@@ -33,6 +33,7 @@ static const PString RasStr      = "ras";
 static const PString NumberStr   = "Number";
 static const PCaselessString UsernameStr = "$USERID";
 static const PCaselessString PasswordStr = "$PASSWORD";
+static const PString AddressStr = "Address";
 static const PString NameServerStr = "NameServer";
 
 static const PString OptionsStr = "Options";
@@ -347,6 +348,73 @@ static int PPPDeviceStatus(const char * devName)
   return FALSE;
 #endif
 }
+
+
+PRemoteConnection::Status PRemoteConnection::GetConfiguration(
+                 Configuration & config  // Configuration of remote connection
+               )
+{
+  return GetConfiguration(remoteName, config);
+}
+
+
+PRemoteConnection::Status PRemoteConnection::GetConfiguration(
+                 const PString & name,   // Remote connection name to get configuration
+                 Configuration & config  // Configuration of remote connection
+               )
+{
+  if (name.IsEmpty())
+    return NoNameOrNumber;
+
+  PConfig cfg(0, RasStr);
+  if (cfg.GetString(name, NumberStr, "").IsEmpty())
+    return NoNameOrNumber;
+
+  cfg.SetDefaultSection(name);
+
+  config.device = cfg.GetString(OptionsStr, PortStr, DefaultPort);
+  config.phoneNumber = cfg.GetString(NumberStr);
+  config.ipAddress = cfg.GetString(AddressStr);
+  config.dnsAddress = cfg.GetString(NameServerStr);
+  config.script = cfg.GetString(LoginStr, DefaultLogin);
+  config.subEntries = 0;
+  config.dialAllSubEntries = FALSE;
+
+  return Connected;
+}
+
+
+PRemoteConnection::Status PRemoteConnection::SetConfiguration(
+                 const Configuration & config,  // Configuration of remote connection
+                 BOOL create            // Flag to create connection if not present
+               )
+{
+  return SetConfiguration(remoteName, config, create);
+}
+
+
+PRemoteConnection::Status PRemoteConnection::SetConfiguration(
+                 const PString & name,          // Remote connection name to configure
+                 const Configuration & config,  // Configuration of remote connection
+                 BOOL create            // Flag to create connection if not present
+               )
+{
+  PConfig cfg(0, RasStr);
+
+  if (!create && cfg.GetString(name, NumberStr, "").IsEmpty())
+    return NoNameOrNumber;
+
+  cfg.SetDefaultSection(name);
+
+//  cfg.SetString(PortStr, config.device);
+  cfg.SetString(NumberStr, config.phoneNumber);
+  cfg.SetString(AddressStr, config.ipAddress);
+  cfg.SetString(NameServerStr, config.dnsAddress);
+  cfg.SetString(LoginStr, config.script);
+
+  return Connected;
+}
+
 
 
 // End of File ////////////////////////////////////////////////////////////////
