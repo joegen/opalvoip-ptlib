@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.17  1998/11/10 12:59:18  robertj
+ * Fixed strange problems with readdir_r usage.
+ *
  * Revision 1.16  1998/10/18 10:02:47  robertj
  * Fixed program argument access functions.
  *
@@ -110,9 +113,6 @@ PINLINE PString PTime::GetTimePM()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PDirectory::IsSubDir() const
-  { return (entryInfo == NULL) ? FALSE : (entryInfo->type == PFileInfo::SubDirectory); }
-
 PINLINE BOOL PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
 
@@ -121,12 +121,6 @@ PINLINE BOOL PDirectory::IsSeparator(char ch)
 
 PINLINE BOOL PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
-
-PINLINE BOOL PDirectory::Restart(int newScanMask)
-  { scanMask = newScanMask; if (directory != NULL) rewinddir(directory); return TRUE; }
-
-PINLINE PString PDirectory::GetEntryName() const
-  { return (entry == NULL) ? PString() : PString((const char *)entry->d_name); }
 
 PINLINE BOOL PDirectory::Exists(const PString & p)
   { return access((const char *)p, 0) == 0; }
