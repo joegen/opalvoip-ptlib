@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.12 1996/07/27 04:11:28 robertj Exp $
+ * $Id: ptime.cxx,v 1.13 1996/08/20 12:07:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.13  1996/08/20 12:07:29  robertj
+ * Fixed volatile milliseconds member of PTimeInterval for printing.
+ *
  * Revision 1.12  1996/07/27 04:11:28  robertj
  * Added bullet proofing for invlid times - especially in Western time zones.
  *
@@ -81,6 +84,8 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & strm) const
 {
+  PInt64 ms = milliseconds;
+
   int decs = strm.precision();
   if (decs > 3)
     decs = 3;
@@ -88,13 +93,13 @@ void PTimeInterval::PrintOn(ostream & strm) const
   strm.fill('0');
 
   BOOL hadPrevious = FALSE;
-  long tmp = (long)(milliseconds/86400000);
+  long tmp = (long)(ms/86400000);
   if (tmp > 0) {
     strm << tmp << ':';
     hadPrevious = TRUE;
   }
 
-  tmp = (long)(milliseconds%86400000)/3600000;
+  tmp = (long)(ms%86400000)/3600000;
   if (hadPrevious || tmp > 0) {
     if (hadPrevious)
       strm.width(2);
@@ -102,7 +107,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
     hadPrevious = TRUE;
   }
 
-  tmp = (long)(milliseconds%3600000)/60000;
+  tmp = (long)(ms%3600000)/60000;
   if (hadPrevious || tmp > 0) {
     if (hadPrevious)
       strm.width(2);
@@ -112,10 +117,10 @@ void PTimeInterval::PrintOn(ostream & strm) const
 
   if (hadPrevious)
     strm.width(2);
-  strm << (long)(milliseconds%60000)/1000;
+  strm << (long)(ms%60000)/1000;
 
   if (decs > 0)
-    strm << '.' << setw(decs) << (int)(milliseconds%1000);
+    strm << '.' << setw(decs) << (int)(ms%1000);
 }
 
 
@@ -144,11 +149,11 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
                                 long hours,
                                 int days)
 {
+  millisecs += seconds*1000;
+  millisecs += minutes*60000L;
+  millisecs += hours*3600000L;
+  millisecs += PInt64(86400000L)*days;
   milliseconds = millisecs;
-  milliseconds += seconds*1000;
-  milliseconds += minutes*60000L;
-  milliseconds += hours*3600000L;
-  milliseconds += PInt64(86400000L)*days;
 }
 
 
