@@ -1142,6 +1142,45 @@ typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PInteractorLayout
+
+class PResourceData;
+
+#include "../../common/ilayout.h"
+  public:
+    // Overrides from class PInteractor
+    HWND GetHWND() const;
+      // Return the MS-Windows handle for the control.
+
+    virtual HWND GetHWND();
+      // Return the MS-Windows handle for the control, call CreateWindow() to
+      // create the window if it has not already been created.
+
+
+  protected:
+    // Overrides from class PInteractor
+    virtual DWORD GetStyle() const;
+      // Return the MS-Windows style used in CreateWindow().
+
+    virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+      // All controls have MS-Windows messages intercepted and passed through
+      // this function.
+
+    // Member variables
+    PRESOURCE_ID resourceID;
+    const PControlCreators * resourceCreators;
+    PINDEX numResourceCreators;
+      // Resource information needed for delayed creation of MS-Windows dialog.
+
+    PResourceData * strings;
+      // Resource strings for filling list boxes etc. Info for EnumDlgChildren.
+
+
+    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PInteractorLayout FAR * layout);
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PToolBar
 
 #include "../../common/toolbar.h"
@@ -1163,51 +1202,9 @@ typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTitledWindow
-
-#include "../../common/titlewnd.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetStyle() const;
-      // Return the MS-Windows style for CreateWindow().
-
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-
-  private:
-    // Member variables
-    BOOL canBeClosed;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PDialog
 
-class PResourceData;
-
 #include "../../common/dialog.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-
   protected:
     // Overrides from class PInteractor
     virtual const char * GetWinClsName() const;
@@ -1216,20 +1213,9 @@ class PResourceData;
     virtual DWORD GetStyle() const;
       // Return the MS-Windows style used in CreateWindow().
 
-    virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // All controls have MS-Windows messages intercepted and passed through
-      // this function.
-
-    // Member variables
-    PRESOURCE_ID resourceID;
-    const PControlCreators * resourceCreators;
-    PINDEX numResourceCreators;
-      // Resource information needed for delayed creation of MS-Windows dialog.
-
-    PResourceData * strings;
-      // Resource strings for filling list boxes etc. Info for EnumDlgChildren.
-
-    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
+    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+      // Event handler for this interactor. Translates MS-Windows messages into
+      // virtual member function calls.
 };
 
 
@@ -1246,7 +1232,8 @@ class PResourceData;
     virtual DWORD GetStyle() const;
       // Return the MS-Windows style used in CreateWindow().
 
-    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
+
+    friend BOOL EXPORTED EnumDlgChildren(HWND hWnd, PInteractorLayout FAR * layout);
 };
 
 
@@ -1289,6 +1276,7 @@ class PResourceData;
 
     // Member variables
     OPENFILENAME fileDlgInfo;
+    PString dlgTitle;
     char fileBuffer[P_MAX_PATH];
     UINT selChangeMessage;
 };
@@ -1343,6 +1331,36 @@ class PResourceData;
     virtual void OnListSelection(UINT listBox, UINT item, UINT operation);
       // Called whenever the standard file dialog changes the selected file in
       // its list boxes
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTitledWindow
+
+#include "../../common/titlewnd.h"
+  public:
+    // Overrides from class PInteractor
+    HWND GetHWND() const;
+      // Return the MS-Windows handle for the control.
+
+    virtual HWND GetHWND();
+      // Return the MS-Windows handle for the control, call CreateWindow() to
+      // create the window if it has not already been created.
+
+
+  protected:
+    // Overrides from class PInteractor
+    virtual DWORD GetStyle() const;
+      // Return the MS-Windows style for CreateWindow().
+
+    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
+      // Event handler for this interactor. Translates MS-Windows messages into
+      // virtual member function calls.
+
+
+  private:
+    // Member variables
+    BOOL canBeClosed;
 };
 
 
@@ -1595,8 +1613,8 @@ typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
     PInteractor * GetWindowObject(HWND hWnd);
 
     // Support for non-modal dialogs
-    void AddDialog(PDialog * pWnd);
-    void RemoveDialog(PDialog * pWnd);
+    void AddDialog(PInteractorLayout * pWnd);
+    void RemoveDialog(PInteractorLayout * pWnd);
 };
 
 
