@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.15  2000/11/12 23:30:41  craigs
+ * Fixed problems with serial port configuration
+ *
  * Revision 1.14  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -61,8 +64,11 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 
+#if defined(P_LINUX)
+#define	TCSETATTR(f,t)	tcsetattr(f,TCSANOW,t)
+#define	TCGETATTR(f,t)	tcgetattr(f,t)
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW
@@ -73,6 +79,15 @@ extern "C" int ioctl(int, int, void *);
 
 #elif defined (P_AIX)
 #include <sys/termio.h>
+#endif
+
+
+#ifndef	TCSETATTR
+#define	TCSETATTR(f,t)	::ioctl(fd,TCSETAW,t)
+#endif
+
+#ifndef	TCGETATTR
+#define	TCSETATTR(f,t)	::ioctl(fd,TCGETA,t)
 #endif
 
 //#define BINARY_LOCK	1
@@ -95,12 +110,12 @@ void PSerialChannel::Construct()
   baudRate   = 9600;
   dataBits   = 8;
   parityBits = NoParity;
-  stopBits   = 1;
-  Termio.c_cflag = B9600 | CS8 | CSTOPB | CREAD | CLOCAL;
+  stopBits   = 2;
 
   // set input mode: ignore breaks, ignore parity errors, do not strip chars,
   // no CR/NL conversion, no case conversion, no XON/XOFF control,
   // no start/stop
+  Termio.c_cflag = B9600 | CS8 | CSTOPB | CREAD | CLOCAL;
   Termio.c_iflag = IGNBRK | IGNPAR;
 
   // set output mode: no post process output, 
@@ -118,7 +133,7 @@ BOOL PSerialChannel::Close()
     PFile::Remove(PString(LOCK_PREFIX) + channelName);
 
     // restore the original terminal settings
-    ::ioctl(os_handle, TCSETAW, &oldTermio);
+    TCSETATTR(os_handle, &oldTermio);
   }
 
   return PChannel::Close();
@@ -191,25 +206,39 @@ BOOL PSerialChannel::Open(const PString & port,
 
   // attempt to open the device
   PString device_name = PString(DEV_PREFIX) + port;
-  if ((os_handle = ::open((const char *)device_name, O_RDWR|O_NONBLOCK)) < 0) {
+  if ((os_handle = ::open((const char *)device_name, O_RDWR|O_NONBLOCK|O_NOCTTY)) < 0) {
     lastError = AccessDenied;
     Close();
     return FALSE;
   }
 
-  // save the current port setup
-  ::ioctl(os_handle, TCGETA, &oldTermio);
-
   // save the channel name
   channelName = port;
 
+  // save the current port setup
+  TCGETATTR(os_handle, &oldTermio);
+
+  // set the default paramaters
+  TCSETATTR(os_handle, &Termio);
+
   // now set the mode that was passed in
-  SetSpeed(speed);
-  SetDataBits(data);
-  SetParity(parity);
-  SetStopBits(stop);
-  SetInputFlowControl(inputFlow);
-  SetOutputFlowControl(outputFlow);
+  if (!SetSpeed(speed))
+    return FALSE;
+
+  if (!SetDataBits(data))
+    return FALSE;
+
+  if (!SetParity(parity))
+    return FALSE;
+
+  if (!SetStopBits(stop))
+    return FALSE;
+
+  if (!SetInputFlowControl(inputFlow))
+    return FALSE;
+
+  if (!SetOutputFlowControl(outputFlow))
+    return FALSE;
 
   ::fcntl(os_handle, F_SETFD, 1);
 
@@ -217,17 +246,17 @@ BOOL PSerialChannel::Open(const PString & port,
 }
 
 
-BOOL PSerialChannel::SetSpeed(DWORD speed)
+BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 {
+  if (newBaudRate == baudRate)
+    return TRUE;
+
+  if (os_handle < 0)
+    return TRUE;
+
   int baud;
-  int mask = 0;
 
-#ifdef CBAUD
-  mask |= CBAUD;
-#endif
-
-  switch(speed) {
-#ifdef CBAUD
+  switch(newBaudRate) {
 #ifdef B50
     case 50:
       baud = B50;
@@ -303,63 +332,49 @@ BOOL PSerialChannel::SetSpeed(DWORD speed)
       baud = B38400;	
       break;
 #endif
+#ifdef B57600
+    case 57600:
+      baud = B57600;
+      break;
+#endif
+#ifdef B115200
+    case 115200:
+      baud = B115200;
+      break;
+#endif
+#ifdef B230400
+    case 230400:
+      baud = B230400;
+      break;
 #endif
     default:
-      baud = 0;
+      baud = -1;
   };
  
-  if (baud == 0) {
+  if (baud == -1) {
     lastError = BadParameter;
     return FALSE;
   }
 
-  // set new baud rate
-  baudRate       = speed;
-  Termio.c_cflag &= ~mask;
+  // save new baud rate
+  baudRate = newBaudRate;
+
+  // set baud rate
+  memset(&Termio, 0, sizeof(Termio));
   Termio.c_cflag |= baud;
 
-  if (os_handle >= 0)
-    ::ioctl(os_handle, TCSETAW, &Termio);
-
-  return TRUE;
+  return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
 
-
-DWORD PSerialChannel::GetSpeed() const
-{
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
-}
-
-BYTE PSerialChannel::GetStopBits() const
-{
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
-}
-
-BYTE PSerialChannel::GetDataBits() const
-{
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
-}
-
-PSerialChannel::Parity PSerialChannel::GetParity() const
-{
-  PAssertAlways(PUnimplementedFunction);
-  return (Parity)0;
-}
 
 BOOL PSerialChannel::SetDataBits(BYTE data)
 {
-  int flags;
-  int mask = 0;
+  if (data == dataBits)
+    return TRUE;
 
-#ifdef CSIZE
-  mask |= CSIZE;
-#endif
+  int flags;
 
   switch (data) {
-#ifdef CSIZE
 #ifdef CS5
     case 5:
       flags = CS5;
@@ -380,9 +395,8 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
       flags = CS8;
       break;
 #endif
-#endif
     default:
-      flags = 0;
+      flags = -1;
       break;
   }
 
@@ -391,104 +405,110 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
     return FALSE;
   }
 
+  if (os_handle < 0)
+    return TRUE;
+
   // set the new number of data bits
-  dataBits       = data;
-  Termio.c_cflag &= ~mask;
+  dataBits  = data;
+  memset(&Termio, 0, sizeof(Termio));
   Termio.c_cflag |= flags;
 
-  if (os_handle >= 0)
-    ::ioctl(os_handle, TCSETAW, &Termio);
-
-  return TRUE;
+  return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
 
 BOOL PSerialChannel::SetParity(Parity parity)
 {
-  int flags;
-  int mask = 0;
+  if (parity == parityBits)
+    return TRUE;
 
-#ifdef PARENB
-  mask |= PARENB;
-#ifdef  PARODD
-  mask |= PARODD;
-#endif
-#endif
+  int flags;
 
   switch (parity) {
-#ifdef PARENB
-#ifdef PARODD
     case OddParity:
     case DefaultParity:
       flags = PARODD | PARENB;
       break;
-#endif
     case EvenParity:
       flags = PARENB;
-#endif
     case NoParity:
-      flags = 0;
+      flags = IGNPAR;
       break;
 
     case MarkParity:
     case SpaceParity:
     default:
-      flags = 0;
+      flags = -1;
   }
 
-  if (flags == 0) {
+  if (flags < 0) {
     lastError = BadParameter;
     return FALSE;
   }
 
+  if (os_handle < 0)
+    return TRUE;
+
   // set the new parity
   parityBits = parity;
-  Termio.c_cflag &= ~mask;
+  memset(&Termio, 0, sizeof(Termio));
   Termio.c_cflag |= flags;
 
-  if (os_handle >= 0)
-    ::ioctl(os_handle, TCSETAW, &Termio);
-
-  return TRUE;
+  return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
 
 BOOL PSerialChannel::SetStopBits(BYTE stop)
 {
-  int flags;
-  int mask = 0;
+  if (stop == stopBits)
+    return TRUE;
 
-#ifdef CSTOPB
-  mask |= CSTOPB;
-#endif
+  int flags;
 
   switch (stop) {
-#ifdef CSTOPB
     case 1:
       flags = 0;
       break;
     case 2:
       flags = CSTOPB;
       break;
-#endif
     default:
-      flags = 0;
+      flags = -1;
   }
 
-  if (flags == 0) {
+  if (flags < 0) {
     lastError = BadParameter;
     return FALSE;
   }
 
+  if (os_handle < 0)
+    return TRUE;
+
   // set the new number of stop bits
-  dataBits = stop;
-  Termio.c_cflag &= ~mask;
+  stopBits = stop;
+  memset(&Termio, 0, sizeof(Termio));
   Termio.c_cflag |= flags;
 
-  if (os_handle >= 0)
-    ::ioctl(os_handle, TCSETAW, &Termio);
-
-  return TRUE;
+  return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
 
+DWORD PSerialChannel::GetSpeed() const
+{
+  return baudRate;
+}
+
+BYTE PSerialChannel::GetStopBits() const
+{
+  return stopBits;
+}
+
+BYTE PSerialChannel::GetDataBits() const
+{
+  return dataBits;
+}
+
+PSerialChannel::Parity PSerialChannel::GetParity() const
+{
+  return parityBits;
+}
 
 BOOL PSerialChannel::SetInputFlowControl(FlowControl)
 {
