@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.37  1998/10/18 14:28:44  robertj
+ * Renamed argv/argc to eliminate accidental usage.
+ *
  * Revision 1.36  1998/10/13 14:06:13  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -428,9 +431,9 @@ PDECLARE_CLASS(PProcess, PThread)
     void Construct();
 
   // Member variables
-    static int argc;
-    static char ** argv;
-    static char ** envp;
+    static int p_argc;
+    static char ** p_argv;
+    static char ** p_envp;
     // main arguments
 
     int terminationValue;
