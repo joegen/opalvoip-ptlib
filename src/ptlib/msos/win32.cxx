@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.90  2000/03/29 04:31:59  robertj
+ * Removed assertion on terminating terminated thread, this is really OK.
+ *
  * Revision 1.89  2000/03/04 08:07:27  robertj
  * Fixed problem with window not appearing when assert on GUI based win32 apps.
  *
@@ -966,7 +969,6 @@ void PThread::Restart()
 
 void PThread::Terminate()
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
   PAssert(originalStackSize > 0, PLogicError);
 
   if (Current() == this)
