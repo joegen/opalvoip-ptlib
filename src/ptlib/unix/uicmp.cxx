@@ -1,6 +1,6 @@
 
 /*
- * $Id: uicmp.cxx,v 1.4 1996/11/16 11:12:56 craigs Exp $
+ * $Id: uicmp.cxx,v 1.5 1998/01/26 07:27:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.5  1998/01/26 07:27:09  robertj
+ * Added part support for extra ping info. Still needs TTL for traceroute.
+ *
  * Revision 1.4  1996/11/16 11:12:56  craigs
  * Fixed problem with work misaligns under SOlaris
  *
@@ -212,6 +215,16 @@ BOOL PICMPSocket::OpenSocket()
 const char * PICMPSocket::GetProtocolName() const
 {
   return "icmp";
+}
+
+
+PICMPSocket::PingInfo::PingInfo(WORD id)
+{
+  identifier = id;
+  sequenceNum = 0;
+  ttl = 255;
+  buffer = NULL;
+  status = Success;
 }
 
 
