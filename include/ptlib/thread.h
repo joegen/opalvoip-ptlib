@@ -1,13 +1,35 @@
 /*
- * $Id: thread.h,v 1.15 1996/03/02 03:15:51 robertj Exp $
+ * thread.h
+ *
+ * Executable thread encapsulation class (pre-emptive if OS allows).
  *
  * Portable Windows Library
  *
- * User Interface Classes Interface Declarations
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.16  1998/09/23 06:21:41  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.15  1996/03/02 03:15:51  robertj
  * Added automatic deletion of thread object instances on thread completion.
  *
