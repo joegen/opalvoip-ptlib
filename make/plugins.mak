@@ -1,6 +1,6 @@
 include ../../make/unix.mak
 
-PLUGIN_FILENAME = $(PLUGIN_NAME).$(LIB_SUFFIX)
+PLUGIN_FILENAME = $(PLUGIN_NAME)_pwplugin.$(LIB_SUFFIX)
 
 OBJDIR = ../pwlib/$(PLUGIN_FAMILY)
 
