@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.20  1999/06/17 13:27:09  robertj
+ * Fixed bug causing crashes on pass through of unknown extensions.
+ *
  * Revision 1.19  1999/06/07 00:31:25  robertj
  * Fixed signed/unsigned problem with number of unknown extensions check.
  *
@@ -2838,8 +2841,8 @@ void PASN_Sequence::UnknownExtensionsEncodePER(PPER_Stream & strm) const
 
   int i;
   for (i = knownExtensions; i < totalExtensions; i++) {
-    if (extensionMap[i])
-      fields[i].Encode(strm);
+    if (extensionMap[i-knownExtensions])
+      fields[i-knownExtensions].Encode(strm);
   }
 }
 
