@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.22 1994/11/28 12:38:23 robertj Exp $
+ * $Id: osutils.cxx,v 1.23 1994/12/12 10:09:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.22  1994/11/28 12:38:23  robertj
+ * Revision 1.23  1994/12/12 10:09:24  robertj
+ * Fixed flotain point configuration variable format.
+ *
+ * Revision 1.22  1994/11/28  12:38:23  robertj
  * Async write functions should have const pointer.
  *
  * Revision 1.21  1994/10/30  11:36:58  robertj
@@ -1486,14 +1489,14 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 
 double PConfig::GetReal(const PString & section, const PString & key, double dflt)
 {
-  PString str(PString::Decimal, dflt);
+  PString str(PString::Printf, "%g", dflt);
   return GetString(section, key, str).AsReal();
 }
 
 
 void PConfig::SetReal(const PString & section, const PString & key, double value)
 {
-  PString str(PString::Decimal, value);
+  PString str(PString::Printf, "%g", value);
   SetString(section, key, str);
 }
 
