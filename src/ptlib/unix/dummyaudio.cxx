@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dummyaudio.cxx,v $
+ * Revision 1.3  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.2  2001/09/27 08:37:45  rogerh
  * remove unwanted lastError
  *
@@ -288,6 +291,16 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 BOOL PSoundChannel::Abort()
 {
   return TRUE;
+}
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+  return FALSE;
 }
 
 

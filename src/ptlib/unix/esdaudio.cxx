@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.4  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.3  2002/01/28 08:01:06  rogerh
  * set lastReadCount during Reads
  *
@@ -228,6 +231,47 @@ BOOL PSoundChannel::Open(const PString & device,
 
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  if (os_handle <= 0)  //Cannot set volume in loop back mode.
+    return FALSE;
+  
+  int rc, deviceVol = (newVal << 8) | newVal;
+
+  if (dir == player)
+    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
+  else
+    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_IGAIN), &deviceVol);
+
+  if (rc < 0) {
+    PTRACE(1, "PSoundChannel::SetVolume failed : " << ::strerror(errno));
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+  if (os_handle <= 0)  //Cannot get volume in loop back mode.
+    return FALSE;
+  
+  int vol, rc;
+  if (dir == player)
+    rc = ::ioctl(os_handle,MIXER_READ(SOUND_MIXER_VOLUME),&vol);
+  else
+    rc = ::ioctl(os_handle,MIXER_READ(SOUND_MIXER_IGAIN),&voll);
+  
+  if (rc < 0) {
+    PTRACE(1, "PSoundChannel::GetVolume failed : " << ::strerror(errno));
+    return FALSE;
+  }
+  
+  devVol = vol;
+  return TRUE;
+}
+  
 
 
 BOOL PSoundChannel::Close()

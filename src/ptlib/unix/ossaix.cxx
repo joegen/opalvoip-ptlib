@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: ossaix.cxx,v $
+ * Revision 1.2  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.1  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -810,6 +813,19 @@ BOOL PSoundChannel::Abort()
   return 0;
 #endif
 }
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+ cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
 
 
 // End of file
