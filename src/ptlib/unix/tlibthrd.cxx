@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.19  1999/07/15 13:10:55  craigs
+ * Fixed problem with EINTR in nontimed sempahore waits
+ *
  * Revision 1.18  1999/07/15 13:05:33  robertj
  * Fixed problem with getting EINTR in semaphore wait, is normal, not error.
  *
@@ -576,7 +579,7 @@ void PSemaphore::Wait()
   while (currentCount == 0) {
     int err = pthread_cond_wait(&condVar, &mutex);
     PProcess::Current().PXCheckSignals();
-    PAssertOS(err == 0);
+    PAssert(err == 0 || err == EINTR, psprintf("wait error = %i", err));
   }
 
   PThread::Current()->PXSetWaitingSemaphore(NULL);
