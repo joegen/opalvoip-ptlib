@@ -154,7 +154,7 @@ LONG RegOpenKeyEx( HKEY hKey, const char* lpSubKey, DWORD ulOptions, REGSAM samD
 LONG RegCreateKeyEx( HKEY hKey, const char* lpSub, DWORD dwr, LPSTR lpcls, DWORD dwo, 
 	REGSAM sam, LPSECURITY_ATTRIBUTES lpsa, PHKEY phk, LPDWORD lpdw );
 
-LONG RegEnumKey(HKEY hKey, DWORD dwIndex, const char* lpName, DWORD cbName);
+LONG RegEnumKey(HKEY hKey, DWORD dwIndex, LPTSTR lpName, DWORD cbName);
 
 LONG RegDeleteKey( HKEY hKey, const char* lpSubKey );
 
