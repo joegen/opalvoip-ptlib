@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.67  2000/03/17 03:47:00  craigs
+# Changed DEBUG version to always be static
+#
 # Revision 1.66  2000/03/09 14:22:04  rogerh
 # OpenBSD requires -lossaudio for OSS Audio support
 #
@@ -350,8 +353,10 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
+ifndef DEBUG
 ifndef P_SHAREDLIB
 P_SHAREDLIB=1
+endif
 endif
 
 ifeq ($(P_SHAREDLIB),0)
