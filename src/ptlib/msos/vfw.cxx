@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.26  2004/10/23 10:50:52  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.25  2003/12/14 10:01:03  rjongbloed
  * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
  *
@@ -116,7 +119,9 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#ifndef _WIN32_WCE
 #pragma comment(lib, "vfw32.lib")
+#endif
 
 #define STEP_GRAB_CAPTURE 1
 
@@ -889,7 +894,9 @@ BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
       char name[100];
       char version[200];
       if (capGetDriverDescription(devId, name, sizeof(name), version, sizeof(version)) ) 
+	  {
         PTRACE(5, "PVidInp\tVideo device[" << devId << "] = " << name << ", " << version);
+	  }
     }
   }
   if (deviceName.GetLength() == 1 && isdigit(deviceName[0]))
