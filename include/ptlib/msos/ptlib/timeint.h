@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
+ * $Id: timeint.h,v 1.3 1995/03/12 05:00:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Revision 1.3  1995/03/12 05:00:03  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.2  1994/07/02  03:18:09  robertj
  * Fixed bug in time intervals being signed.
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
@@ -27,7 +31,7 @@
 #include "../../common/timeint.h"
 };
 
-#define PMaxTimeInterval PTimeInterval((long)0x7fffffff)
+const PTimeInterval PMaxTimeInterval = 0x7fffffff;
 
 
 #endif
