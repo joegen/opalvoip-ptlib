@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.24  2002/01/16 07:51:06  robertj
+ * MSVC compatibilty changes
+ *
  * Revision 1.23  2002/01/16 03:51:20  dereks
  * Move flip methods in PVideoInputDevice  to  PVideoDevice
  *
@@ -368,85 +371,81 @@ class PVideoDevice : public PObject
     int GetLastError() const { return lastError; }
 
 
+    /** Is the device a camera, and obtain video
+     */
+    virtual BOOL CanCaptureVideo();
+ 
+
     /**Get the brightness of the image. 0xffff-Very bright.
      */
-    virtual int GetBrightness() { return frameBrightness; }
+    virtual int GetBrightness();
 
     /**Set brightness of the image. 0xffff-Very bright.
      */
-    virtual BOOL SetBrightness(unsigned newBrightness) 
-      { frameBrightness=newBrightness; return TRUE;}
+    virtual BOOL SetBrightness(unsigned newBrightness);
 
 
     /**Get the whiteness of the image. 0xffff-Very white.
      */
-    virtual int GetWhiteness() { return frameWhiteness; }
+    virtual int GetWhiteness();
 
     /**Set whiteness of the image. 0xffff-Very white.
      */
-    virtual BOOL SetWhiteness(unsigned newWhiteness) 
-      { frameWhiteness=newWhiteness; return TRUE;}
+    virtual BOOL SetWhiteness(unsigned newWhiteness);
 
 
     /**Get the colour of the image. 0xffff-lots of colour.
      */
-    virtual int GetColour() { return frameColour; }
+    virtual int GetColour();
 
     /**Set colour of the image. 0xffff-lots of colour.
      */
-    virtual BOOL SetColour(unsigned newColour) 
-      { frameColour=newColour; return TRUE; }
+    virtual BOOL SetColour(unsigned newColour);
 
 
     /**Get the contrast of the image. 0xffff-High contrast.
      */
-    virtual int GetContrast() { return frameContrast; }
+    virtual int GetContrast();
 
     /**Set contrast of the image. 0xffff-High contrast.
      */
-    virtual BOOL SetContrast(unsigned newContrast) 
-      { frameContrast=newContrast; return TRUE; }
+    virtual BOOL SetContrast(unsigned newContrast);
 
 
     /**Get the hue of the image. 0xffff-High hue.
      */
-    virtual int GetHue() { return frameHue; }
+    virtual int GetHue();
 
     /**Set hue of the image. 0xffff-High hue.
      */
-    virtual BOOL SetHue(unsigned newHue) 
-      { frameHue=newHue; return TRUE; }
+    virtual BOOL SetHue(unsigned newHue);
     
     
-    /** Is the device a camera, and obtain video
-     */
-    virtual BOOL CanCaptureVideo(void)
-      { return deviceCanCaptureVideo; }
- 
-
     /**Return whiteness, brightness, colour, contrast and hue in one call.
      */
-    virtual BOOL GetParameters (int *whiteness, int *brightness, 
-				int *colour, int *contrast, int *hue);
+    virtual BOOL GetParameters(
+      int *whiteness,
+      int *brightness,
+      int *colour,
+      int *contrast,
+      int *hue
+    );
 
 
     /**Get the video conversion vertical flip state.
        Default action is to return FALSE.
      */
-    virtual BOOL GetVFlipState()
-      { return FALSE; }
+    virtual BOOL GetVFlipState();
 
     /**Set the video conversion vertical flip state.
        Default action is to return FALSE.
      */
-    virtual BOOL SetVFlipState(BOOL newVFlipState) 
-      { return FALSE; }
+    virtual BOOL SetVFlipState(BOOL /*newVFlipState*/);
 
     /**Toggle the video conversion vertical flip state.
        Default action is to return FALSE.
     */
-    virtual BOOL ToggleVFlipState() 
-      { return FALSE; }
+    virtual BOOL ToggleVFlipState();
         
 
     /**Set preferred native colour format from video capture device.
