@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.47  2001/03/09 05:50:48  robertj
+ * Added ability to set default PConfig file or path to find it.
+ *
  * Revision 1.46  2001/01/02 07:47:44  robertj
  * Fixed very narrow race condition in timers (destroyed while in OnTimeout()).
  *
@@ -436,6 +439,27 @@ class PProcess : public PThread
        user name of processes owner.
      */
     PString GetUserName() const;
+
+    /**Get the default file to use in PConfig instances.
+      */
+    virtual PString GetConfigurationFile();
+
+    /**Set the default file or set of directories to search for use in PConfig.
+       To find the .ini file for use in the default PConfig() instance, this
+       explicit filename is used, or if it is a set of directories separated
+       by either ':' or ';' characters, then the application base name postfixed
+       with ".ini" is searched for through those directories.
+
+       The search is actually done when the GetConfigurationFile() is called,
+       this function only sets the internal variable.
+
+       Note for Windows, a path beginning with "HKEY_LOCAL_MACHINE\\" or
+       "HKEY_CURRENT_USER\\" will actually search teh system registry for the
+       application base name only (no ".ini") in that folder of the registry.
+      */
+    void SetConfigurationPath(
+      const PString & path   /// Explicit file or set of directories
+    );
   //@}
 
   /**@name Operating System information functions */
@@ -544,6 +568,9 @@ class PProcess : public PThread
 
     PFilePath executableFile;
     // Application executable file from argv[0] (not open)
+
+    PStringList configurationPaths;
+    // Explicit file or set of directories to find default PConfig
 
     PArgList arguments;
     // The list of arguments
