@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.70  2001/02/23 08:42:17  rogerh
+# Add dummyaudio as the default SOUND_SOURCE
+#
 # Revision 1.69  2001/02/15 04:58:51  robertj
 # Added class to do secure HTTP based service process.
 #
@@ -267,6 +270,12 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
 	        video4linux.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
 endif
+
+#Set SOUND_SOURCE to dummyaudio, a file which links but does not
+#actually play or record audio.
+#This will then be overridden by platform specific audio files.
+
+SOUND_SOURCE = dummyaudio.cxx
 
 ifeq ($(OSTYPE),linux)
 SOUND_SOURCE = oss.cxx
