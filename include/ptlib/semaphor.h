@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.7  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.6  1998/11/19 05:17:37  robertj
  * Added PWaitAndSignal class for easier mutexing.
  *
@@ -70,7 +73,9 @@ class PWaitAndSignal {
 };
 
 
-PDECLARE_CLASS(PSemaphore, PObject)
+class PSemaphore : public PObject
+{
+  PCLASSINFO(PSemaphore, PObject)
 /* This class defines a thread synchonisation object. This is in the form of a
    integer semaphore. The semaphore has a count and a maximum value. The
    various combinations of count and usage of the <A>Wait()</A> and

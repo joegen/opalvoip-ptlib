@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.24  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.23  1998/09/23 06:21:15  robertj
  * Added open source copyright license.
  *
@@ -113,7 +116,9 @@
 class PTimeInterval;
 
 
-PDECLARE_CLASS(PTime, PObject)
+class PTime : public PObject
+{
+  PCLASSINFO(PTime, PObject)
 /* This class defines an absolute time and date. It has a number of time and
    date rendering and manipulation functions. It is based on the standard C
    library functions for time. Thus it is based on a number of seconds since
