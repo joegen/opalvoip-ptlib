@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.137  2005/01/21 21:25:19  csoutheren
+ * Removed incorrect return in PThread::WaitForTermination
+ *
  * Revision 1.136  2005/01/16 23:00:37  csoutheren
  * Fixed problem when calling WaitForTermination from within the same thread
  *
@@ -1203,7 +1206,7 @@ void PThread::WaitForTermination() const
 {
   if (this == Current()) {
     PTRACE(2, "WaitForTermination short circuited");
-    return TRUE;
+    return;
   }
   
   PXAbortBlock();   // this assist in clean shutdowns on some systems
