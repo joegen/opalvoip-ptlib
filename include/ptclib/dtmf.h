@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.5  2004/09/09 23:50:48  csoutheren
+ * Fixed problem with duplicate definition of sinetab causing problems
+ *
  * Revision 1.4  2004/09/09 05:23:37  dereksmithies
  * Add utility function to report on dtmf characters used.
  *
@@ -131,6 +134,8 @@ class PDTMFEncoder : public PBYTEArray
     static PMutex & GetMutex();
     static BOOL sineTabInit;
     static void MakeSineTable();
+    static inline double sine(unsigned int ptr)
+    { return sinetab[ptr >> (32-11)]; }
     static double sinetab[1 << 11];
 };
 
