@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.50  1999/08/07 06:50:52  robertj
+ * Removed silly (and incorrect) warning.
+ *
  * Revision 1.49  1999/04/24 05:16:26  robertj
  * Fixed incorrect date in copyright notice.
  *
@@ -1139,8 +1142,8 @@ CREATE_MACRO(BuildDate,EMPTY,args)
 
 CREATE_MACRO(OS,EMPTY,EMPTY)
 {
-  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
-  return process.GetOSClass() & process.GetOSName();
+  return PHTTPServiceProcess::Current().GetOSClass() &
+         PHTTPServiceProcess::Current().GetOSName();
 }
 
 
