@@ -111,6 +111,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.3  2002/02/21 19:49:57  dereks
+ * Fix spelling mistake. Thanks Ryutaroh
+ *
  * Revision 1.2  2002/02/20 20:27:28  dereks
  * updates to previous checkin.
  *
@@ -299,7 +302,7 @@ BOOL PVideoInput1394DcDevice::Start()
   PTRACE(1, deviceName << " " << channelNumber);
 
   // In order to compile the following line, you need libdc1394 later than Feb. 1, 2002.
-  camera.dam_device_file = deviceName.GetPointer();
+  camera.dma_device_file = deviceName.GetPointer();
 
   if ((UseDMA &&dc1394_dma_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
