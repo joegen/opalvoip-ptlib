@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.1 1996/01/23 13:04:20 robertj Exp $
+ * $Id: inetmail.h,v 1.2 1996/03/16 04:38:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.2  1996/03/16 04:38:24  robertj
+ * Added ParseReponse() for splitting reponse line into code and info.
+ *
  * Revision 1.1  1996/01/23 13:04:20  robertj
  * Initial revision
  *
@@ -550,6 +553,21 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
     
 
   protected:
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
+    /* Parse a response line string into a response code and any extra info
+       on the line. Results are placed into the member variables
+       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
+
+       The default bahaviour looks for a space or a '-' and splits the code
+       and info either side of that character, then returns FALSE.
+
+       <H2>Returns:</H2>
+       Position of continuation character in response, 0 if no continuation
+       lines are possible.
+     */
+
     virtual void OnUSER(
       const PString & name  // Name of user.
     );
