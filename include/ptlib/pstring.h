@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.58  2003/12/04 13:10:38  csoutheren
+ * Made PRegularExpression copy constructor private to avoid accidental usage (and subsequent crash)
+ *
  * Revision 1.57  2003/05/14 00:46:47  rjongbloed
  * Added constructor to string lists/arrays etc that takes a single PString.
  *
@@ -3016,6 +3019,13 @@ class PRegularExpression : public PObject
   protected:
     regex_t * expression;
     int lastError;
+
+  private:
+    /// Don't allow regular expression copying.
+    PRegularExpression(
+      const PRegularExpression &
+    )
+    { }  
 };
 
 
