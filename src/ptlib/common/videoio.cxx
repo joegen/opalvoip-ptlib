@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.30  2002/04/07 22:49:32  rogerh
+ * Add some comments
+ *
  * Revision 1.29  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -145,7 +148,7 @@ PVideoDevice::PVideoDevice()
   lastError = 0;
 
   videoFormat = Auto;
-  channelNumber = -1;
+  channelNumber = -1;	// -1 will find the first working channel number.
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
 
@@ -190,7 +193,7 @@ int PVideoDevice::GetNumChannels()
 
 BOOL PVideoDevice::SetChannel(int channelNum)
 {
-  if (channelNum < 0) {
+  if (channelNum < 0) { // Seek out the first available channel
     for (int c = 0; c < GetNumChannels(); c++)
       if (SetChannel(c))
         return TRUE;
