@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.45  1998/10/31 14:01:58  robertj
+ * Fixed ANSI scoping of for loop variable.
+ *
  * Revision 1.44  1998/10/30 10:41:57  robertj
  * Fixed bug cause by previous bug fix in PObjectArray, deleting deleted entries.
  *
@@ -317,7 +320,8 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
   PObject * obj = (*theArray)[index];
 
   PINDEX size = GetSize()-1;
-  for (PINDEX i = index; i < size; i++)
+  PINDEX i;
+  for (i = index; i < size; i++)
     (*theArray)[i] = (*theArray)[i+1];
   (*theArray)[i] = NULL;
 
