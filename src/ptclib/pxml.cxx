@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.26  2002/12/16 06:38:59  robertj
+ * Added ability to specify certain elemets (by name) that are exempt from
+ *   the indent formatting. Useful for XML/RPC where leading white space is
+ *   not ignored by all servers.
+ *
  * Revision 1.25  2002/12/10 04:41:16  robertj
  * Added test for URL being empty, don't try and run auto load in background.
  *
@@ -99,18 +104,14 @@ static void PXML_EndDocTypeDecl(void * userData)
 
 ////////////////////////////////////////////////////
 
-PXML::PXML(int _options)
+PXML::PXML(int options, const char * noIndentElements)
 {
-  Construct();
-  if (_options >= 0)
-    options = _options;
+  Construct(options, noIndentElements);
 }
 
-PXML::PXML(const PString & data, int _options)
+PXML::PXML(const PString & data, int options, const char * noIndentElements)
 {
-  Construct();
-  if (_options >= 0)
-    options = _options;
+  Construct(options, noIndentElements);
   Load(data);
 }
 
@@ -121,10 +122,10 @@ PXML::~PXML()
 }
 
 PXML::PXML(const PXML & xml)
+  : noIndentElements(xml.noIndentElements)
 {
-  Construct();
+  Construct(xml.options, NULL);
 
-  options      = xml.options;
   loadFromFile = xml.loadFromFile;
   loadFilename = xml.loadFilename;
   version      = xml.version;
@@ -138,14 +139,17 @@ PXML::PXML(const PXML & xml)
     rootElement = (PXMLElement *)oldRootElement->Clone(NULL);
 }
 
-void PXML::Construct()
+void PXML::Construct(int _options, const char * _noIndentElements)
 {
   rootElement    = NULL;
   currentElement = NULL;
   lastElement    = NULL;
-  options        = 0;
+  options        = _options > 0 ? _options : 0;
   loadFromFile   = FALSE;
   standAlone     = -2;
+
+  if (_noIndentElements != NULL)
+    noIndentElements = PString(_noIndentElements).Tokenise(' ', FALSE);
 }
 
 PXMLElement * PXML::SetRootElement(const PString & documentType)
@@ -522,9 +526,15 @@ void PXML::EndDocTypeDecl()
 {
 }
 
+BOOL PXML::IsNoIndentElement(const PString & elementName) const
+{
+  return noIndentElements.GetValuesIndex(elementName) != P_MAX_INDEX;
+}
+
+
 void PXML::PrintOn(ostream & strm) const
 {
-  BOOL newLine = (options & PXML::NewLineAfterElement) != 0;
+  BOOL newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
 
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
@@ -559,7 +569,7 @@ void PXML::PrintOn(ostream & strm) const
     strm << "<!DOCTYPE " << rootElement->GetName() << '>';
     if (newLine)
       strm << endl;
-    rootElement->PrintOn(strm, (options & Indent) ? 0 : -1, options);
+    rootElement->Output(strm, *this, 2);
   }
 }
 
@@ -628,12 +638,18 @@ PXMLData::PXMLData(PXMLElement * _parent, const char * data, int len)
   value = PString(data, len);
 }
 
-void PXMLData::PrintOn(ostream & strm, int indent, int options) const
+void PXMLData::Output(ostream & strm, const PXML & xml, int indent) const
 {
-  if (indent > 0)
-    strm << setw(indent) << " ";
+  int options = xml.GetOptions();
+  if (xml.IsNoIndentElement(parent->GetName()))
+    options &= ~PXML::Indent;
+
+  if (options & PXML::Indent)
+    strm << setw(indent-1) << " ";
+
   strm << value;
-  if (indent >= 0 || ((options & PXML::NewLineAfterElement) != 0))
+
+  if ((options & (PXML::Indent|PXML::NewLineAfterElement)) != 0)
     strm << endl;
 }
 
@@ -742,12 +758,15 @@ BOOL PXMLElement::HasAttribute(const PCaselessString & key)
   return attributes.Contains(key);
 }
 
-void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
+void PXMLElement::Output(ostream & strm, const PXML & xml, int indent) const
 {
-  BOOL newLine = (options & PXML::NewLineAfterElement) != 0;
+  int options = xml.GetOptions();
 
-  if (indent > 0)
-    strm << setw(indent) << " ";
+  BOOL newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
+
+  if ((options & PXML::Indent) != 0)
+    strm << setw(indent-1) << " ";
+
   strm << '<' << name;
 
   PINDEX i;
@@ -764,18 +783,22 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
     strm << " />";
     if (newLine)
       strm << endl;
-  } else {
+  }
+  else {
+    BOOL indenting = (options & PXML::Indent) != 0 && !xml.IsNoIndentElement(name);
+
     strm << '>';
-    if (indent >= 0 || newLine)
+    if (indenting)
       strm << endl;
   
     for (i = 0; i < subObjects.GetSize(); i++) 
-      subObjects[i].PrintOn(strm, (indent < 0) ? -1 : (indent + 2), options);
+      subObjects[i].Output(strm, xml, indent + 2);
 
-    if (indent > 0)
-      strm << setw(indent) << " ";
+    if (indenting)
+      strm << setw(indent-1) << " ";
+
     strm << "</" << name << '>';
-    if (indent >= 0 || newLine)
+    if (newLine)
       strm << endl;
   }
 }
