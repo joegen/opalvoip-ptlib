@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.8  1999/08/17 09:42:22  robertj
+ * Fixed close of sound channel in loopback mode closing stdin!
+ *
  * Revision 1.7  1999/08/17 09:28:47  robertj
  * Added audio loopback psuedo-device (thanks Philip Edelbrock)
  *
@@ -322,6 +325,11 @@ BOOL PSoundChannel::Close()
   // if the channel isn't open, do nothing
   if (os_handle < 0)
     return TRUE;
+
+  if (os_handle == 0) {
+    os_handle = -1;
+    return TRUE;
+  }
 
   // the device must be in the dictionary
   dictMutex.Wait();
