@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.35  1999/04/29 07:04:04  robertj
-# Fixed missing -g in debug version
+# Revision 1.36  1999/04/29 08:46:50  robertj
+# Force use of GNU C compiler for .c files not only c++ files.
+#
+# Revision 1.36  1999/04/29 08:46:50  robertj
+# Force use of GNU C compiler for .c files not only c++ files.
 #
 # Revision 1.35  1999/04/29 07:04:04  robertj
 # Fixed missing -g in debug version
@@ -297,7 +300,8 @@ endif
 
 ###############################################################################
 #
-CPLUS		= g++
+# define some common stuff
+#
 
 CC		:= gcc
 CPLUS		:= g++
