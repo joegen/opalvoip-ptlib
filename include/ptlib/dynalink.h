@@ -1,5 +1,5 @@
 /*
- * $Id: dynalink.h,v 1.1 1995/03/14 12:44:08 robertj Exp $
+ * $Id: dynalink.h,v 1.2 1997/06/08 04:49:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: dynalink.h,v $
+ * Revision 1.2  1997/06/08 04:49:20  robertj
+ * Added DLL file extension string function.
+ *
  * Revision 1.1  1995/03/14 12:44:08  robertj
  * Initial revision
  *
@@ -40,6 +43,13 @@ PDECLARE_CLASS(PDynaLink, PObject)
 
 
   // New functions for class
+    static PString GetExtension();
+    /* Get the extension used by this platform for dynamic link libraries.
+
+       <H2>Returns:</H2>
+       String for file extension.
+     */
+
     BOOL Open(
       const PString & name    // Name of the dynamically loadable module.
     );
