@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.12  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.11  1998/11/30 04:48:39  robertj
  * New directory structure
  *
@@ -113,7 +116,9 @@ typedef struct icmp_echo_reply {
 } ICMPECHO;
 
 
-PDECLARE_CLASS(PICMPDLL, PDynaLink)
+class PICMPDLL : public PDynaLink
+{
+  PCLASSINFO(PICMPDLL, PDynaLink)
   public:
     PICMPDLL()
       : PDynaLink("ICMP.DLL")

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.85  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.84  1999/01/08 01:29:47  robertj
  * Support for pthreads under FreeBSD
  *
@@ -299,7 +302,9 @@ static PWinSock dummyForWinSock; // Assure winsock is initialised
 #endif
 
 
-PDECLARE_CLASS(PIPCacheData, PObject)
+class PIPCacheData : public PObject
+{
+  PCLASSINFO(PIPCacheData, PObject)
   public:
     PIPCacheData(struct hostent * ent, const char * original);
     const PString & GetHostName() const { return hostname; }
@@ -329,7 +334,9 @@ class PHostByName : PHostByName_private
 } pHostByName;
 
 
-PDECLARE_CLASS(PIPCacheKey, PObject)
+class PIPCacheKey : public PObject
+{
+  PCLASSINFO(PIPCacheKey, PObject)
   public:
     PIPCacheKey(const PIPSocket::Address & a)
       { addr = a; }

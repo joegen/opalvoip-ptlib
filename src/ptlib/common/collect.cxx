@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.47  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.46  1998/11/02 12:53:52  robertj
  * Fixed yet another bug in the object array SetSize() for unix systems.
  *
@@ -831,7 +834,7 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
-  Element * elmt;
+  Element * elmt = NULL;
   PINDEX pos = info->root->ValueSelect(*obj, elmt);
   if (pos == P_MAX_INDEX)
     return P_MAX_INDEX;
