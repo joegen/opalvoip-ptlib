@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.14  2001/10/31 01:30:40  robertj
+ * Added enhancements for saving/loading/creating certificates and keys.
+ *
  * Revision 1.13  2001/09/10 02:51:22  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -81,6 +84,110 @@ struct ssl_ctx_st;
 struct x509_st;
 struct evp_pkey_st;
 
+enum PSSLFileTypes {
+  PSSLFileTypePEM,
+  PSSLFileTypeASN1,
+  PSSLFileTypeDEFAULT
+};
+
+
+/**Private key for SSL.
+   This class embodies a common environment for all private keys used by the
+   PSSLContext and PSSLChannel classes.
+  */
+class PSSLPrivateKey : public PObject
+{
+  PCLASSINFO(PSSLPrivateKey, PObject);
+  public:
+    /**Create an empty private key.
+      */
+    PSSLPrivateKey();
+
+    /**Create a new RSA private key.
+      */
+    PSSLPrivateKey(
+      unsigned modulus,   /// Number of bits
+      void (*callback)(int,int,void *) = NULL,  /// Progress callback function
+      void *cb_arg = NULL                       /// Argument passed to callback
+    );
+
+    /**Create a new private key given the file.
+       The type of the private key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    PSSLPrivateKey(
+      const PFilePath & keyFile,  /// Private key file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+    );
+
+    /**Create private key from the binary ASN1 DER encoded data specified.
+      */
+    PSSLPrivateKey(
+      const BYTE * keyData,   /// Private key data
+      PINDEX keySize          /// Size of private key data
+    );
+
+    /**Create private key from the binary ASN1 DER encoded data specified.
+      */
+    PSSLPrivateKey(
+      const PBYTEArray & keyData  /// Private key data
+    );
+
+    /**Create a copy of the private key.
+      */
+    PSSLPrivateKey(
+      const PSSLPrivateKey & privKey
+    );
+
+    /**Create a copy of the private key.
+      */
+    PSSLPrivateKey & operator=(
+      const PSSLPrivateKey & privKay
+    );
+
+    /**Destroy and release storage for private key.
+      */
+    ~PSSLPrivateKey();
+
+    /**Get internal OpenSSL private key structure.
+      */
+    operator evp_pkey_st *() const { return key; }
+
+    /**Create a new private key.
+     */
+    BOOL Create(
+      unsigned modulus,   /// Number of bits
+      void (*callback)(int,int,void *) = NULL,  /// Progress callback function
+      void *cb_arg = NULL                       /// Argument passed to callback
+    );
+
+    /**Load private key from file.
+       The type of the private key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    BOOL Load(
+      const PFilePath & keyFile,  /// Private key file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+    );
+
+    /**Save private key to file.
+       The type of the private key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    BOOL Save(
+      const PFilePath & keyFile,  /// Private key file
+      BOOL append = FALSE,        /// Append to file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to write
+    );
+
+
+  protected:
+    evp_pkey_st * key;
+};
+
 
 /**Certificate for SSL.
    This class embodies a common environment for all certificates used by the
@@ -95,25 +202,32 @@ class PSSLCertificate : public PObject
     PSSLCertificate();
 
     /**Create a new certificate given the file.
-       The type of the certificate (eg SSL_FILETYPE_PEM) can be specified
-       explicitly, or if -1 it will be determined from the file extension.
+       The type of the certificate key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
       */
     PSSLCertificate(
       const PFilePath & certFile, /// Certificate file
-      int fileType = -1
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
     );
 
-    /**Create certificate from the binary data specified.
+    /**Create certificate from the binary ASN1 DER encoded data specified.
       */
     PSSLCertificate(
       const BYTE * certData,  /// Certificate data
       PINDEX certSize        /// Size of certificate data
     );
 
-    /**Create certificate from the binary data specified.
+    /**Create certificate from the binary ASN1 DER encoded data specified.
       */
     PSSLCertificate(
       const PBYTEArray & certData  /// Certificate data
+    );
+
+    /**Create certificate from the ASN1 DER base64 encoded data specified.
+      */
+    PSSLCertificate(
+      const PString & certString  /// Certificate data as string
     );
 
     /**Create a copy of the certificate.
@@ -136,67 +250,51 @@ class PSSLCertificate : public PObject
       */
     operator x509_st *() const { return certificate; }
 
+    /**Create a new root certificate.
+       The subject name is a string of the form "/name=value/name=value" where
+       name is a short name for the field and value is a string value for the
+       field for example:
+          "/C=ZA/SP=Western Cape/L=Cape Town/O=Thawte Consulting cc"
+	  "/OU=Certification Services Division/CN=Thawte Server CA"
+	  "/Email=server-certs@thawte.com"
+     */
+    BOOL CreateRoot(
+      const PString & subject,    /// Subject name for certificate
+      const PSSLPrivateKey & key  /// Key to sign certificate with
+    );
+
+    /**Get the certificate as binary ASN1 DER encoded data.
+      */
+    PBYTEArray GetData() const;
+
+    /**Get the certificate as ASN1 DER base64 encoded data.
+      */
+    PString AsString() const;
+
+    /**Load certificate from file.
+       The type of the certificate key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    BOOL Load(
+      const PFilePath & certFile, /// Certificate file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to read
+    );
+
+    /**Save certificate to file.
+       The type of the certificate key can be specified explicitly, or if
+       PSSLFileTypeDEFAULT it will be determined from the file extension,
+       ".pem" is a text file, anything else eg ".der" is a binary ASN1 file.
+      */
+    BOOL Save(
+      const PFilePath & keyFile,  /// Certificate key file
+      BOOL append = FALSE,        /// Append to file
+      PSSLFileTypes fileType = PSSLFileTypeDEFAULT  /// Type of file to write
+    );
+
 
   protected:
     x509_st * certificate;
-};
-
-
-/**Private key for SSL.
-   This class embodies a common environment for all private keys used by the
-   PSSLContext and PSSLChannel classes.
-  */
-class PSSLPrivateKey : public PObject
-{
-  PCLASSINFO(PSSLPrivateKey, PObject);
-  public:
-    /**Create an empty private key.
-      */
-    PSSLPrivateKey();
-
-    /**Create a new private key given the file.
-       The type of the private key (eg SSL_FILETYPE_PEM) can be specified
-       explicitly, or if -1 it will be determined from the file extension.
-      */
-    PSSLPrivateKey(
-      const PFilePath & keyFile  /// Private key file
-    );
-
-    /**Create private key from the binary data specified.
-       If the xorSeed is non-zero then it is used in a simple XOR encryption
-       of the static data allowing it to be hidden in the binary executable.
-       This does not need to be cryptographically strong as it is only
-       intended to prevent simple scanning for the key in a binary file.
-      */
-    PSSLPrivateKey(
-      const BYTE * keyData,   /// Private key data
-      PINDEX keySize,         /// Size of private key data
-      BYTE xorSeed = 0        /// XOR seed value for data hiding
-    );
-
-    /**Create a copy of the private key.
-      */
-    PSSLPrivateKey(
-      const PSSLPrivateKey & privKay
-    );
-
-    /**Create a copy of the private key.
-      */
-    PSSLPrivateKey & operator=(
-      const PSSLPrivateKey & privKay
-    );
-
-    /**Destroy and release storage for private key.
-      */
-    ~PSSLPrivateKey();
-
-    /**Get internal OpenSSL private key structure.
-      */
-    operator evp_pkey_st *() const { return key; }
-
-
-  protected:
-    evp_pkey_st * key;
 };
 
 
