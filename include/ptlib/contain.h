@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.39 1994/12/12 10:16:18 robertj Exp $
+ * $Id: contain.h,v 1.40 1994/12/13 11:50:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.39  1994/12/12 10:16:18  robertj
+ * Revision 1.40  1994/12/13 11:50:45  robertj
+ * Added MakeUnique() function to all container classes.
+ *
+ * Revision 1.39  1994/12/12  10:16:18  robertj
  * Restructuring and documentation of container classes.
  * Renaming of some macros for declaring container classes.
  * Added some extra functionality to PString.
@@ -244,6 +247,22 @@ PDECLARE_CLASS(PContainer, PObject)
        Returns: TRUE if GetSize() returns zero.
      */
 
+    BOOL IsUnique() const;
+    /* Determine if this instance is the one and only reference to the
+       container contents.
+
+       Returns: TRUE if the reference count is one.
+     */
+
+    virtual BOOL MakeUnique();
+    /* Make this instance to be the one and only reference to the container
+       contents. This implicitly does a clone of the contents of the container
+       to make a unique reference. If the instance was already unique then
+       the function does nothing.
+
+       Returns: TRUE if the instance was already unique.
+     */
+
 
   protected:
     PContainer(
@@ -286,7 +305,7 @@ PDECLARE_CLASS(PContainer, PObject)
        the ancestor function should $U$not$U$ be called.
      */
 
-    virtual void CloneContents(const PContainer * c);
+    virtual void CloneContents(const PContainer * src);
     /* Create a duplicate of the container contents. This copies the contents
        from one container to another, unique container. It is automatically
        declared when the PDECLARE_CONTAINER() macro is used.
@@ -298,18 +317,15 @@ PDECLARE_CLASS(PContainer, PObject)
 
        This function will get called once for every class in the heirarchy, so
        the ancestor function should $U$not$U$ be called.
+       
+       $B$$U$Note well$U$$B$, the logic of the function must be able to accept
+       the passed in parameter to clone being the same instance as the
+       destination object, ie during execution $F$this == src$F$.
      */
 
     void Destruct();
     /* Internal function called from container destructors. This will
        conditionally call DestroyContents() to destroy the container contents.
-     */
-
-    BOOL IsUnique() const;
-    /* Determine if this instance is the one and only reference to the
-       container contents.
-
-       Returns: TRUE if the refernece count is one.
      */
 
 
@@ -324,6 +340,7 @@ PDECLARE_CLASS(PContainer, PObject)
 };
 
 
+
 /*$MACRO PCONTAINERINFO(cls, par)
    This macro is used to declare all the functions that should be implemented
    for a working container class. It will also define some inline code for
@@ -333,8 +350,9 @@ PDECLARE_CLASS(PContainer, PObject)
    declaration. Normally, the $H$PDECLARE_CONTAINER macro would be used, which
    includes this macro in it.
 
-   The default implementation for contructors, destructor and the assignment
-   operator is as follows:$F$
+   The default implementation for contructors, destructor, the assignment
+   operator and the MakeUnique() function is as follows:
+   $F$
         cls(const cls & c)
           : par(c)
         {
@@ -358,10 +376,18 @@ PDECLARE_CLASS(PContainer, PObject)
         {
           Destruct();
         }
-    
-    $F$Then the DestroyContents(), CloneContents() and CopyContents()
-    functions are declared and must be implemted by the programmer. See the
-    $H$PContainer class for more information on these functions.
+
+        BOOL MakeUnique()
+        {
+          if (par::MakeUnique())
+            return TRUE;
+          CloneContents(c);
+          return FALSE;
+        }
+    $F$
+    Then the DestroyContents(), CloneContents() and CopyContents() functions
+    are declared and must be implemted by the programmer. See the $H$PContainer
+    class for more information on these functions.
  */
 #define PCONTAINERINFO(cls, par) \
     PCLASSINFO(cls, par) \
@@ -370,11 +396,14 @@ PDECLARE_CLASS(PContainer, PObject)
     cls & operator=(const cls & c) \
       { par::operator=(c); cls::CopyContents(c); return *this; } \
     virtual ~cls() { Destruct(); } \
+    virtual BOOL MakeUnique() \
+      { if(par::MakeUnique())return TRUE; CloneContents(this);return FALSE; } \
   protected: \
     cls(int dummy, const cls * c) : par(dummy, c) { CloneContents(c); } \
     virtual void DestroyContents(); \
     virtual void CloneContents(const cls * c); \
     virtual void CopyContents(const cls & c); \
+
 
 /*$MACRO PDECLARE_CONTAINER(cls, par)
    This macro is used to declare a descendent of $H$PContainer class. It
