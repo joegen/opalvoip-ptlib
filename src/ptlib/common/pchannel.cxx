@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.28  2004/04/09 06:38:11  rjongbloed
+ * Fixed compatibility with STL based streams, eg as used by VC++2003
+ *
  * Revision 1.27  2004/04/03 08:22:21  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -198,11 +201,10 @@ int PChannelStreamBuffer::sync()
 }
 
 
-streampos PChannelStreamBuffer::seekoff(streamoff off,
-#if defined(__MWERKS__) || __GNUC__ >= 3
-                                        ios::seekdir dir, ios::openmode)
+#if __USE_STL__
+streampos PChannelStreamBuffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode)
 #else
-                                        ios::seek_dir dir, int)
+streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
 #endif
 {
   sync();
@@ -227,6 +229,14 @@ streampos PChannelStreamBuffer::seekoff(streamoff off,
     
   return egptr() - gptr();
 }
+
+
+#if __USE_STL__
+streampos PChannelStreamBuffer::seekpos(pos_type pos, ios_base::openmode mode)
+{
+  return seekoff(pos, ios_base::beg, mode);
+}
+#endif
 
 
 PChannel::PChannel()

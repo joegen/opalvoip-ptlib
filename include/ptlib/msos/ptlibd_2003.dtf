@@ -4231,7 +4231,9 @@ EXPORTS
     ?SaveSettings@PSerialChannel@@UAEXAAVPConfig@@@Z @3232 NONAME ;public: virtual void __thiscall PSerialChannel::SaveSettings(class PConfig &)
     ?scientific@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5806 NONAME ;public: static enum std::_Iosb<int>::_Fmtflags const std::_Iosb<int>::scientific
     ?seekoff@Buffer@PStringStream@@UAE?AV?$fpos@H@std@@JHH@Z @5807 NONAME ;public: virtual class std::fpos<int> __thiscall PStringStream::Buffer::seekoff(long,int,int)
-    ?seekoff@PChannelStreamBuffer@@MAE?AV?$fpos@H@std@@JIH@Z @5808 NONAME ;protected: virtual class std::fpos<int> __thiscall PChannelStreamBuffer::seekoff(long,unsigned int,int)
+    ?seekoff@PChannelStreamBuffer@@MAE?AV?$fpos@H@std@@JHH@Z @5831 NONAME ;protected: virtual class std::fpos<int> __thiscall PChannelStreamBuffer::seekoff(long,int,int)
+    ?seekpos@Buffer@PStringStream@@UAE?AV?$fpos@H@std@@V34@H@Z @5832 NONAME ;public: virtual class std::fpos<int> __thiscall PStringStream::Buffer::seekpos(class std::fpos<int>,int)
+    ?seekpos@PChannelStreamBuffer@@MAE?AV?$fpos@H@std@@V23@H@Z @5833 NONAME ;protected: virtual class std::fpos<int> __thiscall PChannelStreamBuffer::seekpos(class std::fpos<int>,int)
     ?Select@PSocket@@SA?AW4Errors@PChannel@@AAVSelectList@1@00@Z @3235 NONAME ;public: static enum PChannel::Errors  __cdecl PSocket::Select(class PSocket::SelectList &,class PSocket::SelectList &,class PSocket::SelectList &)
     ?Select@PSocket@@SA?AW4Errors@PChannel@@AAVSelectList@1@00ABVPTimeInterval@@@Z @3236 NONAME ;public: static enum PChannel::Errors  __cdecl PSocket::Select(class PSocket::SelectList &,class PSocket::SelectList &,class PSocket::SelectList &,class PTimeInterval const &)
     ?Select@PSocket@@SA?AW4Errors@PChannel@@AAVSelectList@1@0@Z @3237 NONAME ;public: static enum PChannel::Errors  __cdecl PSocket::Select(class PSocket::SelectList &,class PSocket::SelectList &)
