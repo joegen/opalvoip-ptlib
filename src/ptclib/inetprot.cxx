@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.4 1996/01/26 02:24:29 robertj Exp $
+ * $Id: inetprot.cxx,v 1.5 1996/01/28 02:48:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.5  1996/01/28 02:48:27  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ *
  * Revision 1.4  1996/01/26 02:24:29  robertj
  * Further implemetation.
  *
@@ -515,7 +518,7 @@ void PBase64::ProcessEncoding(const PString & str)
 
 void PBase64::ProcessEncoding(const char * cstr)
 {
-  ProcessEncoding((PConstMemoryPointer)cstr, strlen(cstr));
+  ProcessEncoding((const BYTE *)cstr, strlen(cstr));
 }
 
 
@@ -546,7 +549,7 @@ void PBase64::OutputBase64(const BYTE * data)
 }
 
 
-void PBase64::ProcessEncoding(PConstMemoryPointer data, PINDEX length)
+void PBase64::ProcessEncoding(const BYTE * data, PINDEX length)
 {
   while (saveCount < 3) {
     saveTriple[saveCount++] = *data++;
@@ -611,7 +614,7 @@ PString PBase64::Encode(const PString & str)
 
 PString PBase64::Encode(const char * cstr)
 {
-  return Encode((PConstMemoryPointer)cstr, strlen(cstr));
+  return Encode((const BYTE *)cstr, strlen(cstr));
 }
 
 
@@ -621,7 +624,7 @@ PString PBase64::Encode(const PBYTEArray & data)
 }
 
 
-PString PBase64::Encode(PConstMemoryPointer data, PINDEX length)
+PString PBase64::Encode(const BYTE * data, PINDEX length)
 {
   PBase64 encoder;
   encoder.ProcessEncoding(data, length);
