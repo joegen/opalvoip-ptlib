@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.6  2000/11/14 08:25:25  robertj
+ * Added function to propagate the error text through to indirect channel.
+ *
  * Revision 1.5  1999/06/17 13:38:11  robertj
  * Fixed race condition on indirect channel close, mutex needed in PIndirectChannel.
  *
@@ -188,6 +191,13 @@ class PIndirectChannel : public PChannel
        Pointer to base I/O channel for the indirect channel.
      */
     virtual PChannel * GetBaseWriteChannel() const;
+
+    /** Get error message description.
+        Return a string indicating the error message that may be displayed to
+       the user. The error for the last I/O operation in this object is used.
+      @return Operating System error description string.
+     */
+    virtual PString GetErrorText() const;
   //@}
 
   /**@name Channel establish functions */
