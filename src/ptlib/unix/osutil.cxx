@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.40  1998/11/26 11:54:16  robertj
+ * Fixed error return on PFile::GetInfo
+ *
  * Revision 1.39  1998/11/24 09:39:09  robertj
  * FreeBSD port.
  *
@@ -621,21 +624,17 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 
 
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
-
 {
+  status.type = PFileInfo::UnknownFileType;
 
   struct stat s;
-  if (lstat(name, &s) != 0) {
-    status.type = PFileInfo::UnknownFileType;
-    return TRUE;
-  }
-
-  status.type = (PFileInfo::FileTypes)0;
+  if (lstat(name, &s) != 0)
+    return FALSE;
 
   if (S_ISLNK(s.st_mode)) {
     status.type = PFileInfo::SymbolicLink;
     if (stat(name, &s) != 0) 
-      return TRUE;
+      return FALSE;
   } 
 
   status.created     = s.st_ctime;
@@ -646,24 +645,16 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 
   if (S_ISREG(s.st_mode))
     status.type = PFileInfo::RegularFile;
-
   else if (S_ISDIR(s.st_mode))
     status.type = PFileInfo::SubDirectory;
-
   else if (S_ISFIFO(s.st_mode))
     status.type = PFileInfo::Fifo;
-
   else if (S_ISCHR(s.st_mode))
     status.type = PFileInfo::CharDevice;
-
   else if (S_ISBLK(s.st_mode))
     status.type = PFileInfo::BlockDevice;
-
   else if (S_ISSOCK(s.st_mode))
     status.type = PFileInfo::SocketDevice;
-
-  if (status.type == 0)
-    status.type = PFileInfo::UnknownFileType;
 
   return TRUE;
 }
