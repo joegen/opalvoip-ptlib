@@ -27,6 +27,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.17  2002/09/04 03:14:18  robertj
+ * Backed out changes submitted by Martin Froehlich as they do not appear to
+ *   actually do anything other than add a sychronisation point. The variables
+ *   the patches intended to protect were already protected.
+ * Fixed bug where if a PMutex was signalled by a thread that did not have it
+ *   locked, it would assert but continue to alter PMutex variables such that
+ *   a deadlock or crash is likely.
+ *
  * Revision 1.16  2002/08/22 13:05:57  craigs
  * Fixed problems with mutex implementation thanks to Martin Froehlich
  *
@@ -108,7 +116,6 @@
 #ifndef P_HAS_RECURSIVE_MUTEX
     pthread_t ownerThreadId;
     PINDEX lockCount;
-    pthread_mutex_t internal_mutex;
 #endif
 
 #elif defined(BE_THREADS)
