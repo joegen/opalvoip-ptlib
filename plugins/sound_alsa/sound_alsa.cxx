@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.6  2003/11/25 09:58:01  dsandras
+ * Removed Abort call from PlaySound ().
+ *
  * Revision 1.5  2003/11/25 09:52:07  dsandras
  * Modified WaitForPlayCompletion so that it uses snd_pcm_drain instead of active waiting.
  *
@@ -544,8 +547,6 @@ BOOL PSoundChannelALSA::PlaySound(const PSound & sound, BOOL wait)
 {
   if (!os_handle)
     return SetErrorValues(NotOpen, EBADF);
-
-  Abort();
 
   if (!Write((const BYTE *)sound, sound.GetSize()))
     return FALSE;
