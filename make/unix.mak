@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.32  1999/02/06 08:44:55  robertj
-# Fixed mistake in last change, library must be at end of link command.
+# Revision 1.33  1999/02/22 00:55:07  robertj
+# BeOS port changes.
+#
+# Revision 1.33  1999/02/22 00:55:07  robertj
+# BeOS port changes.
 #
 # Revision 1.32  1999/02/06 08:44:55  robertj
 # Fixed mistake in last change, library must be at end of link command.
@@ -252,7 +255,7 @@ endif # solaris
 ####################################################
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HAS_INT64
-LDLIBS		:= $(LDLIBS) -lbe -lstdc++.r4
+
 ifdef BE_THREADS
 STDCCFLAGS	:= $(STDCCFLAGS) -DBE_THREADS -DP_PLATFORM_HAS_THREADS
 endif
