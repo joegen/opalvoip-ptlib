@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.11  2003/03/03 09:05:59  rogerh
+ * Looks like a bug in the loopback Close code. Just document it for now.
+ *
  * Revision 1.10  2003/02/20 08:56:55  rogerh
  * Updated code from Shawn following some Mac OS X and linux testing.
  *
@@ -272,6 +275,11 @@ BOOL  PSoundChannel::GetVolume(unsigned &devVol)
 
 BOOL PSoundChannel::Close()
 {
+  /* I think there is a bug here. We should be testing for loopback mode
+   * and NOT calling PChannel::Close() when we are in loopback mode.
+   * (otherwise we close file handle 0 which is stdin)
+   */
+
   return PChannel::Close();
 }
 
