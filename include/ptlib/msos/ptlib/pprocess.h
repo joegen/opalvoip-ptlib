@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.20 1998/04/01 01:53:24 robertj Exp $
+ * $Id: pprocess.h,v 1.21 1998/04/07 13:32:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.21  1998/04/07 13:32:58  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.20  1998/04/01 01:53:24  robertj
  * Fixed problem with NoAutoDelete threads.
  *
@@ -112,6 +115,7 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
   friend void HouseKeepingThread::Main();
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;
+  friend class PApplication;
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 
 #endif
