@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.26  2004/05/17 06:05:20  csoutheren
+# Changed "make docs" to use doxygen
+# Added new config file and main page
+#
 # Revision 1.25  2004/05/04 08:23:19  dsandras
 # Fixed installation of plugins. Fixed uninstallation of plugins.
 #
@@ -230,7 +234,7 @@ ptlib:
 	$(MAKE) -C src/ptlib/$(TARGETDIR) both
 
 docs: 
-	doc++ --dir html --tables pwlib.dxx
+	doxygen pwlib_cfg.dxy
 
 install:
 	( for dir in $(DESTDIR)$(LIBDIR) \
