@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.9  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.8  1998/11/30 02:50:54  robertj
  * New directory structure
  *
@@ -72,14 +75,14 @@ typedef	DWORD           PASNOid;
 class PASNObject;
 class PASNSequence;
 
-//////////////////////////////////////////////////////////////////////////
-//
-//  PASNObject
-//
-
 PLIST(PASNObjectList, PASNObject);
 
-PDECLARE_CLASS(PASNObject, PObject)
+
+//////////////////////////////////////////////////////////////////////////
+
+class PASNObject : public PObject
+{
+  PCLASSINFO(PASNObject, PObject)
 /* This class defines the common behviour of all ASN objects. It also contains
    several functions which are used for encoding common ASN primitives.
 
@@ -272,16 +275,14 @@ PDECLARE_CLASS(PASNObject, PObject)
 
 };
 
+
 //////////////////////////////////////////////////////////////////////////
-//
-//  PASNInteger
-//     A descendant of PASNObject which is a simple ASN integer type
-//
 
-PDECLARE_CLASS(PASNInteger, PASNObject)
-/* This class defines an ASN integer object.
-*/
-
+class PASNInteger : public PASNObject
+{
+  PCLASSINFO(PASNInteger, PASNObject)
+/* A descendant of PASNObject which is a simple ASN integer type.
+ */
   public:
     PASNInteger(PASNInt val);
     PASNInteger(const PBYTEArray & buffer, PINDEX & ptr);
@@ -300,13 +301,14 @@ PDECLARE_CLASS(PASNInteger, PASNObject)
     PASNInt value;
 };
 
-//////////////////////////////////////////////////////////////////////////
-//
-//  PASNString
-//     A descendant of PASNObject which is a simple ASN OctetStr type
-//
 
-PDECLARE_CLASS(PASNString, PASNObject)
+//////////////////////////////////////////////////////////////////////////
+
+class PASNString : public PASNObject
+{
+  PCLASSINFO(PASNString, PASNObject)
+/* A descendant of PASNObject which is a simple ASN OctetStr type
+ */
   public:
     PASNString(const PString & str);
     PASNString(const BYTE * ptr, int len);
@@ -333,7 +335,14 @@ PDECLARE_CLASS(PASNString, PASNObject)
     WORD    valueLen;
 };
 
-PDECLARE_CLASS(PASNIPAddress, PASNString)
+
+//////////////////////////////////////////////////////////////////////////
+
+class PASNIPAddress : public PASNString
+{
+  PCLASSINFO(PASNIPAddress, PASNString)
+/* A descendant of PASNObject which is an IP address type
+ */
   public:
     PASNIPAddress(const PIPSocket::Address & addr)
       : PASNString(PString((const char *)&addr, 4)) { }
@@ -362,11 +371,14 @@ PDECLARE_CLASS(PASNIPAddress, PASNString)
     PIPSocket::Address GetIPAddress () const;
 };
 
-//////////////////////////////////////////////////////////////////////////
-//
-//
 
-PDECLARE_CLASS(PASNUnsignedInteger, PASNObject)
+//////////////////////////////////////////////////////////////////////////
+
+class PASNUnsignedInteger : public PASNObject
+{
+  PCLASSINFO(PASNUnsignedInteger, PASNObject)
+/* A descendant of PASNObject which is an unsigned ASN integer type.
+ */
   public:
     PASNUnsignedInteger(PASNUnsigned val)
       { value = val; }
@@ -389,7 +401,13 @@ PDECLARE_CLASS(PASNUnsignedInteger, PASNObject)
 };
 
 
-PDECLARE_CLASS(PASNTimeTicks, PASNUnsignedInteger)
+//////////////////////////////////////////////////////////////////////////
+
+class PASNTimeTicks : public PASNUnsignedInteger
+{
+  PCLASSINFO(PASNTimeTicks, PASNUnsignedInteger)
+/* A descendant of PASNObject which is an unsigned ASN time tick type.
+ */
   public:
     PASNTimeTicks(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -410,7 +428,13 @@ PDECLARE_CLASS(PASNTimeTicks, PASNUnsignedInteger)
 };
 
 
-PDECLARE_CLASS(PASNCounter, PASNUnsignedInteger)
+//////////////////////////////////////////////////////////////////////////
+
+class PASNCounter : public PASNUnsignedInteger
+{
+  PCLASSINFO(PASNCounter, PASNUnsignedInteger)
+/* A descendant of PASNObject which is an unsigned ASN counter type.
+ */
   public:
     PASNCounter(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -431,7 +455,13 @@ PDECLARE_CLASS(PASNCounter, PASNUnsignedInteger)
 };
 
 
-PDECLARE_CLASS(PASNGauge, PASNUnsignedInteger)
+//////////////////////////////////////////////////////////////////////////
+
+class PASNGauge : public PASNUnsignedInteger
+{
+  PCLASSINFO(PASNGauge, PASNUnsignedInteger)
+/* A descendant of PASNObject which is an unsigned ASN guage type.
+ */
   public:
     PASNGauge(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -457,12 +487,12 @@ PDECLARE_CLASS(PASNGauge, PASNUnsignedInteger)
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PASNObjectID
-//     A descendant of PASNObject which is a simple ASN ObjID type
-//
 
-PDECLARE_CLASS(PASNObjectID, PASNObject)
+class PASNObjectID : public PASNObject
+{
+  PCLASSINFO(PASNObjectID, PASNObject)
+/* A descendant of PASNObject which is an unsigned ASN ObjID type.
+ */
   public:
     PASNObjectID(const PString & str);
     PASNObjectID(PASNOid * val, BYTE theLen);
@@ -485,16 +515,14 @@ PDECLARE_CLASS(PASNObjectID, PASNObject)
     PDWORDArray value;
 };
 
+
 //////////////////////////////////////////////////////////////////////////
-//
-//  PASNull
-//     A descendant of PASNObject which is the NULL type
-//
 
-PDECLARE_CLASS(PASNNull, PASNObject)
-/* This class defines an ASN integer object.
-*/
-
+class PASNNull : public PASNObject
+{
+  PCLASSINFO(PASNNull, PASNObject)
+/* A descendant of PASNObject which is the NULL type
+ */
   public:
     PASNNull();
     PASNNull(const PBYTEArray & buffer, PINDEX & ptr);
@@ -513,13 +541,12 @@ PDECLARE_CLASS(PASNNull, PASNObject)
 
 
 //////////////////////////////////////////////////////////////////////////
-//
-//  PASNSequence
-//     A descendant of PASNObject which is the complex sequence type
-//
 
-PDECLARE_CLASS(PASNSequence, PASNObject)
-  
+class PASNSequence : public PASNObject
+{
+  PCLASSINFO(PASNSequence, PASNObject)
+/* A descendant of PASNObject which is the complex sequence type
+ */
   public:
     PASNSequence();
     PASNSequence(BYTE selector);
@@ -559,3 +586,7 @@ PDECLARE_CLASS(PASNSequence, PASNObject)
 };
 
 #endif
+
+
+// End of File.
+

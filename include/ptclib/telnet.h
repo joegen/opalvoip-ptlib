@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.h,v $
+ * Revision 1.20  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.19  1998/11/30 02:50:56  robertj
  * New directory structure
  *
@@ -94,7 +97,9 @@
 #include <ptlib/sockets.h>
 
 
-PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
+class PTelnetSocket : public PTCPSocket
+{
+  PCLASSINFO(PTelnetSocket, PTCPSocket)
 /* A TCP/IP socket for the TELNET high level protocol.
  */
 

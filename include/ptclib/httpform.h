@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.11  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.10  1998/11/30 02:50:48  robertj
  * New directory structure
  *
@@ -72,7 +75,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PHTTPField
 
-PDECLARE_CLASS(PHTTPField, PObject)
+class PHTTPField : public PObject
+{
+  PCLASSINFO(PHTTPField, PObject)
 /* This class is the abstract base class for fields in a <A>PHTTPForm</A>
    resource type.
  */
@@ -260,7 +265,9 @@ PDECLARE_CLASS(PHTTPField, PObject)
 
 PLIST(PHTTPFieldList, PHTTPField);
 
-PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
+class PHTTPCompositeField : public PHTTPField
+{
+  PCLASSINFO(PHTTPCompositeField, PHTTPField)
   public:
     PHTTPCompositeField(
       const char * name,          // Name (identifier) for the field.
@@ -335,7 +342,9 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
 };
 
 
-PDECLARE_CLASS(PHTTPSubForm, PHTTPCompositeField)
+class PHTTPSubForm : public PHTTPCompositeField
+{
+  PCLASSINFO(PHTTPSubForm, PHTTPCompositeField)
   public:
     PHTTPSubForm(
       const PString & subFormName, // URL for the sub-form
@@ -356,7 +365,9 @@ PDECLARE_CLASS(PHTTPSubForm, PHTTPCompositeField)
 };
 
 
-PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
+class PHTTPFieldArray : public PHTTPCompositeField
+{
+  PCLASSINFO(PHTTPFieldArray, PHTTPCompositeField)
   public:
     PHTTPFieldArray(
       PHTTPField * baseField,
@@ -399,7 +410,9 @@ PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
 };
 
 
-PDECLARE_CLASS(PHTTPStringField, PHTTPField)
+class PHTTPStringField : public PHTTPField
+{
+  PCLASSINFO(PHTTPStringField, PHTTPField)
   public:
     PHTTPStringField(
       const char * name,
@@ -435,7 +448,9 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
 };
 
 
-PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
+class PHTTPPasswordField : public PHTTPStringField
+{
+  PCLASSINFO(PHTTPPasswordField, PHTTPStringField)
   public:
     PHTTPPasswordField(
       const char * name,
@@ -467,7 +482,9 @@ PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
 };
 
 
-PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
+class PHTTPIntegerField : public PHTTPField
+{
+  PCLASSINFO(PHTTPIntegerField, PHTTPField)
   public:
     PHTTPIntegerField(
       const char * name,
@@ -517,7 +534,9 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
 };
 
 
-PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
+class PHTTPBooleanField : public PHTTPField
+{
+  PCLASSINFO(PHTTPBooleanField, PHTTPField)
   public:
     PHTTPBooleanField(
       const char * name,
@@ -560,7 +579,9 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
 };
 
 
-PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
+class PHTTPRadioField : public PHTTPField
+{
+  PCLASSINFO(PHTTPRadioField, PHTTPField)
   public:
     PHTTPRadioField(
       const char * name,
@@ -648,7 +669,9 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
 };
 
 
-PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
+class PHTTPSelectField : public PHTTPField
+{
+  PCLASSINFO(PHTTPSelectField, PHTTPField)
   public:
     PHTTPSelectField(
       const char * name,
@@ -704,7 +727,9 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
 ///////////////////////////////////////////////////////////////////////////////
 // PHTTPForm
 
-PDECLARE_CLASS(PHTTPForm, PHTTPString)
+class PHTTPForm : public PHTTPString
+{
+  PCLASSINFO(PHTTPForm, PHTTPString)
   public:
     PHTTPForm(
       const PURL & url
@@ -768,7 +793,9 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConfig
 
-PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
+class PHTTPConfig : public PHTTPForm
+{
+  PCLASSINFO(PHTTPConfig, PHTTPForm)
   public:
     PHTTPConfig(
       const PURL & url,
@@ -853,7 +880,9 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConfigSectionList
 
-PDECLARE_CLASS(PHTTPConfigSectionList, PHTTPString)
+class PHTTPConfigSectionList : public PHTTPString
+{
+  PCLASSINFO(PHTTPConfigSectionList, PHTTPString)
   public:
     PHTTPConfigSectionList(
       const PURL & url,

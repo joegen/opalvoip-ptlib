@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.18  1999/02/16 08:07:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.17  1998/11/01 04:56:51  robertj
  * Added BOOl return value to Parse() to indicate there are parameters available.
  *
@@ -91,7 +94,9 @@
 #endif
 
 
-PDECLARE_CLASS(PArgList, PObject)
+class PArgList : public PObject
+{
+  PCLASSINFO(PArgList, PObject)
 /* This class allows the parsing of a set of program arguments. This translates
    the standard argc/argv style variables passed into the main() function into
    a set of options (preceded by a '-' character) and parameters.
