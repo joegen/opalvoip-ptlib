@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.28  2001/01/24 06:34:44  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.27  2000/05/23 05:50:43  robertj
  * Attempted to fix stack dump, still refuses to work even though used to work perfectly.
  *
@@ -114,13 +117,18 @@
 #include <ptlib/svcproc.h>
 
 #include <errno.h>
+#ifndef _WIN32_WCE
 #include <strstrea.h>
-
+#else
+#include <winuser.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
 #if defined(_WIN32)
+#ifndef _WIN32_WCE
+#include <imagehlp.h>
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
@@ -145,16 +153,16 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   ReadConsole(in, &dummy, 1, &readBytes, NULL);
   return FALSE;
 }
-
+#endif // _WIN32_WCE
 
 void PWaitOnExitConsoleWindow()
 {
+#ifndef _WIN32_WCE
   EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+#endif // _WIN32_WCE
 }
 
-
-#include <imagehlp.h>
-
+#ifndef _WIN32_WCE
 class PImageDLL : public PDynaLink
 {
   PCLASSINFO(PImageDLL, PDynaLink)
@@ -228,10 +236,12 @@ PImageDLL::PImageDLL()
 
 
 #endif
+#endif
 
 
 void PAssertFunc(const char * file, int line, const char * msg)
 {
+#ifndef _WIN32_WCE
 #if defined(_WIN32)
   DWORD err = GetLastError();
 #else
@@ -410,6 +420,9 @@ void PAssertFunc(const char * file, int line, const char * msg)
         return;
     }
   }
+#else
+#pragma message(Assert is not yet implemented under WinCE\n")
+#endif // _WIN32_WCE
 }
 
 
