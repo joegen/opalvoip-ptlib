@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.10  2002/07/29 15:08:50  craigs
+ * Added autodelete option to PlayFile
+ *
  * Revision 1.9  2002/07/29 15:03:36  craigs
  * Added access to queue functions
  * Added autodelete option to AddFile
@@ -707,10 +710,10 @@ BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
   return frameOffs == frameLen;
 }
 
-void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay)
+void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
 {
   PTRACE(3, "OpalVXML\tEnqueueing file " << fn << " for playing");
-  QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay));
+  QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay, autoDelete));
 }
 
 void PVXMLOutgoingChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
@@ -724,22 +727,6 @@ void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem)
   PWaitAndSignal mutex(queueMutex);
   playQueue.Enqueue(newItem);
 }
-
-/*
-void PVXMLOutgoingChannel::PlayFile(PFile * chan)
-{ 
-  PWaitAndSignal mutex(channelMutex);
-
-  if (!chan->Open(PFile::ReadOnly)) {
-    PTRACE(3, "OpalVXML\tCannot open file \"" << chan->GetName() << "\"");
-    return;
-  }
-
-  PTRACE(3, "OpalVXML\tPlaying file \"" << chan->GetName() << "\"");
-  totalData = 0;
-  SetReadChannel(chan, TRUE);
-}
-*/
 
 void PVXMLOutgoingChannel::FlushQueue()
 {
