@@ -3,7 +3,7 @@
 #
 #  clean whitespace out of source file list
 #
-SRCS		:= $(strip $(SOURCES))
+SOURCES		:= $(strip $(SOURCES))
 # Revision 1.22  1998/09/24 04:20:53  robertj
 
 #  defines for common Unix types
@@ -36,8 +36,6 @@ ifdef P_PTHREADS
 #  define names of some other programs we run
 #
 CPLUS		= g++
-BISON		= bison
-FLEX		= flex
 
 #
 endif
@@ -56,13 +54,13 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 ifdef	DEBUG
 
 LIBID		= d
-STDCCFLAGS	:= $(STDCCFLAGS) -DPMEMORY_CHECK=1
+STDCCFLAGS	:= $(STDCCFLAGS) -DPMEMORY_CHECK=1 -D_DEBUG
 STDCCFLAGS	:= $(STDCCFLAGS) -g
 
 else
 
 LIBID		= r
-OPTCCFLAGS	:= $(OPTCCFLAGS) -O2
+OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
 LDFLAGS		:= $(LDFLAGS) -s
@@ -98,12 +96,14 @@ VPATH_H		:= $(VPATH_H) $(OSDIR)/include
 #
 #STDCCFLAGS     := $(STDCCFLAGS) -Woverloaded-virtual
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(OSDIR)/include
+STDCCFLAGS	:= -I$(OSDIR)/include $(STDCCFLAGS)
 
 #
 # add OS library
 #
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
+
+ifdef fred
 
 ##########################################################################
 #
@@ -134,20 +134,7 @@ $(OBJDIR)/%.o : %.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
 
-#
-# define rule for .y files
-#
-.y.cxx:
-	$(BISON) -dtv $*.y
-	@mv $*.tab.c $*.cxx
-	@mv $*.tab.h $*.h
-	@if [ -r y.output ] ; then mv y.output $*.out ; fi
-
-# 
-# define rule for .y files
-#
-.l.cxx:
-	$(FLEX) -t $*.l > $*.cxx
+endif
 
 
 # End of unix.mak
