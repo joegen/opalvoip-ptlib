@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.55  2003/03/05 08:48:32  robertj
+ * Added PStringArray::ToCharAray() function at suggestion of Ravelli Rossano
+ *
  * Revision 1.54  2002/11/12 09:17:44  robertj
  * Added PString::NumCompare() as functional equivalent of strncmp().
  * Added PSortedStringList::GetNextStringsIndex() to do searches of binary
@@ -2000,7 +2003,9 @@ PDECLARE_ARRAY(PStringArray, PString);
   public:
   /**@name Construction */
   //@{
-    /**Create a PStringArray from the array of C strings.
+    /**Create a PStringArray from the array of C strings. If count is
+       P_MAX_INDEX then strarr is assumed to point to an array of strings
+       where the last pointer is NULL.
      */
     PStringArray(
       PINDEX count,                 /// Count of strings in array
@@ -2070,6 +2075,16 @@ PDECLARE_ARRAY(PStringArray, PString);
     PStringArray operator + (const PStringArray & array);
     PStringArray operator + (const PString & str);
 
+    /**Create an array of C strings.
+       If storage is NULL then this returns a single pointer that may be
+       disposed of using free(). Note that each of the strings are part of the
+       same memory allocation so only one free() is required.
+
+       If storage is not null then that is used to allocate the memory.
+      */
+    char ** ToCharArray(
+      PCharArray * storage = NULL
+    ) const;
   //@}
 };
 
