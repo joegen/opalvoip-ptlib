@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.13  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.12  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -81,11 +84,13 @@
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
 
-PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
-/* This class contains the Multipurpose Internet Mail Extensions parameters
+/** This class contains the Multipurpose Internet Mail Extensions parameters
    and variables.
  */
-
+#ifdef DOC_PLUS_PLUS
+class PMIMEInfo : public PStringToString {
+#endif
+PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
   public:
     PMIMEInfo(
       istream &strm   // Stream to read the objects contents from.
@@ -97,93 +102,85 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
 
 
   // Overrides from class PObject
+    /** Output the contents of the MIME dictionary to the stream. This is
+       primarily used by the standard ##operator<<## function.
+     */
     virtual void PrintOn(
       ostream &strm   // Stream to print the object into.
     ) const;
-    /* Output the contents of the MIME dictionary to the stream. This is
-       primarily used by the standard <CODE><A>operator<<</A></CODE> function.
-     */
 
+    /** Input the contents of the MIME dictionary from the stream. This is
+       primarily used by the standard ##operator>>## function.
+     */
     virtual void ReadFrom(
       istream &strm   // Stream to read the objects contents from.
     );
-    /* Input the contents of the MIME dictionary from the stream. This is
-       primarily used by the standard <CODE><A>operator>></A></CODE> function.
-     */
 
 
   // New functions for class.
+    /** Read MIME information from the socket.
+
+       @return
+       TRUE if the MIME information was successfully read.
+     */
     BOOL Read(
       PInternetProtocol & socket   // Application socket to read MIME info.
     );
-    /* Read MIME information from the socket.
 
-       <H2>Returns:</H2>
+    /** Write MIME information to the socket.
+
+       @return
        TRUE if the MIME information was successfully read.
      */
-
     BOOL Write(
       PInternetProtocol & socket   // Application socket to write MIME info.
     ) const;
-    /* Write MIME information to the socket.
 
-       <H2>Returns:</H2>
-       TRUE if the MIME information was successfully read.
+    /** Determine if the specified key is present in the MIME information
+       set.
+
+       @return
+       TRUE if the MIME variable is present.
      */
-
     BOOL HasKey(
       const PString & key       // Key into MIME dictionary to get info.
     ) const { return GetAt(PCaselessString(key)) != NULL; }
-    /* Determine if the specified key is present in the MIME information
-       set.
 
-       <H2>Returns:</H2>
-       TRUE if the MIME variable is present.
+    /** Get a string for the particular MIME info field with checking for
+       existance. The #dflt# parameter is substituted if the field
+       does not exist in the MIME information read in.
+
+       @return
+       String for the value of the MIME variable.
      */
-
     PString GetString(
       const PString & key,       // Key into MIME dictionary to get info.
       const PString & dflt       // Default value of field if not in MIME info.
     ) const;
-    /* Get a string for the particular MIME info field with checking for
-       existance. The <CODE>dflt</CODE> parameter is substituted if the field
-       does not exist in the MIME information read in.
 
-       <H2>Returns:</H2>
-       String for the value of the MIME variable.
+    /** Get an integer value for the particular MIME info field with checking
+       for existance. The #dflt# parameter is substituted if the
+       field does not exist in the MIME information read in.
+
+       @return
+       Integer value for the MIME variable.
      */
-
     long GetInteger(
       const PString & key,    // Key into MIME dictionary to get info.
       long dflt               // Default value of field if not in MIME info.
     ) const;
-    /* Get an integer value for the particular MIME info field with checking
-       for existance. The <CODE>dflt</CODE> parameter is substituted if the
-       field does not exist in the MIME information read in.
-
-       <H2>Returns:</H2>
-       Integer value for the MIME variable.
-     */
 
 
-    static void SetAssociation(
-      const PStringToString & allTypes,  // MIME content type associations.
-      BOOL merge = TRUE                  // Flag for merging associations.
-    );
-    static void SetAssociation(
-      const PString & fileType,         // File type (extension) to match.
-      const PString & contentType       // MIME content type string.
-    ) { GetContentTypes().SetAt(fileType, contentType); }
-    /* Set an association between a file type and a MIME content type. The
+    /** Set an association between a file type and a MIME content type. The
        content type is then sent for any file in the directory sub-tree that
        has the same extension.
 
-       Note that if the <CODE>merge</CODE> parameter if TRUE then the
+       Note that if the #merge# parameter if TRUE then the
        dictionary is merged into the current association list and is not a
        simple replacement.
 
        The default values placed in this dictionary are:
-          <PRE>
+\begin{verbatim}
           ".txt", "text/plain"
           ".text", "text/plain"
           ".html", "text/html"
@@ -205,35 +202,40 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
           ".mpeg", "video/mpeg"
           ".qt", "video/quicktime"
           ".mov", "video/quicktime"
-          </PRE>
+\end{verbatim}
 
        The default content type will be "application/octet-stream".
      */
-
-    static PString GetContentType(
-      const PString & fileType   // File type (extension) to look up.
+    static void SetAssociation(
+      const PStringToString & allTypes,  // MIME content type associations.
+      BOOL merge = TRUE                  // Flag for merging associations.
     );
-    /* Look up the file type to MIME content type association dictionary and
+    static void SetAssociation(
+      const PString & fileType,         // File type (extension) to match.
+      const PString & contentType       // MIME content type string.
+    ) { GetContentTypes().SetAt(fileType, contentType); }
+
+    /** Look up the file type to MIME content type association dictionary and
        return the MIME content type string. If the file type is not found in
        the dictionary then the string "application/octet-stream" is returned.
 
-       <H2>Returns:</H2>
+       @return
        MIME content type for file type.
      */
+    static PString GetContentType(
+      const PString & fileType   // File type (extension) to look up.
+    );
 
   private:
     static PStringToString & GetContentTypes();
 };
 
 
-class PBase64 : public PObject
-{
-  PCLASSINFO(PBase64, PObject)
-/* This class is used to encode/decode data using the MIME standard base64
+/** This class is used to encode/decode data using the MIME standard base64
    encoding mechanism as defined in RFC1521.
 
    To encode a large block of data use the following seqeunce:
-      <PRE><CODE>
+\begin{verbatim}
       PBase64 base;
       base.StartEncoding();
       while (Read(dataChunk)) {
@@ -241,27 +243,30 @@ class PBase64 : public PObject
         out << base.GetEncodedString();
       }
       out << base.CompleteEncoding();
-      </CODE></PRE>
+\end{verbatim}
     if smaller blocks that fit easily in memory are to be encoded the
-    <A>Encode()</A> functions can be used to everything in one go.
+    #Encode()# functions can be used to everything in one go.
 
     To decode a large block of data use the following sequence:
-      <PRE><CODE>
+\begin{verbatim}
       PBase64 base;
       base.StartDecoding();
       while (Read(str) && ProcessDecoding(str))
         Write(base.GetDecodedData());
       Write(base.GetDecodedData());
-      </CODE></PRE>
+\end{verbatim}
     if smaller blocks that fit easily in memory are to be decoded the
-    <A>Decode()</A> functions can be used to everything in one go.
+    #Decode()# functions can be used to everything in one go.
  */
+class PBase64 : public PObject
+{
+  PCLASSINFO(PBase64, PObject);
 
   public:
-    PBase64();
-    /* Construct a base 64 encoder/decoder and initialise both encode and
-       decode members as in <A>StartEncoding()</A> and <A>StartDecoding()</A>.
+    /** Construct a base 64 encoder/decoder and initialise both encode and
+       decode members as in #StartEncoding()# and #StartDecoding()#.
      */
+    PBase64();
 
     void StartEncoding(
       BOOL useCRLFs = TRUE  // Use CR, LF pairs in end of line characters.
@@ -283,21 +288,21 @@ class PBase64 : public PObject
     );
     // Incorporate the specified data into the base 64 encoding.
 
+    /** Get the partial Base64 string for the data encoded so far.
+    
+       @return
+       Base64 encoded string for the processed data.
+     */
     PString GetEncodedString();
-    /* Get the partial Base64 string for the data encoded so far.
-    
-       <H2>Returns:</H2>
-       Base64 encoded string for the processed data.
-     */
 
-    PString CompleteEncoding();
-    /* Complete the base 64 encoding and return the remainder of the encoded
+    /** Complete the base 64 encoding and return the remainder of the encoded
        Base64 string. Previous data may have been already removed by the
-       <A>GetInterim()</A> function.
+       #GetInterim()# function.
     
-       <H2>Returns:</H2>
+       @return
        Base64 encoded string for the processed data.
      */
+    PString CompleteEncoding();
 
 
     static PString Encode(
@@ -319,39 +324,50 @@ class PBase64 : public PObject
     void StartDecoding();
     // Begin a base 64 decoding operation, initialising the object instance.
 
+    /** Incorporate the specified data into the base 64 decoding.
+    
+       @return
+       TRUE if block was last in the Base64 encoded string.
+     */
     BOOL ProcessDecoding(
       const PString & str      // String to be encoded
     );
     BOOL ProcessDecoding(
       const char * cstr        // C String to be encoded
     );
-    /* Incorporate the specified data into the base 64 decoding.
-    
-       <H2>Returns:</H2>
-       TRUE if block was last in the Base64 encoded string.
-     */
 
+    /** Get the data decoded so far from the Base64 strings processed.
+    
+       @return
+       Decoded data for the processed Base64 string.
+     */
     BOOL GetDecodedData(
       void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
     );
     PBYTEArray GetDecodedData();
-    /* Get the data decoded so far from the Base64 strings processed.
-    
-       <H2>Returns:</H2>
-       Decoded data for the processed Base64 string.
-     */
 
-    BOOL IsDecodeOK() { return perfectDecode; }
-    /* Return a flag to indicate that the input was decoded without any
+    /** Return a flag to indicate that the input was decoded without any
        extraneous or illegal characters in it that were ignored. This does not
        mean that the data is not valid, only that it is suspect.
     
-       <H2>Returns:</H2>
+       @return
        Decoded data for the processed Base64 string.
      */
+    BOOL IsDecodeOK() { return perfectDecode; }
 
 
+    /** Convert a printable text string to binary data using the Internet MIME
+       standard base 64 content transfer encoding.
+
+       The base64 string is checked and TRUE returned if all perfectly correct.
+       If FALSE is returned then the string had extraneous or illegal
+       characters in it that were ignored. This does not mean that the data is
+       not valid, only that it is suspect.
+    
+       @return
+       Base 64 string decoded from input string.
+     */
     static PString Decode(
       const PString & str // Encoded base64 string to be decoded.
     );
@@ -364,17 +380,6 @@ class PBase64 : public PObject
       void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
     );
-    /* Convert a printable text string to binary data using the Internet MIME
-       standard base 64 content transfer encoding.
-
-       The base64 string is checked and TRUE returned if all perfectly correct.
-       If FALSE is returned then the string had extraneous or illegal
-       characters in it that were ignored. This does not mean that the data is
-       not valid, only that it is suspect.
-    
-       <H2>Returns:</H2>
-       Base 64 string decoded from input string.
-     */
 
 
 

@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.4  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.3  1999/02/25 05:05:15  robertj
  * Added missing test for hidden entries not to be written to config file
  *
@@ -24,14 +27,17 @@
 #include <ptlib/sockets.h>
 
 
+/** This class is a single IP access control specification.
+ */
 class PIpAccessControlEntry : public PObject
 {
-/* This class is a single IP access control specification.
- */
-
   PCLASSINFO(PIpAccessControlEntry, PObject)
 
   public:
+    /** Create a new IP access control specification. See the Parse() function
+       for more details on the format of the <CODE>description</CODE>
+       parameter.
+     */
     PIpAccessControlEntry(
       PIPSocket::Address addr,
       PIPSocket::Address msk,
@@ -40,66 +46,59 @@ class PIpAccessControlEntry : public PObject
     PIpAccessControlEntry(
       const PString & description
     );
-    /* Create a new IP access control specification. See the Parse() function
-       for more details on the format of the <CODE>description</CODE>
-       parameter.
-     */
 
+    /** Set a new IP access control specification. See the Parse() function
+       for more details on the format of the <CODE>pstr</CODE> and
+       <CODE>cstr</CODE> parameters.
+     */
     PIpAccessControlEntry & operator=(
       const PString & pstr
     );
     PIpAccessControlEntry & operator=(
       const char * cstr
     );
-    /* Set a new IP access control specification. See the Parse() function
-       for more details on the format of the <CODE>pstr</CODE> and
-       <CODE>cstr</CODE> parameters.
-     */
 
-    virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
-    ) const;
-    /* Compare the two objects and return their relative rank.
+    /** Compare the two objects and return their relative rank.
 
-       <H2>Returns:</H2>
+       @return
        <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
        according to the relative rank of the objects.
      */
+    virtual Comparison Compare(
+      const PObject & obj   // Object to compare against.
+    ) const;
 
+    /** Output the contents of the object to the stream. This outputs the same
+       format as the AsString() function.
+     */
     virtual void PrintOn(
       ostream &strm   // Stream to print the object into.
     ) const;
-    /* Output the contents of the object to the stream. This outputs the same
-       format as the AsString() function.
-     */
 
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-    /* Input the contents of the object from the stream. This expects the
+    /** Input the contents of the object from the stream. This expects the
        next space delimited entry in the stream to be as described in the
        Parse() function.
      */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
 
-    PString AsString() const;
-    /* Convert the specification to a string, that can be processed by the
+    /** Convert the specification to a string, that can be processed by the
        Parse() function.
 
-       <H2>Returns:</H2>
+       @return
        PString representation of the entry.
      */
+    PString AsString() const;
 
-    BOOL IsValid();
-    /* Check the internal fields of the specification for validity.
+    /** Check the internal fields of the specification for validity.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if entry is valid.
      */
+    BOOL IsValid();
 
-    BOOL Parse(
-      const PString & description   // Description of the specification
-    );
-    /* Parse the description string into this IP access control specification.
+    /** Parse the description string into this IP access control specification.
        The string may be of several forms:
           n.n.n.n         Simple IP number, this has an implicit mask of
                           255.255.255.255
@@ -115,20 +114,23 @@ class PIpAccessControlEntry : public PObject
                           using a reverse DNS lookup) ends with the specified
                           domain.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if entry is valid.
      */
+    BOOL Parse(
+      const PString & description   // Description of the specification
+    );
 
 
+    /** Check to see if the specified IP address match any of the conditions
+       specifed in the Parse() function for this entry.
+
+       @return
+       TRUE if entry can match the address.
+     */
     BOOL Match(
       PIPSocket::Address & address    // Address to search for
     );
-    /* Check to see if the specified IP address match any of the conditions
-       specifed in the Parse() function for this entry.
-
-       <H2>Returns:</H2>
-       TRUE if entry can match the address.
-     */
 
     BOOL IsAllowed() const { return allowed; }
     BOOL IsHidden()  const { return hidden; }
@@ -145,9 +147,7 @@ class PIpAccessControlEntry : public PObject
 PSORTED_LIST(PIpAccessControlList_base, PIpAccessControlEntry);
 
 
-class PIpAccessControlList : public PIpAccessControlList_base
-{
-/* This class is a list of IP address mask specifications used to validate if
+/** This class is a list of IP address mask specifications used to validate if
    an address may or may not be used in a connection.
 
    The list may be totally internal to the application, or may use system
@@ -160,18 +160,17 @@ class PIpAccessControlList : public PIpAccessControlList_base
    the broadest onse later. The entry with the value having a mask of zero,
    that is the match all entry, is always last.
  */
+class PIpAccessControlList : public PIpAccessControlList_base
+{
 
   PCLASSINFO(PIpAccessControlList, PIpAccessControlList_base)
 
   public:
-    PIpAccessControlList();
-    /* Create a new, empty, access control list.
+    /** Create a new, empty, access control list.
      */
+    PIpAccessControlList();
 
-    BOOL LoadHostsAccess(
-      const char * daemonName = NULL    // Name of "daemon" application
-    );
-    /* Load the system wide files commonly use under Linux (hosts.allow and
+    /** Load the system wide files commonly use under Linux (hosts.allow and
        hosts.deny file) for IP access. See the Linux man entries on these
        files for more information. Note, these files will be loaded regardless
        of the actual platform used. The directory returned by the
@@ -181,53 +180,63 @@ class PIpAccessControlList : public PIpAccessControlList_base
        the hosts.allow/hosts.deny file. If this is NULL then the
        PProcess::GetName() function is used.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if all the entries in the file were added, if any failed then
        FALSE is returned.
      */
+    BOOL LoadHostsAccess(
+      const char * daemonName = NULL    // Name of "daemon" application
+    );
 
+    /** Load entries in the list from the configuration file specified. This is
+       equivalent to Load(cfg, "IP Access Control List").
+
+       @return
+       TRUE if all the entries in the file were added, if any failed then
+       FALSE is returned.
+     */
     BOOL Load(
       PConfig & cfg   // Configuration file to load entries from.
     );
-    /* Load entries in the list from the configuration file specified. This is
-       equivalent to Load(cfg, "IP Access Control List").
 
-       <H2>Returns:</H2>
+    /** Load entries in the list from the configuration file specified, using
+       the base name for the array of configuration file values. The format of
+       entries in the configuration file are suitable for use with the
+       PHTTPConfig classes.
+
+       @return
        TRUE if all the entries in the file were added, if any failed then
        FALSE is returned.
      */
-
     BOOL Load(
       PConfig & cfg,            // Configuration file to load entries from.
       const PString & baseName  // Base name string for each entry in file.
     );
-    /* Load entries in the list from the configuration file specified, using
-       the base name for the array of configuration file values. The format of
-       entries in the configuration file are suitable for use with the
-       PHTTPConfig classes.
 
-       <H2>Returns:</H2>
-       TRUE if all the entries in the file were added, if any failed then
-       FALSE is returned.
+    /** Save entries in the list to the configuration file specified. This is
+       equivalent to Save(cfg, "IP Access Control List").
      */
-
     void Save(
       PConfig & cfg   // Configuration file to save entries to.
     );
-    /* Save entries in the list to the configuration file specified. This is
-       equivalent to Save(cfg, "IP Access Control List").
-     */
 
+    /** Save entries in the list to the configuration file specified, using
+       the base name for the array of configuration file values. The format of
+       entries in the configuration file are suitable for use with the
+       PHTTPConfig classes.
+     */
     void Save(
       PConfig & cfg,            // Configuration file to save entries to.
       const PString & baseName  // Base name string for each entry in file.
     );
-    /* Save entries in the list to the configuration file specified, using
-       the base name for the array of configuration file values. The format of
-       entries in the configuration file are suitable for use with the
-       PHTTPConfig classes.
-     */
 
+    /** Add the specified entry into the list. See the PIpAccessControlEntry
+       class for more details on the format of the <CODE>description</CODE>
+       field.
+
+       @return
+       TRUE if the entries was successfully added.
+     */
     BOOL Add(
       const PString & description   // Description of the IP match parameters
     );
@@ -236,14 +245,14 @@ class PIpAccessControlList : public PIpAccessControlList_base
       PIPSocket::Address mask,      // Mask for IP network
       BOOL allow                    // Flag for if network is allowed or not
     );
-    /* Add the specified entry into the list. See the PIpAccessControlEntry
+
+    /** Remove the specified entry into the list. See the PIpAccessControlEntry
        class for more details on the format of the <CODE>description</CODE>
        field.
 
-       <H2>Returns:</H2>
-       TRUE if the entries was successfully added.
+       @return
+       TRUE if the entries was successfully removed.
      */
-
     BOOL Remove(
       const PString & description   // Description of the IP match parameters
     );
@@ -251,22 +260,9 @@ class PIpAccessControlList : public PIpAccessControlList_base
       PIPSocket::Address address,   // IP network address
       PIPSocket::Address mask       // Mask for IP network
     );
-    /* Remove the specified entry into the list. See the PIpAccessControlEntry
-       class for more details on the format of the <CODE>description</CODE>
-       field.
-
-       <H2>Returns:</H2>
-       TRUE if the entries was successfully removed.
-     */
 
 
-    BOOL IsAllowed(
-      PTCPSocket & socket           // Socket to test
-    );
-    BOOL IsAllowed(
-      PIPSocket::Address address    // IP Address to test
-    );
-    /* Test the address/connection for if it is allowed within this access
+    /** Test the address/connection for if it is allowed within this access
        control list. If the <CODE>socket</CODE> form is used the peer address
        of the connection is tested.
 
@@ -275,9 +271,15 @@ class PIpAccessControlList : public PIpAccessControlList_base
        is returned. If a match is made then the allow state of that entry is
        returned.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the remote host address is allowed.
      */
+    BOOL IsAllowed(
+      PTCPSocket & socket           // Socket to test
+    );
+    BOOL IsAllowed(
+      PIPSocket::Address address    // IP Address to test
+    );
 
   private:
     BOOL InternalLoadHostsAccess(const PString & daemon, const char * file, BOOL allow);

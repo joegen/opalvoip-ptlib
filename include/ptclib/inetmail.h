@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.11  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.10  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -85,10 +88,7 @@ class PSocket;
 //////////////////////////////////////////////////////////////////////////////
 // PSMTP
 
-class PSMTP : public PInternetProtocol
-{
-  PCLASSINFO(PSMTP, PInternetProtocol)
-/* A TCP/IP socket for the Simple Mail Transfer Protocol.
+/** A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
@@ -113,6 +113,9 @@ class PSMTP : public PInternetProtocol
     <A>ProcessMessage()</A> function until it returns FALSE. This will then
     call the appropriate virtual function on parsing the SMTP protocol.
 */
+class PSMTP : public PInternetProtocol
+{
+  PCLASSINFO(PSMTP, PInternetProtocol)
 
   public:
   // New functions for class.
@@ -129,10 +132,7 @@ class PSMTP : public PInternetProtocol
 };
 
 
-class PSMTPClient : public PSMTP
-{
-  PCLASSINFO(PSMTPClient, PSMTP)
-/* A TCP/IP socket for the Simple Mail Transfer Protocol.
+/** A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
@@ -148,32 +148,43 @@ class PSMTPClient : public PSMTP
          PError << "Mail conection failed." << endl;
       </PRE></CODE>
 */
+class PSMTPClient : public PSMTP
+{
+  PCLASSINFO(PSMTPClient, PSMTP)
 
   public:
-    PSMTPClient();
-    /* Create a TCP/IP SMPTP protocol socket channel. The parameterless form
+    /** Create a TCP/IP SMPTP protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
        form with the <CODE>socket</CODE> parameter opens the socket to an
        incoming call from a "listening" socket.
      */
+    PSMTPClient();
 
-    ~PSMTPClient();
-    /* Destroy the channel object. This will close the channel and as a
+    /** Destroy the channel object. This will close the channel and as a
        client, QUIT from remote SMTP server.
      */
+    ~PSMTPClient();
 
 
   // Overrides from class PChannel.
-    virtual BOOL Close();
-    /* Close the socket, and if connected as a client, QUITs from server.
+    /** Close the socket, and if connected as a client, QUITs from server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was closed and the QUIT accepted by the server.
      */
+    virtual BOOL Close();
 
 
   // New functions for class.
+    /** Begin transmission of a message using the SMTP socket as a client. This
+       negotiates with the remote server and establishes the protocol state
+       for data transmission. The usual Write() or stream commands may then
+       be used to transmit the data itself.
+
+       @return
+       TRUE if message was handled, FALSE if an error occurs.
+     */
     BOOL BeginMessage(
       const PString & from,        // User name of sender.
       const PString & to,          // User name of recipient.
@@ -184,21 +195,13 @@ class PSMTPClient : public PSMTP
       const PStringList & toList,  // List of user names of recipients.
       BOOL eightBitMIME = FALSE    // Mesage will be 8 bit MIME.
     );
-    /* Begin transmission of a message using the SMTP socket as a client. This
-       negotiates with the remote server and establishes the protocol state
-       for data transmission. The usual Write() or stream commands may then
-       be used to transmit the data itself.
 
-       <H2>Returns:</H2>
-       TRUE if message was handled, FALSE if an error occurs.
-     */
+    /** End transmission of a message using the SMTP socket as a client.
 
-    BOOL EndMessage();
-    /* End transmission of a message using the SMTP socket as a client.
-
-       <H2>Returns:</H2>
+       @return
        TRUE if message was accepted by remote server, FALSE if an error occurs.
      */
+    BOOL EndMessage();
 
 
   protected:
@@ -215,10 +218,7 @@ class PSMTPClient : public PSMTP
 };
 
 
-class PSMTPServer : public PSMTP
-{
-  PCLASSINFO(PSMTPServer, PSMTP)
-/* A TCP/IP socket for the Simple Mail Transfer Protocol.
+/** A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
@@ -243,26 +243,29 @@ class PSMTPServer : public PSMTP
     <A>ProcessMessage()</A> function until it returns FALSE. This will then
     call the appropriate virtual function on parsing the SMTP protocol.
 */
+class PSMTPServer : public PSMTP
+{
+  PCLASSINFO(PSMTPServer, PSMTP)
 
   public:
-    PSMTPServer();
-    /* Create a TCP/IP SMPTP protocol socket channel. The parameterless form
+    /** Create a TCP/IP SMPTP protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
        form with the <CODE>socket</CODE> parameter opens the socket to an
        incoming call from a "listening" socket.
      */
+    PSMTPServer();
 
 
   // New functions for class.
-    BOOL ProcessCommand();
-    /* Process commands, dispatching to the appropriate virtual function. This
+    /** Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the QUIT command was
        received or the <A>OnUnknown()</A> function returns FALSE.
      */
+    BOOL ProcessCommand();
 
     void ServerReset();
     // Reset the state of the SMTP server socket.
@@ -274,16 +277,16 @@ class PSMTPServer : public PSMTP
     };
     // Result of forward check
 
+    /** Determine if a user for this domain may be on the local system, or
+       should be forwarded.
+
+       @return
+       Result of forward check operation.
+     */
     virtual ForwardResult ForwardDomain(
       PCaselessString & userDomain,       // Domain for user
       PCaselessString & forwardDomainList // Domains forwarding to
     );
-    /* Determine if a user for this domain may be on the local system, or
-       should be forwarded.
-
-       <H2>Returns:</H2>
-       Result of forward check operation.
-     */
 
     enum LookUpResult {
       ValidUser,      // User name was valid and unique.
@@ -293,33 +296,33 @@ class PSMTPServer : public PSMTP
     };
     // Result of user name look up
 
+    /** Look up a name in the context of the SMTP server.
+
+       The default bahaviour simply returns FALSE.
+
+       @return
+       Result of name look up operation.
+     */
     virtual LookUpResult LookUpName(
       const PCaselessString & name,    // Name to look up.
       PString & expandedName           // Expanded form of name (if found).
     );
-    /* Look up a name in the context of the SMTP server.
 
-       The default bahaviour simply returns FALSE.
+    /** Handle a received message. The <CODE>buffer</CODE> parameter contains
+       the partial or complete message received, depending on the
+       <CODE>completed</CODE> parameter.
 
-       <H2>Returns:</H2>
-       Result of name look up operation.
+       The default behaviour is to simply return FALSE;
+
+       @return
+       TRUE if message was handled, FALSE if an error occurs.
      */
-
     virtual BOOL HandleMessage(
       PCharArray & buffer,  // Buffer containing message data received.
       BOOL starting,        // This is the first call for the message.
       BOOL completed        // This is the last call for the message.
       // Indication that the entire message has been received.
     );
-    /* Handle a received message. The <CODE>buffer</CODE> parameter contains
-       the partial or complete message received, depending on the
-       <CODE>completed</CODE> parameter.
-
-       The default behaviour is to simply return FALSE;
-
-       <H2>Returns:</H2>
-       TRUE if message was handled, FALSE if an error occurs.
-     */
 
 
   protected:
@@ -388,46 +391,46 @@ class PSMTPServer : public PSMTP
     virtual void OnDATA();
     // Message text.
 
-    virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
-    );
-    /* Handle an unknown command.
+    /** Handle an unknown command.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the
        <A>ProcessCommand()</A> function is to return FALSE.
      */
+    virtual BOOL OnUnknown(
+      const PCaselessString & command  // Complete command line received.
+    );
 
     virtual void OnSendMail(
       const PCaselessString & sender  // Name of sender.
     );
     // Common code for OnMAIL(), OnSEND(), OnSOML() and OnSAML() funtions.
 
-    virtual BOOL OnTextData(PCharArray & buffer, BOOL & completed);
-    /* Read a standard text message that is being received by the socket. The
+    /** Read a standard text message that is being received by the socket. The
        text message is terminated by a line with a '.' character alone.
 
        The default behaviour is to read the data into the <CODE>buffer</CODE>
        parameter until either the end of the message or when the
        <CODE>messageBufferSize</CODE> bytes have been read.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if partial message received, FALSE if the end of the data was
        received.
      */
+    virtual BOOL OnTextData(PCharArray & buffer, BOOL & completed);
 
-    virtual BOOL OnMIMEData(PCharArray & buffer, BOOL & completed);
-    /* Read an eight bit MIME message that is being received by the socket. The
+    /** Read an eight bit MIME message that is being received by the socket. The
        MIME message is terminated by the CR/LF/./CR/LF sequence.
 
        The default behaviour is to read the data into the <CODE>buffer</CODE>
        parameter until either the end of the message or when the
        <CODE>messageBufferSize</CODE> bytes have been read.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if partial message received, FALSE if the end of the data was
        received.
      */
+    virtual BOOL OnMIMEData(PCharArray & buffer, BOOL & completed);
 
 
   // Member variables
@@ -446,10 +449,7 @@ class PSMTPServer : public PSMTP
 //////////////////////////////////////////////////////////////////////////////
 // PPOP3
 
-class PPOP3 : public PInternetProtocol
-{
-  PCLASSINFO(PPOP3, PInternetProtocol)
-/* A TCP/IP socket for the Post Office Protocol version 3.
+/** A TCP/IP socket for the Post Office Protocol version 3.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
@@ -486,6 +486,9 @@ class PPOP3 : public PInternetProtocol
     <A>ProcessMessage()</A> function until it returns FALSE. This will then
     call the appropriate virtual function on parsing the POP3 protocol.
  */
+class PPOP3 : public PInternetProtocol
+{
+  PCLASSINFO(PPOP3, PInternetProtocol)
 
   public:
     enum Commands {
@@ -498,20 +501,20 @@ class PPOP3 : public PInternetProtocol
   protected:
     PPOP3();
 
-    virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
-    );
-    /* Parse a response line string into a response code and any extra info
+    /** Parse a response line string into a response code and any extra info
        on the line. Results are placed into the member variables
        <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
 
        The default bahaviour looks for a space or a '-' and splits the code
        and info either side of that character, then returns FALSE.
 
-       <H2>Returns:</H2>
+       @return
        Position of continuation character in response, 0 if no continuation
        lines are possible.
      */
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
 
   // Member variables
     static PString okResponse;
@@ -519,10 +522,7 @@ class PPOP3 : public PInternetProtocol
 };
 
 
-class PPOP3Client : public PPOP3
-{
-  PCLASSINFO(PPOP3Client, PPOP3)
-/* A TCP/IP socket for the Post Office Protocol version 3.
+/** A TCP/IP socket for the Post Office Protocol version 3.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
@@ -549,95 +549,98 @@ class PPOP3Client : public PPOP3
          PError << "Mail conection failed." << endl;
       </PRE></CODE>
  */
+class PPOP3Client : public PPOP3
+{
+  PCLASSINFO(PPOP3Client, PPOP3)
 
   public:
-    PPOP3Client();
-    /* Create a TCP/IP POP3 protocol socket channel. The parameterless form
+    /** Create a TCP/IP POP3 protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
        form with the <CODE>socket</CODE> parameter opens the socket to an
        incoming call from a "listening" socket.
      */
+    PPOP3Client();
 
-    ~PPOP3Client();
-    /* Destroy the channel object. This will close the channel and as a
+    /** Destroy the channel object. This will close the channel and as a
        client, QUIT from remote POP3 server.
      */
+    ~PPOP3Client();
 
 
   // Overrides from class PChannel.
-    virtual BOOL Close();
-    /* Close the socket, and if connected as a client, QUITs from server.
+    /** Close the socket, and if connected as a client, QUITs from server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was closed and the QUIT accepted by the server.
      */
+    virtual BOOL Close();
 
 
   // New functions for class.
+    /** Log into the POP server using the mailbox and access codes specified.
+
+       @return
+       TRUE if logged in.
+     */
     BOOL LogIn(
       const PString & username,   // User name on remote system.
       const PString & password    // Password for user name.
     );
-    /* Log into the POP server using the mailbox and access codes specified.
 
-       <H2>Returns:</H2>
-       TRUE if logged in.
-     */
+    /** Get a count of the number of messages in the mail box.
 
-    int GetMessageCount();
-    /* Get a count of the number of messages in the mail box.
-
-       <H2>Returns:</H2>
+       @return
        Number of messages in mailbox or -1 if an error occurred.
      */
+    int GetMessageCount();
 
-    PUnsignedArray GetMessageSizes();
-    /* Get an array of a integers representing the sizes of each of the
+    /** Get an array of a integers representing the sizes of each of the
        messages in the mail box.
 
-       <H2>Returns:</H2>
+       @return
        Array of integers representing the size of each message.
      */
+    PUnsignedArray GetMessageSizes();
 
-    PStringArray GetMessageHeaders();
-    /* Get an array of a strings representing the standard internet message
+    /** Get an array of a strings representing the standard internet message
        headers of each of the messages in the mail box.
 
        Note that the remote server may not support this function, in which
        case an empty array will be returned.
 
-       <H2>Returns:</H2>
+       @return
        Array of strings continaing message headers.
      */
+    PStringArray GetMessageHeaders();
 
 
-    BOOL BeginMessage(
-      PINDEX messageNumber
-        /* Number of message to retrieve. This is an integer from 1 to the
-           maximum number of messages available.
-         */
-    );
     /* Begin the retrieval of an entire message. The application may then use
        the <A>PApplicationSocket::ReadLine()</A> function with the
        <CODE>unstuffLine</CODE> parameter set to TRUE. Repeated calls until
        its return valus is FALSE will read the message headers and body.
 
-       <H2>Returns:</H2>
+       @return
        Array of strings continaing message headers.
      */
+    BOOL BeginMessage(
+      PINDEX messageNumber
+        /** Number of message to retrieve. This is an integer from 1 to the
+           maximum number of messages available.
+         */
+    );
 
+    /** Delete the message specified from the mail box.
+
+       @return
+       Array of strings continaing message headers.
+     */
     BOOL DeleteMessage(
       PINDEX messageNumber
         /* Number of message to retrieve. This is an integer from 1 to the
            maximum number of messages available.
          */
     );
-    /* Delete the message specified from the mail box.
-
-       <H2>Returns:</H2>
-       Array of strings continaing message headers.
-     */
 
 
   protected:
@@ -648,10 +651,7 @@ class PPOP3Client : public PPOP3
 };
 
 
-class PPOP3Server : public PPOP3
-{
-  PCLASSINFO(PPOP3Server, PPOP3)
-/* A TCP/IP socket for the Post Office Protocol version 3.
+/** A TCP/IP socket for the Post Office Protocol version 3.
 
     When acting as a server, a descendant class would be created to override
     at least the <A>HandleOpenMailbox()</A>, <A>HandleSendMessage()</A> and
@@ -663,65 +663,68 @@ class PPOP3Server : public PPOP3
     <A>ProcessMessage()</A> function until it returns FALSE. This will then
     call the appropriate virtual function on parsing the POP3 protocol.
  */
+class PPOP3Server : public PPOP3
+{
+  PCLASSINFO(PPOP3Server, PPOP3)
 
   public:
-    PPOP3Server();
-    /* Create a TCP/IP POP3 protocol socket channel. The parameterless form
+    /** Create a TCP/IP POP3 protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
        form with the <CODE>socket</CODE> parameter opens the socket to an
        incoming call from a "listening" socket.
      */
+    PPOP3Server();
 
 
   // New functions for class.
-    BOOL ProcessCommand();
-    /* Process commands, dispatching to the appropriate virtual function. This
+    /** Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the QUIT command was
        received or the <A>OnUnknown()</A> function returns FALSE.
      */
+    BOOL ProcessCommand();
 
-    virtual BOOL HandleOpenMailbox(
-      const PString & username,  // User name for mail box
-      const PString & password   // Password for user name
-    );
-    /* Log the specified user into the mail system and return sizes of each
+    /** Log the specified user into the mail system and return sizes of each
        message in mail box.
 
        The user override of this function is expected to populate the protected
        member fields <CODE>messageSizes</CODE> and <CODE>messageIDs</CODE>.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if user and password were valid.
      */
+    virtual BOOL HandleOpenMailbox(
+      const PString & username,  // User name for mail box
+      const PString & password   // Password for user name
+    );
 
+    /** Handle the sending of the specified message to the remote client. The
+       data written to the socket will automatically have the '.' character
+       stuffing enabled.
+
+       @return
+       TRUE if successfully sent message.
+     */
     virtual void HandleSendMessage(
       PINDEX messageNumber, // Number of message to send.
       const PString & id,   // Unique id of message to send.
       PINDEX lines          // Nuumber of lines in body of message to send.
     );
-    /* Handle the sending of the specified message to the remote client. The
-       data written to the socket will automatically have the '.' character
-       stuffing enabled.
+    
+    /** Handle the deleting of the specified message from the mail box. This is
+       called when the OnQUIT command is called for each message that was
+       deleted using the DELE command.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if successfully sent message.
      */
-    
     virtual void HandleDeleteMessage(
       PINDEX messageNumber, // Number of message to send.
       const PString & id    // Unique id of message to send.
     );
-    /* Handle the deleting of the specified message from the mail box. This is
-       called when the OnQUIT command is called for each message that was
-       deleted using the DELE command.
-
-       <H2>Returns:</H2>
-       TRUE if successfully sent message.
-     */
     
 
   protected:
@@ -749,12 +752,12 @@ class PPOP3Server : public PPOP3
     virtual void OnSTAT();
     // Get number of messages in mailbox.
 
+    /** Get the size of a message in mailbox. If <CODE>msg</CODE> is 0 then get
+       sizes of all messages in mailbox.
+     */
     virtual void OnLIST(
       PINDEX msg  // Number of message.
     );
-    /* Get the size of a message in mailbox. If <CODE>msg</CODE> is 0 then get
-       sizes of all messages in mailbox.
-     */
 
     virtual void OnRETR(
       PINDEX msg  // Number of message.
@@ -772,22 +775,22 @@ class PPOP3Server : public PPOP3
     );
     // Get the message header and top <CODE>count</CODE> lines of message.
 
+    /** Get unique ID for message in mailbox. If <CODE>msg</CODE> is 0 then get
+       all IDs for all messages in mailbox.
+     */
     virtual void OnUIDL(
       PINDEX msg  // Number of message.
     );
-    /* Get unique ID for message in mailbox. If <CODE>msg</CODE> is 0 then get
-       all IDs for all messages in mailbox.
-     */
 
-    virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
-    );
-    /* Handle an unknown command.
+    /** Handle an unknown command.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the
        <A>ProcessCommand()</A> function is to return FALSE.
      */
+    virtual BOOL OnUnknown(
+      const PCaselessString & command  // Complete command line received.
+    );
 
 
   // Member variables

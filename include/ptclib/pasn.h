@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.10  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.9  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -80,10 +83,7 @@ PLIST(PASNObjectList, PASNObject);
 
 //////////////////////////////////////////////////////////////////////////
 
-class PASNObject : public PObject
-{
-  PCLASSINFO(PASNObject, PObject)
-/* This class defines the common behviour of all ASN objects. It also contains
+/** This class defines the common behviour of all ASN objects. It also contains
    several functions which are used for encoding common ASN primitives.
 
    This class will never be instantiated directly. See the <A>PASNInteger</A>,
@@ -92,8 +92,14 @@ class PASNObject : public PObject
 
    Only descendants of this class can be put into the <A>ASNSequence</A> class.
 */
+class PASNObject : public PObject
+{
+  PCLASSINFO(PASNObject, PObject)
 
   public:
+    /** Value returned by the <A>GetType()</A> function to indicate the type of
+       an ASN object
+     */
     enum ASNType {
       Integer,		// ASN Integer object
       String,       // ASN Octet String object
@@ -112,119 +118,116 @@ class PASNObject : public PObject
       Unknown,		// unknown ASN object type
       ASNTypeMax	// maximum of number of ASN object types
     };
-    /* Value returned by the <A>GetType()</A> function to indicate the type of
-       an ASN object
-     */
 
-    virtual ASNType GetType() const;
-    /* Return a value of type <A>enum ASNType</A> which indicates the type
+    /** Return a value of type <A>enum ASNType</A> which indicates the type
        of the object
      */
+    virtual ASNType GetType() const;
 
 
-    int GetChoice() const;
-    /* Return the descriminator for Choice sequences
+    /** Return the descriminator for Choice sequences
     */
+    int GetChoice() const;
 
+    /** Return a string giving the type of the object */
     virtual PString GetTypeAsString() const;
-    /* Return a string giving the type of the object */
 
-    virtual PASNInt GetInteger () const;
-    /* Return the value of the ASN object as a PASNInt.
+    /** Return the value of the ASN object as a PASNInt.
 
        This function will assert if the object is not a descendant of
        <A>PASNInteger</A>.
      */
+    virtual PASNInt GetInteger () const;
 
-    virtual PASNUnsigned GetUnsigned () const;
-    /* Return the value of the object as a PASNUnsigned
+    /** Return the value of the object as a PASNUnsigned
 
        This function will assert if the object is not a descendant of
        <A>PASNTimeTicks</A> or <P>PASNCounter</A>.
      */
+    virtual PASNUnsigned GetUnsigned () const;
 
-    virtual PString GetString () const;
-    /* Return the value of the object as a PString. This function can
+    /** Return the value of the object as a PString. This function can
        be use for all ASN object types
      */
+    virtual PString GetString () const;
 
-    virtual const PASNSequence & GetSequence() const;
-    /* Return the value of the object as a PString
+    /** Return the value of the object as a PString
 
        This function will assert if the object is not a descendant of
        <A>PASNSequence</A>.
      */
+    virtual const PASNSequence & GetSequence() const;
 
-    virtual PIPSocket::Address GetIPAddress () const;
-    /* Return the value of the object as an IPAddress
+    /** Return the value of the object as an IPAddress
 
        This function will assert if the object is not a descendant of
        <A>PASNIPAddress</A>.
      */
+    virtual PIPSocket::Address GetIPAddress () const;
 
+    /** Virtual functions used by the <A>PObject::operator<<</A> function to
+       print the value of the object.
+    */
     virtual void PrintOn(
       ostream & strm		// stream to print on
     ) const;
-    /* Virtual functions used by the <A>PObject::operator<<</A> function to
-       print the value of the object.
-    */
 
+    /** Virtual function used to encode the object into ASN format */
     virtual void Encode(
       PBYTEArray & buffer	// buffer to encode into
     );
-    /* Virtual function used to encode the object into ASN format */
 
-    virtual WORD GetEncodedLength();
-    /* Virtual function used to get the length of object when encoded into
+    /** Virtual function used to get the length of object when encoded into
        ASN format 
     */
+    virtual WORD GetEncodedLength();
 
+    /** Virtual function used to duplicate objects */
     virtual PObject * Clone() const;
-    /* Virtual function used to duplicate objects */
 
+    /** Encode an ASN length value */
     static void EncodeASNLength (
       PBYTEArray & buffer,		// buffer to encode into
       WORD length			// ASN length to encode
     );
-    /* Encode an ASN length value */
 
+    /** Return the length of an encoded ASN length value */
     static WORD GetASNLengthLength (
       WORD length			// length to find length of
     );
-    /* Return the length of an encoded ASN length value */
 
+    /** Decode an ASN length in the buffer at the given ptr. The ptr is moved
+       to the byte after the end of the encoded length.
+     */
     static BOOL DecodeASNLength (
       const PBYTEArray & buffer,		// buffer to decode data from
       PINDEX & ptr,			// ptr to decode from
       WORD & len			// returned length
     );
-    /* Decode an ASN length in the buffer at the given ptr. The ptr is moved
-       to the byte after the end of the encoded length.
-     */
 
+    /** Encode a sequence header into the buffer at the specified offset. */
     static void EncodeASNSequenceStart (
       PBYTEArray & buffer,		// buffer to encode data into
       BYTE type,			// sequence type
       WORD length			// length of sequence data
     );
-    /* Encode a sequence header into the buffer at the specified offset. */
 
+    /** Return the encoded length of a sequence if it has the specified length */
     static WORD GetASNSequenceStartLength (
       WORD length			// length of sequence data
     );
-    /* Return the encoded length of a sequence if it has the specified length */
 
+    /** Encode an ASN object header into the buffer */
     static void EncodeASNHeader(
       PBYTEArray & buffer,		// buffer to encode into
       PASNObject::ASNType type,		// ASN type of the object
       WORD length			// length of the object
     );
-    /* Encode an ASN object header into the buffer */
 
+    /** Return the length of an ASN object header if the object is the specified length */
     static WORD GetASNHeaderLength (
       WORD length			// length of object
     );
-    /* Return the length of an ASN object header if the object is the specified length */
 
     static void EncodeASNInteger    (
       PBYTEArray & buffer,		// buffer to encode into
@@ -267,22 +270,22 @@ class PASNObject : public PObject
     // Decode an ASN integer value in the specified buffer 
 
   protected:
+    /** Create an empty ASN object. Used only by descendant constructors */
     PASNObject();
-    /* Create an empty ASN object. Used only by descendant constructors */
 
+    /** Table to map <A>enum ASNType</A> values to ASN identifiers */
     static BYTE ASNTypeToType[ASNTypeMax];
-    /* Table to map <A>enum ASNType</A> values to ASN identifiers */
 
 };
 
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is a simple ASN integer type.
+ */
 class PASNInteger : public PASNObject
 {
   PCLASSINFO(PASNInteger, PASNObject)
-/* A descendant of PASNObject which is a simple ASN integer type.
- */
   public:
     PASNInteger(PASNInt val);
     PASNInteger(const PBYTEArray & buffer, PINDEX & ptr);
@@ -304,11 +307,11 @@ class PASNInteger : public PASNObject
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is a simple ASN OctetStr type
+ */
 class PASNString : public PASNObject
 {
   PCLASSINFO(PASNString, PASNObject)
-/* A descendant of PASNObject which is a simple ASN OctetStr type
- */
   public:
     PASNString(const PString & str);
     PASNString(const BYTE * ptr, int len);
@@ -338,11 +341,11 @@ class PASNString : public PASNObject
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an IP address type
+ */
 class PASNIPAddress : public PASNString
 {
   PCLASSINFO(PASNIPAddress, PASNString)
-/* A descendant of PASNObject which is an IP address type
- */
   public:
     PASNIPAddress(const PIPSocket::Address & addr)
       : PASNString(PString((const char *)&addr, 4)) { }
@@ -374,11 +377,11 @@ class PASNIPAddress : public PASNString
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an unsigned ASN integer type.
+ */
 class PASNUnsignedInteger : public PASNObject
 {
   PCLASSINFO(PASNUnsignedInteger, PASNObject)
-/* A descendant of PASNObject which is an unsigned ASN integer type.
- */
   public:
     PASNUnsignedInteger(PASNUnsigned val)
       { value = val; }
@@ -403,11 +406,11 @@ class PASNUnsignedInteger : public PASNObject
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an unsigned ASN time tick type.
+ */
 class PASNTimeTicks : public PASNUnsignedInteger
 {
   PCLASSINFO(PASNTimeTicks, PASNUnsignedInteger)
-/* A descendant of PASNObject which is an unsigned ASN time tick type.
- */
   public:
     PASNTimeTicks(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -430,11 +433,11 @@ class PASNTimeTicks : public PASNUnsignedInteger
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an unsigned ASN counter type.
+ */
 class PASNCounter : public PASNUnsignedInteger
 {
   PCLASSINFO(PASNCounter, PASNUnsignedInteger)
-/* A descendant of PASNObject which is an unsigned ASN counter type.
- */
   public:
     PASNCounter(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -457,11 +460,11 @@ class PASNCounter : public PASNUnsignedInteger
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an unsigned ASN guage type.
+ */
 class PASNGauge : public PASNUnsignedInteger
 {
   PCLASSINFO(PASNGauge, PASNUnsignedInteger)
-/* A descendant of PASNObject which is an unsigned ASN guage type.
- */
   public:
     PASNGauge(PASNUnsigned val) 
       : PASNUnsignedInteger(val) { }
@@ -488,11 +491,11 @@ class PASNGauge : public PASNUnsignedInteger
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is an unsigned ASN ObjID type.
+ */
 class PASNObjectID : public PASNObject
 {
   PCLASSINFO(PASNObjectID, PASNObject)
-/* A descendant of PASNObject which is an unsigned ASN ObjID type.
- */
   public:
     PASNObjectID(const PString & str);
     PASNObjectID(PASNOid * val, BYTE theLen);
@@ -518,11 +521,11 @@ class PASNObjectID : public PASNObject
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is the NULL type
+ */
 class PASNNull : public PASNObject
 {
   PCLASSINFO(PASNNull, PASNObject)
-/* A descendant of PASNObject which is the NULL type
- */
   public:
     PASNNull();
     PASNNull(const PBYTEArray & buffer, PINDEX & ptr);
@@ -542,11 +545,11 @@ class PASNNull : public PASNObject
 
 //////////////////////////////////////////////////////////////////////////
 
+/** A descendant of PASNObject which is the complex sequence type
+ */
 class PASNSequence : public PASNObject
 {
   PCLASSINFO(PASNSequence, PASNObject)
-/* A descendant of PASNObject which is the complex sequence type
- */
   public:
     PASNSequence();
     PASNSequence(BYTE selector);
