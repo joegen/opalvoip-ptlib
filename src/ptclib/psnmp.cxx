@@ -1,11 +1,14 @@
 /*
  * SNMP Library
  *
- * $Id: psnmp.cxx,v 1.3 1997/07/14 11:47:17 robertj Exp $
+ * $Id: psnmp.cxx,v 1.4 1997/07/20 08:50:04 craigs Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: psnmp.cxx,v $
+ * Revision 1.4  1997/07/20 08:50:04  craigs
+ * Changed var binding list to use ASN NULL rather than empty string
+ *
  * Revision 1.3  1997/07/14 11:47:17  robertj
  * Added "const" to numerous variables.
  *
@@ -81,7 +84,7 @@ static char const * const TrapCodeToText[PSNMP::NumTrapTypes] = {
 void PSNMPVarBindingList::Append(const PString & objectID)
 {
   objectIds.AppendString(objectID);
-  values.Append(PNEW PASNString(""));
+  values.Append(PNEW PASNNull());
 }
 
 
