@@ -177,17 +177,6 @@ DWORD GetPrivateProfileString( const char* lpAppName, const char* lpKeyName,
 BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
   const char* lpString, const char* );
 
-#else // !__cplusplus
-int isprint(int c);
-int isxdigit(int c);
-int isspace( int c );
-int isupper( int c );
-int islower( int c );
-int isalnum( int c );
-int isalpha( int c );
-int iscntrl( int c );
-int isdigit( int c );
-int ispunct( int c );
 #endif // __cplusplus
 
 #endif
