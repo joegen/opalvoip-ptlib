@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.28 1997/04/27 05:50:14 robertj Exp $
+ * $Id: collect.cxx,v 1.29 1997/06/08 04:48:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.29  1997/06/08 04:48:30  robertj
+ * Fixed problems in sorted list with multiple identical entries.
+ *
  * Revision 1.28  1997/04/27 05:50:14  robertj
  * DLL support.
  *
@@ -657,8 +660,15 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 
   info->root->colour = Element::Black;
 
+  x = info->lastElement;
+  info->lastIndex = x->left->subTreeSize;
+  while (x != info->root) {
+    if (x != x->parent->left)
+      info->lastIndex += x->parent->left->subTreeSize+1;
+    x = x->parent;
+  }
+
   reference->size++;
-  info->lastIndex = info->root->ValueSelect(*obj, TRUE);
   return info->lastIndex;
 }
 
@@ -740,13 +750,52 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
-  return info->root->ValueSelect(*obj, TRUE);
+  Element * elmt;
+  PINDEX pos = info->root->ValueSelect(*obj, elmt);
+  if (pos == P_MAX_INDEX)
+    return P_MAX_INDEX;
+
+  if (elmt->data != obj) {
+    PINDEX savePos = pos;
+    Element * saveElmt = elmt;
+    while (elmt->data != obj &&
+            (elmt = elmt->Predecessor()) != &nil &&
+            *obj == *elmt->data)
+      pos--;
+    if (elmt->data != obj) {
+      pos = savePos;
+      elmt = saveElmt;
+      while (elmt->data != obj &&
+              (elmt = elmt->Successor()) != &nil &&
+              *obj == *elmt->data)
+        pos++;
+      if (elmt->data != obj)
+        return P_MAX_INDEX;
+    }
+  }
+
+  info->lastIndex = pos;
+  info->lastElement = elmt;
+
+  return pos;
 }
 
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  return info->root->ValueSelect(obj, FALSE);
+  PINDEX pos = info->root->ValueSelect(obj, info->lastElement);
+  if (pos == P_MAX_INDEX)
+    return P_MAX_INDEX;
+
+  info->lastIndex = pos;
+
+  Element * prev;
+  while ((prev = info->lastElement->Predecessor()) != &nil && obj == *prev->data) {
+    info->lastElement = prev;
+    info->lastIndex--;
+  }
+
+  return info->lastIndex;
 }
 
 
@@ -953,24 +1002,25 @@ PAbstractSortedList::Element * PAbstractSortedList::Element::OrderSelect(PINDEX 
 }
 
 
-PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj, BOOL byPointer)
+PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj,
+                                                 Element * & lastElement)
 {
   if (this != &nil) {
     switch (data->Compare(obj)) {
       case PObject::LessThan :
       {
-        PINDEX index = right->ValueSelect(obj, byPointer);
+        PINDEX index = right->ValueSelect(obj, lastElement);
         if (index != P_MAX_INDEX)
           return left->subTreeSize + index + 1;
         break;
       }
 
       case PObject::GreaterThan :
-        return left->ValueSelect(obj, byPointer);
+        return left->ValueSelect(obj, lastElement);
 
       default :
-        if (!byPointer || data == &obj)
-          return left->subTreeSize;
+        lastElement = this;
+        return left->subTreeSize;
     }
   }
 
