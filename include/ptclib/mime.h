@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.2 1996/01/26 02:24:27 robertj Exp $
+ * $Id: mime.h,v 1.3 1996/01/28 02:46:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.3  1996/01/28 02:46:07  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ *
  * Revision 1.2  1996/01/26 02:24:27  robertj
  * Further implemetation.
  *
@@ -199,8 +202,8 @@ PDECLARE_CLASS(PBase64, PObject)
       const PBYTEArray & data  // Data block to be encoded
     );
     void ProcessEncoding(
-      PConstMemoryPointer dataBlock,  // Pointer to data to be encoded
-      PINDEX length                   // Length of the data block.
+      const BYTE * dataBlock,  // Pointer to data to be encoded
+      PINDEX length            // Length of the data block.
     );
     // Incorporate the specified data into the base 64 encoding.
 
@@ -231,8 +234,8 @@ PDECLARE_CLASS(PBase64, PObject)
       const PBYTEArray & data // Data block to be encoded to MD5
     );
     static PString Encode(
-      PConstMemoryPointer dataBlock,  // Pointer to data to be encoded to MD5
-      PINDEX length                   // Length of the data block.
+      const BYTE * dataBlock, // Pointer to data to be encoded to MD5
+      PINDEX length           // Length of the data block.
     );
     // Encode the data in memory to Base 64 data returnin the string.
 
