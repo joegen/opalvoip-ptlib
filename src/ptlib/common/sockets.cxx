@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.86  1999/02/23 07:19:22  robertj
+ * Added [] operator PIPSocket::Address to get the bytes out of an IP address.
+ *
  * Revision 1.85  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -1271,6 +1274,13 @@ PString PIPSocket::Address::AsString() const
 PIPSocket::Address::operator PString() const
 {
   return inet_ntoa(*this);
+}
+
+
+BYTE PIPSocket::Address::operator[](PINDEX idx) const
+{
+  PAssert(idx >= 0 && idx <= 3, PInvalidParameter);
+  return ((BYTE *)this)[idx];
 }
 
 
