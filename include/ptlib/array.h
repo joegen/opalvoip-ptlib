@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.30  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.29  2004/04/03 06:54:21  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -1231,7 +1234,7 @@ information.
   public: \
     inline cls(PINDEX initialSize = 0) \
       : cls##_PTemplate(initialSize) { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
 #else // PHAS_TEMPLATES
@@ -1246,7 +1249,7 @@ information.
   public: \
     inline cls(PINDEX initialSize = 0) \
       : PArrayObjects(initialSize) { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const\
       { PObject * obj = GetAt(index); \
@@ -1264,7 +1267,7 @@ information.
   public: \
     inline cls(PINDEX initialSize = 0) \
       : cls##_PTemplate(initialSize) { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
 #endif // PHAS_TEMPLATES

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.29  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.28  2004/04/04 07:39:57  csoutheren
  * Fixed cut-and-paste typo in VS.net 2003 changes that made all PLists sorted. Yikes!
  *
@@ -710,7 +713,7 @@ template <class T> class PStack : public PAbstractList
   public: \
     inline cls() \
       : PAbstractList() { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const \
       { return (T &)GetReferenceAt(index); } \
@@ -739,11 +742,11 @@ template <class T> class PStack : public PAbstractList
   public: \
     inline cls() \
       : PAbstractList() { DisallowDeleteObjects(); } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
-    virtual inline void Enqueue(T * t) \
+    virtual void Enqueue(T * t) \
       { PAbstractList::Append(t); } \
-    virtual inline T * Dequeue() \
+    virtual T * Dequeue() \
       { if (GetSize() == 0) return NULL; else return (T *)PAbstractList::RemoveAt(0);} \
   }
 
@@ -769,13 +772,13 @@ template <class T> class PStack : public PAbstractList
   public: \
     inline cls() \
       : PAbstractList() { DisallowDeleteObjects(); } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
-    virtual inline void Push(T * t) \
+    virtual void Push(T * t) \
       { PAbstractList::InsertAt(0, t); } \
-    virtual inline T * Pop() \
+    virtual T * Pop() \
       { PAssert(GetSize() > 0, PStackEmpty); return (T *)PAbstractList::RemoveAt(0); } \
-    virtual inline T & Top() \
+    virtual T & Top() \
       { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); } \
   }
 
@@ -1146,7 +1149,7 @@ template <class T> class PSortedList : public PAbstractSortedList
   public: \
     inline cls() \
       : PAbstractSortedList() { } \
-    inline virtual PObject * Clone() const \
+    virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const \
       { return *(T *)GetAt(index); } \

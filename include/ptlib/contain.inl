@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.50  2004/04/09 03:42:34  csoutheren
+ * Removed all usages of "virtual inline" and "inline virtual"
+ *
  * Revision 1.49  2004/01/18 13:43:48  rjongbloed
  * Fixed broken PString::MakeEmpty() function and moved implementations to .inl file.
  *
@@ -189,9 +192,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE PContainer::~PContainer()
-  { Destruct(); }
 
 PINLINE PContainer & PContainer::operator=(const PContainer & cont)
   { AssignContents(cont); return *this; }
