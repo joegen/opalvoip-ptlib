@@ -1,11 +1,15 @@
 /*
- * $Id: httpsvc.cxx,v 1.29 1998/02/03 06:22:45 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.30 1998/02/16 00:14:09 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.30  1998/02/16 00:14:09  robertj
+ * Added ProductName and BuildDate macros.
+ * Major rewrite of application info passed in PHTTPServiceProcess constructor.
+ *
  * Revision 1.29  1998/02/03 06:22:45  robertj
  * Allowed PHTTPServiceString to be overridden by html file after ';'.
  *
@@ -112,47 +116,29 @@
 #define	EQUIVALENCE	"Equivalence Pty. Ltd."
 
 
-PHTTPServiceProcess::PHTTPServiceProcess(
-                  const char * name,      // Name of product
-                  const char * manuf,     // Name of manufacturer
-                  const char * _gifName,  // text for gif file in page headers
-
-                  WORD majorVersion,    // Major version number of the product
-                  WORD minorVersion,    // Minor version number of the product
-                  CodeStatus status,    // Development status of the product
-                  WORD buildNumber,     // Build number of the product
-
-                  const char * _homePage,  // WWW address of manufacturers home page
-                  const char * _email,     // contact email for manufacturer
-                  const PTEACypher::Key * prodKey,  // Poduct key for registration
-                  const char * const * securedKeys, // Product secured keys for registration
-                  PINDEX securedKeyCount,
-                  const PTEACypher::Key * sigKey // Signature key for encryption of HTML files
-                )
-  : PServiceProcess(manuf, name, majorVersion,
-                    minorVersion, status, buildNumber),
-    gifText(_gifName),
-    securedKeys(securedKeyCount, securedKeys),
+PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
+  : PServiceProcess(inf.manufacturerName, inf.productName,
+                    inf.majorVersion, inf.minorVersion, inf.buildStatus, inf.buildNumber),
+    productKey(inf.productKey),
+    securedKeys(inf.securedKeyCount, inf.securedKeys),
+    signatureKey(inf.signatureKey),
+    compilationDate(inf.compilationDate),
+    manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE),
+    manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
+    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
     httpThreadClosed(0)
 {
-  if (_email != NULL)
-    email = _email;
-  else
-    email = EMAIL;
+  if (inf.gifHTML != NULL)
+    gifHTML = inf.gifHTML;
+  else {
+    gifHTML = psprintf("<img src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+    if (inf.gifWidth != 0 && inf.gifHeight != 0)
+      gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
+    gifHTML += " align=absmiddle>";
+  }
 
-  if (_homePage != NULL)
-    homePage = _homePage;
-  else
-    homePage = HOME_PAGE;
-
-  if (prodKey != NULL)
-    productKey = *prodKey;
-
-  if (sigKey != NULL)
-    signatureKey = *sigKey;
-
-  if (_gifName != NULL)
-    httpNameSpace.AddResource(new PServiceHTTPFile(_gifName));
+  if (inf.gifFilename != NULL)
+    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename));
 
   restartThread = NULL;
   httpListeningSocket = NULL;
@@ -238,15 +224,15 @@ PString PHTTPServiceProcess::GetPageGraphic()
   html << PHTML::TableStart()
        << PHTML::TableRow()
        << PHTML::TableData()
-       << gifText
+       << gifHTML
        << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
        << " Version " << GetVersion(TRUE)
        << PHTML::BreakLine()
        << "By "
-       << PHTML::HotLink(homePage) << GetManufacturer() << PHTML::HotLink()
+       << PHTML::HotLink(manufacturersHomePage) << GetManufacturer() << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink("mailto:" + email) << email << PHTML::HotLink()
+       << PHTML::HotLink("mailto:" + manufacturersEmail) << manufacturersEmail << PHTML::HotLink()
        << PHTML::TableEnd();
 
   return html;
@@ -524,7 +510,7 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
 
   AddFields(prefix);
 
-  Add(new PHTTPStringField("Validation", 34));
+  Add(new PHTTPStringField("Validation", 40));
 
   if (state == PSecureConfig::Defaults) {
     AddDisclaimer(regPage, process.GetManufacturer());
@@ -876,16 +862,38 @@ CREATE_MACRO(Copyright,EMPTY,EMPTY)
 }
 
 
-CREATE_MACRO(OS,EMPTY,EMPTY)
+CREATE_MACRO(ProductName,EMPTY,EMPTY)
 {
-  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
-  return process.GetOSClass() & process.GetOSName();
+  return PHTTPServiceProcess::Current().GetProductName();
+}
+
+
+CREATE_MACRO(Manufacturer,EMPTY,EMPTY)
+{
+  return PHTTPServiceProcess::Current().GetManufacturer();
 }
 
 
 CREATE_MACRO(Version,EMPTY,EMPTY)
 {
   return PHTTPServiceProcess::Current().GetVersion(TRUE);
+}
+
+
+CREATE_MACRO(BuildDate,EMPTY,args)
+{
+  const PTime & date = PHTTPServiceProcess::Current().GetCompilationDate();
+  if (args.IsEmpty())
+    return date.AsString("d MMMM yyyy");
+
+  return date.AsString(args);
+}
+
+
+CREATE_MACRO(OS,EMPTY,EMPTY)
+{
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  return process.GetOSClass() & process.GetOSName();
 }
 
 
@@ -971,12 +979,6 @@ CREATE_MACRO(PeerHost,request,EMPTY)
     return PIPSocket::GetHostName(request.origin);
   else
     return "N/A";
-}
-
-
-CREATE_MACRO(Manufacturer,EMPTY,EMPTY)
-{
-  return PHTTPServiceProcess::Current().GetManufacturer();
 }
 
 
