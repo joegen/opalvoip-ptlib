@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.23 1996/02/03 11:07:37 robertj Exp $
+ * $Id: sockets.cxx,v 1.24 1996/02/08 12:27:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.24  1996/02/08 12:27:22  robertj
+ * Added function to get peer port as well as IP number..
+ *
  * Revision 1.23  1996/02/03 11:07:37  robertj
  * Fixed buf in assuring error when converting string to IP number and string is empty.
  *
@@ -210,6 +213,19 @@ BOOL PIPSocket::GetPeerAddress(Address & addr)
     return FALSE;
 
   addr = address.sin_addr;
+  return TRUE;
+}
+
+
+BOOL PIPSocket::GetPeerAddress(Address & addr, WORD & portNum)
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+    return FALSE;
+
+  addr = address.sin_addr;
+  portNum = ntohs(address.sin_port);
   return TRUE;
 }
 
