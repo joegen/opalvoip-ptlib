@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.2 1994/07/25 03:36:03 robertj Exp $
+ * $Id: ipsock.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.2  1994/07/25 03:36:03  robertj
+ * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Spelt Berkeley correctly.
+ *
+ * Revision 1.2  1994/07/25  03:36:03  robertj
  * Added sockets to common, normalising to same comment standard.
  *
  */
@@ -21,6 +24,12 @@
 
 PDECLARE_CLASS(PIPSocket, PSocket)
   public:
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+
+    BOOL LookupHost(const PString & host_address, sockaddr_in * address);
+
+#endif
 
 
 // Class declaration continued in platform specific header file ///////////////
