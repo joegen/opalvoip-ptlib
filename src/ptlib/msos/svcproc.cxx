@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.16 1996/11/12 10:15:16 robertj Exp $
+ * $Id: svcproc.cxx,v 1.17 1996/11/18 11:32:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.17  1996/11/18 11:32:04  robertj
+ * Fixed bug in doing a "stop" command closing ALL instances of service.
+ *
  * Revision 1.16  1996/11/12 10:15:16  robertj
  * Fixed bug in NT 3.51 locking up when needs to output to window.
  *
@@ -240,23 +243,14 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   while (--argc > 0) {
     if (!CreateControlWindow(TRUE))
       return 1;
-
-    switch (ProcessCommand(*++argv)) {
-      case CommandProcessed :
-        processedCommand = TRUE;
-        break;
-
-      case ProcessCommandError :
-        RunMessageLoop();
-        return 2;
-
-      case DebugCommandMode :
-        debugMode = TRUE;
-    }
+    if (ProcessCommand(*++argv))
+      processedCommand = TRUE;
   }
 
   if (processedCommand) {
-    RunMessageLoop();
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0) != 0)
+      DispatchMessage(&msg);
     return GetTerminationValue();
   }
 
@@ -273,10 +267,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
       return GetTerminationValue();
 
     PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
-    if (!CreateControlWindow(TRUE))
-      return 1;
-    PError << "Not run as a service!" << endl;
-    RunMessageLoop();
+    MessageBox(NULL, "Not run as a service!", GetName(), MB_OK);
     return 1;
   }
 
@@ -292,9 +283,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
       GetExitCodeProcess(h, &exitCode);
       CloseHandle(h);
       if (exitCode == STILL_ACTIVE) {
-        debugMode = FALSE;
-        PError << "Service already running" << endl;
-        RunMessageLoop();
+        MessageBox(NULL, "Service already running", GetName(), MB_OK);
         return 3;
       }
     }
@@ -312,7 +301,34 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
   PAssertOS(threadHandle != (HANDLE)-1);
 
-  RunMessageLoop();
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
+  PAssertOS(terminationEvent != NULL);
+
+  MSG msg;
+  do {
+    switch (MsgWaitForMultipleObjects(1, &terminationEvent,
+                                      FALSE, INFINITE, QS_ALLINPUT)) {
+      case WAIT_OBJECT_0 :
+        msg.message = WM_QUIT;
+        break;
+
+      case WAIT_OBJECT_0+1 :
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+          if (msg.message != WM_QUIT)
+            DispatchMessage(&msg);
+        }
+        break;
+
+      default :
+        // This is a work around for '95 coming up with an erroneous error
+        if (GetLastError() != ERROR_INVALID_HANDLE ||
+            WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
+          msg.message = WM_QUIT;
+    }
+  } while (msg.message != WM_QUIT);
+
+  if (controlWindow != NULL)
+    DestroyWindow(controlWindow);
 
   OnStop();
 
@@ -458,39 +474,6 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
   }
 
   return DefWindowProc(hWnd, msg, wParam, lParam);
-}
-
-
-void PServiceProcess::RunMessageLoop()
-{
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
-  PAssertOS(terminationEvent != NULL);
-
-  MSG msg;
-  do {
-    switch (MsgWaitForMultipleObjects(1, &terminationEvent,
-                                      FALSE, INFINITE, QS_ALLINPUT)) {
-      case WAIT_OBJECT_0 :
-        msg.message = WM_QUIT;
-        break;
-
-      case WAIT_OBJECT_0+1 :
-        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-          if (msg.message != WM_QUIT)
-            DispatchMessage(&msg);
-        }
-        break;
-
-      default :
-        // This is a work around for '95 coming up with an erroneous error
-        if (GetLastError() != ERROR_INVALID_HANDLE ||
-            WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
-          msg.message = WM_QUIT;
-    }
-  } while (msg.message != WM_QUIT);
-
-  if (controlWindow != NULL)
-    DestroyWindow(controlWindow);
 }
 
 
@@ -984,8 +967,7 @@ BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
 }
 
 
-PServiceProcess::ProcessCommandResult
-                             PServiceProcess::ProcessCommand(const char * cmd)
+BOOL PServiceProcess::ProcessCommand(const char * cmd)
 {
   PINDEX cmdNum = 0;
   while (stricmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
@@ -998,7 +980,7 @@ PServiceProcess::ProcessCommandResult
       for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
         PError << ServiceCommandNames[cmdNum] << " | ";
       PError << ServiceCommandNames[cmdNum] << " ]" << endl;
-      return ProcessCommandError;
+      return TRUE;
     }
   }
 
@@ -1009,14 +991,15 @@ PServiceProcess::ProcessCommandResult
   BOOL good = FALSE;
   switch (cmdNum) {
     case SvcCmdDebug : // Debug mode
-      return DebugCommandMode;
+      debugMode = TRUE;
+      return FALSE;
 
     case SvcCmdVersion : // Version command
       ::SetLastError(0);
       PError << GetName() << ' '
              << GetOSClass() << '/' << GetOSName()
              << " Version " << GetVersion(TRUE) << endl;
-      return ProcessCommandError;
+      return TRUE;
 
     case SvcCmdInstall : // install
       good = svcManager->Create(this);
@@ -1054,14 +1037,11 @@ PServiceProcess::ProcessCommandResult
   }
 
   PError << "Service command \"" << ServiceCommandNames[cmdNum] << "\" ";
-  if (good) {
+  if (good)
     PError << "successful." << endl;
-    return CommandProcessed;
-  }
-  else {
+  else
     PError << "failed - error code = " << svcManager->GetError() << endl;
-    return ProcessCommandError;
-  }
+  return TRUE;
 }
 
 
