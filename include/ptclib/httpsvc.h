@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.17 1997/11/04 06:02:56 robertj Exp $
+ * $Id: httpsvc.h,v 1.18 1997/11/10 12:40:05 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.18  1997/11/10 12:40:05  robertj
+ * Changed SustituteEquivalSequence so can override standard macros.
+ *
  * Revision 1.17  1997/11/04 06:02:56  robertj
  * Allowed help gif file name to overridable in PServiceHTML, so can be in subdirectory.
  *
@@ -114,7 +117,7 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     virtual void AddRegisteredText(PHTML & html);
     virtual void AddUnregisteredText(PHTML & html);
-    virtual void SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &);
+    virtual BOOL SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &);
 
   protected:
     PSocket  * httpListeningSocket;
