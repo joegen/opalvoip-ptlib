@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.42  2000/09/20 04:24:09  craigs
+ * Added extra tracing, and removed segv on exit when using tracing
+ *
  * Revision 1.41  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -358,7 +361,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (!IsTerminated())
+  if (!IsTerminated()) 
     Terminate();
 
   ::close(termPipe[0]);
@@ -440,6 +443,7 @@ void * PThread::PX_ThreadStart(void * arg)
   sigaction(SUSPEND_SIG, &action, 0);
 
   // now call the the thread main routine
+  //PTRACE(1, "tlibthrd\tAbout to call Main");
   thread->Main();
 
   // execute the cleanup routine
@@ -499,6 +503,8 @@ void PThread::Terminate()
   if (IsTerminated())
     return;
 
+  PTRACE(1, "tlibthrd\tForcing termination of thread " << (void *)this);
+
   if (Current() == this)
     pthread_exit(NULL);
   else {
@@ -534,12 +540,17 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 BOOL PThread::IsTerminated() const
 {
-  if (PX_threadId == 0) 
+  if (PX_threadId == 0) {
+    //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") = 0");
     return TRUE;
+  }
 
-  if (pthread_kill(PX_threadId, 0) != 0) 
+  if (pthread_kill(PX_threadId, 0) != 0)  {
+    //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") terminated");
     return TRUE;
+  }
 
+  //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") not dead yet");
   return FALSE;
 }
 
@@ -659,6 +670,7 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
+  //PTRACE(1, "tlibthrd\tWaitForTermination(delay)");
   BYTE ch;
   ::write(termPipe[1], &ch, 1);
 
