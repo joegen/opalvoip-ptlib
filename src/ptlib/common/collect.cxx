@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.67  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.66  2004/03/23 10:59:35  rjongbloed
  * Added some extra bulletproofing of containers to avoid complaints by some
  *   memory checking tools, thanks Ted Szoczei
@@ -324,7 +327,7 @@ void PArrayObjects::CloneContents(const PArrayObjects * array)
 
 PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PArrayObjects::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PArrayObjects), PInvalidCast);
   const PArrayObjects & other = (const PArrayObjects &)obj;
   PINDEX i;
   for (i = 0; i < GetSize(); i++) {
@@ -493,7 +496,7 @@ void PAbstractList::CloneContents(const PAbstractList * list)
 
 PObject::Comparison PAbstractList::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PAbstractList::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PAbstractList), PInvalidCast);
   Element * elmt1 = info->head;
   Element * elmt2 = ((const PAbstractList &)obj).info->head;
   while (elmt1 != NULL && elmt2 != NULL) {
@@ -778,7 +781,7 @@ BOOL PAbstractSortedList::SetSize(PINDEX)
 
 PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PAbstractSortedList::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PAbstractSortedList), PInvalidCast);
   Element * elmt1 = info->root;
   while (elmt1->left != &info->nil)
     elmt1 = elmt1->left;
@@ -1265,7 +1268,7 @@ PObject * POrdinalKey::Clone() const
 
 PObject::Comparison POrdinalKey::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(POrdinalKey::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, POrdinalKey), PInvalidCast);
   const POrdinalKey & other = (const POrdinalKey &)obj;
   
   if (theKey < other.theKey)
@@ -1502,7 +1505,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
 
 PObject::Comparison PHashTable::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PHashTable::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PHashTable), PInvalidCast);
   return reference != ((const PHashTable &)obj).reference
                                                       ? GreaterThan : EqualTo;
 }
