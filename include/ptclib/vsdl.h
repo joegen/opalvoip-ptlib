@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.7  2004/05/31 01:26:58  dereksmithies
+ * Fix the "no newline at end of file" warning.
+ *
  * Revision 1.6  2004/05/27 04:47:05  csoutheren
  * Added include guard to file
  *
@@ -292,3 +295,4 @@ class PSDLVideoDevice : public PVideoOutputDevice
 #endif    // P_SDL
 
 #endif
+
