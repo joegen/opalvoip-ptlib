@@ -105,17 +105,18 @@ class ostream_withassign : public ostream
 #include "ceostream.h"
 extern YWinCEOStream cout;
 extern YWinCEOStream cerr;
+extern YWinCEOStream clog;
 
 #else
 extern ostream_withassign cout;
 extern ostream_withassign cerr;
+extern ostream_withassign clog;
 class PStringStream;
 
 extern PStringStream cerr;
 extern PStringStream cout;
+extern PStringStream clog;
 #endif // !WCE_NO_EXTERNAL_STREAMS
-
-extern ostream_withassign clog;
 
 inline ostream& flush(ostream& _outs) { return _outs.flush(); }
 inline ostream& endl(ostream& _outs) { return _outs << '\n' << flush; }
