@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.26  2004/05/02 16:59:09  ykiryanov
+ * Fixed assert in setting priority to threads
+ *
  * Revision 1.25  2004/04/30 16:10:20  ykiryanov
  * Added PMutex code based on BLocker to support recursive locks
  *
@@ -329,8 +332,9 @@ void PThread::SetPriority(Priority priorityLevel)
 
   mPriority = priorities[priorityLevel];
   status_t result = ::set_thread_priority(mId, mPriority );
+  if(result != B_OK)
+    PTRACE(0, "Changing thread priority failed, error " << strerror(result) << endl);
 
-  PAssert(result == B_OK, "Thread priority change error");
 }
 
 
