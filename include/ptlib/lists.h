@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.21  2002/11/12 08:55:53  robertj
+ * Changed scope of PAbstraSortedList::Element class so descendant classes
+ *   can get at it.
+ *
  * Revision 1.20  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -971,11 +975,13 @@ class PAbstractSortedList : public PCollection
   //@}
 
 
+    friend class Element;
+
+  protected:
     class Element {
       public:
         Element(PObject * theData);
 
-      private:
         void DeleteSubTrees(BOOL deleteObject);
         Element * Successor() const;
         Element * Predecessor() const;
@@ -988,12 +994,9 @@ class PAbstractSortedList : public PCollection
         PObject * data;
         PINDEX subTreeSize;
         enum { Red, Black } colour;
-
-      friend class PAbstractSortedList;
+        static Element nil;
     };
     friend class Element;
-
-  protected:
 
     class Info {
       public:
