@@ -76,7 +76,7 @@ PostBuild_Cmds=rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /Fd"..\..\..\Lib\PTLibd.pdb" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /Fd"..\..\..\Lib\PTLibd.pdb" /FD /c
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
@@ -137,14 +137,14 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib.dtf
 
 USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	"$(InputDir)\ptlib.ignore"	
 # Begin Custom Build - Merging exported library symbols
-InputDir=\Work\pwlib\include\ptlib\msos
+InputDir=\pwlib\include\ptlib\msos
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
 InputPath=..\..\..\include\ptlib\msos\ptlib.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym -I "$(Include)$(INCLUDE)" -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
+	MergeSym -I "$(Include)$(INCLUDE)" -x ../../../include/ptlib/msos/ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 	
 # End Custom Build
@@ -182,14 +182,14 @@ SOURCE=..\..\..\include\ptlib\msos\ptlibd.dtf
 # PROP Ignore_Default_Tool 1
 USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	"$(InputDir)\ptlib.ignore"	
 # Begin Custom Build - Merging exported library symbols
-InputDir=\Work\pwlib\include\ptlib\msos
+InputDir=\pwlib\include\ptlib\msos
 IntDir=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 TargetName=PTLibd
 InputPath=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym -I "$(Include)$(INCLUDE)" -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
+	MergeSym -I "$(Include)$(INCLUDE)" -x ../../../include/ptlib/msos/ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 	
 # End Custom Build
