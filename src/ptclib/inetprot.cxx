@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.30 1997/03/28 13:04:37 robertj Exp $
+ * $Id: inetprot.cxx,v 1.31 1997/06/06 08:53:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.31  1997/06/06 08:53:51  robertj
+ * Fixed bug with multiple cookies (MIME fields) are sent to IE.
+ *
  * Revision 1.30  1997/03/28 13:04:37  robertj
  * Fixed bug for multiple fields in MIME headers, especially cookies.
  *
@@ -600,8 +603,19 @@ BOOL PMIMEInfo::Read(PInternetProtocol & socket)
 BOOL PMIMEInfo::Write(PInternetProtocol & socket) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (!socket.WriteLine(GetKeyAt(i) + ": " + GetDataAt(i)))
-      return FALSE;
+    PString name = GetKeyAt(i) + ": ";
+    PString value = GetDataAt(i);
+    if (value.Find(',') != P_MAX_INDEX) {
+      PStringArray vals = value.Tokenise(',');
+      for (PINDEX j = 0; j < vals.GetSize(); j++) {
+        if (!socket.WriteLine(name + vals[i]))
+          return FALSE;
+      }
+    }
+    else {
+      if (!socket.WriteLine(name + value))
+        return FALSE;
+    }
   }
 
   return socket.WriteString(CRLF);
