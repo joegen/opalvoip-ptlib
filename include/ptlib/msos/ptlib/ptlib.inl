@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.2 1994/06/25 12:13:01 robertj Exp $
+ * $Id: ptlib.inl,v 1.3 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,13 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.2  1994/06/25 12:13:01  robertj
- * Synchronisation.
+ * Revision 1.3  1994/07/02 03:18:09  robertj
+ * Multi-threading support.
+ * Fixed bug in time intervals being signed.
  *
+# Revision 1.2  1994/06/25  12:13:01  robertj
+# Synchronisation.
+#
  * Revision 1.1  1994/04/01  14:38:42  robertj
  * Initial revision
  */
@@ -24,7 +28,7 @@
 #ifdef _WINDOWS
 
 PINLINE PTimeInterval PTimer::Tick()
-  { return GetTickCount(); }
+  { return GetTickCount()&0x7fffffff; }
 
 PINLINE unsigned PTimer::Resolution()
   { return 55; }
@@ -107,6 +111,9 @@ PINLINE void PThread::SetPriority(Priority priorityLevel)
 
 PINLINE PThread::Priority PThread::GetPriority() const
   { return basePriority; }
+
+PINLINE BOOL PThread::IsOnlyThread() const
+  { return link == this; }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
