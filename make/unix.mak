@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.30  1999/01/16 09:56:28  robertj
-# Changed some macros to more informative names.
+# Revision 1.31  1999/02/06 05:49:44  robertj
+# BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+#
+# Revision 1.31  1999/02/06 05:49:44  robertj
+# BeOS port effort by Yuri Kiryanov <yk@altavista.net>
 #
 # Revision 1.30  1999/01/16 09:56:28  robertj
 # Changed some macros to more informative names.
@@ -69,6 +72,7 @@ endif
 
 ifndef PWLIBDIR
 PWLIBDIR := $(HOME)/pwlib
+endif
 
 
 ###############################################################################
@@ -116,11 +120,31 @@ all ::
 	@echo ######################################################################
 	@echo
 
+endif
 
-####################################################
+
+###############################################################################
 #
-#  Linux
+# Set up compiler flags and macros for debug/release versions
 #
+
+
+
+PLATFORM_TYPE = $(OSTYPE)_$(MACHTYPE)
+STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
+LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
+
+
+
+ifdef	DEBUG
+OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
+#OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
+#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
+LDFLAGS		:= $(LDFLAGS) -s
+
+OBJ_SUFFIX	:= d
+else
+OBJ_SUFFIX	:= r
 endif # DEBUG
 
 
@@ -140,7 +164,7 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64
 
 endif
 
-PLATFORM_TYPE	:= pic
+
 ifdef SHAREDLIB
 ifndef PROG
 PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
@@ -152,10 +176,6 @@ STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
 
 endif # linux
-#
-#  FreeBSD
-#
-####################################################
 
 
 ####################################################
@@ -177,10 +197,6 @@ endif
 RANLIB		:= 1
 
 endif # FreeBSD
-#
-#  Sunos 4.1.x
-#
-####################################################
 
 
 ####################################################
@@ -193,13 +209,11 @@ RANLIB		:= 1
 REQUIRES_SEPARATE_SWITCH = 1
 
 endif # sunos
-#
-#  Solaris (Sunos 5.x)
-#
-####################################################
 
 
 ####################################################
+
+ifeq ($(OSTYPE),solaris)
 
 #  Solaris (Sunos 5.x)
 
@@ -230,9 +244,16 @@ STDCCFLAGS	:= $(STDCCFLAGS) -D_REENTRANT
 endif
 
 endif # solaris
-#
-#  Other
-#
+
+
+####################################################
+
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_HAS_INT64
+LDLIBS		:= $(LDLIBS) -lbe -lstdc++.r4
+ifdef BE_THREADS
+STDCCFLAGS	:= $(STDCCFLAGS) -DBE_THREADS -DP_PLATFORM_HAS_THREADS
+endif
+
 endif # beos
 
 
@@ -244,6 +265,8 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX -DP_HAS_INT64
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
+
+endif # ultrix
 
 
 ####################################################
@@ -258,19 +281,46 @@ endif # hpux
 
 ###############################################################################
 #
-SHELL		= /bin/sh
+# Make sure some things are defined
+#
+
+ifndef ENDIAN
+ENDIAN		:= PLITTLE_ENDIAN
+endif
+
+ifndef DEBUG_FLAG
+DEBUG_FLAG	:= -g
+endif
+
+
+###############################################################################
+#
+CPLUS		= g++
+
+CC		:= gcc
 CPLUS		:= g++
 SHELL		:= /bin/sh
-PLATFORM_TYPE	= $(OSTYPE)_$(MACHTYPE)
-
 
 .SUFFIXES:	.cxx .prc 
 
 # Directories
 
-#
+UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
+UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
+
+OBJDIR		= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+LIBDIR		= $(PWLIBDIR)/lib
+
+
+# set name of the PT library
+
+PTLIB		= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+
+ifndef SHAREDLIB
+PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
+LDFLAGS		:= $(LDFLAGS) -s
+
 endif # DEBUG
-#
 
 
 # define SSL variables
@@ -282,105 +332,33 @@ SSLDIR		:= /usr/local/ssl
 CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
 LDFLAGS		:= $(LDFLAGS) -L$(SSLDIR)/lib
 ENDLDLIBS	:= $(ENDLDLIBS) -lssl -lcrypto
-#
+
 endif
-#
 
 
 # define Posix threads stuff
 ifdef P_PTHREADS
-#
-#  define names of some other programs we run
-#
-CPLUS		= g++
-
-#
-# Make sure some things are defined
-#
-
-ifndef ENDIAN
-ENDIAN		:= PLITTLE_ENDIAN
-endif
-
-ifndef DEBUG_FLAG
-DEBUG_FLAG	:= -g
-endif
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_PTHREADS
-#
 endif
-#
 
 
 # compiler flags for all modes
 STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 #STDCCFLAGS	:= $(STDCCFLAGS) -fomit-frame-pointer
 #STDCCFLAGS	:= $(STDCCFLAGS) -fno-default-inline
-#
-# if using debug, add -g and set debug ID
-#
-ifdef	DEBUG
-
-OBJ_SUFFIX	:= d
-STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
-LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
-
-else
-
-OBJ_SUFFIX	:= r
-OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
-LDFLAGS		:= $(LDFLAGS) -s
-
-endif # DEBUG
-
-OBJDIR		:= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-
-LIBDIR		= $(PWLIBDIR)/lib
-
-#
-# add PW library directory to library path
-#
-LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR) 
-
-##########################################################################
-#
-#  set up for correct operating system
-#
-
-#
-# set name of the PT library
-#
-PTLIB		= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-
-ifndef SHAREDLIB
-PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
-else
-PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
-endif
-
-#
 #STDCCFLAGS     := $(STDCCFLAGS) -Woverloaded-virtual
-#
 #STDCCFLAGS     := $(STDCCFLAGS) -fno-implement-inlines
 
-#
-# add OS library
-#
-LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
+# add OS directory to include path
+STDCCFLAGS	:= $(STDCCFLAGS) -I$(UNIX_INC_DIR)
+LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR) -l$(PTLIB) 
 # add library directory to library path and include the library
 LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
-#
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
-#
 
 
 #  clean whitespace out of source file list
-######################################################################
-
-
 SOURCES		:= $(strip $(SOURCES))
-
 
 
 # End of unix.mak
