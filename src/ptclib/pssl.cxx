@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.22 2001/05/29 03:33:54 craigs Exp $
+ * $Id: pssl.cxx,v 1.23 2001/05/31 07:04:11 craigs Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.23  2001/05/31 07:04:11  craigs
+ * Changed random seed function
+ *
  * Revision 1.22  2001/05/29 03:33:54  craigs
  * Added options to be compatible with OpenSSL 0.9.6
  *
@@ -183,20 +186,6 @@ PSSLMutexArray::PSSLMutexArray()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static PBYTEArray ConvertXOR(const BYTE * data, PINDEX size, BYTE xorSeed)
-{
-  PBYTEArray clear(size);
-
-  clear[0] = (BYTE)(data[0] ^ xorSeed);
-  for (PINDEX i = 1; i < size; i++)
-    clear[i] = (BYTE)(data[i] ^ clear[i-1]);
-
-  return clear;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
 PSSLCertificate::PSSLCertificate()
 {
   certificate = NULL;
@@ -241,15 +230,9 @@ PSSLCertificate::PSSLCertificate(const PFilePath & certFile, int fileType)
 }
 
 
-PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize, BYTE xorSeed)
+PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize, BYTE /*unused*/)
 {
-  if (xorSeed == 0)
-    certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
-  else {
-    PBYTEArray realCert = ConvertXOR(certData, certSize, xorSeed);
-    BYTE * realCertPtr = realCert.GetPointer();
-    certificate = d2i_X509(NULL, &realCertPtr, certSize);
-  }
+  certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
 }
 
 
@@ -309,15 +292,9 @@ PSSLPrivateKey::PSSLPrivateKey(const PFilePath & keyFile)
 }
 
 
-PSSLPrivateKey::PSSLPrivateKey(const BYTE * keyData, PINDEX keySize, BYTE xorSeed)
+PSSLPrivateKey::PSSLPrivateKey(const BYTE * keyData, PINDEX keySize, BYTE /*unused*/)
 {
-  if (xorSeed == 0)
-    key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyData, keySize);
-  else {
-    PBYTEArray realKey = ConvertXOR(keyData, keySize, xorSeed);
-    BYTE * realKeyPtr = realKey.GetPointer();
-    key = d2i_AutoPrivateKey(NULL, &realKeyPtr, keySize);
-  }
+  key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyData, keySize);
 }
 
 
