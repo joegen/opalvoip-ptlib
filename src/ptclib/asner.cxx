@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.31  2000/09/29 04:11:51  robertj
+ * Fixed possible out of range memory access, thanks Petr Parýzek <paryzek@wo.cz>
+ *
  * Revision 1.30  2000/02/29 06:32:12  robertj
  * Added ability to remove optional field in sequence, thanks Dave Harvey.
  *
@@ -1116,7 +1119,8 @@ void PASN_ObjectId::CommonEncode(PBYTEArray & encodecObjectId) const
       encodecObjectId[outputPosition++] = (BYTE)(subId & mask);
     }
 
-    subId = *objId++;
+    if (length > 1)
+      subId = *objId++;
   }
 }
 
