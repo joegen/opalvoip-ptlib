@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.33  2004/04/18 12:37:40  csoutheren
+ * Modified to detect sem_wait etc on Linux systems
+ *
  * Revision 1.32  2004/04/11 03:20:42  csoutheren
  * Added Unix implementation of PCriticalSection
  *
@@ -175,25 +178,34 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef P_HAS_SEMAPHORES
+
 PINLINE PCriticalSection::PCriticalSection()
-{
-  ::sem_init(&sem, 0, 1);
-}
+{ ::sem_init(&sem, 0, 1); }
 
 PINLINE PCriticalSection::~PCriticalSection()
-{
-  ::sem_destroy(&sem);
-}
+{ ::sem_destroy(&sem); }
 
 PINLINE void PCriticalSection::Enter()
-{
-  ::sem_wait(&sem);
-}
+{ ::sem_wait(&sem); }
 
 PINLINE void PCriticalSection::Leave()
-{
-  ::sem_post(&sem);
-}
+{ ::sem_post(&sem); }
 
+#else
+
+PINLINE PCriticalSection::PCriticalSection()
+{ }
+
+PINLINE PCriticalSection::~PCriticalSection()
+{ }
+
+PINLINE void PCriticalSection::Enter()
+{ }
+
+PINLINE void PCriticalSection::Leave()
+{ }
+
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
