@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.57  2001/06/04 10:15:01  robertj
+ * Fixed bug if tried to get file info on empty file path.
+ *
  * Revision 1.56  2001/03/19 05:49:44  robertj
  * Redid int64 stream input to use library conversion function and
  *   set fail bit if no valid integer was found in the input stream.
@@ -776,6 +779,9 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
+  if (name.IsEmpty())
+    return FALSE;
+
   PString fn = name;
   PINDEX pos = fn.GetLength()-1;
   while (PDirectory::IsSeparator(fn[pos]))
