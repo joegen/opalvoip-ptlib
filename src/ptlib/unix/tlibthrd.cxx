@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.49  2000/11/12 08:16:07  rogerh
+ * This change and the previous change, make pthreads work on FreeBSD 4.2.
+ * FreeBSD has improved its thread signal handling and now correctly generates a
+ * SIGUSR2 signal on a thread (the Resume Signal).  However there was no handler
+ * for this signal and applications would abort with "User signal 2".
+ * So, a dummy sigResumeHandler has been added.
+ *
  * Revision 1.48  2000/11/12 07:57:45  rogerh
  * *** empty log message ***
  *
@@ -283,7 +290,6 @@ static void sigResumeHandler(int)
 {
   // do nothing. This is here so the 'signal' is consumed
   // and stops the application terminating with "User signal 2"
-fprintf(stderr,"RESUMER\n");
 }
 
 
