@@ -24,6 +24,7 @@
 				PreprocessorDefinitions="_DEBUG"
 				RuntimeLibrary="3"
 				DefaultCharIsUnsigned="TRUE"
+				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderFile=".\Debug/MergeSym.pch"
 				AssemblerListingLocation=".\Debug/"
