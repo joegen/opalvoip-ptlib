@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.54  2001/03/29 03:24:31  robertj
+ * Removed capture of SIGQUIT so can still dro a core on demand.
+ *
  * Revision 1.53  2001/03/14 01:16:11  robertj
  * Fixed signals processing, now uses housekeeping thread to handle signals
  *   synchronously. This also fixes issues with stopping PServiceProcess.
@@ -413,9 +416,6 @@ void SetSignals(void (*handler)(int))
 #ifdef SIGINT
   signal(SIGINT, HANDLER(handler));
 #endif
-#ifdef SIGQUIT
-  signal(SIGQUIT, HANDLER(handler));
-#endif
 
 #ifndef P_PTHREADS
 #ifdef SIGUSR1
@@ -472,7 +472,6 @@ void PProcess::PXOnAsyncSignal(int sig)
     case SIGINT:
     case SIGTERM:
     case SIGHUP:
-    case SIGQUIT:
       raise(SIGKILL);
       break;
     default:
