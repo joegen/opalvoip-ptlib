@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.6  2003/09/17 06:02:13  csoutheren
+ * Fixed windows header file problem caused by removing recursive headers
+ *
  * Revision 1.5  2003/04/17 01:21:33  craigs
  * Added import of pybuildopts to correctly detect if P_SAPI is set
  *
@@ -67,6 +70,9 @@
 #endif
 
 ////////////////////////////////////////////////////////////
+
+// this disables the winsock2 stuff in the Windows contain.h, to avoid header file problems
+#define P_KNOCKOUT_WINSOCK2
 
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
