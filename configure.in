@@ -45,7 +45,7 @@ case "$target_cpu" in
    x86_64)	   MACHTYPE=x86_64 ;
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
-   alpha )         MACHTYPE=alpha ;
+   alpha | alphaev56) MACHTYPE=alpha ;
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
    sparc )         MACHTYPE=sparc ;;

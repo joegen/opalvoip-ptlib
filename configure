@@ -1046,7 +1046,7 @@ case "$target_os" in
   netbsd)          OSTYPE=NetBSD ;
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
 
-  solaris | sunos ) OSTYPE=solaris ;
+  solaris2 | sunos ) OSTYPE=solaris ;
 		   OSRELEASE="5.$OSVER" ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
@@ -1068,7 +1068,7 @@ case "$target_cpu" in
    x86_64)	   MACHTYPE=x86_64 ;
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
-   alpha )         MACHTYPE=alpha ;
+   alpha | alphaev56) MACHTYPE=alpha ;
                    STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
    sparc )         MACHTYPE=sparc ;;
