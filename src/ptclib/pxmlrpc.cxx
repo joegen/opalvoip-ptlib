@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.2  2002/03/27 00:50:29  craigs
+ * Fixed problems with parsing faults and creating structs
+ *
  * Revision 1.1  2002/03/26 07:06:29  craigs
  * Initial version
  *
@@ -29,11 +32,7 @@
 #include <ptclib/pxmlrpc.h>
 
 PXMLRPCRequest::PXMLRPCRequest(const PString & method)
-  : PXML(
-#ifdef _DEBUG  
-  Indent
-#endif
-)
+  : PXML()
 {
   rootElement = new PXMLElement(NULL, "methodCall");
   rootElement->AddChild(         new PXMLElement  (rootElement, "methodName", method));
@@ -50,11 +49,12 @@ PXMLRPCElement::PXMLRPCElement(PXMLElement * parent,
   subName = _subName;
 }
 
-void PXMLRPCElement::AddParam(PXMLElement * element) 
+PXMLElement * PXMLRPCElement::AddParam(PXMLElement * element) 
 { 
   PXMLElement * parm = AddChild(new PXMLElement(this, subName));
   parm->AddChild(element); 
   element->SetParent(parm);
+  return parm;
 }
 
 void PXMLRPCElement::AddParam(const PString & str) 
@@ -102,8 +102,9 @@ void PXMLRPCElement::AddArrayParam(const PStringArray & array, const char * type
   AddParam(new PXMLRPCArrayElement(NULL, array, type)); 
 }
 
-void PXMLRPCElement::AddStructParam(const PStringToString & /*dict*/, const char * /*type*/)
+void PXMLRPCElement::AddStructParam(const PStringToString & dict, const char * type)
 {
+  AddParam(new PXMLRPCStructElement(NULL, dict, type)); 
 }
 
 void PXMLRPCElement::AddStructParam(PXMLRPCStruct * /*structParam*/)
@@ -141,6 +142,23 @@ PXMLRPCArrayElement::PXMLRPCArrayElement(PXMLElement * parent,
 
 ////////////////////////////////////////////////////////
 
+PXMLRPCStructElement::PXMLRPCStructElement(PXMLElement * parent, 
+             const PStringToString & dict, 
+                        const char * typeStr)
+  : PXMLElement(parent, "value")
+{ 
+  PXMLElement * structElement = AddChild(new PXMLElement(this,  "struct")); 
+  PINDEX i;
+  for (i = 0; i < dict.GetSize(); i++) {
+    PString key = dict.GetKeyAt(i);
+    PXMLElement * member = structElement->AddChild(new PXMLElement(structElement, "member"));
+    member->AddChild(new PXMLElement         (member, "name",    key));
+    member->AddChild(new PXMLRPCScalarElement(member, dict[key], typeStr));
+  }
+}
+
+////////////////////////////////////////////////////////
+
 PXMLRPCResponse::PXMLRPCResponse()
   : PXML()
 {
@@ -172,12 +190,12 @@ BOOL PXMLRPCResponse::Validate()
     // assume fault is a simple struct
     PStringToString faultInfo;
     PXMLElement * value = params->GetElement("value");
-    if ((value == NULL) || 
-        !ParseStruct(*value, faultInfo) ||
-        (faultInfo.GetSize() != 2) ||
-        !faultInfo.Contains("faultCode") ||
-        !faultInfo.Contains("faultString")
-        ) {
+    if ((value == NULL) ||
+         !ParseStruct(*value, faultInfo) ||
+         (faultInfo.GetSize() != 2) ||
+         (!faultInfo.Contains("faultCode")) ||
+         (!faultInfo.Contains("faultString"))
+         ) {
       PStringStream txt;
       txt << "Fault return is faulty:\n" << *this;
       SetFault(FaultyFault, txt);
@@ -186,7 +204,7 @@ BOOL PXMLRPCResponse::Validate()
     }
 
     // get fault code and string
-    SetFault(faultInfo["faultCode"].AsInteger(), faultInfo["faultCode"]);
+    SetFault(faultInfo["faultCode"].AsInteger(), faultInfo["faultString"]);
 
     return FALSE;
   }
@@ -240,34 +258,36 @@ BOOL PXMLRPCResponse::ParseStruct(PXMLElement & valueElement,
     return FALSE;
   }
 
-  PINDEX i;
-  for (i = 0; i < structElement->GetSize(); i++) {
-    PXMLElement & member      = structElement[i];
-    PXMLElement * nameElement = member.GetElement("name");
-    PXMLElement * element     = member.GetElement("value");
-    if ((nameElement == NULL) || (element == NULL)) {
-      PStringStream txt;
-      txt << "Member " << i << " incomplete";
-      SetFault(MemberIncomplete, txt);
-      PTRACE(2, "RPCXML\t" << GetFaultText());
-      return FALSE;
+  PINDEX i = 0;
+  while (i < structElement->GetSize()) {
+    PXMLElement * member = structElement->GetElement("member", i++);
+    if (member != NULL) {
+      PXMLElement * nameElement = member->GetElement("name");
+      PXMLElement * element     = member->GetElement("value");
+      if ((nameElement == NULL) || (element == NULL)) {
+        PStringStream txt;
+        txt << "Member " << i << " incomplete";
+        SetFault(MemberIncomplete, txt);
+        PTRACE(2, "RPCXML\t" << GetFaultText());
+        return FALSE;
+      }
+
+      if (nameElement->GetName() != "name") {
+        PStringStream txt;
+        txt << "Member " << i << " unnamed";
+        SetFault(MemberUnnamed, txt);
+        PTRACE(2, "RPCXML\t" << GetFaultText());
+        return FALSE;
+      }
+
+      PString name = nameElement->GetData();
+      PString value;
+      PString type;
+      if (!ParseScalar(*element, type, value))
+        return FALSE;
+
+      structDict.SetAt(name, value);
     }
-
-    if (nameElement->GetName() != "name") {
-      PStringStream txt;
-      txt << "Member " << i << " unnamed";
-      SetFault(MemberUnnamed, txt);
-      PTRACE(2, "RPCXML\t" << GetFaultText());
-      return FALSE;
-    }
-
-    PString name = nameElement->GetData();
-    PString value;
-    PString type;
-    if (!ParseScalar(*element, type, value))
-      return FALSE;
-
-    structDict.SetAt(name, value);
   }
 
   return TRUE;
