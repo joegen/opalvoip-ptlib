@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.2 1996/03/02 03:09:48 robertj Exp $
+ * $Id: remconn.h,v 1.3 1996/04/23 11:33:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.3  1996/04/23 11:33:04  robertj
+ * Added username and password.
+ *
  * Revision 1.2  1996/03/02 03:09:48  robertj
  * Added function to get all possible remote access connection names.
  *
@@ -37,7 +40,14 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     virtual PINDEX HashFunction() const;
 
     BOOL Open();
-    BOOL Open(const PString & name);
+    BOOL Open(
+      const PString & name
+    );
+    BOOL Open(
+      const PString & name,
+      const PString & username,
+      const PString & password
+    );
     void Close();
 
     const PString & GetName() const { return remoteName; }
@@ -67,7 +77,9 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
 
     
   protected:
-    PString  remoteName;
+    PString remoteName;
+    PString userName;
+    PString password;
 
   private:
     PRemoteConnection(const PRemoteConnection &) { }
