@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.39  2002/02/11 07:21:46  rogerh
+ * Fix some non portable code which which seeks out /dev/dsp devices and only
+ * worked on Linux. (char device for /dev/dsp is 14 on Linux, 30 on FreeBSD)
+ *
  * Revision 1.38  2002/02/09 00:52:01  robertj
  * Slight adjustment to API and documentation for volume functions.
  *
@@ -394,10 +398,13 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
     return;
 
   do {
-    PString devname = devdir + devdir.GetEntryName();
+    PString filename = devdir.GetEntryName();
+    PString devname = devdir + filename;
     if (devdir.IsSubDir())
       CollectSoundDevices(devname, dsp, mixer);
     else {
+#if defined(P_LINUX)
+      // On Linux, look at the character device numbers
       PFileInfo info;
       if (devdir.GetInfo(info) &&info.type == PFileInfo::CharDevice) {
         struct stat s;
@@ -415,6 +422,24 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
           }
         }
       }
+#else
+      // On FreeBSD, we could have looked for character device '30' for OSS
+      // but as we also suppose OSS on OpenBSD and NetBSD, we will use
+      // this OS independent code for all non Linux platforms.
+
+      // Look for dspN
+      if ( (filename.GetLength() >= 4) && (filename.Left(3) == "dsp")
+        && (filename.Mid(3,1) >= "0") && (filename.Mid(3,1) <= "9")) {
+        PINDEX cardnum = filename.Mid(3).AsInteger();
+        dsp.SetAt(cardnum, devname);
+      }
+      // Look for mixerN
+      if ( (filename.GetLength() >= 6) && (filename.Left(5) == "mixer")
+        && (filename.Mid(5,1) >= "0") && (filename.Mid(5,1) <= "9")) {
+        PINDEX cardnum = filename.Mid(5).AsInteger();
+        mixer.SetAt(cardnum, devname);
+      }
+#endif
     }
   } while (devdir.Next());
 }
