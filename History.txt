@@ -2,6 +2,36 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.1pl19
+------------
+	More bullet proofing of PER decoder, could crash if given garbage data
+	to decode.
+
+	Fixed problem in ASN parser with BER encoding of ASN with optional fields.
+
+	Fixed compiler ambiguities in PTimeInterval constructor.
+
+	Added function to change auto delete flag on a thread.
+
+	Added assert when get nested mutex.
+
+	Fixed bug un Linux version where HTML macros didn't work correctly in
+	PHTTPService applications.
+
+	Improved PString sprintf functions so no longer limited to 1000 characters.
+
+	Fixed bug in unix version where subsequent config file opening uses first
+	opened filename.
+
+	Changed unix config file code to allow writing of config files whilst
+	config file is open.
+
+	Fixed problem in unix thrading where thread that uses PThread::Current()
+	in destructor crashes.
+
+	Various fixes for Motif build.
+
+
 Release 1.1pl18
 ------------
 	Added ability to change the persistent connection parameters (timeout
