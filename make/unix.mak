@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.183  2004/02/21 19:44:54  ykiryanov
+# Fixed make parameters for BeOS: Changed default on BeOS to using Be BONE
+#
 # Revision 1.182  2004/02/11 05:09:14  csoutheren
 # Fixed problems with regex libraries on Solaris, and with host OS numbering
 # being a quoted string rather than a number. Thanks to Chad Attermann
@@ -552,13 +555,7 @@ endif # irix
 ifeq ($(OSTYPE),beos)
 
 BE_THREADS := 1
-
-# Uncomment the next line if you have the
-# BeOS Network Environment (BONE) installed.
-# If you run a standard R5 install, comment it out.
-# NOTE: support for compiling without BONE will likely
-# be droppped.
-#BE_BONE := 1
+BE_BONE := 1
 
 # Uncomment the next line if you have the
 # Media Kit Update installed (probably you don't, unless
