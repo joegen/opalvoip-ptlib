@@ -3,6 +3,7 @@ Repository
 Entries
 Baserev
 rcs
+protocols.dsp
 cypher.txt
 httpclnt.cxx
 ftpclnt.cxx
