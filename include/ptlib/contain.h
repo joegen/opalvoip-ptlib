@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.64  2004/04/15 22:44:52  csoutheren
+ * Re-applied gcc 2.95 patch as CVS screwed up
+ *
  * Revision 1.63  2004/04/14 23:34:52  csoutheren
  * Added plugin for data access
  *
@@ -456,8 +459,8 @@ class PContainer : public PObject
           : size(initialSize), count(1), deleteObjects(TRUE) { }
 
         Reference(const Reference & ref)
+          : count(1)
         {  
-          count = 1;
 #if PCONTAINER_USES_CRITSEC
           PEnterAndLeave m(((Reference &)ref).critSec);
 #endif
