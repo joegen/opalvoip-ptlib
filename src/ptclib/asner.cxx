@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.21  1999/06/30 08:58:12  robertj
+ * Fixed bug in encoding/decoding OID greater than 2.39
+ *
  * Revision 1.20  1999/06/17 13:27:09  robertj
  * Fixed bug causing crashes on pass through of unknown extensions.
  *
@@ -938,63 +941,74 @@ BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
    *  Y is the value of the second subidentifier.
    */
   subId = value[1];
-  if (subId == 0x2B) {
+  if (subId < 40) {
+    value[0] = 0;
+    value[1] = subId;
+  }
+  else if (subId < 80) {
     value[0] = 1;
-    value[1] = 3;
+    value[1] = subId-40;
   }
   else {
-    value[1] = subId % 40;
-    value[0] = (subId - value[1]) / 40;
+    value[0] = 2;
+    value[1] = subId-80;
   }
 
   return TRUE;
 }
 
 
-void PASN_ObjectId::CommonEncode(PBYTEArray & eObjId) const
+void PASN_ObjectId::CommonEncode(PBYTEArray & encodecObjectId) const
 {
-  PINDEX      offs = 0;
-  unsigned    subId, mask, testmask;
-  int         bits, testbits;
-  PINDEX      objIdLen = value.GetSize();
+  PINDEX length = value.GetSize();
   const unsigned * objId = value;
 
-  if (objIdLen < 2) {
-    eObjId[offs++] = 0;
-    objIdLen = 0;
-  } else {
-    eObjId[offs++] = (BYTE)(objId[1] + (objId[0] * 40));
-    objIdLen -= 2;
-    objId += 2;
+  if (length < 2) {
+    // Thise case is really illegal, but we have to do SOMETHING
+    encodecObjectId.SetSize(0);
+    return;
   }
 
-  while (objIdLen-- > 0) {
-    subId = *objId++;
-    if (subId < 128) 
-      eObjId [offs++] = (BYTE)subId;
+  unsigned subId = (objId[0] * 40) + objId[1];
+  objId += 2;
+
+  PINDEX outputPosition = 0;
+
+  while (--length > 0) {
+    if (subId < 128)
+      encodecObjectId[outputPosition++] = (BYTE)subId;
     else {
-      mask = 0x7F; /* handle subid == 0 case */
-      bits = 0;
+      unsigned mask = 0x7F; /* handle subid == 0 case */
+      int bits = 0;
 
       /* testmask *MUST* !!!! be of an unsigned type */
-      for (testmask = 0x7F, testbits = 0;
-           testmask != 0;
-           testmask <<= 7, testbits += 7) {
+      unsigned testmask = 0x7F;
+      int      testbits = 0;
+      while (testmask != 0) {
         if (subId & testmask) {  /* if any bits set */
           mask = testmask;
 	        bits = testbits;
 	      }
+        testmask <<= 7;
+        testbits += 7;
       }
 
       /* mask can't be zero here */
-      for (; mask != 0x7F; mask >>= 7, bits -= 7) {
+      while (mask != 0x7F) {
         /* fix a mask that got truncated above */
-	if (mask == 0x1E00000)
-	  mask = 0xFE00000;
-        eObjId[offs++] = (u_char)(((subId & mask) >> bits) | 0x80);
+      	if (mask == 0x1E00000)
+	        mask = 0xFE00000;
+
+        encodecObjectId[outputPosition++] = (BYTE)(((subId & mask) >> bits) | 0x80);
+
+        mask >>= 7;
+        bits -= 7;
       }
-      eObjId[offs++] = (u_char)(subId & mask);
+
+      encodecObjectId[outputPosition++] = (BYTE)(subId & mask);
     }
+
+    subId = *objId++;
   }
 }
 
