@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 ptclib.lib ptlibs.lib $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /machine:I386 /libpath:"$(EXPATDIR)\Release"
+# ADD LINK32 ptclib.lib ptlib.lib $(EXPATLIBS) $(OPENSSLLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /machine:I386 /libpath:"$(EXPATDIR)\Release" /libpath:"$(OPENSSLDIR)\out32"
 
 !ELSEIF  "$(CFG)" == "xmlrpc - Win32 Debug"
 
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 ptclibd.lib ptlibsd.lib $(EXPATLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"$(EXPATDIR)\Debug"
+# ADD LINK32 ptclibd.lib ptlibd.lib $(EXPATLIBS) $(OPENSSLLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept /libpath:"$(EXPATDIR)\Debug" /libpath:"$(OPENSSLDIR)\out32.dbg"
 # SUBTRACT LINK32 /map
 
 !ENDIF 
