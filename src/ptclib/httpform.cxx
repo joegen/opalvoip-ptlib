@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.8 1997/07/08 13:12:29 robertj Exp $
+ * $Id: httpform.cxx,v 1.9 1997/07/14 11:49:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.9  1997/07/14 11:49:51  robertj
+ * Put "Add" and "Keep" on check boxes in array fields.
+ *
  * Revision 1.8  1997/07/08 13:12:29  robertj
  * Major HTTP form enhancements for lists and arrays of fields.
  *
@@ -318,9 +321,12 @@ void PHTTPFieldArray::GetHTML(PHTML & html)
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     html << PHTML::TableRow() << PHTML::TableData();
     fields[i].GetHTML(html);
-    html << PHTML::TableData()
-         << PHTML::CheckBox(IncludeCheckBox & fields[i].GetName(),
-                            i < fields.GetSize()-1 ? PHTML::Checked : PHTML::UnChecked);
+    html << PHTML::TableData();
+    PString chkboxName = IncludeCheckBox & fields[i].GetName();
+    if (i < fields.GetSize()-1)
+      html << PHTML::CheckBox(chkboxName, PHTML::Checked) << " Keep";
+    else
+      html << PHTML::CheckBox(chkboxName, PHTML::UnChecked) << " Add";
   }
   html << PHTML::TableEnd();
 }
