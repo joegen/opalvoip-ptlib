@@ -337,11 +337,11 @@ BSC32_SBRS= \
 	"$(INTDIR)\Psnmp.sbr" \
 	"$(INTDIR)\pssl.sbr" \
 	"$(INTDIR)\random.sbr" \
+	"$(INTDIR)\shttpsvc.sbr" \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr" \
-	"$(INTDIR)\shttpsvc.sbr"
+	"$(INTDIR)\Telnet.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -370,11 +370,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
 	"$(INTDIR)\random.obj" \
+	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\shttpsvc.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptsslclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -455,11 +455,11 @@ LIB32_OBJS= \
 	"$(INTDIR)\Psnmp.obj" \
 	"..\..\..\Lib\Release\pssl.obj" \
 	"$(INTDIR)\random.obj" \
+	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\shttpsvc.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<

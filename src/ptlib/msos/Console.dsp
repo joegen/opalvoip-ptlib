@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=Console - Win32 Release
+CFG=Console - Win32 SSL Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=Console - Win32 Release
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Console.mak" CFG="Console - Win32 Release"
+!MESSAGE NMAKE /f "Console.mak" CFG="Console - Win32 SSL Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "Console - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "Console - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "Console - Win32 SSL Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "Console - Win32 SSL Release" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +76,60 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\..\..\Lib\ptlibsd.lib"
 
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Console___Win32_SSL_Debug"
+# PROP BASE Intermediate_Dir "Console___Win32_SSL_Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "..\..\..\Lib"
+# PROP Intermediate_Dir "..\..\..\Lib\Debug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /FD /c
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo /o"..\..\..\Lib\PTLib.bsc"
+# ADD BSC32 /nologo /o"..\..\..\Lib\PTLib.bsc"
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\..\..\Lib\ptlibsd.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\ptlibsd.lib"
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Console___Win32_SSL_Release"
+# PROP BASE Intermediate_Dir "Console___Win32_SSL_Release"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\..\..\Lib"
+# PROP Intermediate_Dir "..\..\..\Lib\Release"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /FD /c
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo /o"Lib/PTLib.bsc"
+# ADD BSC32 /nologo /o"Lib/PTLib.bsc"
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\..\..\Lib\ptlibs.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\ptlibs.lib"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "Console - Win32 Release"
 # Name "Console - Win32 Debug"
+# Name "Console - Win32 SSL Debug"
+# Name "Console - Win32 SSL Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
@@ -124,6 +174,26 @@ InputPath=..\common\getdate.y
 
 # End Custom Build
 
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+# Begin Custom Build
+InputPath=..\common\getdate.y
+
+"../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bison ../common/getdate.y
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+# Begin Custom Build
+InputPath=..\common\getdate.y
+
+"../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bison ../common/getdate.y
+
+# End Custom Build
+
 !ENDIF 
 
 # End Source File
@@ -138,6 +208,18 @@ SOURCE=..\common\getdate_tab.c
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+# ADD BASE CPP /Ob0
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# ADD CPP /Ob0
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ENDIF 
