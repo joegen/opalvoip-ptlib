@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.7 1994/08/22 00:18:02 robertj Exp $
+ * $Id: mswin.cxx,v 1.8 1994/10/23 05:41:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.7  1994/08/22 00:18:02  robertj
+ * Revision 1.8  1994/10/23 05:41:29  robertj
+ * Fixed config file bugs.
+ *
+ * Revision 1.7  1994/08/22  00:18:02  robertj
  * Fixed bug in serial comms timers.
  *
  * Revision 1.6  1994/08/04  13:24:27  robertj
@@ -638,25 +641,25 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
 
-PConfig::PConfig(Source src, const PString & section)
-  : defaultSection(section)
+void PConfig::Construct(Source src)
 {
   switch (src) {
     case System :
-      configFile = PFilePath("WIN.INI");
+      Construct("WIN.INI");
       break;
 
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
-      configFile = appFile.GetVolume() +
-                              appFile.GetPath() + appFile.GetTitle() + ".INI";
+      Construct(appFile.GetVolume() +
+                              appFile.GetPath() + appFile.GetTitle() + ".INI");
+      break;
   }
 }
 
 
-PConfig::PConfig(const PFilePath & filename, const PString & section)
-  : configFile(filename), defaultSection(section)
+void PConfig::Construct(const PFilePath & filename)
 {
+  configFile = filename;
 }
 
 
