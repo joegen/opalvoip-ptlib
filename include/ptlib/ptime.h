@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.16 1996/02/03 11:04:52 robertj Exp $
+ * $Id: ptime.h,v 1.17 1996/02/08 12:13:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.17  1996/02/08 12:13:03  robertj
+ * Changed zone parameter in PTime to indicate the time zone as minutes not enum.
+ * Staticised some functions that are system global.
+ *
  * Revision 1.16  1996/02/03 11:04:52  robertj
  * Added string constructor for times, parses date/time from string.
  *
@@ -80,15 +84,15 @@ PDECLARE_CLASS(PTime, PObject)
  */
 
   public:
-    enum TimeZone {
-      Local,
-      UTC,
+    enum {
+      Local = 9999,
+      UTC = 0,
       GMT = UTC
     };
 
     PTime(
       time_t t = time(NULL),  // Time in seconds since 1 January 1970.
-      TimeZone tz = Local     // local time or UTC
+      int tz = Local          // local time or UTC
     );
     PTime(
       const PString & str     // local time or UTC
@@ -100,7 +104,7 @@ PDECLARE_CLASS(PTime, PObject)
       int day,              // Day of month from 1 to 31.
       int month,            // Month from 1 to 12.
       int year,             // Year from 1970 to 2038
-      TimeZone tz = Local   // local time or UTC
+      int tz = Local        // local time or UTC
     );
     /* Create a time object instance. The first form creates a time from a
        number of seconds since 1 January 1970. The second will build the
@@ -229,19 +233,19 @@ PDECLARE_CLASS(PTime, PObject)
        integer from 1..366.
      */
 
-    BOOL IsDaylightSavings() const;
+    static BOOL IsDaylightSavings();
     /* Get flag indicating daylight savings is current.
     
        <H2>Returns:</H2>
        TRUE if daylight savings time is active.
      */
 
-    long GetTimeZone() const;
-    /* Get the number of seconds to add to local time to
-       get UTC, (previously known as GMT)
+    static long GetTimeZone();
+    /* Get the number of minutes to add to UTC (previously known as GMT) to
+       get the local time.
 
        <H2>Returns:</H2>
-       Number of seconds.
+       Number of minutes.
      */
 
     enum TimeZoneType {
@@ -249,9 +253,9 @@ PDECLARE_CLASS(PTime, PObject)
       DaylightSavings
     };
 
-    PString GetTimeZoneString(
+    static PString GetTimeZoneString(
        TimeZoneType type = StandardTime	// Daylight saving or standard time.
-    ) const;
+    );
     /* Get the text identifier for the local time zone .
 
        <H2>Returns:</H2>
@@ -305,27 +309,30 @@ PDECLARE_CLASS(PTime, PObject)
      */
 
     enum TimeFormat {
-      LongDateTime    = 0,
-      LongDate        = 1,
-      LongTime        = 2,
-      MediumDateTime  = 3,
-      MediumDate      = 4,
-      ShortDateTime   = 5,
-      ShortDate       = 6,
-      ShortTime       = 7,
-      NumTimeStrings  = 8
+      RFC1123,
+      LongDateTime,
+      LongDate,
+      LongTime,
+      MediumDateTime,
+      MediumDate,
+      ShortDateTime,
+      ShortDate,
+      ShortTime,
+      NumTimeStrings
     };
     // Standard time formats for string representations of a time and date.
 
     PString AsString(
-      TimeFormat formatCode = ShortDateTime,  // Standard format for time.
-      TimeZone zone = Local
+      TimeFormat formatCode = RFC1123,  // Standard format for time.
+      int zone = Local                  // Time zone for the time.
     ) const;
     PString AsString(
-      const char * formatPtr     // Arbitrary format C string pointer for time.
+      const char * formatPtr,    // Arbitrary format C string pointer for time.
+      int zone = Local                  // Time zone for the time.
     ) const;
     PString AsString(
-      const PString & formatStr  // Arbitrary format string for time.
+      const PString & formatStr, // Arbitrary format string for time.
+      int zone = Local                  // Time zone for the time.
     ) const;
     /* Convert the time to a string using the format code or string as a
        formatting template. The special characters in the formatting string
@@ -356,9 +363,6 @@ PDECLARE_CLASS(PTime, PObject)
        
        Note if there is an 'a' character in the string, the hour will be in 12
        hour format, otherwise in 24 hour format.
-
-       Note if there is an 'u' or 'g' character in the string, the time will
-       be UTC (aka GMT) rather than local time
      */
 
     static PString GetTimeSeparator();
