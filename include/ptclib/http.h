@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.13 1996/03/17 05:41:57 robertj Exp $
+ * $Id: http.h,v 1.14 1996/03/31 08:46:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.14  1996/03/31 08:46:51  robertj
+ * HTTP 1.1 upgrade.
+ *
  * Revision 1.13  1996/03/17 05:41:57  robertj
- * FireDoorV10
+ * Added hit count to PHTTPResource.
  *
  * Revision 1.12  1996/03/16 04:39:55  robertj
  * Added ParseReponse() for splitting reponse line into code and info.
@@ -156,6 +159,33 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
     PHTTPResource * resource;
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPConnectionInfo
+
+PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
+/* This object describes the connectiono associated with a HyperText Transport
+   Protocol request. This information is required by handler functions on
+   <A>PHTTPResource</A> descendant classes to manage the connection correctly.
+*/
+  public:
+    PHTTPConnectionInfo();
+    void Construct(const PMIMEInfo & inMIME, int majorVersion, int MinorVersion);
+
+    void SetPersistance(BOOL newPersist);
+    BOOL IsCompatible(int major, int minor) const;
+
+    BOOL IsPersistant() const         { return isPersistant; }
+    BOOL IsProxyConnection() const    { return isProxyConnection; }
+    int  GetMajorVersion() const      { return majorVersion; }
+    int  GetMinorVersion() const      { return minorVersion; }
+
+  protected:
+    BOOL isPersistant;
+    BOOL isProxyConnection;
+    int  majorVersion;
+    int  minorVersion;
+};
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSocket
@@ -223,17 +253,35 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
       GET,
       HEAD,
       POST,
+      PUT,
+      PATCH,
+      COPY,
+      MOVE,
+      DELETE,
+      LINK,
+      UNLINK,
+      TRACE,
+      WRAPPED,
+      OPTIONS,
+      CONNECT,
       NumCommands
     };
 
 
-    BOOL WriteCommand(
-      Commands cmd,                 // Command to write.
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & outMIME,    // MIME info in request
-      const PString & dataBody,     // Information posted to the HTTP server.
-      PMIMEInfo & replyMIME         // MIME info in response
-    );
+    int ExecuteCommand(Commands cmd,
+                       const PString & url,
+                       const PMIMEInfo & outMIME,
+                       const PString & dataBody,
+                       PMIMEInfo & replyMime);
+
+    BOOL WriteCommand(Commands cmd,
+                      const PString & url,
+                      const PMIMEInfo & outMIME,
+                      const PString & dataBody);
+
+    BOOL ReadResponse(PMIMEInfo & replyMIME);
+
+
     /* Send a command and wait for the response header (including MIME fields).
        Note that a body may still be on its way even if lasResponseCode is not
        200!
@@ -303,13 +351,16 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        is used when the socket is acting as a server.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the socket closed or the
-       <A>OnUnknown()</A> function returns FALSE.
+       TRUE if the request specified persistant mode and the request version
+       allows it, FALSE if the socket closed, timed out, the protocol does not
+       allow persistant mode, or the client did not request it
+       timed out
      */
 
     virtual BOOL OnGET(
-      const PURL & url,       // Universal Resource Locator for document.
-      const PMIMEInfo & info  // Extra MIME information in command.
+      const PURL & url,                    // Universal Resource Locator for document.
+      const PMIMEInfo & info,              // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle a GET command from a client.
 
@@ -318,13 +369,15 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        <A>PHTTPResource</A> object contained therein.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
     virtual BOOL OnHEAD(
-      const PURL & url,       // Universal Resource Locator for document.
-      const PMIMEInfo & info  // Extra MIME information in command.
+      const PURL & url,                   // Universal Resource Locator for document.
+      const PMIMEInfo & info,             // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle a HEAD command from a client.
 
@@ -333,31 +386,35 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        <A>PHTTPResource</A> object contained therein.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
     virtual BOOL OnPOST(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
-      const PStringToString & data  // Variables provided in the POST data.
+      const PURL & url,                   // Universal Resource Locator for document.
+      const PMIMEInfo & info,             // Extra MIME information in command.
+      const PStringToString & data,       // Variables provided in the POST data.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle a POST command from a client.
 
-       The default implemetation looks up the URL in the name space declared by
+       The default implementation looks up the URL in the name space declared by
        the <A>PHTTPSpace</A> class tree and despatches to the
        <A>PHTTPResource</A> object contained therein.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
     virtual BOOL OnProxy(
       Commands cmd,                 // Command to be proxied.
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & info,       // Extra MIME information in command.
-      const PString & body          // Body of request.
+      const PString & body,         // Body of request.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle a proxy command request from a client. This will only get called
        if the request was not for this particular server. If it was a proxy
@@ -367,58 +424,84 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        The default implementation returns OnError(BadGateway).
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
     virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
+      const PCaselessString & command, // Complete command line received.
+      const PHTTPConnectionInfo & connectInfo
     );
     /* Handle an unknown command.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
      */
 
-
     enum StatusCode {
-      Information,
-      OK,                    // request has succeeded
-      Created,               // new resource created: entity body contains URL
-      Accepted,              // request accepted, but not yet completed
-      NoContent,             // no new information
-      MovedPermanently,      // resource moved permanently: location field has new URL
-      MovedTemporarily,      // resource moved temporarily: location field has new URL
-      NotModified,           // document has not been modified
-      BadRequest,            // request malformed or not understood
-      UnAuthorised,          // request requires authentication
-      Forbidden,             // request is refused due to unsufficient authorisation
-      NotFound,              // resource cannot be found
-      InternalServerError,   // server has encountered an unexpected error
-      NotImplemented,        // server does not implement request
-      BadGateway,            // error whilst acting as gateway
-      ServiceUnavailable,    // server temporarily unable to service request
+      Continue = 1000,             // 100 - Continue
+      SwitchingProtocols,          // 101 - upgrade allowed
+      OK,                          // 200 - request has succeeded
+      Created,                     // 201 - new resource created: entity body contains URL
+      Accepted,                    // 202 - request accepted, but not yet completed
+      NonAuthoritativeInformation, // 203 - not definitive entity header
+      NoContent,                   // 204 - no new information
+      ResetContent,                // 205 - contents have been reset
+      PartialContent,              // 206 - partial GET succeeded
+      MultipleChoices,             // 300 - requested resource available elsewehere 
+      MovedPermanently,            // 301 - resource moved permanently: location field has new URL
+      MovedTemporarily,            // 302 - resource moved temporarily: location field has new URL
+      SeeOther,                    // 303 - see other URL
+      NotModified,                 // 304 - document has not been modified
+      UseProxy,                    // 305 - proxy redirect
+      BadRequest,                  // 400 - request malformed or not understood
+      UnAuthorised,                // 401 - request requires authentication
+      PaymentRequired,             // 402 - reserved 
+      Forbidden,                   // 403 - request is refused due to unsufficient authorisation
+      NotFound,                    // 404 - resource cannot be found
+      MethodNotAllowed,            // 405 - not allowed on this resource
+      NoneAcceptable,              // 406 - encoding not acceptable
+      ProxyAuthenticationRequired, // 407 - must authenticate with proxy first
+      RequestTimeout,              // 408 - server timeout on request
+      Conflict,                    // 409 - resource conflict on action
+      Gone,                        // 410 - resource gone away
+      LengthRequired,              // 411 - no Content-Length
+      UnlessTrue,                  // 412 - no Range header for TRUE Unless
+      InternalServerError,         // 500 - server has encountered an unexpected error
+      NotImplemented,              // 501 - server does not implement request
+      BadGateway,                  // 502 - error whilst acting as gateway
+      ServiceUnavailable,          // 503 - server temporarily unable to service request
+      GatewayTimeout,              // 504 - timeout whilst talking to gateway
       NumStatusCodes
+
     };
 
     void StartResponse(
       StatusCode code,      // Status code for the response.
       PMIMEInfo & headers,  // MIME variables included in response.
-      PINDEX bodySize       // Size of the rest of the response.
+      long bodySize         // Size of the rest of the response.
     );
-    /* Write a reply back to the client. This will send the properly formatted
-       reply field followed by the MIME headers which will automatically
-       include mandatory fields. Additional fields may be included into the
-       <CODE>headers</CODE> parameter beforehand.
+    /* Write a command reply back to the client, and construct some of the
+       outgoing MIME fields. The MIME fields are not sent.
 
-       If the major version of the request was 0.9 then this function does
+       The <CODE>bodySize</CODE> parameter determines the size of the 
+       entity body associated with the response. If <CODE>bodySize</CODE> is
+       >= 0, then a ContentLength field will be added to the outgoing MIME
+       headers if one does not already exist.
+
+       If <CODE>bodySize</CODE> is < 0, then it is assumed that the size of
+       the entity body is unknown, or has already been added, and no
+       ContentLength field will be constructed. 
+
+       If the version of the request is less than 1.0, then this function does
        nothing.
      */
 
     virtual BOOL OnError(
-      StatusCode code,      // Status code for the error response.
-      const PString & extra // Extra information included in the response.
+      StatusCode code,                         // Status code for the error response.
+      const PString & extra,                   // Extra information included in the response.
+      const PHTTPConnectionInfo & connectInfo
     );
     /* Write an error response for the specified code.
 
@@ -427,12 +510,12 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        viewer.
 
        <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       TRUE if the connection may persist, FALSE if the connection must close
      */
 
     void SetDefaultMIMEInfo(
-      PMIMEInfo & info       // Extra MIME information in command.
+      PMIMEInfo & info,      // Extra MIME information in command.
+      const PHTTPConnectionInfo & connectInfo
     );
     /* Set the default mime info
      */
@@ -598,6 +681,10 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     );
     PHTTPResource(
       const PURL & url,              // Name of the resource in URL space.
+      const PHTTPAuthority & auth    // Authorisation for the resource.
+    );
+    PHTTPResource(
+      const PURL & url,              // Name of the resource in URL space.
       const PString & contentType    // MIME content type for the resource.
     );
     PHTTPResource(
@@ -663,41 +750,59 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     // Clear the hit count for the resource.
 
 
-    virtual void OnGET(
+    virtual BOOL OnGET(
       PHTTPSocket & socket,       // HTTP socket that received the request
       const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info      // Extra MIME information in command.
+      const PMIMEInfo & info,     // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle the GET command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
        call the virtuals <A>LoadHeaders()</A> and <A>LoadData()</A> to get a
        resource to be sent to the socket.
+
+       <H2>Returns:</H2>
+       TRUE if the connection may persist, FALSE if the connection must close.
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
-    virtual void OnHEAD(
+    virtual BOOL OnHEAD(
       PHTTPSocket & socket,       // HTTP socket that received the request
       const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & info      // Extra MIME information in command.
+      const PMIMEInfo & info,     // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle the HEAD command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
        call the virtual <A>LoadHeaders()</A> to get the header information to
        be sent to the socket.
+
+       <H2>Returns:</H2>
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
-    virtual void OnPOST(
+    virtual BOOL OnPOST(
       PHTTPSocket & socket,         // HTTP socket that received the request
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & info,       // Extra MIME information in command.
-      const PStringToString & data  // Variables in the POST data.
+      const PStringToString & data, // Variables in the POST data.
+      const PHTTPConnectionInfo & conInfo
     );
     /* Handle the POST command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
        call the virtual <A>Post()</A> function to handle the data being
        received.
+
+       <H2>Returns:</H2>
+       TRUE if the connection may persist, FALSE if the connection must close
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
      */
 
     virtual BOOL IsModifiedSince(
@@ -720,8 +825,8 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME      // Extra MIME information in command.
+      const PURL & url,                   // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME            // Extra MIME information in command.
     );
     /* Create a new request block for this type of resource.
 
@@ -789,14 +894,15 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        success.
 
        <H2>Returns:</H2>
-       TRUE if all OK, FALSE if an error occurred.
+       TRUE if the connection may persist, FALSE if the connection must close
      */
 
 
   protected:
     BOOL CheckAuthority(
       PHTTPSocket & socket,   // Socket to send response to.
-      const PMIMEInfo & info  // Extra MIME information in command.
+      const PMIMEInfo & info, // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo
     );
     /* See if the resource is authorised given the mime info
      */
@@ -909,6 +1015,10 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
       const PString & filename     // file in file system and URL name.
     );
     PHTTPFile(
+      const PString & filename,    // file in file system and URL name.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    PHTTPFile(
       const PURL & url,            // Name of the resource in URL space.
       const PFilePath & file       // Location of file in file system.
     );
@@ -938,8 +1048,8 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 
   // Overrides from class PHTTPResource
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME      // Extra MIME information in command.
+      const PURL & url,                  // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME           // Extra MIME information in command.
     );
     /* Create a new request block for this type of resource.
 
@@ -1035,8 +1145,8 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 
   // Overrides from class PHTTPResource
     virtual PHTTPRequest * CreateRequest(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME      // Extra MIME information in command.
+      const PURL & url,                  // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME           // Extra MIME information in command.
     );
     /* Create a new request block for this type of resource.
 
@@ -1079,7 +1189,6 @@ PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
     const PMIMEInfo & inMIME      // Extra MIME information in command.
   );
 
-  PFile file;
   PString fakeIndex;
 };
 
