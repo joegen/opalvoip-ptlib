@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.122  2002/10/31 05:55:55  robertj
+ * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
+ *   there are far too many inheerent assumptions every to make it 16 bit.
+ * Added UTF-8/UCS-2 conversion functions to PString.
+ *
  * Revision 1.121  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -1048,26 +1053,11 @@ const PString & PString::Empty()
 }
 
 
-#ifdef PHAS_UNICODE
-#define PSTRING_COPY(d, s, l) UnicodeCopy((WORD *)(d), (s), (l))
-#define PSTRING_MOVE(d, doff, s, soff, l) \
-            memmove(((WORD*)(d))+(doff), ((WORD*)(s))+(soff), (l)*sizeof(WORD))
-static void UnicodeCopy(WORD * theArray, char * src, size_t len)
-{
-  while (len-- > 0)
-    *theArray++ = *src++;
-}
-#else
-#define PSTRING_COPY(d, s, l) memcpy((d), (s), (l))
-#define PSTRING_MOVE(d, doff, s, soff, l) memmove((d)+(doff), (s)+(soff), (l))
-#endif
-
-
 PString::PString(const char * cstr)
-  : PSTRING_ANCESTOR_CLASS(cstr != NULL ? strlen(cstr)+1 : 1)
+  : PCharArray(cstr != NULL ? strlen(cstr)+1 : 1)
 {
   if (cstr != NULL)
-    PSTRING_COPY(theArray, cstr, GetSize());
+    memcpy(theArray, cstr, GetSize());
 }
 
 
@@ -1076,43 +1066,32 @@ PString::PString(const WORD * ustr)
   if (ustr == NULL)
     SetSize(1);
   else {
-    const WORD * ptr = ustr;
     PINDEX len = 0;
-    while (*ptr++ != 0)
+    while (ustr[len] != 0)
       len++;
-    SetSize(len+1);
-#ifdef PHAS_UNICODE
-    memcpy(theArray, ustr, len*sizeof(WORD))
-#else
-    char * cstr = theArray;
-    while (len-- > 0)
-      *cstr++ = (char)*ustr++;
-#endif
+    InternalFromUCS2(ustr, len);
   }
 }
 
 
 PString::PString(const char * cstr, PINDEX len)
-  : PSTRING_ANCESTOR_CLASS(len+1)
+  : PCharArray(len+1)
 {
   if (len > 0)
-    PSTRING_COPY(theArray, PAssertNULL(cstr), len);
+    memcpy(theArray, PAssertNULL(cstr), len);
 }
 
 
 PString::PString(const WORD * ustr, PINDEX len)
-  : PSTRING_ANCESTOR_CLASS(len+1)
+  : PCharArray(len+1)
 {
-  if (len > 0) {
-    PAssertNULL(ustr);
-#ifdef PHAS_UNICODE
-    memcpy(theArray, ustr, len*sizeof(WORD))
-#else
-    char * cstr = theArray;
-    while (len-- > 0)
-      *cstr++ = (char)*ustr++;
-#endif
-  }
+  InternalFromUCS2(ustr, len);
+}
+
+
+PString::PString(const PWORDArray & ustr)
+{
+  InternalFromUCS2(ustr, ustr.GetSize());
 }
 
 
@@ -1174,7 +1153,7 @@ PString::PString(ConversionType type, const char * str, ...)
       if (*str != '\0') {
         PINDEX len = *str & 0xff;
         PAssert(SetSize(len+1), POutOfMemory);
-        PSTRING_COPY(theArray, str+1, len);
+        memcpy(theArray, str+1, len);
       }
       break;
 
@@ -1182,7 +1161,7 @@ PString::PString(ConversionType type, const char * str, ...)
       if (str[0] != '\0' && str[1] != '\0') {
         PINDEX len = str[0] | (str[1] << 8);
         PAssert(SetSize(len+1), POutOfMemory);
-        PSTRING_COPY(theArray, str+2, len);
+        memcpy(theArray, str+2, len);
       }
       break;
 
@@ -1458,11 +1437,7 @@ PINDEX PString::HashFunction() const
 
 BOOL PString::IsEmpty() const
 {
-#ifdef PHAS_UNICODE
-  return *(WORD*)theArray == '\0';
-#else
   return *theArray == '\0';
-#endif
 }
 
 
@@ -1509,17 +1484,6 @@ BOOL PString::MakeUnique()
 }
 
 
-#ifdef PHAS_UNICODE
-PINDEX PString::GetLength() const
-{
-  for (len = 0; len < GetSize(); len++)
-    if (((WORD *)theArray)[len] == 0)
-      break;
-  return len;
-}
-#endif
-
-
 PString PString::operator+(const char * cstr) const
 {
   if (cstr == NULL)
@@ -1529,8 +1493,8 @@ PString PString::operator+(const char * cstr) const
   PINDEX alen = strlen(cstr)+1;
   PString str;
   str.SetSize(olen+alen);
-  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
-  PSTRING_COPY(str.theArray+olen, cstr, alen);
+  memmove(str.theArray, theArray, olen);
+  memcpy(str.theArray+olen, cstr, alen);
   return str;
 }
 
@@ -1540,7 +1504,7 @@ PString PString::operator+(char c) const
   PINDEX olen = GetLength();
   PString str;
   str.SetSize(olen+2);
-  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  memmove(str.theArray, theArray, olen);
   str.theArray[olen] = c;
   return str;
 }
@@ -1554,7 +1518,7 @@ PString & PString::operator+=(const char * cstr)
   PINDEX olen = GetLength();
   PINDEX alen = strlen(cstr)+1;
   SetSize(olen+alen);
-  PSTRING_COPY(theArray+olen, cstr, alen);
+  memcpy(theArray+olen, cstr, alen);
   return *this;
 }
 
@@ -1581,10 +1545,10 @@ PString PString::operator&(const char * cstr) const
   PString str;
   PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
   str.SetSize(olen+alen+space);
-  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  memmove(str.theArray, theArray, olen);
   if (space != 0)
     str.theArray[olen] = ' ';
-  PSTRING_COPY(str.theArray+olen+space, cstr, alen);
+  memcpy(str.theArray+olen+space, cstr, alen);
   return str;
 }
 
@@ -1595,7 +1559,7 @@ PString PString::operator&(char c) const
   PString str;
   PINDEX space = olen > 0 && theArray[olen-1] != ' ' && c != ' ' ? 1 : 0;
   str.SetSize(olen+2+space);
-  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  memmove(str.theArray, theArray, olen);
   if (space != 0)
     str.theArray[olen] = ' ';
   str.theArray[olen+space] = c;
@@ -1616,7 +1580,7 @@ PString & PString::operator&=(const char * cstr)
   SetSize(olen+alen+space);
   if (space != 0)
     theArray[olen] = ' ';
-  PSTRING_COPY(theArray+olen+space, cstr, alen);
+  memcpy(theArray+olen+space, cstr, alen);
   return *this;
 }
 
@@ -1644,7 +1608,7 @@ void PString::Delete(PINDEX start, PINDEX len)
   if (len > slen - start)
     SetAt(start, '\0');
   else
-    PSTRING_MOVE(theArray, start, theArray, start+len, slen-start-len+1);
+    memmove(theArray+start, theArray+start+len, slen-start-len+1);
   MakeMinimumSize();
 }
 
@@ -1944,9 +1908,9 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
     if (clen > len)
       SetSize(newlen+1);
     if (pos+len < slen)
-      PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len+1);
+      memmove(theArray+pos+clen, theArray+pos+len, slen-pos-len+1);
     if (clen > 0)
-      PSTRING_COPY(theArray+pos, cstr, clen);
+      memcpy(theArray+pos, cstr, clen);
     theArray[newlen] = '\0';
   }
 }
@@ -2122,21 +2086,115 @@ double PString::AsReal() const
 }
 
 
+PWORDArray PString::AsUCS2() const
+{
+#ifdef P_HAS_G_CONVERT
+
+  gsize g_len = 0;
+  gchar * g_ucs2 = g_convert(theArray, GetLength(), "UCS-2", "UTF-8", 0, &g_len, 0);
+  if (g_ucs2 == NULL)
+    return PWORDArray();
+
+  PWORDArray ucs2((const WORD *)g_ucs2, (PINDEX)g_len);
+  g_free(g_ucs2)
+  return ucs2;
+
+#else
+
+  PWORDArray ucs2(GetSize()); // Always bigger than required
+
+  PINDEX count = 0;
+  PINDEX i = 0;
+  while (i < GetSize()) {
+    if ((theArray[i]&0x80) == 0)
+      ucs2[count++] = (BYTE)theArray[i++];
+    else if ((theArray[i]&0xe0) == 0xc0) {
+      if (i < GetSize()-1)
+        ucs2[count++] = (WORD)(((theArray[i++]&0x1f)<<6)|
+                                (theArray[i++]&0x3f));
+      else
+        ucs2[count++] = 0xffff;
+    }
+    else if ((theArray[i]&0xf0) == 0xe0) {
+      if (i < GetSize()-2)
+        ucs2[count++] = (WORD)(((theArray[i++]&0xf)<<12)|
+                               ((theArray[i++]&0x3f)<<6)|
+                                (theArray[i++]&0x3f));
+      else
+        ucs2[count++] = 0xffff;
+    }
+    else
+      ucs2[count++] = 0xffff;
+  }
+
+  ucs2.SetSize(count);
+  return ucs2;
+
+#endif
+}
+
+
+void PString::InternalFromUCS2(const WORD * ptr, PINDEX len)
+{
+  if (ptr == NULL || len == 0) {
+    *this = Empty();
+    return;
+  }
+
+#ifdef P_HAS_G_CONVERT
+
+  gsize g_len = 0;
+  gchar * g_utf8 = g_convert(ptr, len, "UTF-8", "UCS-2", 0, &g_len, 0);
+  if (g_utf8 == NULL) {
+    *this = Empty();
+    return;
+  }
+
+  SetSize(&g_len);
+  memcpy(theArray, g_char, g_len);
+  g_free(g_utf8);
+
+#else
+
+  PINDEX i;
+  PINDEX count = 1;
+  for (i = 0; i < len; i++) {
+    if (ptr[i] < 0x80)
+      count++;
+    else if (ptr[i] < 0x800)
+      count += 2;
+    else
+      count += 3;
+  }
+  SetSize(count);
+
+  count = 0;
+  for (i = 0; i < len; i++) {
+    unsigned v = *ptr++;
+    if (v < 0x80)
+      theArray[count++] = (char)v;
+    else if (v < 0x800) {
+      theArray[count++] = (char)(0xc0+(v>>6));
+      theArray[count++] = (char)(0x80+(v&0x3f));
+    }
+    else {
+      theArray[count++] = (char)(0xd0+(v>>12));
+      theArray[count++] = (char)(0x80+((v>>6)&0x3f));
+      theArray[count++] = (char)(0x80+(v&0x3f));
+    }
+  }
+
+#endif
+}
+
+
 PBYTEArray PString::ToPascal() const
 {
   PINDEX len = GetLength();
   PAssert(len < 256, "Cannot convert to PASCAL string");
   BYTE buf[256];
   buf[0] = (BYTE)len;
-#ifdef PHAS_UNICODE
-  WORD * ptr = (WORD *)theArray;
-  while (len > 0) {
-    buf[len] = (BYTE)(*ptr < 256 ? *ptr : 255);
-    len--;
-  }
-#else
   memcpy(&buf[1], theArray, len);
-#endif
   return PBYTEArray(buf, len+1);
 }
 
