@@ -105,7 +105,7 @@ struct Variables {
 #define yylex		PTime_yylex
 #define yyerror		PTime_yyerror
 
-static int yyparse(void *);
+static int yyparse(void *); 
 static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 
 %}
@@ -518,7 +518,7 @@ static int LookupWord(char * buff, YYSTYPE * yylval)
     int			abbrev;
 
     /* Make it lowercase. */
-    strlwr(buff);
+    PSTRLWR(buff);
 
     if (strcmp(buff, "am") == 0 || strcmp(buff, "a.m.") == 0) {
 	yylval->Meridian = MERam;
@@ -630,7 +630,11 @@ static int LookupWord(char * buff, YYSTYPE * yylval)
 #pragma warning(disable:4211)
 #endif
 
-static int yylex(YYSTYPE * yylval, void * yyInput)
+#ifdef __GNUC__
+#else
+static
+#endif
+int yylex(YYSTYPE * yylval, void * yyInput)
 {
     register int	c;
     register char	*p;
@@ -902,7 +906,11 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
 #pragma warning(disable:4100 4211)
 #endif
 
+#ifdef __GNUC__
+int yyerror(const char * s)
+#else
 static void yyerror(const char * s)
+#endif
 {
 }
 
