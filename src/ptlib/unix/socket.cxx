@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.83  2002/02/13 00:50:32  robertj
+ * Fixed use of symbol in older versionsof Solaris, thanks Markus Storm
+ *
  * Revision 1.82  2002/01/31 22:52:18  robertj
  * Added fix for buffer too small in Solaris GetRouteTable(), thanks Markus Storm.
  *
@@ -1323,7 +1326,10 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 	}
 
 	if (req->level != MIB2_IP
-	    || req->name != MIB2_IP_ROUTE) {  /* == 21 */
+#ifdef P_SOLARIS > 7
+	    || req->name != MIB2_IP_ROUTE
+#endif
+           ) {  /* == 21 */
 	    /* If this is not the routing table, skip it */
 	  /* Note we don't bother with IPv6 (MIB2_IP6_ROUTE) ... */
 	    strbuf.maxlen = task_pagesize;
