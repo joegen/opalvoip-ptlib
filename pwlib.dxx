@@ -89,7 +89,10 @@ without needing to alter the application source files at all.
     //@}
 
     /**@name	Console Mode Classes
-	   @memo	Classes that embody operating system abstractions.
+	   @memo	Classes that embody operating system abstractions. This as
+                        far as possible "normalises" differnt operating systems to
+                        a single API so the same application can be compiled without
+                        modification.
 	  */
     //@{
 	//@Include: include/ptlib/*.h
