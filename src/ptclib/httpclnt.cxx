@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.24  2001/09/28 00:43:47  robertj
+ * Added automatic setting of some outward MIME fields.
+ * Added "user agent" string field for automatic inclusion.
+ * Added function to read the contents of the HTTP request.
+ * Added "restarting" of connection if lost persistence.
+ *
  * Revision 1.23  2001/09/11 03:27:46  robertj
  * Improved error processing on high level protocol failures, usually
  *   caused by unexpected shut down of a socket.
@@ -243,9 +249,15 @@ PHTTPClient::PHTTPClient()
 }
 
 
+PHTTPClient::PHTTPClient(const PString & userAgent)
+  : userAgentName(userAgent)
+{
+}
+
+
 int PHTTPClient::ExecuteCommand(Commands cmd,
                                 const PString & url,
-                                const PMIMEInfo & outMIME,
+                                PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
                                 BOOL persist)
@@ -256,11 +268,14 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
 
 int PHTTPClient::ExecuteCommand(const PString & cmdName,
                                 const PString & url,
-                                const PMIMEInfo & outMIME,
+                                PMIMEInfo & outMIME,
                                 const PString & dataBody,
                                 PMIMEInfo & replyMime,
                                 BOOL persist)
 {
+  if (persist)
+    outMIME.SetAt(ConnectionTag, KeepAliveTag);
+
   if (WriteCommand(cmdName, url, outMIME, dataBody)) {
     if (!persist)
       Shutdown(ShutdownWrite);
@@ -349,6 +364,24 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 }
 
 
+BOOL PHTTPClient::ReadContentBody(const PMIMEInfo & replyMIME, PBYTEArray & body)
+{
+  if (replyMIME.Contains(ContentLengthTag)) {
+    PINDEX length = replyMIME.GetInteger(ContentLengthTag);
+    body.SetSize(length);
+    return ReadBlock(body.GetPointer(), length);
+  }
+
+  static const PINDEX ChunkSize = 2048;
+  PINDEX bytesRead = 0;
+  while (ReadBlock(body.GetPointer(bytesRead+ChunkSize)+bytesRead, ChunkSize))
+    bytesRead += GetLastReadCount();
+
+  body.SetSize(bytesRead + GetLastReadCount());
+  return GetErrorCode(LastReadError) == NoError;
+}
+
+
 BOOL PHTTPClient::GetDocument(const PURL & url,
                               PINDEX & contentLength,
                               BOOL persist)
@@ -398,6 +431,12 @@ BOOL PHTTPClient::PostData(const PURL & url,
   if (!AssureConnect(url, outMIME))
     return FALSE;
 
+  if (!outMIME.Contains(ContentTypeTag))
+    outMIME.SetAt(ContentTypeTag, "application/x-www-form-urlencoded");
+
+  if (!outMIME.Contains(ContentLengthTag))
+    outMIME.SetInteger(ContentLengthTag, data.GetLength());
+
   return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, data, replyMIME, persist) == OK;
 }
 
@@ -406,6 +445,21 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
 {
   PString host = url.GetHostName();
 
+  // If already open check that the other end has not shut down
+  if (IsOpen()) {
+    PTimeInterval oldTimeout = GetReadTimeout();
+    SetReadTimeout(0);
+
+    char c;
+    if (Read(&c, 1))
+      UnRead(c);
+    else
+      Close();
+
+    SetReadTimeout(oldTimeout);
+  }
+
+  // Is not open or other end shut down, restablish connection
   if (!IsOpen()) {
     if (host.IsEmpty()) {
       lastResponseCode = BadRequest;
@@ -420,6 +474,7 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     }
   }
 
+  // Have connection, so fill in the required MIME fields
   static char HostTag[] = "Host";
   if (!outMIME.Contains(HostTag)) {
     if (!host)
@@ -430,6 +485,12 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
         outMIME.SetAt(HostTag, sock->GetHostName());
     }
   }
+
+  if (!outMIME.Contains(DateTag))
+    outMIME.SetAt(DateTag, PTime().AsString());
+
+  if (!userAgentName && !outMIME.Contains(UserAgentTag))
+    outMIME.SetAt(UserAgentTag, userAgentName);
 
   return TRUE;
 }
