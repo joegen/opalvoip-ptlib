@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.41  1999/06/27 02:42:10  robertj
+# Fixed BeOS compatability.
+# Fixed error of platform name not supported, needed :: on main targets.
+#
 # Revision 1.40  1999/06/12 06:43:36  craigs
 # Added PTLIB_ALT variable to allow differentiatio between libc5 and libc6 machines
 #
@@ -137,7 +141,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris beos))
 
 all ::
 	@echo
