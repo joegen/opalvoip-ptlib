@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.24 1996/08/08 10:09:23 robertj Exp $
+ * $Id: ptlib.cxx,v 1.25 1996/08/17 10:00:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.25  1996/08/17 10:00:37  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.24  1996/08/08 10:09:23  robertj
  * Directory structure changes for common files.
  *
@@ -105,18 +108,8 @@
 #endif
 
 
-#if defined(_WIN32) && defined(_WINDLL)
-
-__declspec(dllexport) PProcess * PProcessInstance;
-__declspec(dllexport) ostream * PErrorStream;
-
-#else
-
-PProcess * PSTATIC PProcessInstance;
-ostream * PSTATIC PErrorStream = &cerr;
-
-#endif
-
+PEXPORT PProcess * PSTATIC PProcessInstance;
+PEXPORT ostream * PSTATIC PErrorStream = &cerr;
 
 
 ///////////////////////////////////////////////////////////////////////////////
