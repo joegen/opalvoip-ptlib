@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2003/02/04 05:23:59  craigs
+ * Added new functions
+ *
  * Revision 1.1  2003/02/04 03:31:04  robertj
  * Added STUN
  *
@@ -50,8 +53,19 @@ void StunClient::Main()
 {
   PArgList & args = GetArguments();
 
-  PSTUNClient stun(args[0]);
+  PSTUNClient stun(args[0], 10130, 10139);
   cout << stun.GetNatTypeName();
+
+  PUDPSocket * udp;
+  if (!stun.CreateSocket(udp)) {
+    cout << "Cannot create a socket" << endl;
+    return;
+  }
+
+  PIPSocket::Address addr;
+  WORD port;
+  udp->GetLocalAddress(addr, port);
+  cout << "local address is " << addr << ":" << port << endl;
 }
 
 
