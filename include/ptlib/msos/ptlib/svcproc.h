@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.25  2001/02/15 01:12:15  robertj
+ * Moved some often repeated HTTP service code into PHTTPServiceProcess.
+ *
  * Revision 1.24  1998/12/04 10:13:08  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -111,7 +114,7 @@
 #include "../../svcproc.h"
 #ifdef _WIN32
   public:
-    virtual const char * GetServiceDependencies() const { return NULL; }
+    virtual const char * GetServiceDependencies() const;
       // Get a set of null terminated strings terminated with double null.
 
     virtual BOOL IsServiceProcess() const;
