@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.37 1998/03/20 03:20:45 robertj Exp $
+ * $Id: svcproc.cxx,v 1.38 1998/03/29 06:16:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.38  1998/03/29 06:16:53  robertj
+ * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
+ *
  * Revision 1.37  1998/03/20 03:20:45  robertj
  * Lined up debug output.
  *
@@ -403,11 +406,10 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 }
 
 
-int PServiceProcess::_main(int argc, char ** argv, char ** hInst)
+int PServiceProcess::_main()
 {
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
-  hInstance = (HINSTANCE)hInst;
-  PreInitialise(1, argv);
+  hInstance = (HINSTANCE)envp;
 
   debugMode = FALSE;
   isWin95 = GetOSName() == "95";
