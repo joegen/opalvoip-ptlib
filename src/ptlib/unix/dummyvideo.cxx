@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.3  2001/09/24 09:11:07  rogerh
+ * Add dummy methods, submitted by Andreas Wrede <awrede@mac.com>
+ *
  * Revision 1.2  2001/06/27 17:43:32  rogerh
  * MakeOpen to return FALSE. Also change every things else to return failure.
  *
@@ -65,6 +68,7 @@ BOOL PVideoInputDevice::Close()
   return FALSE;    
 }
 
+
 BOOL PVideoInputDevice::Start()
 {
   return FALSE;
@@ -92,6 +96,42 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
 
 
 BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
+{
+  return FALSE;
+}
+
+
+int PVideoInputDevice::GetBrightness()
+{
+  return -1;
+}
+
+
+BOOL PVideoInputDevice::SetBrightness(unsigned newBrightness)
+{
+  return FALSE;
+}
+
+
+int PVideoInputDevice::GetHue()
+{
+  return -1;
+}
+
+
+BOOL PVideoInputDevice::SetHue(unsigned newHue)
+{
+  return FALSE;
+}
+
+
+int PVideoInputDevice::GetContrast()
+{
+  return -1;
+}
+
+
+BOOL PVideoInputDevice::SetContrast(unsigned newContrast)
 {
   return FALSE;
 }
