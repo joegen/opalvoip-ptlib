@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.16 1996/11/18 11:32:02 robertj Exp $
+ * $Id: svcproc.h,v 1.17 1997/02/05 11:49:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.17  1997/02/05 11:49:38  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.16  1996/11/18 11:32:02  robertj
  * Fixed bug in doing a "stop" command closing ALL instances of service.
  *
@@ -140,10 +143,6 @@
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
 };
-
-
-inline PServiceProcess * PServiceProcess::Current()
-  { return (PServiceProcess *)PProcessInstance; }
 
 
 #endif
