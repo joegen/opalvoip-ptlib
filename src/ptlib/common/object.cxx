@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.40  1999/08/10 10:45:09  robertj
+ * Added mutex in memory check detection code.
+ *
  * Revision 1.39  1999/07/18 15:08:48  robertj
  * Fixed 64 bit compatibility
  *
@@ -231,6 +234,8 @@ PMemoryHeap::Wrapper::Wrapper()
   instance = &real_instance;
 #if defined(_WIN32)
   EnterCriticalSection(&instance->mutex);
+#elif defined(P_PTHREADS)
+  pthread_mutex_lock(&instance->mutex);
 #endif
 }
 
@@ -239,6 +244,8 @@ PMemoryHeap::Wrapper::~Wrapper()
 {
 #if defined(_WIN32)
   LeaveCriticalSection(&instance->mutex);
+#elif defined(P_PTHREADS)
+  pthread_mutex_unlock(&instance->mutex);
 #endif
 }
 
@@ -266,6 +273,9 @@ PMemoryHeap::PMemoryHeap()
   static PDebugStream debug;
   leakDumpStream = &debug;
 #else
+#if defined(P_PTHREADS)
+  pthread_mutex_init(&mutex, NULL);
+#endif
   leakDumpStream = &cerr;
 #endif
 }
@@ -289,6 +299,8 @@ PMemoryHeap::~PMemoryHeap()
   DeleteCriticalSection(&mutex);
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
+#elif defined(P_PTHREADS)
+  pthread_mutex_destroy(&mutex);
 #endif
 }
 
