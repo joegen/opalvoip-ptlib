@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.31 1994/12/12 13:13:17 robertj Exp $
+ * $Id: contain.cxx,v 1.32 1994/12/13 11:50:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.31  1994/12/12 13:13:17  robertj
+ * Revision 1.32  1994/12/13 11:50:56  robertj
+ * Added MakeUnique() function to all container classes.
+ *
+ * Revision 1.31  1994/12/12  13:13:17  robertj
  * Fixed bugs in PString mods just made.
  *
  * Revision 1.30  1994/12/12  10:16:27  robertj
@@ -206,6 +209,17 @@ BOOL PContainer::SetMinSize(PINDEX minSize)
 }
 
 
+BOOL PContainer::MakeUnique()
+{
+  if (IsUnique())
+    return TRUE;
+
+  reference->count--;
+  reference = new Reference(GetSize());
+  return FALSE;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
@@ -257,8 +271,13 @@ void PAbstractArray::CopyContents(const PAbstractArray & array)
 void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
-  theArray = array->theArray;
-  SetSize(GetSize());
+  PINDEX sizebytes = elementSize*GetSize();
+  char * newArray = (char *)malloc(sizebytes);
+  if (newArray == NULL)
+    reference->size = 0;
+  else
+    memcpy(newArray, array->theArray, sizebytes);
+  theArray = newArray;
 }
 
 
@@ -622,6 +641,7 @@ void PString::Insert(const char * cstr, PINDEX pos)
   if (pos >= slen)
     operator+=(cstr);
   else {
+    MakeUnique();
     PINDEX clen = strlen(PAssertNULL(cstr));
     SetSize(slen+clen);
     PSTRING_MOVE(theArray, pos+clen, theArray, pos, slen-pos);
@@ -636,7 +656,7 @@ void PString::Delete(PINDEX start, PINDEX len)
   if (start > slen)
     return;
 
-  SetSize(GetSize());
+  MakeUnique();
   if (start + len > slen)
     SetAt(start, '\0');
   else
