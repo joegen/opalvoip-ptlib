@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.73  2002/11/22 09:43:32  robertj
+ * Fixed encoding of a ASN NULL sequence extension field, eg fastConnectRefused
+ *
  * Revision 1.72  2002/11/21 03:46:22  robertj
  * Changed to encode only the minimum number of bits required, this improves
  *   compatibility with some brain dead ASN decoders.
@@ -4611,9 +4614,6 @@ void PPER_Stream::AnyTypeEncode(const PASN_Object * value)
 
   if (value != NULL)
     value->Encode(substream);
-
-  if (substream.GetPosition() == 0)   // Make sure extension has at least one
-    substream.SingleBitEncode(FALSE); // byte in its ANY type encoding.
 
   substream.CompleteEncoding();
 
