@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.68  2004/02/23 00:44:38  csoutheren
+ * A completely different, other regex include hack to avoid requiring
+ * the sources when using a header-file only environment
+ *
  * Revision 1.67  2004/02/23 00:26:05  csoutheren
  * Finally, a generic and elegant fix for the regex include hacks.  Thanks to Roger Hardiman
  *
@@ -259,12 +263,6 @@
 
 #ifdef P_USE_PRAGMA
 #pragma interface
-#endif
-
-#if P_REGEX
-#include <regex.h>
-#else
-#include "regex/regex.h"
 #endif
 
 
@@ -3063,7 +3061,7 @@ class PRegularExpression : public PObject
     PString patternSaved;
     int flagsSaved;
 
-    regex_t * expression;
+    void * expression;
     int lastError;
 };
 
