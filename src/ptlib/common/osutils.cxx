@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.10 1994/06/25 11:55:15 robertj Exp $
+ * $Id: osutils.cxx,v 1.11 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.10  1994/06/25 11:55:15  robertj
+ * Revision 1.11  1994/07/02 03:03:49  robertj
+ * Time interval and timer redesign.
+ *
+ * Revision 1.10  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.9  1994/04/20  12:17:44  robertj
@@ -128,7 +131,7 @@ istream & PTime::ReadFrom(istream &strm)
 
 PString PTime::AsString(TimeFormat format) const
 {
-  PString fmt;
+  PString fmt, dsep;
 
   PString tsep = GetTimeSeparator();
   BOOL is12hour = GetTimeAMPM();
@@ -152,6 +155,10 @@ PString PTime::AsString(TimeFormat format) const
 
       if (is12hour)
         fmt += "a";
+      break;
+
+    default :
+      break;
   }
 
   switch (format) {
@@ -159,6 +166,10 @@ PString PTime::AsString(TimeFormat format) const
     case MediumDateTime :
     case ShortDateTime :
       fmt += ' ';
+      break;
+
+    default :
+      break;
   }
 
   switch (format) {
@@ -190,10 +201,11 @@ PString PTime::AsString(TimeFormat format) const
         case YearMonthDay :
           fmt += "yy MMM d";
       }
+      break;
 
     case ShortDateTime :
     case ShortDate :
-      PString dsep = GetDateSeparator();
+      dsep = GetDateSeparator();
       switch (GetDateOrder()) {
         case MonthDayYear :
           fmt = "MM" + dsep + "dd" + dsep + "yy";
@@ -204,6 +216,10 @@ PString PTime::AsString(TimeFormat format) const
         case YearMonthDay :
           fmt = "yy" + dsep + "MM" + dsep + "dd";
       }
+      break;
+
+    default :
+      break;
   }
 
   return AsString(fmt);
@@ -299,28 +315,25 @@ PString PTime::AsString(const char * format) const
 #if defined(_PTIMER)
 
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
-  : PTimeInterval(millisecs, seconds, minutes, hours, days),
-    owner(PProcess::Current()->GetTimerList())
+  : resetTime(millisecs, seconds, minutes, hours, days)
 {
-  state = Stopped;
   inTimeout = FALSE;
+  StartRunning(TRUE);
 }
 
 
-PTimer::PTimer(const PTimer & timer)
-  : PTimeInterval(timer), owner(timer.owner)
+PTimer::PTimer(const PTimeInterval & time)
+  : resetTime(time)
 {
-  state = Stopped;
   inTimeout = FALSE;
+  StartRunning(TRUE);
 }
 
 
-PTimer & PTimer::operator=(const PTimer & timer)
+PTimer & PTimer::operator=(const PTimeInterval & time)
 {
-  PTimeInterval::operator=(timer);
-  owner = timer.owner;
-  state = Stopped;
-  inTimeout = FALSE;
+  resetTime = time;
+  StartRunning(TRUE);
   return *this;
 }
 
@@ -329,36 +342,35 @@ PTimer::~PTimer()
 {
   PAssert(!inTimeout, "Timer destroyed in OnTimeout()");
   if (state == Running)
-    owner->Remove(this);
+    PProcess::Current()->GetTimerList()->Remove(this);
 }
 
 
-PObject::Comparison PTimer::Compare(const PObject & obj) const
-{
-  const PTimer & other = (const PTimer &)obj;
-  return targetTime < other.targetTime ? LessThan :
-         targetTime > other.targetTime ? GreaterThan : EqualTo;
-}
-
-
-void PTimer::Start(BOOL once)
+void PTimer::RunContinuous(const PTimeInterval & time)
 {
   if (state == Running && !inTimeout)
-    owner->Remove(this);
+    PProcess::Current()->GetTimerList()->Remove(this);
+  resetTime = time;
+  StartRunning(FALSE);
+}
+
+
+void PTimer::StartRunning(BOOL once)
+{
+  PTimeInterval::operator=(resetTime);
   oneshot = once;
-  targetTime = Tick() + *this;
-  if (!inTimeout)
-    owner->Append(this);
-  state = Running;
+  state = (*this) != 0 ? Running : Stopped;
+  if (state == Running && !inTimeout)
+    PProcess::Current()->GetTimerList()->Append(this);
 }
 
 
 void PTimer::Stop()
 {
   if (state == Running && !inTimeout)
-    owner->Remove(this);
+    PProcess::Current()->GetTimerList()->Remove(this);
   state = Stopped;
-  targetTime = PMaxTimeInterval;
+  SetInterval(0);
 }
 
 
@@ -366,8 +378,7 @@ void PTimer::Pause()
 {
   if (state == Running) {
     if (!inTimeout)
-      owner->Remove(this);
-    pauseLeft = targetTime - Tick();
+      PProcess::Current()->GetTimerList()->Remove(this);
     state = Paused;
   }
 }
@@ -376,9 +387,8 @@ void PTimer::Pause()
 void PTimer::Resume()
 {
   if (state == Paused) {
-    targetTime = Tick() + pauseLeft;
     if (!inTimeout)
-      owner->Append(this);
+      PProcess::Current()->GetTimerList()->Append(this);
     state = Running;
   }
 }
@@ -390,35 +400,44 @@ void PTimer::OnTimeout()
 }
 
 
-PTimeInterval PTimerList::Process()
+BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
-  PTimer * timer = (PTimer *)GetAt(0); // Get earliest timer value
-  if (timer == NULL)
-    return PMaxTimeInterval;
+  operator-=(delta);
 
-  PTimeInterval now = PTimer::Tick();
-  if (now > timer->targetTime) {
-    Remove(timer);
-    timer->inTimeout = TRUE;
-    if (timer->oneshot)
-      timer->state = PTimer::Stopped;
-    else
-      timer->targetTime = now + *timer;
-    timer->OnTimeout();
-    timer->inTimeout = FALSE;
-    if (timer->state == PTimer::Running)
-      Append(timer);
+  if (*this > 0) {
+    if (*this < minTimeLeft)
+      minTimeLeft = *this;
+    return FALSE;
   }
 
-  timer = (PTimer *)GetAt(0); // Get new earliest timer value
-  if (timer == NULL)
-    return PMaxTimeInterval;
+  if (oneshot)
+    state = Stopped;
+  else
+    operator=(resetTime);
 
-  now = PTimer::Tick();
-  if (timer->targetTime <= now)
-    return PTimeInterval(1);
+  inTimeout = TRUE;
+  OnTimeout();
+  inTimeout = FALSE;
 
-  return timer->targetTime - now;
+  return state != Running;
+}
+
+
+PTimeInterval PTimerList::Process()
+{
+  PTimeInterval now = PTimer::Tick();
+  PTimeInterval sampleTime = now - lastSample;
+  if (now < lastSample)
+    sampleTime += PMaxTimeInterval;
+  lastSample = now;
+
+  PTimeInterval minTimeLeft = PMaxTimeInterval;
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    if (((PTimer *)GetAt(i))->Process(sampleTime, minTimeLeft))
+      RemoveAt(i--);
+  }
+
+  return minTimeLeft;
 }
 
 
@@ -1099,11 +1118,11 @@ static BOOL ReceiveString(int nextChar,
 static int ReadCharWithTimeout(PModem & modem, PTimeInterval & timeout)
 {
   modem.SetReadTimeout(timeout);
-  PTimeInterval lastReadStart = PTimer::Tick();
+  PTimeInterval startTick = PTimer::Tick();
   int c;
   if ((c = modem.ReadChar()) < 0) // Timeout or aborted
     return FALSE;
-  timeout -= PTimer::Tick() - lastReadStart;
+  timeout -= PTimer::Tick() - startTick;
   return c;
 }
 
@@ -1171,8 +1190,10 @@ BOOL PModem::CanInitialise() const
     case Deinitialising :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 
@@ -1202,8 +1223,10 @@ BOOL PModem::CanDeinitialise() const
     case Deinitialising :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 
@@ -1236,8 +1259,10 @@ BOOL PModem::CanDial() const
     case DeinitialiseFailed :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 
@@ -1254,7 +1279,7 @@ BOOL PModem::Dial(const PString & number)
 
   status = AwaitingResponse;
 
-  PTimeInterval timeout = 120000;
+  PTimer timeout = 120000;
   PINDEX connectPosition = 0;
   PINDEX busyPosition = 0;
   PINDEX noCarrierPosition = 0;
@@ -1296,8 +1321,10 @@ BOOL PModem::CanHangUp() const
     case Deinitialising :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 
@@ -1328,8 +1355,10 @@ BOOL PModem::CanSendUser() const
     case Deinitialising :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 
@@ -1364,6 +1393,8 @@ void PModem::Abort()
     case Deinitialising :
       status = DeinitialiseFailed;
       break;
+    default :
+      break;
   }
 }
 
@@ -1379,8 +1410,10 @@ BOOL PModem::CanRead() const
     case Deinitialising :
     case SendingUserCommand :
       return FALSE;
+
+    default :
+      return TRUE;
   }
-  return TRUE;
 }
 
 

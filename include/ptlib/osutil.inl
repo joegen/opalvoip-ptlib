@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.14 1994/06/25 11:55:15 robertj Exp $
+ * $Id: osutil.inl,v 1.15 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.14  1994/06/25 11:55:15  robertj
+ * Revision 1.15  1994/07/02 03:03:49  robertj
+ * Time interval and timer redesign.
+ *
+ * Revision 1.14  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.13  1994/04/20  12:17:44  robertj
@@ -52,12 +55,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & ti)
-  : milliseconds(ti.milliseconds) { }
-
-PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & ti)
-  { milliseconds = ti.milliseconds; return *this; }
-
 PINLINE PObject * PTimeInterval::Clone() const
   { return new PTimeInterval(milliseconds); }
 
@@ -89,6 +86,42 @@ PINLINE PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
 PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
   { milliseconds -= t.milliseconds; return *this; }
 
+
+PINLINE BOOL PTimeInterval::operator==(const PTimeInterval & t) const
+  { return milliseconds == t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator!=(const PTimeInterval & t) const
+  { return milliseconds != t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator> (const PTimeInterval & t) const
+  { return milliseconds > t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator>=(const PTimeInterval & t) const
+  { return milliseconds >= t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator< (const PTimeInterval & t) const
+  { return milliseconds < t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator<=(const PTimeInterval & t) const
+  { return milliseconds <= t.milliseconds; }
+
+PINLINE BOOL PTimeInterval::operator==(long msecs) const
+  { return milliseconds == msecs; }
+
+PINLINE BOOL PTimeInterval::operator!=(long msecs) const
+  { return milliseconds != msecs; }
+
+PINLINE BOOL PTimeInterval::operator> (long msecs) const
+  { return milliseconds > msecs; }
+
+PINLINE BOOL PTimeInterval::operator>=(long msecs) const
+  { return milliseconds >= msecs; }
+
+PINLINE BOOL PTimeInterval::operator< (long msecs) const
+  { return milliseconds < msecs; }
+
+PINLINE BOOL PTimeInterval::operator<=(long msecs) const
+  { return milliseconds <= msecs; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -157,7 +190,7 @@ PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
 // PTimerList
 
 PINLINE PTimerList::PTimerList()
-  : PAbstractSortedList() { DisallowDeleteObjects(); }
+  : PAbstractList() { DisallowDeleteObjects(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -492,13 +525,6 @@ PINLINE void PArgList::operator<<(int sh)
 
 PINLINE void PArgList::operator>>(int sh)
   { Shift(-sh); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
-
-PINLINE PThread::~PThread()
-  { Terminate(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
