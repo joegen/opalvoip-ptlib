@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.10 1996/11/10 21:02:46 robertj Exp $
+ * $Id: remconn.cxx,v 1.11 1996/11/16 10:53:17 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.11  1996/11/16 10:53:17  robertj
+ * Added missing SetlastError() so assert has correct error value.
+ *
  * Revision 1.10  1996/11/10 21:02:46  robertj
  * Try doing double sample before flagging a RAS connection disconnected.
  *
@@ -210,6 +213,7 @@ static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
 
   PAssertAlways("RAS Connection Lost");
   rasError = Ras.GetConnectStatus(rasConnection, &status);
+  SetLastError(rasError);
 
   return -1;
 }
@@ -251,6 +255,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
       return InProgress;
   }
 
+  PAssertAlways("RAS Connection Status Retry");
   switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
     case RASCS_Connected :
       return Connected;
