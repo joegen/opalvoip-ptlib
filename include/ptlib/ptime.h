@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.14 1995/06/17 11:13:10 robertj Exp $
+ * $Id: ptime.h,v 1.15 1996/01/03 11:09:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.15  1996/01/03 11:09:34  robertj
+ * Added Universal Time and Time Zones to PTime class.
+ *
  * Revision 1.14  1995/06/17 11:13:10  robertj
  * Documentation update.
  *
@@ -74,16 +77,24 @@ PDECLARE_CLASS(PTime, PObject)
  */
 
   public:
+    enum TimeZone {
+      Local,
+      UTC,
+      GMT = UTC
+    };
+
     PTime(
-      time_t t = time(NULL)   // Time in seconds since 1 January 1970.
+      time_t t = time(NULL),  // Time in seconds since 1 January 1970.
+      TimeZone tz = Local     // local time or UTC
     );
     PTime(
-      int second,   // Second from 0 to 59.
-      int minute,   // Minute from 0 to 59.
-      int hour,     // Hour from 0 to 23.
-      int day,      // Day of month from 1 to 31.
-      int month,    // Month from 1 to 12.
-      int year      // Year from 1970 to 2038
+      int second,           // Second from 0 to 59.
+      int minute,           // Minute from 0 to 59.
+      int hour,             // Hour from 0 to 23.
+      int day,              // Day of month from 1 to 31.
+      int month,            // Month from 1 to 12.
+      int year,             // Year from 1970 to 2038
+      TimeZone tz = Local   // local time or UTC
     );
     /* Create a time object instance. The first form creates a time from a
        number of seconds since 1 January 1970. The second will build the
@@ -219,6 +230,28 @@ PDECLARE_CLASS(PTime, PObject)
        TRUE if daylight savings time is active.
      */
 
+    long GetTimeZone() const;
+    /* Get the number of seconds to add to local time to
+       get UTC, (previously known as GMT)
+
+       <H2>Returns:</H2>
+       Number of seconds.
+     */
+
+    enum TimeZoneType {
+      StandardTime,
+      DaylightSavings
+    };
+
+    PString GetTimeZoneString(
+       TimeZoneType type = StandardTime	// Daylight saving or standard time.
+    ) const;
+    /* Get the text identifier for the local time zone .
+
+       <H2>Returns:</H2>
+       Time zone identifier string.
+     */
+
 
     PTime operator+(
       const PTimeInterval & t   // Time interval to add to the time.
@@ -266,20 +299,21 @@ PDECLARE_CLASS(PTime, PObject)
      */
 
     enum TimeFormat {
-      LongDateTime,
-      LongDate,
-      LongTime,
-      MediumDateTime,
-      MediumDate,
-      ShortDateTime,
-      ShortDate,
-      ShortTime,
-      NumTimeStrings
+      LongDateTime    = 0,
+      LongDate        = 1,
+      LongTime        = 2,
+      MediumDateTime  = 3,
+      MediumDate      = 4,
+      ShortDateTime   = 5,
+      ShortDate       = 6,
+      ShortTime       = 7,
+      NumTimeStrings  = 8
     };
     // Standard time formats for string representations of a time and date.
 
     PString AsString(
-      TimeFormat formatCode = LongDateTime    // Standard format for time.
+      TimeFormat formatCode = ShortDateTime,  // Standard format for time.
+      TimeZone zone = Local
     ) const;
     PString AsString(
       const char * formatPtr     // Arbitrary format C string pointer for time.
@@ -309,12 +343,16 @@ PDECLARE_CLASS(PTime, PObject)
        <DT>MMMM      <DD>month of year as full text
        <DT>y/yy      <DD>year without century
        <DT>yyy/yyyy  <DD>year with century
+       <DT>z         <DD>the time zone description
        </DL>
 
        All other characters are copied to the output string unchanged.
        
        Note if there is an 'a' character in the string, the hour will be in 12
        hour format, otherwise in 24 hour format.
+
+       Note if there is an 'u' or 'g' character in the string, the time will
+       be UTC (aka GMT) rather than local time
      */
 
     static PString GetTimeSeparator();
@@ -345,9 +383,14 @@ PDECLARE_CLASS(PTime, PObject)
        string for PM.
      */
 
+    enum NameType {
+      FullName,
+      Abbreviated
+    };
+
     static PString GetDayName(
       Weekdays dayOfWeek,       // Code for day of week.
-      BOOL abbreviated = FALSE  // Flag for abbreviated or full name.
+      NameType type = FullName  // Flag for abbreviated or full name.
     );
     /* Get the internationalised day of week day name (0=Sun etc).
     
@@ -364,7 +407,7 @@ PDECLARE_CLASS(PTime, PObject)
 
     static PString GetMonthName(
       Months month,             // Code for month in year.
-      BOOL abbreviated = FALSE  // Flag for abbreviated or full name.
+      NameType type = FullName  // Flag for abbreviated or full name.
     );
     /* Get the internationalised month name string (1=Jan etc).
     
