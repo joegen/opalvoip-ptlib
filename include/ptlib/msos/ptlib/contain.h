@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.8 1995/04/25 11:31:18 robertj Exp $
+ * $Id: contain.h,v 1.9 1995/11/09 12:23:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.9  1995/11/09 12:23:46  robertj
+ * Added 64 bit integer support.
+ * Added platform independent base type access classes.
+ *
  * Revision 1.8  1995/04/25 11:31:18  robertj
  * Changes for DLL support.
  *
@@ -121,6 +125,11 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 #endif
 
 
+// Declaration for platform independent architectures
+#define PCHAR8 PANSI_CHAR
+#define PBYTE_ORDER PLITTLE_ENDIAN
+
+
 // Declaration for integer that is the same size as a void *
 #if defined(_WIN32)
 typedef int INT;
@@ -129,19 +138,27 @@ typedef long INT;
 #endif
 
 
-// Declaration for 64 bit unsigned integer quantity
-#if defined(_MSC_VER) && defined(_WIN32)
-typedef unsigned __int64 QWORD;
+// Declaration for a pointer to arbitrary blocks of memory
+#if defined(_WIN32)
+typedef unsigned char * PMemoryPointer;
 #else
-class QWORD {
-  public:
-    QWORD() { }
-    QWORD(unsigned long l) : low(l), high(0) { }
-    operator unsigned long() const { return high != 0 ? 0xffffffff : low; }
-    unsigned long low, high;
-};
+typedef unsigned char __huge * PMemoryPointer;
 #endif
 
+
+// Declaration for signed integer that is 16 bits
+typedef short PInt16;
+
+// Declaration for signed integer that is 32 bits
+typedef long PInt32;
+
+
+// Declaration for 64 bit unsigned integer quantity
+#if defined(_MSC_VER) && defined(_WIN32)
+#define P_HAS_INT64
+typedef signed __int64 PInt64;
+typedef unsigned __int64 PUInt64;
+#endif
 
 
 // Standard array index type (depends on compiler)
