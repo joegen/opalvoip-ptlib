@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2003/09/26 13:41:32  rjongbloed
+ * Added special test to give more indicative error if try to compile without Expat support.
+ *
  * Revision 1.6  2003/04/15 03:00:41  robertj
  * Added array support to XML/RPC
  * Fixed XML/RPC parsing when lots of white space in raw XML, caused by
@@ -59,6 +62,11 @@
 #include "main.h"
 
 #include <ptclib/pxmlrpc.h>
+
+#if !P_EXPAT
+#error Must have Expat XML support for this application
+#endif
+
 
 
 PXMLRPC_STRUCT_BEGIN(NestedStruct)
