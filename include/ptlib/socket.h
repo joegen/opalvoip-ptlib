@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.15 1995/12/23 03:46:54 robertj Exp $
+ * $Id: socket.h,v 1.16 1996/02/15 14:46:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.16  1996/02/15 14:46:43  robertj
+ * Added Select() function to PSocket.
+ *
  * Revision 1.15  1995/12/23 03:46:54  robertj
  * Fixed portability issue with closingh sockets.
  *
@@ -63,6 +66,10 @@
 #ifndef _PCHANNEL
 #include <channel.h>
 #endif
+
+class PSocket;
+
+PLIST(PSocketList, PSocket);
 
 
 PDECLARE_CLASS(PSocket, PChannel)
@@ -124,6 +131,73 @@ PDECLARE_CLASS(PSocket, PChannel)
        TRUE if the channel was successfully opened.
      */
 
+    PDECLARE_CLASS(SelectList, PSocketList)
+      public:
+        SelectList()
+          { DisallowDeleteObjects(); }
+        void operator+=(PSocket & sock)
+          { Append(&sock); }
+        void operator-=(PSocket & sock)
+          { Remove(&sock); }
+    };
+
+    static int Select(
+      PSocket & sock1,        // First socket to check for readability.
+      PSocket & sock2         // Second socket to check for readability.
+    );
+    static int Select(
+      PSocket & sock1,        // First socket to check for readability.
+      PSocket & sock2,        // Second socket to check for readability.
+      const PTimeInterval & timeout // Timeout for wait on read/write data.
+    );
+    static BOOL Select(
+      SelectList & read       // List of sockets to check for readability.
+    );
+    static BOOL Select(
+      SelectList & read,      // List of sockets to check for readability.
+      const PTimeInterval & timeout // Timeout for wait on read/write data.
+    );
+    static BOOL Select(
+      SelectList & read,      // List of sockets to check for readability.
+      SelectList & write      // List of sockets to check for writability.
+    );
+    static BOOL Select(
+      SelectList & read,      // List of sockets to check for readability.
+      SelectList & write,     // List of sockets to check for writability.
+      const PTimeInterval & timeout // Timeout for wait on read/write data.
+    );
+    static BOOL Select(
+      SelectList & read,      // List of sockets to check for readability.
+      SelectList & write,     // List of sockets to check for writability.
+      SelectList & except     // List of sockets to check for exceptions.
+    );
+    static BOOL Select(
+      SelectList & read,      // List of sockets to check for readability.
+      SelectList & write,     // List of sockets to check for writability.
+      SelectList & except,    // List of sockets to check for exceptions.
+      const PTimeInterval & timeout // Timeout for wait on read/write data.
+    );
+    /* Select a socket with available data. This function will block until the
+       timeout or data is available to be read or written to the specified
+       sockets.
+
+       The <CODE>read</CODE>, <CODE>write</CODE> and <CODE>except</CODE> lists
+       are modified by the call so that only the sockets that have data
+       available are present. If the call timed out then all of these lists
+       will be empty.
+
+       If no timeout is specified then the call will block until a socket
+       has data available.
+
+       <H2>Returns:</H2>
+       TRUE if the select was successful or timed out, FALSE if an error
+       occurred. If a timeout occurred then the lists returned will be empty.
+
+       For the versions taking sockets directly instead of lists the integer
+       returned is -1 for an error, 0 for a timeout, 1 for the first socket
+       having read data, 2 for the second socket and 3 for both.
+     */
+
 
 #ifdef P_HAS_BERKELEY_SOCKETS
     inline static WORD  Host2Net(WORD  v) { return htons(v); }
@@ -147,6 +221,15 @@ PDECLARE_CLASS(PSocket, PChannel)
   protected:
     int _Close();
     // Close the socket without setting errors.
+
+  private:
+    static int os_select(
+      int maxfds,
+      fd_set & readfds,
+      fd_set & writefds,
+      fd_set & exceptfds,
+      const PTimeInterval & timeout
+    );
 
 
 // Class declaration continued in platform specific header file ///////////////
