@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.66  2001/10/11 02:20:54  robertj
+ * Added IRIX support (no audio/video), thanks Andre Schulze.
+ *
  * Revision 1.65  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -205,6 +208,14 @@
 
 #elif defined(__BEOS__)
 #define P_USE_STRFTIME
+
+#elif defined(P_IRIX)
+#define P_USE_LANGINFO
+#include <sys/stat.h>
+#include <sys/statfs.h>
+#include <stdio.h>
+#include <mntent.h>
+
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -307,7 +318,7 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX)
   return strtoll(theArray, &dummy, base);
 #else
   return strtoq(theArray, &dummy, base);
@@ -317,7 +328,7 @@ PInt64 PString::AsInt64(unsigned base) const
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX)
   return strtoull(theArray, &dummy, base);
 #else
   return strtouq(theArray, &dummy, base);
@@ -521,7 +532,7 @@ PString PDirectory::GetVolume() const
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
 
-#if defined(P_LINUX) 
+#if defined(P_LINUX) || defined(P_IRIX)
 
     FILE * fp = setmntent(MOUNTED, "r");
     if (fp != NULL) {
@@ -618,6 +629,18 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   total = buf.f_blocks * buf.f_frsize;
   free  = buf.f_bfree  * buf.f_frsize;
 
+  return TRUE;
+  
+#elif defined(P_IRIX)
+
+  struct statfs fs;
+
+  if (statfs(operator+("."), &fs, sizeof(struct statfs), 0) == -1)
+    return FALSE;
+
+  clusterSize = fs.f_bsize;
+  total = fs.f_blocks*(PInt64)fs.f_bsize;
+  free = fs.f_bfree*(PInt64)fs.f_bsize;
   return TRUE;
 
 #else
@@ -1129,7 +1152,7 @@ PString PTime::GetTimePM()
 
 PString PTime::GetTimeSeparator()
 {
-#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS) || defined(P_IRIX)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(T_FMT);
 #  elif defined(P_LINUX)
@@ -1312,7 +1335,7 @@ BOOL PTime::IsDaylightSavings()
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX)
+#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
@@ -1343,7 +1366,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX) || defined(P_IRIX)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
     return str;

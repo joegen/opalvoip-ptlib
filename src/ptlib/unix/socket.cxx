@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.76  2001/10/11 02:20:54  robertj
+ * Added IRIX support (no audio/video), thanks Andre Schulze.
+ *
  * Revision 1.75  2001/10/03 19:31:56  rogerh
  * Add MAC OS X support to GetInterfaceTable
  *
@@ -219,7 +222,7 @@
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX)
 #define ifr_netmask ifr_addr
 
 #include <sys/param.h>
