@@ -340,7 +340,9 @@ dnl check for long double
 AC_C_LONG_DOUBLE
 if test $ac_cv_c_long_double != yes ; then
   AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
-elif test ${OSTYPE} = Darwin ; then
+fi
+
+if test ${OSTYPE} = Darwin ; then
   STDCCFLAGS="$STDCCFLAGS -Wno-long-double"
 fi
 
@@ -1091,6 +1093,20 @@ if test "$HAS_PLUGINS" = "0" ; then
   fi
 fi
 AC_SUBST(HAS_VIDEO_CAPTURE)
+
+dnl ########################################################################
+dnl enable shared memory video devices (static video plugin)
+
+AC_ARG_ENABLE(shm_video,
+		[  --enable-shm-video	  enable shared memory video devices (off by default)],
+		shm_video=$enableval)
+
+USE_SHM_VIDEO_DEVICES=0	
+if test "$shm_video" = "yes" ; then
+  USE_SHM_VIDEO_DEVICES=1
+  AC_MSG_NOTICE(Shared memory video devices enabled)
+fi
+AC_SUBST(USE_SHM_VIDEO_DEVICES)
 
 dnl ########################################################################
 dnl check for various functions
