@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.6  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.5  2003/04/07 11:59:52  robertj
  * Fixed search function returning an error if can't find anything for filter.
  *
@@ -47,6 +50,11 @@
 #if P_LDAP
 
 #include <ldap.h>
+
+
+#if defined(_WIN32)
+#pragma comment(lib, P_LDAP_LIBRARY)
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.34  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.33  2003/04/10 07:14:27  craigs
  * Fixed link problem in MD5 class
  *
@@ -499,7 +502,13 @@ void PMessageDigest5::Complete(Code & codeResult)
 
 #ifdef P_SSL
 
+#ifdef _MSC_VER
+#pragma comment(lib, P_SSL_LIB1)
+#pragma comment(lib, P_SSL_LIB2)
+#endif
+
 #include <openssl/sha.h>
+
 
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
