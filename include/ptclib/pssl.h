@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.18  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.17  2002/03/28 07:26:36  robertj
  * Added Diffie-Hellman parameters wrapper class.
  *
@@ -82,7 +86,7 @@
 #ifndef _PSSL_H
 #define _PSSL_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.h,v $
+ * Revision 1.4  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.3  2002/02/25 11:05:02  rogerh
  * New Delay code which solves the accumulated error problem. Based on ideas
  * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
@@ -40,7 +44,7 @@
 #define _DELAYCHAN_H
 
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

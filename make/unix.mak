@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.136  2002/09/16 01:08:59  robertj
+# Added #define so can select if #pragma interface/implementation is used on
+#   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+#
 # Revision 1.135  2002/09/09 06:49:19  robertj
 # Removed explicit run path, should use environment, thanks Nils Bokermann
 #
@@ -618,7 +622,6 @@ ifndef SYSINCDIR
 SYSINCDIR := /usr/include
 endif
 
-
 ####################################################
 
 ifeq ($(OSTYPE),linux)
@@ -711,6 +714,8 @@ endif
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
 #LDFLAGS		+= --no-whole-archive --cref
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # linux
 
@@ -738,6 +743,8 @@ CFLAGS	+= -pthread
 endif
 
 P_USE_RANLIB		:= 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # FreeBSD
 
@@ -765,6 +772,8 @@ CFLAGS	+= -pthread
 endif
 
 P_USE_RANLIB		:= 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # OpenBSD
 
@@ -791,6 +800,8 @@ CPLUS           := /usr/pkg/pthreads/bin/pg++
 endif
 
 P_USE_RANLIB		:= 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # NetBSD
 
@@ -820,6 +831,8 @@ ifdef P_PTHREADS
 endif
 
 #P_USE_RANLIB		:= 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # AIX
 
@@ -832,6 +845,8 @@ ifeq ($(OSTYPE),sunos)
 
 P_USE_RANLIB		:= 1
 REQUIRES_SEPARATE_SWITCH = 1
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 
 endif # sunos
 
@@ -858,6 +873,8 @@ STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		+= -lsocket -lnsl -ldl -lposix4
 
 #P_USE_RANLIB		:= 1
+
+STDCCFLAGS      += -DP_USE_PRAGMA
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /opt/openh323/lib
@@ -902,6 +919,8 @@ ifdef P_PTHREADS
 ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT
 endif
+
+STDCCFLAGS      += -DP_USE_PRAGMA
 
 endif # irix
 
@@ -968,6 +987,8 @@ STDCCFLAGS += -p
 LDFLAGS += -p
 endif
 
+STDCCFLAGS      += -DP_USE_PRAGMA
+
 endif # beos
 
 
@@ -979,14 +1000,14 @@ ENDIAN	:= PBIG_ENDIAN
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	+= -DP_ULTRIX
-
+STDCCFLAGS      += -DP_USE_PRAGMA
 endif # ultrix
 
 
 ####################################################
 
 ifeq ($(OSTYPE),hpux)
-
+STDCCFLAGS      += -DP_USE_PRAGMA
 # HP/UX 9.x, using gcc 2.6.C3 (Cygnus version)
 STDCCFLAGS	+= -DP_HPUX9
 
@@ -999,10 +1020,25 @@ ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
  
-# STDCCFLAGS	+= -DP_MACOSX
-# use CoreAudio with esd
-STDCCFLAGS	+= -DP_MACOSX
-ENDLDLIBS	+= -framework CoreAudio
+STDCCFLAGS      += -DNO_LONG_DOUBLE -DP_MACOSX
+ENDLDLIBS       += -framework CoreServices -framework CoreAudio
+P_MACOSX	:= 1
+
+# To compile using esound. Uncomment the ESDDIR line, and
+# enter the base path where esound is installed.
+# For Fink users, the base is /sw
+# For others that compiled the esound package without fink,
+# it typically is /usr/local
+
+#ESDDIR =/sw
+
+# Quicktime support is still a long way off. But for development purposes,
+# I am inluding the flags to allow QuickTime to be linked.
+# Uncomment them if you wish, but it will do nothing for the time being.
+
+#HAS_QUICKTIMEX := 1
+#STDCCFLAGS     += -DHAS_QUICKTIMEX
+#ENDLDLIBS      += -framework QuickTime
  
 P_PTHREADS	:= 1
 

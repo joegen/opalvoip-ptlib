@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.17  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.16  2001/10/03 00:24:57  robertj
  * Split out function for adding a single line of MIME info, reduces
  *    duplicated code and is useful in some other areas such as HTTP/1.1
@@ -86,7 +90,7 @@
 #ifndef _PMIME
 #define _PMIME
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

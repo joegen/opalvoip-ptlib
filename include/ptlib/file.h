@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.39  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.38  2002/07/02 08:00:55  craigs
  * Also made GetPosition, SetPosition and SetLength virtual as well
  *
@@ -150,7 +154,7 @@
 
 #define _PFILE
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

@@ -6,6 +6,10 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.h,v $
+ * Revision 1.6  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.5  2002/08/05 05:40:45  robertj
  * Fixed missing pragma interface/implementation
  *
@@ -26,7 +30,7 @@
 #ifndef _SOCKS_H
 #define _SOCKS_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

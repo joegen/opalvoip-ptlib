@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.4  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.3  2002/08/29 06:51:11  robertj
  * Added optimisiation, separate mutex for toBeRemoved list.
  *
@@ -38,7 +42,7 @@
 #ifndef _SAFE_COLLECTION_H
 #define _SAFE_COLLECTION_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
