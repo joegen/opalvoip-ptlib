@@ -19,6 +19,9 @@
  * Detailed explanation can be found at src/ptlib/unix/video4dc1394.cxx
  *
  * $Log: videoio1394dc.h,v $
+ * Revision 1.2  2002/05/30 22:49:35  dereks
+ * correct implementation of GetInputDeviceNames().
+ *
  * Revision 1.1  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -43,7 +46,7 @@
 */
 class PVideoInput1394DcDevice : public PVideoInputDevice
 {
-    PCLASSINFO(PVideoInput1394DcDevice,PVideoInputDevice);
+    PCLASSINFO(PVideoInput1394DcDevice, PVideoInputDevice);
  public:
   /** Create a new video input device.
    */
@@ -82,7 +85,7 @@ class PVideoInput1394DcDevice : public PVideoInputDevice
 
     /**Get a list of all of the drivers available.
       */
-    PStringList GetDeviceNames();
+    static PStringList GetInputDeviceNames();
 
     /**Get the maximum frame size in bytes.
 
