@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.75  2001/09/24 10:09:48  rogerh
+ * Fix an uninitialised variable problem.
+ *
  * Revision 1.74  2001/09/20 05:38:25  robertj
  * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
  * Also prevented semaphore from being created if subclass does not use it.
@@ -1176,7 +1179,7 @@ BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
   absTime.tv_sec  = finishTime.GetTimeInSeconds();
   absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
-  int err;
+  int err = 0;
   while (signalCount == 0) {
     err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     if (err == 0) {
