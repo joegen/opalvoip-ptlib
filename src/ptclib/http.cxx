@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.67  2002/03/19 23:39:57  robertj
+ * Fixed string output to include PathOnly variant, lost in previous mod.
+ *
  * Revision 1.66  2002/03/19 23:24:08  robertj
  * Fixed problems with backward compatibility on parameters processing.
  *
@@ -611,69 +614,71 @@ PString PURL::AsString(UrlFormat fmt) const
   PINDEX i;
   PStringStream str;
 
-  switch (fmt) {
-    case FullURL :
-      return urlString;
+  if (fmt == FullURL)
+    return urlString;
 
-    case HostPortOnly :
-      if (!scheme) {
-        str << scheme << ':';
-        const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+  if (fmt == HostPortOnly) {
+    if (scheme.IsEmpty())
+      return PString::Empty();
 
-        if (schemeInfo.hasDoubleSlash)
-          str << "//";
+    str << scheme << ':';
+    const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
-        if (schemeInfo.type == Other) 
-          str << pathStr;
+    if (schemeInfo.hasDoubleSlash)
+      str << "//";
+
+    if (schemeInfo.type == Other) 
+      str << pathStr;
+    else {
+      if (schemeInfo.type == HostOnly)
+        str << hostname;
+
+      if (schemeInfo.type == UserPasswordHostPort) {
+        if (!username) {
+          str << TranslateString(username, LoginTranslation);
+          if (!password)
+            str << ':' << TranslateString(password, LoginTranslation);
+          str << '@';
+        }
+      }
+
+      if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
+        if (hostname.IsEmpty())
+          str = PString();
         else {
-          if (schemeInfo.type == HostOnly)
-            str << hostname;
-
-          if (schemeInfo.type == UserPasswordHostPort) {
-            if (!username) {
-              str << TranslateString(username, LoginTranslation);
-              if (!password)
-                str << ':' << TranslateString(password, LoginTranslation);
-              str << '@';
-            }
-          }
-
-          if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
-            if (hostname.IsEmpty())
-              str = PString();
-            else {
-              str << hostname;
-              if (port != schemeInfo.defaultPort)
-                str << ':' << port;
-            }
-          }
+          str << hostname;
+          if (port != schemeInfo.defaultPort)
+            str << ':' << port;
         }
       }
-      break;
+    }
+    return str;
+  }
 
-    case URIOnly :
-      if (!path.IsEmpty()) {
-        PINDEX count = path.GetSize();
+  // URIOnly and PathOnly
+  if (!path.IsEmpty()) {
+    PINDEX count = path.GetSize();
+    str << '/';
+    for (i = 0; i < count; i++) {
+      str << TranslateString(path[i], PathTranslation);
+      if (i < count-1)
         str << '/';
-        for (i = 0; i < count; i++) {
-          str << TranslateString(path[i], PathTranslation);
-          if (i < count-1)
-            str << '/';
-        }
-      }
+    }
+  }
 
-      if (!fragment)
-        str << "#" << TranslateString(fragment, PathTranslation);
+  if (fmt == URIOnly) {
+    if (!fragment)
+      str << "#" << TranslateString(fragment, PathTranslation);
 
-      for (i = 0; i < paramVars.GetSize(); i++) {
-        str << ';' << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
-        PString data = paramVars.GetDataAt(i);
-        if (!data)
-          str << '=' << TranslateString(data, QueryTranslation);
-      }
+    for (i = 0; i < paramVars.GetSize(); i++) {
+      str << ';' << TranslateString(paramVars.GetKeyAt(i), QueryTranslation);
+      PString data = paramVars.GetDataAt(i);
+      if (!data)
+        str << '=' << TranslateString(data, QueryTranslation);
+    }
 
-      if (!queryVars.IsEmpty())
-        str << '?' << GetQuery();
+    if (!queryVars.IsEmpty())
+      str << '?' << GetQuery();
   }
 
   return str;
