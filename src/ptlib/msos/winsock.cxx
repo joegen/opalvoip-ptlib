@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.7 1996/01/02 12:57:17 robertj Exp $
+ * $Id: winsock.cxx,v 1.8 1996/01/23 13:25:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.8  1996/01/23 13:25:48  robertj
+ * Moved Accept from platform independent code.
+ *
  * Revision 1.7  1996/01/02 12:57:17  robertj
  * Unix compatibility.
  *
@@ -98,6 +101,7 @@ BOOL PSocket::_WaitForData(BOOL reading)
 
 BOOL PSocket::Read(void * buf, PINDEX len)
 {
+  flush();
   lastReadCount = 0;
 
   if (!_WaitForData(TRUE))
@@ -114,6 +118,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 
 BOOL PSocket::Write(const void * buf, PINDEX len)
 {
+  flush();
   lastWriteCount = 0;
 
   if (!_WaitForData(FALSE))
@@ -170,6 +175,9 @@ BOOL PSocket::ConvertOSError(int error)
 }
 
 
+//////////////////////////////////////////////////////////////////////////////
+// PIPSocket
+
 PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 {
   S_un.S_un_b.s_b1 = b1;
@@ -208,6 +216,27 @@ BYTE PIPSocket::Address::Byte4() const
   return S_un.S_un_b.s_b4;
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// PTCPSocket
+
+BOOL PTCPSocket::Accept(PSocket & socket)
+{
+  // attempt to create a socket
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  int size = sizeof(address);
+  if (!ConvertOSError(os_handle = ::accept(socket.GetHandle(),
+                                          (struct sockaddr *)&address, &size)))
+    return FALSE;
+
+  port = ntohs(address.sin_port);
+  return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PUDPSocket
 
 BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
