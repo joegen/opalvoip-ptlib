@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.15  2004/07/02 03:14:47  csoutheren
+ * Made factories non-singleton, by default
+ * Added more docs
+ *
  * Revision 1.14  2004/07/01 11:41:28  csoutheren
  * Fixed compile and run problems on Linux
  *
@@ -119,8 +123,15 @@
  *       C * d = PFactory<C, unsigned>::CreateInstance(42);
  *       PFactory<C, unsigned>::KeyList_T list = PFactory<C, unsigned>::GetKeyList()
  *
- * Finally, note that the factory lists are all thread safe for addition,
- * creation, and obtaining the key lists.
+ * The factory functions also allow the creation of "singleton" factories that return a 
+ * single instance for all calls to CreateInstance. This can be done by passing a "true"
+ * as a second paramater to the factory registration as shown below, which will cause a single
+ * instance to be minted upon the first call to CreateInstance, and then returned for all
+ * subsequent calls. 
+ *
+ *      PFactory<A>::Worker<E> eFactory("E", true);
+ *
+ * It is also possible to manually set the instance in cases where the object needs to be created non-trivially.
  *
  * The following types are defined as part of the PFactory template class:
  *
@@ -128,6 +139,9 @@
  *     Worker       an abstract factory for a specified concrete type
  *     KeyMap_T     a map<> that converts from the key type to the Worker instance
  *                  for each concrete type registered for a specific abstract type
+ *
+ * As a side issue, note that the factory lists are all thread safe for addition,
+ * creation, and obtaining the key lists.
  *
  */
 
@@ -177,7 +191,7 @@ class PFactory : PFactoryBase
     class WorkerBase
     {
       protected:
-        WorkerBase(bool singleton)
+        WorkerBase(bool singleton = false)
           : isDynamic(false),
             isSingleton(singleton),
             singletonInstance(NULL),
@@ -219,7 +233,7 @@ class PFactory : PFactoryBase
     class Worker : WorkerBase
     {
       public:
-        Worker(const Key_T & key, bool singleton)
+        Worker(const Key_T & key, bool singleton = false)
           : WorkerBase(singleton)
         {
           PFactory<_Abstract_T>::Register(key, this);
