@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.87  2002/07/15 06:39:23  craigs
+ * Added function to allow raising of per-process file handle limit
+ *
  * Revision 1.86  2002/06/27 06:38:58  robertj
  * Changes to remove memory leak display for things that aren't memory leaks.
  *
@@ -387,6 +390,22 @@ void PProcess::Construct()
   housekeepingThread = NULL;
 
   CommonConstruct();
+}
+
+BOOL PProcess::SetMaxFileHandles(int maxFileHandles)
+{
+  // get the current process limit
+  struct rlimit rl;
+  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
+
+  // set the new current limit
+  rl.rlim_cur = maxFileHandles;
+  if (setrlimit(RLIMIT_NOFILE, &rl) != 0) 
+    PTRACE(1, "Cannot set per-process file handle limit to " << maxFileHandles << " - check permissions");
+    return FALSE;
+  }
+
+  return TRUE;
 }
 
 
