@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.4  2003/04/01 07:05:16  robertj
+ * Added ability to specify host:port in opening an LDAP server
+ *
  * Revision 1.3  2003/03/31 03:32:53  robertj
  * Major addition of functionality.
  *
@@ -66,6 +69,13 @@ PLDAPSession::~PLDAPSession()
 BOOL PLDAPSession::Open(const PString & server, WORD port)
 {
   Close();
+
+  PString host = server;
+  PINDEX colon = server.Find(':');
+  if (colon != P_MAX_INDEX) {
+    host = server.Left(colon);
+    port = PIPSocket::GetPortByService(server.Mid(colon+1), "tcp");
+  }
 
   ldapContext = ldap_init(server, port);
   if (!IsOpen())
