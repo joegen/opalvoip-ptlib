@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.45  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.44  2001/04/18 04:10:15  robertj
  * Removed hash function for caseless strings as confuses mixed dictionaries.
  *
@@ -2352,7 +2355,15 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 
 
 extern "C" {
+// Mac OS X has a perfectly good implementation of Henry Spencer's regex
+// package, which it would prefer not to see replaced.  Alas, thanks to
+// Apple's habit of using "typedef struct {} type", there is no clean way
+// to properly forward-declare the type regex_t to the C++ compiler.  So,
+// contain.cxx has to include <regex.h> before <ptlib.h>, and uses the
+// real declaration.  Thankfully, "all pointers smell alike" in C...
+#if !defined(P_MACOS) || !defined(_REGEX_H_)
 typedef struct re_pattern_buffer regex_t;
+#endif
 };
 
 

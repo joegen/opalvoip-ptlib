@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.49  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.48  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -186,12 +189,47 @@
    #main()# function must be defined in the same module as the
    instance of the application.
  */
+#ifndef P_MAC_MPTHREADS
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
     { PProcess::PreInitialise(argc, argv, envp); \
       static cls instance; \
       return instance._main(); \
     }
+#else // Mac MP Tasks implementation
+// Alas, a Macintosh main thread has a number of important responsibilities.
+// The goal of this code is to warm up the Toolbox and create an independant
+// thread for the application object.  I'm trying to wrap a generic Mac main
+// function around an existing derived PProcess class; a real Mac application
+// may want to duplicate this code in a more suitable form after rewriting the
+// canonical Main() implementation.
+// I have changed the process instance variable to be automatic rather than
+// static duration so I can tear down the Mac MP framework.
+// In practice, I think it is better to hand-craft the main function, but this 
+// allows the asn compiler to build and run.
+// The declarations are available in <ptlib/MacMainIf.h>.
+#define PCREATE_PROCESS(cls)                           \
+  extern "C" {                                         \
+    extern int MacInitialisePWLibEvents(void);         \
+    typedef long(*callback_api_c)(void*);              \
+    extern int SpawnProcessInContext(callback_api_c);  \
+    extern void RunApplicationEventLoop(void);         \
+    static long PWTrampoline(void *ignored)            \
+    {                                                  \
+      cls instance;                                    \
+      return  instance._main();                        \
+    }                                                  \
+  };                                                   \
+  int main(int argc, char ** argv, char ** envp)       \
+  {                                                    \
+    int err;                                           \
+    MacInitialisePWLibEvents();                        \
+    PProcess::PreInitialise(argc, argv, envp);         \
+    err = SpawnProcessInContext(PWTrampoline);         \
+    if (err == 0) RunApplicationEventLoop();           \
+    return err;                                        \
+  }
+#endif
 
 /*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
    This macro is used to declare the components necessary for a user PWLib
