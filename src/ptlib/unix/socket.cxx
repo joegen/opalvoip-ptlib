@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.54  2001/01/17 03:48:25  rogerh
+ * Fix GetInterfaceTable so it actually works through all interfaces rather
+ * than falling over after the first entry.
+ *
  * Revision 1.53  2001/01/16 12:56:01  rogerh
  * On BeOS sa_data is 'unsigned char *'. Linux and BSD defines sa_data as 'char *'
  * Add typecast, submitted by Jac Goudsmit <jac_goudsmit@yahoo.com>
@@ -970,8 +974,8 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
   PUDPSocket sock;
 
 #ifndef __BEOS__
-  // get number of interfaces
   int ifNum;
+
 #ifdef SIOCGIFNUM
   PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
 #else
@@ -989,9 +993,9 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
 
     int num = 0;
+    ifreq * ifName = ifConf.ifc_req;
     for (num = 0; num < ifNum; num++) {
 
-      ifreq * ifName = ifConf.ifc_req + num;
       struct ifreq ifReq;
       strcpy(ifReq.ifr_name, ifName->ifr_name);
 
@@ -1017,6 +1021,21 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
           list.Append(PNEW InterfaceEntry(name, addr, macAddr));
         }
       }
+
+#ifndef MAX
+#define MAX(x,y) ( (x) > (y) ? (x) : (y) )
+#endif
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+      // move the ifName pointer along to the next ifreq entry
+      ifName = (struct ifreq *) ((char *)&ifName->ifr_addr
+                    + MAX(ifName->ifr_addr.sa_len, sizeof(ifName->ifr_addr)));
+#else
+      // Note: I am not sure ifName + num is corrent or not.
+      // But this is what the code said before I added this fix for FreeBSD
+      // so I've left it as the default code for non BSD machines
+      ifName = ifName + num;
+#endif
     }
   }
 #endif //!__BEOS__
