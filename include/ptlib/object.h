@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.4 1994/12/05 11:23:28 robertj Exp $
+ * $Id: object.h,v 1.5 1994/12/12 10:08:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.4  1994/12/05 11:23:28  robertj
+ * Revision 1.5  1994/12/12 10:08:30  robertj
+ * Renamed PWrapper to PSmartPointer..
+ *
+ * Revision 1.4  1994/12/05  11:23:28  robertj
  * Fixed PWrapper macros.
  *
  * Revision 1.3  1994/11/19  00:22:55  robertj
@@ -406,14 +409,24 @@ PDECLARE_CLASS(PBinaryUnSerialiser, PUnSerialiser)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// General reference counting wrapper. This object "contains" another object
+// "Smart" pointers.
 
-PDECLARE_CLASS(PWrapper, PObject)
+PDECLARE_CLASS(PSmartObject, PObject)
   public:
-    PWrapper(PObject * obj = NULL);
-    PWrapper(const PWrapper & wrap);
-    PWrapper & operator=(const PWrapper & wrap);
-    virtual ~PWrapper();
+    PSmartObject() { referenceCount = 1; }
+
+  private:
+    unsigned referenceCount;
+
+  friend class PSmartPointer;
+};
+
+PDECLARE_CLASS(PSmartPointer, PObject)
+  public:
+    PSmartPointer(PSmartObject * obj = NULL) { object = obj; }
+    PSmartPointer(const PSmartPointer & wrap);
+    PSmartPointer & operator=(const PSmartPointer & wrap);
+    virtual ~PSmartPointer();
 
     virtual Comparison Compare(const PObject & obj) const;
 
@@ -421,37 +434,36 @@ PDECLARE_CLASS(PWrapper, PObject)
     PObject * GetObject() const { return object; }
 
   protected:
-    PObject  * object;
-    unsigned * referenceCount;
+    PSmartObject * object;
 };
 
 #ifdef PHAS_TEMPLATES
 
-template <class cls> class Wrap : public Wrapper {
+template <class cls> PCLASS PPointer : public PSmartPointer {
   public:
-    Wrap(cls * obj) : Wrapper(obj) { }
+    PPointer(cls * obj) : PSmartPointer(obj) { }
     cls * operator->() const { return (cls *)PAssertNULL(object); }
     cls & operator*() const { return *(cls *)PAssertNULL(object); }
 };
 
-#define PDECLARE_WRAPPER(cls, type) typedef PWrap<type> cls
+#define PDECLARE_POINTER(cls, type) typedef PPointer<type> cls
 
 #else
 
-#define PDECLARE_WRAPPER_CLASS(cls, par, type) \
+#define PDECLARE_POINTER_CLASS(cls, par, type) \
   PDECLARE_CLASS(cls, par) \
     public: \
       cls(type * obj); \
       type * operator->() const; \
       type & operator*() const; \
 
-#define PDECLARE_WRAPPER(cls, par, type) \
-  PDECLARE_WRAPPER_CLASS(cls, par, type) \
+#define PDECLARE_POINTER(cls, par, type) \
+  PDECLARE_POINTER_CLASS(cls, par, type) \
     public: \
       cls() { } \
   }
 
-#define PDEFINE_WRAPPER(cls, par, type) \
+#define PDEFINE_POINTER(cls, par, type) \
   PINLINE cls::cls(type * obj) : par(obj) { } \
   PINLINE type * cls::operator->() const \
     { return (type *)PAssertNULL(object); } \
@@ -464,7 +476,7 @@ template <class cls> class Wrap : public Wrapper {
 ///////////////////////////////////////////////////////////////////////////////
 // General notification mechanism from one object to another
 
-PDECLARE_CLASS(PNotifierFunction, PObject)
+PDECLARE_CLASS(PNotifierFunction, PSmartObject)
   public:
     PNotifierFunction(void * obj) { object = PAssertNULL(obj); }
     virtual void Call(PObject & notifier, INT extra) const = 0;
@@ -473,10 +485,10 @@ PDECLARE_CLASS(PNotifierFunction, PObject)
 };
 
 
-PDECLARE_CLASS(PNotifier, PWrapper)
+PDECLARE_CLASS(PNotifier, PSmartPointer)
   public:
     PNotifier(PNotifierFunction * func = NULL)
-      : PWrapper(func) { }
+      : PSmartPointer(func) { }
     virtual void operator()(PObject & notifier, INT extra) const
       { ((PNotifierFunction*)PAssertNULL(object))->Call(notifier, extra); }
 };
