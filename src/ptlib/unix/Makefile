@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.95  2002/09/09 06:42:00  robertj
+# Added check for Sun audio header before compiling module, thanks Nils Bokermann
+#
 # Revision 1.94  2002/08/29 01:45:07  robertj
 # Changed default opt build to include PTRACE
 #
@@ -382,7 +385,9 @@ SOUND_SOURCE = oss.cxx
 endif
 
 ifeq ($(OSTYPE),solaris)
+ifneq (,$(wildcard /usr/include/sys/audioio.h))
 SOUND_SOURCE = sunaudio.cxx
+endif
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
