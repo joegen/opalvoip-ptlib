@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.32  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.31  2003/04/08 12:47:07  craigs
  * Fixed problem with handling of CDATA
  *
@@ -72,13 +75,18 @@
 
 #include <ptclib/pxml.h>
 
-#define CACHE_BUFFER_SIZE   1024
-
 #if P_EXPAT
 
 #include <expat.h>
 
+
+#define CACHE_BUFFER_SIZE   1024
 #define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
+
+
+#ifdef _MSC_VER
+#pragma comment(lib, P_EXPAT_LIBRARY)
+#endif
 
 
 ////////////////////////////////////////////////////
