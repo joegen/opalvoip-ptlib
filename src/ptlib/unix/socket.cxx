@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.55  2001/02/02 23:31:30  robertj
+ * Fixed enumeration of interfaces, thanks Bertrand Croq.
+ *
  * Revision 1.54  2001/01/17 03:48:25  rogerh
  * Fix GetInterfaceTable so it actually works through all interfaces rather
  * than falling over after the first entry.
@@ -1031,10 +1034,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
       ifName = (struct ifreq *) ((char *)&ifName->ifr_addr
                     + MAX(ifName->ifr_addr.sa_len, sizeof(ifName->ifr_addr)));
 #else
-      // Note: I am not sure ifName + num is corrent or not.
-      // But this is what the code said before I added this fix for FreeBSD
-      // so I've left it as the default code for non BSD machines
-      ifName = ifName + num;
+      ifName++;
 #endif
     }
   }
