@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.8  2003/03/21 11:05:34  rogerh
+ * Audio changes for Mac OS X from Shawn.
+ *
  * Revision 1.7  2003/03/17 19:55:19  rogerh
  * More changes from Shawn. Use a different function to do sample rate
  * conversion to avoid some underrun problems.
@@ -54,16 +57,12 @@
 
 #pragma implementation "sound.h"
 
-#ifndef MAC_CA_USE_AUDIO_CONVERTER
-#define MAC_CA_USE_AUDIO_CONVERTER 1
-#endif
-
 #include <ptlib.h>
 
 #include <CoreAudio/CoreAudio.h>
-#if MAC_CA_USE_AUDIO_CONVERTER == 1
 #include <AudioToolbox/AudioConverter.h>
-#endif
+
+#include <math.h>
 
 #define CA_NULL_DEVICE_NAME "Null"
 
@@ -301,11 +300,42 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
  * A local type to aggregate data to the callback functions
  */
 struct myData {
-  int *bufLen;
-  float *buf;
+  int numChannels;
+  int chunkSamples;
+  int *bufLenPtr;
+  short *buf;
+  void *converterRef;
   pthread_mutex_t *myMutex;
   pthread_cond_t *myCond;
 };
+
+static UInt32 writeConverterBufferLen;
+static void *writeConverterBuffer;
+static float readwriteFoo[1024];
+
+static OSStatus
+ACwriteInputProc(AudioConverterRef inAudioConverter,
+		 UInt32 *outDataSize,
+		 void **outData,
+		 void *inUserData)
+{
+  if (writeConverterBufferLen > 0) {
+    PTRACE(6, "writeInputProc called and sent "
+	   << writeConverterBufferLen << " and wants " << *outDataSize
+	   << endl);
+    if (writeConverterBufferLen < *outDataSize) {
+      *outDataSize = writeConverterBufferLen;
+    }
+    *outData     = writeConverterBuffer;
+    writeConverterBufferLen = 0;
+  }
+  else {
+    PTRACE(6, "writeInputProc called and sent dummy " << *outDataSize << endl);
+    // *outDataSize = 0;
+    *outData     = readwriteFoo;
+  }
+  return noErr;
+}
 
 /*
  * CoreAudio Player callback function
@@ -319,24 +349,65 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
                         void *inClientData)
 {
   float *bufPtr = (float *)outOutputData->mBuffers[0].mData;
-  /*
-  unsigned int bufLen = (int)inOutputData->mBuffers[0].mDataByteSize;
-  */
+  UInt32 *bufLenPtr = (UInt32 *)&(outOutputData->mBuffers[0].mDataByteSize);
   struct myData *data = (struct myData *)inClientData;
-  unsigned int numFloats = *(data->bufLen)/sizeof(float);
+  OSStatus theStatus;
 
   pthread_mutex_lock(data->myMutex);
 
-  for (unsigned int i = 0; i < numFloats; i++)
-    bufPtr[i] = data->buf[i];
-  (*data->bufLen) = 0;
+  /* convert caBuf to bufPtr */
+  writeConverterBufferLen = *(data->bufLenPtr);
+  writeConverterBuffer    = data->buf;
+  theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
+				       ACwriteInputProc,
+				       NULL,
+				       bufLenPtr,
+				       (void *)bufPtr);
+  if (theStatus != 0) {
+    PTRACE(6, "Warning: audio converter (write) failed " << theStatus
+	   << " converted " << *bufLenPtr << " of " << *(data->bufLenPtr)
+	   <<endl);
+  }
 
+  if (data->numChannels == 2) {
+    /* let's make it two-channel audio */
+    for (UInt32 i = 0; i < (*bufLenPtr)/sizeof(float); i+=2) {
+      bufPtr[i+1] = bufPtr[i];
+    }
+  }
+
+  *(data->bufLenPtr) = 0;
   pthread_mutex_unlock(data->myMutex);
   pthread_cond_signal(data->myCond);
 
   return (kAudioHardwareNoError);
 }
 
+static UInt32 readConverterBufferLen;
+static void *readConverterBuffer;
+
+static OSStatus
+ACreadInputProc(AudioConverterRef inAudioConverter,
+		UInt32 *outDataSize,
+		void **outData,
+		void *inUserData)
+{
+  if (readConverterBufferLen > 0) {
+    PTRACE(6, "readInputProc called and sent "
+	   << readConverterBufferLen << " and wants " << *outDataSize
+	   << endl);
+    if (readConverterBufferLen < *outDataSize) {
+      *outDataSize = readConverterBufferLen;
+    }
+    *outData     = readConverterBuffer;
+    readConverterBufferLen = 0;
+  }
+  else {
+    // *outDataSize = 0;
+    *outData     = readwriteFoo;
+  }
+  return noErr;
+}
 
 /*
  * CoreAudio Recorder callback function
@@ -350,14 +421,24 @@ OSStatus RecordIOProc(AudioDeviceID inDevice,
                       void *inClientData)
 {
   float *bufPtr = (float *)inInputData->mBuffers[0].mData;
-  unsigned int bufLen = (int)inInputData->mBuffers[0].mDataByteSize;
+  UInt32 *bufLenPtr = (UInt32 *)&(inInputData->mBuffers[0].mDataByteSize);
   struct myData *data = (struct myData *)inClientData;
+  OSStatus theStatus;
 
   pthread_mutex_lock(data->myMutex);
 
-  for (unsigned int i = 0; i < (bufLen/sizeof(float)); i++)
-    data->buf[i] = bufPtr[i];
-  (*data->bufLen) = bufLen;
+  readConverterBufferLen = *bufLenPtr;
+  readConverterBuffer    = bufPtr;
+  *(data->bufLenPtr) = data->chunkSamples*sizeof(short);
+  theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
+				       ACreadInputProc,
+				       NULL,
+				       (UInt32*)data->bufLenPtr,
+				       (void *)data->buf);
+  if (theStatus != 0) {
+    PTRACE(6, "Warning: audio converter (read) failed " << theStatus
+	   << endl);
+  }
 
   pthread_mutex_unlock(data->myMutex);
   pthread_cond_signal(data->myCond);
@@ -491,7 +572,6 @@ BOOL PSoundChannel::Close()
     }
     caDevID = -1;
 
-#if (MAC_CA_USE_AUDIO_CONVERTER == 1)
     OSStatus theStatus;
 
     if (caConverterRef) {
@@ -501,7 +581,6 @@ BOOL PSoundChannel::Close()
       }
       caConverterRef = NULL;
     }
-#endif
 
     if (caCBData) {
       free(caCBData);
@@ -567,7 +646,6 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 
   caNumChannels = theDescription.mChannelsPerFrame;
 
-#if (MAC_CA_USE_AUDIO_CONVERTER == 1)
   /* the converter code is adapted from vlc */
 
   /* XXX: here might be a problem.
@@ -644,8 +722,18 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
     PTRACE(1, "can not set converter quality " << theStatus);
   }
 
+  UInt32 primeMethod = kConverterPrimeMethod_None;
+
+  theStatus =
+    AudioConverterSetProperty((AudioConverterRef)caConverterRef,
+			      kAudioConverterPrimeMethod,
+			      sizeof(UInt32),
+			      &primeMethod);
+  if (theStatus != 0) {
+    PTRACE(1, "can not set converter prime method " << theStatus);
+  }
+
 #undef PRINT_DATA
-#endif
 
   return TRUE;
 }
@@ -660,13 +748,10 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
  */
 BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 {
-  int samples = size/(mBitsPerSample/8);
-
   OSStatus theStatus;
-  UInt32 theSize;
   AudioValueRange theRange;
 
-  int bufferByteCount, propertySize;
+  UInt32 bufferByteCount, propertySize;
 
   if (caDevID < 0) {
     return TRUE;  /* Null device */
@@ -678,9 +763,12 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   PTRACE(6, "CoreAudio SetBuffer called with size "
             << size << " count " << count);
 
+  chunkSamples = size/(mBitsPerSample/8);
+
   /* find the largest possible buffer size, and allocate a buffer of
    * the size for the callback function
    */
+  /*
   theSize = sizeof(AudioValueRange);
   theStatus = AudioDeviceGetProperty(caDevID, 0, isInput,
 				     kAudioDevicePropertyBufferSizeRange,
@@ -689,8 +777,9 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     PTRACE(1, "can not find buffer size (" << theStatus << ")");
     return FALSE;
   }
-
-  caBuf = (float *)malloc((int)theRange.mMaximum);
+  */
+  caBuf = (short *)malloc(size);
+  // caBuf = (float *)malloc((int)theRange.mMaximum);
   if (!caBuf) {
     PTRACE(1, "can not init caBuf for callback function\n");
     return FALSE;
@@ -707,10 +796,13 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     PTRACE(1, "can not allocate memory for clientData\n");
     return FALSE;
   }
-  clientData->bufLen  = &caBufLen;
-  clientData->buf     = caBuf;
-  clientData->myMutex = &caMutex;
-  clientData->myCond  = &caCond;
+  clientData->numChannels  = caNumChannels;
+  clientData->chunkSamples = chunkSamples;
+  clientData->bufLenPtr    = &caBufLen;
+  clientData->buf          = caBuf;
+  clientData->converterRef = caConverterRef;
+  clientData->myMutex      = &caMutex;
+  clientData->myCond       = &caCond;
 
   caCBData = (void *)clientData; // remembers it so we can free it
 
@@ -718,12 +810,14 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
    * Registers callback function
    */
   if (direction == Player) {
-    PTRACE(6, "Player buffer @ "<< caBuf);
+    PTRACE(6, "Player buffer @ "<< caBuf << " size "
+	   << (int)theRange.mMaximum << endl);
     theStatus =
       AudioDeviceAddIOProc(caDevID, PlaybackIOProc, (void *)clientData);
   }
   else {
-    PTRACE(6, "Recorder buffer @ "<< caBuf);
+    PTRACE(6, "Recorder buffer @ "<< caBuf << " size "
+	   << (int)theRange.mMaximum << endl);
     theStatus =
       AudioDeviceAddIOProc(caDevID, RecordIOProc, (void *)clientData);
   }
@@ -734,11 +828,31 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
    * The computation is based on the format of streams and the
    * requested buffer size.
    */
+  /*
   bufferByteCount =
     samples*
     (44100*caNumChannels*sizeof(float))/
     (mSampleRate*mNumChannels);
+  */
+  bufferByteCount = size;
   propertySize = sizeof(bufferByteCount);
+  if (direction == Player) {
+    theStatus =
+      AudioConverterGetProperty((AudioConverterRef)caConverterRef,
+				kAudioConverterPropertyCalculateOutputBufferSize,
+				&propertySize,
+				&bufferByteCount);
+  } else {
+    theStatus =
+      AudioConverterGetProperty((AudioConverterRef)caConverterRef,
+				kAudioConverterPropertyCalculateInputBufferSize,
+				&propertySize,
+				&bufferByteCount);
+  }
+  if (theStatus != 0) {
+    PTRACE(1, "can not compute converter buffer size " << theStatus);
+    return FALSE;
+  }
 
   PTRACE(1, "CoreAudio buffer size set to " << bufferByteCount);
 
@@ -775,40 +889,14 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
   return TRUE;
 }
 
-static int writeConverterBufferLen;
-static void *writeConverterBuffer;
-
-static OSStatus
-ACwriteInputProc(AudioConverterRef inAudioConverter,
-		 UInt32 *outDataSize,
-		 void **outData,
-		 void *inUserData)
+BOOL PSoundChannel::Write(const void * buf, int len)
 {
-  if (writeConverterBufferLen > 0) {
-    *outDataSize = writeConverterBufferLen;
-    *outData     = writeConverterBuffer;
-    writeConverterBufferLen = 0;
-    writeConverterBuffer    = 0;
-  }
-  else {
-    *outDataSize = 0;
-  }
-  return noErr;
-}
+  UInt32 totalSamples, chunkLen, playedSamples;
 
-BOOL PSoundChannel::Write(const void * buf, PINDEX len)
-{
-  UInt32 ChunkSize, theSize;
-  OSStatus theStatus;
-
-  int totalSamples, chunkSamples, playedSamples;
-  double c;
-  UInt32 chunkLen, cLen;
-  void *chunkBuffer;
   char *playedOffset;
 
   if (caDevID < 0) {
-    usleep(20*1000);
+    usleep((len*1000/(mSampleRate*sizeof(short)))*1000);
     return TRUE;  /* Null device */
   }
 
@@ -817,31 +905,10 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     return FALSE;
   }
 
-  theSize = sizeof(ChunkSize);
-  theStatus = AudioDeviceGetProperty(caDevID,
-				     0, 0,
-				     kAudioDevicePropertyBufferSize,
-				     &theSize, &ChunkSize);
-  if (theStatus) {
-    PTRACE(1, "get device property failed, status = (" << theStatus << ")");
-    return (FALSE);
-  }
-
-  /*
-   * CoreAudio wants a chunk at a time, so let's divide incoming
-   * buffer into chunks
-   */
-
   totalSamples = len/(mBitsPerSample/8);
-  c = (double)ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
-  chunkSamples = (int)ceil(c);
-  chunkLen = chunkSamples*sizeof(short);
-  chunkBuffer = (void *)calloc(chunkSamples, sizeof(short));
-  if (!chunkBuffer) {
-    return FALSE;
-  }
 
-  PTRACE(6, "Write called with len " << len << " and chunkLen " << chunkLen);
+  PTRACE(6, "Write called with len " << len
+	 << " and chunkLen " << chunkSamples*2);
 
   playedSamples = 0;
   while (playedSamples < totalSamples) {
@@ -850,69 +917,21 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     }
     else {
       chunkLen = (totalSamples-playedSamples)*sizeof(short);
-      bzero(chunkBuffer, chunkSamples*sizeof(short));
+      bzero(caBuf, chunkSamples*sizeof(short));
     }
     playedOffset = ((char *)buf)+(playedSamples*sizeof(short));
-    memcpy(chunkBuffer, playedOffset, chunkLen);
 
     pthread_mutex_lock(&caMutex);
     while (caBufLen > 0)
       pthread_cond_wait(&caCond, &caMutex);
 
-    caBufLen = chunkSamples*
-      (44100*caNumChannels*sizeof(float))/
-      (mSampleRate*mNumChannels);
-    cLen = caBufLen;
-
-#if (MAC_CA_USE_AUDIO_CONVERTER == 1)
-    writeConverterBufferLen = chunkLen;
-    writeConverterBuffer    = chunkBuffer;
-    theStatus = AudioConverterFillBuffer((AudioConverterRef)caConverterRef,
-					 ACwriteInputProc,
-					 NULL,
-					 &cLen,
-					 (void *)caBuf);
-    /*
-    theStatus = AudioConverterConvertBuffer((AudioConverterRef)caConverterRef,
-					    chunkLen,
-					    chunkBuffer,
-					    (UInt32 *)&cLen,
-					    (void *)caBuf);
-    */
-    if (theStatus != 0) {
-      PTRACE(6, "Warning: audio converter (write) failed " << theStatus
-                << " converted " << cLen << " of " << caBufLen <<endl);
-    }
-#else
-    bzero(caBuf, caBufLen);
-
-    int duplicates = (44100*caNumChannels/mSampleRate);
-    float scale = 1.0 / SHRT_MAX;
-
-    for (int i = 0; i < chunkSamples; i++) {
-      short *src = (short *)chunkBuffer;
-      float *dst = caBuf;
-      for (int j = 0; j < duplicates; j++) {
-	dst[i*duplicates+j] = scale * src[i];
-      }
-    }
-
-#endif
-
-    if (caNumChannels == 2) {
-      /* let's make it two-channel audio */
-      for (int i = 0; i < caBufLen; i+=2) {
-        caBuf[i+1] = caBuf[i];
-      }
-    }
+    memcpy(caBuf, playedOffset, chunkLen);
+    caBufLen = chunkLen;
 
     playedSamples += chunkSamples;
 
     pthread_mutex_unlock(&caMutex);
   }
-
-  free(chunkBuffer);
-  chunkBuffer = NULL;
 
   return (TRUE);
 }
@@ -955,40 +974,15 @@ BOOL PSoundChannel::WaitForPlayCompletion()
   return TRUE;
 }
 
-static int readConverterBufferLen;
-static void *readConverterBuffer;
-
-static OSStatus
-ACreadInputProc(AudioConverterRef inAudioConverter,
-		UInt32 *outDataSize,
-		void **outData,
-		void *inUserData)
-{
-  if (readConverterBufferLen > 0) {
-    *outDataSize = readConverterBufferLen;
-    *outData     = readConverterBuffer;
-    readConverterBufferLen = 0;
-    readConverterBuffer    = 0;
-  }
-  else {
-    *outDataSize = 0;
-  }
-  return noErr;
-}
-
 
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
 {
-  UInt32 ChunkSize, theSize, cLen;
-  OSStatus theStatus;
+  UInt32 totalSamples, recordedSamples;
 
-  int totalSamples, chunkSamples, chunkLen, recordedSamples;
-  double c;
-  void *chunkBuffer;
   char *recordedOffset;
 
   if (caDevID < 0) {
-    usleep(20*1000);
+    usleep((len*1000/(mSampleRate*sizeof(short)))*1000);
     bzero(buf, len);
     lastReadCount = len;
     return TRUE;  /* Null device */
@@ -1000,94 +994,22 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  theSize = sizeof(ChunkSize);
-  theStatus = AudioDeviceGetProperty(caDevID,
-				     0, 1,
-				     kAudioDevicePropertyBufferSize,
-				     &theSize, &ChunkSize);
-  if (theStatus) {
-    PTRACE(1, "get device property failed, status = (" << theStatus << ")");
-    return (FALSE);
-  }
-
-  /*
-   * CoreAudio returns a chunk at a time, so let's combine incoming
-   * chunks to buffer
-   */
-
   totalSamples = len/(mBitsPerSample/8);
-  c = (double)ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
-  chunkSamples = (int)ceil(c);
-  chunkLen = chunkSamples*sizeof(short);
-  chunkBuffer = (void *)calloc(chunkSamples, sizeof(short));
-  if (!chunkBuffer) {
-    return FALSE;
-  }
 
-  PTRACE(6, "Read called with len " << len << " and chunkLen " << chunkLen);
+  PTRACE(6, "Read called with len " << len << " and chunkLen "
+	 << chunkSamples*2);
   recordedSamples = 0;
   while (recordedSamples < totalSamples) {
     pthread_mutex_lock(&caMutex);
     while (caBufLen == 0)
       pthread_cond_wait(&caCond, &caMutex);
 
-    chunkLen = chunkSamples*sizeof(short);
-    cLen = chunkLen;
-
-#if (MAC_CA_USE_AUDIO_CONVERTER == 1)
-    readConverterBufferLen = caBufLen;
-    readConverterBuffer    = caBuf;
-    theStatus = AudioConverterFillBuffer((AudioConverterRef)caConverterRef,
-					 ACreadInputProc,
-					 NULL,
-					 &cLen,
-					 (void *)chunkBuffer);
-    /*
-    if (caNumChannels == 1) {
-      theStatus =
-	AudioConverterConvertBuffer((AudioConverterRef)caConverterRef,
-				    caBufLen+chunkLen,
-				    // use larger size to fool converter
-				    caBuf,
-				    (UInt32 *)&cLen,
-				    chunkBuffer);
-    }
-    else {
-      theStatus =
-	AudioConverterConvertBuffer((AudioConverterRef)caConverterRef,
-				    caBufLen,
-				    caBuf,
-				    (UInt32 *)&cLen,
-				    chunkBuffer);
-    }
-    */
-    if (theStatus != 0) {
-      PTRACE(6, "Warning: audio converter (read) failed " << theStatus
-                << " converted " << cLen << " of " << chunkLen <<endl);
-    }
-#else
-    float scale = SHRT_MAX;
-    int shrinkWindow = 44100*caNumChannels/mSampleRate;
-
-    for (int i = 0; i < chunkSamples; i++) {
-      short *dst = (short *)chunkBuffer;
-      float *src = caBuf;
-      /*
-	float x = 0.0;
-	for (int j = 0; j < shrinkWindow; j++) {
-	x += src[i*(shrinkWindow)+j];
-	}
-      */
-      dst[i] = (short)(scale * src[i*(shrinkWindow)]);
-    }
-#endif
-
     recordedOffset = ((char *)buf)+(recordedSamples*sizeof(short));
     if (recordedSamples + chunkSamples <= totalSamples) {
-      memcpy(recordedOffset, chunkBuffer, chunkSamples*sizeof(short));
+      memcpy(recordedOffset, caBuf, chunkSamples*sizeof(short));
     }
     else {
-      memcpy(recordedOffset, chunkBuffer,
+      memcpy(recordedOffset, caBuf,
 	     (totalSamples-recordedSamples)*sizeof(short));
     }
 
@@ -1096,9 +1018,6 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 
     pthread_mutex_unlock(&caMutex);
   }
-
-  free(chunkBuffer);
-  chunkBuffer = NULL;
 
   lastReadCount = len;
 
