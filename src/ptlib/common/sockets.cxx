@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.172  2004/04/22 12:27:24  rjongbloed
+ * Fixed selection of QoS to use more flexible #if rather than #ifdef
+ *
  * Revision 1.171  2004/04/18 04:33:38  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -3143,7 +3146,7 @@ BOOL PICMPSocket::OpenSocket(int)
 
 //////////////////////////////////////////////////////////////////////////////
 
-#ifdef P_HAS_QOS
+#if P_HAS_QOS
 
 #ifdef _WIN32
 #ifndef _WIN32_WCE
