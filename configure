@@ -4921,12 +4921,12 @@ cat >>confdefs.h <<\_ACEOF
 #define P_LDAP 1
 _ACEOF
 
-    if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
+    ENDLDLIBS="-lldap -lldap_r -llber $ENDLDLIBS"
+    if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
     fi
-    if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
+    if test "${OPENLDAPLIBDIR}unset" != "unset" ; then
       LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
-      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber"
     fi
   fi
 fi
