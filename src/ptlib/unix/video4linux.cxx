@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.42  2003/09/24 11:26:25  dsandras
+ * Initialize frameHeight and frameWidth to the minimum between QCIF and the max reported capabilities to ensure that several sizes are tried. Removed now unneeded HINT for Logitech Quickcam Pro cameras.
+ *
  * Revision 1.41  2003/09/22 03:25:41  dereksmithies
  * Add patch from Chris Rankin for Logitech QuickCam cameras. Thanks!!
  *
@@ -195,7 +198,7 @@
 #define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
 #define HINT_FORCE_LARGE_SIZE               0x0100  /// driver does not work in small video size.
 #define HINT_FORCE_DEPTH_16                 0x0200  /// CPiA cameras return a wrong value for the depth, and if you try to use that wrong value, it fails.
-#define HINT_USE_CURRENT_HARDWARE_SIZE      0x0400  // Use defaults instead of claimed limits
+
 
 static struct {
   char     *name_regexp;        // String used to match the driver name
@@ -246,15 +249,6 @@ static struct {
   { "Logitech USB Webcam",
     "Logitech USB Webcam which works in large size only",
     HINT_FORCE_LARGE_SIZE,
-    VIDEO_PALETTE_YUV420P 
-  },
-
-  /** This should really apply to all Philips-based
-   *  webcams without the decompressor module loaded.
-   */
-  { "^Logitech QuickCam",
-    "Logitech QuickCam, using default settings",
-    HINT_USE_CURRENT_HARDWARE_SIZE,
     VIDEO_PALETTE_YUV420P 
   },
 
@@ -368,15 +362,8 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   }
 
   // set height and width
-  struct video_window vwin;
-  if (HINT(HINT_USE_CURRENT_HARDWARE_SIZE) &&
-       (::ioctl(videoFd, VIDIOCGWIN, &vwin) == 0)) {
-    frameHeight = vwin.height;
-    frameWidth = vwin.width;
-  } else {
-    frameHeight = videoCapability.maxheight;
-    frameWidth  = videoCapability.maxwidth;
-  }
+  frameHeight = PMIN (videoCapability.maxheight, QCIFHeight);
+  frameWidth  = PMIN (videoCapability.maxwidth, QCIFWidth);
 
   // Init audio
   struct video_audio videoAudio;
