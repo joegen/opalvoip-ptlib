@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.7  1998/12/23 00:34:55  robertj
+ * Fixed normal TCP socket support after adding SOCKS support.
+ *
  * Revision 1.6  1998/12/22 10:29:42  robertj
  * Added support for SOCKS based channels.
  *
@@ -217,6 +220,7 @@ PTCPSocket * PFTPClient::NormalClientTransfer(Commands cmd,
 
   // setup a socket so we can tell the host where to connect to
   PTCPSocket * listenSocket = (PTCPSocket *)socket->Clone();
+  listenSocket->SetPort(0);  // Want new random port number
   listenSocket->Listen();
 
   // The following is just used to automatically delete listenSocket
