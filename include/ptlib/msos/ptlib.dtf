@@ -175,7 +175,6 @@ EXPORTS
     ??0PWin32PacketBuffer@@QAE@H@Z @1815 NONAME ;public: __thiscall PWin32PacketBuffer::PWin32PacketBuffer(int)
     ??0PWin32PacketDriver@@IAE@XZ @1816 NONAME ;protected: __thiscall PWin32PacketDriver::PWin32PacketDriver(void)
     ??0PWin32PacketSYS@@QAE@XZ @1817 NONAME ;public: __thiscall PWin32PacketSYS::PWin32PacketSYS(void)
-    ??0PWin32PacketVxD@@QAE@XZ @1818 NONAME ;public: __thiscall PWin32PacketVxD::PWin32PacketVxD(void)
     ??0PWin32SnmpLibrary@@QAE@XZ @1819 NONAME ;public: __thiscall PWin32SnmpLibrary::PWin32SnmpLibrary(void)
     ??0PWinSock@@QAE@XZ @160 NONAME ;public: __thiscall PWinSock::PWinSock(void)
     ??0Reference@PContainer@@QAE@H@Z @161 NONAME ;public: __thiscall PContainer::Reference::Reference(int)
@@ -1169,7 +1168,6 @@ EXPORTS
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAJ@Z @1908 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,long &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAUAsnAny@@@Z @1909 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,struct AsnAny &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVAddress@PIPSocket@@@Z @1910 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,class PIPSocket::Address &)
-    ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@PAXI@Z @1911 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,void *,unsigned int)
     ?GetOption@PSocket@@QAEHHAAH@Z @1088 NONAME ;public: int __thiscall PSocket::GetOption(int,int &)
     ?GetOption@PSocket@@QAEHHPAXH@Z @1089 NONAME ;public: int __thiscall PSocket::GetOption(int,void *,int)
     ?GetOptionCount@PArgList@@QBEHABVPString@@@Z @1090 NONAME ;public: int __thiscall PArgList::GetOptionCount(class PString const &)const 
@@ -1521,10 +1519,12 @@ EXPORTS
     ?LevelThreshold@PTrace@@0IA @2176 NONAME ;private: static unsigned int  PTrace::LevelThreshold
     ?Lines@PString@@QBE?AVPStringArray@@XZ @1416 NONAME ;public: class PStringArray  __thiscall PString::Lines(void)const 
     ?Listen@PEthSocket@@UAEHIGW4Reusability@PSocket@@@Z @1933 NONAME ;public: virtual int __thiscall PEthSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
+    ?Listen@PIPSocket@@UAEHABVAddress@1@IGW4Reusability@PSocket@@@Z @2222 NONAME ;public: virtual int __thiscall PIPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PIPSocket@@UAEHIGW4Reusability@PSocket@@@Z @1417 NONAME ;public: virtual int __thiscall PIPSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PIPXSocket@@UAEHIGW4Reusability@PSocket@@@Z @1418 NONAME ;public: virtual int __thiscall PIPXSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PSocket@@UAEHIGW4Reusability@1@@Z @1419 NONAME ;public: virtual int __thiscall PSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PSPXSocket@@UAEHIGW4Reusability@PSocket@@@Z @1420 NONAME ;public: virtual int __thiscall PSPXSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
+    ?Listen@PTCPSocket@@UAEHABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @2223 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PTCPSocket@@UAEHIGW4Reusability@PSocket@@@Z @1421 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Load@PSound@@QAEHABVPFilePath@@@Z @2062 NONAME ;public: int __thiscall PSound::Load(class PFilePath const &)
     ?LogOff@PMail@@UAEHXZ @1422 NONAME ;public: virtual int __thiscall PMail::LogOff(void)
@@ -1943,5 +1943,12 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?Listen@PIPSocket@@UAEHABVAddress@1@IGW4Reusability@PSocket@@@Z @2222 NONAME ;public: virtual int __thiscall PIPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
-    ?Listen@PTCPSocket@@UAEHABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @2223 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
+    ??1InterfaceEntry@PIPSocket@@UAE@XZ @2224 NONAME ;public: virtual __thiscall PIPSocket::InterfaceEntry::~InterfaceEntry(void)
+    ??_7InterfaceEntry@PIPSocket@@6B@ @2225 NONAME ;const  PIPSocket::InterfaceEntry::`vftable'
+    ?CompareObjectMemoryDirect@InterfaceEntry@PIPSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @2226 NONAME ;public: virtual enum PObject::Comparison  __thiscall PIPSocket::InterfaceEntry::CompareObjectMemoryDirect(class PObject const &)const 
+    ?GetClass@InterfaceEntry@PIPSocket@@UBEPBDI@Z @2227 NONAME ;public: virtual char const * __thiscall PIPSocket::InterfaceEntry::GetClass(unsigned int)const 
+    ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @2228 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(class PIPSocket::Address)
+    ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@@Z @2229 NONAME ;public: static int __cdecl PIPSocket::GetInterfaceTable(class PList<class PIPSocket::InterfaceEntry> &)
+    ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@PAXIPAI@Z @2230 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,void *,unsigned int,unsigned int *)
+    ?IsClass@InterfaceEntry@PIPSocket@@UBEHPBD@Z @2231 NONAME ;public: virtual int __thiscall PIPSocket::InterfaceEntry::IsClass(char const *)const 
+    ?IsDescendant@InterfaceEntry@PIPSocket@@UBEHPBD@Z @2232 NONAME ;public: virtual int __thiscall PIPSocket::InterfaceEntry::IsDescendant(char const *)const 
