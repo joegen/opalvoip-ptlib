@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.20 1996/03/03 07:37:56 robertj Exp $
+ * $Id: ipsock.h,v 1.21 1996/03/16 04:41:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.21  1996/03/16 04:41:30  robertj
+ * FireDoorV10
+ *
  * Revision 1.20  1996/03/03 07:37:56  robertj
  * Added Reusability clause to the Listen() function on sockets.
  *
@@ -149,14 +152,33 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         { return s << (PString)a; }
     };
 
-    static BOOL GetAddress(
+    static PString GetHostName();
+    static PString GetHostName(
+      const PString & hostname  // Hosts IP address to get name for
+    );
+    static PString GetHostName(
+      const Address & addr    // Hosts IP address to get name for
+    );
+    /* Get the "official" host name for the host specified or if none, the host
+       this process is running on. The host may be specified as an IP number
+       or a hostname alias and is resolved to the canonical form.
+
+       <H2>Returns:</H2>
+       Name of the host or IP number of host.
+     */
+
+    static BOOL GetHostAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    static BOOL GetHostAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
       Address & addr    // Variable to receive hosts IP address
     );
-    /* Get the Internet Protocol address for the specified host.
+    /* Get the Internet Protocol address for the specified host, or if none
+       specified, for the host this process is running on.
 
        <H2>Returns:</H2>
        TRUE if the IP number was returned.
@@ -168,27 +190,18 @@ PDECLARE_CLASS(PIPSocket, PSocket)
          an IP number in "dot" format.
        */
     );
-    /* Get the alias host names for the specified host.
+    static PStringArray GetHostAliases(
+      const Address & addr    // Hosts IP address
+      /* Name of host to get address for. This may be either a domain name or
+         an IP number in "dot" format.
+       */
+    );
+    /* Get the alias host names for the specified host. This includes all DNS
+       names, CNAMEs, names in the local hosts file and IP numbers (as "dot"
+       format strings) for the host.
 
        <H2>Returns:</H2>
        array of strings for each alias for the host.
-     */
-
-    static BOOL GetHostAddress(
-      Address & addr    // Variable to receive hosts IP address
-    );
-    /* Get the Internet Protocol address for the host this process is running
-       on.
-
-       <H2>Returns:</H2>
-       TRUE if the IP number was returned.
-     */
-
-    static PString GetHostName();
-    /* Get the host name for the host this process is running on.
-
-       <H2>Returns:</H2>
-       Name of the host, or an empty string if an error occurs.
      */
 
     BOOL GetLocalAddress(
