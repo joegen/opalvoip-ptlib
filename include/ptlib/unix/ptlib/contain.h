@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.23  2004/04/11 06:15:35  csoutheren
+ * Modified to use Atomic_word if available
+ *
  * Revision 1.22  2004/04/11 03:20:42  csoutheren
  * Added Unix implementation of PCriticalSection
  *
@@ -147,5 +150,9 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 #define	P_HAS_TYPEINFO	1
 #define	PCLASSNAME(cls)	(#cls)
 
-#define   PCONTAINER_USES_CRITSEC   1
+#if P_HAS_ATOMIC_INT
+#define PCONTAINER_USES_CRITSEC   0
+#else
+#define PCONTAINER_USES_CRITSEC   1
+#endif
 
