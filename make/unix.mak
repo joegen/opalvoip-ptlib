@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.187  2004/04/25 22:11:34  ykiryanov
+# Added posix library to make files
+#
 # Revision 1.186  2004/04/21 03:47:36  ykiryanov
 # Added libdl.so to library list for BeOS
 #
@@ -575,7 +578,7 @@ BE_BONE := 1
 # in pwlib.
 #MEDIA_KIT_UPDATE := 1
 
-SYSLIBS     += -lbe -lmedia -lgame -lroot -ldl
+SYSLIBS     += -lbe -lmedia -lgame -lroot -lposix -ldl
 
 ifdef BE_THREADS
 STDCCFLAGS	+= -DBE_THREADS
