@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.21  1999/07/30 00:40:32  robertj
+ * Fixed problem with signal variable in non-Linux platforms
+ *
  * Revision 1.20  1999/07/19 01:32:24  craigs
  * Changed signals used in pthreads code, is used by linux version.
  *
@@ -159,8 +162,8 @@ static void sigSuspendHandler(int)
   sigaddset(&waitSignals, SIGTERM);
 
   for (;;) {
-#ifdef P_LINUX
     int sig;
+#ifdef P_LINUX
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
