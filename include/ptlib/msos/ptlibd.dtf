@@ -1763,7 +1763,7 @@ EXPORTS
     ?Convert@Yuv411ToRgb32@@UAEHPBEPAEPAH@Z @3668 NONAME ;public: virtual int __thiscall Yuv411ToRgb32::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@Yuv422ToYuv411p@@UAEHPBEPAEPAH@Z @3669 NONAME ;public: virtual int __thiscall Yuv422ToYuv411p::Convert(unsigned char const *,unsigned char *,int *)
     ?converters@PColourConverter@@1VPColourConverterRegistrations@@A @3601 NONAME ;protected: static class PColourConverterRegistrations  PColourConverter::converters
-    ?ConvertInPlace@PColourConverter@@UAEHPAEH@Z @3602 NONAME ;public: virtual int __thiscall PColourConverter::ConvertInPlace(unsigned char *,int)
+    ?ConvertInPlace@PColourConverter@@UAEHPAEPAHH@Z @3690 NONAME ;public: virtual int __thiscall PColourConverter::ConvertInPlace(unsigned char *,int *,int)
     ?ConvertOSError@PChannel@@MAEHH@Z @3083 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
     ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @3092 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @1213 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
