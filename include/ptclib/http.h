@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.51  2001/10/31 01:34:47  robertj
+ * Added extra const for constant HTTP tag name strings.
+ * Changes to support HTTP v1.1 chunked transfer encoding.
+ *
  * Revision 1.50  2001/10/03 00:26:34  robertj
  * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
  *
@@ -375,34 +379,34 @@ class PHTTP : public PInternetProtocol
     };
 
     // Common MIME header tags
-    static const char * AllowTag;
-    static const char * AuthorizationTag;
-    static const char * ContentEncodingTag;
-    static const char * ContentLengthTag;
-    static const char * ContentTypeTag;
-    static const char * DateTag;
-    static const char * ExpiresTag;
-    static const char * FromTag;
-    static const char * IfModifiedSinceTag;
-    static const char * LastModifiedTag;
-    static const char * LocationTag;
-    static const char * PragmaTag;
-    static const char * PragmaNoCacheTag;
-    static const char * RefererTag;
-    static const char * ServerTag;
-    static const char * UserAgentTag;
-    static const char * WWWAuthenticateTag;
-    static const char * MIMEVersionTag;
-    static const char * ConnectionTag;
-    static const char * KeepAliveTag;
-    static const char * TransferEncodingTag;
-    static const char * ChunkedTag;
-    static const char * ProxyConnectionTag;
-    static const char * ProxyAuthorizationTag;
-    static const char * ProxyAuthenticateTag;
-    static const char * ForwardedTag;
-    static const char * SetCookieTag;
-    static const char * CookieTag;
+    static const char * const AllowTag;
+    static const char * const AuthorizationTag;
+    static const char * const ContentEncodingTag;
+    static const char * const ContentLengthTag;
+    static const char * const ContentTypeTag;
+    static const char * const DateTag;
+    static const char * const ExpiresTag;
+    static const char * const FromTag;
+    static const char * const IfModifiedSinceTag;
+    static const char * const LastModifiedTag;
+    static const char * const LocationTag;
+    static const char * const PragmaTag;
+    static const char * const PragmaNoCacheTag;
+    static const char * const RefererTag;
+    static const char * const ServerTag;
+    static const char * const UserAgentTag;
+    static const char * const WWWAuthenticateTag;
+    static const char * const MIMEVersionTag;
+    static const char * const ConnectionTag;
+    static const char * const KeepAliveTag;
+    static const char * const TransferEncodingTag;
+    static const char * const ChunkedTag;
+    static const char * const ProxyConnectionTag;
+    static const char * const ProxyAuthorizationTag;
+    static const char * const ProxyAuthenticateTag;
+    static const char * const ForwardedTag;
+    static const char * const SetCookieTag;
+    static const char * const CookieTag;
 
   protected:
     /** Create a TCP/IP HTTP protocol channel.
@@ -831,8 +835,11 @@ class PHTTPServer : public PHTTP
 
        If the version of the request is less than 1.0, then this function does
        nothing.
+
+       @return
+       TRUE if requires v1.1 chunked transfer encoding.
      */
-    void StartResponse(
+    BOOL StartResponse(
       StatusCode code,      // Status code for the response.
       PMIMEInfo & headers,  // MIME variables included in response.
       long bodySize         // Size of the rest of the response.
@@ -890,9 +897,10 @@ class PHTTPRequest : public PObject
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo, // multipart form information (if any)
-      PHTTPServer & socket          // socket that request initiated on
+      PHTTPServer & server          // Server channel that request initiated on
     );
 
+    PHTTPServer & server;           // Server channel that request initiated on
     const PURL & url;               // Universal Resource Locator for document.
     const PMIMEInfo & inMIME;       // Extra MIME information in command.
     const PMultipartFormInfoArray & multipartFormInfo; // multipart form information, if any
@@ -1223,10 +1231,9 @@ class PHTTPResource : public PObject
       const PHTTPConnectionInfo & conInfo
     );
 
-    /** Load the data associated with a GET command.
+    /**Send the data associated with a GET command.
 
-       The default action is to call the virtual #LoadData()# to get a
-       resource to be sent to the socket.
+       The default action calls #SendData()#.
 
        @return
        TRUE if the connection may persist, FALSE if the connection must close.
@@ -1277,6 +1284,20 @@ class PHTTPResource : public PObject
       const PHTTPConnectionInfo & conInfo
     );
 
+    /**Send the data associated with a POST command.
+
+       The default action calls #Post()#.
+
+       @return
+       TRUE if the connection may persist, FALSE if the connection must close.
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
+    */
+    virtual BOOL OnPOSTData(
+      PHTTPRequest & request,
+      const PStringToString & data // Variables in the POST data.
+    );
+
     /** Check to see if the resource has been modified since the date
        specified.
 
@@ -1307,7 +1328,7 @@ class PHTTPResource : public PObject
       const PURL & url,                   // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,           // Extra MIME information in command.
       const PMultipartFormInfoArray & multipartFormInfo,
-	  PHTTPServer & socket
+      PHTTPServer & socket
     );
 
     /** Get the headers for block of data (eg HTML) that the resource contains.
@@ -1320,6 +1341,15 @@ class PHTTPResource : public PObject
     virtual BOOL LoadHeaders(
       PHTTPRequest & request    // Information on this request.
     ) = 0;
+
+    /**Send the data associated with a command.
+
+       The default action is to call the virtual #LoadData()# to get a
+       resource to be sent to the socket.
+    */
+    virtual void SendData(
+      PHTTPRequest & request
+    );
 
     /** Get a block of data that the resource contains.
 
@@ -1397,7 +1427,6 @@ class PHTTPResource : public PObject
       BOOL  IsGet
     );
 
-  private:
     /// Base URL for the resource, may accept URLS with a longer hierarchy
     PURL             baseURL;
     /// MIME content type for the resource
