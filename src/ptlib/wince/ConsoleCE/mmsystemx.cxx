@@ -1,11 +1,11 @@
 //
 // (c) Yuri Kiryanov, openh323@kiryanov.com
-// for Openh323, www.Openh323.org
+// and Yuriy Gorvitovskiy
 //
-// Portions Copyright 1997 Tim Kientzle
-//  from ``The Programmer's Guide to Sound.''
+// Portions (c) 1997 Tim Kientzle
+// from ``The Programmer's Guide to Sound.''
 //
-// Windows CE Port
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
 // Extra Multimedia functionality 
 // 
 
@@ -319,14 +319,20 @@ BOOL WINAPI PlaySound( LPCSTR pszSound, HMODULE hmod, DWORD fdwSound)
 
 MMRESULT WINAPI waveInGetErrorText(MMRESULT mmrError, char* pszText, UINT cchText)
 {
-	USES_CONVERSION;
-	return waveInGetErrorText(mmrError, A2T(pszText), cchText);
+	TCHAR tch[1024];
+	MMRESULT mmResult = waveInGetErrorText(mmrError, tch, 1024);
+	wcstombs(pszText, tch, cchText);
+
+	return mmResult;
 }
 
 MMRESULT WINAPI waveOutGetErrorText(MMRESULT mmrError, char* pszText, UINT cchText)
 {
-	USES_CONVERSION;
-	return waveOutGetErrorText(mmrError, A2T(pszText), cchText);
+	TCHAR tch[1024];
+	MMRESULT mmResult = waveOutGetErrorText(mmrError, tch, 1024);
+	wcstombs(pszText, tch, cchText);
+
+	return mmResult;
 }
 
 // Some missing string functions used by multimedia stuff
