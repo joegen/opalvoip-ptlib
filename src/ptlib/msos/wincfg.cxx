@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.5  2000/08/03 22:47:48  robertj
+ * Removed assert for empty key name so can set registry default key for a section.
+ *
  * Revision 1.4  2000/05/25 11:08:46  robertj
  * Added PConfig::HasKey() function to determine if value actually set.
  * Fixed "system" PConfig to use the win.ini file in correct directory.
@@ -587,11 +590,9 @@ void PConfig::DeleteSection(const PString & section)
 
 void PConfig::DeleteKey(const PString & section, const PString & key)
 {
-  PAssert(!key.IsEmpty(), PInvalidParameter);
-
   switch (source) {
     case Environment :
-      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      PAssert(!key.IsEmpty() && key.Find('=') == P_MAX_INDEX, PInvalidParameter);
       putenv(key + "=");
       break;
 
@@ -603,6 +604,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
     }
 
     case NumSources :
+      PAssert(!key.IsEmpty(), PInvalidParameter);
       PAssert(!section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, key, NULL, location));
   }
@@ -611,10 +613,9 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 
 BOOL PConfig::HasKey(const PString & section, const PString & key) const
 {
-  PAssert(!key.IsEmpty(), PInvalidParameter);
-
   switch (source) {
     case Environment :
+      PAssert(!key.IsEmpty(), PInvalidParameter);
       return getenv(key) != NULL;
 
     case Application : {
@@ -625,7 +626,7 @@ BOOL PConfig::HasKey(const PString & section, const PString & key) const
     }
 
     case NumSources :
-      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
       PString str;
       GetPrivateProfileString(section, key, dflt,
@@ -640,13 +641,11 @@ BOOL PConfig::HasKey(const PString & section, const PString & key) const
 PString PConfig::GetString(const PString & section,
                                const PString & key, const PString & dflt) const
 {
-  PAssert(!key.IsEmpty(), PInvalidParameter);
-
   PString str;
 
   switch (source) {
     case Environment : {
-      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      PAssert(!key.IsEmpty() && key.Find('=') == P_MAX_INDEX, PInvalidParameter);
       char * env = getenv(key);
       if (env != NULL)
         str = env;
@@ -664,7 +663,7 @@ PString PConfig::GetString(const PString & section,
     }
 
     case NumSources :
-      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       GetPrivateProfileString(section, key, dflt,
                                         str.GetPointer(1000), 999, location);
       str.MakeMinimumSize();
@@ -677,11 +676,9 @@ PString PConfig::GetString(const PString & section,
 void PConfig::SetString(const PString & section,
                                     const PString & key, const PString & value)
 {
-  PAssert(!key.IsEmpty(), PInvalidParameter);
-
   switch (source) {
     case Environment :
-      PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+      PAssert(!key.IsEmpty() && key.Find('=') == P_MAX_INDEX, PInvalidParameter);
       putenv(key + "=" + value);
       break;
 
@@ -693,7 +690,7 @@ void PConfig::SetString(const PString & section,
     }
 
     case NumSources :
-      PAssert(!section.IsEmpty(), PInvalidParameter);
+      PAssert(!key.IsEmpty() && !section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, key, value, location));
   }
 }
