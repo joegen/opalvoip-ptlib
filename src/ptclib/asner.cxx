@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.53  2001/09/14 05:26:11  robertj
+ * Fixed problem with assigning a PASN_Choice to itself, thanks Chih-Wei Huang
+ *
  * Revision 1.52  2001/09/14 01:59:59  robertj
  * Fixed problem with incorrectly initialised PASN_Choice sub-object.
  *
@@ -2714,6 +2717,9 @@ PASN_Choice::PASN_Choice(const PASN_Choice & other)
 
 PASN_Choice & PASN_Choice::operator=(const PASN_Choice & other)
 {
+  if (&other == this) // Assigning to ourself, just do nothing.
+    return *this;
+
   delete choice;
 
   PASN_Object::operator=(other);
