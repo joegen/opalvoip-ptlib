@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.49  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.48  2000/11/27 00:58:06  robertj
  * Fixed crash if used PBase64::ProcessEncoding() with zero length.
  *
@@ -314,12 +318,10 @@ BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
     if (Open(socket))
       return TRUE;
     Close();
-    lastError = Miscellaneous;
-    osError = 0x41000000;
+    SetErrorValues(Miscellaneous, 0x41000000);
   }
   else {
-    lastError = socket->GetErrorCode();
-    osError = socket->GetErrorNumber();
+    SetErrorValues(socket->GetErrorCode(), socket->GetErrorNumber());
     delete socket;
   }
 
@@ -562,7 +564,7 @@ BOOL PInternetProtocol::ReadResponse()
   PString line;
   if (!ReadLine(line)) {
     lastResponseCode = -1;
-    lastResponseInfo = GetErrorText();
+    lastResponseInfo = GetErrorText(LastReadError);
     return FALSE;
   }
 
@@ -576,7 +578,7 @@ BOOL PInternetProtocol::ReadResponse()
          (!isdigit(line[0]) && strncmp(line, prefix, continuePos) != 0)) {
     lastResponseInfo += '\n';
     if (!ReadLine(line)) {
-      lastResponseInfo += GetErrorText();
+      lastResponseInfo += GetErrorText(LastReadError);
       return FALSE;
     }
     if (line.Left(continuePos) == prefix)

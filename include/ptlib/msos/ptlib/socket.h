@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.18  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.17  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -121,7 +125,7 @@ typedef int socklen_t;
     virtual BOOL Close();
 
   protected:
-    BOOL ConvertOSError(int error);
+    BOOL ConvertOSError(int status, ErrorGroup group = LastGeneralError);
     static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
 
   private:

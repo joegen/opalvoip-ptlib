@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.4  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.3  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -63,12 +67,9 @@
     virtual PString GetName() const;
 	  // Return the name of the channel
     
-    PString GetErrorText() const;
-      // Get a text form of the last error encountered.
-
   protected:
 
-   static PMutex           bufferMutex;
+   static PMutex bufferMutex;
 
 #endif
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.111  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.110  2001/08/07 03:20:39  robertj
  * Fixed close of DLL so flagged as closed, thanks Stefan Ditscheid.
  *
@@ -846,11 +850,6 @@ BOOL PFilePath::IsValid(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
 
-PString PChannel::GetErrorText() const
-{
-  return GetErrorText(lastError, osError);
-}
-
 PString PChannel::GetErrorText(Errors lastError, int osError)
 {
   if (osError == 0) {
@@ -866,10 +865,10 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
     return _sys_errlist[osError];
 #endif
-  if ((osError & 0x40000000) == 0)
+  if ((osError & PWIN32ErrorFlag) == 0)
     return psprintf("C runtime error %u", osError);
 
-  DWORD err = osError & 0x3fffffff;
+  DWORD err = osError & ~PWIN32ErrorFlag;
 
   static const struct {
     DWORD id;
@@ -906,21 +905,15 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
 }
 
 
-BOOL PChannel::ConvertOSError(int error)
+BOOL PChannel::ConvertOSError(int status, Errors & lastError, int & osError)
 {
-  return ConvertOSError(error, lastError, osError);
-}
-
-
-BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
-{
-  if (error >= 0) {
+  if (status >= 0) {
     lastError = NoError;
     osError = 0;
     return TRUE;
   }
 
-  if (error != -2)
+  if (status != -2)
     osError = errno;
   else {
     osError = GetLastError();
@@ -944,16 +937,16 @@ BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
         osError = EINTR;
         break;
       case WSAEMSGSIZE :
-        osError |= 0x40000000;
+        osError |= PWIN32ErrorFlag;
         lastError = BufferTooSmall;
         return FALSE;
       case WSAEWOULDBLOCK :
       case WSAETIMEDOUT :
-        osError |= 0x40000000;
+        osError |= PWIN32ErrorFlag;
         lastError = Timeout;
         return FALSE;
       default :
-        osError |= 0x40000000;
+        osError |= PWIN32ErrorFlag;
     }
   }
 
@@ -1601,7 +1594,7 @@ PMutex::PMutex()
 
 void PMutex::Signal()
 {
-  ::ReleaseMutex(handle);
+  PAssertOS(::ReleaseMutex(handle));
 }
 
 
@@ -1616,7 +1609,7 @@ PSyncPoint::PSyncPoint()
 
 void PSyncPoint::Signal()
 {
-  ::SetEvent(handle);
+  PAssertOS(::SetEvent(handle));
 }
 
 

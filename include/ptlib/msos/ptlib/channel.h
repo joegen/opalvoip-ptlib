@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.7  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -59,6 +63,9 @@ class PWin32Overlapped : public OVERLAPPED
     ~PWin32Overlapped();
     void Reset();
 };
+
+
+enum { PWIN32ErrorFlag = 0x40000000 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
