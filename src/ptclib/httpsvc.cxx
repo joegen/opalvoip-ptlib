@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.52  2000/05/02 01:50:37  robertj
+ * Rewrite of PServiceMacro so does not use malloc (indirectly).
+ *
  * Revision 1.51  2000/01/27 00:35:52  robertj
  * Fixed benign warning about uninitialised variables in MSVC optimised compile.
  *
@@ -1059,31 +1062,62 @@ static BOOL ExtractVariables(const PString & args,
 
 #undef new
 
-class PServiceMacro : public PCaselessString
+class PServiceMacro : public PObject
 {
   public:
     PServiceMacro(const char * name);
+    PServiceMacro(const PCaselessString & name);
+    Comparison Compare(const PObject & obj) const;
     virtual PString Translate(PHTTPRequest & request, const PString & args) const = 0;
+  protected:
+    const char * macroName;
+    PServiceMacro * link;
+    static PServiceMacro * list;
+  friend class PServiceMacros_list;
 };
+
+PServiceMacro * PServiceMacro::list;
+
+
+PServiceMacro::PServiceMacro(const char * name)
+{
+  macroName = name;
+  link = list;
+  list = this;
+}
+
+
+PServiceMacro::PServiceMacro(const PCaselessString & name)
+{
+  macroName = name;
+}
+
+
+PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
+  return (Comparison)stricmp(macroName, ((const PServiceMacro &)obj).macroName);
+}
+
 
 
 PSORTED_LIST(PServiceMacros_base, PServiceMacro);
 
-
 class PServiceMacros_list : public PServiceMacros_base
 {
   public:
-    PServiceMacros_list() { DisallowDeleteObjects(); }
+    PServiceMacros_list();
 };
 
 
-static PServiceMacros_list ServiceMacros;
-
-
-PServiceMacro::PServiceMacro(const char * name)
-  : PCaselessString(name)
+PServiceMacros_list::PServiceMacros_list()
 {
-  ServiceMacros.Append(this);
+  DisallowDeleteObjects();
+  PServiceMacro * macro = PServiceMacro::list;
+  while (macro != NULL) {
+    Append(macro);
+    macro = macro->link;
+  }
 }
 
 
@@ -1446,7 +1480,8 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
     PString subs;
     if (!PHTTPServiceProcess::Current().SubstituteEquivalSequence(request, include, subs)) {
       PCaselessString cmd = include.Left(include.Find(' '));
-      PINDEX idx = ServiceMacros.GetValuesIndex(cmd);
+      static PServiceMacros_list ServiceMacros;
+      PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd));
       if (idx != P_MAX_INDEX)
         subs = ServiceMacros[idx].Translate(request, include.Mid(cmd.GetLength()).LeftTrim());
     }
