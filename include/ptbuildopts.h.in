@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.38  2005/01/03 12:48:41  csoutheren
+ * Added new configure options and ability to disable/enable modules
+ *
  * Revision 1.37  2004/11/17 12:50:44  csoutheren
  * Win32 DCOM support, thanks to Simon Horne
  *
@@ -433,20 +436,33 @@
 
 /////////////////////////////////////////////////
 //
-// Video capture (Linux and xBSD)
+// various non-core functions
 //
 
+#undef P_TTS
+#undef P_ASN
+#undef P_STUN
+#undef P_PIPECHAN
+#undef P_DTMF
+#undef P_WAVFILE
+#undef P_SOCKS
+#undef P_FTP
+#undef P_SNMP
+#undef P_TELNET
+#undef P_REMCONN
+#undef P_SERIAL
+#undef P_POP3SMTP
+#undef P_AUDIO
+#undef P_ALSA
+#undef P_VIDEO
 #undef NO_VIDEO_CAPTURE
 
-
-/////////////////////////////////////////////////
-//
-// Firewire (Linux only)
-//
-
-#undef TRY_1394AVC
-#undef TRY_1394DC
-
+#undef P_VXML
+#undef P_JABBER
+#undef P_XMLRPC
+#undef P_SOAP
+#undef P_HTTPSVC
+#undef P_HTTP
 
 /////////////////////////////////////////////////
 //
