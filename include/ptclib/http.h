@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.50  2001/10/03 00:26:34  robertj
+ * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
+ *
  * Revision 1.49  2001/09/28 08:55:15  robertj
  * More changes to support restartable PHTTPClient
  *
@@ -392,6 +395,8 @@ class PHTTP : public PInternetProtocol
     static const char * MIMEVersionTag;
     static const char * ConnectionTag;
     static const char * KeepAliveTag;
+    static const char * TransferEncodingTag;
+    static const char * ChunkedTag;
     static const char * ProxyConnectionTag;
     static const char * ProxyAuthorizationTag;
     static const char * ProxyAuthenticateTag;
@@ -502,7 +507,7 @@ class PHTTPClient : public PHTTP
 
     /// Read the body of the HTTP command
     BOOL ReadContentBody(
-      const PMIMEInfo & replyMIME,
+      PMIMEInfo & replyMIME,
       PBYTEArray & body
     );
 
