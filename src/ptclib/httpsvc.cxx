@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.4 1996/08/08 13:36:39 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.5 1996/08/19 13:39:55 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.5  1996/08/19 13:39:55  robertj
+ * Fixed race condition in system restart logic.
+ *
  * Revision 1.4  1996/08/08 13:36:39  robertj
  * Fixed Registation page so no longer has static link, ie can be DLLed.
  *
@@ -41,7 +44,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(
                     minorVersion, status, buildNumber),
     gifText(_gifName)
 {
-  restartSystem = FALSE;
+  restartThread = NULL;
 }
 
 
@@ -74,6 +77,29 @@ void PHTTPServiceProcess::GetPageHeader(PHTML & html, const PString & title)
 }
 
 
+void PHTTPServiceProcess::BeginRestartSystem()
+{
+  if (restartThread == NULL) {
+    restartThread = PThread::Current();
+    OnConfigChanged();
+  }
+}
+
+
+void PHTTPServiceProcess::CompleteRestartSystem()
+{
+  if (restartThread == NULL)
+    return;
+  
+  if (restartThread != PThread::Current())
+    return;
+
+  if (!Initialise("Configuration changed - reloaded"))
+    Terminate();
+  restartThread = NULL;
+}
+
+
 //////////////////////////////////////////////////////////////
 
 void PHTTPServiceThread::Main()
@@ -93,12 +119,7 @@ void PHTTPServiceThread::Main()
   socket.Close();
 
   // if a restart was requested, then do it
-  if (process.GetRestartSystem()) {
-    process.OnConfigChanged();
-    process.SetRestartSystem(FALSE);
-    if (!process.Initialise("Configuration changed - reloaded"))
-      process.Terminate();
-  }
+  process.CompleteRestartSystem();
 }
 
 
@@ -139,10 +160,8 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                        PHTML & reply)
 {
   BOOL retval = PHTTPConfig::Post(request, data, reply);
-  if (request.code == PHTTPSocket::OK) {
-    process.SetRestartSystem(TRUE);
-    process.OnConfigChanged();
-  }
+  if (request.code == PHTTPSocket::OK)
+    process.BeginRestartSystem();
   return retval;
 }
 
