@@ -1,14 +1,36 @@
 /*
- * $Id: ftp.h,v 1.7 1996/10/26 01:39:41 robertj Exp $
+ * ftp.h
+ *
+ * File Transfer Protocol Server/Client channel classes
+ *  As per RFC 959 and RFC 1123
  *
  * Portable Windows Library
  *
- * FTP Server/Client Socket Class Declarations
- *  As per RFC 959 and RFC 1123
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.8  1998/09/23 06:19:26  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.7  1996/10/26 01:39:41  robertj
  * Added check for security breach using 3 way FTP transfer or use of privileged PORT.
  *
