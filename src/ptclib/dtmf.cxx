@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.8  2004/09/09 04:00:01  csoutheren
+ * Added DTMF encoding functions
+ *
  * Revision 1.7  2003/03/17 07:39:25  robertj
  * Fixed possible invalid value causing DTMF detector to crash.
  *
@@ -39,6 +42,7 @@
 #include <ptlib.h>
 #include <ptclib/dtmf.h>
 
+#include <math.h>
 
 /* Integer math scaling factor */
 #define FSC	(1<<12)
@@ -138,3 +142,162 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes)
 	}
 	return keyString;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+//
+//  implement a PCM tone generator
+//
+//  For reference, the US tones are (as indictated by http://www.elexp.com/t_tele.htm)
+//
+//   Dial Tone 350 Hz + 440 Hz Continuous 
+//   Ring Back 440 Hz + 480 Hz ON 2.0, OFF 4.0 seconds 
+//   Busy 480 Hz + 620 Hz On 0.5, OFF 0.5 seconds 
+//
+
+// this code is based on code copied from http://www-users.cs.york.ac.uk/~fisher/telecom/tones/teletones.C
+
+
+#define   DTMF_LEN  100
+
+#ifndef M_PI
+#define M_PI        3.1415926
+#endif
+
+#define TWOPI	      (2.0 * M_PI)
+#define MAXSTR	     512
+#define SAMPLERATE   8000
+#define SINEBITS     11
+#define SINELEN	     (1 << SINEBITS)
+#define TWO32	      4294967296.0	/* 2^32 */
+
+
+static double sinetab[SINELEN];
+
+static double amptab[2] = { 8191.75, 16383.5 };
+
+
+static inline int ifix(double x) 
+{ 
+  return (x >= 0.0) ? (int) (x+0.5) : (int) (x-0.5); 
+}
+
+// given 32-bit pointer ptr, return corresponding element from sine table
+static inline double sine(unsigned int ptr)
+{ 
+  return sinetab[ptr >> (32-SINEBITS)];
+}
+
+// given frequency f, return corresponding phase increment 
+static inline int phinc(double f)
+{ 
+  return ifix(TWO32 * f / (double) SAMPLERATE);
+}
+
+// DTMF frequencies as per http://www.commlinx.com.au/DTMF_frequencies.htm
+
+static double dtmfFreqs[16][2] = {
+  { 941.0, 1336.0 },  // 0
+  { 697.0, 1209.0 },  // 1
+  { 697.0, 1336.0 },  // 2
+  { 697.0, 1477.0 },  // 3
+  { 770.0, 1209.0 },  // 4
+  { 770.0, 1336.0 },  // 5
+  { 770.0, 1477.0 },  // 6
+  { 852.0, 1209.0 },  // 7
+  { 852.0, 1336.0 },  // 8
+  { 852.0, 1477.0 },  // 9
+  { 697.0, 1633.0 },  // A
+  { 770.0, 1633.0 },  // B
+  { 852.0, 1633.0 },  // C
+  { 941.0, 1633.0 },  // D
+  { 941.0, 1209.0 },  // *
+  { 941.0, 1477.0 }   // #
+};
+
+////////////////////////////////////////////////////////////////////////
+
+PMutex & PDTMFEncoder::GetMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
+void PDTMFEncoder::MakeSineTable()
+{ 
+  PWaitAndSignal m(GetMutex());
+  static BOOL sineTabInit = FALSE;
+
+  if (!sineTabInit) {
+    for (int k = 0; k < SINELEN; k++) { 
+      double th = TWOPI * (double) k / (double) SINELEN;
+      sinetab[k] = sin(th);
+    }
+    sineTabInit = TRUE;
+  }
+}
+
+void PDTMFEncoder::AddTone(char _digit, unsigned len)
+{
+  char digit = (char)toupper(_digit);
+  if ('0' <= digit && digit <= '9')
+    digit = digit - '0';
+
+  else if ('A' <= digit && digit <= 'D')
+    digit = digit + 10 - 'A';
+
+  else if (digit == '*')
+    digit = 14;
+
+  else if (digit == '#')
+    digit = 15;
+
+  else
+    return;
+
+  AddTone(dtmfFreqs[digit][0], dtmfFreqs[digit][1], len);
+}
+
+void PDTMFEncoder::AddTone(const PString & str, unsigned len)
+{
+  PINDEX i;
+  for (i = 0; i < str.GetLength(); i++)
+    AddTone(str[i], len);
+}
+
+void PDTMFEncoder::AddTone(double f1, double f2, unsigned ms)
+{
+  int ak = 0;
+
+  MakeSineTable();
+
+  PINDEX dataPtr = GetSize();
+
+  double amp = amptab[ak];
+  int phinc1 = phinc(f1), phinc2 = phinc(f2);
+  int ns = ms * (SAMPLERATE/1000);
+  unsigned int ptr1 = 0, ptr2 = 0;
+
+  for (int n = 0; n < ns; n++) { 
+
+    double val = amp * (sine(ptr1) + sine(ptr2));
+    int ival = ifix(val);
+    if (ival < -32768)
+      ival = -32768;
+    else if (val > 32767) 
+      ival = 32767;
+
+    if (dataPtr == GetSize()) 
+      SetSize(GetSize() + 1024);
+
+    (*this)[dataPtr++] = (BYTE)(ival & 0xff);
+    (*this)[dataPtr++] = (BYTE)(ival >> 8);
+
+    ptr1 += phinc1; 
+    ptr2 += phinc2;
+  }
+
+  SetSize(dataPtr);
+}
+
+////////////////////////////////////////////////////////////////////////////
