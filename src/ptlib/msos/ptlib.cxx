@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.66  2003/03/31 08:38:07  robertj
+ * Added cygwin compatible usage of NT secureity access control lists in
+ *   getting and setting "unix like" file permissions.
+ *
  * Revision 1.65  2002/12/18 05:31:06  robertj
  * Moved PTimeInterval::GetInterval() to common code.
  *
@@ -788,52 +792,172 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 
 
 #ifdef _WIN32_WCE
+
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
-	USES_CONVERSION;
-
-	PString fn = name;
-	PINDEX pos = fn.GetLength()-1;
-	while (PDirectory::IsSeparator(fn[pos]))
-		pos--;
-	fn.Delete(pos+1, P_MAX_INDEX);
-
-	HANDLE hFile = CreateFile(A2T((const char*)fn),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
-	if (hFile==INVALID_HANDLE_VALUE) 
-		return false;
-
-	bool res=false;
-	BY_HANDLE_FILE_INFORMATION FInfo;
-	if (GetFileInformationByHandle(hFile,&FInfo))
-	{
-		info.created = FileTimeToTime(FInfo.ftCreationTime);
-		info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
-		info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
-		info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);		
-
-		info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
-
-		if (FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY==0)
-			info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
-
-		if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
-		{
-			info.type = PFileInfo::SubDirectory;
-			info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
-		}
-		else
-		{
-			info.type = PFileInfo::RegularFile;
-		}
-		info.hidden = (FInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)!=0;
-		res=true;
-	}
-
-	CloseHandle(hFile);
-	return res;
+  USES_CONVERSION;
+  
+  PString fn = name;
+  PINDEX pos = fn.GetLength()-1;
+  while (PDirectory::IsSeparator(fn[pos]))
+    pos--;
+  fn.Delete(pos+1, P_MAX_INDEX);
+  
+  HANDLE hFile = CreateFile(A2T((const char*)fn),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+  if (hFile==INVALID_HANDLE_VALUE) 
+    return false;
+  
+  bool res=false;
+  BY_HANDLE_FILE_INFORMATION FInfo;
+  if (GetFileInformationByHandle(hFile,&FInfo))
+  {
+    info.created = FileTimeToTime(FInfo.ftCreationTime);
+    info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
+    info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
+    info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);		
+    
+    info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
+    
+    if (FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY==0)
+      info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
+    
+    if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
+    {
+      info.type = PFileInfo::SubDirectory;
+      info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
+    }
+    else
+    {
+      info.type = PFileInfo::RegularFile;
+    }
+    info.hidden = (FInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)!=0;
+    res=true;
+  }
+  
+  CloseHandle(hFile);
+  return res;
 }
 
 #else // !_WIN32_WCE
+
+#if defined(_WIN32)
+
+static void TwiddleBits(int newPermissions,
+                        int & oldPermissions,
+                        int permission,
+                        DWORD & mask,
+                        DWORD access)
+{
+  if (newPermissions < 0) {
+    if ((mask&access) == access)
+      oldPermissions |= permission;
+  }
+  else {
+    if ((newPermissions&permission) != 0)
+      mask |= access;
+    else
+      mask &= ~access;
+  }
+}
+
+
+static int FileSecurityPermissions(const PFilePath & filename, int newPermissions)
+{
+  // All of the following is to support cygwin style permissions
+
+  PBYTEArray storage(sizeof(SECURITY_DESCRIPTOR));
+  SECURITY_DESCRIPTOR * descriptor = (SECURITY_DESCRIPTOR *)storage.GetPointer();
+  DWORD lengthNeeded = 0;
+
+  if (!GetFileSecurity(filename,
+                       DACL_SECURITY_INFORMATION,
+                       descriptor,
+                       storage.GetSize(),
+                       &lengthNeeded)) {
+    if (GetLastError() != ERROR_INSUFFICIENT_BUFFER || lengthNeeded == 0)
+      return -1;
+
+    descriptor = (SECURITY_DESCRIPTOR *)storage.GetPointer(lengthNeeded);
+    if (!GetFileSecurity(filename,
+                         DACL_SECURITY_INFORMATION,
+                         descriptor,
+                         storage.GetSize(),
+                         &lengthNeeded))
+      return -1;
+  }
+
+  BOOL daclPresent, daclDefaulted;
+  PACL dacl;
+  if (!GetSecurityDescriptorDacl(descriptor, &daclPresent, &dacl, &daclDefaulted))
+    return -1;
+
+  if (!daclPresent || daclDefaulted)
+    return -1;
+
+  ACL_SIZE_INFORMATION aclSize;
+  if (!GetAclInformation(dacl, &aclSize, sizeof(aclSize), AclSizeInformation))
+    return -1;
+
+  int oldPermissions = 0;
+  int cygwinMask = 0;
+
+  for (DWORD aceIndex = 0; aceIndex< aclSize.AceCount; aceIndex++) {
+    LPVOID acePtr;
+    GetAce(dacl, aceIndex, &acePtr);
+    ACE_HEADER * aceHdr = (ACE_HEADER *)acePtr;
+    if (aceHdr->AceType == ACCESS_ALLOWED_ACE_TYPE) {
+      ACCESS_ALLOWED_ACE * ace = (ACCESS_ALLOWED_ACE *)acePtr;
+      PString account, domain;
+      DWORD accountLen = 1000;
+      DWORD domainLen = 1000;
+      SID_NAME_USE usage;
+      if (LookupAccountSid(NULL, &ace->SidStart,
+                           account.GetPointer(1000), &accountLen,
+                           domain.GetPointer(1000), &domainLen,
+                           &usage)) {
+        if (account *= "None") {
+          cygwinMask |= 2;
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::WorldRead,
+                      ace->Mask, FILE_READ_DATA|FILE_READ_ATTRIBUTES|FILE_READ_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::WorldWrite,
+                      ace->Mask, FILE_WRITE_DATA|FILE_APPEND_DATA|FILE_WRITE_ATTRIBUTES|FILE_WRITE_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::WorldExecute,
+                      ace->Mask, FILE_EXECUTE);
+        }
+        else if (account *= "EVERYONE") {
+          cygwinMask |= 1;
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::GroupRead,
+                      ace->Mask, FILE_READ_DATA|FILE_READ_ATTRIBUTES|FILE_READ_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::GroupWrite,
+                      ace->Mask, FILE_WRITE_DATA|FILE_APPEND_DATA|FILE_WRITE_ATTRIBUTES|FILE_WRITE_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::GroupExecute,
+                      ace->Mask, FILE_EXECUTE);
+        }
+        else if (account == PProcess::Current().GetUserName()) {
+          cygwinMask |= 4;
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::UserRead,
+                      ace->Mask, FILE_READ_DATA|FILE_READ_ATTRIBUTES|FILE_READ_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::UserWrite,
+                      ace->Mask, FILE_WRITE_DATA|FILE_APPEND_DATA|FILE_WRITE_ATTRIBUTES|FILE_WRITE_EA);
+          TwiddleBits(newPermissions, oldPermissions, PFileInfo::UserExecute,
+                      ace->Mask, FILE_EXECUTE);
+        }
+      }
+    }
+  }
+
+  // Only do it if have the three ACE entries as per cygwin
+  if (cygwinMask != 7)
+    return -1;
+
+  if (newPermissions != -1)
+    SetFileSecurity(filename, DACL_SECURITY_INFORMATION, descriptor);
+
+  return oldPermissions;
+}
+
+#endif
+
 
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
@@ -855,16 +979,19 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   info.accessed = (s.st_atime < 0) ? 0 : s.st_atime;
   info.size = s.st_size;
 
-  info.permissions = 0;
-  if ((s.st_mode&S_IREAD) != 0)
-    info.permissions |=
-                PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
-  if ((s.st_mode&S_IWRITE) != 0)
-    info.permissions |=
-             PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
-  if ((s.st_mode&S_IEXEC) != 0)
-    info.permissions |=
-       PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
+#if defined(_WIN32)
+  info.permissions = FileSecurityPermissions(name, -1);
+  if (info.permissions < 0)
+#endif
+  {
+    info.permissions = 0;
+    if ((s.st_mode&S_IREAD) != 0)
+      info.permissions |= PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
+    if ((s.st_mode&S_IWRITE) != 0)
+      info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
+    if ((s.st_mode&S_IEXEC) != 0)
+      info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
+  }
 
   switch (s.st_mode & S_IFMT) {
     case S_IFREG :
@@ -895,6 +1022,10 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
 BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 {
+#if defined(_WIN32)
+  FileSecurityPermissions(name, permissions);
+#endif
+
   return _chmod(name, permissions&(_S_IWRITE|_S_IREAD)) == 0;
 }
 
