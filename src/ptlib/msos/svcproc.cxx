@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.46  1998/10/18 14:28:34  robertj
+ * Renamed argv/argc to eliminate accidental usage.
+ * Fixed strange problem withs etting debug window tabstops in optimised version.
+ *
  * Revision 1.45  1998/10/13 14:14:09  robertj
  * Added thread ID to log.
  * Added heap debug display to service menus.
@@ -470,8 +474,8 @@ int PServiceProcess::_main(void * arg)
   isWin95 = GetOSName() == "95";
 
   BOOL processedCommand = FALSE;
-  while (--argc > 0) {
-    if (ProcessCommand(*++argv))
+  for (PINDEX a = 0; a < arguments.GetCount(); a++) {
+    if (ProcessCommand(arguments[a]))
       processedCommand = TRUE;
   }
 
@@ -675,15 +679,15 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
                                hInstance,
                                NULL);
     SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 128000, 0);
-    static const DWORD tabs[] = {
+    DWORD TabStops[] = {
       DATE_WIDTH,
       DATE_WIDTH+THREAD_WIDTH,
       DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH,
       DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH,
       DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH,
-      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH+32  // Stanard tab width
+      DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH+32  // Standard tab width
     };
-    SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(tabs), (LPARAM)tabs);
+    SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
   }
 
   return TRUE;
