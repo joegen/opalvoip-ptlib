@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.43  1999/07/03 04:31:53  robertj
+# Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
+#
 # Revision 1.42  1999/06/28 09:12:01  robertj
 # Fixed problems with the order in which macros are defined especially on BeOS & Solaris
 #
@@ -444,10 +447,6 @@ STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 # add library directory to library path and include the library
 LDFLAGS		+= -L$(LIBDIR)
 LDLIBS		+= -l$(PTLIB) 
-
-
-#  clean whitespace out of source file list
-SOURCES		:= $(strip $(SOURCES))
 
 
 # End of unix.mak
