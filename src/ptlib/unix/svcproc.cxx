@@ -66,6 +66,7 @@ int PServiceProcess::_main(int parmArgc,
 
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
+
   args.Parse("vdchx");
 
   const char * statusToStr[NumCodeStatuses] = { "Alpha", "Beta", "Release" };

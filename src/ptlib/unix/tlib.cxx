@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.16  1996/09/03 11:55:19  craigs
+ * Removed some potential problems with return values from system calls
+ *
  * Revision 1.15  1996/06/29 01:43:11  craigs
  * Moved AllocateStack to switch.cxx to keep platform dependent routines in one place
  *
@@ -87,7 +90,7 @@ extern "C" int select(int width,
 #endif
 
 PProcess * PProcessInstance;
-ostream  * PErrorStream = &cerr;
+//ostream  * PErrorStream = &cerr;
 
 void PProcess::Construct()
 {
@@ -165,7 +168,7 @@ PString PProcess::GetHomeDir ()
   struct passwd *pw = NULL;
 
   pw = getpwuid (geteuid ());
-  if (pw != NULL) 
+  if (pw != NULL && pw->pw_dir != NULL) 
     dest = pw->pw_dir;
   else if ((ptr = getenv ("HOME")) != NULL) 
     dest = ptr;
@@ -188,7 +191,13 @@ PString PProcess::GetUserName() const
 
 {
   struct passwd * pw = getpwuid (getuid());
-  return PString(pw->pw_name);
+  char * ptr;
+  if (pw != NULL && pw->pw_name != NULL)
+    return PString(pw->pw_name);
+  else if ((ptr = getenv("USER")) != NULL)
+    return PString(ptr);
+  else
+    return PString("user");
 }
 
 void PProcess::PXShowSystemWarning(PINDEX num)
@@ -230,10 +239,11 @@ PThread::~PThread()
   Terminate();
 
   // now we can terminate
+  if (stackBase != NULL)
 #if defined(P_LINUX)
-  munmap(stackBase, stackTop-stackBase+1);
+    munmap(stackBase, stackTop-stackBase+1);
 #else
-  free(stackBase);
+    free(stackBase);
 #endif
 }
 
