@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.57  2002/06/28 05:17:06  yurik
+ * ifndef'd ostrstream as it does not yet exist on wince
+ *
  * Revision 1.56  2002/06/27 06:10:39  robertj
  * Removed PAssert on allocation breakpoint as can often caus a deadlock.
  *
@@ -271,6 +274,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   int err = errno;
 #endif
 
+#ifndef _WIN32_WCE
   ostrstream str;
   str << "Assertion fail: ";
   if (msg != NULL)
@@ -283,6 +287,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   str << ends;
 
   PAssertFunc(str.str());
+#endif // !_WIN32_WCE
 }
 
 
