@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.40 1995/11/09 12:18:53 robertj Exp $
+ * $Id: pwlib.h,v 1.41 1996/08/08 10:08:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
+ * Revision 1.41  1996/08/08 10:08:49  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.40  1995/11/09 12:18:53  robertj
  * Added static (filled) rectange control.
  *
@@ -522,7 +525,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PScrollable
 
-#include <scrollab.h>
+#include <pwlib/scrollab.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -534,7 +537,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PBalloon
 
-#include <balloon.h>
+#include <pwlib/balloon.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,25 +567,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PCommandSink, PCommandSource
 
-#include <commands.h>
+#include <pwlib/commands.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PClipboard
 
 #include <clipbrd.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PSound
-
-#include <sound.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PConfiguration
-
-#include <config.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -595,9 +586,9 @@
 
 #if defined(P_USE_INLINES)
 #include <pwlib.inl>
-#include <pwmisc.inl>
-#include <graphics.inl>
-#include <interact.inl>
+#include <pwlib/pwmisc.inl>
+#include <pwlib/graphics.inl>
+#include <pwlib/interact.inl>
 #endif
 
 #endif // _PWLIB_H
