@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.26  1999/01/11 12:10:32  robertj
+ * Improved operating system version display.
+ *
+ * Revision 1.26  1999/01/11 05:20:12  robertj
+ * Added OS to the -v display text.
+ *
  * Revision 1.25  1998/12/21 06:37:14  robertj
  * Fixed GNu warning on solaris x86
  *
@@ -188,16 +194,14 @@ int PServiceProcess::_main(void *)
 
   args.Parse("vdchxpktl:u:g:");
 
-  const char * statusToStr[NumCodeStatuses] = { "Alpha", "Beta", "Release" };
-
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
-    PError << "Product Name : " << productName << endl
-           << "Manufacturer : " << manufacturer << endl
-           << "Major version: " << majorVersion << endl
-           << "Minor version: " << minorVersion << endl
-           << "Code status  : " << statusToStr[status] << endl
-           << "Build number : " << buildNumber << endl;
+    PError << "Product Name: " << productName << endl
+           << "Manufacturer: " << manufacturer << endl
+           << "Version     : " << GetVersion(TRUE) << endl
+           << "System      : " << GetOSName() << '-'
+                               << GetOSHardware() << ' '
+                               << GetOSVersion() << endl;
     return 0;
   }
 
