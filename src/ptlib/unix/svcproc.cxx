@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.68  2002/06/13 08:50:11  rogerh
+ * GCC 3.1 uses slightly different #includes
+ *
  * Revision 1.67  2002/06/05 12:29:16  craigs
  * Changes for gcc 3.1
  *
@@ -190,7 +193,11 @@
 
 #include <syslog.h>
 #include <stdarg.h>
+#if (__GNUC__ >= 3)
+#include <fstream>
+#else
 #include <fstream.h>
+#endif
 #include <pwd.h>
 #include <grp.h>
 #include <signal.h>
