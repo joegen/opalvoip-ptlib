@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.h,v 1.4 1998/08/25 11:06:34 robertj Exp $
+ * $Id: ethsock.h,v 1.5 1998/09/14 12:27:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ethsock.h,v $
+ * Revision 1.5  1998/09/14 12:27:21  robertj
+ * Added function to parse type out of ethernet/802.2 frame.
+ *
  * Revision 1.4  1998/08/25 11:06:34  robertj
  * Fixed output of PEthSocket::Address variables to streams.
  *
@@ -97,6 +100,16 @@ PDECLARE_CLASS(PEthSocket, PSocket)
         BYTE payload[1492];
       } snap;
     };
+
+    void Parse(
+      WORD & type,      // Type of frame
+      BYTE * & payload, // Pointer to payload
+      PINDEX & length   // Length of payload (on input is full frame length)
+    );
+    /* Parse the Ethernet Frame to extract the frame type and the address of
+       the payload. The length should be the original bytes read in the frame
+       and may be altered to information contained in the frame, if available.
+     */
   };
 #pragma pack()
 
