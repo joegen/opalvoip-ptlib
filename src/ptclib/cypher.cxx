@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.15 1996/07/15 10:33:42 robertj Exp $
+ * $Id: cypher.cxx,v 1.16 1996/08/17 09:56:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.16  1996/08/17 09:56:02  robertj
+ * Fixed big endian processor platform conformance.
+ *
  * Revision 1.15  1996/07/15 10:33:42  robertj
  * Changed memory block base64 conversion functions to be void *.
  * Changed memory block cypher conversion functions to be void *.
@@ -547,10 +550,10 @@ static const DWORD TEADelta = 0x9e3779b9;    // Magic number for key schedule
 
 void PTEACypher::Initialise(BOOL)
 {
-  k0 = ((const DWORD *)(const BYTE *)key)[0];
-  k1 = ((const DWORD *)(const BYTE *)key)[1];
-  k2 = ((const DWORD *)(const BYTE *)key)[2];
-  k3 = ((const DWORD *)(const BYTE *)key)[3];
+  k0 = ((const PUInt32l *)(const BYTE *)key)[0];
+  k1 = ((const PUInt32l *)(const BYTE *)key)[1];
+  k2 = ((const PUInt32l *)(const BYTE *)key)[2];
+  k3 = ((const PUInt32l *)(const BYTE *)key)[3];
 }
 
 
@@ -696,7 +699,12 @@ BOOL PSecureConfig::ValidatePending()
             1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
   PString expiry = expiryDate.AsString("d MMME yyyy", PTime::GMT);
 
-  PString options(PString::Unsigned, (DWORD)*(PUInt32b*)&info[sizeof(code)+1]);
+  // This is for alignment problems on processors that care about such things
+  PUInt32b opt;
+  void * dst = &opt;
+  void * src = &info[sizeof(code)+1];
+  memcpy(dst, src, sizeof(opt));
+  PString options(PString::Unsigned, (DWORD)opt);
 
   PMessageDigest5 digestor;
   PINDEX i;
