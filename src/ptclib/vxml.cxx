@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.47  2004/07/23 00:59:26  csoutheren
+ * Check in latest changes
+ *
  * Revision 1.46  2004/07/17 09:44:12  rjongbloed
  * Fixed missing set of last write count if not actually writing frames.
  *
@@ -283,6 +286,60 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilename> vxmlPlayableFilenameFacto
 
 ///////////////////////////////////////////////////////////////
 
+BOOL PVXMLPlayableFilenameList::Open(PVXMLChannel & chan, const PStringArray & _list, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+{ 
+  for (PINDEX i = 0; i < _list.GetSize(); ++i) {
+    PString fn = chan.AdjustWavFilename(_list[i]);
+    if (PFile::Exists(fn))
+      filenames.AppendString(fn);
+  }
+
+  if (filenames.GetSize() == 0)
+    return FALSE;
+
+  currentIndex = 0;
+
+  return PVXMLPlayable::Open(chan, _delay, ((_repeat >= 0) ? _repeat : 1) * filenames.GetSize(), _autoDelete); 
+}
+
+void PVXMLPlayableFilenameList::OnRepeat(PVXMLChannel & outgoingChannel)
+{
+  PFilePath fn = filenames[currentIndex++ % filenames.GetSize()];
+
+  PChannel * chan = NULL;
+
+  // check the file extension and open a .wav or a raw (.sw or .g723) file
+  if ((fn.Right(4)).ToLower() == ".wav")
+    chan = outgoingChannel.CreateWAVFile(fn);
+  else {
+    PFile * fileChan = new PFile(fn);
+    if (fileChan->Open(PFile::ReadOnly))
+      chan = fileChan;
+    else {
+      delete fileChan;
+    }
+  }
+
+  if (chan == NULL)
+    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
+  else {
+    PTRACE(3, "PVXML\tPlaying file \"" << fn << "\"");
+    outgoingChannel.SetReadChannel(chan, TRUE);
+  }
+}
+
+void PVXMLPlayableFilenameList::OnStop() 
+{
+  if (autoDelete)  {
+    for (PINDEX i = 0; i < filenames.GetSize(); ++i)
+      PFile::Remove(filenames[i]); 
+  }
+}
+
+PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilenameList> vxmlPlayableFilenameListFactory("FileList");
+
+///////////////////////////////////////////////////////////////
+
 PVXMLPlayableCommand::PVXMLPlayableCommand()
 { 
   pipeCmd = NULL; 
@@ -460,8 +517,8 @@ BOOL PVXMLCache::Get(const PString & prefix,
 
   dataFn = CreateFilename(prefix, key, "." + fileType);
   PFilePath typeFn = CreateFilename(prefix, key, "_type.txt");
-  if (!PFile::Exists(dataFn) || PFile::Exists(typeFn)) {
-    PTRACE(4, "Key " << key << " not found in cache");
+  if (!PFile::Exists(dataFn) || !PFile::Exists(typeFn)) {
+    PTRACE(4, "Key \"" << key << "\" not found in cache");
     return FALSE;
   }
 
@@ -1395,6 +1452,25 @@ BOOL PVXMLSession::PlayText(const PString & _text,
                                      PINDEX repeat, 
                                      PINDEX delay)
 {
+
+  PStringArray list;
+  if (!ConvertTextToFilenameList(_text, type, list, !(GetVar("caching") *= "safe")) || (list.GetSize() == 0)) {
+    PTRACE(1, "PVXML\tCannot convert text to speech");
+    return FALSE;
+  }
+
+  PVXMLPlayableFilenameList * playable = new PVXMLPlayableFilenameList;
+  if (!playable->Open(*vxmlChannel, list, delay, repeat, TRUE)) {
+    delete playable;
+    PTRACE(1, "PVXML\tCannot create playable for filename list");
+    return FALSE;
+  }
+
+  return vxmlChannel->QueuePlayable(playable);
+}
+
+BOOL PVXMLSession::ConvertTextToFilenameList(const PString & _text, PTextToSpeech::TextType type, PStringArray & filenameList, BOOL useCache)
+{
   PString prefix = psprintf("tts%i", type);
 
   PStringArray lines = _text.Lines();
@@ -1406,8 +1482,6 @@ BOOL PVXMLSession::PlayText(const PString & _text,
 
     BOOL spoken = FALSE;
     PFilePath dataFn;
-
-    BOOL useCache = !(GetVar("caching") *= "safe");
 
     // see if we have converted this text before
     PString contentType;
@@ -1431,20 +1505,17 @@ BOOL PVXMLSession::PlayText(const PString & _text,
         if (useCache)
           PVXMLCache::GetResourceCache().Put(prefix, text, "wav", contentType, tmpfname, dataFn);
         else
-          PFile::Remove(tmpfname);
+          dataFn = tmpfname;
       }
     }
 
     if (!spoken) {
       PTRACE(2, "PVXML\tcannot speak text using TTS engine");
-    } else if (!PlayFile(dataFn, repeat, delay, FALSE)) {
-      PTRACE(2, "PVXML\tCannot play " << dataFn);
-    } else {
-      PTRACE(2, "PVXML\tText queued: \"" << text << '"');
-    }
+    } else 
+      filenameList.AppendString(dataFn);
   }
 
-  return TRUE;
+  return filenameList.GetSize() > 0;
 }
 
 void PVXMLSession::SetPause(BOOL _pause)
@@ -2209,8 +2280,8 @@ void PVXMLDigitsGrammar::Stop()
 
 //////////////////////////////////////////////////////////////////
 
-PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
-  : PDelayChannel(DelayReadsAndWrites, frameDelay, frameSize)
+PVXMLChannel::PVXMLChannel(unsigned _frameDelay, PINDEX frameSize)
+  : PDelayChannel(DelayReadsAndWrites, _frameDelay, frameSize)
 {
   vxmlInterface = NULL; 
 
@@ -2369,6 +2440,7 @@ BOOL PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
   totalData = 0;
   newItem->OnStart();
   newItem->Record(*this);
+  SetReadTimeout(frameDelay);
   return TRUE;
 }
 
@@ -2434,6 +2506,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         PVXMLPlayable * qItem = (PVXMLPlayable *)playQueue.GetAt(0);
         qItem->OnStart();
         qItem->Play(*this);
+        SetWriteTimeout(frameDelay);
       }
       silenceStuff = FALSE;
       totalData = 0;
@@ -2474,10 +2547,11 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         else
           delay = qItem->GetDelay();
 
-        // if the repeat count is zero, then dequeue entry 
-        if (qItem->GetRepeat() > 1)
+        // if the repeat count is non-zero, then repeat entry
+        if (qItem->GetRepeat() > 1) {
           qItem->SetRepeat(qItem->GetRepeat()-1);
-        else {
+          qItem->OnRepeat(*this);
+        } else {
           qItem->OnStop();
           delete playQueue.Dequeue();
         }
