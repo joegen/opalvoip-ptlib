@@ -27,7 +27,7 @@ extern "C" int ioctl(int, int, void *);
 #define	PORTLISTENV	"PWLIB_SERIALPORTS"
 #define	DEV_PREFIX	"/dev/"
 
-#include "../../common/src/serial.cxx"
+#include "../../common/ptlib/src/serial.cxx"
 
 ////////////////////////////////////////////////////////////////
 //
@@ -291,7 +291,7 @@ BYTE PSerialChannel::GetDataBits() const
 PSerialChannel::Parity PSerialChannel::GetParity() const
 {
   PAssertAlways(PUnimplementedFunction);
-  return 0;
+  return (Parity)0;
 }
 
 BOOL PSerialChannel::SetDataBits(BYTE data)
