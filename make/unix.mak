@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.180  2004/01/29 13:43:59  csoutheren
+# Moved some preprocessor symbols from the command line to include files
+# Modified to set P_HAS_SEMAPHORES to 0 for Linux kernels >= 2.6
+# Applied patches for Solaris thanks to Michal Zygmuntowicz
+#
 # Revision 1.179  2003/11/02 16:00:26  shawn
 # Panther requires -lresolv
 #
@@ -353,7 +358,7 @@ endif
 ifeq ($(P_SHAREDLIB),1)
 ifndef PROG
 STDCCFLAGS	+= -fPIC
-OPTCCFLAGS	+= -fPIC
+#OPTCCFLAGS	+= -fPIC
 endif # PROG
 endif # P_SHAREDLIB
 
@@ -361,8 +366,8 @@ endif # P_SHAREDLIB
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= $(shell $(PWLIBDIR)/make/ptlib-config --libdir)
 #LDFLAGS	+= --no-whole-archive --cref
-STDCCFLAGS      += -DP_USE_PRAGMA
-OPTCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
+#OPTCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 endif # linux
 
@@ -384,7 +389,7 @@ endif
 STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
 
 P_USE_RANLIB		:= 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 
 endif # FreeBSD
@@ -407,7 +412,7 @@ endif
 STDCCFLAGS	+= -DP_OPENBSD=$(OSRELEASE)
 
 P_USE_RANLIB		:= 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 
 endif # OpenBSD
@@ -458,7 +463,7 @@ endif
 endif
 
 P_USE_RANLIB		:= 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
 
 endif # NetBSD
@@ -489,7 +494,7 @@ ifeq ($(OSTYPE),sunos)
 
 P_USE_RANLIB		:= 1
 REQUIRES_SEPARATE_SWITCH = 1
-STDCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA	# migrated to configure
 
 endif # sunos
 
@@ -511,7 +516,7 @@ CC		:= gcc
 
 #P_USE_RANLIB		:= 1
 
-STDCCFLAGS      += -DP_USE_PRAGMA
+#STDCCFLAGS      += -DP_USE_PRAGMA	# migrated to configure
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /opt/openh323/lib
@@ -966,10 +971,11 @@ ENDLDLIBS	+= $(ESDDIR)/lib/libesd.a  # to avoid name conflicts
 HAS_ESD		= 1
 endif
 
-#define templates if available
-ifndef NO_PWLIB_TEMPLATES
-STDCCFLAGS	+= -DPHAS_TEMPLATES
-endif
+# feature migrated to configure.in
+# #define templates if available
+# ifndef NO_PWLIB_TEMPLATES
+# STDCCFLAGS	+= -DPHAS_TEMPLATES
+# endif
 
 # compiler flags for all modes
 #STDCCFLAGS	+= -fomit-frame-pointer

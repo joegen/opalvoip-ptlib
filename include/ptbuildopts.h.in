@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.23  2004/01/29 13:43:59  csoutheren
+ * Moved some preprocessor symbols from the command line to include files
+ * Modified to set P_HAS_SEMAPHORES to 0 for Linux kernels >= 2.6
+ * Applied patches for Solaris thanks to Michal Zygmuntowicz
+ *
  * Revision 1.22  2004/01/27 10:50:29  csoutheren
  * Added versio information to ptbuildopts.h
  *
@@ -99,8 +104,20 @@
 
 /////////////////////////////////////////////////
 //
-// Processor endianess
+// host type
 //
+
+#undef	P_LINUX
+#undef	P_FREEBSD
+#undef	P_OPENBSD
+#undef	P_NETBSD
+#undef	P_SOLARIS
+#undef	P_MACOSX
+#undef	P_UNKNOWN_OS 
+
+/////////////////////////////////////////////////
+//
+// Processor endianess
 //
 
 #undef PBYTE_ORDER
@@ -109,7 +126,6 @@
 /////////////////////////////////////////////////
 //
 // IP v6 Support
-//
 //
 
 #ifndef _WIN32_WCE
@@ -377,6 +393,11 @@
 #undef	PWLIB_MINOR
 #undef	PWLIB_BUILD
 #undef	PWLIB_VERSION
+
+// following features migrated from makefile
+#undef	P_USE_PRAGMA
+#undef	P_64BIT
+#undef	PHAS_TEMPLATES
 
 #endif // _PT_BUILDOPTS_H
 
