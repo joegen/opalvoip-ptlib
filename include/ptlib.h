@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.18  1998/11/30 22:08:56  robertj
+ * Fixed backslash in #include
+ *
  * Revision 1.17  1998/11/30 02:50:43  robertj
  * New directory structure
  *
@@ -91,7 +94,7 @@
 #endif
 
 
-#include <ptlib\contain.h>
+#include <ptlib/contain.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
