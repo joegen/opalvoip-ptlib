@@ -349,6 +349,21 @@ fi
 AC_DEFINE_UNQUOTED(P_HAS_STL_STREAMS, ${P_HAS_STL_STREAMS})
 
 dnl ########################################################################
+dnl see if using GNU glibc++, because then we have atomic integer operations
+
+P_HAS_ATOMIC_INT=0
+AC_MSG_CHECKING(if atomic integer available)
+AC_TRY_COMPILE([#include <bits/atomicity.h>],
+               [_Atomic_word val;], P_HAS_ATOMIC_INT=1)
+if test ${P_HAS_ATOMIC_INT} = 1 ; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_DEFINE_UNQUOTED(P_HAS_ATOMIC_INT, ${P_HAS_ATOMIC_INT})
+
+
+dnl ########################################################################
 dnl check for pthreads library
 
 dnl MSWIN_DISPLAY semaphore,Semaphore Support
