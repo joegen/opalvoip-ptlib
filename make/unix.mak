@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.144  2002/11/12 11:56:46  rogerh
+# Reinstate IPv6 support on the BSD platforms.
+#
 # Revision 1.143  2002/11/03 16:07:19  rogerh
 # Remove IPV6 from FreeBSD until debugging is completed.
 #
@@ -1404,11 +1407,11 @@ endif
 endif
 
 ## define IP v6 stuff
-#ifndef NO_IPv6
-#ifneq (,$(wildcard /usr/include/netinet6/in6.h))
-#STDCCFLAGS	+= -DP_HAS_IPV6
-#endif
-#endif
+ifndef NO_IPv6
+ifneq (,$(wildcard /usr/include/netinet6/in6.h))
+STDCCFLAGS	+= -DP_HAS_IPV6
+endif
+endif
 
 #define templates if available
 ifndef NO_PWLIB_TEMPLATES
