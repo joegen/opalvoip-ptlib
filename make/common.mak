@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.64  2001/10/31 00:45:20  robertj
+# Added debuglibs, optlibs and bothlibs targets, moving help to where these
+#   targets are in teh make file system.
+#
 # Revision 1.63  2001/10/12 07:25:33  robertj
 # Removed diff test, cvs commit already does compare
 #
@@ -314,7 +318,31 @@ endif
 #
 ######################################################################
 
-all :: debugdepend debug optdepend opt
+all :: debuglibs debugdepend debug optlibs optdepend opt
+
+help:
+	@echo "The following targets are available:"
+	@echo "    make debug       Make debug version of application"
+	@echo "    make opt         Make optimised version of application"
+	@echo "    make both        Make both versions of application"
+	@echo
+	@echo "    make debugclean  Remove debug files"
+	@echo "    make optclean    Remove optimised files"
+	@echo "    make clean       Remove both debug and optimised files"
+	@echo
+	@echo "    make debugdepend Create debug dependency files"
+	@echo "    make optdepend   Create optimised dependency files"
+	@echo "    make bothdepend  Create both debug and optimised dependency files"
+	@echo
+	@echo "    make debuglibs   Make debug libraries project depends on"
+	@echo "    make optlibs     Make optimised libraries project depends on"
+	@echo "    make bothlibs    Make both debug and optimised libraries project depends on"
+	@echo
+	@echo "    make all         Create debug & optimised dependencies & libraries"
+	@echo
+	@echo "    make version     Display version for project"
+	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
+	@echo "    make release     Package up optimised version int tar.gz file"
 
 
 ifdef DEBUG
@@ -337,6 +365,11 @@ debugdepend :: $(DEPS)
 
 optdepend ::
 	@$(MAKE) DEBUG= optdepend
+
+debuglibs :: libs
+
+optlibs ::
+	@$(MAKE) DEBUG= libs
 
 libs ::
 	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i debug; done
@@ -362,6 +395,11 @@ debugdepend ::
 optdepend :: $(DEPS)
 	@echo Created dependencies.
 
+debuglibs ::
+	@$(MAKE) DEBUG=1 libs
+
+optlibs :: libs
+
 libs ::
 	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i opt; done
 
@@ -370,7 +408,7 @@ endif
 both :: opt debug
 clean :: optclean debugclean
 bothdepend :: optdepend debugdepend
-
+bothlibs :: optlibs debuglibs
 
 optshared ::
 	$(MAKE) P_SHAREDLIB=1 opt
