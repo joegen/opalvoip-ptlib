@@ -1,6 +1,6 @@
 %{
 /*
- * $Id: asn_lex.l,v 1.2 1998/05/21 04:21:47 robertj Exp $
+ * $Id: asn_lex.l,v 1.3 1998/05/21 08:21:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1997 by Equivalence
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.3  1998/05/21 08:21:50  robertj
+ * GNU C++ compatibility
+ *
  * Revision 1.2  1998/05/21 04:21:47  robertj
  * Implementing more of the ASN spec.
  *
@@ -34,7 +37,7 @@ int InMacroContext = FALSE;
 int HasObjectTypeMacro = FALSE;
 int InMIBContext = FALSE;
 
-int yywrap() { return 1; }
+extern "C" int yywrap() { return 1; }
 
 static int TokenSelect(int context, int token1, int token2)
 {
