@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.20  1998/10/11 02:23:16  craigs
+ * Fixed problem with socket writes not correctly detecting EOF
+ *
  * Revision 1.19  1998/09/24 04:12:09  robertj
  * Added open software license.
  *
@@ -169,11 +172,19 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
   
   while (len > 0) {
 
-    if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
-      return FALSE;
-
     int sendResult = ::write(os_handle,
                   ((const char *)buf)+lastWriteCount, len);
+    if (sendResult <= 0) {
+      if (errno != EWOULDBLOCK)
+        return ConvertOSError(sendResult);
+
+      if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
+        return FALSE;
+
+      sendResult = ::write(os_handle,
+                    ((const char *)buf)+lastWriteCount, len);
+
+    }
 
     if (!ConvertOSError(sendResult))
       return FALSE;

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.31  1998/10/11 02:23:16  craigs
+ * Fixed problem with socket writes not correctly detecting EOF
+ *
  * Revision 1.30  1998/09/24 08:21:11  robertj
  * Fixed warning on GNU 6 library.
  *
@@ -369,15 +372,26 @@ BOOL PSocket::os_sendto(
       sockaddr * addr, // Address to which the datagram is sent.
       PINDEX addrlen)  
 {
+  lastWriteCount = 0;
+
   if (!IsOpen()) {
     lastError     = NotOpen;
-    lastWriteCount = 0;
     return FALSE;
   }
 
+  // attempt to read data
+  int writeResult;
+  if ((writeResult =
+         ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)) > 0) {
+    lastWriteCount = writeResult;
+    return lastWriteCount >= len;
+  }
+
+  if (errno != EWOULDBLOCK)
+    return ConvertOSError(-1);
+
   if (!PXSetIOBlock(PXWriteBlock, writeTimeout)) {
     lastError     = Timeout;
-    lastWriteCount = 0;
     return FALSE;
   }
 
