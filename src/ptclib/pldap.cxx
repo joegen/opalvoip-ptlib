@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.13  2004/01/17 17:45:29  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.12  2003/07/15 12:12:11  csoutheren
  * Added support for multiple values in a single attribute string
  *    Thanks to Ravelli Rossano
@@ -588,7 +591,7 @@ BOOL PLDAPSession::GetSearchResult(SearchContext & context,
                                    const PString & attribute,
                                    PString & data)
 {
-  data = PString::Empty();
+  data.MakeEmpty();
 
   if (!IsOpen())
     return FALSE;
