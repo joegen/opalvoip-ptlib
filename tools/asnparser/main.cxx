@@ -19,11 +19,23 @@ extern int yydebug;
 
 ModuleDefinition * Module;
 
-
-ostream & operator<<(ostream & s, PInt64 i)
-{
-  return s << psprintf("%I64u", i);
-}
+static const char * const StandardClasses[] = {
+  "PASN_Null",
+  "PASN_Boolean",
+  "PASN_Integer",
+  "PASN_Enumeration",
+  "PASN_Real",
+  "PASN_ObjectId",
+  "PASN_BitString",
+  "PASN_OctetString",
+  "PASN_NumericString",
+  "PASN_PrintableString",
+  "PASN_VisibleString",
+  "PASN_IA5String",
+  "PASN_GeneralString",
+  "PASN_BMPString",
+  "PASN_Sequence"
+};
 
 
 static PString MakeIdentifierC(const PString & identifier)
@@ -596,7 +608,7 @@ void TypeBase::GenerateCplusplus(ostream & hdr, ostream & cxx)
 }
 
 
-void TypeBase::GenerateOperators(ostream &, ostream &)
+void TypeBase::GenerateOperators(ostream &, ostream &, const PString &)
 {
 }
 
@@ -693,14 +705,24 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
 
 void TypeBase::EndGenerateCplusplus(ostream & hdr, ostream & cxx)
 {
-  GenerateOperators(hdr, cxx);
+  cxx << "}\n"
+         "\n"
+         "\n";
+
+  GenerateOperators(hdr, cxx, GetIdentifier());
+
   // Output header file declaration of class
-  hdr << "};\n"
+  hdr << "    PObject * Clone() const;\n"
+         "};\n"
          "\n"
          "\n";
 
   // Output cxx file implementation of class
-  cxx << "}\n"
+  cxx << "PObject * " << Module->moduleName << "::" << GetIdentifier() << "::Clone() const\n"
+         "{\n"
+         "  PAssert(IsClass(" << GetIdentifier() << "::Class()), PInvalidCast);\n"
+         "  return new " << GetIdentifier() << "(*this);\n"
+         "}\n"
          "\n"
          "\n";
 
@@ -813,10 +835,10 @@ BOOL DefinedType::IsChoice() const
 }
 
 
-void DefinedType::GenerateOperators(ostream & hdr, ostream & cxx)
+void DefinedType::GenerateOperators(ostream & hdr, ostream & cxx, const PString & className)
 {
   if (baseType != NULL)
-    baseType->GenerateOperators(hdr, cxx);
+    baseType->GenerateOperators(hdr, cxx, className);
 }
 
 
@@ -904,9 +926,17 @@ BooleanType::BooleanType()
 }
 
 
-void BooleanType::GenerateOperators(ostream & hdr, ostream &)
+void BooleanType::GenerateOperators(ostream & hdr, ostream & cxx, const PString & className)
 {
-  hdr << "    " << GetIdentifier() << " & operator=(BOOL v) { SetValue(v); return *this; }\n";
+  hdr << "    " << className << " & operator=(BOOL v);\n";
+  cxx << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(BOOL v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n";
 }
 
 
@@ -930,10 +960,26 @@ IntegerType::IntegerType(NamedNumberList * lst)
 }
 
 
-void IntegerType::GenerateOperators(ostream & hdr, ostream &)
+void IntegerType::GenerateOperators(ostream & hdr, ostream & cxx, const PString & className)
 {
-  hdr << "    " << GetIdentifier() << " & operator=(int v) { SetValue(v); return *this; }\n"
-         "    " << GetIdentifier() << " & operator=(unsigned v) { SetValue(v); return *this; }\n";
+  hdr << "    " << className << " & operator=(int v);\n"
+         "    " << className << " & operator=(unsigned v);\n";
+  cxx << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(int v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n"
+      << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(unsigned v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n";
 }
 
 
@@ -993,7 +1039,7 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "    enum {\n";
 
   int maxEnumValue = 0;
-  int prevNum;
+  int prevNum = -1;
   for (i = 0; i < enumerations.GetSize(); i++) {
     if (i > 0)
       hdr << ",\n";
@@ -1001,7 +1047,7 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
     int num = enumerations[i].GetNumber();
     if (maxEnumValue < num)
       maxEnumValue = num;
-    if ((i == 0) ? (num != 0) : (num != prevNum+1))
+    if (num != prevNum+1)
       hdr << " = " << num;
     prevNum = num;
   }
@@ -1033,9 +1079,17 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 }
 
 
-void EnumeratedType::GenerateOperators(ostream & hdr, ostream &)
+void EnumeratedType::GenerateOperators(ostream & hdr, ostream & cxx, const PString & className)
 {
-  hdr << "    " << GetIdentifier() << " & operator=(unsigned v) { SetValue(v); return *this; }\n";
+  hdr << "    " << className << " & operator=(unsigned v);\n";
+  cxx << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(unsigned v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n";
 }
 
 
@@ -1088,11 +1142,35 @@ OctetStringType::OctetStringType()
 }
 
 
-void OctetStringType::GenerateOperators(ostream & hdr, ostream &)
+void OctetStringType::GenerateOperators(ostream & hdr, ostream & cxx, const PString & className)
 {
-  hdr << "    " << GetIdentifier() << " & operator=(const char * v) { SetValue(v); return *this; }\n"
-         "    " << GetIdentifier() << " & operator=(const PString & v) { SetValue(v); return *this; }\n"
-         "    " << GetIdentifier() << " & operator=(const PBYTEArray & v) { SetValue(v); return *this; }\n";
+  hdr << "    " << className << " & operator=(const char * v);\n"
+         "    " << className << " & operator=(const PString & v);\n"
+         "    " << className << " & operator=(const PBYTEArray & v);\n";
+  cxx << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(const char * v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n"
+      << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(const PString & v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n"
+      << Module->moduleName << "::" << className << " & "
+      << Module->moduleName << "::" << className << "::operator=(const PBYTEArray & v)\n"
+         "{\n"
+         "  SetValue(v);\n"
+         "  return *this;\n"
+         "}\n"
+         "\n"
+         "\n";
 }
 
 
@@ -1370,23 +1448,37 @@ TypeBase * SequenceOfType::FlattenThisType(const TypeBase & parent, TypesList & 
 void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   BeginGenerateCplusplus(hdr, cxx);
-
-  // Output header file declaration of class
-  hdr << ");\n"
-         "    PASN_Object * CreateObject() const;\n"
-         "    " << baseType->GetTypeName() << " & operator[](PINDEX i)\n"
-         "      { return (" << baseType->GetTypeName() << " &)array[i]; }\n";
-
-  // Output cxx file implementation of class
   GenerateConstructorParams(hdr, cxx, TRUE);
   cxx << ")\n"
          "{\n"
          "}\n"
          "\n"
-         "\n"
-         "PASN_Object * " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject() const\n"
+         "\n";
+
+  PString baseTypeName = baseType->GetTypeName();
+
+  // Output header file declaration of class
+  hdr << ");\n"
+         "    PASN_Object * CreateObject() const;\n"
+         "    " << baseTypeName << " & operator[](PINDEX i);\n";
+
+  PINDEX i;
+  for (i = 0; i < PARRAYSIZE(StandardClasses); i++)
+    if (baseTypeName == StandardClasses[i])
+      break;
+  if (i >= PARRAYSIZE(StandardClasses))
+    baseTypeName = Module->moduleName + "::" + baseTypeName;
+  
+  // Output cxx file implementation of class
+  cxx << "PASN_Object * " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject() const\n"
          "{\n"
-         "  return new " << baseType->GetTypeName() << ";\n";
+         "  return new " << baseTypeName << ";\n"
+         "}\n"
+         "\n"
+         "\n"
+      << baseTypeName << " & " << Module->moduleName << "::" << GetIdentifier() << "::operator[](PINDEX i)\n"
+         "{\n"
+         "  return (" << baseTypeName << " &)array[i];\n";
 
   EndGenerateCplusplus(hdr, cxx);
 }
@@ -1438,12 +1530,10 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   BeginGenerateCplusplus(hdr, cxx);
 
   // Output header file declaration of class
-  hdr << ");\n"
-         "    BOOL CreateObject();\n"
-         "\n";
+  hdr << ");\n";
 
   BOOL outputEnum = FALSE;
-  unsigned prevNum;
+  int prevNum = -1;
   for (i = 0; i < fields.GetSize(); i++) {
     const Tag & fieldTag = fields[i].GetTag();
     if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
@@ -1454,8 +1544,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         outputEnum = TRUE;
       }
       hdr << "      e_" << fields[i].GetIdentifier();
-      if (fieldTag.mode != Tag::Automatic &&
-            ((i == 0) ? (fieldTag.number != 0) : (fieldTag.number != prevNum+1)))
+      if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1))
         hdr << " = " << fieldTag.number;
       prevNum = fieldTag.number;
     }
@@ -1465,23 +1554,12 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
     hdr << "\n"
            "    };\n";
 
-  hdr << '\n';
-  PStringSet typesOutput;
-  typesOutput += GetIdentifier();
-  for (i = 0; i < fields.GetSize(); i++) {
-    PString type = fields[i].GetTypeName();
-    if (!typesOutput.Contains(type)) {
-      hdr << "  operator " << type << " &() const { return ("
-          << type << " &)GetObject(); }\n";
-      typesOutput += type;
-    }
-  }
-
   // Output cxx file implementation of class
   GenerateConstructorParams(hdr, cxx, TRUE);
   cxx << ", " << numFields << ", " << (extendable ? "TRUE" : "FALSE");
 
   outputEnum = FALSE;
+  prevNum = -1;
   for (i = 0; i < fields.GetSize(); i++) {
     const Tag & fieldTag = fields[i].GetTag();
     if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
@@ -1494,8 +1572,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         outputEnum = TRUE;
       }
       cxx << fields[i].GetIdentifier();
-      if (fieldTag.mode != Tag::Automatic &&
-              ((i == 0) ? (fieldTag.number != 0) : (fieldTag.number != prevNum+1)))
+      if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1))
         cxx << '=' << fieldTag.number;
       cxx << " \"\n";
       prevNum = fieldTag.number;
@@ -1510,8 +1587,36 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "{\n"
          "}\n"
          "\n"
-         "\n"
-         "BOOL " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject()\n"
+         "\n";
+
+  hdr << '\n';
+
+  PStringSet typesOutput;
+  for (i = 0; i < PARRAYSIZE(StandardClasses); i++)
+    typesOutput += StandardClasses[i];
+  typesOutput += GetIdentifier();
+  for (i = 0; i < fields.GetSize(); i++) {
+    PString type = fields[i].GetTypeName();
+    if (!typesOutput.Contains(type)) {
+      hdr << "    operator " << type << " &() const;\n";
+      cxx  << Module->moduleName << "::" << GetIdentifier() << "::operator "
+           << Module->moduleName << "::" << type << " &() const\n"
+              "{\n"
+              "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+              "  return *(" << type << " *)choice;\n"
+              "}\n"
+              "\n"
+              "\n";
+      typesOutput += type;
+    }
+  }
+
+  if (!typesOutput.IsEmpty())
+    hdr << '\n';
+
+  hdr << "    BOOL CreateObject();\n";
+
+  cxx << "BOOL " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject()\n"
          "{\n";
 
   outputEnum = FALSE;
