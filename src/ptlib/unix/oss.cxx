@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.51  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.50  2002/10/15 10:42:45  rogerh
  * Fix loopback mode, which was broken in a recent change.
  *
@@ -198,6 +201,7 @@
 #pragma implementation "sound.h"
 
 #include <ptlib.h>
+#include <ptlib/socket.h>
 
 #ifdef P_LINUX
 #include <sys/soundcard.h>
@@ -1146,12 +1150,9 @@ BOOL PSoundChannel::StartRecording()
   if (os_handle == 0)
     return TRUE;
 
-  fd_set fds;
-  FD_ZERO(&fds);
-  FD_SET(os_handle, &fds);
-
-  struct timeval instant = {0, 0};
-  return ConvertOSError(::select(1, &fds, NULL, NULL, &instant));
+  P_fd_set fds = os_handle;
+  P_timeval instant;
+  return ConvertOSError(::select(1, fds, NULL, NULL, instant));
 }
 
 

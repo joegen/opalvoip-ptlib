@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.11  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -84,13 +87,6 @@
 #endif
 #ifdef _PTIMEINTERVAL_PLATFORM_INCLUDE
 #undef _PTIMEINTERVAL_PLATFORM_INCLUDE
-
-  public:
-    /**Get time interval as a timeval as used by C library functions.
-       If the time interval is PMaxTimeInterval then this returns NULL,
-       otherwise is returns a pointer to the initialised buffer.
-      */
-    struct timeval * AsTimeVal(struct timeval & buffer) const;
 
 #endif
 
