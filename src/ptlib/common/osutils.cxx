@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.157  2001/02/22 22:31:44  robertj
+ * Changed PProcess version display to show build number even if zero.
+ *
  * Revision 1.156  2001/02/22 08:16:42  robertj
  * Added standard trace file setup subroutine.
  *
@@ -1586,8 +1589,8 @@ PString PProcess::GetVersion(BOOL full) const
 {
   const char * const statusLetter[NumCodeStatuses] =
     { "alpha", "beta", "." };
-  return psprintf(full && buildNumber != 0 ? "%u.%u%s%u" : "%u.%u",
-                majorVersion, minorVersion, statusLetter[status], buildNumber);
+  return psprintf(full ? "%u.%u%s%u" : "%u.%u",
+                  majorVersion, minorVersion, statusLetter[status], buildNumber);
 }
 
 
