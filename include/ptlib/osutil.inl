@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.83  2002/01/26 23:55:55  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.82  2001/11/23 00:55:18  robertj
  * Changed PWaitAndSignal so works inside const functions.
  *
@@ -467,7 +470,7 @@ PINLINE PChannelStreamBuffer &
           PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
   { channel = sbuf.channel; return *this; }
 
-PINLINE PChannel::PChannel(const PChannel &)
+PINLINE PChannel::PChannel(const PChannel &) : iostream(cout.rdbuf())
   { PAssertAlways("Cannot copy channels"); }
 
 PINLINE PChannel & PChannel::operator=(const PChannel &)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.36  2002/01/26 23:55:55  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.35  2001/11/13 04:13:22  robertj
  * Added ability to adjust size of ios buffer on PChannels.
  *
@@ -175,7 +178,7 @@ class PChannelStreamBuffer : public streambuf {
     virtual int overflow(int=EOF);
     virtual int underflow();
     virtual int sync();
-#ifdef __MWERKS__
+#if defined(__MWERKS__) || defined(GCC3)
     virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
 #else
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
