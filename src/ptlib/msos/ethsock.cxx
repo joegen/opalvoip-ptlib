@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.37  2003/04/01 06:01:48  robertj
+ * Fixed problem with returning correct route table device name if have
+ *   2 NIC's under Windows 2000, thanks faa06@tid.es
+ *
  * Revision 1.36  2003/01/11 05:10:51  robertj
  * Fixed Win CE compatibility issues, thanks Joerg Schoemer
  *
@@ -714,9 +718,17 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
   }
 
   if (gwAddr == 0)
-    return PString();
+    return PString::Empty();
 
-  return GetInterfaceName(gwAddr);
+  PString name = GetInterfaceName(gwAddr);
+  if (name.IsEmpty()) {
+    PWin32AsnOid nameOid = "1.3.6.1.2.1.2.2.1.2.0";
+    nameOid[10] = ifNum;
+    if (GetOid(nameOid, name.GetPointer(100), 100))
+      name.MakeMinimumSize();
+  }
+
+  return name;
 }
 
 
@@ -974,7 +986,7 @@ static PString SearchRegistryKeys(const PString & key,
       return result;
   }
 
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1826,7 +1838,7 @@ PString PIPSocket::GetGatewayInterface()
   AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
   if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
-    return PString();
+    return PString::Empty();
 
   return snmp.GetInterfaceName(ifNum);
 }
