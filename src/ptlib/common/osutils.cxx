@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.162  2001/04/15 03:39:24  yurik
+ * Removed shutdown flag. Use IsTerminated() instead
+ *
  * Revision 1.161  2001/04/14 04:53:01  yurik
  * Got rid of init_seg pragma and added process shutdown flag
  *
@@ -625,6 +628,10 @@ void PTrace::SetStream(ostream * s)
 void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
   PProcess & process = PProcess::Current();
+#ifdef _WIN32_WCE
+  if( process.IsTerminated() )
+    return ;
+#endif
 
   // If we have a tracing version, then open trace file and set modes
   PTrace::SetOptions(options);
@@ -699,8 +706,7 @@ static PMutex & PTraceMutex()
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
 #ifdef _WIN32_WCE
-  PProcess & process = PProcess::Current();
-  if( process.isShuttingDown )
+  if( PProcess::Current().IsTerminated() )
     return *PTraceStream;
 #endif
 
@@ -777,8 +783,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 ostream & PTrace::End(ostream & s)
 {
 #ifdef _WIN32_WCE
-  PProcess & process = PProcess::Current();
-  if( process.isShuttingDown )
+  if( PProcess::Current().IsTerminated() )
     return *PTraceStream;
 #endif
 
