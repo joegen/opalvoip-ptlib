@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.49 1996/02/15 14:44:09 robertj Exp $
+ * $Id: osutils.cxx,v 1.50 1996/02/25 03:09:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.50  1996/02/25 03:09:46  robertj
+ * Added consts to all GetXxxx functions in PConfig.
+ *
  * Revision 1.49  1996/02/15 14:44:09  robertj
  * Used string constructor for PTime, more "efficient".
  *
@@ -1347,7 +1350,7 @@ BOOL PModem::CanRead() const
 
 #ifndef _WIN32
 
-BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt)
+BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt) const
 {
   PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
   return str[0] == 'T' || str[0] == 'Y' || str.AsInteger() != 0;
@@ -1360,7 +1363,7 @@ void PConfig::SetBoolean(const PString & section, const PString & key, BOOL valu
 }
 
 
-long PConfig::GetInteger(const PString & section, const PString & key, long dflt)
+long PConfig::GetInteger(const PString & section, const PString & key, long dflt) const
 {
   PString str(PString::Signed, dflt);
   return GetString(section, key, str).AsInteger();
@@ -1375,7 +1378,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 
 #endif
 
-double PConfig::GetReal(const PString & section, const PString & key, double dflt)
+double PConfig::GetReal(const PString & section, const PString & key, double dflt) const
 {
   PString str(PString::Printf, "%g", dflt);
   return GetString(section, key, str).AsReal();
@@ -1389,7 +1392,7 @@ void PConfig::SetReal(const PString & section, const PString & key, double value
 }
 
 
-PTime PConfig::GetTime(const PString & section, const PString & key, const PTime & dflt)
+PTime PConfig::GetTime(const PString & section, const PString & key, const PTime & dflt) const
 {
   return GetString(section, key, dflt.AsString());
 }
