@@ -121,7 +121,7 @@ static:
          ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
 	done
 	make DEBUG=
-	for f in $(STATICLIBS) ; do \
+	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
 	done
 
