@@ -436,7 +436,7 @@ fi
 
 dnl dl needs to be at the end
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  if test ${OSTYPE} != Darwin ; then
+  if test "${OSTYPE}" != "Darwin" ; then
     AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
     if test ${HAS_LIBDL} = yes ; then
       ENDLDLIBS="$ENDLDLIBS -ldl"
