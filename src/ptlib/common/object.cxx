@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.63  2002/11/22 10:14:58  robertj
+ * Fixed correct free of memory blocks in exceptional circumstances. Partially
+ *   trashed heap or objects etc.
+ *
  * Revision 1.62  2002/10/21 12:52:27  rogerh
  * Add throw()s to new and delete. Error reported by FreeBSD 5.0 and GCC 3.2.1
  *
@@ -599,18 +603,24 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
     return;
 
   Wrapper mem;
+  Header * obj = ((Header *)ptr)-1;
 
   if (mem->isDestroyed) {
-    free(ptr);
+    free(obj);
     return;
   }
 
-  if (mem->InternalValidate(ptr, className, mem->leakDumpStream) != Ok) {
-    free(ptr);
-    return;
+  switch (mem->InternalValidate(ptr, className, mem->leakDumpStream)) {
+    case Ok :
+      break;
+    case Trashed :
+      free(ptr);
+      return;
+    case Bad :
+      free(obj);
+      return;
   }
 
-  Header * obj = ((Header *)ptr)-1;
   if (obj->prev != NULL)
     obj->prev->next = obj->next;
   else
