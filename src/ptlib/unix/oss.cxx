@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.50  2002/10/15 10:42:45  rogerh
+ * Fix loopback mode, which was broken in a recent change.
+ *
  * Revision 1.49  2002/09/29 16:19:28  rogerh
  * if /dev/dsp does not exist, do not return it as the default audio device.
  * Instead, return the first dsp device.
@@ -626,17 +629,17 @@ BOOL PSoundChannel::Open(const PString & _device,
       startptr = endptr = 0;
       bufferLen = 0;
       os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
-    }
+    } else {
+      // open the device in non-blocking mode to avoid hang if already open
+      os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
+      if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
+        return ConvertOSError(os_handle);
+      }
 
-    // open the device in non-blocking mode to avoid hang if already open
-    os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
-    if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-      return ConvertOSError(os_handle);
+      // switch to blocking mode
+      DWORD cmd = 0;
+      ::ioctl(os_handle, FIONBIO, &cmd);
     }
-
-    // switch to blocking mode
-    DWORD cmd = 0;
-    ::ioctl(os_handle, FIONBIO, &cmd);
 
     // add the device to the dictionary
     SoundHandleEntry * entry = PNEW SoundHandleEntry;
