@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.32  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.31  2004/11/01 23:16:59  ykiryanov
  * Added macro declaring sound plugin to be static for BeOS
  *
@@ -140,13 +144,6 @@
 #endif
 
 #include <ptlib/pluginmgr.h>
-
-#if defined(_WIN32)
-PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_WindowsMultimedia);
-#elif defined(__BEOS__)
-PWLIB_STATIC_LOAD_PLUGIN(PSoundChannelBeOS);
-#endif
-
 
 /** A class representing a sound. A sound is a highly platform dependent
    entity that is abstracted for use here. Very little manipulation of the
