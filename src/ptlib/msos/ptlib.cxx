@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.33 1998/03/29 06:16:51 robertj Exp $
+ * $Id: ptlib.cxx,v 1.34 1998/04/01 01:54:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.34  1998/04/01 01:54:45  robertj
+ * Added memory leak checking to debug version.
+ *
  * Revision 1.33  1998/03/29 06:16:51  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -692,6 +695,7 @@ void PProcess::Construct()
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
+  _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG)|_CRTDBG_LEAK_CHECK_DF);
 #endif
 
   PSetErrorStream(&cerr);
