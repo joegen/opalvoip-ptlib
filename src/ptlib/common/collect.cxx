@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.14 1995/01/27 11:12:38 robertj Exp $
+ * $Id: collect.cxx,v 1.15 1996/01/23 13:18:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.15  1996/01/23 13:18:29  robertj
+ * Fixed bug in sorted list GetObjectsIndex not checking if is same object
+ * Fixed bug in sorted list append not returning correct value.
+ *
  * Revision 1.14  1995/01/27 11:12:38  robertj
  * Fixed nasty bug in sorted lists.
  *
@@ -108,7 +112,8 @@ void PArrayObjects::CloneContents(const PArrayObjects * array)
 PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
   const PArrayObjects & other = (const PArrayObjects &)obj;
-  for (PINDEX i = 0; i < GetSize(); i++) {
+  PINDEX i;
+  for (i = 0; i < GetSize(); i++) {
     if (i >= other.GetSize() || *(*theArray)[i] < *(*other.theArray)[i])
       return LessThan;
     if (*(*theArray)[i] > *(*other.theArray)[i])
@@ -584,9 +589,9 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   info->root->MakeBlack();
 
   reference->size++;
-  info->lastIndex = P_MAX_INDEX;
-  info->lastElement = NULL;
-  return GetSize();
+  info->lastIndex = info->root->ValueSelect(*obj, TRUE);
+  info->lastElement = element;
+  return info->lastIndex;
 }
 
 
@@ -663,13 +668,13 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
-  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(*obj);
+  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(*obj, TRUE);
 }
 
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(obj);
+  return info->root == NULL ? P_MAX_INDEX : info->root->ValueSelect(obj, FALSE);
 }
 
 
@@ -882,12 +887,12 @@ PAbstractSortedList::Element *
 }
 
 
-PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj)
+PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj, BOOL byPointer)
 {
   switch (data->Compare(obj)) {
     case PObject::LessThan :
       if (right != NULL) {
-        PINDEX index = right->ValueSelect(obj);
+        PINDEX index = right->ValueSelect(obj, byPointer);
         if (index != P_MAX_INDEX)
           return LeftTreeSize() + index + 1;
       }
@@ -895,11 +900,12 @@ PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj)
 
     case PObject::GreaterThan :
       if (left != NULL)
-        return left->ValueSelect(obj);
+        return left->ValueSelect(obj, byPointer);
       break;
 
     default :
-      return LeftTreeSize();
+      if (!byPointer || data == &obj)
+        return LeftTreeSize();
   }
 
   return P_MAX_INDEX;
