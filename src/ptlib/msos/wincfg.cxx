@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.10  2001/08/14 15:41:13  yurik
+ * Fixed bug in EnumKey for CE
+ *
  * Revision 1.9  2001/03/15 23:41:22  robertj
  * Fixed bug just introduced so can access regisrtry directly again from PConfig.
  *
@@ -336,7 +339,17 @@ BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
   if (key == NULL)
     return FALSE;
 
-  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+#ifndef _WIN32_WCE
+  if( RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+
+#else  
+  USES_CONVERSION;
+  TCHAR tstr[MAX_PATH];
+  LONG lResult = RegEnumKey(key, idx, tstr, MAX_PATH);
+  str = T2A(tstr);
+
+  if( lResult != ERROR_SUCCESS )
+#endif
     return FALSE;
 
   str.MakeMinimumSize();
