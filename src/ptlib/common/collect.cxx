@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.42  1998/10/13 14:06:16  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.41  1998/09/23 06:21:52  robertj
  * Added open source copyright license.
  *
@@ -160,6 +163,7 @@
 
 #include <ptlib.h>
 
+#define new PNEW
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,7 +208,7 @@ void PArrayObjects::RemoveAll()
 void PArrayObjects::CloneContents(const PArrayObjects * array)
 {
   ObjPtrArray & oldArray = *array->theArray;
-  theArray = PNEW ObjPtrArray(oldArray.GetSize());
+  theArray = new ObjPtrArray(oldArray.GetSize());
   for (PINDEX i = 0; i < GetSize(); i++) {
     PObject * ptr = oldArray[i];
     if (ptr != NULL)
@@ -1116,7 +1120,7 @@ PAbstractSortedList::Info::Info()
 
 PObject * POrdinalKey::Clone() const
 {
-  return PNEW POrdinalKey(theKey);
+  return new POrdinalKey(theKey);
 }
 
 
@@ -1313,7 +1317,7 @@ PINDEX PHashTable::Table::GetElementsIndex(
 ///////////////////////////////////////////////////////////////////////////////
 
 PHashTable::PHashTable()
-  : hashTable(PNEW PHashTable::Table)
+  : hashTable(new PHashTable::Table)
 {
   PAssertNULL(hashTable);
   hashTable->lastElement = NULL;
@@ -1340,7 +1344,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
   PAssertNULL(hash->hashTable);
   PHashTable::Table * original = hash->hashTable;
 
-  hashTable = PNEW PHashTable::Table(original->GetSize());
+  hashTable = new PHashTable::Table(original->GetSize());
   PAssertNULL(hashTable);
   hashTable->lastElement = NULL;
 
