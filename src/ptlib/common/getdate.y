@@ -585,7 +585,7 @@ static TABLE const MilitaryTable[] = {
     { "w",	tMILZONE,	HOUR(-10) },
     { "x",	tMILZONE,	HOUR(-11) },
     { "y",	tMILZONE,	HOUR(-12) },
-    { "z",	tZONE,		HOUR(  0) }, // Deliberately tZONE
+    { "z",	tZONE,		HOUR(  0) }, /* Deliberately tZONE */
     { NULL }
 };
 
@@ -736,7 +736,7 @@ int yylex(YYSTYPE * yylval, void * yyInput)
 	    else
 		sign = 0;
 	    yylval->Number = 0;
-            Count = 0; // Count number of digits
+            Count = 0; /* Count number of digits */
 	    while (isdigit(c)) {
 		yylval->Number = 10 * yylval->Number + c - '0';
 		c = PTimeGetChar(yyInput);

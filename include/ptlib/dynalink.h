@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.11  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.10  2002/10/10 04:43:43  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -63,7 +66,7 @@
 
 #define _PDYNALINK
 
-#if !defined(__BEOS__) && !defined(P_VXWORKS)
+#if !defined(__BEOS__) && !defined(P_VXWORKS) && !defined(P_RTEMS)
 
 #ifdef P_USE_PRAGMA
 #pragma interface

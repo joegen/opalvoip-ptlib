@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.99  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.98  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -310,6 +313,10 @@
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_QNX)
 #include <sys/sysctl.h>
+#endif
+
+#ifdef P_RTEMS
+#include <bsp.h>
 #endif
 
 int PX_NewHandle(const char *, int);
@@ -763,6 +770,10 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
     medium = MediumWan;
     ipppInterface = TRUE;
   }
+#ifdef P_RTEMS
+  else if (strncmp(RTEMS_BSP_NETWORK_DRIVER_NAME, interfaceName, 3) == 0)
+    medium = Medium802_3;
+#endif
   else
     return SetErrorValues(NotFound, ENOENT);
 

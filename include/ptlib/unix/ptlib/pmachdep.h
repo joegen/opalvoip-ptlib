@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.54  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.53  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -553,6 +556,7 @@ extern "C" {
 #define PSETPGRP()  tcsetprgrp(0, 0)
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define seteuid setuid
+#define setegid setgid
 #define HAS_IFREQ
 
 ///////////////////////////////////////////////////////////////////////////////
