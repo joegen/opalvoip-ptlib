@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.46 1996/08/25 09:33:32 robertj Exp $
+ * $Id: sockets.cxx,v 1.47 1996/09/14 13:09:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.47  1996/09/14 13:09:40  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.46  1996/08/25 09:33:32  robertj
  * Added function to detect "local" host name.
  *
@@ -152,16 +158,37 @@
 
 
 #if defined(_WIN32) || defined(WINDOWS)
-static PTCPSocket dummyForWINSOCK; // Assure winsock is initialised
+static PWinSock dummyForWinSock; // Assure winsock is initialised
 #endif
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
 
-BOOL PSocket::Shutdown(ShutdownValue value)
+PSocket::PSocket()
 {
-  return ConvertOSError(::shutdown(os_handle, value));
+  port = 0;
+}
+
+
+BOOL PSocket::Connect(const PString &)
+{
+  PAssertAlways("Illegal operation.");
+  return FALSE;
+}
+
+
+BOOL PSocket::Listen(unsigned, WORD, Reusability)
+{
+  PAssertAlways("Illegal operation.");
+  return FALSE;
+}
+
+
+BOOL PSocket::Accept(PSocket &)
+{
+  PAssertAlways("Illegal operation.");
+  return FALSE;
 }
 
 
@@ -191,6 +218,77 @@ BOOL PSocket::GetOption(int option, void * valuePtr, int valueSize)
 {
   return ConvertOSError(::getsockopt(os_handle,
                             SOL_SOCKET, option, (char *)valuePtr, &valueSize));
+}
+
+
+BOOL PSocket::Shutdown(ShutdownValue value)
+{
+  return ConvertOSError(::shutdown(os_handle, value));
+}
+
+
+WORD PSocket::GetPortByService(const PString & serviceName) const
+{
+  return GetPortByService(GetProtocolName(), serviceName);
+}
+
+
+WORD PSocket::GetPortByService(const char * protocol, const PString & service)
+{
+  PINDEX space = service.FindOneOf(" \t\r\n");
+  struct servent * serv = ::getservbyname(service(0, space-1), protocol);
+  if (serv != NULL)
+    return ntohs(serv->s_port);
+
+  if (space != P_MAX_INDEX)
+    return (WORD)atoi(service(space+1, P_MAX_INDEX));
+
+  if (isdigit(service[0]))
+    return (WORD)atoi(service);
+
+  return 0;
+}
+
+
+PString PSocket::GetServiceByPort(WORD port) const
+{
+  return GetServiceByPort(GetProtocolName(), port);
+}
+
+
+PString PSocket::GetServiceByPort(const char * protocol, WORD port)
+{
+  struct servent * serv = ::getservbyport(htons(port), protocol);
+  if (serv != NULL)
+    return PString(serv->s_name);
+  else
+    return PString(PString::Unsigned, port);
+}
+
+
+void PSocket::SetPort(WORD newPort)
+{
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  port = newPort;
+}
+
+
+void PSocket::SetPort(const PString & service)
+{
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  port = GetPortByService(service);
+}
+
+
+WORD PSocket::GetPort() const
+{
+  return port;
+}
+
+
+PString PSocket::GetService() const
+{
+  return GetServiceByPort(port);
 }
 
 
@@ -364,17 +462,8 @@ PChannel::Errors PSocket::Select(SelectList & read,
 //////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-#ifdef P_HAS_BERKELEY_SOCKETS
-
-PIPSocket::PIPSocket(WORD portNum)
+PIPSocket::PIPSocket()
 {
-  port = portNum;
-}
-
-
-PIPSocket::PIPSocket(const char * protocol, const PString & service)
-{
-  port = GetPortByService(protocol, service);
 }
 
 
@@ -387,7 +476,7 @@ PString PIPSocket::GetName() const
     struct hostent * host_info = gethostbyaddr(
            (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
     name = host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
-    name += " " + PString(PString::Unsigned, ntohs(address.sin_port));
+    name += ":" + PString(PString::Unsigned, ntohs(address.sin_port));
   }
   return name;
 }
@@ -395,9 +484,10 @@ PString PIPSocket::GetName() const
 
 PString PIPSocket::GetHostName()
 {
-  char name[64];
+  char name[100];
   if (gethostname(name, sizeof(name)-1) != 0)
     return "localhost";
+  name[sizeof(name)-1] = '\0';
   return name;
 }
 
@@ -413,7 +503,7 @@ PString PIPSocket::GetHostName(const PString & hostname)
   else
     host_info = ::gethostbyname(hostname);
 
-  if (host_info != NULL)
+  if (host_info != NULL && host_info->h_name)
     return host_info->h_name;
   else if (temp != 0)
     return temp;
@@ -428,7 +518,7 @@ PString PIPSocket::GetHostName(const Address & addr)
     return addr;
   struct hostent * host_info =
                 ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
-  if (host_info != NULL)
+  if (host_info != NULL && host_info->h_name)
     return host_info->h_name;
   else
     return addr;
@@ -516,30 +606,39 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   DWORD temp = inet_addr((const char *)hostname);
-  struct hostent * itsHost;
+  struct hostent * ent;
   if (temp != INADDR_NONE)
-    itsHost = ::gethostbyaddr((const char *)&temp, 4, PF_INET);
+    ent = ::gethostbyaddr((const char *)&temp, 4, PF_INET);
   else
-    itsHost = ::gethostbyname(hostname);
-  if (itsHost == NULL)
+    ent = ::gethostbyname(hostname);
+  if (ent == NULL)
     return FALSE;
 
-  if (memcmp(itsHost->h_addr, "\x7f\0\0\1", itsHost->h_length) == 0)
+  if (memcmp(ent->h_addr, "\x7f\0\0\1", ent->h_length) == 0)
     return TRUE;
+
+  PINDEX count = 0;
+  while (ent->h_addr_list[count] != NULL)
+    count++;
+
+  PBYTEArray itsHost(count*ent->h_length);
+
+  for (PINDEX i = 0; i < count; i++)
+    memcpy(itsHost.GetPointer()+i*ent->h_length, ent->h_addr_list[i], ent->h_length);
 
   char myname[64];
   if (gethostname(myname, sizeof(myname)-1) != 0)
     return FALSE;
 
-  struct hostent * myHost = ::gethostbyname(myname);
-  if (myHost == NULL)
+  ent = ::gethostbyname(myname);
+  if (ent == NULL)
     return FALSE;
 
-  for (PINDEX mine = 0; myHost->h_addr_list[mine] != NULL; mine++) {
-    for (PINDEX its = 0; itsHost->h_addr_list[its] != NULL; its++) {
-      if (memcmp(myHost->h_addr_list[mine],
-                 itsHost->h_addr_list[its],
-                 itsHost->h_length) == 0)
+  for (PINDEX mine = 0; ent->h_addr_list[mine] != NULL; mine++) {
+    for (PINDEX its = 0; its < count; its++) {
+      if (memcmp(ent->h_addr_list[mine],
+                 &itsHost[its*ent->h_length],
+                 ent->h_length) == 0)
         return TRUE;
     }
   }
@@ -623,67 +722,26 @@ PString PIPSocket::GetPeerHostName()
 }
 
 
-void PIPSocket::SetPort(WORD newPort)
+BOOL PIPSocket::Connect(const PString & host)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = newPort;
+  Address ipnum;
+  if (GetHostAddress(host, ipnum))
+    return Connect(ipnum);
+  return FALSE;
 }
 
 
-void PIPSocket::SetPort(const PString & service)
+BOOL PIPSocket::Connect(const Address & addr)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened socket");
-  port = GetPortByService(service);
-}
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
 
-
-WORD PIPSocket::GetPort() const
-{
-  return port;
-}
-
-
-PString PIPSocket::GetService() const
-{
-  return GetServiceByPort(port);
-}
-
-
-WORD PIPSocket::GetPortByService(const char * protocol, const PString & service)
-{
-  PINDEX space = service.FindOneOf(" \t\r\n");
-  struct servent * serv = ::getservbyname(service(0, space-1), protocol);
-  if (serv != NULL)
-    return ntohs(serv->s_port);
-
-  if (space != P_MAX_INDEX)
-    return (WORD)atoi(service(space+1, P_MAX_INDEX));
-
-  if (isdigit(service[0]))
-    return (WORD)atoi(service);
-
-  return 0;
-}
-
-
-PString PIPSocket::GetServiceByPort(const char * protocol, WORD port)
-{
-  struct servent * serv = ::getservbyport(htons(port), protocol);
-  if (serv != NULL)
-    return PString(serv->s_name);
-  else
-    return PString(PString::Unsigned, port);
-}
-
-
-BOOL PIPSocket::_Connect(const PString & host)
-{
   // make sure we have a port
   PAssert(port != 0, "Cannot connect socket without setting port");
 
-  // attempt to lookup the host name
-  Address ipnum;
-  if (!GetHostAddress(host, ipnum))
+  // attempt to create a socket
+  if (!OpenSocket())
     return FALSE;
 
   // attempt to connect
@@ -691,32 +749,48 @@ BOOL PIPSocket::_Connect(const PString & host)
   memset(&sin, 0, sizeof(sin));
   sin.sin_family = AF_INET;
   sin.sin_port   = htons(port);  // set the port
-  sin.sin_addr   = ipnum;
-  return ConvertOSError(os_connect((struct sockaddr *)&sin, sizeof(sin)));
+  sin.sin_addr   = addr;
+  if (ConvertOSError(os_connect((struct sockaddr *)&sin, sizeof(sin))))
+    return TRUE;
+
+  os_close();
+  return FALSE;
 }
 
 
-BOOL PIPSocket::_Bind(Reusability reuse)
+BOOL PIPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
-  if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0))
-    return FALSE;
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+
+  // close the port if it is already open
+  if (!IsOpen()) {
+    // attempt to create a socket
+    if (!OpenSocket())
+      return FALSE;
+  }
 
   // attempt to listen
-  sockaddr_in sin;
-  memset(&sin, 0, sizeof(sin));
-  sin.sin_family      = AF_INET;
-  sin.sin_addr.s_addr = htonl(INADDR_ANY);
-  sin.sin_port        = htons(port);       // set the port
+  if (SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
+    // attempt to listen
+    sockaddr_in sin;
+    memset(&sin, 0, sizeof(sin));
+    sin.sin_family      = AF_INET;
+    sin.sin_addr.s_addr = htonl(INADDR_ANY);
+    sin.sin_port        = htons(port);       // set the port
 
-  if (!ConvertOSError(bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
-    return FALSE;
+    if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)))) {
+      int size = sizeof(sin);
+      if (ConvertOSError(::getsockname(os_handle, (struct sockaddr*)&sin, &size))) {
+        port = ntohs(sin.sin_port);
+        return TRUE;
+      }
+    }
+  }
 
-  int size = sizeof(sin);
-  if (!ConvertOSError(getsockname(os_handle, (struct sockaddr*)&sin, &size)))
-    return FALSE;
-
-  port = ntohs(sin.sin_port);
-  return TRUE;
+  os_close();
+  return FALSE;
 }
 
 
@@ -766,36 +840,31 @@ PIPSocket::Address::operator PString() const
 }
 
 
-#endif
-
-
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
 
-#ifdef P_HAS_BERKELEY_SOCKETS
-
 PTCPSocket::PTCPSocket(WORD newPort)
-  : PIPSocket(newPort)
 {
+  SetPort(newPort);
 }
 
 
 PTCPSocket::PTCPSocket(const PString & service)
-  : PIPSocket("tcp", service)
 {
+  SetPort(service);
 }
 
 
 PTCPSocket::PTCPSocket(const PString & address, WORD newPort)
-  : PIPSocket(newPort)
 {
+  SetPort(newPort);
   Connect(address);
 }
 
 
 PTCPSocket::PTCPSocket(const PString & address, const PString & service)
-  : PIPSocket("tcp", service)
 {
+  SetPort(service);
   Connect(address);
 }
 
@@ -812,42 +881,23 @@ PTCPSocket::PTCPSocket(PTCPSocket & tcpSocket)
 }
 
 
-BOOL PTCPSocket::Connect(const PString & host)
+BOOL PTCPSocket::OpenSocket()
 {
-  // close the port if it is already open
-  if (IsOpen())
-    Close();
+  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0));
+}
 
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
-    return FALSE;
 
-  // attempt to connect
-  if (_Connect(host)) 
-    return TRUE;
-
-  os_close();
-  return FALSE;
+const char * PTCPSocket::GetProtocolName() const
+{
+  return "tcp";
 }
 
 
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
-  if (IsOpen())
-    Close();
-
-  // make sure we have a port
-  if (newPort != 0)
-    port = newPort;
-
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
-    return FALSE;
-
-  // bind it to a port and attempt to listen
-  if (_Bind(reuse) && ConvertOSError(::listen(os_handle, queueSize)))
+  if (PIPSocket::Listen(queueSize, newPort, reuse) &&
+      ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
-
 
   os_close();
   return FALSE;
@@ -856,6 +906,8 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
+  PAssert(socket.IsDescendant(PIPSocket::Class()), "Invalid listener socket");
+
   sockaddr_in address;
   address.sin_family = AF_INET;
   int size = sizeof(address);
@@ -883,137 +935,98 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 }
 
 
-WORD PTCPSocket::GetPortByService(const PString & serviceName) const
-{
-  return PIPSocket::GetPortByService("tcp", serviceName);
-}
-
-
-PString PTCPSocket::GetServiceByPort(WORD port) const
-{
-  return PIPSocket::GetServiceByPort("tcp", port);
-}
-
-
-#endif
-
-
 void PTCPSocket::OnOutOfBand(const void *, PINDEX)
 {
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PIPDatagramSocket
+
+PIPDatagramSocket::PIPDatagramSocket()
+{
+}
+
+
+BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
+                                 Address & addr, WORD & port)
+{
+  lastReadCount = 0;
+
+  sockaddr_in sockAddr;
+  int addrLen = sizeof(sockAddr);
+  int recvResult = os_recvfrom(buf, len, 0,
+                               (struct sockaddr *)&sockAddr, &addrLen);
+  if (ConvertOSError(recvResult)) {
+    addr = sockAddr.sin_addr;
+    port = ntohs(sockAddr.sin_port);
+
+    lastReadCount = recvResult;
+  }
+
+  return lastReadCount > 0;
+}
+
+
+BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
+                                const Address & addr, WORD port)
+{
+  lastWriteCount = 0;
+
+  sockaddr_in sockAddr;
+  sockAddr.sin_family = AF_INET;
+  sockAddr.sin_addr = addr;
+  sockAddr.sin_port = htons(port);
+  int sendResult = os_sendto(buf, len, 0,
+                             (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+  if (ConvertOSError(sendResult))
+    lastWriteCount = sendResult;
+
+  return lastWriteCount >= len;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PUDPSocket
 
-#ifdef P_HAS_BERKELEY_SOCKETS
-
-PIPDatagramSocket::PIPDatagramSocket(WORD newType, WORD newPort)
-  : PIPSocket(newPort), sockType(newType)
-{
-  protocol = 0;
-}
-
-PIPDatagramSocket::PIPDatagramSocket(WORD newType, const char * proto, const PString & service)
-  : PIPSocket(proto, service), sockType(newType)
-{
-  protocol = 0;
-}
-
-PIPDatagramSocket::PIPDatagramSocket(WORD newType, const char * protocolName)
-  : sockType(newType)
-{
-  struct protoent * p = ::getprotobyname(protocolName);
-  protocol = (p == NULL) ? 0 : p->p_proto;
-}
-
-BOOL PIPDatagramSocket::_Socket()
-{
-  return ConvertOSError(os_handle = os_socket(AF_INET, sockType, protocol));
-}
-
-BOOL PIPDatagramSocket::Connect(const PString & host)
-{
-  // close the port if it is already open
-  if (!IsOpen() && !_Socket())
-    return FALSE;
-
-  // attempt to connect
-  if (_Connect(host))
-    return TRUE;
-
-  os_close();
-  return FALSE;
-}
-
-
-BOOL PIPDatagramSocket::Listen(unsigned, WORD newPort, Reusability reuse)
-{
-  // make sure we have a port
-  if (newPort != 0)
-    port = newPort;
-
-  // close the port if it is already open
-  if (!IsOpen())
-    // attempt to create a socket
-    if (!_Socket())
-      return FALSE;
-
-  // attempt to listen
-  if (_Bind(reuse))
-    return TRUE;
-
-  os_close();
-  return FALSE;
-}
-
-
-BOOL PIPDatagramSocket::Accept(PSocket &)
-{
-  PAssertAlways("Illegal operation.");
-  return FALSE;
-}
-
 PUDPSocket::PUDPSocket(WORD newPort)
-  : PIPDatagramSocket(SOCK_DGRAM, newPort)
 {
-  _Socket();
+  SetPort(newPort);
+  OpenSocket();
 }
 
 
 PUDPSocket::PUDPSocket(const PString & service)
-  : PIPDatagramSocket(SOCK_DGRAM, "udp", service)
 {
-  _Socket();
+  SetPort(service);
+  OpenSocket();
 }
 
 
 PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
-  : PIPDatagramSocket(SOCK_DGRAM, newPort)
 {
+  SetPort(newPort);
   Connect(address);
 }
 
 
 PUDPSocket::PUDPSocket(const PString & address, const PString & service)
-  : PIPDatagramSocket(SOCK_DGRAM, "udp", service)
 {
+  SetPort(service);
   Connect(address);
 }
 
 
-WORD PUDPSocket::GetPortByService(const PString & serviceName) const
+BOOL PUDPSocket::OpenSocket()
 {
-  return PIPSocket::GetPortByService("udp", serviceName);
+  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0));
 }
 
 
-PString PUDPSocket::GetServiceByPort(WORD port) const
+const char * PUDPSocket::GetProtocolName() const
 {
-  return PIPSocket::GetServiceByPort("udp", port);
+  return "udp";
 }
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
