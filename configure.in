@@ -371,11 +371,17 @@ if test $HAS_IPV6 = yes ; then
 fi
 
 dnl ########################################################################
-dnl check for linux video devices
+dnl check for video capture support.
+dnl videodev.h on linux
+dnl machine/ioctl_meteor on FreeBSD
+dnl i386/ioctl_meteor on OpenBSD
+dnl dev/ic/bt8xx on NetBSD
 
 HAS_VIDEO_CAPTURE=no
 AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
 AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
 if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
   AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
   echo "No Video Capture support"
