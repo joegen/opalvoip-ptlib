@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.17  2001/03/20 03:33:18  robertj
+# Major improvement to multiple targets over subdirectories, thanks Jac Goudsmit
+#
 # Revision 1.16  2000/11/01 04:39:20  robertj
 # Made sure opt is first so frech build works
 #
@@ -97,50 +100,17 @@ endif
 all : opt optnoshared bothdepend both
 
 
-opt :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) opt ;)
+# override P_SHAREDLIB for specific targets
+optshared   debugshared   bothshared   : P_SHAREDLIB=1
+optnoshared debugnoshared bothnoshared : P_SHAREDLIB=0
 
-debug :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debug ;)
-
-both :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) both ;)
-
-optshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 opt ;)
-
-debugshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 debug ;)
-
-bothshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 both ;)
-
-optnoshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 opt ;)
-
-debugnoshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 debug ;)
-
-bothnoshared :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 both ;)
-
-clean :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) clean ;)
-
-optclean :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) optclean ;)
-
-debugclean :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debugclean ;)
-
-optdepend :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) optdepend ;)
-
-debugdepend :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) debugdepend ;)
-
-bothdepend :
-	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) bothdepend ;)
+# all these targets are just passed to all subdirectories
+opt         debug         both \
+optdepend   debugdepend   bothdepend \
+optshared   debugshared   bothshared \
+optnoshared debugnoshared bothnoshared \
+optclean    debugclean    clean :
+	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
 
 ptlib:
 	$(MAKE) -C src/ptlib/$(TARGETDIR) both
