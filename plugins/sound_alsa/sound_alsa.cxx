@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.5  2003/11/25 09:52:07  dsandras
+ * Modified WaitForPlayCompletion so that it uses snd_pcm_drain instead of active waiting.
+ *
  * Revision 1.4  2003/11/23 22:09:57  dsandras
  * Removed unuseful stuff and added implementation for functions permitting to play a file or a PSound.
  *
@@ -601,8 +604,7 @@ BOOL PSoundChannelALSA::WaitForPlayCompletion()
   if (!os_handle)
     return SetErrorValues(NotOpen, EBADF);
 
-  while (snd_pcm_state (os_handle) == SND_PCM_STATE_RUNNING)
-    {}
+  snd_pcm_drain (os_handle);
 
   return TRUE;
 }
