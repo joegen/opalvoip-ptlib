@@ -112,7 +112,7 @@ AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
 dnl ########################################################################
 dnl check the endianness
 
-dnl MSWIN Byte Order,PBYTE_ORDER,PLITTLE_ENDIAN
+dnl MSWIN Byte Order,,PBYTE_ORDER,PLITTLE_ENDIAN
 
 AC_C_BIGENDIAN()
 if test ${ac_cv_c_bigendian} = yes ; then
@@ -135,7 +135,7 @@ dnl As if that is not enough, autoconf gets very confused if configure.in
 dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
 dnl to ensure that it is always called
 
-dnl MSWIN Open SSL,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\
+dnl MSWIN Open SSL,openssl,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\,..\external\openssl\,\openssl\,c:\openssl\
 
 dnl see if openssl.h is in the system include paths
 AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
@@ -239,7 +239,7 @@ dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
 
-dnl MSWIN DNS Resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
+dnl MSWIN DNS Resolver,resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
 
 AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
@@ -259,7 +259,7 @@ fi
 dnl ########################################################################
 dnl look for OpenLDAP
 
-dnl MSWIN Open LDAP,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\
+dnl MSWIN Open LDAP,openldap,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\,..\external\openldap\,\openldap\,c:\openldap\
 
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
@@ -290,7 +290,7 @@ fi
 dnl ########################################################################
 dnl look for expat XML parser
 
-dnl MSWIN Expat XML,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\
+dnl MSWIN Expat XML,expat,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\,..\external\expat\,\expat,c:\expat\
 
 AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
 if test "${HAS_EXPAT:-unset}" != "unset" ; then
@@ -319,13 +319,13 @@ fi
 dnl ########################################################################
 dnl Speech
 
-dnl MSWIN Speech API,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
+dnl MSWIN Speech API,sapi,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
 
 
 dnl ########################################################################
 dnl check for pthreads library
 
-dnl MSWIN Semaphore Support,P_HAS_SEMAPHORES
+dnl MSWIN Semaphore Support,,P_HAS_SEMAPHORES
 
 dnl Linux, Mac OS X use libpthread and -lpthread
 dnl FreeBSD uses the -pthread compiler option and uses libc_r
@@ -356,7 +356,7 @@ fi
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
-dnl MSWIN SDL,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\
+dnl MSWIN Simple DirectMedia Layer,libsdl,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\,..\external\sdl\,\sdl\c:\sdl\
 
 
 if test "${HAS_PTHREADS:-unset}" != "unset" ; then
@@ -381,7 +381,7 @@ fi
 dnl ########################################################################
 dnl check for dynamic library code (dlopen end friends)
 
-dnl MSWIN DLL Support,P_DYNALINK
+dnl MSWIN DLL Support,,P_DYNALINK
 
 LIBS=""
 AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
@@ -392,7 +392,7 @@ fi
 dnl ########################################################################
 dnl look for IPV6 functions
 
-dnl MSWIN IPv6 Support,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN IPv6 Support,ipv6,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program Files\Microsoft Visual Studio\VC98\Include\,\Program Files\Microsoft SDK\
 
 AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
 [AC_TRY_COMPILE([#include <sys/types.h>
