@@ -29,7 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.173  2003/06/17 12:05:01  csoutheren
+# Changed compiler flags for optimised build
+#
 # Revision 1.172  2003/05/22 12:17:06  dsandras
+#
 # Removed unneeded code since Firewire support has been moved to configure.
 #
 # Revision 1.171  2003/05/06 09:47:20  robertj
@@ -281,7 +285,7 @@ endif
 
 # -Wall must be at the start of the options otherwise
 # any -W overrides won't have any effect
-STDCCFLAGS += -Wall
+STDCCFLAGS += -Wall 
 
 
 ifneq ($(OSTYPE),rtems)
@@ -911,7 +915,7 @@ LDFLAGS		+= $(DEBLDFLAGS)
 else
 
 ifneq ($(OSTYPE),Darwin)
-  OPTCCFLAGS	+= -O3 -DNDEBUG
+  OPTCCFLAGS	+= -Os -DNDEBUG
 else
   OPTCCFLAGS	+= -O2 -DNDEBUG
 endif
