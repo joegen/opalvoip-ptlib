@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.40  1999/01/30 14:28:10  robertj
+ * Added GetOSConfigDir() function.
+ *
  * Revision 1.39  1999/01/11 11:27:11  robertj
  * Added function to get the hardware process is running on.
  *
@@ -308,6 +311,15 @@ PDECLARE_CLASS(PProcess, PThread)
        
        <H2>Returns:</H2>
        String for OS version.
+     */
+
+    static PDirectory GetOSConfigDir();
+    /* Get the configuration directory of the operating system the process is
+       running on, eg "/etc" for Unix, "c:\windows" for Win95 or
+       "c:\winnt\system32\drivers\etc" for NT.
+
+       <H2>Returns:</H2>
+       Directory for OS configuration files.
      */
 
 
