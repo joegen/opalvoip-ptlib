@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.93 1998/04/07 13:33:33 robertj Exp $
+ * $Id: osutils.cxx,v 1.94 1998/05/25 09:05:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.94  1998/05/25 09:05:56  robertj
+ * Fixed close of channels on destruction.
+ *
  * Revision 1.93  1998/04/07 13:33:33  robertj
  * Changed startup code to support PApplication class.
  *
@@ -629,6 +632,7 @@ PChannel::PChannel()
 PChannel::~PChannel()
 {
   flush();
+  Close();
   delete (PChannelStreamBuffer *)rdbuf();
   init(NULL);
 }
