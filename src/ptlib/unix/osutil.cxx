@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.82  2004/04/03 23:53:10  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.81  2004/04/01 12:51:11  csoutheren
  * Fixed problem with args to access, thanks to Borko Jandras
  *
@@ -226,8 +231,6 @@
 #include <mntent.h>
 #include <sys/vfs.h>
 
-#define P_HAS_READDIR_R
-
 #if (__GNUC_MINOR__ < 7 && __GNUC__ < 3)
 #include <localeinfo.h>
 #else
@@ -251,7 +254,6 @@
 #include <sys/statfs.h>
 
 #elif defined(P_SOLARIS) 
-#define P_HAS_READDIR_R
 #define P_USE_LANGINFO
 #include <sys/timeb.h>
 #include <sys/statvfs.h>
@@ -538,10 +540,14 @@ BOOL PDirectory::Next()
     do {
       struct dirent * entryPtr;
       entryBuffer->d_name[0] = '\0';
-#ifdef P_HAS_READDIR_R
+#if P_HAS_POSIX_READDIR_R == 3
       if (::readdir_r(directory, entryBuffer, &entryPtr) != 0)
         return FALSE;
       if (entryPtr != entryBuffer)
+        return FALSE;
+#elif P_HAS_POSIX_READDIR_R == 2
+      entryPtr = ::readdir_r(directory, entryBuffer);
+      if (entryPtr == NULL)
         return FALSE;
 #else
       if ((entryPtr = readdir(directory)) == NULL)
