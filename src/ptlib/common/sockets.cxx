@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.35 1996/03/18 13:33:18 robertj Exp $
+ * $Id: sockets.cxx,v 1.36 1996/03/26 00:57:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,13 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.36  1996/03/26 00:57:54  robertj
+ * Added contructor that takes PTCPSocket so avoid copy constructor being used instead of accept.
+ * Added GetLocalAddress() variant that returns port number as well.
+ * Removed Linger settings on Connect and Accept.
+ *
  * Revision 1.35  1996/03/18 13:33:18  robertj
- * FireDoorV10
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
  *
  * Revision 1.34  1996/03/17 05:51:18  robertj
  * Fixed strange bug in accept cant have NULL address.
@@ -476,6 +481,19 @@ BOOL PIPSocket::GetLocalAddress(Address & addr)
 }
 
 
+BOOL PIPSocket::GetLocalAddress(Address & addr, WORD & portNum)
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+    return FALSE;
+
+  addr = address.sin_addr;
+  portNum = ntohs(address.sin_port);
+  return TRUE;
+}
+
+
 BOOL PIPSocket::GetPeerAddress(Address & addr)
 {
   sockaddr_in address;
@@ -710,6 +728,12 @@ PTCPSocket::PTCPSocket(PSocket & socket)
 }
 
 
+PTCPSocket::PTCPSocket(PTCPSocket & tcpSocket)
+{
+  Accept(tcpSocket);
+}
+
+
 BOOL PTCPSocket::Connect(const PString & host)
 {
   // close the port if it is already open
@@ -721,11 +745,8 @@ BOOL PTCPSocket::Connect(const PString & host)
     return FALSE;
 
   // attempt to connect
-  if (_Connect(host)) {
-    static const linger ling = { 1, 10 };
-    if (SetOption(SO_LINGER, &ling, sizeof(ling)))
+  if (_Connect(host))
       return TRUE;
-  }
 
   os_close();
   return FALSE;
@@ -757,21 +778,8 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  int size = sizeof(address);
-  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size)))
-    return FALSE;
-
   port = ((PIPSocket &)socket).GetPort();
-
-  static const linger ling = { 1, 10 };
-  if (SetOption(SO_LINGER, &ling, sizeof(ling)))
-    return TRUE;
-
-  os_close();
-  return FALSE;
+  return ConvertOSError(os_handle = os_accept(socket.GetHandle(), NULL, NULL));
 }
 
 
