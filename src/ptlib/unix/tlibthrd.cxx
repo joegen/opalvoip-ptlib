@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.23  1999/08/23 05:33:45  robertj
+ * Made last threading changes Linux only.
+ *
  * Revision 1.22  1999/08/23 05:14:13  robertj
  * Removed blocking of interrupt signals as does not work in Linux threads.
  *
@@ -182,7 +185,7 @@ void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
-#if 0
+#ifndef P_LINUX
   // In this thread we really do want these signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
@@ -208,7 +211,7 @@ void PProcess::Construct()
   // make sure we don't get upset by resume signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
-#if 0
+#ifndef P_LINUX
   sigaddset(&blockedSignals, SIGHUP);
   sigaddset(&blockedSignals, SIGINT);
   sigaddset(&blockedSignals, SIGQUIT);
@@ -315,7 +318,7 @@ void * PThread::PX_ThreadStart(void * arg)
   // block RESUME_SIG
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
-#if 0
+#ifndef P_LINUX
   sigaddset(&blockedSignals, SIGHUP);
   sigaddset(&blockedSignals, SIGINT);
   sigaddset(&blockedSignals, SIGQUIT);
