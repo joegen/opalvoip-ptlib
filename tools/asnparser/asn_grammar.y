@@ -1,13 +1,19 @@
+%expect 14
+
 %{
 
 /*
- * $Id: asn_grammar.y,v 1.3 1998/12/14 06:47:55 robertj Exp $
+ * $Id: asn_grammar.y,v 1.4 1999/06/06 05:30:28 robertj Exp $
  *
  * ASN Grammar
  *
  * Copyright 1997 by Equivalence Pty. Ltd.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.4  1999/06/06 05:30:28  robertj
+ * Support for parameterised types and type-dentifier types.
+ * Added ability to output multiple .cxx files.
+ *
  * Revision 1.3  1998/12/14 06:47:55  robertj
  * New memory check code support.
  *
@@ -30,29 +36,57 @@
 
 extern int yylex();
 
+extern int ReferenceTokenContext;
 extern int IdentifierTokenContext;
 extern int BraceTokenContext;
+extern int NullTokenContext;
 extern int InMacroContext;
 extern int HasObjectTypeMacro;
 extern int InMIBContext;
+extern TypesList * CurrentImportList;
 
-int UnnamedFieldCount = 1;
+static int UnnamedFieldCount = 1;
+static PStringList * DummyParameters;
 
+static PString * ConcatNames(PString * s1, char c, PString * s2)
+{
+  *s1 += c;
+  *s1 += *s2;
+  delete s2;
+  return s1;
+}
+
+#ifdef _MSC_VER
+#pragma warning(disable:4701)
+#endif
 
 %}
 
 %token IDENTIFIER
 %token BIT_IDENTIFIER
 %token OID_IDENTIFIER
+%token IMPORT_IDENTIFIER
+%token MODULEREFERENCE
 %token TYPEREFERENCE
+%token OBJECTCLASSREFERENCE
+%token TYPEFIELDREFERENCE
+%token VALUEFIELDREFERENCE
+%token VALUESETFIELDREFERENCE
+%token OBJECTFIELDREFERENCE
+%token OBJECTSETFIELDREFERENCE
+%token OBJECTREFERENCE
+%token OBJECTSETREFERENCE
 %token INTEGER
 
-%token BSTRING
 %token CSTRING
-%token HSTRING
+%token OS_BSTRING
+%token BS_BSTRING
+%token OS_HSTRING
+%token BS_HSTRING
 
 %token STRING_BRACE
 %token BITSTRING_BRACE
+%token OID_BRACE
 
 %token ABSENT           
 %token ABSTRACT_SYNTAX  
@@ -99,7 +133,8 @@ int UnnamedFieldCount = 1;
 %token MIN              
 %token MINUS_INFINITY
 %token NOTATION
-%token NULL_t
+%token NULL_VALUE
+%token NULL_TYPE
 %token NumericString    
 %token OBJECT           
 %token OCTET            
@@ -159,84 +194,184 @@ int UnnamedFieldCount = 1;
 %token ObjectDescriptor_t
 
 
-%type <ival> INTEGER Class ClassNumber TagDefault SignedNumber
+%type <ival> INTEGER
+%type <ival> TagDefault
+%type <ival> SignedNumber
 %type <ival> ObjectTypeAccess ObjectTypeStatus
+%type <ival> Class ClassNumber
+%type <ival> PresenceConstraint
 
-%type <sval> IDENTIFIER BIT_IDENTIFIER OID_IDENTIFIER TYPEREFERENCE
-%type <sval> BSTRING CSTRING HSTRING
-%type <sval> Symbol Reference GlobalModuleReference CharsDefn
-%type <sval> DefinedValue_OID ExternalValueReference ExternalTypeReference
-%type <sval> NumberForm NameAndNumberForm ObjIdComponent
-%type <sval> DefinitiveNameAndNumberForm DefinitiveObjIdComponent
+%type <sval> CSTRING
+%type <sval> BS_BSTRING
+%type <sval> OS_BSTRING
+%type <sval> BS_HSTRING
+%type <sval> OS_HSTRING
+%type <sval> IDENTIFIER
+%type <sval> BIT_IDENTIFIER
+%type <sval> OID_IDENTIFIER
+%type <sval> IMPORT_IDENTIFIER
+%type <sval> TYPEREFERENCE
+%type <sval> MODULEREFERENCE
+%type <sval> OBJECTCLASSREFERENCE
+%type <sval> TYPEFIELDREFERENCE
+%type <sval> VALUEFIELDREFERENCE
+%type <sval> VALUESETFIELDREFERENCE
+%type <sval> OBJECTFIELDREFERENCE
+%type <sval> OBJECTSETFIELDREFERENCE
+%type <sval> OBJECTREFERENCE
+%type <sval> OBJECTSETREFERENCE
+%type <sval> DefinitiveObjIdComponent
+%type <sval> DefinitiveNameAndNumberForm
+%type <sval> GlobalModuleReference
+%type <sval> Reference
+%type <sval> ExternalTypeReference ExternalValueReference
+%type <sval> ObjIdComponent
+%type <sval> NumberForm
+%type <sval> SimpleDefinedType
+%type <sval> ComponentIdList
+%type <sval> CharsDefn
+%type <sval> SimpleDefinedValue
+%type <sval> FieldName PrimitiveFieldName
+%type <sval> DefinedObjectClass
+%type <sval> ExternalObjectClassReference
+%type <sval> UsefulObjectClassReference
+%type <sval> Parameter
 %type <sval> MibIndexType MibDescrPart MibReferPart
 
-%type <slst> DefinitiveIdentifier DefinitiveObjIdComponentList SymbolList
-%type <slst> ObjIdComponentList BitIdentifierList CharSyms
+%type <slst> DefinitiveIdentifier
+%type <slst> DefinitiveObjIdComponentList
+%type <slst> ObjIdComponentList
+%type <slst> BitIdentifierList
+%type <slst> CharSyms
+%type <slst> ParameterList Parameters
 %type <slst> MibIndexTypes MibIndexPart
 
-%type <tval> Type DefinedType UsefulType SelectionType CharacterStringType 
-%type <tval> ConstrainedType BitStringType BooleanType ChoiceType BuiltinType
-%type <tval> EmbeddedPDVType EnumeratedType Enumerations ExternalType IntegerType
-%type <tval> NullType ObjectIdentifierType  OctetStringType 
-%type <tval> RealType SequenceType SequenceOfType SetType SetOfType TaggedType
-%type <tval> RestrictedCharacterStringType UnrestrictedCharacterStringType
-%type <tval> TypeWithConstraint NamedType ComponentType ComponentTypeLists
-%type <tval> AlternativeTypeLists ContainedSubtype
+%type <tval> Type BuiltinType ReferencedType NamedType
+%type <tval> DefinedType
+%type <tval> ConstrainedType
+%type <tval> TypeWithConstraint
+%type <tval> BitStringType
+%type <tval> BooleanType
+%type <tval> CharacterStringType 
+%type <tval> RestrictedCharacterStringType
+%type <tval> UnrestrictedCharacterStringType
+%type <tval> ChoiceType AlternativeTypeLists
+%type <tval> EmbeddedPDVType
+%type <tval> EnumeratedType Enumerations
+%type <tval> ExternalType
+%type <tval> IntegerType
+%type <tval> NullType
+%type <tval> ObjectClassFieldType
+%type <tval> ObjectIdentifierType
+%type <tval> OctetStringType 
+%type <tval> RealType
+%type <tval> SequenceType ComponentType ComponentTypeLists
+%type <tval> SequenceOfType
+%type <tval> SetType
+%type <tval> SetOfType
+%type <tval> TaggedType
+%type <tval> ParameterizedType
+%type <tval> SelectionType
+%type <tval> UsefulType
+%type <tval> TypeFromObject
+%type <tval> ContainedSubtype
+%type <tval> ActualParameter
+%type <tval> UserDefinedConstraintParameter
+%type <tval> Symbol
+%type <tval> ParameterizedReference
 
-%type <tlst> ComponentTypeList AlternativeTypeList
+%type <tlst> AlternativeTypeList
+%type <tlst> ComponentTypeList
+%type <tlst> ActualParameterList ActualParameters
+%type <tlst> UserDefinedConstraintParameters
+%type <tlst> SymbolList
 
-%type <vval> Value DefinedValue ReferencedValue BuiltinValue BitStringValue BooleanValue 
-%type <vval> CharacterStringValue ChoiceValue NamedValue RestrictedCharacterStringValue
-%type <vval> NullValue ObjectIdentifierValue RealValue NumericRealValue SpecialRealValue 
-%type <vval> AssignedIdentifier ExceptionIdentification ExceptionSpec CharacterStringList
-%type <vval> LowerEndpoint LowerEndValue UpperEndpoint UpperEndValue Quadruple Tuple
-%type <vval> MibDefValPart SequenceValue SequenceOfValue
+%type <vval> Value BuiltinValue
+%type <vval> AssignedIdentifier
+%type <vval> DefinedValue DefinedValue_Import
+%type <vval> ObjectIdentifierValue
+%type <vval> OctetStringValue
+%type <vval> BitStringValue
+%type <vval> ExceptionSpec
+%type <vval> ExceptionIdentification
+%type <vval> MibDefValPart
+%type <vval> LowerEndpoint LowerEndValue UpperEndpoint UpperEndValue
+%type <vval> ReferencedValue
+%type <vval> BooleanValue
+%type <vval> CharacterStringValue RestrictedCharacterStringValue
+%type <vval> CharacterStringList Quadruple Tuple
+%type <vval> ChoiceValue
+%type <vval> NullValue
+%type <vval> RealValue NumericRealValue SpecialRealValue 
+%type <vval> SequenceValue NamedValue
+/*!!!! %type <vval> SequenceOfValue */
+%type <vval> ParameterizedValue
 
 %type <vlst> ComponentValueList
 %type <vlst> MibVarPart MibVarTypes
 
-%type <nval> NamedNumber EnumerationItem NamedBit
+%type <nval> NamedBit
+%type <nval> EnumerationItem
+%type <nval> NamedNumber
 
-%type <nlst> NamedNumberList Enumeration NamedBitList
+%type <nlst> NamedBitList
+%type <nlst> Enumeration
+%type <nlst> NamedNumberList
+
+%type <elmt> IntersectionElements
+%type <elmt> Elements
+%type <elmt> Exclusions
+%type <elmt> SubtypeElements
+%type <elmt> ObjectSetElements
+%type <elmt> ValueRange
+%type <elmt> PermittedAlphabet
+%type <elmt> InnerTypeConstraints
+%type <elmt> MultipleTypeConstraints
+%type <elmt> SizeConstraint
+%type <elmt> UserDefinedConstraintParameterList
+%type <elmt> NamedConstraint
+
+%type <elst> ElementSetSpec Unions Intersections TypeConstraints
+
+%type <cons> Constraint
+%type <cons> ConstraintSpec
+%type <cons> ElementSetSpecs 
+%type <cons> GeneralConstraint
+%type <cons> UserDefinedConstraint
+%type <cons> TableConstraint
+%type <cons> ComponentRelationConstraint
+%type <cons> ObjectSet
 
 %type <tagv> Tag
 
-%type <cons> Constraint SizeConstraint ConstraintSpec ElementSetSpecs
-%type <cons> ComponentConstraint NamedConstraint InnerTypeConstraints
-
-%type <clst> TypeConstraints MultipleTypeConstraints
-
-%type <elst> ElementSetSpec Unions Intersections
-
-%type <elmt> IntersectionElements Elements Exclusions SubtypeElements
-%type <elmt> ValueRange PermittedAlphabet
 
 %union {
-  PInt64	     ival;
-  PString	   * sval;
-  PStringList	   * slst;
-  TypeBase	   * tval;
-  TypesList	   * tlst;
-  ValueBase	   * vval;
-  ValuesList       * vlst;
-  NamedNumber	   * nval;
-  NamedNumberList  * nlst;
-  Constraint	   * cons;
-  ConstraintList   * clst;
-  ValueElementList * elst;
-  ValueElementBase * elmt;
+  PInt64	          ival;
+  PString	        * sval;
+  PStringList	        * slst;
+  TypeBase	        * tval;
+  TypesList	        * tlst;
+  ValueBase	        * vval;
+  ValuesList            * vlst;
+  NamedNumber	        * nval;
+  NamedNumberList       * nlst;
+  Constraint            * cons;
+  ConstraintElementList * elst;
+  ConstraintElementBase * elmt;
   struct {
     Tag::Type tagClass;
     unsigned tagNumber;
   } tagv;
 }
 
+
 %%
 
 ModuleDefinition
-  : TYPEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
+  : MODULEREFERENCE DefinitiveIdentifier DEFINITIONS TagDefault ASSIGNMENT BEGIN_t
       {
 	Module = new ModuleDefinition($1, $2, (Tag::Mode)$4);
+	ReferenceTokenContext = TYPEREFERENCE;
       }
     ModuleBody END
   ;
@@ -253,7 +388,7 @@ DefinitiveIdentifier
   ;
 
 DefinitiveObjIdComponentList
-  : DefinitiveObjIdComponent      
+  : DefinitiveObjIdComponent
       {
 	$$ = new PStringList;
 	$$->Append($1);
@@ -309,10 +444,12 @@ ModuleBody
   | /* empty */
   ;
 
+
 Exports
   : EXPORTS SymbolsExported ';'
   | /* empty */
   ;
+
 
 SymbolsExported
   : SymbolList
@@ -325,8 +462,15 @@ SymbolsExported
       }
   ;
 
+
 Imports
-  : IMPORTS SymbolsFromModuleList ';' 
+  : IMPORTS SymbolsImported ';' 
+  | /* empty */
+  ;
+
+
+SymbolsImported
+  : SymbolsFromModuleList
   | /* empty */
   ;
 
@@ -335,40 +479,61 @@ SymbolsFromModuleList
   | SymbolsFromModuleList SymbolsFromModule
   ;
 
+
 SymbolsFromModule
-  : SymbolList FROM GlobalModuleReference
+  : SymbolList FROM
+      {
+	CurrentImportList = $1;
+	ReferenceTokenContext = MODULEREFERENCE;
+      }
+    GlobalModuleReference
       {
 	if (!HasObjectTypeMacro) {
-	  HasObjectTypeMacro = $1->GetValuesIndex(PString("OBJECT-TYPE")) != P_MAX_INDEX;
+	  HasObjectTypeMacro = $1->GetValuesIndex(SearchType("OBJECT-TYPE")) != P_MAX_INDEX;
 	  if (HasObjectTypeMacro)
 	    PError << "Info: including OBJECT-TYPE macro" << endl;
 	}
-	Module->AddImport(new ImportModule($3, $1));
+	Module->AddImport(new ImportModule($4, $1));
+	ReferenceTokenContext = TYPEREFERENCE;
+	CurrentImportList = NULL;
       }
   ;
 
+
 GlobalModuleReference
-  : TYPEREFERENCE /*modulereference*/ AssignedIdentifier
+  : MODULEREFERENCE AssignedIdentifier
       {
 	delete $2;
       }
   ;
 
+
 AssignedIdentifier
-  : /* empty */
+  : DefinedValue_Import
+  | ObjectIdentifierValue
+  | /* empty */
       {
 	$$ = NULL;
       }
-/*!!!! 
-  | DefinedValue
-*/ 
-  | ObjectIdentifierValue
   ;
+
+DefinedValue_Import
+  : ExternalValueReference
+      {
+	$$ = new DefinedValue($1);
+      }
+  | IMPORT_IDENTIFIER
+      {
+	$$ = new DefinedValue($1);
+      }
+  ;
+
+
 
 SymbolList
   : Symbol
       {
-	$$ = new PStringList;
+	$$ = new TypesList;
 	$$->Append($1);
       }
   | Symbol ',' SymbolList
@@ -378,128 +543,37 @@ SymbolList
       }
   ;
 
+
 Symbol
   : Reference
-/*| ParameterizedReference	/* only required for X.683 */
-  ;
-
-Reference
-  : TYPEREFERENCE
-  | IDENTIFIER 
-/*| objectclassreference      /* not defined in X.680 */
-/*| objectreference	      /* not defined in X.680 */
-/*| objectsetreference	      /* not defined in X.680 */
+      {
+	$$ = new ImportedType($1, FALSE);
+      }
+  | ParameterizedReference    /* only required for X.683 */
   ;
 
 
 /*************************************/
 
 AssignmentList: Assignment 
-              | AssignmentList Assignment
+  | AssignmentList Assignment
   ;
+
 
 Assignment
   : TypeAssignment
   | ValueAssignment
   | ValueSetTypeAssignment 
+  | ObjectClassAssignment
+  | ObjectAssignment
+  | ObjectSetAssignment
+  | ParameterizedAssignment
+  /* We do not have "real" macros, so fake MIB ones */
   | MacroDefinition
   | ObjectTypeDefinition
   | TrapTypeDefinition
-/*| ObjectClassAssignment	/* ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 9.1 */
-/*| ObjectAssignment		/* ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 11.1 */
-/*| ObjectSetAssignment		/* ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 12.1 */
-/*| ParameterizedAssignment	/* ITU-T Rec. X.683 | ISO/IEC 8824-4, subclause 8.1 */
   ;
 
-ExternalTypeReference
-  : TYPEREFERENCE /*modulereference*/ '.' TYPEREFERENCE
-      {
-	*$1 += *$3;
-	delete $3;
-      }
-  ;
-
-ExternalValueReference
-  : TYPEREFERENCE /*modulereference*/ '.' IDENTIFIER
-      {
-	*$1 += *$3;
-	delete $3;
-      }
-  ;
-
-DefinedType
-  : ExternalTypeReference 
-      {
-	$$ = new DefinedType($1);
-      }
-  | TYPEREFERENCE 
-      {
-	$$ = new DefinedType($1);
-      }
-/*| ParameterizedType		  /* ITU-T Rec. X.683 | ISO/IEC 8824-4 */
-/*| ParameterizedValueSetType	  /* ITU-T Rec. X.683 | ISO/IEC 8824-4 */
-  ;
-
-DefinedValue
-  : ExternalValueReference
-      {
-	$$ = new DefinedValue($1);
-      }
-  | IDENTIFIER
-      {
-	$$ = new DefinedValue($1);
-      }
-/*| ParameterizedValue		  /* specified in ITU-T Rec. X.683 | ISO/IEC 8824-4 */
-  ;
-
-DefinedValue_OID
-  : ExternalValueReference
-  | OID_IDENTIFIER
-  ;
-
-
-/*
- The following is for documentation references only (X.680 section 12.1)
-
-AbsoluteReference
-  : '@' GlobalModuleReference '.' ItemSpec
-  ;
-
-ItemSpec
-  : TYPEREFERENCE 
-  |  ItemSpec '.' ComponentId
-  ;
-
-ComponentId
-  : IDENTIFIER
-  | INTEGER
-  | '*'
-  ;
-*/
-
-
-TypeAssignment
-  : TYPEREFERENCE ASSIGNMENT Type
-      {
-	$3->SetName($1);
-	Module->AddType($3);
-      }
-  ;
-
-ValueAssignment 
-  : IDENTIFIER Type
-      {
-	IdentifierTokenContext = $2->GetIdentifierTokenContext();
-	BraceTokenContext = $2->GetBraceTokenContext();
-      }
-    ASSIGNMENT Value
-      {
-	$5->SetValueName($1);
-	Module->AddValue($5);
-	IdentifierTokenContext = IDENTIFIER;
-	BraceTokenContext = '{';
-      }
-  ;
 
 ValueSetTypeAssignment
   : TYPEREFERENCE Type
@@ -516,32 +590,40 @@ ValueSetTypeAssignment
       }
   ;
 
-ValueSet
-  : '{' ElementSetSpec '}'
+
+
+
+/********/
+
+TypeAssignment
+  : TYPEREFERENCE ASSIGNMENT Type
+      {
+	$3->SetName($1);
+	Module->AddType($3);
+      }
   ;
 
+
 Type
-  : DefinedType 
-  | UsefulType 
-  | SelectionType 
-/*| TypeFromObject		/* ITU-T Rec. X.681 | ISO/IEC 8824-2, clause 15 */
-/*| ValueSetFromObjects		/* ITU-T Rec. X.681 | ISO/IEC 8824-2, clause 15 */
-  | ConstrainedType
+  : ConstrainedType
+  | ReferencedType
   | BuiltinType
   ;
 
+
 BuiltinType
-  : BitStringType 
+  : BitStringType
   | BooleanType 
   | CharacterStringType 
   | ChoiceType 
   | EmbeddedPDVType 
   | EnumeratedType 
   | ExternalType 
-/*| InstanceOfType		  /* ITU-T Rec. X.681 | ISO/IEC 8824-2, Annex C */
+  | InstanceOfType
+    { }
   | IntegerType 
   | NullType 
-/*| ObjectClassFieldType	  /* ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 14.1 */
+  | ObjectClassFieldType
   | ObjectIdentifierType 
   | OctetStringType 
   | RealType 
@@ -552,199 +634,42 @@ BuiltinType
   | TaggedType
   ;
 
-NamedType
-  : IDENTIFIER Type
-      {
-	$2->SetName($1);
-	$$ = $2;
-      }
-  | Type	     /* ITU-T Rec. X.680 Appendix H.1 */
-      {
-	PError << StdError(Warning) << "unnamed field." << endl;
-	$1->SetName(new PString(PString::Printf, "_unnamed%u", UnnamedFieldCount++));
-      }
-/*| SelectionType    /* Unnecessary as have rule in Type for this */
+
+ReferencedType
+  : DefinedType
+  | UsefulType
+  | SelectionType
+  | TypeFromObject
+/*!!! syntactically identical to TypeFromObject
+  | ValueSetFromObjects
+*/
   ;
 
-Value
-  : BuiltinValue 
-  | ReferencedValue
+
+DefinedType
+  : ExternalTypeReference
+      {
+	$$ = new DefinedType($1, FALSE);
+      }
+  | TYPEREFERENCE 
+      {
+	$$ = new DefinedType($1,
+			     DummyParameters != NULL &&
+			     DummyParameters->GetValuesIndex(*$1) != P_MAX_INDEX);
+      }
+  | ParameterizedType
+/*| ParameterizedValueSetType	synonym for ParameterizedType */
   ;
 
-BuiltinValue
-  : BitStringValue 
-  | BooleanValue 
-  | CharacterStringValue 
-  | ChoiceValue 
-/*| EmbeddedPDVValue  synonym to SequenceValue */
-/*| EnumeratedValue   synonym to IDENTIFIER    */
-/*| ExternalValue     synonym to SequenceValue */
-/*| InstanceOfValue   /* undefined in X.680 */
-  | SignedNumber      /* IntegerValue */
-      {
-	$$ = new IntegerValue($1);
-      }
-  | NullValue 
-/*| ObjectClassFieldValue   /* defined in ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 14.6 */
-  | ObjectIdentifierValue
-/*| OctetStringValue  equivalent to BitStringValue */
-  | RealValue 
-  | SequenceValue 
-  | SequenceOfValue
-/*| SetValue	      synonym to SequenceValue */
-/*| SetOfValue	      synonym to SequenceOfValue */
-/*| TaggedValue	      synonym to Value */
-    { }
-  ;
 
-ReferencedValue
-  : DefinedValue
-/*| ValueFromObject   /* ITU-T Rec. X.681 | ISO/IEC 8824-2, clause 15 */
-  ;
-
-NamedValue
-  : IDENTIFIER Value
+ExternalTypeReference
+  : MODULEREFERENCE '.' TYPEREFERENCE
       {
-	$2->SetValueName($1);
-	$$ = $2;
-      }
-  ;
-
-BooleanType
-  : BOOLEAN_t
-      {
-	$$ = new BooleanType;
-      }
-  ;
-
-BooleanValue
-  : TRUE_t
-      {
-	$$ = new BooleanValue(TRUE);
-      }
-  | FALSE_t
-      {
-	$$ = new BooleanValue(FALSE);
-      }
-  ;
-
-IntegerType
-  : INTEGER_t
-      {
-	$$ = new IntegerType;
-      }
-  | INTEGER_t '{' NamedNumberList '}'
-      {
-	$$ = new IntegerType($3);
-      }
-  ;
-
-NamedNumberList
-  : NamedNumber		
-      {
-	$$ = new NamedNumberList;
-	$$->Append($1);
-      }
-  | NamedNumberList ',' NamedNumber
-      {
-	$1->Append($3);
-      }
-  ;
-
-NamedNumber
-  : IDENTIFIER '(' SignedNumber ')'	
-      {
-	$$ = new NamedNumber($1, (int)$3);
-      }
-  | IDENTIFIER '(' DefinedValue ')'
-      {
-	$$ = new NamedNumber($1, ((DefinedValue*)$3)->GetReference());
+	*$1 += *$3;
 	delete $3;
       }
   ;
 
-SignedNumber
-  :  INTEGER 
-  | '-' INTEGER
-      {
-	$$ = -$2;
-      }
-  ;
-
-EnumeratedType
-  : ENUMERATED '{' Enumerations '}'
-      {
-	$$ = $3;
-      }
-  ;
-
-Enumerations
-  : Enumeration
-      {
-	$$ = new EnumeratedType($1, FALSE, NULL);
-      }
-  | Enumeration  ',' '.' '.' '.'
-      {
-	$$ = new EnumeratedType($1, TRUE, NULL);
-      }
-  | Enumeration  ',' '.' '.' '.' ',' Enumeration
-      {
-	$$ = new EnumeratedType($1, TRUE, $7);
-      }
-  ;
-
-Enumeration
-  : EnumerationItem
-      {
-	$$ = new NamedNumberList;
-	$$->Append($1);
-      }
-  | Enumeration ',' EnumerationItem
-      {
-	$1->Append($3);
-	$3->SetAutoNumber((*$1)[1]);
-	$$ = $1;
-      }
-  ;
-
-EnumerationItem
-  : IDENTIFIER
-      {
-	$$ = new NamedNumber($1);
-      }
-  | NamedNumber
-  ;
-
-RealType
-  : REAL
-      {
-	$$ = new RealType;
-      }
-  ;
-
-RealValue
-  : NumericRealValue 
-  | SpecialRealValue
-  ;
-
-NumericRealValue
-  :  '0'
-      {
-	$$ = new RealValue(0);
-      }
-/*| SequenceValue	equivalent to other BuiltinValue's */
-  ;
-
-SpecialRealValue
-  : PLUS_INFINITY
-      {
-	$$ = new RealValue(0);
-      }
-  | MINUS_INFINITY
-      {
-	$$ = new RealValue(0);
-      }
-  ;
 
 BitStringType
   : BIT STRING 
@@ -756,6 +681,7 @@ BitStringType
 	$$ = new BitStringType($4);
       }
   ;
+
 
 NamedBitList
   : NamedBit 
@@ -781,396 +707,14 @@ NamedBit
       }
   ;
 
-BitStringValue
-  : BSTRING
+
+BooleanType
+  : BOOLEAN_t
       {
-	$$ = new BitStringValue($1);
-      }
-  | HSTRING
-      {
-	$$ = new BitStringValue($1);
-      }
-  | BITSTRING_BRACE BitIdentifierList '}' 
-      {
-	$$ = new BitStringValue($2);
-      }
-  | BITSTRING_BRACE  '}'
-      {
-	$$ = new BitStringValue;
+	$$ = new BooleanType;
       }
   ;
 
-BitIdentifierList
-  : BIT_IDENTIFIER
-      {
-	$$ = new PStringList;
-      }
-  | BitIdentifierList ',' BIT_IDENTIFIER
-      {
-	// Look up $3
-	$1->SetAt($1->GetSize(), 0);
-      }
-  ;
-
-OctetStringType
-  : OCTET STRING
-      {
-	$$ = new OctetStringType;
-      }
-  ;
-
-NullType
-  : NULL_t
-      {
-	$$ = new NullType;
-      }
-  ;
-
-NullValue
-  : NULL_t
-      {
-	$$ = new NullValue;
-      }
-  ;
-
-SequenceType
-  : SEQUENCE '{' ComponentTypeLists '}'
-      {
-	$$ = $3;
-      }
-  | SEQUENCE '{'  '}'
-      {
-	$$ = new SequenceType(NULL, FALSE, NULL);
-      }
-  | SEQUENCE '{' ExtensionAndException '}'
-      {
-	$$ = new SequenceType(NULL, TRUE, NULL);
-      }
-  ;
-
-ExtensionAndException
-  : '.' '.' '.' ExceptionSpec
-  ;
-
-ComponentTypeLists
-  : ComponentTypeList
-      {
-	$$ = new SequenceType($1, FALSE, NULL);
-      }
-  | ComponentTypeList ',' ExtensionAndException
-      {
-	$$ = new SequenceType($1, TRUE, NULL);
-      }
-  | ComponentTypeList ',' ExtensionAndException ',' ComponentTypeList
-      {
-	$$ = new SequenceType($1, TRUE, $5);
-      }
-  | ExtensionAndException ',' ComponentTypeList
-      {
-	$$ = new SequenceType(NULL, TRUE, $3);
-      }
-  ;
-
-ComponentTypeList
-  : ComponentType
-      {
-	$$ = new TypesList;
-	$$->Append($1);
-      }
-  | ComponentTypeList ',' ComponentType
-      {
-	$1->Append($3);
-      }
-  ;
-
-ComponentType
-  : NamedType
-  | NamedType OPTIONAL_t
-      {
-	$1->SetOptional();
-      }
-  | NamedType DEFAULT
-      {
-	IdentifierTokenContext = $1->GetIdentifierTokenContext();
-      }
-    Value   
-      {
-	IdentifierTokenContext = IDENTIFIER;
-	$1->SetDefaultValue($4);
-      }
-  | COMPONENTS OF_t Type
-      {
-	$$ = $3;
-      }
-  ;
-
-SequenceValue
-  : '{' ComponentValueList '}' 
-      {
-	$$ = new SequenceValue($2);
-      }
-  | '{'  '}'
-      {
-	$$ = new SequenceValue;
-      }
-  ;
-
-/* synonym to SequenceValue
-SetValue
-  : '{' ComponentValueList '}' 
-      {
-	$$ = $2;
-      }
-  | '{'  '}'
-      {
-	$$ = new ValuesList;
-      }
-  ;
-*/
-
-ComponentValueList
-  : NamedValue
-      {
-	$$ = new ValuesList;
-	$$->Append($1);
-      }
-  | ComponentValueList ',' NamedValue
-      {
-	$1->Append($3);
-      }
-  ;
-
-SequenceOfType
-  : SEQUENCE OF_t Type
-      {
-	$$ = new SequenceOfType($3, NULL);
-      }
-  ;
-
-SequenceOfValue
-  : '{' ValueList '}' 
-      {
-	$$ = NULL;
-      }
-  | '{'  '}'
-      {
-	$$ = NULL;
-      }
-  ;
-
-ValueList
-  : Value
-      { }
-  | ValueList ',' Value
-      { }
-  ;
-
-SetType
-  : SET '{' ComponentTypeLists '}' 
-      {
-	$$ = new SetType((SequenceType*)$3);
-      }
-  | SET '{'  '}'
-      {
-	$$ = new SetType;
-      }
-  ;
-
-SetOfType
-  : SET OF_t Type
-      {
-	$$ = new SetOfType($3, NULL);
-      }
-  ;
-
-/* synonym to SequenceOfValue
-SetOfValue
-  : '{' ValueList '}'   
-      {
-	$$ = NULL;
-      }
-  | '{'  '}'
-      {
-	$$ = NULL;
-      }
-  ;
-*/
-
-ChoiceType
-  : CHOICE '{' AlternativeTypeLists '}'
-      {
-	$$ = $3;
-      }
-  ;
-
-AlternativeTypeLists
-  : AlternativeTypeList
-      {
-	$$ = new ChoiceType($1);
-      }
-  | AlternativeTypeList ',' ExtensionAndException
-      {
-	$$ = new ChoiceType($1, TRUE);
-      }
-  | AlternativeTypeList ',' ExtensionAndException  ','  AlternativeTypeList
-      {
-	$$ = new ChoiceType($1, TRUE, $5);
-      }
-  ;
-
-AlternativeTypeList
-  : NamedType	
-      {
-	$$ = new TypesList;
-	$$->Append($1);
-      }
-  | AlternativeTypeList ',' NamedType
-      {
-	$1->Append($3);
-      }
-  ;
-
-ChoiceValue
-  : IDENTIFIER ':' Value
-      {
-	$3->SetValueName($1);
-	$$ = $3;
-      }
-  ;
-
-SelectionType
-  : IDENTIFIER '<' Type
-      {
-	$$ = new SelectionType($1, $3);
-      }
-  ;
-
-TaggedType
-  : Tag Type
-      {
-	$2->SetTag($1.tagClass, $1.tagNumber, Module->GetDefaultTagMode());
-	$$ = $2;
-      }
-  | Tag IMPLICIT Type  
-      {
-	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Implicit);
-	$$ = $3;
-      }
-  | Tag EXPLICIT Type
-      {
-	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Explicit);
-	$$ = $3;
-      }
-  ;
-
-Tag
-  : '[' Class ClassNumber ']'
-      {
-	$$.tagClass = (Tag::Type)$2;
-	$$.tagNumber = (int)$3;
-      }
-  ;
-
-ClassNumber
-  : INTEGER 
-  | DefinedValue
-      {
-	if ($1->IsDescendant(IntegerValue::Class()))
-	  $$ = *(IntegerValue*)$1;
-	else
-	  PError << StdError(Fatal) << "incorrect value type." << endl;
-      }
-  ;
-
-Class
-  : UNIVERSAL
-      {
-	$$ = Tag::Universal;
-      }
-  | APPLICATION
-      {
-	$$ = Tag::Application;
-      }
-  | PRIVATE
-      {
-	$$ = Tag::Private;
-      }
-  | /* empty */
-      {
-	$$ = Tag::ContextSpecific;
-      }
-  ;
-
-EmbeddedPDVType
-  : EMBEDDED PDV
-      {
-	$$ = new EmbeddedPDVType;
-      }
-  ;
-
-ExternalType
-  : EXTERNAL
-      {
-	$$ = new ExternalType;
-      }
-  ;
-
-ObjectIdentifierType
-  : OBJECT IDENTIFIER_t
-      {
-	$$ = new ObjectIdentifierType;
-      }
-  ;
-
-ObjectIdentifierValue
-  : '{' ObjIdComponentList '}'
-      {
-	$$ = new ObjectIdentifierValue($2);
-      }
-/*| '{' DefinedValue_OID ObjIdComponentList '}'  /* Context dependence for DefinedValue */
-  | OID_IDENTIFIER
-      {
-	$$ = new ObjectIdentifierValue($1);
-      }
-  ;
-
-ObjIdComponentList
-  : ObjIdComponent
-      {
-	$$ = new PStringList;
-	$$->Append($1);
-      }
-  | ObjIdComponent ObjIdComponentList
-      {
-	$2->InsertAt(0, $1);
-	$$ = $2;
-      }
-  ;
-
-ObjIdComponent
-  : OID_IDENTIFIER
-  | INTEGER
-      {
-	$$ = new PString(PString::Unsigned, (int)$1);
-      }
-  | NameAndNumberForm
-  ;
-
-NumberForm
-  : INTEGER
-      {
-	$$ = new PString(PString::Unsigned, (int)$1);
-      }
-  | DefinedValue_OID
-  ;
-
-NameAndNumberForm
-  : OID_IDENTIFIER '(' NumberForm ')'
-      {
-	delete $1;
-	$$ = $3;
-      }
-  ;
 
 CharacterStringType
   : RestrictedCharacterStringType
@@ -1228,6 +772,1435 @@ RestrictedCharacterStringType
       }
   ;
 
+
+UnrestrictedCharacterStringType
+  : CHARACTER STRING
+      {
+	$$ = new UnrestrictedCharacterStringType;
+      }
+  ;
+
+
+ChoiceType
+  : CHOICE '{' AlternativeTypeLists '}'
+      {
+	$$ = $3;
+      }
+  ;
+
+AlternativeTypeLists
+  : AlternativeTypeList
+      {
+	$$ = new ChoiceType($1);
+      }
+  | AlternativeTypeList ',' ExtensionAndException
+      {
+	$$ = new ChoiceType($1, TRUE);
+      }
+  | AlternativeTypeList ',' ExtensionAndException  ','  AlternativeTypeList
+      {
+	$$ = new ChoiceType($1, TRUE, $5);
+      }
+  ;
+
+AlternativeTypeList
+  : NamedType	
+      {
+	$$ = new TypesList;
+	$$->Append($1);
+      }
+  | AlternativeTypeList ',' NamedType
+      {
+	$1->Append($3);
+      }
+  ;
+
+
+ExtensionAndException
+  : '.' '.' '.' ExceptionSpec
+  ;
+
+
+NamedType
+  : IDENTIFIER Type
+      {
+	$2->SetName($1);
+	$$ = $2;
+      }
+  | Type	     /* ITU-T Rec. X.680 Appendix H.1 */
+      {
+	PError << StdError(Warning) << "unnamed field." << endl;
+	$1->SetName(new PString(PString::Printf, "_unnamed%u", UnnamedFieldCount++));
+      }
+/*| SelectionType    /* Unnecessary as have rule in Type for this */
+  ;
+
+
+EmbeddedPDVType
+  : EMBEDDED PDV
+      {
+	$$ = new EmbeddedPDVType;
+      }
+  ;
+
+
+EnumeratedType
+  : ENUMERATED '{' Enumerations '}'
+      {
+	$$ = $3;
+      }
+  ;
+
+Enumerations
+  : Enumeration
+      {
+	$$ = new EnumeratedType($1, FALSE, NULL);
+      }
+  | Enumeration  ',' '.' '.' '.'
+      {
+	$$ = new EnumeratedType($1, TRUE, NULL);
+      }
+  | Enumeration  ',' '.' '.' '.' ',' Enumeration
+      {
+	$$ = new EnumeratedType($1, TRUE, $7);
+      }
+  ;
+
+Enumeration
+  : EnumerationItem
+      {
+	$$ = new NamedNumberList;
+	$$->Append($1);
+      }
+  | Enumeration ',' EnumerationItem
+      {
+	$1->Append($3);
+	$3->SetAutoNumber((*$1)[1]);
+	$$ = $1;
+      }
+  ;
+
+EnumerationItem
+  : IDENTIFIER
+      {
+	$$ = new NamedNumber($1);
+      }
+  | NamedNumber
+  ;
+
+
+ExternalType
+  : EXTERNAL
+      {
+	$$ = new ExternalType;
+      }
+  ;
+
+
+InstanceOfType
+  : INSTANCE OF_t DefinedObjectClass
+  ;
+
+
+IntegerType
+  : INTEGER_t
+      {
+	$$ = new IntegerType;
+      }
+  | INTEGER_t '{' NamedNumberList '}'
+      {
+	$$ = new IntegerType($3);
+      }
+  ;
+
+
+NullType
+  : NULL_TYPE
+      {
+	$$ = new NullType;
+      }
+  ;
+
+
+ObjectClassFieldType
+  : DefinedObjectClass '.' FieldName
+      {
+	$$ = new ObjectClassFieldType($1, $3);
+      }
+  ;
+
+
+ObjectIdentifierType
+  : OBJECT IDENTIFIER_t
+      {
+	$$ = new ObjectIdentifierType;
+      }
+  ;
+
+OctetStringType
+  : OCTET STRING
+      {
+	$$ = new OctetStringType;
+      }
+  ;
+
+
+RealType
+  : REAL
+      {
+	$$ = new RealType;
+      }
+  ;
+
+
+SequenceType
+  : SEQUENCE '{' ComponentTypeLists '}'
+      {
+	$$ = $3;
+      }
+  | SEQUENCE '{'  '}'
+      {
+	$$ = new SequenceType(NULL, FALSE, NULL);
+      }
+  | SEQUENCE '{' ExtensionAndException '}'
+      {
+	$$ = new SequenceType(NULL, TRUE, NULL);
+      }
+  ;
+
+ComponentTypeLists
+  : ComponentTypeList
+      {
+	$$ = new SequenceType($1, FALSE, NULL);
+      }
+  | ComponentTypeList ',' ExtensionAndException
+      {
+	$$ = new SequenceType($1, TRUE, NULL);
+      }
+  | ComponentTypeList ',' ExtensionAndException ',' ComponentTypeList
+      {
+	$$ = new SequenceType($1, TRUE, $5);
+      }
+  | ExtensionAndException ',' ComponentTypeList
+      {
+	$$ = new SequenceType(NULL, TRUE, $3);
+      }
+  ;
+
+ComponentTypeList
+  : ComponentType
+      {
+	$$ = new TypesList;
+	$$->Append($1);
+      }
+  | ComponentTypeList ',' ComponentType
+      {
+	$1->Append($3);
+      }
+  ;
+
+ComponentType
+  : NamedType
+  | NamedType OPTIONAL_t
+      {
+	$1->SetOptional();
+      }
+  | NamedType DEFAULT
+      {
+	IdentifierTokenContext = $1->GetIdentifierTokenContext();
+      }
+    Value   
+      {
+	IdentifierTokenContext = IDENTIFIER;
+	$1->SetDefaultValue($4);
+      }
+  | COMPONENTS OF_t Type
+      {
+	$$ = $3;
+      }
+  ;
+
+
+SequenceOfType
+  : SEQUENCE OF_t Type
+      {
+	$$ = new SequenceOfType($3, NULL);
+      }
+  ;
+
+
+SetType
+  : SET '{' ComponentTypeLists '}' 
+      {
+	$$ = new SetType((SequenceType*)$3);
+      }
+  | SET '{'  '}'
+      {
+	$$ = new SetType;
+      }
+  ;
+
+
+SetOfType
+  : SET OF_t Type
+      {
+	$$ = new SetOfType($3, NULL);
+      }
+  ;
+
+
+TaggedType
+  : Tag Type
+      {
+	$2->SetTag($1.tagClass, $1.tagNumber, Module->GetDefaultTagMode());
+	$$ = $2;
+      }
+  | Tag IMPLICIT Type  
+      {
+	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Implicit);
+	$$ = $3;
+      }
+  | Tag EXPLICIT Type
+      {
+	$3->SetTag($1.tagClass, $1.tagNumber, Tag::Explicit);
+	$$ = $3;
+      }
+  ;
+
+Tag
+  : '[' Class ClassNumber ']'
+      {
+	$$.tagClass = (Tag::Type)$2;
+	$$.tagNumber = (int)$3;
+      }
+  ;
+
+ClassNumber
+  : INTEGER 
+  | DefinedValue
+      {
+	if ($1->IsDescendant(IntegerValue::Class()))
+	  $$ = *(IntegerValue*)$1;
+	else
+	  PError << StdError(Fatal) << "incorrect value type." << endl;
+      }
+  ;
+
+Class
+  : UNIVERSAL
+      {
+	$$ = Tag::Universal;
+      }
+  | APPLICATION
+      {
+	$$ = Tag::Application;
+      }
+  | PRIVATE
+      {
+	$$ = Tag::Private;
+      }
+  | /* empty */
+      {
+	$$ = Tag::ContextSpecific;
+      }
+  ;
+
+
+SelectionType
+  : IDENTIFIER '<' Type
+      {
+	$$ = new SelectionType($1, $3);
+      }
+  ;
+
+
+UsefulType
+  : GeneralizedTime
+      {
+	$$ = new GeneralizedTimeType;
+      }
+  | UTCTime
+      {
+	$$ = new UTCTimeType;
+      }
+  | ObjectDescriptor_t
+      {
+	$$ = new ObjectDescriptorType;
+      }
+  ;
+
+
+TypeFromObject
+  : ReferencedObjects '.' FieldName
+    { }
+  ;
+
+/*!!!
+ValueSetFromObjects
+  : ReferencedObjects '.' FieldName
+  ;
+*/
+
+ReferencedObjects
+  : DefinedObject
+  | ParameterizedObject
+  | DefinedObjectSet
+    { }
+  | ParameterizedObjectSet
+    { }
+  ;
+
+ParameterizedObject
+  : DefinedObject ActualParameterList
+  ;
+
+
+
+/********/
+
+ConstrainedType
+  : Type Constraint
+      {
+	$1->AddConstraint($2);
+      }
+  | TypeWithConstraint
+  ;
+
+TypeWithConstraint
+  : SET Constraint OF_t Type
+      {
+	$$ = new SetOfType($4, $2);
+      }
+  | SET SizeConstraint OF_t Type
+      {
+	$$ = new SetOfType($4, new Constraint($2));
+      }
+  | SEQUENCE Constraint OF_t Type
+      {
+	$$ = new SequenceOfType($4, $2);
+      }
+  | SEQUENCE SizeConstraint OF_t Type
+      {
+	$$ = new SequenceOfType($4, new Constraint($2));
+      }
+  ;
+
+Constraint
+  : '(' ConstraintSpec ExceptionSpec ')'
+      {
+	$$ = $2;
+      }
+  ;
+
+ConstraintSpec
+  : ElementSetSpecs
+  | GeneralConstraint
+  ;
+
+
+ExceptionSpec
+  : '!' ExceptionIdentification 
+      {
+	$$ = $2;
+      }
+  | /* empty */
+      {
+	$$ = NULL;
+      }
+  ;
+
+
+ExceptionIdentification
+  : SignedNumber
+      {
+	$$ = new IntegerValue($1);
+      }
+  | DefinedValue
+  | Type ':' Value
+      {
+	delete $1;
+        PError << StdError(Warning) << "Typed exception unsupported" << endl;
+	$$ = $3;
+      }
+  ;
+
+
+ElementSetSpecs
+  : ElementSetSpec
+      {
+	$$ = new Constraint($1, FALSE, NULL);
+      }
+  | ElementSetSpec  ',' '.' '.' '.'
+      {
+	$$ = new Constraint($1, TRUE, NULL);
+      }
+  | '.' '.' '.' ',' ElementSetSpec
+      {
+	$$ = new Constraint(NULL, TRUE, $5);
+      }
+  | ElementSetSpec  ',' '.' '.' '.' ElementSetSpec
+      {
+	$$ = new Constraint($1, TRUE, $6);
+      }
+  ;
+
+
+ElementSetSpec
+  : Unions
+  | ALL Exclusions
+      {
+	$$ = new ConstraintElementList;
+	$$->Append(new ConstrainAllConstraintElement($2));
+      }
+  ;
+
+
+Unions
+  : Intersections
+      {
+	$$ = new ConstraintElementList;
+	$$->Append(new ElementListConstraintElement($1));
+      }
+  | Unions UnionMark Intersections
+      {
+	$1->Append(new ElementListConstraintElement($3));
+      }
+  ;
+
+Intersections
+  : IntersectionElements 
+      {
+	$$ = new ConstraintElementList;
+	$$->Append($1);
+      }
+  | Intersections IntersectionMark IntersectionElements
+      {
+	$1->Append($3);
+      }
+  ;
+
+IntersectionElements
+  : Elements 
+  | Elements Exclusions
+      {
+	$1->SetExclusions($2);
+      }
+  ;
+
+Exclusions
+  : EXCEPT Elements
+      {
+	$$ = $2;
+      }
+  ;
+
+UnionMark
+  : '|'	
+  | UNION
+  ;
+
+IntersectionMark
+  : '^'	
+  | INTERSECTION
+  ;
+
+Elements
+  : SubtypeElements
+  | ObjectSetElements
+  | '(' ElementSetSpec ')'
+      {
+	$$ = new ElementListConstraintElement($2);
+      }
+  ;
+
+
+SubtypeElements
+  : Value
+      {
+	$$ = new SingleValueConstraintElement($1);
+      }
+  | ContainedSubtype
+      {
+	$$ = new SubTypeConstraintElement($1);
+      }
+  | ValueRange
+  | PermittedAlphabet
+  | SizeConstraint
+/*| TypeConstraint  This is really Type and causes ambiguity with ContainedSubtype */
+  | InnerTypeConstraints
+  ;
+
+ValueRange
+  : LowerEndpoint '.' '.' UpperEndpoint
+      {
+	$$ = new ValueRangeConstraintElement($1, $4);
+      }
+  ;
+
+LowerEndpoint
+  : LowerEndValue
+  | LowerEndValue '<'
+  ;
+
+UpperEndpoint
+  : UpperEndValue
+  | '<' UpperEndValue
+      {
+	$$ = $2;
+      }
+  ;
+
+LowerEndValue
+  : Value 
+  | MIN
+      {
+	$$ = new MinValue;
+      }
+  ;
+
+UpperEndValue
+  : Value 
+  | MAX
+      {
+	$$ = new MaxValue;
+      }
+  ;
+
+PermittedAlphabet
+  : FROM Constraint
+      {
+	$$ = new FromConstraintElement($2);
+      }
+  ;
+
+ContainedSubtype
+  : INCLUDES Type
+      {
+	$$ = $2;
+      }
+/*| Type	 Actual grammar has INCLUDES keyword optional but this is
+		 horribly ambiguous, so only support  a few specific Type
+		 definitions */
+  | ConstrainedType
+  | BuiltinType
+  | DefinedType
+  | UsefulType
+  ;
+
+
+SizeConstraint
+  : SIZE_t Constraint
+      {
+	$$ = new SizeConstraintElement($2);
+      }
+  ;
+
+
+InnerTypeConstraints
+  : WITH COMPONENT Constraint
+      {
+	$$ = new WithComponentConstraintElement(NULL, $3, WithComponentConstraintElement::Default);
+      }
+  | WITH COMPONENTS MultipleTypeConstraints
+      {
+	$$ = $3;
+      }
+  ;
+
+MultipleTypeConstraints
+  : '{' TypeConstraints '}'			/* FullSpecification */
+      {
+	$$ = new InnerTypeConstraintElement($2, FALSE);
+      }
+  | '{'  '.' '.' '.' ',' TypeConstraints '}'	/* PartialSpecification */
+      {
+	$$ = new InnerTypeConstraintElement($6, TRUE);
+      }
+  ;
+
+TypeConstraints
+  : NamedConstraint
+      {
+	$$ = new ConstraintElementList;
+	$$->Append($1);
+      }
+  | NamedConstraint ',' TypeConstraints
+      {
+	$3->Append($1);
+	$$ = $3;
+      }
+  ;
+
+NamedConstraint
+  : IDENTIFIER PresenceConstraint
+      {
+	$$ = new WithComponentConstraintElement($1, NULL, (int)$2);
+      }
+  | IDENTIFIER Constraint PresenceConstraint 
+      {
+	$$ = new WithComponentConstraintElement($1, $2, (int)$3);
+      }
+  ;
+
+PresenceConstraint
+  : PRESENT
+      {
+	$$ = WithComponentConstraintElement::Present;
+      }
+  | ABSENT 
+      {
+	$$ = WithComponentConstraintElement::Absent;
+      }
+  | OPTIONAL_t
+      {
+	$$ = WithComponentConstraintElement::Optional;
+      }
+  | /* empty */
+      {
+	$$ = WithComponentConstraintElement::Default;
+      }
+  ;
+
+
+GeneralConstraint
+  : UserDefinedConstraint
+  | TableConstraint
+  ;
+
+UserDefinedConstraint
+  : CONSTRAINED BY '{' UserDefinedConstraintParameterList '}'
+    {
+      $$ = new Constraint($4);
+    }
+  ;
+
+UserDefinedConstraintParameterList
+  : /* empty */
+      {
+	$$ = new UserDefinedConstraintElement(NULL);
+      }
+  | UserDefinedConstraintParameters
+      {
+	$$ = new UserDefinedConstraintElement($1);
+      }
+  ;
+ 
+UserDefinedConstraintParameters
+  : UserDefinedConstraintParameter ',' UserDefinedConstraintParameters
+      {
+	$3->Append($1);
+	$$ = $3;
+      }
+  | UserDefinedConstraintParameter
+      {
+	$$ = new TypesList;
+	$$->Append($1);
+      }
+  ;
+
+UserDefinedConstraintParameter
+  : Governor ':' ActualParameter
+      {
+	$$ = $3;
+      }
+  | ActualParameter
+  ;
+
+
+TableConstraint
+  : ObjectSet /* SimpleTableConstraint */
+  | ComponentRelationConstraint
+  ;
+
+ComponentRelationConstraint
+  : '{' DefinedObjectSet '}' '{' AtNotations '}'
+    { $$ = NULL; }
+  ;
+
+AtNotations
+  : AtNotations ',' AtNotation
+  | AtNotation
+  ;
+
+AtNotation
+  : '@' ComponentIdList
+  | '@' '.' ComponentIdList
+  ;
+
+ComponentIdList
+  : ComponentIdList '.' IDENTIFIER
+  | IDENTIFIER
+  ;
+
+
+/********/
+
+ObjectClassAssignment
+  : OBJECTCLASSREFERENCE ASSIGNMENT ObjectClass
+    { }
+  ;
+
+ObjectAssignment
+  : OBJECTREFERENCE DefinedObjectClass ASSIGNMENT Object
+    { }
+  ;
+
+ObjectSetAssignment
+  : OBJECTSETREFERENCE DefinedObjectClass ASSIGNMENT ObjectSet
+    { }
+  ;
+
+
+ObjectClass
+  : DefinedObjectClass
+    { }
+  | ObjectClassDefn 
+  | ParameterizedObjectClass
+  ;
+
+DefinedObjectClass
+  : ExternalObjectClassReference
+  | OBJECTCLASSREFERENCE
+  | UsefulObjectClassReference
+  ;
+
+
+ExternalObjectClassReference
+  : MODULEREFERENCE '.' OBJECTCLASSREFERENCE
+      {
+	$$ = ConcatNames($1, '.', $3);
+      }
+  ;
+
+UsefulObjectClassReference
+  : TYPE_IDENTIFIER
+      {
+	$$ = new PString("TYPE-IDENTIFIER");
+      }
+  | ABSTRACT_SYNTAX
+      {
+	$$ = new PString("ABSTRACT-SYNTAX");
+      }
+  ;
+
+
+ObjectClassDefn
+  : CLASS  '{'  FieldSpecs '}'  WithSyntaxSpec
+  ;
+
+FieldSpecs
+  : FieldSpecs ',' FieldSpec
+  | FieldSpec
+  ;
+
+FieldSpec
+  : TypeFieldSpec
+  | FixedTypeValueFieldSpec
+  | VariableTypeValueFieldSpec
+  | FixedTypeValueSetFieldSpec
+  | VariableTypeValueSetFieldSpec
+  | ObjectFieldSpec
+  | ObjectSetFieldSpec
+  ;
+
+TypeFieldSpec
+  : TYPEFIELDREFERENCE TypeOptionalitySpec
+    { }
+  ;
+
+TypeOptionalitySpec
+  : OPTIONAL_t
+  | DEFAULT Type
+  | /* empty */
+  ;
+
+FixedTypeValueFieldSpec
+  : VALUEFIELDREFERENCE Type Unique ValueOptionalitySpec
+    { }
+  ;
+
+Unique
+  : UNIQUE
+  | /* empty */
+  ;
+
+ValueOptionalitySpec
+  : OPTIONAL_t
+  | DEFAULT Value
+  | /* empty */
+  ;
+
+VariableTypeValueFieldSpec
+  : VALUEFIELDREFERENCE FieldName ValueOptionalitySpec
+    { }
+  ;
+
+FixedTypeValueSetFieldSpec
+  : VALUESETFIELDREFERENCE Type ValueSetOptionalitySpec
+    { }
+  ;
+
+ValueSetOptionalitySpec
+  : OPTIONAL_t
+  | DEFAULT ValueSet
+  | /* empty */
+  ;
+
+VariableTypeValueSetFieldSpec
+  : VALUESETFIELDREFERENCE FieldName ValueSetOptionalitySpec
+    { }
+  ;
+
+ObjectFieldSpec
+  : OBJECTFIELDREFERENCE DefinedObjectClass ObjectOptionalitySpec
+    { }
+  ;
+
+ObjectOptionalitySpec
+  : OPTIONAL_t
+  | DEFAULT Object
+  | /* empty */
+  ;
+
+ObjectSetFieldSpec
+  : OBJECTSETFIELDREFERENCE DefinedObjectClass ObjectSetOptionalitySpec
+    { }
+  ;
+
+ObjectSetOptionalitySpec
+  : OPTIONAL_t
+  | DEFAULT ObjectSet
+  | /* empty */
+  ;
+
+WithSyntaxSpec
+  : WITH SYNTAX SyntaxList
+  | /* empty */
+  ;
+
+SyntaxList
+  : '{' TokenOrGroupSpecs '}'
+  | '{' '}'
+  ;
+
+TokenOrGroupSpecs
+  : TokenOrGroupSpecs TokenOrGroupSpec
+  | TokenOrGroupSpec
+  ;
+
+TokenOrGroupSpec
+  : RequiredToken
+  | OptionalGroup
+  ;
+
+OptionalGroup
+  : '[' TokenOrGroupSpecs ']'
+  ;
+
+RequiredToken
+  : Literal
+  | PrimitiveFieldName
+    { }
+  ;
+
+Literal
+  : BIT
+  | BOOLEAN_t
+  | CHARACTER
+  | CHOICE
+  | EMBEDDED
+  | END
+  | ENUMERATED
+  | EXTERNAL
+  | FALSE_t
+  | INSTANCE
+  | INTEGER
+    { }
+  | INTERSECTION
+  | MINUS_INFINITY
+  | NULL_TYPE
+  | OBJECT
+  | OCTET
+  | PLUS_INFINITY
+  | REAL
+  | SEQUENCE
+  | SET
+  | TRUE_t
+  | UNION
+  | ','
+  ;
+
+
+DefinedObject
+  : ExternalObjectReference
+  | OBJECTREFERENCE
+    { }
+  ;
+
+ExternalObjectReference
+  : MODULEREFERENCE '.' OBJECTREFERENCE
+    { }
+  ;
+
+
+ParameterizedObjectClass
+  : DefinedObjectClass ActualParameterList
+    { }
+  ;
+
+
+DefinedObjectSet
+  : ExternalObjectSetReference
+    { }
+  | OBJECTSETREFERENCE
+    { }
+  ;
+
+ExternalObjectSetReference
+  : MODULEREFERENCE '.' OBJECTSETREFERENCE
+    { }
+  ;
+
+
+ParameterizedObjectSet
+  : DefinedObjectSet ActualParameterList
+  ;
+
+
+FieldName
+  : FieldName '.' PrimitiveFieldName
+      {
+	$$ = ConcatNames($1, '.', $3);
+      }
+  | PrimitiveFieldName
+  ;
+
+
+PrimitiveFieldName
+  : TYPEFIELDREFERENCE
+  | VALUEFIELDREFERENCE
+  | VALUESETFIELDREFERENCE
+  | OBJECTFIELDREFERENCE
+  | OBJECTSETFIELDREFERENCE
+  ;
+
+
+Object
+  : DefinedObject
+    { }
+/*!!!
+  | ObjectDefn
+    { }
+*/
+  | ObjectFromObject
+    { }
+  | ParameterizedObject
+    { }
+  ;
+
+
+/*!!!!
+ObjectDefn
+  : DefaultSyntax
+  | DefinedSyntax
+  ;
+
+DefaultSyntax
+  : '{' FieldSettings '}
+  : '{' '}
+  ;
+
+FieldSettings
+  : FieldSettings ',' FieldSetting
+  | FieldSetting
+  ;
+
+FieldSetting
+  : PrimitiveFieldName Setting
+  ;
+
+DefinedSyntax
+  : '{' DefinedSyntaxTokens '}'
+  '
+
+DefinedSyntaxTokens
+  : DefinedSyntaxTokens DefinedSyntaxToken
+  | /* empty *//*
+  ;
+
+DefinedSyntaxToken
+  : Literal
+  | Setting
+  ;
+
+Setting
+  : Type
+  | Value
+  | ValueSet
+  | Object
+  | ObjectSet
+  ;
+*/
+
+
+ObjectSet
+  : '{' ElementSetSpec '}'
+    { }
+  ;
+
+
+ObjectFromObject
+  : ReferencedObjects '.' FieldName
+  ;
+
+
+ObjectSetElements
+  : Object
+    { }
+  | DefinedObjectSet
+    { }
+/*!!!
+  | ObjectSetFromObjects
+*/
+  | ParameterizedObjectSet
+    { }
+  ;
+
+/*!!!
+ObjectSetFromObjects
+  : ReferencedObjects '.' FieldName
+  ;
+*/
+
+
+
+/********/
+
+ParameterizedAssignment
+  : ParameterizedTypeAssignment
+  | ParameterizedValueAssignment
+  | ParameterizedValueSetTypeAssignment
+  | ParameterizedObjectClassAssignment
+  | ParameterizedObjectAssignment
+  | ParameterizedObjectSetAssignment
+  ;
+
+ParameterizedTypeAssignment
+  : TYPEREFERENCE ParameterList
+      {
+	DummyParameters = $2;
+      }
+    ASSIGNMENT Type
+      {
+	DummyParameters = NULL;
+	$5->SetName($1);
+	$5->SetParameters($2);
+	Module->AddType($5);
+      }
+  ;
+
+ParameterizedValueAssignment
+  : IDENTIFIER ParameterList Type ASSIGNMENT Value
+    { }
+  ;
+
+ParameterizedValueSetTypeAssignment
+  : TYPEREFERENCE ParameterList Type ASSIGNMENT ValueSet
+    { }
+  ;
+
+ParameterizedObjectClassAssignment
+  : OBJECTCLASSREFERENCE ParameterList ASSIGNMENT ObjectClass
+    { }
+  ;
+
+ParameterizedObjectAssignment
+  : OBJECTREFERENCE ParameterList DefinedObjectClass ASSIGNMENT Object
+    { }
+  ;
+
+ParameterizedObjectSetAssignment
+  : OBJECTSETREFERENCE ParameterList DefinedObjectClass ASSIGNMENT ObjectSet
+    { }
+  ;
+
+ParameterList
+  : '{' Parameters '}'
+      {
+	$$ = $2;
+      }
+  ;
+
+Parameters
+  : Parameters ',' Parameter
+      {
+	$$ = $1;
+	$$->Append($3);
+      }
+  | Parameter
+      {
+	$$ = new PStringList;
+	$$->Append($1);
+      }
+  ;
+
+Parameter
+  : Governor ':' Reference
+      {
+	$$ = $3;
+      }
+  | Reference
+  ;
+
+Governor
+  : Type
+    { }
+  | DefinedObjectClass
+    { }
+  ;
+
+
+ParameterizedType
+  : SimpleDefinedType ActualParameterList
+      {
+	$$ = new ParameterizedType($1, $2);
+      }
+  ;
+
+SimpleDefinedType
+  : ExternalTypeReference
+  | TYPEREFERENCE
+  ;
+
+
+ActualParameterList
+  : '{' ActualParameters '}'
+      {
+	$$ = $2;
+      }
+  ;
+
+ActualParameters
+  : ActualParameters ',' ActualParameter
+      {
+	$1->Append($3);
+	$$ = $1;
+      }
+  | ActualParameter
+      {
+	$$ = new TypesList;
+	$$->Append($1);
+      }
+  ;
+
+ActualParameter
+  : Type
+  | Value
+    { }
+  | ValueSet
+    { }
+  | DefinedObjectClass
+    { }
+/*!!!
+  | Object
+    { }
+  | ObjectSet
+*/
+  ;
+
+
+
+/********/
+
+ValueAssignment 
+  : IDENTIFIER Type
+      {
+	IdentifierTokenContext = $2->GetIdentifierTokenContext();
+	BraceTokenContext = $2->GetBraceTokenContext();
+	NullTokenContext = NULL_VALUE;
+      }
+    ASSIGNMENT Value
+      {
+	$5->SetValueName($1);
+	Module->AddValue($5);
+	IdentifierTokenContext = IDENTIFIER;
+	BraceTokenContext = '{';
+	NullTokenContext = NULL_TYPE;
+      }
+  ;
+
+
+Value
+  : BuiltinValue
+  | ReferencedValue
+  ;
+
+
+BuiltinValue
+  : BitStringValue 
+  | BooleanValue 
+  | CharacterStringValue 
+  | ChoiceValue 
+/*| EmbeddedPDVValue  synonym to SequenceValue */
+/*| EnumeratedValue   synonym to IDENTIFIER    */
+/*| ExternalValue     synonym to SequenceValue */
+/*| InstanceOfValue   synonym to Value */
+  | SignedNumber      /* IntegerValue */
+      {
+	$$ = new IntegerValue($1);
+      }
+  | NullValue 
+/*!!!
+  | ObjectClassFieldValue
+*/
+  | ObjectIdentifierValue
+  | OctetStringValue
+  | RealValue 
+  | SequenceValue 
+/*!!!! 
+  | SequenceOfValue
+*/
+/*| SetValue	      synonym to SequenceValue */
+/*| SetOfValue	      synonym to SequenceOfValue */
+/*| TaggedValue	      synonym to Value */
+  ;
+
+
+DefinedValue
+  : ExternalValueReference
+      {
+	$$ = new DefinedValue($1);
+      }
+  | IDENTIFIER
+      {
+	$$ = new DefinedValue($1);
+      }
+  | ParameterizedValue
+  ;
+
+
+ExternalValueReference
+  : MODULEREFERENCE '.' IDENTIFIER
+      {
+	*$1 += *$3;
+	delete $3;
+      }
+  ;
+
+
+ObjectIdentifierValue
+  : OID_BRACE ObjIdComponentList '}'
+      {
+	$$ = new ObjectIdentifierValue($2);
+      }
+/*!!!
+  | '{' DefinedValue_OID ObjIdComponentList '}'
+      {
+	$$ = new ObjectIdentifierValue($2);
+      }
+*/
+  ;
+
+
+ObjIdComponentList
+  : ObjIdComponent
+      {
+	$$ = new PStringList;
+	$$->Append($1);
+      }
+  | ObjIdComponent ObjIdComponentList
+      {
+	$2->InsertAt(0, $1);
+	$$ = $2;
+      }
+  ;
+
+ObjIdComponent
+  : OID_IDENTIFIER
+  | INTEGER
+      {
+	$$ = new PString(PString::Unsigned, (int)$1);
+      }
+  | OID_IDENTIFIER '(' NumberForm ')'
+      {
+	delete $1;
+	$$ = $3;
+      }
+  ;
+
+NumberForm
+  : INTEGER
+      {
+	$$ = new PString(PString::Unsigned, (int)$1);
+      }
+  | ExternalValueReference
+  | OID_IDENTIFIER
+  ;
+
+
+OctetStringValue
+  : OS_BSTRING
+      {
+	$$ = new OctetStringValue($1);
+      }
+  | OS_HSTRING
+      {
+	$$ = new OctetStringValue($1);
+      }
+  ;
+
+BitStringValue
+  : BS_BSTRING
+      {
+	$$ = new BitStringValue($1);
+      }
+  | BS_HSTRING
+      {
+	$$ = new BitStringValue($1);
+      }
+  | BITSTRING_BRACE BitIdentifierList '}' 
+      {
+	$$ = new BitStringValue($2);
+      }
+  | BITSTRING_BRACE  '}'
+      {
+	$$ = new BitStringValue;
+      }
+  ;
+
+
+BitIdentifierList
+  : BIT_IDENTIFIER
+      {
+	$$ = new PStringList;
+      }
+  | BitIdentifierList ',' BIT_IDENTIFIER
+      {
+	// Look up $3
+	$1->SetAt($1->GetSize(), 0);
+      }
+  ;
+
+
+BooleanValue
+  : TRUE_t
+      {
+	$$ = new BooleanValue(TRUE);
+      }
+  | FALSE_t
+      {
+	$$ = new BooleanValue(FALSE);
+      }
+  ;
+
+
+CharacterStringValue
+  : RestrictedCharacterStringValue
+/*!!!
+  | UnrestrictedCharacterStringValue
+*/
+  ;
+
 RestrictedCharacterStringValue
   : CSTRING
       {
@@ -1283,330 +2256,151 @@ Tuple
       }
   ;
 
-UnrestrictedCharacterStringType
-  : CHARACTER STRING
-      {
-	$$ = new UnrestrictedCharacterStringType;
-      }
-  ;
 
-CharacterStringValue
-  : RestrictedCharacterStringValue
-/*| UnrestrictedCharacterStringValue	synonym for SequenceValue */
-  ;
-
-
-/* The following useful types are defined in clauses 39-41: */
-
-UsefulType
-  : GeneralizedTime
+ChoiceValue
+  : IDENTIFIER ':' Value
       {
-	$$ = new GeneralizedTimeType;
-      }
-  | UTCTime
-      {
-	$$ = new UTCTimeType;
-      }
-  | ObjectDescriptor_t
-      {
-	$$ = new ObjectDescriptorType;
-      }
-  ;
-
-
-/* The following productions are used in clauses 42-45: */
-
-ConstrainedType
-  : TypeWithConstraint
-  | Type Constraint
-      {
-	$1->AddConstraint($2);
-      }
-  ;
-
-TypeWithConstraint
-  : SET Constraint OF_t Type
-      {
-	$$ = new SetOfType($4, $2);
-      }
-  | SET SizeConstraint OF_t Type
-      {
-	$$ = new SetOfType($4, $2);
-      }
-  | SEQUENCE Constraint OF_t Type
-      {
-	$$ = new SequenceOfType($4, $2);
-      }
-  | SEQUENCE SizeConstraint OF_t Type
-      {
-	$$ = new SequenceOfType($4, $2);
-      }
-  ;
-
-Constraint
-  : '(' ConstraintSpec ExceptionSpec ')'
-      {
-	$$ = $2;
-      }
-  ;
-
-ConstraintSpec
-  : ElementSetSpecs
-/*| GeneralConstraint	  /* specified in ITU-T Rec. X.682 | ISO/IEC 8824-3, subclause 8.1 */ 
-  ;
-
-ExceptionSpec
-  : '!' ExceptionIdentification 
-      {
-	$$ = $2;
-      }
-  | /* empty */
-      {
-	$$ = NULL;
-      }
-  ;
-
-ElementSetSpecs
-  : ElementSetSpec
-      {
-	$$ = new Constraint($1, FALSE, NULL);
-      }
-  | ElementSetSpec  ',' '.' '.' '.'
-      {
-	$$ = new Constraint($1, TRUE, NULL);
-      }
-  | '.' '.' '.' ',' ElementSetSpec
-      {
-	$$ = new Constraint(NULL, TRUE, $5);
-      }
-  | ElementSetSpec  ',' '.' '.' '.' ElementSetSpec
-      {
-	$$ = new Constraint($1, TRUE, $6);
-      }
-  ;
-
-ExceptionIdentification
-  : SignedNumber
-      {
-	$$ = new IntegerValue($1);
-      }
-  | DefinedValue
-  | Type ':' Value
-      {
-	delete $1;
-        PError << StdError(Warning) << "Typed exception unsupported" << endl;
+	$3->SetValueName($1);
 	$$ = $3;
       }
   ;
 
-ElementSetSpec
-  : Unions
-  | ALL Exclusions
+
+NullValue
+  : NULL_VALUE
       {
-	$$ = new ValueElementList;
-	$$->Append(new ConstrainAllValueElement($2));
+	$$ = new NullValue;
       }
   ;
 
-Unions
-  : Intersections
+
+RealValue
+  : NumericRealValue 
+  | SpecialRealValue
+  ;
+
+NumericRealValue
+  :  '0'
       {
-	$$ = new ValueElementList;
-	$$->Append(new ListValueElement($1));
+	$$ = new RealValue(0);
       }
-  | Unions UnionMark Intersections
+/*!!!
+  | SequenceValue
+*/
+  ;
+
+SpecialRealValue
+  : PLUS_INFINITY
       {
-	$1->Append(new ListValueElement($3));
+	$$ = new RealValue(0);
+      }
+  | MINUS_INFINITY
+      {
+	$$ = new RealValue(0);
       }
   ;
 
-Intersections
-  : IntersectionElements 
+
+SequenceValue
+  : '{' ComponentValueList '}' 
       {
-	$$ = new ValueElementList;
+	$$ = new SequenceValue($2);
+      }
+  | '{'  '}'
+      {
+	$$ = new SequenceValue;
+      }
+  ;
+
+ComponentValueList
+  : NamedValue
+      {
+	$$ = new ValuesList;
 	$$->Append($1);
       }
-  | Intersections IntersectionMark IntersectionElements
+  | ComponentValueList ',' NamedValue
       {
 	$1->Append($3);
       }
   ;
 
-IntersectionElements
-  : Elements 
-  | Elements Exclusions
+NamedValue
+  : IDENTIFIER Value
       {
-	$1->SetExclusions($2);
-      }
-  ;
-
-Exclusions
-  : EXCEPT Elements
-      {
+	$2->SetValueName($1);
 	$$ = $2;
       }
   ;
 
-UnionMark
-  : '|'	
-  | UNION
-  ;
 
-IntersectionMark
-  : '^'	
-  | INTERSECTION
-  ;
-
-Elements
-  : SubtypeElements 
-/*| ObjectSetElements		/* ITU-T Rec. X.681 | ISO/IEC 8824-2, subclause 12.3 */
-  | '(' ElementSetSpec ')'
+/*!!!! 
+SequenceOfValue
+  : '{' ValueList '}' 
       {
-	$$ = new ListValueElement($2);
+	$$ = NULL;
       }
-  ;
-
-SubtypeElements
-  : Value
+  | '{'  '}'
       {
-	$$ = new SingleValueElement($1);
-      }
-  | ContainedSubtype
-      {
-	$$ = new SubTypeValueElement($1);
-      }
-  | ValueRange
-  | PermittedAlphabet
-  | SizeConstraint
-      {
-	$$ = new ConstraintValueElement($1);
-      }
-/*| TypeConstraint	synonym for Type */
-  | InnerTypeConstraints
-      {
-        PError << StdError(Warning) << "InnerTypeConstraints unsupported" << endl;
 	$$ = NULL;
       }
   ;
 
-ContainedSubtype
-  : INCLUDES Type
-      {
-	$$ = $2;
-      }
-/*!!!! Keyword NULL is used both as a value and type causing a cntext dependence here
-  | NullType
+ValueList
+  : Value
+      { }
+  | ValueList ',' Value
+      { }
+  ;
+*/ 
+
+
+/*!!!
+ObjectClassFieldValue
+  : OpenTypeFieldVal
+  | Value
+  ;
+
+OpenTypeFieldVal
+  : Type ':' Value
+  ;
+*/
+
+
+ReferencedValue
+  : DefinedValue
+/*!!!!
+  | ValueFromObject
 */
   ;
 
-ValueRange
-  : LowerEndpoint '.' '.' UpperEndpoint
-      {
-	$$ = new ValueRangeElement($1, $4);
-      }
+/*!!!!
+ValueFromObject
+  : ReferencedObjects '.' FieldName
+    { }
+  ;
+*/
+
+
+ParameterizedValue
+  : SimpleDefinedValue ActualParameterList
+    { }
   ;
 
-LowerEndpoint
-  : LowerEndValue
-  | LowerEndValue '<'
+SimpleDefinedValue
+  : ExternalValueReference
+  | IDENTIFIER
   ;
 
-UpperEndpoint
-  : UpperEndValue
-  | '<' UpperEndValue
-      {
-	$$ = $2;
-      }
+
+
+/********/
+
+ValueSet
+  : '{' ElementSetSpec '}'
   ;
 
-LowerEndValue
-  : Value 
-  | MIN
-      {
-	$$ = new MinValue;
-      }
-  ;
 
-UpperEndValue
-  : Value 
-  | MAX
-      {
-	$$ = new MaxValue;
-      }
-  ;
-
-SizeConstraint
-  : SIZE_t Constraint
-      {
-	$2->SetPrefix(Constraint::SizePrefix);
-	$$ = $2;
-      }
-  ;
-
-PermittedAlphabet
-  : FROM Constraint
-      {
-	$2->SetPrefix(Constraint::FromPrefix);
-	$$ = new ConstraintValueElement($2);
-      }
-  ;
-
-InnerTypeConstraints
-  : WITH COMPONENT Constraint
-      {
-	$3->SetPrefix(Constraint::WithComponentPrefix);
-	$$ = $3;
-      }
-  | WITH COMPONENTS MultipleTypeConstraints
-      {
-      }
-  ;
-
-MultipleTypeConstraints
-  : '{' TypeConstraints '}'
-      {
-	$$ = $2;
-      }
-  | '{'  '.' '.' '.' ',' TypeConstraints '}'
-      {
-	$$ = $6;
-      }
-  ;
-
-TypeConstraints
-  : NamedConstraint
-      {
-	$$ = new ConstraintList;
-	$$->Append($1);
-      }
-  | NamedConstraint ',' TypeConstraints
-      {
-	$3->Append($1);
-	$$ = $3;
-      }
-  ;
-
-NamedConstraint
-  : IDENTIFIER ComponentConstraint
-      {
-	$$ = $2;
-      }
-  ;
-
-ComponentConstraint
-  : PresenceConstraint
-      {
-	$$ = new Constraint(NULL, FALSE, NULL);
-      }
-  | Constraint PresenceConstraint 
-  ;
-
-PresenceConstraint
-  : PRESENT 
-  | ABSENT 
-  | OPTIONAL_t
-  | /* empty */
-  ;
+/********/
 
 MacroDefinition
   : TYPEREFERENCE MACRO ASSIGNMENT MacroSubstance
@@ -1641,6 +2435,7 @@ TypeProduction
 ValueProduction
   : VALUE NOTATION ASSIGNMENT MacroAlternativeList
   ;
+
 
 /*
 SupportingProductions
@@ -1716,6 +2511,8 @@ LocalValueAssignment
       {}
   ;
 
+
+/********/
 
 ObjectTypeDefinition
   : IDENTIFIER OBJECT_TYPE
@@ -1880,3 +2677,80 @@ MibVarTypes
       }
   ;
 
+
+
+/********/
+
+/*!!! Not actually referenced by any other part of grammar
+AbsoluteReference
+  : '@' GlobalModuleReference '.' ItemSpec
+  ;
+
+ItemSpec
+  : TYPEREFERENCE
+  |  ItemId '.' ComponentId
+  ;
+
+ItemId
+  : ItemSpec
+  ;
+
+ComponentId 
+  : IDENTIFIER
+  | INTEGER
+  | '*'
+  ;
+*/
+
+
+Reference
+  : TYPEREFERENCE
+  | IDENTIFIER 
+  | OBJECTCLASSREFERENCE
+  | OBJECTREFERENCE
+  | OBJECTSETREFERENCE
+  ;
+
+ParameterizedReference
+  : Reference '{' '}'
+      {
+	$$ = new ImportedType($1, TRUE);
+      }
+  ;
+
+
+NamedNumberList
+  : NamedNumber		
+      {
+	$$ = new NamedNumberList;
+	$$->Append($1);
+      }
+  | NamedNumberList ',' NamedNumber
+      {
+	$1->Append($3);
+      }
+  ;
+
+NamedNumber
+  : IDENTIFIER '(' SignedNumber ')'	
+      {
+	$$ = new NamedNumber($1, (int)$3);
+      }
+  | IDENTIFIER '(' DefinedValue ')'
+      {
+	$$ = new NamedNumber($1, ((DefinedValue*)$3)->GetReference());
+	delete $3;
+      }
+  ;
+
+
+SignedNumber
+  :  INTEGER 
+  | '-' INTEGER
+      {
+	$$ = -$2;
+      }
+  ;
+
+
+/** End of File ****/
