@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.17  2001/05/22 23:38:45  robertj
+ * Fixed bug in PVideoOutputDevice, removed redundent SetFrameSize.
+ *
  * Revision 1.16  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -374,13 +377,6 @@ class PVideoOutputDevice : public PVideoDevice
      */
     virtual BOOL Redraw(
       const void * /*frame*/
-    );
-
-    /**Specifiy the width and height of the video stream.
-     */
-    virtual void SetFrameSize(
-      int /*_width*/,
-      int /*_height*/
     );
 
     /**Set the current time.
