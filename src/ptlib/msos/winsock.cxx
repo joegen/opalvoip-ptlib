@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.15 1996/03/31 09:11:06 robertj Exp $
+ * $Id: winsock.cxx,v 1.16 1996/04/05 01:42:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.16  1996/04/05 01:42:28  robertj
+ * Assured PSocket::Write always writes the number of bytes specified.
+ *
  * Revision 1.15  1996/03/31 09:11:06  robertj
  * Fixed major performance problem in timeout read/write to sockets.
  *
@@ -96,6 +99,8 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 {
   flush();
   lastReadCount = 0;
+  if (len == 0)
+    return ConvertOSError(0);
 
   int timeout = readTimeout.GetMilliseconds();
   if (timeout == 0)
@@ -126,9 +131,14 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
-  int sendResult = ::send(os_handle, (const char *)buf, len, 0);
-  if (ConvertOSError(sendResult))
-    lastWriteCount = sendResult;
+  while (len > 0) {
+    int sendResult = ::send(os_handle,
+                  ((const char *)buf)+lastWriteCount, len - lastWriteCount, 0);
+    if (!ConvertOSError(sendResult))
+      return FALSE;
+    lastWriteCount += sendResult;
+    len -= sendResult;
+  }
 
   return lastWriteCount >= len;
 }
