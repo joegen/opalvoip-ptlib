@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.67  2001/02/13 03:27:24  robertj
+ * Added function to do heap validation.
+ *
  * Revision 1.66  2001/02/09 04:41:27  robertj
  * Removed added non memrycheck implementations of new/delete when using GNU C++.
  *
@@ -653,6 +656,14 @@ class PMemoryHeap {
       void * ptr,             /// Pointer to memory block to check
       const char * className, /// Class name it should be.
       ostream * error         /// Stream to receive error message (may be NULL)
+    );
+
+    /** Validate all objects in memory.
+       This effectively calls Validate() on every object in the heap.
+        @return TRUE if every object in heap is Ok.
+     */
+    static BOOL ValidateHeap(
+      ostream * error = NULL  // Stream to output, use default if NULL
     );
 
     /** Ignore/Monitor allocations.
