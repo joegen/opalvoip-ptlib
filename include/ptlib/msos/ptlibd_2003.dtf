@@ -527,6 +527,8 @@ EXPORTS
     ??0PRemoteConnection@@QAE@ABVPString@@@Z @223 NONAME
     ??0PRemoteConnection@@QAE@XZ @224 NONAME
     ??0PSafeCollection@@QAE@PAVPCollection@@@Z @225 NONAME
+    ??0PSafeLockReadOnly@@QAE@ABVPSafeObject@@@Z @7608 NONAME
+    ??0PSafeLockReadWrite@@QAE@ABVPSafeObject@@@Z @7609 NONAME
     ??0PSafeObject@@QAE@XZ @226 NONAME
     ??0PSafePtrBase@@IAE@ABV0@@Z @229 NONAME
     ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@H@Z @7046 NONAME
@@ -930,6 +932,8 @@ EXPORTS
     ??1PRegularExpression@@UAE@XZ @522 NONAME
     ??1PRemoteConnection@@UAE@XZ @523 NONAME
     ??1PSafeCollection@@UAE@XZ @524 NONAME
+    ??1PSafeLockReadOnly@@QAE@XZ @7610 NONAME
+    ??1PSafeLockReadWrite@@QAE@XZ @7611 NONAME
     ??1PSafeObject@@UAE@XZ @525 NONAME
     ??1PSafePtrBase@@UAE@XZ @526 NONAME
     ??1PSemaphore@@UAE@XZ @527 NONAME
@@ -4831,6 +4835,8 @@ EXPORTS
     ?LoadPluginDirectory@PPluginManager@@QAEXABVPDirectory@@@Z @3714 NONAME
     ?loadSoundStuff@PWLibStupidWindowsHacks@@3HA @7445 NONAME
     ?loadVideoStuff@PWLibStupidWindowsHacks@@3HA @7446 NONAME
+    ?Lock@PSafeLockReadOnly@@QAEHXZ @7612 NONAME
+    ?Lock@PSafeLockReadWrite@@QAEHXZ @7613 NONAME
     ?LockReadOnly@PSafeObject@@QBEHXZ @2937 NONAME
     ?LockReadWrite@PSafeObject@@QAEHXZ @2938 NONAME
     ?LogOff@PMail@@UAEHXZ @2939 NONAME
@@ -5478,6 +5484,8 @@ EXPORTS
     ?underflow@PChannelStreamBuffer@@MAEHXZ @3461 NONAME
     ?unitbuf@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5818 NONAME
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @3462 NONAME
+    ?Unlock@PSafeLockReadOnly@@QAEXXZ @7614 NONAME
+    ?Unlock@PSafeLockReadWrite@@QAEXXZ @7615 NONAME
     ?UnlockReadOnly@PSafeObject@@QBEXXZ @3463 NONAME
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @3464 NONAME
     ?UnregisterNotifiee@PSmartNotifieeRegistrar@@SAHI@Z @5994 NONAME

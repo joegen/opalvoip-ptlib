@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.10  2004/10/04 12:54:33  rjongbloed
+ * Added functions for locking an unlocking to "auto-unlock" classes.
+ *
  * Revision 1.9  2004/08/12 12:37:40  rjongbloed
  * Fixed bug recently introduced so removes deleted object from deletion list.
  * Also changed removal list to be correct type.
@@ -273,16 +276,10 @@ class PSafeObject : public PObject
 class PSafeLockReadOnly
 {
   public:
-    PSafeLockReadOnly(const PSafeObject & object)
-      : safeObject((PSafeObject &)object)
-    {
-      locked = safeObject.LockReadOnly();
-    }
-    ~PSafeLockReadOnly()
-    {
-      if (locked)
-        safeObject.UnlockReadOnly();
-    }
+    PSafeLockReadOnly(const PSafeObject & object);
+    ~PSafeLockReadOnly();
+    BOOL Lock();
+    void Unlock();
     BOOL IsLocked() const { return locked; }
     bool operator!() const { return !locked; }
 
@@ -298,16 +295,10 @@ class PSafeLockReadOnly
 class PSafeLockReadWrite
 {
   public:
-    PSafeLockReadWrite(const PSafeObject & object)
-      : safeObject((PSafeObject &)object)
-    {
-      locked = safeObject.LockReadWrite();
-    }
-    ~PSafeLockReadWrite()
-    {
-      if (locked)
-        safeObject.UnlockReadWrite();
-    }
+    PSafeLockReadWrite(const PSafeObject & object);
+    ~PSafeLockReadWrite();
+    BOOL Lock();
+    void Unlock();
     BOOL IsLocked() const { return locked; }
     bool operator!() const { return !locked; }
 
