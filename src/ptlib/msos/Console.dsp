@@ -193,6 +193,10 @@ SOURCE=..\common\pvidchan.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\qos.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\remconn.cxx
 # End Source File
 # Begin Source File
