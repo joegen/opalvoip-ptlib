@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.4  2001/07/20 03:30:59  robertj
+ * Minor cosmetic changes to new PWAVFile class.
+ *
  * Revision 1.3  2001/07/19 09:57:24  rogerh
  * Use correct filename
  *
@@ -44,6 +47,20 @@
 
 #include <ptlib.h>
 
+
+#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__))
+void swab(register char * from, register char * to, register size_t len)
+{
+  while (len > 1) {
+    char b = from[0];
+    to[0] = from[1];
+    to[1] = b;
+    from += 2;
+    to += 2;
+    len -= 2;
+  }
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PWAVFile
@@ -101,17 +118,8 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
 #if PBYTE_ORDER==PBIG_ENDIAN
-  if (bitsPerSample == 16) {
-    PINDEX i;
-    unsigned char tmp, *mybuf;
-    PINDEX num = PFile::GetLastReadCount();
-    mybuf = (unsigned char *)buf;
-    for (i = 0; (i+1) < num; i+=2) {
-      tmp = mybuf[i];
-      mybuf[i] = mybuf[i+1];
-      mybuf[i+1] = tmp;
-    }
-  }
+  if (bitsPerSample == 16)
+    swab(buf, buf, PFile::GetLastReadCount());
 #endif
 
   return (rval);
@@ -181,6 +189,51 @@ off_t PWAVFile::GetPosition() const
   }
 
   return (pos);
+}
+
+
+unsigned PWAVFile::GetChannels() const
+{
+  if (isValidWAV)
+    return numChannels;
+  else
+    return 0;
+}
+
+
+unsigned PWAVFile::GetSampleRate() const
+{
+  if (isValidWAV)
+    return sampleRate;
+  else
+    return 0;
+}
+
+
+unsigned PWAVFile::GetSampleSize() const
+{
+  if (isValidWAV)
+    return bitsPerSample;
+  else
+    return 0;
+}
+
+
+off_t PWAVFile::GetHeaderLength() const
+{
+  if (isValidWAV)
+    return lenHeader;
+  else
+    return 0;
+}
+
+
+off_t PWAVFile::GetDataLength() const
+{
+  if (isValidWAV)
+    return lenData;
+  else
+    return 0;
 }
 
 
@@ -292,8 +345,6 @@ BOOL PWAVFile::ProcessHeader() {
 
 }
 
-#define RETURN_ON_WRITE_FAILURE(writeStat, len) \
-  if (writeStat != TRUE || GetLastWriteCount() != len) return (FALSE);
 
 // Generates a 8000Hz, mono, 16-bit sample WAV header.  When it is
 // called with lenData < 0, it will write the header as if the lenData
@@ -329,36 +380,38 @@ BOOL PWAVFile::GenerateHeader()
 
   // Use PFile::Write as we do not want to use our PWAVFile::Write code
   // as that does some byte swapping
-  RETURN_ON_WRITE_FAILURE(PFile::Write(WAV_LABEL_RIFF,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&len_after,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(WAV_LABEL_WAVE,4), 4);
+  if (!PFile::Write(WAV_LABEL_RIFF,4) ||
+      !PFile::Write(&len_after,4) ||
+      !PFile::Write(WAV_LABEL_WAVE,4))
+    return FALSE;
 
   // Write the FORMAT chunk
   PInt32l len_format = 16;    // length is 16, exclude label_fmt and len_format
   PInt16l format = 0x01;      // Format 0x01 = PCM
-  PInt16l num_channels = numChannels;
+  PInt16l num_channels = (WORD)numChannels;
   PInt32l sample_per_sec = sampleRate;
-  PInt16l bits_per_sample = bitsPerSample;
+  PInt16l bits_per_sample = (WORD)bitsPerSample;
   // These are calculated from the above configuration.
-  PInt16l bytes_per_sample = bitsPerSample >> 3;
+  PInt16l bytes_per_sample = (WORD)(bitsPerSample >> 3);
   PInt32l bytes_per_sec = sample_per_sec * bytes_per_sample;
   
-  RETURN_ON_WRITE_FAILURE(PFile::Write(WAV_LABEL_FMT_,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&len_format,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&format,2), 2);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&num_channels,2), 2);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&sample_per_sec,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&bytes_per_sec,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&bytes_per_sample,2), 2);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&bits_per_sample,2), 2);
+  if (!PFile::Write(WAV_LABEL_FMT_,4) ||
+      !PFile::Write(&len_format,4) ||
+      !PFile::Write(&format,2) ||
+      !PFile::Write(&num_channels,2) ||
+      !PFile::Write(&sample_per_sec,4) ||
+      !PFile::Write(&bytes_per_sec,4) ||
+      !PFile::Write(&bytes_per_sample,2) ||
+      !PFile::Write(&bits_per_sample,2))
+    return FALSE;
 
   // Write the DATA chunk.
   // max data length is LONG_MAX - header length (44)
   PInt32l data_len = (lenData >= 0) ? lenData : LONG_MAX - 44;
 
-
-  RETURN_ON_WRITE_FAILURE(PFile::Write(WAV_LABEL_DATA,4), 4);
-  RETURN_ON_WRITE_FAILURE(PFile::Write(&data_len,4), 4);
+  if (!PFile::Write(WAV_LABEL_DATA,4) ||
+      !PFile::Write(&data_len,4))
+      return FALSE;
 
   lenHeader = 44;
 
