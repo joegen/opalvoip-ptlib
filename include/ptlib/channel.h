@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.10 1995/03/12 04:36:53 robertj Exp $
+ * $Id: channel.h,v 1.11 1995/03/14 12:41:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.10  1995/03/12 04:36:53  robertj
+ * Revision 1.11  1995/03/14 12:41:03  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.10  1995/03/12  04:36:53  robertj
  * Moved GetHandle() function from PFile to PChannel.
  *
  * Revision 1.9  1994/12/21  11:52:48  robertj
@@ -58,7 +61,7 @@ class PChannel;
 PCLASS PChannelStreamBuffer : public PObject, public streambuf {
   PCLASSINFO(PChannelStreamBuffer, PObject)
 /* This class is necessary for implementing the standard C++ iostream interface
-   on $H$PChannel classes and its descendents. It is an internal class and
+   on <A>PChannel</A> classes and its descendents. It is an internal class and
    should not ever be used by application writers.
  */
 
@@ -67,7 +70,7 @@ PCLASS PChannelStreamBuffer : public PObject, public streambuf {
       PChannel * chan   // Channel the buffer operates on.
     );
     /* Construct the streambuf for standard streams on a channel. This is used
-       internally by the $H$PChannel class.
+       internally by the <A>PChannel</A> class.
      */
 
     virtual int overflow(int=EOF);
@@ -94,18 +97,19 @@ PCLASS PChannel : public PContainer, public iostream {
    serial port, pipe, network socket or even just a simple file. Anything that
    requires opening and closing then reading and/or writing from.
 
-   A descendent would typically have constructors and an Open() function which
-   enables access to the I/O channel it represents. The Read() and Write()
-   functions would then be overridden to the platform and I/O specific
-   mechanisms required.
+   A descendent would typically have constructors and an
+   <A><CODE>Open()</CODE></A> function which enables access to the I/O channel
+   it represents. The <A><CODE>Read()</CODE></A> and
+   <A><CODE>Write()</CODE></A> functions would then be overridden to the
+   platform and I/O specific mechanisms required.
 
    The general model for a channel is that the channel accepts and/or supplies
    a stream of bytes. The access to the stream of bytes is via a set of
    functions that allow certain types of transfer. These include direct
    transfers, buffered transfers (via iostream) or asynchronous transfers.
 
-   The model also has the fundamental state of the channel being $I$open$I$ or
-   $I$closed$I$. A channel instance that is closed contains sufficient
+   The model also has the fundamental state of the channel being <I>open</I>
+   or <I>closed</I>. A channel instance that is closed contains sufficient
    information to describe the channel but does not allocate or lock any
    system resources. An open channel allocates or locks the particular system
    resource. The act of opening a channel is a key event that may fail. In this
@@ -120,17 +124,19 @@ PCLASS PChannel : public PContainer, public iostream {
     // New functions for class
     virtual BOOL IsOpen() const;
     /* Determine if the channel is currently open and read and write operations
-       can be executed on it. For example, in the $H$PFile class it returns if
-       the file is currently open.
+       can be executed on it. For example, in the <A>PFile</A> class it returns
+       if the file is currently open.
 
-       Returns: TRUE if the channel is open.
+       <H2>Returns:</H2>
+       TRUE if the channel is open.
      */
 
     virtual PString GetName() const;
     /* Get the platform and I/O channel type name of the channel. For example,
-       it would return the filename in $H$PFile type channels.
+       it would return the filename in <A>PFile</A> type channels.
 
-       Returns: the name of the channel.
+       <H2>Returns:</H2>
+       the name of the channel.
      */
 
 
@@ -150,7 +156,8 @@ PCLASS PChannel : public PContainer, public iostream {
        available, or meaningfull, for all channels. In that case it returns the
        previously set value.
 
-       Returns: time interval for read operations.
+       <H2>Returns:</H2>
+       time interval for read operations.
      */
 
     virtual BOOL Read(
@@ -165,9 +172,9 @@ PCLASS PChannel : public PContainer, public iostream {
        The GetErrorCode() function should be consulted after Read() returns
        FALSE to determine what caused the failure.
 
-       Returns: TRUE indicates that at least one character was read from the
-                channel. FALSE means no bytes were read due to timeout or
-                some other I/O error.
+       <H2>Returns:</H2>
+       TRUE indicates that at least one character was read from the channel.
+       FALSE means no bytes were read due to timeout or some other I/O error.
      */
 
     PINDEX GetLastReadCount() const;
@@ -177,19 +184,22 @@ PCLASS PChannel : public PContainer, public iostream {
        Note that the number of bytes read may often be less than that asked
        for. Aside from the most common case of being at end of file, which the
        applications semantics may regard as an exception, there are some cases
-       where this is normal. For example, if a $H$PTextFile channel on the
+       where this is normal. For example, if a <A>PTextFile</A> channel on the
        MSDOS platform is read from, then the translation of CR/LF pairs to \n
        characters will result in the number of bytes returned being less than
        the size of the buffer supplied.
 
-       Returns: the number of bytes read.
+       <H2>Returns:</H2>
+       the number of bytes read.
      */
 
     virtual int ReadChar();
     /* Read a single 8 bit byte from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
        function gives with a -1 return value.
-       Returns: byte read or -1 if no character could be read.
+
+       <H2>Returns:</H2>
+       byte read or -1 if no character could be read.
      */
 
     PString ReadString(PINDEX len);
@@ -210,7 +220,8 @@ PCLASS PChannel : public PContainer, public iostream {
        will do a sychronous read is in the Read() function with the addition
        of calling the OnReadComplete() before returning.
 
-       Returns: TRUE if the read was sucessfully queued.
+       <H2>Returns:</H2>
+       TRUE if the read was sucessfully queued.
      */
 
     virtual void OnReadComplete(
@@ -239,7 +250,8 @@ PCLASS PChannel : public PContainer, public iostream {
        function may not be available, or meaningfull, for all channels. In
        that case it returns the previously set value.
 
-       Returns: time interval for writing.
+       <H2>Returns:</H2>
+       time interval for writing.
      */
 
     virtual BOOL Write(
@@ -263,11 +275,12 @@ PCLASS PChannel : public PContainer, public iostream {
        Note that the number of bytes written may often be less, or even more,
        than that asked for. A common case of it being less is where the disk
        is full. An example of where the bytes written is more is as follows.
-       On a $H$PTextFile channel on the MSDOS platform, there is translation
-       of \n to CR/LF pairs. This will result in the number of bytes returned
-       being more than that requested.
+       On a <A>PTextFile</A> channel on the MSDOS platform, there is
+       translation of \n to CR/LF pairs. This will result in the number of
+       bytes returned being more than that requested.
 
-       Returns: the number of bytes written.
+       <H2>Returns:</H2>
+       the number of bytes written.
      */
 
     BOOL WriteChar(int c);
@@ -276,14 +289,16 @@ PCLASS PChannel : public PContainer, public iostream {
        
        Note that this asserts if the value is not in the range 0..255.
 
-       Returns: TRUE if the byte was successfully written.
+       <H2>Returns:</H2>
+       TRUE if the byte was successfully written.
      */
 
     BOOL WriteString(const PString & str);
     /* Write a string to the channel. This function simply uses the Write()
        function so all comments on that function also apply.
 
-       Returns: TRUE if the string was completely written.
+       <H2>Returns:</H2>
+       TRUE if the string was completely written.
      */
 
     virtual BOOL WriteAsync(
@@ -296,7 +311,8 @@ PCLASS PChannel : public PContainer, public iostream {
        then this will do a sychronous write as in the Write() function with
        the addition of calling the OnWriteComplete() before returning.
 
-       Returns: TRUE of the write operation was succesfully queued.
+       <H2>Returns:</H2>
+       TRUE of the write operation was succesfully queued.
      */
 
     virtual void OnWriteComplete(
@@ -318,31 +334,40 @@ PCLASS PChannel : public PContainer, public iostream {
        the C language.
 
        The escape commands are:
-          \a    alert (ascii value 7)
-          \b    backspace (ascii value 8)
-          \f    formfeed (ascii value 12)
-          \n    newline (ascii value 10)
-          \r    return (ascii value 13)
-          \t    horizontal tab (ascii value 9)
-          \v    vertical tab (ascii value 11)
-          \\    backslash
-          \ooo  where ooo is octal number (ascii value ooo)
-          \xhh  where hh is hex number (ascii value 0xhh)
-          \0    null character (ascii zero)
-          \dns  delay for n seconds
-          \dnm  delay for n milliseconds
-          \s    characters following this, up to a \w command or the end of
-                string, are to be sent to modem
-          \wns  characters following this, up to a \s, \d or another \w or
-                the end of the string are expected back from the modem. If
-                the string is not received within n seconds, a failed command
-                is registered. The exception to this is if the command is at
-                the end of the string or the next character in the string is
-                the \s, \d or \w in which case all characters are ignored
-                from the modem until n seconds of no data.
-          \wnm  as for above but timeout is in milliseconds
 
-       Returns: TRUE if the command string was completely processed.
+          <DL>
+          <DT><CODE>\a</CODE><DD>    alert (ascii value 7)
+          <DT><CODE>\b</CODE><DD>    backspace (ascii value 8)
+          <DT><CODE>\f</CODE><DD>    formfeed (ascii value 12)
+          <DT><CODE>\n</CODE><DD>    newline (ascii value 10)
+          <DT><CODE>\r</CODE><DD>    return (ascii value 13)
+          <DT><CODE>\t</CODE><DD>    horizontal tab (ascii value 9)
+          <DT><CODE>\v</CODE><DD>    vertical tab (ascii value 11)
+          <DT><CODE>\\</CODE><DD>    backslash
+          <DT><CODE>\ooo</CODE><DD>  where ooo is octal number, ascii value ooo
+          <DT><CODE>\xhh</CODE><DD>  where hh is hex number (ascii value 0xhh)
+          <DT><CODE>\0</CODE><DD>    null character (ascii zero)
+          <DT><CODE>\dns</CODE><DD>  delay for n seconds
+          <DT><CODE>\dnm</CODE><DD>  delay for n milliseconds
+          <DT><CODE>\s</CODE><DD>    characters following this, up to a \w
+                                     command or the end of string, are to be
+                                     sent to modem
+          <DT><CODE>\wns</CODE><DD>  characters following this, up to a \s, \d
+                                     or another \w or the end of the string are
+                                     expected back from the modem. If the
+                                     string is not received within n seconds,
+                                     a failed command is registered. The
+                                     exception to this is if the command is at
+                                     the end of the string or the next
+                                     character in the string is the \s, \d or
+                                     \w in which case all characters are
+                                     ignored from the modem until n seconds of
+                                     no data.
+          <DT><CODE>\wnm</CODE><DD>  as for above but timeout is in
+                                     milliseconds.
+
+       <H2>Returns:</H2>
+       TRUE if the command string was completely processed.
      */
 
     void AbortCommandString();
@@ -355,7 +380,8 @@ PCLASS PChannel : public PContainer, public iostream {
     int GetHandle() const;
     /* Get the integer operating system handle for the channel.
 
-       Returns: standard OS descriptor integer.
+       <H2>Returns:</H2>
+       standard OS descriptor integer.
      */
 
     virtual BOOL Close();
@@ -393,7 +419,8 @@ PCLASS PChannel : public PContainer, public iostream {
        will set the lastError and osError member variables for access by
        GetErrorCode() and GetErrorNumber().
        
-       Returns: TRUE if there was no error.
+       <H2>Returns:</H2>
+       TRUE if there was no error.
      */
 
 
