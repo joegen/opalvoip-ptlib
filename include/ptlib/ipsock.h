@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.33  1998/11/30 08:57:32  robertj
+ * New directory structure
+ *
  * Revision 1.32  1998/11/22 11:30:08  robertj
  * Check route table function to get a list
  *
@@ -136,7 +139,7 @@
 
 
 #ifndef _PSOCKET
-#include <socket.h>
+#include <ptlib/socket.h>
 #endif
 
 PDECLARE_CLASS(PIPSocket, PSocket)
