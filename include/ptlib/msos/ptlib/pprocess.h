@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.13 1996/08/08 10:09:08 robertj Exp $
+ * $Id: pprocess.h,v 1.14 1996/08/17 10:00:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.14  1996/08/17 10:00:34  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.13  1996/08/08 10:09:08  robertj
  * Directory structure changes for common files.
  *
@@ -72,7 +75,7 @@
     PSemaphore threadMutex;
 
     PDECLARE_CLASS(HouseKeepingThread, PThread)
-      public:
+        public:
         HouseKeepingThread();
         void Main();
         PSemaphore semaphore;
@@ -92,18 +95,17 @@
 };
 
 
-#if defined(_WIN32) || !defined(_WINDLL)
-
-#if defined(_WIN32) && defined(_WINDLL)
+#ifdef PMAKEDLL
 extern __declspec(dllexport) PProcess * PProcessInstance;
+#elif PUSEDLL
+extern __declspec(dllimport) PProcess * PProcessInstance;
 #else
-extern PProcess * PSTATIC PProcessInstance;
+extern PProcess * PProcessInstance;
 #endif
+
 
 inline PProcess * PProcess::Current()
   { return PProcessInstance; }
-
-#endif
 
 
 #endif
