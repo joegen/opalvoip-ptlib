@@ -292,7 +292,7 @@ plugins="no"
 AC_MSG_CHECKING(if plugins support needs to be compiled)
 AC_ARG_ENABLE(plugins,
        [  --enable-plugins        enable plugins' support in PWLIB],
-       plugins="yes")
+       plugins=$enableval)
 
 if test "${plugins}" = "no" ; then
   AC_MSG_RESULT(no)
@@ -397,97 +397,83 @@ dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
 dnl check to see OPENSSLDIR is set
+dnl if it is, we assume it correct - no further checking required
 if test ${OPENSSLDIR:-unset} != "unset" ; then
-  
-  echo -n "Checking ${OPENSSLDIR}/include/openssl for SSL... "
+  AC_MSG_CHECKING([for ${OPENSSLDIR}/include/openssl/ssl.h])
   if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
-    echo "yes"
+    AC_MSG_RESULT(yes)
     SSLHDR=1
     SSLINCLUDEDIR="${OPENSSLDIR}/include"
     SSLLIBDIR="${OPENSSLDIR}/lib"
   else
-    echo "no"
+    AC_MSG_RESULT(no)
   fi
 fi
 
 
+dnl if OPENSSLDIR is not set, then check to see if OpenSSL
+dnl is installed in the standard system dirs. And also see if
+dnl if it works using crazy RedHat checks
 if test "${SSLHDR:-unset}" = "unset" ; then
-  dnl see if openssl.h is in the system include paths
-  AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
-
-else
-
-  dnl see if OpenSSL is in the system include path
-  dnl and do the crazy RedHat checks
-
+  AC_CHECK_HEADERS(openssl/ssl.h,SSLDIR=1)
   if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if openssl/ssl.h works with OPENSSL_NO_KRB5... "
+    AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
     AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
 #include <openssl/ssl.h>
 int main(int argc,char **argv){}]],SSLHDR=1)
     if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
+      AC_MSG_RESULT(yes)
       SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
     else
-      echo "no"
+      AC_MSG_RESULT(no)
     fi
   fi
+fi
 
-  dnl check if OpenSSL is in /usr/local/openssl
-  dnl and do the crazy RedHat checks
-  if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works... "
-    AC_COMPILE_IFELSE([[#include "/usr/local/openssl/include/openssl/ssl.h"
-int main(int argc,char **argv){}]],SSLHDR=1)
-    if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
-      SSLCCFLAGS=""
-      SSLINCLUDEDIR="/usr/local/openssl/include"
-      SSLLIBDIR="/usr/local/openssl/lib"
+
+dnl if we have not found OpenSSL so far, then look for it in 
+dnl several standard places, and check for crazy RedHat install too
+if test "${SSLHDR:-unset}" = "unset" ; then
+
+  dnl We want to switch to C language to get .c extension for conftest files
+  AC_LANG_PUSH(C)
+
+  for openssl_dir in /usr/local/openssl /usr/local/ssl ; do
+    AC_MSG_CHECKING([for OpenSSL in $openssl_dir])
+    if test ! -f ${openssl_dir}/include/openssl/ssl.h ; then
+      AC_MSG_RESULT(no)
     else
-      echo "no"
-      echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
-      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
-#include "/usr/local/openssl/include/openssl/ssl.h>
-int main(int argc,char **argv){}]],SSLHDR=1)
-      if test ${SSLHDR:-unset} != "unset" ; then
-        echo "yes"
-        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        SSLINCLUDEDIR="/usr/local/openssl/include"
-        SSLLIBDIR="/usr/local/openssl/lib"
+      AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
+int main(int argc,char **argv){ return 0; }]])
+$CC $CFLAGS -I${openssl_dir}/include -c conftest.c > /dev/null 2>&1
+      if test $? = 0 ; then
+        AC_MSG_RESULT(yes)
+        SSLHDR=1
+        SSLCCFLAGS=""
+        SSLINCLUDEDIR="${openssl_dir}/include"
+        SSLLIBDIR="${openssl_dir}/lib"
+        break
       else
-        echo "no"
+        AC_MSG_RESULT(no)
+        AC_MSG_CHECKING([if ${openssl_dir}/include/openssl/ssl.h works with OPENSSL_NO_KRB5...])
+        AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
+#include "${openssl_dir}/include/openssl/ssl.h"
+int main(int argc,char **argv){}]])
+        $CC $CFLAGS -I${openssl_dir}/openssl/include -c conftest.c > /dev/null 2>&1
+        if test $? = 0 ; then
+          AC_MSG_RESULT(yes)
+          SSLHDR=1
+          SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+          SSLINCLUDEDIR="${openssl_dir}/include"
+          SSLLIBDIR="${openssl_dir}/lib"
+          break
+        else
+          AC_MSG_RESULT(no)
+        fi
       fi
     fi
-  fi
-
-  dnl check if OpenSSL is in /usr/local/ssl
-  dnl and do the crazy RedHat checks
-  if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works... "
-    AC_COMPILE_IFELSE([[#include "/usr/local/ssl/include/openssl/ssl.h"
-int main(int argc,char **argv){}]],SSLHDR=1)
-    if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
-      SSLCCFLAGS=""
-      SSLINCLUDEDIR="/usr/local/ssl/include"
-      SSLLIBDIR="/usr/local/ssl/lib"
-    else
-      echo "no"
-      echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
-      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
-#include "/usr/local/ssl/include/openssl/ssl.h>
-int main(int argc,char **argv){}]],SSLHDR=1)
-      if test ${SSLHDR:-unset} != "unset" ; then
-        echo "yes"
-        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        SSLINCLUDEDIR="/usr/local/ssl/include"
-        SSLLIBDIR="/usr/local/ssl/lib"
-      else
-        echo "no"
-      fi
-    fi
-  fi
+  done
+  AC_LANG_POP(C)
 fi
 
 if test ${SSLHDR:-unset} != "unset" ; then
@@ -497,7 +483,7 @@ if test ${SSLHDR:-unset} != "unset" ; then
     STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
   fi
   if test ${SSLLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS $STDCCFLAGS -L${SSLLIBDIR}"
+    LDFLAGS="$LDFLAGS -L${SSLLIBDIR}"
   fi
   STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
   ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
