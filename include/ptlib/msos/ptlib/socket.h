@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.10 1996/08/08 10:09:14 robertj Exp $
+ * $Id: socket.h,v 1.11 1996/09/14 13:09:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.11  1996/09/14 13:09:46  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.10  1996/08/08 10:09:14  robertj
  * Directory structure changes for common files.
  *
@@ -49,14 +55,11 @@
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 #include <winsock.h>
-#define P_HAS_BERKELEY_SOCKETS
 #endif
 
 
 #include "../../common/ptlib/socket.h"
   public:
-    PSocket();
-      // create an unattached socket
     ~PSocket();
       // close a socket
 
@@ -69,9 +72,20 @@
     static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
 
   private:
-#ifdef P_HAS_BERKELEY_SOCKETS
+#ifdef PHAS_WINSOCK
     static BOOL WinSockStarted;
 #endif
+};
+
+
+PDECLARE_CLASS(PWinSock, PSocket)
+// Must be one and one only instance of this class, and it must be static!.
+  public:
+    PWinSock();
+    ~PWinSock();
+  private:
+    virtual BOOL OpenSocket();
+    virtual const char * GetProtocolName() const;
 };
 
 
