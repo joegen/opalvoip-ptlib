@@ -27,11 +27,15 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.17  2004/02/23 18:10:39  ykiryanov
+ * Added a parameter to semaphore constructor to avoid ambiguity
+ *
  * Revision 1.16  2004/02/23 00:02:20  ykiryanov
  * Changed my e-mail to ykiryanov at users.sourceforge.net. Just in case someone wants to collaborate
  *
  * Revision 1.15  2004/02/22 23:59:28  ykiryanov
- * Added missing functions: PProcess::SetMaxHandles(), PThread::GetCurrentThreadId(), PThread::PXAbortBlock(), PSyncPoint::Signal(), ::Wait(), ::Wait(timeout), ::WillBlock()
+ * Added missing functions: PProcess::SetMaxHandles(), PThread::GetCurrentThreadId(), 
+ * PThread::PXAbortBlock(), PSyncPoint::Signal(), ::Wait(), ::Wait(timeout), ::WillBlock()
  *
  * Revision 1.14  2004/02/22 04:35:04  ykiryanov
  * Removed PMutex desctructor
@@ -588,7 +592,7 @@ PProcess::~PProcess()
 //#define DEBUG_SEMAPHORES
 #define USE_BENAPHORES // Comment this line if you don't want benaphores
 
-PSemaphore::PSemaphore(sem_id anId, int32 initialBenaphore )
+PSemaphore::PSemaphore(sem_id anId, int32 initialBenaphore, int32 param)
   : semId( anId ), benaphoreCount(initialBenaphore)
 {
   #ifdef DEBUG_SEMAPHORES
