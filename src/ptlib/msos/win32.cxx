@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.96  2001/01/28 01:50:46  yurik
+ * WinCE port-related. System version check and new semaphore code
+ *
  * Revision 1.95  2001/01/24 06:44:35  yurik
  * Windows CE port-related changes
  *
@@ -683,7 +686,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   if (root.IsEmpty())
     return FALSE;
 
-#ifdef _WIN32_WCE
+#if _WIN32_WCE < 300
 	USES_CONVERSION;
     ULARGE_INTEGER freeBytesAvailableToCaller;
     ULARGE_INTEGER totalNumberOfBytes; 
@@ -699,8 +702,9 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
 	  return TRUE;
 	}
 	return FALSE;
+#elif _WIN32_WCE >= 300
+	return FALSE;
 #else
-
   BOOL needTotalAndFree = TRUE;
 
   static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
@@ -1451,7 +1455,8 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 #ifndef _WIN32_WCE
   handle = CreateSemaphore(NULL, initial, maxCount, NULL);
 #else
-  handle = CreateEvent(NULL, FALSE, FALSE, NULL); // non-signaled initially. TODO test it on count>1
+  handle = CreateEvent(NULL, FALSE, initial? TRUE : FALSE, NULL); 
+  currentCount = initial;
 #endif
   PAssertOS(handle != NULL);
 }
@@ -1483,7 +1488,10 @@ void PSemaphore::Signal()
 #ifndef _WIN32_WCE
   if (!ReleaseSemaphore(handle, 1, NULL))
 #else
-  if (!SetEvent(handle))
+  if( currentCount > 0 )
+   currentCount--;
+
+  if (!currentCount && !ResetEvent(handle))
 #endif
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
