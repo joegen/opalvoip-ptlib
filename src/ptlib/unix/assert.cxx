@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.7  2000/03/21 03:09:54  craigs
+ * Fixed the fix with EOF
+ *
  * Revision 1.6  2000/03/20 22:59:18  craigs
  * Fixed problem with asserts generating unlimited output when input is redirected
  *
@@ -78,7 +81,6 @@ void PAssertFunc (const char * file, int line, const char * msg)
 
       case 'i' :
       case 'I' :
-      case EOF :
         PError << "\nIgnoring.\n";
         return;
     }
