@@ -5,7 +5,7 @@
  *
  * Portable Windows Library
  *
- * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ * Copyright (c) 2001-2002 Equivalence Pty. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.10  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.9  2002/08/05 05:40:45  robertj
  * Fixed missing pragma interface/implementation
  *

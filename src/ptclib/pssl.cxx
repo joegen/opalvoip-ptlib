@@ -5,7 +5,7 @@
  *
  * Portable Windows Library
  *
- * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ * Copyright (c) 1993-2002 Equivalence Pty. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -21,16 +21,16 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
- * All Rights Reserved.
- *
  * Contributor(s): ______________________________________.
  *
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.34 2002/06/07 02:55:23 robertj Exp $
+ * $Id: pssl.cxx,v 1.35 2002/11/06 22:47:25 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.35  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.34  2002/06/07 02:55:23  robertj
  * Fixed GNU warning
  *

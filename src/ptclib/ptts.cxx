@@ -21,12 +21,12 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
- * All Rights Reserved.
- *
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.3  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.2  2002/08/14 15:18:25  craigs
  * Fixed Festval implementation
  *

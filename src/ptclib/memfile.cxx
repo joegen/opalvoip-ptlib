@@ -19,14 +19,14 @@
  *
  * The Original Code is Portable Windows Library.
  *
- * The Initial Developer of the Original Code is
- * Equivalence Pty Ltd
- *
- * All Rights Reserved.
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.cxx,v $
+ * Revision 1.3  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.2  2002/06/27 03:53:35  robertj
  * Cleaned up documentation and added Compare() function.
  *
