@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.3 1997/06/08 04:49:40 robertj Exp $
+ * $Id: httpform.h,v 1.4 1997/07/08 13:16:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.4  1997/07/08 13:16:12  robertj
+ * Major HTTP form enhancements for lists and arrays of fields.
+ *
  * Revision 1.3  1997/06/08 04:49:40  robertj
  * Adding new llist based form field.
  *
@@ -60,6 +63,22 @@ PDECLARE_CLASS(PHTTPField, PObject)
        String for field name.
      */
 
+    virtual PCaselessString GetNameAt(
+      PINDEX idx  // Number of the primitive in composite field
+    ) const;
+    /* Get the identifier name of the sub-field. If the field is not composite
+       then it always returns the name as for the parameterless GetName().
+
+       <H2>Returns:</H2>
+       String for field name.
+     */
+
+    virtual void SetName(
+      const PString & name   // New name for field
+    );
+    /* Set the name for the field.
+     */
+
     const PString & GetTitle() const { return title; }
     /* Get the title of the field.
 
@@ -88,21 +107,46 @@ PDECLARE_CLASS(PHTTPField, PObject)
     );
     // Set the help text for the field.
 
+    virtual PINDEX GetSize() const;
+    /* Get the number of sub-fields in the composite field. Note that this is
+       the total including any composite sub-fields, ie, it is the size of the
+       whole tree of primitive fields.
+
+       <H2>Returns:</H2>
+       Returns field count.
+     */
+
+    virtual PHTTPField * NewField() const = 0;
+    /* Create a new field of the same class as the current field.
+
+       <H2>Returns:</H2>
+       New field object instance.
+     */
+
     virtual void GetHTML(
       PHTML & html    // HTML to receive the field info.
     ) = 0;
     /* Convert the field to HTML for inclusion into the HTTP page.
      */
 
-    virtual PINDEX GetListCount() const;
-    /* Get the number of sub-fields in the field. The default is 1.
-
-       <H2>Returns:</H2>
-       Returns list count.
+    virtual void GetHTMLHeading(
+      PHTML & html    // HTML to receive the field info.
+    );
+    /* Convert the field to HTML for inclusion into the HTTP page.
      */
 
     virtual PString GetValue() const = 0;
-    /* Get the value of the field.
+    /* Get the string value of the field.
+
+       <H2>Returns:</H2>
+       String for field value.
+     */
+
+    virtual PString GetValueAt(
+      PINDEX idx
+    ) const;
+    /* Get the string value of the sub-field. If the field is not composite
+       then it always returns the value as for the parameterless version.
 
        <H2>Returns:</H2>
        String for field value.
@@ -114,19 +158,12 @@ PDECLARE_CLASS(PHTTPField, PObject)
     /* Set the value of the field.
      */
 
-    virtual PString GetListValue(
-      PINDEX idx
-    ) const;
-    /* Get the value of the field in a list of fields.
-
-       <H2>Returns:</H2>
-       String for field value.
-     */
-
-    virtual void SetListValue(
-      const PStringToString & data   // New value for the field.
+    virtual void SetValueAt(
+      PINDEX idx,
+      const PString & value   // New value for the field.
     );
-    /* Set the value of the field in a list of fields.
+    /* Set the value of the sub-field. If the field is not composite then it
+       always sets the value as for the non-indexed version.
      */
 
     virtual BOOL Validated(
@@ -139,7 +176,14 @@ PDECLARE_CLASS(PHTTPField, PObject)
        BOOL if the new field value is OK.
      */
 
-    virtual BOOL ValidateList(
+
+    virtual void SetAllValues(
+      const PStringToString & data   // New value for the field.
+    );
+    /* Set the value of the field in a list of fields.
+     */
+
+    virtual BOOL ValidateAll(
       const PStringToString & data, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
@@ -149,9 +193,9 @@ PDECLARE_CLASS(PHTTPField, PObject)
        BOOL if the all the new field values are OK.
      */
 
+
     BOOL NotYetInHTML() const { return notInHTML; }
     void SetInHTML() { notInHTML = FALSE; }
-
 
   protected:
     PCaselessString name;
@@ -163,39 +207,97 @@ PDECLARE_CLASS(PHTTPField, PObject)
 
 PLIST(PHTTPFieldList, PHTTPField);
 
-PDECLARE_CLASS(PHTTPListField, PHTTPField)
+PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
   public:
-    PHTTPListField(
-      PHTTPField * fld
+    PHTTPCompositeField(
+      const char * name,          // Name (identifier) for the field.
+      const char * title = NULL,  // Title text for field (defaults to name).
+      const char * help = NULL    // Help text for the field.
     );
 
-    ~PHTTPListField();
+    virtual PCaselessString GetNameAt(
+      PINDEX idx  // Number of the primitive in composite field
+    ) const;
 
+    virtual void SetName(
+      const PString & name   // New name for field
+    );
+
+    virtual PINDEX GetSize() const;
+
+    virtual PHTTPField * NewField() const;
 
     virtual void GetHTML(
       PHTML & html    // HTML to receive the field info.
     );
 
-    virtual PINDEX GetListCount() const;
+    virtual void GetHTMLHeading(
+      PHTML & html    // HTML to receive the field info.
+    );
 
-    virtual BOOL ValidateList(
+    virtual PString GetValue() const;
+    virtual PString GetValueAt(PINDEX idx) const;
+
+    virtual void SetValue(
+      const PString & newValue   // New value for the field.
+    );
+    virtual void SetValueAt(
+      PINDEX idx,
+      const PString & value   // New value for the field.
+    );
+
+    virtual void SetAllValues(
+      const PStringToString & data   // New value for the field.
+    );
+
+    virtual BOOL ValidateAll(
       const PStringToString & data, // Proposed new value for the field.
       PStringStream & msg     // Stream to take error HTML if value not valid.
     ) const;
 
-    virtual PString GetListValue(PINDEX idx) const;
+    void Append(PHTTPField * fld);
 
-    virtual void SetListValue(
+  protected:
+    PHTTPFieldList fields;
+};
+
+
+PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
+  public:
+    PHTTPFieldArray(
+      PHTTPField * baseField
+    );
+
+    ~PHTTPFieldArray();
+
+
+    virtual PCaselessString GetNameAt(
+      PINDEX idx  // Number of the primitive in composite field
+    ) const;
+
+    virtual PINDEX GetSize() const;
+
+    virtual PHTTPField * NewField() const;
+
+    virtual void GetHTML(
+      PHTML & html    // HTML to receive the field info.
+    );
+
+    virtual PString GetValueAt(PINDEX idx) const;
+
+    virtual void SetValueAt(
+      PINDEX idx,
+      const PString & value   // New value for the field.
+    );
+
+    virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
 
-
-    const PHTTPFieldList & GetList() const { return fields; }
-
-
   protected:
-    PHTTPField * templateField;
-    PHTTPFieldList fields;
+    void AddBlankField();
+
+    PHTTPField * baseField;
 };
 
 
@@ -214,6 +316,8 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
       const char * initVal = NULL,
       const char * help = NULL
     );
+
+    virtual PHTTPField * NewField() const;
 
     virtual void GetHTML(
       PHTML & html
@@ -248,6 +352,8 @@ PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
       const char * help = NULL
     );
 
+    virtual PHTTPField * NewField() const;
+
     virtual void GetHTML(
       PHTML & html
     );
@@ -271,6 +377,8 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
       const char * units = NULL,
       const char * help = NULL
     );
+
+    virtual PHTTPField * NewField() const;
 
     virtual void GetHTML(
       PHTML & html
@@ -307,6 +415,8 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
       BOOL initVal = FALSE,
       const char * help = NULL
     );
+
+    virtual PHTTPField * NewField() const;
 
     virtual void GetHTML(
       PHTML & html
@@ -387,6 +497,8 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
       const char * help = NULL
     );
 
+    virtual PHTTPField * NewField() const;
+
     virtual void GetHTML(
       PHTML & html
     );
@@ -435,6 +547,8 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
       PINDEX initVal = 0,
       const char * help = NULL
     );
+
+    virtual PHTTPField * NewField() const;
 
     virtual void GetHTML(
       PHTML & html
@@ -596,6 +710,41 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
 
   private:
     void Construct();
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPConfigSectionList
+
+PDECLARE_CLASS(PHTTPConfigSectionList, PHTTPString)
+  public:
+    PHTTPConfigSectionList(
+      const PURL & url,
+      const PHTTPAuthority & auth,
+      const PString & sectionPrefix,
+      const PString & additionalValueName,
+      const PURL & editSection,
+      const PURL & newSection,
+      const PString & newSectionTitle,
+      PHTML & heading
+    );
+
+    virtual void OnLoadedText(
+      PHTTPRequest & request,    // Information on this request.
+      PString & text             // Data used in reply.
+    );
+    virtual BOOL Post(
+      PHTTPRequest & request,       // Information on this request.
+      const PStringToString & data, // Variables in the POST data.
+      PHTML & replyMessage          // Reply message for post.
+    );
+
+  protected:
+    PString sectionPrefix;
+    PString additionalValueName;
+    PString newSectionLink;
+    PString newSectionTitle;
+    PString editSectionLink;
 };
 
 
