@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.20 1998/01/26 00:48:30 robertj Exp $
+ * $Id: ptime.cxx,v 1.21 1998/03/05 12:49:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.21  1998/03/05 12:49:53  robertj
+ * MemCheck fixes.
+ *
  * Revision 1.20  1998/01/26 00:48:30  robertj
  * Removed days from PTimeInterval PrintOn(), can get it back by using negative precision.
  * Fixed Y2K problem in parsing dates.
@@ -469,7 +472,7 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       default :
-        str += PString(*format++);
+        str += *format++;
     }
   }
 
@@ -560,10 +563,7 @@ static const stringKey idList[NUM_LIST_ENTRIES] = {
 
 static int compare(const void * key, const void * str)
 {
-  PObject::Comparison result = ((PString*)key)->Compare(PString(((stringKey *)str)->string));
-  return (result == PObject::EqualTo) ? 0 : (
-          (result == PObject::LessThan) ? -1 : 1
-         );
+  return strcmp((const char *)key, ((const stringKey *)str)->string);
 }
 
 static int get_token(istream & strm, PString & yytext, yytype & yyval)
@@ -601,8 +601,8 @@ static int get_token(istream & strm, PString & yytext, yytype & yyval)
         return ZONE;
       }
 
-      stringKey * found = (stringKey *)bsearch(&yytext,
-                                               &idList,
+      stringKey * found = (stringKey *)bsearch((const char *)yytext,
+                                               idList,
                                                NUM_LIST_ENTRIES,
                                                sizeof(stringKey),
                                                compare);
