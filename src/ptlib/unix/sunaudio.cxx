@@ -1,5 +1,5 @@
 /*
- * sound.cxx
+ * sunaudio.cxx
  *
  * Sound driver implementation.
  *
@@ -27,11 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
- * Revision 1.1  1999/02/25 03:45:00  robertj
- * Sound driver implementation changes for various unix platforms.
- *
- * Revision 1.1  1999/02/22 13:24:47  robertj
- * Added first cut sound implmentation.
+ * Revision 1.2  1999/03/02 04:34:10  robertj
+ * Fixed header comments
  *
  */
 
