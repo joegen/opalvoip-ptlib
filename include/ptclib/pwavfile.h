@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.13.4.3  2004/07/12 09:17:19  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.13.4.2  2004/07/12 08:30:16  csoutheren
  * More fixes for abstract factory implementation of PWAVFile
  *
@@ -453,8 +456,7 @@ class PWAVFile : public PFile
       *Return a string that describes the WAV format
       */
     PString GetFormatString() const
-    { return (formatHandler == NULL) ? PString("None") : formatHandler->GetFormat(); }
-
+    { if (formatHandler == NULL) return PString("N/A"); else return formatHandler->GetFormat(); }
 
     /**
       * enable autoconversion between PCM-16 and the native format
@@ -505,19 +507,23 @@ class PWAVFile : public PFile
     BOOL     header_needs_updating;
 };
 
-#ifndef P_DISABLE_FACTORY_INSTANCES
+#ifdef _WIN32
 
-#  ifndef  P_FACTORY_INSTANCE_PWAVFileConverter
-#    define P_FACTORY_INSTANCE_PWAVFileConverter 1
-#      pragma message("Including PWAVFileConverter factory loader")
-       PLOAD_FACTORY(PWAVFileConverter, unsigned)
-#  endif
+#  ifndef P_DISABLE_FACTORY_INSTANCES
 
-#  ifndef  P_FACTORY_INSTANCE_PWAVFileFormat
-#    define P_FACTORY_INSTANCE_PWAVFileFormat 1
-#      pragma message("Including PWAVFileFormat factory loader")
-       PLOAD_FACTORY(PWAVFileFormat, unsigned)
-#  endif
+#    ifndef  P_FACTORY_INSTANCE_PWAVFileConverter
+#      define P_FACTORY_INSTANCE_PWAVFileConverter 1
+#        pragma message("Including PWAVFileConverter factory loader")
+         PLOAD_FACTORY(PWAVFileConverter, unsigned)
+#    endif
+
+#    ifndef  P_FACTORY_INSTANCE_PWAVFileFormat
+#      define P_FACTORY_INSTANCE_PWAVFileFormat 1
+#        pragma message("Including PWAVFileFormat factory loader")
+         PLOAD_FACTORY(PWAVFileFormat, unsigned)
+#    endif
+
+# endif
 
 #endif
 
