@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.56  2001/06/29 06:47:30  robertj
+# Added missing dollar sign
+#
 # Revision 1.55  2001/06/29 06:41:03  robertj
 # Fixed make tagbuild for different #defines
 #
@@ -373,7 +376,7 @@ tagbuild ::
 ifdef VERSION_FILE
 	let BLD=$(BUILD_NUMBER)+1 ; \
 	echo "Incrementing to build number $$BLD"; \
-	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
+	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Incremented build number after tagging." $(VERSION_FILE)
 endif
