@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.5 1994/08/22 00:18:02 robertj Exp $
+ * $Id: msdos.cxx,v 1.6 1994/10/30 11:25:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.5  1994/08/22 00:18:02  robertj
+ * Revision 1.6  1994/10/30 11:25:36  robertj
+ * Fixed DOS version of configuration files.
+ *
+ * Revision 1.5  1994/08/22  00:18:02  robertj
  * Added dummy socket function.
  *
  * Revision 1.4  1994/07/27  06:00:10  robertj
@@ -425,25 +428,14 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
 
-PConfig::PConfig(Source src, const PString & section)
-  : defaultSection(section)
+void PConfig::Construct(Source src)
 {
   switch (src) {
-    case System :
-      configFile = PFilePath("WIN.INI");
-      break;
-
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
       configFile = appFile.GetVolume() +
                               appFile.GetPath() + appFile.GetTitle() + ".INI";
   }
-}
-
-
-PConfig::PConfig(const PFilePath & filename, const PString & section)
-  : configFile(filename), defaultSection(section)
-{
 }
 
 
@@ -548,15 +540,6 @@ void PThread::SwitchContext(PThread * from)
 
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PTCPSocket
-
-BOOL PTCPSocket::Open (const PString &, u_short)
-{
-  return FALSE;
 }
 
 
