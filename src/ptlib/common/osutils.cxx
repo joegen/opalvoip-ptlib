@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.86 1997/10/10 10:41:22 robertj Exp $
+ * $Id: osutils.cxx,v 1.87 1998/01/04 07:22:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.87  1998/01/04 07:22:16  robertj
+ * Fixed bug in thread deletion not removing it from active thread list.
+ *
  * Revision 1.86  1997/10/10 10:41:22  robertj
  * Fixed problem with cooperative threading and Sleep() function returning immediately.
  *
@@ -1542,10 +1545,16 @@ void PThread::Terminate()
   if (link == this || status == Terminated)
     return;   // Is only thread or already terminated
 
-  BOOL doYield = status == Running;
-  status = Terminating;
-  if (doYield)
+  if (status == Running) {
+    status = Terminating;
     Yield(); // Never returns from here
+  }
+
+  PThread * prev = PThread::Current();
+  while (prev->link != this)
+    prev = prev->link;
+  prev->link = link;   // Unlink it from the list
+  status = Terminated;
 }
 
 
