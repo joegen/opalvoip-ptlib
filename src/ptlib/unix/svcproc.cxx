@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.23  1998/11/30 21:52:00  robertj
+ * New directory structure.
+ *
  * Revision 1.22  1998/11/06 03:44:55  robertj
  * Fixed bug in argument list parsing, not doing it to member variable.
  * Added check for daemon already running before starting a new daemon.
@@ -42,7 +45,7 @@
 #include <ptlib.h>
 
 #pragma implementation "svcproc.h"
-#include <svcproc.h>
+#include <ptlib/svcproc.h>
 
 #include <syslog.h>
 #include <stdarg.h>
