@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.57  2000/05/02 03:16:46  robertj
+ * Added display of thread name in SystemLog, thanks Ashley Unitt.
+ *
  * Revision 1.56  1999/09/13 13:15:08  robertj
  * Changed PTRACE so will output to system log in PServiceProcess applications.
  *
@@ -368,8 +371,13 @@ void PSystemLog::Output(Level level, const char * msg)
       "Debug3"
     };
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t")
-         << (void *)PThread::Current() << '\t'
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+    PString threadName = PThread::Current()->GetThreadName();
+    if (!threadName)
+      *out << setw(15) << threadName.Left(15);
+    else
+      *out << (void *)PThread::Current();
+    *out << '\t'
          << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
       *out << " - error = " << err << endl;
