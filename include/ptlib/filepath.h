@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.10 1995/07/31 12:03:37 robertj Exp $
+ * $Id: filepath.h,v 1.11 1998/02/16 00:14:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
+ * Revision 1.11  1998/02/16 00:14:57  robertj
+ * Added functions to validate characters in a filename.
+ *
  * Revision 1.10  1995/07/31 12:03:37  robertj
  * Added copy constructor and assignment operator for right types.
  *
@@ -188,6 +191,19 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
     );
     /* Set the type component of the full file specification, eg for the DOS
        file "C:\SRC\PWLIB\FRED.DAT" would become "C:\SRC\PWLIB\FRED.TXT".
+     */
+
+
+    static BOOL IsValid(
+      char c
+    );
+    static BOOL IsValid(
+      const PString & str
+    );
+    /* Test if the character is valid in a filename.
+
+       <H2>Returns:</H2>
+       TRUE if the character is valid for a filename.
      */
 
 
