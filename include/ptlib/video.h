@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.3  2001/03/07 01:42:59  dereks
+ * miscellaneous video fixes. Works on linux now. Add debug statements
+ * (at PTRACE level of 1)
+ *
  * Revision 1.2  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -50,7 +54,7 @@
 /**A class representing a video channel. This class is provided mainly for
    the playback or recording of video on the system.
 
-   Note that this video channel is implicitly a series of frames in YUV411 format.
+   Note that this video channel is implicitly a series of frames in YUV411P format.
    No conversion is performed on data to/from the channel.
  */
 class PVideoChannel : public PChannel
