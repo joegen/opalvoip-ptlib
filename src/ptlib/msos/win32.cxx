@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.32 1996/06/28 13:24:33 robertj Exp $
+ * $Id: win32.cxx,v 1.33 1996/07/20 05:34:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.33  1996/07/20 05:34:05  robertj
+ * Fixed order of registry section tree traversal so can delete whole trees.
+ *
  * Revision 1.32  1996/06/28 13:24:33  robertj
  * Fixed enumeration of sections to recurse into registry tree.
  *
@@ -1280,8 +1283,8 @@ static void RecurseRegistryKeys(const PString & location,
   RegistryKey registry = location;
   PString name;
   for (PINDEX idx = 0; registry.EnumKey(idx, name); idx++) {
-    sections.AppendString(location.Mid(baseLength) + name);
     RecurseRegistryKeys(location + name + '\\', baseLength, sections);
+    sections.AppendString(location.Mid(baseLength) + name);
   }
 }
 
