@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.146  2000/08/30 05:56:07  robertj
+ * Fixed free running timers broken by previous change.
+ *
  * Revision 1.145  2000/08/30 03:17:00  robertj
  * Improved multithreaded reliability of the timers under stress.
  *
@@ -833,37 +836,43 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
    */
   timerList->timeoutMutex.Wait();
 
-  if (state == Starting) {
-    state = Running;
-    if (resetTime < minTimeLeft)
-      minTimeLeft = resetTime;
-  }
-  else {
-    operator-=(delta);
+  switch (state) {
+    case Starting :
+      state = Running;
+      if (resetTime < minTimeLeft)
+        minTimeLeft = resetTime;
+      break;
 
-    if (milliseconds > 0) {
-      if (milliseconds < minTimeLeft.GetMilliSeconds())
-        minTimeLeft = milliseconds;
-    }
-    else {
-      if (oneshot) {
-        SetInterval(0);
-        state = Stopped;
+    case Running :
+      operator-=(delta);
+
+      if (milliseconds > 0) {
+        if (milliseconds < minTimeLeft.GetMilliSeconds())
+          minTimeLeft = milliseconds;
       }
       else {
-        PTimeInterval::operator=(resetTime);
-        if (resetTime < minTimeLeft)
-          minTimeLeft = resetTime;
+        if (oneshot) {
+          SetInterval(0);
+          state = Stopped;
+        }
+        else {
+          PTimeInterval::operator=(resetTime);
+          if (resetTime < minTimeLeft)
+            minTimeLeft = resetTime;
+        }
+
+        timerList->timeoutMutex.Signal();
+
+        /* This must be outside the mutex or if OnTimeout() changes the
+           timer value (quite plausible) it deadlocks.
+         */
+        OnTimeout();
+        return;
       }
+      break;
 
-      timerList->timeoutMutex.Signal();
-
-      /* This must be outside the mutex or if OnTimeout() changes the
-         timer value (quite plausible) it deadlocks.
-       */
-      OnTimeout();
-      return;
-    }
+    default : // Stopped or Paused, do nothing.
+      break;
   }
 
   timerList->timeoutMutex.Signal();
