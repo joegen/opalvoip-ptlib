@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.59  2001/11/25 23:30:31  robertj
+ * Added PProcess::SetUserName() function to set euid
+ *
  * Revision 1.58  2001/10/11 02:20:54  robertj
  * Added IRIX support (no audio/video), thanks Andre Schulze.
  *
@@ -349,14 +352,12 @@ PString PProcess::GetUserName() const
   char buffer[1024];
   struct passwd * pw;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX)
-  ::getpwuid_r(getuid(), &pwd,
-               buffer, 1024,
-               &pw);
+  ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
-  pw = ::getpwuid_r(getuid(), &pwd, buffer, 1024);
+  pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
 #endif
 #else
-  struct passwd * pw = ::getpwuid(getuid());
+  struct passwd * pw = ::getpwuid(geteuid());
 #endif
 
   char * ptr;
@@ -367,6 +368,35 @@ PString PProcess::GetUserName() const
   else
     return PString("user");
 }
+
+
+BOOL PProcess::SetUserName(const PString & username)
+{
+  if (username.IsEmpty())
+    return seteuid(getuid()) != -1;
+
+  if (username[0] == '#')
+    return seteuid(username.Mid(1).AsUnsigned()) != -1;
+
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+  struct passwd pwd;
+  char buffer[1024];
+  struct passwd * pw;
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX)
+  ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
+#else
+  pw = ::getpwnam_r(username, &pwd, buffer, 1024);
+#endif
+#else
+  struct passwd * pw = ::getpwnam(username);
+#endif
+
+  if (pw == NULL || pw->pw_name == NULL)
+    return FALSE;
+
+  return seteuid(pw->pw_uid) != -1;
+}
+
 
 void PProcess::PXShowSystemWarning(PINDEX num)
 {
