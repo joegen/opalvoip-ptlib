@@ -1,11 +1,16 @@
 /*
- * $Id: httpsvc.h,v 1.18 1997/11/10 12:40:05 robertj Exp $
+ * $Id: httpsvc.h,v 1.19 1998/01/26 00:28:32 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.19  1998/01/26 00:28:32  robertj
+ * Removed POrderPage completely from httpsvc.
+ * Added PHTTPAuthority to PHTTPServiceString constructor.
+ * Added option flags to ProcessMacros to automatically load from file etc.
+ *
  * Revision 1.18  1997/11/10 12:40:05  robertj
  * Changed SustituteEquivalSequence so can override standard macros.
  *
@@ -117,7 +122,7 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     virtual void AddRegisteredText(PHTML & html);
     virtual void AddUnregisteredText(PHTML & html);
-    virtual BOOL SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &);
+    virtual BOOL SubstituteEquivalSequence(PHTTPRequest & request, const PString &, PString &);
 
   protected:
     PSocket  * httpListeningSocket;
@@ -272,18 +277,6 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
 };
 
 
-/////////////////////////////////////////////////////////////////////
-
-PDECLARE_CLASS(POrderPage, PHTTPString)
-  public:
-    POrderPage(PHTTPServiceProcess & app, PHTTPAuthority & auth);
-    PString LoadText(PHTTPRequest & request);
-
-  protected:
-    PHTTPServiceProcess & process;
-};
-
-
 /////////////////////////////////////////////////////////////////////S
 
 PDECLARE_CLASS(PServiceHTML, PHTML)
@@ -304,10 +297,17 @@ PDECLARE_CLASS(PServiceHTML, PHTML)
     BOOL CheckSignature();
     static BOOL CheckSignature(const PString & html);
 
+    enum MacroOptions {
+      NoOptions           = 0,
+      NeedSignature       = 1,
+      LoadFromFile        = 2,
+      NoURLOverride       = 4,
+      NoSignatureForFile  = 8
+    };
     static BOOL ProcessMacros(PHTTPRequest & request,
                               PString & text,
                               const PString & filename,
-                              BOOL needSignature);
+                              unsigned options);
 };
 
 
@@ -316,12 +316,10 @@ PDECLARE_CLASS(PServiceHTML, PHTML)
 PDECLARE_CLASS(PServiceHTTPString, PHTTPString)
   public:
     PServiceHTTPString(const PURL & url, const PString & string)
-      : PHTTPString(url, string)
-      { }
+      : PHTTPString(url, string) { }
 
     PServiceHTTPString(const PURL & url, const PString & string, const PHTTPAuthority & auth)
-      : PHTTPString(url, string, auth)
-      { }
+      : PHTTPString(url, string, auth) { }
 
     PString LoadText(PHTTPRequest &);
 };
@@ -331,6 +329,9 @@ PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
   public:
     PServiceHTTPFile(const PString & filename, BOOL needSig = FALSE)
       : PHTTPFile(filename) { needSignature = needSig; }
+
+    PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, BOOL needSig = FALSE)
+      : PHTTPFile(filename, auth) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
@@ -351,7 +352,6 @@ PDECLARE_CLASS(PServiceHTTPDirectory, PHTTPDirectory)
   protected:
     BOOL needSignature;
 };
-
 
 
 #endif
