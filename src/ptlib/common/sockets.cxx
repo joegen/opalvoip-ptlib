@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.20 1995/12/23 03:42:53 robertj Exp $
+ * $Id: sockets.cxx,v 1.21 1996/01/23 13:19:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.21  1996/01/23 13:19:13  robertj
+ * Moved Accept() function to platform dependent code.
+ *
  * Revision 1.20  1995/12/23 03:42:53  robertj
  * Unix portability issues.
  *
@@ -447,21 +450,6 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
 
   _Close();
   return FALSE;
-}
-
-
-BOOL PTCPSocket::Accept(PSocket & socket)
-{
-  // attempt to create a socket
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  int size = sizeof(address);
-  if (!ConvertOSError(os_handle = ::accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size)))
-    return FALSE;
-
-  port = ntohs(address.sin_port);
-  return TRUE;
 }
 
 
