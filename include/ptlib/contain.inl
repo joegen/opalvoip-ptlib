@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.32 1995/08/24 12:34:09 robertj Exp $
+ * $Id: contain.inl,v 1.33 1995/12/23 03:48:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.33  1995/12/23 03:48:40  robertj
+ * Added operators for string set include and exclude.
+ *
  * Revision 1.32  1995/08/24 12:34:09  robertj
  * Added assert for list index out of bounds.
  *
@@ -395,8 +398,14 @@ PINLINE BOOL PAbstractSet::Contains(const PObject & key)
 PINLINE void PStringSet::Include(const PString & str)
   { PAbstractSet::Append(str.Clone()); }
 
+PINLINE PStringSet & PStringSet::operator+=(const PString & str)
+  { PAbstractSet::Append(str.Clone()); return *this; }
+
 PINLINE void PStringSet::Exclude(const PString & str)
   { PAbstractSet::Remove(&str); }
+
+PINLINE PStringSet & PStringSet::operator-=(const PString & str)
+  { PAbstractSet::Remove(&str); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
