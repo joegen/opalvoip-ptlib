@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.4  1998/11/30 02:52:01  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/10/31 12:46:45  robertj
  * Renamed file for having general thread synchronisation objects.
  * Added conditional mutex and read/write mutex thread synchronisation objects.
@@ -46,8 +49,8 @@
 #pragma interface
 #endif
 
-#include <mutex.h>
-#include <syncpoint.h>
+#include <ptlib/mutex.h>
+#include <ptlib/syncpoint.h>
 
 
 PDECLARE_CLASS(PSyncPointAck, PSyncPoint)
