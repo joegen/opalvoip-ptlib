@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.11 1995/06/17 11:13:34 robertj Exp $
+ * $Id: textfile.h,v 1.12 1995/07/31 12:15:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
+ * Revision 1.12  1995/07/31 12:15:49  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.11  1995/06/17 11:13:34  robertj
  * Documentation update.
  *
@@ -50,7 +53,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Text Files
 
-PDECLARE_CONTAINER(PTextFile, PFile)
+PDECLARE_CLASS(PTextFile, PFile)
 /* A class representing a a structured file that is portable accross CPU
    architectures. Essentially this will normalise the end of line character
    which differs fromplatform to platform.
