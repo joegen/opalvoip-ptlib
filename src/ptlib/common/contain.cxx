@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.61 1996/08/22 13:21:55 robertj Exp $
+ * $Id: contain.cxx,v 1.62 1996/09/14 12:45:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.62  1996/09/14 12:45:57  robertj
+ * Fixed bug in PString::Splice() function, no end of string put in.
+ *
  * Revision 1.61  1996/08/22 13:21:55  robertj
  * Fixed major bug in FindLast(), could scan all of memory in negative direction.
  *
@@ -1113,11 +1116,13 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
   else {
     MakeUnique();
     PINDEX clen = strlen(PAssertNULL(cstr));
+    PINDEX newlen = slen-len+clen;
     if (clen > len)
-      SetSize(slen+clen-len+1);
+      SetSize(newlen+1);
     if (pos+len < slen)
       PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len+1);
     PSTRING_COPY(theArray+pos, cstr, clen);
+    theArray[newlen] = '\0';
   }
 }
 
