@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.20  1996/12/29 13:25:02  robertj
+ * Fixed GCC warnings.
+ *
  * Revision 1.19  1996/11/16 11:11:46  craigs
  * Fixed problem with timeout on blocked IO channels
  *
@@ -350,7 +353,6 @@ void PProcess::OperatingSystemYield()
   // collect the handles across all threads
   PThread * thread = current;
   BOOL      threadUnblocked = FALSE;
-  PInt64    maxTimeout = 1000000;
   do {
     if (thread->status == BlockedIO) {
       if (thread->waitPid > 0)
@@ -702,7 +704,7 @@ void PProcess::PXOnSignal(int sig)
   }
 }
 
-void PProcess::PXOnAsyncSignal(int sig)
+void PProcess::PXOnAsyncSignal(int /*sig*/)
 {
 }
 
