@@ -34,6 +34,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_grammar.y,v $
+ * Revision 1.7  1999/07/22 06:48:54  robertj
+ * Added comparison operation to base ASN classes and compiled ASN code.
+ * Added support for ANY type in ASN parser.
+ *
  * Revision 1.6  1999/06/09 06:58:08  robertj
  * Adjusted heading comments.
  *
@@ -121,6 +125,7 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %token ABSENT           
 %token ABSTRACT_SYNTAX  
 %token ALL              
+%token ANY
 %token APPLICATION      
 %token ASSIGNMENT
 %token AUTOMATIC        
@@ -136,6 +141,7 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %token COMPONENTS       
 %token CONSTRAINED      
 %token DEFAULT          
+%token DEFINED
 %token DEFINITIONS      
 %token EMBEDDED         
 %token END
@@ -289,6 +295,7 @@ static PString * ConcatNames(PString * s1, char c, PString * s2)
 %type <tval> EmbeddedPDVType
 %type <tval> EnumeratedType Enumerations
 %type <tval> ExternalType
+%type <tval> AnyType
 %type <tval> IntegerType
 %type <tval> NullType
 %type <tval> ObjectClassFieldType
@@ -649,6 +656,7 @@ BuiltinType
   | EmbeddedPDVType 
   | EnumeratedType 
   | ExternalType 
+  | AnyType 
   | InstanceOfType
     { }
   | IntegerType 
@@ -923,6 +931,18 @@ ExternalType
   : EXTERNAL
       {
 	$$ = new ExternalType;
+      }
+  ;
+
+
+AnyType
+  : ANY
+      {
+	$$ = new AnyType(NULL);
+      }
+  | ANY DEFINED BY IDENTIFIER
+      {
+	$$ = new AnyType($4);
       }
   ;
 
