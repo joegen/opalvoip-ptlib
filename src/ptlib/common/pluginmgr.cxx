@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.25  2004/07/12 09:17:21  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.24  2004/07/06 10:12:54  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -359,4 +362,9 @@ class PluginLoaderStartup : public PProcessStartup
 
 PFactory<PProcessStartup>::Worker<PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader", true);
 
+#ifdef _WIN32
+
 PINSTANTIATE_FACTORY(PProcessStartup, PString)
+
+#endif
+
