@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.2 1994/06/25 11:55:15 robertj Exp $
+ * $Id: filepath.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
- * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Changed parameter before variable argument list to NOT be a reference.
+ *
+ * Revision 1.2  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.1  1994/04/20  12:17:44  robertj
@@ -30,6 +33,13 @@ PDECLARE_CLASS(PFilePath, PString)
     PFilePath(const char * cstr);
     PFilePath & operator=(const PString & str);
       // Create a file spec object with the specified name.
+
+    PFilePath(const char * prefix, const char * dir);
+      // Create a file spec object with a generated temporary name. The
+      // first parameter is a prefix for the filename to which a unique
+      // number is appended. The second parameter is the directory in which
+      // the file is to be placed. If this is NULL a system standard
+      // directory is used.
 
 
     // New member functions
