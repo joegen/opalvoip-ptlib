@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.17 1997/06/16 13:20:15 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.18 1997/07/08 13:11:44 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.18  1997/07/08 13:11:44  robertj
+ * Added standard header and copyright macros to service HTML.
+ *
  * Revision 1.17  1997/06/16 13:20:15  robertj
  * Fixed bug where PHTTPThread crashes on exit.
  *
@@ -394,8 +397,7 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
 
   AddFields(prefix);
 
-  if (state != PSecureConfig::Defaults)
-    Add(new PHTTPStringField("Validation", 34));
+  Add(new PHTTPStringField("Validation", 34));
 
   if (state == PSecureConfig::Defaults) {
     AddDisclaimer(regPage, process.GetManufacturer());
@@ -779,7 +781,11 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
 
     PString subs;
     PCaselessString cmd = text(pos+12, end-1).Trim();
-    if (cmd == "os")
+    if (cmd == "header")
+      subs = process.GetPageGraphic();
+    else if (cmd == "copyright")
+      subs = process.GetCopyrightText();
+    else if (cmd == "os")
       subs = process.GetOSClass() & process.GetOSName();
     else if (cmd == "version")
       subs = process.GetVersion(TRUE);
