@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.63  1998/10/29 05:35:16  robertj
+ * Fixed porblem with GetCount() == 0 if do not call Parse() function.
+ *
  * Revision 1.62  1998/10/28 03:26:42  robertj
  * Added multi character arguments (-abc style) and options precede parameters mode.
  *
@@ -649,6 +652,9 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
+
+PINLINE void PArgList::SetArgs(int argc, char ** argv)
+  { SetArgs(PStringArray(argc, argv)); }
 
 PINLINE void PArgList::Parse(const PString & theArgumentSpec, BOOL optionsBeforeParams)
   { Parse((const char *)theArgumentSpec, optionsBeforeParams); }
