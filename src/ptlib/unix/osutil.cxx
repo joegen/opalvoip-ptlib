@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.80  2004/01/07 21:30:30  dsandras
+ * Applied patch from Miguel Rodriguez Perez <migrax@terra.es> to remove problematic PAssert failing in cases where it shouldn't.
+ *
  * Revision 1.79  2003/09/17 01:18:04  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -545,7 +548,10 @@ BOOL PDirectory::Next()
 #endif
     } while (strcmp(entryBuffer->d_name, "." ) == 0 || strcmp(entryBuffer->d_name, "..") == 0);
 
-    PAssert(PFile::GetInfo(*this+entryBuffer->d_name, *entryInfo), POperatingSystemError);
+    /* Ignore this file if we can't get info about it */
+    if (PFile::GetInfo(*this+entryBuffer->d_name, *entryInfo) == 0)
+      continue;
+    
     if (scanMask == PFileInfo::AllPermissions)
       return TRUE;
   } while ((entryInfo->type & scanMask) == 0);
