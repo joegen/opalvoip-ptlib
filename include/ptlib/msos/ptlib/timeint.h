@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.5 1995/12/10 11:49:26 robertj Exp $
+ * $Id: timeint.h,v 1.6 1996/08/08 10:09:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.6  1996/08/08 10:09:20  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.5  1995/12/10 11:49:26  robertj
  * Fixed bug in time interfval constant variable initialisation. Not guarenteed to work.
  *
@@ -34,7 +37,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-#include "../../common/timeint.h"
+#include "../../common/ptlib/timeint.h"
 };
 
 #define PMaxTimeInterval PTimeInterval(0x7fffffff)
