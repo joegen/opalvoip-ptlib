@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.13 1995/01/09 12:31:49 robertj Exp $
+ * $Id: collect.cxx,v 1.14 1995/01/27 11:12:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.13  1995/01/09 12:31:49  robertj
+ * Revision 1.14  1995/01/27 11:12:38  robertj
+ * Fixed nasty bug in sorted lists.
+ *
+ * Revision 1.13  1995/01/09  12:31:49  robertj
  * Removed unnecesary return value from I/O functions.
  *
  * Revision 1.12  1994/12/13  11:50:52  robertj
@@ -885,7 +888,8 @@ PINDEX PAbstractSortedList::Element::ValueSelect(const PObject & obj)
     case PObject::LessThan :
       if (right != NULL) {
         PINDEX index = right->ValueSelect(obj);
-        return index != P_MAX_INDEX ? LeftTreeSize() + index : P_MAX_INDEX;
+        if (index != P_MAX_INDEX)
+          return LeftTreeSize() + index + 1;
       }
       break;
 
