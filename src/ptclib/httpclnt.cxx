@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.33  2003/04/23 07:00:15  rogerh
+ * Fix the encoding checking. the find_ip sample program now works again
+ *
  * Revision 1.32  2003/01/28 06:48:35  robertj
  * Added https support to PHTTPClient (if #define P_SSL availbel).
  *
@@ -437,7 +440,7 @@ BOOL PHTTPClient::InternalReadContentBody(PMIMEInfo & replyMIME, PAbstractArray 
       return ReadBlock(body.GetPointer(), length);
     }
 
-    if (encoding.IsEmpty()) {
+    if (!(encoding.IsEmpty())) {
       lastResponseCode = -1;
       lastResponseInfo = "Unknown Transfer-Encoding extension";
       return FALSE;
