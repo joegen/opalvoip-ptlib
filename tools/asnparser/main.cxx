@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.23  1999/09/18 02:42:27  craigs
+ * Added optimisation to collapse switch arms in CreateObject functions
+ *
  * Revision 1.22  1999/09/07 09:56:04  robertj
  * Fixed failure to put "using anmespace" in every generated .cxx file.
  *
@@ -2242,15 +2245,44 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
       << "BOOL " << GetClassNameString() << "::CreateObject()\n"
          "{\n";
 
+
+  // declare an array of flags indicating whether the tag has been output or not
+  PBYTEArray flags[fields.GetSize()];
+  for (i = 0; i < fields.GetSize(); i++)
+    flags[i] = 0;
+
+  // keep
   outputEnum = FALSE;
   for (i = 0; i < fields.GetSize(); i++) {
+
     if (fields[i].GetTag().mode == Tag::Automatic || !fields[i].IsChoice()) {
+
+      // ignore this tag if output previously
+      if (flags[i] != 0)
+        continue;
+    
       if (!outputEnum) {
         cxx << "  switch (tag) {\n";
         outputEnum = TRUE;
       }
-      cxx << "    case e_" << fields[i].GetIdentifier() << " :\n"
-             "      choice = new " << fields[i].GetTypeName();
+
+      // if the field has constraints, then output it alone
+      // otherwise, look for all fields with the same type
+      PString name = fields[i].GetTypeName();
+      if (fields[i].HasConstraints()) {
+        cxx << "    case e_" << fields[i].GetIdentifier() << " :\n";
+        flags[i] = 1;
+      } else {
+        PINDEX j;
+        for (j = i; j < fields.GetSize(); j++) {
+          if (fields[j].GetTypeName() == name) {
+            cxx << "    case e_" << fields[j].GetIdentifier() << " :\n";
+            flags[j] = 1;
+          }
+        }
+      }
+
+      cxx << "      choice = new " << name;
       fields[i].GenerateCplusplusConstructor(hdr, cxx);
       cxx << ";\n";
       fields[i].GenerateCplusplusConstraints("    choice->", hdr, cxx);
