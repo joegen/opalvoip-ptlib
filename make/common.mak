@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.84  2003/07/24 22:01:42  dereksmithies
+# Add fixes from Peter Nixon  for fixing install problems. Thanks.
+#
 # Revision 1.83  2003/06/17 12:05:01  csoutheren
 # Changed compiler flags for optimised build
 #
@@ -325,6 +328,10 @@ endif
 TARGET_LIBS	= $(PW_LIBDIR)/$(PTLIB_FILE)
 ifneq (,$(GUI_TYPE))
 TARGET_LIBS	:= $(TARGET_LIBS) $(PW_LIBDIR)/$(PWLIB_FILE)
+endif
+# distinguish betweek building and using pwlib
+ifeq (,$(wildcard $(PWLIBDIR)/src))
+TARGET_LIBS     = $(SYSLIBDIR)/$(PTLIB_FILE)
 endif
 
 $(TARGET):	$(OBJS) $(TARGET_LIBS)
