@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.57  2000/12/11 13:15:17  robertj
+ * Added macro to include signed or unsigned chunks of HTML.
+ * Added flag to globally ignore HTML signatures (useful for develeopment).
+ *
  * Revision 1.56  2000/10/23 09:17:26  robertj
  * Fixed bug un Linux version where HTML macros didn't work correctly.
  *
@@ -232,6 +236,8 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
     productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName)
 {
+  ignoreSignatures = FALSE;
+
   if (inf.gifHTML != NULL)
     gifHTML = inf.gifHTML;
   else {
@@ -1030,6 +1036,9 @@ BOOL PServiceHTML::CheckSignature()
 
 BOOL PServiceHTML::CheckSignature(const PString & html)
 {
+  if (PHTTPServiceProcess::Current().ShouldIgnoreSignatures())
+    return TRUE;
+
   // extract the signature from the file
   PString out;
   PString signature = ExtractSignature(html, out);
@@ -1448,6 +1457,48 @@ CREATE_MACRO(Get,request,args)
 CREATE_MACRO(URL,request,EMPTY)
 {
   return request.url.AsString();
+}
+
+
+CREATE_MACRO(Include,EMPTY,args)
+{
+  PString text;
+
+  if (!args) {
+    PFile file;
+    if (file.Open(args, PFile::ReadOnly))
+      text = file.ReadString(file.GetLength());
+  }
+
+  return text;
+}
+
+
+CREATE_MACRO(SignedInclude,EMPTY,args)
+{
+  PString text;
+
+  if (!args) {
+    PFile file;
+    if (file.Open(args, PFile::ReadOnly)) {
+      text = file.ReadString(file.GetLength());
+      if (!PServiceHTML::CheckSignature(text)) {
+        PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+        PHTML html("Invalid OEM Signature");
+        html << "The HTML file \""
+             << args
+             << "\" contains an invalid signature for \""
+             << process.GetName()
+             << "\" by \""
+             << process.GetManufacturer()
+             << '"'
+             << PHTML::Body();
+        text = html;
+      }
+    }
+  }
+
+  return text;
 }
 
 
