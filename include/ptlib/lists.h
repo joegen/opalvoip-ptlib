@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.7 1995/06/17 11:12:43 robertj Exp $
+ * $Id: lists.h,v 1.8 1995/08/24 12:35:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.8  1995/08/24 12:35:00  robertj
+ * Added assert for list index out of bounds.
+ *
  * Revision 1.7  1995/06/17 11:12:43  robertj
  * Documentation update.
  *
@@ -233,6 +236,20 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
 
 
   protected:
+    PObject & GetReferenceAt(
+      PINDEX index  // Ordinal index of the list element to set as current.
+    ) const;
+    /* Get the object at the specified ordinal position. If the index was
+       greater than the size of the collection then this asserts.
+
+       The object accessed in this way is remembered by the class and further
+       access will be fast. Access to elements one either side of that saved
+       element, and the head and tail of the list, will always be fast.
+
+       <H2>Returns:</H2>
+       reference to object at the specified index.
+     */
+
     BOOL SetCurrent(
       PINDEX index  // Ordinal index of the list element to set as current.
     ) const;
@@ -292,7 +309,7 @@ PDECLARE_CLASS(PList, PAbstractList)
      */
 
     T & operator[](PINDEX index) const
-      { return *(T *)GetAt(index); }
+      { return (T &)GetReferenceAt(index); }
     /* Retrieve a reference  to the object in the list. If there was not an
        object at that ordinal position or the index was beyond the size of the
        array then the function asserts.
@@ -555,7 +572,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const \
-      { return *(T *)GetAt(index); } \
+      { return (T &)GetReferenceAt(index); } \
 
 #define PLIST(cls, T) PDECLARE_LIST(cls, T) }
 
@@ -592,7 +609,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
     virtual inline void Push(T * t) \
       { PAbstractList::InsertAt(0, t); } \
     virtual inline T * Pop() \
-      { return (T *)PAbstractList::RemoveAt(0); } \
+      { PAssert(GetSize() > 0, PStackEmpty); return (T *)PAbstractList::RemoveAt(0); } \
     virtual inline T & Top() \
       { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); } \
 
