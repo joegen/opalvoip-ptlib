@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.10  2004/09/09 05:23:38  dereksmithies
+ * Add utility function to report on dtmf characters used.
+ *
  * Revision 1.9  2004/09/09 04:22:46  csoutheren
  * Added sine table for DTMF encoder
  *
@@ -179,7 +182,6 @@ static double sinetab[SINELEN];
 
 static double amptab[2] = { 8191.75, 16383.5 };
 
-
 static inline int ifix(double x) 
 { 
   return (x >= 0.0) ? (int) (x+0.5) : (int) (x-0.5); 
@@ -196,6 +198,35 @@ static inline int phinc(double f)
 { 
   return ifix(TWO32 * f / (double) SAMPLERATE);
 }
+
+static char dtmfSymbols[16] = {
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  'A',
+  'B',
+  'C',
+  'D',
+  '*',
+  '#'
+};
+
+char PDTMFEncoder::DtmfChar(PINDEX i)
+{
+  PAssert(i < 16, "Only 16 dtmf symbols. Index too large");
+
+  return dtmfSymbols[i];
+}
+
+
+
 
 // DTMF frequencies as per http://www.commlinx.com.au/DTMF_frequencies.htm
 
