@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.75  1998/10/13 14:06:18  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.74  1998/09/23 06:21:54  robertj
  * Added open source copyright license.
  *
@@ -307,6 +310,8 @@
 #include "ptlib/contain.inl"
 #endif
 
+#define new PNEW
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -393,7 +398,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   if (GetSize() == 0)
     theArray = NULL;
   else
-    theArray = (char *)PCALLOC(GetSize(), elementSize);
+    theArray = (char *)calloc(GetSize(), elementSize);
 
   allocatedDynamically = TRUE;
 }
@@ -414,7 +419,7 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
     theArray = NULL;
   else if (dynamicAllocation) {
     PINDEX sizebytes = elementSize*GetSize();
-    theArray = (char *)PMALLOC(sizebytes);
+    theArray = (char *)malloc(sizebytes);
     memcpy(theArray, PAssertNULL(buffer), sizebytes);
   }
   else
@@ -426,7 +431,7 @@ void PAbstractArray::DestroyContents()
 {
   if (theArray != NULL) {
     if (allocatedDynamically)
-      PFREE(theArray);
+      free(theArray);
     theArray = NULL;
   }
 }
@@ -444,7 +449,7 @@ void PAbstractArray::CloneContents(const PAbstractArray * array)
 {
   elementSize = array->elementSize;
   PINDEX sizebytes = elementSize*GetSize();
-  char * newArray = (char *)PMALLOC(sizebytes);
+  char * newArray = (char *)malloc(sizebytes);
   if (newArray == NULL)
     reference->size = 0;
   else
@@ -502,22 +507,22 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   if (theArray != NULL) {
     if (newsizebytes == 0) {
       if (allocatedDynamically)
-        PFREE(theArray);
+        free(theArray);
       newArray = NULL;
     }
     else if (allocatedDynamically) {
-      if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
+      if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
         return FALSE;
     }
     else {
-      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
         return FALSE;
       memcpy(newArray, theArray, PMIN(newsizebytes, oldsizebytes));
       allocatedDynamically = TRUE;
     }
   }
   else if (newsizebytes != 0) {
-    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
       return FALSE;
   }
   else
@@ -536,7 +541,7 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 void PAbstractArray::Attach(const void *buffer, PINDEX bufferSize)
 {
   if (allocatedDynamically && theArray != NULL)
-    PFREE(theArray);
+    free(theArray);
 
   theArray = (char *)buffer;
   reference->size = bufferSize;
@@ -962,7 +967,7 @@ PString & PString::operator=(char ch)
 
 PObject * PString::Clone() const
 {
-  return PNEW PString(*this);
+  return new PString(*this);
 }
 
 
@@ -1032,7 +1037,7 @@ BOOL PString::SetSize(PINDEX newSize)
   if (newsizebytes == 0)
     newArray = NULL;
   else {
-    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+    if ((newArray = (char *)malloc(newsizebytes)) == NULL)
       return FALSE;
 
     if (theArray != NULL)
@@ -1708,7 +1713,7 @@ PString pvsprintf(const char * fmt, va_list arg)
 
 PObject * PCaselessString::Clone() const
 {
-  return PNEW PCaselessString(*this);
+  return new PCaselessString(*this);
 }
 
 
@@ -1892,9 +1897,9 @@ PStringArray::PStringArray(PINDEX count,
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
     if (caseless)
-      newString = PNEW PCaselessString(strarr[i]);
+      newString = new PCaselessString(strarr[i]);
     else
-      newString = PNEW PString(strarr[i]);
+      newString = new PString(strarr[i]);
     SetAt(i, newString);
   }
 }
@@ -1905,7 +1910,7 @@ PString & PStringArray::operator[](PINDEX index)
   PASSERTINDEX(index);
   PAssert(SetMinSize(index+1), POutOfMemory);
   if ((*theArray)[index] == NULL)
-    (*theArray)[index] = PNEW PString;
+    (*theArray)[index] = new PString;
   return *(PString *)(*theArray)[index];
 }
 
