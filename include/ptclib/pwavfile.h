@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.18  2005/03/19 02:52:53  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
+ *
  * Revision 1.17  2005/01/04 07:44:02  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -171,6 +174,8 @@ struct FMTChunk
 class PWAVFileFormat
 {
   public:
+    virtual ~PWAVFileFormat() { }
+
     /**
       * return a PWAVFile format code
       */
@@ -235,6 +240,7 @@ typedef PFactory<PWAVFileFormat, unsigned> PWAVFileFormatByIDFactory;
 class PWAVFileConverter 
 {
   public:
+    virtual ~PWAVFileConverter() { }
     virtual unsigned GetFormat    (const PWAVFile & file) const = 0;
     virtual off_t GetPosition     (const PWAVFile & file) const = 0;
     virtual BOOL SetPosition      (PWAVFile & file, off_t pos, PFile::FilePositionOrigin origin) = 0;
