@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.25  2001/08/28 03:22:01  yurik
+ * Fixed crash on snmp init bug
+ *
  * Revision 1.24  2001/08/16 20:12:25  yurik
  * Fixed duplicate ordinal - ifdef'd ce code
  *
@@ -213,7 +216,7 @@ class PWin32SnmpLibrary
   PCLASSINFO(PWin32SnmpLibrary, PDynaLink)
 #else
 {
-	void Close() {};
+	void Close();
 	BOOL IsLoaded() { return TRUE; }
 #endif
   public:
@@ -538,15 +541,13 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
 #ifndef _WIN32_WCE
 	if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
       !GetFunction("SnmpExtensionQuery", (Function &)Query) ||
-#else
-	Init = SnmpExtensionInit;
-	Query = SnmpExtensionQuery;
-	if(
-#endif
       !Init(0, &hEvent, &baseOid))
     Close();
+#else
+	Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
+    Query = SnmpExtensionQuery;
+#endif
 }
-
 
 BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
 {
