@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.3 1993/07/14 12:49:16 robertj Exp $
+ * $Id: contain.inl,v 1.4 1993/07/16 14:40:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Revision 1.4  1993/07/16 14:40:55  robertj
+ * Added PString constructor for individual characters.
+ * Added string to C style literal format.
+ *
+ * Revision 1.3  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
@@ -66,10 +70,13 @@ inline PString::PString(const PString & str)
   : PCharArray(str) { }
 
 inline PString::PString(const char * cstr)
-  : PCharArray(PAssertNULL(cstr),strlen(cstr)+1) { }
+  : PCharArray(PAssertNULL(cstr), strlen(cstr)+1) { }
 
 inline PString::PString(const char * cstr, PINDEX len)
   : PCharArray(len+1) { memcpy(theArray, PAssertNULL(cstr), len); }
+
+inline PString::PString(char c)
+  : PCharArray(2) { *theArray = c; }
 
 inline PObject::Comparison PString::CompareString(const char * cstr) const
   { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
