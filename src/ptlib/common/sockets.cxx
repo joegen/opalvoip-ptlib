@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.59 1997/06/06 10:56:36 craigs Exp $
+ * $Id: sockets.cxx,v 1.60 1997/09/27 00:58:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.60  1997/09/27 00:58:39  robertj
+ * Fixed race condition on socket close in Select() function.
+ *
  * Revision 1.59  1997/06/06 10:56:36  craigs
  * Added new functions for connectionless UDP writes
  *
@@ -433,33 +436,39 @@ PChannel::Errors PSocket::Select(SelectList & read,
   PINDEX i;
   for (i = 0; i < read.GetSize(); i++) {
     int h = read[i].GetHandle();
-    FD_SET(h, &readfds);
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 1;
+    if (h >= 0) {
+      FD_SET(h, &readfds);
+      if (h > maxfds)
+        maxfds = h;
+      allfds[nextfd++] = h;
+      allfds[nextfd++] = 1;
+    }
   }
 
   fd_set writefds;
   FD_ZERO(&writefds);
   for (i = 0; i < write.GetSize(); i++) {
     int h = write[i].GetHandle();
-    FD_SET(h, &writefds);
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 2;
+    if (h >= 0) {
+      FD_SET(h, &writefds);
+      if (h > maxfds)
+        maxfds = h;
+      allfds[nextfd++] = h;
+      allfds[nextfd++] = 2;
+    }
   }
 
   fd_set exceptfds;
   FD_ZERO(&exceptfds);
   for (i = 0; i < except.GetSize(); i++) {
     int h = except[i].GetHandle();
-    FD_SET(h, &exceptfds);
-    if (h > maxfds)
-      maxfds = h;
-    allfds[nextfd++] = h;
-    allfds[nextfd++] = 4;
+    if (h >= 0) {
+      FD_SET(h, &exceptfds);
+      if (h > maxfds)
+        maxfds = h;
+      allfds[nextfd++] = h;
+      allfds[nextfd++] = 4;
+    }
   }
 #ifdef _MSC_VER
 #pragma warning(default:4127)
@@ -473,15 +482,21 @@ PChannel::Errors PSocket::Select(SelectList & read,
     return lastError;
 
   if (retval > 0) {
-    for (i = 0; i < read.GetSize(); i++)
-      if (!FD_ISSET(read[i].GetHandle(), &readfds))
+    for (i = 0; i < read.GetSize(); i++) {
+      int h = read[i].GetHandle();
+      if (h < 0 || !FD_ISSET(h, &readfds))
         read.RemoveAt(i--);
-    for (i = 0; i < write.GetSize(); i++)
-      if (!FD_ISSET(write[i].GetHandle(), &writefds))
+    }
+    for (i = 0; i < write.GetSize(); i++) {
+      int h = write[i].GetHandle();
+      if (h < 0 || !FD_ISSET(h, &writefds))
         write.RemoveAt(i--);
-    for (i = 0; i < except.GetSize(); i++)
-      if (!FD_ISSET(except[i].GetHandle(), &exceptfds))
+    }
+    for (i = 0; i < except.GetSize(); i++) {
+      int h = except[i].GetHandle();
+      if (h < 0 || !FD_ISSET(h, &exceptfds))
         except.RemoveAt(i--);
+    }
   }
   else {
     read.RemoveAll();
