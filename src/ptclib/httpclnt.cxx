@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.8 1997/06/12 12:33:35 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.9 1998/01/26 00:39:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.9  1998/01/26 00:39:00  robertj
+ * Added function to allow HTTPClient to automatically connect if URL has hostname.
+ * Fixed incorrect return values on HTTPClient GetDocument(), Post etc functions.
+ *
  * Revision 1.8  1997/06/12 12:33:35  robertj
  * Fixed bug where mising MIME fields is regarded as an eror.
  *
@@ -233,7 +237,10 @@ BOOL PHTTPClient::GetDocument(const PURL & url,
                               const PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME);
+  if (!AssureConnect(url))
+    return FALSE;
+
+  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
 }
 
 
@@ -241,7 +248,10 @@ BOOL PHTTPClient::GetHeader(const PURL & url,
                             const PMIMEInfo & outMIME,
                             PMIMEInfo & replyMIME)
 {
-  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME);
+  if (!AssureConnect(url))
+    return FALSE;
+
+  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME) == OK;
 }
 
 
@@ -250,9 +260,27 @@ BOOL PHTTPClient::PostData(const PURL & url,
                            const PStringToString & data,
                            PMIMEInfo & replyMIME)
 {
+  if (!AssureConnect(url))
+    return FALSE;
+
   PStringStream body;
   body << data;
-  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME);
+  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME) == OK;
+}
+
+
+BOOL PHTTPClient::AssureConnect(const PURL & url)
+{
+  if (IsOpen())
+    return TRUE;  // Already connected
+
+  if (url.GetHostName().IsEmpty())
+    return FALSE;
+
+  if (url.GetPort() == 0)
+    return Connect(url.GetHostName());
+
+  return Connect(url.GetHostName(), url.GetPort());
 }
 
 
