@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.81  2003/04/04 08:03:55  robertj
+ * Fixed special case of h323 URL default port changing depending on
+ *   if it the host is an endpoint or gatekeeper.
+ *
  * Revision 1.80  2003/04/04 05:18:08  robertj
  * Added "callto", "tel" and fixed "h323" URL types.
  *
@@ -330,6 +334,7 @@
 #define DEFAULT_RTSPU_PORT	554
 #define DEFAULT_PROSPERO_PORT	1525
 #define	DEFAULT_H323_PORT       1720
+#define	DEFAULT_H323RAS_PORT    1719
 #define	DEFAULT_SIP_PORT        5060
 
 
@@ -704,10 +709,8 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
       if (pos == P_MAX_INDEX)
         pos = 0;
       pos = uphp.Find(':', pos);
-      if (pos == P_MAX_INDEX) {
+      if (pos == P_MAX_INDEX)
         hostname = UntranslateString(uphp, LoginTranslation);
-        port = schemeInfo.defaultPort;
-      }
       else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
@@ -751,6 +754,14 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
   // if the rest of the URL isn't a path, then we are finished!
     pathStr = UntranslateString(url, PathTranslation);
     Recalculate();
+  }
+
+  if (port == 0 && schemeInfo.defaultPort != 0) {
+    // Yes another horrible, horrible special case!
+    if (scheme == "h323" && paramVars("type") == "gk")
+      port = DEFAULT_H323RAS_PORT;
+    else
+      port = schemeInfo.defaultPort;
   }
 }
 
