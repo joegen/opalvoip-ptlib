@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.17  2002/12/04 00:31:13  robertj
+ * Fixed GNU compatibility
+ *
  * Revision 1.16  2002/12/04 00:15:44  robertj
  * Changed usage of PHTTPClient so supports chunked transfer encoding.
  * Large enhancement to create automatically encoding and decoding structures
@@ -776,7 +779,7 @@ PString PXMLRPCVariableBase::ToString() const
 
 void PXMLRPCVariableBase::FromString(const PString & str)
 {
-  PStringStream stream = str;
+  PStringStream stream(str);
   ReadFrom(stream);
 }
 
@@ -829,3 +832,4 @@ void PXMLRPCStructBase::PrintOn(ostream & strm) const
 
 
 // End of file ///////////////////////////////////////////////////////////////
+
