@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.5  2003/11/12 08:55:58  csoutheren
+ * Added newline at end of file to remove gcc warning
+ *
  * Revision 1.4  2003/11/12 05:17:25  csoutheren
  * Added more backwards compatibility functions for PSoundChannel
  *
@@ -254,3 +257,4 @@ BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
 }
 
 #endif //_WIN32
+
