@@ -280,10 +280,9 @@ ValueElementBase::ValueElementBase()
 }
 
 
-BOOL ValueElementBase::GenerateConstructor(ostream &, ostream &)
+void ValueElementBase::GenerateCplusplus(const PString &, ostream &, ostream &)
 {
   PError << StdError(Warning) << "unsupported constraint, ignored." << endl;
-  return FALSE;
 }
 
 
@@ -312,11 +311,11 @@ void ListValueElement::PrintOn(ostream & strm) const
 }
 
 
-BOOL ListValueElement::GenerateConstructor(ostream & hdr, ostream & cxx)
+void ListValueElement::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx)
 {
   if (elements.GetSize() > 1)
     PError << StdError(Warning) << "unsupported INTERSECTION constraints, ignored." << endl;
-  return elements[0].GenerateConstructor(hdr, cxx);
+  elements[0].GenerateCplusplus(fn, hdr, cxx);
 }
 
 
@@ -344,23 +343,25 @@ void SingleValueElement::PrintOn(ostream & strm) const
 }
 
 
-BOOL SingleValueElement::GenerateConstructor(ostream & hdr, ostream & cxx)
+void SingleValueElement::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx)
 {
   if (value->IsDescendant(IntegerValue::Class())) {
-    cxx << ", ";
+    cxx << fn << ", ";
     value->GenerateCplusplus(hdr, cxx);
     cxx << ", ";
     value->GenerateCplusplus(hdr, cxx);
+    cxx << ");\n";
+    return;
   }
-  else if (value->IsDescendant(CharacterStringValue::Class())) {
-    cxx << ", ";
+
+  if (value->IsDescendant(CharacterStringValue::Class())) {
+    cxx << fn << ", ";
     value->GenerateCplusplus(hdr, cxx);
+    cxx << ");\n";
+    return;
   }
-  else {
-    PError << StdError(Warning) << "Unsupported constraint type, ignoring." << endl;
-    return FALSE;
-  }
-  return TRUE;
+
+  PError << StdError(Warning) << "Unsupported constraint type, ignoring." << endl;
 }
 
 
@@ -384,13 +385,13 @@ void ValueRangeElement::PrintOn(ostream & strm) const
 }
 
 
-BOOL ValueRangeElement::GenerateConstructor(ostream & hdr, ostream & cxx)
+void ValueRangeElement::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx)
 {
-  cxx << ", ";
+  cxx << fn << ", ";
   lower->GenerateCplusplus(hdr, cxx);
   cxx << ", ";
   upper->GenerateCplusplus(hdr, cxx);
-  return TRUE;
+  cxx << ");\n";
 }
 
 
@@ -424,9 +425,9 @@ void ConstraintValueElement::PrintOn(ostream & strm) const
 }
 
 
-BOOL ConstraintValueElement::GenerateConstructor(ostream & hdr, ostream & cxx)
+void ConstraintValueElement::GenerateCplusplus(const PString &, ostream & hdr, ostream & cxx)
 {
-  return constraint->GenerateConstructor(hdr, cxx);
+  constraint->GenerateCplusplus(hdr, cxx);
 }
 
 
@@ -479,16 +480,22 @@ void Constraint::PrintOn(ostream & strm) const
 }
 
 
-BOOL Constraint::GenerateConstructor(ostream & hdr, ostream & cxx)
+void Constraint::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   if (standard.GetSize() > 1)
     PError << StdError(Warning) << "unsupported UNION constraints, ignored." << endl;
+
   if (extensions.GetSize() > 0)
     PError << StdError(Warning) << "unsupported extension constraints, ignored." << endl;
-  if (standard[0].GenerateConstructor(hdr, cxx))
-    cxx << (extendable ? ", PASN_ConstrainedObject::ExtendableConstraint"
-                       : ", PASN_ConstrainedObject::FixedConstraint");
-  return FALSE;
+
+  PString fn = prefix == FromPrefix ? "SetCharacterSet(" : "SetConstraints(";
+
+  if (extendable)
+    fn += "PASN_Object::ExtendableConstraint";
+  else
+    fn += "PASN_Object::FixedConstraint";
+
+  standard[0].GenerateCplusplus(fn, hdr, cxx);
 }
 
 
@@ -554,6 +561,12 @@ int TypeBase::GetIdentifierTokenContext() const
 }
 
 
+int TypeBase::GetBraceTokenContext() const
+{
+  return '{';
+}
+
+
 void TypeBase::SetName(PString * newName)
 {
   name = *newName;
@@ -596,13 +609,10 @@ void TypeBase::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   BeginGenerateCplusplus(hdr, cxx);
 
-  // Output header file declaration of class
-  hdr << ");\n";
-
-  // Output cxx file implementation of class
-  GenerateConstructorParams(hdr, cxx, TRUE);
+  // Close off the constructor implementation
   cxx << ")\n"
          "{\n";
+  GenerateCplusplusConstraints("  ", hdr, cxx);
 
   EndGenerateCplusplus(hdr, cxx);
 }
@@ -690,7 +700,7 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
     hdr << UniversalTagNames[tag.number];
   else
     hdr << tag.number;
-  hdr << ", TagClass tagClass = " << UniversalTagClassNames[tag.type];
+  hdr << ", TagClass tagClass = " << UniversalTagClassNames[tag.type] << ");\n\n";
 
   // Output cxx file implementation of class
   cxx << "//\n"
@@ -699,7 +709,7 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
          "\n"
       << Module->moduleName << "::" << GetIdentifier() << "::" << GetIdentifier()
       << "(unsigned tag, TagClass tagClass)\n"
-         "  : " << GetTypeName() << '(';
+         "  : " << GetTypeName() << "(tag, tagClass";
 }
 
 
@@ -730,11 +740,10 @@ void TypeBase::EndGenerateCplusplus(ostream & hdr, ostream & cxx)
 }
 
 
-void TypeBase::GenerateConstructorParams(ostream & hdr, ostream & cxx, BOOL passThru)
+void TypeBase::GenerateCplusplusConstructor(ostream &, ostream & cxx)
 {
-  if (passThru)
-    cxx << "tag, tagClass";
-  else if (HasNonStandardTag() || HasConstraints()) {
+  cxx << '(';
+  if (HasNonStandardTag()) {
     if (tag.type == Tag::Universal &&
         tag.number < PARRAYSIZE(UniversalTagNames) &&
         UniversalTagNames[tag.number] != NULL)
@@ -743,20 +752,15 @@ void TypeBase::GenerateConstructorParams(ostream & hdr, ostream & cxx, BOOL pass
       cxx << tag.number;
     cxx << ", " << UniversalTagClassNames[tag.type];
   }
+  cxx << ')';
+}
 
-  if (HasConstraints()) {
-    PINDEX i;
-    // Reorder to make sure FROM clause is last
-    for (i = 0; i < constraints.GetSize()-1; i++) {
-      if (constraints[i].HasPrefix(Constraint::FromPrefix)) {
-        constraints.DisallowDeleteObjects();
-        constraints.Append(constraints.RemoveAt(i));
-        constraints.AllowDeleteObjects();
-        break;
-      }
-    }
-    for (i = 0; i < constraints.GetSize(); i++)
-      constraints[i].GenerateConstructor(hdr, cxx);
+
+void TypeBase::GenerateCplusplusConstraints(const PString & prefix, ostream & hdr, ostream & cxx)
+{
+  for (PINDEX i = 0; i < constraints.GetSize(); i++) {
+    cxx << prefix;
+    constraints[i].GenerateCplusplus(hdr, cxx);
   }
 }
 
@@ -1031,50 +1035,47 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   PINDEX i;
 
   BeginGenerateCplusplus(hdr, cxx);
-  GenerateConstructorParams(hdr, cxx, TRUE);
-
-  // Output header file declaration of class
-  hdr << ");\n"
-         "\n"
-         "    enum {\n";
 
   int maxEnumValue = 0;
-  int prevNum = -1;
   for (i = 0; i < enumerations.GetSize(); i++) {
-    if (i > 0)
-      hdr << ",\n";
-    hdr << "      e_" << MakeIdentifierC(enumerations[i].GetName());
     int num = enumerations[i].GetNumber();
     if (maxEnumValue < num)
       maxEnumValue = num;
-    if (num != prevNum+1)
-      hdr << " = " << num;
-    prevNum = num;
   }
 
-  hdr << "\n"
-         "    };\n";
-
-  // Output cxx file implementation of class
+  // Generate enumerations and complete the constructor implementation
+  hdr << "    enum {\n";
   cxx << ", " << maxEnumValue << ", " << (extendable ? "TRUE" : "FALSE") << "\n"
          "#ifndef PASN_NOPRINTON\n"
          "      , \"";
 
+  int prevNum = -1;
   for (i = 0; i < enumerations.GetSize(); i++) {
-    int num = enumerations[i].GetNumber();
-    if (i > 0)
+    if (i > 0) {
+      hdr << ",\n";
       cxx << "        \"";
+    }
+
+    hdr << "      e_" << MakeIdentifierC(enumerations[i].GetName());
     cxx << enumerations[i].GetName();
-    if ((i == 0) ? (num != 0) : (num != prevNum+1))
+
+    int num = enumerations[i].GetNumber();
+    if (num != prevNum+1) {
+      hdr << " = " << num;
       cxx << '=' << num;
-    cxx << " \"\n";
+    }
     prevNum = num;
+
+    cxx << " \"\n";
   }
 
+  hdr << "\n"
+         "    };\n"
+         "\n";
   cxx << "#endif\n"
          "    )\n"
          "{\n";
-
+  GenerateCplusplusConstraints("  ", hdr, cxx);
   EndGenerateCplusplus(hdr, cxx);
 }
 
@@ -1127,6 +1128,12 @@ BitStringType::BitStringType(NamedNumberList * lst)
 int BitStringType::GetIdentifierTokenContext() const
 {
   return OID_IDENTIFIER;
+}
+
+
+int BitStringType::GetBraceTokenContext() const
+{
+  return BITSTRING_BRACE;
 }
 
 
@@ -1249,23 +1256,22 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   PINDEX i;
 
   BeginGenerateCplusplus(hdr, cxx);
-  GenerateConstructorParams(hdr, cxx, TRUE);
-
-  // Output header file declaration of class
-  hdr << ");\n"
-         "    PINDEX GetDataLength() const;\n"
-         "    BOOL Decode(PASN_Stream & strm);\n"
-         "    void Encode(PASN_Stream & strm) const;\n"
-         "#ifndef PASN_NOPRINTON\n"
-         "    void PrintOn(ostream & strm) const;\n"
-         "#endif\n"
-         "\n";
 
   PINDEX baseOptions = 0;
-  BOOL outputEnum = FALSE;
   for (i = 0; i < fields.GetSize(); i++) {
     if (i < numFields && fields[i].IsOptional())
       baseOptions++;
+  }
+
+  // Complete ancestor constructor parameters
+  cxx << ", " << baseOptions << ", "
+      << (extendable ? "TRUE" : "FALSE") << ", "
+      << fields.GetSize() - numFields
+      << ')';
+
+  // Output enum for optional parameters
+  BOOL outputEnum = FALSE;
+  for (i = 0; i < fields.GetSize(); i++) {
     if (i >= numFields || fields[i].IsOptional()) {
       if (outputEnum)
         hdr << ",\n";
@@ -1282,27 +1288,32 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
            "    };\n"
            "\n";
 
-  for (i = 0; i < fields.GetSize(); i++)
-    hdr << "    " << fields[i].GetTypeName() << " m_" << fields[i].GetIdentifier() << ";\n";
-
-  // Output cxx file implementation of class
-  cxx << ", " << baseOptions << ", "
-      << (extendable ? "TRUE" : "FALSE") << ", "
-      << fields.GetSize() - numFields
-      << ')';
-
+  // Output the declarations and constructors for member variables
   for (i = 0; i < fields.GetSize(); i++) {
-    if (fields[i].HasConstraints() || fields[i].HasNonStandardTag()) {
+    PString varname = "m_" + fields[i].GetIdentifier();
+    hdr << "    " << fields[i].GetTypeName() << ' ' << varname << ";\n";
+    if (fields[i].HasNonStandardTag()) {
       cxx << ",\n"
-             "    m_" << fields[i].GetIdentifier() << '(';
-      fields[i].GenerateConstructorParams(hdr, cxx, FALSE);
-      cxx << ')';
+             "    " << varname;
+      fields[i].GenerateCplusplusConstructor(hdr, cxx);
     }
   }
 
+  // Output declarations for generated functions
+  hdr << "\n"
+         "    PINDEX GetDataLength() const;\n"
+         "    BOOL Decode(PASN_Stream & strm);\n"
+         "    void Encode(PASN_Stream & strm) const;\n"
+         "#ifndef PASN_NOPRINTON\n"
+         "    void PrintOn(ostream & strm) const;\n"
+         "#endif\n";
+
   cxx << "\n"
-         "{\n"
-         "}\n"
+         "{\n";
+  GenerateCplusplusConstraints("  ", hdr, cxx);
+  for (i = 0; i < fields.GetSize(); i++)
+    fields[i].GenerateCplusplusConstraints("  m_"+fields[i].GetIdentifier()+".", hdr, cxx);
+  cxx << "}\n"
          "\n"
          "\n"
          "#ifndef PASN_NOPRINTON\n"
@@ -1448,20 +1459,20 @@ TypeBase * SequenceOfType::FlattenThisType(const TypeBase & parent, TypesList & 
 void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   BeginGenerateCplusplus(hdr, cxx);
-  GenerateConstructorParams(hdr, cxx, TRUE);
   cxx << ")\n"
-         "{\n"
-         "}\n"
+         "{\n";
+  GenerateCplusplusConstraints("  ", hdr, cxx);
+  cxx << "}\n"
          "\n"
          "\n";
 
   PString baseTypeName = baseType->GetTypeName();
 
-  // Output header file declaration of class
-  hdr << ");\n"
-         "    PASN_Object * CreateObject() const;\n"
+  // Generate declarations for generated functions
+  hdr << "    PASN_Object * CreateObject() const;\n"
          "    " << baseTypeName << " & operator[](PINDEX i);\n";
 
+  // Adjust the array's base type for name space qualification (if needed)
   PINDEX i;
   for (i = 0; i < PARRAYSIZE(StandardClasses); i++)
     if (baseTypeName == StandardClasses[i])
@@ -1469,7 +1480,7 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   if (i >= PARRAYSIZE(StandardClasses))
     baseTypeName = Module->moduleName + "::" + baseTypeName;
   
-  // Output cxx file implementation of class
+  // Generate implementation for functions
   cxx << "PASN_Object * " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject() const\n"
          "{\n"
          "  return new " << baseTypeName << ";\n"
@@ -1529,68 +1540,56 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   BeginGenerateCplusplus(hdr, cxx);
 
-  // Output header file declaration of class
-  hdr << ");\n";
+  // Complete the ancestor constructor parameters
+  cxx << ", " << numFields << ", " << (extendable ? "TRUE" : "FALSE");
 
+  // Generate the enum's for each choice discriminator, and include strings for
+  // PrintOn() debug output into acncestor constructor
   BOOL outputEnum = FALSE;
   int prevNum = -1;
   for (i = 0; i < fields.GetSize(); i++) {
     const Tag & fieldTag = fields[i].GetTag();
     if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
-      if (outputEnum)
+      if (outputEnum) {
         hdr << ",\n";
+        cxx << "        \"";
+      }
       else {
         hdr << "    enum {\n";
-        outputEnum = TRUE;
-      }
-      hdr << "      e_" << fields[i].GetIdentifier();
-      if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1))
-        hdr << " = " << fieldTag.number;
-      prevNum = fieldTag.number;
-    }
-  }
-
-  if (outputEnum)
-    hdr << "\n"
-           "    };\n";
-
-  // Output cxx file implementation of class
-  GenerateConstructorParams(hdr, cxx, TRUE);
-  cxx << ", " << numFields << ", " << (extendable ? "TRUE" : "FALSE");
-
-  outputEnum = FALSE;
-  prevNum = -1;
-  for (i = 0; i < fields.GetSize(); i++) {
-    const Tag & fieldTag = fields[i].GetTag();
-    if (fieldTag.mode == Tag::Automatic || !fields[i].IsChoice()) {
-      if (outputEnum)
-        cxx << "        \"";
-      else {
         cxx << "\n"
                "#ifndef PASN_NOPRINTON\n"
                "      , \"";
         outputEnum = TRUE;
       }
+
+      hdr << "      e_" << fields[i].GetIdentifier();
       cxx << fields[i].GetIdentifier();
-      if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1))
+
+      if (fieldTag.mode != Tag::Automatic && fieldTag.number != (unsigned)(prevNum+1)) {
+        hdr << " = " << fieldTag.number;
         cxx << '=' << fieldTag.number;
-      cxx << " \"\n";
+      }
       prevNum = fieldTag.number;
+      cxx << " \"\n";
     }
   }
 
-  if (outputEnum)
+  if (outputEnum) {
+    hdr << "\n"
+           "    };\n"
+           "\n";
     cxx << "#endif\n"
            "    ";
+  }
 
   cxx << ")\n"
-         "{\n"
-         "}\n"
+         "{\n";
+  GenerateCplusplusConstraints("  ", hdr, cxx);
+  cxx << "}\n"
          "\n"
          "\n";
 
-  hdr << '\n';
-
+  // Generate code for type safe cast operators of selected choice object
   PStringSet typesOutput;
   for (i = 0; i < PARRAYSIZE(StandardClasses); i++)
     typesOutput += StandardClasses[i];
@@ -1611,11 +1610,11 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
     }
   }
 
-  if (!typesOutput.IsEmpty())
+  if (typesOutput.GetSize() > PARRAYSIZE(StandardClasses))
     hdr << '\n';
 
+  // Generate virtual function to create chosen object based on discriminator
   hdr << "    BOOL CreateObject();\n";
-
   cxx << "BOOL " << Module->moduleName << "::" << GetIdentifier() << "::CreateObject()\n"
          "{\n";
 
@@ -1627,10 +1626,11 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         outputEnum = TRUE;
       }
       cxx << "    case e_" << fields[i].GetIdentifier() << " :\n"
-             "      choice = new " << fields[i].GetTypeName() << '(';
-      fields[i].GenerateConstructorParams(hdr, cxx, FALSE);
-      cxx << ");\n"
-             "      return TRUE;\n";
+             "      choice = new " << fields[i].GetTypeName();
+      fields[i].GenerateCplusplusConstructor(hdr, cxx);
+      cxx << ";\n";
+      fields[i].GenerateCplusplusConstraints("      choice->", hdr, cxx);
+      cxx << "      return TRUE;\n";
     }
   }
 
@@ -1696,8 +1696,20 @@ const char * ExternalType::GetAncestorClass() const
 }
 
 
+StringTypeBase::StringTypeBase(int tag)
+  : TypeBase(tag)
+{
+}
+
+
+int StringTypeBase::GetBraceTokenContext() const
+{
+  return STRING_BRACE;
+}
+
+
 BMPStringType::BMPStringType()
-  : TypeBase(Tag::UniversalBMPString)
+  : StringTypeBase(Tag::UniversalBMPString)
 {
 }
 
@@ -1709,7 +1721,7 @@ const char * BMPStringType::GetAncestorClass() const
 
 
 GeneralStringType::GeneralStringType()
-  : TypeBase(Tag::UniversalGeneralString)
+  : StringTypeBase(Tag::UniversalGeneralString)
 {
 }
 
@@ -1721,7 +1733,7 @@ const char * GeneralStringType::GetAncestorClass() const
 
 
 GraphicStringType::GraphicStringType()
-  : TypeBase(Tag::UniversalGraphicString)
+  : StringTypeBase(Tag::UniversalGraphicString)
 {
 }
 
@@ -1733,7 +1745,7 @@ const char * GraphicStringType::GetAncestorClass() const
 
 
 IA5StringType::IA5StringType()
-  : TypeBase(Tag::UniversalIA5String)
+  : StringTypeBase(Tag::UniversalIA5String)
 {
 }
 
@@ -1745,7 +1757,7 @@ const char * IA5StringType::GetAncestorClass() const
 
 
 ISO646StringType::ISO646StringType()
-  : TypeBase(Tag::UniversalVisibleString)
+  : StringTypeBase(Tag::UniversalVisibleString)
 {
 }
 
@@ -1757,7 +1769,7 @@ const char * ISO646StringType::GetAncestorClass() const
 
 
 NumericStringType::NumericStringType()
-  : TypeBase(Tag::UniversalNumericString)
+  : StringTypeBase(Tag::UniversalNumericString)
 {
 }
 
@@ -1769,7 +1781,7 @@ const char * NumericStringType::GetAncestorClass() const
 
 
 PrintableStringType::PrintableStringType()
-  : TypeBase(Tag::UniversalPrintableString)
+  : StringTypeBase(Tag::UniversalPrintableString)
 {
 }
 
@@ -1781,7 +1793,7 @@ const char * PrintableStringType::GetAncestorClass() const
 
 
 TeletexStringType::TeletexStringType()
-  : TypeBase(Tag::UniversalTeletexString)
+  : StringTypeBase(Tag::UniversalTeletexString)
 {
 }
 
@@ -1793,7 +1805,7 @@ const char * TeletexStringType::GetAncestorClass() const
 
 
 T61StringType::T61StringType()
-  : TypeBase(Tag::UniversalTeletexString)
+  : StringTypeBase(Tag::UniversalTeletexString)
 {
 }
 
@@ -1805,7 +1817,7 @@ const char * T61StringType::GetAncestorClass() const
 
 
 UniversalStringType::UniversalStringType()
-  : TypeBase(Tag::UniversalUniversalString)
+  : StringTypeBase(Tag::UniversalUniversalString)
 {
 }
 
@@ -1817,7 +1829,7 @@ const char * UniversalStringType::GetAncestorClass() const
 
 
 VideotexStringType::VideotexStringType()
-  : TypeBase(Tag::UniversalVideotexString)
+  : StringTypeBase(Tag::UniversalVideotexString)
 {
 }
 
@@ -1829,7 +1841,7 @@ const char * VideotexStringType::GetAncestorClass() const
 
 
 VisibleStringType::VisibleStringType()
-  : TypeBase(Tag::UniversalVisibleString)
+  : StringTypeBase(Tag::UniversalVisibleString)
 {
 }
 
@@ -1841,7 +1853,7 @@ const char * VisibleStringType::GetAncestorClass() const
 
 
 UnrestrictedCharacterStringType::UnrestrictedCharacterStringType()
-  : TypeBase(Tag::UniversalUniversalString)
+  : StringTypeBase(Tag::UniversalUniversalString)
 {
 }
 
@@ -2020,6 +2032,36 @@ BitStringValue::BitStringValue(PStringList * newVal)
 }
 
 
+CharacterValue::CharacterValue(BYTE c)
+{
+  value = c;
+}
+
+
+CharacterValue::CharacterValue(BYTE t1, BYTE t2)
+{
+  value = (t1<<8) + t2;
+}
+
+
+CharacterValue::CharacterValue(BYTE q1, BYTE q2, BYTE q3, BYTE q4)
+{
+  value = (q1<<24) + (q2<<16) + (q3<<8) + q4;
+}
+
+
+void CharacterValue::PrintOn(ostream & strm) const
+{
+  strm << "'\\x" << hex << value << '\'';
+}
+
+
+void CharacterValue::GenerateCplusplus(ostream &, ostream & cxx)
+{
+  cxx << value;
+}
+
+
 CharacterStringValue::CharacterStringValue(PString * newVal)
 {
   value = *newVal;
@@ -2082,7 +2124,7 @@ void MinValue::PrintOn(ostream & strm) const
 
 void MinValue::GenerateCplusplus(ostream &, ostream & cxx)
 {
-  cxx << "INT_MIN";
+  cxx << "MinimumValue";
 }
 
 
@@ -2094,7 +2136,28 @@ void MaxValue::PrintOn(ostream & strm) const
 
 void MaxValue::GenerateCplusplus(ostream &, ostream & cxx)
 {
-  cxx << "INT_MAX";
+  cxx << "MaximumValue";
+}
+
+
+SequenceValue::SequenceValue(ValuesList * list)
+{
+  if (list != NULL) {
+    values = *list;
+    delete list;
+  }
+}
+
+
+void SequenceValue::PrintOn(ostream & strm) const
+{
+  strm << "{ ";
+  for (PINDEX i = 0; i < values.GetSize(); i++) {
+    if (i > 0)
+      strm << ", ";
+    strm << values[i];
+  }
+  strm << " }";
 }
 
 
