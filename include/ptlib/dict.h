@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.13 1996/02/03 11:00:28 robertj Exp $
+ * $Id: dict.h,v 1.14 1996/02/08 11:50:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.14  1996/02/08 11:50:01  robertj
+ * Moved Contains function from PSet to PHashTable so available for dictionaries.
+ * Added print for dictionaries key=data\n.
+ * Added GetAt(PINDEX) to template classes to make identical to macro.
+ *
  * Revision 1.13  1996/02/03 11:00:28  robertj
  * Temporary removal of SetAt() and GetAt() functions in dictionary macro.
  *
@@ -139,6 +144,20 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
        <H2>Returns:</H2>
        comparison of the two objects, <CODE>EqualTo</CODE> if the same
        reference and <CODE>GreaterThan</CODE> if not.
+     */
+
+
+  // New functions for class
+    BOOL Contains(
+      const PObject & key   // Key to look for in the set.
+    ) const;
+    /* Determine if the value of the object is contained in the hash table. The
+       object values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
+
+       <H2>Returns:</H2>
+       TRUE if the object value is in the set.
      */
 
 
@@ -302,6 +321,15 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
        TRUE if the object was in the collection.
      */
 
+    virtual PObject * GetAt(
+      PINDEX index  // Index position in the collection of the object.
+    ) const;
+    /* This function is the same as PHashTable::AbstractGetKeyAt().
+
+       <H2>Returns:</H2>
+       Always NULL.
+     */
+
     virtual BOOL SetAt(
       PINDEX index,   // Index position in collection to set.
       PObject * val   // New value to place into the collection.
@@ -347,33 +375,11 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
      */
 
 
-  // New functions for class
-    BOOL Contains(
-      const PObject & key   // Key to look for in the set.
-    );
-    /* Determine if the value of the object is contained in the set. The
-       object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
-       function. The hash table is used to locate the entry.
-
-       <H2>Returns:</H2>
-       TRUE if the object value is in the set.
-     */
-
   private:
     virtual PObject * RemoveAt(
       PINDEX index   // Index position in collection to place the object.
     );
     /* This function is meaningless and will assert if executed.
-
-       <H2>Returns:</H2>
-       Always NULL.
-     */
-
-    virtual PObject * GetAt(
-      PINDEX index  // Index position in the collection of the object.
-    ) const;
-    /* This function is meaningless.
 
        <H2>Returns:</H2>
        Always NULL.
@@ -546,6 +552,18 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        Note that by default, objects placed into the dictionary will be deleted
        when removed or when all references to the dictionary are destroyed.
      */
+
+  // Overrides from class PObject
+    virtual void PrintOn(
+      ostream &strm   // Stream to print the object into.
+    ) const;
+    /* Output the contents of the object to the stream. The exact output is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard <CODE><A>operator<<</A></CODE> function.
+
+       The default behaviour is to print the class name.
+     */
+
 
   // Overrides from class PCollection
     virtual PINDEX Insert(
