@@ -1,8 +1,12 @@
 LIBRARY ptlib
 EXPORTS
     ??0?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVPProcessStartup@@@1@@Z @4940 NONAME
+    ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@1@@Z @5838 NONAME
     ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@1@@Z @5591 NONAME
     ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@1@@Z @5592 NONAME
+    ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@1@@Z @5839 NONAME
+    ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@1@@Z @5840 NONAME
+    ??0?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@std@@QAE@ABU?$less@VPString@@@1@ABV?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@1@@Z @5841 NONAME
     ??0?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@QAE@ABU01@@Z @5593 NONAME
     ??0?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@QAE@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@ABQAVPFactoryBase@@@Z @5594 NONAME
     ??0?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@QAE@ABU01@@Z @4944 NONAME
@@ -12,6 +16,9 @@ EXPORTS
     ??0?$pair@Viterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@_N@std@@QAE@ABViterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@1@AB_N@Z @5597 NONAME
     ??0?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@_N@std@@QAE@ABViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@1@AB_N@Z @4857 NONAME
     ??0?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@_N@std@@QAE@ABViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@1@AB_N@Z @5598 NONAME
+    ??0?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@_N@std@@QAE@ABViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@1@AB_N@Z @5842 NONAME
+    ??0?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@_N@std@@QAE@ABViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@1@AB_N@Z @5843 NONAME
+    ??0?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@_N@std@@QAE@ABViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@1@AB_N@Z @5844 NONAME
     ??0?$pair@VPString@@PAVPProcessStartup@@@std@@QAE@ABVPString@@ABQAVPProcessStartup@@@Z @4949 NONAME
     ??0?$PArray@VPString@@@@IAE@HPBV0@@Z @4950 NONAME
     ??0?$PArray@VPString@@@@QAE@ABV0@@Z @1 NONAME
@@ -36,6 +43,7 @@ EXPORTS
     ??0?$PDictionary@VPString@@VPDynaLink@@@@IAE@HPBV0@@Z @4961 NONAME
     ??0?$PDictionary@VPString@@VPDynaLink@@@@QAE@ABV0@@Z @4962 NONAME
     ??0?$PDictionary@VPString@@VPDynaLink@@@@QAE@XZ @4963 NONAME
+    ??0?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@IAE@XZ @5845 NONAME
     ??0?$PFactory@VPPluginModuleManager@@VPString@@@@IAE@XZ @5599 NONAME
     ??0?$PFactory@VPProcessStartup@@VPString@@@@IAE@XZ @5600 NONAME
     ??0?$PList@VPDynaLink@@@@IAE@HPBV0@@Z @4966 NONAME
@@ -60,6 +68,7 @@ EXPORTS
     ??0?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAE@ABV?$allocator@VPString@@@1@@Z @4992 NONAME
     ??0?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@QAE@ABVPString@@_N@Z @5601 NONAME
     ??0?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE@ABU?$less@VPString@@@1@_NABV?$allocator@PAVPProcessStartup@@@1@@Z @4859 NONAME
+    ??0?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@ABU?$less@VPString@@@1@_NABV?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@1@@Z @5846 NONAME
     ??0?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@ABU?$less@VPString@@@1@_NABV?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@1@@Z @5602 NONAME
     ??0?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE@ABU?$less@VPString@@@1@_NABV?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@1@@Z @5603 NONAME
     ??0Address@PEthSocket@@QAE@ABT01@@Z @17 NONAME
@@ -86,6 +95,8 @@ EXPORTS
     ??0CMCDLL@PMail@@QAE@XZ @36 NONAME
     ??0CMC_message_reference_ptr@@QAE@ABVPString@@@Z @37 NONAME
     ??0const_iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE@ABViterator@12@@Z @5604 NONAME
+    ??0const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@ABViterator@12@@Z @5847 NONAME
+    ??0const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@XZ @5848 NONAME
     ??0const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@ABViterator@12@@Z @5605 NONAME
     ??0const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@XZ @5606 NONAME
     ??0const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE@ABViterator@12@@Z @5607 NONAME
@@ -96,6 +107,8 @@ EXPORTS
     ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @42 NONAME
     ??0iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE@PAU_Node@12@@Z @5610 NONAME
     ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE@PAU_Node@12@@Z @5003 NONAME
+    ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@PAU_Node@12@@Z @5849 NONAME
+    ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@XZ @5850 NONAME
     ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@PAU_Node@12@@Z @5611 NONAME
     ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@XZ @5612 NONAME
     ??0iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE@PAU_Node@12@@Z @5613 NONAME
@@ -231,9 +244,9 @@ EXPORTS
     ??0PRemoteConnection@@QAE@XZ @123 NONAME
     ??0PSafeCollection@@QAE@PAVPCollection@@@Z @124 NONAME
     ??0PSafeObject@@QAE@XZ @125 NONAME
-    ??0PSafePtrBase@@IAE@AAVPSafeCollection@@W4PSafetyMode@@H@Z @126 NONAME
-    ??0PSafePtrBase@@IAE@AAVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @127 NONAME
     ??0PSafePtrBase@@IAE@ABV0@@Z @128 NONAME
+    ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@H@Z @5851 NONAME
+    ??0PSafePtrBase@@IAE@ABVPSafeCollection@@W4PSafetyMode@@PAVPSafeObject@@@Z @5852 NONAME
     ??0PSafePtrBase@@IAE@PAVPSafeObject@@W4PSafetyMode@@@Z @129 NONAME
     ??0PSemaphore@@IAE@PAX@Z @130 NONAME
     ??0PSemaphore@@QAE@ABV0@@Z @131 NONAME
@@ -389,7 +402,6 @@ EXPORTS
     ??0P_YUV420P_YUV411P_Registration@@QAE@XZ @257 NONAME
     ??0P_YUV422_YUV420P_Registration@@QAE@XZ @258 NONAME
     ??0P_YUV422_YUV422_Registration@@QAE@XZ @259 NONAME
-    ??0Reference@PContainer@@QAE@H@Z @4834 NONAME
     ??0RegistryKey@@QAE@ABVPString@@W4OpenMode@0@@Z @260 NONAME
     ??0SecurityID@@QAE@PAU_SID_IDENTIFIER_AUTHORITY@@EKKKKKKKK@Z @5428 NONAME
     ??0SecurityID@@QAE@PBD0PADPAKPAW4_SID_NAME_USE@@@Z @262 NONAME
@@ -397,12 +409,20 @@ EXPORTS
     ??0__SMANIP_int@@QAE@P6AAAVios@@AAV1@H@ZH@Z @5040 NONAME
     ??1?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE@XZ @5617 NONAME
     ??1?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@std@@QAE@XZ @4863 NONAME
+    ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QAE@XZ @5853 NONAME
     ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QAE@XZ @5618 NONAME
     ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAE@XZ @5619 NONAME
+    ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@std@@QAE@XZ @5854 NONAME
+    ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@std@@QAE@XZ @5855 NONAME
+    ??1?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@std@@QAE@XZ @5856 NONAME
     ??1?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@std@@QAE@XZ @5620 NONAME
     ??1?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@QAE@XZ @4866 NONAME
+    ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@QAE@XZ @5857 NONAME
     ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@QAE@XZ @5621 NONAME
     ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@QAE@XZ @5622 NONAME
+    ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@QAE@XZ @5858 NONAME
+    ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@QAE@XZ @5859 NONAME
+    ??1?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@QAE@XZ @5860 NONAME
     ??1?$pair@VPString@@PAVPProcessStartup@@@std@@QAE@XZ @4869 NONAME
     ??1?$PArray@VPString@@@@UAE@XZ @263 NONAME
     ??1?$PArray@VPWaveBuffer@@@@UAE@XZ @264 NONAME
@@ -417,17 +437,25 @@ EXPORTS
     ??1?$PBaseArray@K@@UAE@XZ @273 NONAME
     ??1?$PBaseArray@PAVElement@PHashTable@@@@UAE@XZ @274 NONAME
     ??1?$PBaseArray@PAVPObject@@@@UAE@XZ @275 NONAME
+    ??1?$PDevicePluginAdapter@VPSoundChannel@@@@UAE@XZ @5861 NONAME
+    ??1?$PDevicePluginAdapter@VPVideoInputDevice@@@@UAE@XZ @5862 NONAME
+    ??1?$PDevicePluginAdapter@VPVideoOutputDevice@@@@UAE@XZ @5863 NONAME
     ??1?$PDictionary@VPCaselessString@@VPIPCacheData@@@@UAE@XZ @276 NONAME
     ??1?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAE@XZ @277 NONAME
     ??1?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@UAE@XZ @278 NONAME
     ??1?$PDictionary@VPOrdinalKey@@VPPointer@@@@UAE@XZ @4787 NONAME
     ??1?$PDictionary@VPOrdinalKey@@VPThread@@@@UAE@XZ @279 NONAME
     ??1?$PDictionary@VPString@@VPDynaLink@@@@UAE@XZ @4723 NONAME
+    ??1?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MAE@XZ @5864 NONAME
     ??1?$PFactory@VPPluginModuleManager@@VPString@@@@MAE@XZ @5623 NONAME
     ??1?$PFactory@VPProcessStartup@@VPString@@@@MAE@XZ @5624 NONAME
+    ??1?$PFactory@VPSoundChannel@@VPString@@@@MAE@XZ @5865 NONAME
+    ??1?$PFactory@VPVideoInputDevice@@VPString@@@@MAE@XZ @5866 NONAME
+    ??1?$PFactory@VPVideoOutputDevice@@VPString@@@@MAE@XZ @5867 NONAME
     ??1?$PList@VPDynaLink@@@@UAE@XZ @3033 NONAME
     ??1?$PList@VPNotifier@@@@UAE@XZ @3034 NONAME
     ??1?$PList@VPPluginService@@@@UAE@XZ @2682 NONAME
+    ??1?$PList@VPSafeObject@@@@UAE@XZ @5868 NONAME
     ??1?$PList@VPSocket@@@@UAE@XZ @280 NONAME
     ??1?$PList@VPString@@@@UAE@XZ @281 NONAME
     ??1?$PList@VPThread@@@@UAE@XZ @282 NONAME
@@ -445,9 +473,13 @@ EXPORTS
     ??1?$PStringDictionary@VPString@@@@UAE@XZ @294 NONAME
     ??1?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@XZ @5047 NONAME
     ??1?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAE@XZ @4870 NONAME
+    ??1?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@UAE@XZ @5869 NONAME
+    ??1?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@UAE@XZ @5870 NONAME
+    ??1?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@UAE@XZ @5871 NONAME
     ??1?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@UAE@XZ @5625 NONAME
     ??1?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@UAE@XZ @5626 NONAME
     ??1?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE@XZ @4871 NONAME
+    ??1?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE@XZ @5872 NONAME
     ??1?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE@XZ @5627 NONAME
     ??1?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE@XZ @5628 NONAME
     ??1Address@PIPSocket@@UAE@XZ @295 NONAME
@@ -643,7 +675,14 @@ EXPORTS
     ??1SelectList@PSocket@@UAE@XZ @464 NONAME
     ??1Table@PHashTable@@UAE@XZ @465 NONAME
     ??1WinSNMPLoader@@UAE@XZ @5437 NONAME
+    ??1Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@UAE@XZ @5873 NONAME
+    ??1Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@UAE@XZ @5874 NONAME
+    ??1Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@UAE@XZ @5875 NONAME
+    ??1WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MAE@XZ @5876 NONAME
     ??1WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@MAE@XZ @5631 NONAME
+    ??1WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@MAE@XZ @5877 NONAME
+    ??1WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@MAE@XZ @5878 NONAME
+    ??1WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@MAE@XZ @5879 NONAME
     ??2@YAPAXIPAX@Z @5052 NONAME
     ??3@YAXPAX0@Z @4873 NONAME
     ??4?$PArray@VPString@@@@QAEAAV0@ABV0@@Z @5053 NONAME
@@ -652,9 +691,9 @@ EXPORTS
     ??4?$PBaseArray@F@@QAEAAV0@ABV0@@Z @518 NONAME
     ??4?$PBaseArray@G@@QAEAAV0@ABV0@@Z @519 NONAME
     ??4?$PBaseArray@H@@QAEAAV0@ABV0@@Z @520 NONAME
+    ??4?$PBaseArray@I@@QAEAAV0@ABV0@@Z @5880 NONAME
     ??4?$PBaseArray@J@@QAEAAV0@ABV0@@Z @521 NONAME
     ??4?$PList@VPString@@@@QAEAAV0@ABV0@@Z @5054 NONAME
-    ??4?$PScalarArray@I@@QAEAAV0@ABV0@@Z @522 NONAME
     ??4?$PScalarArray@K@@QAEAAV0@ABV0@@Z @523 NONAME
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @524 NONAME
     ??4Address@PEthSocket@@QAEAAT01@ABVPString@@@Z @525 NONAME
@@ -731,10 +770,12 @@ EXPORTS
     ??8Address@PIPSocket@@QBE_NAAUin_addr@@@Z @4757 NONAME
     ??8Address@PIPSocket@@QBE_NK@Z @4758 NONAME
     ??8const_iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBE_NABV012@@Z @5632 NONAME
+    ??8const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5881 NONAME
     ??8const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5633 NONAME
     ??8const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5634 NONAME
     ??8iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBE_NABV012@@Z @5635 NONAME
     ??8iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBE_NABV012@@Z @5066 NONAME
+    ??8iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5882 NONAME
     ??8iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5636 NONAME
     ??8iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5637 NONAME
     ??8PObject@@QBE_NABV0@@Z @5069 NONAME
@@ -744,9 +785,11 @@ EXPORTS
     ??8PTimeInterval@@QBE_NJ@Z @4762 NONAME
     ??9Address@PEthSocket@@QBE_NPBE@Z @4763 NONAME
     ??9const_iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBE_NABV012@@Z @5638 NONAME
+    ??9const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5883 NONAME
     ??9const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5639 NONAME
     ??9const_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5640 NONAME
     ??9iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBE_NABV012@@Z @5072 NONAME
+    ??9iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5884 NONAME
     ??9iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5641 NONAME
     ??9iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBE_NABV012@@Z @5642 NONAME
     ??9PString@@QBE_NABVPObject@@@Z @4764 NONAME
@@ -755,10 +798,12 @@ EXPORTS
     ??9PTimeInterval@@QBE_NJ@Z @4767 NONAME
     ??A?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAEAAPAVPFactoryBase@@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@1@@Z @5643 NONAME
     ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@ABVPString@@@Z @5644 NONAME
+    ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@ABVPString@@@Z @5885 NONAME
+    ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@ABVPString@@@Z @5886 NONAME
+    ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@ABVPString@@@Z @5887 NONAME
     ??A?$PArray@VPString@@@@QBEAAVPString@@H@Z @5076 NONAME
     ??A?$PBaseArray@D@@QAEAADH@Z @5077 NONAME
     ??A?$PBaseArray@D@@QBEDH@Z @5078 NONAME
-    ??A?$PBaseArray@G@@QAEAAGH@Z @568 NONAME
     ??A?$PBaseArray@H@@QAEAAHH@Z @5079 NONAME
     ??A?$PBaseArray@H@@QBEHH@Z @5080 NONAME
     ??A?$PBaseArray@I@@QAEAAIH@Z @570 NONAME
@@ -782,24 +827,32 @@ EXPORTS
     ??BPOrdinalKey@@QBEHXZ @4578 NONAME
     ??BPString@@QBEPBEXZ @4579 NONAME
     ??Cconst_iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBEPBU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@XZ @5645 NONAME
+    ??Cconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBEPBU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@XZ @5888 NONAME
     ??Cconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBEPBU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@2@XZ @5646 NONAME
     ??Cconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBEPBU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@XZ @5647 NONAME
     ??Citerator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBEPAU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@XZ @5091 NONAME
     ??Dconst_iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBEABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@XZ @5648 NONAME
+    ??Dconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBEABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@XZ @5889 NONAME
     ??Dconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBEABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@2@XZ @5649 NONAME
     ??Dconst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBEABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@XZ @5650 NONAME
     ??Diterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBEAAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@XZ @5651 NONAME
     ??Diterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBEAAU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@XZ @5094 NONAME
     ??Diterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBEAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@XZ @5652 NONAME
     ??DPTimeInterval@@QBE?AV0@H@Z @4580 NONAME
+    ??Econst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAEAAV012@XZ @5890 NONAME
     ??Econst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAEAAV012@XZ @5653 NONAME
     ??Econst_iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAEAAV012@XZ @5654 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AV012@H@Z @5098 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAEAAV012@XZ @5099 NONAME
+    ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5891 NONAME
+    ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAEAAV012@XZ @5892 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5655 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAEAAV012@XZ @5656 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5657 NONAME
     ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAEAAV012@XZ @5658 NONAME
+    ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5893 NONAME
+    ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5894 NONAME
+    ??Eiterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAE?AV012@H@Z @5895 NONAME
     ??EPIntCondMutex@@QAEAAV0@XZ @580 NONAME
     ??EPOrdinalKey@@QAEHH@Z @4581 NONAME
     ??EPOrdinalKey@@QAEHXZ @4582 NONAME
@@ -853,6 +906,7 @@ EXPORTS
     ??RPString@@QBE?AV0@HH@Z @596 NONAME
     ??R_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBEABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@@Z @5661 NONAME
     ??R_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@std@@QBEABVPString@@ABU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@@Z @5107 NONAME
+    ??R_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QBEABVPString@@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@@Z @5896 NONAME
     ??R_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QBEABVPString@@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@2@@Z @5662 NONAME
     ??R_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QBEABVPString@@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@@Z @5663 NONAME
     ??XPString@@QBE_NABV0@@Z @4784 NONAME
@@ -895,17 +949,25 @@ EXPORTS
     ??_7?$PBaseArray@J@@6B@ @620 NONAME
     ??_7?$PBaseArray@K@@6B@ @621 NONAME
     ??_7?$PBaseArray@PAVPObject@@@@6B@ @622 NONAME
+    ??_7?$PDevicePluginAdapter@VPSoundChannel@@@@6B@ @5897 NONAME
+    ??_7?$PDevicePluginAdapter@VPVideoInputDevice@@@@6B@ @5898 NONAME
+    ??_7?$PDevicePluginAdapter@VPVideoOutputDevice@@@@6B@ @5899 NONAME
     ??_7?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @623 NONAME
     ??_7?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@6B@ @624 NONAME
     ??_7?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@6B@ @625 NONAME
     ??_7?$PDictionary@VPOrdinalKey@@VPPointer@@@@6B@ @4790 NONAME
     ??_7?$PDictionary@VPOrdinalKey@@VPThread@@@@6B@ @626 NONAME
     ??_7?$PDictionary@VPString@@VPDynaLink@@@@6B@ @4726 NONAME
+    ??_7?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5900 NONAME
     ??_7?$PFactory@VPPluginModuleManager@@VPString@@@@6B@ @5664 NONAME
     ??_7?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5665 NONAME
+    ??_7?$PFactory@VPSoundChannel@@VPString@@@@6B@ @5901 NONAME
+    ??_7?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @5902 NONAME
+    ??_7?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @5903 NONAME
     ??_7?$PList@VPDynaLink@@@@6B@ @3035 NONAME
     ??_7?$PList@VPNotifier@@@@6B@ @3036 NONAME
     ??_7?$PList@VPPluginService@@@@6B@ @2689 NONAME
+    ??_7?$PList@VPSafeObject@@@@6B@ @5904 NONAME
     ??_7?$PList@VPSocket@@@@6B@ @627 NONAME
     ??_7?$PList@VPString@@@@6B@ @5111 NONAME
     ??_7?$PList@VPThread@@@@6B@ @629 NONAME
@@ -917,6 +979,9 @@ EXPORTS
     ??_7?$PScalarArray@J@@6B@ @635 NONAME
     ??_7?$PScalarArray@K@@6B@ @636 NONAME
     ??_7?$PSet@VPString@@@@6B@ @637 NONAME
+    ??_7?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5905 NONAME
+    ??_7?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5906 NONAME
+    ??_7?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5907 NONAME
     ??_7?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5666 NONAME
     ??_7?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5667 NONAME
     ??_7Address@PIPSocket@@6B@ @638 NONAME
@@ -955,6 +1020,7 @@ EXPORTS
     ??_7PContainer@@6B@ @670 NONAME
     ??_7PCriticalSection@@6B@ @4624 NONAME
     ??_7PDebugStream@@6B@ @671 NONAME
+    ??_7PDevicePluginAdapterBase@@6B@ @5908 NONAME
     ??_7PDirectory@@6B@ @672 NONAME
     ??_7PDynaLink@@6B@ @673 NONAME
     ??_7PEthSocket@@6Biostream@@@ @674 NONAME
@@ -1120,7 +1186,14 @@ EXPORTS
     ??_7Table@PHashTable@@6B@ @817 NONAME
     ??_7Win95_ServiceManager@@6B@ @818 NONAME
     ??_7WinSNMPLoader@@6B@ @5438 NONAME
+    ??_7Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@6B@ @5909 NONAME
+    ??_7Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@6B@ @5910 NONAME
+    ??_7Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@6B@ @5911 NONAME
+    ??_7WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5912 NONAME
     ??_7WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5669 NONAME
+    ??_7WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@6B@ @5913 NONAME
+    ??_7WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @5914 NONAME
+    ??_7WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @5915 NONAME
     ??_8PChannel@@7Bistream@@@ @819 NONAME
     ??_8PChannel@@7Bostream@@@ @820 NONAME
     ??_8PConsoleChannel@@7Bistream@@@ @821 NONAME
@@ -1184,17 +1257,25 @@ EXPORTS
     ??_R0?AV?$PBaseArray@K@@@8 @3060 NONAME
     ??_R0?AV?$PBaseArray@PAVElement@PHashTable@@@@@8 @3061 NONAME
     ??_R0?AV?$PBaseArray@PAVPObject@@@@@8 @3062 NONAME
+    ??_R0?AV?$PDevicePluginAdapter@VPSoundChannel@@@@@8 @5916 NONAME
+    ??_R0?AV?$PDevicePluginAdapter@VPVideoInputDevice@@@@@8 @5917 NONAME
+    ??_R0?AV?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@8 @5918 NONAME
     ??_R0?AV?$PDictionary@VPCaselessString@@VPIPCacheData@@@@@8 @3063 NONAME
     ??_R0?AV?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@@8 @3064 NONAME
     ??_R0?AV?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@@8 @3065 NONAME
     ??_R0?AV?$PDictionary@VPOrdinalKey@@VPPointer@@@@@8 @4793 NONAME
     ??_R0?AV?$PDictionary@VPOrdinalKey@@VPThread@@@@@8 @3066 NONAME
     ??_R0?AV?$PDictionary@VPString@@VPDynaLink@@@@@8 @4729 NONAME
+    ??_R0?AV?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@8 @5919 NONAME
     ??_R0?AV?$PFactory@VPPluginModuleManager@@VPString@@@@@8 @5670 NONAME
     ??_R0?AV?$PFactory@VPProcessStartup@@VPString@@@@@8 @5671 NONAME
+    ??_R0?AV?$PFactory@VPSoundChannel@@VPString@@@@@8 @5920 NONAME
+    ??_R0?AV?$PFactory@VPVideoInputDevice@@VPString@@@@@8 @5921 NONAME
+    ??_R0?AV?$PFactory@VPVideoOutputDevice@@VPString@@@@@8 @5922 NONAME
     ??_R0?AV?$PList@VPDynaLink@@@@@8 @3067 NONAME
     ??_R0?AV?$PList@VPNotifier@@@@@8 @3068 NONAME
     ??_R0?AV?$PList@VPPluginService@@@@@8 @3069 NONAME
+    ??_R0?AV?$PList@VPSafeObject@@@@@8 @5923 NONAME
     ??_R0?AV?$PList@VPSocket@@@@@8 @3070 NONAME
     ??_R0?AV?$PList@VPString@@@@@8 @3071 NONAME
     ??_R0?AV?$PList@VPThread@@@@@8 @3072 NONAME
@@ -1210,6 +1291,9 @@ EXPORTS
     ??_R0?AV?$PSortedList@VPString@@@@@8 @3082 NONAME
     ??_R0?AV?$PStringDictionary@VPOrdinalKey@@@@@8 @3083 NONAME
     ??_R0?AV?$PStringDictionary@VPString@@@@@8 @3084 NONAME
+    ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@8 @5924 NONAME
+    ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@8 @5925 NONAME
+    ??_R0?AV?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@8 @5926 NONAME
     ??_R0?AV?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@@8 @5672 NONAME
     ??_R0?AV?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@@8 @5673 NONAME
     ??_R0?AVAddress@PIPSocket@@@8 @3085 NONAME
@@ -1251,6 +1335,7 @@ EXPORTS
     ??_R0?AVPContainer@@@8 @3121 NONAME
     ??_R0?AVPCriticalSection@@@8 @4625 NONAME
     ??_R0?AVPDebugStream@@@8 @3122 NONAME
+    ??_R0?AVPDevicePluginAdapterBase@@@8 @5927 NONAME
     ??_R0?AVPDirectory@@@8 @3123 NONAME
     ??_R0?AVPDynaLink@@@8 @3124 NONAME
     ??_R0?AVPEthSocket@@@8 @3125 NONAME
@@ -1400,7 +1485,14 @@ EXPORTS
     ??_R0?AVTable@PHashTable@@@8 @3262 NONAME
     ??_R0?AVWin95_ServiceManager@@@8 @3263 NONAME
     ??_R0?AVWinSNMPLoader@@@8 @5439 NONAME
+    ??_R0?AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@@8 @5928 NONAME
+    ??_R0?AVWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@@8 @5929 NONAME
+    ??_R0?AVWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@@8 @5930 NONAME
+    ??_R0?AVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@8 @5931 NONAME
     ??_R0?AVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@8 @5675 NONAME
+    ??_R0?AVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@8 @5932 NONAME
+    ??_R0?AVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@8 @5933 NONAME
+    ??_R0?AVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@8 @5934 NONAME
     ??_R13?0A@A@iostream@@8 @3264 NONAME
     ??_R13?0A@A@istream@@8 @3265 NONAME
     ??_R1A@33BA@ios@@8 @3266 NONAME
@@ -1417,6 +1509,7 @@ EXPORTS
     ??_R1A@?0A@8PFactoryBase@@8 @5676 NONAME
     ??_R1A@?0A@8PHashTable@@8 @3277 NONAME
     ??_R1A@?0A@8PObject@@8 @3278 NONAME
+    ??_R1A@?0A@8WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5935 NONAME
     ??_R1A@?0A@8WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@8 @5677 NONAME
     ??_R1A@?0A@A@?$PArray@VPString@@@@8 @3279 NONAME
     ??_R1A@?0A@A@?$PArray@VPWaveBuffer@@@@8 @3280 NONAME
@@ -1431,17 +1524,25 @@ EXPORTS
     ??_R1A@?0A@A@?$PBaseArray@K@@8 @3289 NONAME
     ??_R1A@?0A@A@?$PBaseArray@PAVElement@PHashTable@@@@8 @3290 NONAME
     ??_R1A@?0A@A@?$PBaseArray@PAVPObject@@@@8 @3291 NONAME
+    ??_R1A@?0A@A@?$PDevicePluginAdapter@VPSoundChannel@@@@8 @5936 NONAME
+    ??_R1A@?0A@A@?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @5937 NONAME
+    ??_R1A@?0A@A@?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @5938 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @3292 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @3293 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@8 @3294 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPOrdinalKey@@VPPointer@@@@8 @4797 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPOrdinalKey@@VPThread@@@@8 @3295 NONAME
     ??_R1A@?0A@A@?$PDictionary@VPString@@VPDynaLink@@@@8 @4732 NONAME
+    ??_R1A@?0A@A@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5939 NONAME
     ??_R1A@?0A@A@?$PFactory@VPPluginModuleManager@@VPString@@@@8 @5678 NONAME
     ??_R1A@?0A@A@?$PFactory@VPProcessStartup@@VPString@@@@8 @5679 NONAME
+    ??_R1A@?0A@A@?$PFactory@VPSoundChannel@@VPString@@@@8 @5940 NONAME
+    ??_R1A@?0A@A@?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5941 NONAME
+    ??_R1A@?0A@A@?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5942 NONAME
     ??_R1A@?0A@A@?$PList@VPDynaLink@@@@8 @3296 NONAME
     ??_R1A@?0A@A@?$PList@VPNotifier@@@@8 @3297 NONAME
     ??_R1A@?0A@A@?$PList@VPPluginService@@@@8 @3298 NONAME
+    ??_R1A@?0A@A@?$PList@VPSafeObject@@@@8 @5943 NONAME
     ??_R1A@?0A@A@?$PList@VPSocket@@@@8 @3299 NONAME
     ??_R1A@?0A@A@?$PList@VPString@@@@8 @3300 NONAME
     ??_R1A@?0A@A@?$PList@VPThread@@@@8 @3301 NONAME
@@ -1457,6 +1558,9 @@ EXPORTS
     ??_R1A@?0A@A@?$PSortedList@VPString@@@@8 @3311 NONAME
     ??_R1A@?0A@A@?$PStringDictionary@VPOrdinalKey@@@@8 @3312 NONAME
     ??_R1A@?0A@A@?$PStringDictionary@VPString@@@@8 @3313 NONAME
+    ??_R1A@?0A@A@?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5944 NONAME
+    ??_R1A@?0A@A@?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5945 NONAME
+    ??_R1A@?0A@A@?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5946 NONAME
     ??_R1A@?0A@A@?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5680 NONAME
     ??_R1A@?0A@A@?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5681 NONAME
     ??_R1A@?0A@A@Address@PIPSocket@@8 @3314 NONAME
@@ -1495,6 +1599,7 @@ EXPORTS
     ??_R1A@?0A@A@PContainer@@8 @3347 NONAME
     ??_R1A@?0A@A@PCriticalSection@@8 @4626 NONAME
     ??_R1A@?0A@A@PDebugStream@@8 @3348 NONAME
+    ??_R1A@?0A@A@PDevicePluginAdapterBase@@8 @5947 NONAME
     ??_R1A@?0A@A@PDirectory@@8 @3349 NONAME
     ??_R1A@?0A@A@PDynaLink@@8 @3350 NONAME
     ??_R1A@?0A@A@PEthSocket@@8 @3351 NONAME
@@ -1643,7 +1748,14 @@ EXPORTS
     ??_R1A@?0A@A@Table@PHashTable@@8 @3488 NONAME
     ??_R1A@?0A@A@Win95_ServiceManager@@8 @3489 NONAME
     ??_R1A@?0A@A@WinSNMPLoader@@8 @5440 NONAME
+    ??_R1A@?0A@A@Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @5948 NONAME
+    ??_R1A@?0A@A@Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @5949 NONAME
+    ??_R1A@?0A@A@Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@8 @5950 NONAME
+    ??_R1A@?0A@A@WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5951 NONAME
     ??_R1A@?0A@A@WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@8 @5683 NONAME
+    ??_R1A@?0A@A@WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@8 @5952 NONAME
+    ??_R1A@?0A@A@WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5953 NONAME
+    ??_R1A@?0A@A@WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5954 NONAME
     ??_R1A@A@3BA@ios@@8 @3490 NONAME
     ??_R1A@BE@3BA@ios@@8 @3491 NONAME
     ??_R1BA@?0A@A@ostream@@8 @3492 NONAME
@@ -1662,17 +1774,25 @@ EXPORTS
     ??_R2?$PBaseArray@J@@8 @3505 NONAME
     ??_R2?$PBaseArray@K@@8 @3506 NONAME
     ??_R2?$PBaseArray@PAVPObject@@@@8 @3507 NONAME
+    ??_R2?$PDevicePluginAdapter@VPSoundChannel@@@@8 @5955 NONAME
+    ??_R2?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @5956 NONAME
+    ??_R2?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @5957 NONAME
     ??_R2?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @3508 NONAME
     ??_R2?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @3509 NONAME
     ??_R2?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@8 @3510 NONAME
     ??_R2?$PDictionary@VPOrdinalKey@@VPPointer@@@@8 @4800 NONAME
     ??_R2?$PDictionary@VPOrdinalKey@@VPThread@@@@8 @3511 NONAME
     ??_R2?$PDictionary@VPString@@VPDynaLink@@@@8 @4735 NONAME
+    ??_R2?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5958 NONAME
     ??_R2?$PFactory@VPPluginModuleManager@@VPString@@@@8 @5684 NONAME
     ??_R2?$PFactory@VPProcessStartup@@VPString@@@@8 @5685 NONAME
+    ??_R2?$PFactory@VPSoundChannel@@VPString@@@@8 @5959 NONAME
+    ??_R2?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5960 NONAME
+    ??_R2?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5961 NONAME
     ??_R2?$PList@VPDynaLink@@@@8 @3512 NONAME
     ??_R2?$PList@VPNotifier@@@@8 @3513 NONAME
     ??_R2?$PList@VPPluginService@@@@8 @3514 NONAME
+    ??_R2?$PList@VPSafeObject@@@@8 @5962 NONAME
     ??_R2?$PList@VPSocket@@@@8 @3515 NONAME
     ??_R2?$PList@VPString@@@@8 @5120 NONAME
     ??_R2?$PList@VPThread@@@@8 @3517 NONAME
@@ -1684,6 +1804,9 @@ EXPORTS
     ??_R2?$PScalarArray@J@@8 @3523 NONAME
     ??_R2?$PScalarArray@K@@8 @3524 NONAME
     ??_R2?$PSet@VPString@@@@8 @3525 NONAME
+    ??_R2?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5963 NONAME
+    ??_R2?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5964 NONAME
+    ??_R2?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5965 NONAME
     ??_R2?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5686 NONAME
     ??_R2?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5687 NONAME
     ??_R2Address@PIPSocket@@8 @3527 NONAME
@@ -1721,6 +1844,7 @@ EXPORTS
     ??_R2PContainer@@8 @3558 NONAME
     ??_R2PCriticalSection@@8 @4627 NONAME
     ??_R2PDebugStream@@8 @3559 NONAME
+    ??_R2PDevicePluginAdapterBase@@8 @5966 NONAME
     ??_R2PDirectory@@8 @3560 NONAME
     ??_R2PDynaLink@@8 @3561 NONAME
     ??_R2PEthSocket@@8 @3562 NONAME
@@ -1865,7 +1989,14 @@ EXPORTS
     ??_R2Table@PHashTable@@8 @3695 NONAME
     ??_R2Win95_ServiceManager@@8 @3696 NONAME
     ??_R2WinSNMPLoader@@8 @5441 NONAME
+    ??_R2Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @5967 NONAME
+    ??_R2Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @5968 NONAME
+    ??_R2Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@8 @5969 NONAME
+    ??_R2WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5970 NONAME
     ??_R2WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@8 @5689 NONAME
+    ??_R2WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@8 @5971 NONAME
+    ??_R2WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5972 NONAME
+    ??_R2WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5973 NONAME
     ??_R3?$PArray@VPString@@@@8 @3697 NONAME
     ??_R3?$PArray@VPWaveBuffer@@@@8 @3698 NONAME
     ??_R3?$PArray@VPWin32PacketBuffer@@@@8 @3699 NONAME
@@ -1878,17 +2009,25 @@ EXPORTS
     ??_R3?$PBaseArray@J@@8 @3706 NONAME
     ??_R3?$PBaseArray@K@@8 @3707 NONAME
     ??_R3?$PBaseArray@PAVPObject@@@@8 @3708 NONAME
+    ??_R3?$PDevicePluginAdapter@VPSoundChannel@@@@8 @5974 NONAME
+    ??_R3?$PDevicePluginAdapter@VPVideoInputDevice@@@@8 @5975 NONAME
+    ??_R3?$PDevicePluginAdapter@VPVideoOutputDevice@@@@8 @5976 NONAME
     ??_R3?$PDictionary@VPCaselessString@@VPIPCacheData@@@@8 @3709 NONAME
     ??_R3?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@8 @3710 NONAME
     ??_R3?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@8 @3711 NONAME
     ??_R3?$PDictionary@VPOrdinalKey@@VPPointer@@@@8 @4803 NONAME
     ??_R3?$PDictionary@VPOrdinalKey@@VPThread@@@@8 @3712 NONAME
     ??_R3?$PDictionary@VPString@@VPDynaLink@@@@8 @4738 NONAME
+    ??_R3?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5977 NONAME
     ??_R3?$PFactory@VPPluginModuleManager@@VPString@@@@8 @5690 NONAME
     ??_R3?$PFactory@VPProcessStartup@@VPString@@@@8 @5691 NONAME
+    ??_R3?$PFactory@VPSoundChannel@@VPString@@@@8 @5978 NONAME
+    ??_R3?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5979 NONAME
+    ??_R3?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5980 NONAME
     ??_R3?$PList@VPDynaLink@@@@8 @3713 NONAME
     ??_R3?$PList@VPNotifier@@@@8 @3714 NONAME
     ??_R3?$PList@VPPluginService@@@@8 @3715 NONAME
+    ??_R3?$PList@VPSafeObject@@@@8 @5981 NONAME
     ??_R3?$PList@VPSocket@@@@8 @3716 NONAME
     ??_R3?$PList@VPString@@@@8 @5129 NONAME
     ??_R3?$PList@VPThread@@@@8 @3718 NONAME
@@ -1900,6 +2039,9 @@ EXPORTS
     ??_R3?$PScalarArray@J@@8 @3724 NONAME
     ??_R3?$PScalarArray@K@@8 @3725 NONAME
     ??_R3?$PSet@VPString@@@@8 @3726 NONAME
+    ??_R3?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5982 NONAME
+    ??_R3?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5983 NONAME
+    ??_R3?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5984 NONAME
     ??_R3?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5692 NONAME
     ??_R3?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@8 @5693 NONAME
     ??_R3Address@PIPSocket@@8 @3728 NONAME
@@ -1937,6 +2079,7 @@ EXPORTS
     ??_R3PContainer@@8 @3759 NONAME
     ??_R3PCriticalSection@@8 @4628 NONAME
     ??_R3PDebugStream@@8 @3760 NONAME
+    ??_R3PDevicePluginAdapterBase@@8 @5985 NONAME
     ??_R3PDirectory@@8 @3761 NONAME
     ??_R3PDynaLink@@8 @3762 NONAME
     ??_R3PEthSocket@@8 @3763 NONAME
@@ -2081,7 +2224,14 @@ EXPORTS
     ??_R3Table@PHashTable@@8 @3896 NONAME
     ??_R3Win95_ServiceManager@@8 @3897 NONAME
     ??_R3WinSNMPLoader@@8 @5442 NONAME
+    ??_R3Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@8 @5986 NONAME
+    ??_R3Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@8 @5987 NONAME
+    ??_R3Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@8 @5988 NONAME
+    ??_R3WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@8 @5989 NONAME
     ??_R3WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@8 @5695 NONAME
+    ??_R3WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@8 @5990 NONAME
+    ??_R3WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@8 @5991 NONAME
+    ??_R3WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @5992 NONAME
     ??_R4?$PArray@VPString@@@@6B@ @3898 NONAME
     ??_R4?$PArray@VPWaveBuffer@@@@6B@ @3899 NONAME
     ??_R4?$PArray@VPWin32PacketBuffer@@@@6B@ @3900 NONAME
@@ -2094,17 +2244,25 @@ EXPORTS
     ??_R4?$PBaseArray@J@@6B@ @3907 NONAME
     ??_R4?$PBaseArray@K@@6B@ @3908 NONAME
     ??_R4?$PBaseArray@PAVPObject@@@@6B@ @3909 NONAME
+    ??_R4?$PDevicePluginAdapter@VPSoundChannel@@@@6B@ @5993 NONAME
+    ??_R4?$PDevicePluginAdapter@VPVideoInputDevice@@@@6B@ @5994 NONAME
+    ??_R4?$PDevicePluginAdapter@VPVideoOutputDevice@@@@6B@ @5995 NONAME
     ??_R4?$PDictionary@VPCaselessString@@VPIPCacheData@@@@6B@ @3910 NONAME
     ??_R4?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@6B@ @3911 NONAME
     ??_R4?$PDictionary@VPOrdinalKey@@VNest@PReadWriteMutex@@@@6B@ @3912 NONAME
     ??_R4?$PDictionary@VPOrdinalKey@@VPPointer@@@@6B@ @4806 NONAME
     ??_R4?$PDictionary@VPOrdinalKey@@VPThread@@@@6B@ @3913 NONAME
     ??_R4?$PDictionary@VPString@@VPDynaLink@@@@6B@ @4741 NONAME
+    ??_R4?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @5996 NONAME
     ??_R4?$PFactory@VPPluginModuleManager@@VPString@@@@6B@ @5696 NONAME
     ??_R4?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5697 NONAME
+    ??_R4?$PFactory@VPSoundChannel@@VPString@@@@6B@ @5997 NONAME
+    ??_R4?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @5998 NONAME
+    ??_R4?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @5999 NONAME
     ??_R4?$PList@VPDynaLink@@@@6B@ @3914 NONAME
     ??_R4?$PList@VPNotifier@@@@6B@ @3915 NONAME
     ??_R4?$PList@VPPluginService@@@@6B@ @3916 NONAME
+    ??_R4?$PList@VPSafeObject@@@@6B@ @6000 NONAME
     ??_R4?$PList@VPSocket@@@@6B@ @3917 NONAME
     ??_R4?$PList@VPString@@@@6B@ @5138 NONAME
     ??_R4?$PList@VPThread@@@@6B@ @3919 NONAME
@@ -2116,6 +2274,9 @@ EXPORTS
     ??_R4?$PScalarArray@J@@6B@ @3925 NONAME
     ??_R4?$PScalarArray@K@@6B@ @3926 NONAME
     ??_R4?$PSet@VPString@@@@6B@ @3927 NONAME
+    ??_R4?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @6001 NONAME
+    ??_R4?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @6002 NONAME
+    ??_R4?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @6003 NONAME
     ??_R4?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5698 NONAME
     ??_R4?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5699 NONAME
     ??_R4Address@PIPSocket@@6B@ @3929 NONAME
@@ -2155,6 +2316,7 @@ EXPORTS
     ??_R4PContainer@@6B@ @3962 NONAME
     ??_R4PCriticalSection@@6B@ @4629 NONAME
     ??_R4PDebugStream@@6B@ @3963 NONAME
+    ??_R4PDevicePluginAdapterBase@@6B@ @6004 NONAME
     ??_R4PDirectory@@6B@ @3964 NONAME
     ??_R4PDynaLink@@6B@ @3965 NONAME
     ??_R4PEthSocket@@6Biostream@@@ @3966 NONAME
@@ -2320,7 +2482,14 @@ EXPORTS
     ??_R4Table@PHashTable@@6B@ @4120 NONAME
     ??_R4Win95_ServiceManager@@6B@ @4121 NONAME
     ??_R4WinSNMPLoader@@6B@ @5443 NONAME
+    ??_R4Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@6B@ @6005 NONAME
+    ??_R4Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@6B@ @6006 NONAME
+    ??_R4Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@6B@ @6007 NONAME
+    ??_R4WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@6B@ @6008 NONAME
     ??_R4WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@6B@ @5701 NONAME
+    ??_R4WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@6B@ @6009 NONAME
+    ??_R4WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @6010 NONAME
+    ??_R4WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @6011 NONAME
     ??_Sofstream@@6B@ @867 NONAME
     ??_U@YAPAXI@Z @5444 NONAME
     ??_V@YAXPAX@Z @5445 NONAME
@@ -2360,8 +2529,8 @@ EXPORTS
     ?AsInt64@PString@@QBE_JI@Z @889 NONAME
     ?AsInteger@PString@@QBEJI@Z @890 NONAME
     ?AsReal@PString@@QBENXZ @891 NONAME
-    ?Assign@PSafePtrBase@@IAEXAAVPSafeCollection@@@Z @892 NONAME
     ?Assign@PSafePtrBase@@IAEXABV1@@Z @893 NONAME
+    ?Assign@PSafePtrBase@@IAEXABVPSafeCollection@@@Z @6012 NONAME
     ?Assign@PSafePtrBase@@IAEXH@Z @894 NONAME
     ?Assign@PSafePtrBase@@IAEXPAVPSafeObject@@@Z @895 NONAME
     ?AssignContents@PAbstractArray@@MAEXABVPContainer@@@Z @896 NONAME
@@ -2387,6 +2556,7 @@ EXPORTS
     ?AttachVideoPlayer@PVideoChannel@@UAEXPAVPVideoOutputDevice@@H@Z @916 NONAME
     ?AttachVideoReader@PVideoChannel@@UAEXPAVPVideoInputDevice@@H@Z @917 NONAME
     ?begin@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@2@XZ @5148 NONAME
+    ?begin@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@2@XZ @6013 NONAME
     ?begin@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@2@XZ @5702 NONAME
     ?begin@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@2@XZ @5703 NONAME
     ?begin@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAEPAPAVPPluginModuleManager@@XZ @5151 NONAME
@@ -2394,8 +2564,12 @@ EXPORTS
     ?begin@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QBEPBVPString@@XZ @5153 NONAME
     ?begin@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@12@XZ @5704 NONAME
     ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AViterator@12@XZ @4883 NONAME
+    ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @6014 NONAME
     ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @5705 NONAME
     ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @5706 NONAME
+    ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @6015 NONAME
+    ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @6016 NONAME
+    ?begin@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @6017 NONAME
     ?Begin@PTrace@@SAAAVostream@@IPBDH@Z @918 NONAME
     ?BeginRead@PWin32PacketSYS@@UAEHPAXKAAKAAVPWin32Overlapped@@@Z @919 NONAME
     ?BeginRead@PWin32PacketVxD@@UAEHPAXKAAKAAVPWin32Overlapped@@@Z @920 NONAME
@@ -2492,6 +2666,7 @@ EXPORTS
     ?Clone@?$PList@VPDynaLink@@@@UBEPAVPObject@@XZ @3039 NONAME
     ?Clone@?$PList@VPNotifier@@@@UBEPAVPObject@@XZ @3040 NONAME
     ?Clone@?$PList@VPPluginService@@@@UBEPAVPObject@@XZ @2703 NONAME
+    ?Clone@?$PList@VPSafeObject@@@@UBEPAVPObject@@XZ @6018 NONAME
     ?Clone@?$PList@VPSocket@@@@UBEPAVPObject@@XZ @958 NONAME
     ?Clone@?$PList@VPString@@@@UBEPAVPObject@@XZ @5237 NONAME
     ?Clone@?$PList@VPThread@@@@UBEPAVPObject@@XZ @960 NONAME
@@ -2588,6 +2763,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3041 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPNotifier@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3042 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPPluginService@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2708 NONAME
+    ?CompareObjectMemoryDirect@?$PList@VPSafeObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @6019 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1046 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @5243 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1048 NONAME
@@ -2779,8 +2955,11 @@ EXPORTS
     ?CopyContents@PHashTable@@IAEXABV1@@Z @1216 NONAME
     ?copy_backward@std@@YAPAPAVPPluginModuleManager@@PAPAV2@00@Z @5253 NONAME
     ?copy_backward@std@@YAPAVPString@@PAV2@00@Z @5254 NONAME
-    ?Create@?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@XZ @5707 NONAME
-    ?Create@?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@XZ @5708 NONAME
+    ?Create@?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MBEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6020 NONAME
+    ?Create@?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MBEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6021 NONAME
+    ?Create@?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MBEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6022 NONAME
+    ?Create@?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@ABVPString@@@Z @6023 NONAME
+    ?Create@?$Worker@VWinSNMPLoader@@@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@ABVPString@@@Z @6024 NONAME
     ?Create@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1217 NONAME
     ?Create@PColourConverter@@SAPAV1@ABVPString@@0II@Z @1218 NONAME
     ?Create@PDirectory@@QBEHH@Z @4642 NONAME
@@ -2812,18 +2991,31 @@ EXPORTS
     ?Create@P_YUV422_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1240 NONAME
     ?Create@P_YUV422_YUV422_Registration@@UBEPAVPColourConverter@@II@Z @1241 NONAME
     ?Create@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1242 NONAME
-    ?Create@WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@XZ @5709 NONAME
+    ?Create@Worker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@MBEPAVPSoundChannel@@ABVPString@@@Z @6025 NONAME
+    ?Create@Worker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@MBEPAVPVideoInputDevice@@ABVPString@@@Z @6026 NONAME
+    ?Create@Worker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@MBEPAVPVideoOutputDevice@@ABVPString@@@Z @6027 NONAME
+    ?Create@WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@MBEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6028 NONAME
+    ?Create@WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@MBEPAVPProcessStartup@@ABVPString@@@Z @6029 NONAME
+    ?Create@WorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@MBEPAVPSoundChannel@@ABVPString@@@Z @6030 NONAME
+    ?Create@WorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@MBEPAVPVideoInputDevice@@ABVPString@@@Z @6031 NONAME
+    ?Create@WorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@MBEPAVPVideoOutputDevice@@ABVPString@@@Z @6032 NONAME
     ?CreateChannel@PSoundChannel@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @2712 NONAME
     ?CreateChunk@PMultiMediaFile@@QAEHAAU_MMCKINFO@@I@Z @1243 NONAME
     ?CreateControlWindow@PServiceProcess@@AAEHH@Z @1244 NONAME
     ?CreateDevice@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @2713 NONAME
     ?CreateDevice@PVideoOutputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @2858 NONAME
     ?CreateDeviceByName@PVideoInputDevice@@SAPAV1@ABVPString@@PAVPPluginManager@@@Z @3013 NONAME
+    ?CreateFactory@?$PDevicePluginAdapter@VPSoundChannel@@@@UAEXABVPString@@@Z @6033 NONAME
+    ?CreateFactory@?$PDevicePluginAdapter@VPVideoInputDevice@@@@UAEXABVPString@@@Z @6034 NONAME
+    ?CreateFactory@?$PDevicePluginAdapter@VPVideoOutputDevice@@@@UAEXABVPString@@@Z @6035 NONAME
     ?CreateFullPath@PDirectory@@SA?AVPString@@ABV2@H@Z @1245 NONAME
+    ?CreateInstance@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@SAPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6036 NONAME
     ?CreateInstance@?$PFactory@VPPluginModuleManager@@VPString@@@@SAPAVPPluginModuleManager@@ABVPString@@@Z @5710 NONAME
     ?CreateInstance@?$PFactory@VPProcessStartup@@VPString@@@@SAPAVPProcessStartup@@ABVPString@@@Z @5711 NONAME
-    ?CreateInstance@WorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@IAEPAVPPluginModuleManager@@XZ @5712 NONAME
-    ?CreateInstance@WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@IAEPAVPProcessStartup@@XZ @5713 NONAME
+    ?CreateInstance@WorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@IAEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6037 NONAME
+    ?CreateInstance@WorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@IAEPAVPPluginModuleManager@@ABVPString@@@Z @6038 NONAME
+    ?CreateInstance@WorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@IAEPAVPProcessStartup@@ABVPString@@@Z @6039 NONAME
+    ?CreateInstance_Internal@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@IAEPAVPDevicePluginAdapterBase@@ABVPString@@@Z @6040 NONAME
     ?CreateInstance_Internal@?$PFactory@VPPluginModuleManager@@VPString@@@@IAEPAVPPluginModuleManager@@ABVPString@@@Z @5714 NONAME
     ?CreateInstance_Internal@?$PFactory@VPProcessStartup@@VPString@@@@IAEPAVPProcessStartup@@ABVPString@@@Z @5715 NONAME
     ?CreateOpenedChannel@PSoundChannel@@SAPAV1@ABVPString@@0W4Directions@1@III@Z @2714 NONAME
@@ -2837,6 +3029,7 @@ EXPORTS
     ?Current@WinSNMPLoader@@QAEAAVPWin32SnmpLibrary@@XZ @5450 NONAME
     ?deallocate@?$allocator@PAVPPluginModuleManager@@@std@@QAEXPAXI@Z @5257 NONAME
     ?deallocate@?$allocator@PAVPProcessStartup@@@std@@QAEXPAXI@Z @5258 NONAME
+    ?deallocate@?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@QAEXPAXI@Z @6041 NONAME
     ?deallocate@?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@QAEXPAXI@Z @5716 NONAME
     ?deallocate@?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@QAEXPAXI@Z @5717 NONAME
     ?deallocate@?$allocator@VPString@@@std@@QAEXPAXI@Z @5261 NONAME
@@ -2848,8 +3041,9 @@ EXPORTS
     ?DeleteKey@PConfig@@UAEXABVPString@@@Z @2969 NONAME
     ?DeleteKey@RegistryKey@@QAEHABVPString@@@Z @1256 NONAME
     ?DeleteMessage@PMail@@QAEHABVPString@@@Z @1257 NONAME
+    ?DeleteObject@PSafeCollection@@UBEXPAVPObject@@@Z @6042 NONAME
     ?DeleteObjectsTimeout@PSafeCollection@@MAEXAAVPTimer@@H@Z @1258 NONAME
-    ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEXXZ @1259 NONAME
+    ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEHXZ @6043 NONAME
     ?DeleteSection@PConfig@@UAEXABVPString@@@Z @2970 NONAME
     ?DeleteSection@PConfig@@UAEXXZ @2971 NONAME
     ?DeleteSubTrees@PAbstractSortedList@@IAEXPAUElement@1@H@Z @3018 NONAME
@@ -2871,6 +3065,7 @@ EXPORTS
     ?Empty@PString@@SA?AV1@XZ @3014 NONAME
     ?EnableAccess@PVideoChannel@@QAEXXZ @1275 NONAME
     ?end@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@XZ @5718 NONAME
+    ?end@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@2@XZ @6044 NONAME
     ?end@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@2@XZ @5719 NONAME
     ?end@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@2@XZ @5720 NONAME
     ?end@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAEPAPAVPPluginModuleManager@@XZ @5266 NONAME
@@ -2878,6 +3073,7 @@ EXPORTS
     ?end@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QBEPBVPString@@XZ @5268 NONAME
     ?end@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@12@XZ @5721 NONAME
     ?end@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AViterator@12@XZ @5269 NONAME
+    ?end@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @6045 NONAME
     ?end@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @5722 NONAME
     ?end@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@XZ @5723 NONAME
     ?End@PTrace@@SAAAVostream@@AAV2@@Z @1276 NONAME
@@ -2900,10 +3096,15 @@ EXPORTS
     ?erase@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@12@V312@@Z @5724 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AViterator@12@V312@0@Z @5273 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AViterator@12@V312@@Z @4888 NONAME
+    ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@0@Z @6046 NONAME
+    ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @6047 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@0@Z @5725 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @5726 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@0@Z @5727 NONAME
     ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @5728 NONAME
+    ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @6048 NONAME
+    ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @6049 NONAME
+    ?erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@V312@@Z @6050 NONAME
     ?ErrorHandler@PVideoInputDevice_VideoForWindows@@KGJPAUHWND__@@HPBD@Z @2716 NONAME
     ?EscapeString@PRegularExpression@@SA?AVPString@@ABV2@@Z @1292 NONAME
     ?Exclude@PStringSet@@QAEXABVPString@@@Z @4646 NONAME
@@ -2921,17 +3122,26 @@ EXPORTS
     ?Exists@PFile@@QBEHXZ @4649 NONAME
     ?Exists@PFile@@SAHABVPFilePath@@@Z @4650 NONAME
     ?ExitSafetyMode@PSafePtrBase@@IAEXW4ExitSafetyModeOption@1@@Z @1302 NONAME
+    ?factory@?1???0PPlugin_PSoundChannel_WindowsMultimedia_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPSoundChannel@@VPString@@@@A @6051 NONAME
+    ?factory@?1???0PPlugin_PVideoInputDevice_FakeVideo_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @6052 NONAME
+    ?factory@?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @6053 NONAME
+    ?factory@?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @6054 NONAME
     ?factoryLoader@?$PFactory@VPProcessStartup@@VPString@@@@2HA @5837 NONAME
     ?fill@std@@YAXPAPAVPPluginModuleManager@@0ABQAV2@@Z @5280 NONAME
     ?fill@std@@YAXPAVPString@@0ABV2@@Z @5281 NONAME
     ?FillRect@PVideoInputDevice_FakeVideo@@QAEXPAEIIHHHHHHH@Z @2861 NONAME
     ?Filtered@PDirectory@@IAEHXZ @1304 NONAME
     ?find@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @5729 NONAME
+    ?find@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@2@ABVPString@@@Z @6055 NONAME
     ?find@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@2@ABVPString@@@Z @5730 NONAME
     ?find@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@std@@QAE?AViterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@2@ABVPString@@@Z @5731 NONAME
     ?find@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @5732 NONAME
+    ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @6056 NONAME
     ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @5733 NONAME
     ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @5734 NONAME
+    ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @6057 NONAME
+    ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @6058 NONAME
+    ?find@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @6059 NONAME
     ?Find@PString@@QBEHABV1@H@Z @4651 NONAME
     ?Find@PString@@QBEHDH@Z @1305 NONAME
     ?Find@PString@@QBEHPBDH@Z @1306 NONAME
@@ -3005,6 +3215,7 @@ EXPORTS
     ?GetClass@?$PList@VPDynaLink@@@@UBEPBDI@Z @4398 NONAME
     ?GetClass@?$PList@VPNotifier@@@@UBEPBDI@Z @4399 NONAME
     ?GetClass@?$PList@VPPluginService@@@@UBEPBDI@Z @4400 NONAME
+    ?GetClass@?$PList@VPSafeObject@@@@UBEPBDI@Z @6060 NONAME
     ?GetClass@?$PList@VPSocket@@@@UBEPBDI@Z @4401 NONAME
     ?GetClass@?$PList@VPString@@@@UBEPBDI@Z @5288 NONAME
     ?GetClass@?$PList@VPThread@@@@UBEPBDI@Z @4403 NONAME
@@ -3232,8 +3443,12 @@ EXPORTS
     ?GetInputDeviceNames@PVideoInputDevice_FakeVideo@@SA?AVPStringList@@XZ @2872 NONAME
     ?GetInputDeviceNames@PVideoInputDevice_VideoForWindows@@SA?AVPStringList@@XZ @2740 NONAME
     ?GetInputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1550 NONAME
+    ?GetInstance@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@KAAAV1@XZ @6061 NONAME
     ?GetInstance@?$PFactory@VPPluginModuleManager@@VPString@@@@KAAAV1@XZ @5736 NONAME
     ?GetInstance@?$PFactory@VPProcessStartup@@VPString@@@@KAAAV1@XZ @5737 NONAME
+    ?GetInstance@?$PFactory@VPSoundChannel@@VPString@@@@KAAAV1@XZ @6062 NONAME
+    ?GetInstance@?$PFactory@VPVideoInputDevice@@VPString@@@@KAAAV1@XZ @6063 NONAME
+    ?GetInstance@?$PFactory@VPVideoOutputDevice@@VPString@@@@KAAAV1@XZ @6064 NONAME
     ?GetInt64@PConfig@@UBE_JABVPString@@0_J@Z @2977 NONAME
     ?GetInt64@PConfig@@UBE_JABVPString@@_J@Z @2978 NONAME
     ?GetInteger@PConfig@@UBEJABVPString@@0J@Z @2979 NONAME
@@ -3408,6 +3623,7 @@ EXPORTS
     ?GetSize@PArrayObjects@@UBEHXZ @1685 NONAME
     ?GetSize@PBitArray@@UBEHXZ @1686 NONAME
     ?GetSize@PContainer@@UBEHXZ @1687 NONAME
+    ?GetSize@PSafeCollection@@QBEHXZ @6065 NONAME
     ?GetSize@Psockaddr@@QBEHXZ @2941 NONAME
     ?GetSpeed@PSerialChannel@@QBEKXZ @1688 NONAME
     ?GetSrcFrameSize@PColourConverter@@QBEHAAI0@Z @1689 NONAME
@@ -3504,7 +3720,11 @@ EXPORTS
     ?insert@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAEXPAVPString@@IABV3@@Z @4899 NONAME
     ?insert@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AU?$pair@Viterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@_N@2@ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@@Z @5744 NONAME
     ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@@Z @4900 NONAME
+    ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@@Z @6066 NONAME
     ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@@Z @5745 NONAME
+    ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@2@@Z @6067 NONAME
+    ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@2@@Z @6068 NONAME
+    ?insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAE?AU?$pair@Viterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@_N@2@ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@2@@Z @6069 NONAME
     ?Insert@PAbstractDictionary@@UAEHABVPObject@@PAV2@@Z @1752 NONAME
     ?Insert@PAbstractList@@UAEHABVPObject@@PAV2@@Z @1753 NONAME
     ?Insert@PAbstractSet@@UAEHABVPObject@@PAV2@@Z @1754 NONAME
@@ -3543,6 +3763,7 @@ EXPORTS
     ?InternalIsDescendant@?$PList@VPDynaLink@@@@UBEHPBD@Z @4268 NONAME
     ?InternalIsDescendant@?$PList@VPNotifier@@@@UBEHPBD@Z @4269 NONAME
     ?InternalIsDescendant@?$PList@VPPluginService@@@@UBEHPBD@Z @4270 NONAME
+    ?InternalIsDescendant@?$PList@VPSafeObject@@@@UBEHPBD@Z @6070 NONAME
     ?InternalIsDescendant@?$PList@VPSocket@@@@UBEHPBD@Z @4271 NONAME
     ?InternalIsDescendant@?$PList@VPString@@@@UBEHPBD@Z @5309 NONAME
     ?InternalIsDescendant@?$PList@VPThread@@@@UBEHPBD@Z @4273 NONAME
@@ -3737,6 +3958,8 @@ EXPORTS
     ?Load@PSound@@QAEHABVPFilePath@@@Z @2073 NONAME
     ?LoadPlugin@PPluginManager@@QAEHABVPString@@@Z @2773 NONAME
     ?LoadPluginDirectory@PPluginManager@@QAEXABVPDirectory@@@Z @5320 NONAME
+    ?loadSoundStuff@PWLibStupidWindowsHacks@@3HA @6071 NONAME
+    ?loadVideoStuff@PWLibStupidWindowsHacks@@3HA @6072 NONAME
     ?LockReadOnly@PSafeObject@@QBEHXZ @2074 NONAME
     ?LockReadWrite@PSafeObject@@QAEHXZ @2075 NONAME
     ?LogOff@PMail@@UAEHXZ @2076 NONAME
@@ -3745,6 +3968,7 @@ EXPORTS
     ?LogOnCommonInterface@PMail@@IAEHPBD00@Z @2079 NONAME
     ?LookUp@PMail@@QAE?AW4LookUpResult@1@ABVPString@@PAV3@@Z @2080 NONAME
     ?lower_bound@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAE?AViterator@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @5748 NONAME
+    ?lower_bound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @6073 NONAME
     ?lower_bound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @5749 NONAME
     ?lower_bound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAE?AViterator@12@ABVPString@@@Z @5750 NONAME
     ?Main@HouseKeepingThread@PProcess@@UAEXXZ @2081 NONAME
@@ -3857,6 +4081,8 @@ EXPORTS
     ?PAssertFunc@@YAXPBD@Z @2175 NONAME
     ?PAssertFunc@@YAXPBDH00@Z @2176 NONAME
     ?PAssertFunc@@YAXPBDH0W4PStandardAssertMessage@@@Z @2177 NONAME
+    ?PAssertFuncInline@@YA_N_NPBDH11@Z @6074 NONAME
+    ?PAssertFuncInline@@YA_N_NPBDH1W4PStandardAssertMessage@@@Z @6075 NONAME
     ?Pause@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2178 NONAME
     ?Pause@PTimer@@QAEXXZ @2179 NONAME
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2180 NONAME
@@ -4016,6 +4242,7 @@ EXPORTS
     ?Register@?$PFactory@VPProcessStartup@@VPString@@@@SAXABVPString@@PAVWorkerBase@1@@Z @5752 NONAME
     ?RegisterNotifiee@PSmartNotifieeRegistrar@@SAIPAX@Z @4828 NONAME
     ?RegisterService@PPluginManager@@QAEHABVPString@@0PAVPPluginServiceDescriptor@@@Z @2799 NONAME
+    ?Register_Internal@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@IAEXABVPString@@PAVWorkerBase@1@@Z @6076 NONAME
     ?Register_Internal@?$PFactory@VPProcessStartup@@VPString@@@@IAEXABVPString@@PAVWorkerBase@1@@Z @5753 NONAME
     ?Release@PWaveBuffer@@AAEKXZ @2299 NONAME
     ?Remove@PAbstractDictionary@@EAEHPBVPObject@@@Z @2300 NONAME
@@ -4075,7 +4302,7 @@ EXPORTS
     ?RightTrim@PString@@QBE?AV1@XZ @2345 NONAME
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @2346 NONAME
     ?SafeDereference@PSafeObject@@QAEXXZ @2347 NONAME
-    ?SafelyCanBeDeleted@PSafeObject@@QAEHXZ @2348 NONAME
+    ?SafelyCanBeDeleted@PSafeObject@@QBEHXZ @6077 NONAME
     ?SafeReference@PSafeObject@@QAEHXZ @2349 NONAME
     ?SafeRemove@PSafeCollection@@MAEHPAVPSafeObject@@@Z @2350 NONAME
     ?SafeRemove@PSafeObject@@QAEXXZ @2351 NONAME
@@ -4268,10 +4495,12 @@ EXPORTS
     ?size@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QBEIXZ @5335 NONAME
     ?size@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QBEIXZ @5336 NONAME
     ?size@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBEIXZ @5337 NONAME
+    ?size@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBEIXZ @6078 NONAME
     ?size@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBEIXZ @5754 NONAME
     ?size@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBEIXZ @5755 NONAME
     ?Sleep@PThread@@SAXABVPTimeInterval@@@Z @4719 NONAME
     ?snmpLibrary@WinSNMPLoader@@1PAVPWin32SnmpLibrary@@A @5463 NONAME
+    ?soundChannelFactoryAdapter@PWLib@@3V?$Worker@V?$PDevicePluginAdapter@VPSoundChannel@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@A @6079 NONAME
     ?Splice@PString@@QAEXABV1@HH@Z @4720 NONAME
     ?Splice@PString@@QAEXPBDHH@Z @2511 NONAME
     ?sprintf@PString@@QAAAAV1@PBDZZ @2512 NONAME
@@ -4334,6 +4563,8 @@ EXPORTS
     ?ValueSelect@PAbstractSortedList@@IBEHPBUElement@1@ABVPObject@@PAPBU21@@Z @3028 NONAME
     ?VerifyHardwareFrameSize@PVideoInputDevice_VideoForWindows@@MAEHII@Z @2816 NONAME
     ?VideoHandler@PVideoInputDevice_VideoForWindows@@KGJPAUHWND__@@PAUvideohdr_tag@@@Z @2817 NONAME
+    ?vidinChannelFactoryAdapter@PWLib@@3V?$Worker@V?$PDevicePluginAdapter@VPVideoInputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@A @6080 NONAME
+    ?vidoutChannelFactoryAdapter@PWLib@@3V?$Worker@V?$PDevicePluginAdapter@VPVideoOutputDevice@@@@@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@A @6081 NONAME
     ?vsprintf@PString@@QAEAAV1@ABV1@PAD@Z @4721 NONAME
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @2564 NONAME
     ?Wait@PSemaphore@@UAEHABVPTimeInterval@@@Z @2565 NONAME
@@ -4385,120 +4616,175 @@ EXPORTS
     ?_Allocate@std@@YAPAVPString@@HPAV2@@Z @5345 NONAME
     ?_Buynode@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEPAU_Node@12@PAU312@D@Z @5756 NONAME
     ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @5533 NONAME
+    ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @6082 NONAME
     ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @5757 NONAME
     ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @5758 NONAME
+    ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @6083 NONAME
+    ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @6084 NONAME
+    ?_Buynode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAEPAU_Node@12@PAU312@D@Z @6085 NONAME
     ?_Charalloc@?$allocator@PAVPFactoryBase@@@std@@QAEPADI@Z @5759 NONAME
     ?_Charalloc@?$allocator@PAVPProcessStartup@@@std@@QAEPADI@Z @5348 NONAME
+    ?_Charalloc@?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@QAEPADI@Z @6086 NONAME
     ?_Charalloc@?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@QAEPADI@Z @5760 NONAME
     ?_Charalloc@?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@QAEPADI@Z @5761 NONAME
     ?_Color@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAADPAU_Node@12@@Z @5762 NONAME
     ?_Color@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAADPAU_Node@12@@Z @5538 NONAME
+    ?_Color@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @6087 NONAME
     ?_Color@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @5763 NONAME
     ?_Color@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @5764 NONAME
     ?_Construct@std@@YAXPAPAVPPluginModuleManager@@ABQAV2@@Z @5354 NONAME
     ?_Construct@std@@YAXPAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@1@ABU21@@Z @5765 NONAME
     ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVPProcessStartup@@@1@ABU21@@Z @4913 NONAME
+    ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@1@ABU21@@Z @6088 NONAME
     ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@1@ABU21@@Z @5766 NONAME
+    ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@1@ABU21@@Z @6089 NONAME
+    ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@1@ABU21@@Z @6090 NONAME
+    ?_Construct@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@1@ABU21@@Z @6091 NONAME
     ?_Construct@std@@YAXPAVPString@@ABV2@@Z @4915 NONAME
     ?_Consval@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEXPAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@ABU32@@Z @5767 NONAME
     ?_Consval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@ABU32@@Z @5356 NONAME
     ?_Consval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@ABU32@@Z @5768 NONAME
     ?_Dec@iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAEXXZ @5769 NONAME
     ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAEXXZ @5544 NONAME
+    ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAEXXZ @6092 NONAME
     ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAEXXZ @5770 NONAME
+    ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAEXXZ @6093 NONAME
+    ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAEXXZ @6094 NONAME
+    ?_Dec@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAEXXZ @6095 NONAME
     ?_Destroy@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAEXPAPAVPPluginModuleManager@@0@Z @5359 NONAME
     ?_Destroy@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@IAEXPAVPString@@0@Z @4918 NONAME
     ?_Destroy@std@@YAXPAPAVPPluginModuleManager@@@Z @5360 NONAME
     ?_Destroy@std@@YAXPAU?$pair@$$CBVPString@@PAVPProcessStartup@@@1@@Z @5361 NONAME
+    ?_Destroy@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@1@@Z @6096 NONAME
     ?_Destroy@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@1@@Z @5771 NONAME
     ?_Destroy@std@@YAXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@1@@Z @5772 NONAME
     ?_Destroy@std@@YAXPAVPString@@@Z @5364 NONAME
     ?_Destval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@@Z @5365 NONAME
+    ?_Destval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@@Z @6097 NONAME
     ?_Destval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@2@@Z @5773 NONAME
     ?_Destval@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@@Z @5774 NONAME
     ?_Erase@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEXPAU_Node@12@@Z @5775 NONAME
     ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU_Node@12@@Z @4919 NONAME
+    ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6098 NONAME
     ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5776 NONAME
     ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5777 NONAME
+    ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6099 NONAME
+    ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6100 NONAME
+    ?_Erase@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6101 NONAME
     ?_Freenode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU_Node@12@@Z @5370 NONAME
+    ?_Freenode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6102 NONAME
     ?_Freenode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5778 NONAME
     ?_Freenode@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5779 NONAME
     ?_Inc@iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QAEXXZ @5780 NONAME
     ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QAEXXZ @5548 NONAME
+    ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QAEXXZ @6103 NONAME
     ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QAEXXZ @5781 NONAME
     ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QAEXXZ @5782 NONAME
+    ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@QAEXXZ @6104 NONAME
+    ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@QAEXXZ @6105 NONAME
+    ?_Inc@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@QAEXXZ @6106 NONAME
     ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXXZ @4925 NONAME
+    ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXXZ @6107 NONAME
     ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXXZ @5783 NONAME
     ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXXZ @5784 NONAME
+    ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAEXXZ @6108 NONAME
+    ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAEXXZ @6109 NONAME
+    ?_Init@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAEXXZ @6110 NONAME
     ?_Insert@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@@Z @5785 NONAME
     ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@@Z @4928 NONAME
+    ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@@Z @6111 NONAME
     ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@@Z @5786 NONAME
+    ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@2@@Z @6112 NONAME
+    ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@2@@Z @6113 NONAME
+    ?_Insert@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAE?AViterator@12@PAU_Node@12@0ABU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@2@@Z @6114 NONAME
     ?_Isnil@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAADPAU_Node@12@@Z @5787 NONAME
     ?_Isnil@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAADPAU_Node@12@@Z @5553 NONAME
+    ?_Isnil@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @6115 NONAME
     ?_Isnil@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @5788 NONAME
     ?_Isnil@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAADPAU_Node@12@@Z @5789 NONAME
     ?_Key@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@PAU_Node@12@@Z @5790 NONAME
     ?_Key@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAABVPString@@PAU_Node@12@@Z @5378 NONAME
+    ?_Key@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAABVPString@@PAU_Node@12@@Z @6116 NONAME
     ?_Key@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAABVPString@@PAU_Node@12@@Z @5791 NONAME
     ?_Key@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAABVPString@@PAU_Node@12@@Z @5792 NONAME
     ?_Lbound@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IBEPAU_Node@12@ABV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@@Z @5793 NONAME
+    ?_Lbound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IBEPAU_Node@12@ABVPString@@@Z @6117 NONAME
     ?_Lbound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IBEPAU_Node@12@ABVPString@@@Z @5794 NONAME
     ?_Lbound@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IBEPAU_Node@12@ABVPString@@@Z @5795 NONAME
     ?_Left@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAAPAU_Node@12@PAU312@@Z @5796 NONAME
     ?_Left@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5383 NONAME
+    ?_Left@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @6118 NONAME
     ?_Left@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5797 NONAME
     ?_Left@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5798 NONAME
     ?_Lmost@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEAAPAU_Node@12@XZ @5799 NONAME
     ?_Lmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEAAPAU_Node@12@XZ @5386 NONAME
+    ?_Lmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @6119 NONAME
     ?_Lmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5800 NONAME
     ?_Lmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5801 NONAME
     ?_Lrotate@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEXPAU_Node@12@@Z @5802 NONAME
     ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU_Node@12@@Z @4930 NONAME
+    ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6120 NONAME
     ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5803 NONAME
     ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5804 NONAME
+    ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6121 NONAME
+    ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6122 NONAME
+    ?_Lrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6123 NONAME
     ?_main@PProcess@@UAEHPAX@Z @2605 NONAME
     ?_main@PServiceProcess@@UAEHPAX@Z @2606 NONAME
     ?_Max@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAPAU_Node@12@PAU312@@Z @5805 NONAME
     ?_Max@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5391 NONAME
+    ?_Max@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @6124 NONAME
     ?_Max@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5806 NONAME
     ?_Max@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5807 NONAME
     ?_Min@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAPAU_Node@12@PAU312@@Z @5808 NONAME
     ?_Min@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5394 NONAME
+    ?_Min@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @6125 NONAME
     ?_Min@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5809 NONAME
     ?_Min@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAPAU_Node@12@PAU312@@Z @5810 NONAME
     ?_Mynode@iterator@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@QBEPAU_Node@23@XZ @5811 NONAME
     ?_Mynode@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@QBEPAU_Node@23@XZ @5564 NONAME
+    ?_Mynode@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@QBEPAU_Node@23@XZ @6126 NONAME
     ?_Mynode@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@QBEPAU_Node@23@XZ @5812 NONAME
     ?_Mynode@iterator@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@QBEPAU_Node@23@XZ @5813 NONAME
     ?_Parent@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAAPAU_Node@12@PAU312@@Z @5814 NONAME
     ?_Parent@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5404 NONAME
+    ?_Parent@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @6127 NONAME
     ?_Parent@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5815 NONAME
     ?_Parent@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5816 NONAME
     ?_Right@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAAPAU_Node@12@PAU312@@Z @5817 NONAME
     ?_Right@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5407 NONAME
+    ?_Right@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @6128 NONAME
     ?_Right@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5818 NONAME
     ?_Right@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAAPAU_Node@12@PAU312@@Z @5819 NONAME
     ?_Rmost@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEAAPAU_Node@12@XZ @5820 NONAME
     ?_Rmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEAAPAU_Node@12@XZ @5410 NONAME
+    ?_Rmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @6129 NONAME
     ?_Rmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5821 NONAME
     ?_Rmost@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5822 NONAME
     ?_Root@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEAAPAU_Node@12@XZ @5823 NONAME
     ?_Root@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IBEAAPAU_Node@12@XZ @5824 NONAME
     ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEAAPAU_Node@12@XZ @5413 NONAME
+    ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @6130 NONAME
+    ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IBEAAPAU_Node@12@XZ @6131 NONAME
     ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5825 NONAME
     ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IBEAAPAU_Node@12@XZ @5826 NONAME
     ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEAAPAU_Node@12@XZ @5827 NONAME
     ?_Root@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IBEAAPAU_Node@12@XZ @5828 NONAME
     ?_Rrotate@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@IAEXPAU_Node@12@@Z @5829 NONAME
     ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@IAEXPAU_Node@12@@Z @4938 NONAME
+    ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6132 NONAME
     ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5830 NONAME
     ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @5831 NONAME
+    ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6133 NONAME
+    ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6134 NONAME
+    ?_Rrotate@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@3@@std@@IAEXPAU_Node@12@@Z @6135 NONAME
     ?_Ucopy@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAEPAPAVPPluginModuleManager@@PBQAV3@0PAPAV3@@Z @5420 NONAME
     ?_Ucopy@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@IAEPAVPString@@PBV3@0PAV3@@Z @5421 NONAME
     ?_Ufill@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@IAEXPAPAVPPluginModuleManager@@IABQAV3@@Z @5422 NONAME
     ?_Ufill@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@IAEXPAVPString@@IABV3@@Z @5423 NONAME
     ?_Value@?$_Tree@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@U?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@U_Kfn@?$map@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@2@U?$less@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@@2@V?$allocator@PAVPFactoryBase@@@2@@std@@KAAAU?$pair@$$CBV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@PAVPFactoryBase@@@2@PAU_Node@12@@Z @5832 NONAME
     ?_Value@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVPProcessStartup@@@std@@U_Kfn@?$map@VPString@@PAVPProcessStartup@@U?$less@VPString@@@std@@V?$allocator@PAVPProcessStartup@@@4@@3@U?$less@VPString@@@3@V?$allocator@PAVPProcessStartup@@@3@@std@@KAAAU?$pair@$$CBVPString@@PAVPProcessStartup@@@2@PAU_Node@12@@Z @5424 NONAME
+    ?_Value@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@3@@std@@KAAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPDevicePluginAdapterBase@@VPString@@@@@2@PAU_Node@12@@Z @6136 NONAME
     ?_Value@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@3@@std@@KAAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPPluginModuleManager@@VPString@@@@@2@PAU_Node@12@@Z @5833 NONAME
     ?_Value@?$_Tree@VPString@@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@std@@U_Kfn@?$map@VPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@5@@3@U?$less@VPString@@@3@V?$allocator@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@3@@std@@KAAAU?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPProcessStartup@@VPString@@@@@2@PAU_Node@12@@Z @5834 NONAME
     ?__setfill@@YAAAVios@@AAV1@H@Z @2607 NONAME
