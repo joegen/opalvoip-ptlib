@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.89  2000/10/09 23:43:58  robertj
+ * Fixed GNU C++ compatibility on last change.
+ *
  * Revision 1.88  2000/10/09 23:37:17  robertj
  * Improved PString sprintf functions so no longer limited to 1000 characters, thanks Yuriy Ershov.
  *
@@ -1776,6 +1779,10 @@ PString & PString::sprintf(const char * fmt, ...)
   return vsprintf(fmt, args);
 }
 
+
+#ifdef __GNUC__
+#define _vsnprintf vsnprintf
+#endif
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
