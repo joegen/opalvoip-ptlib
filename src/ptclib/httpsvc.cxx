@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.33 1998/03/20 03:18:15 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.34 1998/03/23 03:21:40 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.34  1998/03/23 03:21:40  robertj
+ * Fixed missing invalid case in register page.
+ *
  * Revision 1.33  1998/03/20 03:18:15  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -655,6 +658,7 @@ void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
         text.Delete(pos, len);
       break;
 
+    case PSecureConfig::Invalid :
     case PSecureConfig::Pending :
       while (FindSpliceBlock(Default, text, pos, len, start, finish))
         text.Delete(pos, len);
