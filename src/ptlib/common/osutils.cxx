@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.70 1996/06/13 13:31:05 robertj Exp $
+ * $Id: osutils.cxx,v 1.71 1996/06/28 13:22:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.71  1996/06/28 13:22:43  robertj
+ * Rewrite of timers to make OnTimeout more thread safe.
+ *
  * Revision 1.70  1996/06/13 13:31:05  robertj
  * Rewrite of auto-delete threads, fixes Windows95 total crash.
  *
@@ -347,20 +350,15 @@ void PTimer::OnTimeout()
 
 BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
-  if (inTimeout)
-    return TRUE;
-
-  inTimeout = TRUE;
-
   operator-=(delta);
 
   if (milliseconds > 0) {
     if (milliseconds < minTimeLeft.GetMilliSeconds())
       minTimeLeft = milliseconds;
-    inTimeout = FALSE;
-    return TRUE;
+    return FALSE;
   }
 
+  inTimeout = TRUE;
   if (oneshot) {
     operator=(PTimeInterval(0));
     state = Stopped;
@@ -371,11 +369,7 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
       minTimeLeft = resetTime;
   }
 
-  OnTimeout();
-
-  inTimeout = FALSE;
-
-  return state == Running;
+  return TRUE;
 }
 
 
@@ -385,63 +379,59 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 PTimerList::PTimerList()
 {
   DisallowDeleteObjects();
-  processingThread = NULL;
 }
 
 
 void PTimerList::AppendTimer(PTimer * timer)
 {
-  if (processingThread == PThread::Current())
-    PInternalTimerList::InsertAt(0, timer);
-  else {
-    mutex.Wait();
-    PInternalTimerList::InsertAt(0, timer);
-    mutex.Signal();
+  mutex.Wait();
+  PInternalTimerList::InsertAt(0, timer);
+  mutex.Signal();
 #if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
+  PProcess::Current()->SignalTimerChange();
 #endif
-  }
 }
 
 
 void PTimerList::RemoveTimer(PTimer * timer)
 {
-  if (processingThread == PThread::Current())
-    PInternalTimerList::Remove(timer);
-  else {
-    mutex.Wait();
-    PInternalTimerList::Remove(timer);
-    mutex.Signal();
+  mutex.Wait();
+  PInternalTimerList::Remove(timer);
+  mutex.Signal();
 #if defined(P_PLATFORM_HAS_THREADS)
-    PProcess::Current()->SignalTimerChange();
+  PProcess::Current()->SignalTimerChange();
 #endif
-  }
 }
 
 
 PTimeInterval PTimerList::Process()
 {
-  mutex.Wait();
-  processingThread = PThread::Current();
+  PINDEX i;
+  PTimeInterval minTimeLeft;
+  PInternalTimerList timeouts;
+  timeouts.DisallowDeleteObjects();
 
+  mutex.Wait();
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime = now - lastSample;
   if (now < lastSample)
     sampleTime += PMaxTimeInterval;
   lastSample = now;
 
-  PTimeInterval minTimeLeft = PMaxTimeInterval;
-  for (PINDEX i = 0; i < GetSize(); i++) {
-    PTimer * tmr = (PTimer *)GetAt(i);
-    if (tmr->Process(sampleTime, minTimeLeft))
-      i = GetObjectsIndex(tmr);
-    else {
-      i = GetObjectsIndex(tmr)-1;
-      Remove(tmr);
-    }
-  }
+  for (i = 0; i < GetSize(); i++)
+    if ((*this)[i].Process(sampleTime, minTimeLeft))
+      timeouts.Append(GetAt(i));
+  mutex.Signal();
 
-  processingThread = NULL;
+  for (i = 0; i < timeouts.GetSize(); i++)
+    timeouts[i].OnTimeout();
+
+  mutex.Wait();
+  for (i = 0; i < timeouts.GetSize(); i++) {
+    timeouts[i].inTimeout = FALSE;
+    if (!timeouts[i].IsRunning())
+      Remove(timeouts.GetAt(i));
+  }
   mutex.Signal();
 
   return minTimeLeft;
