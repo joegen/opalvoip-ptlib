@@ -217,6 +217,10 @@ SOURCE=..\..\Ptclib\socks.cxx
 
 SOURCE=..\..\Ptclib\Telnet.cxx
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\vxml.cxx
+# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -328,6 +332,10 @@ SOURCE=..\..\..\Include\PtCLib\telnet.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\url.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\vxml.h
 # End Source File
 # End Group
 # End Target
