@@ -1736,6 +1736,7 @@ EXPORTS
     ?GetRenderWidth@PVideoChannel@@QAEHXZ @3130 NONAME ;public: int __thiscall PVideoChannel::GetRenderWidth(void)
     ?GetReturnCode@PPipeChannel@@QBEHXZ @1133 NONAME ;public: int __thiscall PPipeChannel::GetReturnCode(void)const 
     ?GetRing@PSerialChannel@@QAEHXZ @1134 NONAME ;public: int __thiscall PSerialChannel::GetRing(void)
+    ?GetRoot@PDirectory@@QBE?AV1@XZ @3398 NONAME ;public: class PDirectory  __thiscall PDirectory::GetRoot(void)const 
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @1915 NONAME ;public: static int __cdecl PIPSocket::GetRouteTable(class PList<class PIPSocket::RouteEntry> &)
     ?GetSampleRate@PSoundChannel@@QBEIXZ @2652 NONAME ;public: unsigned int __thiscall PSoundChannel::GetSampleRate(void)const 
     ?GetSampleSize@PSoundChannel@@QBEIXZ @2653 NONAME ;public: unsigned int __thiscall PSoundChannel::GetSampleSize(void)const 

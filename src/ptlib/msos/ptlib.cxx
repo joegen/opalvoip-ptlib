@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.63  2002/11/19 12:07:02  robertj
+ * Added function to get root directory.
+ *
  * Revision 1.62  2002/11/19 10:35:16  robertj
  * Added function to extract a path as an array of directories components.
  *
@@ -511,6 +514,15 @@ BOOL PDirectory::IsRoot() const
 
   PINDEX pos = FindOneOf("/\\", 2);
   return pos == GetLength();
+}
+
+
+PDirectory PDirectory::GetRoot() const
+{
+  if ((*this)[1] == ':')
+    return Left(3);
+
+  return Left(FindOneOf("/\\", 2));
 }
 
 
