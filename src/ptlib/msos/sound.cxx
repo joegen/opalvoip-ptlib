@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.23  2001/09/09 17:37:49  yurik
+ * dwBytesRecorded in WAVEHDR could return 0. We should not close the channel in this case
+ *
  * Revision 1.22  2001/09/09 02:17:11  yurik
  * Returned to 1.20
  *
@@ -1165,11 +1168,14 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
   PWaveBuffer & buffer = buffers[bufferIndex];
 
   PINDEX bytesRecorded = buffer.header.dwBytesRecorded;
+  if ( bytesRecorded == 0 ) // Could be nothing
+	  return TRUE;
+
   lastReadCount = bytesRecorded - bufferByteOffset;
   if (lastReadCount > size)
     lastReadCount = size;
 
-  if (lastReadCount == 0 || bufferByteOffset == P_MAX_INDEX)
+  if (bufferByteOffset == P_MAX_INDEX)
     return FALSE;
 
   memcpy(data, &buffer[bufferByteOffset], lastReadCount);
