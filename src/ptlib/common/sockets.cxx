@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.124  2002/10/09 05:37:52  robertj
+ * Fixed IPv6 version of ReadFrom() and WriteTo().
+ *
  * Revision 1.123  2002/10/08 23:31:44  robertj
  * Added missing GetSize() implementation in ip address.
  *
@@ -2231,12 +2234,22 @@ BOOL PIPDatagramSocket::ReadFrom(void * buf, PINDEX len,
 
 #if P_HAS_IPV6
 
-  sockaddr_storage sockAddr_storage;
-  sockaddr_in6 *sockAddr = (sockaddr_in6 *)&sockAddr_storage;
-  PINDEX addrLen = 28;//sizeof(sockAddr);
-  if (os_recvfrom(buf, len, 0, (struct sockaddr *)sockAddr, &addrLen)) {
-    addr = sockAddr->sin6_addr;
-    port = ntohs(sockAddr->sin6_port);
+  sockaddr_storage addrBuf;
+  sockaddr * addrPtr = (sockaddr *)&addrBuf;
+  PINDEX addrLen = sizeof(addrBuf);
+  if (os_recvfrom(buf, len, 0, addrPtr, &addrLen)) {
+    switch (addrPtr->sa_family) {
+      case PF_INET :
+        addr = ((sockaddr_in *)addrPtr)->sin_addr;
+        port = ntohs(((sockaddr_in *)addrPtr)->sin_port);
+        break;
+      case PF_INET6 :
+        addr = ((sockaddr_in6 *)addrPtr)->sin6_addr;
+        port = ntohs(((sockaddr_in6 *)addrPtr)->sin6_port);
+        break;
+      default :
+        return ConvertOSError(-1, LastReadError);
+    }
   }
 
 #else
@@ -2261,19 +2274,30 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 
 #if P_HAS_IPV6
 
-  struct addrinfo *res;
-  int ret;
+  sockaddr_in  addr4;
+  sockaddr_in6 addr6;
+  sockaddr   * addrPtr;
+  PINDEX       addrLen;
+  switch (addr.GetVersion()) {
+    case 4 :
+      addr4.sin_family = AF_INET;
+      addr4.sin_addr = addr;
+      addr4.sin_port = htons(port);
+      addrPtr = (sockaddr *)&addr4;
+      addrLen = sizeof(addr4);
+      break;
+    case 6 :
+      addr6.sin6_family = AF_INET6;
+      addr6.sin6_addr = addr;
+      addr6.sin6_port = htons(port);
+      addrPtr = (sockaddr *)&addr6;
+      addrLen = sizeof(addr6);
+      break;
+    default :
+      return ConvertOSError(-1, LastWriteError);
+  }
 
-  struct addrinfo hints= {0, PF_UNSPEC, SOCK_DGRAM, 0, 0, NULL, NULL, NULL };
-
-  PString l_port = port;
-  PString l_addr_string = addr.AsString();
-  if (getaddrinfo(l_addr_string, l_port , &hints, &res) != 0)
-    return FALSE;
-
-  ret = os_sendto(buf, len, 0, (struct sockaddr *)res->ai_addr, res->ai_addrlen);
-  freeaddrinfo(res);
-  return ret && lastWriteCount >= len;
+  return os_sendto(buf, len, 0, addrPtr, addrLen) && lastWriteCount >= len;
 
 #else
 
