@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.42  2001/01/24 06:46:45  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.41  1998/11/30 04:50:19  robertj
  * New directory structure
  *
@@ -414,7 +417,11 @@ BOOL PSocket::os_sendto(const void * buf,
       return FALSE;
 
     if (selval == 0) {
+#ifndef _WIN32_WCE
       errno = EAGAIN;
+#else
+      SetLastError(EAGAIN);
+#endif
       return FALSE;
     }
   }
@@ -587,7 +594,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   return FALSE;
 }
 
-
+#ifndef _WIN32_WCE
 //////////////////////////////////////////////////////////////////////////////
 // PIPXSocket
 
@@ -980,5 +987,5 @@ BOOL PSPXSocket::Accept(PSocket & socket)
   return TRUE;
 }
 
-
+#endif
 // End Of File ///////////////////////////////////////////////////////////////
