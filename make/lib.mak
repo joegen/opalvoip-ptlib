@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.23  2002/01/26 23:57:08  craigs
+# Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+#
 # Revision 1.22  2002/01/15 07:47:30  robertj
 # Fixed previous fix
 #
@@ -107,7 +110,14 @@ LDSOOPTS = -nostdlib -nostart
 EXTLIBS = $(SYSLIBS) -lstdc++.r4
 else
 LDSOOPTS = -shared
-EXTLIBS =
+endif
+
+ifdef P_PTHREADS
+EXTLIBS += -lpthread
+endif
+
+ifneq (,$(wildcard /usr/include/openssl))
+EXTLIBS += -lssl
 endif
 
 # Solaris loader doesn't grok -soname  (sees it as -s -oname)
@@ -133,9 +143,9 @@ $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
-	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_FILENAME)
-	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
-	ln -s $(INSTALLLIB_DIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
+	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
+	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
+	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
 
 endif # P_SHAREDLIB
 
