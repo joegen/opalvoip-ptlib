@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.8 1996/02/25 02:57:48 robertj Exp $
+ * $Id: http.h,v 1.9 1996/02/25 11:14:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.9  1996/02/25 11:14:21  robertj
+ * Radio button support for forms.
+ *
  * Revision 1.8  1996/02/25 02:57:48  robertj
  * Removed pass through HTTP resource.
  *
@@ -1125,6 +1128,51 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
 
   protected:
     BOOL value;
+};
+
+
+PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
+  public:
+    PHTTPRadioField(
+      const char * name,
+      const PStringArray & valueArray,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      const PStringArray & valueArray,
+      const PStringArray & titleArray,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      PINDEX count,
+      const char * const * valueStrings,
+      PINDEX initVal = 0
+    );
+    PHTTPRadioField(
+      const char * name,
+      PINDEX count,
+      const char * const * valueStrings,
+      const char * const * titleStrings,
+      PINDEX initVal = 0
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & val
+    );
+
+
+  protected:
+    PStringArray values;
+    PStringArray titles;
+    PString value;
 };
 
 
