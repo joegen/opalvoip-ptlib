@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.27  1999/09/23 06:52:16  robertj
+ * Changed PSemaphore to use Posix semaphores.
+ *
  * Revision 1.26  1999/09/03 02:26:25  robertj
  * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
  *
@@ -404,6 +407,7 @@ void PThread::Terminate()
   if (Current() == this)
     pthread_exit(NULL);
   else {
+#ifndef P_HAS_SEMAPHORES
     PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
     if (PX_waitingSemaphore != NULL) {
       PAssertOS(pthread_mutex_lock(&PX_waitingSemaphore->mutex) == 0);
@@ -412,6 +416,7 @@ void PThread::Terminate()
       PX_waitingSemaphore = NULL;
     }
     PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+#endif
 
 #ifndef P_FREEBSD
     pthread_cancel(PX_threadId);
@@ -424,9 +429,11 @@ void PThread::Terminate()
 
 void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 {
+#ifndef P_HAS_SEMAPHORES
   PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
   PX_waitingSemaphore = sem;
   PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
+#endif
 }
 
 
@@ -562,6 +569,9 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(sem_init(&semId, 0, initial) == 0);
+#else
   PAssert(maxCount > 0, "Invalid semaphore maximum.");
   if (initial > maxCount)
     initial = maxCount;
@@ -578,11 +588,15 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
   //pthread_condattr_t condAttr;
   //pthread_condattr_init(&condAttr);
   PAssertOS(pthread_cond_init(&condVar, NULL) == 0);
+#endif
 }
 
 
 PSemaphore::~PSemaphore()
 {
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(sem_destroy(&semId) == 0);
+#else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
 #ifdef P_LINUX
@@ -592,11 +606,15 @@ PSemaphore::~PSemaphore()
   PAssertOS(pthread_cond_destroy(&condVar) == 0);
   PAssertOS(pthread_mutex_destroy(&mutex) == 0);
 #endif
+#endif
 }
 
 
 void PSemaphore::Wait()
 {
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(sem_wait(&semId) == 0);
+#else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
   queuedLocks++;
@@ -614,6 +632,7 @@ void PSemaphore::Wait()
   currentCount--;
 
   PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+#endif
 }
 
 
@@ -624,6 +643,14 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
+#ifdef P_HAS_SEMAPHORES
+  PTimer timeout = waitTime;
+  while (timeout.IsRunning()) {
+    if (sem_trywait(&semId) == 0)
+      return TRUE;
+  }
+  return FALSE;
+#else
   struct timeval valTime;
   ::gettimeofday(&valTime, NULL);
   valTime.tv_sec += waitTime.GetSeconds();
@@ -663,11 +690,15 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&mutex) == 0);
 
   return ok;
+#endif
 }
 
 
 void PSemaphore::Signal()
 {
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(sem_post(&semId) == 0);
+#else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
   if (currentCount < maximumCount)
@@ -677,24 +708,35 @@ void PSemaphore::Signal()
     pthread_cond_signal(&condVar);
 
   PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+#endif
 }
 
 
 BOOL PSemaphore::WillBlock() const
 {
+#ifdef P_HAS_SEMAPHORES
+  return sem_trywait((sem_t *)&semId) != 0;
+#else
   return currentCount == 0;
+#endif
 }
 
 
 PMutex::PMutex()
   : PSemaphore(1, 1)
 {
+#ifdef P_HAS_SEMAPHORES
+  pthread_mutex_init(&mutex, NULL);
+#endif
 }
 
 
 PMutex::~PMutex()
 {
   pthread_mutex_unlock(&mutex);
+#ifdef P_HAS_SEMAPHORES
+  PAssertOS(pthread_mutex_destroy(&mutex) == 0);
+#endif
 }
 
 
