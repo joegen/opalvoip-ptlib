@@ -10,7 +10,7 @@ SOURCES		:= $(strip $(SOURCES))
 ###############################################################################
 #
 # Linux for x86, using gcc 2.6.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -486
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
 ####################################################
 # Sun 4x, using gcc 2.6.3
 #STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4
