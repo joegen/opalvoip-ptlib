@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.6  1998/11/05 09:45:04  robertj
+ * Removed StartImmediate option in thread construction.
+ *
  * Revision 1.5  1998/09/24 04:12:25  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@
 PDECLARE_CLASS(HouseKeepingThread, PThread)
   public:
     HouseKeepingThread()
-      : PThread(1000, AutoDeleteThread, StartImmediate) { }
+      : PThread(1000) { Resume(); }
     void Main();
 };
 
@@ -155,14 +158,13 @@ void PThread::InitialiseProcessThread()
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 InitialSuspension start,
                  Priority /*priorityLevel*/)
   : PX_origStackSize(stackSize)
 {
   PX_autoDelete  = (deletion == AutoDeleteThread);
 
   // throw the new thread
-  PX_NewThread(start == StartSuspended);
+  PX_NewThread(TRUE);
 }
 
 PThread::~PThread()
