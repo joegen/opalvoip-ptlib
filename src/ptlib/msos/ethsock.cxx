@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.cxx,v 1.4 1998/09/08 15:14:36 robertj Exp $
+ * $Id: ethsock.cxx,v 1.5 1998/09/15 08:25:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.5  1998/09/15 08:25:36  robertj
+ * Fixed a number of warnings at maximum optimisation.
+ *
  * Revision 1.4  1998/09/08 15:14:36  robertj
  * Fixed packet type based filtering in Read() function.
  *
@@ -909,9 +912,9 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 
 PString PEthSocket::GetGatewayInterface() const
 {
-  AsnInteger ifNum;
+  AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
-  if (snmp->GetOid(gatewayOid, ifNum)) {
+  if (snmp->GetOid(gatewayOid, ifNum) && ifNum >= 0) {
     gatewayOid.Free();
 
     Address gwAddr;
@@ -965,8 +968,8 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
       return FALSE;
 
     oid[9] = 2;
-    AsnInteger ifIndex;
-    if (!snmp->GetOid(oid, ifIndex))
+    AsnInteger ifIndex = -1;
+    if (!snmp->GetOid(oid, ifIndex) || ifIndex < 0)
       return FALSE;
 
     if (ifIndex == ifNum && idx-- == 0) {
@@ -997,8 +1000,8 @@ static const struct {
 
 BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
-  DWORD filter;
-  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter))
+  DWORD filter = 0;
+  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter) || filter == 0)
     return FALSE;
 
   mask = 0;
@@ -1029,8 +1032,8 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 
 PEthSocket::MediumTypes PEthSocket::GetMedium()
 {
-  DWORD medium;
-  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium))
+  DWORD medium = 0;
+  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0)
     return NumMediumTypes;
 
   static const DWORD MediumValues[NumMediumTypes] = {
