@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.88 1998/01/26 00:47:13 robertj Exp $
+ * $Id: osutils.cxx,v 1.89 1998/02/03 06:19:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.89  1998/02/03 06:19:55  robertj
+ * Added new function to read a block with minimum number of bytes.
+ *
  * Revision 1.88  1998/01/26 00:47:13  robertj
  * Added functions to get/set 64bit integers from a PConfig.
  *
@@ -645,18 +648,28 @@ int PChannel::ReadCharWithTimeout(PTimeInterval & timeout)
 }
 
 
-PString PChannel::ReadString(PINDEX maxLen)
+BOOL PChannel::ReadBlock(void * buf, PINDEX len)
+{
+  char * ptr = (char *)buf;
+  PINDEX numRead = 0;
+
+  while (numRead < len && Read(ptr+numRead, len - numRead))
+    numRead += lastReadCount;
+
+  lastReadCount = numRead;
+
+  return lastReadCount == len;
+}
+
+
+PString PChannel::ReadString(PINDEX len)
 {
   PString str;
-  char * ptr = str.GetPointer(maxLen+1);
-  PINDEX len = 0;
-
-  while (len < maxLen && Read(ptr+len, maxLen - len))
-    len += lastReadCount;
-
-  str.SetSize(len+1);
+  ReadBlock(str.GetPointer(len+1), len);
+  str.SetSize(lastReadCount+1);
   return str;
 }
+
 
 BOOL PChannel::WriteString(const PString & str)
 {
@@ -668,6 +681,7 @@ BOOL PChannel::WriteString(const PString & str)
 
   return len == slen;
 }
+
 
 BOOL PChannel::ReadAsync(void * buf, PINDEX len)
 {
