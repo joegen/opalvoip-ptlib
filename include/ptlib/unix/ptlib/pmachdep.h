@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.39  2000/05/12 01:37:38  rogerh
+ * Add netinet/tcp.h to NetBSD and OpenBSD too.
+ *
  * Revision 1.38  2000/05/05 07:08:01  robertj
  * Same again for FreeBSD and Solaris
  *
@@ -181,6 +184,7 @@ typedef int socklen_t;
 #include <sys/ioctl.h>
 #include <sys/signal.h>
 #include <net/if.h>
+#include <netinet/tcp.h>
 
 #define HAS_IFREQ
 
@@ -210,6 +214,7 @@ typedef int socklen_t;
 #include <sys/ioctl.h>
 #include <sys/signal.h>
 #include <net/if.h>
+#include <netinet/tcp.h>
 
 #define HAS_IFREQ
 
