@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.40 1997/02/14 13:55:44 robertj Exp $
+ * $Id: http.cxx,v 1.41 1997/03/18 22:03:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.41  1997/03/18 22:03:44  robertj
+ * Fixed bug that incorrectly parses URL with double slashes.
+ *
  * Revision 1.40  1997/02/14 13:55:44  robertj
  * Fixed bug in URL for reproducing fields with special characters, must be escaped and weren't.
  *
@@ -488,7 +491,7 @@ void PURL::Parse(const char * cstr)
 
   // the hierarchy is what is left
   pathStr = url;
-  path = url.Tokenise("/", FALSE);
+  path = url.Tokenise("/", TRUE);
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
   for (pos = 0; pos < path.GetSize(); pos++) {
