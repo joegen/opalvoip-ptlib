@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.48  2005/01/15 07:53:55  csoutheren
+ * Fixed problem when disabling http
+ *
  * Revision 1.47  2004/02/03 09:37:20  rjongbloed
  * Added check to text files via the type extension, thanks David Parr
  *
@@ -176,6 +179,9 @@
  */
 
 #include <ptlib.h>
+
+#ifdef P_HTTP
+
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
 #include <ctype.h>
@@ -2012,6 +2018,8 @@ PString PHTTPDirectory::LoadText(PHTTPRequest & request)
 
   return fakeIndex;
 }
+
+#endif // P_HTTP
 
 
 // End Of File ///////////////////////////////////////////////////////////////
