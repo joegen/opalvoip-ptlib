@@ -45,6 +45,29 @@ void Audio::Main()
 
   cout << "\n";
 
+
+  // Display the mixer settings for the default devices
+  PSoundChannel sound;
+  dir = PSoundChannel::Player;
+  sound.Open(PSoundChannel::GetDefaultDevice(dir),dir);
+
+  unsigned int vol;
+  if (sound.GetVolume(vol))
+    cout << "Play volume is " << vol << endl;
+  else
+    cout << "Play volume cannot be obtained" << endl;
+
+  sound.Close();
+
+  dir = PSoundChannel::Recorder;
+  sound.Open(PSoundChannel::GetDefaultDevice(dir),dir);
+  
+  if (sound.GetVolume(vol))
+    cout << "Record volume is " << vol << endl;
+  else
+    cout << "Record volume cannot be obtained" << endl;
+
+  sound.Close();
 }
 
 // End of hello.cxx
