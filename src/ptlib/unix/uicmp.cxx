@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.12  2001/03/07 07:00:17  yurik
+ * #ifdef'd setsockopt IPPROTO_IP for BeOS
+ *
  * Revision 1.11  2001/03/06 22:20:21  craigs
  * Fixed TTL and other stuff so that traceroute is almost possible!
  *
@@ -181,11 +184,13 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
   packet.sequence   = info.sequenceNum;
   packet.id         = info.identifier;
 
+  #ifndef __BEOS__
   if (info.ttl != 0) {
     char ttl = (char)info.ttl;
     if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
       return FALSE;
   }
+  #endif
 
   // set the send time
   packet.sendtime = PTimer::Tick().GetMilliSeconds();
