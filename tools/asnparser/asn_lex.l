@@ -31,6 +31,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.9  1999/07/22 06:48:55  robertj
+ * Added comparison operation to base ASN classes and compiled ASN code.
+ * Added support for ANY type in ASN parser.
+ *
  * Revision 1.8  1999/06/09 06:58:09  robertj
  * Adjusted heading comments.
  *
@@ -104,6 +108,7 @@ static int TokenSelect(int context, int token1, int token2)
 "ABSENT"                           { return ABSENT; }              
 "ABSTRACT-SYNTAX"                  { return ABSTRACT_SYNTAX; }
 "ALL"                              { return ALL; }
+"ANY"                              { return ANY; }
 "APPLICATION"                      { return APPLICATION; }
 "AUTOMATIC"                        { return AUTOMATIC; }
 "BEGIN"                            { return BEGIN_t; }
@@ -118,6 +123,7 @@ static int TokenSelect(int context, int token1, int token2)
 "COMPONENTS"                       { return COMPONENTS; }
 "CONSTRAINED"                      { return CONSTRAINED; }
 "DEFAULT"                          { return DEFAULT; }
+"DEFINED"                          { return DEFINED; }
 "DEFINITIONS"                      { return DEFINITIONS; }
 "EMBEDDED"                         { return EMBEDDED; }
 "END"                              { return END; }
