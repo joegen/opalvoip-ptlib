@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.62  2001/03/24 05:53:12  robertj
+ * Added Windows 98 and ME to GetOSName()
+ *
  * Revision 1.61  2001/03/24 05:37:01  robertj
  * Changed default directory of log file to same as executable.
  * Change tray icon to wait for service stop before displaying message.
@@ -534,7 +537,21 @@ int PServiceProcess::_main(void * arg)
 
   hInstance = (HINSTANCE)arg;
 
-  isWin95 = GetOSName() == "95";
+  OSVERSIONINFO verinfo;
+  verinfo.dwOSVersionInfoSize = sizeof(verinfo);
+  GetVersionEx(&verinfo);
+  switch (verinfo.dwPlatformId) {
+    case VER_PLATFORM_WIN32_NT :
+      isWin95 = FALSE;
+      break;
+    case VER_PLATFORM_WIN32_WINDOWS :
+      isWin95 = TRUE;
+      break;
+    default :
+      PError << "Unsupported Win32 platform type!" << endl;
+      return 1;
+  }
+
   debugMode = arguments.GetCount() > 0 && stricmp(arguments[0], "Debug") == 0;
   currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
