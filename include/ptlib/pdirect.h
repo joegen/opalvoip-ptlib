@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.7 1994/01/13 03:17:55 robertj Exp $
+ * $Id: pdirect.h,v 1.8 1994/03/07 07:38:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.7  1994/01/13 03:17:55  robertj
+ * Revision 1.8  1994/03/07 07:38:19  robertj
+ * Major enhancementsacross the board.
+ *
+ * Revision 1.7  1994/01/13  03:17:55  robertj
  * Added functions to get the name of the volume the directory is contained in
  *    and a function to determine if the directory is a root directory of the
  *    volume (ie is does not have a parent directory).
@@ -34,32 +37,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File System
 
-enum PFileTypes {
-  PRegularFile = 1,
-  PSymbolicLink = 2,
-  PSubDirectory = 4,
-  PCharDevice = 8,
-  PBlockDevice = 16,
-  PFifo = 32,
-  PSocket = 64,
-  PUnknownFileType = 256
-};
 
 #define PAllFiles (PRegularFile|PSymbolicLink|PSubDirectory| \
                        PCharDevice|PBlockDevice|PFifo|PSocket|PUnknownFileType)
-
-
-enum PPermissions {
-  PUserRead = 1,
-  PUserWrite = 2,
-  PUserExecute = 4,
-  PGroupRead = 8,
-  PGroupWrite = 16,
-  PGroupExecute = 32,
-  PWorldRead = 64,
-  PWorldWrite = 128,
-  PWorldExecute = 256,
-};
 
 #define PAllPermissions (PUserRead|PUserWrite|PUserExecute|PGroupRead| \
                 PGroupWrite|PGroupExecute|PWorldRead|PWorldWrite|PWorldExecute)
@@ -70,7 +50,6 @@ enum PPermissions {
 
 
 PDECLARE_CONTAINER(PDirectory, PContainer)
-
   public:
     PDirectory();
       // Create a directory object of the current directory
