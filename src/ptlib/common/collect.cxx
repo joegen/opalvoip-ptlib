@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.43  1998/10/28 00:57:43  robertj
+ * Fixed memory leak in PObjectArray.
+ * Fixed crash when doing GetValuesIndex() on array with NULL elements.
+ *
  * Revision 1.42  1998/10/13 14:06:16  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -242,7 +246,7 @@ BOOL PArrayObjects::SetSize(PINDEX newSize)
 {
   PINDEX sz = theArray->GetSize();
   if (reference->deleteObjects && sz > 0) {
-    for (PINDEX i = sz-1; i > newSize; i--) {
+    for (PINDEX i = sz-1; i >= newSize; i--) {
       PObject * obj = theArray->GetAt(i);
       if (obj != NULL)
         delete obj;
@@ -333,7 +337,8 @@ PINDEX PArrayObjects::GetObjectsIndex(const PObject * obj) const
 PINDEX PArrayObjects::GetValuesIndex(const PObject & obj) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (*(*theArray)[i] == obj)
+    PObject * elmt = (*theArray)[i];
+    if (elmt != NULL && *elmt == obj)
       return i;
   }
   return P_MAX_INDEX;
