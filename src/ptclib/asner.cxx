@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.65  2002/08/06 02:27:58  robertj
+ * GNU C++ v3 compatibility.
+ *
  * Revision 1.64  2002/07/25 10:52:49  robertj
  * Changes to allow more granularity in PDU dumps, hex output increasing
  *   with increasing trace level.
@@ -1547,7 +1550,7 @@ PObject * PASN_BitString::Clone() const
 void PASN_BitString::PrintOn(ostream & strm) const
 {
   int indent = strm.precision() + 2;
-  long flags = strm.flags();
+  _Ios_Fmtflags flags = strm.flags();
 
   if (totalBits > 128)
     strm << "Hex {\n"
@@ -1870,7 +1873,7 @@ PObject * PASN_OctetString::Clone() const
 void PASN_OctetString::PrintOn(ostream & strm) const
 {
   int indent = strm.precision() + 2;
-  long flags = strm.flags();
+  _Ios_Fmtflags flags = strm.flags();
 
   strm << ' ' << value.GetSize() << " octets {\n"
        << hex << setfill('0') << resetiosflags(ios::floatfield)
