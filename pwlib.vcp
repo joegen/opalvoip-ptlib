@@ -51,7 +51,7 @@ CFG=pwlib - Win32 (WCE SH3) Debug
 # PROP Target_Dir ""
 CPP=shcl.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /O2 /D "SHx" /D "SH3" /D "_SH3_" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PTRACING=0 /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /O2 /D "SHx" /D "SH3" /D "_SH3_" /D "NDEBUG" /D PTRACING=0 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibsh3s.lib"
@@ -77,7 +77,7 @@ BSC32=bscmake.exe
 # PROP Target_Dir ""
 CPP=shcl.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "SHx" /D "SH3" /D "_SH3_" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "SHx" /D "SH3" /D "_SH3_" /D "PTRACING" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibsh3sd.lib"
@@ -103,7 +103,7 @@ BSC32=bscmake.exe
 # PROP Target_Dir ""
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /O2 /D "NDEBUG" /D "ARM" /D "_ARM_" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PTRACING=0 /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /O2 /D "NDEBUG" /D "ARM" /D "_ARM_" /D PTRACING=0 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibarms.lib"
@@ -129,7 +129,7 @@ BSC32=bscmake.exe
 # PROP Target_Dir ""
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "ARM" /D "_ARM_" /D "PTRACING" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibarmsd.lib"
@@ -155,7 +155,7 @@ BSC32=bscmake.exe
 # PROP Target_Dir ""
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_LIB" /YX /Oxs /Gz /c
-# ADD CPP /nologo /W3 /O1 /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "i486" /D "_X86_" /D "x86" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PTRACING=0 /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /Oxs /Gz /c
+# ADD CPP /nologo /W3 /O1 /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "i486" /D "_X86_" /D "x86" /D "NDEBUG" /D PTRACING=0 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /Oxs /Gz /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibx86ems.lib"
@@ -181,7 +181,7 @@ BSC32=bscmake.exe
 # PROP Target_Dir ""
 CPP=cl.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "_LIB" /YX /Gz /c
-# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "i486" /D "_X86_" /D "x86" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /Yu"ptlib.h" /Gz /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "i486" /D "_X86_" /D "x86" /D "PTRACING" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D TRACING=1 /Yu"ptlib.h" /Gz /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibx86emsd.lib"
@@ -282,6 +282,7 @@ DEP_CPP_ASSER=\
 
 DEP_CPP_ASSER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -290,7 +291,6 @@ DEP_CPP_ASSER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -351,6 +351,7 @@ DEP_CPP_ASSER=\
 
 DEP_CPP_ASSER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -359,7 +360,6 @@ DEP_CPP_ASSER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -420,6 +420,7 @@ DEP_CPP_ASSER=\
 
 DEP_CPP_ASSER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -428,7 +429,6 @@ DEP_CPP_ASSER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -489,6 +489,7 @@ DEP_CPP_ASSER=\
 
 DEP_CPP_ASSER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -497,7 +498,6 @@ DEP_CPP_ASSER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -558,6 +558,7 @@ DEP_CPP_ASSER=\
 
 DEP_CPP_ASSER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -566,7 +567,6 @@ DEP_CPP_ASSER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -634,6 +634,7 @@ SOURCE=.\src\ptlib\common\collect.cxx
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -642,17 +643,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -663,8 +663,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -700,6 +700,7 @@ DEP_CPP_COLLE=\
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -708,17 +709,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -729,8 +729,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -766,6 +766,7 @@ DEP_CPP_COLLE=\
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -774,17 +775,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -795,8 +795,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -832,6 +832,7 @@ DEP_CPP_COLLE=\
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -840,17 +841,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -861,8 +861,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -898,6 +898,7 @@ DEP_CPP_COLLE=\
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -906,17 +907,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -927,8 +927,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -964,6 +964,7 @@ DEP_CPP_COLLE=\
 
 DEP_CPP_COLLE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -972,17 +973,16 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -993,8 +993,8 @@ DEP_CPP_COLLE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -1038,6 +1038,7 @@ SOURCE=.\src\ptlib\common\contain.cxx
 DEP_CPP_CONTA=\
 	".\src\ptlib\common\regex\regex.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1045,10 +1046,9 @@ DEP_CPP_CONTA=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -1153,67 +1153,48 @@ NODEP_CPP_CONTA=\
 
 DEP_CPP_CONTA=\
 	".\src\ptlib\common\regex\regex.h"\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PTLIB\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PTLIB\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PTLIB\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PTLIB\semaphor.h"\
-	{$(INCLUDE)}"PTLIB\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PTLIB\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PTLIB\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PTLIB\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PTLIB\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PTLIB\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PTLIB\video.h"\
-	{$(INCLUDE)}"PTLIB\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+	
+NODEP_CPP_CONTA=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\TLIB\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\TLIB\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\TLIB\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\TLIB\thread.h"\
+	".\tlib\timeint.h"\
+	".\TLIB\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\TLIB\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE ARM) Debug"
@@ -1374,6 +1355,7 @@ SOURCE=.\src\ptlib\msos\ethsock.cxx
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1382,7 +1364,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1461,6 +1442,7 @@ DEP_CPP_ETHSO=\
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1469,7 +1451,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1548,6 +1529,7 @@ DEP_CPP_ETHSO=\
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1556,7 +1538,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1635,6 +1616,7 @@ DEP_CPP_ETHSO=\
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1643,7 +1625,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1722,6 +1703,7 @@ DEP_CPP_ETHSO=\
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1730,7 +1712,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1809,6 +1790,7 @@ DEP_CPP_ETHSO=\
 
 DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1817,7 +1799,6 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -1970,6 +1951,7 @@ SOURCE=.\src\ptlib\common\object.cxx
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -1978,7 +1960,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2038,6 +2019,7 @@ DEP_CPP_OBJEC=\
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2046,7 +2028,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2106,6 +2087,7 @@ DEP_CPP_OBJEC=\
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2114,7 +2096,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2174,6 +2155,7 @@ DEP_CPP_OBJEC=\
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2182,7 +2164,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2242,6 +2223,7 @@ DEP_CPP_OBJEC=\
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2250,7 +2232,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2310,6 +2291,7 @@ DEP_CPP_OBJEC=\
 
 DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2318,7 +2300,6 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2385,6 +2366,7 @@ SOURCE=.\src\ptlib\common\osutils.cxx
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2393,7 +2375,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2453,6 +2434,7 @@ DEP_CPP_OSUTI=\
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2461,7 +2443,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2521,6 +2502,7 @@ DEP_CPP_OSUTI=\
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2529,7 +2511,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2589,6 +2570,7 @@ DEP_CPP_OSUTI=\
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2597,7 +2579,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2657,6 +2638,7 @@ DEP_CPP_OSUTI=\
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2665,7 +2647,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2725,6 +2706,7 @@ DEP_CPP_OSUTI=\
 
 DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2733,7 +2715,6 @@ DEP_CPP_OSUTI=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -2800,6 +2781,7 @@ SOURCE=.\src\ptlib\common\pchannel.cxx
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2808,17 +2790,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -2829,8 +2810,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -2866,6 +2847,7 @@ DEP_CPP_PCHAN=\
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2874,17 +2856,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -2895,8 +2876,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -2932,6 +2913,7 @@ DEP_CPP_PCHAN=\
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -2940,17 +2922,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -2961,8 +2942,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -2998,6 +2979,7 @@ DEP_CPP_PCHAN=\
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3006,17 +2988,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3027,8 +3008,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3064,6 +3045,7 @@ DEP_CPP_PCHAN=\
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3072,17 +3054,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3093,8 +3074,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3130,6 +3111,7 @@ DEP_CPP_PCHAN=\
 
 DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3138,17 +3120,16 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3159,8 +3140,8 @@ DEP_CPP_PCHAN=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3203,6 +3184,7 @@ SOURCE=.\src\ptlib\common\pconfig.cxx
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3211,17 +3193,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3232,8 +3213,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3269,6 +3250,7 @@ DEP_CPP_PCONF=\
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3277,17 +3259,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3298,8 +3279,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3335,6 +3316,7 @@ DEP_CPP_PCONF=\
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3343,17 +3325,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3364,8 +3345,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3401,6 +3382,7 @@ DEP_CPP_PCONF=\
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3409,17 +3391,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3430,8 +3411,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3467,6 +3448,7 @@ DEP_CPP_PCONF=\
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3475,17 +3457,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3496,8 +3477,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3533,6 +3514,7 @@ DEP_CPP_PCONF=\
 
 DEP_CPP_PCONF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3541,17 +3523,16 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -3562,8 +3543,8 @@ DEP_CPP_PCONF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -3606,6 +3587,7 @@ SOURCE=.\src\ptlib\common\pethsock.cxx
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3613,7 +3595,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3692,6 +3673,7 @@ DEP_CPP_PETHS=\
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3699,7 +3681,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3778,6 +3759,7 @@ DEP_CPP_PETHS=\
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3785,7 +3767,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3864,6 +3845,7 @@ DEP_CPP_PETHS=\
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3871,7 +3853,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3950,6 +3931,7 @@ DEP_CPP_PETHS=\
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -3957,7 +3939,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -4036,6 +4017,7 @@ DEP_CPP_PETHS=\
 
 DEP_CPP_PETHS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4043,7 +4025,6 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -4129,6 +4110,7 @@ SOURCE=.\src\ptlib\common\ptime.cxx
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4137,17 +4119,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4158,8 +4139,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4195,6 +4176,7 @@ DEP_CPP_PTIME=\
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4203,17 +4185,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4224,8 +4205,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4261,6 +4242,7 @@ DEP_CPP_PTIME=\
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4269,17 +4251,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4290,8 +4271,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4327,6 +4308,7 @@ DEP_CPP_PTIME=\
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4335,17 +4317,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4356,8 +4337,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4393,6 +4374,7 @@ DEP_CPP_PTIME=\
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4401,17 +4383,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4422,8 +4403,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4459,6 +4440,7 @@ DEP_CPP_PTIME=\
 
 DEP_CPP_PTIME=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4467,17 +4449,16 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4488,8 +4469,8 @@ DEP_CPP_PTIME=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -4532,6 +4513,7 @@ SOURCE=.\src\ptlib\msos\ptlib.cxx
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4539,7 +4521,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4598,6 +4579,7 @@ DEP_CPP_PTLIB=\
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4605,7 +4587,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4664,6 +4645,7 @@ DEP_CPP_PTLIB=\
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4671,7 +4653,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4730,6 +4711,7 @@ DEP_CPP_PTLIB=\
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4737,7 +4719,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4796,6 +4777,7 @@ DEP_CPP_PTLIB=\
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4803,7 +4785,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4862,6 +4843,7 @@ DEP_CPP_PTLIB=\
 
 DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4869,7 +4851,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -4935,6 +4916,7 @@ SOURCE=.\src\ptlib\common\pvidchan.cxx
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -4943,17 +4925,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -4964,8 +4945,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5001,6 +4982,7 @@ DEP_CPP_PVIDC=\
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5009,17 +4991,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5030,8 +5011,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5067,6 +5048,7 @@ DEP_CPP_PVIDC=\
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5075,17 +5057,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5096,8 +5077,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5133,6 +5114,7 @@ DEP_CPP_PVIDC=\
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5141,17 +5123,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5162,8 +5143,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5199,6 +5180,7 @@ DEP_CPP_PVIDC=\
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5207,17 +5189,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5228,8 +5209,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5265,6 +5246,7 @@ DEP_CPP_PVIDC=\
 
 DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5273,17 +5255,16 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5294,8 +5275,8 @@ DEP_CPP_PVIDC=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5338,6 +5319,7 @@ SOURCE=.\src\ptlib\common\sockets.cxx
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5345,7 +5327,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5424,6 +5405,7 @@ DEP_CPP_SOCKE=\
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5431,7 +5413,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5510,6 +5491,7 @@ DEP_CPP_SOCKE=\
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5517,7 +5499,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5596,6 +5577,7 @@ DEP_CPP_SOCKE=\
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5603,7 +5585,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5682,6 +5663,7 @@ DEP_CPP_SOCKE=\
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5689,7 +5671,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5768,6 +5749,7 @@ DEP_CPP_SOCKE=\
 
 DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5775,7 +5757,6 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -5861,6 +5842,7 @@ SOURCE=.\src\ptlib\msos\sound.cxx
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5869,17 +5851,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5890,8 +5871,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5927,6 +5908,7 @@ DEP_CPP_SOUND=\
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -5935,17 +5917,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -5956,8 +5937,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -5993,6 +5974,7 @@ DEP_CPP_SOUND=\
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6001,17 +5983,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -6022,8 +6003,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -6059,6 +6040,7 @@ DEP_CPP_SOUND=\
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6067,17 +6049,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -6088,8 +6069,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -6125,6 +6106,7 @@ DEP_CPP_SOUND=\
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6133,17 +6115,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -6154,8 +6135,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -6191,6 +6172,7 @@ DEP_CPP_SOUND=\
 
 DEP_CPP_SOUND=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6199,17 +6181,16 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -6220,8 +6201,8 @@ DEP_CPP_SOUND=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -6264,6 +6245,7 @@ SOURCE=.\src\ptlib\common\vconvert.cxx
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6272,7 +6254,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6331,6 +6312,7 @@ DEP_CPP_VCONV=\
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6339,7 +6321,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6398,6 +6379,7 @@ DEP_CPP_VCONV=\
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6406,7 +6388,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6465,6 +6446,7 @@ DEP_CPP_VCONV=\
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6473,7 +6455,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6532,6 +6513,7 @@ DEP_CPP_VCONV=\
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6540,7 +6522,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6599,6 +6580,7 @@ DEP_CPP_VCONV=\
 
 DEP_CPP_VCONV=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6607,7 +6589,6 @@ DEP_CPP_VCONV=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6673,6 +6654,7 @@ SOURCE=.\src\ptlib\common\vfakeio.cxx
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6681,7 +6663,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6739,6 +6720,7 @@ DEP_CPP_VFAKE=\
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6747,7 +6729,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6805,6 +6786,7 @@ DEP_CPP_VFAKE=\
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6813,7 +6795,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6871,6 +6852,7 @@ DEP_CPP_VFAKE=\
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6879,7 +6861,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6937,6 +6918,7 @@ DEP_CPP_VFAKE=\
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -6945,7 +6927,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -7003,6 +6984,7 @@ DEP_CPP_VFAKE=\
 
 DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7011,7 +6993,6 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -7076,6 +7057,7 @@ SOURCE=.\src\ptlib\msos\vfw.cxx
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7083,10 +7065,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7103,10 +7084,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7143,6 +7124,7 @@ DEP_CPP_VFW_C=\
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7150,10 +7132,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7170,10 +7151,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7210,6 +7191,7 @@ DEP_CPP_VFW_C=\
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7217,10 +7199,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7237,10 +7218,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7277,6 +7258,7 @@ DEP_CPP_VFW_C=\
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7284,10 +7266,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7304,10 +7285,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7344,6 +7325,7 @@ DEP_CPP_VFW_C=\
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7351,10 +7333,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7371,10 +7352,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7411,6 +7392,7 @@ DEP_CPP_VFW_C=\
 
 DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7418,10 +7400,9 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7438,10 +7419,10 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7485,6 +7466,7 @@ SOURCE=.\src\ptlib\common\videoio.cxx
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7492,10 +7474,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7512,10 +7493,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7552,6 +7533,7 @@ DEP_CPP_VIDEO=\
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7559,10 +7541,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7579,10 +7560,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7619,6 +7600,7 @@ DEP_CPP_VIDEO=\
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7626,10 +7608,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7646,10 +7627,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7686,6 +7667,7 @@ DEP_CPP_VIDEO=\
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7693,10 +7675,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7713,10 +7694,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7753,6 +7734,7 @@ DEP_CPP_VIDEO=\
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7760,10 +7742,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7780,10 +7761,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7820,6 +7801,7 @@ DEP_CPP_VIDEO=\
 
 DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7827,10 +7809,9 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7847,10 +7828,10 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -7894,6 +7875,7 @@ SOURCE=.\src\ptlib\msos\win32.cxx
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7901,10 +7883,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -7961,6 +7942,7 @@ DEP_CPP_WIN32=\
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -7968,10 +7950,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -8028,6 +8009,7 @@ DEP_CPP_WIN32=\
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8035,10 +8017,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -8095,6 +8076,7 @@ DEP_CPP_WIN32=\
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8102,10 +8084,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -8162,6 +8143,7 @@ DEP_CPP_WIN32=\
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8169,10 +8151,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -8229,6 +8210,7 @@ DEP_CPP_WIN32=\
 
 DEP_CPP_WIN32=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8236,10 +8218,9 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -8303,6 +8284,7 @@ SOURCE=.\src\ptlib\msos\wincfg.cxx
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8311,17 +8293,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8332,8 +8313,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8369,6 +8350,7 @@ DEP_CPP_WINCF=\
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8377,17 +8359,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8398,8 +8379,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8435,6 +8416,7 @@ DEP_CPP_WINCF=\
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8443,17 +8425,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8464,8 +8445,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8501,6 +8482,7 @@ DEP_CPP_WINCF=\
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8509,17 +8491,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8530,8 +8511,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8567,6 +8548,7 @@ DEP_CPP_WINCF=\
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8575,17 +8557,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8596,8 +8577,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8633,6 +8614,7 @@ DEP_CPP_WINCF=\
 
 DEP_CPP_WINCF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8641,17 +8623,16 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -8662,8 +8643,8 @@ DEP_CPP_WINCF=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -8706,6 +8687,7 @@ SOURCE=.\src\ptlib\msos\winsock.cxx
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8713,7 +8695,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -8792,6 +8773,7 @@ DEP_CPP_WINSO=\
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8799,7 +8781,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -8878,6 +8859,7 @@ DEP_CPP_WINSO=\
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8885,7 +8867,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -8964,6 +8945,7 @@ DEP_CPP_WINSO=\
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -8971,7 +8953,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9050,6 +9031,7 @@ DEP_CPP_WINSO=\
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9057,7 +9039,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9136,6 +9117,7 @@ DEP_CPP_WINSO=\
 
 DEP_CPP_WINSO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9143,7 +9125,6 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9232,8 +9213,9 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ceostream.cpp
 !IF  "$(CFG)" == "pwlib - Win32 (WCE SH3) Release"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9241,7 +9223,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9300,8 +9281,9 @@ DEP_CPP_CEOST=\
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE SH3) Debug"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9309,7 +9291,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9368,8 +9349,9 @@ DEP_CPP_CEOST=\
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE ARM) Release"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9377,7 +9359,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9436,8 +9417,9 @@ DEP_CPP_CEOST=\
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE ARM) Debug"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9445,7 +9427,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9504,8 +9485,9 @@ DEP_CPP_CEOST=\
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE x86em) Release"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9513,7 +9495,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9572,8 +9553,9 @@ DEP_CPP_CEOST=\
 !ELSEIF  "$(CFG)" == "pwlib - Win32 (WCE x86em) Debug"
 
 DEP_CPP_CEOST=\
-	{$(INCLUDE)}"ceostream.h"\
+	{$(INCLUDE)}".\INCLUDE\PTLIB\WINCE\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9581,7 +9563,6 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9648,6 +9629,7 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\cevfw.cpp
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9655,7 +9637,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -9715,6 +9696,7 @@ DEP_CPP_CEVFW=\
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9722,7 +9704,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -9782,6 +9763,7 @@ DEP_CPP_CEVFW=\
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9789,7 +9771,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -9849,6 +9830,7 @@ DEP_CPP_CEVFW=\
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9856,7 +9838,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -9916,6 +9897,7 @@ DEP_CPP_CEVFW=\
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9923,7 +9905,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -9983,6 +9964,7 @@ DEP_CPP_CEVFW=\
 
 DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9990,7 +9972,6 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10057,6 +10038,7 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ios.cpp
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10065,17 +10047,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10086,8 +10067,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10124,6 +10105,7 @@ DEP_CPP_IOS_C=\
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10132,17 +10114,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10153,8 +10134,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10191,6 +10172,7 @@ DEP_CPP_IOS_C=\
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10199,17 +10181,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10220,8 +10201,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10258,6 +10239,7 @@ DEP_CPP_IOS_C=\
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10266,17 +10248,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10287,8 +10268,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10325,6 +10306,7 @@ DEP_CPP_IOS_C=\
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10333,17 +10315,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10354,8 +10335,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10392,6 +10373,7 @@ DEP_CPP_IOS_C=\
 
 DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10400,17 +10382,16 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10421,8 +10402,8 @@ DEP_CPP_IOS_C=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -10558,6 +10539,7 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\mmsystemx.cxx
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10565,7 +10547,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10625,6 +10606,7 @@ DEP_CPP_MMSYS=\
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10632,7 +10614,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10692,6 +10673,7 @@ DEP_CPP_MMSYS=\
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10699,7 +10681,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10759,6 +10740,7 @@ DEP_CPP_MMSYS=\
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10766,7 +10748,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10826,6 +10807,7 @@ DEP_CPP_MMSYS=\
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10833,7 +10815,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10893,6 +10874,7 @@ DEP_CPP_MMSYS=\
 
 DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10900,7 +10882,6 @@ DEP_CPP_MMSYS=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -10967,6 +10948,7 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ostream.cpp
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -10975,17 +10957,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -10996,8 +10977,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11034,6 +11015,7 @@ DEP_CPP_OSTRE=\
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11042,17 +11024,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -11063,8 +11044,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11101,6 +11082,7 @@ DEP_CPP_OSTRE=\
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11109,17 +11091,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -11130,8 +11111,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11168,6 +11149,7 @@ DEP_CPP_OSTRE=\
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11176,17 +11158,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -11197,8 +11178,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11235,6 +11216,7 @@ DEP_CPP_OSTRE=\
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11243,17 +11225,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -11264,8 +11245,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11302,6 +11283,7 @@ DEP_CPP_OSTRE=\
 
 DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11310,17 +11292,16 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
-	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
-	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -11331,8 +11312,8 @@ DEP_CPP_OSTRE=\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PTLIB\pdirect.h"\
-	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PTLIB\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PTLIB\ptime.h"\
@@ -11376,6 +11357,7 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\stdlibx.cpp
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11383,7 +11365,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11463,6 +11444,7 @@ DEP_CPP_STDLI=\
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11470,7 +11452,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11550,6 +11531,7 @@ DEP_CPP_STDLI=\
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11557,7 +11539,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11637,6 +11618,7 @@ DEP_CPP_STDLI=\
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11644,7 +11626,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11724,6 +11705,7 @@ DEP_CPP_STDLI=\
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11731,7 +11713,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11811,6 +11792,7 @@ DEP_CPP_STDLI=\
 
 DEP_CPP_STDLI=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -11818,7 +11800,6 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -11971,6 +11952,7 @@ SOURCE=.\src\ptclib\asner.cxx
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -11979,7 +11961,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12038,6 +12019,7 @@ DEP_CPP_ASNER=\
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -12046,7 +12028,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12105,6 +12086,7 @@ DEP_CPP_ASNER=\
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -12113,7 +12095,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12172,6 +12153,7 @@ DEP_CPP_ASNER=\
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -12180,7 +12162,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12239,6 +12220,7 @@ DEP_CPP_ASNER=\
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -12247,7 +12229,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12306,6 +12287,7 @@ DEP_CPP_ASNER=\
 
 DEP_CPP_ASNER=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
@@ -12314,7 +12296,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12380,6 +12361,7 @@ SOURCE=.\src\ptclib\cypher.cxx
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12391,7 +12373,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12450,6 +12431,7 @@ DEP_CPP_CYPHE=\
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12461,7 +12443,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12520,6 +12501,7 @@ DEP_CPP_CYPHE=\
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12531,7 +12513,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12590,6 +12571,7 @@ DEP_CPP_CYPHE=\
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12601,7 +12583,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12660,6 +12641,7 @@ DEP_CPP_CYPHE=\
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12671,7 +12653,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12730,6 +12711,7 @@ DEP_CPP_CYPHE=\
 
 DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
@@ -12741,7 +12723,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -12807,6 +12788,7 @@ SOURCE=.\src\ptclib\dtmf.cxx
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -12815,7 +12797,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12874,6 +12855,7 @@ DEP_CPP_DTMF_=\
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -12882,7 +12864,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -12941,6 +12922,7 @@ DEP_CPP_DTMF_=\
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -12949,7 +12931,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -13008,6 +12989,7 @@ DEP_CPP_DTMF_=\
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -13016,7 +12998,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -13075,6 +13056,7 @@ DEP_CPP_DTMF_=\
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -13083,7 +13065,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -13142,6 +13123,7 @@ DEP_CPP_DTMF_=\
 
 DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
@@ -13150,7 +13132,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -13216,6 +13197,7 @@ SOURCE=.\src\ptclib\inetprot.cxx
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13225,7 +13207,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13304,6 +13285,7 @@ DEP_CPP_INETP=\
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13313,7 +13295,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13392,6 +13373,7 @@ DEP_CPP_INETP=\
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13401,7 +13383,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13480,6 +13461,7 @@ DEP_CPP_INETP=\
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13489,7 +13471,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13568,6 +13549,7 @@ DEP_CPP_INETP=\
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13577,7 +13559,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13656,6 +13637,7 @@ DEP_CPP_INETP=\
 
 DEP_CPP_INETP=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
@@ -13665,7 +13647,6 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
@@ -13751,6 +13732,7 @@ SOURCE=.\src\ptclib\pasn.cxx
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -13760,7 +13742,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -13769,8 +13750,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -13838,6 +13819,7 @@ DEP_CPP_PASN_=\
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -13847,7 +13829,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -13856,8 +13837,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -13925,6 +13906,7 @@ DEP_CPP_PASN_=\
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -13934,7 +13916,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -13943,8 +13924,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -14012,6 +13993,7 @@ DEP_CPP_PASN_=\
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -14021,7 +14003,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -14030,8 +14011,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -14099,6 +14080,7 @@ DEP_CPP_PASN_=\
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -14108,7 +14090,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -14117,8 +14098,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -14186,6 +14167,7 @@ DEP_CPP_PASN_=\
 
 DEP_CPP_PASN_=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
@@ -14195,7 +14177,6 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -14204,8 +14185,8 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PTLIB\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PTLIB\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PTLIB\file.h"\
 	{$(INCLUDE)}"PTLIB\filepath.h"\
@@ -14280,6 +14261,7 @@ SOURCE=.\src\ptclib\pwavfile.cxx
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14288,7 +14270,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14347,6 +14328,7 @@ DEP_CPP_PWAVF=\
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14355,7 +14337,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14414,6 +14395,7 @@ DEP_CPP_PWAVF=\
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14422,7 +14404,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14481,6 +14462,7 @@ DEP_CPP_PWAVF=\
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14489,7 +14471,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14548,6 +14529,7 @@ DEP_CPP_PWAVF=\
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14556,7 +14538,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14615,6 +14596,7 @@ DEP_CPP_PWAVF=\
 
 DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
@@ -14623,7 +14605,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14689,6 +14670,7 @@ SOURCE=.\src\ptclib\random.cxx
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -14697,7 +14679,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14756,6 +14737,7 @@ DEP_CPP_RANDO=\
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -14764,7 +14746,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14823,6 +14804,7 @@ DEP_CPP_RANDO=\
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -14831,7 +14813,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14890,6 +14871,7 @@ DEP_CPP_RANDO=\
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -14898,7 +14880,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -14957,6 +14938,7 @@ DEP_CPP_RANDO=\
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -14965,7 +14947,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -15024,6 +15005,7 @@ DEP_CPP_RANDO=\
 
 DEP_CPP_RANDO=\
 	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"INCLUDE\PTLIB\MSOS\ptlib\..\..\conchan.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
@@ -15032,7 +15014,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PTLIB\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PTLIB\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
