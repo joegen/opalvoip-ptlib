@@ -1233,6 +1233,14 @@ EXPORTS
     ?AsString@PTime@@QBE?AVPString@@W4TimeFormat@1@H@Z @920 NONAME ;public: class PString  __thiscall PTime::AsString(enum PTime::TimeFormat,int)const 
     ?AsUnsigned64@PString@@QBE_KI@Z @921 NONAME ;public: unsigned __int64 __thiscall PString::AsUnsigned64(unsigned int)const 
     ?AsUnsigned@PString@@QBEKI@Z @922 NONAME ;public: unsigned long __thiscall PString::AsUnsigned(unsigned int)const 
+    ?Attach@?$PBaseArray@D@@QAEXPBDH@Z @3283 NONAME ;public: void __thiscall PBaseArray<char>::Attach(char const *,int)
+    ?Attach@?$PBaseArray@E@@QAEXPBEH@Z @3284 NONAME ;public: void __thiscall PBaseArray<unsigned char>::Attach(unsigned char const *,int)
+    ?Attach@?$PBaseArray@F@@QAEXPBFH@Z @3285 NONAME ;public: void __thiscall PBaseArray<short>::Attach(short const *,int)
+    ?Attach@?$PBaseArray@G@@QAEXPBGH@Z @3286 NONAME ;public: void __thiscall PBaseArray<unsigned short>::Attach(unsigned short const *,int)
+    ?Attach@?$PBaseArray@H@@QAEXPBHH@Z @3287 NONAME ;public: void __thiscall PBaseArray<int>::Attach(int const *,int)
+    ?Attach@?$PBaseArray@I@@QAEXPBIH@Z @3288 NONAME ;public: void __thiscall PBaseArray<unsigned int>::Attach(unsigned int const *,int)
+    ?Attach@?$PBaseArray@J@@QAEXPBJH@Z @3289 NONAME ;public: void __thiscall PBaseArray<long>::Attach(long const *,int)
+    ?Attach@?$PBaseArray@K@@QAEXPBKH@Z @3290 NONAME ;public: void __thiscall PBaseArray<unsigned long>::Attach(unsigned long const *,int)
     ?Attach@PAbstractArray@@QAEXPBXH@Z @923 NONAME ;public: void __thiscall PAbstractArray::Attach(void const *,int)
     ?Begin@PTrace@@SAAAVostream@@IPBDH@Z @3027 NONAME ;public: static class ostream & __cdecl PTrace::Begin(unsigned int,char const *,int)
     ?BeginRead@PWin32PacketSYS@@UAEHPAXKAAKAAVPWin32Overlapped@@@Z @2351 NONAME ;public: virtual int __thiscall PWin32PacketSYS::BeginRead(void *,unsigned long,unsigned long &,class PWin32Overlapped &)
@@ -2554,8 +2562,6 @@ EXPORTS
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1984 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
     ?PDummyFunctionToMakeSureSymbolsAreInDEFFile@@YAXXZ @3222 NONAME ;void __cdecl PDummyFunctionToMakeSureSymbolsAreInDEFFile(void)
     ?PGetErrorStream@@YAAAVostream@@XZ @1987 NONAME ;class ostream & __cdecl PGetErrorStream(void)
-    ?pHostByAddr@@3VPHostByAddr@@A @1989 NONAME ;class PHostByAddr  pHostByAddr
-    ?pHostByName@@3VPHostByName@@A @1990 NONAME ;class PHostByName  pHostByName
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @1991 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
     ?Ping@PICMPSocket@@QAEHABVPString@@AAVPingInfo@1@@Z @1992 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &,class PICMPSocket::PingInfo &)
     ?PlatformOpen@PPipeChannel@@AAEHABVPString@@ABVPStringArray@@W4OpenMode@1@HHPBVPStringToString@@@Z @1993 NONAME ;private: int __thiscall PPipeChannel::PlatformOpen(class PString const &,class PStringArray const &,enum PPipeChannel::OpenMode,int,int,class PStringToString const *)
@@ -2925,11 +2931,3 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?Attach@?$PBaseArray@D@@QAEXPBDH@Z @3283 NONAME ;public: void __thiscall PBaseArray<char>::Attach(char const *,int)
-    ?Attach@?$PBaseArray@E@@QAEXPBEH@Z @3284 NONAME ;public: void __thiscall PBaseArray<unsigned char>::Attach(unsigned char const *,int)
-    ?Attach@?$PBaseArray@F@@QAEXPBFH@Z @3285 NONAME ;public: void __thiscall PBaseArray<short>::Attach(short const *,int)
-    ?Attach@?$PBaseArray@G@@QAEXPBGH@Z @3286 NONAME ;public: void __thiscall PBaseArray<unsigned short>::Attach(unsigned short const *,int)
-    ?Attach@?$PBaseArray@H@@QAEXPBHH@Z @3287 NONAME ;public: void __thiscall PBaseArray<int>::Attach(int const *,int)
-    ?Attach@?$PBaseArray@I@@QAEXPBIH@Z @3288 NONAME ;public: void __thiscall PBaseArray<unsigned int>::Attach(unsigned int const *,int)
-    ?Attach@?$PBaseArray@J@@QAEXPBJH@Z @3289 NONAME ;public: void __thiscall PBaseArray<long>::Attach(long const *,int)
-    ?Attach@?$PBaseArray@K@@QAEXPBKH@Z @3290 NONAME ;public: void __thiscall PBaseArray<unsigned long>::Attach(unsigned long const *,int)
