@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.18 1996/06/28 13:15:23 robertj Exp $
+ * $Id: http.h,v 1.19 1996/08/19 13:44:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.19  1996/08/19 13:44:06  robertj
+ * Fixed authorisation so if have no user/password on basic authentication, does not require it.
+ *
  * Revision 1.18  1996/06/28 13:15:23  robertj
  * Modified HTTPAuthority so gets PHTTPReqest (mainly for URL) passed in.
  * Moved HTTP form resource to another compilation module.
@@ -630,6 +633,17 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
        TRUE if the user and password are authorised in the realm.
      */
 
+    BOOL IsActive() const;
+    /* Determine if the authirisation is to be applied. This could be used to
+       distinguish between net requiring authorisation and requiring autorisation
+       but having no password.
+
+       The default behaviour is to return TRUE.
+
+       <H2>Returns:</H2>
+       TRUE if the authorisation in the realm is to be applied.
+     */
+
   protected:
     static void DecodeBasicAuthority(
       const PString & authInfo,   // Authority information string.
@@ -687,6 +701,17 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
 
        <H2>Returns:</H2>
        TRUE if the user and password are authorised in the realm.
+     */
+
+    BOOL IsActive() const;
+    /* Determine if the authirisation is to be applied. This could be used to
+       distinguish between net requiring authorisation and requiring autorisation
+       but having no password.
+
+       The default behaviour is to return TRUE.
+
+       <H2>Returns:</H2>
+       TRUE if the authorisation in the realm is to be applied.
      */
 
     const PString & GetUserName() const { return username; }
