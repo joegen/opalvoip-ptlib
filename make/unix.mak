@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.159  2003/03/01 17:05:05  rogerh
+# Mac OS X updates from Shawn Pai-Hsiang Hsiao
+#
 # Revision 1.158  2003/02/20 23:32:00  robertj
 # More RTEMS support patches, thanks Sebastian Meyer.
 #
@@ -1134,7 +1137,10 @@ ifeq ($(OSTYPE),Darwin)
 # MacOS X or later / Darwin
  
 STDCCFLAGS      += -DNO_LONG_DOUBLE -DP_MACOSX
-ENDLDLIBS       += -framework CoreServices -framework CoreAudio
+#STDCCFLAGS	+= -D_BSD_WCHAR_T_DEFINED_
+ENDLDLIBS       += -framework AudioToolbox -framework CoreAudio
+# ENDLDLIBS	+= -framework CoreServices
+LDFLAGS		+= -multiply_defined suppress
 P_MACOSX	:= 1
 
 # To compile using esound. Uncomment the ESDDIR line, and
