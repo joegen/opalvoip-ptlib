@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.32 1997/06/09 04:30:03 robertj Exp $
+ * $Id: inetprot.cxx,v 1.33 1997/11/06 10:26:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.33  1997/11/06 10:26:48  robertj
+ * Fixed bug in debug dump of MIME dictionary, did not have linefeeds between entries.
+ *
  * Revision 1.32  1997/06/09 04:30:03  robertj
  * Fixed multiple MIME field bug.
  *
@@ -562,10 +565,10 @@ void PMIMEInfo::PrintOn(ostream &strm) const
     if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
       PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++)
-        strm << name << vals[j];
+        strm << name << vals[j] << '\n';
     }
     else
-      strm << name << value;
+      strm << name << value << '\n';
   }
   strm << endl;
 }
