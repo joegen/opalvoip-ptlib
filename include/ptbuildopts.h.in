@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.39  2005/01/26 05:37:39  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.38  2005/01/03 12:48:41  csoutheren
  * Added new configure options and ability to disable/enable modules
  *
@@ -463,6 +466,7 @@
 #undef P_SOAP
 #undef P_HTTPSVC
 #undef P_HTTP
+#undef P_CONFIG_FILE
 
 /////////////////////////////////////////////////
 //
