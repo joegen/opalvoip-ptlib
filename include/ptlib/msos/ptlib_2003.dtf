@@ -3432,7 +3432,7 @@ EXPORTS
     ?CloneContents@PHashTable@@IAEXPBV1@@Z @988 NONAME
     ?Close@PChannel@@UAEHXZ @989 NONAME
     ?Close@PConsoleChannel@@UAEHXZ @990 NONAME
-    ?Close@PDirectory@@QAEXXZ @991 NONAME
+    ?Close@PDirectory@@UAEXXZ @7280 NONAME
     ?Close@PDynaLink@@UAEXXZ @992 NONAME
     ?Close@PEthSocket@@UAEHXZ @993 NONAME
     ?Close@PFile@@UAEHXZ @995 NONAME
@@ -3827,6 +3827,7 @@ EXPORTS
     ?DestroyContents@PHashTable@@MAEXXZ @1270 NONAME
     ?DestroyContents@Table@PHashTable@@UAEXXZ @1271 NONAME
     ?Destruct@PContainer@@IAEXXZ @1272 NONAME
+    ?Destruct@PDirectory@@IAEXXZ @7281 NONAME
     ?DisallowDeleteObjects@PCollection@@QAEXXZ @5204 NONAME
     ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @1273 NONAME
     ?Empty@PString@@SA?AV1@XZ @3014 NONAME
@@ -4167,7 +4168,7 @@ EXPORTS
     ?GetElementAt@Table@PHashTable@@QAEPAVElement@2@ABVPObject@@@Z @1495 NONAME
     ?GetElementsIndex@Table@PHashTable@@QBEHPBVPObject@@HH@Z @1496 NONAME
     ?GetEncoding@PSound@@QBEIXZ @5236 NONAME
-    ?GetEntryName@PDirectory@@QBE?AVPCaselessString@@XZ @1497 NONAME
+    ?GetEntryName@PDirectory@@UBE?AVPCaselessString@@XZ @7282 NONAME
     ?GetError@ServiceManager@@QBEKXZ @5237 NONAME
     ?GetErrorCode@PChannel@@QBE?AW4Errors@1@W4ErrorGroup@1@@Z @5238 NONAME
     ?GetErrorCode@PMail@@QBEHXZ @1498 NONAME
@@ -4236,7 +4237,7 @@ EXPORTS
     ?GetHour@PTime@@QBEHXZ @5499 NONAME
     ?GetHours@PTimeInterval@@QBEHXZ @5500 NONAME
     ?GetHue@PVideoDevice@@UAEHXZ @1545 NONAME
-    ?GetInfo@PDirectory@@QBEHAAVPFileInfo@@@Z @1546 NONAME
+    ?GetInfo@PDirectory@@UBEHAAVPFileInfo@@@Z @7283 NONAME
     ?GetInfo@PFile@@QAEHAAVPFileInfo@@@Z @5501 NONAME
     ?GetInfo@PFile@@SAHABVPFilePath@@AAVPFileInfo@@@Z @1547 NONAME
     ?GetInitialVal@PSemaphore@@QBEIXZ @5250 NONAME
@@ -4778,7 +4779,7 @@ EXPORTS
     ?IsServiceProcess@PServiceProcess@@UBEHXZ @2049 NONAME
     ?IsSingleton@?$PFactory@VPProcessStartup@@VPString@@@@SAHABVPString@@@Z @6647 NONAME
     ?IsSingleton_Internal@?$PFactory@VPProcessStartup@@VPString@@@@IAE_NABVPString@@@Z @6648 NONAME
-    ?IsSubDir@PDirectory@@QBEHXZ @2050 NONAME
+    ?IsSubDir@PDirectory@@UBEHXZ @7284 NONAME
     ?IsSuspended@PThread@@UBEHXZ @2051 NONAME
     ?IsTerminated@PThread@@UBEHXZ @2052 NONAME
     ?IsTextFile@PFile@@MBEHXZ @2053 NONAME
@@ -4901,7 +4902,7 @@ EXPORTS
     ?OnWriteComplete@PChannel@@UAEXPBXH@Z @2115 NONAME
     ?Open@NT_ServiceManager@@AAEHPAVPServiceProcess@@@Z @2116 NONAME
     ?Open@PConsoleChannel@@UAEHW4ConsoleType@1@@Z @2117 NONAME
-    ?Open@PDirectory@@QAEHH@Z @2118 NONAME
+    ?Open@PDirectory@@UAEHH@Z @7285 NONAME
     ?Open@PDynaLink@@UAEHABVPString@@@Z @2119 NONAME
     ?Open@PFile@@UAEHABVPFilePath@@W4OpenMode@1@H@Z @2121 NONAME
     ?Open@PFile@@UAEHW4OpenMode@1@H@Z @2122 NONAME
@@ -5170,7 +5171,7 @@ EXPORTS
     ?Reset@PWin32Overlapped@@QAEXXZ @2331 NONAME
     ?ResizeYUV422@PStandardColourConverter@@IBEXPBEPAE@Z @2332 NONAME
     ?Resolution@PTimer@@SAIXZ @2333 NONAME
-    ?Restart@PDirectory@@QAEHH@Z @5529 NONAME
+    ?Restart@PDirectory@@UAEHH@Z @7286 NONAME
     ?Restart@PThread@@UAEXXZ @2334 NONAME
     ?RestrictAccess@PVideoChannel@@QAEXXZ @2335 NONAME
     ?Resume@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2336 NONAME
