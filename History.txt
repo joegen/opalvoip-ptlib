@@ -2,6 +2,29 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.1pl17
+------------
+	AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+
+	Start of Nucleus++ port.
+
+	Fixed bug in setting current value of options in select form fields.
+
+	Added ability to get at the PTraceStream without timestamps etc, 
+	use UINT_MAX trace level.
+
+	Added more guards for NULL PStrings in PConfigArg handling.
+
+	Removed some warnings on compiling colour icons in PWRC.
+
+	Fixed problems in decompile of .ICO file with multiple icons in PWRC.
+
+	Added ability to append resources to existing file in PWRC.
+
+	Fixed bug that causes crash when gettng cursor/selection position in
+	a PEditBox.
+	
+
 Release 1.1pl16
 ------------
 	Added PConfigArgs class so can save program arguments to config files.
