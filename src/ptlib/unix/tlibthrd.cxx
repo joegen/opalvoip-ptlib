@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.39  2000/04/11 11:38:49  rogerh
+ * More NetBSD Pthread changes
+ *
  * Revision 1.38  2000/04/10 11:47:02  rogerh
  * Add initial NetBSD pthreads support
  *
@@ -237,7 +240,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
@@ -416,7 +419,7 @@ void * PThread::PX_ThreadStart(void * arg)
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
   int sig;
   sigwait(&waitSignals, &sig);
 #else
@@ -554,7 +557,7 @@ void PThread::Suspend(BOOL susp)
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
           int sig;
           sigwait(&waitSignals, &sig);
 #else
