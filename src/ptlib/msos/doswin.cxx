@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.2 1995/03/14 13:31:36 robertj Exp $
+ * $Id: doswin.cxx,v 1.3 1995/03/25 02:09:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
- * Revision 1.2  1995/03/14 13:31:36  robertj
- * Implemented DOS pipe channel.
+ * Revision 1.3  1995/03/25 02:09:11  robertj
+ * Added check for network login name.
  *
+// Revision 1.2  1995/03/14  13:31:36  robertj
+// Implemented DOS pipe channel.
+//
 // Revision 1.1  1995/03/14  12:45:16  robertj
 // Initial revision
 //
@@ -141,6 +144,8 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 void PPipeChannel::Construct(const PString & subProgram,
                 const char * const * arguments, OpenMode mode, BOOL searchPath)
 {
+  hasRun = FALSE;
+
   if (searchPath || subProgram.FindOneOf(":\\/") != P_MAX_INDEX)
     subProgName = subProgram;
   else
@@ -158,15 +163,15 @@ void PPipeChannel::Construct(const PString & subProgram,
   }
   
   if (mode != ReadOnly) {
-    toChild = PFilePath("pwpc", NULL);
-    os_handle = _open(toChild,_O_WRONLY|_O_CREAT|_O_BINARY,S_IREAD|S_IWRITE);
+    toChild = PFilePath("pw", NULL);
+    os_handle = _open(toChild, _O_WRONLY|_O_CREAT|_O_BINARY,S_IREAD|S_IWRITE);
     if (!ConvertOSError(os_handle))
       return;
     subProgName += '<' + toChild;
   }
 
   if (mode != WriteOnly) {
-    fromChild = PFilePath("pwpc", NULL);
+    fromChild = PFilePath("pw", NULL);
     subProgName += '>' + fromChild;
   }
 
@@ -239,14 +244,29 @@ BOOL PPipeChannel::Execute()
   if (hasRun)
     return FALSE;
 
+  flush();
   if (os_handle >= 0) {
     _close(os_handle);
     os_handle = -1;
   }
 
 #if defined(_WINDOWS)
-  if (WinExec(subProgName, SW_HIDE) < 32)
-    return FALSE;
+  if ((osError = (int)WinExec(subProgName, SW_HIDE)) < 32) {
+    switch (osError) {
+      case 0 :
+      case 8 :
+        osError = ENOMEM;
+        break;
+      case 5 :
+        osError = EACCES;
+        break;
+      case 2 :
+        break;
+      default :
+        osError += 0x4000;
+    }
+    return ConvertOSError(-2);
+  }
 #else
   if (!ConvertOSError(system(subProgName)))
     return FALSE;
@@ -292,14 +312,88 @@ void PProcess::OperatingSystemYield()
 
 PString PProcess::GetUserName() const
 {
+  /* ----- Microsoft LAN Manager, Windows for Workgroups, IBM LAN Server ----- */
+#pragma pack(1)
+  static struct {
+    char _far *computername;
+    char _far *username;
+    char _far *langroup;
+    unsigned char ver_major;
+    unsigned char ver_minor;
+    char _far *logon_domain;
+    char _far *oth_domains;
+    char filler[32];
+  } NEAR wksta;
+#pragma pack()
+
+  union REGS r;
+  r.x.ax = 0x5F44;
+  r.x.bx = 10;
+  r.x.cx = sizeof(wksta);
+  r.x.di = (WORD)&wksta;
+
+  struct SREGS sregs;
+  segread(&sregs);
+  sregs.es = sregs.ds;
+  int86x(0x21, &r, &r, &sregs);
+  if (r.x.ax == 0 || r.x.ax == 0x5F44) {
+    char name[32];
+    strcpy(name, wksta.username);
+    strlwr(name);
+    return name;
+  }
+
+
+  /* ----- Novell NetWare ----- Get Connection Information E3(16) */
+
+#pragma pack(1)
+  static struct {
+    unsigned short len;
+    unsigned char func;
+    unsigned char number;
+  } NEAR gcireq;
+  
+  static struct {
+    unsigned short len;
+    unsigned long objectID;
+    unsigned short objecttype;
+    char objectname[48];
+    unsigned char logintime[7];
+    unsigned char reserved[39];
+  } NEAR gcirep;
+#pragma pack()
+
+  /* Load Get Connection Number function code.   */
+  r.x.ax = 0xDC00;
+  int86x(0x21, &r, &r, &sregs);
+  if (r.h.al > 0 && r.h.al <= 100) {
+    /* If the connection number is in range 1-100,
+     * invoke Get Connection Information to get the user name. */
+
+    gcireq.len = sizeof(gcireq) - sizeof(gcireq.len);
+    gcireq.func = 0x16;
+    gcireq.number = r.h.al;
+    gcirep.len = sizeof(gcirep) - sizeof(gcirep.len);
+
+    r.h.ah = 0xE3;
+    r.x.si = (unsigned short) &gcireq;
+    r.x.di = (unsigned short) &gcirep;
+    int86x(0x21, &r, &r, &sregs);
+    if (r.h.al == 0) {
+      strlwr(gcirep.objectname);
+      return gcirep.objectname;
+    }
+  }
+
+
+  /* Give up and use environment variables */
   const char * username = getenv("LOGNAME");
   if (username == NULL) {
     username = getenv("USER");
-    if (username == NULL) {
-      // _intdosx
+    if (username == NULL)
       username = "";
-    }
   }
+  
   PAssert(*username != '\0', "Cannot determine user name, set LOGNAME.");
   return username;
 }
