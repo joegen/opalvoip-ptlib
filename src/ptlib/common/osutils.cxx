@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.189  2002/05/22 00:42:03  craigs
+ * Added GMTTime flag to tracing options
+ *
  * Revision 1.188  2002/05/01 03:45:09  robertj
  * Added initialisation of PreadWriteMutex and changed slightly to agree
  *   with the text book definition of a semaphore for one of the mutexes.
@@ -803,7 +806,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   else {
     if ((PTraceOptions&DateAndTime) != 0) {
       PTime now;
-      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
+      *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local);
     }
 
     if ((PTraceOptions&Timestamp) != 0)
