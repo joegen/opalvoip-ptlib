@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.12  2001/03/07 01:42:59  dereks
+ * miscellaneous video fixes. Works on linux now. Add debug statements
+ * (at PTRACE level of 1)
+ *
  * Revision 1.11  2001/03/06 23:34:20  robertj
  * Added static function to get input device names.
  * Moved some inline virtuals to non-inline.
@@ -94,14 +98,19 @@ class PColourConverter;
      "YUV410P"  YUV 4:1:0 planar
      "MJPEG"    Motion JPEG
  */
+
 class PVideoDevice : public PObject
 {
   PCLASSINFO(PVideoDevice, PObject);
 
   protected:
-    /** Create a new video output device.
+    /** Create a new video device (input or output).
      */
     PVideoDevice();
+
+    /** Delete structures created by PVideoDevice(); 
+     */
+    ~PVideoDevice();
 
 
   public:
