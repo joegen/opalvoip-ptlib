@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.2 1995/11/21 11:49:42 robertj Exp $
+ * $Id: semaphor.h,v 1.3 1995/12/10 11:34:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.3  1995/12/10 11:34:50  robertj
+ * Fixed incorrect order of parameters in semaphore constructor.
+ *
  * Revision 1.2  1995/11/21 11:49:42  robertj
  * Added timeout on semaphore wait.
  *
@@ -63,8 +66,8 @@ PDECLARE_CLASS(PSemaphore, PObject)
 
   public:
     PSemaphore(
-      unsigned maximum = 1,       // Maximum value for semaphore count.
-      unsigned initial = UINT_MAX // Initial value for semaphore count.
+      unsigned initial = UINT_MAX, // Initial value for semaphore count.
+      unsigned maximum = 1         // Maximum value for semaphore count.
     );
     /* Create a new semaphore with maximum count and initial value specified.
        If the initial value is larger than the maximum value then is is set to
@@ -108,6 +111,7 @@ PDECLARE_CLASS(PSemaphore, PObject)
     PTimer   timeout;
     PQUEUE(BlockedThreadsQueue, PThread);
     BlockedThreadsQueue blockedThreads;
+    friend void PThread::Yield();
 #endif
 
 
