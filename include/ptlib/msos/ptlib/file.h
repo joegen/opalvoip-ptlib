@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.2 1995/06/04 12:46:49 robertj Exp $
+ * $Id: file.h,v 1.3 1996/08/08 10:09:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
+ * Revision 1.3  1996/08/08 10:09:00  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.2  1995/06/04 12:46:49  robertj
  * Borland C++ compatibility.
  *
@@ -49,7 +52,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-#include "../../common/file.h"
+#include "../../common/ptlib/file.h"
   protected:
     virtual BOOL IsTextFile() const;
       // Return TRUE if text file translation is required
