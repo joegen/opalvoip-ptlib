@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.5  2002/01/14 11:52:44  rogerh
+ * Add TestAllFormats
+ *
  * Revision 1.4  2001/12/05 08:34:41  rogerh
  * Add more dummy functions
  *
@@ -214,6 +217,12 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 {
 	// Assume the size is valid
 	return TRUE;
+}
+
+
+BOOL PVideoInputDevice::TestAllFormats()
+{
+  return TRUE;
 }
     
 // End Of File ///////////////////////////////////////////////////////////////
