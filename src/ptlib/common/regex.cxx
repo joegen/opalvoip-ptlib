@@ -796,7 +796,7 @@ print_double_string (where, string1, size1, string2, size2)
 /* Set by `re_set_syntax' to the current regexp syntax to recognize.  Can
    also be assigned to arbitrarily: each pattern buffer stores its own
    syntax, so it can be changed between regex compilations.  */
-static reg_syntax_t re_syntax_options = RE_SYNTAX_EMACS;
+reg_syntax_t re_syntax_options = RE_SYNTAX_EMACS;
 
 
 /* Specify the precise syntax of regexps for compilation.  This provides
@@ -2553,7 +2553,6 @@ typedef struct
 
    Returns 0 if we succeed, -2 if an internal error.   */
 
-static
 int
 re_compile_fastmap (
      struct re_pattern_buffer *bufp)
