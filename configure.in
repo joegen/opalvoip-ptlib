@@ -379,7 +379,10 @@ fi
 
 dnl dl needs to be at the end
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  ENDLDLIBS="$ENDLDLIBS -ldl"
+  AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
+  if test ${HAS_LIBDL} = yes ; then
+    ENDLDLIBS="$ENDLDLIBS -ldl"
+  fi
 fi
 
 AC_SUBST(STDCCFLAGS)
