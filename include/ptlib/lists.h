@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.17  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.16  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -85,9 +88,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PList container class
 
-PDECLARE_CONTAINER(PAbstractList, PCollection)
-/* This class is a collection of objects which are descendents of the
-   <A>PObject</A> class. It is implemeted as a doubly linked list.
+/**This class is a collection of objects which are descendents of the
+   #PObject# class. It is implemeted as a doubly linked list.
 
    The implementation of a list allows very fast inserting and deleting of
    objects in the collection, but has severe penalties for random access. All
@@ -98,134 +100,138 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
    access via ordinal index is made sequentially there is little overhead.
 
    The PAbstractList class would very rarely be descended from directly by
-   the user. The <A>PDECLARE_LIST</A> and <A>PLIST</A> macros would normally
+   the user. The #PDECLARE_LIST# and #PLIST# macros would normally
    be used to create descendent classes. They will instantiate the template
-   based on <A>PList</A> or directly declare and define the class (using
+   based on #PList# or directly declare and define the class (using
    inline functions) if templates are not being used.
 
-   The <A>PList</A> class or <A>PDECLARE_LIST</A> macro will define the
-   correctly typed operators for subscript access (operator[]).
+   The #PList# class or #PDECLARE_LIST# macro will define the
+   correctly typed operators for subscript access (#operator[]#).
  */
+class PAbstractList : public PCollection
+{
+  PCONTAINERINFO(PAbstractList, PCollection);
 
   public:
-    PAbstractList();
-    /* Create a new, empty, list.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, list.
 
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
+    PAbstractList();
+  //@}
 
   // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-    /* Get the relative rank of the two lists. The following algorithm is
+    /**Get the relative rank of the two lists. The following algorithm is
        employed for the comparison:
-
-       <DL>
-       <DT><CODE>EqualTo</CODE><DD> if the two lists are identical in length
+\begin{description}
+       \item[#EqualTo#] if the two lists are identical in length
        and each objects values, not pointer, are equal.
 
-       <DT><CODE>LessThan</CODE><DD> if the instances object value at an
+       \item[#LessThan#] if the instances object value at an
        ordinal position is less than the corresponding objects value in the
-       <CODE>obj</CODE> parameters list.
+       #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is less than the <CODE>obj</CODE> parameters list length.
+       length is less than the #obj# parameters list length.
 
-       <DT><CODE>GreaterThan</CODE><DD> if the instances object value at an
+       \item[#GreaterThan#] if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
-       <CODE>obj</CODE> parameters list.
+       #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is greater than the <CODE>obj</CODE> parameters list length.
-       </DL>
+       length is greater than the #obj# parameters list length.
+\end{description}
 
-       <H2>Returns:</H2>
-       comparison of the two objects, <CODE>EqualTo</CODE> for same,
-       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
-       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       @return
+       comparison of the two objects, #EqualTo# for same,
+       #LessThan# for #obj# logically less than the
+       object and #GreaterThan# for #obj# logically
        greater than the object.
      */
+    virtual Comparison Compare(const PObject & obj) const;
 
-  // Overrides from class PContainer
-    virtual BOOL SetSize(
-      PINDEX newSize  // New size for the list, this is ignored.
-    );
-    /* This function is meaningless for lists. The size of the collection is
+  /**@name Overrides from class PContainer */
+  //@{
+    /**This function is meaningless for lists. The size of the collection is
        determined by the addition and removal of objects. The size cannot be
        set in any other way.
 
-       <H2>Returns:</H2>
+       @return
        Always TRUE.
      */
-
-  // Overrides from class PCollection
-    virtual PINDEX Append(
-      PObject * obj   // New object to place into the collection.
+    virtual BOOL SetSize(
+      PINDEX newSize  /// New size for the list, this is ignored.
     );
-    /* Append a new object to the collection. This places a new link at the
+  //@}
+
+  /**@name Overrides from class PCollection */
+  //@{
+    /**Append a new object to the collection. This places a new link at the
        "tail" of the list.
     
-       <H2>Returns:</H2>
+       @return
        index of the newly added object.
      */
-
-    virtual PINDEX Insert(
-      const PObject & before,   // Object value to insert before.
-      PObject * obj             // New object to place into the collection.
+    virtual PINDEX Append(
+      PObject * obj   /// New object to place into the collection.
     );
-    /* Insert a new object immediately before the specified object. If the
+
+    /**Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the <A>Append()</A> function is performed.
+       the #Append()# function is performed.
        
        Note that the object values are compared for the search of the
-       <CODE>before</CODE> parameter, not the pointers. So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
+       #before# parameter, not the pointers. So the objects in the
+       collection must correctly implement the #PObject::Compare()#
        function.
 
-       <H2>Returns:</H2>
+       @return
        index of the newly inserted object.
      */
-
-    virtual PINDEX InsertAt(
-      PINDEX index,   // Index position in collection to place the object.
-      PObject * obj   // New object to place into the collection.
+    virtual PINDEX Insert(
+      const PObject & before,   /// Object value to insert before.
+      PObject * obj             /// New object to place into the collection.
     );
-    /* Insert a new object at the specified ordinal index. If the index is
+
+    /**Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the <A>Append()</A> function is performed.
+       equivalent of the #Append()# function is performed.
 
-       <H2>Returns:</H2>
+       @return
        index of the newly inserted object.
      */
-
-    virtual BOOL Remove(
-      const PObject * obj   // Existing object to remove from the collection.
+    virtual PINDEX InsertAt(
+      PINDEX index,   /// Index position in collection to place the object.
+      PObject * obj   /// New object to place into the collection.
     );
-    /* Remove the object from the collection. If the AllowDeleteObjects option
+
+    /**Remove the object from the collection. If the AllowDeleteObjects option
        is set then the object is also deleted.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the object was in the collection.
      */
-
-    virtual PObject * RemoveAt(
-      PINDEX index   // Index position in collection to place the object.
+    virtual BOOL Remove(
+      const PObject * obj   /// Existing object to remove from the collection.
     );
-    /* Remove the object at the specified ordinal index from the collection.
+
+    /**Remove the object at the specified ordinal index from the collection.
        If the AllowDeleteObjects option is set then the object is also deleted.
 
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       <H2>Returns:</H2>
+       @return
        pointer to the object being removed, or NULL if it was deleted.
      */
-
-    virtual BOOL SetAt(
-      PINDEX index,   // Index position in collection to set.
-      PObject * val   // New value to place into the collection.
+    virtual PObject * RemoveAt(
+      PINDEX index   /// Index position in collection to place the object.
     );
-    /* Set the object at the specified ordinal position to the new value. This
+
+    /**Set the object at the specified ordinal position to the new value. This
        will overwrite the existing entry. If the AllowDeleteObjects option is
        set then the old object is also deleted.
 
@@ -236,75 +242,80 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the object was successfully added.
      */
+    virtual BOOL SetAt(
+      PINDEX index,   /// Index position in collection to set.
+      PObject * val   /// New value to place into the collection.
+    );
 
-    virtual PObject * GetAt(
-      PINDEX index  // Index position in the collection of the object.
-    ) const;
-    /* Get the object at the specified ordinal position. If the index was
+    /**Get the object at the specified ordinal position. If the index was
        greater than the size of the collection then NULL is returned.
 
        The object accessed in this way is remembered by the class and further
        access will be fast. Access to elements one either side of that saved
        element, and the head and tail of the list, will always be fast.
 
-       <H2>Returns:</H2>
+       @return
        pointer to object at the specified index.
      */
-
-    virtual PINDEX GetObjectsIndex(
-      const PObject * obj
+    virtual PObject * GetAt(
+      PINDEX index  // Index position in the collection of the object.
     ) const;
-    /* Search the collection for the specific instance of the object. The
+
+    /**Search the collection for the specific instance of the object. The
        object pointers are compared, not the values. A simple linear search
        from "head" of the list is performed.
 
-       <H2>Returns:</H2>
+       @return
        ordinal index position of the object, or P_MAX_INDEX.
      */
-
-    virtual PINDEX GetValuesIndex(
-      const PObject & obj
+    virtual PINDEX GetObjectsIndex(
+      const PObject * obj  /// Object to find.
     ) const;
-    /* Search the collection for the specified value of the object. The object
+
+    /**Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
+       collection must correctly implement the #PObject::Compare()#
        function. A simple linear search from "head" of the list is performed.
 
-       <H2>Returns:</H2>
+       @return
        ordinal index position of the object, or P_MAX_INDEX.
      */
+    virtual PINDEX GetValuesIndex(
+      const PObject & obj  /// Object to find value of.
+    ) const;
+  //@}
 
 
   protected:
-    PObject & GetReferenceAt(
-      PINDEX index  // Ordinal index of the list element to set as current.
-    ) const;
-    /* Get the object at the specified ordinal position. If the index was
+    /**Get the object at the specified ordinal position. If the index was
        greater than the size of the collection then this asserts.
 
        The object accessed in this way is remembered by the class and further
        access will be fast. Access to elements one either side of that saved
        element, and the head and tail of the list, will always be fast.
 
-       <H2>Returns:</H2>
+       @return
        reference to object at the specified index.
      */
-
-    BOOL SetCurrent(
-      PINDEX index  // Ordinal index of the list element to set as current.
+    PObject & GetReferenceAt(
+      PINDEX index  /// Ordinal index of the list element to set as current.
     ) const;
-    /* Move the internal "cursor" to the index position specified. This
+
+    /**Move the internal "cursor" to the index position specified. This
        function will optimise the sequential move taking into account the
        previous current position and the position at the head and tail of the
        list. Whichever of these three points is closes is used as the starting
        point for a sequential move to the required index.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the index could be set as the current element.
      */
+    BOOL SetCurrent(
+      PINDEX index  /// Ordinal index of the list element to set as current.
+    ) const;
 
     class Element {
       public:
@@ -327,34 +338,40 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> class PList : public PAbstractList
-{
-  PCLASSINFO(PList, PAbstractList)
-/* This template class maps the PAbstractList to a specific object type. The
+/**This template class maps the PAbstractList to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the <A>PDECLARE_LIST</A> macro will
+   Note that if templates are not used the #PDECLARE_LIST# macro will
    simulate the template instantiation.
  */
+template <class T> class PList : public PAbstractList
+{
+  PCLASSINFO(PList, PAbstractList);
 
   public:
-    PList()
-      : PAbstractList() { }
-    /* Create a new, empty, list.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, list.
 
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
+    PList()
+      : PAbstractList() { }
+  //@}
 
-    virtual PObject * Clone() const
-      { return PNEW PList(0, this); }
-    /* Make a complete duplicate of the list. Note that all objects in the
+  /**@name Overrides from class PObject */
+  //@{
+    /**Make a complete duplicate of the list. Note that all objects in the
        array are also cloned, so this will make a complete copy of the list.
      */
+    virtual PObject * Clone() const
+      { return PNEW PList(0, this); }
+  //@}
 
-    T & operator[](PINDEX index) const
-      { return (T &)GetReferenceAt(index); }
-    /* Retrieve a reference  to the object in the list. If there was not an
+  /**@name New functions for class */
+  //@{
+    /**Retrieve a reference  to the object in the list. If there was not an
        object at that ordinal position or the index was beyond the size of the
        array then the function asserts.
 
@@ -362,9 +379,12 @@ template <class T> class PList : public PAbstractList
        access will be fast. Access to elements one either side of that saved
        element, and the head and tail of the list, will always be fast.
 
-       <H2>Returns:</H2>
-       reference to the object at <CODE>index</CODE> position.
+       @return
+       reference to the object at #index# position.
      */
+    T & operator[](PINDEX index) const
+      { return (T &)GetReferenceAt(index); }
+  //@}
 
   protected:
     PList(int dummy, const PList * c)
@@ -372,88 +392,97 @@ template <class T> class PList : public PAbstractList
 };
 
 
-/*$MACRO PDECLARE_LIST(cls, T)
+/**Declare a list class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>.
-
-   If the compilation is using templates then this macro produces a descendent
-   of the <A>PList</A> template class. If templates are not being used then the
-   macro defines a set of inline functions to do all casting of types. The
-   resultant classes have an identical set of functions in either case.
-
-   See the <A>PList</A> and <A>PAbstractList</A> classes for more information.
- */
-#define PDECLARE_LIST(cls, T) \
-  PDECLARE_CLASS(cls, PList<T>) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : PList<T>(dummy, c) { } \
-  public: \
-    cls() \
-      : PList<T>() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-/*$MACRO PLIST(cls, T)
-   This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>. This macro closes the
+   customised for a particular object type {\bf T}. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the <A>PList</A> template class.
+   of the #PList# template class.
 
-   See the <A>PList</A> class and <A>PDECLARE_LIST</A> macro for more
+   See the #PList# class and #PDECLARE_LIST# macro for more
    information.
  */
 #define PLIST(cls, T) typedef PList<T> cls
 
+/**Begin declaration of list class.
+   This macro is used to declare a descendent of PAbstractList class,
+   customised for a particular object type {\bf T}.
 
-template <class T> class PQueue : public PAbstractList
-{
-  PCLASSINFO(PQueue, PAbstractList)
-/* This template class maps the PAbstractList to a specific object type, and
+   If the compilation is using templates then this macro produces a descendent
+   of the #PList# template class. If templates are not being used then the
+   macro defines a set of inline functions to do all casting of types. The
+   resultant classes have an identical set of functions in either case.
+
+   See the #PList# and #PAbstractList# classes for more information.
+ */
+#define PDECLARE_LIST(cls, T) \
+  PLIST(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
+
+
+/**This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a first in first out
    queue. The functions in this class primarily do all the appropriate casting
    of types.
 
-   By default, objects placed into the set will <EM>not</EM> be deleted when
+   By default, objects placed into the set will {\bf not} be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the <A>PDECLARE_QUEUE</A> macro will
+   Note that if templates are not used the #PDECLARE_QUEUE# macro will
    simulate the template instantiation.
  */
+template <class T> class PQueue : public PAbstractList
+{
+  PCLASSINFO(PQueue, PAbstractList);
 
   public:
-    PQueue()
-      : PAbstractList() { DisallowDeleteObjects(); }
-    /* Create a new, empty, queue.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, queue.
 
-       Note that by default, objects placed into the queue will <EM>not</EM> be
+       Note that by default, objects placed into the queue will {\bf not} be
        deleted when removed or when all references to the queue are destroyed.
        This is different from the default on most collection classes.
      */
+    PQueue()
+      : PAbstractList() { DisallowDeleteObjects(); }
+  //@}
 
-    virtual PObject * Clone() const
-      { return PNEW PQueue(0, this); }
-    /* Make a complete duplicate of the list. Note that all objects in the
+  /**@name Overrides from class PObject */
+  //@{
+    /**Make a complete duplicate of the list. Note that all objects in the
        array are also cloned, so this will make a complete copy of the list.
      */
+    virtual PObject * Clone() const
+      { return PNEW PQueue(0, this); }
+  //@}
 
-    virtual void Enqueue(
-      T * obj   // Object to add to the queue.
-    ) { PAbstractList::Append(obj); }
-    /* Add a new object to the queue. This places a new link at the "tail" of
+  /**@name New functions for class */
+  //@{
+    /**Add a new object to the queue. This places a new link at the "tail" of
        the list, which is the "in" side of the queue.
      */
+    virtual void Enqueue(
+      T * obj   /// Object to add to the queue.
+    ) { PAbstractList::Append(obj); }
+    /**Remove an object that was added to the queue.
 
-    virtual T * Dequeue()
-      { return (T *)PAbstractList::RemoveAt(0);}
-    /* Remove an object that was added to the queue.
-
-       <H2>Returns:</H2>
+       @return
        first object added to the queue or NULL if queue empty.
      */
+    virtual T * Dequeue()
+      { return (T *)PAbstractList::RemoveAt(0);}
+  //@}
 
   protected:
     PQueue(int dummy, const PQueue * c)
@@ -462,102 +491,111 @@ template <class T> class PQueue : public PAbstractList
 };
 
 
-/*$MACRO PDECLARE_QUEUE(cls, T)
+/**Declare a queue class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>, and adds functionality
-   that allows the list to be used as a first in first out queue.
-
-   If the compilation is using templates then this macro produces a descendent
-   of the <A>PQueue</A> template class. If templates are not being used then
-   the macro defines a set of inline functions to do all casting of types. The
-   resultant classes have an identical set of functions in either case.
-
-   See the <A>PQueue</A> and <A>PAbstractList</A> classes for more information.
- */
-#define PDECLARE_QUEUE(cls, T) \
-  PDECLARE_CLASS(cls, PQueue<T>) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : PQueue<T>(dummy, c) { } \
-  public: \
-    cls() \
-      : PQueue<T>() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-/*$MACRO PQUEUE(cls, T)
-   This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>, and adds functionality
+   customised for a particular object type {\bf T}, and adds functionality
    that allows the list to be used as a first in first out queue. This macro
    closes the class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the <A>PQueue</A> template class.
+   of the #PQueue# template class.
 
-   See the <A>PList</A> class and <A>PDECLARE_QUEUE</A> macro for more
+   See the #PList# class and #PDECLARE_QUEUE# macro for more
    information.
  */
 #define PQUEUE(cls, T) typedef PQueue<T> cls
 
 
-template <class T> class PStack : public PAbstractList
-{
-  PCLASSINFO(PStack, PAbstractList)
-/* This template class maps the PAbstractList to a specific object type, and
+/**Begin declataion of a queue class.
+   This macro is used to declare a descendent of PAbstractList class,
+   customised for a particular object type {\bf T}, and adds functionality
+   that allows the list to be used as a first in first out queue.
+
+   If the compilation is using templates then this macro produces a descendent
+   of the #PQueue# template class. If templates are not being used then
+   the macro defines a set of inline functions to do all casting of types. The
+   resultant classes have an identical set of functions in either case.
+
+   See the #PQueue# and #PAbstractList# classes for more information.
+ */
+#define PDECLARE_QUEUE(cls, T) \
+  PQUEUE(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
+
+
+/**This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a last in first out
    stack. The functions in this class primarily do all the appropriate casting
    of types.
 
-   By default, objects placed into the set will <EM>not</EM> be deleted when
+   By default, objects placed into the set will {\bf not} be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the <A>PDECLARE_STACK</A> macro will
+   Note that if templates are not used the #PDECLARE_STACK# macro will
    simulate the template instantiation.
  */
+template <class T> class PStack : public PAbstractList
+{
+  PCLASSINFO(PStack, PAbstractList);
 
   public:
-    PStack()
-      : PAbstractList() { DisallowDeleteObjects(); }
-    /* Create a new, empty, stack.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, stack.
 
-       Note that by default, objects placed into the stack will <EM>not</EM> be
+       Note that by default, objects placed into the stack will {\bf not} be
        deleted when removed or when all references to the stack are destroyed.
        This is different from the default on most collection classes.
      */
+    PStack()
+      : PAbstractList() { DisallowDeleteObjects(); }
+  //@}
 
-    virtual PObject * Clone() const
-      { return PNEW PStack(0, this); }
-    /* Make a complete duplicate of the stack. Note that all objects in the
+  /**@name Overrides from class PObject */
+  //@{
+    /**Make a complete duplicate of the stack. Note that all objects in the
        array are also cloned, so this will make a complete copy of the stack.
      */
+    virtual PObject * Clone() const
+      { return PNEW PStack(0, this); }
+  //@}
 
-    virtual void Push(
-      T * obj    // Object to add to the stack.
-    ) { PAbstractList::InsertAt(0, obj); }
-    /* Add an object to the stack. This object will be on "top" of the stack
-       and will be the object returned by the <A>Pop()</A>
+  /**@name New functions for class */
+  //@{
+    /**Add an object to the stack. This object will be on "top" of the stack
+       and will be the object returned by the #Pop()#
        function.
      */
+    virtual void Push(
+      T * obj    /// Object to add to the stack.
+    ) { PAbstractList::InsertAt(0, obj); }
 
-    virtual T * Pop()
-      { return (T *)PAbstractList::RemoveAt(0); }
-    /* Remove the last object pushed onto the stack.
+    /**Remove the last object pushed onto the stack.
 
-       <H2>Returns:</H2>
+       @return
        object on top of the stack.
      */
+    virtual T * Pop()
+      { return (T *)PAbstractList::RemoveAt(0); }
 
-    virtual T & Top()
-      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); }
-    /* Get the element that is currently on top of the stack without removing
+    /**Get the element that is currently on top of the stack without removing
        it.
 
-       <H2>Returns:</H2>
+       @return
        reference to object on top of the stack.
      */
-
+    virtual T & Top()
+      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); }
+  //@}
 
   protected:
     PStack(int dummy, const PStack * c)
@@ -565,50 +603,53 @@ template <class T> class PStack : public PAbstractList
       { reference->deleteObjects = c->reference->deleteObjects; }
 };
 
-/*$MACRO PDECLARE_STACK(cls, T)
+
+/**Declare a stack class.
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>, and adds functionality
-   that allows the list to be used as a last in first out stack.
-
-   If the compilation is using templates then this macro produces a descendent
-   of the <A>PStack</A> template class. If templates are not being used then
-   the macro defines a set of inline functions to do all casting of types. The
-   resultant classes have an identical set of functions in either case.
-
-   See the <A>PStack</A> and <A>PAbstractList</A> classes for more information.
- */
-#define PDECLARE_STACK(cls, T) \
-  PDECLARE_CLASS(cls, PStack<T>) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : PStack<T>(dummy, c) { } \
-  public: \
-    cls() \
-      : PStack<T>() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-
-/*$MACRO PSTACK(cls, T)
-   This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular object type <B>T</B>, and adds functionality
+   customised for a particular object type {\bf T}, and adds functionality
    that allows the list to be used as a last in first out stack. This macro
    closes the class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the <A>PStack</A> template class.
+   of the #PStack# template class.
 
-   See the <A>PStack</A> class and <A>PDECLARE_STACK</A> macro for more
+   See the #PStack# class and #PDECLARE_STACK# macro for more
    information.
  */
 #define PSTACK(cls, T) typedef PStack<T> cls
+
+
+/**Begin declaration of a stack class.
+   This macro is used to declare a descendent of PAbstractList class,
+   customised for a particular object type {\bf T}, and adds functionality
+   that allows the list to be used as a last in first out stack.
+
+   If the compilation is using templates then this macro produces a descendent
+   of the #PStack# template class. If templates are not being used then
+   the macro defines a set of inline functions to do all casting of types. The
+   resultant classes have an identical set of functions in either case.
+
+   See the #PStack# and #PAbstractList# classes for more information.
+ */
+#define PDECLARE_STACK(cls, T) \
+  PSTACK(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
 #else // PHAS_TEMPLATES
 
 
 #define PLIST(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
+  class cls : public PAbstractList { \
+  PCLASSINFO(cls, PAbstractList); \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractList(dummy, c) { } \
@@ -634,9 +675,9 @@ template <class T> class PStack : public PAbstractList
       { return PNEW cls(0, this); } \
 
 
-
 #define PQUEUE(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
+  class cls : public PAbstractList { \
+  PCLASSINFO(cls, PAbstractList); \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractList(dummy, c) \
@@ -664,9 +705,9 @@ template <class T> class PStack : public PAbstractList
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
-
 #define PSTACK(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
+  class cls : public PAbstractList { \
+  PCLASSINFO(cls, PAbstractList); \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractList(dummy, c) \
@@ -703,11 +744,10 @@ template <class T> class PStack : public PAbstractList
 ///////////////////////////////////////////////////////////////////////////////
 // Sorted List of PObjects
 
-PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
-/* This class is a collection of objects which are descendents of the
-   <A>PObject</A> class. It is implemeted as a Red-Black binary tree to
+/**This class is a collection of objects which are descendents of the
+   #PObject# class. It is implemeted as a Red-Black binary tree to
    maintain the objects in rank order. Note that this requires that the
-   <A>PObject::Compare()</A> function be fully implemented oin objects
+   #PObject::Compare()# function be fully implemented oin objects
    contained in the collection.
 
    The implementation of a sorted list allows fast inserting and deleting as
@@ -721,171 +761,178 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
    other access incurs a minimum overhead, but not insignificant.
 
    The PAbstractSortedList class would very rarely be descended from directly
-   by the user. The <A>PDECLARE_LIST</A> and <A>PLIST</A> macros would normally
+   by the user. The #PDECLARE_LIST# and #PLIST# macros would normally
    be used to create descendent classes. They will instantiate the template
-   based on <A>PSortedList</A> or directly declare and define the class (using
+   based on #PSortedList# or directly declare and define the class (using
    inline functions) if templates are not being used.
 
-   The <A>PSortedList</A> class or <A>PDECLARE_SORTED_LIST</A> macro will
+   The #PSortedList# class or #PDECLARE_SORTED_LIST# macro will
    define the correctly typed operators for subscript access
-   (<CODE>operator[]</CODE>).
+   (#operator[]#).
  */
+class PAbstractSortedList : public PCollection
+{
+  PCONTAINERINFO(PAbstractSortedList, PCollection);
 
   public:
-    PAbstractSortedList();
-    /* Create a new, empty, sorted list.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, sorted list.
 
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
+    PAbstractSortedList();
+  //@}
 
-  // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-    /* Get the relative rank of the two lists. The following algorithm is
+  /**@name Overrides from class PObject */
+  //@{
+    /**Get the relative rank of the two lists. The following algorithm is
        employed for the comparison:
-
-       <DL>
-       <DT><CODE>EqualTo</CODE><DD> if the two lists are identical in length
+\begin{descriptions}
+       \item[#EqualTo#] if the two lists are identical in length
        and each objects values, not pointer, are equal.
 
-       <DT><CODE>LessThan</CODE><DD> if the instances object value at an
+       \item[#LessThan#] if the instances object value at an
        ordinal position is less than the corresponding objects value in the
-       <CODE>obj</CODE> parameters list.
+       #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is less than the <CODE>obj</CODE> parameters list length.
+       length is less than the #obj# parameters list length.
 
-       <DT><CODE>GreaterThan</CODE><DD> if the instances object value at an
+       \item[#GreaterThan#] if the instances object value at an
        ordinal position is greater than the corresponding objects value in the
-       <CODE>obj</CODE> parameters list.
+       #obj# parameters list.
                           
        This is also returned if all objects are equal and the instances list
-       length is greater than the <CODE>obj</CODE> parameters list length.
-       </DL>
+       length is greater than the #obj# parameters list length.
+\end{descriptions}
 
-       <H2>Returns:</H2>
-       comparison of the two objects, <CODE>EqualTo</CODE> for same,
-       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
-       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       @return
+       comparison of the two objects, #EqualTo# for same,
+       #LessThan# for #obj# logically less than the
+       object and #GreaterThan# for #obj# logically
        greater than the object.
      */
+    virtual Comparison Compare(const PObject & obj) const;
+  //@}
 
-  // Overrides from class PContainer
-    virtual BOOL SetSize(
-      PINDEX newSize  // New size for the sorted list, this is ignored.
-    );
-    /* This function is meaningless for lists. The size of the collection is
+  /**@name Overrides from class PContainer */
+  //@{
+    /**This function is meaningless for lists. The size of the collection is
        determined by the addition and removal of objects. The size cannot be
        set in any other way.
 
-       <H2>Returns:</H2>
+       @return
        Always TRUE.
      */
+    virtual BOOL SetSize(
+      PINDEX newSize  // New size for the sorted list, this is ignored.
+    );
+  //@}
 
-  // Overrides from class PCollection
+  /**@name Overrides from class PCollection */
+  //@{
+    /**Add a new object to the collection. The object is always placed in the
+       correct ordinal position in the list. It is not placed at the "end".
+
+       @return
+       index of the newly added object.
+     */
     virtual PINDEX Append(
       PObject * obj   // New object to place into the collection.
     );
-    /* Add a new object to the collection. The object is always placed in the
-       correct ordinal position in the list. It is not placed at the "end".
 
-       <H2>Returns:</H2>
-       index of the newly added object.
+    /**Add a new object to the collection.
+    
+       The object is always placed in the correct ordinal position in the list.
+       It is not placed at the specified position. The #before#
+       parameter is ignored.
+
+       @return
+       index of the newly inserted object.
      */
-
     virtual PINDEX Insert(
       const PObject & before,   // Object value to insert before.
       PObject * obj             // New object to place into the collection.
     );
-    /* Add a new object to the collection.
+
+    /**Add a new object to the collection.
     
        The object is always placed in the correct ordinal position in the list.
-       It is not placed at the specified position. The <CODE>before</CODE>
+       It is not placed at the specified position. The #index#
        parameter is ignored.
 
-       <H2>Returns:</H2>
+       @return
        index of the newly inserted object.
      */
-
     virtual PINDEX InsertAt(
       PINDEX index,   // Index position in collection to place the object.
       PObject * obj   // New object to place into the collection.
     );
-    /* Add a new object to the collection.
-    
-       The object is always placed in the correct ordinal position in the list.
-       It is not placed at the specified position. The <CODE>index</CODE>
-       parameter is ignored.
 
-       <H2>Returns:</H2>
-       index of the newly inserted object.
-     */
-
-    virtual BOOL Remove(
-      const PObject * obj   // Existing object to remove from the collection.
-    );
-    /* Remove the object from the collection. If the AllowDeleteObjects option
+    /**Remove the object from the collection. If the AllowDeleteObjects option
        is set then the object is also deleted.
 
        Note that the comparison for searching for the object in collection is
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the object was in the collection.
      */
-
-    virtual PObject * RemoveAt(
-      PINDEX index   // Index position in collection to place the object.
+    virtual BOOL Remove(
+      const PObject * obj   // Existing object to remove from the collection.
     );
-    /* Remove the object at the specified ordinal index from the collection.
+
+    /**Remove the object at the specified ordinal index from the collection.
        If the AllowDeleteObjects option is set then the object is also deleted.
 
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       <H2>Returns:</H2>
+       @return
        pointer to the object being removed, or NULL if it was deleted.
      */
+    virtual PObject * RemoveAt(
+      PINDEX index   // Index position in collection to place the object.
+    );
 
-    virtual void RemoveAll();
-    /* Remove all of the elements in the collection. This operates by
-       continually calling <A>RemoveAt()</A> until there are no objects left.
+    /**Remove all of the elements in the collection. This operates by
+       continually calling #RemoveAt()# until there are no objects left.
 
        The objects are removed from the last, at index
-       <CODE>(GetSize()-1)</CODE> toward the first at index zero.
+       #(GetSize()-1)# toward the first at index zero.
      */
+    virtual void RemoveAll();
 
+    /**Set the object at the specified ordinal position to the new value. This
+       will overwrite the existing entry. If the AllowDeleteObjects option is
+       set then the old object is also deleted.
+
+       Note, the object placed at #index# will not stay at that
+       ordinal position. It is actually placed at the correct position for its
+       rank.
+
+       @return
+       TRUE if the object was successfully added.
+     */
     virtual BOOL SetAt(
       PINDEX index,   // Index position in collection to set.
       PObject * val   // New value to place into the collection.
     );
-    /* Set the object at the specified ordinal position to the new value. This
-       will overwrite the existing entry. If the AllowDeleteObjects option is
-       set then the old object is also deleted.
 
-       Note, the object placed at <CODE>index</CODE> will not stay at that
-       ordinal position. It is actually placed at the correct position for its
-       rank.
+    /**Get the object at the specified ordinal position. If the index was
+       greater than the size of the collection then NULL is returned.
 
-       <H2>Returns:</H2>
-       TRUE if the object was successfully added.
+       @return
+       pointer to object at the specified index.
      */
-
     virtual PObject * GetAt(
       PINDEX index  // Index position in the collection of the object.
     ) const;
-    /* Get the object at the specified ordinal position. If the index was
-       greater than the size of the collection then NULL is returned.
 
-       <H2>Returns:</H2>
-       pointer to object at the specified index.
-     */
-
-    virtual PINDEX GetObjectsIndex(
-      const PObject * obj
-    ) const;
-    /* Search the collection for the specific instance of the object. The
+    /**Search the collection for the specific instance of the object. The
        object pointers are compared, not the values. A binary search is
        employed to locate the entry.
        
@@ -893,21 +940,25 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
        equivalent entry and then a final check is made with the pointers to
        see if they are the same instance.
 
-       <H2>Returns:</H2>
+       @return
        ordinal index position of the object, or P_MAX_INDEX.
      */
+    virtual PINDEX GetObjectsIndex(
+      const PObject * obj
+    ) const;
 
+    /**Search the collection for the specified value of the object. The object
+       values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the #PObject::Compare()#
+       function. A binary search is employed to locate the entry.
+
+       @return
+       ordinal index position of the object, or P_MAX_INDEX.
+     */
     virtual PINDEX GetValuesIndex(
       const PObject & obj
     ) const;
-    /* Search the collection for the specified value of the object. The object
-       values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
-       function. A binary search is employed to locate the entry.
-
-       <H2>Returns:</H2>
-       ordinal index position of the object, or P_MAX_INDEX.
-     */
+  //@}
 
 
     class Element {
@@ -952,44 +1003,53 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> class PSortedList : public PAbstractSortedList
-{
-  PCLASSINFO(PSortedList, PAbstractSortedList)
-/* This template class maps the PAbstractSortedList to a specific object type.
+/**This template class maps the PAbstractSortedList to a specific object type.
    The functions in this class primarily do all the appropriate casting of
    types.
 
-   Note that if templates are not used the <A>PDECLARE_SORTED_LIST</A> macro
+   Note that if templates are not used the #PDECLARE_SORTED_LIST# macro
    will simulate the template instantiation.
  */
+template <class T> class PSortedList : public PAbstractSortedList
+{
+  PCLASSINFO(PSortedList, PAbstractSortedList);
 
   public:
-    PSortedList()
-      : PAbstractSortedList() { }
-    /* Create a new, empty, sorted list.
+  /**@name Construction */
+  //@{
+    /**Create a new, empty, sorted list.
 
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
+    PSortedList()
+      : PAbstractSortedList() { }
+  //@}
 
-    virtual PObject * Clone() const
-      { return PNEW PSortedList(0, this); }
-    /* Make a complete duplicate of the list. Note that all objects in the
+  /**@name Overrides from class PObject */
+  //@{
+    /**Make a complete duplicate of the list. Note that all objects in the
        array are also cloned, so this will make a complete copy of the list.
      */
+    virtual PObject * Clone() const
+      { return PNEW PSortedList(0, this); }
+  //@}
 
-    T & operator[](PINDEX index) const
-      { return *(T *)GetAt(index); }
-    /* Retrieve a reference  to the object in the list. If there was not an
+  /**@name New functions for class */
+  //@{
+    /**Retrieve a reference  to the object in the list. If there was not an
        object at that ordinal position or the index was beyond the size of the
        array then the function asserts.
 
        The object accessed in this way is remembered by the class and further
        access will be fast.
 
-       <H2>Returns:</H2>
-       reference to the object at <CODE>index</CODE> position.
+       @return
+       reference to the object at #index# position.
      */
+    T & operator[](PINDEX index) const
+      { return *(T *)GetAt(index); }
+  //@}
 
   protected:
     PSortedList(int dummy, const PSortedList * c)
@@ -997,48 +1057,51 @@ template <class T> class PSortedList : public PAbstractSortedList
 };
 
 
-/*$MACRO PDECLARE_SORTED_LIST(cls, T)
+/**Declare a sorted list class.
    This macro is used to declare a descendent of PAbstractSortedList class,
-   customised for a particular object type <B>T</B>.
-
-   If the compilation is using templates then this macro produces a descendent
-   of the <A>PSortedList</A> template class. If templates are not being used
-   then the macro defines a set of inline functions to do all casting of types.
-   The resultant classes have an identical set of functions in either case.
-
-   See the <A>PSortedList</A> and <A>PAbstractSortedList</A> classes for more
-   information.
- */
-#define PDECLARE_SORTED_LIST(cls, T) \
-  PDECLARE_CLASS(cls, PSortedList<T>) \
-  protected: \
-    cls(int dummy, const cls * c) \
-      : PSortedList<T>(dummy, c) { } \
-  public: \
-    cls() \
-      : PSortedList<T>() { } \
-    virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-
-/*$MACRO PSORTEDLIST(cls, T)
-   This macro is used to declare a descendent of PAbstractSortedList class,
-   customised for a particular object type <B>T</B>. This macro closes the
+   customised for a particular object type {\bf T}. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the <A>PSortedList</A> template class.
+   of the #PSortedList# template class.
 
-   See the <A>PSortedList</A> class and <A>PDECLARE_SORTED_LIST</A> macro for
+   See the #PSortedList# class and #PDECLARE_SORTED_LIST# macro for
    more information.
  */
 #define PSORTED_LIST(cls, T) typedef PSortedList<T> cls
+
+
+/**Begin declaration of a sorted list class.
+   This macro is used to declare a descendent of PAbstractSortedList class,
+   customised for a particular object type {\bf T}.
+
+   If the compilation is using templates then this macro produces a descendent
+   of the #PSortedList# template class. If templates are not being used
+   then the macro defines a set of inline functions to do all casting of types.
+   The resultant classes have an identical set of functions in either case.
+
+   See the #PSortedList# and #PAbstractSortedList# classes for more
+   information.
+ */
+#define PDECLARE_SORTED_LIST(cls, T) \
+  PSORTED_LIST(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
 #else // PHAS_TEMPLATES
 
 
 #define PSORTED_LIST(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractSortedList) \
+  class cls : public PAbstractSortedList { \
+  PCLASSINFO(cls, PAbstractSortedList); \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractSortedList(dummy, c) { } \
@@ -1062,6 +1125,7 @@ template <class T> class PSortedList : public PAbstractSortedList
       : cls##_PTemplate() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
+
 
 #endif  // PHAS_TEMPLATES
 

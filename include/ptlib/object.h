@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.42  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.41  1999/02/23 07:11:26  robertj
  * Improved trace facility adding trace levels and #define to remove all trace code.
  *
@@ -191,6 +194,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Declare the debugging support
 
+/// Standard assert messages for the PAssert macro.
 enum PStandardAssertMessage {
   PLogicError,              // A logic error occurred.
   POutOfMemory,             // A new or malloc failed.
@@ -207,48 +211,42 @@ enum PStandardAssertMessage {
   PInvalidWindow,           // Access through invalid window.
   PMaxStandardAssertMessage
 };
-// Standard assert messages for the PAssert macro.
 
-/*$MACRO PAssert(condition, msg)
-   This macro is used to assert that a condition must be TRUE. If the condition
-   is FALSE then an assert function is called with the source file and line
-   number the macro was instantiated on, plus the message described by the
-   <CODE>msg</CODE> parameter. This parameter may be either a standard value
-   from the <A>PStandardAssertMessage enum</A> or a literal string.
- */
+/** This macro is used to assert that a condition must be TRUE.
+If the condition is FALSE then an assert function is called with the source
+file and line number the macro was instantiated on, plus the message described
+by the #msg# parameter. This parameter may be either a standard value
+from the #PStandardAssertMessage# enum or a literal string.
+*/
 #define PAssert(b, m) if(b);else PAssertFunc(__FILE__, __LINE__, (m))
 
-/*$MACRO PAssertOS(b)
-   This macro is used to assert that a condition must be TRUE. If the condition
-   is FALSE then an assert function is called with the source file and line
-   number the macro was instantiated on, plus the message described by the
-   <CODE>POperatingSystemError</CODE> value in the
-   <A>PStandardAssertMessage enum</A>.
+/** This macro is used to assert that an operating system call succeeds.
+If the condition is FALSE then an assert function is called with the source
+file and line number the macro was instantiated on, plus the message
+described by the #POperatingSystemError# value in the #PStandardAssertMessage#
+enum.
  */
 #define PAssertOS(b) \
               if(b);else PAssertFunc(__FILE__, __LINE__, POperatingSystemError)
 
-/*$MACRO PAssertNULL(ptr)
-   This macro is used to assert that a pointer must be non-null. If the
-   pointer is NULL then an assert function is called with the source file and
-   line number the macro was instantiated on, plus the message described by the
-   <CODE>PNullPointerReference</CODE> value in the
-   <A>PStandardAssertMessage enum</A>.
-   
-   Note that this evaluates the expression defined by <CODE>ptr</CODE> twice.
-   To prevent incorrect behaviour with this, the macro will assume that the
-   <CODE>ptr</CODE> parameter is an L-Value.
+/** This macro is used to assert that a pointer must be non-null.
+If the pointer is NULL then an assert function is called with the source file
+and line number the macro was instantiated on, plus the message described by
+the PNullPointerReference value in the #PStandardAssertMessage# enum.
+
+Note that this evaluates the expression defined by #ptr# twice. To
+prevent incorrect behaviour with this, the macro will assume that the
+#ptr# parameter is an L-Value.
  */
 #define PAssertNULL(p) ((&(p)&&(p)!=NULL)?(p):(PAssertFunc(__FILE__, \
                                         __LINE__, PNullPointerReference), (p)))
 
-/*$MACRO PAssertAlways(msg)
-   This macro is used to assert immediately. The assert function is called with
-   the source file and line number the macro was instantiated on, plus the
-   message described by the <CODE>msg</CODE> parameter. This parameter may be
-   either a standard value from the <A>PStandardAssertMessage enum</A> or a
-   literal string.
- */
+/** This macro is used to assert immediately.
+The assert function is called with the source file and line number the macro
+was instantiated on, plus the message described by the #msg# parameter. This
+parameter may be either a standard value from the #PStandardAssertMessage#
+enum or a literal string.
+*/
 #define PAssertAlways(m) PAssertFunc(__FILE__, __LINE__, (m))
 
 
@@ -256,27 +254,31 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg);
 void PAssertFunc(const char * file, int line, const char * msg);
 
 
-// Declaration for standard error output
+/** Get the stream being used for error output.
+This stream is used for all trace output using the various trace functions
+and macros.
+*/
 ostream & PGetErrorStream();
-void PSetErrorStream(ostream *);
 
-/*$MACRO PError
-   This macro is used to access the platform specific error output stream. This
-   is to be used in preference to assuming <CODE>cerr</CODE> is always
-   available. On Unix platforms this <EM>is</EM> <CODE>cerr</CODE> but for
-   MS-Windows this is another stream that uses the OutputDebugString() Windows
-   API function. Note that a MS-DOS or Windows NT console application would
-   still use <CODE>cerr</CODE>.
+/** Set the stream to be used for error output.
+This stream is used for all error output using the #PError# macro.
+*/
+void PSetErrorStream(ostream * strm /** New stream for error output */ );
 
-   The PError stream would normally only be used for debugging information as
-   a suitable display is not always available in windowed environments.
+/** This macro is used to access the platform specific error output stream.
+This is to be used in preference to assuming #cerr# is always available. On
+Unix platforms this {\bfis} #cerr# but for MS-Windows this is another stream
+that uses the OutputDebugString() Windows API function. Note that a MS-DOS or
+Windows NT console application would still use #cerr#.
+
+The #PError# stream would normally only be used for debugging information as
+a suitable display is not always available in windowed environments.
    
-   The macro is a wrapper for a global variable <CODE>PErrorStream</CODE> which
-   is a pointer to an <CODE>ostream</CODE>. The variable is initialised to
-   <CODE>cerr</CODE> for all but MS-Windows and NT GUI applications. An
-   application could change this pointer to a <CODE>ofstream</CODE> variable
-   of <CODE>PError</CODE> output is wished to be redirected to a file.
- */
+The macro is a wrapper for a global variable #PErrorStream# which is a pointer
+to an #ostream#. The variable is initialised to #cerr# for all but MS-Windows
+and NT GUI applications. An application could change this pointer to a
+#ofstream# variable of #PError# output is wished to be redirected to a file.
+*/
 #define PError (PGetErrorStream())
 
 
@@ -288,25 +290,87 @@ void PSetErrorStream(ostream *);
 #define PTRACING
 #endif
 
-void PSetTraceStream(ostream *);
-void PSetTraceBlock(BOOL enable);
-void PSetTraceLevel(unsigned level);
-BOOL PCanTrace(unsigned level);
+/** Set the stream to be used for trace output.
+This stream is used for all trace output using the various trace functions
+and macros.
+*/
+void PSetTraceStream(ostream * out /** New output stream from trace. */ );
 
-ostream & PBeginTrace(const char * fileName, int lineNum);
-ostream & PEndTrace(ostream & s);
-/* If these are used outside of the provided macros, it should be noted that
-   the PEndTrace function must be used at the end of the section of trace
-   output. A mutex is obtained on the call to PBeginTrace which will prevent
-   any other threads from using the trace stream until the PEndTrace. The
-   PEndTrace is used in a similar manner to ::endl or ::flush;
- */
+/** Set the PTraceBlock output flag.
+Set the internal flag for PTraceBlock classes to output to the trace stream.
+If this is FALSE, all PTraceBlock output is inhibited regardless of the trace
+level. If TRUE the PTraceBlock may occur provided the trace level is greater
+than zero.
+*/
+void PSetTraceBlock(BOOL enable /** Flag for enabling all PTraceBlock output. */ );
 
+/** Set the trace level.
+The PTRACE() macro checks to see if its level is equal to or lower then the
+level set by this function. If so then the trace text is output to the trace
+stream.
+*/
+void PSetTraceLevel(unsigned level /** New level for trace */ );
+
+/** Determine if the level may cause trace output.
+This checks against the current global trace level set by #PSetTraceLevel#
+for if the trace output may be emitted. This is used by the PTRACE macro.
+*/
+BOOL PCanTrace(unsigned level /** New level */);
+
+/** Begin a trace output.
+If the trace stream output is used outside of the provided macros, it
+should be noted that a mutex is obtained on the call to #PBeginTrace# which
+will prevent any other threads from using the trace stream until the
+#PEndTrace# function is called.
+
+So a typical usage would be:
+\begin{verbatim}
+  ostream & s = PBegintrace();
+  s << "hello";
+  if (want_there)
+    s << " there";
+  s << '!' << PEndTrace();
+\end{verbatim}
+*/
+ostream & PBeginTrace(
+  const char * fileName,  /// Filename of source file being traced
+  int lineNum             /// Line number of source file being traced.
+);
+
+/** End a trace output.
+If the trace stream output is used outside of the provided macros, the
+#PEndTrace# function must be used at the end of the section of trace
+output. A mutex is obtained on the call to #PBeginTrace# which will prevent
+any other threads from using the trace stream until the PEndTrace. The
+#PEndTrace# is used in a similar manner to #::endl# or #::flush#.
+
+So a typical usage would be:
+\begin{verbatim}
+  ostream & s = PBegintrace();
+  s << "hello";
+  if (want_there)
+    s << " there";
+  s << '!' << PEndTrace();
+\end{verbatim}
+*/
+ostream & PEndTrace(ostream & strm /** Trace output stream being completed */);
+
+
+/** Class to trace Execution blocks.
+This class is used for tracing the entry and exit of program blocks. Upon
+construction it outputs an entry trace message and on destruction outputs an
+exit trace message. This is normally only used from in the PTRACE_BLOCK macro.
+*/
 class PTraceBlock {
-/* This class is used for tracing the entry and exit of program blocks.
- */
   public:
-    PTraceBlock(const char * fileName, int lineNum, const char * traceName);
+    /** Output entry trace message. */
+    PTraceBlock(
+      const char * fileName, /// Filename of source file being traced
+      int lineNum,           /// Line number of source file being traced.
+      const char * traceName
+        /// String to be output with trace, typically it is the function name.
+     );
+    /// Output exit trace message.
     ~PTraceBlock();
   private:
     const char * file;
@@ -315,114 +379,176 @@ class PTraceBlock {
 };
 
 
-#ifdef PTRACING
-
-/*$MACRO PTRACE_BLOCK(name)
-   This macro creates a trace variable for tracking the entry and exit of
-   program blocks.
- */
-#define PTRACE_BLOCK(n) PTraceBlock __trace_block_instance(__FILE__, __LINE__, n)
-
-/*$MACRO PTRACE_LINE(name)
-   This macro outputs a trace of a file line execution.
- */
-#define PTRACE_LINE() \
-    if (!PCanTrace(1)) ; else PBeginTrace(__FILE__, __LINE__) << PEndTrace
-
-/*$MACRO PTRACE(name)
-   This macro outputs a trace of a file line execution.
- */
-#define PTRACE(level, a) \
-    if (!PCanTrace(level)) ; else PBeginTrace(__FILE__, __LINE__) << a << PEndTrace
-
-#else
+#ifndef PTRACING
 
 #define PTRACE_BLOCK(n)
 #define PTRACE_LINE()
-#define PTRACE(level, a)
+#define PTRACE(level, arg)
+
+#else
+
+/** Trace an execution block.
+This macro creates a trace variable for tracking the entry and exit of program
+blocks. It creates an instance of the PTraceBlock class that will output a
+trace message at the line PTRACE_BLOCK is called and then on exit from the
+scope it is defined in.
+*/
+#define PTRACE_BLOCK(name) PTraceBlock __trace_block_instance(__FILE__, __LINE__, name)
+
+/** Trace the execution of a line.
+This macro outputs a trace of a source file line execution.
+*/
+#define PTRACE_LINE() \
+    if (!PCanTrace(1)) ; else PBeginTrace(__FILE__, __LINE__) << PEndTrace
+
+/** Output trace.
+This macro outputs a trace of any information needed, using standard stream
+output operators. The output is only made if the trace level set by the
+#PSetTraceLevel# function is greater than or equal to the #level# argument.
+*/
+#define PTRACE(level, args) \
+    if (!PCanTrace(level)) ; else PBeginTrace(__FILE__, __LINE__) << args << PEndTrace
 
 #endif
 
 
 #ifdef PMEMORY_CHECK
 
+/** Memory heap chacking class.
+This class implements the memory heap checking and validation functions. It
+maintains lists of allocated block so that memory leaks can be detected. It
+also initialises memory on allocation and deallocation to help catch errors
+involving the use of dangling pointers.
+*/
 class PMemoryHeap {
   protected:
+    /// Initialise the memory checking subsystem.
     PMemoryHeap();
 
   public:
+    // Clear up the memory checking subsystem, dumping memory leaks.
     ~PMemoryHeap();
 
-    static void * Allocate(
-      size_t nSize,           // Number of bytes to allocate.
-      const char * file,      // Source file name for allocating function.
-      int line,               // Source file line for allocating function.
-      const char * className  // Class name for allocating function.
-    );
-    static void * Allocate(
-      size_t count,       // Number of items to allocate.
-      size_t iSize,       // Size in bytes of each item.
-      const char * file,  // Source file name for allocating function.
-      int line            // Source file line for allocating function.
-    );
-    /* Allocate a memory block.
-    
-       <H2>Returns:</H2>
-       pointer to newly allocated memory block.
+    /** Allocate a memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+       @return pointer to newly allocated memory block.
      */
+    static void * Allocate(
+      size_t nSize,           /// Number of bytes to allocate.
+      const char * file,      /// Source file name for allocating function.
+      int line,               /// Source file line for allocating function.
+      const char * className  /// Class name for allocating function.
+    );
+    /** Allocate a memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+       @return pointer to newly allocated memory block.
+     */
+    static void * Allocate(
+      size_t count,       /// Number of items to allocate.
+      size_t iSize,       /// Size in bytes of each item.
+      const char * file,  /// Source file name for allocating function.
+      int line            /// Source file line for allocating function.
+    );
 
+    /** Change the size of an allocated memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+      @return pointer to reallocated memory block. Note this may
+      {\em not} be the same as the pointer passed into the function.
+     */
     static void * Reallocate(
-      void * ptr,         // Pointer to memory block to reallocate.
-      size_t nSize,       // New number of bytes to allocate.
-      const char * file,  // Source file name for allocating function.
-      int line            // Source file line for allocating function.
+      void * ptr,         /// Pointer to memory block to reallocate.
+      size_t nSize,       /// New number of bytes to allocate.
+      const char * file,  /// Source file name for allocating function.
+      int line            /// Source file line for allocating function.
     );
-    /* Change the size of an allocated memory block.
-    
-       <H2>Returns:</H2>
-       pointer to reallocated memory block. Note this may <EM>not</EM> be the
-       same as the pointer passed into the function.
-     */
 
+    /** Free a memory block.
+      The memory is deallocated, a warning is displayed if it was never
+      allocated. The block of memory is filled with the value in the
+      #freeFillChar# member variable.
+     */
     static void Deallocate(
-      void * ptr,             // Pointer to memory block to deallocate.
-      const char * className  // Class name for deallocating function.
+      void * ptr,             /// Pointer to memory block to deallocate.
+      const char * className  /// Class name for deallocating function.
     );
-    /* Free a memory block.
-     */
 
+    /** Validation result.
+     */
     enum Validation {
       Ok, Bad, Trashed
     };
-    static Validation Validate(
-      void * ptr,             // Pointer to memory block to check
-      const char * className, // Class name it should be.
-      ostream * error         // Stream to receive error message (may be NULL)
-    );
-    /* Validate that the ptr is to a currently allocated heap variable.
+    /** Validate the memory pointer.
+        The #ptr# parameter is validated as a currently allocated heap
+        variable.
+        @return Ok for pointer is in heap, Bad for pointer is not in the heap
+        or Trashed if the pointer is in the heap but has overwritten the guard
+        bytes before or after the actual data part of the memory block.
      */
+    static Validation Validate(
+      void * ptr,             /// Pointer to memory block to check
+      const char * className, /// Class name it should be.
+      ostream * error         /// Stream to receive error message (may be NULL)
+    );
 
-    static void SetIgnoreAllocations(BOOL ignore);
-    /* Set internal flag so that allocations are not included in the memory
+    /** Ignore/Monitor allocations.
+       Set internal flag so that allocations are not included in the memory
        leak check on program termination.
      */
+    static void SetIgnoreAllocations(
+      BOOL ignore  /// New flag for allocation ignoring.
+    );
 
-    static void DumpStatistics();
-    static void DumpStatistics(ostream & strm);
-    /* Get memory check system statistics.
+    /** Get memory check system statistics.
+        Dump statistics output to the default stream.
      */
+    static void DumpStatistics();
+    /** Get memory check system statistics.
+        Dump statistics output to the specified stream.
+     */
+    static void DumpStatistics(ostream & strm /** Stream to output to */);
 
+    /* Get number of allocation.
+      Each allocation is counted and if desired the next allocation request
+      number may be obtained via this function.
+      @return Allocation request number.
+     */
     static DWORD GetAllocationRequest();
-    static void DumpObjectsSince(DWORD objectNumber);
-    static void DumpObjectsSince(DWORD objectNumber, ostream & strm);
-    /* Dump ojects allocated and not deallocated since the specified object
-       number. This would be a value returned by the GetAllocationRequest()
+
+    /** Dump allocated objects.
+       Dump ojects allocated and not deallocated since the specified object
+       number. This would be a value returned by the #GetAllocationRequest()#
+       function.
+
+       Output is to the default stream.
+     */
+    static void DumpObjectsSince(
+      DWORD objectNumber    /// Memory object to begin dump from.
+    );
+
+    /** Dump allocated objects.
+       Dump ojects allocated and not deallocated since the specified object
+       number. This would be a value returned by the #GetAllocationRequest()#
        function.
      */
+    static void DumpObjectsSince(
+      DWORD objectNumber,   /// Memory object to begin dump from.
+      ostream & strm        /// Stream to output dump
+    );
 
-    static void SetAllocationBreakpoint(DWORD point);
-    /* Set the allocation request number to cause an assert.
+    /** Set break point allocation number.
+      Set the allocation request number to cause an assert. This allows a
+      developer to cause a halt in a debugger on a certain allocation allowing
+      them to determine memory leaks allocation point.
      */
+    static void SetAllocationBreakpoint(
+      DWORD point   /// Allocation number to stop at.
+    );
 
   protected:
     void * InternalAllocate(
@@ -465,8 +591,6 @@ class PMemoryHeap {
       BYTE         flags;
       static const char GuardBytes[5];
       char         guard[sizeof(GuardBytes)];
-      // This structure should finish on an 8 byte boundary to avoid alignment
-      // problems on some processors (eg sparc)
     };
 #pragma pack()
 
@@ -495,53 +619,61 @@ class PMemoryHeap {
 };
 
 
-/*$MACRO malloc(s)
-   This macro is used to allocate memory via the memory check system selected
-   with the PMEMORY_CHECK compile time option.
-   
-   This macro should be used instead of the system <CODE>malloc()</CODE>
-   function.
- */
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
 #define malloc(s) PMemoryHeap::Allocate(s, __FILE__, __LINE__, NULL)
 
-/*$MACRO calloc(n,s)
-   This macro is used to allocate memory via the memory check system selected
-   with the PMEMORY_CHECK compile time option.
-   
-   This macro should be used instead of the system <CODE>calloc()</CODE>
-   function.
- */
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
 #define calloc(n,s) PMemoryHeap::Allocate(n, s, __FILE__, __LINE__)
 
-/*$MACRO realloc(p,s)
-   This macro is used to allocate memory via the memory check system selected
-   with the PMEMORY_CHECK compile time option.
-   
-   This macro should be used instead of the system <CODE>realloc()</CODE>
-   function.
- */
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
 #define realloc(p,s) PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__)
 
 
-inline void runtime_free(void * ptr) { free(ptr); }
+/** Free memory allocated by run time library.
+This version of free is used for data that is not allocated using the
+memory check system, ie was malloc'ed inside the C run time library.
+*/
+inline void runtime_free(void * ptr /** Memory block to free */ ) { free(ptr); }
 
-/*$MACRO free(p)
-   This macro is used to deallocate memory via the memory check system selected
-   with the PMEMORY_CHECK compile time option.
-   
-   This macro should be used instead of the system <CODE>free()</CODE>
-   function.
- */
+/** Override of system call for memory check system.
+This macro is used to deallocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
 #define free(p) PMemoryHeap::Deallocate(p, NULL)
 
 
-/*$MACRO PNEW
-   This macro is used to allocate memory via the memory check system selected
-   with the PMEMORY_CHECK compile time option.
+/** Macro for overriding system default #new# operator.
+This macro is used to allocate memory via the memory check system selected
+with the PMEMORY_CHECK compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
 
-   This macro should be used instead of the system <CODE>new</CODE> operator.
- */
-#define PNEW new(__FILE__, __LINE__)
+This macro could be used instead of the system #new# operator. Or you can place
+the line
+\begin{verbatim}
+  #define new PNEW
+\end{verbatim}
+at the begining of the source file, after all declarations that use the
+PCLASSINFO macro.
+*/
+#define PNEW  new (__FILE__, __LINE__)
 
 #ifdef __GNUC__
 #define PSPECIAL_DELETE_FUNCTION
@@ -596,12 +728,15 @@ inline void operator delete[](void * ptr, const char *, int)
 #endif // _DEBUG
 
 
-/*$MACRO PCLASSINFO(cls, par)
-   This macro is used to provide the basic run-time typing capability needed
-   by the library. All descendent classes from the <A>PObject</A> class require
-   these functions for correct operation. Either use this macro or the
-   <A>PDECLARE_CLASS</A> macro.
- */
+/** Declare all the standard PWlib class information.
+This macro is used to provide the basic run-time typing capability needed
+by the library. All descendent classes from the #PObject# class require
+these functions for correct operation. Either use this macro or the
+#PDECLARE_CLASS# macro.
+
+The use of the #PDECLARE_CLASS# macro is no longer recommended for reasons
+of compatibility with documentation systems.
+*/
 #define PCLASSINFO(cls, par) \
   public: \
     static const char * Class() \
@@ -617,11 +752,14 @@ inline void operator delete[](void * ptr, const char *, int)
       { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
     PNEW_AND_DELETE_FUNCTIONS
 
-/*$MACRO PDECLARE_CLASS(cls, par)
-   This macro is used to declare a new class with a single public ancestor. It
-   starts the class declaration and then uses the <A>PCLASSINFO</A> macro to
-   get all the run-time type functions.
- */
+/** Declare a class with PWLib class information.
+This macro is used to declare a new class with a single public ancestor. It
+starts the class declaration and then uses the #PCLASSINFO# macro to
+get all the run-time type functions.
+
+The use of this macro is no longer recommended for reasons of compatibility
+with documentation systems.
+*/
 #define PDECLARE_CLASS(cls, par) class cls : public par { PCLASSINFO(cls, par)
 
 
@@ -632,319 +770,322 @@ class PUnSerialiser;
 ///////////////////////////////////////////////////////////////////////////////
 // The root of all evil ... umm classes
 
+/** Ultimate parent class for all objects in the class library.
+This provides functionality provided to all classes, eg run-time types,
+default comparison operations, simple stream I/O and serialisation support.
+*/
 class PObject {
-/* Ultimate parent class for all objects in the class library. This provides
-   functionality provided to all classes, eg run-time types, default comparison
-   operations, simple stream I/O and serialisation support.
- */
 
   protected:
-    PObject() { }
-    /* Constructor for PObject, make protected so cannot ever allocate one on
+    /** Constructor for PObject, make protected so cannot ever create one on
        its own.
      */
+    PObject() { }
 
   public:
-    virtual ~PObject() { }
     /* Destructor required to get the "virtual". A PObject really has nothing
        to destroy.
      */
+    virtual ~PObject() { }
 
-    static const char * Class() { return "PObject"; }
-    /* Get the name of the class as a C string. This is a static function which
+  /**@name Run Time Type functions */
+  //@{
+    /** Get the name of the class as a C string. This is a static function which
        returns the type of a specific class. It is primarily used as an
-       argument to the <A>IsClass()</A> or <A>IsDescendant()</A> functions.
+       argument to the #IsClass()# or #IsDescendant()# functions.
        
-       When comparing class names, always use the <CODE>strcmp()</CODE>
+       When comparing class names, always use the #strcmp()#
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
 
-       The <A>PCLASSINFO</A> macro declares a version of this function for the
+       The #PCLASSINFO# macro declares a version of this function for the
        particular class.
 
-       <H2>Returns:</H2>
-       pointer to C string literal.
+       @return pointer to C string literal.
      */      
+    static const char * Class() { return "PObject"; }
 
+    /** Get the current dynamic type of the object instance.
+
+       When comparing class names, always use the #strcmp()#
+       function rather than comparing pointers. The pointers are not
+       necessarily the same over compilation units depending on the compiler,
+       platform etc.
+
+       The #PCLASSINFO# macro declares an override of this function for
+       the particular class. The user need not implement it.
+
+       @return pointer to C string literal.
+     */
     virtual const char * GetClass(
       unsigned ancestor = 0
-      /* Level of ancestor to get the class name for. A value of zero is the
+      /** Level of ancestor to get the class name for. A value of zero is the
          instances class name, one is its ancestor, two for the ancestors
          ancestor etc.
        */
     ) const;
-    /* Get the current dynamic type of the object instance.
 
-       When comparing class names, always use the <CODE>strcmp()</CODE>
-       function rather than comparing pointers. The pointers are not
-       necessarily the same over compilation units depending on the compiler,
-       platform etc.
-
-       The <A>PCLASSINFO</A> macro declares an override of this function for
+    /** Determine if the dynamic type of the current instance is of the
+       specified class. The class name is usually provided by the
+       #Class()# static function of the desired class.
+    
+       The #PCLASSINFO# macro declares an override of this function for
        the particular class. The user need not implement it.
 
-       <H2>Returns:</H2>
-       pointer to C string literal.
+       @return TRUE if object is of the class.
      */
-
     virtual BOOL IsClass(
       const char * clsName    // Class name to compare against.
     ) const;
-    /* Determine if the dynamic type of the current instance is of the
-       specified class. The class name is usually provided by the
-       <A>Class()</A> static function of the desired class.
+
+    /** Determine if the dynamic type of the current instance is a descendent of
+       the specified class. The class name is usually provided by the
+       #Class()# static function of the desired class.
     
-       The <A>PCLASSINFO</A> macro declares an override of this function for
+       The #PCLASSINFO# macro declares an override of this function for
        the particular class. The user need not implement it.
 
-       <H2>Returns:</H2>
-       TRUE if object is of the class.
+       @return TRUE if object is descended from the class.
      */
-
     virtual BOOL IsDescendant(
       const char * clsName    // Ancestor class name to compare against.
     ) const;
-    /* Determine if the dynamic type of the current instance is a descendent of
-       the specified class. The class name is usually provided by the
-       <A>Class()</A> static function of the desired class.
-    
-       The <A>PCLASSINFO</A> macro declares an override of this function for
-       the particular class. The user need not implement it.
+  //@}
 
-       <H2>Returns:</H2>
-       TRUE if object is descended from the class.
-     */
-
-
-    enum Comparison {
-      LessThan = -1,    // Object is less than parameter.
-      EqualTo = 0,      // Object is equal to parameter.
-      GreaterThan = 1   // Object is greater than parameter.
-    };
-    /* Result of the comparison operation performed by the <A>Compare()</A>
+  /**@name Comparison functions */
+  //@{
+    /** Result of the comparison operation performed by the #Compare()#
        function.
       */
+    enum Comparison {
+      LessThan = -1,
+      EqualTo = 0,
+      GreaterThan = 1
+    };
 
-    virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
-    ) const;
-    /* Compare the two objects and return their relative rank. This function is
+    /** Compare the two objects and return their relative rank. This function is
        usually overridden by descendent classes to yield the ranking according
        to the semantics of the object.
        
-       The default function is to use the <A>CompareObjectMemoryDirect()</A>
+       The default function is to use the #CompareObjectMemoryDirect()#
        function to do a byte wise memory comparison of the two objects.
 
-       <H2>Returns:</H2>
-       <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
+       @return
+       #LessThan#, #EqualTo# or #GreaterThan#
        according to the relative rank of the objects.
      */
+    virtual Comparison Compare(
+      const PObject & obj   // Object to compare against.
+    ) const;
     
+    /** Determine the byte wise comparison of two objects. This is the default
+       comparison operation for objects that do not explicitly override the
+       #Compare()# function.
+    
+       The #PCLASSINFO# macro declares an override of this function for
+       the particular class. The user need not implement it.
+
+       @return
+       #LessThan#, #EqualTo# or #GreaterThan#
+       according to the result #memcpy()# function.
+     */
     virtual Comparison CompareObjectMemoryDirect(
       const PObject & obj   // Object to compare against.
     ) const;
-    /* Determine the byte wise comparison of two objects. This is the default
-       comparison operation for objects that do not explicitly override the
-       <A>Compare()</A> function.
+
+    /** Compare the two objects.
     
-       The <A>PCLASSINFO</A> macro declares an override of this function for
-       the particular class. The user need not implement it.
-
-       <H2>Returns:</H2>
-       <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
-       according to the result <CODE>memcpy()</CODE> function.
+       @return
+       TRUE if objects are equal.
      */
-
     BOOL operator==(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == EqualTo; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are equal.
-     */
 
+    /** Compare the two objects.
+    
+       @return
+       TRUE if objects are not equal.
+     */
     BOOL operator!=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != EqualTo; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are not equal.
-     */
 
+    /** Compare the two objects.
+    
+       @return
+       TRUE if objects are less than.
+     */
     BOOL operator<(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == LessThan; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are less than.
-     */
 
+    /** Compare the two objects.
+    
+       @return
+       TRUE if objects are greater than.
+     */
     BOOL operator>(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == GreaterThan; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are greater than.
-     */
 
+    /** Compare the two objects.
+    
+       @return
+       TRUE if objects are less than or equal.
+     */
     BOOL operator<=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != GreaterThan; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are less than or equal.
-     */
 
+    /** Compare the two objects.
+    
+       @return
+       TRUE if objects are greater than or equal.
+     */
     BOOL operator>=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != LessThan; }
-    /* Compare the two objects.
-    
-       <H2>Returns:</H2>
-       TRUE if objects are greater than or equal.
-     */
+  //@}
 
-
-    virtual PObject * Clone() const;
-    /* Create a copy of the class on the heap. The exact semantics of the
-       descendent class determine what is required to make a duplicate of the
-       instance. Not all classes can even <EM>do</EM> a clone operation.
-       
-       The main user of the clone function is the <A>PDictionary</A> class as
-       it requires copies of the dictionary keys.
-
-       The default behaviour is for this function to assert.
-
-       <H2>Returns:</H2>
-       pointer to new copy of the class instance.
-     */
-
-    virtual PINDEX HashFunction() const;
-    /* This function yields a hash value required by the <A>PDictionary</A>
-       class. A descendent class that is required to be the key of a dictionary
-       should override this function. The precise values returned is dependent
-       on the semantics of the class. For example, the <A>PString</A> class
-       overrides it to provide a hash function for distinguishing text strings.
-
-       The default behaviour is to return the value zero.
-
-       <H2>Returns:</H2>
-       hash function value for class instance.
-     */
-
-    virtual void PrintOn(
-      ostream &strm   // Stream to print the object into.
-    ) const;
-    /* Output the contents of the object to the stream. The exact output is
+  /**@name I/O functions */
+  //@{
+    /** Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <CODE><A>operator<<</A></CODE> function.
+       primarily used by the standard #operator<<# function.
 
        The default behaviour is to print the class name.
      */
+    virtual void PrintOn(
+      ostream &strm   // Stream to print the object into.
+    ) const;
 
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-    /* Input the contents of the object from the stream. The exact input is
+    /** Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <CODE><A>operator>></A></CODE> function.
+       primarily used by the standard #operator>># function.
 
        The default behaviour is to do nothing.
      */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
 
 
+    /** Global function for using the standard << operator on objects descended
+       from PObject. This simply calls the objects #PrintOn()# function.
+       
+       @return the #strm# parameter.
+     */
     inline friend ostream & operator<<(
       ostream &strm,       // Stream to print the object into.
       const PObject & obj  // Object to print to the stream.
     ) { obj.PrintOn(strm); return strm; }
-    /* Global function for using the standard << operator on objects descended
-       from PObject. This simply calls the objects <A>PrintOn()</A> function.
-       
-       <H2>Returns:</H2>
-       the <CODE>strm</CODE> parameter.
-     */
 
+    /** Global function for using the standard >> operator on objects descended
+       from PObject. This simply calls the objects #ReadFrom()# function.
+
+       @return the #strm# parameter.
+     */
     inline friend istream & operator>>(
       istream &strm,   // Stream to read the objects contents from.
       PObject & obj    // Object to read inormation into.
     ) { obj.ReadFrom(strm); return strm; }
-    /* Global function for using the standard >> operator on objects descended
-       from PObject. This simply calls the objects <A>ReadFrom()</A> function.
-
-       <H2>Returns:</H2>
-       the <CODE>strm</CODE> parameter.
-     */
 
 
-    virtual PINDEX PreSerialise(
-      PSerialiser & strm   // Serialiser stream to serialise object into.
-    );
-    /* This function is used to determine the size of the object and all other
+    /** This function is used to determine the size of the object and all other
        objects it contains. The actual size is dependent on the exact semantics
-       of the descendent object. For example the <A>PString</A> class would
-       return the length of the string plus one, while the <A>PList</A> class
+       of the descendent object. For example the #PString# class would
+       return the length of the string plus one, while the #PList# class
        would return the sum of the sizes of all of the objects in the list
        plus the size of an integer for the number of objects.
 
-       This in only required by the <A>PBinarySerialiser</A> class which
-       serialises the objects into a binary file. The <A>PTextSerialiser</A>
+       This in only required by the #PBinarySerialiser# class which
+       serialises the objects into a binary file. The #PTextSerialiser#
        class which serialises into a text stream does not use this function.
 
-       Note serialisation requires the use of the <A>PDECLARE_SERIAL</A> and
-       <A>PIMPLEMENT_SERIAL</A> macros.
+       Note serialisation requires the use of the #PDECLARE_SERIAL# and
+       #PIMPLEMENT_SERIAL# macros.
 
-       <H2>Returns:</H2>
-       size in bytes of object.
+       @return size in bytes of object.
      */
-
-    virtual void Serialise(
+    virtual PINDEX PreSerialise(
       PSerialiser & strm   // Serialiser stream to serialise object into.
     );
-    /* Serialise the object into the specified stream. This is similar to the
-       <A>PrintOn()</A> function that outputs the contents of the object to a
-       stream, but where <A>PrintOn()</A> usually produces a human readable
+
+    /** Serialise the object into the specified stream. This is similar to the
+       #PrintOn()# function that outputs the contents of the object to a
+       stream, but where #PrintOn()# usually produces a human readable
        form of the object, this function outputs enough data so that it can be
-       reconstructed by the <A>PUnSerialiser</A> class.
+       reconstructed by the #PUnSerialiser# class.
        
        When the user implements this function they will usually be doing it for
        one of either the text of binary output versions. In some circumstances,
-       eg libraries, both need be supported so the <A>IsDscendent()</A>
-       function should be used on the <CODE>strm</CODE> parameter to determine
-       whether it is a <A>PBinarySerialiser</A> class or a
-       <A>PTextSerialiser</A> class and do the appropriate output.
+       eg libraries, both need be supported so the #IsDscendent()#
+       function should be used on the #strm# parameter to determine
+       whether it is a #PBinarySerialiser# class or a
+       #PTextSerialiser# class and do the appropriate output.
 
-       To a large extent, if only the <CODE><<</CODE> operator is used on the
-       <A>PSerialiser</A> instance, the text and binary version can be made
+       To a large extent, if only the #<<# operator is used on the
+       #PSerialiser# instance, the text and binary version can be made
        identical.
      */
-
-    virtual void UnSerialise(
-      PUnSerialiser & strm   // Serialiser stream to serialise object into.
+    virtual void Serialise(
+      PSerialiser & strm   // Serialiser stream to serialise object into.
     );
-    /* Un-serialise the object from the specified stream. This is similar to
-       the <A>ReadFrom()</A> function that inputs the contents of the object
-       from a stream, but where <A>ReadFrom()</A> usually intrerprets a human
+
+    /** Un-serialise the object from the specified stream. This is similar to
+       the #ReadFrom()# function that inputs the contents of the object
+       from a stream, but where #ReadFrom()# usually intrerprets a human
        readable form of the object, this function inputs enough data so that
-       it can be reconstructed from the data provided by the <A>Serialise()</A>
+       it can be reconstructed from the data provided by the #Serialise()#
        function.
 
        When the user implements this function they will usually be doing it for
        one of either the text of binary input versions. In some circumstances,
-       eg libraries, both need be supported so the <A>IsDscendent()</A>
-       function should be used on the <CODE>strm</CODE> parameter to determine
-       whether it is a <A>PBinarySerialiser</A> class or a
-       <A>PTextSerialiser</A> class and do the appropriate input.
+       eg libraries, both need be supported so the #IsDscendent()#
+       function should be used on the #strm# parameter to determine
+       whether it is a #PBinarySerialiser# class or a
+       #PTextSerialiser# class and do the appropriate input.
 
        To a large extent, if only the >> operator is used on the
-       <A>PUnSerialiser</A> instance, the text and binary version can be made
+       #PUnSerialiser# instance, the text and binary version can be made
        identical.
      */
+    virtual void UnSerialise(
+      PUnSerialiser & strm   // Serialiser stream to serialise object into.
+    );
+  //@}
+
+  /**@name Miscellaneous functions */
+  //@{
+    /** Create a copy of the class on the heap. The exact semantics of the
+       descendent class determine what is required to make a duplicate of the
+       instance. Not all classes can even {\bf do} a clone operation.
+       
+       The main user of the clone function is the #PDictionary# class as
+       it requires copies of the dictionary keys.
+
+       The default behaviour is for this function to assert.
+
+       @return
+       pointer to new copy of the class instance.
+     */
+    virtual PObject * Clone() const;
+
+    /** This function yields a hash value required by the #PDictionary#
+       class. A descendent class that is required to be the key of a dictionary
+       should override this function. The precise values returned is dependent
+       on the semantics of the class. For example, the #PString# class
+       overrides it to provide a hash function for distinguishing text strings.
+
+       The default behaviour is to return the value zero.
+
+       @return
+       hash function value for class instance.
+     */
+    virtual PINDEX HashFunction() const;
+  //@}
 };
 
 
@@ -954,191 +1095,223 @@ class PObject {
 
 class PUnSerialiser;
 
+/** Registration class for persistent object serialisation/unserialisation.
+This class is for registration of object classes that will be serialised and
+un-serialised.
+
+As objects are un-serialised, the objects need to be constructed. For the
+#PUnSerialiser# instance to know what constructor to call, a
+registration of functions that call the appropriate constructor.
+
+The #PDECLARE_SERIAL# macro creates a single instance of this class to
+register the class with the serialiser.
+
+Even though this class implements a hash table it does {\bf not} use the
+standard #PHashTable# or #PDictionary# classes due to recursive
+definition problems. Those classes need to register themselves with this
+class before they can be used!
+*/
 class PSerialRegistration {
-/* This class is for registration of object classes that will be serialised and
-   un-serialised.
-
-   As objects are un-serialised, the objects need to be constructed. For the
-   <A>PUnSerialiser</A> instance to know what constructor to call, a
-   registration of functions that call the appropriate constructor.
-
-   The <A>PDECLARE_SERIAL</A> macro creates a single instance of this class to
-   register the class with the serialiser.
-
-   Even though this class implements a hash table it does <EM>not</EM> use the
-   standard <A>PHashTable</A> or <A>PDictionary</A> classes due to recursive
-   definition problems. Those classes need to register themselves with this
-   class before they can be used!
- */
 
   public:
-    typedef PObject * (*CreatorFunction)(PUnSerialiser * serial);
-    /* This type is a pointer to a function to create objects during the
+    /** This type is a pointer to a function to create objects during the
        un-serialisation operation.
      */
+    typedef PObject * (*CreatorFunction)(PUnSerialiser * serial);
 
+    /** Create a serialiser class registration. This is unversally called by
+       static member variables in the #PDECLARE_SERIAL# and
+       #PIMPLEMENT_SERIAL# macros.
+     */
     PSerialRegistration(
       const char * clsNam,    // Name of class to register.
       CreatorFunction func    // Constructor function for the class.
     );
-    /* Create a serialiser class registration. This is unversally called by
-       static member variables in the <A>PDECLARE_SERIAL</A> and
-       <A>PIMPLEMENT_SERIAL</A> macros.
-     */
 
+    /** Get the creator function for the class name specified.
+
+       @return function to construct objects.
+     */
     static CreatorFunction GetCreator(
       const char * clsNam   // Name of class to get the creator function for.
     );
-    /* Get the creator function for the class name specified.
 
-       <H2>Returns:</H2>
-       function to construct objects.
-     */
-
-    enum { HashTableSize = 41 };
     // Constant for size of hash table.
+    enum { HashTableSize = 41 };
 
   protected:
-    const char * className;
-    // This serialiser registrations class
-
-    CreatorFunction creator;
-    /* This serialiser registrations creator function - the function that will
-       make a new object of the classes type and construct it with an instance
-       of the <A>PSerialiser</A> class.
+    /** Calculate the bucket for the hash table lookup.
+      @return Has index for class.
      */
-
-    PSerialRegistration * clash;
-    // Pointer to next registration when a hash clash occurs.
-
     static PINDEX HashFunction(
       const char * className    // Class name to calculate hash function for.
     );
-    // Calculate the bucket for the hash table lookup.
 
+    /// This serialiser registrations class
+    const char * className;
+
+    /** This serialiser registrations creator function - the function that will
+       make a new object of the classes type and construct it with an instance
+       of the #PSerialiser# class.
+     */
+    CreatorFunction creator;
+
+    /// Pointer to next registration when a hash clash occurs.
+    PSerialRegistration * clash;
+
+    /// A static dictionary of class names to creator functions.
     static PSerialRegistration * creatorHashTable[HashTableSize];
-    // A static dictionary of class names to creator functions.
 };
 
 
-class PSerialiser : public PObject
-{
-  PCLASSINFO(PSerialiser, PObject)
-/* This class allows the serialisation of objects to an output stream. This
+/** This class allows the serialisation of objects to an output stream. This
    packages up objects so that they can be reconstructed by an instance of the
-   <A>PUnSerialiser</A> class. The stream they are sent to can be any stream;
+   #PUnSerialiser# class. The stream they are sent to can be any stream;
    file, string, pipe, socket etc.
 
    Serialisation can be done in two manners: binary or text. This depends on
    the serialiser instance that was constructed. Each objects
-   <A>PObject::Serialise()</A> function is called and it is up to that
+   #PObject::Serialise()# function is called and it is up to that
    function to output in binary or text.
 
    To a large extent, if only the << operator is used on the
-   <A>PSerialser</A> instance, the text and binary versions of the
-   <A>PObject::Serialise()</A> function can be made identical.
+   #PSerialser# instance, the text and binary versions of the
+   #PObject::Serialise()# function can be made identical.
 
-   This class is an abstract class and descendents of <A>PTextSerialiser</A> or
-   <A>PBinarySerialiser</A> should be created.
+   This class is an abstract class and descendents of #PTextSerialiser# or
+   #PBinarySerialiser# should be created.
  */
+class PSerialiser : public PObject
+{
+  PCLASSINFO(PSerialiser, PObject);
 
   public:
+    /// Construct a serialiser.
     PSerialiser(
       ostream & strm  // Stream to output serialisation to.
     );
-    // Construct a serialiser.
 
+    /// Output char to serial stream.
     virtual PSerialiser & operator<<(char) = 0;
+    /// Output unsigned char to serial stream.
     virtual PSerialiser & operator<<(unsigned char) = 0;
+    /// Output signed char to serial stream.
     virtual PSerialiser & operator<<(signed char) = 0;
+    /// Output short to serial stream.
     virtual PSerialiser & operator<<(short) = 0;
+    /// Output unsigned short to serial stream.
     virtual PSerialiser & operator<<(unsigned short) = 0;
+    /// Output int to serial stream.
     virtual PSerialiser & operator<<(int) = 0;
+    /// Output unsigned int to serial stream.
     virtual PSerialiser & operator<<(unsigned int) = 0;
+    /// Output long to serial stream.
     virtual PSerialiser & operator<<(long) = 0;
+    /// Output unsigned long to serial stream.
     virtual PSerialiser & operator<<(unsigned long) = 0;
+    /// Output float to serial stream.
     virtual PSerialiser & operator<<(float) = 0;
+    /// Output double to serial stream.
     virtual PSerialiser & operator<<(double) = 0;
+    /// Output long double to serial stream.
     virtual PSerialiser & operator<<(long double) = 0;
+    /// Output C string to serial stream.
     virtual PSerialiser & operator<<(const char *) = 0;
+    /// Output C string to serial stream.
     virtual PSerialiser & operator<<(const unsigned char *) = 0;
+    /// Output C string to serial stream.
     virtual PSerialiser & operator<<(const signed char *) = 0;
-    virtual PSerialiser & operator<<(PObject &);
-    /* Output the data to the serialiser object. When the operator is executed
-       on a <A>PObject</A> descendent then that objects
-       <A>PObject::Serialise()</A> function is called.
+    /** Output the data to the serialiser object.
+      When the operator is executed on a #PObject# descendent then that objects
+      #PObject::Serialise()# function is called.
      */
+    virtual PSerialiser & operator<<(PObject &);
 
   protected:
+    /// Stream to output serial data to.
     ostream & stream;
-    // Stream to output serial data to.
 };
 
 
-class PUnSerialiser : public PObject
-{
-  PCLASSINFO(PUnSerialiser, PObject)
-/* This class allows the un-serialisation of objects from an input stream. This
+/** This class allows the un-serialisation of objects from an input stream. This
    reconstruct objects that where packaged earlier by an instance of the
-   <A>PSerialise</A> class. The stream they are received from can be any
+   #PSerialise# class. The stream they are received from can be any
    stream; file, string, pipe, socket etc.
 
    Serialisation can be done in two manners: binary or text. This depends on
    the serialiser instance that was constructed. Each objects
-   <A>PObject::Serialise()</A> function is called and it is up to that
+   #PObject::Serialise()# function is called and it is up to that
    function to output in binary or text.
 
-   To a large extent, if only the <CODE><<</CODE> operator is used on the
-   <A>PSerialser</A> instance, the text and binary versions of the
-   <A>PObject::Serialise()</A> function can be made identical.
+   To a large extent, if only the #<<# operator is used on the
+   #PSerialser# instance, the text and binary versions of the
+   #PObject::Serialise()# function can be made identical.
 
-   This class is an abstract class and descendents of <A>PTextSerialiser</A> or
-   <A>PBinarySerialiser</A> should be created.
+   This class is an abstract class and descendents of #PTextSerialiser# or
+   #PBinarySerialiser# should be created.
  */
+class PUnSerialiser : public PObject
+{
+  PCLASSINFO(PUnSerialiser, PObject);
 
   public:
+    /// Construct an un-serialiser.
     PUnSerialiser(
       istream & strm    // Stream to read the serialised objects from.
     );
-    // Construct an un-serialiser.
 
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(char &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(unsigned char &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(signed char &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(short &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(unsigned short &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(int &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(unsigned int &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(long &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(unsigned long &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(float &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(double &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(long double &) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(char *) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(unsigned char *) = 0;
+    /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(signed char *) = 0;
-    virtual PUnSerialiser & operator>>(PObject &) = 0;
-    /* Input the data from the un-serialiser object. When the operator is
-       executed on a <A>PObject</A> descendent then that objects
-       <A>PObject::UnSerialise()</A> function is called.
+    /** Input the data from the un-serialiser object.
+      When the operator is executed on a #PObject# descendent then
+      that objects #PObject::UnSerialise()# function is called.
      */
+    virtual PUnSerialiser & operator>>(PObject &) = 0;
 
   protected:
+    /// Stream the read un-serialiser data from.
     istream & stream;
-    // Stream the read un-serialiser data from.
 };
 
 
-/*$MACRO PDECLARE_SERIAL(cls)
+/**Declare information in a class for serialisation of objects.
    This macro is used to declare functions required by the serialisation
-   system. It is used in conjunction with the <A>PIMPLEMENT_SERIAL</A> macro.
+   system. It is used in conjunction with the #PIMPLEMENT_SERIAL# macro.
 
-   This declares the <A>PObject::PreSerialise()</A> and
-   <A>PObject::Serialise()</A> functions which must be imeplemented by the
+   This declares the #PObject::PreSerialise()# and
+   #PObject::Serialise()# functions which must be imeplemented by the
    user. The un-serialisation and registration is declared and implemented by
    these two functions automatically.
  */
-#define PDECLARE_SERIAL(cls) \
+#define PSERIALINFO(cls) \
   public: \
     virtual PINDEX PreSerialise(PSerialiser & strm); \
     virtual void Serialise(PSerialiser & serial); \
@@ -1150,9 +1323,9 @@ class PUnSerialiser : public PObject
     PINDEX serialisedLength; \
     static PSerialRegistration pRegisterSerial; \
 
-/*$MACRO PIMPLEMENT_SERIAL(cls)
+/**
    This macro is used to implement functions required by the serialisation
-   system. It is used in conjunction with the <A>PDECLARE_SERIAL</A> macro.
+   system. It is used in conjunction with the #PDECLARE_SERIAL# macro.
  */
 #define PIMPLEMENT_SERIAL(cls) \
   cls * cls::UnSerialiseNew(PUnSerialiser & serial) \
@@ -1160,50 +1333,62 @@ class PUnSerialiser : public PObject
   PSerialRegistration cls::pRegisterSerial(cls::Class(), cls::UnSerialise); \
 
 
-class PTextSerialiser : public PSerialiser
-{
-  PCLASSINFO(PTextSerialiser, PSerialiser)
-/* This serialiser class serialises each object using ASCII text. This gives
+/** This serialiser class serialises each object using ASCII text. This gives
   the highest level of portability for streams and platforms at the expense
   if larger amounts of data.
  */
+class PTextSerialiser : public PSerialiser
+{
+  PCLASSINFO(PTextSerialiser, PSerialiser);
 
   public:
+    /// Create a text serialiser.
     PTextSerialiser(
       ostream & strm,   // Stream to serialise to.
       PObject & data    // First object to serialise.
     );
-    // Create a text serialiser.
 
+    /// Output primitive to stream.
     PSerialiser & operator<<(char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(signed char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(short);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned short);
+    /// Output primitive to stream.
     PSerialiser & operator<<(int);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned int);
+    /// Output primitive to stream.
     PSerialiser & operator<<(long);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned long);
+    /// Output primitive to stream.
     PSerialiser & operator<<(float);
+    /// Output primitive to stream.
     PSerialiser & operator<<(double);
+    /// Output primitive to stream.
     PSerialiser & operator<<(long double);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const char *);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const unsigned char *);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const signed char *);
-    virtual PSerialiser & operator<<(PObject & obj);
-    /* Output the data to the serialiser object. When the operator is executed
-       on a <A>PObject</A> descendent then that objects
-       <A>PObject::Serialise()</A> function is called.
+    /** Output the data to the serialiser object.
+      When the operator is executed on a #PObject# descendent then that objects
+      #PObject::Serialise()# function is called.
      */
+    virtual PSerialiser & operator<<(PObject & obj);
 };
 
 
 class PSortedStringList;
 
-class PBinarySerialiser : public PSerialiser
-{
-  PCLASSINFO(PBinarySerialiser, PSerialiser)
-/* This serialiser class serialises each object using binary data. This gives
+/** This serialiser class serialises each object using binary data. This gives
    the highest level data density at the expense of some portability and
    possibly the speed of execution.
    
@@ -1213,87 +1398,117 @@ class PBinarySerialiser : public PSerialiser
    the class codes used in the output and the class names that are required by
    the unserialiser to construct instances of those classes.
  */
+class PBinarySerialiser : public PSerialiser
+{
+  PCLASSINFO(PBinarySerialiser, PSerialiser);
 
   public:
+    /// Create a binary serialiser.
     PBinarySerialiser(
       ostream & strm,   // Stream to serialise to.
       PObject & data    // First object to serialise.
     );
-    // Create a binary serialiser.
 
+    /// Destroy the serialiser and its class table.
     ~PBinarySerialiser();
-    // Destroy the serialiser and its class table.
 
+    /// Output primitive to stream.
     PSerialiser & operator<<(char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(signed char);
+    /// Output primitive to stream.
     PSerialiser & operator<<(short);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned short);
+    /// Output primitive to stream.
     PSerialiser & operator<<(int);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned int);
+    /// Output primitive to stream.
     PSerialiser & operator<<(long);
+    /// Output primitive to stream.
     PSerialiser & operator<<(unsigned long);
+    /// Output primitive to stream.
     PSerialiser & operator<<(float);
+    /// Output primitive to stream.
     PSerialiser & operator<<(double);
+    /// Output primitive to stream.
     PSerialiser & operator<<(long double);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const char *);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const unsigned char *);
+    /// Output primitive to stream.
     PSerialiser & operator<<(const signed char *);
-    virtual PSerialiser & operator<<(PObject & obj);
-    /* Output the data to the serialiser object. When the operator is executed
-       on a <A>PObject</A> descendent then that objects
-       <A>PObject::Serialise()</A> function is called.
+    /** Output the data to the serialiser object.
+      When the operator is executed on a #PObject# descendent then that objects
+      #PObject::Serialise()# function is called.
      */
+    virtual PSerialiser & operator<<(PObject & obj);
 
   protected:
+    /// List of classes used during serialisation.
     PSortedStringList * classesUsed;
-    // List of classes used during serialisation.
 };
 
 
-class PTextUnSerialiser : public PUnSerialiser
-{
-  PCLASSINFO(PTextUnSerialiser, PUnSerialiser)
-/* This un-serialiser class reconstructs each object using ASCII text. This
+/** This un-serialiser class reconstructs each object using ASCII text. This
    gives the highest level of portability for streams and platforms at the
    expense if larger amounts of data.
  */
+class PTextUnSerialiser : public PUnSerialiser
+{
+  PCLASSINFO(PTextUnSerialiser, PUnSerialiser);
 
   public:
+    /// Create a text un-serialiser.
     PTextUnSerialiser(
       istream & strm    // Stream to read serialised objects from.
     );
-    // Create a text un-serialiser.
 
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(signed char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(short &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned short &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(int &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned int &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(long &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned long &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(float &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(double &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(long double &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(char *);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned char *);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(signed char *);
-    PUnSerialiser & operator>>(PObject &);
-    /* Input the data from the un-serialiser object. When the operator is
-       executed on a <A>PObject</A> descendent then that objects
-       <A>PObject::UnSerialise()</A> function is called.
+    /** Input the data from the un-serialiser object.
+      When the operator is executed on a #PObject# descendent then
+      that objects #PObject::UnSerialise()# function is called.
      */
+    PUnSerialiser & operator>>(PObject &);
 };
 
 
 class PStringArray;
 
-class PBinaryUnSerialiser : public PUnSerialiser
-{
-  PCLASSINFO(PBinaryUnSerialiser, PUnSerialiser)
-/* This un-serialiser class reconstructs each object using binary data. This
+/** This un-serialiser class reconstructs each object using binary data. This
    gives the highest level data density at the expense of some portability and
    possibly the speed of execution.
    
@@ -1302,119 +1517,136 @@ class PBinaryUnSerialiser : public PUnSerialiser
    the class names that are required by the unserialiser to construct instances
    of those classes.
  */
+class PBinaryUnSerialiser : public PUnSerialiser
+{
+  PCLASSINFO(PBinaryUnSerialiser, PUnSerialiser);
   public:
+    /// Create a binary un-serialiser.
     PBinaryUnSerialiser(
       istream & strm    // Stream to read serialised objects from.
     );
-    // Create a binary un-serialiser.
 
+    /// Destroy the un-serialiser and its class table.
     ~PBinaryUnSerialiser();
-    // Destroy the un-serialiser and its class table.
 
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(signed char &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(short &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned short &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(int &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned int &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(long &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned long &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(float &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(double &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(long double &);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(char *);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(unsigned char *);
+    /// Input primitive from stream.
     PUnSerialiser & operator>>(signed char *);
-    PUnSerialiser & operator>>(PObject &);
-    /* Input the data from the un-serialiser object. When the operator is
-       executed on a <A>PObject</A> descendent then that objects
-       <A>PObject::UnSerialise()</A> function is called.
+    /** Input the data from the un-serialiser object.
+      When the operator is executed on a #PObject# descendent then
+      that objects #PObject::UnSerialise()# function is called.
      */
+    PUnSerialiser & operator>>(PObject &);
 
   protected:
+    /// Class table used by the serialiser.
     PStringArray * classesUsed;
-    // Class table used by the serialiser.
 };
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // "Smart" pointers.
 
-class PSmartObject : public PObject
-{
-  PCLASSINFO(PSmartObject, PObject)
-/* This is the base class for objects that use the <I>smart pointer</I> system.
-   In conjunction with the <A>PSmartPointer</A> class, this class creates
+/** This is the base class for objects that use the {\it smart pointer} system.
+   In conjunction with the #PSmartPointer# class, this class creates
    objects that can have the automatic deletion of the object instance when
    there are no more smart pointer instances pointing to it.
 
-   A PSmartObject carries the reference count that the <A>PSmartPointer</A> 
+   A #PSmartObject# carries the reference count that the #PSmartPointer# 
    requires to determine if the pointer is needed any more and should be
    deleted.
  */
+class PSmartObject : public PObject
+{
+  PCLASSINFO(PSmartObject, PObject);
 
   public:
-    PSmartObject() { referenceCount = 1; }
-    /* Construct a new smart object, subject to a <A>PSmartPointer</A> instance
+    /** Construct a new smart object, subject to a #PSmartPointer# instance
        referencing it.
      */
+    PSmartObject() { referenceCount = 1; }
 
-  private:
-    unsigned referenceCount;
-    /* Count of number of instances of <A>PSmartPointer</A> that currently
+  protected:
+    /** Count of number of instances of #PSmartPointer# that currently
        reference the object instance.
      */
+    unsigned referenceCount;
 
 
   friend class PSmartPointer;
 };
 
 
-class PSmartPointer : public PObject
-{
-  PCLASSINFO(PSmartPointer, PObject)
-/* This is the class for pointers to objects that use the <I>smart pointer</I>
-   system. In conjunction with the <A>PSmartObject</A> class, this class
+/** This is the class for pointers to objects that use the {\it smart pointer}
+   system. In conjunction with the #PSmartObject# class, this class
    references objects that can have the automatic deletion of the object
    instance when there are no more smart pointer instances pointing to it.
 
-   A PSmartPointer carries the pointer to a <A>PSmartObject</A> instance which
+   A PSmartPointer carries the pointer to a #PSmartObject# instance which
    contains a reference count. Assigning or copying instances of smart pointers
    will automatically increment and decrement the reference count. When the
-   last instance that references a <A>PSmartObject</A> instance is destroyed or
-   overwritten, the <A>PSmartObject</A> is deleted.
+   last instance that references a #PSmartObject# instance is destroyed or
+   overwritten, the #PSmartObject# is deleted.
 
    A NULL value is possible for a smart pointer. It can be detected via the
-   <A>IsNULL()</A> function.
+   #IsNULL()# function.
  */
+class PSmartPointer : public PObject
+{
+  PCLASSINFO(PSmartPointer, PObject);
 
   public:
-    PSmartPointer(
-      PSmartObject * obj = NULL   // Smart object to point to.
-    ) { object = obj; }
-    /* Create a new smart pointer instance and have it point to the specified
-       <A>PSmartObject</A> instance.
+  /**@name Construction */
+  //@{
+    /** Create a new smart pointer instance and have it point to the specified
+       #PSmartObject# instance.
      */
-
     PSmartPointer(
-      const PSmartPointer & ptr  // Smart pointer to make a copy of.
-    );
-    /* Create a new smart pointer and point it at the data pointed to by the
-       <CODE>ptr</CODE> parameter. The reference count for the object being
+      PSmartObject * obj = NULL   /// Smart object to point to.
+    ) { object = obj; }
+
+    /** Create a new smart pointer and point it at the data pointed to by the
+       #ptr# parameter. The reference count for the object being
        pointed at is incremented.
      */
+    PSmartPointer(
+      const PSmartPointer & ptr  /// Smart pointer to make a copy of.
+    );
 
-    virtual ~PSmartPointer();
-    /* Destroy the smart pointer and decrement the reference count on the
+    /** Destroy the smart pointer and decrement the reference count on the
        object being pointed to. If there are no more references then the
        object is deleted.
      */
+    virtual ~PSmartPointer();
 
-    PSmartPointer & operator=(
-      const PSmartPointer & ptr  // Smart pointer to assign.
-    );
-    /* Assign this pointer to the value specified in the <CODE>ptr</CODE>
+    /** Assign this pointer to the value specified in the #ptr#
        parameter.
 
        The previous object being pointed to has its reference count
@@ -1424,54 +1656,64 @@ class PSmartPointer : public PObject
        The new object being pointed to after the assignment has its reference
        count incremented.
      */
+    PSmartPointer & operator=(
+      const PSmartPointer & ptr  /// Smart pointer to assign.
+    );
+  //@}
 
-    virtual Comparison Compare(
-      const PObject & obj   // Other smart pointer to compare against.
-    ) const;
-    /* Determine the relative rank of the pointers. This is identical to
+  /**@name Overrides from class PObject */
+  //@{
+    /** Determine the relative rank of the pointers. This is identical to
        determining the relative rank of the integer values represented by the
        memory pointers.
 
-       <H2>Returns:</H2>
-       <CODE>EqualTo</CODE> if objects point to the same object instance,
-       otherwise <CODE>LessThan</CODE> and <CODE>GreaterThan</CODE> may be
+       @return
+       #EqualTo# if objects point to the same object instance,
+       otherwise #LessThan# and #GreaterThan# may be
        returned depending on the relative values of the memory pointers.
      */
+    virtual Comparison Compare(
+      const PObject & obj   // Other smart pointer to compare against.
+    ) const;
+  //@}
 
-    BOOL IsNULL() const { return object == NULL; }
-    /* Determine if the smart pointer has been set to point to an actual
+  /**@name Pointer access functions */
+  //@{
+    /** Determine if the smart pointer has been set to point to an actual
        object instance.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the pointer is NULL.
      */
+    BOOL IsNULL() const { return object == NULL; }
 
-    PSmartObject * GetObject() const { return object; }
-    /* Get the current value if the internal smart object pointer.
+    /** Get the current value if the internal smart object pointer.
 
-       <H2>Returns:</H2>
+       @return
        pointer to object instance.
      */
-
+    PSmartObject * GetObject() const { return object; }
+  //@}
 
   protected:
+    // Member variables
+    /// Object the smart pointer points to.
     PSmartObject * object;
-    // Object the smart pointer points to.
 };
 
 
-/*$MACRO PDECLARE_POINTER_CLASS(cls, par, type)
-   This macro is used to declare a smart pointer class. The class is not
-   closed off allowing customisation of the new class being declared.
+/** This macro is used to declare a smart pointer class.
+The class is not closed off allowing customisation of the new class being
+declared.
 
-   The class <CODE>cls</CODE> is declared as a smart pointer, descended from
-   the <CODE>par</CODE> class, to the <CODE>type</CODE> class.
+The class #cls# is declared as a smart pointer, descended from
+the #par# class, to the #type# class.
 
-   If no customisations are required use the <A>PDECLARE_POINTER_CLASS</A>
-   macro instead.
+If no customisations for the clase are required use the
+#PDECLARE_POINTER_CLASS# macro instead.
 
-   The class declares the following functions:
-      <PRE><CODE>
+The class declares the following functions:
+\begin{verbatim}
       cls(type * obj);
         Constructor creating the smart pointer given the memory pointer.
 
@@ -1480,15 +1722,15 @@ class PSmartPointer : public PObject
 
       type & operator*() const;
         Access to the value of the smart object in the smart pointer.
-      </CODE></PRE>
+\end{verbatim}
 
-   Note if this macro is used then the <A>PIMPLEMENT_POINTER</A> macro must be
-   used to implement some inline functions that the pointer class declares.
-   The separate declaration and definition is sometimes required due to the
-   order in which the <A>PSmartPointer</A> class and the <A>PSmartObject</A>
-   class are declared. They may require a circular reference under some
-   circumstances.
- */
+Note if this macro is used then the #PIMPLEMENT_POINTER# macro must be
+used to implement some inline functions that the pointer class declares.
+The separate declaration and definition is sometimes required due to the
+order in which the #PSmartPointer# class and the #PSmartObject#
+class are declared. They may require a circular reference under some
+circumstances.
+*/
 #define PDECLARE_POINTER_CLASS(cls, par, type) \
   PDECLARE_CLASS(cls, par) \
     public: \
@@ -1497,51 +1739,50 @@ class PSmartPointer : public PObject
       type & operator*() const; \
 
 
-/*$MACRO PDECLARE_POINTER(cls, par, type)
-   This macro is used to declare a smart pointer. Unlike the
-   <A>PDECLARE_POINTER_CLASS</A> macro this closes off the class declaration.
+/** This macro is used to declare a smart pointer.
+Unlike the #PDECLARE_POINTER_CLASS# macro this closes off the class declaration.
 
-   One additional constructor is created in this class declaration which
-   will create a NULL smart pointer when no parameters are provided to the
-   constructor.
+One additional constructor is created in this class declaration which
+will create a NULL smart pointer when no parameters are provided to the
+constructor.
 
-   The class <CODE>cls</CODE> is declared as a smart pointer, descended from
-   the <CODE>par</CODE> class, to the <CODE>type</CODE> class.
+The class #cls# is declared as a smart pointer, descended from
+the #par# class, to the #type# class.
 
-   Note if this macro is used then the <A>PIMPLEMENT_POINTER</A> macro must be
-   used to implement some inline functions that the pointer class declares.
-   The separate declaration and definition is sometimes required due to the
-   order in which the <A>PSmartPointer</A> class and the <A>PSmartObject</A>
-   class are declared. They may require a circular reference under some
-   circumstances.
- */
+Note if this macro is used then the #PIMPLEMENT_POINTER# macro must be
+used to implement some inline functions that the pointer class declares.
+The separate declaration and definition is sometimes required due to the
+order in which the #PSmartPointer# class and the #PSmartObject#
+class are declared. They may require a circular reference under some
+circumstances.
+*/
 #define PDECLARE_POINTER(cls, par, type) \
   PDECLARE_POINTER_CLASS(cls, par, type) \
     public: \
       cls() { } \
   }
 
-/*$MACRO PIMPLEMENT_POINTER(cls, par, type)
+/**This macro is used to implement a smart pointer.
   This macro implements the optionally inline functions, using the
-  <A>PINLINE</A> macro.
+  #PINLINE# macro.
  */
 #define PIMPLEMENT_POINTER(cls, par, type) \
   PINLINE cls::cls(type * obj) : par(obj) { } \
   PINLINE type * cls::operator->() const \
     { return (type *)PAssertNULL(object); } \
   PINLINE type & cls::operator*() const \
-    { return *(type *)PAssertNULL(object); } \
+    { return *(type *)PAssertNULL(object); }
 
-/*$MACRO PSMART_POINTER(cls, type)
-   This macro is used to declare a smart pointer. Unlike the
-   <A>PDECLARE_POINTER_CLASS</A> macro this closes off the class declaration
-   and assumes that it is descended directly off the PSmartPointer class. Also
-   the member functions are implemented as inlines directly in the declaration.
 
-   If the order in which the <A>PSmartPointer</A> and the <A>PSmartObject</A>
-   classes are declared causes problems, use the separate
-   <A>PDECLARE_POINTER_CLASS</A> and <A>PIMPLEMENT_POINTER</A> macros.
- */
+/** This macro is used to declare a smart pointer.
+Unlike the #PDECLARE_POINTER_CLASS# macro this closes off the class declaration
+and assumes that it is descended directly off the PSmartPointer class. Also
+the member functions are implemented as inlines directly in the declaration.
+
+If the order in which the #PSmartPointer# and the #PSmartObject#
+classes are declared causes problems, use the separate
+#PDECLARE_POINTER_CLASS# and #PIMPLEMENT_POINTER# macros.
+*/
 #define PSMART_POINTER(cls, type) \
   PDECLARE_CLASS(cls, par) \
     public: \
@@ -1555,21 +1796,18 @@ class PSmartPointer : public PObject
 ///////////////////////////////////////////////////////////////////////////////
 // General notification mechanism from one object to another
 
-class PNotifierFunction : public PSmartObject
-{
-  PCLASSINFO(PNotifierFunction, PSmartObject)
-/* This class is the <A>PSmartObject</A> contents of the <A>PNotifier</A>
+/** This class is the #PSmartObject# contents of the #PNotifier#
    class.
 
    This is an abstract class for which a descendent is declared for every
-   function that may be called. The <A>PDECLARE_NOTIFIER</A> macro makes this
+   function that may be called. The #PDECLARE_NOTIFIER# macro makes this
    declaration.
 
-   The <A>PNotifier</A> and PNotifierFunction classes build a completely type
+   The #PNotifier# and PNotifierFunction classes build a completely type
    safe mechanism for calling arbitrary member functions on classes. The
    "pointer to a member function" capability built into C++ makes the
    assumption that the function name exists in an ancestor class. If you wish
-   to call a member function name that does <EM>not</EM> exist in any ancestor
+   to call a member function name that does {\bf not} exist in any ancestor
    class, very type unsafe casting of the member functions must be made. Some
    compilers will even refuse to do it at all!
 
@@ -1582,38 +1820,39 @@ class PNotifierFunction : public PSmartObject
    This is most often used as the notification of actions being take by
    interactors in the PWLib library.
  */
+class PNotifierFunction : public PSmartObject
+{
+  PCLASSINFO(PNotifierFunction, PSmartObject);
 
   public:
+    /// Create a notification function instance.
     PNotifierFunction(
-      void * obj    // Object instance that the function will be called on.
+      void * obj    /// Object instance that the function will be called on.
     ) { object = PAssertNULL(obj); }
-    // Create a notification function instance.
 
-    virtual void Call(
-      PObject & notifier,  // Object that is making the notification.
-      INT extra            // Extra information that may be passed to function.
-    ) const = 0;
-    /* Execute the call to the actual notification function on the object
+    /** Execute the call to the actual notification function on the object
        instance contained in this object.
      */
+    virtual void Call(
+      PObject & notifier,  /// Object that is making the notification.
+      INT extra            /// Extra information that may be passed to function.
+    ) const = 0;
 
   protected:
+    // Member variables
+    /** Object instance to receive the notification function call. */
     void * object;
-    // Object instance to receive the notification function call.
 };
 
 
-class PNotifier : public PSmartPointer
-{
-  PCLASSINFO(PNotifier, PSmartPointer)
-/* This class is the <A>PSmartPointer</A> to the <A>PNotifierFunction</A>
+/** This class is the #PSmartPointer# to the #PNotifierFunction#
    class.
 
-   The PNotifier and <A>PNotifierFunction</A> classes build a completely type
+   The PNotifier and #PNotifierFunction# classes build a completely type
    safe mechanism for calling arbitrary member functions on classes. The
    "pointer to a member function" capability built into C++ makes the
    assumption that the function name exists in an ancestor class. If you wish
-   to call a member function name that does <EM>not</EM> exist in any ancestor
+   to call a member function name that does {\bf not} exist in any ancestor
    class, very type unsafe casting of the member functions must be made. Some
    compilers will even refuse to do it at all!
 
@@ -1626,44 +1865,48 @@ class PNotifier : public PSmartPointer
    This is most often used as the notification of actions being take by
    interactors in the PWLib library.
  */
+class PNotifier : public PSmartPointer
+{
+  PCLASSINFO(PNotifier, PSmartPointer);
 
   public:
+    /** Create a new notification function smart pointer. */
     PNotifier(
-      PNotifierFunction * func = NULL
+      PNotifierFunction * func = NULL   /// Notifier function to call.
     ) : PSmartPointer(func) { }
-    // Create a new notification function smart pointer.
 
-    virtual void operator()(
-      PObject & notifier,  // Object that is making the notification.
-      INT extra            // Extra information that may be passed to function.
-    ) const {((PNotifierFunction*)PAssertNULL(object))->Call(notifier,extra);}
-    /* Execute the call to the actual notification function on the object
+    /**Execute the call to the actual notification function on the object
        instance contained in this object. This will make a polymorphic call to
-       the function declared by the <A>PDECLARE_NOTIFIER</A> macro which in
+       the function declared by the #PDECLARE_NOTIFIER# macro which in
        turn calls the required function in the destination object.
      */
+    virtual void operator()(
+      PObject & notifier,  /// Object that is making the notification.
+      INT extra            /// Extra information that may be passed to function.
+    ) const {((PNotifierFunction*)PAssertNULL(object))->Call(notifier,extra);}
 };
 
 
-/*$MACRO PDECLARE_NOTIFIER(notifier, notifiee, func)
-  This macro declares the descendent class of <A>PNotifierFunction</A> that
-  will be used in instances of <A>PNotifier</A> created by the
-  <A>PCREATE_NOTIFIER</A> or <A>PCREATE_NOTIFIER2</A> macros.
+/** Declare a notifier object class.
+  This macro declares the descendent class of #PNotifierFunction# that
+  will be used in instances of #PNotifier# created by the
+  #PCREATE_NOTIFIER# or #PCREATE_NOTIFIER2# macros.
 
   The macro is expected to be used inside a class declaration. The class it
   declares will therefore be a nested class within the class being declared.
   The name of the new nested class is derived from the member function name
   which should guarentee the class names are unique.
 
-  The <CODE>notifier</CODE> parameter is the class of the function that will be
-  calling the notification function. The <CODE>notifiee</CODE> parameter is the
+  The #notifier# parameter is the class of the function that will be
+  calling the notification function. The #notifiee# parameter is the
   class to which the called member function belongs. Finally the
-  <CODE>func</CODE> parameter is the name of the member function to be
+  #func# parameter is the name of the member function to be
   declared.
 
   This macro will also declare the member function itself. This will be:
-
-      <CODE>void func(notifier & n, INT extra)</CODE>
+\begin{verbatim}
+      void func(notifier & n, INT extra)
+\end{verbatim}
 
   The implementation of the function is left for the user.
  */
@@ -1677,22 +1920,22 @@ class PNotifier : public PSmartPointer
   friend class func##_PNotifier; \
   virtual void func(notifier & note, INT extra)
 
-/*$MACRO PCREATE_NOTIFIER2(obj, func)
-  This macro creates an instance of the particular <A>PNotifier</A> class using
-  the <CODE>func</CODE> parameter as the member function to call.
+/** Create a notifier object instance.
+  This macro creates an instance of the particular #PNotifier# class using
+  the #func# parameter as the member function to call.
 
-  The <CODE>obj</CODE> parameter is the instance to call the function against.
-  If the instance to be called is the current instance, ie <CODE>obj</CODE> is
-  to <CODE>this</CODE> the the <A>PCREATE_NOTIFIER</A> macro should be used.
+  The #obj# parameter is the instance to call the function against.
+  If the instance to be called is the current instance, ie #obj# is
+  to #this# the the #PCREATE_NOTIFIER# macro should be used.
  */
 #define PCREATE_NOTIFIER2(obj, func) PNotifier(new func##_PNotifier(obj))
 
-/*$MACRO PCREATE_NOTIFIER(func)
-  This macro creates an instance of the particular <A>PNotifier</A> class using
-  the <CODE>func</CODE> parameter as the member function to call.
+/** Create a notifier object instance.
+  This macro creates an instance of the particular #PNotifier# class using
+  the #func# parameter as the member function to call.
 
-  The <CODE>this</CODE> object is used as the instance to call the function
-  against. The <A>PCREATE_NOTIFIER2</A> macro may be used if the instance to be
+  The #this# object is used as the instance to call the function
+  against. The #PCREATE_NOTIFIER2# macro may be used if the instance to be
   called is not the current object instance.
  */
 #define PCREATE_NOTIFIER(func) PCREATE_NOTIFIER2(this, func)
@@ -1899,7 +2142,7 @@ class PStandardType
     operator type() { return data; }
     /* Get the platform dependent value for the type.
 
-       <H2>Returns:</H2>
+       @return
        data for instance.
      */
 
@@ -1907,7 +2150,7 @@ class PStandardType
       { return strm << (type)val; }
     /* Output the platform dependent value for the type to the stream.
 
-       <H2>Returns:</H2>
+       @return
        the stream output was made to.
      */
 
@@ -1915,7 +2158,7 @@ class PStandardType
       { type data; strm >> data; val = PStandardType(data); return strm; }
     /* Input the platform dependent value for the type from the stream.
 
-       <H2>Returns:</H2>
+       @return
        the stream input was made from.
      */
 
@@ -2092,21 +2335,21 @@ PI_SAME(PFloat80b, long double);
 
 /*$MACRO PMIN(v1, v2)
    This macro is used to calculate the minimum of two values. As this is a
-   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
+   macro the expression in #v1# or #v2# is executed
    twice so extreme care should be made in its use.
  */
 #define PMIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
 
 /*$MACRO PMAX(v1, v2)
    This macro is used to calculate the maximum of two values. As this is a
-   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
+   macro the expression in #v1# or #v2# is executed
    twice so extreme care should be made in its use.
  */
 #define PMAX(v1, v2) ((v1) > (v2) ? (v1) : (v2))
 
 /*$MACRO PABS(val)
    This macro is used to calculate an absolute value. As this is a macro the
-   expression in <CODE>val</CODE> is executed twice so extreme care should be
+   expression in #val# is executed twice so extreme care should be
    made in its use.
  */
 #define PABS(v) ((v) < 0 ? -(v) : (v))

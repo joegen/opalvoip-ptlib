@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.25  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.24  1999/02/16 08:11:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -116,110 +119,131 @@
 class PTimeInterval;
 
 
-class PTime : public PObject
-{
-  PCLASSINFO(PTime, PObject)
-/* This class defines an absolute time and date. It has a number of time and
+/**This class defines an absolute time and date. It has a number of time and
    date rendering and manipulation functions. It is based on the standard C
    library functions for time. Thus it is based on a number of seconds since
    1 January 1970.
  */
+class PTime : public PObject
+{
+  PCLASSINFO(PTime, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+    /** Time Zone special codes. The value for a time zone is usually in minutes
+        from UTC, this enum are special values for specific areas.
+      */
     enum {
+      /// Universal Coordinated Time.
       UTC   = 0,
+      /// Greenwich Mean Time, effectively UTC.
       GMT   = UTC,
+      /// Local Time.
       Local = 9999
     };
 
-    PTime();
-    PTime(
-      time_t tsecs          // Time in seconds since 00:00:00 1/1/70 UTC
-    ) { theTime = tsecs; }
-    PTime(
-      const PString & str   // Time and data as a string
-    );
-    PTime(
-      int second,           // Second from 0 to 59.
-      int minute,           // Minute from 0 to 59.
-      int hour,             // Hour from 0 to 23.
-      int day,              // Day of month from 1 to 31.
-      int month,            // Month from 1 to 12.
-      int year,             // Year from 1970 to 2038
-      int tz = Local        // local time or UTC
-    );
-    /* Create a time object instance. The first form creates a time from a
-       number of seconds since 1 January 1970. The second will build the
-       structure from the specified date and time components. If no parameter
-       is provided then the time is the actual real time of construction.
+    /**Create a time object instance.
+       This initialises the time with the current time in the current time zone.
      */
+    PTime();
 
+    /**Create a time object instance.
+       This initialises the time to the specified time.
+     */
+    PTime(
+      time_t tsecs          /// Time in seconds since 00:00:00 1/1/70 UTC
+    ) { theTime = tsecs; }
 
-  // Overrides from class PObject
-    PObject * Clone() const;
-    /* Create a copy of the time on the heap. It is the responsibility of the
+    /**Create a time object instance.
+       This initialises the time to the specified time, parsed from the string.
+     */
+    PTime(
+      const PString & str   /// Time and data as a string
+    );
+
+    /**Create a time object instance.
+       This initialises the time to the specified time.
+     */
+    PTime(
+      int second,           /// Second from 0 to 59.
+      int minute,           /// Minute from 0 to 59.
+      int hour,             /// Hour from 0 to 23.
+      int day,              /// Day of month from 1 to 31.
+      int month,            /// Month from 1 to 12.
+      int year,             /// Year from 1970 to 2038
+      int tz = Local        /// local time or UTC
+    );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /**Create a copy of the time on the heap. It is the responsibility of the
        caller to delete the created object.
     
-       <H2>Returns:</H2>
+       @return
        pointer to new time.
      */
+    PObject * Clone() const;
 
-    virtual Comparison Compare(
-      const PObject & obj   // Other time to compare against.
-    ) const;
-    /* Determine the relative rank of the specified times. This ranks the
+    /**Determine the relative rank of the specified times. This ranks the
        times as you would expect.
        
-       <H2>Returns:</H2>
+       @return
        rank of the two times.
      */
-
-    virtual void PrintOn(
-      ostream & strm    // Stream to output the time to.
+    virtual Comparison Compare(
+      const PObject & obj   /// Other time to compare against.
     ) const;
-    /* Output the time to the stream. This uses the <A>AsString()</A> function
-       with the <CODE>ShortDateTime</CODE> parameter.
-     */
 
-    virtual void ReadFrom(
-      istream & strm    // Stream to input the time from.
-    );
-    /* Input the time from the specified stream. If a parse error occurs the
+    /**Output the time to the stream. This uses the #AsString()# function
+       with the #ShortDateTime# parameter.
+     */
+    virtual void PrintOn(
+      ostream & strm    /// Stream to output the time to.
+    ) const;
+
+    /**Input the time from the specified stream. If a parse error occurs the
        time is set to the current time. The input is expected in the same
-       format as produced by the <A>AsString()</A> function with the
-       <CODE>ShortDateTime</CODE> parameter.
+       format as produced by the #AsString()# function with the
+       #ShortDateTime# parameter.
      */
+    virtual void ReadFrom(
+      istream & strm    /// Stream to input the time from.
+    );
+  //@}
 
+  /**@name Access functions */
+  //@{
+    /**Get the second of the time.
 
-  // New member functions
+       @return
+       integer in range 0..59.
+     */
     int GetSecond() const;
-    /* Get the second of the time.
 
-       <H2>Returns:</H2>
+    /**Get the minute of the time.
+
+       @return
        integer in range 0..59.
      */
-
     int GetMinute() const;
-    /* Get the minute of the time.
 
-       <H2>Returns:</H2>
-       integer in range 0..59.
-     */
+    /**Get the hour of the time.
 
-    int GetHour() const;
-    /* Get the hour of the time.
-
-       <H2>Returns:</H2>
+       @return
        integer in range 0..23.
      */
+    int GetHour() const;
 
-    int GetDay() const;
-    /* Get the day of the month of the date.
+    /**Get the day of the month of the date.
 
-       <H2>Returns:</H2>
+       @return
        integer in range 1..31.
      */
+    int GetDay() const;
 
+    /// Month codes.
     enum Months {
       January = 1,
       February,
@@ -234,22 +258,22 @@ class PTime : public PObject
       November,
       December
     };
-    // Months in a year.
 
-    Months GetMonth() const;
-    /* Get the month of the date.
+    /**Get the month of the date.
 
-       <H2>Returns:</H2>
+       @return
        enum for month.
      */
+    Months GetMonth() const;
 
-    int GetYear() const;
-    /* Get the year of the date.
+    /**Get the year of the date.
 
-       <H2>Returns:</H2>
+       @return
        integer in range 1970..2038.
      */
+    int GetYear() const;
 
+    /// Days of the week.
     enum Weekdays {
       Sunday,
       Monday,
@@ -259,246 +283,271 @@ class PTime : public PObject
       Friday,
       Saturday
     };
-    // DAys of the week.
 
-    Weekdays GetDayOfWeek() const;
-    /* Get the day of the week of the date.
+    /**Get the day of the week of the date.
     
-       <H2>Returns:</H2>
+       @return
        enum for week days with 0=Sun, 1=Mon, ..., 6=Sat.
      */
+    Weekdays GetDayOfWeek() const;
 
-    int GetDayOfYear() const;
-    /* Get the day in the year of the date.
+    /**Get the day in the year of the date.
     
-       <H2>Returns:</H2>
+       @return
        integer from 1..366.
      */
+    int GetDayOfYear() const;
 
-    BOOL IsPast() const;
-    /* Determine if the time is in the past or in the future.
+    /**Determine if the time is in the past or in the future.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if time is before the current real time.
      */
+    BOOL IsPast() const;
 
-    BOOL IsFuture() const;
-    /* Determine if the time is in the past or in the future.
+    /**Determine if the time is in the past or in the future.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if time is after the current real time.
      */
+    BOOL IsFuture() const;
+  //@}
 
-
-    static BOOL IsDaylightSavings();
-    /* Get flag indicating daylight savings is current.
+  /**@name Time Zone configuration functions */
+  //@{
+    /**Get flag indicating daylight savings is current.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if daylight savings time is active.
      */
+    static BOOL IsDaylightSavings();
 
+    /// Flag for time zone adjustment on daylight savings.
     enum TimeZoneType {
       StandardTime,
       DaylightSavings
     };
 
+    /// Get the time zone offset in minutes.
     static int GetTimeZone();
-    static int GetTimeZone(
-       TimeZoneType type  // Daylight saving or standard time.
-    );
-    /* Get the number of minutes to add to UTC (previously known as GMT) to
+    /**Get the time zone offset in minutes.
+       This is the number of minutes to add to UTC (previously known as GMT) to
        get the local time. The first form automatically adjusts for daylight
        savings time, whilst the second form returns the specified time.
 
-       <H2>Returns:</H2>
+       @return
        Number of minutes.
      */
-
-    static PString GetTimeZoneString(
-       TimeZoneType type = StandardTime // Daylight saving or standard time.
+    static int GetTimeZone(
+       TimeZoneType type  /// Daylight saving or standard time.
     );
-    /* Get the text identifier for the local time zone .
 
-       <H2>Returns:</H2>
+    /**Get the text identifier for the local time zone .
+
+       @return
        Time zone identifier string.
      */
+    static PString GetTimeZoneString(
+       TimeZoneType type = StandardTime /// Daylight saving or standard time.
+    );
+  //@}
 
-
-    PTime operator+(
-      const PTimeInterval & t   // Time interval to add to the time.
-    ) const;
-    /* Add the interval to the time to yield a new time.
+  /**@name Operations */
+  //@{
+    /**Add the interval to the time to yield a new time.
     
-       <H2>Returns:</H2>
+       @return
        Time altered by the interval.
      */
+    PTime operator+(
+      const PTimeInterval & time   /// Time interval to add to the time.
+    ) const;
 
-    PTime & operator+=(
-      const PTimeInterval & t   // Time interval to add to the time.
-    );
-    /* Add the interval to the time changing the instance.
+    /**Add the interval to the time changing the instance.
     
-       <H2>Returns:</H2>
+       @return
        reference to the current time instance.
      */
+    PTime & operator+=(
+      const PTimeInterval & time   /// Time interval to add to the time.
+    );
 
-    PTimeInterval operator-(
-      const PTime & t   // Time to subtract from the time.
-    ) const;
-    /* Calculate the difference between two times to get a time interval.
+    /**Calculate the difference between two times to get a time interval.
     
-       <H2>Returns:</H2>
+       @return
        Time intervale difference between the times.
      */
-
-    PTime operator-(
-      const PTimeInterval & t   // Time interval to subtract from the time.
+    PTimeInterval operator-(
+      const PTime & time   /// Time to subtract from the time.
     ) const;
-    /* Subtract the interval from the time to yield a new time.
+
+    /**Subtract the interval from the time to yield a new time.
     
-       <H2>Returns:</H2>
+       @return
        Time altered by the interval.
      */
+    PTime operator-(
+      const PTimeInterval & time   /// Time interval to subtract from the time.
+    ) const;
 
-    PTime & operator-=(
-      const PTimeInterval & t   // Time interval to subtract from the time.
-    );
-    /* Subtract the interval from the time changing the instance.
+    /**Subtract the interval from the time changing the instance.
 
-       <H2>Returns:</H2>
+       @return
        reference to the current time instance.
      */
+    PTime & operator-=(
+      const PTimeInterval & time   /// Time interval to subtract from the time.
+    );
+  //@}
 
+  /**@name String conversion functions */
+  //@{
+    /// Standard time formats for string representations of a time and date.
     enum TimeFormat {
+      /// Internet standard format.
       RFC1123,
+      /// Date with weekday, full month names and time with seconds.
       LongDateTime,
+      /// Date with weekday, full month names and no time.
       LongDate,
+      /// Time with seconds.
       LongTime,
+      /// Date with abbreviated month names and time without seconds.
       MediumDateTime,
+      /// Date with abbreviated month names and no time.
       MediumDate,
+      /// Date with numeric month name and time without seconds.
       ShortDateTime,
+      /// Date with numeric month and no time.
       ShortDate,
+      /// Time without seconds.
       ShortTime,
       NumTimeStrings
     };
-    // Standard time formats for string representations of a time and date.
 
+    /** Convert the time to a string representation. */
     PString AsString(
-      TimeFormat formatCode = RFC1123,  // Standard format for time.
-      int zone = Local                  // Time zone for the time.
+      TimeFormat formatCode = RFC1123,  /// Standard format for time.
+      int zone = Local                  /// Time zone for the time.
     ) const;
+
+    /** Convert the time to a string representation. */
     PString AsString(
-      const char * formatPtr,    // Arbitrary format C string pointer for time.
-      int zone = Local                  // Time zone for the time.
-    ) const;
-    PString AsString(
-      const PString & formatStr, // Arbitrary format string for time.
-      int zone = Local                  // Time zone for the time.
+      const PString & formatStr, /// Arbitrary format string for time.
+      int zone = Local           /// Time zone for the time.
     ) const;
     /* Convert the time to a string using the format code or string as a
        formatting template. The special characters in the formatting string
        are:
-
-       <DL>
-       <DT>h         <DD>hour without leading zero
-       <DT>hh        <DD>hour with leading zero
-       <DT>m         <DD>minute without leading zero
-       <DT>mm        <DD>minute with leading zero
-       <DT>s         <DD>second without leading zero
-       <DT>ss        <DD>second with leading zero
-       <DT>a         <DD>the am/pm string
-       <DT>w/ww/www  <DD>abbreviated day of week name
-       <DT>wwww      <DD>full day of week name
-       <DT>d         <DD>day of month without leading zero
-       <DT>dd        <DD>day of month with leading zero
-       <DT>M         <DD>month of year without leading zero
-       <DT>MM        <DD>month of year with leading zero
-       <DT>MMM       <DD>month of year as abbreviated text
-       <DT>MMMM      <DD>month of year as full text
-       <DT>y/yy      <DD>year without century
-       <DT>yyy/yyyy  <DD>year with century
-       <DT>z         <DD>the time zone description
-       </DL>
+\begin{description}
+       \item[h]         hour without leading zero
+       \item[hh]        hour with leading zero
+       \item[m]         minute without leading zero
+       \item[mm]        minute with leading zero
+       \item[s]         second without leading zero
+       \item[ss]        second with leading zero
+       \item[a]         the am/pm string
+       \item[w/ww/www]  abbreviated day of week name
+       \item[wwww]      full day of week name
+       \item[d]         day of month without leading zero
+       \item[dd]        day of month with leading zero
+       \item[M]         month of year without leading zero
+       \item[MM]        month of year with leading zero
+       \item[MMM]       month of year as abbreviated text
+       \item[MMMM]      month of year as full text
+       \item[y/yy]      year without century
+       \item[yyy/yyyy]  year with century
+       \item[z]         the time zone description
+\end{description}
 
        All other characters are copied to the output string unchanged.
        
        Note if there is an 'a' character in the string, the hour will be in 12
        hour format, otherwise in 24 hour format.
      */
+    PString AsString(
+      const char * formatPtr,    /// Arbitrary format C string pointer for time.
+      int zone = Local           /// Time zone for the time.
+    ) const;
+  //@}
 
-    static PString GetTimeSeparator();
-    /* Get the internationalised time separator.
+  /**@name Internationalisation functions */
+  //@{
+    /**Get the internationalised time separator.
     
-       <H2>Returns:</H2>
+       @return
        string for time separator.
      */
+    static PString GetTimeSeparator();
 
-    static BOOL GetTimeAMPM();
-    /* Get the internationalised time format: AM/PM or 24 hour.
+    /**Get the internationalised time format: AM/PM or 24 hour.
     
-       <H2>Returns:</H2>
+       @return
        TRUE is 12 hour, FALSE if 24 hour.
      */
+    static BOOL GetTimeAMPM();
 
-    static PString GetTimeAM();
-    /* Get the internationalised time AM string.
+    /**Get the internationalised time AM string.
     
-       <H2>Returns:</H2>
+       @return
        string for AM.
      */
+    static PString GetTimeAM();
 
-    static PString GetTimePM();
-    /* Get the internationalised time PM string.
+    /**Get the internationalised time PM string.
     
-       <H2>Returns:</H2>
+       @return
        string for PM.
      */
+    static PString GetTimePM();
 
+    /// Flag for returning language dependent string names.
     enum NameType {
       FullName,
       Abbreviated
     };
 
-    static PString GetDayName(
-      Weekdays dayOfWeek,       // Code for day of week.
-      NameType type = FullName  // Flag for abbreviated or full name.
-    );
-    /* Get the internationalised day of week day name (0=Sun etc).
+    /**Get the internationalised day of week day name (0=Sun etc).
     
-       <H2>Returns:</H2>
+       @return
        string for week day.
      */
+    static PString GetDayName(
+      Weekdays dayOfWeek,       /// Code for day of week.
+      NameType type = FullName  /// Flag for abbreviated or full name.
+    );
 
-    static PString GetDateSeparator();
-    /* Get the internationalised date separator.
+    /**Get the internationalised date separator.
     
-       <H2>Returns:</H2>
+       @return
        string for date separator.
      */
+    static PString GetDateSeparator();
 
-    static PString GetMonthName(
-      Months month,             // Code for month in year.
-      NameType type = FullName  // Flag for abbreviated or full name.
-    );
-    /* Get the internationalised month name string (1=Jan etc).
+    /**Get the internationalised month name string (1=Jan etc).
     
-       <H2>Returns:</H2>
+       @return
        string for month.
      */
+    static PString GetMonthName(
+      Months month,             /// Code for month in year.
+      NameType type = FullName  /// Flag for abbreviated or full name.
+    );
 
+    /// Possible orders for date components.
     enum DateOrder {
       MonthDayYear,   // Date is ordered month then day then year.
       DayMonthYear,   // Date is ordered day then month then year.
       YearMonthDay    // Date is ordered year then day month then day.
     };
-    // Possible orders for date components.
 
-    static DateOrder GetDateOrder();
-    /* Return the internationalised date order.
+    /**Return the internationalised date order.
     
-       <H2>Returns:</H2>
+       @return
        code for date ordering.
      */
+    static DateOrder GetDateOrder();
+  //@}
 
     static struct tm * os_localtime(const time_t * clock, struct tm * t);
     static struct tm * os_gmtime(const time_t * clock, struct tm * t);
@@ -511,8 +560,11 @@ class PTime : public PObject
 
   protected:
     // Member variables
+    /// Number of seconds since 1 January 1970.
     time_t theTime;
-    // Number of seconds since 1 January 1970.
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

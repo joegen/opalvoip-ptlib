@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.30  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.29  1999/02/16 08:11:09  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -125,86 +128,106 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File System
 
-class PFileInfo : public PObject
-{
-  PCLASSINFO(PFileInfo, PObject)
-/* Class containing the system information on a file path. Information can be
+/**Class containing the system information on a file path. Information can be
    obtained on any directory entry event if it is not a "file" in the strictest
    sense. Sub-directories, devices etc may also have information retrieved.
  */
+class PFileInfo : public PObject
+{
+  PCLASSINFO(PFileInfo, PObject);
 
   public:
-    enum FileTypes {
-      RegularFile = 1,        // Ordinary disk file.
-      SymbolicLink = 2,       // File path is a symbolic link.
-      SubDirectory = 4,       // File path is a sub-directory
-      CharDevice = 8,         // File path is a character device name.
-      BlockDevice = 16,       // File path is a block device name.
-      Fifo = 32,              // File path is a fifo (pipe) device.
-      SocketDevice = 64,      // File path is a socket device.
-      UnknownFileType = 256,  // File path is of an unknown type.
-      AllFiles = 0x1ff        // Mask for all file types.
-    };
-    /* All types that a particular file path may be. Not all platforms support
+    /**All types that a particular file path may be. Not all platforms support
        all of the file types. For example under DOS no file may be of the
-       type <CODE>SymbolicLink</CODE>.
+       type #SymbolicLink#.
      */
+    enum FileTypes {
+      /// Ordinary disk file.
+      RegularFile = 1,        
+      /// File path is a symbolic link.
+      SymbolicLink = 2,       
+      /// File path is a sub-directory
+      SubDirectory = 4,       
+      /// File path is a character device name.
+      CharDevice = 8,         
+      /// File path is a block device name.
+      BlockDevice = 16,       
+      /// File path is a fifo (pipe) device.
+      Fifo = 32,              
+      /// File path is a socket device.
+      SocketDevice = 64,      
+      /// File path is of an unknown type.
+      UnknownFileType = 256,  
+      /// Mask for all file types.
+      AllFiles = 0x1ff        
+    };
 
+    /// File type for this file. Only one bit is set at a time here.
     FileTypes type;
-    // File type for this file. Only one bit is set at a time here.
 
-    PTime created;
-    /* Time of file creation of the file. Not all platforms support a separate
+    /**Time of file creation of the file. Not all platforms support a separate
        creation time in which case the last modified time is returned.
      */
+    PTime created;
 
+    /// Time of last modifiaction of the file.
     PTime modified;
-    // Time of last modifiaction of the file.
 
-    PTime accessed;
-    /* Time of last access to the file. Not all platforms support a separate
+    /**Time of last access to the file. Not all platforms support a separate
        access time in which case the last modified time is returned.
      */
+    PTime accessed;
 
-    PUInt64 size;
-    /* Size of the file in bytes. This is a quadword or 8 byte value to allow
+    /**Size of the file in bytes. This is a quadword or 8 byte value to allow
        for files greater than 4 gigabytes.
      */
+    PUInt64 size;
 
+    /// File access permissions for the file.
     enum Permissions {
-      WorldExecute = 1,   // File has world execute permission
-      WorldWrite = 2,     // File has world write permission
-      WorldRead = 4,      // File has world read permission
-      GroupExecute = 8,   // File has group execute permission
-      GroupWrite = 16,    // File has group write permission
-      GroupRead = 32,     // File has group read permission
-      UserExecute = 64,   // File has owner execute permission
-      UserWrite = 128,    // File has owner write permission
-      UserRead = 256,     // File has owner read permission
-      AllPermissions = 0x1ff,   // All possible permissions.
+      /// File has world execute permission
+      WorldExecute = 1,   
+      /// File has world write permission
+      WorldWrite = 2,     
+      /// File has world read permission
+      WorldRead = 4,      
+      /// File has group execute permission
+      GroupExecute = 8,   
+      /// File has group write permission
+      GroupWrite = 16,    
+      /// File has group read permission
+      GroupRead = 32,     
+      /// File has owner execute permission
+      UserExecute = 64,   
+      /// File has owner write permission
+      UserWrite = 128,    
+      /// File has owner read permission
+      UserRead = 256,     
+      /// All possible permissions.
+      AllPermissions = 0x1ff,   
+      /// Owner read & write plus group and world read permissions.
       DefaultPerms = UserRead|UserWrite|GroupRead|WorldRead,
+      /// Owner read & write & execute plus group and world read & exectute permissions.
       DefaultDirPerms = DefaultPerms|UserExecute|GroupExecute|WorldExecute
-      // Owner read & write plus group and world read permissions.
+      
     };
-    // File access permissions for the file.
 
-    int permissions;
-    /* A bit mask of all the file acces permissions. See the
-       <A>Permissions enum</A> for the possible bit values.
+    /**A bit mask of all the file acces permissions. See the
+       #Permissions enum# for the possible bit values.
        
        Not all platforms support all permissions.
      */
+    int permissions;
 
-    BOOL hidden;
-    /* File is a hidden file. What constitutes a hidden file is platform
+    /**File is a hidden file. What constitutes a hidden file is platform
        dependent, for example under unix it is a file beginning with a '.'
        character while under MS-DOS there is a file system attribute for it.
      */
+    BOOL hidden;
 };
 
 
-PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
-/* Class to represent a directory in the operating system file system. A
+/**Class to represent a directory in the operating system file system. A
    directory is a special file that contains a list of file paths.
    
    The directory paths are highly platform dependent and a minimum number of
@@ -217,197 +240,226 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
    The path always has a trailing separator.
 
    Some platforms allow more than one character to act as a directory separator
-   so when doing any processing the <A>IsSeparator()</A> function should be
+   so when doing any processing the #IsSeparator()# function should be
    used to determine if a character is a possible separator.
 
    The directory may be opened to gain access to the list of files that it
-   contains. Note that the directory does <EM>not</EM> contain the "." and ".."
+   contains. Note that the directory does {\bf not} contain the "." and ".."
    entries that some platforms support.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is <A>PString</A>. For other
-   platforms, the ancestor class is <A>PCaselessString</A>.
+   case sensitive, eg Unix, the ancestor is #PString#. For other
+   platforms, the ancestor class is #PCaselessString#.
  */
+class PDirectory : public PFilePathString
+{
+  PCONTAINERINFO(PDirectory, PFilePathString);
 
   public:
+  /**@name Construction */
+  //@{
+    /// Create a directory object of the current working directory
     PDirectory();
-    // Create a directory object of the current working directory
       
-    PDirectory(
-      const char * cpathname      // Directory path name for new object.
-    );
-    PDirectory(
-      const PString & pathname    // Directory path name for new object.
-    );
-    /* Create a directory object of the specified directory. The
-       <CODE>pathname</CODE> parameter may be a relative directory which is
-       made absolute by the creation of the <A>PDirectory</A> object.
+    /**Create a directory object of the specified directory. The
+       #pathname# parameter may be a relative directory which is
+       made absolute by the creation of the #PDirectory# object.
      */
+    PDirectory(
+      const char * cpathname      /// Directory path name for new object.
+    );
 
+    /**Create a directory object of the specified directory. The
+       #pathname# parameter may be a relative directory which is
+       made absolute by the creation of the #PDirectory# object.
+     */
+    PDirectory(
+      const PString & pathname    /// Directory path name for new object.
+    );
+  //@}
 
-  // New member functions
-    PDirectory GetParent() const;
-    /* Get the directory for the parent to the current directory. If the
+  /**@name Access functions */
+  //@{
+    /**Get the directory for the parent to the current directory. If the
        directory is already the root directory it returns the root directory
        again.
 
-       <H2>Returns:</H2>
+       @return
        parent directory.
      */
+    PDirectory GetParent() const;
 
-    PFILE_PATH_STRING GetVolume() const;
-    /* Get the volume name that the directory is in.
+    /**Get the volume name that the directory is in.
     
        This is platform dependent, for example for MS-DOS it is the 11
        character volume name for the drive, eg "DOS_DISK", and for Macintosh it
        is the disks volume name eg "Untitled". For a unix platform it is the
        device name for the file system eg "/dev/sda1".
 
-       <H2>Returns:</H2>
+       @return
        string for the directory volume.
      */
+    PFilePathString GetVolume() const;
 
-    BOOL IsRoot() const;
-    /* Determine if the directory is the root directory of a volume.
+    /**Determine if the directory is the root directory of a volume.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if the object is a root directory.
      */
+    BOOL IsRoot() const;
 
-    PINLINE static BOOL IsSeparator(
-      char ch    // Character to check as being a separator.
-    );
-    /* Determine if the character <CODE>ch</CODE> is a directory path
+    /**Determine if the character #ch# is a directory path
        separator.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if may be used to separate directories in a path.
      */
+    PINLINE static BOOL IsSeparator(
+      char ch    /// Character to check as being a separator.
+    );
 
-    BOOL GetVolumeSpace(
-      PInt64 & total,     // Total number of bytes available on volume
-      PInt64 & free,      // Number of bytes unused on the volume
-      DWORD & clusterSize // "Quantisation factor" in bytes for files on volume
-    ) const;
-    /* Determine the total number of bytes and number of bytes free on the
+    /**Determine the total number of bytes and number of bytes free on the
        volume that this directory is contained on.
 
        Note that the free space will be the physical limit and if user quotas
        are in force by the operating system, the use may not actually be able
        to use all of these bytes.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the information could be determined.
      */
+    BOOL GetVolumeSpace(
+      PInt64 & total,     /// Total number of bytes available on volume
+      PInt64 & free,      /// Number of bytes unused on the volume
+      DWORD & clusterSize /// "Quantisation factor" in bytes for files on volume
+    ) const;
+  //@}
 
+  /**@name File system functions */
+  //@{
+    /**Test for if the directory exists.
 
-    BOOL Exists() const;
-    static BOOL Exists(
-      const PString & p   // Directory file path.
-    );
-    /* Test for if the directory exists. The parameterless version tests
-       against the name contained in the object instance. The static version
-       may be simply passed a path name.
-
-       <H2>Returns:</H2>
+       @return
        TRUE if directory exists.
      */
-      
-    BOOL Change() const;
-    static BOOL Change(
-      const PString & p   // Directory file path.
-    );
-    /* Change the current working directory. The parameterless version changes
-       to the name contained in the object instance. The static version may be
-       simply passed a path name.
+    BOOL Exists() const;
 
-       <H2>Returns:</H2>
+    /**Test for if the specified directory exists.
+
+       @return
+       TRUE if directory exists.
+     */
+    static BOOL Exists(
+      const PString & path   /// Directory file path.
+    );
+      
+    /**Change the current working directory to the objects location.
+
+       @return
        TRUE if current working directory was changed.
      */
+    BOOL Change() const;
+
+    /**Change the current working directory to that specified..
+
+       @return
+       TRUE if current working directory was changed.
+     */
+    static BOOL Change(
+      const PString & path   /// Directory file path.
+    );
       
+    /**Create a new directory with the specified permissions.
+
+       @return
+       TRUE if directory created.
+     */
     BOOL Create(
       int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
     ) const;
-    PINLINE static BOOL Create(
-      const PString & p,   // Directory file path.
-      int perm = PFileInfo::DefaultDirPerms    // Permission on new directory.
-    );
-    /* Create a new directory with the specified permissions. The parameterless
-       version changes to the name contained in the object instance. The static
-       version may be simply passed a path name.
+    /**Create a new directory as specified with the specified permissions.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if directory created.
      */
-
-    BOOL Remove();
-    PINLINE static BOOL Remove(
-      const PString & p   // Directory file path.
+    PINLINE static BOOL Create(
+      const PString & p,   /// Directory file path.
+      int perm = PFileInfo::DefaultDirPerms    /// Permission on new directory.
     );
-    /* Delete the specified directory. The parameterless version changes to the
-       name contained in the object instance. The static version may be simply
-       passed a path name.
 
-       <H2>Returns:</H2>
+    /**Delete the directory.
+
+       @return
        TRUE if directory was deleted.
      */
-      
+    BOOL Remove();
 
-    BOOL Open(
-      int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
+    /**Delete the specified directory.
+
+       @return
+       TRUE if directory was deleted.
+     */
+    PINLINE static BOOL Remove(
+      const PString & path   /// Directory file path.
     );
-    /* Open the directory for scanning its list of files. Once opened the
-       <A>GetEntryName()</A> function may be used to get the current directory
-       entry and the <A>Next()</A> function used to move to the next directory
+  //@}
+
+  /**@name Directory listing functions */
+  //@{
+    /**Open the directory for scanning its list of files. Once opened the
+       #GetEntryName()# function may be used to get the current directory
+       entry and the #Next()# function used to move to the next directory
        entry.
        
        Only files that are of a type that is specified in the mask will be
        returned.
        
-       Note that the directory scan will <EM>not</EM> return the "." and ".."
+       Note that the directory scan will {\bf not} return the "." and ".."
        entries that some platforms support.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-      
-    BOOL Restart(
-      int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
+    BOOL Open(
+      int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
     );
-    /* Restart file list scan from the beginning of directory. This is similar
-       to the <A>Open()</A> command but does not require that the directory be
-       closed (using <A>Close()</A>) first.
+      
+    /**Restart file list scan from the beginning of directory. This is similar
+       to the #Open()# command but does not require that the directory be
+       closed (using #Close()#) first.
 
        Only files that are of a type that is specified in the mask will be
        returned.
 
-       Note that the directory scan will <EM>not</EM> return the "." and ".."
+       Note that the directory scan will {\bf not} return the "." and ".."
        entries that some platforms support.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
+    BOOL Restart(
+      int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
+    );
       
-    BOOL Next();
-    /* Move to the next file in the directory scan.
+    /**Move to the next file in the directory scan.
     
        Only files that are of a type that is specified in the mask passed to
-       the <A>Open()</A> or <A>Restart()</A> functions will be returned.
+       the #Open()# or #Restart()# functions will be returned.
 
-       Note that the directory scan will <EM>not</EM> return the "." and ".."
+       Note that the directory scan will {\bf not} return the "." and ".."
        entries that some platforms support.
 
-       <H2>Returns:</H2>
-       TRUS if there is another valid file in the directory.
+       @return
+       TRUE if there is another valid file in the directory.
      */
+    BOOL Next();
       
+    /// Close the directory during or after a file list scan.
     void Close();
-    // Close the directory during or after a file list scan.
 
-    PFILE_PATH_STRING GetEntryName() const;
-    /* Get the name (without the volume or directory path) of the current
+    /**Get the name (without the volume or directory path) of the current
        entry in the directory scan. This may be the name of a file or a
        subdirectory or even a link or device for operating systems that support
        them.
@@ -415,32 +467,34 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        To get a full path name concatenate the PDirectory object itself with
        the entry name.
        
-       Note that the directory scan will <EM>not</EM> return the "." and ".."
+       Note that the directory scan will {\bf not} return the "." and ".."
        entries that some platforms support.
 
-       <H2>Returns:</H2>
+       @return
        string for directory entry.
      */
+    PFilePathString GetEntryName() const;
 
-    BOOL IsSubDir() const;
-    /* Determine if the directory entry currently being scanned is itself
+    /**Determine if the directory entry currently being scanned is itself
        another directory entry.
        
-       Note that the directory scan will <EM>not</EM> return the "." and ".."
+       Note that the directory scan will {\bf not} return the "." and ".."
        entries that some platforms support.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if entry is a subdirectory.
      */
+    BOOL IsSubDir() const;
 
-    BOOL GetInfo(
-      PFileInfo & info    // Object to receive the file information.
-    ) const;
-    /* Get file information on the current directory entry.
+    /**Get file information on the current directory entry.
     
-       <H2>Returns:</H2>
+       @return
        TRUE if file information was successfully retrieved.
      */
+    BOOL GetInfo(
+      PFileInfo & info    /// Object to receive the file information.
+    ) const;
+  //@}
 
 
   protected:
@@ -450,8 +504,11 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
 
 
     // Member variables
+    /// Mask of file types that the directory scan will return.
     int scanMask;
-    // Mask of file types that the directory scan will return.
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
