@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.40  2004/06/02 06:16:48  csoutheren
+ * Removed unnecessary buffer copying and removed potential busy loop
+ *
  * Revision 1.39  2004/05/02 05:14:43  rjongbloed
  * Fixed possible deadlock in shutdown of VXML channel/session.
  *
@@ -190,17 +193,16 @@ PINDEX       PVXMLSession::cacheCount = 0;
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
   //activeGrammar   = NULL;
-  recording       = FALSE;
-  vxmlThread      = NULL;
-  incomingChannel = NULL;
-  outgoingChannel = NULL;
-  loaded          = FALSE;
-  forceEnd        = FALSE;
-  textToSpeech    = NULL;
-  listening       = FALSE;
-  activeGrammar   = NULL;
-  currentNode     = NULL;
-  emptyAction     = TRUE;
+  recording        = FALSE;
+  vxmlThread       = NULL;
+  incomingChannel  = NULL;
+  outgoingChannel  = NULL;
+  loaded           = FALSE;
+  textToSpeech     = NULL;
+  listening        = FALSE;
+  activeGrammar    = NULL;
+  currentNode      = NULL;
+  emptyAction      = TRUE;
 
   SetTextToSpeech(_tts, autoDelete);
 
@@ -390,41 +392,43 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
     PWaitAndSignal m(cacheMutex);
 
     // see if the URL is in the cache
-    PINDEX index = resourceCache->GetValuesIndex(url);
-    if (index != P_MAX_INDEX) {
+    if (resourceCache != NULL) {
+      PINDEX index = resourceCache->GetValuesIndex(url);
+      if (index != P_MAX_INDEX) {
 
-      // if too long since last examined, then expire the cache
-      PTimeInterval interval = PTime() - (*resourceCache)[index].loadTime;
-      if (interval.GetMilliSeconds() > 1000*60)
-        resourceCache->RemoveAt(index);
-      else {
-        PVXMLCacheItem & item = (*resourceCache)[index];
+        // if too long since last examined, then expire the cache
+        PTimeInterval interval = PTime() - (*resourceCache)[index].loadTime;
+        if (interval.GetMilliSeconds() > 1000*60)
+          resourceCache->RemoveAt(index);
+        else {
+          PVXMLCacheItem & item = (*resourceCache)[index];
 
-        // if the cache indicates the resource was invalid
-        if (!item.ok)
-          return FALSE;
+          // if the cache indicates the resource was invalid
+          if (!item.ok)
+            return FALSE;
 
-        // check the content type, maybe
-        if (!contentType.IsEmpty() && (contentType != item.contentType))
-          return FALSE;
+          // check the content type, maybe
+          if (!contentType.IsEmpty() && (contentType != item.contentType))
+            return FALSE;
 
-        // set the file load information
-        fn          = item.fn;
-        contentType = item.contentType;
-        loadFile    = TRUE;
-      }
-    } 
+          // set the file load information
+          fn          = item.fn;
+          contentType = item.contentType;
+          loadFile    = TRUE;
+        }
+      } 
+    }
 
     // resource was not in the cache, so add it
     if (!loadFile) {
       PHTTPClient client;
-      PINDEX contentLength;
       PMIMEInfo outMIME, replyMIME;
 
       // create a cache item indicating a failed load
       PVXMLCacheItem * item = new PVXMLCacheItem(url);
       item->ok = FALSE;
-      resourceCache->Append(item);
+      if (resourceCache != NULL)
+        resourceCache->Append(item);
 
       // get the resource header information
       if (!client.GetDocument(url, outMIME, replyMIME)) {
@@ -432,11 +436,11 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
         return FALSE;
       }
 
-      // get the length of the data
-      if (replyMIME.Contains(PHTTPClient::ContentLengthTag))
-        contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag].AsUnsigned();
-      else
-        contentLength = P_MAX_INDEX;
+      // Get the body of the response in a PBYTEArray (might by binary data)
+      PBYTEArray incomingData;
+
+      // Data can come in in multipart/chunked, this way seems to solve this
+      client.ReadContentBody(replyMIME, incomingData);
 
       // create the cache directory, if not already in existence
       if (!cacheDir.Exists())
@@ -457,26 +461,8 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
         return FALSE;
       }
 
-      // download the resource into the cache file
-      PINDEX offs = 0;
-      for (;;) {
-        PINDEX len;
-        if (contentLength == P_MAX_INDEX)
-          len = CACHE_BUFFER_SIZE;
-        else if (offs == contentLength)
-          break;
-        else
-          len = PMIN(contentLength = offs, CACHE_BUFFER_SIZE);
-
-        if (!client.Read(offs + text.GetPointer(offs + len), len))
-          break;
-
-        len = client.GetLastReadCount();
-        if (!cacheFile.Write(offs + (const BYTE *)text, len))
-          break;
-
-        offs += len;
-      }
+      // write the data in the cache file
+      cacheFile.Write( incomingData.GetPointer(), incomingData.GetSize() );
 
       // set the cache information
       item->ok          = TRUE;
@@ -576,244 +562,247 @@ BOOL PVXMLSession::Open(BOOL isPCM)
 
 BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
 {
+  Close();
+
+  // cannot open if no data is loaded
+  if (!loaded)
+    return FALSE;
+
+  // set the underlying channel
   if (!PIndirectChannel::Open(out, in))
     return FALSE;
 
-  PWaitAndSignal m(sessionMutex);
-  outgoingChannel = out;
-  incomingChannel = in;
+  // start the VXML session in another thread
+  {
+    PWaitAndSignal m(sessionMutex);
+    outgoingChannel = out;
+    incomingChannel = in;
+  }
+  threadRunning = TRUE;
+  vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), 0, PThread::NoAutoDeleteThread);
+
   return TRUE;
 }
 
 
 BOOL PVXMLSession::Close()
 {
-  sessionMutex.Wait();
+  {
+    PWaitAndSignal m(sessionMutex);
+    if (vxmlThread != NULL) {
 
-  if (vxmlThread != NULL) {
-    vxmlThread->WaitForTermination();
-    delete vxmlThread;
-    vxmlThread = NULL;
+      // Stop condition for thread
+      threadRunning = FALSE;
+      waitForEvent.Signal();
+
+      // Signal all syncpoints that could be waiting for things
+      transferSync.Signal();
+      answerSync.Signal();
+
+      vxmlThread->WaitForTermination();
+      delete vxmlThread;
+      vxmlThread = NULL;
+    }
+
+    outgoingChannel = NULL;
+    incomingChannel = NULL;
   }
-
-  outgoingChannel = NULL;
-  incomingChannel = NULL;
-
-  sessionMutex.Signal();
 
   return PIndirectChannel::Close();
 }
 
 
-BOOL PVXMLSession::Execute()
+void PVXMLSession::VXMLExecute(PThread &, INT)
 {
-  PWaitAndSignal m(sessionMutex);
+  while (threadRunning) {
 
-  return ExecuteWithoutLock();
-}
+    // process current node in the VXML script
+    ProcessNode();
 
-BOOL PVXMLSession::ExecuteWithoutLock()
-{
-  // check to see if a vxml thread has stopped since last we looked
-  if ((vxmlThread != NULL) && (vxmlThread->IsTerminated())) {
-    vxmlThread->WaitForTermination();
-    delete vxmlThread;
-    vxmlThread = NULL;
-  }
+    // wait for something to happen
+    if (currentNode == NULL || IsPlaying())
+      waitForEvent.Wait();
 
-  // check to see if we are ending a call
-  if (forceEnd) {
-    OnEndSession();
-    return FALSE;
-  }
+    // process any active grammars
+    ProcessGrammar();
 
-  // if:
-  //    no script has been loaded or
-  //    there is already a thread running or
-  //    a grammar defined or
-  //    recording is in progress
-  //    no outgoing channel
-  // then just return silence
-  //
-  if (!loaded || (vxmlThread != NULL) || recording || (outgoingChannel == NULL))
-    return TRUE;
+    // Wait for the buffer to complete before continuing to the next node
+    if (currentNode == NULL || IsPlaying())
+      continue;
 
-  // throw a thread to execute the VXML, because this can take some time
-  vxmlThread = PThread::Create(PCREATE_NOTIFIER(DialogExecute), 0, PThread::NoAutoDeleteThread);
-  return TRUE;
-}
+    // if the current node has children, then process the first child
+    if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
+      currentNode = ((PXMLElement *)currentNode)->GetElement(0);
 
-void PVXMLSession::DialogExecute(PThread &, INT)
-{
-  // --- Process any recognition ---
-
-  // If we have an active grammar then check to see if there has been some recognition
-  if (activeGrammar) {
-    BOOL processGrammar(FALSE);
-
-    // Stop if we've matched a grammar or have a failed recognition
-    if (activeGrammar->GetState() == PVXMLGrammar::FILLED || activeGrammar->GetState() == PVXMLGrammar::NOMATCH)
-      processGrammar = TRUE;
-    // Stop the grammar if we've timed out
-    else if (listening && !IsPlaying())   {
-      activeGrammar->Stop();
-      processGrammar = TRUE;
-    }
-
-    // Let the loop run again if we're still waiting to time out and haven't resolved the grammar one way or the other
-    if (!processGrammar && listening)
-      return;
-
-    if (processGrammar) {
-      PVXMLGrammar::GrammarState state = activeGrammar->GetState();
-      PString value = activeGrammar->GetValue();
-      LoadGrammar(NULL);
-      listening = FALSE;
-
-      // Stop any playback
-      if (outgoingChannel != NULL) {
-        outgoingChannel->FlushQueue();
-      }
-
-      // Figure out what happened
-      PString eventname;
-      switch (state)
-      {
-        case PVXMLGrammar::FILLED:
-          eventname = "filled";
-          break;
-        case PVXMLGrammar::NOINPUT:
-          eventname = "noinput";
-          break;
-        case PVXMLGrammar::NOMATCH:
-          eventname = "nomatch";
-          break;
-        default:
-          ; //ERROR - unexpected grammar state
-      }
-
-      // Find the handler and move there
-      PXMLElement * handler = FindHandler(eventname);
-      if (handler != NULL)
-        currentNode = handler;
-      // otherwise move on to the next node (already pointed there)
-    }
-  } // (end) there is an active grammar
-
-
-  // --- Process the current element ---
-
-  // Process the current node
-  if (currentNode != NULL) {
-
-    if (!currentNode->IsElement())
-      TraverseAudio();
+    // else process the next sibling
     else {
-      PXMLElement * element = (PXMLElement*)currentNode;
-      PCaselessString nodeType = element->GetName();
-      PTRACE(3, "PVXML\t**** Processing VoiceXML element: <" << nodeType << "> ***");
-
-      if (nodeType *= "audio") {
-        TraverseAudio();
-      }
-
-      else if (nodeType *= "block") {
-        // check 'cond' attribute to see if this element's children are to be skipped
-        // go on and process the children
-      }
-
-      else if (nodeType *= "break") {
-        TraverseAudio();
-      }
-
-      else if (nodeType *= "disconnect") {
-        currentNode = NULL;
-      }
-
-      else if (nodeType *= "field") {
-        currentField = (PXMLElement*)currentNode;
-        timeout = DEFAULT_TIMEOUT;
-        TraverseGrammar();  // this will set activeGrammar
-      }
-
-      else if (nodeType *= "form") {
-        // this is now the current element - go on
-        currentForm = element;
-        currentField = NULL;  // no active field in a new form
-      }
-
-      else if (nodeType *= "goto") {
-        TraverseGoto();
-      }
-
-      else if (nodeType *= "grammar") {
-        TraverseGrammar();  // this will set activeGrammar
-      }
-
-      else if (nodeType *= "record") {
-		    TraverseRecord();		
-      }
-
-      else if (nodeType *= "prompt") {
-        // LATER:
-        // check 'cond' attribute to see if the children of this node should be processed
-        // check 'count' attribute to see if this node should be processed
-        // flush all prompts if 'bargein' attribute is set to false
-
-        // Update timeout of current recognition (if 'timeout' attribute is set)
-        if (element->HasAttribute("timeout")) {
-          PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
+      // Keep moving up the parents until we find a next sibling
+      while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
+        currentNode = currentNode->GetParent();
+        // if we are on the backwards traversal through a <field> then wait
+        // for a grammar recognition and throw events if necessary
+        if (currentNode != NULL && (currentNode->IsElement() == TRUE) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
+          listening = TRUE;
+          PlaySilence(timeout);
         }
-
-        // go on to process the children
       }
 
-      else if (nodeType *= "say-as") {
-      }
-
-      else if (nodeType *= "value") {
-        TraverseAudio();
-      }
-
-      else if (nodeType *= "var") {
-      }
-    } // (end) else the current node is a PXMLElement
-  } // (end) there is a current node
-
-
-  // --- Move along the XML tree ---
-
-  // Wait for the buffer to complete before quiting
-  if (currentNode == NULL) {
-    if (IsPlaying())
-      return;
-  }
-
-  // if the current node has children, then process the first child
-  else if (currentNode->IsElement() && (((PXMLElement *)currentNode)->GetElement(0) != NULL))
-    currentNode = ((PXMLElement *)currentNode)->GetElement(0);
-
-  // else process the next sibling
-  else {
-    // Keep moving up the parents until we find a next sibling
-    while ((currentNode != NULL) && currentNode->GetNextObject() == NULL) {
-      currentNode = currentNode->GetParent();
-       // if we are on the backwards traversal through a <field> then wait
-      // for a grammar recognition and throw events if necessary
-      if (currentNode != NULL && (currentNode->IsElement() == TRUE) && (((PXMLElement*)currentNode)->GetName() *= "field")) {
-        listening = TRUE;
-        PlaySilence(timeout);
-      }
+      if (currentNode != NULL)
+        currentNode = currentNode->GetNextObject();
     }
 
-    if (currentNode != NULL)
-      currentNode = currentNode->GetNextObject();
+    // Determine if we should quit
+    if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
+      if (OnEmptyAction())
+        threadRunning = FALSE;
+    }
   }
 
-  // Determine if we should quit
-  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
-    if (OnEmptyAction())
-      forceEnd = TRUE;
+  OnEndSession();
+
+  PWaitAndSignal m(sessionMutex);
+  if (outgoingChannel != NULL)
+    outgoingChannel->Close();
+
+  if (incomingChannel != NULL)
+    incomingChannel->Close();
+
+  return;
+}
+
+void PVXMLSession::ProcessGrammar()
+{
+  if (activeGrammar == NULL)
+    return;
+
+  BOOL processGrammar = FALSE;
+
+  // Stop if we've matched a grammar or have a failed recognition
+  if (activeGrammar->GetState() == PVXMLGrammar::FILLED || activeGrammar->GetState() == PVXMLGrammar::NOMATCH)
+    processGrammar = TRUE;
+  // Stop the grammar if we've timed out
+  else if (listening && !IsPlaying())   {
+    activeGrammar->Stop();
+    processGrammar = TRUE;
+  }
+
+  // Let the loop run again if we're still waiting to time out and haven't resolved the grammar one way or the other
+  if (!processGrammar && listening)
+    return;
+
+  if (processGrammar) {
+    PVXMLGrammar::GrammarState state = activeGrammar->GetState();
+    PString value = activeGrammar->GetValue();
+    LoadGrammar(NULL);
+    listening = FALSE;
+
+    // Stop any playback
+    if (outgoingChannel != NULL) {
+      outgoingChannel->FlushQueue();
+    }
+
+    // Figure out what happened
+    PString eventname;
+    switch (state)
+    {
+      case PVXMLGrammar::FILLED:
+        eventname = "filled";
+        break;
+      case PVXMLGrammar::NOINPUT:
+        eventname = "noinput";
+        break;
+      case PVXMLGrammar::NOMATCH:
+        eventname = "nomatch";
+        break;
+      default:
+        ; //ERROR - unexpected grammar state
+    }
+
+    // Find the handler and move there
+    PXMLElement * handler = FindHandler(eventname);
+    if (handler != NULL)
+      currentNode = handler;
+    // otherwise move on to the next node (already pointed there)
+  }
+}
+
+
+void PVXMLSession::ProcessNode()
+{
+  if (currentNode == NULL)
+    return;
+
+  if (!currentNode->IsElement())
+    TraverseAudio();
+  else {
+    PXMLElement * element = (PXMLElement*)currentNode;
+    PCaselessString nodeType = element->GetName();
+    PTRACE(3, "PVXML\t**** Processing VoiceXML element: <" << nodeType << "> ***");
+
+    if (nodeType *= "audio") {
+      TraverseAudio();
+    }
+
+    else if (nodeType *= "block") {
+      // check 'cond' attribute to see if this element's children are to be skipped
+      // go on and process the children
+    }
+
+    else if (nodeType *= "break")
+      TraverseAudio();
+
+    else if (nodeType *= "disconnect")
+      currentNode = NULL;
+
+    else if (nodeType *= "field") {
+      currentField = (PXMLElement*)currentNode;
+      timeout = DEFAULT_TIMEOUT;
+      TraverseGrammar();  // this will set activeGrammar
+    }
+
+    else if (nodeType *= "form") {
+      // this is now the current element - go on
+      currentForm = element;
+      currentField = NULL;  // no active field in a new form
+    }
+
+    else if (nodeType *= "goto")
+      TraverseGoto();
+
+    else if (nodeType *= "grammar")
+      TraverseGrammar();  // this will set activeGrammar
+
+    else if (nodeType *= "record")
+		  TraverseRecord();		
+
+    else if (nodeType *= "prompt") {
+      // LATER:
+      // check 'cond' attribute to see if the children of this node should be processed
+      // check 'count' attribute to see if this node should be processed
+      // flush all prompts if 'bargein' attribute is set to false
+
+      // Update timeout of current recognition (if 'timeout' attribute is set)
+      if (element->HasAttribute("timeout")) {
+        PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
+      }
+
+      // go on to process the children
+    }
+
+    else if (nodeType *= "say-as") {
+    }
+
+    else if (nodeType *= "value")
+      TraverseAudio();
+
+    else if (nodeType *= "if") 
+      TraverseIf();
+
+    else if (nodeType *= "exit") 
+      TraverseExit();
+
+    else if (nodeType *= "transfer") 
+      TraverseTransfer();
   }
 }
 
@@ -829,8 +818,8 @@ BOOL PVXMLSession::OnUserInput(const PString & str)
   } 
 
   // playback
-    else if (activeGrammar != NULL && activeGrammar->OnUserInput(str)) {
-    ExecuteWithoutLock();
+  else if (activeGrammar != NULL && activeGrammar->OnUserInput(str)) {
+    waitForEvent.Signal();
     return TRUE;
   }
 
@@ -1038,9 +1027,17 @@ BOOL PVXMLSession::LoadGrammar(PVXMLGrammar * grammar)
   return TRUE;
 }
 
-BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
+BOOL PVXMLSession::PlayText(const PString & _text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
 {
-  if (textToSpeech != NULL) {
+  if (textToSpeech == NULL)
+    return TRUE;
+
+  PStringArray lines = _text.Lines();
+  for (PINDEX i = 0; i < lines.GetSize(); i++) {
+    PString text = lines[i].Trim();
+    if (text.IsEmpty())
+      continue;
+
     PFilePath tmpfname("tts", NULL);
     PRandom r;
     PFilePath fname(tmpfname.GetDirectory() + (psprintf("tts_%i.wav", r.Generate() % 1000000)));
@@ -1056,7 +1053,7 @@ BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, 
       } else if (!PlayFile(fname, repeat, delay, TRUE)) {
         PTRACE(2, "PVXML\tCannot play " << fname);
       } else {
-        PTRACE(2, "PVXML\tText queued");
+        PTRACE(2, "PVXML\tText queued: \"" << text << '"');
       }
     }
   }
@@ -1379,8 +1376,9 @@ PXMLElement * PVXMLSession::FindHandler(const PString & event)
   return NULL;
 }
 
-void PVXMLSession::SayAs(const PString & className, const PString & text)
+void PVXMLSession::SayAs(const PString & className, const PString & _text)
 {
+  PString text = _text.Trim();
   if (!text.IsEmpty()) {
     PTextToSpeech::TextType type = PTextToSpeech::Literal;
 
@@ -1411,7 +1409,8 @@ void PVXMLSession::SayAs(const PString & className, const PString & text)
     else if (className *= "duration")
       type = PTextToSpeech::Duration;
 
-    PlayText(text, type);
+    else
+      PlayText(text, type);
   }
 }
 
@@ -1428,7 +1427,123 @@ PTimeInterval PVXMLSession::StringToTime(const PString & str)
   return PTimeInterval(msecs);
 }
 
+BOOL PVXMLSession::TraverseTransfer()
+{
+  PVXMLTransferOptions opts;
 
+  PAssert(currentNode != NULL, "TraverseTransfer(): Expected valid node");
+  if (currentNode == NULL)
+    return FALSE;
+
+  PAssert(currentNode->IsElement(), "TraverseTransfer(): Expected element");
+  
+  // Retrieve parameters
+  PString dest = ((PXMLElement*)currentNode)->GetAttribute("dest");
+  PString source = ((PXMLElement*)currentNode)->GetAttribute("source");
+  PString connectTimeoutStr = ((PXMLElement*)currentNode)->GetAttribute("connecttimeout");
+  PString bridgeStr = ((PXMLElement*)currentNode)->GetAttribute("dest");
+  
+  bool bridge = ( ( bridgeStr == "true" ) == TRUE );
+  unsigned int connectTimeout = connectTimeoutStr.AsInteger();
+
+  if ( ( connectTimeout < 2 ) && ( connectTimeout > 30 ) )
+  {
+    connectTimeout = 30;
+  }
+
+  if ( dest.Find( "phone://" ) < dest.GetSize() )
+  {
+    dest.Delete( 0, 8 );
+  }
+  else
+  {
+    return FALSE;
+  }
+
+  if ( source.Find( "phone://" ) < source.GetSize() )
+  {
+    source.Delete( 0, 8 );
+  }
+  else
+  {
+    return FALSE;
+  }
+
+  opts.SetCallingToken( callingCallToken );
+  opts.SetDestinationDNR( dest );
+  opts.SetSourceDNR( source );
+  opts.SetTimeout( connectTimeout );
+  opts.SetBridge( bridge );
+
+  DoTransfer( opts );
+
+  // Wait for the transfer result signal
+  transferSync.Wait();
+
+  return TRUE;
+}
+
+void PVXMLSession::OnTransfer( PVXMLTransferResult& args )
+{
+  // transfer has ended, save result
+  SetVar( args.GetName(), args );
+
+  // Signal transfer initiator that the transfer has ended and the VXML can 
+  // continue
+  transferSync.Signal();
+}
+
+BOOL PVXMLSession::TraverseIf()
+{
+  // If 'cond' parameter evaluates to true, enter child entities, else
+  // go to next element.
+
+  PString condition = ((PXMLElement*)currentNode)->GetAttribute("cond");
+
+  // Find comparison type
+
+  int location = condition.Find( "==" );
+
+  bool isEqual = ( location < condition.GetSize() );
+
+  if ( isEqual )
+  {
+    // Find var name
+    PString varname = condition.Left( location );
+    // Find value, skip '=' signs
+    PString cond_value = condition.Right( condition.GetSize() - (location + 3) );
+    
+    // check if var value equals value from condition and if not skip child elements
+    PString value = GetVar( varname );
+    if ( cond_value != value )
+    {
+      if (currentNode->IsElement()) 
+      {
+        PXMLElement* element = (PXMLElement*) currentNode;
+        if ( element->HasSubObjects() )
+        {
+          // Step to last child element (really last element is NULL?)
+          currentNode = element->GetElement(element->GetSize() - 1);
+        }
+      }
+    }
+    // No else needed, let's hop the parser continues to next element iso next child element.
+  }
+  else
+  {
+    PTRACE( 1, "\tPVXMLSession, <if> element contains condition with operator other than ==, not implemented" );
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL PVXMLSession::TraverseExit()
+{
+  threadRunning = !DoExit();
+  waitForEvent.Signal();
+  return threadRunning;
+}
 
 ///////////////////////////////////////////////////////////////
 
@@ -1458,9 +1573,9 @@ PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
   wavFile     = NULL;
   playing     = FALSE;
   recording   = FALSE;
-  frameLen    = frameOffs = 0;
   silentCount = 20;         // wait 20 frames before playing the OGM
   paused      = FALSE;
+  delayBytes  = 0;
 }
 
 
@@ -1629,144 +1744,117 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
   if (closed)
     return FALSE;
 
-  // Create the frame buffer using the amount of bytes the codec wants to
-  // read. Different codecs use different read sizes.
-  frameBuffer.SetMinSize(1024); //amount);
-
   // assume we are returning silence
-  BOOL doSilence = TRUE;
-  BOOL frameBoundary = FALSE;
+  BOOL silenceStuff = FALSE;
 
-  // if still outputting a frame from last time, then keep doing it
-  if (frameOffs < frameLen) {
+  // if we are paused or in a delay, then do return silence
+  if (paused || delayTimer.IsRunning())
+    silenceStuff = TRUE;
 
-    frameBoundary = AdjustFrame(buffer, amount);
-    doSilence = FALSE;
+  // if we are returning silence frames, then decrement the frame count
+  // and contine returning silence
+  else if (silentCount > 0) {
+    silenceStuff = TRUE;
+    silentCount--;
+  }
 
-  } else {
+  // if underlying channel is open, then read from the channel
+  else if (GetBaseReadChannel() != NULL)
+    silenceStuff = FALSE;
 
-    // if we are paused or in a delay, then do nothing
-    if (paused || delayTimer.IsRunning())
-      ;
-
-    // if we are returning silence frames, then decrement the frame count
-    else if (silentCount > 0) 
-      silentCount--;
-
-    // if a channel is already open, don't do silence
-    else if (GetBaseReadChannel() != NULL)
-      doSilence = FALSE;
-
-    // check play queue
-    else {
-      PINDEX qSize;
-      {
-        PWaitAndSignal m(queueMutex);
-        qSize = playQueue.GetSize();
-      }
-
-      // if nothing in queue, then re-execute VXML
-      if (qSize == 0) {
-        if (!vxml.Execute())
-          return FALSE;
-      }
-
-      // otherwise queue the next data item
-      else {
-        {
-          PWaitAndSignal m(queueMutex);
-          PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-          qItem->OnStart();
-          qItem->Play(*this);
-        }
-        doSilence = FALSE;
-        totalData = 0;
-        playing = TRUE;
-      }
+  // if underlying channel is not open, then see if there is anything in the queue
+  else {
+    PINDEX qSize;
+    {
+      PWaitAndSignal m(queueMutex);
+      qSize = playQueue.GetSize();
     }
 
-    // if not doing silence, try and read more data
-    if (!doSilence) {
+    // if nothing in queue, then return silence
+    if (qSize == 0)
+      silenceStuff = TRUE;
+
+    // otherwise queue the next data item
+    else {
+      {
+        PWaitAndSignal m(queueMutex);
+        PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
+        qItem->OnStart();
+        qItem->Play(*this);
+      }
+      silenceStuff = FALSE;
+      totalData = 0;
+      playing = TRUE;
+    }
+  }
+
+  // if not doing silence, try and read more data
+  // from the underlying channel
+  if (!silenceStuff) {
   
-      if (ReadFrame(amount)) {
-        frameBoundary = AdjustFrame(buffer, amount);
-        totalData += amount;
-  
-      } else {
+    if (ReadFrame(buffer, amount)) {
+      totalData += amount;
+    } 
+    
+    else {
 
-        playing = FALSE;
-        doSilence = TRUE;
+      PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
+      PIndirectChannel::Close();
 
-        PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
-        PIndirectChannel::Close();
+      playing = FALSE;
+      silenceStuff = TRUE;
 
-        // get the item that was just playing
-        PINDEX delay;
-        {
-          PWaitAndSignal m(queueMutex);
-          PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-          if (PAssertNULL(qItem) == NULL)
-            return FALSE;
-
-          // get the delay time BEFORE deleting the info
+      // get the item that was just playing
+      PINDEX delay;
+      {
+        PWaitAndSignal m(queueMutex);
+        PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
+        if (qItem == NULL)
+          delay = 0;
+        else
           delay = qItem->delay;
 
-          // if the repeat count is zero, then dequeue entry 
-          if (--qItem->repeat == 0) {
-            qItem->OnStop();
-            delete playQueue.Dequeue();
-          }
+        // if the repeat count is zero, then dequeue entry 
+        if (qItem->repeat == 0 || --qItem->repeat == 0) {
+          qItem->OnStop();
+          delete playQueue.Dequeue();
         }
+      }
 
-        // if delay required, then setup the delay
-        if (delay != 0) {
-          PTRACE(3, "PVXML\tDelaying for " << delay);
-          delayTimer = delay;
-        }
+      // if delay required, then setup the delay
+      if (delay != 0) {
+        PTRACE(3, "PVXML\tDelaying for " << delay);
+        delayTimer = delay;
+      }
 
-        // if no delay, re-evaluate VXML script
-        else {
-          PINDEX qSize;
-          {
-            PWaitAndSignal m(queueMutex);
-            qSize = playQueue.GetSize();
-          }
-          if (qSize == 0) {
-            if (!vxml.Execute())
-              return FALSE;
-          }
+      // if no delay, then check the queue size 
+      else {
+        PINDEX qSize;
+        {
+          PWaitAndSignal m(queueMutex);
+          qSize = playQueue.GetSize();
         }
+        // if nothing in the queue, trigger the main loop to perhaps send more data
+        if (qSize == 0)
+          vxml.waitForEvent.Signal();
       }
     }
   }
   
   // start silence frame if required
-  if (doSilence) {
-    CreateSilenceFrame(amount);
-    frameBoundary = AdjustFrame(buffer, amount);
-  }
+  // note that this always requires a delay
+  if (silenceStuff)
+    lastReadCount = CreateSilenceFrame(buffer, amount);
 
-  // delay to synchronise to frame boundary
-  if (frameBoundary)
-    delay.Delay((amount+frameBytes-1)/frameBytes * frameTime);
+  // handle the appropriate delay
+  HandleDelay(lastReadCount);
 
   return TRUE;
 }
 
-
-BOOL PVXMLChannel::AdjustFrame(void * buffer, PINDEX amount)
+void PVXMLChannel::HandleDelay(PINDEX /*amount*/)
 {
-  if ((frameOffs + amount) > frameLen) {
-    PTRACE(5, "Reading past end of frame:offs=" << frameOffs << ",amt=" << amount << ",len=" << frameLen);
-    amount = frameLen - frameOffs;
-  }
-
-  memcpy(buffer, frameBuffer.GetPointer()+frameOffs, amount);
-  frameOffs += amount;
-
-  lastReadCount = amount;
-
-  return frameOffs == frameLen;
+  delay.Delay(frameTime);
 }
 
 void PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
@@ -1824,27 +1912,24 @@ BOOL PVXMLChannelPCM::WriteFrame(const void * buf, PINDEX len)
   return wavFile->Write(buf, len);
 }
 
-BOOL PVXMLChannelPCM::ReadFrame(PINDEX amount)
+BOOL PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
 {
-  frameOffs = 0;
-  frameLen  = amount;
-
-  BOOL result = PIndirectChannel::Read(frameBuffer.GetPointer(), frameLen);
-
-  // if we did not read a full frame of audio, fill the end of the
-  // frame with zeros.
-  PINDEX count = GetLastReadCount();
-  if (count < frameLen)
-    memset(frameBuffer.GetPointer()+count, 0, frameLen-count);
-
-  return result;
+  return PIndirectChannel::Read(buffer, amount);
 }
 
-void PVXMLChannelPCM::CreateSilenceFrame(PINDEX amount)
+void PVXMLChannelPCM::HandleDelay(PINDEX amount)
 {
-  frameOffs = 0;
-  frameLen  = amount;
-  memset(frameBuffer.GetPointer(), 0, frameLen);
+  delayBytes += amount;
+  while (delayBytes >= frameBytes) {
+    delay.Delay(frameTime);
+    delayBytes -= frameBytes;
+  }
+}
+
+PINDEX PVXMLChannelPCM::CreateSilenceFrame(void * buffer, PINDEX amount)
+{
+  memset(buffer, 0, amount);
+  return amount;
 }
 
 BOOL PVXMLChannelPCM::IsSilenceFrame(const void * buf, PINDEX len) const
@@ -1892,25 +1977,24 @@ BOOL PVXMLChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
   return wavFile->Write(buf, 24);
 }
 
-BOOL PVXMLChannelG7231::ReadFrame(PINDEX /*amount*/)
+BOOL PVXMLChannelG7231::ReadFrame(void * buffer, PINDEX /*amount*/)
 {
-  if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
+  if (!PIndirectChannel::Read(buffer, 1))
     return FALSE;
 
-  frameOffs = 0;
   static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
-  frameLen = g7231Lens[frameBuffer[0]&3];
+  if (!PIndirectChannel::Read(buffer, g7231Lens[((BYTE *)buffer)[0]&3]-1))
+    return FALSE;
 
-  return PIndirectChannel::Read(frameBuffer.GetPointer()+1, frameLen-1);
+  lastReadCount++;
+  return TRUE;
 }
 
-void PVXMLChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
+PINDEX PVXMLChannelG7231::CreateSilenceFrame(void * buffer, PINDEX /* len */)
 {
-  frameOffs = 0;
-  frameLen  = 4;
-
-  frameBuffer[0] = 2;
-  memset(frameBuffer.GetPointer()+1, 0, 3);
+  ((BYTE *)buffer)[0] = 2;
+  memset(((BYTE *)buffer)+1, 0, 3);
+  return 4;
 }
 
 BOOL PVXMLChannelG7231::IsSilenceFrame(const void * buf, PINDEX len) const
@@ -1934,17 +2018,15 @@ BOOL PVXMLChannelG729::WriteFrame(const void * buf, PINDEX /*len*/)
   return wavFile->Write(buf, 10);
 }
 
-BOOL PVXMLChannelG729::ReadFrame(PINDEX /*amount*/)
+BOOL PVXMLChannelG729::ReadFrame(void * buffer, PINDEX /*amount*/)
 {
-  return PIndirectChannel::Read(frameBuffer.GetPointer(), 10);
+  return PIndirectChannel::Read(buffer, 10);
 }
 
-void PVXMLChannelG729::CreateSilenceFrame(PINDEX /*amount*/)
+PINDEX PVXMLChannelG729::CreateSilenceFrame(void * buffer, PINDEX /* len */)
 {
-  frameOffs = 0;
-  frameLen  = 10;
-
-  memset(frameBuffer.GetPointer(), 0, 10);
+  memset(buffer, 0, 10);
+  return 10;
 }
 
 BOOL PVXMLChannelG729::IsSilenceFrame(const void * /*buf*/, PINDEX /*len*/) const
