@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.9 1996/07/27 04:08:58 robertj Exp $
+ * $Id: socket.h,v 1.10 1996/08/08 10:09:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.10  1996/08/08 10:09:14  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.9  1996/07/27 04:08:58  robertj
  * Created static version of ConvertOSError().
  *
@@ -50,7 +53,7 @@
 #endif
 
 
-#include "../../common/socket.h"
+#include "../../common/ptlib/socket.h"
   public:
     PSocket();
       // create an unattached socket
