@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.7  2003/03/17 07:39:25  robertj
+ * Fixed possible invalid value causing DTMF detector to crash.
+ *
  * Revision 1.6  2002/02/20 02:59:34  yurik
  * Added end of line to trace statement
  *
@@ -36,6 +39,7 @@
 #include <ptlib.h>
 #include <ptclib/dtmf.h>
 
+
 /* Integer math scaling factor */
 #define FSC	(1<<12)
 
@@ -44,7 +48,10 @@
 
 #define P2 ((int)(POLRAD*POLRAD*FSC))
 
-PDTMFDecoder::PDTMFDecoder() {
+
+
+PDTMFDecoder::PDTMFDecoder()
+{
 	// Initialise the class
 	int i,kk;
 	for (kk = 0; kk < 8; kk++) {
@@ -60,8 +67,6 @@ PDTMFDecoder::PDTMFDecoder() {
 	}
 
 	/* We encode the tones in 8 bits, translate those to symbol */
-	key[0x00] = '\0';
-
 	key[0x11] = '1'; key[0x12] = '4'; key[0x14] = '7'; key[0x18] = '*';
 	key[0x21] = '2'; key[0x22] = '5'; key[0x24] = '8'; key[0x28] = '0';
 	key[0x41] = '3'; key[0x42] = '6'; key[0x44] = '9'; key[0x48] = '#';
@@ -75,7 +80,9 @@ PDTMFDecoder::PDTMFDecoder() {
 	p1[4] = -2384; p1[5] = -2040; p1[6] = -1635; p1[7] = -1164;
 }
 
-PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
+
+PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes)
+{
 	int x;
 	int s, kk;
 	int c, d, f, n;
@@ -124,9 +131,9 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
 		if (s != so) {
 			nn = 0;
 			so = s;
-		} else if ((nn++ == 520) && (key[s] != '?')) {
-			PTRACE(1,"Got 16bit PCM DTMF " << key[s] << endl);
-			keyString = keyString + key[s];
+		} else if (nn++ == 520 && s < 256 && key[s] != '?') {
+			PTRACE(3,"DTMF\tDetected '" << key[s] << "' in PCM-16 stream");
+			keyString += key[s];
 		}
 	}
 	return keyString;
