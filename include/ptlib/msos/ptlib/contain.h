@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.13 1996/07/15 10:26:55 robertj Exp $
+ * $Id: contain.h,v 1.14 1996/08/08 10:08:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.14  1996/08/08 10:08:58  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.13  1996/07/15 10:26:55  robertj
  * MSVC 4.1 Support
  *
@@ -209,7 +212,7 @@ const PINDEX P_MAX_INDEX = 0xffff;
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
 
-#include "..\..\common\object.h"
+#include "../../common/ptlib/contain.h"
 
 
 #endif // _OBJECT_H
