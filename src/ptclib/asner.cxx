@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.70  2002/10/31 05:51:10  robertj
+ * Changed to use new UTF-8/UCS-2 conversion functions on PString.
+ *
  * Revision 1.69  2002/10/29 08:12:44  robertj
  * Fixed MSVC warnings.
  *
@@ -2475,47 +2478,6 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
 }
 
 
-PASN_BMPString & PASN_BMPString::operator=(const char * str)
-{
-  // Must be at least this big for string conversion
-  value.SetSize(::strlen(str));
-
-  // Convert string looking for "&#1234;" style characters for 16 bit stuff
-  PINDEX count = 0;
-  while (*str != '\0') {
-    WORD c = (BYTE)*str++;
-
-    if (c == '&' && *str == '#') {
-      unsigned bigChar = 0;
-      const char * p = str+1;
-      while (isdigit(*p))
-        bigChar = bigChar*10 + *p++ - '0';
-      if (*p == ';' && bigChar < 65536) {
-        c = (WORD)bigChar;
-        str = p + 1;
-      }
-    }
-
-    if (IsLegalCharacter(c))
-      value[count++] = c;
-  }
-
-  // Can't have any more than the upper constraint
-  if ((unsigned)count > upperLimit)
-    count = upperLimit;
-
-  // Number of bytes must be at least lhe lower constraint
-  PINDEX newSize = (int)count < lowerLimit ? lowerLimit : count;
-  value.SetSize(newSize);
-
-  // Pad out with the first character till required size
-  while (count < newSize)
-    value[count++] = firstChar;
-
-  return *this;
-}
-
-
 PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
 {
   PINDEX paramSize = array.GetSize();
@@ -2540,19 +2502,6 @@ PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
     value[count++] = firstChar;
 
   return *this;
-}
-
-
-PString PASN_BMPString::GetValue() const
-{
-  PString str;
-  for (PINDEX i = 0; i < value.GetSize(); i++) {
-    if (value[i] > 0 && value[i] < 256)
-      str += (char)value[i];
-    else
-      str.sprintf("&#%u;", value[i]);
-  }
-  return str;
 }
 
 
