@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.41  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.40  2002/05/02 14:19:32  rogerh
  * Handle Big Endian systems correctly.
  * Patch submitted by andi@fischlustig.de
@@ -264,7 +267,7 @@ PDICTIONARY(SoundHandleDict, PString, SoundHandleEntry);
 
 static char buffer[LOOPBACK_BUFFER_SIZE];
 static int  startptr, endptr;
-static unsigned int bufferLen;
+static PINDEX bufferLen;
 static PMutex audioBufferMutex;
 PAudioDelay readDelay;
 PAudioDelay writeDelay;
@@ -735,7 +738,7 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     return TRUE; // the write failed, but we return OK
   }
 
-  unsigned int index = 0;
+  PINDEX index = 0;
   while (index < len) {
     buffer[endptr++] = ((char *)buf)[index++];
     if (endptr == LOOPBACK_BUFFER_SIZE)
@@ -793,9 +796,9 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 
   // There may not be enough audio data in the buffer, so find out
   // how much we can copy.
-  unsigned int copy = ((len < bufferLen) ? len : bufferLen);
+  PINDEX copy = ((len < bufferLen) ? len : bufferLen);
 
-  for (unsigned int index = 0; index < copy; index++) {
+  for (PINDEX index = 0; index < copy; index++) {
     ((char *)buf)[index]=buffer[startptr++];
     if (startptr == LOOPBACK_BUFFER_SIZE)
       startptr = 0;

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.112  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.111  2002/04/09 02:30:18  robertj
  * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
  *
@@ -755,7 +758,7 @@ void PAbstractArray::PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed)
   }
 
   long mask = -1;
-  if (size < sizeof(mask))
+  if (size < (PINDEX)sizeof(mask))
     mask = (1L << (size*8)) - 1;
 
   PINDEX i = 0;
