@@ -1758,6 +1758,8 @@ EXPORTS
     ?Process@PTimerList@@QAE?AVPTimeInterval@@XZ @1525 NONAME ;public: class PTimeInterval  __thiscall PTimerList::Process(void)
     ?ProcessCommand@PServiceProcess@@AAEHPBD@Z @1526 NONAME ;private: int __thiscall PServiceProcess::ProcessCommand(char const *)
     ?PSetErrorStream@@YAXPAVostream@@@Z @1527 NONAME ;void __cdecl PSetErrorStream(class ostream *)
+    ?PSetTraceBlock@@YAXH@Z @2120 NONAME ;void __cdecl PSetTraceBlock(int)
+    ?PSetTraceLevel@@YAXI@Z @2121 NONAME ;void __cdecl PSetTraceLevel(unsigned int)
     ?PSetTraceStream@@YAXPAVostream@@@Z @1528 NONAME ;void __cdecl PSetTraceStream(class ostream *)
     ?psprintf@@YA?AVPString@@PBDZZ @1529 NONAME ;class PString  __cdecl psprintf(char const *,...)
     ?PutData@PWin32PacketBuffer@@QAEHPBXH@Z @1938 NONAME ;public: int __thiscall PWin32PacketBuffer::PutData(void const *,int)
@@ -2056,5 +2058,5 @@ EXPORTS
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?PSetTraceBlock@@YAXH@Z @2120 NONAME ;void __cdecl PSetTraceBlock(int)
-    ?PSetTraceLevel@@YAXI@Z @2121 NONAME ;void __cdecl PSetTraceLevel(unsigned int)
+    ??AAddress@PIPSocket@@QBEEH@Z @2122 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
+    ?PCanTrace@@YAHI@Z @2123 NONAME ;int __cdecl PCanTrace(unsigned int)

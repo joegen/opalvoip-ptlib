@@ -2306,6 +2306,7 @@ EXPORTS
     ?Pause@PTimer@@QAEXXZ @1983 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1984 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
     ?PBeginTrace@@YAAAVostream@@PBDH@Z @2944 NONAME ;class ostream & __cdecl PBeginTrace(char const *,int)
+    ?PCanTrace@@YAHI@Z @2951 NONAME ;int __cdecl PCanTrace(unsigned int)
     ?PEndTrace@@YAAAVostream@@AAV1@@Z @2945 NONAME ;class ostream & __cdecl PEndTrace(class ostream &)
     ?PGetErrorStream@@YAAAVostream@@XZ @1987 NONAME ;class ostream & __cdecl PGetErrorStream(void)
     ?pHostByAddr@@3VPHostByAddr@@A @1989 NONAME ;class PHostByAddr  pHostByAddr
@@ -2839,4 +2840,5 @@ EXPORTS
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
     __real@4@4008fa00000000000000 @2906 NONAME ;__real@4@4008fa00000000000000
-    ?PCanTrace@@YAHI@Z @2951 NONAME ;int __cdecl PCanTrace(unsigned int)
+    ??AAddress@PIPSocket@@QBEEH@Z @2952 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
+    ?__LINE__Var@?1???AAddress@PIPSocket@@QBEEH@Z@4FA @2953 NONAME ;short  `public: unsigned char __thiscall PIPSocket::Address::operator[](int)const '::`2'::__LINE__Var
