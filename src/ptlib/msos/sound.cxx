@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.35  2003/06/05 05:20:35  rjongbloed
+ * Fixed WinCE compatibility, thanks Yuri Kiryanov
+ *
  * Revision 1.34  2003/05/29 08:57:38  rjongbloed
  * Futher changes to not alter balance when changing volume setting, also fixed
  *   correct return of volume level if balance not centred, thanks Diego Tártara
@@ -1468,8 +1471,13 @@ BOOL PSoundChannel::SetVolume(unsigned newVolume)
          else if ( oldR == 0 )
            lVol = rawVolume;
          else {
+#ifndef _WIN32_WCE
            rVol = ::MulDiv( 2 * rawVolume, oldR, oldL + oldR );
            lVol = ::MulDiv( rVol, oldL, oldR );
+#else
+           rVol = 2 * rawVolume * oldR / ( oldL + oldR );
+           lVol = rVol * oldL / oldR;
+#endif
          }
          
          rawVolume = MAKELPARAM(lVol, rVol);
