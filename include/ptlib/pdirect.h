@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.9 1994/04/01 14:14:57 robertj Exp $
+ * $Id: pdirect.h,v 1.10 1994/04/11 14:16:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.9  1994/04/01 14:14:57  robertj
+ * Revision 1.10  1994/04/11 14:16:27  robertj
+ * Added function for determining if character is a valid directory separator.
+ *
+ * Revision 1.9  1994/04/01  14:14:57  robertj
  * Put platform independent file permissions and type codes back.
  *
  * Revision 1.7  1994/01/13  03:17:55  robertj
@@ -92,7 +95,10 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
 
     BOOL IsRoot() const;
       // Return TRUE if the directory is the root directory of a volume.
-      
+
+    PINLINE static BOOL IsSeparator(char c);
+      // Return TRUE if the character is a directory path separator.
+
 
     BOOL Change() const;
     PINLINE static BOOL Change(const PString & p);
