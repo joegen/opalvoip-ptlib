@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.3  2000/07/25 13:38:26  robertj
+ * Added frame rate parameter to video frame grabber.
+ *
  * Revision 1.2  2000/07/25 13:14:07  robertj
  * Got the video capture stuff going!
  *
@@ -236,6 +239,43 @@ BOOL PVideoInputDevice::IsCapturing()
 }
 
 
+BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
+{
+  if (!PVideoDevice::SetFrameRate(rate))
+    return FALSE;
+
+  BOOL running = IsCapturing();
+  if (running)
+    Stop();
+
+  CAPTUREPARMS parms;
+  memset(&parms, 0, sizeof(parms));
+
+  if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+    PTRACE(1, "capCaptureGetSetup: failed - " << GetLastError());
+    return FALSE;
+  }
+
+  parms.dwRequestMicroSecPerFrame = 100000000 / frameRate;
+  parms.fMakeUserHitOKToCapture = FALSE;
+  parms.wPercentDropForError = 100;
+  parms.fCaptureAudio = FALSE;
+  parms.fAbortLeftMouse = FALSE;
+  parms.fAbortRightMouse = FALSE;
+  parms.fLimitEnabled = FALSE;
+
+  if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
+    PTRACE(1, "capCaptureSetSetup: failed - " << GetLastError());
+    return FALSE;
+  }
+
+  if (running)
+    return Start();
+
+  return TRUE;
+}
+
+
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
@@ -421,25 +461,8 @@ BOOL PVideoInputDevice::InitialiseCapture()
     capPreview(hCaptureWindow, TRUE);
   }
 
-  CAPTUREPARMS parms;
-  memset(&parms, 0, sizeof(parms));
-  if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    PTRACE(1, "capCaptureGetSetup: failed - " << GetLastError());
+  if (!SetFrameRate(frameRate))
     return FALSE;
-  }
-
-  parms.dwRequestMicroSecPerFrame = 1000000 / 15;
-  parms.fMakeUserHitOKToCapture = FALSE;
-  parms.wPercentDropForError = 100;
-  parms.fCaptureAudio = FALSE;
-  parms.fAbortLeftMouse = FALSE;
-  parms.fAbortRightMouse = FALSE;
-  parms.fLimitEnabled = FALSE;
-
-  if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    PTRACE(1, "capCaptureSetSetup: failed - " << GetLastError());
-    return FALSE;
-  }
 
   if (!SetFrameSize(frameWidth, frameHeight))
     return FALSE;

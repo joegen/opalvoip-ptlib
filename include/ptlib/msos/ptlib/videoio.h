@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.3  2000/07/25 13:38:26  robertj
+ * Added frame rate parameter to video frame grabber.
+ *
  * Revision 1.2  2000/07/25 13:14:07  robertj
  * Got the video capture stuff going!
  *
@@ -40,8 +43,9 @@
 
 #include "../../videoio.h"
   protected:
-    virtual BOOL SetFrameSize(unsigned width, unsigned height);
     virtual BOOL SetColourFormat(ColourFormat colourFormat);
+    virtual BOOL SetFrameRate(unsigned rate);
+    virtual BOOL SetFrameSize(unsigned width, unsigned height);
 
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
