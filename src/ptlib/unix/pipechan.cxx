@@ -222,8 +222,15 @@ BOOL PPipeChannel::IsRunning() const
 
 int PPipeChannel::WaitForTermination()
 {
+#ifdef P_PTHREADS
+  if (kill (childPid, 0) == 0) {
+    while (wait3(NULL, WUNTRACED, NULL) != childPid)
+      ;
+  }
+#else
   if (kill (childPid, 0) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
+#endif
 
   ConvertOSError(-1);
   return -1;
@@ -231,8 +238,15 @@ int PPipeChannel::WaitForTermination()
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
+#ifdef P_PTHREADS
+  if (kill (childPid, 0) == 0) {
+    while (wait3(NULL, WUNTRACED, NULL) != childPid)
+      ;
+  }
+#else
   if (kill (childPid, 0) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
+#endif
 
   ConvertOSError(-1);
   return -1;
