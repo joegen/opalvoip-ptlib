@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.103  1998/10/28 03:26:43  robertj
+ * Added multi character arguments (-abc style) and options precede parameters mode.
+ *
  * Revision 1.102  1998/10/28 00:59:49  robertj
  * New improved argument parsing.
  *
@@ -1435,7 +1438,9 @@ void PConfig::SetTime(const PString & section, const PString & key, const PTime 
 
 #if defined(_PARGLIST)
 
-PArgList::PArgList(const char * theArgStr, const char * theArgumentSpec)
+PArgList::PArgList(const char * theArgStr,
+                   const char * theArgumentSpec,
+                   BOOL optionsBeforeParams)
 {
   // get the program arguments
   if (theArgStr != NULL)
@@ -1443,27 +1448,31 @@ PArgList::PArgList(const char * theArgStr, const char * theArgumentSpec)
 
   // if we got an argument spec - so process them
   if (theArgumentSpec != NULL)
-    Parse(theArgumentSpec);
+    Parse(theArgumentSpec, optionsBeforeParams);
 }
 
 
-PArgList::PArgList(int theArgc, char ** theArgv, const char * theArgumentSpec)
+PArgList::PArgList(int theArgc, char ** theArgv,
+                   const char * theArgumentSpec,
+                   BOOL optionsBeforeParams)
 {
   // get the program arguments
   SetArgs(theArgc, theArgv);
 
   // if we got an argument spec - so process them
   if (theArgumentSpec != NULL)
-    Parse(theArgumentSpec);
+    Parse(theArgumentSpec, optionsBeforeParams);
 }
 
 
-PArgList::PArgList(int theArgc, char ** theArgv, const PString & theArgumentSpec)
+PArgList::PArgList(int theArgc, char ** theArgv,
+                   const PString & theArgumentSpec,
+                   BOOL optionsBeforeParams)
 {
   // get the program name and path
   SetArgs(theArgc, theArgv);
   // we got an argument spec - so process them
-  Parse(theArgumentSpec);
+  Parse(theArgumentSpec, optionsBeforeParams);
 }
 
 
@@ -1517,10 +1526,8 @@ void PArgList::SetArgs(int argc, char ** argv)
 }
 
 
-BOOL PArgList::Parse(const char * spec)
+void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
-  BOOL ok = TRUE;
-
   PAssertNULL(spec);
 
   optionLetters = "";
@@ -1536,29 +1543,36 @@ BOOL PArgList::Parse(const char * spec)
       optionLetters += *spec++;
     if (*spec == '-') {
       const char * base = ++spec;
-      while (*spec != '\0' && *spec != ':' && *spec != ';')
+      while (*spec != '\0' && *spec != '.' && *spec != ':' && *spec != ';')
         spec++;
       optionNames[codeCount] = PString(base, spec-base);
-      if (*spec == ';')
+      if (*spec == '.')
         spec++;
     }
-    if (*spec == ':') {
+    if (*spec == ':' || *spec == ';') {
       canHaveOptionString.SetSize(codeCount+1);
-      canHaveOptionString[codeCount] = TRUE;
+      canHaveOptionString[codeCount] = *spec == ':' ? 2 : 1;
       spec++;
     }
     codeCount++;
   }
 
+  // Clear and reset size of option information
   optionCount.SetSize(0);
   optionCount.SetSize(codeCount);
   optionString.SetSize(0);
   optionString.SetSize(codeCount);
+
+  // Find starting point
+  PINDEX arg = 0;
+  if (optionsBeforeParams && parameterIndex.GetSize() > 0)
+    arg = parameterIndex[parameterIndex.GetSize()-1] + 1;
+
+  // Clear parameter indexes
   parameterIndex.SetSize(0);
 
   // Now work through the arguments and split out the options
   PINDEX param = 0;
-  PINDEX arg = shift;
   BOOL hadMinusMinus = FALSE;
   while (arg < argumentArray.GetSize()) {
     const PString & argStr = argumentArray[arg];
@@ -1567,40 +1581,49 @@ BOOL PArgList::Parse(const char * spec)
       parameterIndex.SetSize(param+1);
       parameterIndex[param++] = arg;
     }
-    else if (argStr == "--") {
-      // If -- then ALL remaining arguments are not options
+    else if (optionsBeforeParams && parameterIndex.GetSize() > 0)
+      break;
+    else if (argStr == "--") // ALL remaining args are parameters not options
       hadMinusMinus = TRUE;
-    }
+    else if (argStr[1] == '-')
+      ParseOption(optionNames.GetValuesIndex(argStr.Mid(2)), 0, arg, canHaveOptionString);
     else {
-      PINDEX idx;
-      if (argStr[1] != '-')
-        idx = optionLetters.Find(argStr[1]);
-      else
-        idx = optionNames.GetValuesIndex(argStr.Mid(2));
-      if (idx == P_MAX_INDEX) {
-        UnknownOption(argStr);
-        ok = FALSE;
-      }
-      else {
-        optionCount[idx]++;
-        if (canHaveOptionString[idx]) {
-          if (argStr[1] != '-' && argStr[2] != '\0')
-            optionString[idx] = argStr.Mid(2);
-          else {
-            arg++;
-            if (arg < argumentArray.GetSize()) {
-              if (!optionString[idx])
-                optionString[idx] += '\n';
-              optionString[idx] += argumentArray[arg];
-            }
-          }
-        }
-      }
+      for (PINDEX i = 1; i < argStr.GetLength(); i++)
+        if (ParseOption(optionLetters.Find(argStr[i]), i+1, arg, canHaveOptionString))
+          break;
     }
+
     arg++;
   }
+}
 
-  return ok;
+
+BOOL PArgList::ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg,
+                           const PIntArray & canHaveOptionString)
+{
+  if (idx == P_MAX_INDEX) {
+    UnknownOption(argumentArray[arg]);
+    return FALSE;
+  }
+
+  optionCount[idx]++;
+  if (canHaveOptionString[idx] == 0)
+    return FALSE;
+
+  if (!optionString[idx])
+    optionString[idx] += '\n';
+
+  if (offset != 0 &&
+        (canHaveOptionString[idx] == 1 || argumentArray[arg][offset] != '\0')) {
+    optionString[idx] = argumentArray[arg].Mid(offset);
+    return TRUE;
+  }
+
+  if (++arg >= argumentArray.GetSize())
+    return FALSE;
+
+  optionString[idx] += argumentArray[arg];
+  return TRUE;
 }
 
 
