@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.17  2000/11/14 08:30:03  robertj
+ * Fixed bug in closing SMTP client, conditional around wrong way.
+ *
  * Revision 1.16  2000/11/10 01:08:11  robertj
  * Added content transfer encoding and automatic base64 translation.
  *
@@ -140,7 +143,7 @@ BOOL PSMTPClient::Close()
 
   if (IsOpen() && haveHello) {
     SetReadTimeout(60000);
-    ok = ExecuteCommand(QUIT, "")/100 != 2 && ok;
+    ok = ExecuteCommand(QUIT, "")/100 == 2 && ok;
   }
   return PInternetProtocol::Close() && ok;
 }
