@@ -126,6 +126,7 @@ EXPORTS
     ??0PServiceProcess@@QAE@PBD0GGW4CodeStatus@PProcess@@G@Z @108 NONAME ;public: __thiscall PServiceProcess::PServiceProcess(char const *,char const *,unsigned short,unsigned short,enum PProcess::CodeStatus,unsigned short)
     ??0PSmartPointer@@QAE@ABV0@@Z @109 NONAME ;public: __thiscall PSmartPointer::PSmartPointer(class PSmartPointer const &)
     ??0PSocket@@IAE@XZ @110 NONAME ;protected: __thiscall PSocket::PSocket(void)
+    ??0PSortedStringList@@QAE@HPBQBDH@Z @2132 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(int,char const * const *,int)
     ??0PSound@@QAE@ABVPFilePath@@@Z @2026 NONAME ;public: __thiscall PSound::PSound(class PFilePath const &)
     ??0PSound@@QAE@IIIHPBE@Z @2099 NONAME ;public: __thiscall PSound::PSound(unsigned int,unsigned int,unsigned int,int,unsigned char const *)
     ??0PSoundChannel@@QAE@ABVPString@@W4Directions@0@III@Z @2028 NONAME ;public: __thiscall PSoundChannel::PSoundChannel(class PString const &,enum PSoundChannel::Directions,unsigned int,unsigned int,unsigned int)
@@ -143,7 +144,9 @@ EXPORTS
     ??0PString@@QAE@W4ConversionType@0@NI@Z @121 NONAME ;public: __thiscall PString::PString(enum PString::ConversionType,double,unsigned int)
     ??0PString@@QAE@XZ @122 NONAME ;public: __thiscall PString::PString(void)
     ??0PStringArray@@QAE@HPBQBDH@Z @123 NONAME ;public: __thiscall PStringArray::PStringArray(int,char const * const *,int)
+    ??0PStringList@@QAE@HPBQBDH@Z @2133 NONAME ;public: __thiscall PStringList::PStringList(int,char const * const *,int)
     ??0PStringList@@QAE@XZ @1808 NONAME ;public: __thiscall PStringList::PStringList(void)
+    ??0PStringSet@@QAE@HPBQBDH@Z @2134 NONAME ;public: __thiscall PStringSet::PStringSet(int,char const * const *,int)
     ??0PStringStream@@QAE@ABVPString@@@Z @124 NONAME ;public: __thiscall PStringStream::PStringStream(class PString const &)
     ??0PStringStream@@QAE@PBD@Z @125 NONAME ;public: __thiscall PStringStream::PStringStream(char const *)
     ??0PStringStream@@QAE@XZ @126 NONAME ;public: __thiscall PStringStream::PStringStream(void)
@@ -211,9 +214,12 @@ EXPORTS
     ??1?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@UAE@XZ @171 NONAME ;public: virtual __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::~PDictionary<class PIPCacheKey,class PIPCacheData>(void)
     ??1?$PDictionary@VPOrdinalKey@@VPThread@@@@UAE@XZ @172 NONAME ;public: virtual __thiscall PDictionary<class POrdinalKey,class PThread>::~PDictionary<class POrdinalKey,class PThread>(void)
     ??1?$PList@VPSocket@@@@UAE@XZ @173 NONAME ;public: virtual __thiscall PList<class PSocket>::~PList<class PSocket>(void)
+    ??1?$PList@VPString@@@@UAE@XZ @2135 NONAME ;public: virtual __thiscall PList<class PString>::~PList<class PString>(void)
     ??1?$PList@VPThread@@@@UAE@XZ @174 NONAME ;public: virtual __thiscall PList<class PThread>::~PList<class PThread>(void)
     ??1?$PList@VPTimer@@@@UAE@XZ @175 NONAME ;public: virtual __thiscall PList<class PTimer>::~PList<class PTimer>(void)
     ??1?$POrdinalDictionary@VPString@@@@UAE@XZ @176 NONAME ;public: virtual __thiscall POrdinalDictionary<class PString>::~POrdinalDictionary<class PString>(void)
+    ??1?$PSet@VPString@@@@UAE@XZ @2136 NONAME ;public: virtual __thiscall PSet<class PString>::~PSet<class PString>(void)
+    ??1?$PSortedList@VPString@@@@UAE@XZ @2137 NONAME ;public: virtual __thiscall PSortedList<class PString>::~PSortedList<class PString>(void)
     ??1?$PStringDictionary@VPOrdinalKey@@@@UAE@XZ @177 NONAME ;public: virtual __thiscall PStringDictionary<class POrdinalKey>::~PStringDictionary<class POrdinalKey>(void)
     ??1?$PStringDictionary@VPString@@@@UAE@XZ @178 NONAME ;public: virtual __thiscall PStringDictionary<class PString>::~PStringDictionary<class PString>(void)
     ??1Buffer@PDebugStream@@UAE@XZ @1822 NONAME ;public: virtual __thiscall PDebugStream::Buffer::~Buffer(void)
@@ -289,6 +295,7 @@ EXPORTS
     ??1PString@@UAE@XZ @241 NONAME ;public: virtual __thiscall PString::~PString(void)
     ??1PStringArray@@UAE@XZ @242 NONAME ;public: virtual __thiscall PStringArray::~PStringArray(void)
     ??1PStringList@@UAE@XZ @243 NONAME ;public: virtual __thiscall PStringList::~PStringList(void)
+    ??1PStringSet@@UAE@XZ @2138 NONAME ;public: virtual __thiscall PStringSet::~PStringSet(void)
     ??1PStringStream@@UAE@XZ @244 NONAME ;public: virtual __thiscall PStringStream::~PStringStream(void)
     ??1PStringToOrdinal@@UAE@XZ @245 NONAME ;public: virtual __thiscall PStringToOrdinal::~PStringToOrdinal(void)
     ??1PStringToString@@UAE@XZ @246 NONAME ;public: virtual __thiscall PStringToString::~PStringToString(void)
@@ -520,6 +527,7 @@ EXPORTS
     ??_7?$PList@VPSocket@@@@6B@ @443 NONAME ;const  PList<class PSocket>::`vftable'
     ??_7?$PList@VPThread@@@@6B@ @444 NONAME ;const  PList<class PThread>::`vftable'
     ??_7?$PList@VPTimer@@@@6B@ @445 NONAME ;const  PList<class PTimer>::`vftable'
+    ??_7?$PSet@VPString@@@@6B@ @2139 NONAME ;const  PSet<class PString>::`vftable'
     ??_7Buffer@PDebugStream@@6B@ @1846 NONAME ;const  PDebugStream::Buffer::`vftable'
     ??_7Buffer@PStringStream@@6B@ @446 NONAME ;const  PStringStream::Buffer::`vftable'
     ??_7Buffer@PSystemLog@@6B@ @447 NONAME ;const  PSystemLog::Buffer::`vftable'
@@ -603,6 +611,7 @@ EXPORTS
     ??_7PString@@6B@ @516 NONAME ;const  PString::`vftable'
     ??_7PStringArray@@6B@ @517 NONAME ;const  PStringArray::`vftable'
     ??_7PStringList@@6B@ @518 NONAME ;const  PStringList::`vftable'
+    ??_7PStringSet@@6B@ @2140 NONAME ;const  PStringSet::`vftable'
     ??_7PStringStream@@6Biostream@@@ @519 NONAME ;const  PStringStream::`vftable'{for `iostream'}
     ??_7PStringStream@@6BPString@@@ @520 NONAME ;const  PStringStream::`vftable'{for `PString'}
     ??_7PStringToOrdinal@@6B@ @521 NONAME ;const  PStringToOrdinal::`vftable'
@@ -746,6 +755,7 @@ EXPORTS
     ?Clone@?$PList@VPSocket@@@@UBEPAVPObject@@XZ @634 NONAME ;public: virtual class PObject * __thiscall PList<class PSocket>::Clone(void)const 
     ?Clone@?$PList@VPThread@@@@UBEPAVPObject@@XZ @635 NONAME ;public: virtual class PObject * __thiscall PList<class PThread>::Clone(void)const 
     ?Clone@?$PList@VPTimer@@@@UBEPAVPObject@@XZ @636 NONAME ;public: virtual class PObject * __thiscall PList<class PTimer>::Clone(void)const 
+    ?Clone@?$PSet@VPString@@@@UBEPAVPObject@@XZ @2141 NONAME ;public: virtual class PObject * __thiscall PSet<class PString>::Clone(void)const 
     ?Clone@PBYTEArray@@UBEPAVPObject@@XZ @637 NONAME ;public: virtual class PObject * __thiscall PBYTEArray::Clone(void)const 
     ?Clone@PCaselessString@@UBEPAVPObject@@XZ @638 NONAME ;public: virtual class PObject * __thiscall PCaselessString::Clone(void)const 
     ?Clone@PCharArray@@UBEPAVPObject@@XZ @639 NONAME ;public: virtual class PObject * __thiscall PCharArray::Clone(void)const 
@@ -759,6 +769,7 @@ EXPORTS
     ?Clone@PString@@UBEPAVPObject@@XZ @646 NONAME ;public: virtual class PObject * __thiscall PString::Clone(void)const 
     ?Clone@PStringArray@@UBEPAVPObject@@XZ @647 NONAME ;public: virtual class PObject * __thiscall PStringArray::Clone(void)const 
     ?Clone@PStringList@@UBEPAVPObject@@XZ @648 NONAME ;public: virtual class PObject * __thiscall PStringList::Clone(void)const 
+    ?Clone@PStringSet@@UBEPAVPObject@@XZ @2142 NONAME ;public: virtual class PObject * __thiscall PStringSet::Clone(void)const 
     ?Clone@PStringToOrdinal@@UBEPAVPObject@@XZ @649 NONAME ;public: virtual class PObject * __thiscall PStringToOrdinal::Clone(void)const 
     ?Clone@PStringToString@@UBEPAVPObject@@XZ @650 NONAME ;public: virtual class PObject * __thiscall PStringToString::Clone(void)const 
     ?Clone@PTCPSocket@@UBEPAVPObject@@XZ @1980 NONAME ;public: virtual class PObject * __thiscall PTCPSocket::Clone(void)const 
@@ -815,6 +826,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @694 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PSocket>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @695 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PThread>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPTimer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @696 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PTimer>::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@?$PSet@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2143 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSet<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@CMCDLL@PMail@@UBE?AW4Comparison@PObject@@ABV4@@Z @697 NONAME ;public: virtual enum PObject::Comparison  __thiscall PMail::CMCDLL::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@HouseKeepingThread@PProcess@@UBE?AW4Comparison@PObject@@ABV4@@Z @698 NONAME ;public: virtual enum PObject::Comparison  __thiscall PProcess::HouseKeepingThread::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@MAPIDLL@PMail@@UBE?AW4Comparison@PObject@@ABV4@@Z @699 NONAME ;public: virtual enum PObject::Comparison  __thiscall PMail::MAPIDLL::CompareObjectMemoryDirect(class PObject const &)const 
@@ -877,6 +889,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PString@@UBE?AW4Comparison@PObject@@ABV3@@Z @751 NONAME ;public: virtual enum PObject::Comparison  __thiscall PString::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PStringArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @752 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringArray::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PStringList@@UBE?AW4Comparison@PObject@@ABV3@@Z @753 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringList::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PStringSet@@UBE?AW4Comparison@PObject@@ABV3@@Z @2144 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringSet::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PStringStream@@UBE?AW4Comparison@PObject@@ABV3@@Z @754 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringStream::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PStringToOrdinal@@UBE?AW4Comparison@PObject@@ABV3@@Z @755 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringToOrdinal::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PStringToString@@UBE?AW4Comparison@PObject@@ABV3@@Z @756 NONAME ;public: virtual enum PObject::Comparison  __thiscall PStringToString::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1047,6 +1060,7 @@ EXPORTS
     ?GetClass@?$PList@VPSocket@@@@UBEPBDI@Z @900 NONAME ;public: virtual char const * __thiscall PList<class PSocket>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPThread@@@@UBEPBDI@Z @901 NONAME ;public: virtual char const * __thiscall PList<class PThread>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPTimer@@@@UBEPBDI@Z @902 NONAME ;public: virtual char const * __thiscall PList<class PTimer>::GetClass(unsigned int)const 
+    ?GetClass@?$PSet@VPString@@@@UBEPBDI@Z @2145 NONAME ;public: virtual char const * __thiscall PSet<class PString>::GetClass(unsigned int)const 
     ?GetClass@CMCDLL@PMail@@UBEPBDI@Z @903 NONAME ;public: virtual char const * __thiscall PMail::CMCDLL::GetClass(unsigned int)const 
     ?GetClass@HouseKeepingThread@PProcess@@UBEPBDI@Z @904 NONAME ;public: virtual char const * __thiscall PProcess::HouseKeepingThread::GetClass(unsigned int)const 
     ?GetClass@MAPIDLL@PMail@@UBEPBDI@Z @905 NONAME ;public: virtual char const * __thiscall PMail::MAPIDLL::GetClass(unsigned int)const 
@@ -1109,6 +1123,7 @@ EXPORTS
     ?GetClass@PString@@UBEPBDI@Z @957 NONAME ;public: virtual char const * __thiscall PString::GetClass(unsigned int)const 
     ?GetClass@PStringArray@@UBEPBDI@Z @958 NONAME ;public: virtual char const * __thiscall PStringArray::GetClass(unsigned int)const 
     ?GetClass@PStringList@@UBEPBDI@Z @959 NONAME ;public: virtual char const * __thiscall PStringList::GetClass(unsigned int)const 
+    ?GetClass@PStringSet@@UBEPBDI@Z @2146 NONAME ;public: virtual char const * __thiscall PStringSet::GetClass(unsigned int)const 
     ?GetClass@PStringStream@@UBEPBDI@Z @960 NONAME ;public: virtual char const * __thiscall PStringStream::GetClass(unsigned int)const 
     ?GetClass@PStringToOrdinal@@UBEPBDI@Z @961 NONAME ;public: virtual char const * __thiscall PStringToOrdinal::GetClass(unsigned int)const 
     ?GetClass@PStringToString@@UBEPBDI@Z @962 NONAME ;public: virtual char const * __thiscall PStringToString::GetClass(unsigned int)const 
@@ -1208,6 +1223,7 @@ EXPORTS
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@0@Z @1901 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &,class PIPSocket::Address &)
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@@Z @1902 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &)
     ?GetIpAddress@PWin32AsnAny@@QAEHAAVAddress@PIPSocket@@@Z @1903 NONAME ;public: int __thiscall PWin32AsnAny::GetIpAddress(class PIPSocket::Address &)
+    ?GetKeyAt@?$PSet@VPString@@@@UBEABVPString@@H@Z @2147 NONAME ;public: virtual class PString const & __thiscall PSet<class PString>::GetKeyAt(int)const 
     ?GetKeys@PConfig@@QBE?AVPStringList@@ABVPString@@@Z @1044 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(class PString const &)const 
     ?GetKeys@PConfig@@QBE?AVPStringList@@XZ @1045 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(void)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @1904 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
@@ -1404,6 +1420,7 @@ EXPORTS
     ?IsClass@?$PList@VPSocket@@@@UBEHPBD@Z @1218 NONAME ;public: virtual int __thiscall PList<class PSocket>::IsClass(char const *)const 
     ?IsClass@?$PList@VPThread@@@@UBEHPBD@Z @1219 NONAME ;public: virtual int __thiscall PList<class PThread>::IsClass(char const *)const 
     ?IsClass@?$PList@VPTimer@@@@UBEHPBD@Z @1220 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsClass(char const *)const 
+    ?IsClass@?$PSet@VPString@@@@UBEHPBD@Z @2148 NONAME ;public: virtual int __thiscall PSet<class PString>::IsClass(char const *)const 
     ?IsClass@CMCDLL@PMail@@UBEHPBD@Z @1221 NONAME ;public: virtual int __thiscall PMail::CMCDLL::IsClass(char const *)const 
     ?IsClass@HouseKeepingThread@PProcess@@UBEHPBD@Z @1222 NONAME ;public: virtual int __thiscall PProcess::HouseKeepingThread::IsClass(char const *)const 
     ?IsClass@MAPIDLL@PMail@@UBEHPBD@Z @1223 NONAME ;public: virtual int __thiscall PMail::MAPIDLL::IsClass(char const *)const 
@@ -1466,6 +1483,7 @@ EXPORTS
     ?IsClass@PString@@UBEHPBD@Z @1275 NONAME ;public: virtual int __thiscall PString::IsClass(char const *)const 
     ?IsClass@PStringArray@@UBEHPBD@Z @1276 NONAME ;public: virtual int __thiscall PStringArray::IsClass(char const *)const 
     ?IsClass@PStringList@@UBEHPBD@Z @1277 NONAME ;public: virtual int __thiscall PStringList::IsClass(char const *)const 
+    ?IsClass@PStringSet@@UBEHPBD@Z @2149 NONAME ;public: virtual int __thiscall PStringSet::IsClass(char const *)const 
     ?IsClass@PStringStream@@UBEHPBD@Z @1278 NONAME ;public: virtual int __thiscall PStringStream::IsClass(char const *)const 
     ?IsClass@PStringToOrdinal@@UBEHPBD@Z @1279 NONAME ;public: virtual int __thiscall PStringToOrdinal::IsClass(char const *)const 
     ?IsClass@PStringToString@@UBEHPBD@Z @1280 NONAME ;public: virtual int __thiscall PStringToString::IsClass(char const *)const 
@@ -1503,6 +1521,7 @@ EXPORTS
     ?IsDescendant@?$PList@VPSocket@@@@UBEHPBD@Z @1306 NONAME ;public: virtual int __thiscall PList<class PSocket>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPThread@@@@UBEHPBD@Z @1307 NONAME ;public: virtual int __thiscall PList<class PThread>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPTimer@@@@UBEHPBD@Z @1308 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsDescendant(char const *)const 
+    ?IsDescendant@?$PSet@VPString@@@@UBEHPBD@Z @2150 NONAME ;public: virtual int __thiscall PSet<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@CMCDLL@PMail@@UBEHPBD@Z @1309 NONAME ;public: virtual int __thiscall PMail::CMCDLL::IsDescendant(char const *)const 
     ?IsDescendant@HouseKeepingThread@PProcess@@UBEHPBD@Z @1310 NONAME ;public: virtual int __thiscall PProcess::HouseKeepingThread::IsDescendant(char const *)const 
     ?IsDescendant@MAPIDLL@PMail@@UBEHPBD@Z @1311 NONAME ;public: virtual int __thiscall PMail::MAPIDLL::IsDescendant(char const *)const 
@@ -1565,6 +1584,7 @@ EXPORTS
     ?IsDescendant@PString@@UBEHPBD@Z @1363 NONAME ;public: virtual int __thiscall PString::IsDescendant(char const *)const 
     ?IsDescendant@PStringArray@@UBEHPBD@Z @1364 NONAME ;public: virtual int __thiscall PStringArray::IsDescendant(char const *)const 
     ?IsDescendant@PStringList@@UBEHPBD@Z @1365 NONAME ;public: virtual int __thiscall PStringList::IsDescendant(char const *)const 
+    ?IsDescendant@PStringSet@@UBEHPBD@Z @2151 NONAME ;public: virtual int __thiscall PStringSet::IsDescendant(char const *)const 
     ?IsDescendant@PStringStream@@UBEHPBD@Z @1366 NONAME ;public: virtual int __thiscall PStringStream::IsDescendant(char const *)const 
     ?IsDescendant@PStringToOrdinal@@UBEHPBD@Z @1367 NONAME ;public: virtual int __thiscall PStringToOrdinal::IsDescendant(char const *)const 
     ?IsDescendant@PStringToString@@UBEHPBD@Z @1368 NONAME ;public: virtual int __thiscall PStringToString::IsDescendant(char const *)const 
@@ -2057,10 +2077,11 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
     _PTimeGetChar@4 @2126 NONAME ;_PTimeGetChar@4
     _PTimeGetDateOrder@0 @2127 NONAME ;_PTimeGetDateOrder@0
     _PTimeIsDayName@12 @2128 NONAME ;_PTimeIsDayName@12
     _PTimeIsMonthName@12 @2129 NONAME ;_PTimeIsMonthName@12
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
+    __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
+    ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @2152 NONAME ;public: static class PString  __cdecl PSoundChannel::GetDefaultDevice(enum PSoundChannel::Directions)
