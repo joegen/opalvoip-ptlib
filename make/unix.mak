@@ -25,8 +25,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.25  1998/11/22 08:11:41  craigs
-# *** empty log message ***
+# Revision 1.26  1998/11/24 09:39:19  robertj
+# FreeBSD port.
+#
+# Revision 1.26  1998/11/24 09:39:19  robertj
+# FreeBSD port.
 #
 # Revision 1.25  1998/11/22 08:11:41  craigs
 # *** empty log message ***
@@ -43,36 +46,37 @@
 ###############################################################################
 #
 ifeq ($(OSTYPE),mklinux)
-OSTYPE		= linux
-MACHTYPE	= ppc
+OSTYPE=linux
+MACHTYPE=ppc
 
 ifndef OSTYPE
 ifeq ($(HOSTTYPE),i486-linux)
-OSTYPE		= linux
-MACHTYPE	= x86
+OSTYPE=linux
+MACHTYPE=x86
 
 ifndef MACHTYPE
 ifeq ($(HOSTTYPE),i386-linux)
-OSTYPE		= linux
-MACHTYPE	= x86
-endif
-
-ifeq ($(OSTYPE),linux)
-
-ifndef MACHTYPE
-MACHTYPE	= x86
+OSTYPE=linux
+MACHTYPE=x86
 ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux))
 OSTYPE   := linux
 ifeq ($(MACHTYPE),i486)
-MACHTYPE	= x86
+MACHTYPE=x86
 
 ifeq ($(OSTYPE),Linux)
 ifeq ($(MACHTYPE),i386)
-MACHTYPE	= x86
+MACHTYPE=x86
 ifeq ($(OSTYPE),mklinux)
 OSTYPE   := linux
-endif #linux
 ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
+ifndef OSTYPE
+error ::
+	@echo Must define OSTYPE environment variable
+
+ifndef MACHTYPE
+error ::
+	@echo Must define MACHTYPE environment variable
+	@echo ######################################################################
 	@echo
 
 ####################################################
@@ -86,11 +90,11 @@ endif # DEBUG
 
 ifeq ($(OSTYPE),linux)
 
-ifeq ($(MACHTYPE),ppc)
-ENDIAN=PBIG_ENDIAN
-else
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX
 ENDIAN=PLITTLE_ENDIAN
 STDCCFLAGS	:= $(STDCCFLAGS) -m486
+else
+ENDIAN=PBIG_ENDIAN
 
 ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
@@ -108,6 +112,26 @@ STATIC_LIBS	= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	= /usr/lib
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
+SYSLIBDIR	:= /usr/lib
+
+endif # linux
+#
+#  Sunos 4.1.x
+#
+####################################################
+
+
+####################################################
+
+ENDIAN=PLITTLE_ENDIAN
+STDCCFLAGS	:= $(STDCCFLAGS) -m486
+
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+endif
+CFLAGS	:= $(CFLAGS) -pthread
+endif
+
 RANLIB		:= 1
 
 endif # FreeBSD
