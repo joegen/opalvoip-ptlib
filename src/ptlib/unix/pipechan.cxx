@@ -120,7 +120,7 @@ void PPipeChannel::Construct(const PString & subProgram,
     else
       execv(cmd, args);
 
-    PError << "fatal error: child process failed to exec" << endl;
+    exit(2);
   }
 
   PAssert(childPid >= 0, POperatingSystemError);
