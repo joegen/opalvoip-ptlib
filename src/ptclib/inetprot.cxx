@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.13 1996/03/04 12:20:41 robertj Exp $
+ * $Id: inetprot.cxx,v 1.14 1996/03/16 04:53:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,13 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.14  1996/03/16 04:53:07  robertj
+ * Changed all the get host name and get host address functions to be more consistent.
+ * Added ParseReponse() for splitting reponse line into code and info.
+ * Changed lastResponseCode to an integer.
+ * Fixed bug in MIME write function, should be const.
+ * Added PString parameter version of UnRead().
+ *
  * Revision 1.13  1996/03/04 12:20:41  robertj
  * Split file into mailsock.cxx
  *
@@ -284,7 +291,15 @@ void PApplicationSocket::UnRead(int ch)
 }
 
 
-void PApplicationSocket::UnRead(void * buffer, PINDEX len)
+void PApplicationSocket::UnRead(const PString & str)
+{
+  PINDEX size = unReadBuffer.GetSize();
+  PINDEX len = str.GetLength();
+  memcpy(unReadBuffer.GetPointer(size+len)+size, (const char *)str, len);
+}
+
+
+void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
 {
   PINDEX size = unReadBuffer.GetSize();
   memcpy(unReadBuffer.GetPointer(size+len)+size, buffer, len);
@@ -343,61 +358,76 @@ BOOL PApplicationSocket::WriteResponse(const PString & code,
 
 BOOL PApplicationSocket::ReadResponse()
 {
-  return ReadResponse(lastResponseCode, lastResponseInfo);
-}
-
-
-BOOL PApplicationSocket::ReadResponse(PString & code, PString & info)
-{
   PString line;
   if (!ReadLine(line))
     return FALSE;
 
-  PINDEX endCode = line.FindOneOf(" -", 1);
-  if (endCode == P_MAX_INDEX) {
-    code = line;
-    info = PString();
+  PINDEX continuePos = ParseResponse(line);
+  if (continuePos > 0)
     return TRUE;
-  }
 
-  code = line.Left(endCode);
-  info = line.Mid(endCode+1);
-
-  while (!isdigit(line[0]) || line[endCode] == '-') {
-    info += '\n';
+  char continueChar = line[continuePos];
+  while (!isdigit(line[0]) || line[continuePos] == continueChar) {
+    lastResponseInfo += '\n';
     if (!ReadLine(line))
       return FALSE;
-    info += line.Mid(endCode+1);
+    lastResponseInfo += line.Mid(continuePos+1);
   }
-
-  lastResponseInfo = info;
-  lastResponseCode = code;
 
   return TRUE;
 }
 
 
-char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
-                                        const PString & param)
+BOOL PApplicationSocket::ReadResponse(int & code, PString & info)
+{
+  BOOL retval = ReadResponse();
+
+  code = lastResponseCode;
+  info = lastResponseInfo;
+
+  return retval;
+}
+
+
+BOOL PApplicationSocket::ParseResponse(const PString & line)
+{
+  PINDEX endCode = line.FindOneOf(" -");
+  if (endCode == P_MAX_INDEX) {
+    lastResponseCode = -1;
+    lastResponseInfo = line;
+    return 0;
+  }
+
+  lastResponseCode = line.Left(endCode).AsInteger();
+  lastResponseInfo = line.Mid(endCode+1);
+  return endCode;
+}
+
+
+int PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
+                                       const PString & param)
 {
   if (!WriteCommand(cmdNumber, param))
-    return '\0';
+    return -1;
 
   if (!ReadResponse())
-    return '\0';
+    return -1;
 
-  return lastResponseCode[0];
+  return lastResponseCode;
 }
 
-PINDEX PApplicationSocket::GetLastResponseCode() const
+
+int PApplicationSocket::GetLastResponseCode() const
 {
-  return (PINDEX)lastResponseCode.AsInteger();
+  return lastResponseCode;
 }
+
 
 PString PApplicationSocket::GetLastResponseInfo() const
 {
   return lastResponseInfo;
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PMIMEInfo
@@ -459,7 +489,7 @@ BOOL PMIMEInfo::Read(PApplicationSocket & socket)
 }
 
 
-BOOL PMIMEInfo::Write(PApplicationSocket & socket)
+BOOL PMIMEInfo::Write(PApplicationSocket & socket) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     if (!socket.WriteLine(GetKeyAt(i) + ": " + GetDataAt(i)))
