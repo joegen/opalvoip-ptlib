@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.28  2001/09/03 09:15:40  robertj
+ * Changed GetDeviceNames to try and find actual devices and real devices.
+ *
  * Revision 1.27  2001/08/22 02:23:07  robertj
  * Fixed duplicate class name. All PWlib classes should start with P
  *
@@ -355,14 +358,32 @@ PSoundChannel::~PSoundChannel()
 
 PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
-  static const char * const devices[] = {
-    "/dev/audio",
-    "/dev/dsp",
-    "/dev/dspW",
-    "loopback"
-  };
+  PStringList devices;
 
-  return PStringArray(PARRAYSIZE(devices), devices);
+  PDirectory devdir("/dev");
+  if (devdir.Open()) {
+    do {
+      PFileInfo info;
+      if (devdir.GetInfo(info)) {
+        if (info.type == PFileInfo::CharDevice) {
+          struct stat s;
+          if (lstat(devdir + devdir.GetEntryName(), &s) == 0 &&
+                   (s.st_rdev >> 8) == 14 &&  // OSS Audio major device number
+                   (s.st_rdev & 15) == 3) {   // Digital audio monor device number
+            int fd = ::open(devdir + devdir.GetEntryName(), O_RDONLY);
+            if (errno != ENODEV)
+              devices.AppendString(devdir.GetEntryName());
+            if (fd >= 0)
+              ::close(fd);
+          }
+        }
+      }
+    } while (devdir.Next());
+  }
+
+  devices.AppendString("loopback");
+
+  return devices;
 }
 
 
