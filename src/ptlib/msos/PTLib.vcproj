@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="PTLib"
+	RootNamespace="PTLib"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -130,7 +131,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)&quot;\&quot;$(TargetName)&quot;.dll"/>
+				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)\$(TargetName).dll&quot;"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -200,22 +201,14 @@
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\..\..\include\ptlib\msos\ptlib.dtf">
-			<FileConfiguration
-				Name="Debug|Win32"
-				ExcludedFromBuild="TRUE">
-				<Tool
-					Name="VCCustomBuildTool"/>
-			</FileConfiguration>
+			RelativePath="..\..\..\include\ptlib\msos\ptlib_2003.dtf">
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Merging exported library symbols"
-					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)&quot;\ptlibs.lib &quot;$(InputPath)&quot;
-copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)&quot;\&quot;$(TargetName)&quot;.def &gt; nul
-"
-					AdditionalDependencies="$(OutDir)\ptlibs.lib;$(InputDir)ptlib.ignore;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul"
+					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibs.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
 		</File>
@@ -229,23 +222,15 @@ copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)&quot;\&quot;$(TargetName)&quot
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath="..\..\..\include\ptlib\msos\ptlibd.dtf">
+			RelativePath="..\..\..\include\ptlib\msos\ptlibd_2003.dtf">
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
-					Description="Merging exported library symbols"
-					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)&quot;\ptlibsd.lib &quot;$(InputPath)&quot;
-copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)&quot;\&quot;$(TargetName)&quot;.def  &gt; nul
-"
-					AdditionalDependencies="$(OutDir)\ptlibsd.lib;$(InputDir)ptlib.ignore;"
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul"
+					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibsd.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
-			</FileConfiguration>
-			<FileConfiguration
-				Name="Release|Win32"
-				ExcludedFromBuild="TRUE">
-				<Tool
-					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
 		</File>
 	</Files>
