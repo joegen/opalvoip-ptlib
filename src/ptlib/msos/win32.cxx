@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.55 1998/01/26 00:57:09 robertj Exp $
+ * $Id: win32.cxx,v 1.56 1998/02/16 00:10:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.56  1998/02/16 00:10:45  robertj
+ * Added function to open a URL in a browser.
+ * Added functions to validate characters in a filename.
+ *
  * Revision 1.55  1998/01/26 00:57:09  robertj
  * Fixed uninitialised source in PConfig when getting environment.
  *
@@ -210,6 +214,7 @@
 
 #include <ptlib.h>
 #include <svcproc.h>
+#include <url.h>
 
 #include <winuser.h>
 #include <winnls.h>
@@ -451,6 +456,25 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
   total = totalNumberOfClusters*clusterSize;
   return TRUE;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFilePath
+
+static PString IllegalFilenameCharacters = "<>:\"/\\|";
+
+BOOL PFilePath::IsValid(char c)
+{
+  return IllegalFilenameCharacters.Find(c) == P_MAX_INDEX;
+}
+
+
+BOOL PFilePath::IsValid(const PString & str)
+{
+  return str != "." && str != ".." &&
+         str.FindOneOf(IllegalFilenameCharacters) == P_MAX_INDEX;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2353,6 +2377,19 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
 
   func = (Function)p;
   return TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PURL
+
+BOOL PURL::OpenBrowser(const PString & url)
+{
+  if ((int)ShellExecute(NULL, "open", url, NULL, NULL, 0) > 32)
+    return TRUE;
+
+  MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
+  return FALSE;
 }
 
 
