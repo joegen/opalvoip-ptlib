@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.18 1994/06/25 11:55:15 robertj Exp $
+ * $Id: contain.inl,v 1.19 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.18  1994/06/25 11:55:15  robertj
+ * Revision 1.19  1994/07/02 03:03:49  robertj
+ * Addition of container searching facilities.
+ *
+ * Revision 1.18  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.17  1994/04/20  12:17:44  robertj
@@ -254,6 +257,16 @@ PINLINE PAbstractList::PAbstractList()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINLINE PINDEX PStringList::AppendString(const PString & str)
+  { return Append(new PString(str)); }
+
+PINLINE PINDEX PStringList::InsertString(
+                                   const PString & before, const PString & str)
+  { return Insert(before, new PString(str)); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PINLINE PAbstractSortedList::PAbstractSortedList()
   : info(new SortedListInfo) { PAssertNULL(info); }
 
@@ -277,6 +290,16 @@ PINLINE BOOL PSortedListElement::LeftTreeSize()
 
 PINLINE BOOL PSortedListElement::RightTreeSize()
   { return right != NULL ? right->subTreeSize : 0; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PINLINE PINDEX PSortedStringList::AppendString(const PString & str)
+  { return Append(new PString(str)); }
+
+PINLINE PINDEX PSortedStringList::InsertString(
+                                   const PString & before, const PString & str)
+  { return Insert(before, new PString(str)); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
