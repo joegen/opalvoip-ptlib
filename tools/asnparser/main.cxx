@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.53  2005/03/08 03:48:06  csoutheren
+ * Fixed problem with incorrect parameter to PIsDescendant in generated code
+ *
  * Revision 1.52  2004/08/13 00:18:34  csoutheren
  * Fixed problem with indent when outputting single elements
  *
@@ -185,7 +188,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 2
+#define BUILD_NUMBER 3
 
 
 unsigned lineNumber;
@@ -2243,7 +2246,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         << "PObject::Comparison " << GetClassNameString() << "::Compare(const PObject & obj) const\n"
            "{\n"
            "#ifndef PASN_LEANANDMEAN\n"
-           "  PAssert(PIsDescendant(this, " << GetClassNameString() << "), PInvalidCast);\n"
+           "  PAssert(PIsDescendant(&obj, " << GetClassNameString() << "), PInvalidCast);\n"
            "#endif\n"
            "  const " << GetClassNameString() << " & other = (const " << GetClassNameString() << " &)obj;\n"
            "\n"
