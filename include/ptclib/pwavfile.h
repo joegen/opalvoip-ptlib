@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.13  2003/03/07 06:12:05  robertj
+ * Added more WAV file "magic numbers".
+ *
  * Revision 1.12  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -108,7 +111,12 @@ class PWAVFile : public PFile
       fmt_ALaw        = 6,      /// A-Law 8kHz
       fmt_uLaw        = 7,      /// u-Law 8kHz
       fmt_GSM         = 0x31,   /// GSM
+      fmt_G728        = 0x41,   /// RFC2361
+      fmt_G723        = 0x42,   /// RFC2361
       fmt_MSG7231     = 0x42,   /// Microsoft G.723.1
+      fmt_G726        = 0x64,   /// RFC2361
+      fmt_G722        = 0x65,   /// RFC2361
+      fmt_G729        = 0x84,   /// RFC2361
       fmt_VivoG7231   = 0x111,  /// VivoActive G.723.1
 
       // For backward compatibility
