@@ -99,7 +99,6 @@ case "$target_os" in
 		   OS_TAG="P_MACOSX" ;
 		   OSRELEASE="`uname -r | sed 's/\.//g'`" ;
                    SHAREDLIBEXT="dylib";
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
 
   beos*)           OSTYPE=beos ;
