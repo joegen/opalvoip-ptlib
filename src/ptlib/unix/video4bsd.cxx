@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.16  2001/12/05 14:45:20  rogerh
+ * Implement GetFrameData and GetFrameDataNoDelay
+ *
  * Revision 1.15  2001/12/05 14:32:48  rogerh
  * Add GetParemters function
  *
@@ -310,8 +313,27 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 }
 
 
-
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+{
+  if(frameRate>0) {
+    frameTimeError += msBetweenFrames;
+
+    do {
+      if ( !GetFrameDataNoDelay(buffer, bytesReturned))
+        return FALSE;
+      PTime now;
+      PTimeInterval delay = now - previousFrameTime;
+      frameTimeError -= (int)delay.GetMilliSeconds();
+      previousFrameTime = now;
+    }  while(frameTimeError > 0) ;
+
+    return TRUE;
+  }
+  return GetFrameDataNoDelay(buffer,bytesReturned);
+}
+
+
+BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
 
   // Hack time. It seems that the Start() and Stop() functions are not
