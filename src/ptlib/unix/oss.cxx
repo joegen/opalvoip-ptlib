@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.12  2000/03/04 13:02:28  robertj
+ * Added simple play functions for sound files.
+ *
  * Revision 1.11  2000/02/15 23:11:34  robertj
  * Audio support for FreeBSD, thanks Roger Hardiman.
  *
@@ -147,6 +150,29 @@ BOOL PSound::Save(const PFilePath & /*filename*/)
 {
   return FALSE;
 }
+
+
+BOOL PSound::Play()
+{
+  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
+                        PSoundChannel::Player);
+  if (!channel.IsOpen())
+    return FALSE;
+
+  return channel.PlaySound(*this, TRUE);
+}
+
+
+BOOL PSound::PlayFile(const PFilePath & file, BOOL /*wait*/)
+{
+  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
+                        PSoundChannel::Player);
+  if (!channel.IsOpen())
+    return FALSE;
+
+  return channel.PlayFile(file, TRUE);
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
