@@ -1,16 +1,16 @@
 /*
- * $Id: httpsvc.cxx,v 1.21 1997/08/21 12:43:19 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.22 1997/08/28 14:19:40 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
- * Revision 1.21  1997/08/21 12:43:19  robertj
+ * Revision 1.22  1997/08/28 14:19:40  robertj
  * Fixed bug where HTTP directory was not processed for macros.
  *
- * Revision 1.20  1997/08/08 11:13:46  robertj
- * Added virtual for substituting random symbols in OEM files.
+ * Revision 1.20  1997/08/20 08:59:58  craigs
+ * Changed macro handling to commonise #equival sequence
  *
  * Revision 1.19  1997/07/26 11:38:22  robertj
  * Support for overridable pages in HTTP service applications.
@@ -333,10 +333,13 @@ void PConfigPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
   PFile file;
-  if (file.Open(filePath, PFile::ReadOnly)) {
+  if (!file.Open(filePath, PFile::ReadOnly))
+    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), FALSE);
+  else {
     text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
   }
+
   PHTTPConfig::OnLoadedText(request, text);
 }
 
@@ -394,9 +397,11 @@ void PConfigSectionsPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
   PFile file;
-  if (file.Open(filePath, PFile::ReadOnly)) {
+  if (!file.Open(filePath, PFile::ReadOnly))
+    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), FALSE);
+  else {
     text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
   }
   PHTTPConfigSectionList::OnLoadedText(request, text);
 }
@@ -635,12 +640,12 @@ POrderPage::POrderPage(PHTTPServiceProcess & app, PHTTPAuthority & auth)
 }
 
 
-PString POrderPage::LoadText(PHTTPRequest &)
+PString POrderPage::LoadText(PHTTPRequest & request)
 {
   PFile file;
   if (file.Open("order.html", PFile::ReadOnly)) {
     PString text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
     return text;
   }
 
@@ -831,7 +836,7 @@ BOOL PServiceHTML::CheckSignature(const PString & html)
   return checkSignature == signature;
 }
 
-static void ReplaceIncludes(PString & text)
+static void ReplaceIncludes(PHTTPRequest & request, PString & text)
 {
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
 
@@ -845,7 +850,7 @@ static void ReplaceIncludes(PString & text)
     PCaselessString cmd = text(pos+12, end-1).Trim();
     if (cmd == "header") {
       subs = process.GetPageGraphic();
-      ReplaceIncludes(subs);
+      ReplaceIncludes(request, subs);
     }
 
     else if (cmd == "copyright")
@@ -875,7 +880,7 @@ static void ReplaceIncludes(PString & text)
           << PHTML::HotLink();
       subs = out;
     } else 
-      process.SubstituteEquivalSequence(cmd, subs);
+      process.SubstituteEquivalSequence(request, cmd, subs);
 
     text.Splice(subs, pos, end-pos+3);
   }
@@ -883,7 +888,8 @@ static void ReplaceIncludes(PString & text)
 
 
 
-BOOL PServiceHTML::ProcessMacros(PString & text,
+BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
+                                 PString & text,
                                  const PString & filename,
                                  BOOL needSignature)
 {
@@ -905,7 +911,7 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
     }
   }
 
-  ReplaceIncludes(text);
+  ReplaceIncludes(request, text);
 
   return TRUE;
 }
@@ -913,10 +919,8 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
 
 ///////////////////////////////////////////////////////////////////
 
-void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
+static void ServiceOnLoadedText(PString & text)
 {
-  PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), needSignature);
-
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
 
   text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
@@ -927,12 +931,25 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
                process.GetCopyrightText(), TRUE);
 }
 
-
-///////////////////////////////////////////////////////////////////
-
-void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest &, PString & text)
+PString PServiceHTTPString::LoadText(PHTTPRequest & request)
 {
-  PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), needSignature);
+  PString text = PHTTPString::LoadText(request);
+  ServiceOnLoadedText(text);
+  PServiceHTML::ProcessMacros(request, text, "", FALSE);
+
+  return text;
+}
+
+void PServiceHTTPFile::OnLoadedText(PHTTPRequest & request, PString & text)
+{
+  ServiceOnLoadedText(text);
+  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), needSignature);
+}
+
+void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest & request, PString & text)
+{
+  ServiceOnLoadedText(text);
+  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), needSignature);
 }
 
 
