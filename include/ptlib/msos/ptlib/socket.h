@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.12 1996/10/08 13:05:01 robertj Exp $
+ * $Id: socket.h,v 1.13 1998/08/27 02:06:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.13  1998/08/27 02:06:42  robertj
+ * GNU C library v6 compatibility
+ *
  * Revision 1.12  1996/10/08 13:05:01  robertj
  * More IPX support.
  *
@@ -94,6 +97,9 @@ PDECLARE_CLASS(PWinSock, PSocket)
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 };
+
+
+typedef int socklen_t;
 
 
 #endif
