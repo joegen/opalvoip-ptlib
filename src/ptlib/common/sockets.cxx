@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.30 1996/03/02 03:25:13 robertj Exp $
+ * $Id: sockets.cxx,v 1.31 1996/03/03 07:38:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.31  1996/03/03 07:38:45  robertj
+ * Added Reusability clause to the Listen() function on sockets.
+ *
  * Revision 1.30  1996/03/02 03:25:13  robertj
  * Added Capability to get and set Berkeley socket options.
  *
@@ -541,8 +544,15 @@ BOOL PIPSocket::_Connect(const PString & host)
 }
 
 
-BOOL PIPSocket::_Bind()
+BOOL PIPSocket::_Bind(Reusability reuse)
 {
+  if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0))
+    return FALSE;
+
+  static const linger ling = { 1, 10 };
+  if (!SetOption(SO_LINGER, &ling, sizeof(ling)))
+    return TRUE;
+
   // attempt to listen
   sockaddr_in sin;
   memset(&sin, 0, sizeof(sin));
@@ -660,38 +670,35 @@ BOOL PTCPSocket::Connect(const PString & host)
 
   // attempt to connect
   if (_Connect(host)) {
-    static const linger ling = { 0, 0 };
-    return SetOption(SO_LINGER, &ling, sizeof(ling));
+    static const linger ling = { 1, 10 };
+    if (SetOption(SO_LINGER, &ling, sizeof(ling)))
+      return TRUE;
   }
 
-  _Close();
+  os_close();
   return FALSE;
 }
 
 
-BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
+BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
-  if (!IsOpen()) {
-    // make sure we have a port
-    if (newPort != 0)
-      port = newPort;
+  if (IsOpen())
+    Close();
 
-    // attempt to create a socket
-    if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
-      return FALSE;
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
 
-    // bind it to a port
-    if (!_Bind()) {
-      _Close();
-      return FALSE;
-    }
-  }
+  // attempt to create a socket
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
+    return FALSE;
 
-  // attempt to listen
-  if (ConvertOSError(::listen(os_handle, queueSize)))
+  // bind it to a port and attempt to listen
+  if (_Bind(reuse) && ConvertOSError(::listen(os_handle, queueSize)))
     return TRUE;
 
-  _Close();
+
+  os_close();
   return FALSE;
 }
 
@@ -708,8 +715,12 @@ BOOL PTCPSocket::Accept(PSocket & socket)
 
   port = ntohs(address.sin_port);
 
-  static const linger ling = { 0, 0 };
-  return SetOption(SO_LINGER, &ling, sizeof(ling));
+  static const linger ling = { 1, 10 };
+  if (SetOption(SO_LINGER, &ling, sizeof(ling)))
+    return TRUE;
+
+  os_close();
+  return FALSE;
 }
 
 
@@ -797,7 +808,7 @@ BOOL PUDPSocket::Connect(const PString & host)
 }
 
 
-BOOL PUDPSocket::Listen(unsigned, WORD newPort)
+BOOL PUDPSocket::Listen(unsigned, WORD newPort, Reusability reuse)
 {
   // make sure we have a port
   if (newPort != 0)
@@ -808,7 +819,7 @@ BOOL PUDPSocket::Listen(unsigned, WORD newPort)
     return FALSE;
 
   // attempt to listen
-  if (_Bind())
+  if (_Bind(reuse))
     return TRUE;
 
   Close();
