@@ -23,6 +23,10 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#ifndef EOF
+#include <stdio.h>
+#endif
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4131 4701)
