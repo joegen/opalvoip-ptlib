@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.67 1998/01/26 02:49:22 robertj Exp $
+ * $Id: sockets.cxx,v 1.68 1998/03/05 12:45:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.68  1998/03/05 12:45:48  robertj
+ * DNS cache and NT bug fix attempts.
+ *
  * Revision 1.67  1998/01/26 02:49:22  robertj
  * GNU support.
  *
@@ -587,9 +590,15 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 }
 
 
+static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
+{
+  PConfig cfg("DNS Cache");
+  return cfg.GetInteger(key, dflt);
+}
+
 BOOL PIPCacheData::HasAged() const
 {
-  static PTimeInterval retirement(0, 0, 5); // 5 minutes
+  static PTimeInterval retirement = GetConfigTime("Age Limit", 300000); // 5 minutes
   PTime now;
   PTimeInterval age = now - birthDate;
   return age > retirement;
@@ -792,9 +801,13 @@ void PIPSocket::ClearNameCache()
   pHostByAddr.mutex.Wait();
   pHostByName.RemoveAll();
   pHostByAddr.RemoveAll();
-//#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
-//  ::gethostbyname("www.microsoft.com");
-//#endif
+#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
+  static PTimeInterval delay = GetConfigTime("NT Bug Delay", 0);
+  if (delay != 0) {
+    ::Sleep(delay.GetInterval());
+    ::gethostbyname("www.microsoft.com");
+  }
+#endif
   pHostByName.mutex.Signal();
   pHostByAddr.mutex.Signal();
 }
