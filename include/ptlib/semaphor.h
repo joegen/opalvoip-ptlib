@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.9  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.8  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -84,7 +88,7 @@
 class PWaitAndSignal {
   public:
     /**Create the semaphore wait instance.
-       This will wait on the specified semaphore using teh #Wait()# function
+       This will wait on the specified semaphore using the #Wait()# function
        before returning.
       */
     PWaitAndSignal(

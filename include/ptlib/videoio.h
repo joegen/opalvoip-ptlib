@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.8  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.7  2000/11/09 00:20:38  robertj
  * Added qcif size constants
  *
@@ -54,6 +58,7 @@
 #pragma interface
 #endif
 
+class PVideoConvert; 
 
 
 /**This class defines a video device.
@@ -93,6 +98,8 @@ class PVideoDevice : public PObject
       NumColourFormats
     };
 
+
+
     enum StandardSizes {
       CIFWidth = 352,
       CIFHeight = 288,
@@ -104,7 +111,7 @@ class PVideoDevice : public PObject
      */
     PVideoDevice(
       VideoFormat videoformat = Auto,
-      unsigned channelNumber = 0,
+      int channelNumber = 0,
       ColourFormat colourFormat = RGB24
     );
 
@@ -116,13 +123,13 @@ class PVideoDevice : public PObject
       BOOL startImmediate = TRUE    /// Immediately start device
     ) = 0;
 
-    /**Determine of the device is currently open.
+    /**Determine if the device is currently open.
       */
-    virtual BOOL IsOpen() const = 0;
+    virtual BOOL IsOpen() = 0;
 
     /**Close the device.
       */
-    virtual BOOL Close() = 0;
+    virtual BOOL Close();
 
     /**Start the video device I/O capture.
       */
@@ -144,7 +151,7 @@ class PVideoDevice : public PObject
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const = 0;
+    virtual PStringList GetDeviceNames() const ;
 
     /**Set the video format to be used.
 
@@ -165,7 +172,7 @@ class PVideoDevice : public PObject
 
        Default behaviour returns 1.
     */
-    virtual unsigned GetNumChannels() const;
+    virtual int GetNumChannels() ;
 
     /**Set the video channel to be used on the device.
 
@@ -173,14 +180,14 @@ class PVideoDevice : public PObject
        returns the IsOpen() status.
     */
     virtual BOOL SetChannel(
-      unsigned channelNumber  /// New channel number for device.
+         int channelNumber  /// New channel number for device.
     );
 
     /**Get the video channel to be used on the device.
 
        Default behaviour returns the value of the channelNumber variable.
     */
-    virtual unsigned GetChannel() const;
+    virtual int  GetChannel() const;
 
     /**Set the colour format to be used.
 
@@ -222,7 +229,7 @@ class PVideoDevice : public PObject
       unsigned & minHeight,  /// Variable to receive minimum height
       unsigned & maxWidth,   /// Variable to receive maximum width
       unsigned & maxHeight   /// Variable to receive maximum height
-    ) const;
+    ) ;
 
     /**Set the frame size to be used.
 
@@ -239,10 +246,32 @@ class PVideoDevice : public PObject
        Default behaviour returns the value of the frameWidth and frameHeight
        variable and returns the IsOpen() status.
     */
+
     virtual BOOL GetFrameSize(
       unsigned & width,
       unsigned & height
-    ) const;
+    );
+
+     /** Get the size of an image, given a particular width, height and colour format.
+       */
+    static unsigned CalcFrameSize( 
+      unsigned width,
+      unsigned height,
+      int colourFormat
+      );
+   
+    /** Get the width of the frame being used.
+
+        Default  behaviour returns the value of the frameWidth variable
+    */
+    virtual unsigned GetFrameWidth() const
+        { return frameWidth; }
+    /** Get the height of the frame being used.
+
+        Default  behaviour returns the value of the frameHeight variable
+    */
+    virtual unsigned GetFrameHeight() const
+      { return frameHeight; }
 
     /**Get the maximum frame size in bytes.
 
@@ -260,7 +289,7 @@ class PVideoDevice : public PObject
     PString      deviceName;
     int          lastError;
     VideoFormat  videoFormat;
-    unsigned     channelNumber;
+    int          channelNumber;
     ColourFormat colourFormat;
     unsigned     frameRate;
     unsigned     frameWidth;
@@ -278,11 +307,39 @@ class PVideoOutputDevice : public PVideoDevice
     /** Create a new video output device.
      */
     PVideoOutputDevice(
-      VideoFormat videoformat = PAL,
-      int channelNumber = 0,
-      ColourFormat colourFormat = RGB24
-    );
+      VideoFormat  /*videoformat */   = PAL,
+      int          /*channelNumber */ = 0 ,
+      ColourFormat /*colourFormat */  = RGB24 
+      ) {  };
+    
+    /**Close the video output device on destruction.
+      */
+    virtual ~PVideoOutputDevice() { Close(); };      
+
+    /**Cause the referenced data to be drawn to the 
+       previously defined media 
+     */
+    virtual BOOL Redraw(const void * /*frame*/ ) {	return FALSE; };
+
+    /**Specifiy the width and height of the video stream.
+     */
+    virtual void SetFrameSize(int /*_width*/, int /*_height*/) 
+	{   };
+
+    /**Set the current time.
+     */
+    virtual void SetNow(int _now)  { now = _now; }
+
+  protected:
+
+    PINDEX  frameWidth;
+    PINDEX  frameHeight;
+    int now;
+    BOOL suppress;
+
 };
+
+
 
 
 /**This class defines a video input device.
@@ -295,15 +352,14 @@ class PVideoInputDevice : public PVideoDevice
     /** Create a new video input device.
      */
     PVideoInputDevice(
-      VideoFormat videoformat = PAL,
-      unsigned channelNumber = 0,
+      VideoFormat videoFormat   = PAL,
+      int channelNumber         = 0,
       ColourFormat colourFormat = RGB24
     );
 
     /**Close the video input device on destruction.
       */
     ~PVideoInputDevice() { Close(); }
-
 
     /**Open the device given the device name.
       */
@@ -314,7 +370,7 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Determine of the device is currently open.
       */
-    virtual BOOL IsOpen() const;
+    virtual BOOL IsOpen() ;
 
     /**Close the device.
       */
@@ -334,7 +390,7 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const;
+    virtual PStringList GetDeviceNames() const ;
 
     /**Get the maximum frame size in bytes.
 
@@ -342,7 +398,6 @@ class PVideoInputDevice : public PVideoDevice
        frames (eg motion JPEG) so will be the maximum size of all frames.
       */
     virtual PINDEX GetMaxFrameBytes();
-
 
     /**Grab a frame.
       */
@@ -356,6 +411,13 @@ class PVideoInputDevice : public PVideoDevice
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
+
+    
+ protected:
+    
+    PVideoConvert * conversion; /// image grab format change. If NULL ptr, no change needed.
+   
+ public:
 
 #ifdef DOC_PLUS_PLUS
 };

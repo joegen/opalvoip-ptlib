@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.3  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.2  2000/07/30 03:54:28  robertj
  * Added more colour formats to video device enum.
  *
@@ -41,11 +45,11 @@
 #include "../../videoio.h"
   public:
     virtual BOOL SetVideoFormat(VideoFormat videoFormat);
-    virtual unsigned GetNumChannels() const;
-    virtual BOOL SetChannel(unsigned channelNumber);
+    virtual int  GetNumChannels();
+    virtual BOOL SetChannel(int channelNumber);
     virtual BOOL SetColourFormat(ColourFormat colourFormat);
     virtual BOOL SetFrameRate(unsigned rate);
-    virtual BOOL GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) const;
+    virtual BOOL GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) ;
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
   protected:
     void ClearMapping();

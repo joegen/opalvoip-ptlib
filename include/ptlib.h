@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.23  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.22  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -241,6 +245,11 @@ using namespace std;
 // PSound
 
 #include <ptlib/sound.h>
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoChannel
+
+#include <ptlib/video.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.2  2000/12/19 22:20:26  dereks
+ * Add video channel classes to connect to the PwLib PVideoInputDevice class.
+ * Add PFakeVideoInput class to generate test images for video.
+ *
  * Revision 1.1  2000/11/09 00:43:04  dereks
  * Initial release.
  *
@@ -34,167 +38,17 @@
  *
  */
 
-
 #define _PVIDEO
 
 #ifdef __GNUC__
 #pragma interface
 #endif
 
-
-/** A class representing a video. A video is a highly platform dependent
-   entity that is abstracted for use here. Very little manipulation of the
-   videos are possible.
-
- */
-class PVideo : public PBYTEArray
-{
-  PCLASSINFO(PVideo, PBYTEArray);
-
-  public:
-  /**@name Construction */
-  //@{
-    /**Create a new video, using the parameters provided.
-       It is expected that the "lowest common denominator" encoding, linear PCM,
-       is used.
-
-       All other values for the encoding are platform dependent.
-     */
-    PVideo(
-      unsigned numChannels = 1,    /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,  /// Samples per second
-      unsigned bitsPerSample = 16, /// Number of bits per sample
-      PINDEX   bufferSize = 0,     /// Size of data
-      const BYTE * data = NULL     /// Pointer to initial data
-    );
-
-    /**Create a new video, reading from a platform dependent file.
-     */
-    PVideo(
-      const PFilePath & filename   /// Video file to load.
-    );
-
-    /**Set new data bytes for the video.
-     */
-    PVideo & operator=(
-      const PBYTEArray & data  // New data for video
-    );
-  //@}
-
-  /**@name File functions */
-  //@{
-    /**Load a platform dependent video file 
-
-       Also note that not all possible files are playable by this library. No
-       format conversions between file and driver are performed.
-
-       @return
-       TRUE if the video is loaded successfully.
-     */
-    BOOL Load(
-      const PFilePath & filename   /// Video file to load.
-    );
-
-    /**Save a platform dependent video file (eg .WAV file for Win32) from the
-       object.
-
-       @return
-       TRUE if the video is saved successfully.
-     */
-    BOOL Save(
-      const PFilePath & filename   // Video file to load.
-    );
-  //@}
-
-  /**@name Access functions */
-  //@{
-    /// Play the video on the default video device.
-    BOOL Play();
-
-    /**Set the internal video format to be:
-     */
-    void SetFormat(
-      unsigned numChannels,   // Number of channels eg mono/stereo
-      unsigned sampleRate,    /// Samples per second
-      unsigned bitsPerSample  /// Number of bits per sample
-    );
-
-    /**Get the current encoding. 
-     */
-    unsigned GetEncoding()   const { return encoding; }
-
-    /// Get  the number of channels (mono/stereo) in the video.
-    unsigned GetChannels()   const { return numChannels; }
-
-    /// Get the sample rate in samples per second.
-    unsigned GetSampleRate() const { return sampleRate; }
-
-    /// Get the sample size in bits per sample.
-    unsigned GetSampleSize() const { return sampleSize; }
-
-    /// Get the platform dependent error code from the last file load.
-    DWORD    GetErrorCode()  const { return dwLastError; }
-
-    /// Get the size of the platform dependent format info.
-    PINDEX   GetFormatInfoSize()  const { return formatInfo.GetSize(); }
-
-    /// Get pointer to the platform dependent format info.
-    const void * GetFormatInfoData() const { return (const BYTE *)formatInfo; }
-  //@}
-
-  /**@name Miscellaneous functions */
-  //@{
-    /**Play a video file to the default device. If the #wait#
-       parameter is TRUE then the function does not return until the file has
-       been played. If FALSE then the video play is begun asynchronously and
-       the function returns immediately.
-
-       @return
-       TRUE if the video is playing or has played.
-     */
-    static BOOL PlayFile(
-      const PFilePath & file, /// Video file to play.
-      BOOL wait = TRUE        /// Flag to play video synchronously.
-    );
-
-    /// Play the "standard" warning beep for the platform.
-    static void Beep();
-  //@}
-
-  protected:
-    /// Format code
-    unsigned   encoding;      
-    /// Samples per second
-    unsigned   sampleRate;    
-    /// Number of bits per sample
-    unsigned   sampleSize;    
-    /// Last error code for Load()/Save() functions
-    DWORD      dwLastError;   
-    /// Full info on the format (platform dependent)
-    PBYTEArray formatInfo;    
-};
-
+#include <ptlib/videoio.h>
+#include <ptlib/vfakeio.h>
 
 /**A class representing a video channel. This class is provided mainly for
-   the playback or recording of videos on the system.
-
-   A video driver is either playing or recording. If simultaneous playing and
-   recording is desired, two instances of PVideoChannel must be created.
-
-   The video is buffered and the size and number of buffers should be set
-   before playing/recording. Each call to Write() will use one buffer, so care
-   needs to be taken not to use a large number of small writes but tailor the
-   buffers to the size of each write you make.
-
-   Similarly for reading, an entire buffer must be read before any of it is
-   available to a Read() call. Note that once a buffer is filled you can read
-   it a byte at a time if desired, but as soon as all the data in the buffer
-   is used returned, the next read will wait until the entire next buffer is
-   read from the hardware. So again, tailor the number and size of buffers to
-   the application. To avoid being blocked until the buffer fills, you can use
-   the StartRecording() function to initiate the buffer filling, and the
-   IsRecordingBufferFull() function to determine when the Read() function will
-   no longer block.
+   the playback or recording of video on the system.
 
    Note that this video channel is implicitly a series of frames in YUV411 format.
    No conversion is performed on data to/from the channel.
@@ -219,10 +73,7 @@ class PVideoChannel : public PChannel
       */
     PVideoChannel(
       const PString & device,       /// Name of video driver/device
-      Directions dir,               /// Video I/O direction
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
+      Directions dir               /// Video I/O direction
     );
     // 
 
@@ -232,6 +83,23 @@ class PVideoChannel : public PChannel
 
   /**@name Open functions */
   //@{
+    /**Open the specified device for playing or recording. The device name is
+       platform specific and is as returned in the GetDevices() function.
+
+       @return
+       TRUE if the video device is valid for playing/recording.
+     */
+    BOOL Open(
+      const PString & device,       /// Name of video driver/device
+      Directions dir               /// Video I/O direction
+    );
+
+    /** return True if one (or both) of the video device class pointers
+       is non NULL. If either pointer is non NULL, then a device is ready
+       to be written to, which indicates this channel is open.
+    */
+     BOOL IsOpen() const;
+    
     /**Get all of the names for video devices/drivers that are available on
        this platform. Note that a named device may not necessarily do both
        playing and recording so the arrays returned with the #dir#
@@ -240,9 +108,9 @@ class PVideoChannel : public PChannel
        @return
        An array of platform dependent strings for each video player/recorder.
      */
-    static PStringArray GetDeviceNames(
+    static PStringList GetDeviceNames(
       Directions dir    // Video I/O direction
-    );
+    )  ;
 
     /**Get the name for the default video devices/driver that is on this
        platform. Note that a named device may not necessarily do both
@@ -255,193 +123,84 @@ class PVideoChannel : public PChannel
     static PString GetDefaultDevice(
       Directions dir    // Video I/O direction
     );
+    //@}
 
-
-    /**Open the specified device for playing or recording. The device name is
-       platform specific and is as returned in the GetDevices() function.
-
-       @return
-       TRUE if the video device is valid for playing/recording.
+    
+    /**Return the width of the currently selected grabbing device.
      */
-    BOOL Open(
-      const PString & device,       /// Name of video driver/device
-      Directions dir,               /// Video I/O direction
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
-    );
+    virtual PINDEX  GetGrabWidth(); 
 
-    /**Abort the background playing/recording of the video channel.
-
-       @return
-       TRUE if the video has successfully been aborted.
+    /**Return the height of the currently selected grabbing device.
      */
-    BOOL Abort();
-  //@}
+    virtual PINDEX  GetGrabHeight();
 
-  /**@name Channel set up functions */
-  //@{
-    /**Set the format for play/record. Note that linear PCM data is the only
-       one supported at this time.
-
-       Note that if the PlayFile() function is used, this may be overridden
-       by information in the file being played.
-
-       @return
-       TRUE if the format is valid.
+    virtual BOOL Read(void * buf, PINDEX  len);
+      // Low level read from the video channel. This function will block until the
+      // requested number of characters were read.
+  
+  
+    /**Low level write to the channel, which is data to be rendered to the 
+       local video display device.
+       */
+    BOOL Write(const void * buf,  //Pointer to the image data to be rendered
+               PINDEX      len);
+	       
+    /**Cause the referenced data to be drawn to the 
+       previously defined media 
      */
-    BOOL SetFormat(
-      unsigned numChannels = 1,     /// Number of channels eg mono/stereo
-      unsigned sampleRate = 8000,   /// Samples per second
-      unsigned bitsPerSample = 16   /// Number of bits per sample
-    );
+    virtual BOOL Redraw(const void * frame) 
+        { return mpOutput->Redraw (frame); };
 
-  /**@name Play functions */
-  //@{
-    /**Play a video to the open device. If the #wait# parameter is
-       TRUE then the function does not return until the file has been played.
-       If FALSE then the video play is begun asynchronously and the function
-       returns immediately.
-
-       Note if the driver is closed of the object destroyed then the video
-       play is aborted.
-
-       Also note that not all possible videos and video files are playable by
-       this library. No format conversions between video object and driver are
-       performed.
-
-       @return
-       TRUE if the video is playing or has played.
+    /**Set the current time.
      */
+    virtual void SetRenderNow(int _now)  
+         { mpOutput->SetNow(_now); }
 
-    BOOL PlayVideo(
-      const PVideo & video,   /// Video to play.
-      BOOL wait = TRUE        /// Flag to play video synchronously.
-    );
-    /**Play a video file to the open device. If the #wait#
-       parameter is TRUE then the function does not return until the file has
-       been played. If FALSE then the video play is begun asynchronously and
-       the function returns immediately.
-
-       Note if the driver is closed of the object destroyed then the video
-       play is aborted.
-
-       Also note that not all possible videos and video files are playable by
-       this library. No format conversions between video object and driver are
-       performed.
-
-       @return
-       TRUE if the video is playing or has played.
+    /**Return the previously specified width.
      */
-    BOOL PlayFile(
-      const PFilePath & file, /// Video file to play.
-      BOOL wait = TRUE        /// Flag to play video synchronously.
-    );
+    PINDEX  GetRenderWidth()
+      { return mpOutput->GetFrameWidth(); }
 
-    /**Indicate if the video play begun with PlayBuffer() or PlayFile() has
-       completed.
-
-       @return
-       TRUE if the video has completed playing.
+    /**Return the previously specified height.
      */
-    BOOL HasPlayCompleted();
+    PINDEX  GetRenderHeight()
+      { return mpOutput->GetFrameHeight(); }
 
-    /**Block the thread until the video play begun with PlayBuffer() or
-       PlayFile() has completed.
-
-       @return
-       TRUE if the video has successfully completed playing.
+    /**Specifiy the width and height of the video stream, which is to be
+       rendered onto the previously specified device.
      */
-    BOOL WaitForPlayCompletion();
+    virtual void SetRenderFrameSize(int _width, int _height) 
+      { mpOutput->SetFrameSize(_width, _height); }
 
-  //@}
-
-  /**@name Record functions */
-  //@{
-    /**Record into the video object all of the buffer's of video data. Use the
-       SetBuffers() function to determine how long the recording will be made.
-
-       For the Win32 platform, the most efficient way to record a PVideo is to
-       use the SetBuffers() function to set a single buffer of the desired
-       size and then do the recording. For Linux OSS this can cause problems
-       as the buffers are rounded up to a power of two, so to gain more
-       accuracy you need a number of smaller buffers.
-
-       Note that this function will block until all of the data is buffered.
-       If you wish to do this asynchronously, use StartRecording() and
-       AreAllrecordBuffersFull() to determine when you can call RecordVideo()
-       without blocking.
-
-       @return
-       TRUE if the video has been recorded.
+    /**Specifiy the width and height of the video stream, which is to be
+       extracted from the previously specified device.
      */
-    BOOL RecordVideo(
-      PVideo & video /// Video recorded
-    );
+    virtual void SetGrabberFrameSize(int _width, int _height) 
+      { if(mpInput != NULL)
+           mpInput->SetFrameSize((unsigned)_width, (unsigned)_height); }
 
-    /**Record into the platform dependent video file all of the buffer's of
-       video data. Use the SetBuffers() function to determine how long the
-       recording will be made.
-
-       Note that this function will block until all of the data is buffered.
-       If you wish to do this asynchronously, use StartRecording() and
-       AreAllrecordBuffersFull() to determine when you can call RecordVideo()
-       without blocking.
-
-       @return
-       TRUE if the video has been recorded.
+    /**Attach a user specific class for rendering video 
      */
-    BOOL RecordFile(
-      const PFilePath & file /// Video file recorded
-    );
+    virtual void AttachVideoPlayer(PVideoOutputDevice * device);
 
-    /**Start filling record buffers. The first call to Read() will also
-       initiate the recording.
-
-       @return
-       TRUE if the video driver has successfully started recording.
+    /**Attach a user specific class for acquiring video 
      */
-    BOOL StartRecording();
+    virtual void AttachVideoReader(PVideoInputDevice * device);
 
-    /**Determine if a record buffer has been filled, so that the next Read()
-       call will not block. Provided that the amount of data read is less than
-       the buffer size.
-
-       @return
-       TRUE if the video driver has filled a buffer.
+    /**See if the grabber is open 
      */
-    BOOL IsRecordBufferFull();
-
-    /**Determine if all of the record buffer allocated has been filled. There
-       is an implicit Abort() of the recording if this occurs and recording is
-       stopped. The channel may need to be closed and opened again to start
-       a new recording.
-
-       @return
-       TRUE if the video driver has filled a buffer.
+    virtual BOOL IsGrabberOpen();
+    
+    /**See if the rendering device is open
      */
-    BOOL AreAllRecordBuffersFull();
+    virtual BOOL IsRenderOpen();
 
-    /**Block the thread until a record buffer has been filled, so that the
-       next Read() call will not block. Provided that the amount of data read
-       is less than the buffer size.
+ protected:
+    Directions       direction;
 
-       @return
-       TRUE if the video driver has filled a buffer.
-     */
-    BOOL WaitForRecordBufferFull();
-
-    /**Block the thread until all of the record buffer allocated has been
-       filled. There is an implicit Abort() of the recording if this occurs
-       and recording is stopped. The channel may need to be closed and opened
-       again to start a new recording.
-
-       @return
-       TRUE if the video driver has filled a buffer.
-     */
-    BOOL WaitForAllRecordBuffersFull();
-  //@}
-
+    PString          deviceName;     ///Specified video device name, eg /dev/video0.
+    PVideoInputDevice  *mpInput;    /// For grabbing video from the camera.
+    PVideoOutputDevice *mpOutput;   /// For displaying video on the screen.
 
   private:
     void Construct();
