@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.77  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.76  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -820,6 +823,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
 #ifndef P_VXWORKS
 #ifdef P_RTEMS
     _reent _reent_data;
+    memset(&_reent_data, 0, sizeof(_reent_data));
     os_handle = _mkstemp_r(&_reent_data, templateStr);
 #else
     os_handle = mkstemp(templateStr);
