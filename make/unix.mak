@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.86  2001/02/09 12:29:41  robertj
+# Changed to allow for object directory suffix to be different from library.
+#
 # Revision 1.85  2001/01/16 19:19:02  rogerh
 # Set BE_THREADS to 1 instead of 0 for consistency
 #
@@ -728,6 +731,10 @@ OBJ_SUFFIX	:= r
 endif # DEBUG
 endif # OBJ_SUFFIX
 
+ifndef OBJDIR_SUFFIX
+OBJDIR_SUFFIX = $(OBJ_SUFFIX)
+endif
+
 ifeq ($(P_SHAREDLIB),0)
 LIB_SUFFIX	= a
 else
@@ -810,13 +817,13 @@ PW_LIBDIR	= $(PWLIBDIR)/lib
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
 
 # set name of the PW library (may not be used)
 PWLIB_BASE	= pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
 ###############################################################################
