@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.24 1996/09/14 13:09:47 robertj Exp $
+ * $Id: winsock.cxx,v 1.25 1996/10/08 13:03:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.25  1996/10/08 13:03:09  robertj
+ * More IPX support.
+ *
  * Revision 1.24  1996/09/14 13:09:47  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -95,6 +98,9 @@
 
 #include <ptlib.h>
 #include <sockets.h>
+
+#include <nspapi.h>
+#include <svcguid.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -428,25 +434,41 @@ PIPXSocket::Address::Address(const Address & addr)
 
 PIPXSocket::Address::Address(const PString & str)
 {
-  memset(this, 0, sizeof(*this));
-
   PINDEX colon = str.Find(':');
   if (colon == P_MAX_INDEX)
     colon = 0;
-  else
-    network.dw = str.Left(colon++).AsInteger();
+  else {
+    DWORD netnum = 0;
+    for (PINDEX i = 0; i < colon; i++) {
+      int c = str[i];
+      if (isdigit(c))
+        netnum = (netnum << 4) + c - '0';
+      else if (isxdigit(c))
+        netnum = (netnum << 4) + toupper(c) - 'A' + 10;
+      else {
+        memset(this, 0, sizeof(*this));
+        return;
+      }
+    }
+    network.dw = ntohl(netnum);
+  }
+
+  memset(node, 0, sizeof(node));
 
   PINDEX byte = 11;
   PINDEX pos = str.GetLength();
-  do {
-    pos--;
+  while (--pos > colon) {
     int c = str[pos];
     if (isdigit(c))
       node[byte/2] = (BYTE)((node[byte/2] << 4) + c - '0');
     else if (isxdigit(c))
       node[byte/2] = (BYTE)((node[byte/2] << 4) + toupper(c) - 'A' + 10);
+    else {
+      memset(this, 0, sizeof(*this));
+      return;
+    }
     byte--;
-  } while (pos > colon);
+  }
 }
 
 
@@ -466,9 +488,16 @@ PIPXSocket::Address & PIPXSocket::Address::operator=(const Address & addr)
 
 PIPXSocket::Address::operator PString() const
 {
-  return psprintf("%lu:%02X%02X%02X%02X%02X%02X",
-                  network.dw,
+  return psprintf("%02X%02X%02X%02X:%02X%02X%02X%02X%02X%02X",
+                  network.b.b1, network.b.b2, network.b.b3, network.b.b4,
                   node[0], node[1], node[2], node[3], node[4], node[5]);
+}
+
+
+BOOL PIPXSocket::Address::IsValid() const
+{
+  static Address empty;
+  return memcmp(this, &empty, sizeof(empty)) != 0;
 }
 
 
@@ -500,6 +529,24 @@ const char * PIPXSocket::GetProtocolName() const
 }
 
 
+BOOL PIPXSocket::SetPacketType(int type)
+{
+  return ConvertOSError(::setsockopt(os_handle,
+                           NSPROTO_IPX, IPX_PTYPE, (char *)&type, sizeof(type)));
+}
+
+
+int PIPXSocket::GetPacketType()
+{
+  int value;
+  int valSize = sizeof(value);
+  if (ConvertOSError(::getsockopt(os_handle,
+                                NSPROTO_IPX, IPX_PTYPE, (char *)&value, &valSize)))
+    return value;
+  return -1;
+}
+
+
 PString PIPXSocket::GetHostName(const Address & addr)
 {
   return addr;
@@ -507,12 +554,6 @@ PString PIPXSocket::GetHostName(const Address & addr)
 
 
 BOOL PIPXSocket::GetHostAddress(Address & addr)
-{
-  return FALSE;
-}
-
-
-BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
   return FALSE;
 }
@@ -529,6 +570,34 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 {
   memcpy(&addr.network, sip.sa_netnum, sizeof(addr.network));
   memcpy(addr.node, sip.sa_nodenum, sizeof(addr.node));
+}
+
+
+BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
+{
+  addr = hostname;
+  if (addr.IsValid())
+    return TRUE;
+
+  static GUID netware_file_server = SVCID_FILE_SERVER;
+  CSADDR_INFO addr_info[10];
+  DWORD buffer_length = sizeof(addr_info);
+	int num = GetAddressByName(NS_DEFAULT,
+                             &netware_file_server,
+                             (LPTSTR)(const char *)hostname,
+                             NULL,
+                             0,
+                             NULL,
+                             addr_info,
+                             &buffer_length,
+                             NULL,
+                             NULL
+                            );
+  if (num <= 0)
+    return FALSE;
+
+  AssignAddress(addr, *(sockaddr_ipx *)addr_info[0].RemoteAddr.lpSockaddr);
+  return TRUE;
 }
 
 
