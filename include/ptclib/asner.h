@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.28  2002/05/29 01:22:35  robertj
+ * Added ability to set object id from unsigned integer arrays.
+ *
  * Revision 1.27  2002/05/21 04:23:40  robertj
  * Fixed problem with ASN encoding/decoding unsconstrained negative numbers,
  *
@@ -427,7 +430,10 @@ class PASN_ObjectId : public PASN_Object
 
     PASN_ObjectId & operator=(const char * dotstr);
     PASN_ObjectId & operator=(const PString & dotstr);
+    PASN_ObjectId & operator=(const PUnsignedArray & numbers);
     void SetValue(const PString & dotstr);
+    void SetValue(const PUnsignedArray & numbers) { value = numbers; }
+    void SetValue(const unsigned * numbers, PINDEX size);
 
     BOOL operator==(const char * dotstr) const;
     BOOL operator!=(const char * dotstr) const      { return !operator==(dotstr); }
