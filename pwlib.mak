@@ -14,6 +14,8 @@ all:
 	cd ..\..\src\ptlib\msos
 	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Release" RECURSE=0
 !IFDEF OPENSSLDIR
+OPENSSLFLAG=1
+OPENSSLLIBS="ssleay32.lib libeay32.lib"
 	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 SSL Release" RECURSE=0
 !ELSE
 	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Release" RECURSE=0
