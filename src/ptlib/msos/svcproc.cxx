@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.58  2001/02/13 03:30:22  robertj
+ * Added function to do heap validation.
+ *
  * Revision 1.57  2000/05/02 03:16:46  robertj
  * Added display of thread name in SystemLog, thanks Ashley Unitt.
  *
@@ -643,10 +646,11 @@ enum {
   CutMenuID,
   DeleteMenuID,
   SelectAllMenuID,
-#ifdef _DEBUG
+#if PMEMORY_CHECK
   MarkMenuID,
   DumpMenuID,
   StatsMenuID,
+  ValidateMenuID,
 #endif
   SvcCmdBaseMenuID = 1000,
   LogLevelBaseMenuID = 2000
@@ -677,10 +681,11 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
   AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-#ifdef _DEBUG
+#if PMEMORY_CHECK
   AppendMenu(menu, MF_STRING, MarkMenuID, "&Mark Memory");
   AppendMenu(menu, MF_STRING, DumpMenuID, "&Dump Memory");
   AppendMenu(menu, MF_STRING, StatsMenuID, "&Statistics");
+  AppendMenu(menu, MF_STRING, ValidateMenuID, "&Validate Heap");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
 #endif
   AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
@@ -845,6 +850,9 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         case StatsMenuID :
           PMemoryHeap::DumpStatistics();
+          break;
+        case ValidateMenuID :
+          PMemoryHeap::ValidateHeap();
           break;
 #endif
 
