@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.5 1995/03/12 05:00:02 robertj Exp $
+ * $Id: thread.h,v 1.6 1995/04/25 11:19:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.6  1995/04/25 11:19:53  robertj
+ * Fixes for DLL use in WIN32.
+ *
  * Revision 1.5  1995/03/12 05:00:02  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -94,7 +97,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 };
 
 
-#ifndef _WINDLL
+#if defined(_WIN32) || !defined(_WINDLL)
 
 inline PThread::PThread()
   { }   // Is mostly initialised by InitialiseProcessThread().
