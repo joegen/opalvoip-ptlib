@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.122  2004/03/17 05:52:59  csoutheren
+# Removed obsolete udp.cxx
+#
 # Revision 1.121  2004/02/15 22:36:29  csoutheren
 # Included ALSA in default non-plugin sound drivers
 #
@@ -620,7 +623,6 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/dtmf.cxx \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
-	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
         $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
