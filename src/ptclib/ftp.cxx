@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.1 1996/03/04 12:12:51 robertj Exp $
+ * $Id: ftp.cxx,v 1.2 1996/03/16 04:51:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.2  1996/03/16 04:51:12  robertj
+ * Changed lastResponseCode to an integer.
+ *
  * Revision 1.1  1996/03/04 12:12:51  robertj
  * Initial revision
  *
@@ -139,7 +142,7 @@ BOOL PFTPSocket::Connect(const PString & address)
   if (!PApplicationSocket::Connect(address))
     return FALSE;
 
-  if (!ReadResponse() || lastResponseCode != "220") {
+  if (!ReadResponse() || lastResponseCode != 220) {
     Close();
     return FALSE;
   }
@@ -387,12 +390,13 @@ BOOL PFTPSocket::OnPASV(const PCaselessString &)
   WORD portNo = passiveSocket->GetPort();
   PIPSocket::Address ourAddr;
   GetHostAddress(ourAddr);
-  PString str = psprintf("Entering Passive Mode (%i,%i,%i,%i,%i,%i)",
-                          ourAddr.Byte1(),
-                          ourAddr.Byte2(),
-                          ourAddr.Byte3(),
-                          ourAddr.Byte4(),
-                          portNo/256, portNo%256);
+  PString str(PString::Printf,
+              "Entering Passive Mode (%i,%i,%i,%i,%i,%i)",
+              ourAddr.Byte1(),
+              ourAddr.Byte2(),
+              ourAddr.Byte3(),
+              ourAddr.Byte4(),
+              portNo/256, portNo%256);
 
   return WriteResponse(227, str);
 }
@@ -716,20 +720,19 @@ BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port)
 BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
                           PINDEX & code, PString & info)
 {
-  PString str(psprintf("%i,%i,%i,%i,%i,%i",
+  PString str(PString::Printf,
+              "%i,%i,%i,%i,%i,%i",
               addr.Byte1(),
               addr.Byte2(),
               addr.Byte3(),
               addr.Byte4(),
               port/256,
-              port%256));
+              port%256);
 
   if (!WriteCommand(PORT, str))
     return FALSE;
 
-  PString codeStr;
-  BOOL resp = ReadResponse(codeStr, info);
-  code = codeStr.AsInteger();
+  BOOL resp = ReadResponse(code, info);
   return resp;
 }
 
