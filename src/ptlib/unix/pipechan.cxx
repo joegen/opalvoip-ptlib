@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.17  1998/11/05 09:42:01  robertj
+ * Fixed bug in direct stdout mode opening redirected stdout.
+ * Solaris support, missing environ declaration.
+ * Added assert for unsupported timeout in WaitForTermination() under solaris.
+ *
  * Revision 1.16  1998/11/02 11:11:19  robertj
  * Added pipe output to stdout/stderr.
  *
@@ -90,7 +95,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
  
   // setup the pipe from the child
-  if (mode == WriteOnly)
+  if (mode == WriteOnly || mode == ReadWriteStd)
     fromChildPipe[0] = fromChildPipe[1] = -1;
   else
     PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
@@ -182,6 +187,9 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
+#ifdef P_SOLARIS
+    extern char ** __environ;
+#endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
       PString str = environment->GetKeyAt(i) + '=' + environment->GetDataAt(i);
@@ -305,6 +313,7 @@ int PPipeChannel::WaitForTermination()
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
 #ifdef P_PTHREADS
+  PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
   if (kill (childPid, 0) == 0) {
     while (wait3(NULL, WUNTRACED, NULL) != childPid)
       ;
