@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.199  2002/10/09 00:46:19  robertj
+ * Changed PThread::Create() so does not return PThread pointer if the thread
+ *   has been created auto-delete, the pointer is extremely dangerous to use
+ *   as it could be deleted at any time, so to remove temptation ...
+ *
  * Revision 1.198  2002/10/08 03:35:15  robertj
  * Fixed BSD warning
  *
@@ -1848,7 +1853,19 @@ PThread * PThread::Create(const PNotifier & notifier,
                           const PString & threadName,
                           PINDEX stackSize)
 {
-  return new PSimpleThread(notifier, parameter, deletion, priorityLevel, threadName, stackSize);
+  PThread * thread = new PSimpleThread(notifier,
+                                       parameter,
+                                       deletion,
+                                       priorityLevel,
+                                       threadName,
+                                       stackSize);
+  if (deletion != AutoDeleteThread)
+    return thread;
+
+  // Do not return a pointer to the thread if it is auto-delete as this
+  // pointer is extremely dangerous to use, it could be deleted at any moment
+  // from now on so using the pointer could crash the program.
+  return NULL;
 }
 
 
