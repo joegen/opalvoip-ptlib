@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.33 1996/03/16 04:52:20 robertj Exp $
+ * $Id: sockets.cxx,v 1.34 1996/03/17 05:51:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.34  1996/03/17 05:51:18  robertj
+ * Fixed strange bug in accept cant have NULL address.
+ *
  * Revision 1.33  1996/03/16 04:52:20  robertj
  * Changed all the get host name and get host address functions to be more consistent.
  *
@@ -751,10 +754,13 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
-  port = ((PIPSocket &)socket).GetPort();
-  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(), NULL, NULL)))
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
+                                          (struct sockaddr *)&address, &size)))
     return FALSE;
 
+  port = ((PIPSocket &)socket).GetPort();
 
   static const linger ling = { 1, 10 };
   if (SetOption(SO_LINGER, &ling, sizeof(ling)))
