@@ -24,6 +24,10 @@
  * Contributor(s): Jac Goudsmit <jac@be.com>.
  *
  * $Log: video4beos.cxx,v $
+ * Revision 1.3  2002/04/10 08:40:36  rogerh
+ * Simplify the SetVideoChannelFormat() code. Use the implementation in the
+ * ancestor class.
+ *
  * Revision 1.2  2002/04/05 21:54:58  rogerh
  * Add SsetVideoChannelFormat - Reminded by Yuri
  *
@@ -160,11 +164,5 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 	return FALSE;
 }
  
-
-BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat)
-{
-	return TRUE;
-}
-
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,10 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.19  2002/04/10 08:40:36  rogerh
+ * Simplify the SetVideoChannelFormat() code. Use the implementation in the
+ * ancestor class.
+ *
  * Revision 1.18  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -544,16 +548,6 @@ BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
   frameHue        = *hue;
 
   return TRUE;
-}
-
-BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
-{
-  BOOL err1, err2;
-
-  err1 = SetChannel (newNumber);
-  err2 = SetVideoFormat (newFormat);
-  
-  return (err1 && err2);
 }
 
 BOOL PVideoInputDevice::TestAllFormats()
