@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.8  2000/08/04 12:52:18  robertj
+ * SSL changes, added error functions, removed need to have openssl include directory in app.
+ *
  * Revision 1.7  2000/01/10 02:23:18  craigs
  * Update for new OpenSSL
  *
@@ -56,10 +59,10 @@
 
 #include <ptlib/sockets.h>
 
-extern "C" {
-#include <openssl/ssl.h>
-#include <openssl/crypto.h>
-};
+
+struct ssl_st;
+struct ssl_ctx_st;
+
 
 class PSSLChannel : public PIndirectChannel
 {
@@ -91,9 +94,11 @@ class PSSLChannel : public PIndirectChannel
     int SetClientCertificate(const PString & certFile, const PString & keyFile);
 
 
-    // Normal socket read & write functions
-    BOOL   Read(void * buf, PINDEX len);
-    BOOL   Write(const void * buf, PINDEX len);
+    // Overrides from PChannel
+    virtual BOOL   Read(void * buf, PINDEX len);
+    virtual BOOL   Write(const void * buf, PINDEX len);
+    virtual PString GetErrorText() const;
+    virtual BOOL ConvertOSError(int error);
 
     BOOL   RawRead(void * buf, PINDEX len);
     PINDEX RawGetLastReadCount() const;
@@ -105,16 +110,25 @@ class PSSLChannel : public PIndirectChannel
     BOOL Shutdown(ShutdownValue) { return TRUE; }
 
   protected:
-    int  Set_SSL_Fd();
+    /**This callback is executed when the Open() function is called with
+       open channels. It may be used by descendent channels to do any
+       handshaking required by the protocol that channel embodies.
+
+       The default behaviour is to simply return TRUE.
+
+       @return
+       Returns TRUE if the protocol handshaking is successful.
+     */
+    virtual BOOL OnOpen();
+
     int  SetClientCertificate(const char * certFile, const char * keyFile);
 
     static BOOL SetCAPathAndFile(const char * caPath, const char * caFile);
     static void Cleanup();
 
 
-    SSL * ssl;
-    static SSL_CTX * context;
-    static PMutex semaphores[CRYPTO_NUM_LOCKS];
+    ssl_st * ssl;
+    static ssl_ctx_st * context;
     static PMutex initFlag;
 };
 
