@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.109  2003/04/14 21:20:59  dereks
+# Fix problems for Firewire video. Thanks to Snark on #gnomemeeting
+#
 # Revision 1.108  2003/03/31 09:03:04  robertj
 # Added ILS support file.
 #
@@ -415,6 +418,10 @@ endif
 
 ifdef TRY_1394DC
 VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
+endif
+
+ifdef TRY_1394AVC
+VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
 endif
 
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
