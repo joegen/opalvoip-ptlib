@@ -27,6 +27,11 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.6  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.5  2001/10/23 02:11:00  dereks
  * Extend video channel so it can display raw data, using attached video devices.
  *
@@ -159,44 +164,53 @@ class PVideoChannel : public PChannel
     /**Cause the referenced data to be drawn to the 
        previously defined media 
      */
-    virtual BOOL Redraw(const void * frame) 
-        { return mpOutput->Redraw (frame); };
+    virtual BOOL Redraw(const void * frame); 
 
     /**Set the current time.
      */
-    virtual void SetRenderNow(int _now)  
-         { mpOutput->SetNow(_now); }
+    virtual void SetRenderNow(int _now);  
 
     /**Return the previously specified width.
      */
-    PINDEX  GetRenderWidth()
-      { return mpOutput->GetFrameWidth(); }
+    PINDEX  GetRenderWidth();
 
     /**Return the previously specified height.
      */
-    PINDEX  GetRenderHeight()
-      { return mpOutput->GetFrameHeight(); }
+    PINDEX  GetRenderHeight();
 
     /**Specifiy the width and height of the video stream, which is to be
        rendered onto the previously specified device.
      */
-    virtual void SetRenderFrameSize(int _width, int _height) 
-      { mpOutput->SetFrameSize(_width, _height); }
+    virtual void SetRenderFrameSize(int _width, int _height); 
 
     /**Specifiy the width and height of the video stream, which is to be
        extracted from the previously specified device.
      */
-    virtual void SetGrabberFrameSize(int _width, int _height) 
-      { if(mpInput != NULL)
-           mpInput->SetFrameSize((unsigned)_width, (unsigned)_height); }
+    virtual void SetGrabberFrameSize(int _width, int _height); 
 
     /**Attach a user specific class for rendering video 
+
+       If keepCurrent is true, an abort is caused when the program attempts to attach
+       a new player when there is already a video player attached.
+
+       If keepCurrent is false, the existing video player is deleted before attaching
+       the new player.
      */
-    virtual void AttachVideoPlayer(PVideoOutputDevice * device);
+    virtual void AttachVideoPlayer(PVideoOutputDevice * device, BOOL keepCurrent = TRUE);
 
     /**Attach a user specific class for acquiring video 
+
+      If keepCurrent is true, an abort is caused when the program attempts to attach
+       a new reader when there is already a video reader attached.
+
+       If keepCurrent is false, the existing video reader is deleted before attaching
+       the new reader.
      */
-    virtual void AttachVideoReader(PVideoInputDevice * device);
+    virtual void AttachVideoReader(PVideoInputDevice * device, BOOL keepCurrent = TRUE);
+
+    /**Return a pointer to the class for acquiring video 
+     */
+    virtual PVideoInputDevice *GetVideoReader();
 
     /**See if the grabber is open 
      */
@@ -211,13 +225,32 @@ class PVideoChannel : public PChannel
     */
     BOOL DisplayRawData(void *videoBuffer);
 
+    /**Destroy the attached grabber class.
+     */
+    virtual void CloseVideoReader();
+
+    /**Destroy the attached video display class.
+     */
+    virtual void CloseVideoPlayer();
+
+    /**Restrict others from using this video channel.
+     */
+    void RestrictAccess();
+    
+    /**Allow free access to this video channel.
+     */
+    void EnableAccess();
+
  protected:
+
     Directions       direction;
 
     PString          deviceName;     ///Specified video device name, eg /dev/video0.
     PVideoInputDevice  *mpInput;    /// For grabbing video from the camera.
     PVideoOutputDevice *mpOutput;   /// For displaying video on the screen.
 
+    PMutex           accessMutex;   // Ensure that only task is accesing 
+                                    // members in this video channel.
   private:
     void Construct();
 

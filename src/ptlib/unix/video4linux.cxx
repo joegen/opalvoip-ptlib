@@ -25,6 +25,11 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.20  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.19  2001/11/05 01:03:20  dereks
  * Fix error in collection of video data. Frame rate is now double of that
  * obtained previously.
@@ -207,7 +212,7 @@ static struct {
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
   Close();
-
+ 
   deviceName = devName;
   videoFd = ::open((const char *)devName, O_RDWR);
   if (videoFd < 0) {
@@ -226,7 +231,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   SetCanCaptureVideo(videoCapability.type & VID_TYPE_CAPTURE);
 
   hint_index = PARRAYSIZE(driver_hints) - 1;
-  PString driver_name = videoCapability.name;  
+  PString driver_name(videoCapability.name);  
 
   // Scan the hint table, looking for regular expression matches with
   // drivers we hold hints for.
@@ -559,16 +564,36 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
+  if(frameRate>0) {
+    frameTimeError += msBetweenFrames;
+   
+    do {
+      if ( !GetFrameDataNoDelay(buffer, bytesReturned))
+	return FALSE;      
+      PTime now;
+      PTimeInterval delay = now - previousFrameTime;
+      frameTimeError -= (int)delay.GetMilliSeconds();
+      previousFrameTime = now;
+    }  while(frameTimeError > 0) ;
+
+  }
+  return GetFrameDataNoDelay(buffer,bytesReturned);
+}
+
+
+BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+{
   if (canMap < 0) {
-
-    if (::ioctl(videoFd, VIDIOCGMBUF, &frame) < 0)
-      cout << "VIDIOCGMBUF failed" << endl;
-    else {
+    //When canMap is < 0, it is the first use of GetFrameData. Check for memory mapping.
+    if (::ioctl(videoFd, VIDIOCGMBUF, &frame) < 0) {
+      canMap=0;
+      //This video device cannot do memory mapping.
+    } else {
       videoBuffer = (BYTE *)::mmap(0, frame.size, PROT_READ|PROT_WRITE, MAP_SHARED, videoFd, 0);
-
+      
       if (videoBuffer < 0) {
         canMap = 0;
-
+	//This video device cannot do memory mapping.
       } else {
         canMap = 1;
 
@@ -583,47 +608,21 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
         frameBuffer[1].height = frameHeight;
 
         currentFrame = 0;
-	if (::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]) != 0) {
+	int ret;
+        ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]);
+	if (ret < 0) {
 	  PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (A)");
 	  canMap = 0;
 	  ::munmap(videoBuffer, frame.size);
 	  videoBuffer = NULL;
+	  //This video device cannot do memory mapping.
 	}	
       }
     }
   }
 
-  // device does not support memory mapping - use normal read
-  // take care over signals.
   if (canMap == 0) {
-
-    ssize_t ret;
-
-    ret = -1;
-    while (ret < 0) {
-      ret = ::read(videoFd, buffer, frameBytes);
-      if ((ret < 0) && (errno == EINTR))
-	continue;
-    
-      if (ret < 0) {
-	PTRACE(1,"PVideoInputDevice::GetFrameData read() failed");
-	return FALSE;
-      }
-      
-    }
-
-    if ((unsigned) ret != frameBytes) {
-      PTRACE(1,"PVideoInputDevice::GetFrameData read() returned a short read");
-      // Not a completely fatal. Maybe it should return FALSE instead of a partial
-      // image though?
-      // return FALSE;
-    }
-    
-    if (converter != NULL)
-      return converter->ConvertInPlace(buffer, bytesReturned);
-    if (bytesReturned != NULL)
-      *bytesReturned = frameBytes;
-    return TRUE;
+    return NormalReadProcess(buffer, bytesReturned);
   }
 
   /*****************************
@@ -652,7 +651,9 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     canMap = 0;
     ::munmap(videoBuffer, frame.size);
     videoBuffer = NULL;
-  }
+    
+    return NormalReadProcess(buffer, bytesReturned);
+ }
 
   
   // device does support memory mapping, get data
@@ -665,7 +666,8 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     canMap = 0;
     ::munmap(videoBuffer, frame.size);
     videoBuffer = NULL;
-    return FALSE;
+ 
+    return NormalReadProcess(buffer, bytesReturned);
   }
   
   // If converting on the fly do it from frame store to output buffer, otherwise do
@@ -684,6 +686,40 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   return TRUE;
 }
 
+//This video device does not support memory mapping - so 
+// use normal read process to extract a frame of video data.
+BOOL PVideoInputDevice::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesReturned)
+{ 
+   ssize_t ret;
+   ret = -1;
+   while (ret < 0) {
+
+     ret = ::read(videoFd, resultBuffer, frameBytes);
+     if ((ret < 0) && (errno == EINTR))
+	continue;
+    
+      if (ret < 0) {
+	PTRACE(1,"PVideoInputDevice::NormalReadProcess() failed");
+	return FALSE;
+      }
+      
+    }
+
+    if ((unsigned) ret != frameBytes) {
+      PTRACE(1,"PVideoInputDevice::NormalReadProcess() returned a short read");
+      // Not a completely fatal. Maybe it should return FALSE instead of a partial
+      // image though?
+      // return FALSE;
+    }
+    
+    if (converter != NULL)
+      return converter->ConvertInPlace(resultBuffer, bytesReturned);
+
+    if (bytesReturned != NULL)
+      *bytesReturned = frameBytes;
+
+    return TRUE;
+}
 
 void PVideoInputDevice::ClearMapping()
 {
@@ -913,5 +949,30 @@ BOOL PVideoInputDevice::SetHue(unsigned newHue)
   return TRUE;
 }
 
+BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness, 
+                                      int *colour, int *contrast, int *hue)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  *brightness = vp.brightness;
+  *colour     = vp.colour;
+  *contrast   = vp.contrast;
+  *hue        = vp.hue;
+  *whiteness  = vp.whiteness;
+
+  frameBrightness = *brightness;
+  frameColour     = *colour;
+  frameContrast   = *contrast;
+  frameHue        = *hue;
+  frameWhiteness  = *whiteness;
+  
+  return TRUE;
+}
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,11 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.8  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.7  2001/03/12 03:54:11  dereks
  * Make setting frame rate consistent with that for real video device.
  *
@@ -65,9 +70,8 @@
 
 PFakeVideoInputDevice::PFakeVideoInputDevice()
 {
-  lastTick = PTimer::Tick();  
-  msBetweenFrames= 100;  
   grabCount = 0;
+  SetFrameRate(10);
 }
 
 
@@ -144,10 +148,10 @@ BOOL PFakeVideoInputDevice::SetColourFormat(const PString & newFormat)
 
 BOOL PFakeVideoInputDevice::SetFrameRate(unsigned rate)
 {
-  if (rate==0)
-    return FALSE;
-  
-  msBetweenFrames= 1000 / rate;
+  if ( (rate < 1) || ( rate > 50) )
+    PVideoDevice::SetFrameRate(10);
+  else
+    PVideoDevice::SetFrameRate(rate);
 
   return TRUE;
 }
@@ -162,8 +166,8 @@ BOOL PFakeVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
   minHeight = 10;
   maxWidth  = 1000;
   maxHeight =  800;
-  return TRUE;
 
+  return TRUE;
 }
 
 
@@ -185,44 +189,57 @@ PINDEX PFakeVideoInputDevice::GetMaxFrameBytes()
 
 void PFakeVideoInputDevice::WaitFinishPreviousFrame()
 {
-   PTimeInterval delay = lastTick + msBetweenFrames - PTimer::Tick() ;
+  frameTimeError += msBetweenFrames;
 
-   if( (delay > 0) && ( delay <= msBetweenFrames) ) //Prevents excessive long sleep.
-     PThread::Current()->Sleep(delay);         
+  PTime now;
+  PTimeInterval delay = now - previousFrameTime;
+  frameTimeError -= (int)delay.GetMilliSeconds();
+  previousFrameTime = now;
 
-   lastTick = PTimer::Tick();
+  if (frameTimeError > 0)
+#ifdef P_LINUX
+    usleep(frameTimeError * 1000);
+#else
+    PThread::Current()->Sleep(frameTimeError);
+#endif
 } 
 
 
 BOOL PFakeVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
-   FillFrameWithData(buffer);
-   *bytesReturned= videoFrameSize;
+  WaitFinishPreviousFrame();
 
-   return TRUE;
+  GetFrameDataNoDelay(buffer, bytesReturned);
+  
+  *bytesReturned= videoFrameSize;
+
+  return TRUE;
 }
 
 
-void PFakeVideoInputDevice::FillFrameWithData(BYTE *destFrame)
+BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * bytesReturned)
 {
-     WaitFinishPreviousFrame();
-     
      grabCount++;
 
      // Make sure are NUM_PATTERNS cases here.
      switch(channelNumber){       
-         case 0: 
-             GrabMovingBlocksTestFrame(destFrame);
-             break;
-         case 1: 
-             GrabMovingLineTestFrame(destFrame);
-             break;
-	 case 2:
-	     GrabBouncingBoxes(destFrame);
-	     break;
-         default:
-             GrabNTSCTestFrame(destFrame);
+     case 0: 
+       GrabMovingBlocksTestFrame(destFrame);
+       break;
+     case 1: 
+       GrabMovingLineTestFrame(destFrame);
+       break;
+     case 2:
+       GrabBouncingBoxes(destFrame);
+       break;
+     case 3:
+       GrabBlankImage(destFrame);
+       break;
+     default:
+       GrabNTSCTestFrame(destFrame);
      }
+
+     return TRUE;
 }
 
 
@@ -530,5 +547,19 @@ void PFakeVideoInputDevice::GrabMovingLineTestFrame(BYTE *resFrame)
 	  FillRect(resFrame, width, height, 0, hi,   width, 2, 0, 0, 0);
 }
 
-    
+void PFakeVideoInputDevice::GrabBlankImage(BYTE *resFrame)
+{
+  unsigned width=0;
+  unsigned height=0;
+  GetFrameSize(width,height);
+
+  grabCount++;
+
+  FillRect(resFrame, width, height,
+                    0, 0,                       //Position x,y
+              width, height, //Fill the whole frame with the colour.
+                          200,200,200); //a light grey colour.                                                             
+}
+
+ 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,11 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.6  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.5  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -104,16 +109,24 @@ class PFakeVideoInputDevice : public PVideoInputDevice
       */
     virtual PINDEX GetMaxFrameBytes();
 
-    /**Grab a frame.
+    /**Grab a frame. 
+
+       There will be a delay in returning, as specified by frame rate.
       */
-    BOOL GetFrameData(
+    virtual BOOL GetFrameData(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// Optional bytes returned.
     );
 
-    /**Called when this class has to generate a fictitous image 
-     */
-    void FillFrameWithData(BYTE * buffer);
+    /**Grab a frame.
+
+       Do not delay according to the current frame rate.
+      */
+    virtual BOOL GetFrameDataNoDelay(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+    );
+
 
     /**A test image that contains area of low and high resolution.
        The picture changes every second*/
@@ -131,6 +144,10 @@ class PFakeVideoInputDevice : public PVideoInputDevice
       */
     void GrabBouncingBoxes(BYTE *resFrame);
     
+    /**Generate a static image, containing a constant field of grey.
+     */
+    void GrabBlankImage(BYTE *resFrame);
+
     /** Fills a region of the image with a constant colour.
      */
     void FillRect(BYTE * frame,  unsigned width, unsigned height,
@@ -211,9 +228,7 @@ class PFakeVideoInputDevice : public PVideoInputDevice
     
  protected:
    PINDEX videoFrameSize;
-   int    msBetweenFrames; 
    int    grabCount;       
-   PTimeInterval lastTick; 
 };
 
 #endif
