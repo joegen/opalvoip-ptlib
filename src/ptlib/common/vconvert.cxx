@@ -1,5 +1,5 @@
 /*
- * videoio.cxx
+ * vconvert.cxx
  *
  * Classes to support streaming video input (grabbing) and output.
  *
@@ -24,25 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.2  2000/12/19 23:58:14  robertj
+ * Fixed MSVC compatibility issues.
+ *
  * Revision 1.1  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
- *
- * Revision 1.5  2000/11/09 00:20:58  robertj
- * Added qcif size constants
- *
- * Revision 1.4  2000/07/26 03:50:50  robertj
- * Added last error variable to video device.
- *
- * Revision 1.3  2000/07/26 02:13:48  robertj
- * Added some more "common" bounds checking to video device.
- *
- * Revision 1.2  2000/07/25 13:38:26  robertj
- * Added frame rate parameter to video frame grabber.
- *
- * Revision 1.1  2000/07/15 09:47:35  robertj
- * Added video I/O device classes.
- *
  */
 
 #include <ptlib.h>
@@ -52,10 +39,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoConvert
 
-PVideoConvert::PVideoConvert(int      srcFormat,
-                             int      destFormat,
+PVideoConvert::PVideoConvert(PVideoDevice::ColourFormat srcFormat,
+                             PVideoDevice::ColourFormat destFormat,
                              unsigned width,
-                             unsigned height )
+                             unsigned height)
 {
   internalBuffer = NULL;
   if ( (width==0) || (height==0) )

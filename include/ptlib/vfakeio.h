@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.2  2000/12/19 23:58:14  robertj
+ * Fixed MSVC compatibility issues.
+ *
  * Revision 1.1  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -158,10 +161,10 @@ class PFakeVideoInputDevice: public PVideoInputDevice
     void ClearMapping() { return ; }
     
  protected:
-    PTimeInterval lastTick; 
-    int    msBetweenFrames; 
-    int    grabCount;       
-    
+   PINDEX videoFrameSize;
+   int    msBetweenFrames; 
+   int    grabCount;       
+   PTimeInterval lastTick; 
 };
 
 #endif
