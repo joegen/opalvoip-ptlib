@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.50  1999/08/22 13:38:39  robertj
+ * Fixed termination hang up problem with memory check code under unix pthreads.
+ *
  * Revision 1.49  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -679,6 +682,8 @@ class PMemoryHeap {
       char         guard[sizeof(GuardBytes)];
     };
 #pragma pack()
+
+    BOOL isDestroyed;
 
     Header * listHead;
     Header * listTail;

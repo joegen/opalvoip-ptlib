@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.41  1999/08/22 13:38:39  robertj
+ * Fixed termination hang up problem with memory check code under unix pthreads.
+ *
  * Revision 1.40  1999/08/10 10:45:09  robertj
  * Added mutex in memory check detection code.
  *
@@ -232,6 +235,9 @@ PMemoryHeap::Wrapper::Wrapper()
   // guarentee that a static global is contructed before it is used.
   static PMemoryHeap real_instance;
   instance = &real_instance;
+  if (instance->isDestroyed)
+    return;
+
 #if defined(_WIN32)
   EnterCriticalSection(&instance->mutex);
 #elif defined(P_PTHREADS)
@@ -242,6 +248,9 @@ PMemoryHeap::Wrapper::Wrapper()
 
 PMemoryHeap::Wrapper::~Wrapper()
 {
+  if (instance->isDestroyed)
+    return;
+
 #if defined(_WIN32)
   LeaveCriticalSection(&instance->mutex);
 #elif defined(P_PTHREADS)
@@ -252,6 +261,8 @@ PMemoryHeap::Wrapper::~Wrapper()
 
 PMemoryHeap::PMemoryHeap()
 {
+  isDestroyed = FALSE;
+
   listHead = NULL;
   listTail = NULL;
 
@@ -283,11 +294,23 @@ PMemoryHeap::PMemoryHeap()
 
 PMemoryHeap::~PMemoryHeap()
 {
+  isDestroyed = TRUE;
+
   if (leakDumpStream != NULL) {
     DumpStatistics(*leakDumpStream);
 #if !defined(_WIN32)
     if (listTail != NULL && listTail->request >= firstRealObject) {
-      signal(SIGINT, SIG_DFL);
+#if defined(P_PTHREADS)
+      sigset_t blockedSignals;
+      sigemptyset(&blockedSignals);
+      sigaddset(&blockedSignals, SIGINT);
+      sigaddset(&blockedSignals, SIGQUIT);
+      sigaddset(&blockedSignals, SIGTERM);
+      pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL);
+#endif
+      ::signal(SIGINT, SIG_DFL);
+      ::signal(SIGQUIT, SIG_DFL);
+      ::signal(SIGTERM, SIG_DFL);
       *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
       cin.get();
     }
@@ -329,6 +352,9 @@ void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int l
 
 void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className)
 {
+  if (isDestroyed)
+    return malloc(nSize);
+
   Header * obj = (Header *)malloc(sizeof(Header) + nSize + sizeof(Header::GuardBytes));
   if (obj == NULL) {
     PAssertAlways(POutOfMemory);
@@ -387,6 +413,9 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
 
   Wrapper mem;
 
+  if (mem->isDestroyed)
+    return realloc(ptr, nSize);
+
   if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) == Trashed)
     return NULL;
 
@@ -430,6 +459,11 @@ void PMemoryHeap::Deallocate(void * ptr, const char * className)
 
   Wrapper mem;
 
+  if (mem->isDestroyed) {
+    free(ptr);
+    return;
+  }
+
   if (mem->InternalValidate(ptr, className, mem->leakDumpStream) == Trashed) {
     free(ptr);
     return;
@@ -466,6 +500,9 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
                                                       const char * className,
                                                       ostream * error)
 {
+  if (isDestroyed)
+    return Bad;
+
   if (ptr == NULL)
     return Trashed;
 
