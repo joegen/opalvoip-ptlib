@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.229  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.228  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -767,13 +771,6 @@
 #include <vector>
 
 #include <ctype.h>
-
-#ifdef _WIN32
-namespace PWLibStupidWindowsHacks {
-extern int loadSoundStuff;
-extern int loadVideoStuff;
-};
-#endif
 
 class PSimpleThread : public PThread
 {
@@ -1915,12 +1912,6 @@ PProcess::PProcess(const char * manuf, const char * name,
   InitialiseProcessThread();
 
   Construct();
-
-#ifdef _WIN32
-  PWLibStupidWindowsHacks::loadSoundStuff = 1;
-  PWLibStupidWindowsHacks::loadVideoStuff = 1;
-
-#endif
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory

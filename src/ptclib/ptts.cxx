@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.16  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.15  2004/10/23 10:56:15  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -107,17 +111,11 @@
 // this disables the winsock2 stuff in the Windows contain.h, to avoid header file problems
 #define P_KNOCKOUT_WINSOCK2
 
-#define P_DISABLE_FACTORY_INSTANCES
-
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
 
-#ifdef _WIN32
-
 PINSTANTIATE_FACTORY(PTextToSpeech, PString)
-
-#endif
 
 ////////////////////////////////////////////////////////////
 //

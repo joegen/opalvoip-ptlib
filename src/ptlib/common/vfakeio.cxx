@@ -24,6 +24,10 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.31  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.30  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -119,15 +123,18 @@
  *
  *
  */
+
 #define P_FORCE_STATIC_PLUGIN
 
 #include <ptlib.h>
+
+#if defined(_WIN32) && !defined(P_FORCE_STATIC_PLUGIN)
+#error "vfakeio.cxx must be compiled without precompiled headers"
+#endif
+
 #include <ptlib/videoio.h>
 
-
 #define NUM_PATTERNS 6
-
-
 #define MAX_L_HEIGHT 11
 
 typedef struct {

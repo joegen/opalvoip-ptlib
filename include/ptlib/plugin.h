@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.12  2005/01/04 07:44:03  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.11  2004/08/16 11:57:47  csoutheren
  * More changes for VS.net
  *
@@ -183,7 +187,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 #define PWLIB_STATIC_LOAD_PLUGIN(cls) \
   class PPlugin_##cls##_Registration; \
   extern PPlugin_##cls##_Registration PPlugin_##cls##_Registration_Instance; \
-  static PPlugin_##cls##_Registration * PPlugin_##cls##_Registration_Static_Library_Loader = &PPlugin_##cls##_Registration_Instance
+  static PPlugin_##cls##_Registration * PPlugin_##cls##_Registration_Static_Library_Loader = &PPlugin_##cls##_Registration_Instance;
 
 #else
 
@@ -206,6 +210,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 //////////////////////////////////////////////////////
 
 #if defined(P_HAS_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
+
 #  define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
     PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor)
 
