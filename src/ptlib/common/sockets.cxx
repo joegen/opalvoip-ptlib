@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.44 1996/07/27 04:10:35 robertj Exp $
+ * $Id: sockets.cxx,v 1.45 1996/07/30 12:24:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.45  1996/07/30 12:24:53  robertj
+ * Fixed incorrect conditional stopping Select() from working.
+ *
  * Revision 1.44  1996/07/27 04:10:35  robertj
  * Changed Select() calls to return error codes.
  *
@@ -226,7 +229,7 @@ int PSocket::Select(PSocket & sock1,
 
   Errors lastError;
   int osError;
-  if (ConvertOSError(rval, lastError, osError))
+  if (!ConvertOSError(rval, lastError, osError))
     return lastError;
 
   rval = 0;
@@ -330,7 +333,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
   Errors lastError;
   int osError;
-  if (ConvertOSError(retval, lastError, osError))
+  if (!ConvertOSError(retval, lastError, osError))
     return lastError;
 
   if (retval > 0) {
