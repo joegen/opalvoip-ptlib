@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.31  2004/05/30 04:48:15  ykiryanov
+ * Sync point is better when semaphore based
+ *
  * Revision 1.30  2004/05/24 04:17:16  ykiryanov
  * Made PSyncPoint::Wait to return FALSE if called with timeout 0
  *
@@ -696,17 +699,13 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
         B_RELATIVE_TIMEOUT, microseconds)) == B_INTERRUPTED))
     {
     }
-
-    if(ms == 0)
-     return (result != B_TIMED_OUT); // Not timed out - check Wait(0) passed
   }
   else
   {
-    PError << "Semaphore Wait (locker type) with timeout " << microseconds << endl;
     result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
   }
 
-  return result == B_OK;
+  return ms == 0 ? FALSE : result == B_OK;
 }
 
 void PSemaphore::Signal()
@@ -753,7 +752,7 @@ BOOL PSemaphore::WillBlock() const
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
- : PSemaphore(TRUE) // TREU means Implemented through BLocker
+ : PSemaphore(FALSE) // FALSE is semaphore based, TRUE means implemented through BLocker
 {
    PSemaphore::Create(0);
 }
@@ -770,7 +769,7 @@ void PSyncPoint::Wait()
                                                                                                       
 BOOL PSyncPoint::Wait(const PTimeInterval & timeout)
 {
-  return timeout.GetMilliSeconds() ==0 ? FALSE: PSemaphore::Wait(timeout);
+  return PSemaphore::Wait(timeout);
 }
                                                                                                       
 BOOL PSyncPoint::WillBlock() const
