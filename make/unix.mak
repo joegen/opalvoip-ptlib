@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.52  1999/11/11 08:11:01  robertj
+# Reworded warning in vain hope people will understand!
+#
 # Revision 1.51  1999/10/22 10:21:46  craigs
 # Added define to only include semaphore libraries on Linux platform
 #
@@ -180,12 +183,20 @@ ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris beos))
 all ::
 	@echo
 	@echo ######################################################################
-	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed. You will"
-	@echo "         have to examine the values for OSTYPE and MACHTYPE or the"
-	@echo "         uname -s and uname -m commands and set the correct unix"
-	@echo "         variant in the tables above."
+	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed.  This may"
+	@echo "         be a new operating system not yet encountered, or more"
+	@echo "         likely, the OSTYPE and MACHTYPE environment variables are"
+	@echo "         set to unusual values. You may need to explicitly set these"
+	@echo "         variables for the correct operation of this system."
 	@echo
-	@echo "              *** DO NOT IGNORE THIS MESSAGE ***
+	@echo "         Currently supported OSTYPE names are:"
+	@echo "              linux Linux linux-gnu mklinux"
+	@echo "              solaris Solaris SunOS"
+	@echo "              FreeBSD beos"
+	@echo
+	@echo "              **********************************"
+	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
+	@echo "              **********************************"
 	@echo
 	@echo "         The system almost certainly will not compile! When you get"
 	@echo "         it working please send patches to support@equival.com.au"
