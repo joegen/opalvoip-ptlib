@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.4  1999/03/09 08:07:00  robertj
+# Documentation support.
+#
 # Revision 1.3  1999/01/22 00:30:45  robertj
 # Yet more build environment changes.
 #
@@ -96,6 +99,13 @@ bothdepend :
 
 bothclean :
 	$(MAKE) DEBUG= clean ; $(MAKE) DEBUG=1 clean
+
+
+
+
+docs: 
+	@if [ ! -d html ] ; then mkdir -p html ; fi
+	doc++ -a -f -d html pwlib.dxx
 
 
 ifdef HAS_GUI
