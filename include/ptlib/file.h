@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.11 1994/01/03 04:42:23 robertj Exp $
+ * $Id: file.h,v 1.12 1994/01/13 03:40:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Revision 1.12  1994/01/13 03:40:22  robertj
+ * Added hidden flag to file info.
+ *
+ * Revision 1.12  1994/01/13  03:36:48  robertj
+ * Created intermediate class PInteractorLayout for dialog-ish windows.
+ *
+ * Revision 1.11  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.10  1993/12/31  06:45:38  robertj
@@ -131,7 +137,8 @@ PDECLARE_CONTAINER(PFile, PContainer)
       PTime modified;
       PTime accessed;
       DWORD filesize;
-      int permissions;
+      int   permissions;
+      BOOL  hidden;
     };
     BOOL GetInfo(Info & info) const;
     static BOOL GetInfo(const PString & name, Info & info);
