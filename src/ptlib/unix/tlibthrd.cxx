@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.89  2002/08/22 13:05:57  craigs
+ * Fixed problems with mutex implementation thanks to Martin Froehlich
+ *
  * Revision 1.88  2002/07/15 06:56:59  craigs
  * Fixed missing brace
  *
@@ -1146,7 +1149,8 @@ PMutex::PMutex()
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
   pthread_mutex_init(&mutex, &attr);
 #else
-  ownerThreadId = (pthread_t)-1;
+  internal_mutex = MutexInitialiser;
+  ownerThreadId  = (pthread_t)-1;
   lockCount = 0;
 #endif
 }
@@ -1160,7 +1164,8 @@ PMutex::PMutex(const PMutex & /*mut*/)
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
   pthread_mutex_init(&mutex, &attr);
 #else
-  ownerThreadId = (pthread_t)-1;
+  internal_mutex = MutexInitialiser;
+  ownerThreadId  = (pthread_t)-1;
   lockCount = 0;
 #endif
 }
@@ -1172,20 +1177,24 @@ void PMutex::Wait()
 
   // if the mutex is already acquired by this thread,
   // then just increment the lock count
-  if (pthread_equal(ownerThreadId, currentThreadId)) {
+  pthread_mutex_lock(&internal_mutex);
+  if (lockCount!=0 && pthread_equal(ownerThreadId, currentThreadId)) {
     lockCount++;
+    pthread_mutex_unlock(&internal_mutex);
     return;
   }
+  pthread_mutex_unlock(&internal_mutex);
 #endif
 
   // acquire the lock for real
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
 #ifndef P_HAS_RECURSIVE_MUTEX
-  // set flags
-  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
-          "PMutex acquired whilst locked by another thread");
+  // increment the lock count
+  pthread_mutex_lock(&internal_mutex);
+  lockCount++;
   ownerThreadId = currentThreadId;
+  pthread_mutex_unlock(&internal_mutex);
 #endif
 }
 
@@ -1199,14 +1208,20 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   }
 
 #ifndef P_HAS_RECURSIVE_MUTEX
+  // lock the internal mutex
+  pthread_mutex_lock(&internal_mutex);
+
   // get the current thread ID
   pthread_t currentThreadId = pthread_self();
 
   // if we already have the mutex, return immediately
-  if (pthread_equal(ownerThreadId, currentThreadId)) {
+  if (lockCount != 0 && pthread_equal(ownerThreadId, currentThreadId)) {
     lockCount++;
+    pthread_mutex_unlock(&internal_mutex);
     return TRUE;
   }
+
+  pthread_mutex_unlock(&internal_mutex);
 #endif
 
   // create absolute finish time
@@ -1215,11 +1230,14 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
+
 #ifndef P_HAS_RECURSIVE_MUTEX
-      PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
-              "PMutex acquired whilst locked by another thread");
+      pthread_mutex_lock(&internal_mutex);
+      lockCount++;
       ownerThreadId = currentThreadId;
+      pthread_mutex_unlock(&internal_mutex);
 #endif
+
       return TRUE;
     }
 
@@ -1237,16 +1255,19 @@ void PMutex::Signal()
           "PMutex signal failed - no matching wait or signal by wrong thread");
 
   // if lock was recursively acquired, then decrement the counter
-  if (lockCount > 0) {
+  pthread_mutex_lock(&internal_mutex);
+  if (lockCount > 1) {
     lockCount--;
+    pthread_mutex_unlock(&internal_mutex);
     return;
   }
 
   // otherwise mark mutex as available
   ownerThreadId = (pthread_t)-1;
+  lockCount--;
+  pthread_mutex_unlock(&internal_mutex);
 #endif
 
-  // and unlock for sure
   PAssert(pthread_mutex_unlock(&mutex) == 0,
           "PMutex signal failed - no matching wait or signal by wrong thread");
 }
