@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.129  2004/05/31 22:59:04  csoutheren
+# Added enum.cxx
+#
 # Revision 1.128  2004/04/28 11:26:43  csoutheren
 # Hopefully fixed SASL and SASL2 problems
 #
@@ -652,6 +655,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
+	$(COMPONENT_SRC_DIR)/enum.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
         $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
