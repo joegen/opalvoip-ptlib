@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.25  2003/04/08 05:09:41  craigs
+ * Added ability to use commands as an audio source
+ *
  * Revision 1.24  2003/03/18 00:45:36  robertj
  * Fixed missing return in previous patch.
  *
@@ -112,6 +115,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib/pipechan.h>
 
 #include <ptclib/pxml.h>
 #include <ptclib/delaychan.h>
@@ -235,6 +240,7 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual BOOL PlayCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
 
@@ -354,25 +360,51 @@ class PVXMLQueueDataItem : public PVXMLQueueItem
     PBYTEArray data;
 };
 
-
-class PVXMLQueueFilenameItem : public PVXMLQueueItem
+class PVXMLQueueChannelItem : public PVXMLQueueItem
 {
-  PCLASSINFO(PVXMLQueueFilenameItem, PObject);
+  PCLASSINFO(PVXMLQueueChannelItem, PVXMLQueueItem);
   public:
-    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL _autoDelete = FALSE)
-      : PVXMLQueueItem(repeat, delay), fn(_fn), autoDelete(_autoDelete)
+    PVXMLQueueChannelItem(PINDEX repeat = 1, PINDEX delay = 0, BOOL _autoDelete = FALSE)
+      : PVXMLQueueItem(repeat, delay), autoDelete(_autoDelete)
     { }
 
-    void Play(PVXMLChannel & outgoingChannel);
-
-    void OnStop() 
-    { if (autoDelete) PFile::Remove(fn); }
-
   protected:
-    PFilePath fn;
     BOOL autoDelete;
 };
 
+
+class PVXMLQueueFilenameItem : public PVXMLQueueChannelItem
+{
+  PCLASSINFO(PVXMLQueueFilenameItem, PVXMLQueueChannelItem);
+  public:
+    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX _repeat = 1, PINDEX _delay = 0, BOOL _autoDelete = FALSE)
+      : PVXMLQueueChannelItem(_repeat, _delay, _autoDelete), fn(_fn)
+    { }
+
+    void Play(PVXMLChannel & outgoingChannel);
+    void OnStop();
+
+  protected:
+    PFilePath fn;
+};
+
+class PVXMLQueueCommandItem : public PVXMLQueueChannelItem
+{
+  PCLASSINFO(PVXMLQueueCommandItem, PVXMLQueueChannelItem);
+  public:
+    PVXMLQueueCommandItem(const PString & _cmd, const PString & _fmt, unsigned _freq, PINDEX _repeat = 1, PINDEX _delay = 0, BOOL _autoDelete = FALSE)
+      : PVXMLQueueChannelItem(_repeat, _delay, _autoDelete), cmd(_cmd), format(_fmt), sampleFrequency(_freq)
+    { pipeCmd = NULL; }
+
+    void Play(PVXMLChannel & outgoingChannel);
+    void OnStop();
+
+  protected:
+    PPipeChannel * pipeCmd;
+    PString cmd;
+    PString format;
+    unsigned sampleFrequency;
+};
 
 class PVXMLQueueURLItem : public PVXMLQueueItem
 {
@@ -438,6 +470,7 @@ class PVXMLChannel : public PIndirectChannel
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual void QueueCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
 
     virtual void QueueItem(PVXMLQueueItem * newItem);
     virtual void FlushQueue();
@@ -447,6 +480,7 @@ class PVXMLChannel : public PIndirectChannel
     PVXMLSession & vxml;
     BOOL isIncoming;
     PString formatName;
+    unsigned sampleFrequency;
     PINDEX frameBytes;
     unsigned frameTime;
     unsigned wavFileType;
