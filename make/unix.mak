@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.130  2002/06/13 10:01:20  rogerh
+# We no longer need the /usr/include/g++/backward include path
+#
 # Revision 1.129  2002/06/10 08:37:58  rogerh
 # Add instructions for compiling on FreeBSD 5.x with GCC 3.1
 #
@@ -670,9 +673,6 @@ CFLAGS	+= -pthread
 endif
 
 P_USE_RANLIB		:= 1
-
-# FreeBSD 5.0-current users with GCC 3.1 must uncomment the folowing line
-#STDCCFLAGS      += -I /usr/include/g++/backward -Wno-deprecated
 
 endif # FreeBSD
 
