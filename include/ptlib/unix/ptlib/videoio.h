@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.7  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.6  2001/03/03 06:13:01  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -80,6 +83,7 @@
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
     int    colourFormatCode;
+    PINDEX hint_index;
     BYTE * videoBuffer;
     PINDEX frameBytes;
     int    currentFrame;

@@ -21,9 +21,12 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.15  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.14  2001/03/08 23:04:19  robertj
  * Fixed up some documentation.
  *
@@ -295,7 +298,6 @@ class PVideoDevice : public PObject
        Default behaviour returns the value of the frameWidth and frameHeight
        variable and returns TRUE.
     */
-
     virtual BOOL GetFrameSize(
       unsigned & width,
       unsigned & height
@@ -305,14 +307,13 @@ class PVideoDevice : public PObject
 
         Default  behaviour returns the value of the frameWidth variable
     */
-    virtual unsigned GetFrameWidth() const
-        { return frameWidth; }
+    virtual unsigned GetFrameWidth() const;
+
     /** Get the height of the frame being used.
 
         Default  behaviour returns the value of the frameHeight variable
     */
-    virtual unsigned GetFrameHeight() const
-      { return frameHeight; }
+    virtual unsigned GetFrameHeight() const;
 
     /**Get the maximum frame size in bytes.
 

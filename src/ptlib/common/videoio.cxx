@@ -21,9 +21,12 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.13  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.12  2001/03/08 08:31:34  robertj
  * Numerous enhancements to the video grabbing code including resizing
  *   infrastructure to converters. Thanks a LOT, Mark Cooke.
@@ -268,17 +271,14 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   PINDEX prefResizeIdx = 0;
   while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
     
-    if ((prefResizeTable[prefResizeIdx].dest_width != frameWidth) ||
-	(prefResizeTable[prefResizeIdx].dest_height != frameHeight))
-      continue;
-    
-    // If we found a preferred size pairing, see if the converter is
-    // happy.
-    
-    if (SetFrameSize(prefResizeTable[prefResizeIdx].device_width,
-		     prefResizeTable[prefResizeIdx].device_height)) {
-      if (converter->SetDstFrameSize(width, height, bScaleNotCrop))
-	return TRUE;
+    if ((prefResizeTable[prefResizeIdx].dest_width == frameWidth) &&
+        (prefResizeTable[prefResizeIdx].dest_height == frameHeight)) {
+
+      if (SetFrameSize(prefResizeTable[prefResizeIdx].device_width,
+                       prefResizeTable[prefResizeIdx].device_height)) {
+        if (converter->SetDstFrameSize(width, height, bScaleNotCrop))
+  	  return TRUE;
+      }
     }
     
     prefResizeIdx++;
@@ -295,7 +295,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   if (SetFrameSize(maxWidth, maxHeight))
     if (converter->SetDstFrameSize(width, height, bScaleNotCrop))
       return TRUE;
-  
+
   return FALSE;
 }
 
@@ -319,19 +319,57 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
   else
     frameHeight = height;
 
-  if (converter)
+  if (converter) {
     converter->SetSrcFrameSize(width,height);
-
+    converter->SetDstFrameSize(width,height, FALSE);    
+  }
+  
   return TRUE;
 }
 
 
 BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height) 
 {
+#if 1
+    // Channels get very upset at this not returning the output size.
+    if (converter)
+	return converter->GetDstFrameSize(width, height);
+#endif
   width = frameWidth;
   height = frameHeight;
   return TRUE;
 }
+
+
+unsigned PVideoDevice::GetFrameWidth() const
+{
+#if 1
+    unsigned w,h;
+
+    // Channels get very upset at this not returning the output size.
+    if (converter) {
+	converter->GetDstFrameSize(w, h);
+	return w;
+    }
+#endif
+  return frameWidth;
+}
+
+
+unsigned PVideoDevice::GetFrameHeight() const
+{
+#if 1
+    unsigned w,h;
+
+    // Channels get very upset at this not returning the output size.
+    if (converter) {
+	converter->GetDstFrameSize(w, h);
+	return h;
+    }
+#endif
+  return frameHeight;
+}
+
 
 unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
                                            const PString & colourFormat)
