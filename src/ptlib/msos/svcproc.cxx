@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.66  2001/06/02 01:33:29  robertj
+ * Thread name is always presend now so always use it in system log
+ *    output  and make it wider in text output and tab area in window.
+ *
  * Revision 1.65  2001/04/18 00:19:07  robertj
  * Removed newline from error code string in NT event.
  *
@@ -262,7 +266,7 @@
 static HINSTANCE hInstance;
 
 #define DATE_WIDTH    72
-#define THREAD_WIDTH  48
+#define THREAD_WIDTH  80
 #define LEVEL_WIDTH   32
 #define PROTO_WIDTH   40
 #define ACTION_WIDTH  48
@@ -393,10 +397,10 @@ void PSystemLog::Output(Level level, const char * msg)
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss\t");
     PString threadName = PThread::Current()->GetThreadName();
-    if (!threadName)
-      *out << setw(15) << threadName.Left(15);
+    if (threadName.GetLength() <= 23)
+      *out << setw(23) << threadName;
     else
-      *out << (void *)PThread::Current();
+      *out << threadName.Left(10) << "..." << threadName.Right(10);
     *out << '\t'
          << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
