@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.48  2001/02/18 23:16:02  robertj
+ * Fixed possible NULL pointer reference in memory check validation
+ *   function, thanks Peter Ehlin.
+ *
  * Revision 1.47  2001/02/13 03:31:02  robertj
  * Added function to do heap validation.
  *
@@ -536,11 +540,14 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
     return Bad;
   }
   
-  if (obj->className != NULL && strcmp(obj->className, className) != 0) {
+  if (!(className == NULL && obj->className == NULL) &&
+       (className == NULL || obj->className == NULL ||
+       (className != obj->className && strcmp(obj->className, className) != 0))) {
     if (error != NULL)
       *error << "PObject " << ptr << '[' << obj->size << "] #" << obj->request
-             << " allocated as \"" << obj->className
-             << "\" and should be \"" << className << "\"." << endl;
+             << " allocated as \"" << (obj->className != NULL ? obj->className : "<NULL>")
+             << "\" and should be \"" << (className != NULL ? className : "<NULL>")
+             << "\"." << endl;
     return Bad;
   }
 
