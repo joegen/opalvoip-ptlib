@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.63  2000/07/28 05:13:47  robertj
+ * Fixed silly mistake in runtime_malloc() function, should return a pointer!
+ *
  * Revision 1.62  2000/07/20 05:46:34  robertj
  * Added runtime_malloc() function for cases where memory check code must be bypassed.
  *
@@ -784,7 +787,7 @@ class PMemoryHeap {
 This version of free is used for data that is not to be allocated using the
 memory check system, ie will be free'ed inside the C run time library.
 */
-inline void runtime_malloc(size_t bytes /** Size of block to allocate */ ) { malloc(bytes); }
+inline void * runtime_malloc(size_t bytes /** Size of block to allocate */ ) { return malloc(bytes); }
 
 /** Free memory allocated by run time library.
 This version of free is used for data that is not allocated using the
