@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.41  2001/05/16 06:03:14  craigs
+ * Changed to allow access to absolute registry paths from within subforms
+ *
  * Revision 1.40  2001/02/07 04:44:47  robertj
  * Added ability to use check box to add/delete fields from arrays.
  *
@@ -1981,11 +1984,11 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
                      const PStringToString & data,
                      PHTML & msg)
 {
-  PString prefix = request.url.GetQueryVars()("subformprefix");
+  //PString prefix = request.url.GetQueryVars()("subformprefix");
   const PHTTPField * field = NULL;
-  if (!prefix)
-    field = fields.LocateName(prefix);
-  if (field == NULL)
+  //if (!prefix)
+  //  field = fields.LocateName(prefix);
+  //if (field == NULL)
     field = &fields;
 
   PStringStream errors;
