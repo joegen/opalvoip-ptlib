@@ -466,22 +466,20 @@ dnl look for SDL, but only if we have pthreads
 dnl MSWIN Simple DirectMedia Layer,libsdl,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\,..\external\sdl\,\sdl\c:\sdl\
 
 
-if test "${HAS_PTHREADS:-unset}" != "unset" ; then
-  AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    AC_CHECK_LIB(SDL, SDL_Init, HAS_SDL=1, HAS_SDL=, -lpthread)
+AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
+fi
+if test "${HAS_SDL:-unset}" != "unset" ; then
+  AC_SUBST(HAS_SDL, 1)
+  AC_DEFINE(P_SDL, 1, "SDL found")
+  if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
   fi
-  if test "${HAS_SDL:-unset}" != "unset" ; then
-    AC_SUBST(HAS_SDL, 1)
-    AC_DEFINE(P_SDL, 1, "SDL found")
-    if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
-    fi
-    if test ${SDLLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
-    fi
-    ENDLDLIBS="$ENDLDLIBS -lSDL"
+  if test ${SDLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
   fi
+  ENDLDLIBS="$ENDLDLIBS -lSDL"
 fi
 
 
