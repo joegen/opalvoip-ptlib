@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.6 1995/03/12 05:00:01 robertj Exp $
+ * $Id: socket.h,v 1.7 1995/12/10 11:49:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.7  1995/12/10 11:49:43  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.6  1995/03/12 05:00:01  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -45,29 +48,16 @@
   public:
     PSocket();
       // create an unattached socket
+    ~PSocket();
+      // close a socket
 
     virtual BOOL Read(void * buf, PINDEX len);
-      // Low level read from the channel. This function may block until the
-      // requested number of characters were read or the read timeout was
-      // reached. The return value indicates that at least one character was
-      // read from the channel.
-
     virtual BOOL Write(const void * buf, PINDEX len);
-      // Low level write to the channel. This function will block until the
-      // requested number of characters are written or the write timeout is
-      // reached. The return value is TRUE if at least len bytes were written
-      // to the channel.
-
     virtual BOOL Close();
-      // Close the socket.
 
   protected:
-      BOOL ConvertOSError(int error);
-      // Convert an operating system error into platform independent error.
-      // This will set the lastError and osError member variables for access
-      // by GetErrorCode() and GetErrorNumber(). Returns TRUE if there was
-      // no error.
-
+    BOOL ConvertOSError(int error);
+    BOOL _WaitForData(BOOL reading);
 
   private:
 #ifdef P_HAS_BERKELEY_SOCKETS
