@@ -398,6 +398,30 @@ fi
 AC_DEFINE_UNQUOTED(P_HAS_POSIX_READDIR_R, ${P_HAS_POSIX_READDIR_R})
 
 dnl ########################################################################
+dnl check for minimum sizing
+
+AC_ARG_ENABLE(minsize,
+       [  --enable-minsize        minimise the size of the lib by disabling least used options])
+
+dnl these are the default configure settings
+default_resolver=yes
+default_openldap=yes
+default_openssl=yes
+default_expat=yes
+default_sdl=yes
+default_sasl=yes
+
+if test "${enable_minsize}x" = "yesx" ; then
+  default_resolver=no
+  default_openldap=no
+  default_openssl=no
+  default_expat=no
+  default_sdl=no
+  default_sasl=no
+fi
+
+
+dnl ########################################################################
 dnl check for recvmsg
 
 P_HAS_RECVMSG=0
@@ -657,11 +681,15 @@ dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 
 AC_ARG_ENABLE(resolver,
-       [  --disable-resolver      disable DNS resolver support in PWLIB],
-       resolver=$enableval)
+       [  --disable-resolver      disable DNS resolver support in PWLIB])
 
-if test "$resolver" = "no" ; then
-  AC_DEFINE(P_DNS, 0)
+if test "${enable_resolver}z" = "z" ; then
+  enable_resolver=$default_resolver
+fi
+
+HAS_RESOLVER=
+if test "$enable_resolver" = "no" ; then
+  AC_MSG_NOTICE(DNS resolver disabled)
 else
   AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
@@ -685,8 +713,10 @@ int main(int argc,char **argv){
 
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
     AC_DEFINE(P_DNS, 1, "resolver libraries found")
+    HAS_RESOLVER=1
   fi
 fi
+AC_SUBST(HAS_RESOLVER)
 
 dnl ########################################################################
 dnl Look for SASL
@@ -700,10 +730,16 @@ dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
   
 AC_ARG_ENABLE(sasl,
-       [  --disable-sasl          disable SASL support in PWLIB],
-       sasl=$enableval)
+       [  --disable-sasl          disable SASL support in PWLIB])
 
-if test "$sasl" = "no" ; then
+if test "${enable_sasl}z" = "z" ; then
+  enable_sasl=$default_sasl
+fi
+
+HAS_SASL=
+HAS_SASL2=
+
+if test "$enable_sasl" = "no" ; then
   AC_MSG_NOTICE(SASL disabled)
 else 
 
@@ -739,17 +775,18 @@ if test "${HAS_SASL2}x" != "x" ; then
   HAS_SASL2=1
   ENDLDLIBS="$ENDLDLIBS -lsasl2"
   AC_DEFINE(P_SASL2)
-  AC_SUBST(HAS_SASL2, 1)
 elif test "${HAS_SASL}x" != "x" ; then
   HAS_SASL=1
   ENDLDLIBS="$ENDLDLIBS -lsasl"
   AC_DEFINE(P_SASL)
-  AC_SUBST(HAS_SASL, 1)
 else
   HAS_SASL=0
 fi
 
 fi dnl disable_Sasl
+
+AC_SUBST(HAS_SASL)
+AC_SUBST(HAS_SASL2)
 
 dnl ########################################################################
 dnl look for OpenLDAP (requires SASL)
@@ -763,12 +800,15 @@ dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
 AC_ARG_ENABLE(openldap,
-       [  --disable-openldap      disable OpenLDAP support in PWLIB],
-       openldap=$enableval)
+       [  --disable-openldap      disable OpenLDAP support in PWLIB])
 
-if test "$openldap" = "no" ; then
-  AC_SUBST(HAS_OPENLDAP, 0)
-  AC_DEFINE(P_LDAP, 0)
+if test "${enable_openldap}z" = "z" ; then
+  enable_openldap=$default_openldap
+fi
+
+HAS_OPENLDAP=
+if test "$enable_openldap" = "no" ; then
+  AC_MSG_NOTICE(OpenLDAP disabled)
 else 
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
     AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
@@ -792,7 +832,7 @@ else
   fi
 
   if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-    AC_SUBST(HAS_OPENLDAP, 1)
+    HAS_OPENLDAP=1
     AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
     ENDLDLIBS="-lldap -lldap_r -llber $ENDLDLIBS"
     if test "${OPENLDAPINCLUDEDIR}unset" != "unset" ; then
@@ -803,6 +843,8 @@ else
     fi
   fi
 fi
+
+AC_SUBST(HAS_OPENLDAP)
 
 
 dnl ########################################################################
@@ -825,12 +867,15 @@ dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
 AC_ARG_ENABLE(openssl,
-       [  --disable-openssl       disable OpenSSL support in PWLIB],
-       openssl=$enableval)
+       [  --disable-openssl       disable OpenSSL support in PWLIB])
 
-if test "$openssl" = "no" ; then
-  AC_DEFINE(P_SSL, 0)
-  AC_SUBST(HAS_OPENSSL, 0)
+if test "${enable_openssl}z" = "z" ; then
+  enable_openssl=$default_openssl
+fi
+
+HAS_OPENSSL=
+if test "$enable_openssl" = "no" ; then
+  AC_MSG_NOTICE(OpenSSL disabled)
 else
 
   dnl check to see OPENSSLDIR is set
@@ -919,8 +964,8 @@ int main(int argc,char **argv){}]])
   fi
 
   if test ${SSLHDR:-unset} != "unset" ; then
-    AC_SUBST(HAS_OPENSSL, 1)
     AC_DEFINE(P_SSL, 1, "OpenSSL found")
+    HAS_OPENSSL=1
     if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
     fi
@@ -932,6 +977,7 @@ int main(int argc,char **argv){}]])
   fi
 fi
 
+AC_SUBST(HAS_OPENSSL)
 AC_SUBST(P_STATIC_ENDLDLIBS)
 AC_SUBST(P_STATIC_LDFLAGS)
 
@@ -947,11 +993,15 @@ dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 
 AC_ARG_ENABLE(expat,
-       [  --disable-expat         disable XML support in PWLIB],
-       expat=$enableval)
+       [  --disable-expat         disable XML support in PWLIB])
 
-if test "$expat" = "no" ; then
-  AC_SUBST(HAS_EXPAT, 0)
+if test "${enable_expat}z" = "z" ; then
+  enable_expat=$default_expat
+fi
+
+HAS_EXPAT=
+if test "$enable_expat" = "no" ; then
+  AC_MSG_NOTICE(Expat disabled)
   AC_DEFINE(P_EXPAT, 0)
 else
 
@@ -967,7 +1017,7 @@ else
   fi
 
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    AC_SUBST(HAS_EXPAT, 1)
+    HAS_EXPAT=1
     AC_DEFINE(P_EXPAT, 1, "expat found")
     if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
@@ -978,6 +1028,7 @@ else
     ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
 fi
+AC_SUBST(HAS_EXPAT)
 
 
 dnl ########################################################################
@@ -1058,11 +1109,15 @@ dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
 AC_ARG_ENABLE(sdl,
-       [  --disable-sdl           disable SDL support in PWLIB],
-       sdl=$enableval)
+       [  --disable-sdl           disable SDL support in PWLIB])
 
-if test "$sdl" = "no" ; then
-  AC_SUBST(HAS_SDL, 0)
+if test "${enable_sdl}z" = "z" ; then
+  enable_sdl=$default_sdl
+fi
+
+HAS_SDL=
+if test "$enable_sdl" = "no" ; then
+  AC_MSG_NOTICE(SDL disabled)
   AC_DEFINE(P_SDL, 0)
 else
   dnl SDL checks
@@ -1088,7 +1143,7 @@ else
   fi
 
   if test "${HAS_SDL:-unset}" != "unset" ; then
-    AC_SUBST(HAS_SDL, 1)
+    HAS_SDL=1
     AC_DEFINE(P_SDL, 1, "SDL found")
     if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
       STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
@@ -1099,6 +1154,7 @@ else
     ENDLDLIBS="$ENDLDLIBS -l${SDLLIB}"
   fi
 fi
+AC_SUBST(HAS_SDL)
 
 
 dnl ########################################################################
