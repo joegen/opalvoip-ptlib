@@ -1943,6 +1943,7 @@ EXPORTS
     ?GetErrorNumber@PChannel@@QBEHXZ @1450 NONAME ;public: int __thiscall PChannel::GetErrorNumber(void)const 
     ?GetErrorText@PChannel@@SA?AVPString@@W4Errors@1@H@Z @1452 NONAME ;public: static class PString  __cdecl PChannel::GetErrorText(enum PChannel::Errors,int)
     ?GetErrorText@PChannel@@UBE?AVPString@@XZ @3085 NONAME ;public: virtual class PString  __thiscall PChannel::GetErrorText(void)const 
+    ?GetErrorText@PIndirectChannel@@UBE?AVPString@@XZ @3405 NONAME ;public: virtual class PString  __thiscall PIndirectChannel::GetErrorText(void)const 
     ?GetErrorText@PMail@@QBE?AVPString@@XZ @1453 NONAME ;public: class PString  __thiscall PMail::GetErrorText(void)const 
     ?GetErrorText@PRegularExpression@@QBE?AVPString@@XZ @1454 NONAME ;public: class PString  __thiscall PRegularExpression::GetErrorText(void)const 
     ?GetErrorText@PSoundChannel@@UBE?AVPString@@XZ @3086 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetErrorText(void)const 
@@ -3020,4 +3021,16 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?GetErrorText@PIndirectChannel@@UBE?AVPString@@XZ @3405 NONAME ;public: virtual class PString  __thiscall PIndirectChannel::GetErrorText(void)const 
+    ??0PNotifier@@QAE@ABV0@@Z @3406 NONAME ;public: __thiscall PNotifier::PNotifier(class PNotifier const &)
+    ??0PSimpleThread@@QAE@ABVPNotifier@@HW4AutoDeleteFlag@PThread@@W4Priority@3@ABVPString@@H@Z @3407 NONAME ;public: __thiscall PSimpleThread::PSimpleThread(class PNotifier const &,int,enum PThread::AutoDeleteFlag,enum AutoDeleteFlag::Priority,class PString const &,int)
+    ??1PSimpleThread@@UAE@XZ @3408 NONAME ;public: virtual __thiscall PSimpleThread::~PSimpleThread(void)
+    ??2PSimpleThread@@SAPAXI@Z @3409 NONAME ;public: static void * __cdecl PSimpleThread::operator new(unsigned int)
+    ??3PSimpleThread@@SAXPAX@Z @3410 NONAME ;public: static void __cdecl PSimpleThread::operator delete(void *)
+    ??_7PSimpleThread@@6B@ @3411 NONAME ;const  PSimpleThread::`vftable'
+    ?Class@PSimpleThread@@SAPBDXZ @3412 NONAME ;public: static char const * __cdecl PSimpleThread::Class(void)
+    ?CompareObjectMemoryDirect@PSimpleThread@@UBE?AW4Comparison@PObject@@ABV3@@Z @3413 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSimpleThread::CompareObjectMemoryDirect(class PObject const &)const 
+    ?Create@PThread@@SAPAV1@ABVPNotifier@@HW4AutoDeleteFlag@1@W4Priority@1@ABVPString@@H@Z @3414 NONAME ;public: static class PThread * __cdecl PThread::Create(class PNotifier const &,int,enum PThread::AutoDeleteFlag,enum PThread::Priority,class PString const &,int)
+    ?GetClass@PSimpleThread@@UBEPBDI@Z @3415 NONAME ;public: virtual char const * __thiscall PSimpleThread::GetClass(unsigned int)const 
+    ?IsClass@PSimpleThread@@UBEHPBD@Z @3416 NONAME ;public: virtual int __thiscall PSimpleThread::IsClass(char const *)const 
+    ?IsDescendant@PSimpleThread@@UBEHPBD@Z @3417 NONAME ;public: virtual int __thiscall PSimpleThread::IsDescendant(char const *)const 
+    ?Main@PSimpleThread@@UAEXXZ @3418 NONAME ;public: virtual void __thiscall PSimpleThread::Main(void)
