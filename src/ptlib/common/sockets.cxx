@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.130  2002/10/17 08:17:28  robertj
+ * Fixed incomplete changes for expandable fd_set
+ *
  * Revision 1.129  2002/10/17 07:17:43  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -1314,21 +1317,21 @@ PChannel::Errors PSocket::Select(SelectList & read,
       int h = read[i].GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!FD_ISSET(h, &readfds))
+      if (!readfds.IsPresent(h))
         read.RemoveAt(i--);
     }
     for (i = 0; i < write.GetSize(); i++) {
       int h = write[i].GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!FD_ISSET(h, &writefds))
+      if (!writefds.IsPresent(h))
         write.RemoveAt(i--);
     }
     for (i = 0; i < except.GetSize(); i++) {
       int h = except[i].GetHandle();
       if (h < 0)
         return Interrupted;
-      if (!FD_ISSET(h, &exceptfds))
+      if (!exceptfds.IsPresent(h))
         except.RemoveAt(i--);
     }
   }
