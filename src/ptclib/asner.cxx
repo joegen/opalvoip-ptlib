@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.40  2001/04/26 08:15:58  robertj
+ * Fixed problem with ASN compile of single constraints on enumerations.
+ *
  * Revision 1.39  2001/04/23 05:46:06  robertj
  * Fixed problem with unconstrained PASN_NumericString coding in 8 bits
  *   instead of 4, thanks Chew Kuan.
@@ -213,25 +216,7 @@ PINDEX PASN_Object::GetObjectLength() const
 }
 
 
-void PASN_Object::SetConstraints(ConstraintType, MinimumValueTag lower, unsigned upper)
-{
-  SetConstraints(PartiallyConstrained, (int)lower, upper);
-}
-
-
-void PASN_Object::SetConstraints(ConstraintType, int lower, MaximumValueTag upper)
-{
-  SetConstraints(PartiallyConstrained, lower, (unsigned)upper);
-}
-
-
-void PASN_Object::SetConstraints(ConstraintType, MinimumValueTag lower, MaximumValueTag upper)
-{
-  SetConstraints(PartiallyConstrained, (int)lower, (unsigned)upper);
-}
-
-
-void PASN_Object::SetConstraints(ConstraintType, int, unsigned)
+void PASN_Object::SetConstraintBounds(ConstraintType, int, unsigned)
 {
 }
 
@@ -257,8 +242,8 @@ PASN_ConstrainedObject::PASN_ConstrainedObject(unsigned tag, TagClass tagClass)
 }
 
 
-void PASN_ConstrainedObject::SetConstraints(ConstraintType ctype,
-                                            int lower, unsigned upper)
+void PASN_ConstrainedObject::SetConstraintBounds(ConstraintType ctype,
+                                                 int lower, unsigned upper)
 {
   constraint = ctype;
   if (constraint == Unconstrained) {
@@ -575,9 +560,9 @@ void PASN_Integer::PrintOn(ostream & strm) const
 }
 
 
-void PASN_Integer::SetConstraints(ConstraintType type, int lower, unsigned upper)
+void PASN_Integer::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if ((int)value < lowerLimit)
       value = lowerLimit;
@@ -1405,10 +1390,10 @@ void PASN_BitString::PrintOn(ostream & strm) const
 }
 
 
-void PASN_BitString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+void PASN_BitString::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
   PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   SetSize(GetSize());
 }
 
@@ -1672,10 +1657,10 @@ void PASN_OctetString::PrintOn(ostream & strm) const
 }
 
 
-void PASN_OctetString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+void PASN_OctetString::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
   PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if (value.GetSize() < (PINDEX)lowerLimit)
       value.SetSize(lowerLimit);
@@ -1901,10 +1886,11 @@ void PASN_ConstrainedString::PrintOn(ostream & strm) const
 }
 
 
-void PASN_ConstrainedString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+void PASN_ConstrainedString::SetConstraintBounds(ConstraintType type,
+                                                 int lower, unsigned upper)
 {
   PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if (value.GetSize() < (PINDEX)lowerLimit)
       value.SetSize(lowerLimit);
@@ -3074,7 +3060,7 @@ BOOL PASN_Choice::DecodePER(PPER_Stream & strm)
       }
       else {
         PASN_OctetString * open_type = new PASN_OctetString;
-        open_type->SetConstraints(PASN_ConstrainedObject::FixedConstraint, len, len);
+        open_type->SetConstraints(PASN_ConstrainedObject::FixedConstraint, len);
         open_type->Decode(strm);
         if (open_type->GetSize() > 0)
           choice = open_type;
@@ -3169,7 +3155,7 @@ PASN_Sequence::PASN_Sequence(unsigned tag, TagClass tagClass,
                              unsigned nOpts, BOOL extend, unsigned nExtend)
   : PASN_Object(tag, tagClass, extend)
 {
-  optionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, nOpts, nOpts);
+  optionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, nOpts);
   knownExtensions = nExtend;
   totalExtensions = 0;
   endBasicEncoding = 0;
@@ -3471,8 +3457,7 @@ BOOL PASN_Sequence::NoExtensionsToDecode(PPER_Stream & strm)
     if (!strm.SmallUnsignedDecode((unsigned &)totalExtensions))
       return FALSE;
     totalExtensions++;
-    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint,
-                                totalExtensions, totalExtensions);
+    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, totalExtensions);
     extensionMap.Decode(strm);
   }
 
@@ -3488,8 +3473,7 @@ BOOL PASN_Sequence::NoExtensionsToEncode(PPER_Stream & strm)
   if (totalExtensions < 0) {
     totalExtensions = extensionMap.GetSize();
     strm.SmallUnsignedEncode(totalExtensions-1);
-    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint,
-                                totalExtensions, totalExtensions);
+    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, totalExtensions);
     extensionMap.Encode(strm);
   }
 
@@ -3719,10 +3703,10 @@ void PASN_Array::PrintOn(ostream & strm) const
 }
 
 
-void PASN_Array::SetConstraints(ConstraintType type, int lower, unsigned upper)
+void PASN_Array::SetConstraintBounds(ConstraintType type, int lower, unsigned upper)
 {
   PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  PASN_ConstrainedObject::SetConstraintBounds(type, lower, upper);
   if (constraint != Unconstrained) {
     if (GetSize() < (PINDEX)lowerLimit)
       SetSize(lowerLimit);
