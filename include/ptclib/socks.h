@@ -6,6 +6,9 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.h,v $
+ * Revision 1.2  1998/12/23 00:33:05  robertj
+ * UDP support
+ *
  * Revision 1.1  1998/12/22 10:34:17  robertj
  * Initial revision
  *
@@ -17,7 +20,59 @@
 #include <ptlib/sockets.h>
 
 
-class PSocksSocket : public PTCPSocket
+class PSocksProtocol
+{
+  public:
+    PSocksProtocol(WORD port);
+
+  // New functions for class
+    enum {
+      DefaultServerPort = 1080
+    };
+    BOOL SetServer(
+      const PString & hostname,
+      const char * service = "socks 1080"
+    );
+    BOOL SetServer(
+      const PString & hostname,
+      WORD port
+    );
+
+    void SetAuthentication(
+      const PString & username,
+      const PString & password
+    );
+    /* Set the username and password for the SOCKS server authentication. This
+       is for the cleartext authentication only, GSSAPI, Kerberos etc is not
+       yet supported.
+     */
+
+  protected:
+    BOOL ConnectSocksServer(PTCPSocket & thisSocket);
+
+    virtual void SetErrorCodes(PChannel::Errors errCode, int osErr) = 0;
+
+    virtual BOOL SendSocksCommand(PTCPSocket & socket,
+                                  BYTE command,
+                                  const char * hostname,
+                                  PIPSocket::Address addr);
+    virtual BOOL ReceiveSocksResponse(PTCPSocket & socket,
+                                      PIPSocket::Address & addr,
+                                      WORD & port);
+
+
+    PString            serverHost;
+    WORD               serverPort;
+    PString            authenticationUsername;
+    PString            authenticationPassword;
+    PIPSocket::Address remoteAddress;
+    WORD               remotePort;
+    PIPSocket::Address localAddress;
+    WORD               localPort;
+};
+
+
+class PSocksSocket : public PTCPSocket, public PSocksProtocol
 {
 /* This is an ancestor class allowing access to a SOCKS servers (version 4 and 5).
  */
@@ -92,6 +147,8 @@ class PSocksSocket : public PTCPSocket
        TRUE if the channel was successfully opened.
      */
 
+
+  // Overrides from class PIPSocket.
     virtual BOOL GetLocalAddress(
       Address & addr    // Variable to receive hosts IP address
     );
@@ -120,45 +177,54 @@ class PSocksSocket : public PTCPSocket
      */
 
 
-  // New functions for class
-    enum {
-      DefaultServerPort = 1080
-    };
-    BOOL SetServer(
-      const PString & hostname,
-      const char * service = "socks 1080"
-    );
-    BOOL SetServer(
-      const PString & hostname,
-      WORD port
-    );
-
-    void SetAuthentication(
-      const PString & username,
-      const PString & password
-    );
-    /* Set the username and password for the SOCKS server authentication. This
-       is for the cleartext authentication only, GSSAPI, Kerberos etc is not
-       yet supported.
-     */
-
   protected:
-    virtual BOOL ConnectServer();
-    virtual BOOL SendSocksCommand(BYTE command, const char * hostname, Address addr) = 0;
-    virtual BOOL ReceiveSocksResponse(Address & addr, WORD & port) = 0;
+    virtual void SetErrorCodes(PChannel::Errors errCode, int osErr);
     int TransferHandle(PSocksSocket & destination);
-
-    PString serverHost;
-    WORD    serverPort;
-    PString authenticationUsername;
-    PString authenticationPassword;
-    Address remoteAddress;
-    WORD    remotePort;
-    Address localAddress;
-    WORD    localPort;
 
   private:
     virtual BOOL Connect(WORD localPort, const Address & addr);
+};
+
+
+class PSocks4Socket : public PSocksSocket
+{
+/* This class allows access to RFC1928 compliant SOCKS server.
+ */
+  PCLASSINFO(PSocks4Socket, PSocksSocket)
+
+  public:
+    PSocks4Socket(
+      WORD port = 0
+    );
+    PSocks4Socket(
+      const PString & host,
+      WORD port = 0
+    );
+
+  // Overrides from class PObject
+    virtual PObject * Clone() const;
+    /* Create a copy of the class on the heap. The exact semantics of the
+       descendent class determine what is required to make a duplicate of the
+       instance. Not all classes can even <EM>do</EM> a clone operation.
+       
+       The main user of the clone function is the <A>PDictionary</A> class as
+       it requires copies of the dictionary keys.
+
+       The default behaviour is for this function to assert.
+
+       <H2>Returns:</H2>
+       pointer to new copy of the class instance.
+     */
+
+
+  protected:
+    virtual BOOL SendSocksCommand(PTCPSocket & socket,
+                                  BYTE command,
+                                  const char * hostname,
+                                  PIPSocket::Address addr);
+    virtual BOOL ReceiveSocksResponse(PTCPSocket & socket,
+                                      PIPSocket::Address & addr,
+                                      WORD & port);
 };
 
 
@@ -177,6 +243,40 @@ class PSocks5Socket : public PSocksSocket
       WORD port = 0
     );
 
+  // Overrides from class PObject
+    virtual PObject * Clone() const;
+    /* Create a copy of the class on the heap. The exact semantics of the
+       descendent class determine what is required to make a duplicate of the
+       instance. Not all classes can even <EM>do</EM> a clone operation.
+       
+       The main user of the clone function is the <A>PDictionary</A> class as
+       it requires copies of the dictionary keys.
+
+       The default behaviour is for this function to assert.
+
+       <H2>Returns:</H2>
+       pointer to new copy of the class instance.
+     */
+};
+
+
+class PSocksUDPSocket : public PUDPSocket, public PSocksProtocol
+{
+/* This class allows access to RFC1928 compliant SOCKS server.
+ */
+  PCLASSINFO(PSocksUDPSocket, PUDPSocket)
+
+  public:
+    PSocksUDPSocket(
+      WORD port = 0
+    );
+    PSocksUDPSocket(
+      const PString & host,
+      WORD port = 0
+    );
+
+
+  // Overrides from class PObject
     virtual PObject * Clone() const;
     /* Create a copy of the class on the heap. The exact semantics of the
        descendent class determine what is required to make a duplicate of the
@@ -192,27 +292,73 @@ class PSocks5Socket : public PSocksSocket
      */
 
 
-  protected:
-    virtual BOOL ConnectServer();
-    virtual BOOL SendSocksCommand(BYTE command, const char * hostname, Address addr);
-    virtual BOOL ReceiveSocksResponse(Address & addr, WORD & port);
-};
-
-
-class PSocksUDPSocket : public PUDPSocket
-{
-/* This class allows access to RFC1928 compliant SOCKS server.
- */
-  PCLASSINFO(PSocksUDPSocket, PUDPSocket)
-
-  public:
-    PSocksUDPSocket(
-      WORD port = 0
+  // Overrides from class PSocket.
+    virtual BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
     );
-    PSocksUDPSocket(
-      const PString & host,
-      WORD port = 0
+    virtual BOOL Connect(
+      const Address & addr      // Address of remote machine to connect to.
     );
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
+
+       The port number as defined by the object instance construction or the
+       <A>PIPSocket::SetPort()</A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
+      WORD port = 0,           // Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+    );
+    /* Listen on a socket for a remote host on the specified port number. This
+       may be used for server based applications. A "connecting" socket begins
+       a connection by initiating a connection to this socket. An active socket
+       of this type is then used to generate other "accepting" sockets which
+       establish a two way communications channel with the "connecting" socket.
+
+       If the <CODE>port</CODE> parameter is zero then the port number as
+       defined by the object instance construction or the
+       <A>PIPSocket::SetPort()</A> function.
+
+       For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+  // Overrides from class PIPSocket.
+    virtual BOOL GetLocalAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    virtual BOOL GetLocalAddress(
+      Address & addr,    // Variable to receive peer hosts IP address
+      WORD & port        // Variable to receive peer hosts port number
+    );
+    /* Get the Internet Protocol address for the local host.
+
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
+     */
+
+    virtual BOOL GetPeerAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    virtual BOOL GetPeerAddress(
+      Address & addr,    // Variable to receive peer hosts IP address
+      WORD & port        // Variable to receive peer hosts port number
+    );
+    /* Get the Internet Protocol address for the peer host the socket is
+       connected to.
+
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
+     */
 
 
   // Overrides from class PIPDatagramSocket.
@@ -242,9 +388,13 @@ class PSocksUDPSocket : public PUDPSocket
 
 
   protected:
-    PSocks5Socket socks;
-    Address       serverAddress;
-    WORD          serverPort;
+    virtual void SetErrorCodes(PChannel::Errors errCode, int osErr);
+
+    PTCPSocket socksControl;
+    Address    serverAddress;
+
+  private:
+    virtual BOOL Connect(WORD localPort, const Address & addr);
 };
 
 
