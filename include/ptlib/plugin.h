@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.10  2004/08/16 10:55:09  csoutheren
+ * Fixed problems compiling under Linux
+ *
  * Revision 1.9  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -61,7 +64,7 @@ class PDevicePluginFactory : public PFactory<_Abstract_T, _Key_T>
         }
 
       protected:
-        virtual _Abstract_T * Create(const Key_T & key) const;
+        virtual _Abstract_T * Create(const _Key_T & key) const;
     };
 };
 
@@ -73,12 +76,14 @@ class PDevicePluginAdapterBase
     virtual void CreateFactory(const PString & device) = 0;
 };
 
-template <class DeviceBase>
+template <typename DeviceBase>
 class PDevicePluginAdapter : public PDevicePluginAdapterBase
 {
   public:
+    typedef PDevicePluginFactory<DeviceBase> Factory_T;
+    typedef typename Factory_T::Worker Worker_T;
     void CreateFactory(const PString & device)
-    { new PDevicePluginFactory<DeviceBase>::Worker(device, TRUE); }
+    { new typename Worker_T::Worker(device, TRUE); }
 };
 
 #define PWLIB_PLUGIN_API_VERSION 0
