@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.20  2002/01/26 23:55:55  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.19  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -140,7 +143,7 @@ class PSystemLog : public PObject, public iostream {
     /// Create a system log stream
     PSystemLog(
      Level level   /// only messages at this level or higher will be logged
-    ) { logLevel = level; buffer.log = this; init(&buffer); }
+    ) : iostream(cout.rdbuf()) { logLevel = level; buffer.log = this; init(&buffer); }
 
     /// Destroy the string stream, deleting the stream buffer
     ~PSystemLog() { flush(); }
@@ -174,7 +177,7 @@ class PSystemLog : public PObject, public iostream {
   //@}
 
   private:
-    PSystemLog(const PSystemLog &) { }
+    PSystemLog(const PSystemLog &) : iostream(cout.rdbuf()) { }
     PSystemLog & operator=(const PSystemLog &) { return *this; }
 
     class Buffer : public streambuf {
