@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.104  2001/01/24 06:32:17  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.103  2000/06/26 11:17:21  robertj
  * Nucleus++ port (incomplete).
  *
@@ -806,7 +809,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -818,7 +821,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -836,7 +839,7 @@ WORD PSocket::GetPortByService(const PString & serviceName) const
 
 WORD PSocket::GetPortByService(const char * protocol, const PString & service)
 {
-#ifdef __NUCLEUS_PLUS__
+#if defined( __NUCLEUS_PLUS__ ) || defined( _WIN32_WCE )
   if(!strcmp(protocol,"tcp") && service.AsInteger()>0) return service.AsInteger();
   PAssertAlways
   ("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
@@ -871,7 +874,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__)
+#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
