@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.48  1999/08/10 10:45:09  robertj
+ * Added mutex in memory check detection code.
+ *
  * Revision 1.47  1999/07/18 15:08:24  robertj
  * Fixed 64 bit compatibility
  *
@@ -681,8 +684,10 @@ class PMemoryHeap {
 
     ostream * leakDumpStream;
 
-#ifdef _WIN32
+#if defined(_WIN32)
     CRITICAL_SECTION mutex;
+#elif defined(P_PTHREADS)
+    pthread_mutex_t mutex;
 #endif
 };
 
