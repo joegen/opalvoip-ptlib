@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.5  1998/12/18 03:48:32  robertj
+ * Fixed wanring on PPC linux compile
+ *
  * Revision 1.4  1998/11/30 04:50:47  robertj
  * New directory structure
  *
@@ -105,7 +108,7 @@ PString PFTPClient::GetSystemType()
 BOOL PFTPClient::SetType(RepresentationType type)
 {
   static const char * const typeCode[] = { "A", "E", "I" };
-  PAssert(type < PARRAYSIZE(typeCode), PInvalidParameter);
+  PAssert((PINDEX)type < PARRAYSIZE(typeCode), PInvalidParameter);
   return ExecuteCommand(TYPE, typeCode[type])/100 == 2;
 }
 
