@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.21 1994/12/21 11:52:54 robertj Exp $
+ * $Id: file.h,v 1.22 1995/01/14 06:22:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.21  1994/12/21 11:52:54  robertj
+ * Revision 1.22  1995/01/14 06:22:11  robertj
+ * Documentation
+ *
+ * Revision 1.21  1994/12/21  11:52:54  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.20  1994/08/23  11:32:52  robertj
@@ -100,7 +103,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
   public:
     PFile();
     /* Create a file object but do not open it. It does not initially have a
-       valid file name. However, an attempt to open file file using the
+       valid file name. However, an attempt to open the file using the
        $B$Open()$B$ function will generate a unique temporary file.
      */
 
