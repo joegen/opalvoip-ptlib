@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.69  2001/03/01 02:15:16  robertj
+ * Fixed PTRACE_LINE() so drops filename and line which may not be in trace otherwise.
+ *
  * Revision 1.68  2001/02/22 08:16:41  robertj
  * Added standard trace file setup subroutine.
  *
@@ -569,7 +572,7 @@ This macro outputs a trace of a source file line execution.
 */
 #define PTRACE_LINE() \
     if (!PTrace::CanTrace(1)) ; else \
-      PTrace::Begin(1, __FILE__, __LINE__) << PTrace::End
+      PTrace::Begin(1, __FILE__, __LINE__) << __FILE__ << '(' << __LINE__ << ')' << PTrace::End
 
 /** Output trace.
 This macro outputs a trace of any information needed, using standard stream
