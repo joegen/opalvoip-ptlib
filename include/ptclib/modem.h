@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.h,v $
+ * Revision 1.10  1998/12/02 03:51:39  robertj
+ * Unix compatibility changes
+ *
  * Revision 1.9  1998/09/23 06:20:53  robertj
  * Added open source copyright license.
  *
@@ -61,6 +64,10 @@
 
 #ifdef __GNUC__
 #pragma interface
+#endif
+
+#ifndef _PSERIALCHANNEL
+#include <ptlib/serchan.h>
 #endif
 
 
