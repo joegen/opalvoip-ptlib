@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.26  1998/11/26 11:40:03  craigs
+# Added checking for resource compilation
+#
 # Revision 1.25  1998/11/26 07:29:19  craigs
 # Yet another bash at a GUI build environment
 #
@@ -248,8 +251,14 @@ ifdef GUI
 ifdef RESOURCE
 $(RESOBJS) : $(RESCXX) $(RESCODE)
 
+$(RESCXX) : $(RESHDR)
+
+TMPRSRC	= resource.tmp
+
 $(RESCXX) $(RESCODE) $(RESHDR): $(RESOURCE)
+	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
 	$(PWRC) -v $(PFLAGS) $(RESOURCE)
+	@if test -e $(TMPRSRC) && diff $(RESHDR) $(TMPRSRC) ; then cp $(TMPRSRC) $(RESHDR) ; else rm -f $(TMPRSRC) ;  fi
 
 endif
 endif
