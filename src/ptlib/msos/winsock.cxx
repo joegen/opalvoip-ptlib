@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.25 1996/10/08 13:03:09 robertj Exp $
+ * $Id: winsock.cxx,v 1.26 1996/10/26 01:43:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.26  1996/10/26 01:43:18  robertj
+ * Removed translation of IP address to host order DWORD. Is ALWAYS net order.
+ *
  * Revision 1.25  1996/10/08 13:03:09  robertj
  * More IPX support.
  *
@@ -389,7 +392,7 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 
 PIPSocket::Address::operator DWORD() const
 {
-  return PSocket::Net2Host(S_un.S_addr);
+  return S_un.S_addr;
 }
 
 
