@@ -1,5 +1,5 @@
 /*
- * $Id: sfile.h,v 1.8 1995/01/14 06:19:39 robertj Exp $
+ * $Id: sfile.h,v 1.9 1995/03/14 12:42:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sfile.h,v $
- * Revision 1.8  1995/01/14 06:19:39  robertj
+ * Revision 1.9  1995/03/14 12:42:34  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.8  1995/01/14  06:19:39  robertj
  * Documentation
  *
  * Revision 1.7  1994/08/23  11:32:52  robertj
@@ -52,34 +55,35 @@ PDECLARE_CLASS(PStructuredFile, PFile)
     PStructuredFile();
     /* Create a structured file object but do not open it. It does not
        initially have a valid file name. However, an attempt to open the file
-       using the $B$Open()$B$ function will generate a unique temporary file.
+       using the <A><CODE>Open()</CODE></A> function will generate a unique
+       temporary file.
        
        The initial structure size is one byte.
      */
 
     PStructuredFile(
       OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // $H$OpenOptions for open operation.
+      int opts = ModeDefault  // <A>OpenOptions</A> for open operation.
     );
     /* Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The $B$IsOpen()$B$ function may be used after object construction to
-       determine if the file was successfully opened.
+       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       construction to determine if the file was successfully opened.
      */
       
     PStructuredFile(
       const PFilePath & name,     // Name of file to open.
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // $H$OpenOptions for open operation.
+      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
     );
     /* Create a structured file object with the specified name and open it in
        the specified mode and with the specified options.
 
-       The $B$IsOpen()$B$ function may be used after object construction to
-       determine if the file was successfully opened.
+       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       construction to determine if the file was successfully opened.
      */
 
 
@@ -87,17 +91,19 @@ PDECLARE_CLASS(PStructuredFile, PFile)
     BOOL Read(void * buffer);
     /* Read a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       $B$SetStructure()$B$ function.
+       <A><CODE>SetStructure()</CODE></A> function.
 
-       Returns: TRUE if the structure was successfully read.
+       <H2>Returns:</H2>
+       TRUE if the structure was successfully read.
      */
       
     BOOL Write(void * buffer);
     /* Write a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       $B$SetStructure()$B$ function.
+       <A><CODE>SetStructure()</CODE></A> function.
 
-       Returns: TRUE if the structure was successfully written.
+       <H2>Returns:</H2>
+       TRUE if the structure was successfully written.
      */
 
 
@@ -105,7 +111,8 @@ PDECLARE_CLASS(PStructuredFile, PFile)
     size_t GetStructureSize();
     /* Get the size of each structure in the file.
 
-       Returns: number of bytes in a structure.
+       <H2>Returns:</H2>
+       number of bytes in a structure.
      */
 
     enum ElementType {
