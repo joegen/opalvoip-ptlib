@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.26  2004/03/23 04:56:23  csoutheren
+ * Added patches to use XPG6 threading under Linux if available
+ * Thanks to Matthew Hodgson
+ *
  * Revision 1.25  2004/02/04 02:34:38  csoutheren
  * Added many new flags to configure to allow disabling of various features
  * Fixed "swab" detection
@@ -391,6 +395,8 @@
 
 #undef P_PTHREADS
 #undef P_HAS_SEMAPHORES
+#undef P_PTHREADS_XPG6      
+#undef P_HAS_SEMAPHORES_XPG6
 
 /////////////////////////////////////////////////
 //
