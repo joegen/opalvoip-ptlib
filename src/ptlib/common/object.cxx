@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.71  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.70  2004/04/03 08:09:16  csoutheren
  * Fixed compile problem on Windows
  *
@@ -342,24 +345,6 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 #endif // !_WIN32_WCE
 }
 
-const char * PObject::GetClass(unsigned) const
-{
-  return Class();
-}
-
-
-BOOL PObject::IsClass(const char * clsName) const
-{
-  return strcmp(clsName, Class()) == 0;
-}
-
-
-BOOL PObject::IsDescendant(const char * clsName) const
-{
-  return strcmp(clsName, Class()) == 0;
-}
-
-
 PObject::Comparison PObject::CompareObjectMemoryDirect(const PObject&obj) const
 {
   int retval = memcmp(this, &obj, sizeof(PObject));
@@ -437,7 +422,7 @@ PSmartPointer::~PSmartPointer()
 
 PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PSmartPointer::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PSmartPointer), PInvalidCast);
   PSmartObject * other = ((const PSmartPointer &)obj).object;
   if (object == other)
     return EqualTo;
