@@ -101,8 +101,29 @@ class ostream_withassign : public ostream
     ostream& operator=(streambuf* _sb) { return ostream::operator=(_sb); }
 };
 
+#ifndef WCE_NO_EXTERNAL_STREAMS
+class YWinCEOStream : public ostream
+{
+public:
+	YWinCEOStream();
+	~YWinCEOStream();
+
+	void Subscribe(HWND Reciever,UINT MessageID);
+	void UnSubscribe();
+};
+
+extern YWinCEOStream cout;
+extern YWinCEOStream cerr;
+
+#else
 extern ostream_withassign cout;
 extern ostream_withassign cerr;
+class PStringStream;
+
+extern PStringStream cerr;
+extern PStringStream cout;
+#endif // !WCE_NO_EXTERNAL_STREAMS
+
 extern ostream_withassign clog;
 
 inline ostream& flush(ostream& _outs) { return _outs.flush(); }
