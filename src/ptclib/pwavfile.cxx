@@ -28,6 +28,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.21  2002/05/21 01:59:54  robertj
+ * Removed the enum which made yet another set of magic numbers for audio
+ *   formats, now uses the WAV file format numbers.
+ * Fixed missing Open() function which does not have file name parameter.
+ * Added ability to set the audio format after construction.
+ * Added automatic expansion of G.723.1 SID frames into 24 zero bytes as
+ *   those formats do not currently support 4 byte frames.
+ * Fixed trace output to include "module" section.
+ *
  * Revision 1.20  2002/02/06 00:52:23  robertj
  * Fixed GNU warning.
  *
@@ -124,36 +133,45 @@ void swab(const void * void_from, void * void_to, register size_t len)
 }
 #endif
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PWAVFile
 
-PWAVFile::PWAVFile(WaveType type)
+PWAVFile::PWAVFile(unsigned fmt)
   : PFile()
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
-  waveType = type;
+  format = fmt;
 }
 
 
-PWAVFile::PWAVFile(OpenMode mode, int opts, WaveType type)
+PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
   : PFile(mode, opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
-  waveType = type;
+  format = fmt;
 }
 
 
-PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, WaveType type)
-  : PFile(name, mode, opts)
+PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
+  : PFile(mode, opts)
 {
   isValidWAV = FALSE;
   header_needs_updating = FALSE;
+  format = fmt;
 
-  if (!IsOpen()) return; 
+  Open(name);
+}
 
-  waveType = type;
+
+BOOL PWAVFile::Open(OpenMode  mode, int opts)
+{
+  if (!(PFile::Open(mode, opts)))
+    return FALSE;
+
+  isValidWAV = FALSE;
 
   // Try and process the WAV file header information.
   // Either ProcessHeader() or GenerateHeader() must be called.
@@ -179,7 +197,26 @@ PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, WaveType typ
     }
   }
 
+  return TRUE;
 }
+
+
+BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
+{
+  Close();
+  SetFilePath(name);
+  return Open(mode, opts);
+}
+
+
+BOOL PWAVFile::Close()
+{
+  if (header_needs_updating)
+    UpdateHeader();
+
+  return (PFile::Close());
+}
+
 
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Read(void * buf, PINDEX len)
@@ -188,19 +225,14 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
   // e.g. WAV files made in GoldWave have a copyright and a URL in this chunk.
   // We do not want to return this data by mistake.
 
-  PINDEX readlen;
+  PINDEX readlen = len;
   if ((off_t)(GetPosition() + len) > lenData) {
-    PTRACE(1, "Detected non audio data after the sound samples");
+    PTRACE(1, "WAV\tRead: Detected non audio data after the sound samples");
     readlen = lenData-GetPosition(); 
-  } else {
-    readlen = len;
   }
 
-  BOOL rval = PFile::Read(buf, readlen);
-
-  if (rval == FALSE) {
-    return (rval);
-  }
+  if (!PFile::Read(buf, readlen))
+    return FALSE;
 
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
@@ -210,13 +242,15 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
     swab(buf, buf, PFile::GetLastReadCount());
 #endif
 
-  return (rval);
+  return TRUE;
 }
+
 
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Write(const void * buf, PINDEX len)
 {
-  BOOL rval;
+  // Needs to update header on close.
+  header_needs_updating = TRUE;
 
   // WAV files are little-endian. So swap the bytes if this is
   // a big endian machine and we have 16 bit samples
@@ -227,56 +261,28 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
   }
 #endif
 
-  rval = PFile::Write(buf, len);
-  // Needs to update header on close.
-  if (rval == TRUE) {
-    header_needs_updating = TRUE;
+  if (format != fmt_VivoG7231 && format != fmt_MSG7231)
+    return PFile::Write(buf, len);
+
+  // The Microsoft && VivoActive G.2723.1 codec cannot do SID frames
+  const BYTE * frame = (const BYTE *)buf;
+  while (len > 0) {
+    unsigned frameType = *frame&3;
+    static PINDEX FrameSize[4] = { 24, 20, 4, 1 };
+
+    if (len < FrameSize[frameType])
+      return FALSE;
+
+    static PINDEX WriteSize[4] = { 24, 20, 24, 24 };
+    static const BYTE silence[24] = { 0 };
+    if (!PFile::Write(frameType < 2 ? frame : silence, WriteSize[frameType]))
+      return FALSE;
+
+    frame += FrameSize[frameType];
+    len -= FrameSize[frameType];
   }
 
-  return (rval);
-}
-
-BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
-{
-  if (!(PFile::Open(name, mode, opts))) return FALSE;
-
-  // The file should be open now. Check the header
-  isValidWAV = FALSE;
-  header_needs_updating = FALSE;
-
-  if (!IsOpen()) return FALSE; 
-
-  // Try and process the WAV file header information.
-  // Either ProcessHeader() or GenerateHeader() must be called.
-
-  if (PFile::GetLength() > 0) {
-    // try and process the WAV file header information
-    if (mode == ReadOnly || mode == ReadWrite) {
-      isValidWAV = ProcessHeader();
-    }
-    if (mode == WriteOnly) {
-      lenData = -1;
-      GenerateHeader();
-    }
-  }
-  else {
-    // generate header
-    if (mode == ReadWrite || mode == WriteOnly) {
-      lenData = -1;
-      GenerateHeader();
-    }
-    if (mode == ReadOnly) {
-      isValidWAV = FALSE; // ReadOnly on a zero length file
-    }
-  }
   return TRUE;
-}
- 
-BOOL PWAVFile::Close()
-{
-  if (header_needs_updating)
-    UpdateHeader();
-  return (PFile::Close());
 }
 
 
@@ -289,6 +295,7 @@ BOOL PWAVFile::SetPosition(off_t pos, FilePositionOrigin origin)
 
   return (PFile::SetPosition(pos, origin));
 }
+
 
 off_t PWAVFile::GetPosition() const
 {
@@ -365,6 +372,17 @@ off_t PWAVFile::GetDataLength()
 }
 
 
+BOOL PWAVFile::SetFormat(unsigned fmt)
+{
+  if (IsOpen() || isValidWAV)
+    return FALSE;
+
+  header_needs_updating = FALSE;
+  format = fmt;
+  return TRUE;
+}
+
+
 #define WAV_LABEL_RIFF "RIFF"
 #define WAV_LABEL_WAVE "WAVE"
 #define WAV_LABEL_FMT_ "fmt "
@@ -382,14 +400,14 @@ BOOL PWAVFile::ProcessHeader() {
   // This comes in 3 or 4 chunks, either RIFF, FORMAT and DATA
   // or RIFF, FORMAT, FACT and DATA.
 
-  if (IsOpen() == FALSE) {
-    PTRACE(1,"Not Open");
+  if (!IsOpen()) {
+    PTRACE(1,"WAV\tProcessHeader: Not Open");
     return (FALSE);
   }
 
   // go to the beginning of the file
-  if (PFile::SetPosition(0) == FALSE) {
-    PTRACE(1,"Cannot Set Pos");
+  if (!PFile::SetPosition(0)) {
+    PTRACE(1,"WAV\tProcessHeader: Cannot Set Pos");
     return (FALSE);
   }
 
@@ -407,12 +425,12 @@ BOOL PWAVFile::ProcessHeader() {
 
   // check if labels are correct
   if (strncmp(hdr_label_riff, WAV_LABEL_RIFF, strlen(WAV_LABEL_RIFF))) {
-    PTRACE(1,"Not RIFF");
+    PTRACE(1,"WAV\tProcessHeader: Not RIFF");
     return (FALSE);
   }
 
   if (strncmp(hdr_label_wave, WAV_LABEL_WAVE, strlen(WAV_LABEL_WAVE))) {
-    PTRACE(1,"Not WAVE");
+    PTRACE(1,"WAV\tProcessHeader: Not WAVE");
     return (FALSE);
   }
 
@@ -441,14 +459,14 @@ BOOL PWAVFile::ProcessHeader() {
   // The spec allows for extra bytes at the end of the FORMAT chunk
   // Use the len_format field from FORMAT to determine where to move to
   // in the file to find the start of the next chunk.
-  if (PFile::SetPosition(size_riff_chunk+size_format_chunk) == FALSE) {
-    PTRACE(1,"Cannot reset position");
+  if (!PFile::SetPosition(size_riff_chunk+size_format_chunk)) {
+    PTRACE(1,"WAV\tProcessHeader: Cannot reset position");
     return (FALSE);
   }
 
   // check if labels are correct
   if (strncmp(hdr_label_fmt, WAV_LABEL_FMT_, strlen(WAV_LABEL_FMT_)) ) {
-    PTRACE(1,"Not FMT");
+    PTRACE(1,"WAV\tProcessHeader: Not FMT");
     return (FALSE);
   }
 
@@ -476,9 +494,8 @@ BOOL PWAVFile::ProcessHeader() {
     // used when the WAV file contains compressed audio instead of PCM audio.
     // Use the len_fact field from FACT to determine where to move to
     // in the file to find the start of the next chunk.
-    if (PFile::SetPosition(size_riff_chunk+size_format_chunk
-			   +size_fact_chunk) == FALSE) {
-      PTRACE(1,"Cannot reset position");
+    if (!PFile::SetPosition(size_riff_chunk+size_format_chunk+size_fact_chunk)) {
+      PTRACE(1,"WAV\tProcessHeader: Cannot reset position");
       return (FALSE);
     }
   }
@@ -493,7 +510,7 @@ BOOL PWAVFile::ProcessHeader() {
   RETURN_ON_READ_FAILURE(PFile::Read(&hdr_data_len,4), 4);
 
   if (strncmp(hdr_label_data, WAV_LABEL_DATA, strlen(WAV_LABEL_DATA))) {
-    PTRACE(1,"Not DATA");
+    PTRACE(1,"WAV\tProcessHeader: Not DATA");
     return (FALSE);
   }
 
@@ -521,14 +538,14 @@ BOOL PWAVFile::ProcessHeader() {
 
 BOOL PWAVFile::GenerateHeader()
 {
-  if (IsOpen() == FALSE) {
-    PTRACE(1, "Not Open");
+  if (!IsOpen()) {
+    PTRACE(1, "WAV\tGenerateHeader: Not Open");
     return (FALSE);
   }
 
   // go to the beginning of the file
-  if (PFile::SetPosition(0) == FALSE) {
-    PTRACE(1,"Cannot Set Pos");
+  if (!PFile::SetPosition(0)) {
+    PTRACE(1,"WAV\tGenerateHeader: Cannot Set Pos");
     return (FALSE);
   }
 
@@ -540,25 +557,50 @@ BOOL PWAVFile::GenerateHeader()
 
 
   // Set the file parameters.
-  if (waveType == PCM_WavFile) {
-    lenHeader   = 44;
-    len_format  = 16;   // size of the FORMAT chunk;
-    format      = 0x01; // PCM type
-    numChannels = 1;
-    sampleRate  = 8000;
-    bytesPerSample = 2;
-    bitsPerSample  = 16;
-    averageBytesPerSec = sampleRate * bytesPerSample;
-  }
-  if (waveType == G7231_WavFile) {
-    lenHeader   = 60;
-    len_format  = 20;    // size of the FORMAT chunk;
-    format      = 0x111; // VivoActive G.723.1 (0x42 is the MS G.723.1 code)
-    numChannels = 1;
-    sampleRate  = 8000;
-    bytesPerSample = 24; // There are 24 bytes in a G.723.1 frame
-    bitsPerSample  = 0;
-    averageBytesPerSec = 800; // Windows Sound Recorder requires this value
+  switch (format) {
+    case fmt_PCM :
+      lenHeader   = 44;
+      len_format  = 16;   // size of the FORMAT chunk;
+      numChannels = 1;
+      sampleRate  = 8000;
+      bytesPerSample = 2;
+      bitsPerSample  = 16;
+      averageBytesPerSec = sampleRate * bytesPerSample;
+      break;
+
+    case fmt_ALaw :
+    case fmt_uLaw :
+      lenHeader   = 44;
+      len_format  = 16;   // size of the FORMAT chunk;
+      numChannels = 1;
+      sampleRate  = 8000;
+      bytesPerSample = 1;
+      bitsPerSample  = 8;
+      averageBytesPerSec = sampleRate * bytesPerSample;
+      break;
+
+    case fmt_GSM :
+      lenHeader   = 48;
+      len_format  = 20;   // size of the FORMAT chunk;
+      numChannels = 1;
+      sampleRate  = 8000;
+      bytesPerSample = 33;
+      bitsPerSample  = 0;
+      averageBytesPerSec = 33*50;
+      break;
+
+    case fmt_VivoG7231 :
+      lenHeader   = 60;
+      len_format  = 20;    // size of the FORMAT chunk;
+      numChannels = 1;
+      sampleRate  = 8000;
+      bytesPerSample = 24; // There are 24 bytes in a G.723.1 frame
+      bitsPerSample  = 0;
+      averageBytesPerSec = 800; // Windows Sound Recorder requires this value
+      break;
+
+    default :
+      return FALSE;
   }
 
   // length of audio data is set to a large value if lenData does not
@@ -603,23 +645,20 @@ BOOL PWAVFile::GenerateHeader()
     return FALSE;
 
   // The format chunk then has extra data for G.723.1 files
-  if (waveType == G7231_WavFile) {
+  if (format == fmt_VivoG7231) {
     PInt16l hdr_format_data1 = 1;
     PInt16l hdr_format_data2 = 480;
     if (!PFile::Write(&hdr_format_data1,2) ||
         !PFile::Write(&hdr_format_data2,2))
       return FALSE;
-  }
 
-
-  // Write the FACT chunk. (only for G.723.1 files)
-  if (waveType == G7231_WavFile) {
+    // Write the FACT chunk. (only for G.723.1 files)
     PInt32l hdr_fact_len  = 4; // length is 4, exclude label_fact and fact_len
     PInt32l hdr_fact_data = 0; // fact chunk data. Should be number of samples.
     if (!PFile::Write(WAV_LABEL_FACT,4) ||
         !PFile::Write(&hdr_fact_len,4) ||
         !PFile::Write(&hdr_fact_data,4))
-        return FALSE;
+      return FALSE;
   }
 
   // Write the DATA chunk.
@@ -627,7 +666,7 @@ BOOL PWAVFile::GenerateHeader()
 
   if (!PFile::Write(WAV_LABEL_DATA,4) ||
       !PFile::Write(&hdr_data_len,4))
-      return FALSE;
+    return FALSE;
 
   isValidWAV = TRUE;
 
@@ -638,14 +677,14 @@ BOOL PWAVFile::GenerateHeader()
 BOOL PWAVFile::UpdateHeader()
 {
   // Check file is still open
-  if (IsOpen() == FALSE) {
-    PTRACE(1,"Not Open");
+  if (!IsOpen()) {
+    PTRACE(1,"WAV\tUpdateHeader: Not Open");
     return (FALSE);
   }
 
   // Check there is already a valid header
-  if (isValidWAV == FALSE) {
-    PTRACE(1,"WAV File not valid");
+  if (!isValidWAV) {
+    PTRACE(1,"WAV\tUpdateHeader: File not valid");
     return (FALSE);
   }
 
@@ -656,12 +695,14 @@ BOOL PWAVFile::UpdateHeader()
   PFile::SetPosition(4);
   PInt32l hdr_len_after = (lenHeader - 8) + lenData; // size does not include
 						     // first 8 bytes
-  if (!PFile::Write(&hdr_len_after,4)) return (FALSE);
+  if (!PFile::Write(&hdr_len_after,4))
+    return (FALSE);
 
   // Write out the 'data_len' field
   PFile::SetPosition(lenHeader - 4);
   PInt32l hdr_data_len = lenData;
-  if (!PFile::Write(&hdr_data_len,4)) return (FALSE);
+  if (!PFile::Write(&hdr_data_len,4))
+    return (FALSE);
 
   header_needs_updating = FALSE;
 
