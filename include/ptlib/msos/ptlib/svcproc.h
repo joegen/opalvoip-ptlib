@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.13 1996/08/19 13:36:41 robertj Exp $
+ * $Id: svcproc.h,v 1.14 1996/10/08 13:04:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.14  1996/10/08 13:04:53  robertj
+ * Rewrite to use standard window isntead of console window.
+ *
  * Revision 1.13  1996/08/19 13:36:41  robertj
  * Moved PSYSTEMLOG macro to common code.
  *
@@ -118,11 +121,18 @@
     ProcessCommandResult ProcessCommand(const char * cmd);
     // Process command line argument for controlling the service.
 
+    BOOL CreateControlWindow();
+    static LPARAM WINAPI StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LPARAM WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    void RunMessageLoop();
+    void DebugOutput(const char * out);
 
     BOOL                  isWin95;
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
     HANDLE                terminationEvent;
+    HWND                  controlWindow;
+    HWND                  debugWindow;
 
 #endif
 
