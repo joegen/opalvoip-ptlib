@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.13 1996/08/20 12:07:29 robertj Exp $
+ * $Id: ptime.cxx,v 1.14 1996/10/26 01:40:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.14  1996/10/26 01:40:12  robertj
+ * Fixed bug in time parser that caused endless looping.
+ *
  * Revision 1.13  1996/08/20 12:07:29  robertj
  * Fixed volatile milliseconds member of PTimeInterval for printing.
  *
@@ -622,6 +625,10 @@ void PTime::ReadFrom(istream &strm)
       case -1:
         finished = TRUE;
         putback = FALSE;
+        break;
+
+      case IDENTIFIER :
+        finished = TRUE;
         break;
 
       case DAY:
