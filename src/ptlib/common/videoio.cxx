@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.32  2002/08/30 02:31:43  dereks
+ * Make operation of the code more clear. Thanks Diego Tartara
+ *
  * Revision 1.31  2002/04/12 08:24:53  robertj
  * Added text string output for tracing video format.
  *
@@ -715,8 +718,8 @@ BOOL PVideoInputDevice::GetVFlipState()
 BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip) 
 {
   if ( converter == NULL )
-    // no converter (yet), any new converter will have doVFlip = FALSE
-    return !newVFlip;
+    return FALSE;
+
   converter->SetVFlipState(newVFlip);
   return TRUE;
 } 
