@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.18 1998/06/16 03:32:14 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.19 1998/08/06 00:54:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.19  1998/08/06 00:54:22  robertj
+ * Fixed bug in sending empty files, caused endless wait in Netscape.
+ *
  * Revision 1.18  1998/06/16 03:32:14  robertj
  * Propagated persistence and proxy flags in new connection info instances.
  *
@@ -538,8 +541,9 @@ void PHTTPServer::StartResponse(StatusCode code,
   WriteString(psprintf("%sHTTP/%u.%u %03u %s\r\n",
               crlf, majorVersion, minorVersion, statusInfo->code, statusInfo->text));
 
-  // output the headers
-  if (bodySize >= 0 && !headers.Contains(ContentLengthTag))
+  // output the headers. But don't put in ContentLength if the bodysize is zero
+  // because that can be confused by some browsers as meaning there is no body length.
+  if (bodySize > 0 && !headers.Contains(ContentLengthTag))
     headers.SetAt(ContentLengthTag, PString(PString::Unsigned, (PINDEX)bodySize));
   headers.Write(*this);
 
@@ -1304,7 +1308,8 @@ BOOL PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
   if (count > 10000)
     count = 10000;
 
-  PAssert(file.Read(data.GetPointer(count), count), PLogicError);
+  if (count > 0)
+    PAssert(file.Read(data.GetPointer(count), count), PLogicError);
 
   if (!file.IsEndOfFile())
     return TRUE;
