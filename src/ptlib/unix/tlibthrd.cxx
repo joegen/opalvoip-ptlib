@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.38  2000/04/10 11:47:02  rogerh
+ * Add initial NetBSD pthreads support
+ *
  * Revision 1.37  2000/04/06 12:19:49  rogerh
  * Add Mac OS X support submitted by Kevin Packard
  *
@@ -501,7 +504,7 @@ void PThread::Terminate()
     PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
     pthread_kill(PX_threadId, SIGKILL);
 #else
     pthread_cancel(PX_threadId);
