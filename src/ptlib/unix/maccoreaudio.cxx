@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.11  2003/11/02 20:04:24  shawn
+ * more AudioConverterRef type conversion stuff for Panther
+ *
  * Revision 1.10  2003/11/02 15:55:48  shawn
  * use static_cast<>, especially Mac OS X 10.3 (Panther)
  *
@@ -361,6 +364,7 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
   struct myData *data = (struct myData *)inClientData;
   OSStatus theStatus;
   UInt32 chunkLen;
+  AudioConverterRef cRef = static_cast<AudioConverterRef>(data->converterRef);
 
   PTRACE(6, "COREAUDIO: PlaybackIOProc called"<<endl);
   pthread_mutex_lock(data->myMutex);
@@ -379,7 +383,8 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
 
   writeConverterBufferLen = chunkLen;
   writeConverterBuffer    = *data->consumerOffsetPtr;
-  theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
+
+  theStatus = AudioConverterFillBuffer(cRef,
 				       ACwriteInputProc,
 				       NULL,
 				       bufLenPtr,
@@ -448,6 +453,7 @@ OSStatus RecordIOProc(AudioDeviceID inDevice,
   struct myData *data = (struct myData *)inClientData;
   OSStatus theStatus;
   UInt32 chunkLen;
+  AudioConverterRef cRef = static_cast<AudioConverterRef>(data->converterRef);
 
   pthread_mutex_lock(data->myMutex);
 
@@ -463,7 +469,7 @@ OSStatus RecordIOProc(AudioDeviceID inDevice,
 	 " buffers" << endl);
   readConverterBufferLen = *bufLenPtr;
   readConverterBuffer    = bufPtr;
-  theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
+  theStatus = AudioConverterFillBuffer(cRef,
 				       ACreadInputProc,
 				       NULL,
 				       (UInt32*)&chunkLen,
@@ -609,8 +615,10 @@ BOOL PSoundChannel::Close()
 
     OSStatus theStatus;
 
-    if (caConverterRef) {
-      theStatus = AudioConverterDispose((AudioConverterRef)caConverterRef);
+    AudioConverterRef cRef = static_cast<AudioConverterRef>(caConverterRef);
+
+    if (cRef) {
+      theStatus = AudioConverterDispose(cRef);
       if (theStatus != 0) {
 	PTRACE(1, "AudioConverterDispose failed");
       }
@@ -730,8 +738,8 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   PRINT_DATA(mBitsPerChannel, "bitsPerChannel");
 */
 
-  AudioConverterRef ref = static_cast<AudioConverterRef>(caConverterRef);
-  AudioConverterRef *refToRef = &ref;
+  AudioConverterRef cRef;
+  AudioConverterRef *refToRef = &cRef;
 
   if (direction == Player) {
     theStatus = AudioConverterNew(&pwlibDescription,
@@ -748,11 +756,15 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
     return FALSE;
   }
 
+  caConverterRef = (void *)cRef;
+
+  PTRACE(1, "caConverterRef = " << caConverterRef << " cRef = " << cRef);
+
   UInt32 quality = kAudioConverterQuality_Low;
   // UInt32 quality = kAudioConverterQuality_High;
 
   theStatus =
-    AudioConverterSetProperty((AudioConverterRef)caConverterRef,
+    AudioConverterSetProperty(cRef,
 			      kAudioConverterSampleRateConverterQuality,
 			      sizeof(UInt32),
 			      &quality);
@@ -769,7 +781,7 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   }
 
   theStatus =
-    AudioConverterSetProperty((AudioConverterRef)caConverterRef,
+    AudioConverterSetProperty(cRef,
 			      kAudioConverterPrimeMethod,
 			      sizeof(UInt32),
 			      &primeMethod);
@@ -879,15 +891,16 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   */
   bufferByteCount = size;
   propertySize = sizeof(bufferByteCount);
+  AudioConverterRef cRef = static_cast<AudioConverterRef>(caConverterRef);
   if (direction == Player) {
     theStatus =
-      AudioConverterGetProperty((AudioConverterRef)caConverterRef,
+      AudioConverterGetProperty(cRef,
 				kAudioConverterPropertyCalculateOutputBufferSize,
 				&propertySize,
 				&bufferByteCount);
   } else {
     theStatus =
-      AudioConverterGetProperty((AudioConverterRef)caConverterRef,
+      AudioConverterGetProperty(cRef,
 				kAudioConverterPropertyCalculateInputBufferSize,
 				&propertySize,
 				&bufferByteCount);
