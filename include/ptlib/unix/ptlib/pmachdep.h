@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.28  1999/08/09 01:51:42  robertj
+ * Added missing paths include (esp. for VARRUN in svcproc)
+ *
  * Revision 1.27  1999/07/16 10:21:51  robertj
  * Added paths header file so _PATH_VARRUN is defined for svcprox.
  *
@@ -71,6 +74,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #if defined(P_LINUX)
 
+#include <paths.h>
 #include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
