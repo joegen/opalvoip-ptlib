@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.91  2003/06/23 14:31:33  ykiryanov
+ * Modified for WinCE - used ShellExecuteEx instead of ShellExecute
+ *
  * Revision 1.90  2003/06/05 00:15:54  rjongbloed
  * Fixed callto bug created by previous patch.
  *
@@ -1076,11 +1079,22 @@ void PURL::SetQueryVar(const PString & key, const PString & data)
 BOOL PURL::OpenBrowser(const PString & url)
 {
 #ifdef WIN32
-  if ((int)ShellExecute(NULL, "open", url, NULL, NULL, 0) > 32)
+  SHELLEXECUTEINFO sei;
+  ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
+  sei.cbSize = sizeof(SHELLEXECUTEINFO);
+  sei.lpVerb = "open";
+
+  if ((int) ShellExecuteEx(&sei) > 32)
     return TRUE;
 
+#ifndef _WIN32_WCE
   MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
-#endif
+#else
+  USES_CONVERSION;
+  MessageBox(NULL, _T("Unable to open page"), A2T(PProcess::Current().GetName()), MB_APPLMODAL);
+#endif // _WIN32_WCE
+
+#endif // WIN32
   return FALSE;
 }
 
