@@ -1,10 +1,9 @@
 //
-// (c) Yuri Kiryanov, openh323@kiryanov.com
-// for Openh323, www.Openh323.org
-//
-// Windows CE Port
-// Extra header file 
+// (c) 2000 Yuri Kiryanov, openh323@kiryanov.com
+// and Yuriy Gorvitovskiy
 // 
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
+// PWLib extras
 
-#include <stdlibx.h>
+#include <ctype.h>
 
