@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.12  2004/02/23 23:52:19  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.11  2004/01/03 03:37:53  csoutheren
  * Fixed compile problem on Linux
  *
@@ -75,7 +78,9 @@
 
 #include <windns.h>
 
-#pragma comment(lib, P_DNS_LIBRARY)
+#pragma comment(lib,    P_DNS_LIBRARY)
+#pragma comment(linker, "/delayload:dnsapi.dll")
+#pragma comment(lib,    "Delayimp.lib")
 
 #else
 

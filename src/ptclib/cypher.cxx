@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.39  2004/02/23 23:52:19  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.38  2003/04/27 23:52:57  craigs
  * Fixed problem with SHA1 not calling Start
  *
@@ -512,14 +515,6 @@ void PMessageDigest5::Complete(Code & codeResult)
 #if P_SSL
 
 #include <openssl/sha.h>
-
-
-#ifdef _MSC_VER
-#pragma comment(lib, P_SSL_LIB1)
-#pragma comment(lib, P_SSL_LIB2)
-#endif
-
-
 
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
