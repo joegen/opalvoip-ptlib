@@ -7,6 +7,16 @@
 #ifndef _CEVFW_H
 #define _CEVFW_H
 
+#define VFWAPI  WINAPI
+
+#ifdef __cplusplus
+/* SendMessage in C++*/
+#define AVICapSM(hwnd,m,w,l) ( (IsWindow(hwnd)) ? ::SendMessage(hwnd,m,w,l) : 0)
+#else
+/* SendMessage in C */
+#define AVICapSM(hwnd,m,w,l) ( (IsWindow(hwnd)) ?   SendMessage(hwnd,m,w,l) : 0)
+#endif  /* __cplusplus */
+
 // video data block header
 typedef struct videohdr_tag {
     LPBYTE      lpData;                 /* pointer to locked data buffer */
@@ -88,42 +98,59 @@ typedef struct tagCapDriverCaps {
     HANDLE      hVideoExtOut;               // Driver Ext Out channel
 } CAPDRIVERCAPS, *PCAPDRIVERCAPS, FAR *LPCAPDRIVERCAPS;
 
+typedef LRESULT (CALLBACK* CAPERRORCALLBACK)  (HWND hWnd, int nID, LPCSTR lpsz);
+typedef LRESULT (CALLBACK* CAPVIDEOCALLBACK)  (HWND hWnd, LPVIDEOHDR lpVHdr);
+
+#define WM_CAP_START                    WM_USER
+#define WM_CAP_SET_CALLBACK_ERRORA      (WM_CAP_START+  2)
+#define WM_CAP_SET_CALLBACK_ERROR       WM_CAP_SET_CALLBACK_ERRORA
+#define WM_CAP_SET_CALLBACK_FRAME       (WM_CAP_START+  5)
+#define WM_CAP_SET_CALLBACK_VIDEOSTREAM (WM_CAP_START+  6)
+#define WM_CAP_GET_USER_DATA			(WM_CAP_START+  8)
+#define WM_CAP_SET_USER_DATA			(WM_CAP_START+  9)
+#define WM_CAP_DRIVER_CONNECT           (WM_CAP_START+  10)
+#define WM_CAP_DRIVER_DISCONNECT        (WM_CAP_START+  11)
+#define WM_CAP_DRIVER_GET_CAPS          (WM_CAP_START+  14)
+#define WM_CAP_SET_AUDIOFORMAT          (WM_CAP_START+  35)
+#define WM_CAP_GET_AUDIOFORMAT          (WM_CAP_START+  36)
+#define WM_CAP_GET_VIDEOFORMAT          (WM_CAP_START+  44)
+#define WM_CAP_SET_VIDEOFORMAT          (WM_CAP_START+  45)
+#define WM_CAP_SET_PREVIEW              (WM_CAP_START+  50)
+#define WM_CAP_GET_STATUS               (WM_CAP_START+  54)
+#define WM_CAP_GRAB_FRAME_NOSTOP        (WM_CAP_START+  61)
+#define WM_CAP_SET_SEQUENCE_SETUP       (WM_CAP_START+  64)
+#define WM_CAP_GET_SEQUENCE_SETUP       (WM_CAP_START+  65)
+#define WM_CAP_GET_USER_DATA		(WM_CAP_START+  8)
+
 // Functions
-DWORD capGetVideoFormatSize(HWND hwnd);
-BOOL capGetStatus(HWND hwnd, LPCAPSTATUS s, int wSize);
+#define capGetVideoFormat(hwnd, s, wSize)          ((DWORD)AVICapSM(hwnd, WM_CAP_GET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
+#define capGetVideoFormatSize(hwnd)					((DWORD)AVICapSM(hwnd, WM_CAP_GET_VIDEOFORMAT, 0, 0L))
+#define capSetVideoFormat(hwnd, s, wSize)          ((BOOL)AVICapSM(hwnd, WM_CAP_SET_VIDEOFORMAT, (WPARAM)(wSize), (LPARAM)(LPVOID)(s)))
+#define capGetStatus(hwnd, s, wSize)               ((BOOL)AVICapSM(hwnd, WM_CAP_GET_STATUS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPSTATUS)(s)))
+#define capGrabFrameNoStop(hwnd)                   ((BOOL)AVICapSM(hwnd, WM_CAP_GRAB_FRAME_NOSTOP, (WPARAM)0, (LPARAM)0L))
+#define capSetCallbackOnError(hwnd, fpProc)        ((BOOL)AVICapSM(hwnd, WM_CAP_SET_CALLBACK_ERROR, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnFrame(hwnd, fpProc)        ((BOOL)AVICapSM(hwnd, WM_CAP_SET_CALLBACK_FRAME, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capSetCallbackOnVideoStream(hwnd, fpProc)  ((BOOL)AVICapSM(hwnd, WM_CAP_SET_CALLBACK_VIDEOSTREAM, 0, (LPARAM)(LPVOID)(fpProc)))
+#define capDriverConnect(hwnd, i)                  ((BOOL)AVICapSM(hwnd, WM_CAP_DRIVER_CONNECT, (WPARAM)(i), 0L))
+#define capDriverDisconnect(hwnd)                  ((BOOL)AVICapSM(hwnd, WM_CAP_DRIVER_DISCONNECT, (WPARAM)0, 0L))
+#define capSetUserData(hwnd, lUser)					((BOOL)AVICapSM(hwnd, WM_CAP_SET_USER_DATA, 0, (LPARAM)lUser))
+#define capGetUserData(hwnd)						(AVICapSM(hwnd, WM_CAP_GET_USER_DATA, 0, 0))
+#define capCaptureGetSetup(hwnd, s, wSize)         ((BOOL)AVICapSM(hwnd, WM_CAP_GET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
+#define capCaptureSetSetup(hwnd, s, wSize)         ((BOOL)AVICapSM(hwnd, WM_CAP_SET_SEQUENCE_SETUP, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPTUREPARMS)(s)))
+#define capDriverGetCaps(hwnd, s, wSize)           ((BOOL)AVICapSM(hwnd, WM_CAP_DRIVER_GET_CAPS, (WPARAM)(wSize), (LPARAM)(LPVOID)(LPCAPDRIVERCAPS)(s)))
+#define capPreview(hwnd, f)                        ((BOOL)AVICapSM(hwnd, WM_CAP_SET_PREVIEW, (WPARAM)(BOOL)(f), 0L))
 
-DWORD capGetVideoFormat(HWND hwnd, LPVOID s, int wSize);
-BOOL capSetVideoFormat(HWND hwnd, LPVOID s, int wSize);
-
-BOOL capGrabFrameNoStop(HWND hwnd);
-
-BOOL capGetDriverDescription (UINT wDriverIndex,
+BOOL VFWAPI capGetDriverDescription(UINT wDriverIndex,
         LPSTR lpszName, int cbName,
         LPSTR lpszVer, int cbVer);
 
-HWND capCreateCaptureWindow (
+HWND VFWAPI capCreateCaptureWindow(
         LPCSTR lpszWindowName,
         DWORD dwStyle,
         int x, int y, int nWidth, int nHeight,
         HWND hwndParent, int nID);
 
-typedef LRESULT (CALLBACK* CAPERRORCALLBACK)  (HWND hWnd, int nID, LPCSTR lpsz);
-BOOL capSetCallbackOnError(HWND hwnd, CAPERRORCALLBACK fpProc);
-
-typedef LRESULT (CALLBACK* CAPVIDEOCALLBACK)  (HWND hWnd, LPVIDEOHDR lpVHdr);
-BOOL capSetCallbackOnFrame(HWND hwnd, CAPVIDEOCALLBACK fpProc);
-BOOL capSetCallbackOnVideoStream(HWND hwnd, CAPVIDEOCALLBACK fpProc);
-
-BOOL capDriverConnect(HWND hwnd, int i); 
-BOOL capDriverDisconnect(HWND hwnd);
-
-BOOL capSetUserData(HWND hwnd, LPVOID lUser);
-LPVOID capGetUserData(HWND hwnd);
-
-BOOL capCaptureGetSetup(HWND hwnd, LPCAPTUREPARMS s, int wSize);
-BOOL capCaptureSetSetup(HWND hwnd, LPCAPTUREPARMS s, int wSize);
-
-BOOL capDriverGetCaps(HWND hwnd, LPCAPDRIVERCAPS s, int wSize);
-BOOL capPreview(HWND hwnd, BOOL f); 
-
+// Making types of these functions to define static stubs
+typedef BOOL (VFWAPI CAPGETDRIVERDESCRIPTIONPROC)(UINT,LPSTR, int, LPSTR, int);
+typedef HWND (VFWAPI CAPCREATECAPTUREWINDOWPROC)(LPCSTR,DWORD,int,int,int,int,HWND,int);
 #endif // _CEVFW_H
