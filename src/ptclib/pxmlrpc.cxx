@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.13  2002/10/08 12:09:28  craigs
+ * More fixes for creation of struct params
+ *
  * Revision 1.12  2002/10/08 11:58:01  craigs
  * Fixed creation of struct params
  *
@@ -141,24 +144,28 @@ PXMLElement * PXMLRPCBlock::CreateBinary(const PBYTEArray & data)
 
 PXMLElement * PXMLRPCBlock::CreateStruct()
 {
-  return CreateValueElement(new PXMLElement(NULL, "struct"));
+  PAssertAlways("Not used");
+  return NULL;
 }
+
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict)
 {
-  return CreateValueElement(CreateStruct(dict, "string"));
+  return CreateStruct(dict, "string");
 }
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PString & typeStr)
 {
-  PXMLElement * structElement = CreateStruct();
+  PXMLElement * structElement = new PXMLElement(NULL, "struct");
+  PXMLElement * valueElement  = CreateValueElement(structElement);
+
   PINDEX i;
   for (i = 0; i < dict.GetSize(); i++) {
     PString key = dict.GetKeyAt(i);
     structElement->AddChild(CreateMember(key, CreateScalar(typeStr, dict[key])));
   }
 
-  return structElement;
+  return valueElement;
 }
 
 
