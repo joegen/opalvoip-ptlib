@@ -388,6 +388,7 @@ EXPORTS
     ??0P_RGB32F_YUV420P_Registration@@QAE@XZ @244 NONAME
     ??0P_RGB32_RGB24_Registration@@QAE@XZ @245 NONAME
     ??0P_RGB32_YUV420P_Registration@@QAE@XZ @246 NONAME
+    ??0P_SBGGR8_RGB24_Registration@@QAE@XZ @6137 NONAME
     ??0P_timeval@@QAE@XZ @247 NONAME
     ??0P_UYV444_YUV420P_Registration@@QAE@XZ @248 NONAME
     ??0P_UYVY422_YUV420P_Registration@@QAE@XZ @249 NONAME
@@ -643,6 +644,8 @@ EXPORTS
     ??1P_RGB32_RGB24_Registration@@UAE@XZ @434 NONAME
     ??1P_RGB32_YUV420P@@UAE@XZ @435 NONAME
     ??1P_RGB32_YUV420P_Registration@@UAE@XZ @436 NONAME
+    ??1P_SBGGR8_RGB24@@UAE@XZ @6138 NONAME
+    ??1P_SBGGR8_RGB24_Registration@@UAE@XZ @6139 NONAME
     ??1P_UYV444_YUV420P@@UAE@XZ @437 NONAME
     ??1P_UYV444_YUV420P_Registration@@UAE@XZ @438 NONAME
     ??1P_UYVY422_YUV420P@@UAE@XZ @439 NONAME
@@ -1155,6 +1158,8 @@ EXPORTS
     ??_7P_RGB32_RGB24_Registration@@6B@ @788 NONAME
     ??_7P_RGB32_YUV420P@@6B@ @789 NONAME
     ??_7P_RGB32_YUV420P_Registration@@6B@ @790 NONAME
+    ??_7P_SBGGR8_RGB24@@6B@ @6140 NONAME
+    ??_7P_SBGGR8_RGB24_Registration@@6B@ @6141 NONAME
     ??_7P_UYV444_YUV420P@@6B@ @791 NONAME
     ??_7P_UYV444_YUV420P_Registration@@6B@ @792 NONAME
     ??_7P_UYVY422_YUV420P@@6B@ @793 NONAME
@@ -1452,6 +1457,8 @@ EXPORTS
     ??_R0?AVP_RGB32_RGB24_Registration@@@8 @3229 NONAME
     ??_R0?AVP_RGB32_YUV420P@@@8 @3230 NONAME
     ??_R0?AVP_RGB32_YUV420P_Registration@@@8 @3231 NONAME
+    ??_R0?AVP_SBGGR8_RGB24@@@8 @6142 NONAME
+    ??_R0?AVP_SBGGR8_RGB24_Registration@@@8 @6143 NONAME
     ??_R0?AVP_UYV444_YUV420P@@@8 @3232 NONAME
     ??_R0?AVP_UYV444_YUV420P_Registration@@@8 @3233 NONAME
     ??_R0?AVP_UYVY422_YUV420P@@@8 @3234 NONAME
@@ -1715,6 +1722,8 @@ EXPORTS
     ??_R1A@?0A@A@P_RGB32_RGB24_Registration@@8 @3455 NONAME
     ??_R1A@?0A@A@P_RGB32_YUV420P@@8 @3456 NONAME
     ??_R1A@?0A@A@P_RGB32_YUV420P_Registration@@8 @3457 NONAME
+    ??_R1A@?0A@A@P_SBGGR8_RGB24@@8 @6144 NONAME
+    ??_R1A@?0A@A@P_SBGGR8_RGB24_Registration@@8 @6145 NONAME
     ??_R1A@?0A@A@P_UYV444_YUV420P@@8 @3458 NONAME
     ??_R1A@?0A@A@P_UYV444_YUV420P_Registration@@8 @3459 NONAME
     ??_R1A@?0A@A@P_UYVY422_YUV420P@@8 @3460 NONAME
@@ -1958,6 +1967,8 @@ EXPORTS
     ??_R2P_RGB32_RGB24_Registration@@8 @3664 NONAME
     ??_R2P_RGB32_YUV420P@@8 @3665 NONAME
     ??_R2P_RGB32_YUV420P_Registration@@8 @3666 NONAME
+    ??_R2P_SBGGR8_RGB24@@8 @6146 NONAME
+    ??_R2P_SBGGR8_RGB24_Registration@@8 @6147 NONAME
     ??_R2P_UYV444_YUV420P@@8 @3667 NONAME
     ??_R2P_UYV444_YUV420P_Registration@@8 @3668 NONAME
     ??_R2P_UYVY422_YUV420P@@8 @3669 NONAME
@@ -2193,6 +2204,8 @@ EXPORTS
     ??_R3P_RGB32_RGB24_Registration@@8 @3865 NONAME
     ??_R3P_RGB32_YUV420P@@8 @3866 NONAME
     ??_R3P_RGB32_YUV420P_Registration@@8 @3867 NONAME
+    ??_R3P_SBGGR8_RGB24@@8 @6148 NONAME
+    ??_R3P_SBGGR8_RGB24_Registration@@8 @6149 NONAME
     ??_R3P_UYV444_YUV420P@@8 @3868 NONAME
     ??_R3P_UYV444_YUV420P_Registration@@8 @3869 NONAME
     ??_R3P_UYVY422_YUV420P@@8 @3870 NONAME
@@ -2451,6 +2464,8 @@ EXPORTS
     ??_R4P_RGB32_RGB24_Registration@@6B@ @4089 NONAME
     ??_R4P_RGB32_YUV420P@@6B@ @4090 NONAME
     ??_R4P_RGB32_YUV420P_Registration@@6B@ @4091 NONAME
+    ??_R4P_SBGGR8_RGB24@@6B@ @6150 NONAME
+    ??_R4P_SBGGR8_RGB24_Registration@@6B@ @6151 NONAME
     ??_R4P_UYV444_YUV420P@@6B@ @4092 NONAME
     ??_R4P_UYV444_YUV420P_Registration@@6B@ @4093 NONAME
     ??_R4P_UYVY422_YUV420P@@6B@ @4094 NONAME
@@ -2701,7 +2716,7 @@ EXPORTS
     ?CloneContents@PHashTable@@IAEXPBV1@@Z @988 NONAME
     ?Close@PChannel@@UAEHXZ @989 NONAME
     ?Close@PConsoleChannel@@UAEHXZ @990 NONAME
-    ?Close@PDirectory@@QAEXXZ @991 NONAME
+    ?Close@PDirectory@@UAEXXZ @6152 NONAME
     ?Close@PDynaLink@@UAEXXZ @992 NONAME
     ?Close@PEthSocket@@UAEHXZ @993 NONAME
     ?Close@PFile@@UAEHXZ @995 NONAME
@@ -2924,6 +2939,7 @@ EXPORTS
     ?Convert@P_RGB32F_YUV420P@@UAEHPBEPAEPAH@Z @1189 NONAME
     ?Convert@P_RGB32_RGB24@@UAEHPBEPAEPAH@Z @1190 NONAME
     ?Convert@P_RGB32_YUV420P@@UAEHPBEPAEPAH@Z @1191 NONAME
+    ?Convert@P_SBGGR8_RGB24@@UAEHPBEPAEPAH@Z @6153 NONAME
     ?Convert@P_UYV444_YUV420P@@UAEHPBEPAEPAH@Z @1192 NONAME
     ?Convert@P_UYVY422_YUV420P@@UAEHPBEPAEPAH@Z @1193 NONAME
     ?Convert@P_YUV411P_YUV420P@@UAEHPBEPAEPAH@Z @1194 NONAME
@@ -2977,6 +2993,7 @@ EXPORTS
     ?Create@P_RGB32F_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1227 NONAME
     ?Create@P_RGB32_RGB24_Registration@@UBEPAVPColourConverter@@II@Z @1228 NONAME
     ?Create@P_RGB32_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1229 NONAME
+    ?Create@P_SBGGR8_RGB24_Registration@@UBEPAVPColourConverter@@II@Z @6154 NONAME
     ?Create@P_UYV444_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1230 NONAME
     ?Create@P_UYVY422_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1231 NONAME
     ?Create@P_YUV411P_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @1232 NONAME
@@ -3060,6 +3077,7 @@ EXPORTS
     ?DestroyContents@PHashTable@@MAEXXZ @1270 NONAME
     ?DestroyContents@Table@PHashTable@@UAEXXZ @1271 NONAME
     ?Destruct@PContainer@@IAEXXZ @1272 NONAME
+    ?Destruct@PDirectory@@IAEXXZ @6155 NONAME
     ?DisallowDeleteObjects@PCollection@@QAEXXZ @4644 NONAME
     ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @1273 NONAME
     ?Empty@PString@@SA?AV1@XZ @3014 NONAME
@@ -3377,7 +3395,7 @@ EXPORTS
     ?GetDstFrameSize@PColourConverter@@QBEHAAI0@Z @1494 NONAME
     ?GetElementAt@Table@PHashTable@@QAEPAVElement@2@ABVPObject@@@Z @1495 NONAME
     ?GetElementsIndex@Table@PHashTable@@QBEHPBVPObject@@HH@Z @1496 NONAME
-    ?GetEntryName@PDirectory@@QBE?AVPCaselessString@@XZ @1497 NONAME
+    ?GetEntryName@PDirectory@@UBE?AVPCaselessString@@XZ @6156 NONAME
     ?GetErrorCode@PChannel@@QBE?AW4Errors@1@W4ErrorGroup@1@@Z @4662 NONAME
     ?GetErrorCode@PMail@@QBEHXZ @1498 NONAME
     ?GetErrorCode@PRegularExpression@@QBE?AW4ErrorCodes@1@XZ @1499 NONAME
@@ -3437,7 +3455,7 @@ EXPORTS
     ?GetHour@PTime@@QBEHXZ @4667 NONAME
     ?GetHours@PTimeInterval@@QBEHXZ @4668 NONAME
     ?GetHue@PVideoDevice@@UAEHXZ @1545 NONAME
-    ?GetInfo@PDirectory@@QBEHAAVPFileInfo@@@Z @1546 NONAME
+    ?GetInfo@PDirectory@@UBEHAAVPFileInfo@@@Z @6157 NONAME
     ?GetInfo@PFile@@QAEHAAVPFileInfo@@@Z @4669 NONAME
     ?GetInfo@PFile@@SAHABVPFilePath@@AAVPFileInfo@@@Z @1547 NONAME
     ?GetInputDeviceNames@PVideoInputDevice_FakeVideo@@SA?AVPStringList@@XZ @2872 NONAME
@@ -3928,7 +3946,7 @@ EXPORTS
     ?IsServiceProcess@PServiceProcess@@UBEHXZ @2049 NONAME
     ?IsSingleton@?$PFactory@VPProcessStartup@@VPString@@@@SAHABVPString@@@Z @5746 NONAME
     ?IsSingleton_Internal@?$PFactory@VPProcessStartup@@VPString@@@@IAE_NABVPString@@@Z @5747 NONAME
-    ?IsSubDir@PDirectory@@QBEHXZ @2050 NONAME
+    ?IsSubDir@PDirectory@@UBEHXZ @6158 NONAME
     ?IsSuspended@PThread@@UBEHXZ @2051 NONAME
     ?IsTerminated@PThread@@UBEHXZ @2052 NONAME
     ?IsTextFile@PFile@@MBEHXZ @2053 NONAME
@@ -4021,7 +4039,7 @@ EXPORTS
     ?OnWriteComplete@PChannel@@UAEXPBXH@Z @2115 NONAME
     ?Open@NT_ServiceManager@@AAEHPAVPServiceProcess@@@Z @2116 NONAME
     ?Open@PConsoleChannel@@UAEHW4ConsoleType@1@@Z @2117 NONAME
-    ?Open@PDirectory@@QAEHH@Z @2118 NONAME
+    ?Open@PDirectory@@UAEHH@Z @6159 NONAME
     ?Open@PDynaLink@@UAEHABVPString@@@Z @2119 NONAME
     ?Open@PFile@@UAEHABVPFilePath@@W4OpenMode@1@H@Z @2121 NONAME
     ?Open@PFile@@UAEHW4OpenMode@1@H@Z @2122 NONAME
@@ -4286,7 +4304,7 @@ EXPORTS
     ?Reset@PWin32Overlapped@@QAEXXZ @2331 NONAME
     ?ResizeYUV422@PStandardColourConverter@@IBEXPBEPAE@Z @2332 NONAME
     ?Resolution@PTimer@@SAIXZ @2333 NONAME
-    ?Restart@PDirectory@@QAEHH@Z @4713 NONAME
+    ?Restart@PDirectory@@UAEHH@Z @6160 NONAME
     ?Restart@PThread@@UAEXXZ @2334 NONAME
     ?RestrictAccess@PVideoChannel@@QAEXXZ @2335 NONAME
     ?Resume@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2336 NONAME
@@ -4311,6 +4329,7 @@ EXPORTS
     ?Save@PConfigArgs@@QAEXABVPString@@@Z @2354 NONAME
     ?Save@PSound@@QAEHABVPFilePath@@@Z @2355 NONAME
     ?SaveSettings@PSerialChannel@@UAEXAAVPConfig@@@Z @2356 NONAME
+    ?SBGGR8toRGB@PStandardColourConverter@@IBEHPBEPAEPAHIHH@Z @6161 NONAME
     ?seekoff@Buffer@PStringStream@@UAEJJW4seek_dir@ios@@H@Z @2357 NONAME
     ?seekoff@PChannelStreamBuffer@@MAEJJW4seek_dir@ios@@H@Z @2358 NONAME
     ?Select@PSocket@@SA?AW4Errors@PChannel@@AAVSelectList@1@00@Z @2359 NONAME
