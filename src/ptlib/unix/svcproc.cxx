@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.61  2001/09/20 05:35:47  robertj
+ * Fixed crash (race condition) if shutdown service via signal and exit main.
+ *
  * Revision 1.60  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -324,6 +327,10 @@ PServiceProcess::~PServiceProcess()
 {
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
+
+  // close the system log
+  if (systemLogFile.IsEmpty())
+    closelog();
 }
 
 
@@ -658,10 +665,6 @@ int PServiceProcess::_main(void *)
       Terminate();
     }
   }
-
-  // close the system log
-  if (systemLogFile.IsEmpty())
-    closelog();
 
   return terminationValue;
 }
