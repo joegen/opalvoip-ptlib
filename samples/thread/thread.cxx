@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.4  2002/11/04 18:11:22  rogerh
+ * Terminate the threads prior to deletion.
+ *
  * Revision 1.3  2002/11/04 16:24:21  rogerh
  * Delete the threads, fixing a memory leak.
  *
@@ -52,7 +55,7 @@ class MyThread1 : public PThread
 {
   PCLASSINFO(MyThread1, PThread);
   public:
-    MyThread1() : PThread(1000,AutoDeleteThread)
+    MyThread1() : PThread(1000,NoAutoDeleteThread)
     {
       Resume(); // start running this thread as soon as the thread is created.
     }
@@ -75,7 +78,7 @@ class MyThread2 : public PThread
 {
   PCLASSINFO(MyThread2, PThread);
   public:
-    MyThread2() : PThread(1000,AutoDeleteThread)
+    MyThread2() : PThread(1000,NoAutoDeleteThread)
     {
     // This thread will not start automatically. We must call
     // Resume() after creating the thread.
@@ -130,7 +133,7 @@ void ThreadTest::Main()
   // Thread 2 should be suspended.
   // Sleep for three seconds. Only thread 1 will be running.
   // Display will show "1 1 1 1 1 1 1..."
-  sleep(3);
+  sleep(1);
 
 
   // Start the second thread.
@@ -138,24 +141,32 @@ void ThreadTest::Main()
   // Sleep for 3 seconds, allowing the threads to run.
   // Display will show "1 2 1 2 1 2 1 2 1 2..."
   mythread2->Resume();
-  sleep(3);
+  sleep(1);
 
 
   // Suspend thread 1.
   // Sleep for 3 seconds. Only thread 2 should be running.
   // Display will show "2 2 2 2 2 2 2..."
   mythread1->Suspend();
-  sleep(3);
+  sleep(1);
 
 
   // Resume thread 1.
   // Sleep for 3 seconds. Both threads should be running.
   // Display will show "1 2 1 2 1 2 1 2 1 2..."
   mythread1->Resume();
-  sleep(3);
+  sleep(1);
 
 
   // Clean up
+  mythread1->Terminate();
+  mythread1->WaitForTermination();
+  cout << "Thread 1 terminated" << endl;
+
+  mythread2->Terminate();
+  mythread2->WaitForTermination();
+  cout << "Thread 2 terminated" << endl;
+
   delete mythread1;
   delete mythread2;
 
