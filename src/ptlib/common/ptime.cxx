@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.33  2000/04/28 13:23:25  robertj
+ * Fixed printing of negative time intervals.
+ *
  * Revision 1.32  2000/04/18 06:01:01  robertj
  * Fixed integer overflow bug in PTime addition functions, thanks Ian MacDonald
  *
@@ -164,6 +167,11 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 void PTimeInterval::PrintOn(ostream & strm) const
 {
   PInt64 ms = milliseconds;
+
+  if (ms < 0) {
+    strm << '-';
+    ms = -ms;
+  }
 
   char prevFill = strm.fill();
   strm.fill('0');
