@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.2  2003/02/09 23:22:46  robertj
+ * Fixed spelling errors, and setting return values, thanks Andreas Sikkema
+ *
  * Revision 1.1  2003/02/04 22:46:48  robertj
  * Added basic SOAP support, thanks Andreas Sikkema
  *
@@ -224,31 +227,35 @@ PINDEX stringToFaultCode( PString & faultStr )
   return PSOAPMessage::Server;
 }
 
-BOOL PSOAPMessage::GetParamater( PString name, PString & value )
+BOOL PSOAPMessage::GetParameter( PString name, PString & value )
 {
-  PXMLElement* pElement = GetParamater( name );
+  PXMLElement* pElement = GetParameter( name );
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:string" )
   {
     value = pElement->GetData();
     return TRUE;
   }
+
+  value = PString::Empty();
   return FALSE;
 }
 
-BOOL PSOAPMessage::GetParamater( PString name, int & value )
+BOOL PSOAPMessage::GetParameter( PString name, int & value )
 {
-  PXMLElement* pElement = GetParamater( name );
+  PXMLElement* pElement = GetParameter( name );
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:int" )
   {
     value = pElement->GetData().AsInteger();
     return TRUE;
   }
+
+  value = -1;
   return FALSE;
 }
 
-PXMLElement* PSOAPMessage::GetParamater( PString name )
+PXMLElement* PSOAPMessage::GetParameter( PString name )
 {
   if ( pSOAPMethod )
   {
@@ -293,9 +300,9 @@ BOOL PSOAPMessage::Load( const PString & str )
           if ( method == "Fault" )
           {
             // The SOAP server has signalled an error
-            PString faultCodeData = GetParamater( "faultcode" )->GetData();
+            PString faultCodeData = GetParameter( "faultcode" )->GetData();
             faultCode = stringToFaultCode( faultCodeData );
-            faultText = GetParamater( "faultstring" )->GetData();
+            faultText = GetParameter( "faultstring" )->GetData();
           }
           else
           {
