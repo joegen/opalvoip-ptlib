@@ -30,7 +30,7 @@ void Audio::Main()
   for (PINDEX i = 0; i < names.GetSize(); i++)
     cout << "  \"" << names[i] << "\"\n";
 
-  cout << "and default device is \"" << PSoundChannel::GetDefaultDevice(dir) << "\"\n";
+  cout << "The default play device is \"" << PSoundChannel::GetDefaultDevice(dir) << "\"\n";
 
 
   cout << "\n";
@@ -41,7 +41,7 @@ void Audio::Main()
   for (PINDEX i = 0; i < names.GetSize(); i++)
     cout << "  \"" << names[i] << "\"\n";
 
-  cout << "and default device is \"" << PSoundChannel::GetDefaultDevice(dir) << "\"\n";
+  cout << "The default record device is \"" << PSoundChannel::GetDefaultDevice(dir) << "\"\n";
 
   cout << "\n";
 
