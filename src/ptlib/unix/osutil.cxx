@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.79  2003/09/17 01:18:04  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.78  2003/05/01 06:08:36  robertj
  * Fixed concurrency problem with some time functions, thanks chad@broadmind.com
  *
@@ -285,8 +289,12 @@
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #if !P_USE_INLINES
-#include <ptlib/osutil.inl>
-#include <ptlib/ptlib.inl>
+#include "ptlib/osutil.inl"
+#ifdef _WIN32
+#include "ptlib/win32/ptlib/ptlib.inl"
+#else
+#include "ptlib/unix/ptlib/ptlib.inl"
+#endif
 #endif
 
 #ifdef P_SUN4
