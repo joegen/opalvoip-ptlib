@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.10 1994/12/21 11:36:07 robertj Exp $
+ * $Id: ptlib.cxx,v 1.11 1995/01/06 10:41:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.10  1994/12/21 11:36:07  robertj
+ * Revision 1.11  1995/01/06 10:41:43  robertj
+ * Moved identifiers into different scope.
+ * Changed file size to 64 bit integer.
+ *
+ * Revision 1.10  1994/12/21  11:36:07  robertj
  * Fixed caseless string for file paths.
  *
  * Revision 1.9  1994/10/30  11:26:54  robertj
@@ -232,7 +236,7 @@ BOOL PDirectory::Filtered()
     return TRUE;
   if (strcmp(fileinfo.name, "..") == 0)
     return TRUE;
-  if (scanMask == PAllPermissions)
+  if (scanMask == PFileInfo::AllPermissions)
     return FALSE;
 
   PFileInfo inf;
@@ -382,23 +386,26 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 
   info.permissions = 0;
   if ((s.st_mode&S_IREAD) != 0)
-    info.permissions |= PUserRead|PGroupRead|PWorldRead;
+    info.permissions |=
+                PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
   if ((s.st_mode&S_IWRITE) != 0)
-    info.permissions |= PUserWrite|PGroupWrite|PWorldWrite;
+    info.permissions |=
+             PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
   if ((s.st_mode&S_IEXEC) != 0)
-    info.permissions |= PUserExecute|PGroupExecute|PWorldExecute;
+    info.permissions |=
+       PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
 
   switch (s.st_mode & S_IFMT) {
     case S_IFREG :
-      info.type = PRegularFile;
+      info.type = PFileInfo::RegularFile;
       break;
 
     case S_IFDIR :
-      info.type = PSubDirectory;
+      info.type = PFileInfo::SubDirectory;
       break;
 
     default:
-      info.type = PUnknownFileType;
+      info.type = PFileInfo::UnknownFileType;
       break;
   }
 
