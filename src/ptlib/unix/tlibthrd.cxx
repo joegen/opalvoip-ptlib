@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.131  2004/05/21 00:49:16  csoutheren
+ * Added PreShutdown to ~PProcess
+ *
  * Revision 1.130  2004/04/27 04:36:47  rjongbloed
  * Fixed occassional crash on exit due to level 5 trace in PProcess
  *   destructor that needs an undestructed PProcess.
@@ -634,6 +637,8 @@ BOOL PProcess::SetMaxHandles(int newMax)
 
 PProcess::~PProcess()
 {
+  PreShutdown();
+
   // Don't wait for housekeeper to stop if Terminate() is called from it.
   if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
     housekeepingThread->SetClosing();
