@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.26  2004/03/22 10:15:28  rjongbloed
+ * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
+ *   when goes out of scope.
+ *
  * Revision 1.25  2004/02/24 11:19:32  rjongbloed
  * Fixed seekpos() function on channel to read data when seeking beyond end of corrent stream.
  *
@@ -635,22 +639,20 @@ PObject::Comparison PIndirectChannel::Compare(const PObject & obj) const
 
 PString PIndirectChannel::GetName() const
 {
-  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
+  PReadWaitAndSignal mutex(channelPointerMutex);
 
-  PString name;
   if (readChannel != NULL && readChannel == writeChannel)
-    name = readChannel->GetName();
-  else {
-    name = "R<";
-    if (readChannel != NULL)
-      name += readChannel->GetName();
-    name += "> T<";
-    if (writeChannel != NULL)
-      name += writeChannel->GetName();
-    name += ">";
-  }
+    return readChannel->GetName();
 
-  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+  PStringStream name;
+
+  name << "R<";
+  if (readChannel != NULL)
+    name << readChannel->GetName();
+  name << "> T<";
+  if (writeChannel != NULL)
+    name << writeChannel->GetName();
+  name << '>';
 
   return name;
 }
@@ -694,18 +696,15 @@ BOOL PIndirectChannel::Close()
 
 BOOL PIndirectChannel::IsOpen() const
 {
-  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
+  PReadWaitAndSignal mutex(channelPointerMutex);
 
-  BOOL returnValue;
   if (readChannel != NULL && readChannel == writeChannel)
-    returnValue = readChannel->IsOpen();
-  else {
-    returnValue = readChannel != NULL ? readChannel->IsOpen() : FALSE;
-    if (writeChannel != NULL)
-      returnValue = writeChannel->IsOpen() || returnValue;
-  }
+    return readChannel->IsOpen();
 
-  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
+  BOOL returnValue = readChannel != NULL ? readChannel->IsOpen() : FALSE;
+
+  if (writeChannel != NULL)
+    returnValue = writeChannel->IsOpen() || returnValue;
 
   return returnValue;
 }
@@ -715,25 +714,20 @@ BOOL PIndirectChannel::Read(void * buf, PINDEX len)
 {
   flush();
 
-  channelPointerMutex.StartRead();
+  PReadWaitAndSignal mutex(channelPointerMutex);
 
-  BOOL returnValue;
   if (readChannel == NULL) {
     SetErrorValues(NotOpen, EBADF, LastReadError);
-    returnValue = FALSE;
-  }
-  else {
-    readChannel->SetReadTimeout(readTimeout);
-
-    returnValue = readChannel->Read(buf, len);
-
-    SetErrorValues(readChannel->GetErrorCode(LastReadError),
-                   readChannel->GetErrorNumber(LastReadError),
-                   LastReadError);
-    lastReadCount = readChannel->GetLastReadCount();
+    return FALSE;
   }
 
-  channelPointerMutex.EndRead();
+  readChannel->SetReadTimeout(readTimeout);
+  BOOL returnValue = readChannel->Read(buf, len);
+
+  SetErrorValues(readChannel->GetErrorCode(LastReadError),
+                 readChannel->GetErrorNumber(LastReadError),
+                 LastReadError);
+  lastReadCount = readChannel->GetLastReadCount();
 
   return returnValue;
 }
@@ -743,26 +737,21 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 {
   flush();
 
-  channelPointerMutex.StartRead();
+  PReadWaitAndSignal mutex(channelPointerMutex);
 
-  BOOL returnValue;
   if (writeChannel == NULL) {
     SetErrorValues(NotOpen, EBADF, LastWriteError);
-    returnValue = FALSE;
-  }
-  else {
-    writeChannel->SetWriteTimeout(writeTimeout);
-
-    returnValue = writeChannel->Write(buf, len);
-
-    SetErrorValues(writeChannel->GetErrorCode(LastWriteError),
-                   writeChannel->GetErrorNumber(LastWriteError),
-                   LastWriteError);
-
-    lastWriteCount = writeChannel->GetLastWriteCount();
+    return FALSE;
   }
 
-  channelPointerMutex.EndRead();
+  writeChannel->SetWriteTimeout(writeTimeout);
+  BOOL returnValue = writeChannel->Write(buf, len);
+
+  SetErrorValues(writeChannel->GetErrorCode(LastWriteError),
+                 writeChannel->GetErrorNumber(LastWriteError),
+                 LastWriteError);
+
+  lastWriteCount = writeChannel->GetLastWriteCount();
 
   return returnValue;
 }
@@ -770,18 +759,15 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 
 BOOL PIndirectChannel::Shutdown(ShutdownValue value)
 {
-  channelPointerMutex.StartRead();
+  PReadWaitAndSignal mutex(channelPointerMutex);
 
-  BOOL returnValue;
   if (readChannel != NULL && readChannel == writeChannel)
-    returnValue = readChannel->Shutdown(value);
-  else {
-    returnValue = readChannel != NULL ? readChannel->Shutdown(value) : FALSE;
-    if (writeChannel != NULL)
-      returnValue = writeChannel->Shutdown(value) || returnValue;
-  }
+    return readChannel->Shutdown(value);
 
-  channelPointerMutex.EndRead();
+  BOOL returnValue = readChannel != NULL ? readChannel->Shutdown(value) : FALSE;
+
+  if (writeChannel != NULL)
+    returnValue = writeChannel->Shutdown(value) || returnValue;
 
   return returnValue;
 }
@@ -884,25 +870,15 @@ BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
 
 PChannel * PIndirectChannel::GetBaseReadChannel() const
 {
-  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
-
-  PChannel * returnValue = readChannel != NULL ? readChannel->GetBaseReadChannel() : 0;
-
-  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
-
-  return returnValue;
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return readChannel != NULL ? readChannel->GetBaseReadChannel() : 0;
 }
 
 
 PChannel * PIndirectChannel::GetBaseWriteChannel() const
 {
-  ((PIndirectChannel*)this)->channelPointerMutex.StartRead();
-
-  PChannel * returnValue = writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
-
-  ((PIndirectChannel*)this)->channelPointerMutex.EndRead();
-
-  return returnValue;
+  PReadWaitAndSignal mutex(channelPointerMutex);
+  return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
 }
 
 
