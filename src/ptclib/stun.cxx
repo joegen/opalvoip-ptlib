@@ -47,6 +47,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #endif
+#include <errno.h>
 
 #endif // _WIN32_WCE
 #include "udp.h"
