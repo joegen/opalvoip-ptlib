@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.11  2001/04/23 00:34:29  robertj
+ * Added ability for PWaitAndSignal to not wait on semaphore.
+ *
  * Revision 1.10  2001/01/27 23:40:09  yurik
  * WinCE port-related - CreateEvent used instead of CreateSemaphore
  *
@@ -95,7 +98,8 @@ class PWaitAndSignal {
        before returning.
       */
     PWaitAndSignal(
-      PSemaphore & sem    /// Semaphore descendent to wait/signal.
+      PSemaphore & sem,   /// Semaphore descendent to wait/signal.
+      BOOL wait = TRUE    /// Wait for semaphore before returning.
     );
     /** Signal the semaphore.
         This will execute the Signal() function on the semaphore that was used
