@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.9 1994/12/21 11:52:48 robertj Exp $
+ * $Id: channel.h,v 1.10 1995/03/12 04:36:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.9  1994/12/21 11:52:48  robertj
+ * Revision 1.10  1995/03/12 04:36:53  robertj
+ * Moved GetHandle() function from PFile to PChannel.
+ *
+ * Revision 1.9  1994/12/21  11:52:48  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.8  1994/11/28  12:31:40  robertj
@@ -348,6 +351,12 @@ PCLASS PChannel : public PContainer, public iostream {
        this can only be called from within another thread.
      */
 
+
+    int GetHandle() const;
+    /* Get the integer operating system handle for the channel.
+
+       Returns: standard OS descriptor integer.
+     */
 
     virtual BOOL Close();
       // Close the channel.
