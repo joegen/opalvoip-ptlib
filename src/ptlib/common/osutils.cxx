@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.180  2002/02/11 04:07:00  robertj
+ * Fixed possibly race condition in PTRACE of first message. Consequence is
+ *   that cannot PTRACE until have PProcess, ie before main() is executed.
+ *
  * Revision 1.179  2002/01/31 08:14:16  robertj
  * Put back code taken out by GCC 3.0 patch. It really SHOULD be there!
  *
@@ -748,17 +752,8 @@ BOOL PTrace::CanTrace(unsigned level)
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
   if (PTraceMutex == NULL) {
-    // This flag must never be destroyed before it is finished with. As we
-    // cannot assure destruction at the right time we simply allocate it and
-    // NEVER destroy it! This is OK as the only reason for its destruction is
-    // the program is exiting and then who cares?
-#if PMEMORY_CHECK
-    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
-    PTraceMutex = new PMutex;
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
+    PAssertAlways("Cannot use PTRACE before PProcess constructed.");
+    return *PTraceStream;
   }
 
   PTraceMutex->Wait();
@@ -1592,6 +1587,18 @@ PProcess::PProcess(const char * manuf, const char * name,
   minorVersion = minor;
   status = stat;
   buildNumber = build;
+
+  // This flag must never be destroyed before it is finished with. As we
+  // cannot assure destruction at the right time we simply allocate it and
+  // NEVER destroy it! This is OK as the only reason for its destruction is
+  // the program is exiting and then who cares?
+#if PMEMORY_CHECK
+  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+  PTraceMutex = new PMutex;
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
+#endif
 
   if (p_argv != 0 && p_argc > 0) {
     arguments.SetArgs(p_argc-1, p_argv+1);
