@@ -125,9 +125,10 @@ static BOOL LocateFile(const PString & baseName,
   if (PFile::Exists(filename))
     return TRUE;
 
-  // use the system file
+  // otherwise check the system directory for a file to read,
+  // and then create 
   readFilename = SYS_CONFIG_DIR + baseName + EXTENSION;
-  return PFile::Exists(filename);
+  return PFile::Exists(readFilename);
 }
      
 
@@ -161,7 +162,7 @@ void PConfig::Construct(Source src)
 
     case PConfig::Application:
     default:
-      name = PProcess::Current()->GetName() + EXTENSION;
+      name = PProcess::Current()->GetName();
       if (LocateFile(name, readFilename, filename))
         break;
       name = PProcess::Current()->GetFile().GetTitle();
@@ -186,18 +187,29 @@ PConfig::~PConfig()
 
 {
   if (saveOnExit && dirty) {
-    PTextFile file;
-    if (file.Open(filename, PFile::WriteOnly)) {
-      for (PINDEX i = 0; i < config->GetSize(); i++) {
-        PXConfigSectionList & section = (*config)[i].GetList();
-        file << "[" << (*config)[i] << "]" << endl;
-        for (PINDEX j = 0; j < section.GetSize(); j++) {
-          PXConfigValue & value = section[j];
-          file << value << "=" << value.GetValue() << endl;
+    // make sure the directory that the file is to be written into exists
+    PDirectory dir = filename.GetDirectory();
+    if (!dir.Exists() && !dir.Create( 
+                                     PFileInfo::UserExecute |
+                                     PFileInfo::UserWrite |
+                                     PFileInfo::UserRead))
+      PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
+    else {
+      PTextFile file;
+      if (!file.Open(filename, PFile::WriteOnly))
+        PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
+      else {
+        for (PINDEX i = 0; i < config->GetSize(); i++) {
+          PXConfigSectionList & section = (*config)[i].GetList();
+          file << "[" << (*config)[i] << "]" << endl;
+          for (PINDEX j = 0; j < section.GetSize(); j++) {
+            PXConfigValue & value = section[j];
+            file << value << "=" << value.GetValue() << endl;
+          }
+          file << endl;
         }
-        file << endl;
+        file.Close();
       }
-      file.Close();
     }
   }
   delete config;
