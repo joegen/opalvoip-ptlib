@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.32  2004/04/21 11:22:48  csoutheren
+ * Modified to work with gcc 3.4.0
+ *
  * Revision 1.31  2004/04/18 12:06:06  csoutheren
  * Added classes for SASL authentication
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -453,6 +456,7 @@
 #undef  P_HAS_STL_STREAMS
 #undef  P_HAS_ATOMIC_INT
 #undef  P_HAS_RECURSIVE_MUTEX
+#undef  P_NEEDS_GNU_CXX_NAMESPACE
 
 #endif // _PT_BUILDOPTS_H
 
