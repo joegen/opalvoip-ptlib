@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.43  2004/04/03 23:53:09  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.42  2004/03/23 05:59:17  csoutheren
  * Moved the Base64 routines into cypher.cxx, which is a more sensible
  * place and reduces the inclusion of unrelated code
@@ -1156,7 +1161,7 @@ static const char DefaultPendingPrefix[] = "Pending:";
 PSecureConfig::PSecureConfig(const PTEACypher::Key & prodKey,
                              const PStringArray & secKeys,
                              Source src)
-  : PConfig(DefaultSecuredOptions, src),
+  : PConfig(PString(DefaultSecuredOptions), src),
     securedKeys(secKeys),
     securityKey(DefaultSecurityKey),
     expiryDateKey(DefaultExpiryDateKey),
@@ -1171,7 +1176,7 @@ PSecureConfig::PSecureConfig(const PTEACypher::Key & prodKey,
                              const char * const * secKeys,
                              PINDEX count,
                              Source src)
-  : PConfig(DefaultSecuredOptions, src),
+  : PConfig(PString(DefaultSecuredOptions), src),
     securedKeys(count, secKeys),
     securityKey(DefaultSecurityKey),
     expiryDateKey(DefaultExpiryDateKey),
