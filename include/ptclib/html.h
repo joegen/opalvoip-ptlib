@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.15 1996/08/17 10:00:18 robertj Exp $
+ * $Id: html.h,v 1.16 1997/06/16 13:18:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.16  1997/06/16 13:18:02  robertj
+ * Set Is() function to be const as it should have been.
+ *
  * Revision 1.15  1996/08/17 10:00:18  robertj
  * Changes for Windows DLL support.
  *
@@ -153,7 +156,7 @@ PDECLARE_CLASS(PHTML, PStringStream)
 
 
   // New functions for class.
-    BOOL Is(ElementInSet elmt);
+    BOOL Is(ElementInSet elmt) const;
     void Set(ElementInSet elmt);
     void Clr(ElementInSet elmt);
     void Toggle(ElementInSet elmt);
