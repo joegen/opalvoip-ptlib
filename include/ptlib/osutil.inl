@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.64  1998/10/30 05:24:30  robertj
+ * Added return value to << and >> operators for shifting arguments.
+ *
  * Revision 1.63  1998/10/29 05:35:16  robertj
  * Fixed porblem with GetCount() == 0 if do not call Parse() function.
  *
@@ -674,11 +677,11 @@ PINLINE PINDEX PArgList::GetCount() const
 PINLINE PString PArgList::operator[](PINDEX num) const
   { return GetParameter(num); }
 
-PINLINE void PArgList::operator<<(int sh)
-  { Shift(sh); }
+PINLINE PArgList & PArgList::operator<<(int sh)
+  { Shift(sh); return *this; }
 
-PINLINE void PArgList::operator>>(int sh)
-  { Shift(-sh); }
+PINLINE PArgList & PArgList::operator>>(int sh)
+  { Shift(-sh); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
