@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.7 1996/06/10 09:55:44 robertj Exp $
+ * $Id: url.h,v 1.8 1996/08/19 13:37:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.8  1996/08/19 13:37:28  robertj
+ * Fixed URL parsing and definition (cannot have relative paths).
+ *
  * Revision 1.7  1996/06/10 09:55:44  robertj
  * Added global function for query parameters parsing.
  *
@@ -138,11 +141,12 @@ PDECLARE_CLASS(PURL, PObject)
     WORD GetPort() const                        { return port; }
     const PString & GetPathStr() const          { return pathStr; }
     const PStringArray & GetPath() const        { return path; }
-    BOOL IsAbsolutePath() const                 { return absolutePath; }
     const PString & GetParameters() const       { return parameters; }
     const PString & GetFragment() const         { return fragment; }
     const PString & GetQuery() const            { return queryStr; }
     PStringToString GetQueryVars() const        { return queryVars; }
+
+    void SetPort(WORD newPort)                  { port = newPort; }
 
   protected:
     PCaselessString scheme;
