@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.27 1997/07/08 13:13:45 robertj Exp $
+ * $Id: object.h,v 1.28 1998/09/14 12:29:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.28  1998/09/14 12:29:11  robertj
+ * Fixed memory leak dump under windows to not include static globals.
+ * Fixed problem with notifier declaration not allowing implementation inline after macro.
+ *
  * Revision 1.27  1997/07/08 13:13:45  robertj
  * DLL support.
  *
@@ -733,9 +737,34 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
 
 #else // !defined(PMEMORY_CHECK) || PMEMORY_CHECK==0
 
+#if defined(_DEBUG) && defined(_MSC_VER)
+
+#include <crtdbg.h>
+
+#define PNEW new(__FILE__, __LINE__)
+#define PNEW_AND_DELETE_FUNCTIONS \
+    void * operator new(size_t nSize, const char * file, int line) \
+      { return _malloc_dbg(nSize, _CLIENT_BLOCK, file, line); } \
+    void * operator new(size_t nSize) \
+      { return _malloc_dbg(nSize, _CLIENT_BLOCK, NULL, 0); } \
+    void operator delete(void * ptr) \
+      { _free_dbg(ptr, _CLIENT_BLOCK); }
+
+class PMemoryState : public _CrtMemState
+{
+  public:
+    PMemoryState(BOOL d = TRUE) { _CrtMemCheckpoint(this); dumpAll = d; }
+    ~PMemoryState()             { if (dumpAll) _CrtMemDumpAllObjectsSince(this); }
+  private:
+    BOOL dumpAll;
+};
+
+#else
+
 #define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
 
+#endif
 
 #endif // defined(PMEMORY_CHECK)
 
@@ -1872,14 +1901,14 @@ PDECLARE_CLASS(PNotifier, PSmartPointer)
   The implementation of the function is left for the user.
  */
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-  virtual void func(notifier & n, INT extra); \
   class func##_PNotifier : public PNotifierFunction { \
     public: \
       func##_PNotifier(notifiee * obj) : PNotifierFunction(obj) { } \
       virtual void Call(PObject & note, INT extra) const \
         { ((notifiee*)object)->func((notifier &)note, extra); } \
   }; \
-  friend class func##_PNotifier
+  friend class func##_PNotifier; \
+  virtual void func(notifier & note, INT extra)
 
 /*$MACRO PCREATE_NOTIFIER2(obj, func)
   This macro creates an instance of the particular <A>PNotifier</A> class using
