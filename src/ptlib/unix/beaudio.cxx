@@ -24,14 +24,19 @@
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
  *
- * Contributor(s): Yuri Kiryanov (openh323@kiryanov.com), Jac Goudsmit <jac@be.com>.
+ * Contributor(s): 
+ * Yuri Kiryanov, ykiryanov at users.sourceforge.net,
+ * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.10  2004/04/02 03:29:07  ykiryanov
+ * New improved code
+ *
  * Revision 1.9  2002/02/09 00:52:01  robertj
  * Slight adjustment to API and documentation for volume functions.
  *
  * Revision 1.8  2002/02/07 20:57:21  dereks
- * add SetVolume and GetVolume methods to PSoundChannel
+ * add SetVolume and GetVolume methods to PSoundChannelBeOS
  *
  * Revision 1.7  2001/07/09 06:16:15  yurik
  * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
@@ -56,8 +61,6 @@
  *
  */
 
-#pragma implementation "sound.h"
-
 // Storage kit
 #include <storage/Directory.h>
 #include <storage/Entry.h>
@@ -70,6 +73,8 @@
 #include <media/MediaTrack.h>
 #include <media/SoundPlayer.h>
 #include <media/PlaySound.h>
+
+#define MEDIA_KIT_UPDATE
 
 #ifdef MEDIA_KIT_UPDATE
 #include <media/MediaRecorder.h>
@@ -135,6 +140,101 @@ do { \
 BAudioFileWriter *playwriter=NULL;
 BAudioFileWriter *recwriter=NULL;
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// PSoundChannelBeOS declaration
+
+class P_CircularBuffer;
+
+class PSoundChannelBeOS: public PSoundChannel
+{
+ public:
+    PSoundChannelBeOS();
+    void Construct();
+    PSoundChannelBeOS(const PString &device,
+                     PSoundChannel::Directions dir,
+                     unsigned numChannels,
+                     unsigned sampleRate,
+                     unsigned bitsPerSample);
+    ~PSoundChannelBeOS();
+    static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
+    static PString GetDefaultDevice(PSoundChannel::Directions);
+    BOOL Open(const PString & _device,
+              Directions _dir,
+              unsigned _numChannels,
+              unsigned _sampleRate,
+              unsigned _bitsPerSample);
+    BOOL Setup();
+    BOOL Close();
+    BOOL IsOpen() const;
+    BOOL Write(const void * buf, PINDEX len);
+    BOOL Read(void * buf, PINDEX len);
+    BOOL SetFormat(unsigned numChannels,
+                   unsigned sampleRate,
+                   unsigned bitsPerSample);
+    unsigned GetChannels() const;
+    unsigned GetSampleRate() const;
+    unsigned GetSampleSize() const;
+    BOOL SetBuffers(PINDEX size, PINDEX count);
+    BOOL GetBuffers(PINDEX & size, PINDEX & count);
+    BOOL PlaySound(const PSound & sound, BOOL wait);
+    BOOL PlayFile(const PFilePath & filename, BOOL wait);
+    BOOL HasPlayCompleted();
+    BOOL WaitForPlayCompletion();
+    BOOL RecordSound(PSound & sound);
+    BOOL RecordFile(const PFilePath & filename);
+    BOOL StartRecording();
+    BOOL IsRecordBufferFull();
+    BOOL AreAllRecordBuffersFull();
+    BOOL WaitForRecordBufferFull();
+    BOOL WaitForAllRecordBuffersFull();
+    BOOL Abort();
+    BOOL SetVolume(unsigned newVal);
+    BOOL GetVolume(unsigned &devVol);
+
+  public:
+    // Overrides from class PChannel
+    virtual PString GetName() const { return deviceName; }
+      // Return the name of the channel.
+  protected:
+    PString     deviceName;
+    Directions  direction;   
+
+  private:
+  	// Only one of the following pointers can be non-NULL at a time.
+	BMediaRecorder		   *mRecorder;
+	BSoundPlayer		   *mPlayer;
+
+	// Raw media format specifier used for sound player.
+	// It also stores the parameters (number of channels, sample rate etc) so
+	// no need to store them separately here.
+	// For the recorder, a media_format struct is created temporarily with
+	// the data from this raw format spec.
+	media_raw_audio_format	mFormat;
+
+	// The class holds a circular buffer whose size is set with SetBuffers.
+	// We only need one buffer for BeOS. The number of buffers that was set
+	// is only kept for reference.
+	friend class P_CircularBuffer;
+	P_CircularBuffer	   *mBuffer;			// The internal buffer
+	PINDEX					mNumBuffers;		// for reference only!
+	
+	// Just some helpers so that the Open function doesn't get too big
+	BOOL OpenPlayer(void);
+	BOOL OpenRecorder(const PString &dev);
+
+	// internal buffer setting function so we can disable the SetBuffers
+	// function for debug purposes
+	// size is the total size, threshold is the fill/drain threshold on
+	// the buffer
+	BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
+
+	// Input resampler
+	Resampler			   *mResampler;
+};
+
+//PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_BeOSMultimedia);
+//PCREATE_SOUND_PLUGIN(BeOSMultimedia, PSoundChannelBeOS);
 
 ////////////////////////////////////////////////////////////////////////////////
 // PSound
@@ -489,11 +589,11 @@ BOOL PSound::Save(const PFilePath & filename)
 
 BOOL PSound::Play()
 {
-	PSoundChannel player(PSoundChannel::GetDefaultDevice(PSoundChannel::Player), PSoundChannel::Player, numChannels, sampleRate, sampleSize);
+	PSoundChannelBeOS player(PSoundChannelBeOS::GetDefaultDevice(PSoundChannelBeOS::Player), PSoundChannelBeOS::Player, numChannels, sampleRate, sampleSize);
 	
 	if (!player.IsOpen())
 	{
-		PRINT(("PSoundChannel constructor failed to open"));
+		PRINT(("PSoundChannelBeOS constructor failed to open"));
 		return FALSE;
 	}
 	
@@ -779,7 +879,7 @@ public:
 	}
 	
 	// Fill buffer with data.
-	void Fill(const BYTE **extbuf, PINDEX *extsize)
+	void Fill(const BYTE **extbuf, size_t *extsize)
 	{
 		PRINTCB(("start: head %d tail %d headroom %d tailroom %d extsize %d buffer %p this %p", mHead, mTail, mHeadRoom, mTailRoom, *extsize, mBuffer, this));
 
@@ -809,7 +909,7 @@ public:
 			PINDEX done=Write(
 				mBuffer+lTail,
 				extbuf,
-				lTailRoom,
+			    lTailRoom,
 				extsize);
 			
 			totaldone +=done;
@@ -852,7 +952,7 @@ public:
 	}
 
 	// Empty data out of buffer
-	void Drain(BYTE **extbuf, PINDEX *extsize)
+	void Drain(BYTE **extbuf, size_t *extsize)
 	{
 		PRINTCB(("start: head %d tail %d headroom %d tailroom %d extsize %d buffer %p this %p", mHead, mTail, mHeadRoom, mTailRoom, *extsize, mBuffer, this));
 
@@ -1007,7 +1107,7 @@ static void RecordBuffer(void *cookie, const void *buffer, size_t size, const me
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PSoundChannel
+// PSoundChannelBeOS
 
 // This defines the number of times we would like to be called per second
 // to play/record data
@@ -1017,7 +1117,7 @@ static void RecordBuffer(void *cookie, const void *buffer, size_t size, const me
 // setting we put into the format.
 #define DEFAULT_BUFSIZE(channels, rate, bits) ((channels*rate*(bits/8))/PLAYRECFREQ)
 
-PSoundChannel::PSoundChannel() :
+PSoundChannelBeOS::PSoundChannelBeOS() :
 	mRecorder(NULL),
 	mPlayer(NULL),
 	mBuffer(NULL),
@@ -1034,7 +1134,7 @@ PSoundChannel::PSoundChannel() :
 }
 
 
-PSoundChannel::PSoundChannel(const PString & dev,
+PSoundChannelBeOS::PSoundChannelBeOS(const PString & dev,
                              Directions dir,
                              unsigned numChannels,
                              unsigned sampleRate,
@@ -1053,7 +1153,7 @@ PSoundChannel::PSoundChannel(const PString & dev,
 }
 
 
-PSoundChannel::~PSoundChannel()
+PSoundChannelBeOS::~PSoundChannelBeOS()
 {
 	PRINT((""));
 	
@@ -1140,7 +1240,7 @@ static const PStringArray GetRecorderDevicesList(BMediaRecorder *rec)
 }
 
 
-PStringArray PSoundChannel::GetDeviceNames(Directions dir)
+PStringArray PSoundChannelBeOS::GetDeviceNames(Directions dir)
 {
 	if (dir==Recorder)
 	{
@@ -1154,7 +1254,7 @@ PStringArray PSoundChannel::GetDeviceNames(Directions dir)
 }
 
 
-PString PSoundChannel::GetDefaultDevice(Directions dir)
+PString PSoundChannelBeOS::GetDefaultDevice(Directions dir)
 {
 	if (dir==Recorder)
 	{
@@ -1177,7 +1277,7 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 }
 
 
-BOOL PSoundChannel::OpenPlayer(void)
+BOOL PSoundChannelBeOS::OpenPlayer(void)
 {
 	// We're using cascaded "if result"s here for clarity
 	BOOL result=TRUE;
@@ -1205,8 +1305,15 @@ BOOL PSoundChannel::OpenPlayer(void)
 	if (result)		
 	{
 		// Create the player
-		mPlayer=new BSoundPlayer(&mFormat, NULL, PlayBuffer, NULL, mBuffer);
+		//was: mPlayer=new BSoundPlayer(&mFormat, NULL, PlayBuffer, NULL, mBuffer);
 	
+		mPlayer = new BSoundPlayer(
+				&mFormat, 
+				NULL,
+				PlayBuffer,
+				NULL,
+				NULL);
+				
 		if ((mPlayer==NULL) || (mPlayer->InitCheck()!=B_OK))
 		{
 			result=FALSE;
@@ -1234,7 +1341,7 @@ BOOL PSoundChannel::OpenPlayer(void)
 }
 
 
-BOOL PSoundChannel::OpenRecorder(const PString &dev)
+BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 {
 	// We're using cascaded "if result"s here for clarity
 	BOOL result=TRUE;
@@ -1250,7 +1357,7 @@ BOOL PSoundChannel::OpenRecorder(const PString &dev)
 	if (result)			
 	{
 		// Create the recorder
-		mRecorder=new BMediaRecorder("PWLIB PSoundChannel recorder");
+		mRecorder=new BMediaRecorder("PWLIB PSoundChannelBeOS recorder");
 	
 		if ((mRecorder==NULL) || (mRecorder->InitCheck()!=B_OK))
 		{
@@ -1396,7 +1503,7 @@ BOOL PSoundChannel::OpenRecorder(const PString &dev)
 }
 
 
-BOOL PSoundChannel::Open(const PString & dev,
+BOOL PSoundChannelBeOS::Open(const PString & dev,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
@@ -1447,7 +1554,7 @@ BOOL PSoundChannel::Open(const PString & dev,
 }
 
 
-BOOL PSoundChannel::Abort()
+BOOL PSoundChannelBeOS::Abort()
 {
 	if (IsOpen())
 	{
@@ -1471,7 +1578,7 @@ BOOL PSoundChannel::Abort()
 }
 
 
-BOOL PSoundChannel::SetFormat(unsigned numChannels,
+BOOL PSoundChannelBeOS::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
@@ -1504,25 +1611,25 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
 }
 
 
-unsigned PSoundChannel::GetChannels() const
+unsigned PSoundChannelBeOS::GetChannels() const
 {
 	return mFormat.channel_count;
 }
 
 
-unsigned PSoundChannel::GetSampleRate() const
+unsigned PSoundChannelBeOS::GetSampleRate() const
 {
 	return (unsigned)mFormat.frame_rate;
 }
 
 
-unsigned PSoundChannel::GetSampleSize() const
+unsigned PSoundChannelBeOS::GetSampleSize() const
 {
 	return (mFormat.format & 0xF)*8; // return number of BITS
 }
 
 
-BOOL PSoundChannel::Read(void *buf, PINDEX len)
+BOOL PSoundChannelBeOS::Read(void *buf, PINDEX len)
 {
 	// Can only read from a recorder
 	if (mRecorder!=NULL)
@@ -1542,7 +1649,7 @@ BOOL PSoundChannel::Read(void *buf, PINDEX len)
 #endif
 
 		// Get data from the buffer
-		mBuffer->Drain((BYTE**)&buf, &len);
+		mBuffer->Drain((BYTE**)&buf, (size_t*) &len);
 
 #ifdef FILEDUMP
 		if (recwriter)
@@ -1558,7 +1665,7 @@ BOOL PSoundChannel::Read(void *buf, PINDEX len)
 }
 
 
-BOOL PSoundChannel::Write(const void *buf, PINDEX len)
+BOOL PSoundChannelBeOS::Write(const void *buf, PINDEX len)
 {
 	// can only write to a player
   	if (mPlayer!=NULL)
@@ -1578,7 +1685,7 @@ BOOL PSoundChannel::Write(const void *buf, PINDEX len)
 #endif
 	
 		// Store data into the buffer
-		mBuffer->Fill((const BYTE **)&buf, &len);
+		mBuffer->Fill((const BYTE **)&buf, (size_t*) &len);
 
 		// Update last write count
 		lastWriteCount-=len;
@@ -1590,7 +1697,7 @@ BOOL PSoundChannel::Write(const void *buf, PINDEX len)
 }
 
 
-BOOL PSoundChannel::Close()
+BOOL PSoundChannelBeOS::Close()
 {
 	PRINT((""));
 	
@@ -1632,13 +1739,13 @@ BOOL PSoundChannel::Close()
 }
 
 
-BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
+BOOL PSoundChannelBeOS::SetBuffers(PINDEX size, PINDEX count)
 {
 	return InternalSetBuffers(size*(mNumBuffers=count),size);
 }
 
 
-BOOL PSoundChannel::InternalSetBuffers(PINDEX size, PINDEX threshold)
+BOOL PSoundChannelBeOS::InternalSetBuffers(PINDEX size, PINDEX threshold)
 {
 	if (mPlayer)
 	{
@@ -1699,7 +1806,7 @@ BOOL PSoundChannel::InternalSetBuffers(PINDEX size, PINDEX threshold)
 }
 
 
-BOOL PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
+BOOL PSoundChannelBeOS::GetBuffers(PINDEX &size, PINDEX &count)
 {
 	if (mBuffer)
 	{
@@ -1712,13 +1819,13 @@ BOOL PSoundChannel::GetBuffers(PINDEX &size, PINDEX &count)
 }
 
 
-BOOL PSoundChannel::PlaySound(const PSound &sound, BOOL wait)
+BOOL PSoundChannelBeOS::PlaySound(const PSound &sound, BOOL wait)
 {
 	PRINT(("wait=%s", wait?"true":"false"));
 	
 	if (mPlayer==NULL)
 	{
-		PRINT(("Playing a sound on a closed (or recording) PSoundChannel"));
+		PRINT(("Playing a sound on a closed (or recording) PSoundChannelBeOS"));
 		return FALSE;
 	}
 
@@ -1728,7 +1835,7 @@ BOOL PSoundChannel::PlaySound(const PSound &sound, BOOL wait)
 
 	// create a local buffer that references the PSound
 	// NOTE: no conversion between the PSound's format and the
-	// PSoundChannel's format is done.
+	// PSoundChannelBeOS's format is done.
 	const BYTE *buf=(const BYTE *)sound;
 	PINDEX size=sound.GetSize();
 	
@@ -1743,7 +1850,7 @@ BOOL PSoundChannel::PlaySound(const PSound &sound, BOOL wait)
 		mBuffer->WaitForState(P_CircularBuffer::EmptyEnough);
 		
 		// Write the data
-		mBuffer->Fill(&buf, &size);
+		mBuffer->Fill(&buf, (size_t*) &size);
 	}
 	
 	// Wait until the sound is finished, if requested
@@ -1757,7 +1864,7 @@ BOOL PSoundChannel::PlaySound(const PSound &sound, BOOL wait)
 }
 
 
-BOOL PSoundChannel::PlayFile(const PFilePath &file, BOOL wait)
+BOOL PSoundChannelBeOS::PlayFile(const PFilePath &file, BOOL wait)
 {
 	entry_ref 			ref;
 	status_t			err;
@@ -1793,7 +1900,7 @@ BOOL PSoundChannel::PlayFile(const PFilePath &file, BOOL wait)
 }
 
 
-BOOL PSoundChannel::HasPlayCompleted()
+BOOL PSoundChannelBeOS::HasPlayCompleted()
 {
 	if (mPlayer!=NULL)
 	{
@@ -1804,7 +1911,7 @@ BOOL PSoundChannel::HasPlayCompleted()
 }
 
 
-BOOL PSoundChannel::WaitForPlayCompletion()
+BOOL PSoundChannelBeOS::WaitForPlayCompletion()
 {
 	if (mPlayer!=NULL)
 	{
@@ -1815,13 +1922,13 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 }
 
 
-BOOL PSoundChannel::RecordSound(PSound &sound)
+BOOL PSoundChannelBeOS::RecordSound(PSound &sound)
 {
 	PRINT((""));
 	
 	if (mRecorder==NULL) 
 	{
-		PRINT(("Recording a sound on a closed (or playing) PSoundChannel"));
+		PRINT(("Recording a sound on a closed (or playing) PSoundChannelBeOS"));
 		return FALSE;
 	}
 
@@ -1859,7 +1966,7 @@ BOOL PSoundChannel::RecordSound(PSound &sound)
 #endif
 
 	// Read the data		
-	mBuffer->Drain(&buf, &size);
+	mBuffer->Drain(&buf, (size_t*) &size);
 
 #ifdef FILEDUMP
 	recwriter->writewavfile(dumpbuf, dumpsize);
@@ -1870,18 +1977,18 @@ BOOL PSoundChannel::RecordSound(PSound &sound)
 }
 
 
-BOOL PSoundChannel::RecordFile(const PFilePath & filename)
+BOOL PSoundChannelBeOS::RecordFile(const PFilePath & filename)
 {
 	// Not implemented for now
 	return FALSE;
 }
 
 
-BOOL PSoundChannel::StartRecording()
+BOOL PSoundChannelBeOS::StartRecording()
 {
 	if (mRecorder==NULL) 
 	{
-		PRINT(("Recording to a closed (or playing) PSoundChannel"));
+		PRINT(("Recording to a closed (or playing) PSoundChannelBeOS"));
 		return FALSE;
 	}
 	
@@ -1899,7 +2006,7 @@ BOOL PSoundChannel::StartRecording()
 }
 
 
-BOOL PSoundChannel::IsRecordBufferFull()
+BOOL PSoundChannelBeOS::IsRecordBufferFull()
 {
 	if (mRecorder)
 	{
@@ -1910,7 +2017,7 @@ BOOL PSoundChannel::IsRecordBufferFull()
 }
 
 
-BOOL PSoundChannel::AreAllRecordBuffersFull()
+BOOL PSoundChannelBeOS::AreAllRecordBuffersFull()
 {
 	if (mRecorder)
 	{
@@ -1921,11 +2028,11 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 }
 
 
-BOOL PSoundChannel::WaitForRecordBufferFull()
+BOOL PSoundChannelBeOS::WaitForRecordBufferFull()
 {
 	if (mRecorder==NULL)
 	{
-		PRINT(("Waiting for record buffer on playing or closed PSoundChannel"));
+		PRINT(("Waiting for record buffer on playing or closed PSoundChannelBeOS"));
 		return FALSE;
 	}
 	
@@ -1935,11 +2042,11 @@ BOOL PSoundChannel::WaitForRecordBufferFull()
 }
 
 
-BOOL PSoundChannel::WaitForAllRecordBuffersFull()
+BOOL PSoundChannelBeOS::WaitForAllRecordBuffersFull()
 {
 	if (mRecorder==NULL)
 	{
-		PRINT(("Waiting for record buffers on playing or closed PSoundChannel"));
+		PRINT(("Waiting for record buffers on playing or closed PSoundChannelBeOS"));
 		return FALSE;
 	}
 	
@@ -1949,7 +2056,7 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 }
 
 
-BOOL PSoundChannel::IsOpen() const
+BOOL PSoundChannelBeOS::IsOpen() const
 {
 	BOOL result=((mPlayer!=NULL) || (mRecorder!=NULL));
 	PRINT(("returning %s", result?"true":"false"));
@@ -1958,15 +2065,15 @@ BOOL PSoundChannel::IsOpen() const
 
 
 
-BOOL PSoundChannel::SetVolume(unsigned newVolume)
+BOOL PSoundChannelBeOS::SetVolume(unsigned newVolume)
 {
-  cerr << __FILE__<< "PSoundChannel :: SetVolume called in error. Please fix" << endl;
+  cerr << __FILE__<< "PSoundChannelBeOS :: SetVolume called in error. Please fix" << endl;
   return FALSE;
 }
 
-BOOL  PSoundChannel::GetVolume(unsigned & volume)
+BOOL  PSoundChannelBeOS::GetVolume(unsigned & volume)
 {
-  cerr << __FILE__<< "PSoundChannel :: GetVolume called in error. Please fix" << endl;
+  cerr << __FILE__<< "PSoundChannelBeOS :: GetVolume called in error. Please fix" << endl;
   return FALSE;
 
 }
