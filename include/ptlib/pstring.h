@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.13 1995/06/17 11:13:08 robertj Exp $
+ * $Id: pstring.h,v 1.14 1995/10/14 15:02:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.14  1995/10/14 15:02:56  robertj
+ * Changed arrays to not break references, but strings still need to.
+ *
  * Revision 1.13  1995/06/17 11:13:08  robertj
  * Documentation update.
  *
@@ -76,6 +79,24 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
    compiled with or without UNICODE or undefined results will occur.
    <CODE>PSTRING_ANCESTOR_CLASS</CODE> macro is normally set to
    <A>PCharArray</A>.
+
+   An important feature of the string class, which is not present in other
+   container classes, is that when the string contents is changed, that is
+   resized or elements set, the string is "dereferenced", and a duplicate
+   made of its contents. That is this instance of the array is disconnected
+   from all other references to the string data, if any, and a new string array
+   contents created. For example consider the following:
+   <PRE><CODE>
+          PString s1 = "String"; // New array allocated and set to "String"
+          PString s2 = s1;       // s2 has pointer to same array as s1
+                                 // and reference count is 2 for both
+          s1[0] = 's';           // Breaks references into different strings
+   </CODE></PRE>
+   at the end s1 is "string" and s2 is "String" both with reference count of 1.
+
+   The functions that will "break" a reference are <A>SetSize()<A/>,
+   <A>SetMinSize()<A/>, <A>GetPointer()<A/>, <A>SetAt()<A/> and
+   <A>operator[]<A/>.
 
    Note that the array is a '\0' terminated string as in C strings. Thus the
    memory allocated, and the length of the string may be different values.
@@ -233,6 +254,22 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
 
   // Overrides from class PContainer
+    virtual BOOL SetSize(
+      PINDEX newSize  // New size of the array in elements.
+    );
+    /* Set the size of the string. A new string may be allocated to accomodate
+       the new number of characters. If the string increases in size then the
+       new characters are initialised to zero. If the string is made smaller
+       then the data beyond the new size is lost.
+
+       Note that this function will break the current instance from multiple
+       references to an array. A new array is allocated and the data from the
+       old array copied to it.
+
+       <H2>Returns:</H2>
+       TRUE if the memory for the array was allocated successfully.
+     */
+
     virtual BOOL IsEmpty() const;
     /* Determine if the string is empty. This is semantically slightly
        different from the usual <A>PContainer::IsEmpty()</A> function. It does
@@ -242,6 +279,17 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        <H2>Returns:</H2>
        TRUE if no non-null characters in string.
      */
+
+    virtual BOOL MakeUnique();
+    /* Make this instance to be the one and only reference to the container
+       contents. This implicitly does a clone of the contents of the container
+       to make a unique reference. If the instance was already unique then
+       the function does nothing.
+
+       <H2>Returns:</H2>
+       TRUE if the instance was already unique.
+     */
+
 
 
   // New functions for class
