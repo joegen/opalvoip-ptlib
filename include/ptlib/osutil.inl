@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.38 1996/02/08 12:12:01 robertj Exp $
+ * $Id: osutil.inl,v 1.39 1996/02/13 13:06:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.39  1996/02/13 13:06:55  robertj
+ * Changed GetTimeZone() so can specify the standard/daylight time.
+ *
  * Revision 1.38  1996/02/08 12:12:01  robertj
  * Changed zone parameter in PTime to indicate the time zone as minutes not enum.
  *
@@ -254,6 +257,8 @@ PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
 PINLINE PString PTime::AsString(const PString & format, int zone) const
   { return AsString((const char *)format, zone); }
 
+PINLINE long PTime::GetTimeZone() 
+  { return GetTimeZone(IsDaylightSavings() ? DaylightSavings : StandardTime); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimerList
