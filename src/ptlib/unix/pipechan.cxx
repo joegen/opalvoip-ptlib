@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.31  2001/10/11 02:20:54  robertj
+ * Added IRIX support (no audio/video), thanks Andre Schulze.
+ *
  * Revision 1.30  2001/08/16 11:58:22  rogerh
  * Add more Mac OS X changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -150,7 +153,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
   // fork to allow us to execute the child
-#ifdef __BEOS__
+#if defined(__BEOS__) || defined(P_IRIX)
   if ((childPid = fork()) != 0) {
 #else
   if ((childPid = vfork()) != 0) {
@@ -235,7 +238,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX)
     extern char ** environ;
 #define __environ environ
 #endif
