@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.67  2003/06/23 16:31:03  ykiryanov
+ * Excluded PFile::SetPermissions function from WinCE build
+ *
  * Revision 1.66  2003/03/31 08:38:07  robertj
  * Added cygwin compatible usage of NT secureity access control lists in
  *   getting and setting "unix like" file permissions.
@@ -1018,8 +1021,6 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   return TRUE;
 }
 
-#endif // _WIN32_WCE
-
 BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 {
 #if defined(_WIN32)
@@ -1029,6 +1030,7 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
   return _chmod(name, permissions&(_S_IWRITE|_S_IREAD)) == 0;
 }
 
+#endif // _WIN32_WCE
 
 BOOL PFile::IsTextFile() const
 {
