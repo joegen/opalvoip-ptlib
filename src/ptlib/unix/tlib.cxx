@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.36  1998/11/24 11:24:40  robertj
+ * Added FreeBSD OSName
+ *
  * Revision 1.35  1998/11/24 09:39:16  robertj
  * FreeBSD port.
  *
@@ -175,6 +178,8 @@ PString PProcess::GetOSName()
 {
 #if defined(P_LINUX)
   return PString("Linux");
+#elif defined(P_FREEBSD)
+  return PString("FreeBSD");
 #elif defined(P_HPUX9)
   return PString("HP/UX");
 #elif defined(P_SUN4)
