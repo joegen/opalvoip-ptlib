@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.95 1998/05/30 13:28:18 robertj Exp $
+ * $Id: osutils.cxx,v 1.96 1998/06/13 15:11:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.96  1998/06/13 15:11:56  robertj
+ * Added stack check in Yield().
+ * Added immediate schedule of semaphore timeout thread.
+ *
  * Revision 1.95  1998/05/30 13:28:18  robertj
  * Changed memory check code so global statics are not included in leak check.
  * Fixed deadlock in cooperative threading.
@@ -1810,7 +1814,23 @@ void PThread::Yield()
       PProcessInstance->GetTimerList()->Process();
     else {
       char stackUsed;
-      PAssert(&stackUsed > current->stackBase, "Stack overflow!");
+      if (&stackUsed < current->stackBase) {
+        char * buf = (char *)malloc(1000);
+        sprintf(buf, "Stack overflow!\n"
+                     "\n"
+                     "Thread: 0x%08x - %s\n"
+                     "Stack top  : 0x%08x\n"
+                     "Stack base : 0x%08x\n"
+                     "Stack frame: 0x%08x\n"
+                     "\n",
+                (int)current, current->GetClass(),
+                (int)current->stackTop,
+                (int)current->stackBase,
+                (int)&stackUsed);
+        PAssertAlways(buf);
+        PError << "Aborting." << endl;
+        _exit(1);
+      }
     }
 
     if (current->status == Running) {
@@ -1866,8 +1886,13 @@ void PThread::Yield()
 
         case BlockedSem :
         case SuspendedBlockSem :
-          if (thread->blockingSemaphore->timeout == 0)
-            thread->blockingSemaphore->Signal();
+          if (thread->blockingSemaphore->timeout == 0) {
+            thread->blockingSemaphore->PSemaphore::Signal();
+            if (thread->status == Waiting) {
+              next = thread;
+              next->status = Running;
+            }
+          }
           break;
 
         case Starting :
