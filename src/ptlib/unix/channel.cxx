@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.35  2001/11/27 02:20:20  robertj
+ * Fixed problem with a read ro write blocking until connect completed, it
+ *   really should return an error as the caller is doing a bad thing.
+ *
  * Revision 1.34  2001/09/20 05:23:39  robertj
  * Fixed race deadlock problem in channel abort I/O function
  *
@@ -161,6 +165,7 @@ ios::ios(const ios &)
 void PChannel::Construct()
 {
   os_handle = -1;
+  px_lastBlockType = PXReadBlock;
   px_readThread = NULL;
   px_writeThread = NULL;
 }
@@ -175,7 +180,7 @@ void PChannel::Construct()
 //   can be used to determine which error occurred
 //
 
-BOOL PChannel::PXSetIOBlock(int type, const PTimeInterval & timeout)
+BOOL PChannel::PXSetIOBlock(PXBlockType type, const PTimeInterval & timeout)
 {
   ErrorGroup group;
   switch (type) {
@@ -194,30 +199,45 @@ BOOL PChannel::PXSetIOBlock(int type, const PTimeInterval & timeout)
 
   PThread * blockedThread = PThread::Current();
 
-  px_threadMutex.Wait();
-  if (type != PXWriteBlock) {
-    PAssert(px_readThread == NULL, "Attempt to read from multiple threads.");
-    px_readThread = blockedThread;
+  {
+    PWaitAndSignal mutex(px_threadMutex);
+    switch (type) {
+      case PXWriteBlock :
+        if (px_readThread != NULL && px_lastBlockType != PXReadBlock)
+          return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
+
+        PTRACE(4, "PWLib\tBlocking on write.");
+        px_writeMutex.Wait();
+        px_writeThread = blockedThread;
+        break;
+
+      case PXReadBlock :
+        PAssert(px_readThread == NULL || px_lastBlockType != PXReadBlock,
+                "Attempt to do simultaneous reads from multiple threads.");
+        // Fall into default case
+
+      default :
+        if (px_readThread != NULL)
+          return SetErrorValues(DeviceInUse, EBUSY, LastReadError);
+        px_readThread = blockedThread;
+        px_lastBlockType = type;
+    }
   }
-  else {
-    PTRACE(4, "PWLib\tBlocking on write.");
-    px_writeMutex.Wait();
-    px_writeThread = blockedThread;
-  }
-  px_threadMutex.Signal();
 
   int stat = blockedThread->PXBlockOnIO(os_handle, type, timeout);
 
   px_threadMutex.Wait();
-  if (type != PXWriteBlock)
+  if (type != PXWriteBlock) {
+    px_lastBlockType = PXReadBlock;
     px_readThread = NULL;
+  }
   else {
     px_writeThread = NULL;
     px_writeMutex.Signal();
   }
   px_threadMutex.Signal();
 
-  // if select returned < 0, then covert errno into lastError and return FALSE
+  // if select returned < 0, then convert errno into lastError and return FALSE
   if (stat < 0)
     return ConvertOSError(stat, group);
 
