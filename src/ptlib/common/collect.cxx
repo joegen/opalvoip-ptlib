@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.66  2004/03/23 10:59:35  rjongbloed
+ * Added some extra bulletproofing of containers to avoid complaints by some
+ *   memory checking tools, thanks Ted Szoczei
+ *
  * Revision 1.65  2004/02/15 03:04:52  rjongbloed
  * Fixed problem with PSortedList nil variable and assignment between instances,
  *   pointed out by Ben Lear.
@@ -289,13 +293,14 @@ void PArrayObjects::CopyContents(const PArrayObjects & array)
 
 void PArrayObjects::DestroyContents()
 {
-  if (reference->deleteObjects) {
+  if (reference->deleteObjects && theArray != NULL) {
     for (PINDEX i = 0; i < theArray->GetSize(); i++) {
       if ((*theArray)[i] != NULL)
         delete (*theArray)[i];
     }
   }
   delete theArray;
+  theArray = NULL;
 }
 
 
@@ -453,6 +458,7 @@ void PAbstractList::DestroyContents()
 {
   RemoveAll();
   delete info;
+  info = NULL;
 }
 
 
@@ -737,6 +743,7 @@ void PAbstractSortedList::DestroyContents()
 {
   RemoveAll();
   delete info;
+  info = NULL;
 }
 
 
@@ -1458,8 +1465,11 @@ PHashTable::PHashTable()
 
 void PHashTable::DestroyContents()
 {
-  hashTable->reference->deleteObjects = reference->deleteObjects;
-  delete hashTable;
+  if (hashTable != NULL) {
+    hashTable->reference->deleteObjects = reference->deleteObjects;
+    delete hashTable;
+    hashTable = NULL;
+  }
 }
 
 
