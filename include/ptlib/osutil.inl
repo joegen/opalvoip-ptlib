@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.72  2000/01/06 14:09:42  robertj
+ * Fixed problems with starting up timers,losing up to 10 seconds
+ *
  * Revision 1.71  1999/08/22 12:13:43  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -416,7 +419,7 @@ PINLINE int PTime::GetTimeZone()
 // PTimer
 
 PINLINE BOOL PTimer::IsRunning() const
-  { return state == Running; }
+  { return state == Starting || state == Running; }
 
 PINLINE BOOL PTimer::IsPaused() const
   { return state == Paused; }
