@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.44  2001/03/22 22:48:25  robertj
+ * Fixed errors in usage help text.
+ *
  * Revision 1.43  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -389,14 +392,14 @@ int PServiceProcess::InitialiseService()
 #endif
               "  -u --uid uid        set user id to run as\n"
               "  -g --gid gid        set group id to run as\n"
-              "  -p --pid-file       do not write pid file\n"
-              "  -t --terminate      terminate process in pid file\n"
-              "  -k --kill           kill process in pid file\n"
+              "  -p --pid-file       name or directory for pid file\n"
+              "  -t --terminate      orderly terminate process in pid file\n"
+              "  -k --kill           preemptively kill process in pid file\n"
               "  -c --console        output messages to stdout rather than syslog\n"
-              "  -l --log-file file  output messages to file rather than syslog\n"
+              "  -l --log-file file  output messages to file or directory instead of syslog\n"
               "  -x --execute        execute as a normal program\n"
               "  -i --ini-file       Set the ini file to use, may be explicit file or\n"
-              "                      a ':' seaparated set of directories to search.\n"
+              "                      a ':' separated set of directories to search.\n"
            << endl;
     return 0;
   }
