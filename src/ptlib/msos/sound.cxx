@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.11  2000/05/01 05:59:11  robertj
+ * Added mutex to PSoundChannel buffer structure.
+ *
  * Revision 1.10  2000/03/04 10:15:32  robertj
  * Added simple play functions for sound files.
  *
@@ -751,6 +754,8 @@ BOOL PSoundChannel::OpenDevice(unsigned id)
 {
   Close();
 
+  PWaitAndSignal mutex(bufferMutex);
+
   bufferByteOffset = P_MAX_INDEX;
   bufferIndex = 0;
 
@@ -826,6 +831,8 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   BOOL ok = TRUE;
 
+  PWaitAndSignal mutex(bufferMutex);
+
   if (!buffers.SetSize(count))
     ok = FALSE;
   else {
@@ -846,6 +853,8 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
 BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 {
+  PWaitAndSignal mutex(bufferMutex);
+
   count = buffers.GetSize();
 
   if (count == 0)
@@ -868,25 +877,29 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
 
   const BYTE * ptr = (const BYTE *)data;
 
+  bufferMutex.Wait();
+
   while (size > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
+      bufferMutex.Signal();
       // No free buffers, so wait for one
       if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
         osError = MMSYSERR_ERROR;
         return FALSE; // No free buffers
       }
+      bufferMutex.Wait();
     }
 
     // Can't write more than a buffer full
     PINDEX count = size;
     if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
-      return FALSE;
+      break;
 
     memcpy(buffer.GetPointer(), data, count);
 
     if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-      return FALSE;
+      break;
 
     bufferIndex = (bufferIndex+1)%buffers.GetSize();
     lastWriteCount += count;
@@ -894,7 +907,9 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
     ptr += count;
   }
 
-  return TRUE;
+  bufferMutex.Signal();
+
+  return size == 0;
 }
 
 
@@ -919,6 +934,8 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
   }
 
   if (ok) {
+    bufferMutex.Wait();
+
     // To avoid lots of copying of sound data, we fake the PSound buffer into
     // the internal buffers and play directly from the PSound object.
     buffers.SetSize(1);
@@ -933,6 +950,8 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
     }
     else
       ok = FALSE;
+
+    bufferMutex.Signal();
   }
 
   SetFormat(numChannels, sampleRate, bitsPerSample);
@@ -963,20 +982,24 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
     return FALSE;
   }
 
+  bufferMutex.Wait();
+
   while (dataSize > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
+      bufferMutex.Signal();
       // No free buffers, so wait for one
       if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
         SetFormat(numChannels, sampleRate, bitsPerSample);
         return FALSE;
       }
+      bufferMutex.Wait();
     }
 
     // Can't write more than a buffer full
     PINDEX count = dataSize;
     if ((osError = buffer.Prepare(hWaveOut, count)) != MMSYSERR_NOERROR)
-      return FALSE;
+      break;
 
     // Read the waveform data subchunk
     if (!mmio.Read(buffer.GetPointer(), count)) {
@@ -991,6 +1014,8 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
     dataSize -= count;
   }
 
+  bufferMutex.Signal();
+
   if (dataSize == 0 && wait)
     WaitForPlayCompletion();
 
@@ -1001,6 +1026,8 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
+  PWaitAndSignal mutex(bufferMutex);
+
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     if ((buffers[i].header.dwFlags&WHDR_DONE) == 0)
       return FALSE;
@@ -1023,6 +1050,8 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 
 BOOL PSoundChannel::StartRecording()
 {
+  PWaitAndSignal mutex(bufferMutex);
+
   // See if has started already.
   if (bufferByteOffset != P_MAX_INDEX)
     return TRUE;
@@ -1060,6 +1089,8 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
   if (!WaitForRecordBufferFull())
     return FALSE;
+
+  PWaitAndSignal mutex(bufferMutex);
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
@@ -1100,6 +1131,8 @@ BOOL PSoundChannel::RecordSound(PSound & sound)
                   waveFormat->nSamplesPerSec,
                   waveFormat->wBitsPerSample);
 
+  PWaitAndSignal mutex(bufferMutex);
+
   if (buffers.GetSize() == 1 &&
           (PINDEX)buffers[0].header.dwBytesRecorded == buffers[0].GetSize())
     sound = buffers[0];
@@ -1134,6 +1167,8 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
   if (!WaitForAllRecordBuffersFull())
     return FALSE;
 
+  PWaitAndSignal mutex(bufferMutex);
+
   PINDEX dataSize = 0;
   PINDEX i;
   for (i = 0; i < buffers.GetSize(); i++)
@@ -1158,6 +1193,8 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 
 BOOL PSoundChannel::IsRecordBufferFull()
 {
+  PWaitAndSignal mutex(bufferMutex);
+
   if (bufferByteOffset == P_MAX_INDEX)
     return TRUE;
 
@@ -1167,6 +1204,8 @@ BOOL PSoundChannel::IsRecordBufferFull()
 
 BOOL PSoundChannel::AreAllRecordBuffersFull()
 {
+  PWaitAndSignal mutex(bufferMutex);
+
   if (bufferByteOffset == P_MAX_INDEX)
     return TRUE;
 
@@ -1214,6 +1253,8 @@ BOOL PSoundChannel::Abort()
 
   if (hWaveIn != NULL)
     osError = waveInReset(hWaveIn);
+
+  PWaitAndSignal mutex(bufferMutex);
 
   for (PINDEX i = 0; i < buffers.GetSize(); i++)
     buffers[i].Release();
