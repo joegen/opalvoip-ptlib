@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.6 1996/02/13 13:09:16 robertj Exp $
+ * $Id: http.h,v 1.7 1996/02/19 13:25:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.7  1996/02/19 13:25:43  robertj
+ * Added overwrite option to AddResource().
+ * Added get/set string to PHTTPString resource.
+ * Moved nested classes from PHTTPForm.
+ *
  * Revision 1.6  1996/02/13 13:09:16  robertj
  * Added extra parameters to callback function in PHTTPResources, required
  *   by descendants to make informed decisions on data being loaded.
@@ -77,12 +82,22 @@ PDECLARE_CLASS(PHTTPSpace, PObject)
 
 
   // New functions for class.
+    enum AddOptions {
+      ErrorOnExist,
+      Overwrite
+    };
     BOOL AddResource(
-      PHTTPResource * resource  // Resource to add to the name space.
+      PHTTPResource * resource, // Resource to add to the name space.
+      AddOptions overwrite = ErrorOnExist
+        // Flag to overwrite an existing resource if it already exists.
     );
     /* Add a new resource to the URL space. If there is already a resource at
        the location in the tree, or that location in the tree is already in
        the path to another resource then the function will fail.
+
+       The <CODE>overwrite</CODE> flag can be used to replace an existing
+       resource. TH function will still fail if the resource is on a partial
+       path to antoher resource but not if it is a leaf node.
 
        <H2>Returns:</H2>
        TRUE if resource added, FALSE if failed.
@@ -745,6 +760,20 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
        String for loaded text.
      */
 
+  // New functions for class.
+    const PString & GetString() { return string; }
+    /* Get the string for this resource.
+
+       <H2>Returns:</H2>
+       String for resource.
+     */
+
+    void SetString(
+      const PString & str   // New string for the resource.
+    ) { string = str; }
+    /* Set the string to be returned by this resource.
+     */
+
 
   protected:
     PString string;
@@ -907,6 +936,195 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 ///////////////////////////////////////////////////////////////////////////////
 // PHTTPForm
 
+PDECLARE_CLASS(PHTTPField, PObject)
+/* This class is the abstract base class for fields in a <A>PHTTPForm</A>
+   resource type.
+ */
+  public:
+    PHTTPField(
+      const char * name,        // Name (identifier) for the field.
+      const char * title = NULL // Title text for field (defaults to name).
+    );
+    // Create a new field in a HTTP form.
+
+    virtual Comparison Compare(
+      const PObject & obj
+    ) const;
+    /* Compare the fields using the field names.
+
+       <H2>Returns:</H2>
+       Comparison of the name fields of the two fields.
+     */
+
+    const PCaselessString & GetName() const { return name; }
+    /* Get the identifier name of the field.
+
+       <H2>Returns:</H2>
+       String for field name.
+     */
+
+    const PString & GetTitle() const { return title; }
+    /* Get the title of the field.
+
+       <H2>Returns:</H2>
+       String for title placed next to the field.
+     */
+
+    virtual void GetHTML(
+      PHTML & html    // HTML to receive the field info.
+    ) = 0;
+    /* Convert the field to HTML for inclusion into the HTTP page.
+     */
+
+    virtual PString GetValue() const = 0;
+    /* Get the value of the field.
+
+       <H2>Returns:</H2>
+       String for field value.
+     */
+
+    virtual void SetValue(
+      const PString & val   // New value for the field.
+    ) = 0;
+    /* Set the value of the field.
+     */
+
+    virtual BOOL Validated(
+      const PString & newVal, // Proposed new value for the field.
+      PStringStream & msg     // Stream to take error HTML if value not valid.
+    ) const;
+    /* Validate the new field value before <A>SetValue()</A> if called.
+
+       <H2>Returns:</H2>
+       BOOL if the new field value is OK.
+     */
+
+    BOOL NotYetInHTML() const { return notInHTML; }
+
+  protected:
+    PCaselessString name;
+    PString title;
+    BOOL notInHTML;
+};
+
+
+PDECLARE_CLASS(PHTTPStringField, PHTTPField)
+  public:
+    PHTTPStringField(
+      const char * name,
+      PINDEX size,
+      const char * initVal = NULL
+    );
+    PHTTPStringField(
+      const char * name,
+      const char * title,
+      PINDEX size,
+      const char * initVal = NULL
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & val
+    );
+
+
+  protected:
+    PString value;
+    PINDEX size;
+};
+
+
+PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
+  public:
+    PHTTPPasswordField(
+      const char * name,
+      PINDEX size,
+      const char * initVal = NULL
+    );
+    PHTTPPasswordField(
+      const char * name,
+      const char * title,
+      PINDEX size,
+      const char * initVal = NULL
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+};
+
+
+PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
+  public:
+    PHTTPIntegerField(
+      const char * name,
+      int low, int high,
+      int initVal = 0,
+      const char * units = NULL
+    );
+    PHTTPIntegerField(
+      const char * name,
+      const char * title,
+      int low, int high,
+      int initVal = 0,
+      const char * units = NULL
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & val
+    );
+
+    virtual BOOL Validated(
+      const PString & newVal,
+      PStringStream & msg
+    ) const;
+
+
+  protected:
+    int low, high, value;
+    PString units;
+};
+
+
+PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
+  public:
+    PHTTPBooleanField(
+      const char * name,
+      BOOL initVal = FALSE
+    );
+    PHTTPBooleanField(
+      const char * name,
+      const char * title,
+      BOOL initVal = FALSE
+    );
+
+    virtual void GetHTML(
+      PHTML & html
+    );
+
+    virtual PString GetValue() const;
+
+    virtual void SetValue(
+      const PString & val
+    );
+
+
+  protected:
+    BOOL value;
+};
+
+
 PDECLARE_CLASS(PHTTPForm, PHTTPString)
   public:
     PHTTPForm(
@@ -914,7 +1132,7 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     );
     PHTTPForm(
       const PURL & url,
-      PHTTPAuthority & auth
+      const PHTTPAuthority & auth
     );
     PHTTPForm(
       const PURL & url,
@@ -923,7 +1141,7 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     PHTTPForm(
       const PURL & url,
       const PString & html,
-      PHTTPAuthority & auth
+      const PHTTPAuthority & auth
     );
 
 
@@ -935,164 +1153,30 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     );
 
 
-    PDECLARE_CLASS(Field, PObject)
-      public:
-        Field(
-          const char * name,
-          const char * title = NULL
-        );
-
-        virtual Comparison Compare(
-          const PObject & obj
-        ) const;
-
-        const PCaselessString & GetName() const { return name; }
-
-        const PString & GetTitle() const { return title; }
-
-        virtual PHTML::Element GetHTML() const = 0;
-
-        virtual PString GetValue() const = 0;
-
-        virtual void SetValue(
-          const PString & val
-        ) = 0;
-
-        virtual BOOL Validated(
-          const PString & newVal,
-          PStringStream & msg
-        ) const;
-
-
-      protected:
-        PCaselessString name;
-        PString title;
-    };
-
-    PDECLARE_CLASS(StringField, Field)
-      public:
-        StringField(
-          const char * name,
-          PINDEX size,
-          const char * initVal = ""
-        );
-        StringField(
-          const char * name,
-          const char * title,
-          PINDEX size,
-          const char * initVal
-        );
-
-        virtual PHTML::Element GetHTML() const;
-
-        virtual PString GetValue() const;
-
-        virtual void SetValue(
-          const PString & val
-        );
-
-
-      protected:
-        PString value;
-        PINDEX size;
-    };
-
-    PDECLARE_CLASS(PasswordField, StringField)
-      public:
-        PasswordField(
-          const char * name,
-          PINDEX size,
-          const char * initVal = ""
-        );
-        PasswordField(
-          const char * name,
-          const char * title,
-          PINDEX size,
-          const char * initVal
-        );
-
-        virtual PHTML::Element GetHTML() const;
-    };
-
-    PDECLARE_CLASS(IntegerField, Field)
-      public:
-        IntegerField(
-          const char * name,
-          int low, int high,
-          int initVal = 0,
-          const char * units = ""
-        );
-        IntegerField(
-          const char * name,
-          const char * title,
-          int low, int high,
-          int initVal = 0,
-          const char * units = ""
-        );
-
-        virtual PHTML::Element GetHTML() const;
-
-        virtual PString GetValue() const;
-
-        virtual void SetValue(
-          const PString & val
-        );
-
-        virtual BOOL Validated(
-          const PString & newVal,
-          PStringStream & msg
-        ) const;
-
-
-      protected:
-        int low, high, value;
-        PString units;
-    };
-
-    PDECLARE_CLASS(BooleanField, Field)
-      public:
-        BooleanField(
-          const char * name,
-          BOOL initVal
-        );
-        BooleanField(
-          const char * name,
-          const char * title,
-          BOOL initVal
-        );
-
-        virtual PHTML::Element GetHTML() const;
-        virtual PString GetValue() const;
-        virtual void SetValue(
-          const PString & val
-        );
-
-
-      protected:
-        BOOL value;
-    };
-
-
     void Add(
-      Field * fld
+      PHTTPField * fld
     );
 
+    enum BuildOptions {
+      CompleteHTML,
+      InsertIntoForm,
+      InsertIntoHTML
+    };
+
     void BuildHTML(
-      const char * heading,
-      BOOL complete = TRUE
+      const char * heading
     );
     void BuildHTML(
-      const PString & heading,
-      BOOL complete = TRUE
+      const PString & heading
     );
     void BuildHTML(
       PHTML & html,
-      BOOL complete = TRUE
+      BuildOptions option = CompleteHTML
     );
 
 
   protected:
-    PLIST(FieldList, Field);
+    PLIST(FieldList, PHTTPField);
     FieldList fields;
     PStringSet fieldNames;
 };
@@ -1110,7 +1194,7 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
     PHTTPConfig(
       const PURL & url,
       const PString & section,
-      PHTTPAuthority & auth
+      const PHTTPAuthority & auth
     );
     PHTTPConfig(
       const PURL & url,
@@ -1121,7 +1205,7 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
       const PURL & url,
       const PString & section,
       const PString & html,
-      PHTTPAuthority & auth
+      const PHTTPAuthority & auth
     );
 
     virtual PHTTPSocket::StatusCode Post(
@@ -1133,10 +1217,24 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
 
 
     void SetConfigValues();
+    /* Set all of the field values to the config files current values. Their
+       current values are used as the defaults if no entry is present in the
+       config file.
+     */
+
+    void AddNewKeyFields(
+      PHTTPField * keyFld,  // Field for the key to be added.
+      PHTTPField * valFld   // Field for the value of the key yto be added.
+    );
+    /* Add fields to the HTTP form for adding a new key to the config file
+       section.
+     */
 
 
   protected:
     PString section;
+    PHTTPField * keyField;
+    PHTTPField * valField;
 };
 
 
