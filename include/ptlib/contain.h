@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.40 1994/12/13 11:50:45 robertj Exp $
+ * $Id: contain.h,v 1.41 1995/01/09 12:36:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.40  1994/12/13 11:50:45  robertj
+ * Revision 1.41  1995/01/09 12:36:18  robertj
+ * Removed unnecesary return value from I/O functions.
+ * Changes due to Mac port.
+ *
+ * Revision 1.40  1994/12/13  11:50:45  robertj
  * Added MakeUnique() function to all container classes.
  *
  * Revision 1.39  1994/12/12  10:16:18  robertj
@@ -292,7 +296,7 @@ PDECLARE_CLASS(PContainer, PObject)
        will occur.
      */
 
-    virtual void CopyContents(const PContainer & c);
+    void CopyContents(const PContainer & c);
     /* Copy the container contents. This copies the contents from one reference
        to another. It is automatically declared when the PDECLARE_CONTAINER()
        macro is used.
@@ -305,7 +309,7 @@ PDECLARE_CLASS(PContainer, PObject)
        the ancestor function should $U$not$U$ be called.
      */
 
-    virtual void CloneContents(const PContainer * src);
+    void CloneContents(const PContainer * src);
     /* Create a duplicate of the container contents. This copies the contents
        from one container to another, unique container. It is automatically
        declared when the PDECLARE_CONTAINER() macro is used.
@@ -401,8 +405,8 @@ PDECLARE_CLASS(PContainer, PObject)
   protected: \
     cls(int dummy, const cls * c) : par(dummy, c) { CloneContents(c); } \
     virtual void DestroyContents(); \
-    virtual void CloneContents(const cls * c); \
-    virtual void CopyContents(const cls & c); \
+    void CloneContents(const cls * c); \
+    void CopyContents(const cls & c); \
 
 
 /*$MACRO PDECLARE_CONTAINER(cls, par)
@@ -460,7 +464,7 @@ PDECLARE_CLASS(PCollection, PContainer)
      */
 
     // Overrides from class PObject
-    virtual ostream & PrintOn(
+    virtual void PrintOn(
       ostream &strm   // Output stream to print the collection.
     ) const;
     /* Print the collection on the stream. This simply executes the
