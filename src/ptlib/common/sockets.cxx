@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.168  2004/02/04 02:32:31  csoutheren
+ * Changed #ifdef to #if to ensure flags are tested correctly
+ *
  * Revision 1.167  2004/01/23 07:07:35  csoutheren
  * Fixed compile warning under Linux
  *
@@ -1926,7 +1929,7 @@ PString PIPSocket::GetPeerHostName()
 BOOL PIPSocket::Connect(const PString & host)
 {
   Address ipnum;
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   if (GetHostAddress(host, ipnum))
     return Connect(GetDefaultIpAny(), 0, ipnum);
 #else
@@ -1939,7 +1942,7 @@ BOOL PIPSocket::Connect(const PString & host)
 
 BOOL PIPSocket::Connect(const Address & addr)
 {
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), 0, addr);
 #else
   return Connect(INADDR_ANY, 0, addr);
@@ -1949,7 +1952,7 @@ BOOL PIPSocket::Connect(const Address & addr)
 
 BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
 {
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   return Connect(GetDefaultIpAny(), localPort, addr);
 #else
   return Connect(INADDR_ANY, localPort, addr);
@@ -2037,7 +2040,7 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
 
 BOOL PIPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
-#ifdef P_HAS_IPV6
+#if P_HAS_IPV6
   return Listen(GetDefaultIpAny(), queueSize, newPort, reuse);
 #else
   return Listen(INADDR_ANY, queueSize, newPort, reuse);
