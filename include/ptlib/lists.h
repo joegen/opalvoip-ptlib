@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.4 1995/02/05 00:48:05 robertj Exp $
+ * $Id: lists.h,v 1.5 1995/02/22 10:50:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
- * Revision 1.4  1995/02/05 00:48:05  robertj
+ * Revision 1.5  1995/02/22 10:50:30  robertj
+ * Changes required for compiling release (optimised) version.
+ *
+ * Revision 1.4  1995/02/05  00:48:05  robertj
  * Fixed template version.
  *
  * Revision 1.3  1995/01/15  04:49:23  robertj
@@ -53,7 +56,7 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
  */
 
   public:
-    PINLINE PAbstractList();
+    PAbstractList();
     /* Create a new, empty, list.
 
        Note that by default, objects placed into the list will be deleted when
@@ -601,7 +604,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
  */
 
   public:
-    PINLINE PAbstractSortedList();
+    PAbstractSortedList();
     /* Create a new, empty, sorted list.
 
        Note that by default, objects placed into the list will be deleted when
