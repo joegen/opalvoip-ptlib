@@ -2015,6 +2015,12 @@ case "$target_os" in
                    SHAREDLIBEXT="dylib";
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
+  
+  beos*)	   OSTYPE=beos ;
+		   OS_TAG="P_BEOS" ;
+		   OSRELEASE=`uname -r` ;
+		   STDCCFLAGS="$STDCCGLAGS -D__BEOS__"
+		   ;;  
 
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
@@ -2101,10 +2107,13 @@ _ACEOF
 
 fi
 
+if test ${OSTYPE} != beos ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_PTHREADS 1
 _ACEOF
+
+fi
 
 if test ${OSTYPE} != Darwin ; then
 
