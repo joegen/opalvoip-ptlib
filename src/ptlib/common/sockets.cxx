@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.187  2005/03/22 07:29:30  csoutheren
+ * Fixed problem where PStrings sometimes get case into
+ * PIPSocket::Address when outputting to an ostream
+ *
  * Revision 1.186  2005/02/13 23:01:36  csoutheren
  * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
  * address range as RFC1918
@@ -2435,6 +2439,10 @@ ostream & operator<<(ostream & s, const PIPSocket::Address & a)
   return s << a.AsString();
 }
 
+ostream & operator<<(ostream & s, const PString & str)
+{
+  return s << (const char *)str;
+}
 
 istream & operator>>(istream & s, PIPSocket::Address & a)
 {
