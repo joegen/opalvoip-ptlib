@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.22 1994/07/27 05:58:07 robertj Exp $
+ * $Id: contain.inl,v 1.23 1994/10/23 04:41:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.22  1994/07/27 05:58:07  robertj
+ * Revision 1.23  1994/10/23 04:41:45  robertj
+ * Added implemtation for PString constructor used by Clone().
+ * Added PStringDictionary function.
+ *
+ * Revision 1.22  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.21  1994/07/25  03:31:00  robertj
@@ -135,6 +139,9 @@ PINLINE PString::PString()
 
 PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
+
+PINLINE PString::PString(const PString * str)
+  : PCharArray(*str) { }
 
 PINLINE PString::PString(const char * cstr)
   : PCharArray(strlen(PAssertNULL(cstr))+1) { strcpy(theArray, cstr); }
@@ -398,6 +405,9 @@ PINLINE const PString & PStringDictionary::GetKeyAt(PINDEX index) const
 
 PINLINE PString & PStringDictionary::GetDataAt(PINDEX index) const
   { return (PString &)AbstractGetDataAt(index); }
+
+PINLINE BOOL PStringDictionary::SetDataAt(PINDEX index, const PString & str)
+  { return PAbstractDictionary::SetDataAt(index, PNEW PString(str)); }
 
 
 // End Of File ///////////////////////////////////////////////////////////////
