@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.19 1996/08/19 13:44:06 robertj Exp $
+ * $Id: http.h,v 1.20 1996/08/22 13:20:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.20  1996/08/22 13:20:55  robertj
+ * Fixed bug in authorisation, missing virtual prevented polymorphism.
+ *
  * Revision 1.19  1996/08/19 13:44:06  robertj
  * Fixed authorisation so if have no user/password on basic authentication, does not require it.
  *
@@ -633,7 +636,7 @@ PDECLARE_CLASS(PHTTPAuthority, PObject)
        TRUE if the user and password are authorised in the realm.
      */
 
-    BOOL IsActive() const;
+    virtual BOOL IsActive() const;
     /* Determine if the authirisation is to be applied. This could be used to
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
@@ -703,7 +706,7 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
        TRUE if the user and password are authorised in the realm.
      */
 
-    BOOL IsActive() const;
+    virtual BOOL IsActive() const;
     /* Determine if the authirisation is to be applied. This could be used to
        distinguish between net requiring authorisation and requiring autorisation
        but having no password.
