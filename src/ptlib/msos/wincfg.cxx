@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.2  1998/12/04 10:10:48  robertj
+ * Added virtual for determining if process is a service. Fixes linkage problem.
+ *
  * Revision 1.1  1998/11/30 05:35:28  robertj
  * Initial revision
  *
@@ -257,9 +260,9 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
     return;
 
   if (basekey == NULL) {
-    //if (PProcess::Current().IsDescendant(PServiceProcess::Class()))
-    //  basekey = HKEY_LOCAL_MACHINE;
-    //else
+    if (PProcess::Current().IsServiceProcess())
+      basekey = HKEY_LOCAL_MACHINE;
+    else
       basekey = HKEY_CURRENT_USER;
   }
 
