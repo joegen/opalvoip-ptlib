@@ -1,5 +1,5 @@
 /*
- * $Id: ftpclnt.cxx,v 1.1 1996/09/14 13:02:18 robertj Exp $
+ * $Id: ftpclnt.cxx,v 1.2 1997/03/28 13:06:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.2  1997/03/28 13:06:58  robertj
+ * made STAT command more robust for getting file info from weird FTP servers.
+ *
  * Revision 1.1  1996/09/14 13:02:18  robertj
  * Initial revision
  *
@@ -147,7 +150,7 @@ PStringArray PFTPClient::GetDirectoryNames(const PString & path,
 
 PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 {
-  if (ExecuteCommand(STAT, path)/100 == 2) {
+  if (ExecuteCommand(STAT, path)/100 == 2 && lastResponseInfo.Find(path) != P_MAX_INDEX) {
     PINDEX start = lastResponseInfo.Find('\n');
     if (start != P_MAX_INDEX) {
       PINDEX end = lastResponseInfo.Find('\n', ++start);
