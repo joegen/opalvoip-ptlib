@@ -36,6 +36,7 @@
 
   protected:
     void * dllHandle;
+    PString name;
 
 #endif // !P_VXWORKS && !P_RTEMS
 
