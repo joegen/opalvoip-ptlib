@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.63 1998/04/01 01:52:42 robertj Exp $
+ * $Id: win32.cxx,v 1.64 1998/08/20 06:05:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.64  1998/08/20 06:05:28  robertj
+ * Allowed Win32 class to be used in other compilation modules
+ *
  * Revision 1.63  1998/04/01 01:52:42  robertj
  * Fixed problem with NoAutoDelete threads.
  *
@@ -860,6 +863,29 @@ BOOL PPipeChannel::Execute()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PWin32Overlapped
+
+PWin32Overlapped::PWin32Overlapped()
+{
+  memset(this, 0, sizeof(*this));
+  hEvent = CreateEvent(0, TRUE, 0, NULL);
+}
+
+PWin32Overlapped::~PWin32Overlapped()
+{
+  if (hEvent != NULL)
+    CloseHandle(hEvent);
+}
+
+void PWin32Overlapped::Reset()
+{
+  Offset = OffsetHigh = 0;
+  if (hEvent != NULL)
+    ResetEvent(hEvent);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PSerialChannel
 
 void PSerialChannel::Construct()
@@ -880,18 +906,6 @@ PString PSerialChannel::GetName() const
 {
   return portName;
 }
-
-
-class POVERLAPPED : public OVERLAPPED {
-  public:
-    POVERLAPPED()
-      {
-        memset(this, 0, sizeof(OVERLAPPED));
-        hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-      }
-    ~POVERLAPPED()
-      { CloseHandle(hEvent); }
-};
 
 
 BOOL PSerialChannel::Read(void * buf, PINDEX len)
@@ -917,7 +931,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
   if (eventMask != (EV_RXCHAR|EV_TXEMPTY))
     PAssertOS(SetCommMask(commsResource, EV_RXCHAR|EV_TXEMPTY));
 
-  POVERLAPPED overlap;
+  PWin32Overlapped overlap;
   DWORD timeToGo = readTimeout.GetInterval();
   DWORD bytesToGo = len;
   char * bufferPtr = (char *)buf;
@@ -968,7 +982,7 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
     cto.WriteTotalTimeoutConstant = writeTimeout.GetInterval();
   PAssertOS(SetCommTimeouts(commsResource, &cto));
 
-  OVERLAPPED overlap;
+  PWin32Overlapped overlap;
   memset(&overlap, 0, sizeof(overlap));
   overlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) {
@@ -1314,29 +1328,6 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
 
-class RegistryKey
-{
-  public:
-    enum OpenMode {
-      ReadOnly,
-      ReadWrite,
-      Create
-    };
-    RegistryKey(const PString & subkey, OpenMode mode);
-    ~RegistryKey();
-    BOOL EnumKey(PINDEX idx, PString & str);
-    BOOL EnumValue(PINDEX idx, PString & str);
-    BOOL DeleteKey(const PString & subkey);
-    BOOL DeleteValue(const PString & value);
-    BOOL QueryValue(const PString & value, PString & str);
-    BOOL QueryValue(const PString & value, DWORD & num, BOOL boolean);
-    BOOL SetValue(const PString & value, const PString & str);
-    BOOL SetValue(const PString & value, DWORD num);
-  private:
-    HKEY key;
-};
-
-
 class SecurityID
 {
   public:
@@ -1628,6 +1619,8 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
 
   switch (type) {
     case REG_SZ :
+    case REG_MULTI_SZ :
+    case REG_EXPAND_SZ :
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
 
