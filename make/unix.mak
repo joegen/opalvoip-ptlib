@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.133  2002/07/18 13:18:22  rogerh
+# The patch to set big endian for linux on the sparc (by Kawahara Taro) was
+# incorrectly added in version 1.91 and it made Alpha big endian instead. The
+# patch is now in correctly. Alpha problem reported by Robert M. Riches Jr.
+#
 # Revision 1.132  2002/06/20 05:49:04  robertj
 # Fixed typo to include templates by default.
 #
@@ -661,7 +666,7 @@ ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
-ifeq ($(MACHTYPE),alpha)
+ifeq ($(MACHTYPE),sparc)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
