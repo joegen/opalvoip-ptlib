@@ -4,6 +4,7 @@
 #pragma implementation "ipsock.h"
 #pragma implementation "udpsock.h"
 #pragma implementation "tcpsock.h"
+#pragma implementation "ipdsock.h"
 
 #include <ptlib.h>
 #include <sockets.h>
@@ -85,9 +86,10 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 }
 
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, int * size)
+int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
+                       const PTimeInterval & timeout)
 {
-  if (!PXSetIOBlock(PXAcceptBlock, sock)) {
+  if (!PXSetIOBlock(PXAcceptBlock, sock, timeout)) {
     errno = EINTR;
     return -1;
   }
@@ -181,7 +183,7 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 //  PUDPSocket
 //
 
-BOOL PUDPSocket::ReadFrom(
+BOOL PIPDatagramSocket::ReadFrom(
       void * buf,     // Data to be written as URGENT TCP data.
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
       Address & addr, // Address from which the datagram was received.
@@ -214,7 +216,7 @@ BOOL PUDPSocket::ReadFrom(
 //  PUDPSocket
 //
 
-virtual BOOL PUDPSocket::WriteTo(
+BOOL PIPDatagramSocket::WriteTo(
       const void * buf,   // Data to be written as URGENT TCP data.
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
       const Address & addr, // Address to which the datagram is sent.
