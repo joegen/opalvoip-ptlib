@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.39 1995/10/14 15:03:12 robertj Exp $
+ * $Id: pwlib.h,v 1.40 1995/11/09 12:18:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
+ * Revision 1.40  1995/11/09 12:18:53  robertj
+ * Added static (filled) rectange control.
+ *
  * Revision 1.39  1995/10/14 15:03:12  robertj
  * Added floating dialogs.
  *
@@ -310,6 +313,12 @@
 // PStaticBox
 
 #include <statbox.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PStaticRect
+
+#include <statrect.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
