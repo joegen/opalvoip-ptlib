@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.4  1998/11/30 22:07:19  robertj
+ * New directory structure.
+ *
  * Revision 1.3  1998/09/24 04:12:01  robertj
  * Added open software license.
  *
@@ -48,7 +51,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
 
-#include "../../common/ptlib/tcpsock.h"
+#include "../../tcpsock.h"
   public:
     virtual BOOL Read(void * buf, PINDEX len);
 
