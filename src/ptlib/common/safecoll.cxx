@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.11  2004/08/14 07:42:31  rjongbloed
+ * Added trace log at level 6 for helping find PSafeObject reference/dereference errors.
+ *
  * Revision 1.10  2004/08/12 12:37:41  rjongbloed
  * Fixed bug recently introduced so removes deleted object from deletion list.
  * Also changed removal list to be correct type.
@@ -102,6 +105,7 @@ BOOL PSafeObject::SafeReference()
     return FALSE;
 
   safeReferenceCount++;
+  PTRACE(6, "SafeColl\tIncrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this);
   return TRUE;
 }
 
@@ -109,10 +113,10 @@ BOOL PSafeObject::SafeReference()
 void PSafeObject::SafeDereference()
 {
   safetyMutex.Wait();
-  if (safeReferenceCount > 0)
+  if (PAssert(safeReferenceCount > 0, PLogicError)) {
     safeReferenceCount--;
-  else
-    PAssertAlways(PLogicError);
+    PTRACE(6, "SafeColl\tDecrement reference count to " << safeReferenceCount << " for " << GetClass() << ' ' << (void *)this);
+  }
   safetyMutex.Signal();
 }
 
