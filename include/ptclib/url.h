@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.4 1996/03/02 03:12:13 robertj Exp $
+ * $Id: url.h,v 1.5 1996/03/16 04:46:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.5  1996/03/16 04:46:02  robertj
+ * FireDoorV10
+ *
  * Revision 1.4  1996/03/02 03:12:13  robertj
  * Added function to translate a string to a form suitable for inclusion in a URL.
  *
@@ -99,8 +102,13 @@ PDECLARE_CLASS(PURL, PObject)
        String representation of the URL.
      */
 
+    enum TranslationType {
+       NormalTranslation,
+       QueryTranslation
+    };
     static PString TranslateString(
-      const PString & str     // String to be translated
+      const PString & str,    // String to be translated
+      TranslationType type = NormalTranslation
     );
     /* Translate a string from general form to one that can be included into
        a URL. All reserved characters are escaped.
