@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.10  2000/03/04 10:15:32  robertj
+ * Added simple play functions for sound files.
+ *
  * Revision 1.9  2000/02/17 11:33:33  robertj
  * Changed PSoundChannel::Write so blocks instead of error if no buffers available.
  *
@@ -469,6 +472,22 @@ BOOL PSound::Save(const PFilePath & filename)
   return TRUE;
 }
 
+
+BOOL PSound::Play()
+{
+  PSoundChannel channel(PSoundChannel::GetDefaultDevice(PSoundChannel::Player),
+                        PSoundChannel::Player);
+  if (!channel.IsOpen())
+    return FALSE;
+
+  return channel.PlaySound(*this, TRUE);
+}
+
+
+BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
+{
+  return ::PlaySound(file, NULL, SND_FILENAME|(wait ? SND_SYNC : SND_ASYNC));
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
