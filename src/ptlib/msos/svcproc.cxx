@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.35 1998/02/20 23:01:10 robertj Exp $
+ * $Id: svcproc.cxx,v 1.36 1998/03/05 12:49:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.36  1998/03/05 12:49:55  robertj
+ * MemCheck fixes.
+ *
  * Revision 1.35  1998/02/20 23:01:10  robertj
  * Fixed bug where application exits on log out in win95.
  *
@@ -137,7 +140,6 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <io.h>
-#include <crtdbg.h>
 
 
 #define UWM_SYSTRAY (WM_USER + 1)
@@ -402,9 +404,6 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 
 int PServiceProcess::_main(int argc, char ** argv, char ** hInst)
 {
-  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
-
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   hInstance = (HINSTANCE)hInst;
   PreInitialise(1, argv);
@@ -906,7 +905,8 @@ void PServiceProcess::ThreadEntry()
   SetTerminationValue(1);
   if (OnStart()) {
 
-    SetEvent(startedEvent);
+    if (!debugMode)
+      SetEvent(startedEvent);
     ReportStatus(SERVICE_RUNNING);
     SetTerminationValue(0);
 
@@ -1148,18 +1148,18 @@ class NT_ServiceManager : public ServiceManager
     BOOL Delete(PServiceProcess * svc);
     BOOL Start(PServiceProcess * svc);
     BOOL Stop(PServiceProcess * svc)
-      { return ControlService(svc, SERVICE_CONTROL_STOP); }
+      { return Control(svc, SERVICE_CONTROL_STOP); }
     BOOL Pause(PServiceProcess * svc)
-      { return ControlService(svc, SERVICE_CONTROL_PAUSE); }
+      { return Control(svc, SERVICE_CONTROL_PAUSE); }
     BOOL Resume(PServiceProcess * svc)
-      { return ControlService(svc, SERVICE_CONTROL_CONTINUE); }
+      { return Control(svc, SERVICE_CONTROL_CONTINUE); }
 
     DWORD GetError() const { return error; }
 
   private:
     BOOL OpenManager();
     BOOL Open(PServiceProcess * svc);
-    BOOL ControlService(PServiceProcess * svc, DWORD command);
+    BOOL Control(PServiceProcess * svc, DWORD command);
 
     SC_HANDLE schSCManager, schService;
 };
@@ -1285,7 +1285,7 @@ BOOL NT_ServiceManager::Start(PServiceProcess * svc)
 }
 
 
-BOOL NT_ServiceManager::ControlService(PServiceProcess * svc, DWORD command)
+BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
 {
   if (!Open(svc))
     return FALSE;
