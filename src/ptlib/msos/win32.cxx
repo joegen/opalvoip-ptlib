@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.126  2002/12/11 22:25:04  robertj
+ * Added ability to set user identity temporarily and permanently.
+ * Added get and set users group functions.
+ *
  * Revision 1.125  2002/11/20 02:38:38  robertj
  * Fixed file path parsing for common unix/dos path error.
  *
@@ -1561,9 +1565,25 @@ PString PProcess::GetUserName() const
 }
 
 
-BOOL PProcess::SetUserName(const PString & username)
+BOOL PProcess::SetUserName(const PString & username, BOOL)
 {
   if (username.IsEmpty())
+    return FALSE;
+
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+PString PProcess::GetGroupName() const
+{
+  return "Users";
+}
+
+
+BOOL PProcess::SetGroupName(const PString & groupname, BOOL)
+{
+  if (groupname.IsEmpty())
     return FALSE;
 
   PAssertAlways(PUnimplementedFunction);
