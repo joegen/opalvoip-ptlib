@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.21  2001/11/28 05:10:19  robertj
+ * Added enable of TV card sound when grabbing, thanks Santiago Garcia Mantinan
+ *
  * Revision 1.20  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -274,6 +277,15 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   if (GetHue() < 0)
     goto errorOpenVideoInputDevice;
 
+  // Init audio
+  struct video_audio videoAudio;
+  if (::ioctl(videoFd, VIDIOCGAUDIO, &videoAudio) >= 0 &&
+                      (videoAudio.flags & VIDEO_AUDIO_MUTABLE) != 0) {
+    videoAudio.flags &= ~VIDEO_AUDIO_MUTE;
+    videoAudio.mode = VIDEO_SOUND_MONO;
+    ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
+  }
+
   return TRUE;
 
  errorOpenVideoInputDevice:
@@ -293,6 +305,15 @@ BOOL PVideoInputDevice::Close()
 {
   if (!IsOpen())
     return FALSE;
+
+
+  // Mute audio
+  struct video_audio videoAudio;
+  if (::ioctl(videoFd, VIDIOCGAUDIO, &videoAudio) >= 0 &&
+                      (videoAudio.flags & VIDEO_AUDIO_MUTABLE) != 0) {
+    videoAudio.flags |= VIDEO_AUDIO_MUTE;
+    ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
+  }
 
   ClearMapping();
   ::close(videoFd);
