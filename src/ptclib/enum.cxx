@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.2  2004/05/31 23:14:17  csoutheren
+ * Fixed warnings under VS.net and fixed problem with SRV records when returning multiple records
+ *
  * Revision 1.1  2004/05/31 13:56:37  csoutheren
  * Added implementation of ENUM resolution of E.164 numbers by DNS
  *
@@ -95,7 +98,7 @@ struct NAPTR_DNS {
   PString GetReplacement() const    { return PString(GetReplacementBase()+1, GetReplacementLen()); }
 };
 
-PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD results)
+PDNS::NAPTRRecord * PDNS::NAPTRRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD /*results*/)
 {
   PDNS::NAPTRRecord * record = NULL;
 

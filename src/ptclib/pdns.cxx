@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.17  2004/05/31 23:14:17  csoutheren
+ * Fixed warnings under VS.net and fixed problem with SRV records when returning multiple records
+ *
  * Revision 1.16  2004/05/31 12:49:48  csoutheren
  * Added handling of unknown DNS types
  *
@@ -318,9 +321,9 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
       ) {
     SRVRecord * record = new SRVRecord();
     record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
-    record->port     = results->Data.SRV.wPort;
-    record->priority = results->Data.SRV.wPriority;
-    record->weight   = results->Data.SRV.wWeight;
+    record->port     = dnsRecord->Data.SRV.wPort;
+    record->priority = dnsRecord->Data.SRV.wPriority;
+    record->weight   = dnsRecord->Data.SRV.wWeight;
 
     // see if any A records match this hostname
     PDNS_RECORD aRecord = results;
@@ -510,8 +513,8 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
     // if no A record found, then get address the hard way
     if (aRecord == NULL)
       PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
-
   }
+
   return record;
 }
 
