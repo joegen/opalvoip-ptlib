@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.149  2000/11/28 12:55:37  robertj
+ * Added static function to create a new thread class and automatically
+ *   run a function on another class in the context of that thread.
+ *
  * Revision 1.148  2000/10/20 05:31:32  robertj
  * Added function to change auto delete flag on a thread.
  *
@@ -502,6 +506,25 @@
 #include <ptlib/svcproc.h>
 
 #include <ctype.h>
+
+
+class PSimpleThread : public PThread
+{
+    PCLASSINFO(PSimpleThread, PThread);
+  public:
+    PSimpleThread(
+      const PNotifier & notifier,
+      INT parameter,
+      AutoDeleteFlag deletion,
+      Priority priorityLevel,
+      const PString & threadName,
+      PINDEX stackSize
+    );
+    void Main();
+  protected:
+    PNotifier callback;
+    INT parameter;
+};
 
 
 #ifndef __NUCLEUS_PLUS__
@@ -1510,6 +1533,37 @@ PString PThread::GetThreadName() const
 void PThread::SetThreadName(const PString & name)
 {
   threadName = name; 
+}
+
+
+PThread * PThread::Create(const PNotifier & notifier,
+                          INT parameter,
+                          AutoDeleteFlag deletion,
+                          Priority priorityLevel,
+                          const PString & threadName,
+                          PINDEX stackSize)
+{
+  return new PSimpleThread(notifier, parameter, deletion, priorityLevel, threadName, stackSize);
+}
+
+
+PSimpleThread::PSimpleThread(const PNotifier & notifier,
+                             INT param,
+                             AutoDeleteFlag deletion,
+                             Priority priorityLevel,
+                             const PString & threadName,
+                             PINDEX stackSize)
+  : PThread(stackSize, deletion, priorityLevel, threadName),
+    callback(notifier),
+    parameter(param)
+{
+  Resume();
+}
+
+
+void PSimpleThread::Main()
+{
+  callback(*this, parameter);
 }
 
 
