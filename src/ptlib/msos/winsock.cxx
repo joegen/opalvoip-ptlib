@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.10 1996/02/19 13:52:39 robertj Exp $
+ * $Id: winsock.cxx,v 1.11 1996/02/25 03:13:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.11  1996/02/25 03:13:12  robertj
+ * Moved some socket functions to platform dependent code.
+ *
  * Revision 1.10  1996/02/19 13:52:39  robertj
  * Added SO_LINGER option to socket to stop data loss on close.
  * Fixed error reporting for winsock classes.
@@ -155,10 +158,28 @@ int PSocket::_Close()
 }
 
 
+int PSocket::os_socket(int af, int type, int protocol)
+{
+  return ::socket(af, type, protocol);
+}
+
+
+int PSocket::os_connect(struct sockaddr * addr, int size)
+{
+  return ::connect(os_handle, addr, size);
+}
+
+
+int PSocket::os_accept(int sock, struct sockaddr * addr, int * size)
+{
+  return ::accept(sock, addr, size);
+}
+
 int PSocket::os_select(int maxfds,
                        fd_set & readfds,
                        fd_set & writefds,
                        fd_set & exceptfds,
+                       const PIntArray &,
                        const PTimeInterval & timeout)
 {
   struct timeval tv_buf;
@@ -240,28 +261,6 @@ BYTE PIPSocket::Address::Byte3() const
 BYTE PIPSocket::Address::Byte4() const
 {
   return S_un.S_un_b.s_b4;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PTCPSocket
-
-BOOL PTCPSocket::Accept(PSocket & socket)
-{
-  // attempt to create a socket
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  int size = sizeof(address);
-  if (!ConvertOSError(os_handle = ::accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size)))
-    return FALSE;
-
-  port = ntohs(address.sin_port);
-
-  // Wait 10 seconds for close to flush output
-  static linger ling = { 1, 10 };
-  return ConvertOSError(setsockopt(os_handle,
-                          SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
 }
 
 
