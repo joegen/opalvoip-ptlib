@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.13 1995/03/14 12:42:18 robertj Exp $
+ * $Id: ptime.h,v 1.14 1995/06/17 11:13:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.14  1995/06/17 11:13:10  robertj
+ * Documentation update.
+ *
  * Revision 1.13  1995/03/14 12:42:18  robertj
  * Updated documentation to use HTML codes.
  *
@@ -111,9 +114,8 @@ PDECLARE_CLASS(PTime, PObject)
     virtual void PrintOn(
       ostream & strm    // Stream to output the time to.
     ) const;
-    /* Output the time to the stream. This uses the
-       <A><CODE>AsString()</CODE></A> function with the
-       <CODE>ShortDateTime</CODE> parameter.
+    /* Output the time to the stream. This uses the <A>AsString()</A> function
+       with the <CODE>ShortDateTime</CODE> parameter.
      */
 
     virtual void ReadFrom(
@@ -121,8 +123,8 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Input the time from the specified stream. If a parse error occurs the
        time is set to the current time. The input is expected in the same
-       format as produced by the <A><CODE>AsString()</CODE></A> function with
-       the <CODE>ShortDateTime</CODE> parameter.
+       format as produced by the <A>AsString()</A> function with the
+       <CODE>ShortDateTime</CODE> parameter.
      */
 
 
