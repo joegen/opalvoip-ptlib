@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.4 1995/06/04 12:49:51 robertj Exp $
+ * $Id: winsock.cxx,v 1.5 1995/06/17 00:59:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.5  1995/06/17 00:59:49  robertj
+ * Fixed bug with stream being flushed on read/write.
+ *
  * Revision 1.4  1995/06/04 12:49:51  robertj
  * Fixed bugs in socket read and write function return status.
  * Fixed bug in socket close setting object state to "closed".
@@ -53,6 +56,8 @@ PSocket::PSocket()
 
 BOOL PSocket::Read(void * buf, PINDEX len)
 {
+  flush();
+
   lastReadCount = 0;
 
   u_long state = readTimeout == PMaxTimeInterval ? 0 : 1;
@@ -84,6 +89,8 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 
 BOOL PSocket::Write(const void * buf, PINDEX len)
 {
+  flush();
+
   lastWriteCount = 0;
 
   u_long state = writeTimeout == PMaxTimeInterval ? 0 : 1;
