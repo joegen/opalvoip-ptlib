@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.105  2001/01/28 01:15:01  yurik
+ * WinCE port-related
+ *
  * Revision 1.104  2001/01/24 06:32:17  yurik
  * Windows CE port-related changes
  *
@@ -451,8 +454,17 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
   }
 
   hostname = host_info->h_name;
+#ifndef _WIN32_WCE
   address = *(DWORD *)host_info->h_addr;
+#else
+  if( host_info->h_addr )
+	  address = PIPSocket::Address(
+		  (BYTE) host_info->h_addr[0],
+		  (BYTE) host_info->h_addr[1],
+		  (BYTE) host_info->h_addr[2],
+		  (BYTE) host_info->h_addr[3]);
 
+#endif
   aliases.AppendString(host_info->h_name);
 
   PINDEX i;
