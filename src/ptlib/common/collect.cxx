@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.64  2004/02/09 06:23:32  csoutheren
+ * Added fix for gcc 3.3.1 problem. Apparently, it is unable to correctly resolve
+ * a function argument that is a reference to a const pointer. Changing the argument
+ * to be a pointer to a pointer solves the problem. Go figure
+ *
  * Revision 1.63  2004/02/08 22:46:35  csoutheren
  * Added casts to fix problems with gcc
  *
@@ -949,7 +954,7 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
 PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 {
   Element * elmt = NULL;
-  PINDEX pos = ValueSelect(info->root, *obj, (const Element *)elmt);
+  PINDEX pos = ValueSelect(info->root, *obj, (const Element **)&elmt);
   if (pos == P_MAX_INDEX)
     return P_MAX_INDEX;
 
@@ -981,7 +986,7 @@ PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
 
 PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
 {
-  PINDEX pos = ValueSelect(info->root, obj, (const Element *)info->lastElement);
+  PINDEX pos = ValueSelect(info->root, obj, (const Element **)&info->lastElement);
   if (pos == P_MAX_INDEX)
     return P_MAX_INDEX;
 
@@ -1196,7 +1201,7 @@ PAbstractSortedList::Element * PAbstractSortedList::OrderSelect(Element * node, 
 
 PINDEX PAbstractSortedList::ValueSelect(const Element * node,
                                         const PObject & obj,
-                                        const Element * & lastElement) const
+                                        const Element ** lastElement) const
 {
   if (node != &nil) {
     switch (node->data->Compare(obj)) {
@@ -1212,7 +1217,7 @@ PINDEX PAbstractSortedList::ValueSelect(const Element * node,
         return ValueSelect(node->left, obj, lastElement);
 
       default :
-        lastElement = node;
+        *lastElement = node;
         return node->left->subTreeSize;
     }
   }

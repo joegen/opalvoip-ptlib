@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.24  2004/02/09 06:23:32  csoutheren
+ * Added fix for gcc 3.3.1 problem. Apparently, it is unable to correctly resolve
+ * a function argument that is a reference to a const pointer. Changing the argument
+ * to be a pointer to a pointer solves the problem. Go figure
+ *
  * Revision 1.23  2004/02/08 11:13:10  rjongbloed
  * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
  *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
@@ -1015,7 +1020,7 @@ class PAbstractSortedList : public PCollection
     Element * Successor(const Element * node) const;
     Element * Predecessor(const Element * node) const;
     Element * OrderSelect(Element * node, PINDEX index) const;
-    PINDEX ValueSelect(const Element * node, const PObject & obj, const Element * & lastElement) const;
+    PINDEX ValueSelect(const Element * node, const PObject & obj, const Element ** lastElement) const;
 };
 
 
