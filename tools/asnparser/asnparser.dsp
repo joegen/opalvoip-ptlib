@@ -145,7 +145,7 @@ BuildCmds= \
 # Begin Source File
 
 SOURCE=.\asn_lex.cxx
-# ADD CPP /W2
+# ADD CPP /W2 /I "..\..\include\ptlib\msos"
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
