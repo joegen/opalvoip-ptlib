@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.5 1997/04/01 06:00:53 robertj Exp $
+ * $Id: httpform.cxx,v 1.6 1997/04/12 02:07:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.6  1997/04/12 02:07:26  robertj
+ * Fixed boolean check boxes being more flexible on string values.
+ *
  * Revision 1.5  1997/04/01 06:00:53  robertj
  * Changed PHTTPConfig so if section empty string, does not write PConfig parameters.
  *
@@ -236,7 +239,7 @@ void PHTTPBooleanField::GetHTML(PHTML & html)
 
 void PHTTPBooleanField::SetValue(const PString & val)
 {
-  value = val[0] == 'T';
+  value = toupper(val[0]) == 'T' || toupper(val[0]) == 'y' || val.AsInteger() != 0;
 }
 
 
