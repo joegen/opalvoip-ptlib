@@ -18,6 +18,13 @@ fi
 
 AC_SUBST(INSTALLPREFIX)
 
+
+dnl ########################################################################
+dnl set LIBDIR accordingly
+LIBDIR="${libdir}"
+AC_SUBST(LIBDIR)
+
+
 dnl ########################################################################
 dnl extract the PWLIB version
 MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
