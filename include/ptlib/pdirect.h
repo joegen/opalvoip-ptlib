@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.37  2002/11/19 12:07:02  robertj
+ * Added function to get root directory.
+ *
  * Revision 1.36  2002/11/19 10:34:59  robertj
  * Added function to extract a path as an array of directories components.
  *
@@ -342,6 +345,13 @@ class PDirectory : public PFilePathString
        TRUE if the object is a root directory.
      */
     BOOL IsRoot() const;
+
+    /**Get the root directory of a volume.
+    
+       @return
+       root directory.
+     */
+    PDirectory GetRoot() const;
 
     /**Get the directory path as an array of strings.
       */
