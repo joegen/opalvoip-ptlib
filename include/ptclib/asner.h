@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.9  1999/07/22 06:48:51  robertj
+ * Added comparison operation to base ASN classes and compiled ASN code.
+ * Added support for ANY type in ASN parser.
+ *
  * Revision 1.8  1999/03/09 09:34:05  robertj
  * Fixed typo's.
  *
@@ -187,8 +191,10 @@ class PASN_Null : public PASN_Object
     PASN_Null(unsigned tag = UniversalNull,
               TagClass tagClass = UniversalTagClass);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -211,8 +217,10 @@ class PASN_Boolean : public PASN_Object
     BOOL GetValue() const { return value; }
     void SetValue(BOOL v) { value = v; }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -238,8 +246,10 @@ class PASN_Integer : public PASN_ConstrainedObject
     unsigned GetValue() const { return value; }
     void SetValue(unsigned v) { operator=(v); }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -278,8 +288,10 @@ class PASN_Enumeration : public PASN_Object
 
     unsigned GetMaximum() const { return maxEnumValue; }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -310,8 +322,10 @@ class PASN_Real : public PASN_Object
     double GetValue() const { return value; }
     void SetValue(double v) { value = v; }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -346,8 +360,10 @@ class PASN_ObjectId : public PASN_Object
     const PUnsignedArray & GetValue() const { return value; }
     unsigned operator[](PINDEX idx) const { return value[idx]; }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -387,8 +403,10 @@ class PASN_BitString : public PASN_ConstrainedObject
 
     virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -436,8 +454,10 @@ class PASN_OctetString : public PASN_ConstrainedObject
 
     virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -467,7 +487,9 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     void SetCharacterSet(ConstraintType ctype, unsigned firstChar = 0, unsigned lastChar = 255);
     void SetCharacterSet(const char * charSet, PINDEX size, ConstraintType ctype);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
@@ -533,8 +555,10 @@ class PASN_BMPString : public PASN_ConstrainedObject
     void SetCharacterSet(ConstraintType ctype, const PWORDArray & charSet);
     void SetCharacterSet(ConstraintType ctype, unsigned firstChar, unsigned lastChar);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -571,25 +595,43 @@ class PASN_Choice : public PASN_Object
     PASN_Object & GetObject() const;
     BOOL IsValid() const { return choice != NULL; }
 
-    operator PASN_Null &() const;
-    operator PASN_Boolean &() const;
-    operator PASN_Integer &() const;
-    operator PASN_Enumeration &() const;
-    operator PASN_Real &() const;
-    operator PASN_ObjectId &() const;
-    operator PASN_BitString &() const;
-    operator PASN_OctetString &() const;
-    operator PASN_NumericString &() const;
-    operator PASN_PrintableString &() const;
-    operator PASN_VisibleString &() const;
-    operator PASN_IA5String &() const;
-    operator PASN_GeneralString &() const;
-    operator PASN_BMPString &() const;
-    operator PASN_Sequence &() const;
+    operator PASN_Null &();
+    operator PASN_Boolean &();
+    operator PASN_Integer &();
+    operator PASN_Enumeration &();
+    operator PASN_Real &();
+    operator PASN_ObjectId &();
+    operator PASN_BitString &();
+    operator PASN_OctetString &();
+    operator PASN_NumericString &();
+    operator PASN_PrintableString &();
+    operator PASN_VisibleString &();
+    operator PASN_IA5String &();
+    operator PASN_GeneralString &();
+    operator PASN_BMPString &();
+    operator PASN_Sequence &();
+
+    operator const PASN_Null &() const;
+    operator const PASN_Boolean &() const;
+    operator const PASN_Integer &() const;
+    operator const PASN_Enumeration &() const;
+    operator const PASN_Real &() const;
+    operator const PASN_ObjectId &() const;
+    operator const PASN_BitString &() const;
+    operator const PASN_OctetString &() const;
+    operator const PASN_NumericString &() const;
+    operator const PASN_PrintableString &() const;
+    operator const PASN_VisibleString &() const;
+    operator const PASN_IA5String &() const;
+    operator const PASN_GeneralString &() const;
+    operator const PASN_BMPString &() const;
+    operator const PASN_Sequence &() const;
 
     virtual BOOL CreateObject() = 0;
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL IsPrimitive() const;
@@ -636,8 +678,10 @@ class PASN_Sequence : public PASN_Object
     BOOL HasOptionalField(PINDEX opt) const;
     void IncludeOptionalField(PINDEX opt);
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL IsPrimitive() const;
@@ -705,7 +749,9 @@ class PASN_Array : public PASN_ConstrainedObject
     void RemoveAt(PINDEX i) { array.RemoveAt(i); }
     void RemoveAll() { array.RemoveAll(); }
 
+    virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
+
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL IsPrimitive() const;
