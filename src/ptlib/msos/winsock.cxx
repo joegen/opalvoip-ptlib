@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.47  2002/05/22 07:22:17  robertj
+ * Fixed bug in waiting for connect with a timeout not checking for errors via
+ *   the except fdset in the select() call. Would give timeout for all errors.
+ *
  * Revision 1.46  2002/04/12 01:42:41  robertj
  * Changed return value on os_connect() and os_accept() to make sure
  *   get the correct error codes propagated up under unix.
@@ -318,10 +322,17 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   }
 
   fd_set_class writefds = os_handle;
+  fd_set_class exceptfds = os_handle;
   timeval_class tv = readTimeout;
-  switch (select(0, NULL, &writefds, NULL, &tv)) {
+  switch (select(1, NULL, &writefds, &exceptfds, &tv)) {
     case 1 :
-      err = 0;
+      if (writefds.IsPresent(os_handle))
+        err = 0;
+      else {
+        int sz = sizeof(err);
+        if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) != 0)
+          err = GetLastError();
+      }
       break;
     case 0 :
       err = WSAETIMEDOUT;
@@ -335,14 +346,16 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
       err = GetLastError();
   }
 
-  // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
-  // work for some period of time after a connect, saying it is not connected yet!
-  for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
-    sockaddr_in address;
-    int sz = sizeof(address);
-    if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0)
-      break;
-    ::Sleep(0);
+  if (err == 0) {
+    // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
+    // work for some period of time after a connect, saying it is not connected yet!
+    for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+      sockaddr_in address;
+      int sz = sizeof(address);
+      if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0)
+        break;
+      ::Sleep(0);
+    }
   }
 
   SetLastError(err);
