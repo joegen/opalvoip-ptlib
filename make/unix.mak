@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.165  2003/04/02 09:53:06  rogerh
+# wrap ldap grep in a wildcard check so silence grep's error messages when
+# there is no ldap.h file.
+# add checks for ldap.h in /usr/local/include too.  (for the BSD platforms)
+#
 # Revision 1.164  2003/04/01 02:09:46  robertj
 # Changed detection of OpenLDAP so more specific to OpenLDAP header file
 #   and not detect other implementations.
@@ -1511,13 +1516,24 @@ endif
 endif # DEBUG
 
 # define OpenLDAP variables if installed
+ifneq (,$(wildcard /usr/include/ldap.h))
 ifneq (,$(shell grep -i openldap /usr/include/ldap.h))
+HAS_OPENLDAP	= 1
+endif
+endif
+
+ifneq (,$(wildcard /usr/local/include/ldap.h))
+ifneq (,$(shell grep -i openldap /usr/local/include/ldap.h))
+HAS_OPENLDAP	= 1
+endif
+endif
+
+ifdef HAS_OPENLDAP
 STDCCFLAGS	+= -DP_LDAP 
 ENDLDLIBS	+= -llber -lldap -lldap_r
 ifeq ($(OSTYPE),linux)
-ENDLDLIBS	+= -lresolv	# only linux has -lresolv
+ENDLDLIBS	+= -lresolv	# only linux needs -lresolv
 endif
-HAS_OPENLDAP	= 1
 endif
 
 
