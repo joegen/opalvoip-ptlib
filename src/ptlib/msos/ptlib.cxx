@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.53  2001/01/24 06:38:29  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.52  2000/07/09 14:05:46  robertj
  * Added file share options.
  *
@@ -398,7 +401,12 @@ BOOL PDirectory::Change(const PString & p)
 BOOL PDirectory::Filtered()
 {
 #if defined(_WIN32)
+#ifdef _WIN32_WCE
+  USES_CONVERSION;
+  char * name = T2A(fileinfo.cFileName);
+#else
   char * name = fileinfo.cFileName;
+#endif // _WIN32_WCE
 #else
   char * name = fileinfo.name;
 #endif
@@ -619,7 +627,11 @@ BOOL PFile::Remove(const PFilePath & name, BOOL force)
 BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
 {
   if (newname.FindOneOf(":\\/") != P_MAX_INDEX) {
+#ifdef _WIN32_WCE
+    set_errno(EINVAL);
+#else
     errno = EINVAL;
+#endif // _WIN32_WCE
     return FALSE;
   }
   PString fullname = oldname.GetDirectory() + newname;
@@ -648,6 +660,54 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
   return Copy(oldname, newname, force) && Remove(oldname);
 }
 
+
+#ifdef _WIN32_WCE
+BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
+{
+	USES_CONVERSION;
+
+	PString fn = name;
+	PINDEX pos = fn.GetLength()-1;
+	while (PDirectory::IsSeparator(fn[pos]))
+		pos--;
+	fn.Delete(pos+1, P_MAX_INDEX);
+
+	HANDLE hFile = CreateFile(A2T((const char*)fn),0,FILE_SHARE_READ,NULL,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
+	if (hFile==INVALID_HANDLE_VALUE) 
+		return false;
+
+	bool res=false;
+	BY_HANDLE_FILE_INFORMATION FInfo;
+	if (GetFileInformationByHandle(hFile,&FInfo))
+	{
+		info.created = FileTimeToTime(FInfo.ftCreationTime);
+		info.modified = FileTimeToTime(FInfo.ftLastWriteTime);
+		info.accessed = FileTimeToTime(FInfo.ftLastAccessTime);
+		info.size = (__int64(FInfo.nFileSizeHigh)<<32)+__int64(FInfo.nFileSizeLow);		
+
+		info.permissions = PFileInfo::UserRead|PFileInfo::GroupRead|PFileInfo::WorldRead;
+
+		if (FInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY==0)
+			info.permissions |= PFileInfo::UserWrite|PFileInfo::GroupWrite|PFileInfo::WorldWrite;
+
+		if (FInfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY)
+		{
+			info.type = PFileInfo::SubDirectory;
+			info.permissions |= PFileInfo::UserExecute|PFileInfo::GroupExecute|PFileInfo::WorldExecute;
+		}
+		else
+		{
+			info.type = PFileInfo::RegularFile;
+		}
+		info.hidden = (FInfo.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)!=0;
+		res=true;
+	}
+
+	CloseHandle(hFile);
+	return res;
+}
+
+#else // !_WIN32_WCE
 
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
@@ -702,6 +762,7 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   return TRUE;
 }
 
+#endif // _WIN32_WCE
 
 BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
 {
