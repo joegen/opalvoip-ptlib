@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.94  2003/08/27 03:37:45  dereksmithies
+ * Fix initialization of pathStr so it really is empty. BIG thanks to Diego Tartara.
+ *
  * Revision 1.93  2003/07/22 03:26:10  csoutheren
  * Fixed problem with parsing default H323 addresses
  *
@@ -990,7 +993,7 @@ void PURL::SetPath(const PStringArray & p)
 {
   path = p;
 
-  pathStr.Empty();
+  pathStr = PString::Empty();
   for (PINDEX i = 0; i < path.GetSize(); i++)
     pathStr += '/' + path[i];
 
