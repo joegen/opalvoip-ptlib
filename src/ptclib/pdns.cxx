@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.14  2004/05/28 06:50:45  csoutheren
+ * Reorganised DNS functions to use templates, and exposed more internals to allow new DNS lookup types to be added
+ *
  * Revision 1.13  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -71,121 +74,17 @@
 #endif
 
 #include <ptlib.h>
-
 #include <ptclib/pdns.h>
 
 #if P_DNS
-
-#include <ptclib/random.h>
-
-#if defined(_WIN32)
-
-#include <windns.h>
-
-#pragma comment(lib, P_DNS_LIBRARY)
-
-#else
-
-#define	P_HAS_RESOLVER	1
-
-#if P_HAS_RESOLVER
-#include <arpa/nameser.h>
-#include <resolv.h>
-#if defined(P_MACOSX) && (P_MACOSX >= 700)
-#include <arpa/nameser_compat.h>
-#endif
-#endif
-
-#endif
 
 #ifndef	T_SRV
 #define	T_SRV	33
 #endif
 
-
 /////////////////////////////////////////////////
-
-PDNS::Record::Record()
-{ 
-  used = FALSE; 
-}
-
-
-/////////////////////////////////////////////////
-
 
 #ifdef P_HAS_RESOLVER
-
-#define	DNS_STATUS		int
-#define	DNS_TYPE_SRV		T_SRV
-#define	DNS_TYPE_MX		T_MX
-#define	DNS_TYPE_A		T_A
-#define	DnsFreeRecordList	0
-#define	DNS_QUERY_STANDARD	0
-#define	DNS_QUERY_BYPASS_CACHE	0
-
-typedef struct _DnsAData {
-  DWORD IpAddress;
-} DNS_A_DATA;
-
-typedef struct {
-  char   pNameExchange[MAXDNAME];
-  WORD   wPreference;
-
-} DNS_MX_DATA;
-
-typedef struct {
-  char pNameHost[MAXDNAME];
-} DNS_PTR_DATA;
-
-typedef struct _DnsSRVData {
-  public:
-    char   pNameTarget[MAXDNAME];
-    WORD   wPriority;
-    WORD   wWeight;
-    WORD   wPort;
-
-} DNS_SRV_DATA;
-
-typedef struct _DnsRecordFlags
-{
-    unsigned   Section     : 2;
-    unsigned   Delete      : 1;
-    unsigned   CharSet     : 2;
-    unsigned   Unused      : 3;
-    unsigned   Reserved    : 24;
-} DNS_RECORD_FLAGS;
-
-typedef enum _DnsSection
-{
-  DnsSectionQuestion,
-  DnsSectionAnswer,
-  DnsSectionAuthority,
-  DnsSectionAddtional,
-} DNS_SECTION;
-
-
-class DnsRecord {
-  public:
-    DnsRecord * pNext;
-    char        pName[MAXDNAME];
-    WORD        wType;
-    WORD        wDataLength;
-
-    union {
-      DWORD               DW;     // flags as DWORD
-      DNS_RECORD_FLAGS    S;      // flags as structure
-    } Flags;
-
-    union {
-      DNS_A_DATA   A;
-      DNS_MX_DATA  MX;
-      DNS_PTR_DATA NS;
-      DNS_SRV_DATA SRV;
-    } Data;
-};
-
-typedef DnsRecord * PDNS_RECORD;
 
 static BOOL GetDN(const BYTE * reply, const BYTE * replyEnd, BYTE * & cp, char * buff)
 {
@@ -367,20 +266,23 @@ DNS_STATUS DnsQuery_A(const char * service,
 
 #endif // P_HAS_RESOLVER
 
-
-/////////////////////////////////////////////////
-
 PObject::Comparison PDNS::SRVRecord::Compare(const PObject & obj) const
 {
-  PDNS::SRVRecord & other = (PDNS::SRVRecord &)obj;
-  if (priority < other.priority)
+  const SRVRecord * other = dynamic_cast<const SRVRecord *>(&obj);
+
+  if (other == NULL)
     return LessThan;
-  else if (priority > other.priority)
-    return GreaterThan;
-  if (weight < other.weight)
+
+  if (priority < other->priority)
     return LessThan;
-  else if (weight > other.weight)
+  else if (priority > other->priority)
     return GreaterThan;
+
+  if (weight < other->weight)
+    return LessThan;
+  else if (weight > other->weight)
+    return GreaterThan;
+
   return EqualTo;
 }
 
@@ -392,6 +294,39 @@ void PDNS::SRVRecord::PrintOn(ostream & strm) const
 }
 
 /////////////////////////////////////////////////
+
+PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD results)
+{
+  PDNS::SRVRecord * record = NULL;
+
+  if (
+      (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
+      (dnsRecord->wType == DNS_TYPE_SRV) &&
+      (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
+      ) {
+    SRVRecord * record = new SRVRecord();
+    record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
+    record->port     = results->Data.SRV.wPort;
+    record->priority = results->Data.SRV.wPriority;
+    record->weight   = results->Data.SRV.wWeight;
+
+    // see if any A records match this hostname
+    PDNS_RECORD aRecord = results;
+    while (aRecord != NULL) {
+      if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+        record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
+        break;
+      }
+      aRecord = aRecord->pNext;
+    }
+
+    // if no A record found, then get address the hard way
+    if (aRecord == NULL)
+      PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
+  }
+
+  return record;
+}
 
 void PDNS::SRVRecordList::PrintOn(ostream & strm) const
 {
@@ -497,14 +432,11 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
   return NULL;
 }
 
-///////////////////////////////////////////////////////
-
-BOOL PDNS::GetSRVRecords(const PString & _service,
-                         const PString & type,
-		                     const PString & domain,
-		                     SRVRecordList & recordList)
+BOOL GetSRVRecords(const PString & _service,
+                   const PString & type,
+                   const PString & domain,
+                   PDNS::SRVRecordList & recordList)
 {
-
   if (_service.IsEmpty())
     return FALSE;
 
@@ -519,69 +451,20 @@ BOOL PDNS::GetSRVRecords(const PString & _service,
   return GetSRVRecords(service, recordList);
 }
 
-BOOL PDNS::GetSRVRecords(const PString & service, PDNS::SRVRecordList & recordList)
-{
-  recordList.RemoveAll();
-
-  PDNS_RECORD results = NULL;
-  DNS_STATUS status = DnsQuery_A((const char *)service, 
-                                 DNS_TYPE_SRV, 
-                                 DNS_QUERY_STANDARD | DNS_QUERY_BYPASS_CACHE, 
-                                 NULL, 
-                                 &results, 
-                                 NULL);
-  if (status != 0)
-    return FALSE;
-
-  // find SRV records
-  PDNS_RECORD dnsRecord = results;
-  while (dnsRecord != NULL) {
-    if (
-        (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
-        (dnsRecord->wType == DNS_TYPE_SRV) &&
-        (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
-       ) {
-      SRVRecord * record = new SRVRecord();
-      record->hostName = PString(dnsRecord->Data.SRV.pNameTarget);
-      record->port     = results->Data.SRV.wPort;
-      record->priority = results->Data.SRV.wPriority;
-      record->weight   = results->Data.SRV.wWeight;
-
-      // see if any A records match this hostname
-      PDNS_RECORD aRecord = results;
-      while (aRecord != NULL) {
-        if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
-          record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
-          break;
-        }
-        aRecord = aRecord->pNext;
-      }
-
-      // if no A record found, then get address the hard way
-      if (aRecord == NULL)
-        PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
-
-      // add record to the list
-      recordList.Append(record);
-    }
-    dnsRecord = dnsRecord->pNext;
-  }
-
-  if (results != NULL)
-    DnsRecordListFree(results, DnsFreeRecordList);
-
-  return recordList.GetSize() != 0;
-}
 
 ///////////////////////////////////////////////////////
 
 PObject::Comparison PDNS::MXRecord::Compare(const PObject & obj) const
 {
-  PDNS::MXRecord & other = (PDNS::MXRecord &)obj;
-  if (preference < other.preference)
+  const MXRecord * other = dynamic_cast<const MXRecord *>(&obj);
+  if (other == NULL)
     return LessThan;
-  else if (preference > other.preference)
+
+  if (preference < other->preference)
+    return LessThan;
+  else if (preference > other->preference)
     return GreaterThan;
+
   return EqualTo;
 }
 
@@ -593,58 +476,32 @@ void PDNS::MXRecord::PrintOn(ostream & strm) const
 
 ///////////////////////////////////////////////////////
 
-BOOL PDNS::GetMXRecords(const PString & domain, MXRecordList & recordList)
+PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS_RECORD results)
 {
-  if (domain.IsEmpty())
-    return FALSE;
+  MXRecord * record = NULL;
 
-  recordList.RemoveAll();
+  if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_MX)) {
+    record = new MXRecord();
+    record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);
+    record->preference = dnsRecord->Data.MX.wPreference;
 
-  PDNS_RECORD results = NULL;
-  DNS_STATUS status = DnsQuery_A((const char *)domain, 
-                                 DNS_TYPE_MX, 
-                                 DNS_QUERY_STANDARD, 
-                                 NULL, 
-                                 &results, 
-                                 NULL);
-  if (status != 0)
-    return FALSE;
-
-  // find MX records
-  PDNS_RECORD dnsRecord = results;
-  while (dnsRecord != NULL) {
-    if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_MX)) {
-      MXRecord * record = new MXRecord();
-      record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);
-      record->preference = dnsRecord->Data.MX.wPreference;
-
-      // see if any A records match this hostname
-      PDNS_RECORD aRecord = results;
-      while (aRecord != NULL) {
-        if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
-          record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
-          break;
-        }
-        aRecord = aRecord->pNext;
+    // see if any A records match this hostname
+    PDNS_RECORD aRecord = results;
+    while (aRecord != NULL) {
+      if ((dnsRecord->Flags.S.Section == DnsSectionAddtional) && (dnsRecord->wType == DNS_TYPE_A)) {
+        record->hostAddress = PIPSocket::Address(dnsRecord->Data.A.IpAddress);
+        break;
       }
-
-      // if no A record found, then get address the hard way
-      if (aRecord == NULL)
-        PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
-
-      // add record to the list
-      recordList.Append(record);
+      aRecord = aRecord->pNext;
     }
-    dnsRecord = dnsRecord->pNext;
+
+    // if no A record found, then get address the hard way
+    if (aRecord == NULL)
+      PIPSocket::GetHostAddress(record->hostName, record->hostAddress);
+
   }
-
-  if (results != NULL)
-    DnsRecordListFree(results, DnsFreeRecordList);
-
-  return recordList.GetSize() != 0;
+  return record;
 }
-
-///////////////////////////////////////////////////////
 
 void PDNS::MXRecordList::PrintOn(ostream & strm) const
 {
@@ -674,7 +531,6 @@ PDNS::MXRecord * PDNS::MXRecordList::GetNext()
 
   return (PDNS::MXRecord *)GetAt(lastIndex++);
 }
-
 
 #endif // P_DNS
 
