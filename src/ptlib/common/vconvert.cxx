@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.21  2001/12/02 21:53:56  dereks
+ * Additional debug information
+ *
  * Revision 1.20  2001/11/28 04:43:10  robertj
  * Added synonym colour class for equivalent colour format strings.
  * Allowed for setting ancestor classes in PCOLOUR_CONVERTER() macro.
@@ -233,9 +236,9 @@ BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
   srcFrameWidth = width;
   srcFrameHeight = height;
   srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
-
+  PTRACE(3,"PColourConvert::Src Frame Format" <<srcColourFormat);
   PTRACE(3,"PColourConvert::SetSrcFrameSize "<< ( (srcFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
-                       <<srcFrameWidth<<"x"<<srcFrameHeight<<"-->"<<srcFrameBytes);
+	 <<srcFrameWidth<<"x"<<srcFrameHeight<<"-->"<<srcFrameBytes << " bytes.");
 
   return srcFrameBytes != 0;
 }
@@ -250,8 +253,9 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
   
   dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
 
+  PTRACE(3,"PColourConvert::Dst Frame Format" <<dstColourFormat);
   PTRACE(3,"PColourConvert::SetDstFrameSize "<< ( (dstFrameBytes != 0) ? "Succeeded, ": " Failed" ) 
-                       <<dstFrameWidth<<"x"<<dstFrameHeight<<"-->"<<dstFrameBytes);
+	 <<dstFrameWidth<<"x"<<dstFrameHeight<<"-->" << dstFrameBytes<< " bytes.");
 
   return dstFrameBytes != 0;
 }
