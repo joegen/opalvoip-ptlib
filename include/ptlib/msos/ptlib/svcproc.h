@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.20 1998/03/29 06:16:50 robertj Exp $
+ * $Id: svcproc.h,v 1.21 1998/04/07 13:32:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.21  1998/04/07 13:32:31  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.20  1998/03/29 06:16:50  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -167,9 +170,9 @@ extern "C" char ** __argv;
 #undef PCREATE_PROCESS
 #define PCREATE_PROCESS(cls) \
   extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
-    { PProcess::PreInitialise(__argc, __argv, (char **)hInst); \
+    { PProcess::PreInitialise(__argc, __argv, _environ); \
       static cls instance; \
-      return instance._main(); \
+      return instance._main(hInst); \
     }
 
 
