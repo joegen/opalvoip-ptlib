@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.30 2001/12/13 09:15:41 robertj Exp $
+ * $Id: pssl.cxx,v 1.31 2002/03/28 07:26:25 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.31  2002/03/28 07:26:25  robertj
+ * Added Diffie-Hellman parameters wrapper class.
+ *
  * Revision 1.30  2001/12/13 09:15:41  robertj
  * Added function to get private key as ray DER binary data or as base64 string.
  *
@@ -655,6 +658,103 @@ BOOL PSSLCertificate::Save(const PFilePath & certFile, BOOL append, PSSLFileType
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PSSLDiffieHellman::PSSLDiffieHellman()
+{
+  dh = NULL;
+}
+
+
+PSSLDiffieHellman::PSSLDiffieHellman(const PFilePath & dhFile,
+                                     PSSLFileTypes fileType)
+{
+  dh = NULL;
+  Load(dhFile, fileType);
+}
+
+
+PSSLDiffieHellman::PSSLDiffieHellman(const BYTE * pData, PINDEX pSize,
+                                     const BYTE * gData, PINDEX gSize)
+{
+  dh = DH_new();
+  if (dh == NULL)
+    return;
+
+  dh->p = BN_bin2bn(pData, pSize, NULL);
+  dh->g = BN_bin2bn(gData, gSize, NULL);
+  if (dh->p != NULL && dh->g != NULL)
+    return;
+
+  DH_free(dh);
+  dh = NULL;
+}
+
+
+PSSLDiffieHellman::PSSLDiffieHellman(const PSSLDiffieHellman & diffie)
+{
+  dh = diffie.dh;
+}
+
+
+PSSLDiffieHellman & PSSLDiffieHellman::operator=(const PSSLDiffieHellman & diffie)
+{
+  if (dh != NULL)
+    DH_free(dh);
+  dh = diffie.dh;
+  return *this;
+}
+
+
+PSSLDiffieHellman::~PSSLDiffieHellman()
+{
+  if (dh != NULL)
+    DH_free(dh);
+}
+
+
+BOOL PSSLDiffieHellman::Load(const PFilePath & dhFile,
+                             PSSLFileTypes fileType)
+{
+  if (dh != NULL) {
+    DH_free(dh);
+    dh = NULL;
+  }
+
+  PSSL_BIO in;
+  if (!in.OpenRead(dhFile)) {
+    SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE,ERR_R_SYS_LIB);
+    return FALSE;
+  }
+
+  if (fileType == PSSLFileTypeDEFAULT)
+    fileType = dhFile.GetType() == ".pem" ? PSSLFileTypePEM : PSSLFileTypeASN1;
+
+  switch (fileType) {
+    case PSSLFileTypeASN1 :
+      dh = d2i_DHparams_bio(in, NULL);
+      if (dh != NULL)
+        return TRUE;
+
+      SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE, ERR_R_ASN1_LIB);
+      break;
+
+    case PSSLFileTypePEM :
+      dh = PEM_read_bio_DHparams(in, NULL, NULL, NULL);
+      if (dh != NULL)
+        return TRUE;
+
+      SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE, ERR_R_PEM_LIB);
+      break;
+
+    default :
+      SSLerr(SSL_F_SSL_CTX_USE_PRIVATEKEY_FILE,SSL_R_BAD_SSL_FILETYPE);
+  }
+
+  return FALSE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/)
 {
   static PSSLMutexArray mutexes;
@@ -781,6 +881,12 @@ BOOL PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
     return FALSE;
 
   return SSL_CTX_check_private_key(context);
+}
+
+
+BOOL PSSLContext::UseDiffieHellman(const PSSLDiffieHellman & dh)
+{
+  return SSL_CTX_set_tmp_dh(context, (dh_st *)dh) > 0;
 }
 
 
