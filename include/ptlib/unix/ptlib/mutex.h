@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.23  2004/04/12 03:35:27  csoutheren
+ * Fixed problems with non-recursuve mutexes and critical sections on
+ * older compilers and libc
+ *
  * Revision 1.22  2004/04/12 00:58:45  csoutheren
  * Fixed PAtomicInteger on Linux, and modified PMutex to use it
  *
@@ -123,7 +127,7 @@
   protected:
 
 #  if defined(P_PTHREADS) && !defined(VX_TASKS)
-#    ifndef P_HAS_RECURSIVE_MUTEX
+#    if P_HAS_RECURSIVE_MUTEX == 0
        pthread_t ownerThreadId;
        PAtomicInteger lockCount;
 #    endif
