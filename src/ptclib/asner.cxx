@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.5 1998/01/26 01:51:20 robertj Exp $
+ * $Id: asner.cxx,v 1.6 1998/02/03 06:28:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.6  1998/02/03 06:28:27  robertj
+ * Fixed length calculation of integers in BER.
+ * Added new function to read a block with minimum number of bytes.
+ *
  * Revision 1.5  1998/01/26 01:51:20  robertj
  * Removed uninitialised variable warnings.
  *
@@ -349,7 +353,7 @@ static PINDEX GetIntegerDataLength(int value)
   int shift = (sizeof(value)-1)*8-1;
 
   // remove all sequences of nine 0's or 1's at the start of the value
-  while (shift > 8 && ((value >> shift)&0x1ff) == (value < 0 ? 0x1ff : 0))
+  while (shift > 0 && ((value >> shift)&0x1ff) == (value < 0 ? 0x1ff : 0))
     shift -= 8;
 
   return (shift+9)/8;
@@ -2928,33 +2932,19 @@ PINDEX PPER_Stream::GetBitsLeft() const
 
 BOOL PPER_Stream::Read(PChannel & chan)
 {
-  byteOffset = 0;
-  bitOffset = 8;
-
-  int len_len = chan.ReadChar();
-  if (len_len < 0)
+  // Get RFC1006 TPKT length
+  BYTE tpkt[4];
+  if (!chan.ReadBlock(tpkt, sizeof(tpkt)))
     return FALSE;
 
-  int data_len = 0;
-  for (int len_count = 0; len_count < len_len; len_count++) {
-    int len_part = chan.ReadChar();
-    if (len_part < 0)
-      return FALSE;
-    data_len = (data_len << 8) | len_part;
+  if (tpkt[0] != 3) { // Only support version 3
+    SetSize(0);
+    return TRUE;
   }
 
-  data_len -= len_len + 1;
-  if (data_len < 0)
-    return FALSE;
+  PINDEX data_len = ((tpkt[2] << 8)|tpkt[3]) - 4;
 
-  BYTE * ptr = GetPointer(data_len);
-  while (data_len > 0 && chan.Read(ptr, data_len)) {
-    PINDEX last_read = chan.GetLastReadCount();
-    data_len -= last_read;
-    ptr += last_read;
-  }
-
-  return data_len == 0;
+  return chan.ReadBlock(GetPointer(data_len), data_len);
 }
 
 
