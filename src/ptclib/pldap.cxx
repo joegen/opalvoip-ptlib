@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.10  2003/06/06 09:14:01  dsandras
+ * Test that a search result has been returned before calling ldapresult2error.
+ *
  * Revision 1.9  2003/06/05 23:17:52  rjongbloed
  * Changed default operation timeout to 30 seconds.
  *
@@ -516,13 +519,15 @@ BOOL PLDAPSession::Search(SearchContext & context,
                                 tval,
                                 searchLimit,
                                 &context.msgid);
+
   if (errorNumber != LDAP_SUCCESS)
     return FALSE;
 
   if (ldap_result(ldapContext, context.msgid, LDAP_MSG_ONE, tval, &context.result) > 0)
     return GetNextSearchResult(context);
 
-  errorNumber = ldap_result2error(ldapContext, context.result, TRUE);
+  if (context.result)
+    errorNumber = ldap_result2error(ldapContext, context.result, TRUE);
   if (errorNumber == 0)
     errorNumber = LDAP_OTHER;
   return FALSE;
