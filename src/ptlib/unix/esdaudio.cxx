@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.3  2002/01/28 08:01:06  rogerh
+ * set lastReadCount during Reads
+ *
  * Revision 1.2  2001/09/24 08:56:43  rogerh
  * Remove LastError, submitted by Andreas Wrede <awrede@mac.com>
  *
@@ -339,11 +342,9 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
 {
-  int rval;
-
   if (os_handle > 0) {
-    rval = ::read(os_handle, buf, len);
-    if (rval > 0) {
+    lastReadCount = ::read(os_handle, buf, len);
+    if (lastReadCount > 0) {
       return (TRUE);
     }
     else {
@@ -353,6 +354,8 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   else {
     // loopback
     int index = 0;
+
+    lastReadCount = len; // set it here as len is about to change
 
     while (len > 0) {
       while (startptr == endptr)
