@@ -403,7 +403,7 @@ char * _ui64toa (unsigned __int64 val,char *buf,int radix)
         return buf;
 }
 
-#if _WIN32_WCE < 300
+//#if _WIN32_WCE < 300
 __int64 _atoi64(const char *nptr)
 {
         int c;              /* current char */
@@ -431,7 +431,7 @@ __int64 _atoi64(const char *nptr)
         else
             return total;   /* return result, negated if necessary */
 }
-#endif
+//#endif
 
 char * _mktemp (char *temp)
 {
