@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.25  2000/02/28 11:39:52  robertj
+ * Removed warning for if STRICT (for windows.h) already defined.
+ *
  * Revision 1.24  1999/03/09 10:30:17  robertj
  * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
  *
@@ -142,7 +145,9 @@
 #define WINVER 0x401
 #endif
 
+#ifndef STRICT
 #define STRICT
+#endif
 #include <windows.h>
 
 #undef DELETE   // Remove define from NT headers.
