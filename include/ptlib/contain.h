@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.62  2004/04/12 03:35:14  csoutheren
+ * Fixed problems with non-recursuve mutexes and critical sections on
+ * older compilers and libc
+ *
  * Revision 1.61  2004/04/12 00:36:04  csoutheren
  * Added new class PAtomicInteger and added Windows implementation
  *
@@ -457,9 +461,9 @@ class PContainer : public PObject
 #if PCONTAINER_USES_CRITSEC
         PCriticalSection critSec;
         Reference & operator=(const Reference & ref)
-        { size = ref.size; count = ref.count; deleteObjects = ref.deleteObjects; return *this; }
+        { count.SetValue(1); size = ref.size; deleteObjects = ref.deleteObjects; return *this; }
         Reference(const Reference & ref)
-        { size = ref.size; count = ref.count; deleteObjects = ref.deleteObjects; }
+        { count.SetValue(1); size = ref.size; deleteObjects = ref.deleteObjects; }
 #endif
     } * reference;
 };
