@@ -22,6 +22,11 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.2  2001/09/27 08:22:48  rogerh
+ * Doing a flush on cout does not work on Mac OS X. So you do not see any
+ * results until the program stops. So replace the printing of the numbers with
+ * good old printf and fflush.
+ *
  * Revision 1.1  2001/09/21 09:18:28  rogerh
  * Add a thread test program which demonstrates thread, suspend and resume.
  *
@@ -52,7 +57,8 @@ class MyThread1 : public PThread
     void Main() {
       while (1) {
         // Display the number 1, then sleep for a short time
-	cout << "1 " << flush;
+        printf("1 ");
+        fflush(stdout);
 	usleep(10000);
       };
     };
@@ -75,7 +81,8 @@ class MyThread2 : public PThread
     void Main() {
       while (1) {
         // Display the number 2, then sleep for a short time
-	cout << "2 " << flush;
+        printf("2 ");
+        fflush(stdout);
 	usleep(10000);
       };
     };
