@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.82  2002/04/24 01:11:37  robertj
+ * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
+ *
  * Revision 1.81  2002/04/16 10:57:26  rogerh
  * Change WaitForTermination() so it does not use 100% CPU.
  * Reported by Andrea <ghittino@tiscali.it>
@@ -416,6 +419,10 @@ void PThread::InitialiseProcessThread()
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
+
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
 }
 
 
@@ -444,6 +451,10 @@ PThread::PThread(PINDEX stackSize,
 
   // new thread is actually started the first time Resume() is called.
   PX_firstTimeStart = TRUE;
+
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
 }
 
 
