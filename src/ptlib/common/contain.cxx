@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.81  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.80  1999/08/12 12:12:47  robertj
  * GCC 2.95 compatibility.
  *
@@ -322,7 +325,7 @@
 #include "regex.h"
 
 
-#if !defined(P_USE_INLINES)
+#if !P_USE_INLINES
 #include "ptlib/contain.inl"
 #endif
 

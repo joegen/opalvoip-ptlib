@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwlib.h,v $
+ * Revision 1.46  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.45  1998/11/30 02:50:44  robertj
  * New directory structure
  *
@@ -621,7 +624,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(P_USE_INLINES)
+#if P_USE_INLINES
 #include <pwlib/pwlib.inl>
 #include <pwlib/pwmisc.inl>
 #include <pwlib/graphics.inl>

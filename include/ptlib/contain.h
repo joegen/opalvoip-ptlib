@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.50  1999/08/17 03:46:40  robertj
+ * Fixed usage of inlines in optimised version.
+ *
  * Revision 1.49  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -744,7 +747,7 @@ class PCollection : public PContainer
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in all the inline functions
 
-#if defined(P_USE_INLINES)
+#if P_USE_INLINES
 #include "ptlib/contain.inl"
 #endif
 
