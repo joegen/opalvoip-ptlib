@@ -25,6 +25,10 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.6  2001/03/08 08:31:34  robertj
+ * Numerous enhancements to the video grabbing code including resizing
+ *   infrastructure to converters. Thanks a LOT, Mark Cooke.
+ *
  * Revision 1.5  2001/03/07 01:42:59  dereks
  * miscellaneous video fixes. Works on linux now. Add debug statements
  * (at PTRACE level of 1)
@@ -102,7 +106,7 @@ class PColourConverter : public PObject
       */
     PColourConverter(
       const PString & srcColourFormat,  /// Name of source colour format
-      const PString & destColourFormat, /// Name of destination colour format
+      const PString & dstColourFormat,  /// Name of destination colour format
       unsigned width,   /// Width of frame
       unsigned height   /// Height of frame
     );
@@ -112,9 +116,21 @@ class PColourConverter : public PObject
        Default behaviour sets the frameWidth and frameHeight variables and
        returns the IsOpen() status.
     */
-    virtual BOOL SetFrameSize(
+    virtual BOOL SetSrcFrameSize(
       unsigned width,   /// New width of frame
       unsigned height   /// New height of frame
+    );
+
+    /**Set the target frame size to be used.
+
+       The default behaviour sets the target frame size, and the
+       scale / crop preference.  If the converter can't resize frames,
+       this call fails.
+    */
+    virtual BOOL SetDstFrameSize(
+      unsigned width,   /// New width of target frame
+      unsigned height,  /// New height of target frame
+      BOOL     bScale   /// TRUE if scaling is preferred over crop
     );
 
     /**Get the source colour format.
@@ -184,19 +200,24 @@ class PColourConverter : public PObject
       */
     static PColourConverter * Create(
       const PString & srcColourFormat,  /// Name of source colour format
-      const PString & destColourFormat, /// Name of destination colour format
-      unsigned width,   /// Width of frame
-      unsigned height   /// Height of frame
+      const PString & dstColourFormat,  /// Name of destination colour format
+      unsigned width,   /// Width of frame (used for both src and dst)
+      unsigned height   /// Height of frame (used for both src and dst)
     );
 
 
   protected:
     PString  srcColourFormat;
     PString  dstColourFormat;
-    unsigned frameWidth;
-    unsigned frameHeight;
+    unsigned srcFrameWidth;
+    unsigned srcFrameHeight;
     unsigned srcFrameBytes;
     unsigned dstFrameBytes;
+
+    // Needed for resizing
+    unsigned dstFrameWidth;
+    unsigned dstFrameHeight;
+    BOOL     scaleNotCrop;
 
     PBYTEArray intermediateFrameStore;
 
