@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.4  2000/05/25 11:08:46  robertj
+ * Added PConfig::HasKey() function to determine if value actually set.
+ * Fixed "system" PConfig to use the win.ini file in correct directory.
+ *
  * Revision 1.3  1999/12/30 00:32:48  robertj
  * Allowed absolute registry paths in PConfig::Application instances.
  *
@@ -440,8 +444,11 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
         location = appname;
       else if (appname.Find("HKEY_CURRENT_USER\\") == 0)
         location = appname;
-      else
-        Construct("WIN.INI");
+      else {
+        PString dir;
+        GetWindowsDirectory(dir.GetPointer(_MAX_PATH), _MAX_PATH);
+        Construct(PDirectory(dir)+"WIN.INI");
+      }
       break;
 
     case Application :
@@ -599,6 +606,34 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
       PAssert(!section.IsEmpty(), PInvalidParameter);
       PAssertOS(WritePrivateProfileString(section, key, NULL, location));
   }
+}
+
+
+BOOL PConfig::HasKey(const PString & section, const PString & key) const
+{
+  PAssert(!key.IsEmpty(), PInvalidParameter);
+
+  switch (source) {
+    case Environment :
+      return getenv(key) != NULL;
+
+    case Application : {
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      RegistryKey registry(location + section, RegistryKey::ReadOnly);
+      PString dummy;
+      return registry.QueryValue(key, dummy);
+    }
+
+    case NumSources :
+      PAssert(!section.IsEmpty(), PInvalidParameter);
+      static const char dflt[] = "<<<<<====---PConfig::DefaultValueString---====>>>>>";
+      PString str;
+      GetPrivateProfileString(section, key, dflt,
+                                        str.GetPointer(1000), 999, location);
+      return str != dflt;
+  }
+
+  return FALSE;
 }
 
 
