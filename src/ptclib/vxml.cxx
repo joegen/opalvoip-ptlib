@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.21  2002/08/29 00:16:12  craigs
+ * Fixed typo, thanks to Peter Robinson
+ *
  * Revision 1.20  2002/08/28 08:05:16  craigs
  * Reorganised VXMLSession class as per code from Alexander Kovatch
  *
@@ -150,7 +153,7 @@ static PFilePath URLToFilename(const PURL & url)
   fnStr.Replace('/', '\\', TRUE);
   fn = fnStr;
 #else
-  fn = = url.GetPathStr();
+  fn = url.GetPathStr();
 #endif
 
   return fn;
