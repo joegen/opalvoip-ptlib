@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.36  2001/08/06 01:39:02  robertj
+ * Added assignement operator with RHS of PASN_BMPString to classes
+ *   descended from PASN_BMPString.
+ *
  * Revision 1.35  2001/08/03 09:01:02  robertj
  * Added assignement operator with RHS of PWORDArray to classes
  *   descended from PASN_BMPString.
@@ -289,7 +293,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 1)
+  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 2)
 {
 }
 
@@ -2562,6 +2566,7 @@ void BMPStringType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBa
 {
   StringTypeBase::GenerateOperators(hdr, cxx, actualType);
   GenerateOperator("PWORDArray &", hdr, cxx, actualType);
+  GenerateOperator("PASN_BMPString &", hdr, cxx, actualType);
 }
 
 
