@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.42  2004/03/23 05:59:17  csoutheren
+ * Moved the Base64 routines into cypher.cxx, which is a more sensible
+ * place and reduces the inclusion of unrelated code
+ *
  * Revision 1.41  2004/03/14 10:03:47  rjongbloed
  * Fixed "security patch" that cleared entire object (including the vtable!) isntead of
  *   clearing the "sensitive" information it was supposed to clear.
@@ -163,6 +167,280 @@
 #include <ptclib/mime.h>
 #include <ptclib/random.h>
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PBase64
+
+PBase64::PBase64()
+{
+  StartEncoding();
+  StartDecoding();
+}
+
+
+void PBase64::StartEncoding(BOOL useCRLF)
+{
+  encodedString = "";
+  encodeLength = nextLine = saveCount = 0;
+  useCRLFs = useCRLF;
+}
+
+
+void PBase64::ProcessEncoding(const PString & str)
+{
+  ProcessEncoding((const char *)str);
+}
+
+
+void PBase64::ProcessEncoding(const char * cstr)
+{
+  ProcessEncoding((const BYTE *)cstr, strlen(cstr));
+}
+
+
+void PBase64::ProcessEncoding(const PBYTEArray & data)
+{
+  ProcessEncoding(data, data.GetSize());
+}
+
+
+static const char Binary2Base64[65] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+void PBase64::OutputBase64(const BYTE * data)
+{
+  char * out = encodedString.GetPointer(((encodeLength+7)&~255) + 256);
+
+  out[encodeLength++] = Binary2Base64[data[0] >> 2];
+  out[encodeLength++] = Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
+  out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
+  out[encodeLength++] = Binary2Base64[data[2]&0x3f];
+
+  if (++nextLine > 18) { // 76 columns
+    if (useCRLFs)
+      out[encodeLength++] = '\r';
+    out[encodeLength++] = '\n';
+    nextLine = 0;
+  }
+}
+
+
+void PBase64::ProcessEncoding(const void * dataPtr, PINDEX length)
+{
+  if (length == 0)
+    return;
+
+  const BYTE * data = (const BYTE *)dataPtr;
+  while (saveCount < 3) {
+    saveTriple[saveCount++] = *data++;
+    if (--length == 0)
+      return;
+  }
+
+  OutputBase64(saveTriple);
+
+  PINDEX i;
+  for (i = 0; i+2 < length; i += 3)
+    OutputBase64(data+i);
+
+  saveCount = length - i;
+  switch (saveCount) {
+    case 2 :
+      saveTriple[0] = data[i++];
+      saveTriple[1] = data[i];
+      break;
+    case 1 :
+      saveTriple[0] = data[i];
+  }
+}
+
+
+PString PBase64::GetEncodedString()
+{
+  PString retval = encodedString;
+  encodedString = "";
+  encodeLength = 0;
+  return retval;
+}
+
+
+PString PBase64::CompleteEncoding()
+{
+  char * out = encodedString.GetPointer(encodeLength + 5)+encodeLength;
+
+  switch (saveCount) {
+    case 1 :
+      *out++ = Binary2Base64[saveTriple[0] >> 2];
+      *out++ = Binary2Base64[(saveTriple[0]&3)<<4];
+      *out++ = '=';
+      *out   = '=';
+      break;
+
+    case 2 :
+      *out++ = Binary2Base64[saveTriple[0] >> 2];
+      *out++ = Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
+      *out++ = Binary2Base64[((saveTriple[1]&15)<<2)];
+      *out   = '=';
+  }
+
+  return encodedString;
+}
+
+
+PString PBase64::Encode(const PString & str)
+{
+  return Encode((const char *)str);
+}
+
+
+PString PBase64::Encode(const char * cstr)
+{
+  return Encode((const BYTE *)cstr, strlen(cstr));
+}
+
+
+PString PBase64::Encode(const PBYTEArray & data)
+{
+  return Encode(data, data.GetSize());
+}
+
+
+PString PBase64::Encode(const void * data, PINDEX length)
+{
+  PBase64 encoder;
+  encoder.ProcessEncoding(data, length);
+  return encoder.CompleteEncoding();
+}
+
+
+void PBase64::StartDecoding()
+{
+  perfectDecode = TRUE;
+  quadPosition = 0;
+  decodedData.SetSize(0);
+  decodeSize = 0;
+}
+
+
+BOOL PBase64::ProcessDecoding(const PString & str)
+{
+  return ProcessDecoding((const char *)str);
+}
+
+
+BOOL PBase64::ProcessDecoding(const char * cstr)
+{
+  static const BYTE Base642Binary[256] = {
+    96, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 99, 99, 98, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 62, 99, 99, 99, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 99, 99, 99, 97, 99, 99,
+    99,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 99, 99, 99, 99, 99,
+    99, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
+  };
+
+  for (;;) {
+    BYTE value = Base642Binary[(BYTE)*cstr++];
+    switch (value) {
+      case 96 : // end of string
+        return FALSE;
+
+      case 97 : // '=' sign
+        if (quadPosition == 3 || (quadPosition == 2 && *cstr == '=')) {
+          quadPosition = 0;  // Reset this to zero, as have a perfect decode
+          return TRUE; // Stop decoding now as must be at end of data
+        }
+        perfectDecode = FALSE;  // Ignore '=' sign but flag decode as suspect
+        break;
+
+      case 98 : // CRLFs
+        break;  // Ignore totally
+
+      case 99 :  // Illegal characters
+        perfectDecode = FALSE;  // Ignore rubbish but flag decode as suspect
+        break;
+
+      default : // legal value from 0 to 63
+        BYTE * out = decodedData.GetPointer(((decodeSize+1)&~255) + 256);
+        switch (quadPosition) {
+          case 0 :
+            out[decodeSize] = (BYTE)(value << 2);
+            break;
+          case 1 :
+            out[decodeSize++] |= (BYTE)(value >> 4);
+            out[decodeSize] = (BYTE)((value&15) << 4);
+            break;
+          case 2 :
+            out[decodeSize++] |= (BYTE)(value >> 2);
+            out[decodeSize] = (BYTE)((value&3) << 6);
+            break;
+          case 3 :
+            out[decodeSize++] |= (BYTE)value;
+            break;
+        }
+        quadPosition = (quadPosition+1)&3;
+    }
+  }
+}
+
+
+PBYTEArray PBase64::GetDecodedData()
+{
+  perfectDecode = quadPosition == 0;
+  decodedData.SetSize(decodeSize);
+  PBYTEArray retval = decodedData;
+  retval.MakeUnique();
+  decodedData.SetSize(0);
+  decodeSize = 0;
+  return retval;
+}
+
+
+BOOL PBase64::GetDecodedData(void * dataBlock, PINDEX length)
+{
+  perfectDecode = quadPosition == 0;
+  BOOL bigEnough = length >= decodeSize;
+  memcpy(dataBlock, decodedData, bigEnough ? decodeSize : length);
+  decodedData.SetSize(0);
+  decodeSize = 0;
+  return bigEnough;
+}
+
+
+PString PBase64::Decode(const PString & str)
+{
+  PBYTEArray data;
+  Decode(str, data);
+  return PString((const char *)(const BYTE *)data, data.GetSize());
+}
+
+
+BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
+{
+  PBase64 decoder;
+  decoder.ProcessDecoding(str);
+  data = decoder.GetDecodedData();
+  return decoder.IsDecodeOK();
+}
+
+
+BOOL PBase64::Decode(const PString & str, void * dataBlock, PINDEX length)
+{
+  PBase64 decoder;
+  decoder.ProcessDecoding(str);
+  return decoder.GetDecodedData(dataBlock, length);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1030,6 +1308,5 @@ void PSecureConfig::ResetPending()
   DeleteKey(expiryDateKey);
   DeleteKey(optionBitsKey);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
