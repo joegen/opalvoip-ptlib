@@ -27,6 +27,11 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.47  2002/09/29 09:26:16  rogerh
+ * Changes to sound card detection.
+ * For Damien Sandras, allow /dev/dsp to be added to the list of sound devices
+ * For FreeBSD, ignore /dev/dspN.M eg /dev/dsp0.2 which are virtual soundcards
+ *
  * Revision 1.46  2002/08/30 07:58:27  craigs
  * Added fix for when sound cards are already open, thanks to Damien Sandras
  *
@@ -417,6 +422,15 @@ PSoundChannel::~PSoundChannel()
   Close();
 }
 
+static BOOL IsNumericString(PString numbers) {
+  // return true if 'numbers' contains only digits 0 to 9
+  for (PINDEX p = 0; p < numbers.GetLength(); p++) {
+    if (!isdigit(numbers[p])) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
 
 static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdinalToString & mixer, BOOL collect_with_names)
 {
@@ -449,21 +463,36 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
 	  }
         }
       } else {
-        // On devfs systems, the major numbers change dynamically.
-	// On FreeBSD and other OSs, the major numbes are different to linux.
-	// So collect devices by looking for dspN and mixerM
+        // On Linux devfs systems, the major numbers can change dynamically.
+	// On FreeBSD and other OSs, the major numbes are different to Linux.
+	// So collect devices by looking for dsp(N) and mixer(N).
+	// Notes. FreeBSD supports audio stream mixing. For /dev/dsp0
+	// there are also entries for /dev/dsp0.0 dsp0.1 dsp0.2 and dsp0.3
+	// We will ignore these N.M devices.
 
-        // Look for dspN
-        if ( (filename.GetLength() >= 4) && (filename.Left(3) == "dsp")
-          && (filename.Mid(3,1) >= "0") && (filename.Mid(3,1) <= "9")) {
-          PINDEX cardnum = filename.Mid(3).AsInteger();
-          dsp.SetAt(cardnum, devname);
+        // Look for dsp
+        if (filename == "dsp") {
+          dsp.SetAt(0, devname);
         }
-        // Look for mixerN
-        if ( (filename.GetLength() >= 6) && (filename.Left(5) == "mixer")
-          && (filename.Mid(5,1) >= "0") && (filename.Mid(5,1) <= "9")) {
-          PINDEX cardnum = filename.Mid(5).AsInteger();
-          mixer.SetAt(cardnum, devname);
+        // Look for dspN. Insert at position cardnum + 1
+        if ((filename.GetLength() > 3) && (filename.Left(3) == "dsp")) {
+	  PString numbers = filename.Mid(3); // get everything after 'dsp'
+	  if (IsNumericString(numbers)) {
+            PINDEX cardnum = numbers.AsInteger();
+            dsp.SetAt(cardnum+1, devname);
+	  }
+        }
+        // Look for mixer
+        if (filename == "mixer") {
+          mixer.SetAt(0, devname);
+        }
+        // Look for mixerN. Insert at position cardnum + 1
+        if ((filename.GetLength() > 5) && (filename.Left(5) == "mixer")) {
+	  PString numbers = filename.Mid(5); // get everything after 'mixer'
+	  if (IsNumericString(numbers)) {
+            PINDEX cardnum = numbers.AsInteger();
+            mixer.SetAt(cardnum+1, devname);
+	  }
         }
       }
     }
@@ -473,8 +502,8 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
 
 PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
-  // First locate sound cards. On Linux with devfs and on the other
-  // platforms, we search for filenames with dspN or mixerN.
+  // First locate sound cards. On Linux with devfs and on the other platforms
+  // (eg FreeBSD), we search for filenames with dspN or mixerN.
   // On linux without devfs we scan all of the devices and look for ones
   // with major device numbers corresponding to OSS compatible drivers.
 
@@ -539,7 +568,6 @@ PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
 {
   return "/dev/dsp";
 }
-
 
 BOOL PSoundChannel::Open(const PString & _device,
                               Directions _dir,
