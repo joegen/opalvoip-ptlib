@@ -1,0 +1,391 @@
+/*
+ * contain.h
+ *
+ * General container classes.
+ *
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Log: contain.h,v $
+ * Revision 1.29  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
+ * Revision 1.28  2002/09/23 07:17:23  robertj
+ * Changes to allow winsock2 to be included.
+ *
+ * Revision 1.27  2002/03/15 05:58:52  robertj
+ * Added strncasecmp macro for unix compatibility
+ *
+ * Revision 1.26  2000/05/02 02:58:09  robertj
+ * Added strcasecmp macro, BSDish version of stricmp
+ *
+ * Revision 1.25  2000/02/28 11:39:52  robertj
+ * Removed warning for if STRICT (for windows.h) already defined.
+ *
+ * Revision 1.24  1999/03/09 10:30:17  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
+ * Revision 1.23  1998/11/30 02:55:06  robertj
+ * New directory structure
+ *
+ * Revision 1.22  1998/10/13 14:13:16  robertj
+ * Complete rewrite of memory leak detection code.
+ *
+ * Revision 1.21  1998/09/24 03:29:57  robertj
+ * Added open software license.
+ *
+ * Revision 1.20  1998/03/09 07:15:15  robertj
+ * Added support for MemCheck-32 program.
+ *
+ * Revision 1.19  1998/01/26 00:52:13  robertj
+ * Fixed istream << operator for PInt64, should be reference.
+ *
+ * Revision 1.18  1997/07/08 13:01:30  robertj
+ * DLL support.
+ *
+ * Revision 1.17  1997/01/12 04:13:07  robertj
+ * Changed library to support NT 4.0 API changes.
+ *
+ * Revision 1.16  1996/09/14 12:38:57  robertj
+ * Moved template define from command line to code.
+ * Fixed correct application of windows defines.
+ *
+ * Revision 1.15  1996/08/17 10:00:33  robertj
+ * Changes for Windows DLL support.
+ *
+ * Revision 1.14  1996/08/08 10:08:58  robertj
+ * Directory structure changes for common files.
+ *
+ * Revision 1.13  1996/07/15 10:26:55  robertj
+ * MSVC 4.1 Support
+ *
+ * Revision 1.12  1996/03/31 09:07:29  robertj
+ * Removed bad define in NT headers.
+ *
+ * Revision 1.11  1996/01/28 02:54:27  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ *
+ * Revision 1.10  1996/01/23 13:23:15  robertj
+ * Added const version of PMemoryPointer
+ *
+ * Revision 1.9  1995/11/09 12:23:46  robertj
+ * Added 64 bit integer support.
+ * Added platform independent base type access classes.
+ *
+ * Revision 1.8  1995/04/25 11:31:18  robertj
+ * Changes for DLL support.
+ *
+ * Revision 1.7  1995/03/12 04:59:54  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.6  1995/01/09  12:28:45  robertj
+ * Moved EXPORTED definition from applicat.h
+ *
+ * Revision 1.5  1995/01/06  10:47:08  robertj
+ * Added 64 bit integer.
+ *
+ * Revision 1.4  1994/11/19  00:18:26  robertj
+ * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
+ *
+ * Revision 1.3  1994/07/02  03:18:09  robertj
+ * Support for 16 bit systems.
+ *
+ * Revision 1.2  1994/06/25  12:13:01  robertj
+ * Synchronisation.
+ *
+ * Revision 1.1  1994/04/01  14:38:42  robertj
+ * Initial revision
+ *
+ */
+
+#ifndef _CONTAIN_H
+#error "Please remove pwlib\include\ptlib\msos from the tool include path"
+#error "and from the pre-processor options for this project"
+#endif
+
+#ifndef _OBJECT_H
+#define _OBJECT_H
+
+
+#ifdef _MSC_VER
+
+#pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
+#pragma warning(disable:4251)  // disable warning exported structs
+#pragma warning(disable:4511)  // default copy ctor not generated warning
+#pragma warning(disable:4512)  // default assignment op not generated warning
+#pragma warning(disable:4514)  // unreferenced inline removed
+#pragma warning(disable:4699)  // precompiled headers
+#pragma warning(disable:4702)  // disable warning about unreachable code
+#pragma warning(disable:4705)  // disable warning about statement has no effect
+#pragma warning(disable:4710)  // inline not expanded warning
+#pragma warning(disable:4711)  // auto inlining warning
+#pragma warning(disable:4097)  // typedef synonym for class
+
+#if _MSC_VER>=800
+#define PHAS_TEMPLATES
+#endif
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Machine & Compiler dependent declarations
+
+#if defined(_WIN32) && !defined(WIN32)
+#define WIN32
+#endif
+
+#if defined(_WINDOWS) || defined(_WIN32)
+
+#  ifndef WINVER
+#  define WINVER 0x401
+#  endif
+
+#  ifndef STRICT
+#  define STRICT
+#  endif
+
+#  ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+#  endif
+
+#  include <windows.h>
+
+#  undef DELETE   // Remove define from NT headers.
+
+
+#else
+
+  typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
+  typedef unsigned short WORD;  // 16 bit unsigned integer quantity
+  typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
+  typedef int            BOOL;  // type returned by expresion (i != j)
+
+  #define TRUE 1
+  #define FALSE 0
+
+  #define NEAR __near
+
+#endif
+
+
+// Declaration for exported callback functions to OS
+#if defined(_WIN32)
+#  define PEXPORTED __stdcall
+#elif defined(_WINDOWS)
+#  define PEXPORTED WINAPI __export
+#else
+#  define PEXPORTED __far __pascal
+#endif
+
+
+// Declaration for static global variables (WIN16 compatibility)
+#if defined(_WIN32)
+#  define PSTATIC
+#else
+#  define PSTATIC __near
+#endif
+
+
+// Declaration for platform independent architectures
+#define PCHAR8 PANSI_CHAR
+#define PBYTE_ORDER PLITTLE_ENDIAN
+
+
+// Declaration for integer that is the same size as a void *
+#if defined(_WIN32)
+  typedef int INT;
+#else
+  typedef long INT;   
+#endif
+
+
+// Declaration for signed integer that is 16 bits
+typedef short PInt16;
+
+// Declaration for signed integer that is 32 bits
+typedef long PInt32;
+
+
+// Declaration for 64 bit unsigned integer quantity
+#if defined(_MSC_VER) && defined(_WIN32)
+
+#define P_HAS_INT64
+
+typedef signed __int64 PInt64;
+typedef unsigned __int64 PUInt64;
+
+class ostream;
+class istream;
+
+ostream & operator<<(ostream & s, PInt64 v);
+ostream & operator<<(ostream & s, PUInt64 v);
+
+istream & operator>>(istream & s, PInt64 & v);
+istream & operator>>(istream & s, PUInt64 & v);
+
+#endif
+
+
+// Standard array index type (depends on compiler)
+// Type used in array indexes especially that required by operator[] functions.
+#ifdef _MSC_VER
+
+# define PINDEX int
+# if defined(_WIN32)
+    const PINDEX P_MAX_INDEX = 0x7fffffff;
+# else
+    const PINDEX P_MAX_INDEX = 0x7fff;
+# endif
+  inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
+# define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+
+#else
+
+# define PINDEX unsigned
+# if sizeof(int) == 4
+    const PINDEX P_MAX_INDEX = 0xffffffff;
+# else
+    const PINDEX P_MAX_INDEX = 0xffff;
+# endif
+# define PABSINDEX(idx) (idx)
+# define PASSERTINDEX(idx)
+
+#endif
+
+#define strcasecmp(s1,s2) stricmp(s1,s2)
+#define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+
+class PWin32Overlapped : public OVERLAPPED
+{
+  // Support class for overlapped I/O in Win32.
+  public:
+    PWin32Overlapped();
+    ~PWin32Overlapped();
+    void Reset();
+};
+
+
+enum { PWIN32ErrorFlag = 0x40000000 };
+
+class PString;
+
+class RegistryKey
+{
+  public:
+    enum OpenMode {
+      ReadOnly,
+      ReadWrite,
+      Create
+    };
+    RegistryKey(const PString & subkey, OpenMode mode);
+    ~RegistryKey();
+
+    BOOL EnumKey(PINDEX idx, PString & str);
+    BOOL EnumValue(PINDEX idx, PString & str);
+    BOOL DeleteKey(const PString & subkey);
+    BOOL DeleteValue(const PString & value);
+    BOOL QueryValue(const PString & value, PString & str);
+    BOOL QueryValue(const PString & value, DWORD & num, BOOL boolean);
+    BOOL SetValue(const PString & value, const PString & str);
+    BOOL SetValue(const PString & value, DWORD num);
+  private:
+    HKEY key;
+};
+
+#ifndef _WIN32_WCE
+  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+#else
+  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+  #include <ptlib/wince/time.h>
+#endif
+
+// used by various modules to disable the winsock2 include to avoid header file problems
+#ifndef P_KNOCKOUT_WINSOCK2
+
+#if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
+
+#  include <winsock.h>
+
+#else // P_WINSOCKv1
+
+  ///IPv6 support
+  // Needed for for IPv6 socket API. Must be included before "windows.h"
+#  include <winsock2.h> // Version 2 of windows socket
+#  include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
+
+#  if P_HAS_IPV6 && !defined IPPROTO_IPV6
+#pragma warning(push)
+#pragma warning(disable:4127 4706)
+#include "tpipv6.h"  // For IPv6 Tech Preview.
+#pragma warning(pop)
+#  endif
+
+#endif // P_WINSOCKv1
+
+
+#define PIPX
+
+typedef int socklen_t;
+
+#endif  // P_KNOCKOUT_WINSOCK2
+
+#if defined(_MSC_VER) && !defined(_WIN32)
+extern "C" int __argc;
+extern "C" char ** __argv;
+#endif
+
+#ifdef __BORLANDC__
+#define __argc _argc
+#define __argv _argv
+#endif
+
+#undef Yield
+
+#define P_THREADIDENTIFIER DWORD
+
+#include <sys\types.h>
+#include <errno.h>
+#include <io.h>
+
+#pragma warning(disable:4201)
+#include <mmsystem.h>
+
+
+#ifndef _WIN32_WCE
+#include <vfw.h>
+#else
+#include <cevfw.h>
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+// Fill in common declarations
+
+//#include "../../contain.h"
+
+
+#endif // _OBJECT_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////
