@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.26  2000/05/15 23:33:06  craigs
+ * Fixed problem where lastReadCount was not zeroed if no read occurred
+ *
  * Revision 1.25  1999/03/02 05:41:59  robertj
  * More BeOS changes
  *
@@ -158,6 +161,8 @@ BOOL PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval & ti
 
 BOOL PChannel::Read(void * buf, PINDEX len)
 {
+  lastReadCount = 0;
+
   if (os_handle < 0) {
     lastError = NotOpen;
     return FALSE;
