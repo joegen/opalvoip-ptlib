@@ -1807,14 +1807,14 @@ EXPORTS
     ?Delete@PNotifyIconData@@QAEXXZ @1959 NONAME ;public: void __thiscall PNotifyIconData::Delete(void)
     ?Delete@PString@@QAEXHH@Z @1960 NONAME ;public: void __thiscall PString::Delete(int,int)
     ?Delete@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1961 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Delete(class PServiceProcess *)
-    ?DeleteKey@PConfig@@QAEXABVPString@@0@Z @1962 NONAME ;public: void __thiscall PConfig::DeleteKey(class PString const &,class PString const &)
-    ?DeleteKey@PConfig@@QAEXABVPString@@@Z @1963 NONAME ;public: void __thiscall PConfig::DeleteKey(class PString const &)
+    ?DeleteKey@PConfig@@UAEXABVPString@@0@Z @3926 NONAME ;public: virtual void __thiscall PConfig::DeleteKey(class PString const &,class PString const &)
+    ?DeleteKey@PConfig@@UAEXABVPString@@@Z @3927 NONAME ;public: virtual void __thiscall PConfig::DeleteKey(class PString const &)
     ?DeleteKey@RegistryKey@@QAEHABVPString@@@Z @1964 NONAME ;public: int __thiscall RegistryKey::DeleteKey(class PString const &)
     ?DeleteMessage@PMail@@QAEHABVPString@@@Z @1965 NONAME ;public: int __thiscall PMail::DeleteMessage(class PString const &)
     ?DeleteObjectsTimeout@PSafeCollection@@MAEXAAVPTimer@@H@Z @1966 NONAME ;protected: virtual void __thiscall PSafeCollection::DeleteObjectsTimeout(class PTimer &,int)
     ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEXXZ @1967 NONAME ;public: virtual void __thiscall PSafeCollection::DeleteObjectsToBeRemoved(void)
-    ?DeleteSection@PConfig@@QAEXABVPString@@@Z @1968 NONAME ;public: void __thiscall PConfig::DeleteSection(class PString const &)
-    ?DeleteSection@PConfig@@QAEXXZ @1969 NONAME ;public: void __thiscall PConfig::DeleteSection(void)
+    ?DeleteSection@PConfig@@UAEXABVPString@@@Z @3928 NONAME ;public: virtual void __thiscall PConfig::DeleteSection(class PString const &)
+    ?DeleteSection@PConfig@@UAEXXZ @3929 NONAME ;public: virtual void __thiscall PConfig::DeleteSection(void)
     ?DeleteSubTrees@Element@PAbstractSortedList@@QAEXH@Z @1970 NONAME ;public: void __thiscall PAbstractSortedList::Element::DeleteSubTrees(int)
     ?DeleteValue@RegistryKey@@QAEHABVPString@@@Z @1971 NONAME ;public: int __thiscall RegistryKey::DeleteValue(class PString const &)
     ?Descend@PMultiMediaFile@@QAEHIAAU_MMCKINFO@@PAU2@@Z @1972 NONAME ;public: int __thiscall PMultiMediaFile::Descend(unsigned int,struct _MMCKINFO &,struct _MMCKINFO *)
@@ -1878,8 +1878,8 @@ EXPORTS
     ?FromString@Address@PIPSocket@@QAEHABVPString@@@Z @2035 NONAME ;public: int __thiscall PIPSocket::Address::FromString(class PString const &)
     ?GetAddress@PEthSocket@@QAEHAATAddress@1@@Z @2036 NONAME ;public: int __thiscall PEthSocket::GetAddress(union PEthSocket::Address &)
     ?GetAddress@PRemoteConnection@@QAE?AVPString@@XZ @2037 NONAME ;public: class PString  __thiscall PRemoteConnection::GetAddress(void)
-    ?GetAllKeyValues@PConfig@@QBE?AVPStringToString@@ABVPString@@@Z @2038 NONAME ;public: class PStringToString  __thiscall PConfig::GetAllKeyValues(class PString const &)const 
-    ?GetAllKeyValues@PConfig@@QBE?AVPStringToString@@XZ @2039 NONAME ;public: class PStringToString  __thiscall PConfig::GetAllKeyValues(void)const 
+    ?GetAllKeyValues@PConfig@@UBE?AVPStringToString@@ABVPString@@@Z @3930 NONAME ;public: virtual class PStringToString  __thiscall PConfig::GetAllKeyValues(class PString const &)const 
+    ?GetAllKeyValues@PConfig@@UBE?AVPStringToString@@XZ @3931 NONAME ;public: virtual class PStringToString  __thiscall PConfig::GetAllKeyValues(void)const 
     ?GetAny6@Address@PIPSocket@@SAABV12@XZ @3881 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetAny6(void)
     ?GetArguments@PProcess@@QAEAAVPArgList@@XZ @2041 NONAME ;public: class PArgList & __thiscall PProcess::GetArguments(void)
     ?GetAt@?$PBaseArray@D@@QBEDH@Z @2042 NONAME ;public: char __thiscall PBaseArray<char>::GetAt(int)const 
@@ -1910,8 +1910,8 @@ EXPORTS
     ?GetBaseReadChannel@PIndirectChannel@@UBEPAVPChannel@@XZ @2067 NONAME ;public: virtual class PChannel * __thiscall PIndirectChannel::GetBaseReadChannel(void)const 
     ?GetBaseWriteChannel@PChannel@@UBEPAV1@XZ @2068 NONAME ;public: virtual class PChannel * __thiscall PChannel::GetBaseWriteChannel(void)const 
     ?GetBaseWriteChannel@PIndirectChannel@@UBEPAVPChannel@@XZ @2069 NONAME ;public: virtual class PChannel * __thiscall PIndirectChannel::GetBaseWriteChannel(void)const 
-    ?GetBoolean@PConfig@@QBEHABVPString@@0H@Z @2070 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,class PString const &,int)const 
-    ?GetBoolean@PConfig@@QBEHABVPString@@H@Z @2071 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,int)const 
+    ?GetBoolean@PConfig@@UBEHABVPString@@0H@Z @3932 NONAME ;public: virtual int __thiscall PConfig::GetBoolean(class PString const &,class PString const &,int)const 
+    ?GetBoolean@PConfig@@UBEHABVPString@@H@Z @3933 NONAME ;public: virtual int __thiscall PConfig::GetBoolean(class PString const &,int)const 
     ?GetBrightness@PVideoDevice@@UAEHXZ @2072 NONAME ;public: virtual int __thiscall PVideoDevice::GetBrightness(void)
     ?GetBroadcast@Address@PIPSocket@@SAABV12@XZ @2073 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetBroadcast(void)
     ?GetBuffers@PSoundChannel@@UAEHAAH0@Z @3657 NONAME ;public: virtual int __thiscall PSoundChannel::GetBuffers(int &,int &)
@@ -2081,7 +2081,7 @@ EXPORTS
     ?GetDefaultDevice@PVideoChannel@@SA?AVPString@@W4Directions@1@@Z @2231 NONAME ;public: static class PString  __cdecl PVideoChannel::GetDefaultDevice(enum PVideoChannel::Directions)
     ?GetDefaultIpAddressFamily@PIPSocket@@SAHXZ @2232 NONAME ;public: static int __cdecl PIPSocket::GetDefaultIpAddressFamily(void)
     ?GetDefaultIpAny@PIPSocket@@SA?AVAddress@1@XZ @2233 NONAME ;public: static class PIPSocket::Address  __cdecl PIPSocket::GetDefaultIpAny(void)
-    ?GetDefaultSection@PConfig@@QBE?AVPString@@XZ @2234 NONAME ;public: class PString  __thiscall PConfig::GetDefaultSection(void)const 
+    ?GetDefaultSection@PConfig@@UBE?AVPString@@XZ @3934 NONAME ;public: virtual class PString  __thiscall PConfig::GetDefaultSection(void)const 
     ?GetDeviceID@PSoundChannelWin32@@AAEHABVPString@@W4Directions@PSoundChannel@@AAI@Z @3666 NONAME ;private: int __thiscall PSoundChannelWin32::GetDeviceID(class PString const &,enum PSoundChannel::Directions,unsigned int &)
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringList@@ABVPString@@W4Directions@1@PAVPPluginManager@@@Z @3667 NONAME ;public: static class PStringList  __cdecl PSoundChannel::GetDeviceNames(class PString const &,enum PSoundChannel::Directions,class PPluginManager *)
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringList@@W4Directions@1@@Z @3668 NONAME ;public: static class PStringList  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
@@ -2178,10 +2178,10 @@ EXPORTS
     ?GetInputDeviceNames@PVideoInputDevice_FakeVideo@@SA?AVPStringList@@XZ @3818 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice_FakeVideo::GetInputDeviceNames(void)
     ?GetInputDeviceNames@PVideoInputDevice_VideoForWindows@@SA?AVPStringList@@XZ @3680 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice_VideoForWindows::GetInputDeviceNames(void)
     ?GetInputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @2319 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetInputFlowControl(void)const 
-    ?GetInt64@PConfig@@QBE_JABVPString@@0_J@Z @2320 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,class PString const &,__int64)const 
-    ?GetInt64@PConfig@@QBE_JABVPString@@_J@Z @2321 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,__int64)const 
-    ?GetInteger@PConfig@@QBEJABVPString@@0J@Z @2322 NONAME ;public: long __thiscall PConfig::GetInteger(class PString const &,class PString const &,long)const 
-    ?GetInteger@PConfig@@QBEJABVPString@@J@Z @2323 NONAME ;public: long __thiscall PConfig::GetInteger(class PString const &,long)const 
+    ?GetInt64@PConfig@@UBE_JABVPString@@0_J@Z @3935 NONAME ;public: virtual __int64 __thiscall PConfig::GetInt64(class PString const &,class PString const &,__int64)const 
+    ?GetInt64@PConfig@@UBE_JABVPString@@_J@Z @3936 NONAME ;public: virtual __int64 __thiscall PConfig::GetInt64(class PString const &,__int64)const 
+    ?GetInteger@PConfig@@UBEJABVPString@@0J@Z @3937 NONAME ;public: virtual long __thiscall PConfig::GetInteger(class PString const &,class PString const &,long)const 
+    ?GetInteger@PConfig@@UBEJABVPString@@J@Z @3938 NONAME ;public: virtual long __thiscall PConfig::GetInteger(class PString const &,long)const 
     ?GetInteger@PWin32AsnAny@@QAEHAAJ@Z @2324 NONAME ;public: int __thiscall PWin32AsnAny::GetInteger(long &)
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@H@Z @2325 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(int)
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @2326 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(class PIPSocket::Address)
@@ -2193,8 +2193,8 @@ EXPORTS
     ?GetIpAddress@PWin32AsnAny@@QAEHAAVAddress@PIPSocket@@@Z @2331 NONAME ;public: int __thiscall PWin32AsnAny::GetIpAddress(class PIPSocket::Address &)
     ?GetKeyAt@?$PSet@VPString@@@@UBEABVPString@@H@Z @2332 NONAME ;public: virtual class PString const & __thiscall PSet<class PString>::GetKeyAt(int)const 
     ?GetKeyAt@?$PStringDictionary@VPString@@@@QBEABVPString@@H@Z @2333 NONAME ;public: class PString const & __thiscall PStringDictionary<class PString>::GetKeyAt(int)const 
-    ?GetKeys@PConfig@@QBE?AVPStringList@@ABVPString@@@Z @2334 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(class PString const &)const 
-    ?GetKeys@PConfig@@QBE?AVPStringList@@XZ @2335 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(void)const 
+    ?GetKeys@PConfig@@UBE?AVPStringList@@ABVPString@@@Z @3939 NONAME ;public: virtual class PStringList  __thiscall PConfig::GetKeys(class PString const &)const 
+    ?GetKeys@PConfig@@UBE?AVPStringList@@XZ @3940 NONAME ;public: virtual class PStringList  __thiscall PConfig::GetKeys(void)const 
     ?GetLastError@PMultiMediaFile@@QBEKXZ @2336 NONAME ;public: unsigned long __thiscall PMultiMediaFile::GetLastError(void)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @2337 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
     ?GetLastReadCount@PChannel@@UBEHXZ @3922 NONAME ;public: virtual int __thiscall PChannel::GetLastReadCount(void)const 
@@ -2335,8 +2335,8 @@ EXPORTS
     ?GetQueryOidCommand@PWin32PacketVxD@@UBEIK@Z @2465 NONAME ;public: virtual unsigned int __thiscall PWin32PacketVxD::GetQueryOidCommand(unsigned long)const 
     ?GetReadChannel@PIndirectChannel@@QBEPAVPChannel@@XZ @2466 NONAME ;public: class PChannel * __thiscall PIndirectChannel::GetReadChannel(void)const 
     ?GetReadTimeout@PChannel@@QBE?AVPTimeInterval@@XZ @2467 NONAME ;public: class PTimeInterval  __thiscall PChannel::GetReadTimeout(void)const 
-    ?GetReal@PConfig@@QBENABVPString@@0N@Z @2468 NONAME ;public: double __thiscall PConfig::GetReal(class PString const &,class PString const &,double)const 
-    ?GetReal@PConfig@@QBENABVPString@@N@Z @2469 NONAME ;public: double __thiscall PConfig::GetReal(class PString const &,double)const 
+    ?GetReal@PConfig@@UBENABVPString@@0N@Z @3941 NONAME ;public: virtual double __thiscall PConfig::GetReal(class PString const &,class PString const &,double)const 
+    ?GetReal@PConfig@@UBENABVPString@@N@Z @3942 NONAME ;public: virtual double __thiscall PConfig::GetReal(class PString const &,double)const 
     ?GetRefAt@PAbstractDictionary@@UBEAAVPObject@@ABV2@@Z @2470 NONAME ;public: virtual class PObject & __thiscall PAbstractDictionary::GetRefAt(class PObject const &)const 
     ?GetReferenceAt@PAbstractList@@IBEAAVPObject@@H@Z @2471 NONAME ;protected: class PObject & __thiscall PAbstractList::GetReferenceAt(int)const 
     ?GetRenderHeight@PVideoChannel@@QAEHXZ @2472 NONAME ;public: int __thiscall PVideoChannel::GetRenderHeight(void)
@@ -2354,7 +2354,7 @@ EXPORTS
     ?GetSampleSize@PSoundChannelWin32@@UBEIXZ @3689 NONAME ;public: virtual unsigned int __thiscall PSoundChannelWin32::GetSampleSize(void)const 
     ?GetSecond@PTime@@QBEHXZ @2483 NONAME ;public: int __thiscall PTime::GetSecond(void)const 
     ?GetSeconds@PTimeInterval@@QBEJXZ @2484 NONAME ;public: long __thiscall PTimeInterval::GetSeconds(void)const 
-    ?GetSections@PConfig@@QBE?AVPStringList@@XZ @2485 NONAME ;public: class PStringList  __thiscall PConfig::GetSections(void)const 
+    ?GetSections@PConfig@@UBE?AVPStringList@@XZ @3943 NONAME ;public: virtual class PStringList  __thiscall PConfig::GetSections(void)const 
     ?GetSendAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2486 NONAME ;public: void __thiscall PUDPSocket::GetSendAddress(class PIPSocket::Address &,unsigned short &)
     ?GetService@PSocket@@QBE?AVPString@@XZ @2487 NONAME ;public: class PString  __thiscall PSocket::GetService(void)const 
     ?GetServiceByPort@PSocket@@SA?AVPString@@PBDG@Z @2488 NONAME ;public: static class PString  __cdecl PSocket::GetServiceByPort(char const *,unsigned short)
@@ -2374,9 +2374,9 @@ EXPORTS
     ?GetStartTime@PProcess@@QBE?AVPTime@@XZ @2499 NONAME ;public: class PTime  __thiscall PProcess::GetStartTime(void)const 
     ?GetStatus@PRemoteConnection@@QBE?AW4Status@1@XZ @2500 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetStatus(void)const 
     ?GetStopBits@PSerialChannel@@QBEEXZ @2501 NONAME ;public: unsigned char __thiscall PSerialChannel::GetStopBits(void)const 
-    ?GetString@PConfig@@QBE?AVPString@@ABV2@00@Z @2502 NONAME ;public: class PString  __thiscall PConfig::GetString(class PString const &,class PString const &,class PString const &)const 
-    ?GetString@PConfig@@QBE?AVPString@@ABV2@0@Z @2503 NONAME ;public: class PString  __thiscall PConfig::GetString(class PString const &,class PString const &)const 
-    ?GetString@PConfig@@QBE?AVPString@@ABV2@@Z @2504 NONAME ;public: class PString  __thiscall PConfig::GetString(class PString const &)const 
+    ?GetString@PConfig@@UBE?AVPString@@ABV2@00@Z @3944 NONAME ;public: virtual class PString  __thiscall PConfig::GetString(class PString const &,class PString const &,class PString const &)const 
+    ?GetString@PConfig@@UBE?AVPString@@ABV2@0@Z @3945 NONAME ;public: virtual class PString  __thiscall PConfig::GetString(class PString const &,class PString const &)const 
+    ?GetString@PConfig@@UBE?AVPString@@ABV2@@Z @3946 NONAME ;public: virtual class PString  __thiscall PConfig::GetString(class PString const &)const 
     ?GetStringsIndex@PSortedStringList@@QBEHABVPString@@@Z @2505 NONAME ;public: int __thiscall PSortedStringList::GetStringsIndex(class PString const &)const 
     ?GetStringsIndex@PStringArray@@QBEHABVPString@@@Z @2506 NONAME ;public: int __thiscall PStringArray::GetStringsIndex(class PString const &)const 
     ?GetStringsIndex@PStringList@@QBEHABVPString@@@Z @2507 NONAME ;public: int __thiscall PStringList::GetStringsIndex(class PString const &)const 
@@ -2384,10 +2384,10 @@ EXPORTS
     ?GetThreadId@PThread@@UBEKXZ @2509 NONAME ;public: virtual unsigned long __thiscall PThread::GetThreadId(void)const 
     ?GetThreadName@PProcess@@UBE?AVPString@@XZ @2510 NONAME ;public: virtual class PString  __thiscall PProcess::GetThreadName(void)const 
     ?GetThreadName@PThread@@UBE?AVPString@@XZ @2511 NONAME ;public: virtual class PString  __thiscall PThread::GetThreadName(void)const 
-    ?GetTime@PConfig@@QBE?AVPTime@@ABVPString@@0@Z @2512 NONAME ;public: class PTime  __thiscall PConfig::GetTime(class PString const &,class PString const &)const 
-    ?GetTime@PConfig@@QBE?AVPTime@@ABVPString@@0ABV2@@Z @2513 NONAME ;public: class PTime  __thiscall PConfig::GetTime(class PString const &,class PString const &,class PTime const &)const 
-    ?GetTime@PConfig@@QBE?AVPTime@@ABVPString@@@Z @2514 NONAME ;public: class PTime  __thiscall PConfig::GetTime(class PString const &)const 
-    ?GetTime@PConfig@@QBE?AVPTime@@ABVPString@@ABV2@@Z @2515 NONAME ;public: class PTime  __thiscall PConfig::GetTime(class PString const &,class PTime const &)const 
+    ?GetTime@PConfig@@UBE?AVPTime@@ABVPString@@0@Z @3947 NONAME ;public: virtual class PTime  __thiscall PConfig::GetTime(class PString const &,class PString const &)const 
+    ?GetTime@PConfig@@UBE?AVPTime@@ABVPString@@0ABV2@@Z @3948 NONAME ;public: virtual class PTime  __thiscall PConfig::GetTime(class PString const &,class PString const &,class PTime const &)const 
+    ?GetTime@PConfig@@UBE?AVPTime@@ABVPString@@@Z @3949 NONAME ;public: virtual class PTime  __thiscall PConfig::GetTime(class PString const &)const 
+    ?GetTime@PConfig@@UBE?AVPTime@@ABVPString@@ABV2@@Z @3950 NONAME ;public: virtual class PTime  __thiscall PConfig::GetTime(class PString const &,class PTime const &)const 
     ?GetTimeAM@PTime@@SA?AVPString@@XZ @2516 NONAME ;public: static class PString  __cdecl PTime::GetTimeAM(void)
     ?GetTimeAMPM@PTime@@SAHXZ @2517 NONAME ;public: static int __cdecl PTime::GetTimeAMPM(void)
     ?GetTimeInSeconds@PTime@@QBEJXZ @2518 NONAME ;public: long __thiscall PTime::GetTimeInSeconds(void)const 
@@ -2445,8 +2445,8 @@ EXPORTS
     ?HashFunction@POrdinalKey@@UBEHXZ @2567 NONAME ;public: virtual int __thiscall POrdinalKey::HashFunction(void)const 
     ?HashFunction@PRemoteConnection@@UBEHXZ @2568 NONAME ;public: virtual int __thiscall PRemoteConnection::HashFunction(void)const 
     ?HashFunction@PString@@UBEHXZ @2569 NONAME ;public: virtual int __thiscall PString::HashFunction(void)const 
-    ?HasKey@PConfig@@QBEHABVPString@@0@Z @2570 NONAME ;public: int __thiscall PConfig::HasKey(class PString const &,class PString const &)const 
-    ?HasKey@PConfig@@QBEHABVPString@@@Z @2571 NONAME ;public: int __thiscall PConfig::HasKey(class PString const &)const 
+    ?HasKey@PConfig@@UBEHABVPString@@0@Z @3951 NONAME ;public: virtual int __thiscall PConfig::HasKey(class PString const &,class PString const &)const 
+    ?HasKey@PConfig@@UBEHABVPString@@@Z @3952 NONAME ;public: virtual int __thiscall PConfig::HasKey(class PString const &)const 
     ?HasOption@PArgList@@QBEHABVPString@@@Z @2572 NONAME ;public: int __thiscall PArgList::HasOption(class PString const &)const 
     ?HasOption@PArgList@@QBEHD@Z @2573 NONAME ;public: int __thiscall PArgList::HasOption(char)const 
     ?HasOption@PArgList@@QBEHPBD@Z @2574 NONAME ;public: int __thiscall PArgList::HasOption(char const *)const 
@@ -3193,8 +3193,8 @@ EXPORTS
     ?SetAutoDelete@PThread@@UAEXW4AutoDeleteFlag@1@@Z @3273 NONAME ;public: virtual void __thiscall PThread::SetAutoDelete(enum PThread::AutoDeleteFlag)
     ?SetAutoDeleteObjects@PSafeCollection@@UAEXXZ @3274 NONAME ;public: virtual void __thiscall PSafeCollection::SetAutoDeleteObjects(void)
     ?SetAvgBytesPerSec@PQoS@@QAEXK@Z @3579 NONAME ;public: void __thiscall PQoS::SetAvgBytesPerSec(unsigned long)
-    ?SetBoolean@PConfig@@QAEXABVPString@@0H@Z @3275 NONAME ;public: void __thiscall PConfig::SetBoolean(class PString const &,class PString const &,int)
-    ?SetBoolean@PConfig@@QAEXABVPString@@H@Z @3276 NONAME ;public: void __thiscall PConfig::SetBoolean(class PString const &,int)
+    ?SetBoolean@PConfig@@UAEXABVPString@@0H@Z @3953 NONAME ;public: virtual void __thiscall PConfig::SetBoolean(class PString const &,class PString const &,int)
+    ?SetBoolean@PConfig@@UAEXABVPString@@H@Z @3954 NONAME ;public: virtual void __thiscall PConfig::SetBoolean(class PString const &,int)
     ?SetBreak@PSerialChannel@@QAEXH@Z @3277 NONAME ;public: void __thiscall PSerialChannel::SetBreak(int)
     ?SetBrightness@PVideoDevice@@UAEHI@Z @3278 NONAME ;public: virtual int __thiscall PVideoDevice::SetBrightness(unsigned int)
     ?SetBuffers@PSoundChannel@@UAEHHH@Z @3740 NONAME ;public: virtual int __thiscall PSoundChannel::SetBuffers(int,int)
@@ -3222,7 +3222,7 @@ EXPORTS
     ?SetDefaultIpAddressFamily@PIPSocket@@SAXH@Z @3301 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamily(int)
     ?SetDefaultIpAddressFamilyV4@PIPSocket@@SAXXZ @3302 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV4(void)
     ?SetDefaultIpAddressFamilyV6@PIPSocket@@SAXXZ @3904 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV6(void)
-    ?SetDefaultSection@PConfig@@QAEXABVPString@@@Z @3303 NONAME ;public: void __thiscall PConfig::SetDefaultSection(class PString const &)
+    ?SetDefaultSection@PConfig@@UAEXABVPString@@@Z @3955 NONAME ;public: virtual void __thiscall PConfig::SetDefaultSection(class PString const &)
     ?SetDSCP@PQoS@@QAEXH@Z @3581 NONAME ;public: void __thiscall PQoS::SetDSCP(int)
     ?SetDSCPAlternative@PQoS@@SAXKI@Z @3582 NONAME ;public: static void __cdecl PQoS::SetDSCPAlternative(unsigned long,unsigned int)
     ?SetDstFrameSize@PColourConverter@@UAEHIIH@Z @3304 NONAME ;public: virtual int __thiscall PColourConverter::SetDstFrameSize(unsigned int,unsigned int,int)
@@ -3250,10 +3250,10 @@ EXPORTS
     ?SetGroupName@PProcess@@QAEHABVPString@@H@Z @3327 NONAME ;public: int __thiscall PProcess::SetGroupName(class PString const &,int)
     ?SetHue@PVideoDevice@@UAEHI@Z @3328 NONAME ;public: virtual int __thiscall PVideoDevice::SetHue(unsigned int)
     ?SetInputFlowControl@PSerialChannel@@QAEHW4FlowControl@1@@Z @3330 NONAME ;public: int __thiscall PSerialChannel::SetInputFlowControl(enum PSerialChannel::FlowControl)
-    ?SetInt64@PConfig@@QAEXABVPString@@0_J@Z @3331 NONAME ;public: void __thiscall PConfig::SetInt64(class PString const &,class PString const &,__int64)
-    ?SetInt64@PConfig@@QAEXABVPString@@_J@Z @3332 NONAME ;public: void __thiscall PConfig::SetInt64(class PString const &,__int64)
-    ?SetInteger@PConfig@@QAEXABVPString@@0J@Z @3333 NONAME ;public: void __thiscall PConfig::SetInteger(class PString const &,class PString const &,long)
-    ?SetInteger@PConfig@@QAEXABVPString@@J@Z @3334 NONAME ;public: void __thiscall PConfig::SetInteger(class PString const &,long)
+    ?SetInt64@PConfig@@UAEXABVPString@@0_J@Z @3956 NONAME ;public: virtual void __thiscall PConfig::SetInt64(class PString const &,class PString const &,__int64)
+    ?SetInt64@PConfig@@UAEXABVPString@@_J@Z @3957 NONAME ;public: virtual void __thiscall PConfig::SetInt64(class PString const &,__int64)
+    ?SetInteger@PConfig@@UAEXABVPString@@0J@Z @3958 NONAME ;public: virtual void __thiscall PConfig::SetInteger(class PString const &,class PString const &,long)
+    ?SetInteger@PConfig@@UAEXABVPString@@J@Z @3959 NONAME ;public: virtual void __thiscall PConfig::SetInteger(class PString const &,long)
     ?SetInterval@PTimeInterval@@UAEX_JJJJH@Z @3335 NONAME ;public: virtual void __thiscall PTimeInterval::SetInterval(__int64,long,long,long,int)
     ?SetInterval@PTimer@@UAEX_JJJJH@Z @3336 NONAME ;public: virtual void __thiscall PTimer::SetInterval(__int64,long,long,long,int)
     ?SetLastElementAt@Table@PHashTable@@QAEHH@Z @3337 NONAME ;public: int __thiscall PHashTable::Table::SetLastElementAt(int)
@@ -3283,8 +3283,8 @@ EXPORTS
     ?SetPriority@PThread@@UAEXW4Priority@1@@Z @3359 NONAME ;public: virtual void __thiscall PThread::SetPriority(enum PThread::Priority)
     ?SetReadChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @3360 NONAME ;public: int __thiscall PIndirectChannel::SetReadChannel(class PChannel *,int)
     ?SetReadTimeout@PChannel@@QAEXABVPTimeInterval@@@Z @3361 NONAME ;public: void __thiscall PChannel::SetReadTimeout(class PTimeInterval const &)
-    ?SetReal@PConfig@@QAEXABVPString@@0N@Z @3362 NONAME ;public: void __thiscall PConfig::SetReal(class PString const &,class PString const &,double)
-    ?SetReal@PConfig@@QAEXABVPString@@N@Z @3363 NONAME ;public: void __thiscall PConfig::SetReal(class PString const &,double)
+    ?SetReal@PConfig@@UAEXABVPString@@0N@Z @3960 NONAME ;public: virtual void __thiscall PConfig::SetReal(class PString const &,class PString const &,double)
+    ?SetReal@PConfig@@UAEXABVPString@@N@Z @3961 NONAME ;public: virtual void __thiscall PConfig::SetReal(class PString const &,double)
     ?SetRenderFrameSize@PVideoChannel@@UAEXHH@Z @3364 NONAME ;public: virtual void __thiscall PVideoChannel::SetRenderFrameSize(int,int)
     ?SetRTS@PSerialChannel@@QAEXH@Z @3365 NONAME ;public: void __thiscall PSerialChannel::SetRTS(int)
     ?SetSafetyMode@PSafePtrBase@@QAEHW4PSafetyMode@@@Z @3366 NONAME ;public: int __thiscall PSafePtrBase::SetSafetyMode(enum PSafetyMode)
@@ -3301,14 +3301,14 @@ EXPORTS
     ?SetSrcFrameSize@PColourConverter@@UAEHII@Z @3377 NONAME ;public: virtual int __thiscall PColourConverter::SetSrcFrameSize(unsigned int,unsigned int)
     ?SetStopBits@PSerialChannel@@QAEHE@Z @3378 NONAME ;public: int __thiscall PSerialChannel::SetStopBits(unsigned char)
     ?SetStream@PTrace@@SAXPAVostream@@@Z @3379 NONAME ;public: static void __cdecl PTrace::SetStream(class ostream *)
-    ?SetString@PConfig@@QAEXABVPString@@00@Z @3380 NONAME ;public: void __thiscall PConfig::SetString(class PString const &,class PString const &,class PString const &)
-    ?SetString@PConfig@@QAEXABVPString@@0@Z @3381 NONAME ;public: void __thiscall PConfig::SetString(class PString const &,class PString const &)
+    ?SetString@PConfig@@UAEXABVPString@@00@Z @3962 NONAME ;public: virtual void __thiscall PConfig::SetString(class PString const &,class PString const &,class PString const &)
+    ?SetString@PConfig@@UAEXABVPString@@0@Z @3963 NONAME ;public: virtual void __thiscall PConfig::SetString(class PString const &,class PString const &)
     ?SetStructure@PStructuredFile@@QAEXPAUElement@1@H@Z @3382 NONAME ;public: void __thiscall PStructuredFile::SetStructure(struct PStructuredFile::Element *,int)
     ?SetTerminationValue@PProcess@@QAEXH@Z @3383 NONAME ;public: void __thiscall PProcess::SetTerminationValue(int)
     ?SetThreadName@PProcess@@UAEXABVPString@@@Z @3384 NONAME ;public: virtual void __thiscall PProcess::SetThreadName(class PString const &)
     ?SetThreadName@PThread@@UAEXABVPString@@@Z @3385 NONAME ;public: virtual void __thiscall PThread::SetThreadName(class PString const &)
-    ?SetTime@PConfig@@QAEXABVPString@@0ABVPTime@@@Z @3386 NONAME ;public: void __thiscall PConfig::SetTime(class PString const &,class PString const &,class PTime const &)
-    ?SetTime@PConfig@@QAEXABVPString@@ABVPTime@@@Z @3387 NONAME ;public: void __thiscall PConfig::SetTime(class PString const &,class PTime const &)
+    ?SetTime@PConfig@@UAEXABVPString@@0ABVPTime@@@Z @3964 NONAME ;public: virtual void __thiscall PConfig::SetTime(class PString const &,class PString const &,class PTime const &)
+    ?SetTime@PConfig@@UAEXABVPString@@ABVPTime@@@Z @3965 NONAME ;public: virtual void __thiscall PConfig::SetTime(class PString const &,class PTime const &)
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @3388 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
     ?SetUserName@PProcess@@QAEHABVPString@@H@Z @3389 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &,int)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @3390 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
