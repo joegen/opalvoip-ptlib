@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.22  2000/07/04 20:34:16  rogerh
+ * Only use ioctl SNDCTL_DSP_SETDUPLEX is Linux. It is not defined in FreeBSD
+ * In NetBSD and OpenBSD (using liboss), the ioctl returns EINVAL.
+ *
  * Revision 1.21  2000/07/02 14:18:27  craigs
  * Fixed various problems with buffer handling
  *
@@ -381,8 +385,11 @@ BOOL PSoundChannel::Setup()
   } else {
     PTRACE(6, "OSS\tInitialising " << device << "(" << (void *)(&entry) << ")");
 
-    // enable full duplex (maybe)
+
+#if defined(P_LINUX)
+    // enable full duplex (maybe).
     ::ioctl(os_handle, SNDCTL_DSP_SETDUPLEX, 0);
+#endif
 
     stat = FALSE;
 
