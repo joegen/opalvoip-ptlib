@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.20  1999/07/19 01:32:24  craigs
+ * Changed signals used in pthreads code, is used by linux version.
+ *
  * Revision 1.19  1999/07/15 13:10:55  craigs
  * Fixed problem with EINTR in nontimed sempahore waits
  *
@@ -79,8 +82,17 @@
 #include <pthread.h>
 #include <sys/resource.h>
 
+#ifdef P_LINUX
+
+#define	SUSPEND_SIG	SIGALRM
+#define	RESUME_SIG	SIGVTALRM
+
+#else
+
 #define	SUSPEND_SIG	SIGUSR1
 #define	RESUME_SIG	SIGUSR2
+
+#endif
 
 PDECLARE_CLASS(HouseKeepingThread, PThread)
   public:
@@ -142,12 +154,21 @@ static void sigSuspendHandler(int)
   sigset_t waitSignals;
   sigemptyset(&waitSignals);
   sigaddset(&waitSignals, RESUME_SIG);
+  sigaddset(&waitSignals, SIGINT);
+  sigaddset(&waitSignals, SIGQUIT);
+  sigaddset(&waitSignals, SIGTERM);
+
+  for (;;) {
 #ifdef P_LINUX
-  int sig;
-  sigwait(&waitSignals, &sig);
+    int sig;
+    sigwait(&waitSignals, &sig);
 #else
-  sigwait(&waitSignals);
+    sig = sigwait(&waitSignals);
 #endif
+    PProcess::Current().PXCheckSignals();
+    if (sig == RESUME_SIG)
+      return;
+  }
 }
 
 
