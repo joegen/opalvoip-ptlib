@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.38  2002/02/09 00:52:01  robertj
+ * Slight adjustment to API and documentation for volume functions.
+ *
  * Revision 1.37  2002/02/07 20:57:21  dereks
  * add SetVolume and GetVolume methods to PSoundChannel
  *
@@ -1085,7 +1088,7 @@ BOOL PSoundChannel::Abort()
 
 
 
-BOOL PSoundChannel::SetVolume(int newVal)
+BOOL PSoundChannel::SetVolume(unsigned newVal)
 {
   if (os_handle <= 0)  //CAnnot set volume in loop back mode.
     return FALSE;
@@ -1105,7 +1108,7 @@ BOOL PSoundChannel::SetVolume(int newVal)
   return TRUE;
 }
 
-BOOL  PSoundChannel::GetVolume(int &devVol)
+BOOL  PSoundChannel::GetVolume(unsigned &devVol)
 {
   if (os_handle <= 0)  //CAnnot get volume in loop back mode.
     return FALSE;
