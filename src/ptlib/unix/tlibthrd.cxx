@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.10  1999/01/11 03:42:26  robertj
+ * Fixed problem with destroying thread automatically.
+ *
  * Revision 1.9  1999/01/09 03:37:28  robertj
  * Fixed problem with closing thread waiting on semaphore.
  * Improved efficiency of mutex to use pthread functions directly.
@@ -329,7 +332,8 @@ void PThread::Terminate()
     return;
 
   PAssert(!IsTerminated(), "Cannot terminate a thread which is already terminated");
-  if (Current() == this)
+  PThread * current = Current();
+  if (current == NULL || current == this)
     pthread_exit(NULL);
   else {
     PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
@@ -356,7 +360,7 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 BOOL PThread::IsTerminated() const
 {
-  return pthread_kill(PX_threadId, 0) != 0;
+  return Current() == NULL || pthread_kill(PX_threadId, 0) != 0;
 }
 
 
