@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.28  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.27  2000/03/07 01:43:29  robertj
  * Removed double include of ras.h as no longer works with later versions.
  *
@@ -227,7 +230,7 @@ BOOL PRemoteConnection::Open(const PString & name, BOOL existing)
 
 PObject::Comparison PRemoteConnection::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PRemoteConnection::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PRemoteConnection), PInvalidCast);
   return remoteName.Compare(((const PRemoteConnection &)obj).remoteName);
 }
 

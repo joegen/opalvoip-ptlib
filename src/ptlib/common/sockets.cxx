@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.169  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.168  2004/02/04 02:32:31  csoutheren
  * Changed #ifdef to #if to ensure flags are tested correctly
  *
@@ -2677,7 +2680,7 @@ BOOL PTCPSocket::Listen(const Address & bindAddr,
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
-  PAssert(socket.IsDescendant(PIPSocket::Class()), "Invalid listener socket");
+  PAssert(PIsDescendant(&socket, PIPSocket), "Invalid listener socket");
 
 #if P_HAS_IPV6
 

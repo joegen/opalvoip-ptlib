@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\..\Lib\Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /Fd"..\..\..\Lib\PTLib.pdb" /FD /c
+# ADD CPP /nologo /MD /W4 /GR /GX /Zi /O2 /Ob2 /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /Fd"..\..\..\Lib\PTLib.pdb" /FD /c
 # ADD BASE RSC /l 0xc09
 # ADD RSC /l 0xc09
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\..\..\Lib\Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /Fd"..\..\..\Lib\PTLibd.pdb" /FD /c
+# ADD CPP /nologo /MDd /W4 /GR /GX /Zi /Od /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /Fd"..\..\..\Lib\PTLibd.pdb" /FD /c
 # ADD BASE RSC /l 0xc09
 # ADD RSC /l 0xc09
 BSC32=bscmake.exe

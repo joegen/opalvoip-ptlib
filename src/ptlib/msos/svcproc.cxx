@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.77  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.76  2004/04/03 06:54:30  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -586,7 +589,7 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
 PServiceProcess & PServiceProcess::Current()
 {
   PServiceProcess & process = (PServiceProcess &)PProcess::Current();
-  PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service!");
+  PAssert(PIsDescendant(&process, PServiceProcess), "Not a service!");
   return process;
 }
 
