@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.3 1996/08/08 10:09:11 robertj Exp $
+ * $Id: semaphor.h,v 1.4 1998/03/20 03:19:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.4  1998/03/20 03:19:49  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.3  1996/08/08 10:09:11  robertj
  * Directory structure changes for common files.
  *
@@ -29,9 +32,10 @@
 #include "../../common/ptlib/semaphor.h"
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
-    HANDLE GetHandle() const { return hSemaphore; }
-  private:
-    HANDLE hSemaphore;
+    HANDLE GetHandle() const { return handle; }
+  protected:
+    PSemaphore(HANDLE h);
+    HANDLE handle;
 #endif
 };
 
