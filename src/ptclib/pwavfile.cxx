@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.37  2005/03/22 07:32:55  csoutheren
+ * Fixed problem with incorrect message being displayed when reading past end of file
+ *
  * Revision 1.36  2005/01/04 08:09:42  csoutheren
  * Fixed Linux configure problems
  *
@@ -387,10 +390,12 @@ BOOL PWAVFile::RawRead(void * buf, PINDEX len)
   // e.g. WAV files made in GoldWave have a copyright and a URL in this chunk.
   // We do not want to return this data by mistake.
   PINDEX readlen = len;
-  if ((off_t)(PFile::GetPosition() + len - lenHeader) > lenData) {
-    PTRACE(1, "WAV\tRead: Detected non audio data after the sound samples");
+  off_t pos = PFile::GetPosition();
+  if (pos == lenData)
     return FALSE;
-  }
+  
+  if ((pos + len) > lenData)
+    readlen = lenData - pos;
 
   if (formatHandler != NULL)
     return formatHandler->Read(*this, buf, readlen);
