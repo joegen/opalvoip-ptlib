@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.85  2002/08/13 05:39:17  robertj
+ * Fixed GNU compatibility
+ *
  * Revision 1.84  2002/08/13 01:57:15  robertj
  * Fixed "last dump object" position in Memory Dump macro.
  *
@@ -1744,7 +1747,7 @@ PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
 
 PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
 {
-  static lastObjectNumber = 0;
+  static DWORD lastObjectNumber = 0;
   DWORD objectNumber = lastObjectNumber;
   PStringToString vars = request.url.GetQueryVars();
   if (vars.Contains("object"))
