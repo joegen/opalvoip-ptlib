@@ -223,6 +223,15 @@ void MergeSym::Main()
     if (args.HasOption('v'))
       cout << "Writing .DEF file..." << flush;
 
+    // If file is read/only, set it to read/write
+    PFileInfo info;
+    if (PFile::GetInfo(def_filename, info)) {
+      if ((info.permissions&PFileInfo::UserWrite) == 0) {
+        PFile::SetPermissions(def_filename, info.permissions|PFileInfo::UserWrite);
+        cout << "Setting \"" << def_filename << "\" to read/write mode." << flush;
+      }
+    }
+
     if (def.Open(def_filename, PFile::WriteOnly)) {
       for (i = 0; i < def_file_lines.GetSize(); i++)
         def << def_file_lines[i] << '\n';
