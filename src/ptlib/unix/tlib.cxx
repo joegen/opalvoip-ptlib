@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.56  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.55  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -205,7 +208,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX) || defined(__BEOS__)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
@@ -381,7 +384,9 @@ void PXSignalHandler(int sig)
   PProcess & process = PProcess::Current();
   process.pxSignals |= 1 << sig;
   process.PXOnAsyncSignal(sig);
-#ifdef P_PTHREADS
+#if defined(P_MAC_MPTHREADS)
+  process.SignalTimerChange();
+#elif defined(P_PTHREADS)
   // Inform house keeping thread we have a signal to be processed
   BYTE ch;
   write(process.timerChangePipe[1], &ch, 1);
@@ -505,7 +510,9 @@ void PProcess::CommonDestruct()
 //  Non-PTHREAD based routines
 //
 
-#ifdef P_PTHREADS
+#if defined(P_MAC_MPTHREADS)
+#include "tlibmpthrd.cxx"
+#elif defined(P_PTHREADS)
 #include "tlibthrd.cxx"
 #elif defined(BE_THREADS)
 #include "tlibbe.cxx"

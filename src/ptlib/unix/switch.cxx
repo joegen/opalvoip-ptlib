@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.21  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.20  2000/03/08 12:17:09  rogerh
  * Add OpenBSD support
  *
@@ -58,7 +61,7 @@
 
 #include <ptlib.h>
 
-#if !defined(P_PTHREADS) && !defined(BE_THREADS)
+#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS)
 
 #ifdef P_LINUX
 #ifdef PPC
