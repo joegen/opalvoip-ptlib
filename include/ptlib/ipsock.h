@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.74  2005/02/07 12:12:33  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.73  2005/02/07 00:47:17  csoutheren
  * Changed IPV6 code to use standard IPV6 macros
  *
@@ -270,8 +274,8 @@
 
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.
-   If P_USE_IPV6 is not set, IPv4 only is supported.
-   If P_USE_IPV6 is set, both IPv4 and IPv6 adresses are supported, with 
+   If P_HAS_IPV6 is not set, IPv4 only is supported.
+   If P_HAS_IPV6 is set, both IPv4 and IPv6 adresses are supported, with 
    IPv4 as default. This allows to transparently use IPv4, IPv6 or Dual 
    stack operating systems.
  */
@@ -785,6 +789,9 @@ class PIPSocket : public PSocket
           const Address & _addr,
           const Address & _mask,
           const PString & _macAddr
+#if P_HAS_IPV6
+          , const PString & _ip6Addr = PString::Empty()
+#endif
         );
 
         /// Print to specified stream
@@ -798,6 +805,16 @@ class PIPSocket : public PSocket
         /// Get the address associated with the interface
         Address GetAddress() const { return ipAddr; }
 
+        BOOL HasIP6Address() const
+#if ! P_HAS_IPV6
+        { return FALSE;}
+#else
+        { return !ip6Addr.IsEmpty();}
+
+        /// Get the address associated with the interface
+        Address GetIP6Address() const { return ip6Addr; }
+#endif
+
         /// Get the net mask associated with the interface
         Address GetNetMask() const { return netMask; }
 
@@ -809,6 +826,9 @@ class PIPSocket : public PSocket
         Address ipAddr;
         Address netMask;
         PString macAddr;
+#if P_HAS_IPV6
+        PString ip6Addr;
+#endif
     };
 
     PLIST(InterfaceTable, InterfaceEntry);
