@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.184  2002/04/24 01:10:28  robertj
+ * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
+ *
  * Revision 1.183  2002/04/19 00:43:17  craigs
  * Fixed problem with file modes
  *
@@ -671,7 +674,6 @@ static ostream * PTraceStream = 0L;
 
 static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
-static unsigned PTraceBlockIndentLevel = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
@@ -868,11 +870,13 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
   line = lineNum;
   name = traceName;
 
-  PTraceBlockIndentLevel += 2;
-
   if ((PTraceOptions&Blocks) != 0) {
+    PThread * thread = PThread::Current();
+    thread->traceBlockIndentLevel += 2;
+
     ostream & s = PTrace::Begin(1, file, line);
-    for (unsigned i = 0; i < PTraceBlockIndentLevel; i++)
+    s << "B-Entry\t";
+    for (unsigned i = 0; i < thread->traceBlockIndentLevel; i++)
       s << '=';
     s << "> " << name << PTrace::End;
   }
@@ -882,14 +886,16 @@ PTrace::Block::Block(const char * fileName, int lineNum, const char * traceName)
 PTrace::Block::~Block()
 {
   if ((PTraceOptions&Blocks) != 0) {
+    PThread * thread = PThread::Current();
+
     ostream & s = PTrace::Begin(1, file, line);
-    s << '<';
-    for (unsigned i = 0; i < PTraceBlockIndentLevel; i++)
+    s << "B-Exit\t<";
+    for (unsigned i = 0; i < thread->traceBlockIndentLevel; i++)
       s << '=';
     s << ' ' << name << PTrace::End;
-  }
 
-  PTraceBlockIndentLevel -= 2;
+    thread->traceBlockIndentLevel -= 2;
+  }
 }
 
 
@@ -1800,6 +1806,9 @@ void PThread::InitialiseProcessThread()
   stackBase = NULL;
   link = this;
   ((PProcess*)this)->currentThread = this;
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
 }
 
 
@@ -1813,6 +1822,9 @@ PThread::PThread(PINDEX stackSize,
   basePriority = priorityLevel;   // Threads user settable priority level
   dynamicPriority = 0;            // Run immediately
   suspendCount = 1;
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
 
   AllocateStack(stackSize);
   PAssert(stackBase != NULL, "Insufficient near heap for thread");
