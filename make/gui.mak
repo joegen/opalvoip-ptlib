@@ -34,7 +34,7 @@ LDLIBS	:= $(GUILIBS) $(LDLIBS)
 #
 #  rules for resource compilation
 #
-PWRC		= $(PWLIBDIR)/tools/pwrc/obj_$(GUI)_$(OBJ_SUFFIX)_r/pwrc 
+PWRC		= $(PWLIBDIR)/tools/pwrc/obj_$(OBJ_SUFFIX)_r/pwrc -a $(GUI)
 
 #
 # if we are using a resource file, then define the required files
