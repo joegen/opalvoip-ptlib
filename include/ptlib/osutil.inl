@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.56 1997/10/03 13:38:26 robertj Exp $
+ * $Id: osutil.inl,v 1.57 1998/01/04 08:04:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.57  1998/01/04 08:04:27  robertj
+ * Changed gmtime and locatime to use operating system specific functions.
+ *
  * Revision 1.56  1997/10/03 13:38:26  robertj
  * Fixed race condition on socket close in Select() function.
  *
@@ -279,28 +282,28 @@ PINLINE void PTime::PrintOn(ostream & strm) const
   { strm << AsString(); }
 
 PINLINE int PTime::GetSecond() const
-  { return localtime(&theTime)->tm_sec; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_sec; }
 
 PINLINE int PTime::GetMinute() const
-  { return localtime(&theTime)->tm_min; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_min; }
 
 PINLINE int PTime::GetHour() const
-  { return localtime(&theTime)->tm_hour; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_hour; }
 
 PINLINE int PTime::GetDay() const
-  { return localtime(&theTime)->tm_mday; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_mday; }
 
 PINLINE PTime::Months PTime::GetMonth() const
-  { return (Months)(localtime(&theTime)->tm_mon+January); }
+  { struct tm ts; return (Months)(os_localtime(&theTime, &ts)->tm_mon+January); }
 
 PINLINE int PTime::GetYear() const
-  { return localtime(&theTime)->tm_year+1900; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_year+1900; }
 
 PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
-  { return (Weekdays)localtime(&theTime)->tm_wday; }
+  { struct tm ts; return (Weekdays)os_localtime(&theTime, &ts)->tm_wday; }
 
 PINLINE int PTime::GetDayOfYear() const
-  { return localtime(&theTime)->tm_yday; }
+  { struct tm ts; return os_localtime(&theTime, &ts)->tm_yday; }
 
 PINLINE BOOL PTime::IsPast() const
   { return theTime < time(NULL); }
