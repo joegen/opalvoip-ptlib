@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.9 1995/07/31 12:15:45 robertj Exp $
+ * $Id: pipechan.h,v 1.10 1996/03/31 08:50:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.10  1996/03/31 08:50:51  robertj
+ * Changed string list to array.
+ * Added function to idicate if sub-process is running.
+ *
  * Revision 1.9  1995/07/31 12:15:45  robertj
  * Removed PContainer from PChannel ancestor.
  *
@@ -98,7 +102,7 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
-      const PStringList & argumentList,  // List of arguments to sub-program.
+      const PStringArray & argumentList,  // Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE       // Flag for system PATH to be searched.
     );
@@ -205,6 +209,12 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        sub-program.
      */
 
+    int GetReturnCode() const;
+    /* Get the return code from the most recent Close;
+
+       <H2>Returns:</H2>
+       Return code from the closing process
+     */
 
   // New member functions
     const PFilePath & GetSubProgram() const;
@@ -225,6 +235,16 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        As the sub-program is run immediately and concurrently, this will just
        give an end of file to the stdin of the remote process. This is often
        necessary
+     */
+
+    BOOL IsRunning() const;
+    /* Determine if the program associated with the PPipeChannel is still
+       executing. This is useful for determining the status of PPipeChannels
+       which take a long time to execute on operating systems which support
+       concurrent multi-processing.
+       
+       <H2>Returns:</H2>
+       TRUE if the program associated with the PPipeChannel is still running
      */
 
     static BOOL CanReadAndWrite();
