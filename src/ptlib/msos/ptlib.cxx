@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.48  1999/06/14 07:59:38  robertj
+ * Enhanced tracing again to add options to trace output (timestamps etc).
+ *
  * Revision 1.47  1999/06/13 13:54:07  robertj
  * Added PConsoleChannel class for access to stdin/stdout/stderr.
  *
@@ -777,7 +780,7 @@ BOOL PTextFile::WriteLine(const PString & str)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PProcess
+// PConsoleChannel
 
 PConsoleChannel::PConsoleChannel()
 {
