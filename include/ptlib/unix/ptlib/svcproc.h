@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.4 1996/08/03 12:10:46 craigs Exp $
+ * $Id: svcproc.h,v 1.5 1996/09/03 11:56:56 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.5  1996/09/03 11:56:56  craigs
+ * Changed PSYSTEMLOG to user cerr
+ *
  * Revision 1.4  1996/08/03 12:10:46  craigs
  * Changed for new common directories and added new PSystemLog macro
  *
@@ -32,7 +35,5 @@
     void PXOnSigInt();
     BOOL consoleMessages;
 };
-
-#define	PSYSTEMLOG(l,t)  do { PSystemLog _l(PSystemLog::l); _l << t; } while(0)
 
 #endif
