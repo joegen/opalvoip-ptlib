@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.8  1998/10/13 14:06:31  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.7  1998/09/23 06:22:27  robertj
  * Added open source copyright license.
  *
@@ -63,6 +66,8 @@
 
 #include <ptlib.h>
 #include <pasn.h>
+
+#define new PNEW
 
 
 #define ASN_BOOLEAN         (0x01)
@@ -526,7 +531,7 @@ PString PASNInteger::GetString () const
 
 PObject * PASNInteger::Clone() const
 {
-  return PNEW PASNInteger(*this);
+  return new PASNInteger(*this);
 }
 
 
@@ -627,7 +632,7 @@ PString PASNString::GetString () const
 
 PObject * PASNString::Clone() const
 {
-  return PNEW PASNString(*this);
+  return new PASNString(*this);
 }
 
 
@@ -918,7 +923,7 @@ BOOL PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
 
 PObject * PASNObjectID::Clone() const
 {
-  return PNEW PASNObjectID(*this);
+  return new PASNObjectID(*this);
 }
 
 
@@ -954,25 +959,25 @@ void PASNSequence::Append(PASNObject * obj)
 
 void PASNSequence::AppendInteger(PASNInt value)
 {
-  Append(PNEW PASNInteger(value));
+  Append(new PASNInteger(value));
 }
 
 
 void PASNSequence::AppendString (const PString & str)
 {
-  Append(PNEW PASNString(str));
+  Append(new PASNString(str));
 }
 
 
 void PASNSequence::AppendObjectID(const PString & str)
 {
-  Append(PNEW PASNObjectID(str));
+  Append(new PASNObjectID(str));
 }
 
 
 void PASNSequence::AppendObjectID(PASNOid * val, BYTE len)
 {
-  Append(PNEW PASNObjectID(val, len));
+  Append(new PASNObjectID(val, len));
 }
 
 
@@ -1104,52 +1109,52 @@ BOOL PASNSequence::Decode(const PBYTEArray & buffer, PINDEX & ptr)
   while (ptr < s && ok) {
     c = buffer[ptr];
     if ((c & ~ASN_EXTENSION_ID) == (ASN_CONSTRUCTOR | ASN_CONTEXT)) 
-      sequence.Append(PNEW PASNSequence(buffer, ptr));
+      sequence.Append(new PASNSequence(buffer, ptr));
     else switch (c) {
 
       // Integer
       case ASN_INTEGER | ASN_UNIVERSAL | ASN_PRIMITIVE:
-        sequence.Append(PNEW PASNInteger(buffer, ptr));
+        sequence.Append(new PASNInteger(buffer, ptr));
         break;
 
       // Octet String
       case ASN_OCTET_STR | ASN_UNIVERSAL | ASN_PRIMITIVE:
-        sequence.Append(PNEW PASNString(buffer, ptr));
+        sequence.Append(new PASNString(buffer, ptr));
         break;
 
       // NULL
       case ASN_NULL | ASN_UNIVERSAL | ASN_PRIMITIVE:
-        sequence.Append(PNEW PASNNull(buffer, ptr));
+        sequence.Append(new PASNNull(buffer, ptr));
         break;
 
       // Object ID
       case ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE:
-        sequence.Append(PNEW PASNObjectID(buffer, ptr));
+        sequence.Append(new PASNObjectID(buffer, ptr));
         break;
 
       // Sequence
       case ASN_CONSTRUCTOR | ASN_SEQUENCE:
-        sequence.Append(PNEW PASNSequence(buffer, ptr));
+        sequence.Append(new PASNSequence(buffer, ptr));
         break;
 
       // TimeTicks
       case ASN_APPLICATION | 3:
-        sequence.Append(PNEW PASNTimeTicks(buffer, ptr));
+        sequence.Append(new PASNTimeTicks(buffer, ptr));
         break;
 
       // Counter
       case ASN_APPLICATION | 1:
-        sequence.Append(PNEW PASNCounter(buffer, ptr));
+        sequence.Append(new PASNCounter(buffer, ptr));
         break;
 
       // Gauge
       case ASN_APPLICATION | 2:
-        sequence.Append(PNEW PASNGauge(buffer, ptr));
+        sequence.Append(new PASNGauge(buffer, ptr));
         break;
 
       // IP Address
       case ASN_APPLICATION | 0:
-        sequence.Append(PNEW PASNIPAddress(buffer, ptr));
+        sequence.Append(new PASNIPAddress(buffer, ptr));
         break;
 
       default:
@@ -1283,7 +1288,7 @@ WORD PASNNull::GetEncodedLength()
 
 PObject * PASNNull::Clone() const
 {
-  return PNEW PASNNull();
+  return new PASNNull();
 }
 
 PASNObject::ASNType PASNNull::GetType() const
