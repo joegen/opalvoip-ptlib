@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.21  2004/04/02 03:40:00  ykiryanov
+ * Cleaned up semaphore code
+ *
  * Revision 1.20  2004/02/23 18:08:10  ykiryanov
  * Added a parameter to semaphore constructor call to made constructor unambiguous. Suggested by Craig Southeren
  *
@@ -127,11 +130,10 @@
 
 #elif defined(BE_THREADS)
 
-  public:
-    PSemaphore(sem_id anId, int32 benaphoreCount, int32 param);
   protected:
+    thread_id mOwner; // delete can be called by owner thread
     sem_id semId;
-    volatile int32 benaphoreCount;
+    volatile int32 mCount;
 
 #elif defined(VX_TASKS)
 
