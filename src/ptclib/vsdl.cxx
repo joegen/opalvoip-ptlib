@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.7  2003/05/17 03:21:26  rjongbloed
+ * Removed need to do strange things with main() function.
+ *
  * Revision 1.6  2003/05/14 02:34:53  dereksmithies
  * Make SDL display work if only one of two display areas in use.
  *
@@ -51,7 +54,7 @@
 #include <ptlib.h>
 #include <ptclib/vsdl.h>
 
-#if	P_SDL
+#if P_SDL
 
 extern "C" {
 
@@ -60,24 +63,29 @@ extern "C" {
 };
 
 #ifdef _MSC_VER
-#pragma comment(lib, P_SDL_LIBRARY1)
-#pragma comment(lib, P_SDL_LIBRARY2)
+#pragma comment(lib, P_SDL_LIBRARY)
 #endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 PSDLVideoFrame::PSDLVideoFrame(unsigned newWidth, unsigned newHeight, const void *_data)
 {
   Initialise(newWidth, newHeight, (Uint8 *)_data);
 }
 
+
 PSDLVideoFrame::PSDLVideoFrame(unsigned newWidth, unsigned newHeight, Uint8 *_data)
 {
   Initialise(newWidth, newHeight, _data);
 }
 
+
 PSDLVideoFrame::~PSDLVideoFrame()
 {
   delete data;
 }
+
 
 void PSDLVideoFrame::PrintOn(ostream & strm) const
 {
@@ -95,11 +103,12 @@ void PSDLVideoFrame::Initialise(unsigned newWidth,
   memcpy(data, _data, size);
 }
 
+
 ///////////////////////////////////////////////////////////////////////
 
 PSDLVideoDevice::PSDLVideoDevice(const PString & _remoteName,
-			                                      BOOL _isEncoding, 
-                               PSDLDisplayThread *_sdlThread)
+                                 BOOL _isEncoding,
+                                 PSDLDisplayThread *_sdlThread)
 {
   PTRACE(3, "PSDL\tGeneric SDL video constructor start for " << (isEncoding ? "local" : "remote") );
   
@@ -114,16 +123,19 @@ PSDLVideoDevice::PSDLVideoDevice(const PString & _remoteName,
   sdlThread->RequestOpenWindow(isEncoding);
 }
 
+
 PSDLVideoDevice::~PSDLVideoDevice()
 { 
   Close();
 }
+
 
 BOOL PSDLVideoDevice::Close()
 {
   sdlThread->RequestCloseWindow(isEncoding);
   return TRUE;
 }
+
 
 BOOL PSDLVideoDevice::SetFrameSize (unsigned _width, unsigned _height)
 {
@@ -132,6 +144,7 @@ BOOL PSDLVideoDevice::SetFrameSize (unsigned _width, unsigned _height)
 
   return TRUE;
 }
+
 
 BOOL PSDLVideoDevice::Redraw (const void *frame)
 {
@@ -142,10 +155,12 @@ BOOL PSDLVideoDevice::Redraw (const void *frame)
   return TRUE;
 }
 
+
 BOOL PSDLVideoDevice::IsOpen()
 {
   return TRUE;
 }
+
 
 BOOL PSDLVideoDevice::SetFrameData(unsigned /*x*/,
                                    unsigned /*y*/,
@@ -170,6 +185,7 @@ BOOL PSDLVideoDevice::EndFrame()
   return TRUE;
 }
 
+
 PStringList PSDLVideoDevice::GetDeviceNames() const
 {
   PStringList  devlist;
@@ -178,6 +194,7 @@ PStringList PSDLVideoDevice::GetDeviceNames() const
   return devlist;
 }
 
+
 //////////////////////////////////////////////////////////////
 
 PSDLDisplayThread::PSDLDisplayThread(BOOL _videoPIP)
@@ -185,7 +202,7 @@ PSDLDisplayThread::PSDLDisplayThread(BOOL _videoPIP)
 {
   threadRunning = TRUE;
 
-	PINDEX i;
+  PINDEX i;
 
   for (i = 0; i < 2; i++) {
     width[i]         = 0;
@@ -212,6 +229,7 @@ PSDLDisplayThread::PSDLDisplayThread(BOOL _videoPIP)
   Resume();
 }
 
+
 PSDLDisplayThread::~PSDLDisplayThread()
 {
 }
@@ -220,10 +238,14 @@ PSDLDisplayThread::~PSDLDisplayThread()
 void PSDLDisplayThread::Main()
 {
   // initialise the SDL library
-  if (::SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+  if (::SDL_Init(SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE) < 0 ) {
     PTRACE(0, "Couldn't initialize SDL: " << ::SDL_GetError());
     return;      
   }
+
+#ifdef _WIN32
+  SDL_SetModuleHandle(GetModuleHandle(NULL));
+#endif
 
   PSDLVideoFrame * frame;
 
@@ -269,8 +291,10 @@ void PSDLDisplayThread::Main()
 
   CloseWindow(TRUE);
   CloseWindow(FALSE);
+  ::SDL_Quit();
   PTRACE(3, "PSDL\tEnd of sdl display loop");
 }
+
 
 BOOL PSDLDisplayThread::AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding)
 {
@@ -303,21 +327,24 @@ BOOL PSDLDisplayThread::AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding)
   return TRUE;
 }
 
+
 BOOL PSDLDisplayThread::IsOpen()
 {
   return threadRunning;
-;
 }
+
 
 BOOL PSDLDisplayThread::ScreenIsOpen()
 {
   return (screen != NULL);
 }
 
+
 BOOL PSDLDisplayThread::DisplayIsShutDown()
 {
   return displayIsShutDown;
 }
+
 
 void PSDLDisplayThread::Terminate()
 {
@@ -337,6 +364,7 @@ void PSDLDisplayThread::Terminate()
   commandSync.Signal();
 }
 
+
 void PSDLDisplayThread::RequestCloseWindow(BOOL isEncoding)
 {
   PTRACE(3, "PSDL\tRequest: Close window " << GetDirName(isEncoding) << " video");
@@ -350,6 +378,7 @@ void PSDLDisplayThread::RequestCloseWindow(BOOL isEncoding)
 
   commandSync.Signal();
 }
+
 
 void PSDLDisplayThread::RequestOpenWindow(BOOL isEncoding)
 {
@@ -385,6 +414,7 @@ PSDLVideoFrame * PSDLDisplayThread::GetNextFrame(BOOL isEncoding)
   return res;
 }
 
+
 BOOL PSDLDisplayThread::ResizeScreen(unsigned newWidth, unsigned newHeight)
 {   
   if ((oldScreenWidth == newWidth) && (oldScreenHeight == newHeight)) 
@@ -410,6 +440,7 @@ BOOL PSDLDisplayThread::ResizeScreen(unsigned newWidth, unsigned newHeight)
   return TRUE;
 }
 
+
 void PSDLDisplayThread::InitDisplayPosn()
 {
   PTRACE(6, "PSDL\tInitDisplayPosition now");
@@ -418,6 +449,7 @@ void PSDLDisplayThread::InitDisplayPosn()
   if (currentSurface != NULL)
     InitDisplayPosn(currentSurface->w, currentSurface->h);
 }
+
 
 void PSDLDisplayThread::InitDisplayPosn(unsigned w, unsigned h)
 {  
@@ -448,6 +480,7 @@ void PSDLDisplayThread::InitDisplayPosn(unsigned w, unsigned h)
   WriteOutDisplay();
 }
 
+
 void PSDLDisplayThread::CloseScreen(void)
 { 
   if (screen != NULL) {    
@@ -460,6 +493,7 @@ void PSDLDisplayThread::CloseScreen(void)
     ::SDL_Quit();
   } 
 }
+
 
 BOOL PSDLDisplayThread::CreateOverlay(BOOL isEncoding)
 {
@@ -494,6 +528,7 @@ BOOL PSDLDisplayThread::CreateOverlay(BOOL isEncoding)
   return TRUE;
 }
 
+
 BOOL PSDLDisplayThread::SetOverlaySize (BOOL isEncoding, unsigned _width, unsigned _height)
 {
   unsigned dispIndex = GetDisplayIndex(isEncoding);
@@ -513,6 +548,7 @@ BOOL PSDLDisplayThread::SetOverlaySize (BOOL isEncoding, unsigned _width, unsign
 
   return TRUE;
 }
+
 
 void PSDLDisplayThread::CloseWindow(BOOL isEncoding)
 {
@@ -567,6 +603,7 @@ void PSDLDisplayThread::ProcessSDLEvents(void)
     }    //end event.type==SDL_VIDEORESIZE
   }      //end while (SDL_PollEvent())
 }
+
 
 BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
 {
@@ -631,6 +668,7 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
   return TRUE;  
 }
 
+
 void PSDLDisplayThread::WriteOutDisplay(void)
 {
 #ifdef PTRACING
@@ -656,6 +694,7 @@ void PSDLDisplayThread::WriteOutDisplay(void)
 #endif
 }
 
+
 unsigned PSDLDisplayThread::GetDisplayIndex(BOOL isEncoding)
 {
   if (isEncoding)
@@ -664,7 +703,8 @@ unsigned PSDLDisplayThread::GetDisplayIndex(BOOL isEncoding)
     return RemoteIndex;
 }
 
-///////////////////////////////////////////////////
 
-// P_SDL
-#endif
+#endif // P_SDL
+
+
+// Edn of file ////////////////////////////////////////////////////////////////
