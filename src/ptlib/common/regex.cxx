@@ -248,11 +248,11 @@ char *alloca ();
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-#ifndef _WIN32_WCE
+#if (_WIN32_WCE < 300) && !defined(__RPCNDR_H__) 
 typedef char boolean;
 #define false 0
 #define true 1
-#endif // _WIN32_WCE
+#endif // _WIN32_WCE < 300 and !__RPCNDR_H__
 
 /* These are the command codes that appear in compiled regular
    expressions.  Some opcodes are followed by argument bytes.  A
