@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.46  2001/03/14 01:49:54  craigs
+ * Added ability to handle multi-part form POST commands
+ *
  * Revision 1.45  2001/02/22 05:26:47  robertj
  * Added "nicer" version of GetDocument in HTTP client class.
  *
@@ -529,6 +532,23 @@ class PHTTPClient : public PHTTP
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PMultipartFormInfo
+
+/** This object describes the information associated with a multi-part
+    form entry
+  */
+
+class PMultipartFormInfo : public PObject
+{
+  PCLASSINFO(PMultipartFormInfo, PObject);
+  public:
+    PMIMEInfo mime;
+    PString body;
+};
+
+PARRAY(PMultipartFormInfoArray, PMultipartFormInfo);
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
 class PHTTPServer;
@@ -579,8 +599,15 @@ class PHTTPConnectionInfo : public PObject
       */
     void SetPersistenceMaximumTransations(unsigned m) { persistenceMaximum = m; }
 
+    const PMultipartFormInfoArray & GetMultipartFormInfo() const
+      { return multipartFormInfoArray; }
+
+    void ResetMultipartFormInfo()
+      { multipartFormInfoArray.RemoveAll(); }
+
   protected:
     BOOL Initialise(PHTTPServer & server, PString & args);
+    void DecodeMultipartFormInfo(const PString & type, const PString & entityBody);
 
     PHTTP::Commands commandCode;
     PString         commandName;
@@ -594,6 +621,7 @@ class PHTTPConnectionInfo : public PObject
     long            entityBodyLength;
     PTimeInterval   persistenceTimeout;
     unsigned        persistenceMaximum;
+    PMultipartFormInfoArray multipartFormInfoArray;
 
   friend class PHTTPServer;
 };
@@ -825,11 +853,13 @@ class PHTTPRequest : public PObject
     PHTTPRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo, // multipart form information (if any)
       PHTTPServer & socket          // socket that request initiated on
     );
 
     const PURL & url;               // Universal Resource Locator for document.
     const PMIMEInfo & inMIME;       // Extra MIME information in command.
+    const PMultipartFormInfoArray & multipartFormInfo; // multipart form information, if any
     PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
     PINDEX contentSize;             // Size of the body of the resource data.
@@ -1240,6 +1270,7 @@ class PHTTPResource : public PObject
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                   // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,           // Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo,
 	  PHTTPServer & socket
     );
 
@@ -1487,6 +1518,7 @@ class PHTTPFile : public PHTTPResource
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo,
   	  PHTTPServer & socket
     );
 
@@ -1543,7 +1575,8 @@ class PHTTPFileRequest : public PHTTPRequest
     PHTTPFileRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
-	  PHTTPServer & server
+      const PMultipartFormInfoArray & multipartFormInfo,
+      PHTTPServer & server
     );
 
     PFile file;
@@ -1591,6 +1624,7 @@ class PHTTPDirectory : public PHTTPFile
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,          // Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo,
   	  PHTTPServer & socket
     );
 
@@ -1653,6 +1687,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PHTTPDirRequest(
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & inMIME,     // Extra MIME information in command.
+      const PMultipartFormInfoArray & multipartFormInfo, 
       PHTTPServer & server
     );
 
