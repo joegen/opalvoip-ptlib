@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.7 1996/05/03 13:12:07 craigs Exp $
+ * $Id: socket.h,v 1.8 1996/08/03 12:09:51 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.8  1996/08/03 12:09:51  craigs
+ * Changed for new common directories
+ *
  * Revision 1.7  1996/05/03 13:12:07  craigs
  * More Sun4 fixes
  *
@@ -44,7 +47,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
 
-#include "../../common/socket.h"
+#include "../../common/ptlib/socket.h"
   public:
     ~PSocket();
 };

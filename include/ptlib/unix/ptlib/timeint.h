@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.4 1996/06/10 11:03:33 craigs Exp $
+ * $Id: timeint.h,v 1.5 1996/08/03 12:09:51 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.5  1996/08/03 12:09:51  craigs
+ * Changed for new common directories
+ *
  * Revision 1.4  1996/06/10 11:03:33  craigs
  * Remove unneeded function declarations
  *
@@ -34,7 +37,7 @@
 
 #include <time.h>
 
-#include "../../common/timeint.h"
+#include "../../common/ptlib/timeint.h"
 };
 
 #define PMaxTimeInterval PTimeInterval((long)0x7fffffff)

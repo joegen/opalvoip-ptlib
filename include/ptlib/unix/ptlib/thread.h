@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.5 1996/04/15 10:50:48 craigs Exp $
+ * $Id: thread.h,v 1.6 1996/08/03 12:09:51 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.6  1996/08/03 12:09:51  craigs
+ * Changed for new common directories
+ *
  * Revision 1.5  1996/04/15 10:50:48  craigs
  * Last revision prior to release of MibMaster
  *
@@ -40,7 +43,7 @@ class PSemaphore;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#include "../../common/thread.h"
+#include "../../common/ptlib/thread.h"
 
   public:
     int PXBlockOnIO(int handle,
