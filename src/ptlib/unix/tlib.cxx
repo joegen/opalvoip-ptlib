@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.46  1999/07/19 01:32:24  craigs
+ * Changed signals used in pthreads code, is used by linux version.
+ *
  * Revision 1.45  1999/07/11 13:42:13  craigs
  * pthreads support for Linux
  *
@@ -389,12 +392,16 @@ void SetSignals(void (*handler)(int))
 #ifdef SIGQUIT
   signal(SIGQUIT, HANDLER(handler));
 #endif
+
+#ifndef P_PTHREADS
 #ifdef SIGUSR1
   signal(SIGUSR1, HANDLER(handler));
 #endif
 #ifdef SIGUSR2
   signal(SIGUSR2, HANDLER(handler));
 #endif
+#endif
+
 #ifdef SIGPIPE
   signal(SIGPIPE, HANDLER(handler));
 #endif
