@@ -1,3 +1,37 @@
+/*
+ * svcproc.cxx
+ *
+ * Service process (daemon) implementation.
+ *
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Log: svcproc.cxx,v $
+ * Revision 1.20  1998/09/24 04:12:20  robertj
+ * Added open software license.
+ *
+ */
+
 #include <ptlib.h>
 
 #pragma implementation "svcproc.h"
@@ -55,6 +89,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
       "Debug2",
       "Debug3"
     };
+
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss\t") << levelName[level+1] << '\t' << cmsg << endl;
 
