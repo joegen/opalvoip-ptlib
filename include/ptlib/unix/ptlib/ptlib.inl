@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.27  2002/11/19 12:14:44  robertj
+ * Added function to get root directory.
+ *
  * Revision 1.26  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -109,6 +112,9 @@ PINLINE unsigned PTimer::Resolution()
 
 PINLINE BOOL PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
+
+PINLINE PDirectory PDirectory::GetRoot() const
+  { return PString(PDIR_SEPARATOR); }
 
 PINLINE BOOL PDirectory::IsSeparator(char ch)
   { return ch == PDIR_SEPARATOR; }
