@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.13 1995/06/17 11:12:21 robertj Exp $
+ * $Id: channel.h,v 1.14 1995/07/31 12:15:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.14  1995/07/31 12:15:42  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.13  1995/06/17 11:12:21  robertj
  * Documentation update.
  *
@@ -97,8 +100,8 @@ PCLASS PChannelStreamBuffer : public PObject, public streambuf {
 };
 
 
-PCLASS PChannel : public PContainer, public iostream {
-  PCONTAINERINFO(PChannel, PContainer)
+PCLASS PChannel : public PObject, public iostream {
+  PCLASSINFO(PChannel, PObject)
 /* Abstract class defining I/O channel semantics. An I/O channel can be a
    serial port, pipe, network socket or even just a simple file. Anything that
    requires opening and closing then reading and/or writing from.
@@ -123,7 +126,10 @@ PCLASS PChannel : public PContainer, public iostream {
 
   public:
     PChannel();
-      // Construct the channel
+      // Create the channel.
+
+    ~PChannel();
+      // CLose down the channel.
 
 
     // New functions for class
@@ -453,6 +459,10 @@ PCLASS PChannel : public PContainer, public iostream {
       // Timeout for write operations.
 
   private:
+    PChannel(const PChannel &) { }
+    PChannel & operator=(const PChannel &) { return *this; }
+    // Prevent usage by descendents
+
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
 
