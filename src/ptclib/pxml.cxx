@@ -280,6 +280,19 @@ PXMLElement * PXML::GetElement(PINDEX idx) const
   return (PXMLElement *)(rootElement->GetElement(idx));
 }
 
+BOOL PXML::RemoveElement(PINDEX idx)
+{
+  if (rootElement == NULL)
+    return FALSE;
+
+  if (idx >= rootElement->GetSize())
+    return FALSE;
+
+  rootElement->RemoveElement(idx);
+  return TRUE;
+}
+
+
 PINDEX PXML::GetNumElements() const
 {
 	if (rootElement == NULL) return 0;
@@ -523,6 +536,16 @@ PXMLObject * PXMLElement::GetElement(PINDEX idx) const
 
   return &subObjects[idx];
 }
+
+BOOL PXMLElement::RemoveElement(PINDEX idx)
+{
+  if (idx >= subObjects.GetSize())
+    return FALSE;
+
+  subObjects.RemoveAt(idx);
+  return TRUE;
+}
+
 
 PString PXMLElement::GetAttribute(const PCaselessString & key) const
 {
