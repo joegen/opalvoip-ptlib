@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.35  2004/08/17 15:18:30  csoutheren
+ * Added support for MovedTemp/MovedPerm to GetDocument
+ * Fixed problem with empty URL passed to ExecuteCommand
+ *
  * Revision 1.34  2004/04/19 12:53:06  csoutheren
  * Fix for iostream changes thanks to David Parr
  *
@@ -378,7 +382,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
   else
     this_stream << cmdName;
 
-  this_stream << ' ' << url << " HTTP/1.1\r\n"
+  this_stream << ' ' << (url.IsEmpty() ? "/" : url) << " HTTP/1.1\r\n"
               << setfill('\r') << outMIME;
 
   return Write((const char *)dataBody, len);
@@ -406,7 +410,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       if (replyMIME.Read(*this))
         return TRUE;
   }
-
+ 
   lastResponseCode = -1;
   if (GetErrorCode(LastReadError) != NoError)
     lastResponseInfo = GetErrorText(LastReadError);
@@ -506,12 +510,41 @@ BOOL PHTTPClient::GetTextDocument(const PURL & url,
 }
 
 
-BOOL PHTTPClient::GetDocument(const PURL & url,
-                              PMIMEInfo & outMIME,
+BOOL PHTTPClient::GetDocument(const PURL & _url,
+                              PMIMEInfo & _outMIME,
                               PMIMEInfo & replyMIME,
                               BOOL persist)
 {
-  return ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist) == RequestOK;
+  int count = 0;
+  static const char locationTag[] = "Location";
+  PURL url = _url;
+  for (;;) {
+    PMIMEInfo outMIME = _outMIME;
+    replyMIME.RemoveAll();
+    PString u = url.AsString();
+    int code = ExecuteCommand(GET, url, outMIME, PString(), replyMIME, persist);
+    switch (code) {
+      case RequestOK:
+        return TRUE;
+      case MovedPermanently:
+      case MovedTemporarily:
+        {
+          if (count > 10)
+            return FALSE;
+          PString str = replyMIME(locationTag);
+          if (str.IsEmpty())
+            return FALSE;
+          PString doc;
+          if (!ReadContentBody(replyMIME, doc))
+            return FALSE;
+          url = str;
+          count++;
+        }
+        break;
+      default:
+        return FALSE;
+    }
+  }
 }
 
 
