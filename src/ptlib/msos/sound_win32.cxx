@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.6  2004/02/23 23:52:20  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.5  2004/02/15 03:59:20  rjongbloed
  * Fixed the default number of buffer to be the value determined emprirically in
  *    OpenH323, thanks Ted Szoczei
@@ -164,6 +167,9 @@
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
+#pragma comment(lib,    "winmm.lib")
+#pragma comment(linker, "/delayload:winmm.dll")
+#pragma comment(lib,    "Delayimp.lib")
 
 class PSound;
 

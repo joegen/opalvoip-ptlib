@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.8  2004/02/23 23:52:20  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.7  2003/10/30 11:28:25  rjongbloed
  * Added dircetory name for Speech API under Windows.
  *
@@ -60,7 +63,9 @@
 #if P_SAPI
 
 #if defined(P_SAPI_LIBRARY)
-#pragma comment(lib, P_SAPI_LIBRARY)
+#pragma comment(lib,    P_SAPI_LIBRARY)
+#pragma comment(linker, "/delayload:sapi.dll")
+#pragma comment(lib,    "Delayimp.lib")
 #endif
 
 
