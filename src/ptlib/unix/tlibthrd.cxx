@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.51  2000/11/16 11:06:38  rogerh
+ * Add a better fix for the "user signal 2" aborts seen on FreeBSD 4.2 and above.
+ * We need to sched_yeild() after the pthread_create() to make sure the new thread
+ * actually has a chance to execute. The abort problem was caused when the
+ * resume signal was issued before the thread was ready for it.
+ *
  * Revision 1.50  2000/11/12 23:30:02  craigs
  * Added extra WaitForTermination to assist bug location
  *
@@ -289,13 +295,6 @@ static void sigSuspendHandler(int)
 }
 
 
-static void sigResumeHandler(int)
-{
-  // do nothing. This is here so the 'signal' is consumed
-  // and stops the application terminating with "User signal 2"
-}
-
-
 void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
@@ -421,8 +420,25 @@ void PThread::PX_NewThread(BOOL startSuspended)
 //  pthread_attr_t threadAttr;
 //  pthread_attr_init(&threadAttr);
   PAssertOS(pthread_create(&PX_threadId, NULL, PX_ThreadStart, this) == 0);
-}
 
+#if defined(P_FREEBSD)
+  // There is a potential race condition here which shows up with FreeBSD 4.2
+  // and later, but really applies to all pthread libraries.
+  // If a thread is started in suspend mode, we need to make sure
+  // the thread (PX_ThreadStart) has had a chance to execute and block on the
+  // sigwait() (blocking on the Resume Signal) before this function returns.
+  // Otherwise the main program may issue a Resume Signal on the thread
+  // by calling PThread::Resume() before the thread is ready for it.
+  // If that happens the program will abort with an unhandled signal error.
+  // A workaround (not 100% guaranteed) is to yield here, which gives
+  // the newly created thread (PX_ThreadStart) a chance to execute.
+
+  if (startSuspended) {
+    sched_yield();
+  }
+#endif
+}
+ 
 
 void * PThread::PX_ThreadStart(void * arg)
 { 
@@ -597,13 +613,6 @@ void PThread::Suspend(BOOL susp)
 {
   PAssertOS(pthread_mutex_lock(&PX_suspendMutex) == 0);
   BOOL unlock = TRUE;
-
-#if defined(P_FREEBSD)
-  struct sigaction resume_action;
-  memset(&resume_action, 0, sizeof(resume_action));
-  resume_action.sa_handler = sigResumeHandler;
-  sigaction(RESUME_SIG, &resume_action, 0);
-#endif
 
   if (pthread_kill(PX_threadId, 0) == 0) {
 
