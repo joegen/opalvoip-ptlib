@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.58  2001/07/09 04:26:08  yurik
+ * Fixed lack of pthread_self function on BeOS
+ *
  * Revision 1.57  2001/07/04 08:54:23  robertj
  * Added dump of thread in SEGV signal handler, this one seems to work.
  *
@@ -675,7 +678,6 @@ void PServiceProcess::Terminate()
   exit(terminationValue);
 }
 
-
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
   const char * sigmsg;
@@ -713,12 +715,11 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   inHandler = TRUE;
 
-
-  unsigned thread_id = (unsigned)pthread_self();
-  PThread * thread_ptr = activeThreads.GetAt(thread_id);
+  unsigned tid = (unsigned) pthread_self();
+  PThread * thread_ptr = activeThreads.GetAt(tid);
 
   char msg[200];
-  sprintf(msg, "\nCaught %s, thread_id=%u", sigmsg, thread_id);
+  sprintf(msg, "\nCaught %s, thread_id=%u", sigmsg, tid);
 
   if (thread_ptr != NULL) {
     PString thread_name = thread_ptr->GetThreadName();
