@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.19  2002/12/19 03:37:05  craigs
+ * Simplified PChannel::WriteString
+ *
  * Revision 1.18  2002/04/09 02:30:18  robertj
  * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
  *
@@ -289,13 +292,7 @@ PString PChannel::ReadString(PINDEX len)
 
 BOOL PChannel::WriteString(const PString & str)
 {
-  const char * ptr = str;
-  PINDEX len = 0, slen = str.GetLength();
-
-  while (len < slen && Write(ptr+len, slen - len))
-    len += lastWriteCount;
-
-  return len == slen;
+  return Write((const char *)str, str.GetLength()); 
 }
 
 
