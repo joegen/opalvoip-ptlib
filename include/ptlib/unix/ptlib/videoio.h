@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.14  2001/11/25 23:47:05  robertj
+ * Changed sense of HAS_VIDEO_CAPTURE to NO_VIDEO_CAPTURE to reduce cmd line.
+ *
  * Revision 1.13  2001/11/22 16:08:32  rogerh
  * Allow compiles on Linux without V4L installed (eg 2.0.36 / RedHat 5.2)
  *
@@ -76,7 +79,7 @@
 
 #ifndef _PVIDEOIO
 
-#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
+#if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
 #include <linux/videodev.h>     /* change this to "videodev2.h" for v4l2 */
 #endif
 
@@ -115,7 +118,7 @@
     virtual int GetHue();
     virtual BOOL SetHue(unsigned newHue); 
 
-#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
+#if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
     // only override these methods in Linux. Other platforms will use the
     // default methods in PVideoDevice
     virtual int GetWhiteness();
@@ -127,7 +130,7 @@
     void ClearMapping();
 
 
-#if defined(P_LINUX) && defined(HAS_VIDEO_CAPTURE)
+#if defined(P_LINUX) && !defined(NO_VIDEO_CAPTURE)
     int    videoFd;
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
