@@ -1,11 +1,17 @@
 /*
- * $Id: httpsvc.h,v 1.4 1996/08/19 13:43:46 robertj Exp $
+ * $Id: httpsvc.h,v 1.5 1996/09/14 13:09:12 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.5  1996/09/14 13:09:12  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.4  1996/08/19 13:43:46  robertj
  * Fixed race condition in system restart logic.
  *
@@ -65,10 +71,12 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
 /////////////////////////////////////////////////////////////////////
 
+class PTCPSocket;
+
 PDECLARE_CLASS(PHTTPServiceThread, PThread)
   public:
     PHTTPServiceThread(PHTTPServiceProcess & app,
-                       PTCPSocket & listeningSocket,
+                       PSocket & listeningSocket,
                        PHTTPSpace & http)
       : PThread(10000, AutoDeleteThread),
         process(app), listener(listeningSocket), httpSpace(http)
@@ -78,7 +86,7 @@ PDECLARE_CLASS(PHTTPServiceThread, PThread)
 
   protected:
     PHTTPServiceProcess & process;
-    PTCPSocket & listener;
+    PSocket & listener;
     PHTTPSpace & httpSpace;
 };
 
@@ -100,7 +108,7 @@ PDECLARE_CLASS(PConfigPage, PHTTPConfig)
     );
 
     BOOL OnPOST(
-      PHTTPSocket & socket,
+      PHTTPServer & server,
       const PURL & url,
       const PMIMEInfo & info,
       const PStringToString & data,
