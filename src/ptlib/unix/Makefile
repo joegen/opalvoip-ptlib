@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.82  2001/11/25 23:28:04  robertj
+# Fixed correct setting of HAS_VIDEO_CAPTURE compile flag
+#
 # Revision 1.81  2001/08/11 15:38:43  rogerh
 # Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
 #
@@ -307,17 +310,14 @@ VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
 VIDEO_CAPTURE_SOURCE = video4linux.cxx
-STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
 VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
 VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
