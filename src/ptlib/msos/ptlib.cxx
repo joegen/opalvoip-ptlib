@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.36 1998/05/26 01:29:53 robertj Exp $
+ * $Id: ptlib.cxx,v 1.37 1998/09/14 12:55:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.37  1998/09/14 12:55:06  robertj
+ * Changed memory debug to dump leaks not including static globals.
+ *
  * Revision 1.36  1998/05/26 01:29:53  robertj
  * Removed assert as this Close() function is now called all the time for Unix reasons.
  *
@@ -706,13 +709,21 @@ BOOL PTextFile::WriteLine(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+#if defined(_DEBUG) && defined(_MSC_VER)
+void PDumpObjects(void *userPortion, size_t)
+{
+  PObject * obj = (PObject *)userPortion;
+  _CrtDbgReport(_CRT_WARN, NULL, 0, NULL, "class = %s\n", obj->GetClass());
+}
+#endif
+
 void PProcess::Construct()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_MSC_VER)
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
   _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
-  _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG)|_CRTDBG_LEAK_CHECK_DF);
+  _CrtSetDumpClient(PDumpObjects);
 #endif
 
   PSetErrorStream(&cerr);
