@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.133  2005/01/11 06:22:10  csoutheren
+# Fixed problem with removing HTTP classes
+#
 # Revision 1.132  2005/01/03 12:48:43  csoutheren
 # Added new configure options and ability to disable/enable modules
 #
@@ -630,7 +633,9 @@ SOURCES += \
 endif
 
 ifdef HAS_HTTP
-SOURCES += $(COMPONENT_SRC_DIR)/http.cxx 
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/http.cxx \
+	$(COMPONENT_SRC_DIR)/httpclnt.cxx 
 endif
 
 ifdef HAS_HTTPSVC
@@ -638,7 +643,6 @@ SOURCES += \
 	svcproc.cxx \
 	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
 	$(COMPONENT_SRC_DIR)/httpform.cxx \
-	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
 	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
 	$(COMPONENT_SRC_DIR)/html.cxx 
 
