@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.30 1997/07/08 13:13:47 robertj Exp $
+ * $Id: pstring.h,v 1.31 1997/12/11 10:29:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.31  1997/12/11 10:29:49  robertj
+ * Added type correct Contains() function to dictionaries.
+ *
  * Revision 1.30  1997/07/08 13:13:47  robertj
  * DLL support.
  *
@@ -1644,7 +1647,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
      */
 
     PString operator()(const K & key, const char * dflt = "") const
-      { if (Contains(key)) return (*this)[key]; return dflt; }
+      { if (AbstractContains(key)) return (*this)[key]; return dflt; }
     /* Get the string contained in the dictionary at the <CODE>key</CODE>
        position. The hash table is used to locate the data quickly via the
        hash function provided by the key.
@@ -1657,6 +1660,18 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
        <H2>Returns:</H2>
        reference to the object indexed by the key.
+     */
+
+    BOOL Contains(
+      const K & key   // Key to look for in the dictionary.
+      ) const { return AbstractContains(key); }
+    /* Determine if the value of the object is contained in the hash table. The
+       object values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
+
+       <H2>Returns:</H2>
+       TRUE if the object value is in the dictionary.
      */
 
     virtual PString * RemoveAt(
@@ -1817,6 +1832,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       { return (PString &)GetRefAt(key); } \
     inline PString operator()(const K & key, const char * dflt = "") const \
       { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
+    virtual BOOL Contains(const K & key) const \
+      { return AbstractContains(key); } \
     virtual PString * RemoveAt(const K & key) \
       { PObject * obj = GetAt(key); PAbstractDictionary::SetAt(key,NULL); return (PString*)obj;}\
     inline virtual PString * GetAt(const K & key) const \
