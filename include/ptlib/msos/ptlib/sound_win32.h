@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.h,v $
+ * Revision 1.3  2004/10/23 11:32:27  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.2  2003/12/29 03:28:56  csoutheren
  * Allowed access to Windows sound channel declaration, just in case it is required
  *
@@ -43,7 +46,9 @@
 #define _PSOUND_WIN32
 
 #include <mmsystem.h>
+#ifndef _WIN32_WCE
 #pragma comment(lib, "winmm.lib")
+#endif
 
 class PWaveFormat : public PObject
 {
