@@ -64,9 +64,9 @@ CLEAN_FILES	:= $(CLEAN_FILES) core
 ifdef	PROG
 
 ifndef	SHAREDLIB
-all:	$(OBJDIR)/$(PROG)
+all ::	$(OBJDIR)/$(PROG)
 else
-all:	$(OBJDIR)/$(PROG)_dll
+all ::	$(OBJDIR)/$(PROG)_dll
 endif
 
 ifdef BUILDFILES
