@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.11  2001/03/06 23:34:20  robertj
+ * Added static function to get input device names.
+ * Moved some inline virtuals to non-inline.
+ *
  * Revision 1.10  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -132,7 +136,7 @@ class PVideoDevice : public PObject
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const ;
+    virtual PStringList GetDeviceNames() const = 0;
 
 
     enum VideoFormat {
@@ -331,16 +335,22 @@ class PVideoOutputDevice : public PVideoDevice
     /**Cause the referenced data to be drawn to the 
        previously defined media 
      */
-    virtual BOOL Redraw(const void * /*frame*/ ) {	return FALSE; };
+    virtual BOOL Redraw(
+      const void * /*frame*/
+    );
 
     /**Specifiy the width and height of the video stream.
      */
-    virtual void SetFrameSize(int /*_width*/, int /*_height*/) 
-	{   };
+    virtual void SetFrameSize(
+      int /*_width*/,
+      int /*_height*/
+    );
 
     /**Set the current time.
      */
-    virtual void SetNow(int _now)  { now = _now; }
+    virtual void SetNow(
+      int _now
+    );
 
 
   protected:
@@ -395,7 +405,11 @@ class PVideoInputDevice : public PVideoDevice
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const ;
+    virtual PStringList GetDeviceNames() const;
+
+    /**Get a list of all of the drivers available.
+      */
+    static PStringList GetInputDeviceNames();
 
     /**Get the maximum frame size in bytes.
 

@@ -2062,7 +2062,6 @@ EXPORTS
     ?GetDeviceNames@PFakeVideoInputDevice@@UBE?AVPStringList@@XZ @3475 NONAME ;public: virtual class PStringList  __thiscall PFakeVideoInputDevice::GetDeviceNames(void)const 
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringArray@@W4Directions@1@@Z @2685 NONAME ;public: static class PStringArray  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
     ?GetDeviceNames@PVideoChannel@@SA?AVPStringList@@W4Directions@1@@Z @3440 NONAME ;public: static class PStringList  __cdecl PVideoChannel::GetDeviceNames(enum PVideoChannel::Directions)
-    ?GetDeviceNames@PVideoDevice@@UBE?AVPStringList@@XZ @3441 NONAME ;public: virtual class PStringList  __thiscall PVideoDevice::GetDeviceNames(void)const 
     ?GetDeviceNames@PVideoInputDevice@@UBE?AVPStringList@@XZ @3365 NONAME ;public: virtual class PStringList  __thiscall PVideoInputDevice::GetDeviceNames(void)const 
     ?GetDirectory@PFilePath@@QBE?AVPDirectory@@XZ @1441 NONAME ;public: class PDirectory  __thiscall PFilePath::GetDirectory(void)const 
     ?GetDSR@PSerialChannel@@QAEHXZ @1442 NONAME ;public: int __thiscall PSerialChannel::GetDSR(void)
@@ -2134,6 +2133,7 @@ EXPORTS
     ?GetInfo@PDirectory@@QBEHAAVPFileInfo@@@Z @1487 NONAME ;public: int __thiscall PDirectory::GetInfo(class PFileInfo &)const 
     ?GetInfo@PFile@@QAEHAAVPFileInfo@@@Z @1488 NONAME ;public: int __thiscall PFile::GetInfo(class PFileInfo &)
     ?GetInfo@PFile@@SAHABVPFilePath@@AAVPFileInfo@@@Z @1489 NONAME ;public: static int __cdecl PFile::GetInfo(class PFilePath const &,class PFileInfo &)
+    ?GetInputDeviceNames@PVideoInputDevice@@SA?AVPStringList@@XZ @3693 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetInputDeviceNames(void)
     ?GetInputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1490 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetInputFlowControl(void)const 
     ?GetInt64@PConfig@@QBE_JABVPString@@0_J@Z @1491 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,class PString const &,__int64)const 
     ?GetInt64@PConfig@@QBE_JABVPString@@_J@Z @1492 NONAME ;public: __int64 __thiscall PConfig::GetInt64(class PString const &,__int64)const 

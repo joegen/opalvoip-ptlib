@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.9  2001/03/06 23:34:20  robertj
+ * Added static function to get input device names.
+ * Moved some inline virtuals to non-inline.
+ *
  * Revision 1.8  2001/03/05 01:12:41  robertj
  * Added more source formats for conversion, use list. Thanks Mark Cooke.
  *
@@ -85,16 +89,6 @@ BOOL PVideoDevice::SetVideoFormat(VideoFormat videoFmt)
 PVideoDevice::VideoFormat PVideoDevice::GetVideoFormat() const
 {
   return videoFormat;
-}
-
-
-PStringList PVideoDevice::GetDeviceNames() const
-{
-  PStringList list;
-
-  list.AppendString("Video Device raw.");
-
-  return list;  
 }
 
 
@@ -268,8 +262,31 @@ PVideoOutputDevice::PVideoOutputDevice()
 }
 
 
+BOOL PVideoOutputDevice::Redraw(const void * /*frame*/)
+{
+  return FALSE;
+}
+
+
+void PVideoOutputDevice::SetFrameSize(int /*_width*/, int /*_height*/) 
+{
+}
+
+
+void PVideoOutputDevice::SetNow(int _now)
+{
+  now = _now;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
+
+PStringList PVideoInputDevice::GetDeviceNames() const
+{
+  return GetInputDeviceNames();
+}
+
 
 BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
 {
