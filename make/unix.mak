@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.49  1999/09/21 00:56:29  robertj
+# Added more sound support for BeOS (thanks again Yuri!)
+#
 # Revision 1.48  1999/08/24 01:58:29  robertj
 # Added normalisation of sun4 architecture MACHTYPE to be sparc.
 #
@@ -339,7 +342,7 @@ ifeq ($(OSTYPE),beos)
 BE_THREADS := 0
 
 # BeOS R4, using gcc from Cygnus version 2.9-beos-980929
-LDLIBS		+= -lbe
+LDLIBS		+= -lbe -lmedia -lgame
 
 ifdef BE_THREADS
 STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
