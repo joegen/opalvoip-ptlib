@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.45 1997/07/12 09:45:01 robertj Exp $
+ * $Id: http.cxx,v 1.46 1997/07/14 11:47:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.46  1997/07/14 11:47:10  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.45  1997/07/12 09:45:01  robertj
  * Fixed bug when URL has + sign in somthing other than parameters.
  *
@@ -199,13 +202,13 @@ enum SchemeFormat {
 
 class schemeStruct {
   public:
-    char * name;
-    int    type;
-    BOOL   hasDoubleSlash;
-    WORD   defaultPort;
+    const char * name;
+    int  type;
+    BOOL hasDoubleSlash;
+    WORD defaultPort;
 };
 
-static schemeStruct schemeInfo[] = {
+static schemeStruct const schemeInfo[] = {
   { "http",      UserPasswordHostPort, TRUE, DEFAULT_HTTP_PORT },
   { "https",     HostPort, TRUE, DEFAULT_HTTPS_PORT },
   { "gopher",    HostPort, TRUE, DEFAULT_GOPHER_PORT },
@@ -221,15 +224,15 @@ static schemeStruct schemeInfo[] = {
   { NULL }
 };
 
-static schemeStruct defaultSchemeInfo = { "other", Other, FALSE};
+static schemeStruct const defaultSchemeInfo = { "other", Other, FALSE};
 
-static schemeStruct * GetSchemeInfo(const PString & scheme)
+static const schemeStruct & GetSchemeInfo(const PString & scheme)
 {
   PINDEX i;
   for (i = 0; schemeInfo[i].name != NULL; i++)
     if (scheme *= schemeInfo[i].name)
-      return &schemeInfo[i];
-  return &defaultSchemeInfo;
+      return schemeInfo[i];
+  return defaultSchemeInfo;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -384,7 +387,7 @@ void PURL::Parse(const char * cstr)
 
   PINDEX pos;
 
-  static PString reservedChars = "=;/#?";
+  static const PString reservedChars = "=;/#?";
 
   // determine if the URL has a scheme
   scheme = "";
@@ -412,23 +415,23 @@ void PURL::Parse(const char * cstr)
 
     // get information which tells us how to parse URL for this
     // particular scheme
-    schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+    const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
     
     // if the URL should have leading slash, then remove it if it has one
-    if (schemeInfo->hasDoubleSlash &&
+    if (schemeInfo.hasDoubleSlash &&
       url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
     url.Delete(0, 2);
 
     // if the rest of the URL isn't a path, then we are finished!
-    if (schemeInfo->type == Other) {
+    if (schemeInfo.type == Other) {
       pathStr = url;
       return;
     }
 
     // parse user/password/host/port
-    if (schemeInfo->type == HostPort ||
-        schemeInfo->type == UserPasswordHostPort ||
-        schemeInfo->type == HostOnly) {
+    if (schemeInfo.type == HostPort ||
+        schemeInfo.type == UserPasswordHostPort ||
+        schemeInfo.type == HostOnly) {
       pos = url.Find('/');
       PString uphp = url.Left(pos);
       if (pos != P_MAX_INDEX)
@@ -437,13 +440,13 @@ void PURL::Parse(const char * cstr)
         url = PString();
 
       // if the URL is of type HostOnly, then this is the hostname
-      if (schemeInfo->type == HostOnly) {
+      if (schemeInfo.type == HostOnly) {
         hostname = uphp;
         UnmangleString(hostname, NormalTranslation);
       } 
 
       // if the URL is of type UserPasswordHostPort, then parse it
-      if (schemeInfo->type == UserPasswordHostPort) {
+      if (schemeInfo.type == UserPasswordHostPort) {
 
         // extract username and password
         PINDEX pos2 = uphp.Find('@');
@@ -463,12 +466,12 @@ void PURL::Parse(const char * cstr)
       }
 
       // determine if the URL has a port number
-      if (schemeInfo->type == HostPort ||
-          schemeInfo->type == UserPasswordHostPort) {
+      if (schemeInfo.type == HostPort ||
+          schemeInfo.type == UserPasswordHostPort) {
         pos = uphp.Find(":");
         if (pos == P_MAX_INDEX) {
           hostname = uphp;
-          port = schemeInfo->defaultPort;
+          port = schemeInfo.defaultPort;
         } else {
           hostname = uphp.Left(pos);
           port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
@@ -530,18 +533,18 @@ PString PURL::AsString(UrlFormat fmt) const
       str << "http://";
     else {
       str << scheme << ':';
-      schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+      const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
-      if (schemeInfo->hasDoubleSlash)
+      if (schemeInfo.hasDoubleSlash)
         str << "//";
 
-      if (schemeInfo->type == Other) 
+      if (schemeInfo.type == Other) 
         str << pathStr;
       else {
-        if (schemeInfo->type == HostOnly)
+        if (schemeInfo.type == HostOnly)
           str << hostname;
 
-        if (schemeInfo->type == UserPasswordHostPort) {
+        if (schemeInfo.type == UserPasswordHostPort) {
           if (!username || !password)
             str << TranslateString(username)
                 << ':'
@@ -549,10 +552,10 @@ PString PURL::AsString(UrlFormat fmt) const
                 << '@';
         }
 
-        if (schemeInfo->type == HostPort ||
-            schemeInfo->type == UserPasswordHostPort) {
+        if (schemeInfo.type == HostPort ||
+            schemeInfo.type == UserPasswordHostPort) {
           str << hostname;
-          if (port != schemeInfo->defaultPort)
+          if (port != schemeInfo.defaultPort)
             str << ':'
                 << port;
         }
@@ -588,7 +591,7 @@ PString PURL::AsString(UrlFormat fmt) const
 //////////////////////////////////////////////////////////////////////////////
 // PHTTP
 
-static char const * HTTPCommands[PHTTP::NumCommands] = {
+static char const * const HTTPCommands[PHTTP::NumCommands] = {
   // HTTP 1.0 commands
   "GET", "HEAD", "POST",
 
