@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.68  1998/11/30 08:57:17  robertj
+ * Fixed problem where if += is used on PFilePath, it no longer may be normalised.
+ *
  * Revision 1.67  1998/11/19 05:17:35  robertj
  * Added PWaitAndSignal class for easier mutexing.
  *
@@ -516,6 +519,15 @@ PINLINE PFilePath & PFilePath::operator=(const char * cstr)
 
 PINLINE PFilePath & PFilePath::operator=(const PFilePath & path)
   { PFILE_PATH_STRING::operator=(path); return *this; }
+
+PINLINE PFilePath & PFilePath::operator+=(const PString & str)
+  { operator=(*this + str); return *this; }
+
+PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
+  { operator=(*this + cstr); return *this; }
+
+PINLINE PFilePath & PFilePath::operator+=(char ch)
+  { operator=(*this + ch); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
