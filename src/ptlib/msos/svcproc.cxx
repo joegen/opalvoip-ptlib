@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.54  1999/07/16 03:22:16  robertj
+ * Fixed tray icon version command so does not ask question.
+ *
  * Revision 1.53  1999/06/14 07:59:39  robertj
  * Enhanced tracing again to add options to trace output (timestamps etc).
  *
@@ -849,7 +852,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
           else if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds) {
             const char * cmdname = ServiceCommandNames[wParam-SvcCmdBaseMenuID];
-            if (MessageBox(hWnd, cmdname & GetName(), GetName(),
+            if (wParam == SvcCmdBaseMenuID+SvcCmdVersion ||
+                MessageBox(hWnd, cmdname & GetName() & "?", GetName(),
                            MB_ICONQUESTION|MB_YESNO) == IDYES)
               ProcessCommand(cmdname);
           }
