@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.14 1996/05/15 10:23:25 robertj Exp $
+ * $Id: ptlib.inl,v 1.15 1996/07/20 05:32:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.15  1996/07/20 05:32:26  robertj
+ * MSVC 4.1 compatibility.
+ *
  * Revision 1.14  1996/05/15 10:23:25  robertj
  * Changed millisecond access functions to get 64 bit integer.
  *
@@ -63,7 +66,7 @@
 #ifdef _WINDOWS
 
 PINLINE PTimeInterval PTimer::Tick()
-  { return GetTickCount()&0x7fffffff; }
+  { return (int)(GetTickCount()&0x7fffffff); }
 
 PINLINE unsigned PTimer::Resolution()
 #if defined(_WIN32)
