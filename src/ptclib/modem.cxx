@@ -1,5 +1,5 @@
 /*
- * serial.cxx
+ * modem.cxx
  *
  * Asynchronous Serial I/O channel class.
  *
@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.cxx,v $
+ * Revision 1.4  1998/11/30 12:33:06  robertj
+ * Split serial channel and modem, modem to components library.
+ *
  * Revision 1.3  1998/09/23 06:22:38  robertj
  * Added open source copyright license.
  *
@@ -39,83 +42,13 @@
  */
 
 #include <ptlib.h>
+#include <ptclib/modem.h>
 
 #include <ctype.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PSerialChannel
-
-#ifdef _PSERIALCHANNEL
-
-PSerialChannel::PSerialChannel()
-{
-  Construct();
-}
-
-
-PSerialChannel::PSerialChannel(const PString & port, DWORD speed, BYTE data,
-       Parity parity, BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
-{
-  Construct();
-  Open(port, speed, data, parity, stop, inputFlow, outputFlow);
-}
-
-
-PSerialChannel::PSerialChannel(PConfig & cfg)
-{
-  Construct();
-  Open(cfg);
-}
-
-
-PSerialChannel::~PSerialChannel()
-{
-  Close();
-}
-
-
-static const char PortName[] = "PortName";
-static const char PortSpeed[] = "PortSpeed";
-static const char PortDataBits[] = "PortDataBits";
-static const char PortParity[] = "PortParity";
-static const char PortStopBits[] = "PortStopBits";
-static const char PortInputFlow[] = "PortInputFlow";
-static const char PortOutputFlow[] = "PortOutputFlow";
-
-
-BOOL PSerialChannel::Open(PConfig & cfg)
-{
-  PStringList ports = GetPortNames();
-  return Open(cfg.GetString(PortName, ports[0]),
-              cfg.GetInteger(PortSpeed, 9600),
-              (BYTE)cfg.GetInteger(PortDataBits, 8),
-              (PSerialChannel::Parity)cfg.GetInteger(PortParity, 1),
-              (BYTE)cfg.GetInteger(PortStopBits, 1),
-              (PSerialChannel::FlowControl)cfg.GetInteger(PortInputFlow, 1),
-              (PSerialChannel::FlowControl)cfg.GetInteger(PortOutputFlow, 1));
-}
-
-
-void PSerialChannel::SaveSettings(PConfig & cfg)
-{
-  cfg.SetString(PortName, GetName());
-  cfg.SetInteger(PortSpeed, GetSpeed());
-  cfg.SetInteger(PortDataBits, GetDataBits());
-  cfg.SetInteger(PortParity, GetParity());
-  cfg.SetInteger(PortStopBits, GetStopBits());
-  cfg.SetInteger(PortInputFlow, GetInputFlowControl());
-  cfg.SetInteger(PortOutputFlow, GetOutputFlowControl());
-}
-
-
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PModem
-
-#ifdef _PMODEM
 
 PModem::PModem()
 {
@@ -520,27 +453,6 @@ BOOL PModem::CanRead() const
       return TRUE;
   }
 }
-
-
-void PSerialChannel::ClearDTR()
-{
-  SetDTR(FALSE);
-}
-
-
-void PSerialChannel::ClearRTS()
-{
-  SetRTS(FALSE);
-}
-
-
-void PSerialChannel::ClearBreak()
-{
-  SetBreak(FALSE);
-}
-
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
