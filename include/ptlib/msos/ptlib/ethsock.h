@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.5  1998/11/30 02:55:09  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/11/20 03:17:42  robertj
  * Split rad and write buffers to separate pools.
  *
@@ -50,7 +53,7 @@ class PWin32PacketBuffer;
 PARRAY(PWin32PackBufArray, PWin32PacketBuffer);
 
 
-#include "../../common/ptlib/ethsock.h"
+#include "../../ethsock.h"
   public:
   // Overrides from class PChannel
     virtual PString GetName() const;
