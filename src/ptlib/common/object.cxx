@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.62  2002/10/21 12:52:27  rogerh
+ * Add throw()s to new and delete. Error reported by FreeBSD 5.0 and GCC 3.2.1
+ *
  * Revision 1.61  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -311,25 +314,41 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 #undef free
 
 
+#if __GNUC__ >= 3
+void * operator new(size_t nSize) throw (std::bad_alloc)
+#else
 void * operator new(size_t nSize)
+#endif
 {
   return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
 }
 
 
+#if __GNUC__ >= 3
+void * operator new[](size_t nSize) throw (std::bad_alloc)
+#else
 void * operator new[](size_t nSize)
+#endif
 {
   return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
 }
 
 
+#if __GNUC__ >= 3
+void operator delete(void * ptr) throw()
+#else
 void operator delete(void * ptr)
+#endif
 {
   PMemoryHeap::Deallocate(ptr, NULL);
 }
 
 
+#if __GNUC__ >= 3
+void operator delete[](void * ptr) throw()
+#else
 void operator delete[](void * ptr)
+#endif
 {
   PMemoryHeap::Deallocate(ptr, NULL);
 }
@@ -819,12 +838,20 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #ifndef P_VXWORKS
 
+#if __GNUC__ >= 3
+void * operator new[](size_t nSize) throw (std::bad_alloc)
+#else
 void * operator new[](size_t nSize)
+#endif
 {
   return malloc(nSize);
 }
 
+#if __GNUC__ >= 3
+void operator delete[](void * ptr) throw ()
+#else
 void operator delete[](void * ptr)
+#endif
 {
   free(ptr);
 }
