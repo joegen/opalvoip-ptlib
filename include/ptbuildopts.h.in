@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.28  2004/04/09 11:54:46  csoutheren
+ * Added configure.in check for STL streams, and tested with gcc 2.95.3,
+ * gcc 3.3.1, and gcc 3.3.3
+ *
  * Revision 1.27  2004/04/03 23:53:08  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -418,6 +422,7 @@
 #undef	PHAS_TEMPLATES
 #undef	PNO_LONG_DOUBLE
 #undef	P_HAS_POSIX_READDIR_R
+#undef  P_HAS_STL_STREAMS
 
 #endif // _PT_BUILDOPTS_H
 
