@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.53  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.52  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -544,6 +547,7 @@ typedef int64_t         quad_t;
 extern "C" {
   int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *tv);
   int strcasecmp(const char *, const char *);
+  int strncasecmp(const char *, const char *, size_t);
   char* strdup(const char *);
 }
 #define PSETPGRP()  tcsetprgrp(0, 0)

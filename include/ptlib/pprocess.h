@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.57  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.56  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -221,11 +224,13 @@
   instance._main();
 #elif defined(P_RTEMS)
 #define PCREATE_PROCESS(cls) \
-   rtems_task Init( rtems_task_argument argument) \
+extern "C" {\
+   void* POSIX_Init( void* argument) \
      { PProcess::PreInitialise(0, 0, 0); \
        static cls instance; \
        exit( instance._main() ); \
-     }
+     } \
+}
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
