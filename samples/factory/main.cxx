@@ -15,8 +15,8 @@ PCREATE_PROCESS(Factory)
 
 void Factory::Main()
 {
-  PGenericFactory<AbstractClass>::KeyList_T keyList = PGenericFactory<AbstractClass>::GetKeyList();
-  PGenericFactory<AbstractClass>::KeyList_T::const_iterator r;
+  PGenericFactory<MyAbstractClass>::KeyList_T keyList = PGenericFactory<MyAbstractClass>::GetKeyList();
+  PGenericFactory<MyAbstractClass>::KeyList_T::const_iterator r;
 
   cout << "List of concrete types:" << endl;
   for (r = keyList.begin(); r != keyList.end(); ++r)
@@ -25,10 +25,13 @@ void Factory::Main()
 
   unsigned i;
   for (i = 0; i < keyList.size(); i++) {
-    AbstractClass * c = PGenericFactory<AbstractClass>::CreateInstance(keyList[i]);
-    if (c == NULL) 
-      cout << "Cannot instantiate class " << keyList[i] << endl;
-    else
-      cout << keyList[i] << "::Function returned " << c->Function() << endl;
+    for (int j = 0; j < 3; j++)
+    {
+      MyAbstractClass * c = PGenericFactory<MyAbstractClass>::CreateInstance(keyList[i]);
+      if (c == NULL) 
+        cout << "Cannot instantiate class " << keyList[i] << endl;
+      else
+        cout << keyList[i] << "::Function returned " << c->Function() << ", instance " << (void *)c << endl;
+    }
   }
 }
