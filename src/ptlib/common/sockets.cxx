@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.41 1996/05/18 09:09:16 robertj Exp $
+ * $Id: sockets.cxx,v 1.42 1996/05/26 03:47:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,13 +8,8 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.41  1996/05/18 09:09:16  robertj
- * Fixed opening of IP address 0, is now an error.
- * Made GetHostName() return name part only, without domain.
- *
- * Revision 1.40  1996/05/15 10:18:48  robertj
- * Added ICMP protocol socket, getting common ancestor to UDP.
- * Added timeout to accept function.
+ * Revision 1.42  1996/05/26 03:47:03  robertj
+ * Compatibility to GNU 2.7.x
  *
  * Revision 1.39  1996/04/29 12:20:01  robertj
  * Fixed GetHostAliases() so doesn't overwrite names with IP numbers.
@@ -237,19 +232,22 @@ int PSocket::Select(PSocket & sock1,
 
 BOOL PSocket::Select(SelectList & read)
 {
-  return Select(read, SelectList(), SelectList(), PMaxTimeInterval);
+  SelectList dummy1, dummy2;
+  return Select(read, dummy1, dummy2, PMaxTimeInterval);
 }
 
 
 BOOL PSocket::Select(SelectList & read, const PTimeInterval & timeout)
 {
-  return Select(read, SelectList(), SelectList(), timeout);
+  SelectList dummy1, dummy2;
+  return Select(read, dummy1, dummy2, timeout);
 }
 
 
 BOOL PSocket::Select(SelectList & read, SelectList & write)
 {
-  return Select(read, write, SelectList(), PMaxTimeInterval);
+  SelectList dummy1;
+  return Select(read, write, dummy1, PMaxTimeInterval);
 }
 
 
@@ -257,7 +255,8 @@ BOOL PSocket::Select(SelectList & read,
                      SelectList & write,
                      const PTimeInterval & timeout)
 {
-  return Select(read, write, SelectList(), timeout);
+  SelectList dummy1;
+  return Select(read, write, dummy1, timeout);
 }
 
 
@@ -283,7 +282,8 @@ BOOL PSocket::Select(SelectList & read,
 #endif
   fd_set readfds;
   FD_ZERO(&readfds);
-  for (PINDEX i = 0; i < read.GetSize(); i++) {
+  PINDEX i;
+  for (i = 0; i < read.GetSize(); i++) {
     int h = read[i].GetHandle();
     FD_SET(h, &readfds);
     if (h > maxfds)
@@ -430,8 +430,6 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
   if ((temp = inet_addr((const char *)hostname)) != -1) {
-    if (temp == 0)
-      return FALSE;
     memcpy(&addr, &temp, sizeof(addr));
     return TRUE;
   }
@@ -453,7 +451,8 @@ static void BuildAliases(struct hostent * host_info, PStringArray & aliases)
     return;
 
   PINDEX count = aliases.GetSize();
-  for (PINDEX i = 0; host_info->h_aliases[i] != NULL; i++)
+  PINDEX i;
+  for (i = 0; host_info->h_aliases[i] != NULL; i++)
     aliases[count++] = host_info->h_aliases[i];
   for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
     PIPSocket::Address temp;
@@ -566,7 +565,7 @@ PString PIPSocket::GetPeerHostName()
 
 void PIPSocket::SetPort(WORD newPort)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened TCP socket");
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
   port = newPort;
 }
 
