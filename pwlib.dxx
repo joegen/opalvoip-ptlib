@@ -1,0 +1,98 @@
+/**@name Portable Windows Libaray
+ 
+\begin{center}
+ 	{\Large{\bf Welcome to the wonderful world of PWLib}}
+\end{center}
+
+PWLib is a moderately large class library that has classes for I/O
+portability, multi-threading portability, aid in producing unix daemons and
+NT services portably and all sorts of internet protocols.
+
+All this over and above basic "container" classes such as arrays, linear lists,
+sorted lists (RB Tree) and dictionaries (hash tables) which were all created
+before STL became the answer to all our prayers. Unfortunately, due to intertia
+and the GNU C++ inadequate support of templates, this library will probably not
+be ported to STL in the near future.
+
+Still there is a lot here that can be usefull in producing portable applications
+without needing to alter the application source files at all.
+
+ \begin{center}
+ 	{\Large{\bf Enjoy!}}
+ \end{center}
+ 
+@memo	A Portable Text and GUI C/C++ Class Libarary.
+@version	1.03
+@author	Equivalence Pty. Ltd.
+*/
+//@{
+	/**@name	Using PWLib
+		Detailed tutorials will almost certainly not be forthcoming. However,
+		at least giving you an indication on how to start an application would
+		be usefull, so here is the infamous "Hello world!" program.
+		\begin{verbatim}
+		// hello.cxx
+
+		#include <ptlib.h>
+
+		class Hello : public PProcess
+		{
+		  PCLASSINFO(Hello, PProcess)
+		  public:
+			void Main();
+		};
+
+		PCREATE_PROCESS(Hello)
+
+		void Hello::Main()
+		{
+		  cout << "Hello world!\n";
+		}
+
+		// End of hello.cxx
+		\end{verbatim}
+
+		The \Ref{CREATE_PROCESS} macro actually defines the #main()# function
+		and creates an instance of Hello. This assures that everything is
+		initialised in the correct order. C++ does initialisation of global
+		statics badly (and destruction is even worse), so try to put
+		everything into your PProcess descedent rather than globals.
+
+		A GUI application is very similar but is descended off
+		\Ref{PApplication} rather than \Ref{PProcess}, and would create a
+		window as a descendent off the \Ref{PMainWindow} class.
+
+	   @memo	Brief examples.
+	*/
+
+    /**@name	GUI Mode Components
+	   @memo	Non-windowing system specific classes that may be used as
+				components in applications.
+	  */
+    //@{
+	//@Include: include/pwclib/*.h
+    //@}
+
+    /**@name	GUI Mode Classes
+	   @memo	Classes that embody windowing system abstractions.
+	  */
+    //@{
+	//@Include: include/pwlib/*.h
+    //@}
+
+    /**@name	Console Mode Components
+	   @memo	Non-operating system specific classes that may be used as
+				components in applications.
+	  */
+    //@{
+	//@Include: include/ptclib/*.h
+    //@}
+
+    /**@name	Console Mode Classes
+	   @memo	Classes that embody operating system abstractions.
+	  */
+    //@{
+	//@Include: include/ptlib/*.h
+    //@}
+
+//@}
