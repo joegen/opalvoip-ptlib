@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.120  2002/08/14 00:43:40  robertj
+ * Added ability to have fixed maximum length PStringStream's so does not do
+ *   unwanted malloc()'s while outputing data.
+ *
  * Revision 1.119  2002/08/06 08:51:36  robertj
  * Added missing va_end, thanks Klaus Kaempf
  *
@@ -2241,20 +2245,34 @@ PObject::Comparison PCaselessString::InternalCompare(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PStringStream::Buffer::Buffer(PStringStream & str, PINDEX size)
+  : string(str),
+    fixedBufferSize(size != 0)
+{
+  string.SetSize(size != 0 ? size : 256);
+  sync();
+}
+
+
 int PStringStream::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
+    if (fixedBufferSize)
+      return EOF;
+
     int gpos = gptr() - eback();
     int ppos = pptr() - pbase();
-    char * newptr = string->GetPointer(string->GetSize() + 32);
-    setp(newptr, newptr + string->GetSize() - 1);
+    char * newptr = string.GetPointer(string.GetSize() + 32);
+    setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
     setg(newptr, newptr + gpos, newptr + ppos);
   }
+
   if (c != EOF) {
     *pptr() = (char)c;
     pbump(1);
   }
+
   return 0;
 }
 
@@ -2267,10 +2285,10 @@ int PStringStream::Buffer::underflow()
 
 int PStringStream::Buffer::sync()
 {
-  char * base = string->GetPointer();
-  PINDEX len = string->GetLength();
+  char * base = string.GetPointer();
+  PINDEX len = string.GetLength();
   setg(base, base, base + len);
-  setp(base, base + string->GetSize() - 1);
+  setp(base, base + string.GetSize() - 1);
   pbump(len);
   return 0;
 }
@@ -2282,7 +2300,7 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
                                  ios::seek_dir dir, int mode)
 #endif
 {
-  int len = string->GetLength();
+  int len = string.GetLength();
   int gpos = gptr() - eback();
   int ppos = pptr() - pbase();
   char * newgptr;
@@ -2322,7 +2340,7 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
       break;
 
     default:
-      PAssertAlways2(string->GetClass(), PInvalidParameter);
+      PAssertAlways2(string.GetClass(), PInvalidParameter);
       newgptr = gptr();
       newpptr = pptr();
   }
@@ -2337,25 +2355,38 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
 }
 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4355)
+#endif
+
 PStringStream::PStringStream()
-    : iostream(cout.rdbuf())
+  : iostream(new PStringStream::Buffer(*this, 0))
 {
-  init(new PStringStream::Buffer(this));
+}
+
+
+PStringStream::PStringStream(PINDEX fixedBufferSize)
+  : iostream(new PStringStream::Buffer(*this, fixedBufferSize))
+{
 }
 
 
 PStringStream::PStringStream(const PString & str)
-    : PString(str), iostream(cout.rdbuf())
+  : PString(str),
+    iostream(new PStringStream::Buffer(*this, 0))
 {
-  init(new PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const char * cstr)
-  : PString(cstr), iostream(cout.rdbuf())
+  : PString(cstr),
+    iostream(new PStringStream::Buffer(*this, 0))
 {
-  init(new PStringStream::Buffer(this));
 }
+
+#ifdef _MSC_VER
+#pragma warning(default:4355)
+#endif
 
 
 PStringStream::~PStringStream()

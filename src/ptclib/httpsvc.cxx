@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.86  2002/08/14 00:43:40  robertj
+ * Added ability to have fixed maximum length PStringStream's so does not do
+ *   unwanted malloc()'s while outputing data.
+ *
  * Revision 1.85  2002/08/13 05:39:17  robertj
  * Fixed GNU compatibility
  *
@@ -1737,8 +1741,7 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
 {
   BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-  PStringStream str;
-  str.SetSize(2000);
+  PStringStream str(5000);
   PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
   PMemoryHeap::DumpStatistics(str);
   return str;
@@ -1754,8 +1757,7 @@ PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
     objectNumber = vars["object"].AsUnsigned();
 
   BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-  PStringStream str;
-  str.SetSize(20000);
+  PStringStream str(32000);
   str << "Dumping objects from #" << objectNumber << '\n';
   PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
   PMemoryHeap::DumpObjectsSince(objectNumber, str);
