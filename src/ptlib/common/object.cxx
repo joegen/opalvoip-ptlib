@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.70  2004/04/03 08:09:16  csoutheren
+ * Fixed compile problem on Windows
+ *
  * Revision 1.69  2004/04/03 07:41:01  csoutheren
  * Fixed compile problem with ostringstream/ostrstream
  *
@@ -312,7 +315,8 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 #endif
 
 #ifndef _WIN32_WCE
-  #if (__GNUC__ >= 3)
+
+  #if (__GNUC__ >= 3) && defined (__USE_STL__)
   ostringstream str;
   #else
   ostrstream str;
@@ -326,8 +330,15 @@ void PAssertFunc(const char * file, int line, const char * className, const char
   if (err != 0)
     str << ", Error=" << err;
   str << ends;
+  
+  #if (__GNUC__ >= 3) && defined (__USE_STL__)
+  const char * s = str.str().c_str();
+  #else
+  const char * s = str.str();
+  #endif
 
-  PAssertFunc(str.str().c_str());
+  PAssertFunc(s);
+
 #endif // !_WIN32_WCE
 }
 
