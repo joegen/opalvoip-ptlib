@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.8  2000/12/18 07:31:10  robertj
+ * Fixed minor irritation with DEF file being reordered when symbol added.
+ *
  * Revision 1.7  2000/04/29 05:48:22  robertj
  * Added error and progress reporting in searching path for external DEF files.
  *
@@ -69,7 +72,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 1, ReleaseCode, 1)
+  : PProcess("Equivalence", "MergeSym", 1, 1, ReleaseCode, 2)
 {
 }
 
@@ -293,24 +296,29 @@ void MergeSym::Main()
     }
 
     if (def.Open(def_filename, PFile::WriteOnly)) {
-      for (i = 0; i < def_file_lines.GetSize(); i++)
-        def << def_file_lines[i] << '\n';
+      SortedSymbolList merged_symbols;
+      merged_symbols.DisallowDeleteObjects();
 
       for (i = 0; i < def_symbols.GetSize(); i++) {
         if (lib_symbols.GetValuesIndex(def_symbols[i]) != P_MAX_INDEX &&
             !def_symbols[i].IsExternal()) {
-          def << def_symbols[i];
+          merged_symbols.Append(&def_symbols[i]);
         }
         if (args.HasOption('v') && i%100 == 0)
           cout << '.' << flush;
       }
       for (i = 0; i < lib_symbols.GetSize(); i++) {
         if (def_symbols.GetValuesIndex(lib_symbols[i]) == P_MAX_INDEX)
-          def << lib_symbols[i];
+          merged_symbols.Append(&lib_symbols[i]);
         if (args.HasOption('v') && i%100 == 0)
           cout << '.' << flush;
       }
       cout << "\nSymbols merged: " << added << " added, " << removed << " removed.\n";
+
+      for (i = 0; i < def_file_lines.GetSize(); i++)
+        def << def_file_lines[i] << '\n';
+      for (i = 0; i < merged_symbols.GetSize(); i++)
+        def << merged_symbols[i];
     }
     else {
       PError << "Could not create file " << def_filename << ':' << def.GetErrorText() << endl;
