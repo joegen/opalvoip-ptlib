@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.13  2001/09/10 21:58:31  craigs
+ * Fixed cut and paste problem that broke PIndirectChannel::Write
+ *
  * Revision 1.12  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -671,9 +674,10 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 
     returnValue = writeChannel->Write(buf, len);
 
-    return SetErrorValues(writeChannel->GetErrorCode(LastWriteError),
-                          writeChannel->GetErrorNumber(LastWriteError),
-                          LastWriteError);
+    SetErrorValues(writeChannel->GetErrorCode(LastWriteError),
+                   writeChannel->GetErrorNumber(LastWriteError),
+                   LastWriteError);
+
     lastWriteCount = writeChannel->GetLastWriteCount();
   }
 
