@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.5 1996/02/25 03:04:32 robertj Exp $
+ * $Id: mime.h,v 1.6 1996/03/16 04:38:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.6  1996/03/16 04:38:09  robertj
+ * Fixed bug in MIME write function, should be const.
+ *
  * Revision 1.5  1996/02/25 03:04:32  robertj
  * Added decoding of Base64 to a block of memory instead of PBYTEArray.
  *
@@ -81,7 +84,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
 
     BOOL Write(
       PApplicationSocket & socket   // Application socket to write MIME info.
-    );
+    ) const;
     /* Write MIME information to the socket.
 
        <H2>Returns:</H2>
