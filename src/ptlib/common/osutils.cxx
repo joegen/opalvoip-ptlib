@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.145  2000/08/30 03:17:00  robertj
+ * Improved multithreaded reliability of the timers under stress.
+ *
  * Revision 1.144  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -712,24 +715,36 @@ void PDirectory::CloneContents(const PDirectory * d)
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : resetTime(millisecs, seconds, minutes, hours, days)
 {
-  state = Stopped;
-  timeoutThread = NULL;
-  StartRunning(TRUE);
+  Construct();
 }
 
 
 PTimer::PTimer(const PTimeInterval & time)
   : resetTime(time)
 {
+  Construct();
+}
+
+
+void PTimer::Construct()
+{
   state = Stopped;
-  timeoutThread = NULL;
+
+  timerList = PProcess::Current().GetTimerList();
+
+  timerList->listMutex.Wait();
+  timerList->Append(this);
+  timerList->listMutex.Signal();
+
+  timerList->timeoutMutex.Wait();
   StartRunning(TRUE);
 }
 
 
 PTimer & PTimer::operator=(DWORD milliseconds)
 {
-  resetTime = (PInt64)milliseconds;
+  timerList->timeoutMutex.Wait();
+  resetTime.SetInterval(milliseconds);
   StartRunning(oneshot);
   return *this;
 }
@@ -737,6 +752,7 @@ PTimer & PTimer::operator=(DWORD milliseconds)
 
 PTimer & PTimer::operator=(const PTimeInterval & time)
 {
+  timerList->timeoutMutex.Wait();
   resetTime = time;
   StartRunning(oneshot);
   return *this;
@@ -745,14 +761,15 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 
 PTimer::~PTimer()
 {
-  PAssert(timeoutThread == NULL || PThread::Current() != timeoutThread, "Timer destroyed in OnTimeout()");
-  if (IsRunning())
-    PProcess::Current().GetTimerList()->RemoveTimer(this);
+  timerList->listMutex.Wait();
+  timerList->Remove(this);
+  timerList->listMutex.Signal();
 }
 
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
+  timerList->timeoutMutex.Wait();
   resetTime = time;
   StartRunning(FALSE);
 }
@@ -760,50 +777,44 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
-  if (IsRunning() && timeoutThread == NULL)
-    PProcess::Current().GetTimerList()->RemoveTimer(this);
-
   PTimeInterval::operator=(resetTime);
   oneshot = once;
   state = (*this) != 0 ? Starting : Stopped;
 
-  if (IsRunning()) {
-    if (timeoutThread == NULL)
-      PProcess::Current().GetTimerList()->AppendTimer(this);
 #if defined(P_PLATFORM_HAS_THREADS)
-    else
-      PProcess::Current().SignalTimerChange();
+  if (IsRunning())
+    PProcess::Current().SignalTimerChange();
 #endif
-  }
+
+  // This must have been set by the caller
+  timerList->timeoutMutex.Signal();
 }
 
 
 void PTimer::Stop()
 {
-  if (IsRunning() && timeoutThread == NULL)
-    PProcess::Current().GetTimerList()->RemoveTimer(this);
+  timerList->timeoutMutex.Wait();
   state = Stopped;
   SetInterval(0);
+  timerList->timeoutMutex.Signal();
 }
 
 
 void PTimer::Pause()
 {
-  if (IsRunning()) {
-    if (timeoutThread == NULL)
-      PProcess::Current().GetTimerList()->RemoveTimer(this);
+  timerList->timeoutMutex.Wait();
+  if (IsRunning())
     state = Paused;
-  }
+  timerList->timeoutMutex.Signal();
 }
 
 
 void PTimer::Resume()
 {
-  if (state == Paused) {
-    if (timeoutThread == NULL)
-      PProcess::Current().GetTimerList()->AppendTimer(this);
+  timerList->timeoutMutex.Wait();
+  if (state == Paused)
     state = Starting;
-  }
+  timerList->timeoutMutex.Signal();
 }
 
 
@@ -814,35 +825,48 @@ void PTimer::OnTimeout()
 }
 
 
-BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
+void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
+  /*Ideally there should be a timeoutMutex for each individual timer, but
+    that seems incredibly profligate of system resources as there  can be a
+    LOT of PTimer instances about. So use one one mutex for all.
+   */
+  timerList->timeoutMutex.Wait();
+
   if (state == Starting) {
     state = Running;
     if (resetTime < minTimeLeft)
       minTimeLeft = resetTime;
-    return FALSE;
-  }
-
-  operator-=(delta);
-
-  if (milliseconds > 0) {
-    if (milliseconds < minTimeLeft.GetMilliSeconds())
-      minTimeLeft = milliseconds;
-    return FALSE;
-  }
-
-  timeoutThread = PThread::Current();
-  if (oneshot) {
-    operator=(PTimeInterval(0));
-    state = Stopped;
   }
   else {
-    operator=(resetTime);
-    if (resetTime < minTimeLeft)
-      minTimeLeft = resetTime;
+    operator-=(delta);
+
+    if (milliseconds > 0) {
+      if (milliseconds < minTimeLeft.GetMilliSeconds())
+        minTimeLeft = milliseconds;
+    }
+    else {
+      if (oneshot) {
+        SetInterval(0);
+        state = Stopped;
+      }
+      else {
+        PTimeInterval::operator=(resetTime);
+        if (resetTime < minTimeLeft)
+          minTimeLeft = resetTime;
+      }
+
+      timerList->timeoutMutex.Signal();
+
+      /* This must be outside the mutex or if OnTimeout() changes the
+         timer value (quite plausible) it deadlocks.
+       */
+      OnTimeout();
+      return;
+    }
   }
 
-  return TRUE;
+  timerList->timeoutMutex.Signal();
 }
 
 
@@ -855,36 +879,13 @@ PTimerList::PTimerList()
 }
 
 
-void PTimerList::AppendTimer(PTimer * timer)
-{
-  mutex.Wait();
-  PInternalTimerList::InsertAt(0, timer);
-  mutex.Signal();
-#if defined(P_PLATFORM_HAS_THREADS)
-  PProcess::Current().SignalTimerChange();
-#endif
-}
-
-
-void PTimerList::RemoveTimer(PTimer * timer)
-{
-  mutex.Wait();
-  PInternalTimerList::Remove(timer);
-  mutex.Signal();
-#if defined(P_PLATFORM_HAS_THREADS)
-  PProcess::Current().SignalTimerChange();
-#endif
-}
-
-
 PTimeInterval PTimerList::Process()
 {
   PINDEX i;
   PTimeInterval minTimeLeft = PMaxTimeInterval;
-  PInternalTimerList timeouts;
-  timeouts.DisallowDeleteObjects();
 
-  mutex.Wait();
+  listMutex.Wait();
+
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime;
   if (lastSample == 0)
@@ -897,20 +898,9 @@ PTimeInterval PTimerList::Process()
   lastSample = now;
 
   for (i = 0; i < GetSize(); i++)
-    if ((*this)[i].Process(sampleTime, minTimeLeft))
-      timeouts.Append(RemoveAt(i--));
-  mutex.Signal();
-
-  for (i = 0; i < timeouts.GetSize(); i++)
-    timeouts[i].OnTimeout();
-
-  mutex.Wait();
-  for (i = 0; i < timeouts.GetSize(); i++) {
-    timeouts[i].timeoutThread = NULL;
-    if (timeouts[i].IsRunning())
-      Append(timeouts.GetAt(i));
-  }
-  mutex.Signal();
+    (*this)[i].Process(sampleTime, minTimeLeft);
+  
+  listMutex.Signal();
 
   return minTimeLeft;
 }
