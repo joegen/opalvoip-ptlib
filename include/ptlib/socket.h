@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.37  2001/09/06 02:30:17  robertj
+ * Fixed mismatched declarations, thanks Vjacheslav Andrejev
+ *
  * Revision 1.36  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -526,14 +529,14 @@ class PSocket : public PChannel
       struct sockaddr * sin,
       PINDEX size
     );
-    int os_recvfrom(
+    BOOL os_recvfrom(
       void * buf,
       PINDEX len,
       int flags,
       struct sockaddr * from,
       PINDEX * fromlen
     );
-    int os_sendto(
+    BOOL os_sendto(
       const void * buf,
       PINDEX len,
       int flags,
