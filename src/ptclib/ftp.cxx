@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.2 1996/03/16 04:51:12 robertj Exp $
+ * $Id: ftp.cxx,v 1.3 1996/03/18 13:33:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.3  1996/03/18 13:33:15  robertj
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
+ *
  * Revision 1.2  1996/03/16 04:51:12  robertj
  * Changed lastResponseCode to an integer.
  *
@@ -712,13 +715,13 @@ void PFTPSocket::SendToClient(const PFilePath & filename)
 BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port)
 {
   PString info;
-  PINDEX code;
+  int code;
   return SendPORT(addr, port, code, info);
 }
 
 
 BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
-                          PINDEX & code, PString & info)
+                          int & code, PString & info)
 {
   PString str(PString::Printf,
               "%i,%i,%i,%i,%i,%i",
@@ -732,8 +735,7 @@ BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
   if (!WriteCommand(PORT, str))
     return FALSE;
 
-  BOOL resp = ReadResponse(code, info);
-  return resp;
+  return ReadResponse(code, info);
 }
 
 
