@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.8 1994/08/23 11:32:52 robertj Exp $
+ * $Id: config.h,v 1.9 1994/12/12 10:11:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
- * Revision 1.8  1994/08/23 11:32:52  robertj
+ * Revision 1.9  1994/12/12 10:11:59  robertj
+ * Documentation.
+ *
+ * Revision 1.8  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.7  1994/08/22  00:46:48  robertj
@@ -40,87 +43,294 @@
 
 
 PDECLARE_CLASS(PConfig, PObject)
-  // A class representing a configuration for the application. A configuration
-  // file consists of a number of section each with a number of variables. Each
-  // variable has a key to identify it and a value.
+/* A class representing a configuration for the application. There are four
+   sources of configuration information. The system environment, a system wide
+   configuration file, an application specific configuration file or an
+   explicit configuration file.
+
+   Configuration information follows a three level hierarchy: $I$file$I$,
+   $I$section$I$ and $I$variable$I$. Thus, a configuration file consists of a
+   number of sections each with a number of variables selected by a $I$key$I$.
+   Each variable has an associated value.
+
+   Note that the evironment source for configuration information does not have
+   sections. The section is ignored and the same set of keys are available.
+   
+   The configuration file is a standard text file for the platform with its
+   internals appearing in the form:
+        $F$[Section String]
+        Key Name=Value String$F$
+ */
 
   public:
     enum Source {
       Environment,
+      /* The platform specific environment. For Unix, MSDOS, NT etc this is
+         $U$the$U$ environment current when the program was run. For the MacOS
+         this is a subset of the Gestalt and SysEnviron information.
+       */
       System,
+      /* The platform specific system wide configuration file. For MS-Windows
+         this is the WIN.INI file. For Unix, plain MS-DOS, etc this is a
+         configuration file similar to that for applications except there is
+         only a single file that applies to all PWLib applications.
+       */
       Application
+      /* The application specific configuration file. This is the most common
+         source of configuration for an application. The location of this file
+         is platform dependent, but its contents are always the same. For
+         MS-Windows the file should be either in the same directory as the
+         executable or in the Windows directory. For the MacOS this would be
+         either in the System Folder or the Preferences folder within it. For
+         Unix this would be the users home directory.
+       */
     };
-    PConfig(Source src = Application);
-    PConfig(Source src, const PString & section);
-    PConfig(const PFilePath & filename);
-    PConfig(const PFilePath & filename, const PString & section);
-      // Create a new configuration object
+    /* This enum describes the standard source for configuration information.
+     */
+
+    PConfig(
+      Source src = Application  // Standard source for the configuration.
+    );
+    PConfig(
+      Source src,               // Standard source for the configuration.
+      const PString & section   // Default section to search for variables.
+    );
+    PConfig(
+      const PFilePath & filename  // Explicit name of the configuration file.
+    );
+    PConfig(
+      const PFilePath & filename, // Explicit name of the configuration file.
+      const PString & section     // Default section to search for variables.
+    );
+    /* Create a new configuration object. Once a source is selected for the
+       configuration it cannot be changed. Only at the next level of the
+       hierarchy (sections) are selection able to be made dynamically with an
+       active PConfig object.
+     */
 
 
     // New functions for class
-    void SetDefaultSection(const PString & section);
-      // Set the default section for variable operations.
+    void SetDefaultSection(
+      const PString & section  // New default section name.
+    );
+    /* Set the default section for variable operations. All functions that deal
+       with keys and get or set configuration values will use this section
+       unless an explicit section name is specified.
+
+       Note when the $B$Environment$B$ source is being used the default section
+       may be set but it is ignored.
+     */
 
     PString GetDefaultSection() const;
-      // Get the default section for variable operations.
+    /* Get the default section for variable operations. All functions that deal
+       with keys and get or set configuration values will use this section
+       unless an explicit section name is specified.
+
+       Note when the $B$Environment$B$ source is being used the default section
+       may be retrieved but it is ignored.
+
+       Returns: default section name string.
+     */
 
     PStringList GetSections();
-      // Return a list of all the section names in the file.
+    /* Get all of the section names currently specified in the file. A section
+       is the part specified by the [ and ] characters.
+
+       Note when the $B$Environment$B$ source is being used this will return
+       an empty list as there are no section present.
+
+       Returns: list of all section names.
+     */
 
     PStringList GetKeys() const;
-    PStringList GetKeys(const PString & section) const;
-      // Return a list of all the keys in the section. If the section name is
-      // not specified then use the default section.
+    PStringList GetKeys(
+      const PString & section   // Section to use instead of the default.
+    ) const;
+    /* Get a list of all the keys in the section. If the section name is not
+       specified then use the default section.
+
+       Returns: list of all key names.
+     */
 
 
     void DeleteSection();
-    void DeleteSection(const PString & section);
-      // Delete all variables in the specified section. If the section name is
-      // not specified then use the default section.
+    void DeleteSection(
+      const PString & section   // Name of section to delete.
+    );
+    /* Delete all variables in the specified section. If the section name is
+       not specified then the default section is deleted.
 
-    void DeleteKey(const PString & key);
-    void DeleteKey(const PString & section, const PString & key);
-      // Delete the particular variable in the specified section.
+       Note that the section header is also removed so the section will not
+       appear in the GetSections() function.
+     */
 
+    void DeleteKey(
+      const PString & key       // Key of the variable to delete.
+    );
+    void DeleteKey(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key       // Key of the variable to delete.
+    );
+    /* Delete the particular variable in the specified section. If the section
+       name is not specified then the default section is used.
 
-    PString GetString(const PString & key);
-    PString GetString(const PString & key, const PString & dflt);
-    PString GetString(const PString & section,
-                                    const PString & key, const PString & dflt);
-      // Get a string variable determined by the key in the section.
-
-    void SetString(const PString & key, const PString & value);
-    void SetString(const PString & section,
-                                   const PString & key, const PString & value);
-      // Set a string variable determined by the key in the section.
-
-
-    BOOL GetBoolean(const PString & key, BOOL dflt = FALSE);
-    BOOL GetBoolean(const PString & section,
-                                       const PString & key, BOOL dflt = FALSE);
-      // Get a boolean variable determined by the key in the section.
-
-    void SetBoolean(const PString & key, BOOL value);
-    void SetBoolean(const PString & section, const PString & key, BOOL value);
-      // Set a boolean variable determined by the key in the section.
+       Note that the variable and key are removed from the file. The key will
+       no longer appear in the GetKeys() function. If you wish to delete the
+       value without deleting the key, use SetString() to set it to the empty
+       string.
+     */
 
 
-    long GetInteger(const PString & key, long dflt = 0);
-    long GetInteger(const PString & section, const PString & key, long dflt=0);
-      // Get an integer variable determined by the key in the section.
+    PString GetString(
+      const PString & key       // The key name for the variable.
+    );
+    PString GetString(
+      const PString & key,      // The key name for the variable.
+      const PString & dflt      // Default value for the variable.
+    );
+    PString GetString(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      const PString & dflt      // Default value for the variable.
+    );
+    /* Get a string variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+       
+       If the key is not present the value returned is the that provided by
+       the $B$dlft$B$ parameter. Note that this is different from the key being
+       present but having no value, in which case an empty string is returned.
 
-    void SetInteger(const PString & key, long value);
-    void SetInteger(const PString & section, const PString & key, long value);
-      // Set an integer variable determined by the key in the section.
+       Returns: string value of the variable.
+     */
+
+    void SetString(
+      const PString & key,      // The key name for the variable.
+      const PString & value     // New value to set for the variable.
+    );
+    void SetString(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      const PString & value     // New value to set for the variable.
+    );
+    /* Set a string variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+     */
 
 
-    double GetReal(const PString & key, double dflt = 0);
-    double GetReal(const PString & section,const PString & key,double dflt=0);
-      // Get a floating point variable determined by the key in the section.
+    BOOL GetBoolean(
+      const PString & key,      // The key name for the variable.
+      BOOL dflt = FALSE         // Default value for the variable.
+    );
+    BOOL GetBoolean(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      BOOL dflt = FALSE         // Default value for the variable.
+    );
+    /* Get a boolean variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
 
-    void SetReal(const PString & key, double value);
-    void SetReal(const PString & section, const PString & key, double value);
-      // Set a floating point variable determined by the key in the section.
+       The boolean value can be specified in a number of ways. The TRUE value
+       is returned if the string value for the variable begins with either the
+       'T' character or the 'Y' character. Alternatively if the string can
+       be converted to a numeric value, a non-zero value will also return TRUE.
+       Thus the values can be Key=True, Key=Yes or Key=1 for TRUE and
+       Key=False, Key=No, or Key=0 for FALSE.
+
+       If the key is not present the value returned is the that provided by
+       the $B$dlft$B$ parameter. Note that this is different from the key being
+       present but having no value, in which case FALSE is returned.
+
+       Returns: boolean value of the variable.
+     */
+
+    void SetBoolean(
+      const PString & key,      // The key name for the variable.
+      BOOL value                // New value to set for the variable.
+    );
+    void SetBoolean(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      BOOL value                // New value to set for the variable.
+    );
+    /* Set a boolean variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       If value is TRUE then the string "True" is written to the variable
+       otherwise the string "False" is set.
+     */
+
+
+    long GetInteger(
+      const PString & key,      // The key name for the variable.
+      long dflt = 0             // Default value for the variable.
+    );
+    long GetInteger(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      long dflt = 0             // Default value for the variable.
+    );
+    /* Get an integer variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       If the key is not present the value returned is the that provided by
+       the $B$dlft$B$ parameter. Note that this is different from the key being
+       present but having no value, in which case zero is returned.
+
+       Returns: integer value of the variable.
+     */
+
+    void SetInteger(
+      const PString & key,      // The key name for the variable.
+      long value                // New value to set for the variable.
+    );
+    void SetInteger(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      long value                // New value to set for the variable.
+    );
+    /* Set an integer variable determined by the key in the section. If the
+       section name is not specified then the default section is used.
+
+       The value is always formatted as a signed number with no leading or
+       trailing blanks.
+     */
+
+
+    double GetReal(
+      const PString & key,      // The key name for the variable.
+      double dflt = 0           // Default value for the variable.
+    );
+    double GetReal(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      double dflt = 0           // Default value for the variable.
+    );
+    /* Get a floating point variable determined by the key in the section. If
+       the section name is not specified then the default section is used.
+
+       If the key is not present the value returned is the that provided by
+       the $B$dlft$B$ parameter. Note that this is different from the key being
+       present but having no value, in which case zero is returned.
+
+       Returns: floating point value of the variable.
+     */
+
+    void SetReal(
+      const PString & key,      // The key name for the variable.
+      double value              // New value to set for the variable.
+    );
+    void SetReal(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      double value              // New value to set for the variable.
+    );
+    /* Set a floating point variable determined by the key in the section. If
+       the section name is not specified then the default section is used.
+
+       The value is always formatted as a signed decimal or exponential form
+       number with no leading or trailing blanks, ie it uses the %g formatter
+       from the printf() function.
+     */
 
 
   protected:
@@ -130,9 +340,13 @@ PDECLARE_CLASS(PConfig, PObject)
 
 
   private:
-    void Construct(Source src);
-    void Construct(const PFilePath & filename);
-      // Do common construction code
+    void Construct(
+      Source src                  // Standard source for the configuration.
+    );
+    void Construct(
+      const PFilePath & filename  // Explicit name of the configuration file.
+    );
+    // Do common construction code.
 
 
 // Class declaration continued in platform specific header file ///////////////
