@@ -630,6 +630,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\ptclib\psasl.cxx">
+			</File>
+			<File
 				RelativePath="..\..\Ptclib\Psnmp.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -1060,6 +1063,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\pldap.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\psasl.h">
 			</File>
 			<File
 				RelativePath="..\..\..\Include\PtCLib\psnmp.h">
