@@ -170,19 +170,8 @@ fi
 AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 dnl
 dnl posix semaphore support in darwin/macosx is broken
-dnl and we don;t want to use on Linux 2.6 and above
 dnl 
-if test ${OSTYPE} != Linux ; then
-  SRC_RELEASE=`uname -r`
-  [VERSION=`echo $SRC_RELEASE | sed -n -e 's/^\([0-9]*\).*/\1/p'`]
-  [PATCHLEVEL=`echo $SRC_RELEASE | sed -n -e 's/.*\.\([0-9]*\)\..*/\1/p'`]
-  if test \( $VERSION -le 2 \) -a \( $PATCHLEVEL -lt 6 \) ; then
-    AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
-    AC_MSG_NOTICE(P_HAS_SEMAPHORES = 1 as kernel $SRC_RELEASE < 2.6);
-  else
-    AC_MSG_NOTICE(P_HAS_SEMAPHORES = 0 as kernel $SRC_RELEASE >= 2.6);
-  fi
-elif test ${OSTYPE} != Darwin ; then
+if test ${OSTYPE} != Darwin ; then
   AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
 fi
 
