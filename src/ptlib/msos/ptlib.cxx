@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.55  2001/03/15 23:49:42  robertj
+ * Added missing operators for reading 64 bit integers from streams.
+ *
  * Revision 1.54  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -242,6 +245,59 @@ ostream & operator<<(ostream & s, PUInt64 v)
 {
   char buffer[25];
   return s << _ui64toa(v, buffer, (s.flags()&ios::oct) ? 8 : ((s.flags()&ios::hex) ? 16 : 10));
+}
+
+
+istream & operator>>(istream & s, PInt64 & v)
+{
+  while (isspace(s.peek()))
+    s.get();
+
+  int sign = 1;
+  switch (s.peek()) {
+    case '-' :
+      sign = -1;
+      // Do '+' case
+    case '+' :
+      s.get();
+  }
+
+  operator>>(s, (PUInt64&)v);
+
+  if (sign < 0)
+    v = -v;
+
+  return s;
+}
+
+
+istream & operator>>(istream & s, PUInt64 & v)
+{
+  while (isspace(s.peek()))
+    s.get();
+
+  v = 0;
+
+  if ((s.flags()&ios::oct) != 0) {
+    while (isdigit(s.peek()) && s.peek() < '8')
+      v = v*8 + s.get()-'0';
+  }
+  else if ((s.flags()&ios::hex) != 0) {
+    while (isxdigit(s.peek())) {
+      int c = s.get()-'0';
+      if (c > 9)
+        c -= 'A'-'9'+1;
+      if (c > 15)
+        c -= 'a'-'A';
+      v = v*16 + c;
+    }
+  }
+  else {
+    while (isdigit(s.peek()))
+      v = v* 10 + s.get()-'0';
+  }
+
+  return s;
 }
 
 
