@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.33  2004/07/26 00:40:41  csoutheren
+ * Fixed thread starvation problem under Linux by splitting channelMutex
+ * into seperate read and write mutexes
+ *
  * Revision 1.32  2004/07/23 00:59:26  csoutheren
  * Check in latest changes
  *
@@ -692,7 +696,8 @@ class PVXMLChannel : public PDelayChannel
     PString mediaFormat;
     PString wavFilePrefix;
 
-    PMutex channelMutex;
+    PMutex channelWriteMutex;
+    PMutex channelReadMutex;
     BOOL closed;
 
     // Incoming audio variables
