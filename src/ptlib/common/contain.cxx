@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.34 1995/01/04 10:57:08 robertj Exp $
+ * $Id: contain.cxx,v 1.35 1995/01/09 12:32:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.34  1995/01/04 10:57:08  robertj
+ * Revision 1.35  1995/01/09 12:32:56  robertj
+ * Removed unnecesary return value from I/O functions.
+ * Changed function names due to Mac port.
+ *
+ * Revision 1.34  1995/01/04  10:57:08  robertj
  * Changed for HPUX and GNU2.6.x
  *
  * Revision 1.33  1995/01/03  09:39:08  robertj
@@ -548,13 +552,13 @@ PObject * PString::Clone() const
 }
 
 
-ostream & PString::PrintOn(ostream &strm) const
+void PString::PrintOn(ostream &strm) const
 {
-  return strm << theArray;
+  strm << theArray;
 }
 
 
-istream & PString::ReadFrom(istream &strm)
+void PString::ReadFrom(istream &strm)
 {
   SetMinSize(100);
   char * ptr = theArray;
@@ -570,13 +574,12 @@ istream & PString::ReadFrom(istream &strm)
   }
   *ptr = '\0';
   PAssert(MakeMinimumSize(), POutOfMemory);
-  return strm;
 }
 
 
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
-  return CompareString(((const PString &)obj).theArray);
+  return InternalCompare(((const PString &)obj).theArray);
 }
 
 
@@ -1028,7 +1031,7 @@ PString pvsprintf(const char * fmt, va_list arg)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PObject::Comparison PCaselessString::CompareString(const char * cstr) const
+PObject::Comparison PCaselessString::InternalCompare(const char * cstr) const
 {
   PAssertNULL(cstr);
   const char * pstr = PAssertNULL(theArray);
@@ -1239,7 +1242,7 @@ PStringStream::PStringStream(const char * cstr)
 PStringStream & PStringStream::operator=(const PString & str)
 {
   PString::operator=(str);
-  rdbuf()->sync();
+  flush();
   return *this;
 }
 
