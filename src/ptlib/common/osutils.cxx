@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.11 1994/07/02 03:03:49 robertj Exp $
+ * $Id: osutils.cxx,v 1.12 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.11  1994/07/02 03:03:49  robertj
+ * Revision 1.12  1994/07/17 10:46:06  robertj
+ * Fixed timer bug.
+ * Moved handle from file to channel.
+ * Changed args to use container classes.
+ *
+ * Revision 1.11  1994/07/02  03:03:49  robertj
  * Time interval and timer redesign.
  *
  * Revision 1.10  1994/06/25  11:55:15  robertj
@@ -151,6 +156,9 @@ PString PTime::AsString(TimeFormat format) const
         case LongDateTime :
         case LongTime :
           fmt += tsep + "ss";
+
+        default :
+          break;
       }
 
       if (is12hour)
@@ -317,6 +325,7 @@ PString PTime::AsString(const char * format) const
 PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
   : resetTime(millisecs, seconds, minutes, hours, days)
 {
+  state = Stopped;
   inTimeout = FALSE;
   StartRunning(TRUE);
 }
@@ -325,6 +334,7 @@ PTimer::PTimer(long millisecs, int seconds, int minutes, int hours, int days)
 PTimer::PTimer(const PTimeInterval & time)
   : resetTime(time)
 {
+  state = Stopped;
   inTimeout = FALSE;
   StartRunning(TRUE);
 }
@@ -333,7 +343,7 @@ PTimer::PTimer(const PTimeInterval & time)
 PTimer & PTimer::operator=(const PTimeInterval & time)
 {
   resetTime = time;
-  StartRunning(TRUE);
+  StartRunning(oneshot);
   return *this;
 }
 
@@ -348,8 +358,6 @@ PTimer::~PTimer()
 
 void PTimer::RunContinuous(const PTimeInterval & time)
 {
-  if (state == Running && !inTimeout)
-    PProcess::Current()->GetTimerList()->Remove(this);
   resetTime = time;
   StartRunning(FALSE);
 }
@@ -357,9 +365,13 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
+  if (state == Running && !inTimeout)
+    PProcess::Current()->GetTimerList()->Remove(this);
+
   PTimeInterval::operator=(resetTime);
   oneshot = once;
   state = (*this) != 0 ? Running : Stopped;
+
   if (state == Running && !inTimeout)
     PProcess::Current()->GetTimerList()->Append(this);
 }
@@ -402,6 +414,9 @@ void PTimer::OnTimeout()
 
 BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
+  if (inTimeout)
+    return FALSE;
+
   operator-=(delta);
 
   if (*this > 0) {
@@ -412,8 +427,11 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
   if (oneshot)
     state = Stopped;
-  else
+  else {
     operator=(resetTime);
+    if (resetTime < minTimeLeft)
+      minTimeLeft = resetTime;
+  }
 
   inTimeout = TRUE;
   OnTimeout();
@@ -540,10 +558,12 @@ streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
 PChannel::PChannel()
   : readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
 {
+  os_handle = -1;
   osError = 0;
   lastError = NoError;
   lastReadCount = lastWriteCount = 0;
   init(new PChannelStreamBuffer(this));
+  Construct();
 }
 
 
@@ -562,6 +582,12 @@ void PChannel::CopyContents(const PChannel & c)
 {
   init(c.rdbuf());
   ((PChannelStreamBuffer*)rdbuf())->channel = this;
+}
+
+
+BOOL PChannel::IsOpen() const
+{
+  return os_handle >= 0;
 }
 
 
@@ -1492,14 +1518,6 @@ PArgList::PArgList(int theArgc, char ** theArgv, const char * theArgumentSpec)
 }
 
 
-PArgList::~PArgList()
-{
-  free(argumentSpec);
-  free(optionCount);
-  free(argumentList);
-}
-
-
 void PArgList::SetArgs(int argc, char ** argv)
 {
   // save argv and and argc for later
@@ -1512,32 +1530,31 @@ void PArgList::SetArgs(int argc, char ** argv)
 void PArgList::Parse(const char * theArgumentSpec)
 {
   char  c;
-  char *p;
-  int   l;
+  PINDEX p, l;
 
   // allocate and initialise storage
-  argumentSpec = strdup (theArgumentSpec);
-  l = strlen (argumentSpec);
-  optionCount   = (PINDEX *) calloc (l, sizeof (PINDEX));
-  argumentList = (char **) calloc (l, sizeof (char *));
+  argumentSpec = theArgumentSpec;
+  l = argumentSpec.GetLength();
+  optionCount.SetSize(l);
+  argumentList.SetSize(l);
 
   while (arg_count > 0 && arg_values[0][0] == '-') {
     while ((c = *++arg_values[0]) != 0) {
-      if ((p = strchr (argumentSpec, c)) == NULL)
+      if ((p = argumentSpec.Find(c)) == P_MAX_INDEX)
         UnknownOption (c);
       else {
-        optionCount[p-argumentSpec]++;
-        if (p[1] == ':') {
+        optionCount[p]++;
+        if (argumentSpec[p+1] == ':') {
           if (*++(arg_values[0]))
-            argumentList[p-argumentSpec] = arg_values[0];
+            argumentList[p] = arg_values[0];
           else {
             if (arg_count < 2) {
-              optionCount[p-argumentSpec] = 0;
+              optionCount[p] = 0;
               MissingArgument (c);
             }
             else {
               --arg_count;
-              argumentList [p-argumentSpec] = *++arg_values;
+              argumentList[p] = *++arg_values;
             }
           }
           break;
@@ -1552,8 +1569,8 @@ void PArgList::Parse(const char * theArgumentSpec)
 
 PINDEX PArgList::GetOptionCount(char option) const
 {
-  char * p = strchr(argumentSpec, option);
-  return (p == NULL ? 0 : optionCount[p-argumentSpec]);
+  PINDEX p = argumentSpec.Find(option);
+  return (p == P_MAX_INDEX ? 0 : optionCount[p]);
 }
 
 
@@ -1566,9 +1583,9 @@ PINDEX PArgList::GetOptionCount(const char * option) const
 
 PString PArgList::GetOptionString(char option, const char * dflt) const
 {
-  char * p = strchr(argumentSpec, option);
-  if (p != NULL)
-    return argumentList[p-argumentSpec];
+  PINDEX p = argumentSpec.Find(option);
+  if (p != P_MAX_INDEX)
+    return argumentList[p];
 
   if (dflt != NULL)
     return dflt;
