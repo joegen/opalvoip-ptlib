@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.42  2000/05/02 08:28:10  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.41  1999/09/17 01:11:14  robertj
  * Fixed some documentation typos.
  *
@@ -347,33 +350,32 @@ class PHTTP : public PInternetProtocol
     };
 
     // Common MIME header tags
-    static const PCaselessString AllowTag;
-    static const PCaselessString AuthorizationTag;
-    static const PCaselessString ContentEncodingTag;
-    static const PCaselessString ContentLengthTag;
-    static const PCaselessString ContentTypeTag;
-    static const PCaselessString DateTag;
-    static const PCaselessString ExpiresTag;
-    static const PCaselessString FromTag;
-    static const PCaselessString IfModifiedSinceTag;
-    static const PCaselessString LastModifiedTag;
-    static const PCaselessString LocationTag;
-    static const PCaselessString PragmaTag;
-    static const PCaselessString PragmaNoCacheTag;
-    static const PCaselessString RefererTag;
-    static const PCaselessString ServerTag;
-    static const PCaselessString UserAgentTag;
-    static const PCaselessString WWWAuthenticateTag;
-    static const PCaselessString MIMEVersionTag;
-    static const PCaselessString ConnectionTag;
-    static const PCaselessString KeepAliveTag;
-    static const PCaselessString ProxyConnectionTag;
-    static const PCaselessString ProxyAuthorizationTag;
-    static const PCaselessString ProxyAuthenticateTag;
-    static const PCaselessString ForwardedTag;
-    static const PCaselessString SetCookieTag;
-    static const PCaselessString CookieTag;
-
+    static const char * AllowTag;
+    static const char * AuthorizationTag;
+    static const char * ContentEncodingTag;
+    static const char * ContentLengthTag;
+    static const char * ContentTypeTag;
+    static const char * DateTag;
+    static const char * ExpiresTag;
+    static const char * FromTag;
+    static const char * IfModifiedSinceTag;
+    static const char * LastModifiedTag;
+    static const char * LocationTag;
+    static const char * PragmaTag;
+    static const char * PragmaNoCacheTag;
+    static const char * RefererTag;
+    static const char * ServerTag;
+    static const char * UserAgentTag;
+    static const char * WWWAuthenticateTag;
+    static const char * MIMEVersionTag;
+    static const char * ConnectionTag;
+    static const char * KeepAliveTag;
+    static const char * ProxyConnectionTag;
+    static const char * ProxyAuthorizationTag;
+    static const char * ProxyAuthenticateTag;
+    static const char * ForwardedTag;
+    static const char * SetCookieTag;
+    static const char * CookieTag;
 
   protected:
     /** Create a TCP/IP HTTP protocol channel.
