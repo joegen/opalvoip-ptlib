@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.72  2004/04/13 11:47:52  csoutheren
+ * Changed PSmartPtr to use PAtomicInteger
+ *
  * Revision 1.71  2004/04/03 08:22:21  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -402,8 +405,11 @@ PSmartPointer & PSmartPointer::operator=(const PSmartPointer & ptr)
   if (object == ptr.object)
     return *this;
 
-  if (object != NULL && --object->referenceCount == 0)
-    delete object;
+  if (object != NULL) {
+    --object->referenceCount;
+    if (object->referenceCount.IsZero())
+      delete object;
+  }
 
   object = ptr.object;
   if (object != NULL)
@@ -415,8 +421,11 @@ PSmartPointer & PSmartPointer::operator=(const PSmartPointer & ptr)
 
 PSmartPointer::~PSmartPointer()
 {
-  if (object != NULL && --object->referenceCount == 0)
-    delete object;
+  if (object != NULL) {
+    --object->referenceCount;
+    if (object->referenceCount.IsZero())
+      delete object;
+  }
 }
 
 
