@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.10 1995/02/19 04:19:14 robertj Exp $
+ * $Id: object.h,v 1.11 1995/03/12 04:40:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.10  1995/02/19 04:19:14  robertj
+ * Revision 1.11  1995/03/12 04:40:55  robertj
+ * Changed standard error code for not open from file to channel.
+ *
+ * Revision 1.10  1995/02/19  04:19:14  robertj
  * Added dynamically linked command processing.
  *
  * Revision 1.9  1995/02/05  00:48:07  robertj
@@ -85,7 +88,7 @@ enum PStandardAssertMessage {
   PUnimplementedFunction,   // Funtion is not implemented.
   PInvalidParameter,        // Invalid parameter was passed to a function.
   POperatingSystemError,    // Error was returned by Operating System.
-  PFileNotOpen,             // Operation attempted when fil enot open.
+  PChannelNotOpen,          // Operation attempted when channel not open.
   PUnsupportedFeature,      // Feature is not supported.
   PInvalidWindow,           // Access through invalid window.
   PMaxStandardAssertMessage
