@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.45  2000/10/30 05:48:33  robertj
+ * Added assert when get nested mutex.
+ *
  * Revision 1.44  2000/10/24 03:32:40  robertj
  * Fixed problem where thread that uses PThread::Current() in dtor crashes.
  *
@@ -873,6 +876,7 @@ BOOL PSemaphore::WillBlock() const
 PMutex::PMutex()
   : PSemaphore(1, 1)
 {
+  ownerThreadId = 0;
 #ifdef P_HAS_SEMAPHORES
   pthread_mutex_init(&mutex, NULL);
 #endif
@@ -890,7 +894,10 @@ PMutex::~PMutex()
 
 void PMutex::Wait()
 {
+  pthread_t currentThreadId = pthread_self();
+  PAssert(ownerThreadId != currentThreadId, "Nested mutex deadlock");
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
+  ownerThreadId = currentThreadId;
 }
 
 
@@ -901,13 +908,18 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
+  pthread_t currentThreadId = pthread_self();
+  PAssert(ownerThreadId != currentThreadId, "Nested mutex deadlock");
+
   PTimeInterval sleepTime = waitTime/100;
   if (sleepTime > 1000)
     sleepTime = 1000;
   int subdivision = waitTime.GetMilliSeconds()/sleepTime.GetMilliSeconds();
   for (int count = 0; count < subdivision; count++) {
-    if (pthread_mutex_trylock(&mutex) == 0)
+    if (pthread_mutex_trylock(&mutex) == 0) {
+      ownerThreadId = currentThreadId;
       return TRUE;
+    }
     PThread::Current()->Sleep(sleepTime);
   }
 
@@ -917,6 +929,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 
 void PMutex::Signal()
 {
+  ownerThreadId = 0;
   PAssertOS(pthread_mutex_unlock(&mutex) == 0);
 }
 
