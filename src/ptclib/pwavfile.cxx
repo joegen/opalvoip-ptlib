@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.30  2003/07/28 18:39:09  dsandras
+ * Linux has a swab function. Patch from Alexander Larsson <alexl@redhat.com>.
+ *
  * Revision 1.29  2003/02/20 23:32:00  robertj
  * More RTEMS support patches, thanks Sebastian Meyer.
  *
@@ -140,7 +143,7 @@
 #include <ptlib.h>
 #include <ptclib/pwavfile.h>
 
-#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__) \
+#if PBYTE_ORDER==PBIG_ENDIAN && (defined(__BEOS__) \
                                  || defined(P_SOLARIS) || defined(P_RTEMS))
 #ifdef P_RTEMS
 extern "C" {
