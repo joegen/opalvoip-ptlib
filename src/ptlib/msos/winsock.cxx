@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.32 1997/12/18 05:05:27 robertj Exp $
+ * $Id: winsock.cxx,v 1.33 1998/01/26 01:00:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.33  1998/01/26 01:00:06  robertj
+ * Added timeout to os_connect().
+ * Fixed problems with NT version of IsLocalHost().
+ *
  * Revision 1.32  1997/12/18 05:05:27  robertj
  * Moved IsLocalHost() to platform dependent code.
  *
@@ -219,12 +223,6 @@ int PSocket::os_socket(int af, int type, int proto)
 }
 
 
-int PSocket::os_connect(struct sockaddr * addr, int size)
-{
-  return ::connect(os_handle, addr, size);
-}
-
-
 class fd_set_class : public fd_set {
   public:
     fd_set_class(SOCKET fd)
@@ -238,6 +236,8 @@ class fd_set_class : public fd_set {
 #pragma warning(default:4127)
 #endif
       }
+    BOOL IsPresent(int h) const
+      { return FD_ISSET(h, this); }
 };
 
 class timeval_class : public timeval {
@@ -248,6 +248,49 @@ class timeval_class : public timeval {
         tv_sec = time.GetSeconds();
       }
 };
+
+
+int PSocket::os_connect(struct sockaddr * addr, int size)
+{
+  if (readTimeout == PMaxTimeInterval)
+    return ::connect(os_handle, addr, size);
+
+  DWORD fionbio = 1;
+  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR)
+    return SOCKET_ERROR;
+  fionbio = 0;
+
+  if (::connect(os_handle, addr, size) != SOCKET_ERROR)
+    return ::ioctlsocket(os_handle, FIONBIO, &fionbio);
+
+  DWORD err = GetLastError();
+  if (err != WSAEWOULDBLOCK) {
+    ::ioctlsocket(os_handle, FIONBIO, &fionbio);
+    SetLastError(err);
+    return SOCKET_ERROR;
+  }
+
+  fd_set_class writefds = os_handle;
+  timeval_class tv = readTimeout;
+  switch (select(0, NULL, &writefds, NULL, &tv)) {
+    case 1 :
+      err = 0;
+      break;
+    case 0 :
+      err = WSAETIMEDOUT;
+      break;
+    default :
+      err = GetLastError();
+  }
+
+  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR)
+    if (err == 0)
+      err = GetLastError();
+
+  SetLastError(err);
+  return err == 0 ? 0 : SOCKET_ERROR;
+}
+
 
 int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
                        const PTimeInterval & timeout)
@@ -452,22 +495,21 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   Address addr = hostname;
   if (addr == 16777343)  // Is 127.0.0.1
     return TRUE;
-  if (addr == (DWORD)-1)
-    return FALSE;
 
-  PStringArray itsAliases = GetHostAliases(hostname);
-  if (itsAliases.IsEmpty())
-    return FALSE;
+  if (addr == 0) {
+    if (!GetHostAddress(hostname, addr))
+      return FALSE;
+  }
 
-  PStringArray myAliases = GetHostAliases(GetHostName());
-  if (myAliases.IsEmpty())
-    return FALSE;
+  struct hostent * host_info = ::gethostbyname(GetHostName());
 
-  for (PINDEX mine = 0; mine < myAliases.GetSize(); mine++) {
-    for (PINDEX its = 0; its < itsAliases.GetSize(); its++) {
-      if (myAliases[mine] *= itsAliases[its])
-        return TRUE;
-    }
+  static BOOL isWin95 = PProcess::GetOSName() == "95";
+  if (isWin95)
+    return addr == Address(*(struct in_addr *)host_info->h_addr_list[0]);
+
+  for (PINDEX i = 0; host_info->h_addr_list[i] != NULL; i++) {
+    if (addr == Address(*(struct in_addr *)host_info->h_addr_list[i]))
+      return TRUE;
   }
 
   return FALSE;
