@@ -33,6 +33,13 @@
 
 #include <ptlib.h>
 
+//  Used to create XML tags
+static const PString ID_TAG_LEFT    ("<");
+static const PString ID_TAG_RIGHT   (">");
+static const PString ID_TAG_END     ("</");
+static const PString ID_TAG_NO_DATA ("/>");
+
+
 class PXMLObject;
 class PXMLElement;
 class PXMLData;
@@ -71,12 +78,18 @@ class PXML : public PObject
 
     void PrintOn(ostream & strm) const;
 
+
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
+    PXMLElement * GetElement(PINDEX idx) const;
+    PINDEX        GetNumElements() const; 
+    PXMLElement * GetRootElement() const { return rootElement; }
+
     PCaselessString GetDocumentType() const;
 
     PString GetErrorString() const { return errorString; }
     PINDEX  GetErrorColumn() const { return errorCol; }
     PINDEX  GetErrorLine() const   { return errorLine; }
+
 
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
@@ -88,6 +101,19 @@ class PXML : public PObject
 				  const char * pubid,
 				  int hasInternalSubSet);
     virtual void EndDocTypeDecl();
+
+     // static methods to create XML tags
+     static PString CreateStartTag (const PString & text)
+       { return PString(ID_TAG_LEFT + text + ID_TAG_RIGHT); }
+
+     static PString CreateEndTag (const PString & text)
+       { return PString(ID_TAG_END + text + ID_TAG_RIGHT); }
+
+     static PString CreateTagNoData (const PString & text)
+       { return PString(ID_TAG_LEFT + text + ID_TAG_NO_DATA); }
+
+     static PString CreateTag (const PString & text, const PString & data)
+       { return PString(CreateStartTag(text) + data + CreateEndTag(text)); }
 
   protected:
     void Construct();
@@ -103,7 +129,6 @@ class PXML : public PObject
     PString errorString;
     PINDEX errorCol;
     PINDEX errorLine;
-
 };
 
 ////////////////////////////////////////////////////////////
@@ -173,17 +198,30 @@ class PXMLElement : public PXMLObject {
     void SetName(const PString & v)
       { name = v; }
 
+    PINDEX GetSize() const
+      { return subObjects.GetSize(); }
+
     void AddSubObject(PXMLObject * elem, BOOL dirty = TRUE);
 
     void SetAttribute(const PCaselessString & key,
 		              const PString & value,
-			                 BOOL setDirty = TRUE);
+                                         BOOL setDirty = TRUE);
 
     PString GetAttribute(const PCaselessString & key) const;
+    PString GetKeyAttribute(PINDEX idx) const;
+    PString GetDataAttribute(PINDEX idx) const;
     BOOL HasAttribute(const PCaselessString & key);
+    BOOL HasAttributes() const      { return attributes.GetSize() > 0; }
+    PINDEX GetNumAttributes() const { return attributes.GetSize(); }
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
+
+    BOOL HasSubObjects() const
+      { return subObjects.GetSize(); }
+
+    PXMLObjectArray  GetSubObjects() const
+      { return subObjects; }
 
     PString GetData() const;
 
@@ -202,7 +240,9 @@ class PXMLSettings : public PXML
 {
   PCLASSINFO(PXMLSettings, PXML);
   public:
-    PXMLSettings();
+    PXMLSettings(int options = NewLineAfterElement | CloseExtended);
+    PXMLSettings(const PString & data, int options = NewLineAfterElement | CloseExtended);
+    PXMLSettings(const PConfig & data, int options = NewLineAfterElement | CloseExtended);
 
     BOOL Load(const PString & data);
     BOOL LoadFile(const PFilePath & fn);
@@ -215,6 +255,8 @@ class PXMLSettings : public PXML
 
     PString GetAttribute(const PCaselessString & section, const PString & key) const;
     BOOL    HasAttribute(const PCaselessString & section, const PString & key) const;
+
+    void ToConfig(PConfig & cfg) const;
 };
 
 #endif
