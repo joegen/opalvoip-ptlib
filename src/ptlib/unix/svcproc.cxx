@@ -137,8 +137,18 @@ void PServiceProcess::OnStop()
 }
 
 
-void PServiceProcess::PXOnSigInt()
+void PServiceProcess::PXOnSignal(int sig)
 {
+  if (sig == SIGINT)
+    return;
+  PProcess::PXOnSignal(sig);
+}
+
+void PServiceProcess::PXOnAsyncSignal(int sig)
+{
+  if (sig != SIGINT) 
+    return;
+
   OnStop();
   exit(1);
 }
