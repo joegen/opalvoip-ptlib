@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.56  1999/05/04 15:26:01  robertj
+ * Improved HTTP/1.1 compatibility (pass through user commands).
+ * Fixed problems with quicktime installer.
+ *
  * Revision 1.55  1999/04/21 01:56:13  robertj
  * Fixed problem with escape codes greater that %80
  *
@@ -675,8 +679,9 @@ static char const * const HTTPCommands[PHTTP::NumCommands] = {
   "GET", "HEAD", "POST",
 
   // HTTP 1.1 commands
-  "PUT",  "PATCH", "COPY",    "MOVE",   "DELETE",
-  "LINK", "UNLINK", "TRACE", "WRAPPED", "OPTIONS",
+  "PUT",  "DELETE", "TRACE", "OPTIONS",
+
+  // HTTPS command
   "CONNECT"
 };
 
