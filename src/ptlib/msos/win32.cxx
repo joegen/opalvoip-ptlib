@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.4 1995/06/04 12:48:52 robertj Exp $
+ * $Id: win32.cxx,v 1.5 1995/06/17 01:03:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.5  1995/06/17 01:03:08  robertj
+ * Added NT service process type.
+ *
  * Revision 1.4  1995/06/04 12:48:52  robertj
  * Fixed bug in directory path creation.
  * Fixed bug in comms channel open error.
@@ -24,6 +27,7 @@
  */
 
 #include <ptlib.h>
+#include <svcproc.h>
 
 #include <winuser.h>
 #include <winnls.h>
@@ -1045,6 +1049,297 @@ PString PProcess::GetUserName() const
   ::GetUserName(username.GetPointer((PINDEX)size), &size);
   username.MakeMinimumSize();
   return username;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PServiceProcess
+
+void PServiceProcess::PreInitialise(int argc, char ** argv)
+{
+  PProcess::PreInitialise(1, argv);
+
+  if (argc <= 1) {
+    debugMode = FALSE;
+
+    // SERVICE_STATUS members that don't change
+    status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+    status.dwServiceSpecificExitCode = 0;
+
+    static SERVICE_TABLE_ENTRY dispatchTable[] = {
+      { "", PServiceProcess::MainEntry },
+      { NULL, NULL }
+    };
+
+    dispatchTable[0].lpServiceName = GetServiceName();
+
+    if (StartServiceCtrlDispatcher(dispatchTable))
+      exit(GetTerminationValue());
+
+    SystemLog(LogFatal, "StartServiceCtrlDispatcher failed.");
+    exit(1);
+  }
+
+  if (stricmp(argv[1], "debug") == 0) {
+    debugMode = TRUE;
+    return;
+  }
+
+  SC_HANDLE schSCManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+  if (schSCManager == NULL) {
+    cerr << "Could not open Service Manager." << endl;
+    exit(1);
+  }
+
+  SC_HANDLE schService = OpenService(schSCManager,
+                                        GetServiceName(), SERVICE_ALL_ACCESS);
+
+  for (int arg = 1; arg < argc; arg++) {
+    if (stricmp(argv[arg], "install") == 0) {
+      if (schService != NULL)
+        cerr << "Service is already installed." << endl;
+      else {
+        schService = CreateService(
+                            schSCManager,               // SCManager database
+                            GetServiceName(),           // name of service
+                            GetServiceName(),           // name to display
+                            SERVICE_ALL_ACCESS,         // desired access
+                            SERVICE_WIN32_OWN_PROCESS,  // service type
+                            SERVICE_DEMAND_START,       // start type
+                            SERVICE_ERROR_NORMAL,       // error control type
+                            argv[0],                    // service's binary
+                            NULL,                       // no load ordering group
+                            NULL,                       // no tag identifier
+                            NULL,                       // no dependencies
+                            NULL,                       // LocalSystem account
+                            NULL);                      // no password
+        if (schService == NULL) {
+          DWORD err = GetLastError();
+          cerr << "Service install failed - error code = " << err << endl;
+        }
+      }
+    }
+    else if (stricmp(argv[arg], "remove") == 0) {
+      if (schService != NULL)
+        cerr << "Service is not installed." << endl;
+      else {
+        if (!DeleteService(schService)) {
+          DWORD err = GetLastError();
+          cerr << "Service removal failed - error code = " << err << endl;
+        }
+        schService = NULL;
+      }
+    }
+    else if (stricmp(argv[arg], "start") == 0) {
+      if (schService != NULL)
+        cerr << "Service is not installed." << endl;
+      else {
+        if (!StartService(schService, 0, NULL)) {
+          DWORD err = GetLastError();
+          cerr << "Service start failed - error code = " << err << endl;
+        }
+      }
+    }
+    else if (stricmp(argv[arg], "stop") == 0) {
+      if (schService != NULL)
+        cerr << "Service is not installed." << endl;
+      else {
+        SERVICE_STATUS status;
+        if (!ControlService(schService, SERVICE_CONTROL_STOP, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service stop failed - error code = " << err << endl;
+        }
+      }
+    }
+    else if (stricmp(argv[arg], "pause") == 0) {
+      if (schService != NULL)
+        cerr << "Service is not installed." << endl;
+      else {
+        SERVICE_STATUS status;
+        if (!ControlService(schService, SERVICE_CONTROL_PAUSE, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service pause failed - error code = " << err << endl;
+        }
+      }
+    }
+    else if (stricmp(argv[arg], "resume") == 0) {
+      if (schService != NULL)
+        cerr << "Service is not installed." << endl;
+      else {
+        SERVICE_STATUS status;
+        if (!ControlService(schService, SERVICE_CONTROL_CONTINUE, &status)) {
+          DWORD err = GetLastError();
+          cerr << "Service continue failed - error code = " << err << endl;
+        }
+      }
+    }
+    else
+      cerr << "Unknown parameter \"" << *argv << "\" - ignoring." << endl;
+  }
+
+	if (schService != NULL)
+    CloseServiceHandle(schService);
+	if (schSCManager != NULL)
+    CloseServiceHandle(schSCManager);
+  exit(0);
+}
+
+
+void PServiceProcess::BoundMainEntry()
+{
+  // register our service control handler:
+  statusHandle = RegisterServiceCtrlHandler(GetServiceName(), ControlEntry);
+  if (statusHandle == NULL)
+    return;
+
+  // report the status to Service Control Manager.
+  if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 3000))
+    return;
+
+  Main();
+
+  ReportStatus(SERVICE_STOPPED, 0);
+}
+
+
+void PServiceProcess::MainEntry(DWORD, LPTSTR *)
+{
+  Current()->BoundMainEntry();
+}
+
+
+void PServiceProcess::ControlEntry(DWORD code)
+{
+  PServiceProcess * instance = Current();
+  if (instance == NULL)
+    return;
+
+  switch (code) {
+    case SERVICE_CONTROL_PAUSE : // Pause the service if it is running.
+      instance->OnPause();
+      break;
+
+    case SERVICE_CONTROL_CONTINUE : // Resume the paused service.
+      instance->OnContinue();
+      break;
+
+    case SERVICE_CONTROL_STOP : // Stop the service.
+      instance->OnStop();
+      break;
+
+    case SERVICE_CONTROL_INTERROGATE : // Update the service status.
+      instance->OnInterrogate();
+      break;
+
+    default :
+      instance->ReportStatus(SERVICE_RUNNING);
+  }
+}
+
+
+void PServiceProcess::SystemLog(SystemLogLevel level, const PString & msg)
+{
+  DWORD err = GetLastError();
+
+  static const char * levelName[] = {
+    "Fatal error logged",
+    "Error logged",
+    "Warning logged",
+    "Information logged"
+  };
+
+  if (debugMode) {
+    PError << levelName[level] << ": " << msg;
+    if (level != LogInfo)
+      PError << " - error = " << err;
+    PError << endl;
+    return;
+  }
+
+  // Use event logging to log the error.
+  HANDLE hEventSource = RegisterEventSource(NULL, GetServiceName());
+  if (hEventSource == NULL)
+    return;
+
+  PStringStream buf;
+  if (level != LogInfo)
+    buf << "error code = " << err;
+
+  LPCTSTR strings[3];
+  strings[0] = levelName[level];
+  strings[1] = msg;
+  strings[2] = buf;
+
+  ReportEvent(hEventSource, // handle of event source
+              EVENTLOG_ERROR_TYPE,  // event type
+              0,                    // event category
+              0,                    // event ID
+              NULL,                 // current user's SID
+              PARRAYSIZE(strings),  // number of strings
+              0,                    // no bytes of raw data
+              strings,              // array of error strings
+              NULL);                // no raw data
+  DeregisterEventSource(hEventSource);
+}
+
+
+BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
+                                   DWORD dwWin32ExitCode,
+                                   DWORD dwCheckPoint,
+                                   DWORD dwWaitHint)
+{
+  // Disable control requests until the service is started.
+  if (dwCurrentState == SERVICE_START_PENDING)
+    status.dwControlsAccepted = 0;
+  else
+    status.dwControlsAccepted =
+                           SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
+
+  // These SERVICE_STATUS members are set from parameters.
+  status.dwCurrentState = dwCurrentState;
+  status.dwWin32ExitCode = dwWin32ExitCode;
+  status.dwCheckPoint = dwCheckPoint;
+  status.dwWaitHint = dwWaitHint;
+
+  if (debugMode)
+    return TRUE;
+
+  // Report the status of the service to the service control manager.
+  if (SetServiceStatus(statusHandle, &status))
+    return TRUE;
+
+  // If an error occurs, stop the service.
+  SystemLog(LogError, "SetServiceStatus failed");
+  return FALSE;
+}
+
+
+void PServiceProcess::OnPause()
+{
+  if (status.dwCurrentState != SERVICE_RUNNING)
+    ReportStatus(SERVICE_RUNNING);
+  else
+    ReportStatus(SERVICE_PAUSED);
+}
+
+
+void PServiceProcess::OnContinue()
+{
+  ReportStatus(SERVICE_RUNNING);
+}
+
+
+void PServiceProcess::OnStop()
+{
+  // Report the status, specifying the checkpoint and waithint, before
+  // setting the termination event.
+  ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+}
+
+
+void PServiceProcess::OnInterrogate()
+{
+  ReportStatus(SERVICE_RUNNING);
 }
 
 
