@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.33  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.32  2000/02/18 09:55:21  robertj
  * Added parameter so get/setsockopt can have other levels to SOL_SOCKET.
  *
@@ -137,6 +140,8 @@
 #ifndef _PCHANNEL
 #include <ptlib/channel.h>
 #endif
+
+#include <sys/socket.h>
 
 class PSocket;
 

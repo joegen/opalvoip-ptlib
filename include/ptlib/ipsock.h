@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.43  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.42  1999/09/10 04:35:42  robertj
  * Added Windows version of PIPSocket::GetInterfaceTable() function.
  *
@@ -208,6 +211,11 @@ class PIPSocket : public PSocket
         /// Copy an address from another Address
         Address(const Address & addr);
 
+#ifdef __NUCLEUS_NET__
+        Address(const struct id_struct & addr);
+        Address & operator=(const struct id_struct & addr);
+#endif
+
         /// Copy an address from another Address
         Address & operator=(const in_addr & addr);
 
@@ -311,7 +319,7 @@ class PIPSocket : public PSocket
       const Address & bind,     /// Local interface address to bind to.
       unsigned queueSize = 5,   /// Number of pending accepts that may be queued.
       WORD port = 0,            /// Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+      Reusability reuse = AddressIsExclusive /// Can/Can't listen more than once.
     );
 
 
