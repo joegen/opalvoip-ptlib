@@ -241,6 +241,10 @@ SOURCE=..\..\ptclib\pssl.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pwavfile.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\pxml.cxx
 # End Source File
 # Begin Source File
@@ -254,17 +258,6 @@ SOURCE=..\..\ptclib\random.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\shttpsvc.cxx
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -349,6 +342,10 @@ SOURCE=..\..\..\Include\PtCLib\psnmp.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pwavfile.h
 # End Source File
 # Begin Source File
 
