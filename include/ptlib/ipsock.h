@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.38  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.37  1999/02/23 07:19:22  robertj
  * Added [] operator PIPSocket::Address to get the bytes out of an IP address.
  *
@@ -154,134 +157,183 @@
 #include <ptlib/socket.h>
 #endif
 
-class PIPSocket : public PSocket
-{
-  PCLASSINFO(PIPSocket, PSocket)
-/* This class describes a type of socket that will communicate using the
+/** This class describes a type of socket that will communicate using the
    Internet Protocol.
  */
-
+class PIPSocket : public PSocket
+{
+  PCLASSINFO(PIPSocket, PSocket);
   protected:
-    PIPSocket();
     /* Create a new Internet Protocol socket based on the port number
        specified.
      */
+    PIPSocket();
 
 
   public:
+    /**
+      A class describing an IP address
+     */
     class Address : public in_addr {
       public:
+        /**@name Address constructors */
+        //@{
+        /// Create an IP address with the default address
         Address();
+
+        /// Create an IP address with the default address
         Address(const PString & dotNotation);
+
+        /// Create an IP address from four byte values
         Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
+
+        /// Create an IP address from a four byte value in network byte order
         Address(DWORD dw);
+
+        /// Create an IP address from an in_addr structure
         Address(const in_addr & addr);
+
+        /// Copy an address from another Address
         Address(const Address & addr);
+
+        /// Copy an address from another Address
         Address & operator=(const in_addr & addr);
+
+        /// Copy an address from another Address
         Address & operator=(const Address & addr);
+
+        /// Copy an address from a string
         Address & operator=(const PString & dotNotation);
+
+        /// Copy an address from a four byte value in network order
         Address & operator=(DWORD dw);
+        //@}
+
+        /// Format an address as a string
         PString AsString() const;
+
+        /// Format an address as a string
         operator PString() const;
+
+        /// Return address in network order
         operator DWORD() const;
+
+        /// Return first byte of IP address
         BYTE Byte1() const;
+
+        /// Return second byte of IP address
         BYTE Byte2() const;
+
+        /// Return third byte of IP address
         BYTE Byte3() const;
+
+        /// Return fourth byte of IP address
         BYTE Byte4() const;
+
+        /// return specified byte of IP address
         BYTE operator[](PINDEX idx) const;
-      friend ostream & operator<<(ostream & s, const Address & a);
+
+        /// output address as a string to the specified string
+        friend ostream & operator<<(ostream & s, const Address & a);
     };
 
 
   // Overrides from class PChannel
-    virtual PString GetName() const;
-    /* Get the platform and I/O channel type name of the channel. For an IP
+    /** Get the platform and I/O channel type name of the channel. For an IP
        socket this returns the host name of the peer the socket is connected
        to, followed by the socket number it is connected to.
 
-       <H2>Returns:</H2>
+       @return
        the name of the channel.
      */
+    virtual PString GetName() const;
 
 
   // Overrides from class PSocket.
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    virtual BOOL Connect(
-      const Address & addr      // Address of remote machine to connect to.
-    );
-    virtual BOOL Connect(
-      WORD localPort,           // Local port number for connection
-      const Address & addr      // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number. This is
+    /** Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
+       #PIPSocket::SetPort()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully connected to the remote host.
      */
-
-    virtual BOOL Listen(
-      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0,           // Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+    virtual BOOL Connect(
+      const PString & address   /// Address of remote machine to connect to.
     );
-    /* Listen on a socket for a remote host on the specified port number. This
+    virtual BOOL Connect(
+      const Address & addr      /// Address of remote machine to connect to.
+    );
+    virtual BOOL Connect(
+      WORD localPort,           /// Local port number for connection
+      const Address & addr      /// Address of remote machine to connect to.
+    );
+
+    /** Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
        a connection by initiating a connection to this socket. An active socket
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
-       If the <CODE>port</CODE> parameter is zero then the port number as
+       If the #port# parameter is zero then the port number as
        defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
+       #PIPSocket::SetPort()# function.
 
-       For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
+       For the UDP protocol, the #queueSize# parameter is ignored.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
+      WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
+    );
 
 
   // New functions for class
-    static PString GetHostName();
-    static PString GetHostName(
-      const PString & hostname  // Hosts IP address to get name for
-    );
-    static PString GetHostName(
-      const Address & addr    // Hosts IP address to get name for
-    );
-    /* Get the "official" host name for the host specified or if none, the host
+    /** Get the "official" host name for the host specified or if none, the host
        this process is running on. The host may be specified as an IP number
        or a hostname alias and is resolved to the canonical form.
 
-       <H2>Returns:</H2>
+       @return
        Name of the host or IP number of host.
      */
+    static PString GetHostName();
+    static PString GetHostName(
+      const PString & hostname  /// Hosts IP address to get name for
+    );
+    static PString GetHostName(
+      const Address & addr    /// Hosts IP address to get name for
+    );
 
+    /** Get the Internet Protocol address for the specified host, or if none
+       specified, for the host this process is running on.
+
+       @return
+       TRUE if the IP number was returned.
+     */
     static BOOL GetHostAddress(
-      Address & addr    // Variable to receive hosts IP address
+      Address & addr    /// Variable to receive hosts IP address
     );
     static BOOL GetHostAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
-      Address & addr    // Variable to receive hosts IP address
+      Address & addr    /// Variable to receive hosts IP address
     );
-    /* Get the Internet Protocol address for the specified host, or if none
-       specified, for the host this process is running on.
 
-       <H2>Returns:</H2>
-       TRUE if the IP number was returned.
+    /** Get the alias host names for the specified host. This includes all DNS
+       names, CNAMEs, names in the local hosts file and IP numbers (as "dot"
+       format strings) for the host.
+
+       @return
+       array of strings for each alias for the host.
      */
-
     static PStringArray GetHostAliases(
       const PString & hostname
       /* Name of host to get address for. This may be either a domain name or
@@ -289,83 +341,72 @@ class PIPSocket : public PSocket
        */
     );
     static PStringArray GetHostAliases(
-      const Address & addr    // Hosts IP address
+      const Address & addr    /// Hosts IP address
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
     );
-    /* Get the alias host names for the specified host. This includes all DNS
-       names, CNAMEs, names in the local hosts file and IP numbers (as "dot"
-       format strings) for the host.
 
-       <H2>Returns:</H2>
-       array of strings for each alias for the host.
+    /** Determine if the specified host is actually the local machine. This
+       can be any of the host aliases or multi-homed IP numbers or even
+       the special number 127.0.0.1 for the loopback device.
+
+       @return
+       TRUE if the host is the local machine.
      */
-
     static BOOL IsLocalHost(
       const PString & hostname
       /* Name of host to get address for. This may be either a domain name or
          an IP number in "dot" format.
        */
     );
-    /* Determine if the specified host is actually the local machine. This
-       can be any of the host aliases or multi-homed IP numbers or even
-       the special number 127.0.0.1 for the loopback device.
 
-       <H2>Returns:</H2>
-       TRUE if the host is the local machine.
-     */
+    /** Get the Internet Protocol address for the local host.
 
-    virtual BOOL GetLocalAddress(
-      Address & addr    // Variable to receive hosts IP address
-    );
-    virtual BOOL GetLocalAddress(
-      Address & addr,    // Variable to receive peer hosts IP address
-      WORD & port        // Variable to receive peer hosts port number
-    );
-    /* Get the Internet Protocol address for the local host.
-
-       <H2>Returns:</H2>
+       @return
        TRUE if the IP number was returned.
      */
+    virtual BOOL GetLocalAddress(
+      Address & addr    /// Variable to receive hosts IP address
+    );
+    virtual BOOL GetLocalAddress(
+      Address & addr,    /// Variable to receive peer hosts IP address
+      WORD & port        /// Variable to receive peer hosts port number
+    );
 
-    virtual BOOL GetPeerAddress(
-      Address & addr    // Variable to receive hosts IP address
-    );
-    virtual BOOL GetPeerAddress(
-      Address & addr,    // Variable to receive peer hosts IP address
-      WORD & port        // Variable to receive peer hosts port number
-    );
-    /* Get the Internet Protocol address for the peer host the socket is
+    /** Get the Internet Protocol address for the peer host the socket is
        connected to.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the IP number was returned.
      */
-
-    PString GetLocalHostName();
-    /* Get the host name for the local host.
-
-       <H2>Returns:</H2>
-       Name of the host, or an empty string if an error occurs.
-     */
-
-    PString GetPeerHostName();
-    /* Get the host name for the peer host the socket is connected to.
-
-       <H2>Returns:</H2>
-       Name of the host, or an empty string if an error occurs.
-     */
-
-    static void ClearNameCache();
-    /* Clear the name cache.
-     */
-
-
-    static BOOL GetGatewayAddress(
-      Address & addr     // Variable to receive the IP address.
+    virtual BOOL GetPeerAddress(
+      Address & addr    /// Variable to receive hosts IP address
     );
-    /* Get the IP address that is being used as the gateway, that is, the
+    virtual BOOL GetPeerAddress(
+      Address & addr,    /// Variable to receive peer hosts IP address
+      WORD & port        /// Variable to receive peer hosts port number
+    );
+
+    /** Get the host name for the local host.
+
+       @return
+       Name of the host, or an empty string if an error occurs.
+     */
+    PString GetLocalHostName();
+
+    /** Get the host name for the peer host the socket is connected to.
+
+       @return
+       Name of the host, or an empty string if an error occurs.
+     */
+    PString GetPeerHostName();
+
+    /** Clear the name (DNS) cache.
+     */
+    static void ClearNameCache();
+
+    /** Get the IP address that is being used as the gateway, that is, the
        computer that packets on the default route will be sent.
 
        The string returned may be used in the Connect() function to open that
@@ -373,12 +414,14 @@ class PIPSocket : public PSocket
 
        Note that the driver does not need to be open for this function to work.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if there was a gateway.
      */
+    static BOOL GetGatewayAddress(
+      Address & addr     /// Variable to receive the IP address.
+    );
 
-    static PString GetGatewayInterface();
-    /* Get the name for the interface that is being used as the gateway,
+    /** Get the name for the interface that is being used as the gateway,
        that is, the interface that packets on the default route will be sent.
 
        The string returned may be used in the Connect() function to open that
@@ -386,19 +429,35 @@ class PIPSocket : public PSocket
 
        Note that the driver does not need to be open for this function to work.
 
-       <H2>Returns:</H2>
+       @return
+
        String name of the gateway device, or empty string if there is none.
      */
+    static PString GetGatewayInterface();
 
+    /**
+       Describes a route table entry
+    */
     class RouteEntry : public PObject
     {
-      PCLASSINFO(RouteEntry, PObject)
+      PCLASSINFO(RouteEntry, PObject);
       public:
+        /// create a route table entry from an IP address
         RouteEntry(const Address & addr) : network(addr) { }
+
+        /// Get the network address associated with the route table entry
         Address GetNetwork() const { return network; }
+
+        /// Get the network address mask associated with the route table entry
         Address GetNetMask() const { return net_mask; }
+
+        /// Get the default gateway address associated with the route table entry
         Address GetDestination() const { return destination; }
+
+        /// Get the network address name associated with the route table entry
         const PString & GetInterface() const { return interfaceName; }
+
+        /// Get the network metric associated with the route table entry
         long GetMetric() const { return metric; }
       protected:
         Address network;
@@ -410,14 +469,18 @@ class PIPSocket : public PSocket
     };
 
     PLIST(RouteTable, RouteEntry);
-    static BOOL GetRouteTable(
-      RouteTable & table      // Route table
-    );
-    /* Get the systems route table.
 
-       <H2>Returns:</H2>
+    /** Get the systems route table.
+
+       @return
        TRUE if the route table is returned, FALSE if an error occurs.
      */
+    static BOOL GetRouteTable(
+      RouteTable & table      /// Route table
+    );
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.7  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.6  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -55,22 +58,24 @@
 #include <ptlib/socket.h>
 #endif
 
-class PIPXSocket : public PSocket
-{
-  PCLASSINFO(PIPXSocket, PSocket)
-/* This class describes a type of socket that will communicate using the
+/**This class describes a type of socket that will communicate using the
    IPX/SPX protocols.
  */
+class PIPXSocket : public PSocket
+{
+  PCLASSINFO(PIPXSocket, PSocket);
 
   public:
-    PIPXSocket(
-      WORD port = 0       // Port number to use for the connection.
-    );
-    /* Create a new IPX datagram socket.
+    /**Create a new IPX datagram socket.
      */
+    PIPXSocket(
+      WORD port = 0       /// Port number to use for the connection.
+    );
 
 
   public:
+    /** IPX protocol address specification.
+     */
     class Address {
       public:
         union {
@@ -84,169 +89,227 @@ class PIPXSocket : public PSocket
         } network;
         BYTE node[6];
 
+        /** Create new, invalid, address. */
         Address();
-        Address(const Address & addr);
-        Address(const PString & str);
-        Address(DWORD netNum, const char * nodeNum);
-        Address & operator=(const Address & addr);
+        /** Create copy of existing address */
+        Address(const Address & addr /** Address to copy */);
+        /** Create address from string representation. */
+        Address(const PString & str /** String representation of address */);
+        /** Create address from node and net numbers. */
+        Address(
+          DWORD netNum, /// IPX network number.
+          const char * nodeNum  /// IPX node number (MAC address)
+        );
+        /** Create copy of existing address */
+        Address & operator=(const Address & addr /** Address to copy */);
+        /** Get string representation of IPX address */
         operator PString() const;
+        /** Determine if address is valid. Note that this does not mean that
+            the host is online.
+            @return TRUE is address is valid.
+          */
         BOOL IsValid() const;
-      friend ostream & operator<<(ostream & s, Address & a)
-        { return s << (PString)a; }
+      /** Output string representation of IPX address to stream. */
+      friend ostream & operator<<(
+        ostream & strm, /// Stream to output to
+        Address & addr  /// Address to output
+      ) { return strm << (PString)addr; }
     };
 
-  // Overrides from class PChannel
-    virtual PString GetName() const;
-    /* Get the platform and I/O channel type name of the channel. For an
+  /**@name Overrides from class PChannel */
+  //@{
+    /**Get the platform and I/O channel type name of the channel. For an
        IPX/SPX socket this returns the network number, node number of the
        peer the socket is connected to, followed by the socket number it
        is connected to.
 
-       <H2>Returns:</H2>
+       @return
        the name of the channel.
      */
+    virtual PString GetName() const;
+  //@}
 
 
-  // Overrides from class PSocket
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    virtual BOOL Connect(
-      const Address & address   // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number. This is
+  /**@name Overrides from class PSocket */
+  //@{
+    /**Connect a socket to a remote host on the port number of the socket.
+       This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
+       #PIPSocket::SetPort()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully connected to the remote host.
      */
-
-    virtual BOOL Listen(
-      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0,           // Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+    virtual BOOL Connect(
+      const PString & address   /// Address of remote machine to connect to.
     );
-    /* Listen on a socket for a remote host on the specified port number. This
+    /**Connect a socket to a remote host on the port number of the socket.
+       This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
+
+       The port number as defined by the object instance construction or the
+       #PIPSocket::SetPort()# function.
+
+       @return
+       TRUE if the channel was successfully connected to the remote host.
+     */
+    virtual BOOL Connect(
+      const Address & address   /// Address of remote machine to connect to.
+    );
+
+    /**Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
        a connection by initiating a connection to this socket. An active socket
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
-       If the <CODE>port</CODE> parameter is zero then the port number as
+       If the #port# parameter is zero then the port number as
        defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
+       #PIPSocket::SetPort()# function.
 
-       For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
+       For the UDP protocol, the #queueSize# parameter is ignored.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-
-  // New functions for class
-    BOOL SetPacketType(
-      int type    // IPX packet type for this socket.
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
+      WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
     );
-    /* Sets the packet type for datagrams sent by this socket.
+  //@}
 
-       <H2>Returns:</H2>
-       TRUE if the type was successfully set.
-     */
+  /**@name Address and name space look up functions */
+  //@{
+    /**Get the host name for the host specified server.
 
-    int GetPacketType();
-    /* Gets the packet type for datagrams sent by this socket.
-
-       <H2>Returns:</H2>
-       type of packets or -1 if error.
-     */
-
-
-    static PString GetHostName(
-      const Address & addr    // Hosts IP address to get name for
-    );
-    /* Get the host name for the host specified server.
-
-       <H2>Returns:</H2>
+       @return
        Name of the host or IPX number of host.
      */
-
-    static BOOL GetHostAddress(
-      Address & addr    // Variable to receive this hosts IP address
+    static PString GetHostName(
+      const Address & addr    /// Hosts IP address to get name for
     );
+
+    /**Get the IPX address for the specified host.
+
+       @return
+       TRUE if the IPX number was returned.
+     */
+    static BOOL GetHostAddress(
+      Address & addr    /// Variable to receive this hosts IP address
+    );
+
+    /**Get the IPX address for the specified host.
+
+       @return
+       TRUE if the IPX number was returned.
+     */
     static BOOL GetHostAddress(
       const PString & hostname,
-      /* Name of host to get address for. This may be either a server name or
+      /** Name of host to get address for. This may be either a server name or
          an IPX number in "colon" format.
        */
-      Address & addr    // Variable to receive hosts IPX address
+      Address & addr    /// Variable to receive hosts IPX address
     );
-    /* Get the IPX address for the specified host.
 
-       <H2>Returns:</H2>
+    /**Get the IPX/SPX address for the local host.
+
+       @return
        TRUE if the IPX number was returned.
      */
-
     BOOL GetLocalAddress(
-      Address & addr    // Variable to receive hosts IPX address
+      Address & addr    /// Variable to receive hosts IPX address
     );
-    BOOL GetLocalAddress(
-      Address & addr,    // Variable to receive peer hosts IPX address
-      WORD & port        // Variable to receive peer hosts port number
-    );
-    /* Get the IPX/SPX address for the local host.
 
-       <H2>Returns:</H2>
+    /**Get the IPX/SPX address for the local host.
+
+       @return
        TRUE if the IPX number was returned.
      */
+    BOOL GetLocalAddress(
+      Address & addr,    /// Variable to receive peer hosts IPX address
+      WORD & port        /// Variable to receive peer hosts port number
+    );
 
-    BOOL GetPeerAddress(
-      Address & addr    // Variable to receive hosts IPX address
-    );
-    BOOL GetPeerAddress(
-      Address & addr,    // Variable to receive peer hosts IPX address
-      WORD & port        // Variable to receive peer hosts port number
-    );
-    /* Get the IPX/SPX address for the peer host the socket is
+    /**Get the IPX/SPX address for the peer host the socket is
        connected to.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the IPX number was returned.
      */
-
-
-    virtual BOOL ReadFrom(
-      void * buf,     // Data to be written as URGENT TCP data.
-      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
-      Address & addr, // Address from which the datagram was received.
-      WORD & port     // Port from which the datagram was received.
+    BOOL GetPeerAddress(
+      Address & addr    /// Variable to receive hosts IPX address
     );
-    /* Read a datagram from a remote computer.
+
+    /**Get the IPX/SPX address for the peer host the socket is
+       connected to.
+
+       @return
+       TRUE if the IPX number was returned.
+     */
+    BOOL GetPeerAddress(
+      Address & addr,    /// Variable to receive peer hosts IPX address
+      WORD & port        /// Variable to receive peer hosts port number
+    );
+  //@}
+
+  /**@name I/O functions */
+  //@{
+    /**Sets the packet type for datagrams sent by this socket.
+
+       @return
+       TRUE if the type was successfully set.
+     */
+    BOOL SetPacketType(
+      int type    /// IPX packet type for this socket.
+    );
+
+    /**Gets the packet type for datagrams sent by this socket.
+
+       @return
+       type of packets or -1 if error.
+     */
+    int GetPacketType();
+
+
+    /**Read a datagram from a remote computer.
        
-       <H2>Returns:</H2>
+       @return
        TRUE if all the bytes were sucessfully written.
      */
-
-    virtual BOOL WriteTo(
-      const void * buf,   // Data to be written as URGENT TCP data.
-      PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
-      const Address & addr, // Address to which the datagram is sent.
-      WORD port           // Port to which the datagram is sent.
+    virtual BOOL ReadFrom(
+      void * buf,     /// Data to be written as URGENT TCP data.
+      PINDEX len,     /// Number of bytes pointed to by #buf#.
+      Address & addr, /// Address from which the datagram was received.
+      WORD & port     /// Port from which the datagram was received.
     );
-    /* Write a datagram to a remote computer.
 
-       <H2>Returns:</H2>
+    /**Write a datagram to a remote computer.
+
+       @return
        TRUE if all the bytes were sucessfully written.
      */
+    virtual BOOL WriteTo(
+      const void * buf,   /// Data to be written as URGENT TCP data.
+      PINDEX len,         /// Number of bytes pointed to by #buf#.
+      const Address & addr, /// Address to which the datagram is sent.
+      WORD port           /// Port to which the datagram is sent.
+    );
+  //@}
 
 
   protected:
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.9  1999/03/09 02:59:50  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.8  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -62,226 +65,277 @@
 #endif
 
 
+/**This class establishes a mail session with the platforms mail system.
+*/
 class PMail : public PObject
 {
-  PCLASSINFO(PMail, PObject)
-/* This class establishes a mail session with the platforms mail system.
-*/
+  PCLASSINFO(PMail, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+    /**Create a mail session. It is initially not logged in.
+     */
     PMail();
+
+    /**Create a mail session.
+       Attempt to log in using the parameters provided.
+     */
     PMail(
-      const PString & username,  // User withing mail system to use.
-      const PString & password   // Password for user in mail system.
+      const PString & username,  /// User withing mail system to use.
+      const PString & password   /// Password for user in mail system.
     );
+
+    /**Create a mail session.
+       Attempt to log in using the parameters provided.
+     */
     PMail(
-      const PString & username,  // User withing mail system to use.
-      const PString & password,  // Password for user in mail system.
+      const PString & username,  /// User withing mail system to use.
+      const PString & password,  /// Password for user in mail system.
       const PString & service
-      /* A platform dependent string indicating the location of the underlying
+      /**A platform dependent string indicating the location of the underlying
          messaging service, eg the path to a message store or node name of the
          mail server.
        */
     );
-    /* Create a mail session. The parameterless form does not log into the
-       mail system. The second form attempts to log in using the parameters
-       provided.
-     */
 
 
     virtual ~PMail();
     /* Destroy the mail session, logging off the mail system if necessary.
      */
+  //@}
 
+  /**@name Log in/out functions */
+  //@{
+    /**Attempt to log on to the mail system using the parameters provided.
 
-  // New functions for class
+       @return
+       TRUE if successfully logged on.
+     */
     BOOL LogOn(
-      const PString & username,  // User withing mail system to use.
-      const PString & password   // Password for user in mail system.
+      const PString & username,  /// User withing mail system to use.
+      const PString & password   /// Password for user in mail system.
     );
+
+    /**Attempt to log on to the mail system using the parameters provided.
+
+       @return
+       TRUE if successfully logged on.
+     */
     BOOL LogOn(
-      const PString & username,  // User withing mail system to use.
-      const PString & password,  // Password for user in mail system.
+      const PString & username,  /// User withing mail system to use.
+      const PString & password,  /// Password for user in mail system.
       const PString & service
-      /* A platform dependent string indicating the location of the underlying
+      /**A platform dependent string indicating the location of the underlying
          messaging service, eg the path to a message store or node name of the
          mail server.
        */
     );
-    /* Attempt to log on to the mail system using the parameters provided.
 
-       <H2>Returns:</H2>
-       TRUE if successfully logged on.
-     */
+    /**Log off from the mail system.
 
-    virtual BOOL LogOff();
-    /* Log off from the mail system.
-
-       <H2>Returns:</H2>
+       @return
        TRUE if successfully logged off.
      */
+    virtual BOOL LogOff();
 
-    BOOL IsLoggedOn() const;
-    /* Determine if the mail session is active and logged into the mail system.
+    /**Determine if the mail session is active and logged into the mail system.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if logged into the mail system.
      */
+    BOOL IsLoggedOn() const;
+  //@}
 
+  /**@name Send message functions */
+  //@{
+    /**Send a new simple mail message.
 
-    BOOL SendNote(
-      const PString & recipient,  // Name of recipient of the mail message.
-      const PString & subject,    // Subject name for the mail message.
-      const char * body           // Text body of the mail message.
-    );
-    BOOL SendNote(
-      const PString & recipient,  // Name of recipient of the mail message.
-      const PString & subject,    // Subject name for the mail message.
-      const char * body,          // Text body of the mail message.
-      const PStringList & attachments
-                        // List of files to attach to the mail message.
-    );
-    BOOL SendNote(
-      const PString & recipient,  // Name of recipient of the mail message.
-      const PStringList & carbonCopies, // Name of CC recipients.
-      const PStringList & blindCarbons, // Name of BCC recipients.
-      const PString & subject,        // Subject name for the mail message.
-      const char * body,              // Text body of the mail message.
-      const PStringList & attachments
-                        // List of files to attach to the mail message.
-    );
-    /* Send a new simple mail message.
-
-       <H2>Returns:</H2>
+       @return
        TRUE if the mail message was successfully queued. Note that this does
-       <EM>not</EM> mean that it has been delivered.
+       {\bf not} mean that it has been delivered.
      */
-
-
-    PStringArray GetMessageIDs(
-      BOOL unreadOnly = TRUE    // Only get the IDs for unread messages.
+    BOOL SendNote(
+      const PString & recipient,  /// Name of recipient of the mail message.
+      const PString & subject,    /// Subject name for the mail message.
+      const char * body           /// Text body of the mail message.
     );
-    /* Get a list of ID strings for all messages in the mail box.
 
-       <H2>Returns:</H2>
+    /**Send a new simple mail message.
+
+       @return
+       TRUE if the mail message was successfully queued. Note that this does
+       {\bf not} mean that it has been delivered.
+     */
+    BOOL SendNote(
+      const PString & recipient,  /// Name of recipient of the mail message.
+      const PString & subject,    /// Subject name for the mail message.
+      const char * body,          /// Text body of the mail message.
+      const PStringList & attachments
+                        /// List of files to attach to the mail message.
+    );
+
+    /**Send a new simple mail message.
+
+       @return
+       TRUE if the mail message was successfully queued. Note that this does
+       {\bf not} mean that it has been delivered.
+     */
+    BOOL SendNote(
+      const PString & recipient,  /// Name of recipient of the mail message.
+      const PStringList & carbonCopies, /// Name of CC recipients.
+      const PStringList & blindCarbons, /// Name of BCC recipients.
+      const PString & subject,        /// Subject name for the mail message.
+      const char * body,              /// Text body of the mail message.
+      const PStringList & attachments
+                        /// List of files to attach to the mail message.
+    );
+  //@}
+
+  /**@name Read message functions */
+  //@{
+    /**Get a list of ID strings for all messages in the mail box.
+
+       @return
        An array of ID strings.
      */
+    PStringArray GetMessageIDs(
+      BOOL unreadOnly = TRUE    /// Only get the IDs for unread messages.
+    );
 
+    /// Message header for each mail item.
     struct Header {
-      PString  subject;           // Subject for message.
-      PString  originatorName;    // Full name of message originator.
-      PString  originatorAddress; // Return address of message originator.
-      PTime    received;          // Time message received.
+      /// Subject for message.
+      PString  subject;           
+      /// Full name of message originator.
+      PString  originatorName;    
+      /// Return address of message originator.
+      PString  originatorAddress; 
+      /// Time message received.
+      PTime    received;          
     };
 
-    BOOL GetMessageHeader(
-      const PString & id,      // Identifier of message to get header.
-      Header & hdrInfo         // Header info for the message.
-    );
-    /* Get the header information for a message.
+    /**Get the header information for a message.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if header information was successfully obtained.
      */
-
-    BOOL GetMessageBody(
-      const PString & id,      // Identifier of message to get body.
-      PString & body,          // Body text of mail message.
-      BOOL markAsRead = FALSE  // Mark the message as read.
+    BOOL GetMessageHeader(
+      const PString & id,      /// Identifier of message to get header.
+      Header & hdrInfo         /// Header info for the message.
     );
-    /* Get the body text for a message into the <CODE>body</CODE> string
+
+    /**Get the body text for a message into the #body# string
        parameter.
 
        Note that if the body text for the mail message is very large, the
        function will return FALSE. To tell between an error getting the message
-       body and having a large message body the <A>GetErrorCode()</A> function
+       body and having a large message body the #GetErrorCode()# function
        must be used.
 
-       To get a large message body, the <A>GetMessageAttachments()</A> should
-       be used with the <CODE>includeBody</CODE> parameter set to TRUE so that
+       To get a large message body, the #GetMessageAttachments()# should
+       be used with the #includeBody# parameter set to TRUE so that
        the message body is placed into a disk file.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the body text was retrieved, FALSE if the body was too large or
        some other error occurred.
      */
-
-    BOOL GetMessageAttachments(
-      const PString & id,       // Identifier of message to get attachments.
-      PStringArray & filenames, // File names for each attachment.
-      BOOL includeBody = FALSE, // Include the message body as first attachment
-      BOOL markAsRead = FALSE   // Mark the message as read
+    BOOL GetMessageBody(
+      const PString & id,      /// Identifier of message to get body.
+      PString & body,          /// Body text of mail message.
+      BOOL markAsRead = FALSE  /// Mark the message as read.
     );
-    /* Get all of the attachments for a message as disk files.
 
-       <H2>Returns:</H2>
+    /**Get all of the attachments for a message as disk files.
+
+       @return
        TRUE if attachments were successfully obtained.
      */
-
-    BOOL MarkMessageRead(
-      const PString & id      // Identifier of message to get header.
+    BOOL GetMessageAttachments(
+      const PString & id,       /// Identifier of message to get attachments.
+      PStringArray & filenames, /// File names for each attachment.
+      BOOL includeBody = FALSE, /// Include the message body as first attachment
+      BOOL markAsRead = FALSE   /// Mark the message as read
     );
-    /* Mark the message as read.
 
-       <H2>Returns:</H2>
+    /**Mark the message as read.
+
+       @return
        TRUE if message was successfully marked as read.
      */
-
-    BOOL DeleteMessage(
-      const PString & id      // Identifier of message to get header.
+    BOOL MarkMessageRead(
+      const PString & id      /// Identifier of message to get header.
     );
-    /* Delete the message from the system.
 
-       <H2>Returns:</H2>
+    /**Delete the message from the system.
+
+       @return
        TRUE if message was successfully deleted.
      */
+    BOOL DeleteMessage(
+      const PString & id      /// Identifier of message to get header.
+    );
+  //@}
 
-
+  /**@name User look up functions */
+  //@{
+    /// Result of a lookup operation with the #LookUp()# function.
     enum LookUpResult {
-      UnknownUser,    // User name is unknown in mail system.
-      AmbiguousUser,  // User is ambiguous in mail system.
-      ValidUser,      // User is a vlid, unique name in mail system.
-      LookUpError     // An error occurred during the look up
+      /// User name is unknown in mail system.
+      UnknownUser,    
+      /// User is ambiguous in mail system.
+      AmbiguousUser,  
+      /// User is a valid, unique name in mail system.
+      ValidUser,      
+      /// An error occurred during the look up
+      LookUpError     
     };
 
-    LookUpResult LookUp(
-      const PString & name,  // Name to look up.
-      PString * fullName = NULL
-      /* String to receive full name of user passed in <CODE>name</CODE>. If
-         NULL then the full name is <EM>not</EM> returned.
-       */
-    );
-    /* Look up the specified name and verify that they are a valid address in
+    /**Look up the specified name and verify that they are a valid address in
        the mail system.
 
-       <H2>Returns:</H2>
+       @return
        result of the name lookup.
      */
+    LookUpResult LookUp(
+      const PString & name,  /// Name to look up.
+      PString * fullName = NULL
+      /**String to receive full name of user passed in #name#. If
+         NULL then the full name is {\bf not} returned.
+       */
+    );
+  //@}
 
-
-    int GetErrorCode() const;
-    /* Get the internal error code for the last error by a function in this
+  /**@name Error functions */
+  //@{
+    /**Get the internal error code for the last error by a function in this
        mail session.
 
-       <H2>Returns:</H2>
+       @return
        integer error code for last operation.
      */
+    int GetErrorCode() const;
 
-    PString GetErrorText() const;
-    /* Get the internal error description for the last error by a function in
+    /**Get the internal error description for the last error by a function in
        this mail session.
 
-       <H2>Returns:</H2>
+       @return
        string error text for last operation.
      */
+    PString GetErrorText() const;
+  //@}
 
 
   protected:
     void Construct();
     // Common construction code.
 
+    /// Flag indicating the session is active.
     BOOL loggedOn;
-    // Flag indicating the session is active.
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
