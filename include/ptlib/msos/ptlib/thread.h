@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.11 1996/06/13 13:32:12 robertj Exp $
+ * $Id: thread.h,v 1.12 1996/07/27 04:08:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.12  1996/07/27 04:08:34  robertj
+ * Changed thread creation to use C library function instead of direct WIN32.
+ *
  * Revision 1.11  1996/06/13 13:32:12  robertj
  * Rewrite of auto-delete threads, fixes Windows95 total crash.
  *
@@ -80,12 +83,12 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
   protected:
     HANDLE threadHandle;
-    DWORD  threadId;
+    UINT   threadId;
 
   private:
     PINDEX originalStackSize;
 
-    static DWORD EXPORTED MainFunction(LPVOID thread);
+    static UINT __stdcall MainFunction(void * thread);
 #else
   public:
     typedef BOOL (__far *BlockFunction)(PObject *);
