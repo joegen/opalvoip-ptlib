@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.115  2003/09/17 08:57:33  csoutheren
+# Moved PSmartPointer and PNotifier into seperate files
+# Added detection for system regex libraries on all platforms
+#
 # Revision 1.114  2003/07/28 18:44:01  dsandras
 # Make use of the libc regex on Linux.
 #
@@ -601,10 +605,8 @@ SOURCES	= \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
-ifneq ($(OSTYPE),Carbon)
-ifneq ($(OSTYPE),linux)
+ifneq ($(HAS_REGEX),1)
 OBJS	= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
-endif
 endif
 
 CLEAN_FILES = $(GETDATE_SOURCE)
