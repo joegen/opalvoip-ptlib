@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.43  2000/10/20 06:11:48  robertj
+ * Added function to change auto delete flag on a thread.
+ *
  * Revision 1.42  2000/09/20 04:24:09  craigs
  * Added extra tracing, and removed segv on exit when using tracing
  *
@@ -611,6 +614,13 @@ BOOL PThread::IsSuspended() const
   BOOL suspended = PX_suspendCount > 0;
   PAssertOS(pthread_mutex_unlock((pthread_mutex_t *)&PX_suspendMutex) == 0);
   return suspended;
+}
+
+
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
+  autoDelete = deletion == AutoDeleteThread;
 }
 
 
