@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.154  2003/01/20 08:54:01  rogerh
+# Use new native pthreads in NetBSD -current.
+#
 # Revision 1.153  2003/01/11 05:30:13  robertj
 # Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
 #
@@ -886,11 +889,18 @@ LDLIBS		+= -lossaudio
 STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include
 
 # enable the USE_PTH line to compile using pth
-# comment out USE_PTH to compile using unproven threads
-USE_PTH := 1
+# enable the USE_NATIVE_THREADS line to compile using native threads
+# enable the USE_UNPROVEN_THREADS line to compile using unproven threads
+#USE_PTH_THREADS := 1
+#USE_UNPROVEN_THREADS := 1
+USE_NATIVE_THREADS := 1
 
 ifdef P_PTHREADS
-ifdef USE_PTH 
+ifdef USE_NATIVE_THREADS
+STDCCFLAGS += -DP_NETBSD_NATIVE
+LDLIBS  += -lpthread
+else
+ifdef USE_PTH_THREADS
 STDCCFLAGS += -DP_GNU_PTH
 STDCCFLAGS += -I/usr/pkg/include
 LDFLAGS += -L/usr/pkg/lib
@@ -901,6 +911,7 @@ LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
 CC              := /usr/pkg/pthreads/bin/pgcc
 CPLUS           := /usr/pkg/pthreads/bin/pg++
+endif
 endif
 endif
 
