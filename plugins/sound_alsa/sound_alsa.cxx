@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.26  2004/12/05 20:45:06  dsandras
+ * Added back some of the former code to fix probems with PWavFile.
+ *
  * Revision 1.25  2004/12/02 01:19:48  dereksmithies
  * Ensure ALSA is initialised to a default of 2 stored buffers.
  * Improve reporting of errors.
@@ -400,7 +403,28 @@ BOOL PSoundChannelALSA::Setup(int nBytes)
     no_error = FALSE;
   }
 
+  
+  snd_pcm_uframes_t period_size = storedSize / (frameBytes ? frameBytes : 2);
+  if ((err = snd_pcm_hw_params_set_period_size_near (os_handle, 	 
+						     hw_params, 	 
+						     &period_size, 	 
+						     0)) < 0) { 	 
 
+    msg << "Cannot set period size " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg); 	 
+    cerr << msg << endl;
+  }
+
+  
+  if ((err = (int) snd_pcm_hw_params_set_periods_near (os_handle, 	    
+						       hw_params,
+						       (unsigned int *) 
+						       &storedPeriods,
+						       0)) < 0) {
+    msg << "Cannot set periods to " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg); 	 
+    cerr << msg << endl;
+  }
 
  /*****The buffer time is TWICE  the period time.
        bufferTime is the time to play the stored data.
