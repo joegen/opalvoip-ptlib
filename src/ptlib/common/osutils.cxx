@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.2 1993/08/31 03:38:02 robertj Exp $
+ * $Id: osutils.cxx,v 1.3 1993/11/20 17:26:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,15 +8,18 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.2  1993/08/31 03:38:02  robertj
- * G++ needs explicit casts for char */void * interchange.
+ * Revision 1.3  1993/11/20 17:26:28  robertj
+ * Removed separate osutil.h
+ *
+ * Revision 1.2  1993/08/31  03:38:02  robertj
+ * G++ needs explicit casts for char * / void * interchange.
  *
  * Revision 1.1  1993/08/27  18:17:47  robertj
  * Initial revision
  *
  */
 
-#include "osutil.h"
+#include "pwlib.h"
 
 #include <fcntl.h>
 #include <errno.h>
