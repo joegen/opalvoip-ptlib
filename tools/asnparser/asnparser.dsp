@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="ASNParser" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Console Application" 0x0103
@@ -17,12 +17,12 @@ CFG=ASNParser - Win32 Debug
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "ASNParser - Win32 Release" (based on\
- "Win32 (x86) Console Application")
+!MESSAGE "ASNParser - Win32 Release" (based on "Win32 (x86) Console Application")
 !MESSAGE "ASNParser - Win32 Debug" (based on "Win32 (x86) Console Application")
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
@@ -52,7 +52,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386
 # ADD LINK32 ptlib.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /machine:I386 /libpath:"..\..\lib"
 # Begin Special Build Tool
-SOURCE=$(InputPath)
+SOURCE="$(InputPath)"
 PostBuild_Desc=Copying ASN parser to pwlib/lib directory.
 PostBuild_Cmds=copy Release\asnparser.exe ..\..\lib > nul
 # End Special Build Tool
@@ -71,7 +71,7 @@ PostBuild_Cmds=copy Release\asnparser.exe ..\..\lib > nul
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Yu"ptlib.h" /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -151,10 +151,10 @@ SOURCE=.\asn_lex.cxx
 # Begin Source File
 
 SOURCE=.\asn_lex.l
-USERDEP__ASN_L="asn_grammar.h"	"asn_grammar.cxx"	
 
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
+USERDEP__ASN_L="asn_grammar.h"	"asn_grammar.cxx"	
 # Begin Custom Build - Performing Lex Step
 InputPath=.\asn_lex.l
 InputName=asn_lex
@@ -166,6 +166,7 @@ InputName=asn_lex
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
 
+USERDEP__ASN_L="asn_grammar.h"	"asn_grammar.cxx"	
 # Begin Custom Build - Performing Lex Step
 InputPath=.\asn_lex.l
 InputName=asn_lex
