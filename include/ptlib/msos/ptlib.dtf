@@ -950,6 +950,7 @@ EXPORTS
     ?Construct@PRemoteConnection@@AAEXXZ @790 NONAME ;private: void __thiscall PRemoteConnection::Construct(void)
     ?Construct@PSerialChannel@@AAEXXZ @791 NONAME ;private: void __thiscall PSerialChannel::Construct(void)
     ?Construct@PSoundChannel@@AAEXXZ @2049 NONAME ;private: void __thiscall PSoundChannel::Construct(void)
+    ?Construct@PTimer@@AAEXXZ @2483 NONAME ;private: void __thiscall PTimer::Construct(void)
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @792 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @793 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
     ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
@@ -1810,6 +1811,7 @@ EXPORTS
     ?PrintOn@PUnsignedArray@@UBEXAAVostream@@@Z @1522 NONAME ;public: virtual void __thiscall PUnsignedArray::PrintOn(class ostream &)const 
     ?PrintOn@PWaveFormat@@UBEXAAVostream@@@Z @2240 NONAME ;public: virtual void __thiscall PWaveFormat::PrintOn(class ostream &)const 
     ?PrintOn@PWORDArray@@UBEXAAVostream@@@Z @1523 NONAME ;public: virtual void __thiscall PWORDArray::PrintOn(class ostream &)const 
+    ?Process@PTimer@@AAEXABVPTimeInterval@@AAV2@@Z @2484 NONAME ;private: void __thiscall PTimer::Process(class PTimeInterval const &,class PTimeInterval &)
     ?Process@PTimerList@@QAE?AVPTimeInterval@@XZ @1525 NONAME ;public: class PTimeInterval  __thiscall PTimerList::Process(void)
     ?ProcessCommand@PServiceProcess@@AAEHPBD@Z @1526 NONAME ;private: int __thiscall PServiceProcess::ProcessCommand(char const *)
     ?PSetErrorStream@@YAXPAVostream@@@Z @1527 NONAME ;void __cdecl PSetErrorStream(class ostream *)
@@ -2123,5 +2125,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?Construct@PTimer@@AAEXXZ @2483 NONAME ;private: void __thiscall PTimer::Construct(void)
-    ?Process@PTimer@@AAEXABVPTimeInterval@@AAV2@@Z @2484 NONAME ;private: void __thiscall PTimer::Process(class PTimeInterval const &,class PTimeInterval &)
+    ??0SecurityID@@QAE@PAU_SID_IDENTIFIER_AUTHORITY@@EKKKKKKKK@Z @2485 NONAME ;public: __thiscall SecurityID::SecurityID(struct _SID_IDENTIFIER_AUTHORITY *,unsigned char,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long,unsigned long)
+    ??0SecurityID@@QAE@PBD0PADPAKPAW4_SID_NAME_USE@@@Z @2486 NONAME ;public: __thiscall SecurityID::SecurityID(char const *,char const *,char *,unsigned long *,enum _SID_NAME_USE *)
