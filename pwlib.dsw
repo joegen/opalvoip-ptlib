@@ -144,6 +144,21 @@ Package=<4>
 
 ###############################################################################
 
+Project: "SortedListTest"=.\samples\sortedlist\SortedListTest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name PTLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
 Project: "ThreadSafe"=.\SAMPLES\ThreadSafe\ThreadSafe.dsp - Package Owner=<4>
 
 Package=<5>
