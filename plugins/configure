@@ -849,6 +849,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
+  --disable-video         disable video device support in PWLIB
   --enable-v4l            enable V4L video support
   --enable-bsdvideo       enable BSD video support
   --enable-avc            enable IEEE1394/AVC video support
@@ -3266,6 +3267,14 @@ echo "${ECHO_T}no" >&6
   fi
 fi
 
+# Check whether --enable-video or --disable-video was given.
+if test "${enable_video+set}" = set; then
+  enableval="$enable_video"
+  video=$enableval
+fi;
+
+if test "$video" != "no" ; then
+
 
 # Check whether --enable-v4l or --disable-v4l was given.
 if test "${enable_v4l+set}" = set; then
@@ -4562,6 +4571,8 @@ echo "${ECHO_T}yes" >&6
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
   fi
+fi
+
 fi
 
 
