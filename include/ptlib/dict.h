@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.19 1997/12/11 10:27:16 robertj Exp $
+ * $Id: dict.h,v 1.20 1998/01/05 10:39:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.20  1998/01/05 10:39:34  robertj
+ * Fixed "typesafe" templates/macros for dictionaries, especially on GNU.
+ *
  * Revision 1.19  1997/12/11 10:27:16  robertj
  * Added type correct Contains() function to dictionaries.
  *
@@ -620,20 +623,6 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        <CODE>index</CODE> parameter.
      */
 
-    virtual BOOL Remove(
-      const PObject * obj   // Existing object to remove from the collection.
-    );
-    /* Remove the object from the collection. If the AllowDeleteObjects option
-       is set then the object is also deleted.
-
-       Note that the comparison for searching for the object in collection is
-       made by pointer, not by value. Thus the parameter must point to the
-       same instance of the object that is in the collection.
-
-       <H2>Returns:</H2>
-       TRUE if the object was in the collection.
-     */
-
     virtual PObject * RemoveAt(
       PINDEX index   // Index position in collection to place the object.
     );
@@ -714,7 +703,7 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        TRUE if the new object could be placed into the dictionary.
      */
 
-    virtual BOOL SetAt(
+    virtual BOOL AbstractSetAt(
       const PObject & key,  // Key for position in dictionary to add object.
       PObject * obj         // New object to put into the dictionary.
     );
@@ -743,7 +732,7 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        reference to object at the specified key.
      */
 
-    virtual PObject * GetAt(
+    virtual PObject * AbstractGetAt(
       const PObject & key   // Key for position in dictionary to get object.
     ) const;
     /* Get the object at the specified key position. If the key was not in the
@@ -765,6 +754,21 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        <H2>Returns:</H2>
        Always zero.
      */
+
+    virtual BOOL Remove(
+      const PObject * obj   // Existing object to remove from the collection.
+    );
+    /* Remove the object from the collection. If the AllowDeleteObjects option
+       is set then the object is also deleted.
+
+       Note that the comparison for searching for the object in collection is
+       made by pointer, not by value. Thus the parameter must point to the
+       same instance of the object that is in the collection.
+
+       <H2>Returns:</H2>
+       TRUE if the object was in the collection.
+     */
+
 };
 
 
@@ -822,9 +826,9 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        TRUE if the object value is in the dictionary.
      */
 
-    virtual PObject * RemoveAt(
+    virtual D * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
-    ) { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; }
+    ) { D * obj = GetAt(key); AbstractSetAt(key, NULL); return obj; }
     /* Remove an object at the specified key. The returned pointer is then
        removed using the <A>SetAt()</A> function to set that key value to
        NULL. If the <CODE>AllowDeleteObjects</CODE> option is set then the
@@ -834,9 +838,25 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        pointer to the object being removed, or NULL if it was deleted.
      */
 
+    virtual BOOL SetAt(
+      const K & key,  // Key for position in dictionary to add object.
+      D * obj         // New object to put into the dictionary.
+    ) { return AbstractSetAt(key, obj); }
+    /* Add a new object to the collection. If the objects value is already in
+       the dictionary then the object is overrides the previous value. If the
+       AllowDeleteObjects option is set then the old object is also deleted.
+
+       The object is placed in the an ordinal position dependent on the keys
+       hash function. Subsequent searches use the has function to speed access
+       to the data item.
+
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
+     */
+
     virtual D * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (D *)PAbstractDictionary::GetAt(key); }
+    ) const { return (D *)AbstractGetAt(key); }
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
@@ -876,10 +896,6 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
   protected:
     PDictionary(int dummy, const PDictionary * c)
       : PAbstractDictionary(dummy, c) { }
-
-  private:
-    PObject * GetAt(const PObject & key) const
-      { return PAbstractDictionary::GetAt(key); }
 };
 
 
@@ -976,7 +992,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
     virtual POrdinalKey * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (POrdinalKey *)PAbstractDictionary::GetAt(key); }
+    ) const { return (POrdinalKey *)AbstractGetAt(key); }
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
@@ -987,7 +1003,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
     virtual BOOL SetDataAt(
       PINDEX index,   // Ordinal index in the dictionary.
       PINDEX ordinal  // New ordinal value to put into the dictionary.
-    ) {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}
+      ) { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); }
     /* Set the data at the specified ordinal index position in the dictionary.
 
        The ordinal position in the dictionary is determined by the hash values
@@ -1000,7 +1016,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
     virtual BOOL SetAt(
       const K & key,  // Key for position in dictionary to add object.
       PINDEX ordinal  // New ordinal value to put into the dictionary.
-    ) { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); }
+    ) { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); }
     /* Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
        AllowDeleteObjects option is set then the old object is also deleted.
@@ -1011,6 +1027,18 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
        <H2>Returns:</H2>
        TRUE if the object was successfully added.
+     */
+
+    virtual PINDEX RemoveAt(
+      const K & key   // Key for position in dictionary to get object.
+    ) { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; }
+    /* Remove an object at the specified key. The returned pointer is then
+       removed using the <A>SetAt()</A> function to set that key value to
+       NULL. If the <CODE>AllowDeleteObjects</CODE> option is set then the
+       object is also deleted.
+
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
      */
 
     const K & GetKeyAt(PINDEX index) const
@@ -1045,18 +1073,6 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
   protected:
     POrdinalDictionary(int dummy, const POrdinalDictionary * c)
       : PAbstractDictionary(dummy, c) { }
-
-  private:
-    PObject * GetAt(PINDEX idx) const
-      { return PAbstractDictionary::GetAt(idx); }
-    PObject * GetAt(const PObject & key) const
-      { return PAbstractDictionary::GetAt(key); }
-    BOOL SetAt(PINDEX idx, PObject * obj)
-      { return PAbstractDictionary::SetAt(idx, obj); }
-    BOOL SetAt(const PObject & key, PObject * obj)
-      { return PAbstractDictionary::SetAt(key, obj); }
-    BOOL SetDataAt(PINDEX idx, PObject * obj)
-      { return PAbstractDictionary::SetDataAt(idx, obj); }
 };
 
 
@@ -1106,9 +1122,6 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 #define PDICTIONARY(cls, K, D) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
-  private: \
-    PObject * GetAt(const PObject & key) const \
-      { return PAbstractDictionary::GetAt(key); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
@@ -1121,10 +1134,12 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (D &)GetRefAt(key); } \
     virtual BOOL Contains(const K & key) const \
       { return AbstractContains(key); } \
-    virtual PObject * RemoveAt(const K & key) \
-      { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; } \
+    virtual D * RemoveAt(const K & key) \
+      { D * obj = GetAt(key); AbstractSetAt(key, NULL); return obj; } \
+    virtual BOOL SetAt(const K & key, D * obj) \
+      { return AbstractSetAt(key, obj); } \
     virtual D * GetAt(const K & key) const \
-      { return (D *)PAbstractDictionary::GetAt(key); } \
+      { return (D *)AbstractGetAt(key); } \
     const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
     D & GetDataAt(PINDEX index) const \
@@ -1147,17 +1162,6 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 #define PORDINAL_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
-  private: \
-    PObject * GetAt(PINDEX idx) const \
-      { return PAbstractDictionary::GetAt(idx); } \
-    PObject * GetAt(const PObject & key) const \
-      { return PAbstractDictionary::GetAt(key); } \
-    BOOL SetAt(const PObject & key, PObject * obj) \
-      { return PAbstractDictionary::SetAt(key, obj); } \
-    BOOL SetAt(PINDEX idx, PObject * obj) \
-      { return PAbstractDictionary::SetAt(idx, obj); } \
-    BOOL SetDataAt(PINDEX idx, PObject * obj) \
-      { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
@@ -1171,11 +1175,13 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
     virtual BOOL Contains(const K & key) const \
       { return AbstractContains(key); } \
     inline virtual POrdinalKey * GetAt(const K & key) const \
-      { return (POrdinalKey *)PAbstractDictionary::GetAt(key); } \
+      { return (POrdinalKey *)AbstractGetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
-     {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}\
+      { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); } \
     inline virtual BOOL SetAt(const K & key, PINDEX ordinal) \
-      { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); } \
+      { return AbstractSetAt(key, PNEW POrdinalKey(ordinal)); } \
+    inline virtual PINDEX RemoveAt(const K & key) \
+      { PINDEX ord = *GetAt(key); AbstractSetAt(key, NULL); return ord; } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
     inline PINDEX GetDataAt(PINDEX index) const \
