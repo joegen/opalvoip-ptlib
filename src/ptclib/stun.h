@@ -35,8 +35,11 @@ extern "C" {
 }
 #endif
 
+#if defined (_WIN32) | (__GNUC__ >= 3)
+#include <iostream>
+#else
 #include <iostream.h>
-
+#endif
 
 // define some basic types
 typedef unsigned char  UInt8;
