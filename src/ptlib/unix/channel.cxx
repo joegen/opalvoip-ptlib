@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.1 1995/01/16 20:50:54 craigs Exp $
+ * $Id: channel.cxx,v 1.2 1995/01/23 22:58:01 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,8 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
- * Revision 1.1  1995/01/16 20:50:54  craigs
- * Initial revision
+ * Revision 1.2  1995/01/23 22:58:01  craigs
+ * Changes for HPUX and Sun 4
  *
  */
 
@@ -33,6 +33,11 @@
 #include <fcntl.h>
 #include <termio.h>
 #include <signal.h>
+
+
+#if defined (P_SUN4)
+extern "C" int vfork();
+#endif
 
 #define BINARY_LOCK	1
 #define	LOCK_PREFIX	"/var/spool/uucp/LCK.."
@@ -92,6 +97,8 @@ BOOL PChannel::Close()
 
 PString PChannel::GetErrorText() const
 {
+  return strerror(osError);
+#if 0
 #ifdef P_HPUX9
   if (osError > 0 && osError < sys_nerr)
     return sys_errlist[osError];
@@ -101,6 +108,7 @@ PString PChannel::GetErrorText() const
 #endif
   else
     return PString();
+#endif
 }
 
 BOOL PChannel::ConvertOSError(int err)
@@ -623,7 +631,7 @@ PStringList PSerialChannel::GetPortNames()
 
 static void PipeSignalHandler(int parm)
 {
-#if 0
+#if 1
   PError << "SIGPIPE" << endl;
 #endif
   signal(SIGPIPE, PipeSignalHandler);
