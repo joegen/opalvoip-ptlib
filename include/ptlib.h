@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.31  2004/05/13 14:53:34  csoutheren
+ * Add "abstract factory" template classes
+ *
  * Revision 1.30  2004/04/11 13:26:25  csoutheren
  * Removed namespace problems and removed warnings for Windows <string>
  *
@@ -225,6 +228,11 @@
 
 #include <ptlib/syncthrd.h>
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PFactory
+
+#include <ptlib/pfactory.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
