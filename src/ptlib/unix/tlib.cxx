@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.34  1998/10/31 14:14:21  robertj
+ * Changed syncptack.h to syncthrd.h for more thread synchronisation objects.
+ *
  * Revision 1.33  1998/10/19 00:29:57  robertj
  * Moved error stream to common.
  *
@@ -122,7 +125,7 @@
 #pragma implementation "semaphor.h"
 #pragma implementation "mutex.h"
 #pragma implementation "syncpoint.h"
-#pragma implementation "syncptack.h"
+#pragma implementation "syncthrd.h"
 
 #include "ptlib.h"
 
