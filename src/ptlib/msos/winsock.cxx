@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.16 1996/04/05 01:42:28 robertj Exp $
+ * $Id: winsock.cxx,v 1.17 1996/04/12 09:45:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.17  1996/04/12 09:45:06  robertj
+ * Rewrite of PSocket::Read() to avoid "Connection Reset" errors caused by SO_RCVTIMEO
+ *
+ * Revision 1.17  1996/04/10 12:15:11  robertj
+ * Rewrite of PSocket::Read() to avoid "Connection Reset" errors caused by SO_RCVTIMEO.
+ *
  * Revision 1.16  1996/04/05 01:42:28  robertj
  * Assured PSocket::Write always writes the number of bytes specified.
  *
@@ -99,16 +105,49 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 {
   flush();
   lastReadCount = 0;
-  if (len == 0)
-    return ConvertOSError(0);
+
+  if (len == 0) {
+    lastError = BadParameter;
+    osError = EINVAL;
+    return FALSE;
+  }
 
   int timeout = readTimeout.GetMilliseconds();
-  if (timeout == 0)
-    timeout = 1;
-  else if (timeout == -1)
-    timeout = 0;
-  if (!SetOption(SO_RCVTIMEO, timeout))
-    return FALSE;
+  if (timeout != -1) {
+    DWORD available;
+    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+      return FALSE;
+
+    if (available == 0) {
+      struct timeval tv;
+      tv.tv_usec = timeout%1000*1000;
+      tv.tv_sec = timeout/1000;
+      fd_set readfds;
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+      FD_ZERO(&readfds);
+      FD_SET(os_handle, &readfds);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+      int selval = select(0, &readfds, NULL, NULL, &tv);
+      if (!ConvertOSError(selval))
+        return FALSE;
+
+      if (selval == 0) {
+        lastError = Timeout;
+        osError = EAGAIN;
+        return FALSE;
+      }
+
+      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+        return FALSE;
+    }
+
+    if (available > 0 && len > (PINDEX)available)
+      len = available;
+  }
 
   int recvResult = ::recv(os_handle, (char *)buf, len, 0);
   if (ConvertOSError(recvResult))
