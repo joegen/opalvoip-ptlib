@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.21  2002/10/11 08:24:10  robertj
+ * Added test for not needing tpipv6.h  with later winsock2.h, thanks Ted Szoczei
+ *
  * Revision 1.20  2002/10/08 12:41:52  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -113,7 +116,7 @@
 #include <winsock2.h> // Version 2 of windows socket
 #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
 
-#if P_HAS_IPV6
+#if P_HAS_IPV6 && !defined IPPROTO_IPV6
 #pragma warning(push)
 #pragma warning(disable:4127 4706)
 #include "tpipv6.h"  // For IPv6 Tech Preview.
