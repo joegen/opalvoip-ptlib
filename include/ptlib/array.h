@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.23  2002/06/20 06:08:59  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.22  2002/06/14 13:20:37  robertj
  * Added PBitArray class.
  *
@@ -1107,7 +1110,7 @@ template <class T> class PArray : public PArrayObjects
     ) const {
       PObject * obj = GetAt(index);
       PAssert(obj != NULL, PInvalidArrayElement);
-      return *(T *)obj;
+      return (T &)*obj;
     }
   //@}
 
