@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.133  2004/06/24 11:29:44  csoutheren
+ * Changed to use pthread_mutex_timedlock for more efficient mutex wait operations
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.132  2004/06/01 07:42:20  csoutheren
  * Restored memory allocation checking
  * Added configure flag to enable, thanks to Derek Smithies
@@ -1658,6 +1662,31 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   PTime finishTime;
   finishTime += waitTime;
 
+#if P_PTHREADS_XPG6
+  
+  struct timespec absTime;
+  absTime.tv_sec  = finishTime.GetTimeInSeconds();
+  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+
+#if P_HAS_RECURSIVE_MUTEX
+  return pthread_mutex_timedlock(&mutex, &absTime) == 0;
+#else
+
+  if (pthread_mutex_timedlock(&mutex, &absTime) != 0)
+    return FALSE;
+
+  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount.IsZero()),
+          "PMutex acquired whilst locked by another thread");
+
+  // Note this is protected by the mutex itself only the thread with
+  // the lock can alter it.
+  ownerThreadId = currentThreadId;
+  return TRUE;
+
+#endif
+
+#else // P_PTHREADS_XPG6
+
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
 #if P_HAS_RECURSIVE_MUTEX == 0
@@ -1666,7 +1695,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
       // Note this is protected by the mutex itself only the thread with
       // the lock can alter it.
       ownerThreadId = currentThreadId;
-#endif
+#endif // P_HAS_RECURSIVE_MUTEX
 
       return TRUE;
     }
@@ -1675,6 +1704,8 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   } while (PTime() < finishTime);
 
   return FALSE;
+
+#endif // P_PTHREADS_XPG6
 }
 
 
