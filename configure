@@ -2461,15 +2461,9 @@ fi
 
 GCSECTIONS=0
 
-echo "$as_me:$LINENO: checking if linker accepts --gc-sections" >&5
-echo $ECHO_N "checking if linker accepts --gc-sections... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-int main(int ac,char **av) { return 0; }
-_ACEOF
-$CXX $CFLAGS -Wl,--gc-sections conftest.cc > /dev/null 2>&1
-if test $? = 0 ; then
-  echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
+
+if test 0 = 1 ;  then
+
 
   echo "$as_me:$LINENO: checking if compiler accepts -ffunction-sections" >&5
 echo $ECHO_N "checking if compiler accepts -ffunction-sections... $ECHO_C" >&6
@@ -2487,21 +2481,6 @@ echo "${ECHO_T}yes" >&6
 echo "${ECHO_T}no" >&6
   fi
 
-  echo "$as_me:$LINENO: checking if compiler accepts -fdata-sections" >&5
-echo $ECHO_N "checking if compiler accepts -fdata-sections... $ECHO_C" >&6
-  cat >conftest.$ac_ext <<_ACEOF
-int main(int ac,char **av) { return 0; }
-_ACEOF
-  $CXX $CFLAGS -fdata-sections -c conftest.cc > /dev/null 2>&1
-  if test $? = 0 ; then
-    echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-    STDCCFLAGS="$STDCCFLAGS -fdata-sections"
-    GCSECTIONS=1
-  else
-    echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-  fi
 
 
   if test $GCSECTIONS = 1; then
@@ -2509,11 +2488,8 @@ echo "${ECHO_T}no" >&6
       P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -Wl,--gc-sections"
     fi
   fi
-
-else
-  echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
 fi
+
 
 ac_ext=cc
 ac_cpp='$CXXCPP $CPPFLAGS'
