@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.11 1994/01/03 04:42:23 robertj Exp $
+ * $Id: contain.cxx,v 1.12 1994/01/15 03:14:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Revision 1.12  1994/01/15 03:14:22  robertj
+ * Mac portability problems.
+ *
+ * Revision 1.11  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.10  1993/12/31  06:53:02  robertj
@@ -1668,8 +1671,7 @@ ostream & PScalarKey::PrintOn(ostream & strm) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PHashTable::PHashTable()
-  : PCollection(0),
-    hashTable(new PInternalHashTable)
+  : hashTable(new PInternalHashTable)
 {
   PAssertNULL(hashTable);
   hashTable->lastElement = NULL;
