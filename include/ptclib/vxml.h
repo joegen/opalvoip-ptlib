@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.6  2004/07/12 08:30:16  csoutheren
+ * More fixes for abstract factory implementation of PWAVFile
+ *
  * Revision 1.30.2.5  2004/07/08 04:58:11  csoutheren
  * Exposed VXML playable classes to allow descendants
  *
@@ -300,16 +303,11 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
     virtual BOOL Open(BOOL isPCM); // For backward compatibility FALSE=G.723.1
     virtual BOOL Open(const PString & mediaFormat);
-    virtual BOOL Open(
-      PVXMLChannel * in,
-      PVXMLChannel * out
-    );
     virtual BOOL Close();
 
     BOOL Execute();
 
-    PVXMLChannel * GetIncomingChannel() const { return incomingChannel; }
-    PVXMLChannel * GetOutgoingChannel() const { return outgoingChannel; }
+    PVXMLChannel * GetVXMLChannel() const { return vxmlChannel; }
 
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
@@ -423,8 +421,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     BOOL forceEnd;
 
     PString mediaFormat;
-    PVXMLChannel * incomingChannel;
-    PVXMLChannel * outgoingChannel;
+    PVXMLChannel * vxmlChannel;
 
     PTextToSpeech * textToSpeech;
     BOOL autoDeleteTextToSpeech;
@@ -444,6 +441,37 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     PINDEX        defaultDTMF;
 };
 
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLRecordable : public PObject
+{
+  PCLASSINFO(PVXMLRecordable, PObject);
+  public:
+    PVXMLRecordable()
+    { consecutiveSilence = 0; finalSilence = 3000; }
+
+    virtual BOOL Open(const PString & _arg) = 0;
+
+    virtual void Record(PVXMLChannel & incomingChannel) = 0;
+
+    virtual void OnStart() { }
+
+    virtual BOOL OnFrame(BOOL /*isSilence*/) { return TRUE; }
+
+    virtual void OnStop() { }
+
+    void SetFinalSilence(unsigned v)
+    { finalSilence = v; }
+
+    unsigned GetFinalSilence()
+    { return finalSilence; }
+
+  protected:
+    PTime silenceStart;
+    unsigned finalSilence;
+    unsigned consecutiveSilence;
+};
 
 //////////////////////////////////////////////////////////////////
 
@@ -544,6 +572,20 @@ class PVXMLPlayableFilename : public PVXMLPlayable
 
 //////////////////////////////////////////////////////////////////
 
+class PVXMLRecordableFilename : public PVXMLRecordable
+{
+  PCLASSINFO(PVXMLRecordableFilename, PVXMLRecordable);
+  public:
+    BOOL Open(const PString & _arg);
+    void Record(PVXMLChannel & incomingChannel);
+    BOOL OnFrame(BOOL isSilence);
+
+  protected:
+    PFilePath fn;
+};
+
+//////////////////////////////////////////////////////////////////
+
 PQUEUE(PVXMLQueue, PVXMLPlayable);
 
 //////////////////////////////////////////////////////////////////
@@ -555,7 +597,7 @@ class PVXMLChannel : public PDelayChannel
     PVXMLChannel(unsigned frameDelay, PINDEX frameSize);
     ~PVXMLChannel();
 
-    virtual BOOL Open(PVXMLChannelInterface * _vxml, BOOL incoming);
+    virtual BOOL Open(PVXMLChannelInterface * _vxml);
 
     // overrides from PIndirectChannel
     virtual BOOL IsOpen() const;
@@ -564,9 +606,7 @@ class PVXMLChannel : public PDelayChannel
     virtual BOOL Write(const void * buf, PINDEX len);
 
     // new functions
-    virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
-    PWAVFile * GetWAVFile() const
-    { return wavFile; }
+    virtual PWAVFile * CreateWAVFile(const PFilePath & fn, BOOL recording = FALSE);
 
     const PString & GetFormatName() const { return formatName; }
     BOOL IsMediaPCM() const { return formatName == "PCM-16"; }
@@ -576,6 +616,8 @@ class PVXMLChannel : public PDelayChannel
     // Incoming channel functions
     virtual BOOL WriteFrame(const void * buf, PINDEX len) = 0;
     virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const = 0;
+
+    virtual BOOL QueueRecordable(PVXMLRecordable * newItem);
 
     BOOL StartRecording(const PFilePath & fn, unsigned finalSilence = 2000);
     BOOL EndRecording();
@@ -607,7 +649,6 @@ class PVXMLChannel : public PDelayChannel
 
   protected:
     PVXMLChannelInterface * vxmlInterface;
-    BOOL isIncoming;
 
     unsigned sampleFrequency;
     PString formatName;
@@ -619,7 +660,7 @@ class PVXMLChannel : public PDelayChannel
 
     // Incoming audio variables
     BOOL recording;
-    PWAVFile * wavFile;
+    PVXMLRecordable * recordable;
     unsigned finalSilence;
     unsigned silenceRun;
 
