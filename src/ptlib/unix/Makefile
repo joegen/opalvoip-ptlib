@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.94  2002/08/29 01:45:07  robertj
+# Changed default opt build to include PTRACE
+#
 # Revision 1.93  2002/08/14 15:18:54  craigs
 # Added ptts.cxx to build
 #
@@ -327,6 +330,10 @@ VERSION_FILE = $(PWLIBDIR)/version.h
 COMPONENT_SRC_DIR	= ../../ptclib
 COMMON_SRC_DIR		= ../common
 VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
+
+
+CFLAGS += -DPTRACING=1
+
 
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
