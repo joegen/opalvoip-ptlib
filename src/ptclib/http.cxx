@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.1 1996/01/23 13:04:32 robertj Exp $
+ * $Id: http.cxx,v 1.2 1996/01/26 02:24:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,12 +8,16 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.2  1996/01/26 02:24:30  robertj
+ * Further implemetation.
+ *
  * Revision 1.1  1996/01/23 13:04:32  robertj
  * Initial revision
  *
  */
 
 #include <ptlib.h>
+#include <html.h>
 #include <http.h>
 
 
@@ -21,7 +25,6 @@
 // PURL
 
 PURL::PURL()
-  : hostname("localhost")
 {
   port = 80;
 }
@@ -50,7 +53,7 @@ PObject::Comparison PURL::Compare(const PObject & obj) const
       if (c == EqualTo) {
         c = hostname.Compare(other.hostname);
         if (c == EqualTo) {
-          c = hierarchy.Compare(other.hierarchy);
+          c = path.Compare(other.path);
           if (c == EqualTo) {
             c = parameters.Compare(other.parameters);
             if (c == EqualTo) {
@@ -85,8 +88,9 @@ void PURL::Parse(const char * cstr)
 {
   scheme = hostname = PCaselessString();
   username = password = parameters = fragment = query = PString();
-  hierarchy.SetSize(0);
+  path.SetSize(0);
   port = 80;
+  absolutePath = TRUE;
 
   // copy the string so we can take bits off it
   PString url = cstr;
@@ -94,14 +98,16 @@ void PURL::Parse(const char * cstr)
   static PString reservedChars = "=;/#?";
   PINDEX pos;
 
-  while ((pos = url.Find('%')) != P_MAX_INDEX) {
-    int c = 0;
-    PINDEX i = pos+1;
-    while (isdigit(url[i]))
-      c = c * 10 + url[i++];
-    url[pos] = (char)c;
-    if (i > pos+1)
-      url.Delete(pos+1, i-pos-1);
+  pos = (PINDEX)-1;
+  while ((pos = url.Find('%', pos+1)) != P_MAX_INDEX) {
+    int digit1 = url[pos+1];
+    int digit2 = url[pos+2];
+    if (isxdigit(digit1) && isxdigit(digit2)) {
+      url[pos] = (char)(
+            (isdigit(digit2) ? (digit2-'0') : (toupper(digit2)-'A'+10)) +
+           ((isdigit(digit1) ? (digit1-'0') : (toupper(digit1)-'A'+10)) << 4));
+      url.Delete(pos+1, 2);
+    }
   }
 
   // determine if the URL has a scheme
@@ -171,15 +177,16 @@ void PURL::Parse(const char * cstr)
   }
 
   // the hierarchy is what is left
-  for (pos = 0; url[pos] == '/'; pos++)
-    ;
-  if (pos > 0)
-    url.Delete(0, pos);
-  hierarchy = url.Tokenise('/', FALSE);
-  for (pos = 1; pos < hierarchy.GetSize(); pos++) {
-    if (pos > 0 && hierarchy[pos] == "..") {
-      hierarchy.RemoveAt(pos--);
-      hierarchy.RemoveAt(pos--);
+  path = url.Tokenise('/', FALSE);
+  absolutePath = path[0].IsEmpty();
+  if (absolutePath)
+    path.RemoveAt(0);
+  if (path[path.GetSize()-1].IsEmpty())
+    path.RemoveAt(path.GetSize()-1);
+  for (pos = 0; pos < path.GetSize(); pos++) {
+    if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
+      path.RemoveAt(pos--);
+      path.RemoveAt(pos--);
     }
   }
 }
@@ -206,9 +213,9 @@ PString PURL::AsString(UrlFormat fmt) const
     }
   }
 
-  PINDEX count = hierarchy.GetSize();
+  PINDEX count = path.GetSize();
   for (PINDEX i = 0; i < count; i++) {
-    str << hierarchy[i];
+    str << path[i];
     if (i < count-1)
       str << '/';
   }
@@ -229,43 +236,210 @@ PString PURL::AsString(UrlFormat fmt) const
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTSimpleAuth
+// PHTML
 
-PHTSimpleAuth::PHTSimpleAuth(const PString & realm_,
-                               const PString & username_,
-                               const PString & password_)
-  : realm(realm_), username(username_), password(password_)
+PHTML::PHTML()
 {
-  PAssert(!realm.IsEmpty(), "Must have a realm!");
+  memset(elementSet, 0, sizeof(elementSet));
 }
 
 
-PObject * PHTSimpleAuth::Clone() const
+PHTML::PHTML(const char * cstr)
 {
-  return PNEW PHTSimpleAuth(realm, username, password);
+  memset(elementSet, 0, sizeof(elementSet));
+  SetTitle(cstr);
+  SetBody();
 }
 
 
-PString PHTSimpleAuth::GetRealm() const
+PHTML::PHTML(const PString & str)
 {
-  return realm;
+  memset(elementSet, 0, sizeof(elementSet));
+  SetTitle(str);
+  SetBody();
 }
 
 
-BOOL PHTSimpleAuth::Validate(const PString & authInfo) const
+PHTML::~PHTML()
 {
-  PString decoded;
-  if (authInfo(0, 5) == PCaselessString("Basic "))
-    decoded = PBase64::Decode(authInfo(6, P_MAX_INDEX));
-  else
-    decoded = PBase64::Decode(authInfo);
+  for (PINDEX i = 0; i < PARRAYSIZE(elementSet); i++)
+    PAssert(elementSet[i] == 0, "Failed to close elements");
+}
 
-  PINDEX colonPos = decoded.Find(':');
-  if (colonPos == P_MAX_INDEX) 
-    return FALSE;
 
-  return username == decoded.Left(colonPos).Trim() &&
-         password == decoded(colonPos+1, P_MAX_INDEX).Trim();
+void PHTML::SetHead()
+{
+  PAssert(!Is(InBody), "Bad HTML element");
+  *this << '<';
+  if (Is(InHead))
+    *this << '/';
+  *this << "HEAD>\r\n";
+  Toggle(InHead);
+}
+
+
+void PHTML::SetBody()
+{
+  if (Is(InTitle))
+    SetTitle("");
+  if (Is(InHead))
+    SetHead();
+  *this << '<';
+  if (Is(InBody))
+    *this << '/';
+  *this << "BODY>\r\n";
+  Toggle(InBody);
+}
+
+
+void PHTML::SetTitle(const char * title)
+{
+  PAssert(!Is(InBody), "Bad HTML element");
+  if (!Is(InHead))
+    SetHead();
+  if (Is(InTitle)) {
+    if (title != NULL)
+      *this << title;
+    *this << "</TITLE>";
+    Not(InTitle);
+  }
+  else {
+    *this << "<TITLE>";
+    if (title != NULL)
+      *this << title << "</TITLE>";
+    else
+      Set(InTitle);
+  }
+}
+
+
+void PHTML::SetHeading(int num)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  PAssert(num >= 1 && num <= 6, "Bad heading number");
+  *this << '<';
+  if (Is(InHeading))
+    *this << '/';
+  *this << 'H' << num << '>';
+  Toggle(InHeading);
+}
+
+
+void PHTML::SetLineBreak(ClearCodes clear, int distance)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  *this << "<BR";
+  if (clear != ClearDefault) {
+    *this << " CLEAR=";
+    switch (clear) {
+      case ClearDefault :
+        break;
+      case ClearLeft :
+        *this << "left";
+        break;
+      case ClearRight :
+        *this << "right";
+        break;
+      case ClearAll :
+        *this << "all";
+        break;
+      case ClearEn :
+        *this << distance << " en";
+        break;
+      case ClearPixels :
+        *this << distance << " pixels";
+        break;
+    }
+  }
+  *this << ">\r\n";
+}
+
+
+static const char * const AlignCodeString[PHTML::NumAlignCodes] = {
+  "", "left", "centre", "right", "justify", "top", "bottom"
+};
+
+void PHTML::SetParagraph(AlignCodes align,
+                                  BOOL noWrap, ClearCodes clear, int distance)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  *this << "<P";
+  if (*AlignCodeString[align] != '\0')
+    *this << " ALIGN=" << AlignCodeString[align];
+  if (noWrap)
+    *this << " NOWRAP";
+  if (clear != ClearDefault) {
+    *this << " CLEAR=";
+    switch (clear) {
+      case ClearDefault :
+        break;
+      case ClearLeft :
+        *this << "left";
+        break;
+      case ClearRight :
+        *this << "right";
+        break;
+      case ClearAll :
+        *this << "all";
+        break;
+      case ClearEn :
+        *this << distance << " en";
+        break;
+      case ClearPixels :
+        *this << distance << " pixels";
+        break;
+    }
+  }
+  *this << ">\r\n";
+}
+
+
+void PHTML::SetAnchor(const char * href, const char * text)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  if (Is(InAnchor)) {
+    PAssert(href == NULL || *href == '\0', PInvalidParameter);
+    if (text != NULL)
+      *this << text;
+    *this << "</A>";
+    Not(InAnchor);
+  }
+  else {
+    PAssert(href != NULL && *href != '\0', PInvalidParameter);
+    *this << "<A HREF=\"" << href << "\">";
+    if (text != NULL)
+      *this << text << "</A>";
+    else
+      Set(InAnchor);
+  }
+}
+
+
+void PHTML::SetImage(const char * src, const char * alt, AlignCodes align, int width, int height)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  PAssert(src != NULL && *src != '\0', PInvalidParameter);
+  *this << "<IMG SRC=\"" << src << '"';
+  if (alt != NULL)
+    *this << " ALT=\"" << alt << '"';
+  if (*AlignCodeString[align] != '\0')
+    *this << " ALIGN=" << AlignCodeString[align];
+  if (width != 0)
+    *this << " WIDTH=" << width;
+  if (height != 0)
+    *this << " HEIGHT=" << height;
+  *this << '>';
+}
+
+
+void PHTML::SetSimpleElement(const char * name, ElementInSet elmt)
+{
+  PAssert(Is(InBody), "HTML element out of context");
+  *this << '<';
+  if (Is(elmt))
+    *this << '/';
+  *this << name << '>';
+  Toggle(elmt);
 }
 
 
@@ -300,7 +474,7 @@ PObject::Comparison PHTTPSpace::Compare(const PObject & obj) const
 BOOL PHTTPSpace::AddResource(PHTTPResource * res)
 {
   PAssert(res != NULL, PInvalidParameter);
-  const PStringArray & path = res->GetURL().GetHierarchy();
+  const PStringArray & path = res->GetURL().GetPath();
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
@@ -319,7 +493,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res)
 
 PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 {
-  const PStringArray & path = url.GetHierarchy();
+  const PStringArray & path = url.GetPath();
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
@@ -340,7 +514,8 @@ static char const * HTTPCommands[PHTTPSocket::NumCommands] = {
   "GET", "HEAD", "POST"
 };
 
-static char ContentLengthStr[] = "Content-Length";
+static const PString ContentLengthStr = "Content-Length";
+static const PString ContentTypeStr = "Content-Type";
 
 
 PHTTPSocket::PHTTPSocket(WORD port)
@@ -388,25 +563,12 @@ BOOL PHTTPSocket::GetHeader(const PString & url)
 }
 
 
-BOOL PHTTPSocket::PostData(const PString & url, const PostDict & info)
+BOOL PHTTPSocket::PostData(const PString & url, const PStringToString & data)
 {
   WriteCommand(POST, url);
-  for (PINDEX i = 0; i < info.GetSize(); i++)
-    WriteString(info.GetKeyAt(i) + " = " + info.GetDataAt(i));
+  for (PINDEX i = 0; i < data.GetSize(); i++)
+    WriteString(data.GetKeyAt(i) + " = " + data.GetDataAt(i));
   return FALSE;
-}
-
-
-PHTTPSocket::PostDict::PostDict(const PString & str)
-{
-  // break the string into string/value pairs separated by &
-  PStringArray tokens = str.Tokenise("&=", TRUE);
-  for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-    if (GetAt((PCaselessString)tokens[i]) != NULL) 
-      SetAt(tokens[i], (*this)[tokens[i]] + "," + tokens[i+1]);
-    else
-      SetAt(tokens[i], tokens[i+1]);
-  }
 }
 
 
@@ -486,7 +648,17 @@ BOOL PHTTPSocket::ProcessCommand()
       break;
 
     case POST :
-      OnPOST(url, mimeInfo, PostDict(entityBody));
+      PStringToString postData;
+      // break the string into string/value pairs separated by &
+      PStringArray tokens = entityBody.Tokenise("&=", TRUE);
+      for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
+        PCaselessString key = tokens[i];
+        if (postData.GetAt(key) != NULL) 
+          postData.SetAt(key, postData[key] + "," + tokens[i+1]);
+        else
+          postData.SetAt(key, tokens[i+1]);
+      }
+      OnPOST(url, mimeInfo, postData);
       break;
   }
 
@@ -522,7 +694,7 @@ void PHTTPSocket::OnHEAD(const PURL & url, const PMIMEInfo & info)
 
 void PHTTPSocket::OnPOST(const PURL & url,
                          const PMIMEInfo & info,
-                         const PostDict & data)
+                         const PStringToString & data)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
   if (resource == NULL)
@@ -553,7 +725,7 @@ static struct httpStatusCodeStruct {
   { "Moved Temporarily",     302, 1 },
   { "Not Modified",          304, 0 },
   { "Bad Request",           400, 1 },
-  { "Unauthorised",          401, 1 },
+  { "Unauthorised",          401, 0 },
   { "Forbidden",             403, 1 },
   { "Not Found",             404, 1 },
   { "Internal Server Error", 500, 1 },
@@ -561,68 +733,112 @@ static struct httpStatusCodeStruct {
   { "Bad Gateway",           502, 1 },
 };
 
-void PHTTPSocket::OnError(PHTTPSocket::StatusCode code, const PString & reasonPhrase)
+void PHTTPSocket::StartResponse(StatusCode code,
+                                PMIMEInfo & headers,
+                                PINDEX bodySize)
+{
+  if (majorVersion < 1)
+    return;
+
+  httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
+  *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
+        << statusInfo->code <<  statusInfo->text << "\r\n";
+
+  PTime now;
+  headers.SetAt("Date", now.AsString("www, dd MMM yyyy hh:mm:ssg")+" GMT");
+  headers.SetAt("MIME-Version", "1.0");
+  headers.SetAt("Server", GetServerName());
+  headers.SetAt(ContentLengthStr, PString(PString::Unsigned, bodySize));
+  headers.Write(*this);
+}
+
+
+void PHTTPSocket::OnError(StatusCode code, const PString & extra)
 {
   httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
 
   PMIMEInfo headers;
-  PStringStream entityBody;
-  if (statusInfo->allowedBody) {
-    headers.SetAt("Content-Type", "text/html");
-    entityBody << "<HEAD><TITLE>"
-               << statusInfo->code
-               << " "
-               << statusInfo->text
-               << "</TITLE></HEAD>\r\n"
-               << "<BODY><H1>"
-               << statusInfo->code
-               << " "
-               << statusInfo->text
-               << "</H1>"
-               << reasonPhrase << "\r\n"
-               << "</BODY>\r\n";
+
+  if (!statusInfo->allowedBody) {
+    StartResponse(code, headers, 0);
+    return;
   }
 
-  SendResponse(code, headers, entityBody);
+  PHTML reply;
+  reply << PHTML::Title()
+        << statusInfo->code
+        << " "
+        << statusInfo->text
+        << PHTML::Body()
+        << PHTML::Heading(1)
+        << statusInfo->code
+        << " "
+        << statusInfo->text
+        << PHTML::Heading(1)
+        << extra
+        << PHTML::Body();
+
+  headers.SetAt(ContentTypeStr, "text/html");
+  StartResponse(code, headers, reply.GetLength());
+  WriteString(reply);
 }
 
 
-void PHTTPSocket::SendResponse(PHTTPSocket::StatusCode code, 
-                               PMIMEInfo & headers,
-                               const PString & entityBody)
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPSimpleAuth
+
+PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
+                                 const PString & username_,
+                                 const PString & password_)
+  : realm(realm_), username(username_), password(password_)
 {
-  httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
+  PAssert(!realm.IsEmpty(), "Must have a realm!");
+}
 
-  if (majorVersion >= 1) {
-    *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
-          << statusInfo->code <<  statusInfo->text << "\r\n";
 
-    PTime now;
-    headers.SetAt("Date", now.AsString("www, dd MMM yyyy hh:mm:ssg")+" GMT");
-    headers.SetAt("MIME-Version", "1.0");
-    headers.SetAt("Server", GetServerName());
-    headers.SetAt(ContentLengthStr,
-                           PString(PString::Unsigned, entityBody.GetLength()));
-    headers.Write(*this);
-  }
+PObject * PHTTPSimpleAuth::Clone() const
+{
+  return PNEW PHTTPSimpleAuth(realm, username, password);
+}
 
-  WriteString(entityBody);
+
+PString PHTTPSimpleAuth::GetRealm() const
+{
+  return realm;
+}
+
+
+BOOL PHTTPSimpleAuth::Validate(const PString & authInfo) const
+{
+  PString decoded;
+  if (authInfo(0, 5) == PCaselessString("Basic "))
+    decoded = PBase64::Decode(authInfo(6, P_MAX_INDEX));
+  else
+    decoded = PBase64::Decode(authInfo);
+
+  PINDEX colonPos = decoded.Find(':');
+  if (colonPos == P_MAX_INDEX) 
+    return FALSE;
+
+  return username == decoded.Left(colonPos).Trim() &&
+         password == decoded(colonPos+1, P_MAX_INDEX).Trim();
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPResource
 
-PHTTPResource::PHTTPResource(const PURL & url)
-  : baseURL(url)
+PHTTPResource::PHTTPResource(const PURL & url, const PString & type)
+  : baseURL(url), contentType(type)
 {
   authority = NULL;
 }
 
 
 PHTTPResource::PHTTPResource(const PURL & url,
-                                       const PHTTPAuthority & auth)
-  : baseURL(url)
+                             const PString & type,
+                             const PHTTPAuthority & auth)
+  : baseURL(url), contentType(type)
 {
   authority = (PHTTPAuthority *)auth.Clone();
 }
@@ -635,17 +851,18 @@ PHTTPResource::~PHTTPResource()
 
 
 void PHTTPResource::OnGET(PHTTPSocket & socket,
-                               const PURL & url,
-                               const PMIMEInfo & info)
+                          const PURL & url,
+                          const PMIMEInfo & info)
 {
   if (CheckAuthority(socket, info)) {
     PCharArray data;
-    PMIMEInfo reply;
-    PHTTPSocket::StatusCode code = GetData(url, info, data, reply);
+    PMIMEInfo outMIME;
+    outMIME.SetAt(ContentTypeStr, contentType);
+    PHTTPSocket::StatusCode code = OnLoadData(url, info, data, outMIME);
     if (code != PHTTPSocket::OK)
       socket.OnError(code, url.AsString());
     else {
-      socket.SendResponse(code, reply, "");
+      socket.StartResponse(code, outMIME, data.GetSize());
       socket.Write(data, data.GetSize());
     }
   }
@@ -659,11 +876,11 @@ void PHTTPResource::OnHEAD(PHTTPSocket & socket,
   if (CheckAuthority(socket, info)) {
     PMIMEInfo reply;
     PCharArray data;
-    PHTTPSocket::StatusCode code = GetHead(url, info, data, reply);
+    PHTTPSocket::StatusCode code = OnLoadHead(url, info, data, reply);
     if (code != PHTTPSocket::OK)
       socket.OnError(code, url.AsString());
     else {
-      socket.SendResponse(code, reply, "");
+      socket.StartResponse(code, reply, data.GetSize());
       socket.Write(data, data.GetSize());
     }
   }
@@ -673,7 +890,7 @@ void PHTTPResource::OnHEAD(PHTTPSocket & socket,
 void PHTTPResource::OnPOST(PHTTPSocket & socket,
                                 const PURL & url,
                                 const PMIMEInfo & info,
-                                const PHTTPSocket::PostDict & data)
+                                const PStringToString & data)
 {
   if (CheckAuthority(socket, info)) {
     Post(url, info, data);
@@ -683,7 +900,7 @@ void PHTTPResource::OnPOST(PHTTPSocket & socket,
 
 
 BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
-                                        const PMIMEInfo & info)
+                                   const PMIMEInfo & info)
 {
   if (authority == NULL)
     return TRUE;
@@ -695,32 +912,75 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     PMIMEInfo reply;
     reply.SetAt("WWW-Authenticate",
                               "Basic realm=\"" + authority->GetRealm() + "\"");
-    socket.SendResponse(PHTTPSocket::UnAuthorised, reply, "");
+    socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
     return FALSE;
   }
 
   if (authority->Validate(authInfo))
     return TRUE;
 
-  PMIMEInfo reply;
-  socket.SendResponse(PHTTPSocket::Forbidden, reply, "");
+  socket.OnError(PHTTPSocket::Forbidden, "");
   return FALSE;
 }
 
 
-PHTTPSocket::StatusCode PHTTPResource::GetHead(const PURL & url,
-                                               const PMIMEInfo & inMIME,
-                                               PCharArray & data,
-                                               PMIMEInfo & outMIME)
+PHTTPSocket::StatusCode PHTTPResource::OnLoadHead(const PURL & url,
+                                                  const PMIMEInfo & inMIME,
+                                                  PCharArray & data,
+                                                  PMIMEInfo & outMIME)
 {
-  return GetData(url, inMIME, data, outMIME);
+  return OnLoadData(url, inMIME, data, outMIME);
 }
 
 
 PHTTPSocket::StatusCode PHTTPResource::Post(const PURL &,
                                             const PMIMEInfo &,
-                                            const PHTTPSocket::PostDict &)
+                                            const PStringToString &)
 {
+  return PHTTPSocket::OK;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPString
+
+PHTTPString::PHTTPString(const PURL & url, const PString & str)
+  : PHTTPResource(url, "text/html"), string(str)
+{
+}
+
+
+PHTTPString::PHTTPString(const PURL & url,
+                         const PString & str,
+                         const PString & type)
+  : PHTTPResource(url, type), string(str)
+{
+}
+
+
+PHTTPString::PHTTPString(const PURL & url,
+                         const PString & str,
+                         const PHTTPAuthority & auth)
+  : PHTTPResource(url, "text/html", auth), string(str)
+{
+}
+
+
+PHTTPString::PHTTPString(const PURL & url,
+                         const PString & str,
+                         const PString & type,
+                         const PHTTPAuthority & auth)
+  : PHTTPResource(url, type, auth), string(str)
+{
+}
+
+
+PHTTPSocket::StatusCode PHTTPString::OnLoadData(const PURL &,
+                                                const PMIMEInfo &,
+                                                PCharArray & data,
+                                                PMIMEInfo &)
+{
+  data = string;
   return PHTTPSocket::OK;
 }
 
@@ -729,27 +989,52 @@ PHTTPSocket::StatusCode PHTTPResource::Post(const PURL &,
 // PHTTPFile
 
 PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & file)
-  : PHTTPResource(url), path(file)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(file.GetType())),
+    filePath(file)
 {
 }
 
 
-PHTTPSocket::StatusCode PHTTPFile::GetData(const PURL & url,
-                                           const PMIMEInfo &,
-                                           PCharArray & data,
-                                           PMIMEInfo & outMIME)
+PHTTPFile::PHTTPFile(const PURL & url,
+                     const PFilePath & file,
+                     const PString & type)
+  : PHTTPResource(url, type), filePath(file)
+{
+}
+
+
+PHTTPFile::PHTTPFile(const PURL & url,
+                     const PFilePath & file,
+                     const PHTTPAuthority & auth)
+  : PHTTPResource(url, PMIMEInfo::GetContentType(file.GetType()), auth),
+    filePath(file)
+{
+}
+
+
+PHTTPFile::PHTTPFile(const PURL & url,
+                     const PFilePath & file,
+                     const PString & type,
+                     const PHTTPAuthority & auth)
+  : PHTTPResource(url, type, auth), filePath(file)
+{
+}
+
+
+PHTTPSocket::StatusCode PHTTPFile::OnLoadData(const PURL & url,
+                                              const PMIMEInfo &,
+                                              PCharArray & data,
+                                              PMIMEInfo &)
 {
   if (baseURL != url)
     return PHTTPSocket::NotFound;
 
   PFile file;
-  if (!file.Open(path, PFile::ReadOnly))
+  if (!file.Open(filePath, PFile::ReadOnly))
     return PHTTPSocket::NotFound;
 
   PINDEX count = file.GetLength();
   file.Read(data.GetPointer(count), count);
-
-  outMIME.SetAt("Content-Type", "text/html");
 
   return PHTTPSocket::OK;
 }
@@ -759,54 +1044,88 @@ PHTTPSocket::StatusCode PHTTPFile::GetData(const PURL & url,
 // PHTTPDirectory
 
 PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
-  : PHTTPResource(url), path(dir)
+  : PHTTPResource(url, PString()), basePath(dir)
 {
 }
 
 
-PHTTPSocket::StatusCode PHTTPDirectory::GetData(const PURL & url,
-                                                const PMIMEInfo &,
-                                                PCharArray & data,
-                                                PMIMEInfo & outMIME)
+PHTTPDirectory::PHTTPDirectory(const PURL & url,
+                               const PDirectory & dir,
+                               const PHTTPAuthority & auth)
+  : PHTTPResource(url, PString(), auth), basePath(dir)
 {
-  const PStringArray & hierarchy = url.GetHierarchy();
-  PFilePath newPath = path;
-  for (PINDEX i = baseURL.GetHierarchy().GetSize();
-                                                i < hierarchy.GetSize()-1; i++)
-    newPath += hierarchy[i] + PDIR_SEPARATOR;
+}
 
-  if (i < hierarchy.GetSize())
-    newPath += hierarchy[i];
+
+PHTTPSocket::StatusCode PHTTPDirectory::OnLoadData(const PURL & url,
+                                                   const PMIMEInfo &,
+                                                   PCharArray & data,
+                                                   PMIMEInfo & outMIME)
+{
+  const PStringArray & path = url.GetPath();
+  PFilePath realPath = basePath;
+  for (PINDEX i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
+    realPath += path[i] + PDIR_SEPARATOR;
+
+  if (i < path.GetSize())
+    realPath += path[i];
 
   // See if its a normal file
   PFileInfo info;
-  if (!PFile::GetInfo(newPath, info))
+  if (!PFile::GetInfo(realPath, info))
     return PHTTPSocket::NotFound;
 
   // Noew try and open it
   PFile file;
   if (info.type != PFileInfo::SubDirectory) {
-    if (!file.Open(newPath, PFile::ReadOnly))
+    if (!file.Open(realPath, PFile::ReadOnly))
       return PHTTPSocket::NotFound;
   }
   else {
     static const char * const IndexFiles[] = {
-      "Welcome.html", "welcome.html", "index.html"
+      "Welcome.html", "welcome.html", "index.html",
+      "Welcome.htm",  "welcome.htm",  "index.htm"
     };
     for (i = 0; i < PARRAYSIZE(IndexFiles); i++)
-      if (file.Open(newPath + PDIR_SEPARATOR + IndexFiles[i], PFile::ReadOnly))
+      if (file.Open(realPath + PDIR_SEPARATOR + IndexFiles[i], PFile::ReadOnly))
         break;
   }
 
   if (file.IsOpen()) {
     PINDEX count = file.GetLength();
     file.Read(data.GetPointer(count), count);
-  }
+    outMIME.SetAt(ContentTypeStr,
+                      PMIMEInfo::GetContentType(file.GetFilePath().GetType()));
 
-  outMIME.SetAt("Content-Type", "text/html");
+  }
+  else {
+    outMIME.SetAt(ContentTypeStr, "text/html");
+    PHTML reply = "Directory of " + url.AsString();
+    reply << PHTML::Heading(1)
+          << "Directory of " << url
+          << PHTML::Heading(1);
+    PDirectory dir = realPath;
+    if (dir.Open()) {
+      do {
+        reply << PHTML::Anchor(dir.GetEntryName());
+        if (dir.IsSubDir())
+          reply << PHTML::Image("internal-gopher-menu");
+        else if (PMIMEInfo::GetContentType(
+                      PFilePath(dir.GetEntryName()).GetType())(0,4) == "text/")
+          reply << PHTML::Image("internal-gopher-text");
+        else
+          reply << PHTML::Image("internal-gopher-unknown");
+        reply << ' ' << dir.GetEntryName()
+              << PHTML::Anchor() << PHTML::BreakLine();
+      } while (dir.Next());
+    }
+    reply << PHTML::Body();
+    data = reply;
+  }
 
   return PHTTPSocket::OK;
 }
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
