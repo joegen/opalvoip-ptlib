@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.18  2002/09/03 04:11:14  craigs
+ * More changes from Alexander Kovatch
+ *
  * Revision 1.17  2002/08/30 05:06:13  craigs
  * Added changes for PVXMLGrammar from Alexander Kovatch
  *
@@ -138,12 +141,14 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
 {
   PCLASSINFO(PVXMLDigitsGrammar, PVXMLGrammar);
   public:
-    PVXMLDigitsGrammar(PXMLElement * field, PINDEX digitCount);
+    PVXMLDigitsGrammar(PXMLElement * field, PINDEX minDigits, PINDEX maxDigits, PString terminators);
     BOOL OnUserInput(const PString & str);
     virtual void Stop();
 
   protected:
-    PINDEX digitCount;
+    PINDEX minDigits;
+    PINDEX maxDigits;
+    PString terminators;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -231,6 +236,8 @@ class PVXMLSession : public PIndirectChannel
     BOOL TraverseAudio();
     BOOL TraverseGoto();
     BOOL TraverseGrammar();
+
+    PXMLElement * FindHandler(const PString & event);
 
     void SayAs(const PString & className, const PString & text);
 
