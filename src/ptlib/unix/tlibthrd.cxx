@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.64  2001/05/23 00:18:55  robertj
+ * Added support for real time threads, thanks Erland Lewin.
+ *
  * Revision 1.63  2001/04/20 09:27:25  robertj
  * Fixed previous change for auto delete threads, must have thread ID zeroed.
  *
@@ -458,7 +461,7 @@ void PThread::InitialiseProcessThread()
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 Priority /*priorityLevel*/,
+                 Priority priorityLevel,
                  const PString & name)
   : threadName(name)
 {
@@ -466,6 +469,11 @@ PThread::PThread(PINDEX stackSize,
 
   PX_origStackSize = stackSize;
   autoDelete       = (deletion == AutoDeleteThread);
+
+  /* it appears that this whole file assumes that PThreads are present, so 
+     I won't bother with #ifdef P_PTHREAD here and elsewhere. 
+  */
+  originalPriority = priorityLevel;
 
 #ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
@@ -510,9 +518,28 @@ void PThread::PX_NewThread(BOOL startSuspended)
 #endif
 
   // throw the thread
-//  pthread_attr_t threadAttr;
-//  pthread_attr_init(&threadAttr);
-  PAssertOS(pthread_create(&PX_threadId, NULL, PX_ThreadStart, this) == 0);
+  
+  pthread_attr_t threadAttr;
+  pthread_attr_init(&threadAttr);
+
+#ifdef P_LINUX
+  /*
+    Set realtime scheduling if our effective user id is root (only then is this
+    allowed) AND our priority is Highest.
+      As far as I can see, we could use either SCHED_FIFO or SCHED_RR here, it
+    doesn't matter.
+      I don't know if other UNIX OSs have SCHED_FIFO and SCHED_RR as well.
+
+    WARNING: a misbehaving thread (one that never blocks) started with Highest
+    priority can hang the entire machine. That is why root permission is 
+    neccessary.
+  */
+  if( (geteuid() == 0) && (originalPriority == HighestPriority) )
+    PAssertOS( pthread_attr_setschedpolicy( &threadAttr, SCHED_FIFO ) == 0 );
+#endif
+
+  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) 
+            == 0);
 
 #if defined(P_FREEBSD)
   // There is a potential race condition here which shows up with FreeBSD 4.2
@@ -834,15 +861,64 @@ void PThread::SetAutoDelete(AutoDeleteFlag deletion)
   autoDelete = deletion == AutoDeleteThread;
 }
 
-
-void PThread::SetPriority(Priority /*priorityLevel*/)
+/*
+  erl: I don't know if this method should be const or not. What does const mean
+  wrt a method?
+*/
+void PThread::SetPriority( Priority priorityLevel )
 {
+#ifdef P_LINUX
+  struct sched_param sched_param;
+  
+  if( (priorityLevel == HighestPriority) && (geteuid() == 0) )
+  {
+    sched_param.sched_priority = sched_get_priority_min( SCHED_FIFO );
+    
+    PAssertOS( pthread_setschedparam( PX_threadId, SCHED_FIFO, &sched_param ) 
+               == 0 );
+  }
+  else if( priorityLevel != HighestPriority )
+  {
+    /* priority 0 is the only permitted value for the SCHED_OTHER scheduler */ 
+    sched_param.sched_priority = 0;
+    
+    PAssertOS( pthread_setschedparam( PX_threadId, SCHED_OTHER, 
+                                      &sched_param ) == 0 );
+  }
+#endif
 }
 
-
+/*
+  erl: Should this method be const or not? What does const on a method mean?
+*/
 PThread::Priority PThread::GetPriority() const
 {
+#ifdef LINUX
+  int schedulingPolicy;
+  struct sched_param schedParams;
+  
+  PAssertOS( pthread_getschedparam( PX_threadId, &schedulingPolicy, 
+                                    &schedParams ) );
+  
+  switch( schedulingPolicy )
+  {
+    case SCHED_OTHER:
+      return NormalPriority;
+      
+    case SCHED_FIFO:
+    case SCHED_RR:
+      return HighestPriority;
+      
+    default:
+      /* Unknown scheduler. We don't know what priority this thread has. */
+      PTRACE( 1, "tlibthrd\tPThread::GetPriority: unknown scheduling policy #" 
+              << schedulingPolicy );
+      
+      return originalPriority; /* as good a guess as any */
+  }
+#else
   return LowestPriority;
+#endif
 }
 
 
