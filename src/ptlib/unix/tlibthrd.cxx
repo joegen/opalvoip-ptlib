@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.16  1999/05/12 03:29:20  robertj
+ * Fixed problem with semaphore free, done at wrong time.
+ *
  * Revision 1.15  1999/04/29 08:41:26  robertj
  * Fixed problems with uninitialised mutexes in PProcess.
  *
@@ -237,6 +240,7 @@ PThread::~PThread()
     Terminate();
 
   PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
+  PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
 }
 
 
@@ -326,9 +330,6 @@ void PThread::PX_ThreadEnd(void * arg)
   process.activeThreads.SetAt(thread->PX_GetThreadId(), NULL);
   process.threadMutex.Signal();
   
-  // destroy the suspend mutex
-  PAssertOS(pthread_mutex_destroy(&thread->PX_suspendMutex) == 0);
-
   // delete the thread if required
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
