@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.18 1996/01/23 13:14:32 robertj Exp $
+ * $Id: object.h,v 1.19 1996/01/28 02:46:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.19  1996/01/28 02:46:43  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ * Added missing bit shift operators to 64 bit integer class.
+ *
  * Revision 1.18  1996/01/23 13:14:32  robertj
  * Added const version of PMemoryPointer.
  * Added constructor to endian classes for the base type.
@@ -105,6 +109,7 @@ enum PStandardAssertMessage {
   PLogicError,              // A logic error occurred.
   POutOfMemory,             // A new or malloc failed.
   PNullPointerReference,    // A reference was made through a NULL pointer.
+  PInvalidCast,             // An invalid cast to descendant is required.
   PInvalidArrayIndex,       // An index into an array was negative.
   PInvalidArrayElement,     // A NULL array element object was accessed.
   PStackEmpty,              // A Pop() was made of a stack with no elements.
@@ -259,6 +264,8 @@ class PInt64__ {
     void Or (const PInt64__ & v) { low |= v.low; high |= v.high; }
     void And(const PInt64__ & v) { low &= v.low; high &= v.high; }
     void Xor(const PInt64__ & v) { low ^= v.low; high ^= v.high; }
+    void ShiftLeft(int bits);
+    void ShiftRight(int bits);
 
     BOOL Eq(unsigned long v) const { return low == v && high == 0; }
     BOOL Ne(unsigned long v) const { return low != v || high != 0; }
@@ -281,6 +288,8 @@ class PInt64__ {
     cls operator|(type v) const { cls t = *this; t.Or (v); return t; } \
     cls operator&(type v) const { cls t = *this; t.And(v); return t; } \
     cls operator^(type v) const { cls t = *this; t.Xor(v); return t; } \
+    cls operator<<(type v) const { cls t = *this; t.ShiftLeft((int)v); return t; } \
+    cls operator>>(type v) const { cls t = *this; t.ShiftRight((int)v); return t; } \
     const cls & operator+=(type v) { Add(v); return *this; } \
     const cls & operator-=(type v) { Sub(v); return *this; } \
     const cls & operator*=(type v) { Mul(v); return *this; } \
@@ -288,6 +297,8 @@ class PInt64__ {
     const cls & operator|=(type v) { Or (v); return *this; } \
     const cls & operator&=(type v) { And(v); return *this; } \
     const cls & operator^=(type v) { Xor(v); return *this; } \
+    const cls & operator<<=(type v) { ShiftLeft((int)v); return *this; } \
+    const cls & operator>>=(type v) { ShiftRight((int)v); return *this; } \
     BOOL operator==(type v) const { return Eq(v); } \
     BOOL operator!=(type v) const { return Ne(v); } \
     BOOL operator< (type v) const { return Lt(v); } \
@@ -455,13 +466,13 @@ class PStandardType
     name() { } \
     name(type value) : data(value) { } \
     name(istream & stream) { Get(stream); } \
-    name(PConstMemoryPointer & mem) { Get(mem); } \
+    name(const BYTE ** mem) { Get(mem); } \
     operator type() const { return data; } \
     operator type &() { return data; } \
     inline void Get(istream & stream); \
-    inline void Get(PConstMemoryPointer & mem); \
+    inline void Get(const BYTE ** mem); \
     inline void Put(ostream & stream) const; \
-    inline void Put(PMemoryPointer & mem) const; \
+    inline void Put(BYTE ** mem) const; \
     friend ostream & operator<<(ostream & s, const name & v) { v.Put(s); return s; } \
     friend istream & operator>>(istream & s, name & v) { v.Get(s); return s; } \
     private: type data; \
@@ -470,25 +481,25 @@ class PStandardType
 #define PI_SAME(name, type) \
   inline void name::Get(istream & stream) \
     { stream.read((char *)&data, sizeof(type)); } \
-  inline void name::Get(PConstMemoryPointer & mem) \
+  inline void name::Get(const BYTE ** mem) \
     { data = *(type *)mem; mem += sizeof(type); } \
   inline void name::Put(ostream & stream) const \
     { stream.write((char *)&data, sizeof(type)); } \
-  inline void name::Put(PMemoryPointer & mem) const \
+  inline void name::Put(BYTE ** mem) const \
     { *(type *)mem = data; mem += sizeof(type); }
 
 #define PI_LOOP(type) \
-    char * bytes = ((char *)&data)+sizeof(type); while (bytes != (char*)&data)
+    BYTE * bytes = ((BYTE *)&data)+sizeof(type); while (bytes != (BYTE *)&data)
 
 #define PI_DIFF(name, type) \
   inline void name::Get(istream & stream) \
     { PI_LOOP(type) stream.get(*--bytes); } \
-  inline void name::Get(PConstMemoryPointer & mem) \
-    { PI_LOOP(type) *--bytes = *mem++; } \
+  inline void name::Get(const BYTE ** mem) \
+    { PI_LOOP(type) *--bytes = *(*mem)++; } \
   inline void name::Put(ostream & stream) const \
     { PI_LOOP(type) stream.put(*--bytes); } \
-  inline void name::Put(PMemoryPointer & mem) const \
-    { PI_LOOP(type) *mem++ = *--bytes; }
+  inline void name::Put(BYTE ** mem) const \
+    { PI_LOOP(type) *(*mem)++ = *--bytes; }
 
 
 PI_TYPE(PChar8, char);
@@ -1395,8 +1406,8 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
 
 PDECLARE_CLASS(PTextSerialiser, PSerialiser)
 /* This serialiser class serialises each object using ASCII text. This gives
-	the highest level of portability for streams and platforms at the expense
-	if larger amounts of data.
+  the highest level of portability for streams and platforms at the expense
+  if larger amounts of data.
  */
 
   public:
