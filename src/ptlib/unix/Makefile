@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.38  1999/02/19 11:33:51  robertj
+# Added IP access control lists file.
+#
 # Revision 1.37  1999/01/22 00:30:46  robertj
 # Yet more build environment changes.
 #
@@ -168,6 +171,7 @@ endif
 
 
 SOURCES	= $(PROTO_SOURCES) \
+	  $(COMPONENT_SRC_DIR)/ipacl.cxx \
 	  $(COMPONENT_SRC_DIR)/modem.cxx \
 	  $(COMPONENT_SRC_DIR)/cypher.cxx \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
