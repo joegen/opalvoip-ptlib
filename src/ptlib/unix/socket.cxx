@@ -241,12 +241,15 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       if (ioctl(fd, SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
         if (ioctl(fd, SIOCGIFADDR, &ifReq) >= 0) {
-          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
+          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr))) {
+            ::close(fd);
             return TRUE;
+          }
         }
       }
     }
   }
+  ::close(fd);
   return FALSE;
 }
 
