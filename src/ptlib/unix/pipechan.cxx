@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.15  1998/11/02 10:30:40  robertj
+ * GNU v6 compatibility.
+ *
  * Revision 1.14  1998/11/02 10:07:34  robertj
  * Added ReadStandardError implementation
  *
@@ -176,10 +179,10 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-    environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
+    __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
       PString str = environment->GetKeyAt(i) + '=' + environment->GetDataAt(i);
-      environ[i] = strdup(str);
+      __environ[i] = strdup(str);
     }
   }
 
