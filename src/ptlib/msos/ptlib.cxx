@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.9 1994/10/30 11:26:54 robertj Exp $
+ * $Id: ptlib.cxx,v 1.10 1994/12/21 11:36:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.9  1994/10/30 11:26:54  robertj
+ * Revision 1.10  1994/12/21 11:36:07  robertj
+ * Fixed caseless string for file paths.
+ *
+ * Revision 1.9  1994/10/30  11:26:54  robertj
  * Fixed set current directory function.
  * Changed PFilePath to be case insignificant according to platform.
  *
@@ -299,7 +302,7 @@ PFilePath & PFilePath::operator=(const PString & str)
 }
 
 
-void PFilePath::SetType(const PString & type)
+void PFilePath::SetType(const PCaselessString & type)
 {
   *this = operator()(0, FindLast('.')-1) + type;
 }
