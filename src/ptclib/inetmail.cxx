@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.18  2000/11/16 07:15:15  robertj
+ * Fixed problem with not closing off base64 encoding at next MIME part.
+ *
  * Revision 1.17  2000/11/14 08:30:03  robertj
  * Fixed bug in closing SMTP client, conditional around wrong way.
  *
@@ -1253,11 +1256,11 @@ BOOL PRFC822Channel::MultipartMessage(const PString & boundary)
 
 void PRFC822Channel::NextPart(const PString & boundary)
 {
-  PBase64 * oldBase64 = base64;
-
   if (base64 != NULL) {
+    PBase64 * oldBase64 = base64;
     base64 = NULL;
     *this << oldBase64->CompleteEncoding() << '\n';
+    delete oldBase64;
   }
 
   while (boundaries.GetSize() > 0) {
@@ -1269,7 +1272,6 @@ void PRFC822Channel::NextPart(const PString & boundary)
 
   flush();
 
-  base64 = oldBase64;
   writePartHeaders = boundaries.GetSize() > 0;
   partHeaders.RemoveAll();
 }
