@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.61  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.60  2003/11/12 04:40:58  csoutheren
  * Fixed linking problem on systems without QoS or IPV6
  *
@@ -1094,7 +1097,7 @@ BOOL PSPXSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PSPXSocket::Accept(PSocket & socket)
 {
-  PAssert(socket.IsDescendant(PIPXSocket::Class()), "Invalid listener socket");
+  PAssert(PIsDescendant(&socket, PIPXSocket), "Invalid listener socket");
 
   sockaddr_ipx sip;
   sip.sa_family = AF_IPX;

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.8  2004/04/03 08:22:22  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.7  2002/12/10 07:37:34  robertj
  * optimised SetLockMode() so if doesn't change mode it doesn't do anything.
  *
@@ -325,7 +328,7 @@ PSafePtrBase::~PSafePtrBase()
 
 PObject::Comparison PSafePtrBase::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PSafePtrBase), PInvalidCast);
   PSafeObject * otherObject = ((const PSafePtrBase &)obj).currentObject;
   if (currentObject < otherObject)
     return LessThan;
