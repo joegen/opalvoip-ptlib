@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.14 1996/05/09 12:22:09 robertj Exp $
+ * $Id: timeint.h,v 1.15 1996/05/15 10:19:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.15  1996/05/15 10:19:29  robertj
+ * Changed millisecond access functions to get 64 bit integer.
+ *
  * Revision 1.14  1996/05/09 12:22:09  robertj
  * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
  *
@@ -137,11 +140,11 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
 
   // New member functions
-    long GetMilliseconds() const;
+    PInt64 GetMilliSeconds() const;
     /* Get the number of milliseconds for the time interval.
     
        <H2>Returns:</H2>
-       long integer number of milliseconds.
+       very long integer number of milliseconds.
      */
 
     long GetSeconds() const;
@@ -170,6 +173,13 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     
        <H2>Returns:</H2>
        integer number of days.
+     */
+
+    DWORD GetInterval() const;
+    /* Get the number of milliseconds for the time interval.
+    
+       <H2>Returns:</H2>
+       long integer number of milliseconds.
      */
 
 
