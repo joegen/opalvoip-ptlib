@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.81  2000/05/18 22:23:21  rogerh
+# Fix RANLIB usage on the BSD machines. RANLIB can now be used to
+# specify the ranlib executable. P_USE_RANLIB must now be set to
+# enable ranlib usage.
+#
 # Revision 1.80  2000/05/18 08:33:12  robertj
 # Added variables for standard programs ar and ranlib
 #
@@ -443,7 +448,7 @@ ifdef P_PTHREADS
 CFLAGS	+= -pthread
 endif
 
-RANLIB		:= 1
+P_USE_RANLIB		:= 1
 
 endif # FreeBSD
 
@@ -465,7 +470,7 @@ ifdef P_PTHREADS
 CFLAGS	+= -pthread
 endif
 
-RANLIB		:= 1
+P_USE_RANLIB		:= 1
 
 endif # OpenBSD
 
@@ -491,7 +496,7 @@ CC              := /usr/pkg/pthreads/bin/pgcc
 CPLUS           := /usr/pkg/pthreads/bin/pg++
 endif
 
-RANLIB		:= 1
+P_USE_RANLIB		:= 1
 
 endif # NetBSD
 
@@ -502,7 +507,7 @@ ifeq ($(OSTYPE),sunos)
 
 # Sparc Sun 4x, using gcc 2.7.2
 
-RANLIB		:= 1
+P_USE_RANLIB		:= 1
 REQUIRES_SEPARATE_SWITCH = 1
 
 endif # sunos
@@ -530,7 +535,7 @@ STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		+= -lsocket -lnsl -ldl -lposix4
 LDFLAGS		+= -R/usr/local/gnu/lib
 
-#RANLIB		:= 1
+#P_USE_RANLIB		:= 1
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /usr/local/gnu/lib
@@ -602,7 +607,7 @@ else
 ENDIAN		:= PBIG_ENDIAN
 endif
   
-RANLIB		:= 1
+P_USE_RANLIB		:= 1
 
 CC              := cc
 CPLUS           := c++
