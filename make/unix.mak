@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.150  2003/01/06 22:38:33  rogerh
+# Get NetBSD to use pth by default
+#
 # Revision 1.149  2003/01/06 22:34:10  rogerh
 # Add NetBSD pth support. Check the state of USE_PTH.
 # Taken from NetBSD package, via Andreas Wrede
@@ -858,7 +861,7 @@ LDLIBS		+= -lossaudio
 
 # enable the USE_PTH line to compile using pth
 # comment out USE_PTH to compile using unproven threads
-#USE_PTH := 1
+USE_PTH := 1
 
 ifdef P_PTHREADS
 ifdef USE_PTH 
