@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.51 1997/08/07 11:57:42 robertj Exp $
+ * $Id: win32.cxx,v 1.52 1997/08/21 12:44:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.52  1997/08/21 12:44:56  robertj
+ * Removed extension from DLL "short" name.
+ *
  * Revision 1.51  1997/08/07 11:57:42  robertj
  * Added ability to get registry data from other applications and anywhere in system registry.
  *
@@ -2289,11 +2292,15 @@ BOOL PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(BOOL full) const
 {
-  PString str;
+  PFILE_PATH_STRING str;
   if (_hDLL != NULL) {
     GetModuleFileName(_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
-    if (!full)
+    if (!full) {
       str.Delete(0, str.FindLast('\\')+1);
+      PINDEX pos = str.Find(".DLL");
+      if (pos != P_MAX_INDEX)
+        str.Delete(pos, P_MAX_INDEX);
+    }
   }
   str.MakeMinimumSize();
   return str;
