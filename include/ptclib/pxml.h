@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.22  2003/04/27 23:54:13  craigs
+ * Removed deprecated options
+ *
  * Revision 1.21  2003/03/31 07:41:50  craigs
  * Fixed problem with accidental introduced dependency on expat.h
  *
@@ -74,8 +77,8 @@ class PXMLParser : public PObject
     enum Options {
       Indent              = 1,
       NewLineAfterElement = 2,
-      NoIgnoreWhiteSpace  = 4,
-      CloseExtended       = 8,
+      NoIgnoreWhiteSpace  = 4,   // ignored
+      CloseExtended       = 8,   // ignored
       WithNS              = 16,
     };
 
@@ -364,9 +367,9 @@ class PXMLSettings : public PXML
 {
   PCLASSINFO(PXMLSettings, PXML);
   public:
-    PXMLSettings(int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
-    PXMLSettings(const PString & data, int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
-    PXMLSettings(const PConfig & data, int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
+    PXMLSettings(int options = PXMLParser::NewLineAfterElement);
+    PXMLSettings(const PString & data, int options = PXMLParser::NewLineAfterElement);
+    PXMLSettings(const PConfig & data, int options = PXMLParser::NewLineAfterElement);
 
     BOOL Load(const PString & data);
     BOOL LoadFile(const PFilePath & fn);
