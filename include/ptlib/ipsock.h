@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.59  2003/04/28 02:55:08  robertj
+ * Added function to see at run time if IPv6 available, thanks Sebastien Josset
+ *
  * Revision 1.58  2003/04/03 08:43:23  robertj
  * Added IPv4 mapping into IPv6, thanks Sebastien Josset
  *
@@ -420,11 +423,14 @@ class PIPSocket : public PSocket
     // They are not RFC 2553, chapter 7.3, compliant.
     // As a concequence, when opening a socket to listen to port 1720 (for exemple) from any remot host
     // one must decide whether this an IPv4 or an IPv6 socket...
-    static const void SetDefaultIpAddressFamily(int ipAdressFamily); // PF_INET, PF_INET6
-    static const void SetDefaultIpAddressFamilyV4(); // PF_INET
-    static const void SetDefaultIpAddressFamilyV6(); // PF_INET6
-    static const int  GetDefaultIpAddressFamily();
-    static const PIPSocket::Address GetDefaultIpAny();
+    static int GetDefaultIpAddressFamily();
+    static void SetDefaultIpAddressFamily(int ipAdressFamily); // PF_INET, PF_INET6
+    static void SetDefaultIpAddressFamilyV4(); // PF_INET
+#if P_HAS_IPV6
+    static void SetDefaultIpAddressFamilyV6(); // PF_INET6
+    static BOOL IsIpAddressFamilyV6Supported();
+#endif
+    static PIPSocket::Address GetDefaultIpAny();
 
     // Open an IPv4 or IPv6 socket
     virtual BOOL OpenSocket(
