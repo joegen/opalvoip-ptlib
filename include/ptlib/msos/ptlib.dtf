@@ -2219,6 +2219,7 @@ EXPORTS
     ?OpenDevice@PSoundChannel@@AAEHI@Z @2092 NONAME ;private: int __thiscall PSoundChannel::OpenDevice(unsigned int)
     ?OpenManager@NT_ServiceManager@@AAEHXZ @1468 NONAME ;private: int __thiscall NT_ServiceManager::OpenManager(void)
     ?OpenSocket@PEthSocket@@MAEHXZ @1935 NONAME ;protected: virtual int __thiscall PEthSocket::OpenSocket(void)
+    ?OpenSocket@PICMPSocket@@MAEHH@Z @3403 NONAME ;protected: virtual int __thiscall PICMPSocket::OpenSocket(int)
     ?OpenSocket@PICMPSocket@@MAEHXZ @1469 NONAME ;protected: virtual int __thiscall PICMPSocket::OpenSocket(void)
     ?OpenSocket@PIPXSocket@@MAEHXZ @1470 NONAME ;protected: virtual int __thiscall PIPXSocket::OpenSocket(void)
     ?OpenSocket@PSPXSocket@@MAEHXZ @1471 NONAME ;protected: virtual int __thiscall PSPXSocket::OpenSocket(void)
