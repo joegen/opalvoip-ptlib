@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.140  2002/11/01 23:55:52  robertj
+# Added automatic inclusion of IPv6 if present in system.
+#
 # Revision 1.139  2002/10/17 13:44:27  robertj
 # Port to RTEMS, thanks Vladimir Nesic.
 #
@@ -1382,6 +1385,13 @@ endif
 # define Posix threads stuff
 ifdef P_PTHREADS
 STDCCFLAGS	+= -DP_PTHREADS
+endif
+
+# define IP v6 stuff
+ifndef NO_IPv6
+ifneq (,$(wildcard /$(SYSINCDIR)/netinet/ip6.h))
+STDCCFLAGS	+= -DP_HAS_IPV6
+endif
 endif
 
 #define templates if available
