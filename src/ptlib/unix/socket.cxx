@@ -1,5 +1,5 @@
 /*
- * $Id: socket.cxx,v 1.26 1998/09/08 11:31:51 robertj Exp $
+ * $Id: socket.cxx,v 1.27 1998/09/18 05:46:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994-1996 Equivalence Pty. Ltd.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.27  1998/09/18 05:46:00  robertj
+ * Fixed incorrectly returning success on a connect() error other than a timeout.
+ *
  * Revision 1.26  1998/09/08 11:31:51  robertj
  * Fixed ippp bug on very full packets.
  *
@@ -96,11 +99,21 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   // check the response
   if (val < 0)
     return -1;
-  else if (val == 0) {
+
+  if (val == 0) {
     errno = ECONNREFUSED;
     return -1;
   }
-  return 0;
+
+  // A successful select() call does not necessarily mean the socket connected OK.
+  int optval = -1;
+  int optlen = sizeof(optval);
+  getsockopt(os_handle, SOL_SOCKET, SO_ERROR, &optval, &optlen);
+  if (optval == 0)
+    return 0;
+
+  errno = optval;
+  return -1;
 }
 
 
