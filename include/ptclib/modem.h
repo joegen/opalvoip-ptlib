@@ -1,5 +1,5 @@
 /*
- * $Id: modem.h,v 1.7 1995/03/14 12:41:51 robertj Exp $
+ * $Id: modem.h,v 1.8 1995/06/17 11:12:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: modem.h,v $
+ * Revision 1.8  1995/06/17 11:12:46  robertj
+ * Documentation update.
+ *
  * Revision 1.7  1995/03/14 12:41:51  robertj
  * Updated documentation to use HTML codes.
  *
@@ -48,14 +51,14 @@ PDECLARE_CLASS(PModem, PSerialChannel)
    operations are the exchange of strings in "chat" script.
    
    The following defaults are used for command strings:
-       initialise         ATZ\r\w2sOK\w100m
-       deinitialise       \d2s+++\d2sATH0\r
-       pre-dial           ATDT
-       post-dial          \r
-       busy reply         BUSY
-       no carrier reply   NO CARRIER
-       connect reply      CONNECT
-       hang up            \d2s+++\d2sATH0\r
+       initialise         <CODE>ATZ\r\w2sOK\w100m</CODE>
+       deinitialise       <CODE>\d2s+++\d2sATH0\r</CODE>
+       pre-dial           <CODE>ATDT</CODE>
+       post-dial          <CODE>\r</CODE>
+       busy reply         <CODE>BUSY</CODE>
+       no carrier reply   <CODE>NO CARRIER</CODE>
+       connect reply      <CODE>CONNECT</CODE>
+       hang up            <CODE>\d2s+++\d2sATH0\r</CODE>
 
  */
 
@@ -136,7 +139,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \s before the string.
+       Note there is an implied <CODE>\s</CODE> before the string.
      */
 
     PString GetInitString() const;
@@ -153,7 +156,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* The modem is in a state that allows the initialise to start.
     
        <H2>Returns:</H2>
-       TRUE if the <A><CODE>Initialise()</CODE></A> function may proceeed.
+       TRUE if the <A>Initialise()</A> function may proceeed.
      */
 
     BOOL Initialise();
@@ -175,7 +178,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \s before the string.
+       Note there is an implied <CODE>\s</CODE> before the string.
      */
 
     PString GetDeinitString() const;
@@ -192,7 +195,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* The modem is in a state that allows the de-initialise to start.
     
        <H2>Returns:</H2>
-       TRUE if the <A><CODE>Deinitialise()</CODE></A> function may proceeed.
+       TRUE if the <A>Deinitialise()</A> function may proceeed.
      */
 
     BOOL Deinitialise();
@@ -214,7 +217,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \s before the string.
+       Note there is an implied <CODE>\s</CODE> before the string.
      */
 
     PString GetPreDialString() const;
@@ -235,8 +238,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is <EM>not</EM> an implied \s before the string, unlike the
-       pre-dial string.
+       Note there is <EM>not</EM> an implied <CODE>\s</CODE> before the
+       string, unlike the pre-dial string.
      */
 
     PString GetPostDialString() const;
@@ -257,8 +260,9 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \w120s before the string. Also the \s and \d
-       commands do not operate and will simply terminate the string match.
+       Note there is an implied <CODE>\w120s</CODE> before the string. Also
+       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       will simply terminate the string match.
      */
 
     PString GetBusyString() const;
@@ -279,8 +283,9 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \w120s before the string. Also the \s and \d
-       commands do not operate and will simply terminate the string match.
+       Note there is an implied <CODE>\w120s</CODE> before the string. Also
+       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       will simply terminate the string match.
      */
 
     PString GetNoCarrierString() const;
@@ -301,8 +306,9 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \w120s before the string. Also the \s and \d
-       commands do not operate and will simply terminate the string match.
+       Note there is an implied <CODE>\w120s</CODE> before the string. Also
+       the <CODE>\s</CODE> and <CODE>\d</CODE> commands do not operate and
+       will simply terminate the string match.
      */
 
     PString GetConnectString() const;
@@ -319,7 +325,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* The modem is in a state that allows the dial to start.
     
        <H2>Returns:</H2>
-       TRUE if the <A><CODE>Dial()</CODE></A> function may proceeed.
+       TRUE if the <A>Dial()</A> function may proceeed.
      */
 
     BOOL Dial(const PString & number);
@@ -329,8 +335,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        sent with all replies met.
 
        The string sent to the modem is the concatenation of the pre-dial
-       string, a \s, the <CODE>number</CODE> parameter and the post-dial
-       string.
+       string, a <CODE>\s</CODE>, the <CODE>number</CODE> parameter and the
+       post-dial string.
 
        <H2>Returns:</H2>
        TRUE if command string sent successfully and the objects state has
@@ -345,7 +351,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        See the <A>PChannel::SendCommandString()</A> function for more
        information on the format of the command string.
 
-       Note there is an implied \s before the string.
+       Note there is an implied <CODE>\s</CODE> before the string.
      */
 
     PString GetHangUpString() const;
@@ -362,7 +368,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* The modem is in a state that allows the hang up to start.
     
        <H2>Returns:</H2>
-       TRUE if the <A><CODE>HangUp()</CODE></A> function may proceeed.
+       TRUE if the <A>HangUp()</A> function may proceeed.
      */
 
     BOOL HangUp();
@@ -380,7 +386,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* The modem is in a state that allows the user command to start.
     
        <H2>Returns:</H2>
-       TRUE if the <A><CODE>SendUser()</CODE></A> function may proceeed.
+       TRUE if the <A>SendUser()</A> function may proceeed.
      */
 
     BOOL SendUser(
@@ -405,7 +411,7 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        multi-threading is used.
 
        <H2>Returns:</H2>
-       TRUE if <A><CODE>Read()</CODE></A> operations are "safe".
+       TRUE if <A>Read()</A> operations are "safe".
      */
 
     enum Status {
