@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.58  2002/11/12 08:57:18  robertj
+ * Changed scope of PAbstraSortedList::Element class so descendant classes
+ *   can get at it.
+ * Fixed problem with GetValuesIndex not returning first element of a certain
+ *   value if the object was a PCaselessString.
+ *
  * Revision 1.57  2002/06/25 02:24:59  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -673,7 +679,7 @@ PAbstractList::Element::Element(PObject * theData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static PAbstractSortedList::Element nil = NULL;
+PAbstractSortedList::Element PAbstractSortedList::Element::nil = NULL;
 
 PAbstractSortedList::PAbstractSortedList()
 {
@@ -698,14 +704,14 @@ void PAbstractSortedList::CopyContents(const PAbstractSortedList & list)
 void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 {
   Element * element = list->info->root;
-  while (element->left != &nil)
+  while (element->left != &Element::nil)
     element = element->left;
 
   info = new Info;
   PAssert(info != NULL, POutOfMemory);
   reference->size = 0;
 
-  while (element != &nil) {
+  while (element != &Element::nil) {
     Append(element->data->Clone());
     element = element->Successor();
   }
@@ -722,17 +728,17 @@ PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PAbstractSortedList::Class()), PInvalidCast);
   Element * elmt1 = info->root;
-  while (elmt1->left != &nil)
+  while (elmt1->left != &Element::nil)
     elmt1 = elmt1->left;
 
   Element * elmt2 = ((const PAbstractSortedList &)obj).info->root;
-  while (elmt2->left != &nil)
+  while (elmt2->left != &Element::nil)
     elmt2 = elmt2->left;
 
-  while (elmt1 != &nil && elmt2 != &nil) {
-    if (elmt1 == &nil)
+  while (elmt1 != &Element::nil && elmt2 != &Element::nil) {
+    if (elmt1 == &Element::nil)
       return LessThan;
-    if (elmt2 == &nil)
+    if (elmt2 == &Element::nil)
       return GreaterThan;
     if (*elmt1->data < *elmt2->data)
       return LessThan;
@@ -749,14 +755,14 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 {
   Element * z = new Element(PAssertNULL(obj));
   Element * x = info->root;
-  Element * y = &nil;
-  while (x != &nil) {
+  Element * y = &Element::nil;
+  while (x != &Element::nil) {
     x->subTreeSize++;
     y = x;
     x = *z->data < *x->data ? x->left : x->right;
   }
   z->parent = y;
-  if (y == &nil)
+  if (y == &Element::nil)
     info->root = z;
   else if (*z->data < *y->data)
     y->left = z;
@@ -841,10 +847,10 @@ PObject * PAbstractSortedList::RemoveAt(PINDEX index)
 
 void PAbstractSortedList::RemoveAll()
 {
-  if (info->root != &nil) {
+  if (info->root != &Element::nil) {
     info->root->DeleteSubTrees(reference->deleteObjects);
     delete info->root;
-    info->root = &nil;
+    info->root = &Element::nil;
     reference->size = 0;
   }
 }
@@ -903,14 +909,14 @@ PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
     PINDEX savePos = pos;
     Element * saveElmt = elmt;
     while (elmt->data != obj &&
-            (elmt = elmt->Predecessor()) != &nil &&
+            (elmt = elmt->Predecessor()) != &Element::nil &&
             *obj == *elmt->data)
       pos--;
     if (elmt->data != obj) {
       pos = savePos;
       elmt = saveElmt;
       while (elmt->data != obj &&
-              (elmt = elmt->Successor()) != &nil &&
+              (elmt = elmt->Successor()) != &Element::nil &&
               *obj == *elmt->data)
         pos++;
       if (elmt->data != obj)
@@ -934,7 +940,8 @@ PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
   info->lastIndex = pos;
 
   Element * prev;
-  while ((prev = info->lastElement->Predecessor()) != &nil && obj == *prev->data) {
+  while ((prev = info->lastElement->Predecessor()) != &Element::nil &&
+                                  prev->data->Compare(obj) == EqualTo) {
     info->lastElement = prev;
     info->lastIndex--;
   }
@@ -950,18 +957,18 @@ void PAbstractSortedList::RemoveElement(Element * node)
   if (node->data != NULL && reference->deleteObjects)
     delete node->data;
 
-  Element * y = node->left == &nil || node->right == &nil ? node : node->Successor();
+  Element * y = node->left == &Element::nil || node->right == &Element::nil ? node : node->Successor();
 
   Element * t = y;
-  while (t != &nil) {
+  while (t != &Element::nil) {
     t->subTreeSize--;
     t = t->parent;
   }
 
-  Element * x = y->left != &nil ? y->left : y->right;
+  Element * x = y->left != &Element::nil ? y->left : y->right;
   x->parent = y->parent;
 
-  if (y->parent == &nil)
+  if (y->parent == &Element::nil)
     info->root = x;
   else if (y == y->parent->left)
     y->parent->left = x;
@@ -1041,10 +1048,10 @@ void PAbstractSortedList::LeftRotate(Element * node)
 {
   Element * pivot = PAssertNULL(node)->right;
   node->right = pivot->left;
-  if (pivot->left != &nil)
+  if (pivot->left != &Element::nil)
     pivot->left->parent = node;
   pivot->parent = node->parent;
-  if (node->parent == &nil)
+  if (node->parent == &Element::nil)
     info->root = pivot;
   else if (node == node->parent->left)
     node->parent->left = pivot;
@@ -1061,10 +1068,10 @@ void PAbstractSortedList::RightRotate(Element * node)
 {
   Element * pivot = PAssertNULL(node)->left;
   node->left = pivot->right;
-  if (pivot->right != &nil)
+  if (pivot->right != &Element::nil)
     pivot->right->parent = node;
   pivot->parent = node->parent;
-  if (node->parent == &nil)
+  if (node->parent == &Element::nil)
     info->root = pivot;
   else if (node == node->parent->right)
     node->parent->right = pivot;
@@ -1106,7 +1113,7 @@ PAbstractSortedList::Element * PAbstractSortedList::Element::Successor() const
 }
 
 
-PAbstractSortedList::Element*PAbstractSortedList::Element::Predecessor() const
+PAbstractSortedList::Element * PAbstractSortedList::Element::Predecessor() const
 {
   Element * pred;
   if (left != &nil) {
@@ -1193,7 +1200,7 @@ void PAbstractSortedList::Element::DeleteSubTrees(BOOL deleteObject)
 
 PAbstractSortedList::Info::Info()
 {
-  root = &nil;
+  root = &Element::nil;
   lastElement = NULL;
   lastIndex = P_MAX_INDEX;
 }
