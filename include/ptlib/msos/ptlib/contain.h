@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.51  2005/03/10 06:37:19  csoutheren
+ * Removed use of typeid on WIndows to get class name because it is not threadsafe
+ * In fact, lets just use #classname everywhere because that will always work
+ * Thanks to Vyacheslav Frolov
+ *
  * Revision 1.50  2004/10/30 19:23:45  ykiryanov
  * Ifdefd strcasecmp for WinCE port
  *
@@ -463,7 +468,6 @@ extern "C" char ** __argv;
 #endif
 
 #define   P_HAS_TYPEINFO  1
-#define   PCLASSNAME(cls) (6+typeid(cls).name())
 
 //#define   PCONTAINER_USES_CRITSEC   1
 
