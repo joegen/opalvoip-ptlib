@@ -22,7 +22,11 @@ PDECLARE_CLASS(PRASDLL, PDynaLink)
 } Ras;
 
 PRASDLL::PRASDLL()
-  : PDynaLink("RASAPI.DLL")
+#ifdef _WIN32
+  : PDynaLink("RASAPI32.DLL")
+#else
+  : PDynaLink("RASAPI16.DLL")
+#endif
 {
   if (!GetFunction("RasDialA", (Function &)Dial) ||
       !GetFunction("RasHangUpA", (Function &)HangUp) ||
