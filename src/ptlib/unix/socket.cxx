@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.63  2001/06/19 12:09:13  rogerh
+ * Mac OS X change
+ *
  * Revision 1.62  2001/04/16 22:46:22  craigs
  * Fixed problem with os_connect not correctly reporting errors
  *
@@ -177,7 +180,7 @@
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX)
 #define ifr_netmask ifr_addr
 #endif
 
