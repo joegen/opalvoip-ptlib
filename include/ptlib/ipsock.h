@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.72  2005/02/04 05:50:27  csoutheren
+ * Extended IsRFC1918 to handle IPV6
+ *
  * Revision 1.71  2005/01/16 21:27:01  csoutheren
  * Changed PIPSocket::IsAny to be const
  *
@@ -431,13 +434,22 @@ class PIPSocket : public PSocket
         /// Check for Broadcast address 255.255.255.255
         BOOL IsBroadcast() const;
 
-        // Check if the remote address is private address as specified
-        // by RFC 1918 address
-        //  10.0.0.0    - 10.255.255.255.255
-        //  172.16.0.0  - 172.31.255.255
-        //  192.168.0.0 - 192.168.255.255
+        // Check if the remote address is a private address.
+        // For IPV4 this is specified RFC 1918 as the following ranges:
+        //    10.0.0.0    - 10.255.255.255.255
+        //    172.16.0.0  - 172.31.255.255
+        //    192.168.0.0 - 192.168.255.255
+        // For IPV6 this is specified as any address having "1111 1110 1” for the first nine bits
         BOOL IsRFC1918() const 
-        { return (Byte1() == 10)
+        { 
+#if P_HAS_IPV6
+          if (version == 6) {
+            if (this->IsV4Mapped()) 
+              return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();
+            return (Byte1() == 0xfe) && ((Byte2() & 0x80) != 0);
+          }
+#endif
+          return (Byte1() == 10)
                   ||
                   (
                     (Byte1() == 172)
