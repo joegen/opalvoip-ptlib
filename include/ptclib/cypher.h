@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.8 1996/11/16 10:50:24 robertj Exp $
+ * $Id: cypher.h,v 1.9 1997/10/10 10:44:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.9  1997/10/10 10:44:01  robertj
+ * Fixed bug in password encryption, missing string terminator.
+ *
  * Revision 1.8  1996/11/16 10:50:24  robertj
  * Fixed bug in registration order form showing incorrect check code when have key.
  *
@@ -191,6 +194,10 @@ PDECLARE_CLASS(PCypher, PObject)
 
     PString Decode(
       const PString & cypher   // Base64 Cypher text string to be decoded.
+    );
+    BOOL Decode(
+      const PString & cypher,  // Base64 Cypher text string to be decoded.
+      PString & clear          // Clear text string decoded.
     );
     BOOL Decode(
       const PString & cypher,  // Base64 Cypher text string to be decoded.
