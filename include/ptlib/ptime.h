@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.26  2000/04/05 02:50:16  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.25  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -152,8 +155,9 @@ class PTime : public PObject
        This initialises the time to the specified time.
      */
     PTime(
-      time_t tsecs          /// Time in seconds since 00:00:00 1/1/70 UTC
-    ) { theTime = tsecs; }
+      time_t tsecs,          /// Time in seconds since 00:00:00 1/1/70 UTC
+      long usecs = 0
+    ) { theTime = tsecs; microseconds = usecs; }
 
     /**Create a time object instance.
        This initialises the time to the specified time, parsed from the string.
@@ -215,6 +219,29 @@ class PTime : public PObject
 
   /**@name Access functions */
   //@{
+    /**Get the total microseconds since the epoch. The epoch is the 1st
+       January 1970.
+
+       @return
+       microseconds.
+     */
+    PInt64 GetTimestamp() const;
+
+    /**Get the total seconds since the epoch. The epoch is the 1st
+       January 1970.
+
+       @return
+       seconds.
+     */
+    time_t GetTimeInSeconds() const;
+
+    /**Get the microsecond part of the time.
+
+       @return
+       integer in range 0..999999.
+     */
+    long GetMicrosecond() const;
+
     /**Get the second of the time.
 
        @return
@@ -562,6 +589,7 @@ class PTime : public PObject
     // Member variables
     /// Number of seconds since 1 January 1970.
     time_t theTime;
+    long   microseconds;
 
 #ifdef DOC_PLUS_PLUS
 };
