@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.4  2003/04/17 06:14:31  robertj
+ * Changed link of openssl to be static.
+ *
  * Revision 1.3  2003/04/17 01:22:29  craigs
  * Fixed problem with OpenLDAP and OpenSSL-0.9.7
  *
@@ -125,9 +128,9 @@
 #define P_SSL_DIR         "@SSL_DIR@/"
 
 #ifdef _DEBUG
-#define P_SSL_LIBDIR P_SSL_DIR "out32dll"
+#define P_SSL_LIBDIR P_SSL_DIR "out32"
 #else
-#define P_SSL_LIBDIR P_SSL_DIR "out32dll.dbg"
+#define P_SSL_LIBDIR P_SSL_DIR "out32.dbg"
 #endif
 
 #define P_SSL_LIB1 P_SSL_LIBDIR "/ssleay32.lib"
