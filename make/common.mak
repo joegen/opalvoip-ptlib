@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.87  2003/11/02 15:57:56  shawn
+# remove -static for Mac OS X
+#
 # Revision 1.86  2003/10/03 00:36:59  dereksmithies
 # Fix generation of dependencies. Thanks to Vyacheslav Frolov
 #
@@ -265,7 +268,9 @@ STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
 endif
 
 ifneq ($(P_SHAREDLIB),1)
+ifneq ($(OSTYPE),Darwin) # Mac OS X does not really support -static
 LDFLAGS += -static
+endif
 endif
 
 #  clean whitespace out of source file list
