@@ -47,6 +47,8 @@
 #elif defined(P_SOLARIS) 
 #define P_USE_LANGINFO
 #include <sys/timeb.h>
+#include <sys/statvfs.h>
+#include <sys/mnttab.h>
 
 #elif defined(P_SUN4)
 #include <sys/timeb.h>
@@ -261,7 +263,7 @@ PString PDirectory::GetVolume() const
 {
   PString volume;
 
-#if defined(P_LINUX)
+#if defined(P_LINUX) 
   struct stat status;
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
@@ -275,6 +277,21 @@ PString PDirectory::GetVolume() const
       }
     }
     endmntent(fp);
+  }
+#elif defined(P_SOLARIS)
+  struct stat status;
+  if (stat(operator+("."), &status) != -1) {
+    dev_t my_dev = status.st_dev;
+
+    FILE * fp = fopen("/etc/mnttab", "r");
+    struct mnttab * mnt;
+    while (getmntent(fp, mnt) == 0) {
+      if (stat(mnt->mnt_mountp, &status) != -1 && status.st_dev == my_dev) {
+        volume = mnt->mnt_special;
+        break;
+      }
+    }
+    fclose(fp);
   }
 #else
 #error Platform requires implemetation of GetVolume()
@@ -293,8 +310,18 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
 
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
+
+#elif defined(P_SOLARIS)
+  struct statvfs buf;
+  if (statvfs(operator+("."), &buf) != 0)
+    return FALSE;
+
+  total = buf.f_blocks * buf.f_frsize;
+  free  = buf.f_bfree  * buf.f_frsize;
+
+  return TRUE;
 #else
-#error Platform requires implemetation of GetVolume()
+#error Platform requires implemetation of GetVolumeSpace()
 #endif
   return TRUE;
 }
