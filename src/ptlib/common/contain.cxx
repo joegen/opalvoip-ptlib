@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.99  2001/04/18 04:10:15  robertj
+ * Removed hash function for caseless strings as confuses mixed dictionaries.
+ *
  * Revision 1.98  2001/04/18 01:20:59  robertj
  * Fixed problem with hash function for short strings, thanks Patrick Koorevaar.
  * Also fixed hash function for caseless strings.
@@ -1834,16 +1837,6 @@ PString pvsprintf(const char * fmt, va_list arg)
 PObject * PCaselessString::Clone() const
 {
   return new PCaselessString(*this);
-}
-
-
-PINDEX PCaselessString::HashFunction() const
-{
-  PINDEX i = 0;
-  PINDEX sum = 0;
-  while (i < 8 && theArray[i] != 0)
-    sum += toupper(theArray[i++]);
-  return sum%23;
 }
 
 

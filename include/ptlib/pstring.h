@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.44  2001/04/18 04:10:15  robertj
+ * Removed hash function for caseless strings as confuses mixed dictionaries.
+ *
  * Revision 1.43  2001/04/18 01:20:58  robertj
  * Fixed problem with hash function for short strings, thanks Patrick Koorevaar.
  * Also fixed hash function for caseless strings.
@@ -1590,21 +1593,6 @@ class PCaselessString : public PString
        unique reference to that data.
      */
     virtual PObject * Clone() const;
-
-    /**Calculate a hash value for use in sets and dictionaries.
-    
-       The hash function for strings will produce a value based on the sum of
-       the first three characters of the string. This is a fairly basic
-       function and make no assumptions about the string contents. A user may
-       descend from PString and override the hash function if they can take
-       advantage of the types of strings being used, eg if all strings start
-       with the letter 'A' followed by 'B or 'C' then the current hash function
-       will not perform very well.
-
-       @return
-       hash value for string.
-     */
-    virtual PINDEX HashFunction() const;
 
   protected:
   // Overrides from class PString
