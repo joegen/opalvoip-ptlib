@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.19 1995/03/12 04:42:48 robertj Exp $
+ * $Id: pdirect.h,v 1.20 1995/03/14 12:42:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.19  1995/03/12 04:42:48  robertj
+ * Revision 1.20  1995/03/14 12:42:00  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.19  1995/03/12  04:42:48  robertj
  * Updated documentation.
  * Changed return type of functions to the correct case string.
  *
@@ -96,7 +99,7 @@ PDECLARE_CLASS(PFileInfo, PObject)
     };
     /* All types that a particular file path may be. Not all platforms support
        all of the file types. For example under DOS no file may be of the
-       type $B$SymbolicLink$B$.
+       type <CODE>SymbolicLink</CODE>.
      */
 
     FileTypes type;
@@ -137,8 +140,8 @@ PDECLARE_CLASS(PFileInfo, PObject)
     // File access permissions for the file.
 
     int permissions;
-    /* A bit mask of all the file acces permissions. See the $H$Permissions
-       enum for the possible bit values.
+    /* A bit mask of all the file acces permissions. See the
+       <A>Permissions</A> enum for the possible bit values.
        
        Not all platforms support all permissions.
      */
@@ -165,16 +168,16 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
    The path always has a trailing separator.
 
    Some platforms allow more than one character to act as a directory separator
-   so when doing any processing the $B$IsSeparator()$B$ function should be used
-   to determine if a character is a possible separator.
+   so when doing any processing the <A><CODE>IsSeparator()</CODE></A> function
+   should be used to determine if a character is a possible separator.
 
    The directory may be opened to gain access to the list of files that it
-   contains. Note that the directory does $U$not$U$ contain the "." and ".."
+   contains. Note that the directory does <EM>not</EM> contain the "." and ".."
    entries that some platforms support.
 
    The ancestor class is dependent on the platform. For file systems that are
-   case sensitive, eg Unix, the ancestor is $H$PString. For other platforms,
-   the ancestor class is $H$PCaselessString.
+   case sensitive, eg Unix, the ancestor is <A>PString</A>. For other
+   platforms, the ancestor class is <A>PCaselessString</A>.
  */
 
   public:
@@ -184,9 +187,9 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
     PDirectory(
       const PString & pathname    // Directory path name for new object.
     );
-    /* Create a directory object of the specified directory. The $B$pathname$B$
-       parameter may be a relative directory which is made absolute by the
-       creation of the PDirectory object.
+    /* Create a directory object of the specified directory. The
+       <CODE>pathname</CODE> parameter may be a relative directory which is
+       made absolute by the creation of the <A>PDirectory</A> object.
      */
 
 
@@ -199,21 +202,25 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        is the disks volume name eg "Untitled". For a unix platform it is the
        device name for the file system eg "/dev/sda1".
 
-       Returns: string for the directory volume.
+       <H2>Returns:</H2>
+       string for the directory volume.
      */
 
     BOOL IsRoot() const;
     /* Determine if the directory is the root directory of a volume.
     
-       Returns: TRUE if the object is a root directory.
+       <H2>Returns:</H2>
+       TRUE if the object is a root directory.
      */
 
     PINLINE static BOOL IsSeparator(
-      char c    // Character to check as being a separator.
+      char ch    // Character to check as being a separator.
     );
-    /* Determine if the character $B$c$B$ is a directory path separator.
+    /* Determine if the character <CODE>ch</CODE> is a directory path
+       separator.
 
-       Returns: TRUE if may be used to separate directories in a path.
+       <H2>Returns:</H2>
+       TRUE if may be used to separate directories in a path.
      */
 
 
@@ -225,7 +232,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        against the name contained in the object instance. The static version
        may be simply passed a path name.
 
-       Returns: TRUE if directory exists.
+       <H2>Returns:</H2>
+       TRUE if directory exists.
      */
       
     BOOL Change() const;
@@ -236,7 +244,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        to the name contained in the object instance. The static version may be
        simply passed a path name.
 
-       Returns: TRUE if current working directory was changed.
+       <H2>Returns:</H2>
+       TRUE if current working directory was changed.
      */
       
     BOOL Create(
@@ -250,7 +259,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        version changes to the name contained in the object instance. The static
        version may be simply passed a path name.
 
-       Returns: TRUE if directory created.
+       <H2>Returns:</H2>
+       TRUE if directory created.
      */
 
     BOOL Remove();
@@ -261,7 +271,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        name contained in the object instance. The static version may be simply
        passed a path name.
 
-       Returns: TRUE if directory was deleted.
+       <H2>Returns:</H2>
+       TRUE if directory was deleted.
      */
       
 
@@ -269,47 +280,51 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
       int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
     );
     /* Open the directory for scanning its list of files. Once opened the
-       $B$GetEntryName()$B$ function may be used to get the current directory
-       entry and the $B$Next()$B$ function used to move to the next directory
-       entry.
+       <A><CODE>GetEntryName()</CODE></A> function may be used to get the
+       current directory entry and the <A><CODE>Next()</CODE></A> function
+       used to move to the next directory entry.
        
        Only files that are of a type that is specified in the mask will be
        returned.
        
-       Note that the directory scan will $U$not$U$ return the "." and ".."
+       Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
 
-       Returns: TRUE if directory was successfully opened, and there was at
-                least one file in it of the specified types.
+       <H2>Returns:</H2>
+       TRUE if directory was successfully opened, and there was at least one
+       file in it of the specified types.
      */
       
     BOOL Restart(
       int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
     );
     /* Restart file list scan from the beginning of directory. This is similar
-       to the $B$Open()$B$ command but does not require that the directory be
-       closed (using $B$Close()$B$) first.
+       to the <A><CODE>Open()</CODE></A> command but does not require that the
+       directory be closed (using <A><CODE>Close()</CODE></A>) first.
 
        Only files that are of a type that is specified in the mask will be
        returned.
 
-       Note that the directory scan will $U$not$U$ return the "." and ".."
+       Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
 
-       Returns: TRUE if directory was successfully opened, and there was at
-                least one file in it of the specified types.
+       <H2>Returns:</H2>
+       TRUE if directory was successfully opened, and there was at least one
+       file in it of the specified types.
      */
       
     BOOL Next();
     /* Move to the next file in the directory scan.
     
        Only files that are of a type that is specified in the mask passed to
-       the $B$Open()$B$ or $B$Restart()$B$ functions will be returned.
+       the <A><CODE>Open()</CODE></A> or <A><CODE>Restart()</CODE></A>
+       functions will be returned.
 
-       Note that the directory scan will $U$not$U$ return the "." and ".."
+       Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
 
-       Returns: TRUS if there is another valid file in the directory.
+       <H2>Returns:</H2>
+       TRUS if there is another valid file in the directory.
      */
       
     void Close();
@@ -324,20 +339,22 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
        To get a full path name concatenate the PDirectory object itself with
        the entry name.
        
-       Note that the directory scan will $U$not$U$ return the "." and ".."
+       Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
 
-       Returns: string for directory entry.
+       <H2>Returns:</H2>
+       string for directory entry.
      */
 
     BOOL IsSubDir() const;
     /* Determine if the directory entry currently being scanned is itself
        another directory entry.
        
-       Note that the directory scan will $U$not$U$ return the "." and ".."
+       Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
 
-       Returns: TRUE if entry is a subdirectory.
+       <H2>Returns:</H2>
+       TRUE if entry is a subdirectory.
      */
 
     BOOL GetInfo(
@@ -345,7 +362,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
     ) const;
     /* Get file information on the current directory entry.
     
-       Returns: TRUE if file information was successfully retrieved.
+       <H2>Returns:</H2>
+       TRUE if file information was successfully retrieved.
      */
 
 
