@@ -207,6 +207,10 @@ SOURCE=..\..\ptclib\pxmlrpc.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pxmlrpcs.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\qchannel.cxx
 # End Source File
 # Begin Source File
@@ -328,6 +332,10 @@ SOURCE=..\..\..\include\ptclib\pxml.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\pxmlrpc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pxmlrpcs.h
 # End Source File
 # Begin Source File
 
