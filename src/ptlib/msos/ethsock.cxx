@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.cxx,v 1.2 1998/08/21 05:27:13 robertj Exp $
+ * $Id: ethsock.cxx,v 1.3 1998/08/25 11:03:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.3  1998/08/25 11:03:15  robertj
+ * Fixed proble with NT get of OID.
+ * Fixed bug with not setting channel name when interface opened.
+ *
  * Revision 1.2  1998/08/21 05:27:13  robertj
  * Fine tuning of interface.
  *
@@ -134,6 +138,7 @@ class PWin32PacketDriver
                    void * output, DWORD outSize,
                    DWORD & received);
 
+    virtual DWORD GetQueryOidCommand(UINT oid) const = 0;
     BOOL QueryOid(UINT oid, DWORD & data);
     BOOL QueryOid(UINT oid, UINT len, BYTE * data);
     BOOL SetOid(UINT oid, DWORD data);
@@ -157,6 +162,8 @@ class PWin32PacketVxD : public PWin32PacketDriver
 
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+    virtual DWORD GetQueryOidCommand(UINT oid) const;
 };
 
 
@@ -172,6 +179,8 @@ class PWin32PacketSYS : public PWin32PacketDriver
 
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
+
+    virtual DWORD GetQueryOidCommand(UINT oid) const;
 };
 
 
@@ -525,8 +534,7 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
   PWin32OidBuffer buf(oid, len);
   DWORD rxsize;
-  if (!IoControl(oid >= 0x01000000 ? IOCTL_PROTOCOL_QUERY_OID : IOCTL_PROTOCOL_STATISTICS,
-                 buf, buf, buf, buf, rxsize))
+  if (!IoControl(GetQueryOidCommand(oid), buf, buf, buf, buf, rxsize))
     return FALSE;
 
   if (rxsize == 0)
@@ -545,8 +553,10 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
   oidData[2] = 0x12345678;
 
   DWORD rxsize;
-  if (!IoControl(oid >= 0x01000000 ? IOCTL_PROTOCOL_QUERY_OID : IOCTL_PROTOCOL_STATISTICS,
-                 oidData, sizeof(oidData), oidData, sizeof(oidData), rxsize))
+  if (!IoControl(GetQueryOidCommand(oid),
+                 oidData, sizeof(oidData),
+                 oidData, sizeof(oidData),
+                 rxsize))
     return FALSE;
 
   if (rxsize == 0)
@@ -673,6 +683,12 @@ BOOL PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 }
 
 
+DWORD PWin32PacketVxD::GetQueryOidCommand(UINT oid) const
+{
+  return oid >= 0x01000000 ? IOCTL_PROTOCOL_QUERY_OID : IOCTL_PROTOCOL_STATISTICS;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PWin32PacketSYS::PWin32PacketSYS()
@@ -774,6 +790,12 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 }
 
 
+DWORD PWin32PacketSYS::GetQueryOidCommand(UINT) const
+{
+  return IOCTL_PROTOCOL_QUERY_OID;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static PWin32PacketDriver * CreatePacketDriver()
@@ -833,11 +855,11 @@ PString PEthSocket::GetName() const
 }
 
 
-BOOL PEthSocket::Connect(const PString & interfaceName)
+BOOL PEthSocket::Connect(const PString & newName)
 {
   Close();
 
-  if (!driver->BindInterface(interfaceName))
+  if (!driver->BindInterface(newName))
     return FALSE;
 
   Address myAddr;
@@ -853,8 +875,10 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
       break;
 
     ifPhysAddressOid.Free();
-    if (itsAddr == myAddr)
+    if (itsAddr == myAddr) {
+      interfaceName = newName;
       return TRUE;
+    }
 
     os_handle++;
   }
