@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.139  2002/10/17 13:44:27  robertj
+# Port to RTEMS, thanks Vladimir Nesic.
+#
 # Revision 1.138  2002/10/10 04:43:44  robertj
 # VxWorks port, thanks Martijn Roest
 #
@@ -578,7 +581,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems))
 
 default_target :
 	@echo
@@ -593,7 +596,7 @@ default_target :
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
 	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
-	@echo "              VxWorks"
+	@echo "              VxWorks rtems"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -629,8 +632,10 @@ endif
 STDCCFLAGS += -Wall
 
 
+ifneq ($(OSTYPE),rtems)
 ifndef SYSINCDIR
 SYSINCDIR := /usr/include
+endif
 endif
 
 ####################################################
@@ -1118,6 +1123,35 @@ STDCCFLAGS      += -DP_USE_PRAGMA
 endif # VxWorks
 
  
+####################################################
+
+ifeq ($(OSTYPE),rtems)
+
+CC              := $(MACHTYPE)-rtems-gcc --pipe
+CPLUS           := $(MACHTYPE)-rtems-g++
+#LD              := $(MACHTYPE)-rtems-ld
+#AR              := $(MACHTYPE)-rtems-ar
+#RUNLIB          := $(MACHTYPE)-rtems-runlib
+
+SYSLIBDIR	:= $(RTEMS_MAKEFILE_PATH)/lib
+SYSINCDIR	:= $(RTEMS_MAKEFILE_PATH)/lib/include
+
+LDFLAGS		+= -B$(SYSLIBDIR)/ -specs=bsp_specs -qrtems
+STDCCFLAGS	+= -B$(SYSLIBDIR)/ -specs=bsp_specs -ansi -fasm -qrtems
+
+ifeq ($(CPUTYPE),mcpu32)
+STDCCFLAGS	+= -mcpu32
+LDFLAGS		+= -mcpu32 
+endif
+
+STDCCFLAGS	+= -DP_RTEMS -DNO_VIDEO_CAPTURE -DP_HAS_SEMAPHORES
+
+P_SHAREDLIB	:= 0
+P_PTHREADS	:= 1
+
+endif # rtems
+
+
 ###############################################################################
 #
 # Make sure some things are defined
@@ -1302,9 +1336,11 @@ OPENSSLDIR := $(SYSINCDIR)
 export OPENSSLDIR
 endif
 
+ifneq ($(OSTYPE),rtems)
 ifneq (,$(wildcard /usr/local/ssl))
 OPENSSLDIR := /usr/local/ssl
 export OPENSSLDIR
+endif
 endif
 
 endif
@@ -1326,11 +1362,13 @@ ENDLDLIBS	+= -lexpat
 STDCCFLAGS	+= -DP_EXPAT
 endif
 
+ifneq ($(OSTYPE),rtems)
 ifneq (,$(wildcard /usr/local/include/expat.h))
 HAS_EXPAT	= 1
 ENDLDLIBS	+= -lexpat
 STDCCFLAGS	+= -DP_EXPAT -I /usr/local/include
 LDFLAGS		+= -L /usr/local/lib
+endif
 endif
 
 

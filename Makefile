@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.23  2002/10/17 13:44:27  robertj
+# Port to RTEMS, thanks Vladimir Nesic.
+#
 # Revision 1.22  2001/08/06 19:35:27  rogerh
 # Include the relevent header file based on the version of OpenBSD.
 # Submitted by Marius Aamodt Eriksen <marius@umich.edu>
@@ -109,7 +112,8 @@ endif
 include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
-ifneq ($(OSTYPE),Nucleus)
+
+ifeq (,$(findstring $(OSTYPE),Nucleus rtems))
 SUBDIRS += tools/asnparser
 
 include make/defaultgui.mak

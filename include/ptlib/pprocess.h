@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.56  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.55  2002/10/17 07:17:42  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -216,6 +219,13 @@
   PProcess::PreInitialise(0, NULL, NULL); \
   cls instance; \
   instance._main();
+#elif defined(P_RTEMS)
+#define PCREATE_PROCESS(cls) \
+   rtems_task Init( rtems_task_argument argument) \
+     { PProcess::PreInitialise(0, 0, 0); \
+       static cls instance; \
+       exit( instance._main() ); \
+     }
 #else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \

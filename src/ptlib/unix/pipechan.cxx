@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.34  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.33  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -149,21 +152,33 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
   else 
+#ifdef P_RTEMS
+    PAssert(socketpair(AF_INET,SOCK_STREAM,0,toChildPipe) == 0, POperatingSystemError);
+#else
     PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
+#endif
  
   // setup the pipe from the child
   if (mode == WriteOnly || mode == ReadWriteStd)
     fromChildPipe[0] = fromChildPipe[1] = -1;
   else
+#ifdef P_RTEMS
+    PAssert(socketpair(AF_INET,SOCK_STREAM,0,fromChildPipe) == 0, POperatingSystemError);
+#else
     PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
+#endif
 
   if (stderrSeparate)
+#ifdef P_RTEMS
+    PAssert(socketpair(AF_INET,SOCK_STREAM,0,stderrChildPipe) == 0, POperatingSystemError);
+#else
     PAssert(pipe(stderrChildPipe) == 0, POperatingSystemError);
+#endif
   else
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
   // fork to allow us to execute the child
-#if defined(__BEOS__) || defined(P_IRIX)
+#if defined(__BEOS__) || defined(P_IRIX) || defined(P_RTEMS)
   if ((childPid = fork()) != 0) {
 #else
   if ((childPid = vfork()) != 0) {
@@ -248,7 +263,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_RTEMS)
     extern char ** environ;
 #define __environ environ
 #endif

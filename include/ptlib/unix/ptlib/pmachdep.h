@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.51  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.50  2002/10/16 11:29:05  rogerh
  * remove redundant #include.
  *
@@ -523,6 +526,30 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 
 #define strcasecmp strcmp
 
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_RTEMS)
+
+#include <sys/termios.h>
+#include <sys/errno.h>
+#include <sys/fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <net/if.h>
+typedef int socklen_t;
+typedef int64_t         quad_t;
+extern "C" {
+  int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *tv);
+  int strcasecmp(const char *, const char *);
+  char* strdup(const char *);
+}
+#define PSETPGRP()  tcsetprgrp(0, 0)
+#define wait3(s, o, r) waitpid(-1, s, o)
+#define seteuid setuid
+#define HAS_IFREQ
+
+
+///////////////////////////////////////////////////////////////////////////////
 #else
 
 // Other operating systems here
