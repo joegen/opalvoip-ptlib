@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.55  1999/08/07 01:43:41  robertj
+ * Added "NoWin" option to prevent display of window in command line commands.
+ *
  * Revision 1.54  1999/07/16 03:22:16  robertj
  * Fixed tray icon version command so does not ask question.
  *
@@ -232,7 +235,6 @@ static HINSTANCE hInstance;
 #define ACTION_WIDTH  48
 
 enum {
-  SvcCmdDebug,
   SvcCmdTray,
   SvcCmdNoTray,
   SvcCmdVersion,
@@ -247,7 +249,6 @@ enum {
 };
 
 static const char * const ServiceCommandNames[NumSvcCmds] = {
-  "Debug",
   "Tray",
   "NoTray",
   "Version",
@@ -505,31 +506,39 @@ int PServiceProcess::_main(void * arg)
 
   hInstance = (HINSTANCE)arg;
 
-  debugMode = FALSE;
   isWin95 = GetOSName() == "95";
+  debugMode = arguments.GetCount() > 0 && stricmp(arguments[0], "Debug") == 0;
+  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
 
-  BOOL processedCommand = FALSE;
-  for (PINDEX a = 0; a < arguments.GetCount(); a++) {
-    if (ProcessCommand(arguments[a]))
-      processedCommand = TRUE;
-  }
+  if (!debugMode && arguments.GetCount() > 0) {
+    if (stricmp(arguments[0], "NoWin") == 0)
+      arguments.Shift(1);
+    else {
+      if (!CreateControlWindow(TRUE))
+        return 1;
+    }
 
-  if (processedCommand) {
+    for (PINDEX a = 0; a < arguments.GetCount(); a++)
+      ProcessCommand(arguments[a]);
+
+    if (controlWindow == NULL)
+      return GetTerminationValue();
+
     if (debugWindow != NULL && debugWindow != (HWND)-1) {
       ::SetLastError(0);
       PError << "Close window or select another command from the Control menu.\n" << endl;
     }
+
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0) != 0) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     }
+
     return GetTerminationValue();
   }
 
-  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Warning;
-
-  if (!processedCommand && !debugMode && !isWin95) {
+  if (!debugMode && !isWin95) {
     static SERVICE_TABLE_ENTRY dispatchTable[] = {
       { "", PServiceProcess::StaticMainEntry },
       { NULL, NULL }
@@ -1449,7 +1458,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
   while (stricmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
     if (++cmdNum >= NumSvcCmds) {
       if (!CreateControlWindow(TRUE))
-        return TRUE;
+        return FALSE;
       if (*cmd != '\0')
         PError << "Unknown command \"" << cmd << "\".\n";
       else
@@ -1458,23 +1467,21 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
         PError << ServiceCommandNames[cmdNum] << " | ";
       PError << ServiceCommandNames[cmdNum] << " ]" << endl;
-      return TRUE;
+      return FALSE;
     }
   }
 
-  if (!CreateControlWindow(cmdNum != SvcCmdTray))
-    return TRUE;
-
   NT_ServiceManager nt;
   Win95_ServiceManager win95;
-  ServiceManager * svcManager =
-                    isWin95 ? (ServiceManager *)&win95 : (ServiceManager *)&nt;
+
+  ServiceManager * svcManager;
+  if (isWin95)
+    svcManager = &win95;
+  else
+    svcManager = &nt;
+
   BOOL good = FALSE;
   switch (cmdNum) {
-    case SvcCmdDebug : // Debug mode
-      debugMode = TRUE;
-      return FALSE;
-
     case SvcCmdTray :
     {
       PNotifyIconData nid(controlWindow, NIF_MESSAGE|NIF_ICON, GetName());
