@@ -27,6 +27,29 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.177.2.1  2005/02/04 05:19:10  csoutheren
+ * Backported patches from Atlas-devel
+ *
+ * Revision 1.183  2005/01/26 05:38:01  csoutheren
+ * Added ability to remove config file support
+ *
+ * Revision 1.182  2005/01/16 21:27:07  csoutheren
+ * Changed PIPSocket::IsAny to be const
+ *
+ * Revision 1.181  2005/01/16 20:35:41  csoutheren
+ * Fixed problem with IPv6 INADDR_ANY
+ *
+ * Revision 1.180  2005/01/15 19:23:39  csoutheren
+ * Fixed problem in operator *= for IP V6
+ *
+ * Revision 1.179  2004/12/14 14:24:20  csoutheren
+ * Added PIPSocket::Address::operator*= to compare IPV4 addresses
+ * to IPV4-compatible IPV6 addresses. More documentation needed
+ * once this is tested as working
+ *
+ * Revision 1.178  2004/12/14 06:20:29  csoutheren
+ * Added function to get address of network interface
+ *
  * Revision 1.177  2004/11/16 00:31:44  csoutheren
  * Added Cygwin support (needs to have gethostbyname_r fixed)
  *
@@ -649,7 +672,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
+static PIPSocket::Address any6(in6addr_any); 
 #endif
 
 
@@ -983,10 +1006,11 @@ void PIPCacheData::AddEntry(struct addrinfo * addr_info)
 #endif
 
 
-static PTimeInterval GetConfigTime(const char * key, DWORD dflt)
+static PTimeInterval GetConfigTime(const char * /*key*/, DWORD dflt)
 {
-  PConfig cfg("DNS Cache");
-  return cfg.GetInteger(key, dflt);
+  //PConfig cfg("DNS Cache");
+  //return cfg.GetInteger(key, dflt);
+  return dflt;
 }
 
 
@@ -2103,7 +2127,7 @@ const PIPSocket::Address & PIPSocket::Address::GetAny6()
 #endif
 
 
-BOOL PIPSocket::Address::IsAny()
+BOOL PIPSocket::Address::IsAny() const
 {
   return (!IsValid());
 }
@@ -2251,8 +2275,19 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
   return EqualTo;
 }
 
-
 #if P_HAS_IPV6
+bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
+{
+  if (version == addr.version)
+    return operator==(addr);
+
+  if (this->GetVersion() == 6 && this->IsV4Mapped()) 
+    return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
+  else if (addr.GetVersion() == 6 && addr.IsV4Mapped()) 
+    return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
+  return FALSE;
+}
+
 bool PIPSocket::Address::operator==(in6_addr & addr) const
 {
   PIPSocket::Address a(addr);
@@ -2509,6 +2544,19 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 }
 #endif
 
+BOOL PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
+{
+  PIPSocket::InterfaceTable interfaceTable;
+  if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+    PINDEX i;
+    for (i = 0; i < interfaceTable.GetSize(); ++i) {
+      PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
+      if (!localAddr.IsLoopback() && (!localAddr.IsRFC1918() || !addr.IsRFC1918()))
+        addr = localAddr;
+    }
+  }
+  return addr.IsValid();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
