@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.19  2002/12/10 03:51:17  robertj
+ * Fixed member variable display in structure
+ *
  * Revision 1.18  2002/12/09 04:06:44  robertj
  * Added macros for defining multi-argument functions
  *
@@ -889,7 +892,10 @@ void PXMLRPCStructBase::EndConstructor()
 
 void PXMLRPCStructBase::PrintOn(ostream & strm) const
 {
-  strm << variablesByOrder;
+  for (PINDEX i = 0; i < variablesByOrder.GetSize(); i++) {
+    PXMLRPCVariableBase & var = variablesByOrder[i];
+    strm << var.GetName() << '=' << var << '\n';
+  }
 }
 
 
