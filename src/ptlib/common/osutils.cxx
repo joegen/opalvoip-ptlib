@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.52 1996/03/02 03:24:48 robertj Exp $
+ * $Id: osutils.cxx,v 1.53 1996/03/03 07:39:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.53  1996/03/03 07:39:51  robertj
+ * Fixed bug in thread scheduler for correct termination of "current" thread.
+ *
  * Revision 1.52  1996/03/02 03:24:48  robertj
  * Changed timer thread to update timers periodically, this allows timers to be
  *    views dynamically by other threads.
@@ -1606,17 +1609,19 @@ void PThread::InitialiseProcessThread()
 }
 
 
-PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
+PThread::PThread(PINDEX stackSize,
+                 AutoDeleteFlag deletion,
+                 InitialSuspension start,
+                 Priority priorityLevel)
 {
+  autoDelete = deletion == AutoDeleteThread;
   basePriority = priorityLevel;   // Threads user settable priority level
   dynamicPriority = 0;            // Run immediately
 
-  suspendCount = startSuspended ? 1 : 0;
+  suspendCount = start == StartSuspended ? 1 : 0;
 
   AllocateStack(stackSize);
   PAssert(stackBase != NULL, "Insufficient near heap for thread");
-
-  stackTop = stackBase + stackSize;
 
   status = Terminated; // Set to this so Restart() works
   Restart();
@@ -1645,7 +1650,7 @@ void PThread::Terminate()
 
   BOOL doYield = status == Running;
   status = Terminating;
-  if (doYield);
+  if (doYield)
     Yield(); // Never returns from here
 }
 
@@ -1742,9 +1747,16 @@ void PThread::Yield()
 {
   // Determine the next thread to schedule
   PProcess * process = PProcess::Current();
-  PThread * current = process->currentThread;
+
+  // The following is static as the SwitchContext function invalidates all
+  // automatic variables in this function call.
+  static PThread * current = process->currentThread;
+
   if (current == process)
     process->GetTimerList()->Process();
+  else
+    PAssert(&process > stackBase, "Stack overflow!");
+
   if (current->status == Running) {
     if (current->basePriority != HighestPriority && current->link != current)
       current->status = Waiting;
@@ -1759,6 +1771,7 @@ void PThread::Yield()
 
   PThread * next = NULL; // Next thread to be scheduled
   PThread * prev = current; // Need the thread in the previous link
+  PThread * start = current;  // Need thread in list that is the "start"
   PThread * thread = current->link;
   BOOL pass = 0;
   BOOL canUseLowest = TRUE;
@@ -1804,9 +1817,9 @@ void PThread::Yield()
       case Terminating :
         prev->link = thread->link;   // Unlink it from the list
         thread->status = Terminated;
-        if (thread == current)
-          process->currentThread = current = prev;
-        if (thread->autoDelete)
+        if (thread == start)         // If unlinking the "start" thread
+          start = thread->prev;      //    then we better make it still in list
+        if (thread != current && thread->autoDelete)
           delete thread;
         break;
 
@@ -1820,7 +1833,7 @@ void PThread::Yield()
     // Need to have previous thread so can unlink a terminating thread
     prev = thread;
     thread = thread->link;
-    if (thread == current) {
+    if (thread == start) {
       pass++;
       if (pass > 3) // Everything is blocked
         process->OperatingSystemYield();
@@ -1830,7 +1843,11 @@ void PThread::Yield()
   process->currentThread = next;
   if (next->status != Starting)
     next->status = Running;
+
   next->SwitchContext(current);
+
+  if (current->status == Terminated && current->autoDelete)
+    delete current;
 }
 
 
