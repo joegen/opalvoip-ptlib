@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.30 1997/12/11 10:30:02 robertj Exp $
+ * $Id: collect.cxx,v 1.31 1998/01/06 12:00:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.31  1998/01/06 12:00:15  robertj
+ * Fixed "typesafe" templates/macros for dictionaries, especially on GNU.
+ *
  * Revision 1.30  1997/12/11 10:30:02  robertj
  * Added type correct Contains() function to dictionaries.
  *
@@ -1409,14 +1412,14 @@ PINDEX PAbstractDictionary::Append(PObject *)
 
 PINDEX PAbstractDictionary::Insert(const PObject & before, PObject * obj)
 {
-  SetAt(before, obj);
+  AbstractSetAt(before, obj);
   return 0;
 }
 
 
 PINDEX PAbstractDictionary::InsertAt(PINDEX index, PObject * obj)
 {
-  SetAt(AbstractGetKeyAt(index), obj);
+  AbstractSetAt(AbstractGetKeyAt(index), obj);
   return index;
 }
  
@@ -1431,7 +1434,7 @@ BOOL PAbstractDictionary::Remove(const PObject *)
 PObject * PAbstractDictionary::RemoveAt(PINDEX index)
 {
   PObject & obj = AbstractGetDataAt(index);
-  SetAt(AbstractGetKeyAt(index), NULL);
+  AbstractSetAt(AbstractGetKeyAt(index), NULL);
   return &obj;
 }
 
@@ -1462,11 +1465,11 @@ PObject * PAbstractDictionary::GetAt(PINDEX index) const
  
 BOOL PAbstractDictionary::SetDataAt(PINDEX index, PObject * val)
 {
-  return SetAt(AbstractGetKeyAt(index), val);
+  return AbstractSetAt(AbstractGetKeyAt(index), val);
 }
 
 
-BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
+BOOL PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
 {
   if (obj == NULL) {
     obj = hashTable->RemoveElement(key);
@@ -1492,7 +1495,7 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 }
 
 
-PObject * PAbstractDictionary::GetAt(const PObject & key) const
+PObject * PAbstractDictionary::AbstractGetAt(const PObject & key) const
 {
   Element * element = hashTable->GetElementAt(key);
   return element != NULL ? element->data : (PObject *)NULL;
