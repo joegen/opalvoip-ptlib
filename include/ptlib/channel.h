@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.35  2001/11/13 04:13:22  robertj
+ * Added ability to adjust size of ios buffer on PChannels.
+ *
  * Revision 1.34  2001/09/11 03:27:46  robertj
  * Improved error processing on high level protocol failures, usually
  *   caused by unexpected shut down of a socket.
@@ -178,10 +181,14 @@ class PChannelStreamBuffer : public streambuf {
     virtual streampos seekoff(streamoff, ios::seek_dir, int);
 #endif
 
+    BOOL SetBufferSize(
+      PINDEX newSize
+    );
+
   private:
     // Member variables
     PChannel * channel;
-    char buffer[1024];
+    PCharArray input, output;
 
   public:
     PChannelStreamBuffer(const PChannelStreamBuffer & sbuf);
@@ -533,6 +540,15 @@ class PChannel : public PObject, public iostream {
      */
     virtual BOOL Shutdown(
       ShutdownValue option
+    );
+
+    /**Set the iostream buffer size for reads and writes.
+
+       @return
+       TRUE if the new buffer size was set.
+      */
+    BOOL SetBufferSize(
+      PINDEX newSize    /// New buffer size
     );
 
     /** Send a command meta-string. A meta-string is a string of characters
