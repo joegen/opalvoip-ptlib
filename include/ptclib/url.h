@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.6 1996/03/31 08:53:13 robertj Exp $
+ * $Id: url.h,v 1.7 1996/06/10 09:55:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.7  1996/06/10 09:55:44  robertj
+ * Added global function for query parameters parsing.
+ *
  * Revision 1.6  1996/03/31 08:53:13  robertj
  * Added string representation for URI part only.
  *
@@ -120,6 +123,13 @@ PDECLARE_CLASS(PURL, PObject)
        <H2>Returns:</H2>
        String for the URL ready translation.
      */
+
+    static void SplitQueryVars(
+      const PString & queryStr,   // String to split into variables.
+      PStringToString & queryVars // Dictionary of variable names and values.
+    );
+    // Split a string in &= form to a dictionary of names and values.
+
 
     const PCaselessString & GetScheme() const   { return scheme; }
     const PString & GetUserName() const         { return username; }
