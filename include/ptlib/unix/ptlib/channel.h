@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.24  2004/04/27 04:37:50  rjongbloed
+ * Fixed ability to break of a PSocket::Select call under linux when a socket
+ *   is closed by another thread.
+ *
  * Revision 1.23  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -119,5 +123,7 @@
     PThread   * px_readThread;
     PThread   * px_writeThread;
     PMutex      px_writeMutex;
+    PThread   * px_selectThread;
+    PMutex      px_selectMutex;
 
 // End Of File ////////////////////////////////////////////////////////////////
