@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.17  1999/10/24 01:32:11  craigs
+ * Removed definition of BREAK_SIGNAL and moved to src file
+ *
  * Revision 1.16  1999/09/03 02:26:25  robertj
  * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
  *
@@ -99,7 +102,6 @@
     PString channelName;
 
 #ifdef P_PTHREADS
-#define P_IO_BREAK_SIGNAL SIGPROF
   protected:
     PMutex    PX_readMutex;
     pthread_t PX_readThreadId;
