@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.67.4.1  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
  * Revision 1.67  2003/09/17 09:02:14  csoutheren
  * Removed memory leak detection code
  *
@@ -252,7 +255,11 @@
 #include <ptlib/NucleusDebstrm.h>
 #else
 #if defined(__GNUC__) && __GNUC__ > 2
-#include <strstream>
+#  if (__GNUC__ >= 3)
+#    include <sstream>
+#  else
+#    include <strstream>
+#  endif
 #else
 #include <strstream.h>
 #endif
@@ -312,7 +319,13 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 #endif
 
 #ifndef _WIN32_WCE
+
+  #if (__GNUC__ >= 3)
+  ostringstream str;
+  #else
   ostrstream str;
+  #endif
+
   str << "Assertion fail: ";
   if (msg != NULL)
     str << msg << ", ";
@@ -323,7 +336,12 @@ void PAssertFunc(const char * file, int line, const char * className, const char
     str << ", Error=" << err;
   str << ends;
 
-  PAssertFunc(str.str());
+  #if (__GNUC__ >= 3)
+  const char * s = str.str().c_str();
+  #else
+  const char * s = str.str();
+  #endif
+  PAssertFunc(s);
 #endif // !_WIN32_WCE
 }
 

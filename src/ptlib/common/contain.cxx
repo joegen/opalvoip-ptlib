@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.146.2.1  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
+ * Revision 1.157  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.146  2004/03/20 04:20:34  rjongbloed
  * Fixed some VxWorks port issues especially underrrun memory access in
  *   the PString::FindLast function,, thanks Eize Slange
@@ -577,7 +584,7 @@ PContainer::PContainer(PINDEX initialSize)
 
 PContainer::PContainer(int, const PContainer * cont)
 {
-  PAssertNULL(cont);
+  PAssert(cont != NULL, PInvalidParameter);
   PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
 
   reference = new Reference(0);
@@ -2629,7 +2636,9 @@ PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseles
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
     if (caseless)
@@ -2689,7 +2698,9 @@ PSortedStringList::PSortedStringList(PINDEX count,
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
     if (caseless)
@@ -2782,7 +2793,9 @@ PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     if (caseless)
       Include(PCaselessString(strarr[i]));

@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.47.4.1  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
+ * Revision 1.49  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.47  2003/03/24 04:31:03  robertj
  * Added function to set and get strings from PConfig in correct format for
  *   use with HTTP form array contsructs.
@@ -1961,7 +1968,9 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 
 PHTTPField * PHTTPForm::Add(PHTTPField * fld)
 {
-  PAssertNULL(fld);
+  if (PAssertNULL(fld) == NULL)
+    return NULL;
+
   PAssert(!fieldNames[fld->GetName()], "Field already on form!");
   fieldNames += fld->GetName();
   fields.Append(fld);
