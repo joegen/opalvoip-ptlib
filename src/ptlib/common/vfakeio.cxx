@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.28  2004/03/16 10:10:47  csoutheren
+ * Proper fix that does not generate warnings
+ *
  * Revision 1.27  2004/03/16 08:27:14  csoutheren
  * Removed illegal characters
  *
@@ -433,7 +436,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "******",
              "      ",
              "      " }},
-    { '\230', { "      ",
+    { (char)230, { "      ",
 	     "      ",
 	     "      ",
 	     " ** * ",
@@ -444,7 +447,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " ** * ",
              "      ",
              "      " }},
-    { '\248', { "      ",
+    { (char)248, { "      ",
 	     "      ",
 	     "     *",
 	     " **** ",
@@ -455,7 +458,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " **** ",
              "*     ",
              "      " }},
-    { '229', { "  **  ",
+    { (char)229, { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     " **** ",
@@ -752,7 +755,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*****",
              "     ",
              "     " }},
-    { '\198', { " ** ***",
+    { (char)198, { " ** ***",
 	     "*  *   ",
 	     "*  *   ",
 	     "*  *   ",
@@ -763,7 +766,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     "*  ****",
              "       ",
              "       " }},
-    { '\216', { " *** ",
+    { (char)216, { " *** ",
 	     "*  **",
 	     "* * *",
 	     "* * *",
@@ -774,7 +777,7 @@ static OneVFakeLetterData vFakeLetterData[] = {
 	     " *** ",
              "*    ",
              "     " }},
-    { '197', { "  **  ",
+    { (char)197, { "  **  ",
 	     " *  * ",
 	     "  **  ",
 	     "  **  ",
