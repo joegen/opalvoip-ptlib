@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.8 1995/08/24 12:38:36 robertj Exp $
+ * $Id: thread.h,v 1.9 1995/12/10 11:48:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.9  1995/12/10 11:48:54  robertj
+ * Fixed bug in application shutdown of child threads.
+ *
  * Revision 1.8  1995/08/24 12:38:36  robertj
  * Added extra conditional compile for WIN32 code.
  *
@@ -73,9 +76,6 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
   private:
     PINDEX originalStackSize;
-
-    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    static ThreadDict threads;
 
     static DWORD EXPORTED MainFunction(LPVOID thread);
 #else
