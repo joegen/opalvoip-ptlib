@@ -151,8 +151,8 @@ are the basics:
 		C:\PWLib\Lib
 		
     The Lib folder is created as parts of PWLib are built. Also add this
-    directory to your PATH environment variable (so PWRC, MergeSym and 
-    ASNParser tools can be found).
+    directory to your PATH environment variable (so the MergeSym tool can 
+    be found).
 
 2.  The build should automatically create a file pwlib/include/ptbuildopts.h
     via the configure.exe program that should be in the pwlib directory. If
@@ -170,17 +170,7 @@ are the basics:
 	
     In VisualStudio v7 open the pwlib.sln file in the pwlib top directory.
 
-4.  In VisualStudio v5/6 use the Batch Build command and build the "ASNParser
-    Win32 Release", "pwtest Win32 Release" and "pwtest Win32 Debug" targets.
-    Make sure all other targets are not checked.
-    
-    In VisualStudio v7 use the Batch Build command. It seems as though the
-    batch build does not build dependent parts unless they're checked in the
-    Build column. For a test build, be sure all Projects are checked except
-    ASNParser-debug, MergeSym-debug, PacketVXD-release, PWRC-debug, and both
-    XMLRPC.
-
-5.  That's it, now you're on your own!
+4.  That's it, now you're on your own!
 
 
 
@@ -189,15 +179,9 @@ These are the project relationships:
 project             dependencies                             output
 -------             ------------                             ------
 Console             (none)                                   ptlibs.lib
-GUI                 (none)                                   pwlibs.lib
 MergeSym            ptlibs.lib                               mergesym.exe
 PTLib               ptlibs.lib, mergesym.exe                 ptlib.dll & lib
-PWLib               pwlibs.lib, mergesysm.exe, ptlib.lib     pwlib.dll & lib
 Console Components  (none)                                   ptclib.lib
-GUI Components      (none)                                   pwclib.lib
-ASN Parser          ptlib.lib                                asnparser.exe
-PWRC                ptlib.lib (flex.exe)                     pwrc.exe
-PWTest              ptlib,pwlib,ptclib,pwclib.lib,pwrc.exe   pwtest.exe
 MSDevWizard         (none)                                   PWLibWizard.awx
 XMLRPC              ptlibs.lib, ptclib.lib                   xmlrpc.exe
 PacketVXD           (none)                                   epacket.vxd
@@ -861,14 +845,8 @@ modules (openh323 and pwlib ) and load their respective .vcp files.
 To build POCKETBONE you first need to build the two libraries,
 pwlib and openh323. You should build these two libraries using
 MS Visual C++, they will need to be built with eVC for the embedded
-solution. It would be a good idea to build the libraries first
-since it contains 'asnparser.exe' which is NOT built within eVC.
-Then the latest version of asnparser.exe is used to build the 
-.asn files by eVC. The location of asnparser.exe will need to 
-defined in the 'Executable directory' as shown below in order 
-for eVC to find it. Asnparser.exe is usually in 
-'pwlib/tools/asnparser/release'. Both PWLIB and OPENH323 directories
-contain a .VCP file included within the POCKETBONE sources.
+solution. Both PWLIB and OPENH323 directories contain a .VCP file 
+included within the POCKETBONE sources.
 
 Before you can build POCKETBONE however, you will need to configure
 your eVC so it knows where to find the required include, library 
@@ -922,7 +900,7 @@ provided above.
 
 Tools->Options->Directories, option Executeable AND Library .
 ------------------------------------------------------------
-< Your source dir for location of asnparser.exe and ptlib.dll >    
+< Your source dir for location of ptlib.dll >    
 < Your source dir for location of Gapi files ( gx.dll )  > \ lib 
 < Your source dir >   PWLIB \ Lib (even if does not exist ) 
 < Your source dir >   OPENH323 \ Lib ( even if doesn't exist ) 
