@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.118  2003/11/12 03:29:51  csoutheren
+# Initial version of plugin code from Snark of GnomeMeeting with changes
+#    by Craig Southeren of Post Increment
+#
 # Revision 1.117  2003/10/27 04:06:13  csoutheren
 # Added code to allow compilation of new QoS code on Unix
 #
@@ -402,6 +406,7 @@ VERSION_FILE = $(PWLIBDIR)/version.h
 COMPONENT_SRC_DIR	= ../../ptclib
 COMMON_SRC_DIR		= ../common
 VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
+PLUGIN_DIR		= ../../../plugins
 
 
 #####CFLAGS += -DPTRACING=1
@@ -459,7 +464,7 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
 		$(VIDEO_CAPTURE_SOURCE) \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
 
-
+#ifndef	P_HAS_PLUGINS
 #Set SOUND_SOURCE to dummyaudio, a file which links but does not
 #actually play or record audio.
 #This will then be overridden by platform specific audio files.
@@ -467,7 +472,8 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
 SOUND_SOURCE = dummyaudio.cxx
 
 ifeq ($(OSTYPE),linux)
-SOUND_SOURCE = oss.cxx
+VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
+SOUND_SOURCE	= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
 endif
 
 ifeq ($(OSTYPE),solaris)
@@ -584,10 +590,12 @@ SOURCES	= \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
 	$(VIDEO_SOURCE) \
-	$(SOUND_SOURCE) \
 	$(GETDATE_SOURCE) \
 	$(PXML_SOURCE) \
+        $(SOUND_SOURCE) \
 	uicmp.cxx \
+	$(COMMON_SRC_DIR)/sound.cxx \
+	$(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/pvidchan.cxx \
