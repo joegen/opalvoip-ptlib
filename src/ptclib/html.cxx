@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.cxx,v $
+ * Revision 1.20  2004/04/03 06:54:24  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.19  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -134,7 +137,8 @@ PHTML::PHTML(const char * cstr)
   memset(elementSet, 0, sizeof(elementSet));
   tableNestLevel = 0;
   initialElement = NumElementsInSet;
-  *this << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
+  ostream & this_stream = *this;
+  this_stream << Title(cstr) << Body() << Heading(1) << cstr << Heading(1);
 }
 
 
@@ -143,7 +147,8 @@ PHTML::PHTML(const PString & str)
   memset(elementSet, 0, sizeof(elementSet));
   tableNestLevel = 0;
   initialElement = NumElementsInSet;
-  *this << Title(str) << Body() << Heading(1) << str << Heading(1);
+  ostream & this_stream = *this;
+  this_stream << Title(str) << Body() << Heading(1) << str << Heading(1);
 }
 
 

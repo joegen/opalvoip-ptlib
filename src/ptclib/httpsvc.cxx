@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.94  2004/04/03 06:54:24  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.93  2004/03/23 04:41:05  csoutheren
  * Fixed compile problem on Linux
  *
@@ -1202,15 +1205,16 @@ PServiceHTML::PServiceHTML(const char * title, const char * help, const char * h
 {
   PHTTPServiceProcess::Current().GetPageHeader(*this, title);
 
-  *this << PHTML::Heading(1) << title;
+  ostream & this_stream = *this;
+  this_stream << PHTML::Heading(1) << title;
   
   if (help != NULL)
-    *this << "&nbsp;"
-          << PHTML::HotLink(help)
-          << PHTML::Image(helpGif, "Help", 48, 23, "align=absmiddle")
-          << PHTML::HotLink();
+    this_stream << "&nbsp;"
+                << PHTML::HotLink(help)
+                << PHTML::Image(helpGif, "Help", 48, 23, "align=absmiddle")
+                << PHTML::HotLink();
 
-  *this << PHTML::Heading(1) << PHTML::Paragraph();
+  this_stream << PHTML::Heading(1) << PHTML::Paragraph();
 }
 
 
