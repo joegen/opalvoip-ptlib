@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.31 1997/12/11 10:29:49 robertj Exp $
+ * $Id: pstring.h,v 1.32 1997/12/11 13:32:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.32  1997/12/11 13:32:47  robertj
+ * Added AsUnsigned() function to convert string to DWORD.
+ *
  * Revision 1.31  1997/12/11 10:29:49  robertj
  * Added type correct Contains() function to dictionaries.
  *
@@ -1170,6 +1173,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     long AsInteger(
       unsigned base = 10    // Number base to convert the string in.
     ) const;
+    DWORD AsUnsigned(
+      unsigned base = 10    // Number base to convert the string in.
+    ) const;
     /* Convert the string to an integer value using the specified number base.
        All characters up to the first illegal character for the number base are
        converted. Case is not significant for bases greater than 10.
@@ -1178,7 +1184,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        if it is not in this range.
 
        This function uses the standard C library <CODE>strtol()</CODE>
-       function.
+       or <CODE>strtoul()</CODE> function.
 
        <H2>Returns:</H2>
        integer value for the string.
