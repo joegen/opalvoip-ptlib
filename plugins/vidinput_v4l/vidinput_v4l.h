@@ -1,4 +1,3 @@
-#pragma interface
 
 #include <sys/mman.h>
 #include <sys/time.h>
@@ -7,23 +6,8 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vfakeio.h>
 #include <ptlib/vconvert.h>
-#if !P_USE_INLINES
-#include <ptlib/contain.inl>
-#endif
 
-// FIXME! For some reason I had to copy-paste it from linux/videodev.h...
-struct video_capability
-{
-        char name[32];
-        int type;
-        int channels;   /* Num channels */
-        int audios;     /* Num audio devices */
-        int maxwidth;   /* Supported width */
-        int maxheight;  /* And height */
-        int minwidth;   /* Supported width */
-        int minheight;  /* And height */
-};
-
+#include <linux/videodev.h>
 
 class PVideoInputV4lDevice: public PVideoInputDevice
 {
@@ -34,23 +18,28 @@ public:
 
   static PStringList GetInputDeviceNames();
 
-  BOOL Close();
-
   BOOL Open(const PString &deviceName, BOOL startImmediate);
 
   BOOL IsOpen();
-  BOOL IsCapturing();
+
+  BOOL Close();
 
   BOOL Start();
   BOOL Stop();
 
+  BOOL IsCapturing();
+
   PINDEX GetMaxFrameBytes();
 
+  BOOL GetFrame(PBYTEArray & frame);
   BOOL GetFrameData(BYTE*, PINDEX*);
   BOOL GetFrameDataNoDelay(BYTE*, PINDEX*);
 
   BOOL GetFrameSizeLimits(unsigned int&, unsigned int&,
 			  unsigned int&, unsigned int&);
+
+  BOOL TestAllFormats();
+
   BOOL SetFrameSize(unsigned int, unsigned int);
   BOOL SetFrameRate(unsigned int);
   BOOL VerifyHardwareFrameSize(unsigned int, unsigned int);
@@ -76,7 +65,6 @@ public:
   BOOL SetChannel(int);
 
   BOOL NormalReadProcess(BYTE*, PINDEX*);
-  BOOL TestAllFormats();
 
   void ClearMapping();
 
