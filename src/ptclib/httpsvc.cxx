@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.28 1998/01/26 02:49:19 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.29 1998/02/03 06:22:45 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.29  1998/02/03 06:22:45  robertj
+ * Allowed PHTTPServiceString to be overridden by html file after ';'.
+ *
  * Revision 1.28  1998/01/26 02:49:19  robertj
  * GNU support.
  *
@@ -400,6 +403,7 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                               baseURL.AsString(PURL::PathOnly).Mid(1),
                               PServiceHTML::LoadFromFile);
 
+  PSYSTEMLOG(Debug3, "Post to " << request.url << '\n' << data);
   BOOL retval = PHTTPConfig::Post(request, data, reply);
 
   OnLoadedText(request, reply);
@@ -412,9 +416,8 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
 
 BOOL PConfigPage::GetExpirationDate(PTime & when)
 {
-  // As early as possible, but because of time zones & daylight time make it the
-  // second day...
-  when = PTime(90000);
+  // Well and truly before now....
+  when = PTime(0, 0, 0, 1, 1, 1980);
   return TRUE;
 }
 
@@ -470,9 +473,8 @@ BOOL PConfigSectionsPage::Post(PHTTPRequest & request,
 
 BOOL PConfigSectionsPage::GetExpirationDate(PTime & when)
 {
-  // As early as possible, but because of time zones & daylight time make it the
-  // second day...
-  when = PTime(90000);
+  // Well and truly before now....
+  when = PTime(0, 0, 0, 1, 1, 1980);
   return TRUE;
 }
 
@@ -945,15 +947,30 @@ CREATE_MACRO(Time,EMPTY,args)
 }
 
 
-CREATE_MACRO(LocalHost,EMPTY,EMPTY)
+CREATE_MACRO(LocalHost,request,EMPTY)
 {
-  return PIPSocket::GetHostName();
+  if (request.localAddr != 0)
+    return PIPSocket::GetHostName(request.localAddr);
+  else
+    return PIPSocket::GetHostName();
+}
+
+
+CREATE_MACRO(LocalPort,request,EMPTY)
+{
+  if (request.localPort != 0)
+    return psprintf("%u", request.localPort);
+  else
+    return "80";
 }
 
 
 CREATE_MACRO(PeerHost,request,EMPTY)
 {
-  return PIPSocket::GetHostName(request.origin);
+  if (request.origin != 0)
+    return PIPSocket::GetHostName(request.origin);
+  else
+    return "N/A";
 }
 
 
@@ -1085,22 +1102,24 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
   PINDEX alreadyLoadedPrefixLength = 0;
 
   PString filename = defaultFile;
-  if ((options&LoadFromFile) != 0 && !filename) {
+  if ((options&LoadFromFile) != 0) {
     if ((options&NoURLOverride) == 0) {
       filename = request.url.GetParameters();
       if (filename.IsEmpty())
         filename = defaultFile;
     }
 
-    PString alreadyLoaded = "<!--#loadedfrom " + filename + "-->\r\n";
-    alreadyLoadedPrefixLength = alreadyLoaded.GetLength();
+    if (!filename) {
+      PString alreadyLoaded = "<!--#loadedfrom " + filename + "-->\r\n";
+      alreadyLoadedPrefixLength = alreadyLoaded.GetLength();
 
-    if (text.Find(alreadyLoaded) != 0) {
-      PFile file;
-      if (file.Open(filename, PFile::ReadOnly)) {
-        text = alreadyLoaded + file.ReadString(file.GetLength());
-        if ((options&NoSignatureForFile) == 0)
-          options |= NeedSignature;
+      if (text.Find(alreadyLoaded) != 0) {
+        PFile file;
+        if (file.Open(filename, PFile::ReadOnly)) {
+          text = alreadyLoaded + file.ReadString(file.GetLength());
+          if ((options&NoSignatureForFile) == 0)
+            options |= NeedSignature;
+        }
       }
     }
   }
@@ -1177,7 +1196,7 @@ PString PServiceHTTPString::LoadText(PHTTPRequest & request)
 {
   PString text = PHTTPString::LoadText(request);
   ServiceOnLoadedText(text);
-  PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
+  PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::LoadFromFile);
 
   return text;
 }
