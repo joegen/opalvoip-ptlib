@@ -3524,6 +3524,7 @@ EXPORTS
     ?Exists@PFile@@QBEHXZ @5492 NONAME
     ?Exists@PFile@@SAHABVPFilePath@@@Z @5209 NONAME
     ?ExitSafetyMode@PSafePtrBase@@IAEXW4ExitSafetyModeOption@1@@Z @1302 NONAME
+    ?factoryLoader@?$PFactory@VPProcessStartup@@VPString@@@@2HA @6738 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @5210 NONAME
     ?FillRect@PVideoInputDevice_FakeVideo@@QAEXPAEIIHHHHHHH@Z @2861 NONAME
     ?Filtered@PDirectory@@IAEHXZ @1304 NONAME
