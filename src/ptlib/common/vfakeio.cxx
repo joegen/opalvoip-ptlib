@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.7  2001/03/12 03:54:11  dereks
+ * Make setting frame rate consistent with that for real video device.
+ *
  * Revision 1.6  2001/03/09 00:12:40  robertj
  * Fixed incorrect number of channels returned on fake video.
  *
@@ -144,7 +147,7 @@ BOOL PFakeVideoInputDevice::SetFrameRate(unsigned rate)
   if (rate==0)
     return FALSE;
   
-  msBetweenFrames= (1000 * 100)/ rate;
+  msBetweenFrames= 1000 / rate;
 
   return TRUE;
 }
