@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.97  2004/02/24 11:14:44  rjongbloed
+ * Fixed correct initialisation of some internal variables in URL if parse fails.
+ *
  * Revision 1.96  2004/01/17 17:44:17  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -599,38 +602,35 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 
 void PURL::Parse(const char * cstr, const char * defaultScheme)
 {
-  hostname = PCaselessString();
+  urlString = cstr;
 
-  pathStr.MakeEmpty();
+  scheme.MakeEmpty();
   username.MakeEmpty();
   password.MakeEmpty();
-  fragment.MakeEmpty();
-
-  path.SetSize(0);
-  queryVars.RemoveAll();
+  hostname.MakeEmpty();
   port = 0;
   relativePath = FALSE;
+  pathStr.MakeEmpty();
+  path.SetSize(0);
+  paramVars.RemoveAll();
+  fragment.MakeEmpty();
+  queryVars.RemoveAll();
 
   // copy the string so we can take bits off it
   while (isspace(*cstr))
     cstr++;
   PString url = cstr;
 
-  PINDEX pos;
+  // Character set as per RFC2396
+  PINDEX pos = 0;
+  while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
+    pos++;
 
   // get information which tells us how to parse URL for this
   // particular scheme
   const schemeStruct * schemeInfo = NULL;
-    
-  // determine if the URL has a scheme
-  scheme.MakeEmpty();
 
-  // Character set as per RFC2396
-  pos = 0;
-  while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
-    pos++;
-
-  // Have explicit scheme
+  // Determine if the URL has an explicit scheme
   if (url[pos] == ':') {
     schemeInfo = GetSchemeInfo(url.Left(pos));
     if (schemeInfo == NULL && defaultScheme == NULL)
