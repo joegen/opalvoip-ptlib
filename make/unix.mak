@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.157  2003/02/19 10:22:22  rogerh
+# Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
+#
 # Revision 1.156  2003/02/18 03:55:59  dereks
 # Add 1394AVC pathces from  Georgi Georgiev. Thanks!
 #
@@ -1493,7 +1496,7 @@ endif
 
 # define ESDDIR variables if installed
 ifdef  ESDDIR
-STDCCFLAGS	+= -I$(ESDDIR)/include
+STDCCFLAGS	+= -I$(ESDDIR)/include -DUSE_ESD=1
 ENDLDLIBS	+= $(ESDDIR)/lib/libesd.a  # to avoid name conflicts
 HAS_ESD		= 1
 endif
