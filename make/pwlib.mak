@@ -27,6 +27,15 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: pwlib.mak,v $
+# Revision 1.4  1998/12/02 02:39:53  robertj
+# New directory structure.
+#
+# Revision 1.2  1998/11/26 07:29:23  craigs
+# *** empty log message ***
+#
+# Revision 1.1  1998/11/22 10:42:29  craigs
+# Initial revision
+#
 # Revision 1.3  1998/10/16 13:45:17  robertj
 # Fixed included make file name
 #
@@ -34,6 +43,12 @@
 # Added open software license.
 #
 
-include ~/pwlib/unix/src/unix.mak
-include ~/pwlib/xlib/src/xlib_unix.mak
-include ~/pwlib/unix/src/common.mak
+ifndef PWLIBDIR
+PWLIBDIR=$(HOME)/pwlib
+endif
+
+include $(PWLIBDIR)/make/unix.mak
+include $(PWLIBDIR)/make/gui.mak
+include $(PWLIBDIR)/make/common.mak
+
+# End of pwlib.mak
