@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.4 1994/08/23 11:32:52 robertj Exp $
+ * $Id: sockets.h,v 1.5 1995/06/04 12:36:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.5  1995/06/04 12:36:55  robertj
+ * Added application layer protocol sockets.
+ *
  * Revision 1.4  1994/08/23 11:32:52  robertj
  * Oops
  *
@@ -67,6 +70,12 @@
 // PTelnetSocket
 
 #include <telnet.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PApplicationSocket
+
+#include <appsock.h>
 
 
 #endif // _SOCKETS_H
