@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.21 1996/03/31 08:52:36 robertj Exp $
+ * $Id: socket.h,v 1.22 1996/05/15 10:11:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.22  1996/05/15 10:11:38  robertj
+ * Added timeout to accept function.
+ *
  * Revision 1.21  1996/03/31 08:52:36  robertj
  * Added socket shutdown function.
  *
@@ -144,10 +147,15 @@ PDECLARE_CLASS(PSocket, PChannel)
        created to establish a link.
 
        The port that the socket uses is the one used in the <A>Listen()</A>
-       command of the <CODE>socket</CODE> parameter.
+       command of the <CODE>socket</CODE> parameter. Note an error occurs if
+       the <CODE>socket</CODE> parameter has not had the <A>Listen()</A>
+       function called on it.
 
        Note that this function will block until a remote system connects to the
-       port number specified in the "listening" socket.
+       port number specified in the "listening" socket. The time that the
+       function will block is determined by the read timeout of the
+       <CODE>socket</CODE> parameter. This will normally be
+       <CODE>PMaxTimeInterval</CODE> which indicates an infinite time.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
@@ -304,7 +312,8 @@ PDECLARE_CLASS(PSocket, PChannel)
     int os_accept(
       int sock,
       struct sockaddr * addr,
-      int * size
+      int * size,
+      const PTimeInterval & timeout
     );
     static int os_select(
       int maxfds,
