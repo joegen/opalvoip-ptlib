@@ -847,6 +847,7 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+disable plugin support]
   --disable-audio        disable audio support
   --enable-alsa           enable ALSA audio support
   --enable-oss            enable OSS audio support
@@ -1816,6 +1817,20 @@ fi
 LIBDIR="${libdir}"
 
 
+# Check whether --enable-plugins or --disable-plugins was given.
+if test "${enable_plugins+set}" = set; then
+  enableval="$enable_plugins"
+
+fi;
+if test "${enable_plugins}z" = "z" ; then
+  enable_plugins=yes
+fi
+if test "$enable_plugins" = "no" ; then
+  { echo "$as_me:$LINENO: Plugins disabled" >&5
+echo "$as_me: Plugins disabled" >&6;}
+else
+
+
 # Check whether --enable-audio or --disable-audio was given.
 if test "${enable_audio+set}" = set; then
   enableval="$enable_audio"
@@ -1836,7 +1851,7 @@ else
   enable_alsa=yes
 fi;
 
-if test "${enable_alsa}z" != "yesz" ; then
+if test "${enable_alsa}z" = "yesz" ; then
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4805,6 +4820,8 @@ echo "${ECHO_T}no" >&6
 fi
 
 fi
+
+fi # enable_plugins
 
 
           ac_config_files="$ac_config_files Makefile"
