@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.105  2004/06/01 05:22:43  csoutheren
+ * Restored memory check functionality
+ *
  * Revision 1.104  2004/05/12 04:36:17  csoutheren
  * Fixed problems with using sem_wait and friends on systems that do not
  * support atomic integers
@@ -372,6 +375,10 @@
 #include "msos/ptlib/contain.h"
 #else
 #include "unix/ptlib/contain.h"
+#endif
+
+#ifdef _DEBUG
+#define PMEMORY_CHECK   1
 #endif
 
 #if defined(P_VXWORKS)
@@ -781,11 +788,384 @@ trace level is sufficient.
 
 #endif
 
-// the following macros exist purely for backwards compatibility
+#if PMEMORY_CHECK
+
+/** Memory heap checking class.
+This class implements the memory heap checking and validation functions. It
+maintains lists of allocated block so that memory leaks can be detected. It
+also initialises memory on allocation and deallocation to help catch errors
+involving the use of dangling pointers.
+*/
+class PMemoryHeap {
+  protected:
+    /// Initialise the memory checking subsystem.
+    PMemoryHeap();
+
+  public:
+    // Clear up the memory checking subsystem, dumping memory leaks.
+    ~PMemoryHeap();
+
+    /** Allocate a memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+       @return pointer to newly allocated memory block.
+     */
+    static void * Allocate(
+      size_t nSize,           /// Number of bytes to allocate.
+      const char * file,      /// Source file name for allocating function.
+      int line,               /// Source file line for allocating function.
+      const char * className  /// Class name for allocating function.
+    );
+    /** Allocate a memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+       @return pointer to newly allocated memory block.
+     */
+    static void * Allocate(
+      size_t count,       /// Number of items to allocate.
+      size_t iSize,       /// Size in bytes of each item.
+      const char * file,  /// Source file name for allocating function.
+      int line            /// Source file line for allocating function.
+    );
+
+    /** Change the size of an allocated memory block.
+       This allocates a new memory block and keeps track of it. The memory
+       block is filled with the value in the #allocFillChar# member variable
+       to help detect uninitialised structures.
+      @return pointer to reallocated memory block. Note this may
+      {\em not} be the same as the pointer passed into the function.
+     */
+    static void * Reallocate(
+      void * ptr,         /// Pointer to memory block to reallocate.
+      size_t nSize,       /// New number of bytes to allocate.
+      const char * file,  /// Source file name for allocating function.
+      int line            /// Source file line for allocating function.
+    );
+
+    /** Free a memory block.
+      The memory is deallocated, a warning is displayed if it was never
+      allocated. The block of memory is filled with the value in the
+      #freeFillChar# member variable.
+     */
+    static void Deallocate(
+      void * ptr,             /// Pointer to memory block to deallocate.
+      const char * className  /// Class name for deallocating function.
+    );
+
+    /** Validation result.
+     */
+    enum Validation {
+      Ok, Bad, Trashed
+    };
+    /** Validate the memory pointer.
+        The #ptr# parameter is validated as a currently allocated heap
+        variable.
+        @return Ok for pointer is in heap, Bad for pointer is not in the heap
+        or Trashed if the pointer is in the heap but has overwritten the guard
+        bytes before or after the actual data part of the memory block.
+     */
+    static Validation Validate(
+      void * ptr,             /// Pointer to memory block to check
+      const char * className, /// Class name it should be.
+      ostream * error         /// Stream to receive error message (may be NULL)
+    );
+
+    /** Validate all objects in memory.
+       This effectively calls Validate() on every object in the heap.
+        @return TRUE if every object in heap is Ok.
+     */
+    static BOOL ValidateHeap(
+      ostream * error = NULL  // Stream to output, use default if NULL
+    );
+
+    /** Ignore/Monitor allocations.
+       Set internal flag so that allocations are not included in the memory
+       leak check on program termination.
+       Returns the previous state.
+     */
+    static BOOL SetIgnoreAllocations(
+      BOOL ignore  /// New flag for allocation ignoring.
+    );
+
+    /** Get memory check system statistics.
+        Dump statistics output to the default stream.
+     */
+    static void DumpStatistics();
+    /** Get memory check system statistics.
+        Dump statistics output to the specified stream.
+     */
+    static void DumpStatistics(ostream & strm /** Stream to output to */);
+
+    /* Get number of allocation.
+      Each allocation is counted and if desired the next allocation request
+      number may be obtained via this function.
+      @return Allocation request number.
+     */
+    static DWORD GetAllocationRequest();
+
+    /** Dump allocated objects.
+       Dump ojects allocated and not deallocated since the specified object
+       number. This would be a value returned by the #GetAllocationRequest()#
+       function.
+
+       Output is to the default stream.
+     */
+    static void DumpObjectsSince(
+      DWORD objectNumber    /// Memory object to begin dump from.
+    );
+
+    /** Dump allocated objects.
+       Dump ojects allocated and not deallocated since the specified object
+       number. This would be a value returned by the #GetAllocationRequest()#
+       function.
+     */
+    static void DumpObjectsSince(
+      DWORD objectNumber,   /// Memory object to begin dump from.
+      ostream & strm        /// Stream to output dump
+    );
+
+    /** Set break point allocation number.
+      Set the allocation request number to cause an assert. This allows a
+      developer to cause a halt in a debugger on a certain allocation allowing
+      them to determine memory leaks allocation point.
+     */
+    static void SetAllocationBreakpoint(
+      DWORD point   /// Allocation number to stop at.
+    );
+
+  protected:
+    void * InternalAllocate(
+      size_t nSize,           // Number of bytes to allocate.
+      const char * file,      // Source file name for allocating function.
+      int line,               // Source file line for allocating function.
+      const char * className  // Class name for allocating function.
+    );
+    Validation InternalValidate(
+      void * ptr,             // Pointer to memory block to check
+      const char * className, // Class name it should be.
+      ostream * error         // Stream to receive error message (may be NULL)
+    );
+    void InternalDumpStatistics(ostream & strm);
+    void InternalDumpObjectsSince(DWORD objectNumber, ostream & strm);
+
+    class Wrapper {
+      public:
+        Wrapper();
+        ~Wrapper();
+        PMemoryHeap * operator->() const { return instance; }
+      private:
+        PMemoryHeap * instance;
+    };
+    friend class Wrapper;
+
+    enum Flags {
+      NoLeakPrint = 1
+    };
+
+#pragma pack(1)
+    struct Header {
+      enum {
+        // Assure that the Header struct is aligned to 8 byte boundary
+        NumGuardBytes = 16 - (sizeof(Header *) +
+                              sizeof(Header *) +
+                              sizeof(const char *) +
+                              sizeof(const char *) +
+                              sizeof(size_t) +
+                              sizeof(DWORD) +
+                              sizeof(WORD) +
+                              sizeof(BYTE))%8
+      };
+
+      Header     * prev;
+      Header     * next;
+      const char * className;
+      const char * fileName;
+      size_t       size;
+      DWORD        request;
+      WORD         line;
+      BYTE         flags;
+      char         guard[NumGuardBytes];
+
+      static char GuardBytes[NumGuardBytes];
+    };
+#pragma pack()
+
+    BOOL isDestroyed;
+
+    Header * listHead;
+    Header * listTail;
+
+    static DWORD allocationBreakpoint;
+    DWORD allocationRequest;
+    DWORD firstRealObject;
+    BYTE  flags;
+
+    char  allocFillChar;
+    char  freeFillChar;
+
+    DWORD currentMemoryUsage;
+    DWORD peakMemoryUsage;
+    DWORD currentObjects;
+    DWORD peakObjects;
+    DWORD totalObjects;
+
+    ostream * leakDumpStream;
+
+#if defined(_WIN32)
+    CRITICAL_SECTION mutex;
+#elif defined(P_PTHREADS)
+    pthread_mutex_t mutex;
+#endif
+};
+
+
+/** Allocate memory for the run time library.
+This version of free is used for data that is not to be allocated using the
+memory check system, ie will be free'ed inside the C run time library.
+*/
+inline void * runtime_malloc(size_t bytes /** Size of block to allocate */ ) { return malloc(bytes); }
+
+/** Free memory allocated by run time library.
+This version of free is used for data that is not allocated using the
+memory check system, ie was malloc'ed inside the C run time library.
+*/
+inline void runtime_free(void * ptr /** Memory block to free */ ) { free(ptr); }
+
+
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
+#define malloc(s) PMemoryHeap::Allocate(s, __FILE__, __LINE__, NULL)
+
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
+#define calloc(n,s) PMemoryHeap::Allocate(n, s, __FILE__, __LINE__)
+
+/** Override of system call for memory check system.
+This macro is used to allocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
+#define realloc(p,s) PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__)
+
+
+/** Override of system call for memory check system.
+This macro is used to deallocate memory via the memory check system selected
+with the #PMEMORY_CHECK# compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+*/
+#define free(p) PMemoryHeap::Deallocate(p, NULL)
+
+
+/** Macro for overriding system default #new# operator.
+This macro is used to allocate memory via the memory check system selected
+with the PMEMORY_CHECK compile time option. It will include the source file
+and line into the memory allocation to allow the PMemoryHeap class to keep
+track of the memory block.
+
+This macro could be used instead of the system #new# operator. Or you can place
+the line
+\begin{verbatim}
+  #define new PNEW
+\end{verbatim}
+at the begining of the source file, after all declarations that use the
+PCLASSINFO macro.
+*/
+#define PNEW  new (__FILE__, __LINE__)
+
+#if !defined(_MSC_VER) || _MSC_VER<1200
+#define PSPECIAL_DELETE_FUNCTION
+#else
+#define PSPECIAL_DELETE_FUNCTION \
+    void operator delete(void * ptr, const char *, int) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    void operator delete[](void * ptr, const char *, int) \
+      { PMemoryHeap::Deallocate(ptr, Class()); }
+#endif
+
+#define PNEW_AND_DELETE_FUNCTIONS \
+    void * operator new(size_t nSize, const char * file, int line) \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+    void * operator new(size_t nSize) \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
+    void operator delete(void * ptr) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    void * operator new[](size_t nSize, const char * file, int line) \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+    void * operator new[](size_t nSize) \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
+    void operator delete[](void * ptr) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
+    PSPECIAL_DELETE_FUNCTION
+
+
+inline void * operator new(size_t nSize, const char * file, int line)
+  { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
+
+inline void * operator new[](size_t nSize, const char * file, int line)
+  { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
+
+#ifndef __GNUC__
+void * operator new(size_t nSize);
+void * operator new[](size_t nSize);
+
+void operator delete(void * ptr);
+void operator delete[](void * ptr);
+
+#if defined(_MSC_VER) && _MSC_VER>=1200
+inline void operator delete(void * ptr, const char *, int)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+
+inline void operator delete[](void * ptr, const char *, int)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+#endif
+#endif
+
+
+#else // PMEMORY_CHECK
 
 #define PNEW new
+
+#if defined(__GNUC__) || (defined(_WIN32_WCE) && defined(_X86_))
+
+#define PNEW_AND_DELETE_FUNCTIONS
+
+#else
+
+#define PNEW_AND_DELETE_FUNCTIONS \
+    void * operator new(size_t nSize) \
+      { return malloc(nSize); } \
+    void operator delete(void * ptr) \
+      { free(ptr); } \
+    void * operator new[](size_t nSize) \
+      { return malloc(nSize); } \
+    void operator delete[](void * ptr) \
+      { free(ptr); }
+
+void * operator new(size_t nSize);
+void * operator new[](size_t nSize);
+
+void operator delete(void * ptr);
+void operator delete[](void * ptr);
+
+#endif
+
 #define runtime_malloc(s) malloc(s)
 #define runtime_free(p) free(p)
+
+#endif // PMEMORY_CHECK
+
 
 /** Declare all the standard PWlib class information.
 This macro is used to provide the basic run-time typing capability needed
