@@ -124,10 +124,7 @@ ifndef RELEASEPROGDIR
 RELEASEPROGDIR=$(PROG)
 endif
 
-ifndef VERSION
-VERSION=v1.XplX
-endif
-
+ifdef VERSION
 ifdef DEBUG
 release:
 	$(MAKE) DEBUG= release
@@ -135,6 +132,10 @@ else
 release: $(OBJDIR)/$(PROG)
 	cp $(OBJDIR)/$(PROG) $(RELEASEDIR)/$(RELEASEPROGDIR)
 	cd $(RELEASEDIR) ; tar cf - $(RELEASEPROGDIR) | gzip > $(PROG)_$(VERSION)_$(OBJ_SUFFIX).tar.gz
+endif
+else
+release:
+	echo You must define a VERSION macro.
 endif
 
 
