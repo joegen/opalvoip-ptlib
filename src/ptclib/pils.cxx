@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.cxx,v $
+ * Revision 1.4  2003/04/11 00:07:56  robertj
+ * More for Microsoft IP address specification wierdness (registration side).
+ *
  * Revision 1.3  2003/04/07 13:05:20  robertj
  * Workaround for Microsoft IP address specification wierdness.
  *
@@ -63,6 +66,18 @@ istream & operator>>(istream & s, PILSSession::MSIPAddress & a)
 #endif
 
   return s;
+}
+
+
+ostream & operator<<(ostream & s, PILSSession::MSIPAddress & a)
+{
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+  DWORD u = a;
+#else
+  DWORD u = (a.Byte1()<<24)|(a.Byte2()<<16)|(a.Byte3()<<8)|a.Byte4();
+#endif
+
+  return s << u;
 }
 
 
