@@ -3,13 +3,18 @@
 PWLIBDIR=c:\work\pwlib
 !ENDIF
 
+INCLUDE=$(INCLUDE);$(PWLIBDIR)\include\ptlib\msos;$(PWLIBDIR)\include\pwlib\mswin;$(PWLIBDIR)\include
+LIB=$(LIB);$(PWLIBDIR)\Lib
+
 !IFDEF OPENSSLDIR
 OPENSSLFLAG=1
 OPENSSLLIBS=ssleay32.lib libeay32.lib
 !ENDIF
 
-INCLUDE=$(INCLUDE);$(PWLIBDIR)\include\ptlib\msos;$(PWLIBDIR)\include\pwlib\mswin;$(PWLIBDIR)\include
-LIB=$(LIB);$(PWLIBDIR)\Lib
+!IFDEF EXPATDIR
+EXPATFLAG=1
+EXPATLIBS=expat.lib
+!ENDIF
 
 all:
 	cd src\ptlib\msos
