@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2003/03/31 03:35:20  robertj
+ * Major addition of LDAP functionality.
+ * Added ILS specialisation of LDAP.
+ *
  * Revision 1.1  2003/03/28 01:15:44  robertj
  * OpenLDAP support.
  *
@@ -32,6 +36,7 @@
 
 
 class PLDAPSession;
+class PILSSession;
 
 
 class LDAPTest : public PProcess
@@ -42,7 +47,13 @@ class LDAPTest : public PProcess
     LDAPTest();
     virtual void Main();
     void Usage();
+    void Add(PArgList & args, PLDAPSession & ldap);
+    void Delete(PArgList & args, PLDAPSession & ldap);
     void Search(PArgList & args, PLDAPSession & ldap);
+
+    void AddILS(PArgList & args, PILSSession & ils);
+    void DeleteILS(PArgList & args, PILSSession & ils);
+    void SearchILS(PArgList & args, PILSSession & ils);
 };
 
 
