@@ -31,6 +31,15 @@ DEFAULT_VIDINPUT	= vidinput_v4l
 endif
 endif
 
+HAS_V4L2	= @HAS_V4L2@
+
+ifeq (1,$(HAS_V4L2))
+SUBDIRS += vidinput_v4l2
+ifeq (,$(DEFAULT_VIDINPUT))
+DEFAULT_VIDINPUT	= vidinput_v4l2
+endif
+endif
+
 HAS_BSDVIDEOCAP		= @HAS_BSDVIDEOCAP@
 
 ifeq (1,$(HAS_BSDVIDEOCAP))

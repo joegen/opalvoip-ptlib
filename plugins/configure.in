@@ -84,6 +84,23 @@ if test "$enable_v4l" = "yes" ; then
 fi
 
 dnl #########################################################################
+dnl check for V4L2 video support
+dnl ########################################################################
+
+AC_ARG_ENABLE(v4l2, [  --enable-v4l2            enable V4L2 video support],,enable_v4l2=no)
+
+if test "$enable_v4l2" = "yes" ; then
+  AC_CHECK_HEADER(linux/videodev2.h, V4L2HDR=1)
+  AC_MSG_CHECKING(for V4L2 video support)
+  if test "${V4LHDR:-unset}" != "unset"; then
+    AC_SUBST(HAS_V4L2, 1)
+    AC_MSG_RESULT(yes)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
+dnl #########################################################################
 dnl check for BSD video capture support
 dnl ########################################################################
 
