@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.210  2004/03/20 09:08:15  rjongbloed
+ * Changed interaction between PTrace and PSystemLog so that the tracing code does
+ *   not need to know about the system log, thus reducing the code footprint for most apps.
+ *
  * Revision 1.209  2003/11/13 21:42:32  csoutheren
  * Fixed problem with thread name display under Windows thanks to Ted Szoczei
  *
@@ -698,7 +702,6 @@
  */
 
 #include <ptlib.h>
-#include <ptlib/svcproc.h>
 
 #include <ctype.h>
 
@@ -758,6 +761,7 @@ static ostream * PTraceStream = 0L;
 static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
+static unsigned PTraceCurrentLevel;
 
 void PTrace::SetStream(ostream * s)
 {
@@ -859,13 +863,11 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
   if (level == UINT_MAX)
     return *PTraceStream;
 
-  if ((PTraceOptions&SystemLogStream) != 0) {
-    unsigned lvl = level+PSystemLog::Warning;
-    if (lvl >= PSystemLog::NumLogLevels)
-      lvl = PSystemLog::NumLogLevels-1;
-    ((PSystemLog*)PTraceStream)->SetLevel((PSystemLog::Level)lvl);
-  }
-  else {
+  // Save log level for this message so End() function can use. This is
+  // protected by the PTraceMutex
+  PTraceCurrentLevel = level;
+
+  if ((PTraceOptions&SystemLogStream) == 0) {
     if ((PTraceOptions&DateAndTime) != 0) {
       PTime now;
       *PTraceStream << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t", (PTraceOptions&GMTTime) ? PTime::GMT : PTime::Local);
@@ -931,8 +933,14 @@ ostream & PTrace::End(ostream & s)
 #else
   ::streambuf & rb = *s.rdbuf();
   if (((s.flags()&ios::unitbuf) != 0) || (rb.out_waiting() > 0)) {
-    if ((PTraceOptions&SystemLogStream) != 0)
+    if ((PTraceOptions&SystemLogStream) != 0) {
+      // Get the trace level for this message and set the stream width to that
+      // level so that the PSystemLog can extract the log level back out of the
+      // ios structure. There could be portability issues with this though it
+      // should work pretty universally.
+      s.width(PTraceCurrentLevel+1);
       s.flush();
+    }
     else
       s << endl;
   }

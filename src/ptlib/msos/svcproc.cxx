@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.75  2004/03/20 09:08:15  rjongbloed
+ * Changed interaction between PTrace and PSystemLog so that the tracing code does
+ *   not need to know about the system log, thus reducing the code footprint for most apps.
+ *
  * Revision 1.74  2003/09/17 09:02:14  csoutheren
  * Removed memory leak detection code
  *
@@ -534,7 +538,20 @@ int PSystemLog::Buffer::underflow()
 
 int PSystemLog::Buffer::sync()
 {
-  PSystemLog::Output(log->logLevel, string);
+  Level logLevel;
+  if (log->width() == 0 || (PTrace::GetOptions()&PTrace::SystemLogStream) == 0)
+    logLevel = log->logLevel;
+  else {
+    // Trace system sets the ios stream width as the last thing it does before
+    // doing a flush, which gets us here. SO now we can get a PTRACE looking
+    // exactly like a PSYSTEMLOG of appropriate level.
+    unsigned traceLevel = log->width() -1 + PSystemLog::Warning;
+    log->width(0);
+    if (traceLevel >= PSystemLog::NumLogLevels)
+      traceLevel = PSystemLog::NumLogLevels-1;
+    logLevel = (Level)traceLevel;
+  }
+  PSystemLog::Output(logLevel, string);
 
   string.SetSize(10);
   char * base = string.GetPointer();
@@ -1019,8 +1036,12 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         default :
-          if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
+          if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels) {
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
+#if PTRACING
+            PTrace::SetLevel(wParam-LogLevelBaseMenuID-PSystemLog::Warning);
+#endif
+          }
           else if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds) {
             const char * cmdname = ServiceCommandNames[wParam-SvcCmdBaseMenuID];
             if (wParam == SvcCmdBaseMenuID+SvcCmdVersion ||
