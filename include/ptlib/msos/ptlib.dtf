@@ -1616,6 +1616,7 @@ EXPORTS
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@H@Z @1900 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(int)
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @2228 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(class PIPSocket::Address)
     ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@@Z @2229 NONAME ;public: static int __cdecl PIPSocket::GetInterfaceTable(class PList<class PIPSocket::InterfaceEntry> &)
+    ?GetInterval@PTimeInterval@@QBEKXZ @3402 NONAME ;public: unsigned long __thiscall PTimeInterval::GetInterval(void)const 
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@0@Z @1901 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &,class PIPSocket::Address &)
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@@Z @1902 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &)
     ?GetIpAddress@PWin32AsnAny@@QAEHAAVAddress@PIPSocket@@@Z @1903 NONAME ;public: int __thiscall PWin32AsnAny::GetIpAddress(class PIPSocket::Address &)
