@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.86  2002/12/18 05:05:43  robertj
+ * Fixed problem with returning DWORD time interval when PTimeInterval is
+ *   out of range, especially when negative!
+ *
  * Revision 1.85  2002/10/29 00:07:21  robertj
  * Added IsValid() function to indicate that a PTime is set correctly.
  *
@@ -310,9 +314,6 @@ PINLINE PObject * PTimeInterval::Clone() const
 
 PINLINE PInt64 PTimeInterval::GetMilliSeconds() const
   { return milliseconds; }
-
-PINLINE DWORD PTimeInterval::GetInterval() const
-  { return (DWORD)milliseconds; }
 
 PINLINE long PTimeInterval::GetSeconds() const
   { return (long)(milliseconds/1000); }
