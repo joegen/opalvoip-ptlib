@@ -27,6 +27,10 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.33  2004/10/26 18:29:41  ykiryanov
+ * Added ostream::write and istream::read with 2nd param as streamsize to please
+ * New toolchain
+ *
  * Revision 1.32  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -111,7 +115,10 @@ class PMutex;
 
 #include <ptlib.h>
 #include <ptlib/socket.h>
+
+#ifdef B_ZETA_VERSION 
 #include <posix/rlimit.h>
+#endif // Zeta
 
 // For class BLocker
 #include <be/support/Locker.h>
@@ -809,5 +816,13 @@ BOOL PMutex::WillBlock() const
 
 int seteuid(uid_t uid) { return 0; }
 int setegid(gid_t gid) { return 0; }
+
+///////////////////////////////////////////////////////////////////////////////
+// Toolchain dependent stuff
+#if (__GNUC_MINOR__  > 9)
+#warning "Using gcc 2.95.x"
+    ostream& ostream::write(const char *s, streamsize n) { return write(s, (long) n); };
+    istream& istream::read(char *s, streamsize n) { return read(s, (long) n); };
+#endif // gcc minor  > 9  
 
 // End Of File ///////////////////////////////////////////////////////////////
