@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.22  2004/04/30 16:16:21  ykiryanov
+ * BeOS modifications derived from BLocker use
+ *
  * Revision 1.21  2004/04/02 03:40:00  ykiryanov
  * Cleaned up semaphore code
  *
@@ -128,9 +131,14 @@
   friend void PThread::Terminate();
 #endif
 
-#elif defined(BE_THREADS)
+#elif defined(__BEOS__)
+
+  public:
+    PSemaphore(BOOL fNested); 
+    void Create(unsigned initial);
 
   protected:
+    BOOL mfNested; // Does it support recursive locks?
     thread_id mOwner; // delete can be called by owner thread
     sem_id semId;
     volatile int32 mCount;
