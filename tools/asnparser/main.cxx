@@ -464,6 +464,8 @@ void Constraint::PrintOn(ostream & strm) const
     case WithComponentPrefix :
       strm << "WITH COMPONENT";
       break;
+    default :
+      break;
   }
   strm << '(';
   for (PINDEX i = 0; i < standard.GetSize(); i++)
@@ -1013,7 +1015,8 @@ void EnumeratedType::PrintOn(ostream & strm) const
 {
   PrintStart(strm);
   strm << '\n';
-  for (PINDEX i = 0; i < numEnums; i++)
+  PINDEX i;
+  for (i = 0; i < numEnums; i++)
     strm << indent() << enumerations[i] << '\n';
   if (extendable) {
     strm << "...\n";
