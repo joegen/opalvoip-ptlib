@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.154  2001/01/28 00:53:00  yurik
+ * WinCE port-related - streams refined
+ *
  * Revision 1.153  2001/01/25 07:14:39  robertj
  * Fixed spurios memory leak message. Usual static global problem.
  *
@@ -563,11 +566,19 @@ void PSetErrorStream(ostream * s)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef __NUCLEUS_PLUS__
+#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
 static ostream * PTraceStream = &cerr;
 #else
+
+#ifdef __NUCLEUS_PLUS__ 
 static ostream * PTraceStream = 0L;
 #endif
+#ifdef _WIN32_WCE
+static YWinCEOStream * PTraceStream = &cerr;
+#endif
+
+#endif
+
 static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
 static unsigned PTraceBlockIndentLevel = 0;
@@ -575,10 +586,17 @@ static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
 {
-#ifndef __NUCLEUS_PLUS__
+#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   PTraceStream = s != NULL ? s : &cerr;
 #else
+
+#ifdef __NUCLEUS_PLUS__ 
   PTraceStream = s;
+#endif
+#ifdef _WIN32_WCE
+  PTraceStream = &cerr;
+#endif
+
 #endif
 }
 
