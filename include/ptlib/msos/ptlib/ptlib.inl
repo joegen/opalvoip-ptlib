@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.10 1995/04/22 00:52:55 robertj Exp $
+ * $Id: ptlib.inl,v 1.11 1995/12/10 11:48:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.11  1995/12/10 11:48:27  robertj
+ * Fixed bug in application shutdown of child threads.
+ *
  * Revision 1.10  1995/04/22 00:52:55  robertj
  * Added GetDirectory() function to PFilePath.
  *
@@ -123,7 +126,7 @@ PINLINE BOOL PPipeChannel::CanReadAndWrite()
 #if defined(_WIN32)
 
 PINLINE PThread * PThread::Current()
-  { return (PThread *)threads.GetAt(GetCurrentThreadId()); }
+  { return(PThread*)PProcess::Current()->threads.GetAt(GetCurrentThreadId()); }
 
 PINLINE void PThread::Sleep(const PTimeInterval & delay)
   { ::Sleep(delay.GetMilliseconds()); }
