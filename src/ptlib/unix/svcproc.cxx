@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.72  2002/10/03 01:27:51  robertj
+ * Added fail safe _exit() as it appears raise(SIGQUIT) does not always dump
+ *   core and exit the app causing endless SEGV's to appear the log file!
+ *
  * Revision 1.71  2002/10/01 06:03:44  robertj
  * Attempt to prevent recursive signals for SEGV etc
  *
@@ -844,8 +848,10 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   signal(SIGBUS, SIG_DFL);
 
   static BOOL inHandler = FALSE;
-  if (inHandler)
+  if (inHandler) {
     raise(SIGQUIT); // Dump core
+    _exit(-1); // Fail safe if raise() didn't dump core and exit
+  }
 
   inHandler = TRUE;
 
@@ -888,6 +894,7 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   }
 
   raise(SIGQUIT); // Dump core
+  _exit(-1); // Fail safe if raise() didn't dump core and exit
 }
 
 
