@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.13  1999/06/09 02:07:49  robertj
+ * Fixed backward compatibility of generated template code with G++ 2.7.x
+ *
  * Revision 1.12  1999/06/07 01:56:25  robertj
  * Added header comment on license.
  *
@@ -1056,7 +1059,7 @@ void TypeBase::BeginGenerateCplusplus(ostream & hdr, ostream & cxx)
          "//\n"
          "\n"
       << GetTemplatePrefix()
-      << GetClassNameString() << "::" << GetIdentifier() << "(unsigned tag, TagClass tagClass)\n"
+      << GetClassNameString() << "::" << GetIdentifier() << "(unsigned tag, PASN_Object::TagClass tagClass)\n"
          "  : " << GetTypeName() << "(tag, tagClass";
 }
 
