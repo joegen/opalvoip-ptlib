@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.69  2004/04/03 06:54:22  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.68  2004/02/23 00:44:38  csoutheren
  * A completely different, other regex include hack to avoid requiring
  * the sources when using a header-file only environment
@@ -2020,7 +2023,7 @@ class PStringStream : public PString, public iostream
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-#if defined(__MWERKS__) || __GNUC__ >= 3
+#ifdef __USE_STL__
         virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
 #else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);
