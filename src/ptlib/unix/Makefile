@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.123  2004/04/02 03:59:46  ykiryanov
+# Uncommented beaudio code
+#
 # Revision 1.122  2004/03/17 05:52:59  csoutheren
 # Removed obsolete udp.cxx
 #
@@ -533,10 +536,10 @@ endif
 #  SOUND_SOURCE = ossaix.cxx
 #  endif
 #  
-#  ifeq ($(OSTYPE),beos)
+  ifeq ($(OSTYPE),beos)
 #  
 #  ifdef MEDIA_KIT_UPDATE
-#  SOUND_SOURCE = beaudio.cxx
+  SOUND_SOURCE = beaudio.cxx
 #  else
 #  BEAUDIO_SRC_DIR	= ./beaudio
 #  VPATH_CXX += $(BEAUDIO_SRC_DIR)
@@ -550,7 +553,7 @@ endif
 #                $(COMMON_SRC_DIR)/videoio.cxx \
 # 	       	   video4beos.cxx \
 # 	       	   $(COMMON_SRC_DIR)/vconvert.cxx
-# endif
+ endif
 # 
 # ifeq ($(OSTYPE),Carbon)
 # MACAUDIO_SRC_DIR	= ./macosaudio
