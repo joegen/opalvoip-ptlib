@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.167  2001/07/20 04:14:19  robertj
+ * Removed GNU warning.
+ *
  * Revision 1.166  2001/05/29 02:50:56  robertj
  * Fixed GNU compatibility
  *
@@ -641,7 +644,9 @@ void PTrace::SetStream(ostream * s)
 
 void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
+#if PTRACING
   PProcess & process = PProcess::Current();
+#endif
 
   // If we have a tracing version, then open trace file and set modes
   PTrace::SetOptions(options);
