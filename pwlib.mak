@@ -37,10 +37,13 @@ all:
 
 
 debug: all
+	cd src\ptlib\msos
 	nmake /nologo /f "Console.mak" CFG="Console - Win32 Debug" RECURSE=0
 	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Debug" RECURSE=0
 	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Debug" RECURSE=0
+	cd ..\..\pwlib\mswin
 	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Debug" RECURSE=0
 	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Debug" RECURSE=0
 	nmake /nologo /f "GUI Components.mak" CFG="GUI Components - Win32 Debug" RECURSE=0
+	cd ..\..\..\tools\pwtest
 	nmake /nologo /f "PWTest.mak" CFG="pwtest - Win32 Debug" RECURSE=0
