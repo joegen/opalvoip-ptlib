@@ -28,6 +28,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.10  2002/05/21 01:56:53  robertj
+ * Removed the enum which made yet another set of magic numbers for audio
+ *   formats, now uses the WAV file format numbers.
+ * Fixed failure to write header when destroying object without and explicit
+ *   call to Close().
+ * Fixed missing Open() function which does not have file name parameter.
+ * Added ability to set the audio format after construction.
+ *
  * Revision 1.9  2002/01/22 03:55:07  craigs
  * Added #define guards when file moved to PTCLib
  *
@@ -88,11 +96,17 @@ class PWAVFile : public PFile
     /**When a file is opened for writing, we can specify if this is a PCM
        wav file or a G.723.1 wav file.
      */
-    enum WaveType {
-      /// File will be a PCM Wave file, 8Khz, 16 bit, mono.
-      PCM_WavFile,
-      /// File will be a G.723.1 Wave file./
-      G7231_WavFile
+    enum {
+      fmt_PCM         = 1,      /// PCM, 8kHz, 16 bit, mono
+      fmt_ALaw        = 6,      /// A-Law 8kHz
+      fmt_uLaw        = 7,      /// u-Law 8kHz
+      fmt_GSM         = 0x31,   /// GSM
+      fmt_MSG7231     = 0x42,   /// Microsoft G.723.1
+      fmt_VivoG7231   = 0x111,  /// VivoActive G.723.1
+
+      // For backward compatibility
+      PCM_WavFile = fmt_PCM,
+      G7231_WavFile = fmt_VivoG7231
     };
 
 
@@ -106,7 +120,7 @@ class PWAVFile : public PFile
        #WaveType enum#
      */
     PWAVFile(
-      WaveType type = PCM_WavFile /// Type of WAV File to create
+      unsigned format = fmt_PCM /// Type of WAV File to create
     );
 
     /**Create a unique temporary file name, and open the file in the specified
@@ -124,7 +138,7 @@ class PWAVFile : public PFile
     PWAVFile(
       OpenMode mode,          /// Mode in which to open the file.
       int opts = ModeDefault, /// #OpenOptions enum# for open operation.
-      WaveType type = PCM_WavFile /// Type of WAV File to create
+      unsigned format = fmt_PCM /// Type of WAV File to create
     );
 
     /**Create a WAV file object with the specified name and open it in
@@ -140,8 +154,12 @@ class PWAVFile : public PFile
       const PFilePath & name,     /// Name of file to open.
       OpenMode mode = ReadWrite,  /// Mode in which to open the file.
       int opts = ModeDefault,     /// #OpenOptions enum# for open operation.
-      WaveType type = PCM_WavFile /// Type of WAV File to create
+      unsigned format = fmt_PCM /// Type of WAV File to create
     );
+
+    /**Close the file before destruction.
+      */
+    ~PWAVFile() { Close(); }
   //@}
 
   /**@name Overrides from class PFile */
@@ -168,6 +186,22 @@ class PWAVFile : public PFile
     virtual BOOL Write(
       const void * buf,   /// Pointer to a block of memory to receive the write bytes.
       PINDEX len    /// Maximum number of bytes to write to the channel.
+    );
+
+    /**Open the current file in the specified mode and with
+       the specified options. If the file object already has an open file then
+       it is closed.
+       
+       If there has not been a filename attached to the file object (via
+       #SetFilePath()#, the #name# parameter or a previous
+       open) then a new unique temporary filename is generated.
+
+       @return
+       TRUE if the file was successfully opened.
+     */
+    virtual BOOL Open(
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // Options for open operation.
     );
 
     /**Open the specified WAV file name in the specified mode and with
@@ -229,6 +263,10 @@ class PWAVFile : public PFile
   //@{
     /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
     */
+    BOOL SetFormat(unsigned fmt);
+
+    /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
+    */
     unsigned GetFormat() const;
 
     /**Find out the number of channels the WAV file has. Typically this is 1 for
@@ -273,8 +311,6 @@ class PWAVFile : public PFile
     unsigned numChannels;
     unsigned sampleRate;
     unsigned bitsPerSample;
-
-    unsigned waveType; // writing a PCM or a G.723.1 file
 
     off_t    lenHeader;
     off_t    lenData;
