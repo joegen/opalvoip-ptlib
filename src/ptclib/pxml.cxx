@@ -44,6 +44,7 @@
 
 #define	XMLSETTINGS_OPTIONS	(NewLineAfterElement | CloseExtended)
 
+
 ////////////////////////////////////////////////////
 //
 static void PXML_StartElement(void * userData, const char * name, const char ** attrs)
@@ -346,12 +347,36 @@ void PXML::PrintOn(ostream & strm) const
     strm << endl;
 
   if (rootElement != NULL) {
-    strm << "<!DOCTYPE " << rootElement->GetName() << ">";
+    strm << "<!DOCTYPE " << rootElement->GetName() << '>';
     if (newLine)
       strm << endl;
     rootElement->PrintOn(strm, (options & Indent) ? 0 : -1, options);
   }
 }
+
+PString CreateStartTag(const PString & text)
+{
+  return '<' + text + '>';
+}
+
+
+PString CreateEndTag(const PString & text)
+{
+  return "</" + text + '>';
+}
+
+
+PString CreateTagNoData(const PString & text)
+{
+  return '<' + text + "/>";
+}
+
+
+PString CreateTag(const PString & text, const PString & data)
+{
+  return CreateStartTag(text) + data + CreateEndTag(text);
+}
+
 
 ///////////////////////////////////////////////////////
 //
@@ -379,7 +404,7 @@ PXMLData::PXMLData(PXMLElement * _parent, const char * data, int len)
 void PXMLData::PrintOn(ostream & strm, int indent, int options) const
 {
   if (indent > 0)
-    strm << psprintf("%*s", indent, "");
+    strm << setw(indent) << " ";
   strm << value;
   if (indent >= 0 || ((options & PXML::NewLineAfterElement) != 0))
     strm << endl;
@@ -479,14 +504,14 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
   BOOL newLine = (options & PXML::NewLineAfterElement) != 0;
 
   if (indent > 0)
-    strm << psprintf("%*s", indent, "");
-  strm << "<" << name;
+    strm << setw(indent) << " ";
+  strm << '<' << name;
 
   PINDEX i;
   if (attributes.GetSize() > 0) {
     for (i = 0; i < attributes.GetSize(); i++) {
       PCaselessString key = attributes.GetKeyAt(i);
-      strm << " " << key << "=\"" << attributes[key] << "\"";
+      strm << ' ' << key << "=\"" << attributes[key] << '"';
     }
   }
 
@@ -497,7 +522,7 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
     if (newLine)
       strm << endl;
   } else {
-    strm << ">";
+    strm << '>';
     if (indent >= 0 || newLine)
       strm << endl;
   
@@ -505,8 +530,8 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
       subObjects[i].PrintOn(strm, (indent < 0) ? -1 : (indent + 2), options);
 
     if (indent > 0)
-      strm << psprintf("%*s", indent, "");
-    strm << "</" << name << ">";
+      strm << setw(indent) << ' ';
+    strm << "</" << name << '>';
     if (indent >= 0 || newLine)
       strm << endl;
   }
@@ -655,9 +680,9 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
     for (PINDEX j = 0; j < (PINDEX)el->GetNumAttributes(); ++j) {
       PString key = el->GetKeyAttribute(j);
       PString dat = el->GetDataAttribute(j);
-      if ( key != "" && dat != "")
+      if (!key && !dat)
         cfg.SetString(sectionName, key, dat);
-	 }
+    }
   }	
 }
 
