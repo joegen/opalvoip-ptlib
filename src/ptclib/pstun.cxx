@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.8.2.1  2003/10/13 02:44:03  dereksmithies
+ * Fix comparison of signed and unsigned variable warning.
+ *
  * Revision 1.8  2003/10/05 00:56:25  rjongbloed
  * Rewrite of STUN to not to use imported code with undesirable license.
  *
@@ -301,7 +304,7 @@ public:
     SetMinSize(sizeof(PSTUNMessageHeader));
     PSTUNMessageHeader * hdr = (PSTUNMessageHeader *)theArray;
     hdr->msgType = (WORD)newType;
-    for (PINDEX i = 0; i < sizeof(hdr->transactionId); i++)
+    for (PINDEX i = 0; i < ((PINDEX)sizeof(hdr->transactionId)); i++)
       hdr->transactionId[i] = id != NULL ? id[i] : (BYTE)PRandom::Number();
   }
 
