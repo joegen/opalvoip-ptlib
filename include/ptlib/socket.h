@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.46  2004/04/27 04:37:50  rjongbloed
+ * Fixed ability to break of a PSocket::Select call under linux when a socket
+ *   is closed by another thread.
+ *
  * Revision 1.45  2004/01/28 08:53:02  csoutheren
  * Fixed missing delete[] operator. Thanks to Borko Jandras
  *
@@ -577,14 +581,6 @@ class PSocket : public PChannel
       PSocket & listener,
       struct sockaddr * addr,
       PINDEX * size
-    );
-    static int os_select(
-      int maxfds,
-      fd_set * readfds,
-      fd_set * writefds,
-      fd_set * exceptfds,
-      const PIntArray & allfds,
-      const PTimeInterval & timeout
     );
 
 
