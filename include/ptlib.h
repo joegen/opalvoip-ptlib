@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.28  2003/09/17 01:18:01  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.27  2003/04/16 07:16:55  craigs
  * Modified for new autoconf based configuration
  *
@@ -273,8 +277,12 @@ using namespace std;
 
 
 #if P_USE_INLINES
-#include <ptlib/ptlib.inl>
-#include <ptlib/osutil.inl>
+#ifdef _WIN32
+#include "ptlib/win32/ptlib/ptlib.inl"
+#else
+#include "ptlib/unix/ptlib/ptlib.inl"
+#endif
+#include "ptlib/osutil.inl"
 
 #endif
 
