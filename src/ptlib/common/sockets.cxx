@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.120  2002/05/22 07:18:46  robertj
+ * Fixed bug where SO_RESUSEADDR wsa being turned ON instead of OFF when
+ *   making an outgoing connection, should only be ON for listener sockets.
+ *
  * Revision 1.119  2002/04/12 01:42:41  robertj
  * Changed return value on os_connect() and os_accept() to make sure
  *   get the correct error codes propagated up under unix.
@@ -1418,7 +1422,7 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
   // attempt to connect
   sockaddr_in sin;
   if (localPort != 0 || iface != INADDR_ANY) {
-    if (!SetOption(SO_REUSEADDR, 1)) {
+    if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
       return FALSE;
     }
