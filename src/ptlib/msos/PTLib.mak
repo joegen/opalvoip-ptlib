@@ -299,14 +299,14 @@ SOURCE=.\libver.rc
 
 !ENDIF 
 
-SOURCE=.\ptlib.dtf
+SOURCE=..\..\..\include\ptlib\msos\ptlib.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=.\ptlib.dtf
+InputPath=..\..\..\include\ptlib\msos\ptlib.dtf
 USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 
 "$(INTDIR)\ptlib.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIB)
@@ -321,7 +321,7 @@ USERDEP__PTLIB="$(OutDir)\ptlibs.lib"
 
 !ENDIF 
 
-SOURCE=.\ptlibd.dtf
+SOURCE=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
@@ -330,7 +330,7 @@ SOURCE=.\ptlibd.dtf
 IntDir=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 TargetName=PTLibd
-InputPath=.\ptlibd.dtf
+InputPath=..\..\..\include\ptlib\msos\ptlibd.dtf
 USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	
 
 "$(INTDIR)\PTLibd.def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)" $(USERDEP__PTLIBD)
