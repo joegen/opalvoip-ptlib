@@ -19,8 +19,6 @@
 
 #if defined(SIOCGIFCOUNT)
 #define SIOCGIFNUM  SIOCGIFCOUNT
-#else
-#define SIOCGIFNUM  0x8938
 #endif
 
 #define PSETPGRP()  setpgrp()
