@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.4 1996/01/02 12:54:12 robertj Exp $
+ * $Id: svcproc.h,v 1.5 1996/01/28 02:55:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.5  1996/01/28 02:55:02  robertj
+ * WIN16 support.
+ *
  * Revision 1.4  1996/01/02 12:54:12  robertj
  * Made "common".
  *
@@ -30,6 +33,7 @@
 // PServiceProcess
 
 #include "../../common/svcproc.h"
+#ifdef _WIN32
   private:
     static void __stdcall StaticMainEntry(DWORD argc, LPTSTR * argv);
     /* Internal function called from the Service Manager. This simply calls the
@@ -86,6 +90,7 @@
     SERVICE_STATUS_HANDLE statusHandle;
     HANDLE                terminationEvent;
 
+#endif
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
 };
