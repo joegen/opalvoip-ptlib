@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.15  2002/01/23 04:26:36  craigs
+ * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
+ * use of default copy constructors for objects containing instances of
+ * these classes
+ *
  * Revision 1.14  2001/11/23 00:55:18  robertj
  * Changed PWaitAndSignal so works inside const functions.
  *
@@ -171,6 +176,10 @@ class PSemaphore : public PObject
       unsigned maximum  /// Maximum value for semaphore count.
     );
 
+    /** Create a new Semaphore with the same initial and maximum values as the original
+     */
+    PSemaphore(const PSemaphore &);
+
     /**Destroy the semaphore. This will assert if there are still waiting
        threads on the semaphore.
      */
@@ -220,7 +229,6 @@ class PSemaphore : public PObject
 #endif
 
   private:
-    PSemaphore(const PSemaphore &) { }
     PSemaphore & operator=(const PSemaphore &) { return *this; }
 
 

@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.7  2002/01/23 04:26:36  craigs
+ * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
+ * use of default copy constructors for objects containing instances of
+ * these classes
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -88,7 +93,7 @@ class PMutex : public PSemaphore
        never wait.
      */
     PMutex();
-
+    PMutex(const PMutex & mutex);
 
 // Include platform dependent part of class
 #include <ptlib/mutex.h>
