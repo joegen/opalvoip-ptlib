@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.60  2001/09/28 00:45:42  robertj
+ * Broke out internal static function for unstranslating URL strings.
+ *
  * Revision 1.59  2001/07/16 00:43:06  craigs
  * Added ability to parse other transport URLs
  *
@@ -418,26 +421,31 @@ PString PURL::TranslateString(const PString & str, TranslationType type)
 }
 
 
-static void UnmangleString(PString & str, PURL::TranslationType type)
+PString PURL::UntranslateString(const PString & str, TranslationType type)
 {
+  PString xlat = str;
+  xlat.MakeUnique();
+
   PINDEX pos;
   if (type == PURL::QueryTranslation) {
     pos = (PINDEX)-1;
-    while ((pos = str.Find('+', pos+1)) != P_MAX_INDEX)
-      str[pos] = ' ';
+    while ((pos = xlat.Find('+', pos+1)) != P_MAX_INDEX)
+      xlat[pos] = ' ';
   }
 
   pos = (PINDEX)-1;
-  while ((pos = str.Find('%', pos+1)) != P_MAX_INDEX) {
-    int digit1 = str[pos+1];
-    int digit2 = str[pos+2];
+  while ((pos = xlat.Find('%', pos+1)) != P_MAX_INDEX) {
+    int digit1 = xlat[pos+1];
+    int digit2 = xlat[pos+2];
     if (isxdigit(digit1) && isxdigit(digit2)) {
-      str[pos] = (char)(
+      xlat[pos] = (char)(
             (isdigit(digit2) ? (digit2-'0') : (toupper(digit2)-'A'+10)) +
            ((isdigit(digit1) ? (digit1-'0') : (toupper(digit1)-'A'+10)) << 4));
-      str.Delete(pos+1, 2);
+      xlat.Delete(pos+1, 2);
     }
   }
+
+  return xlat;
 }
 
 
@@ -445,10 +453,8 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 {
   PStringArray tokens = queryStr.Tokenise("&=", TRUE);
   for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
-    PCaselessString key = tokens[i];
-    UnmangleString(key, QueryTranslation);
-    PString data = tokens[i+1];
-    UnmangleString(data, QueryTranslation);
+    PCaselessString key = UntranslateString(tokens[i], QueryTranslation);
+    PString data = UntranslateString(tokens[i+1], QueryTranslation);
     if (queryVars.Contains(key))
       queryVars.SetAt(key, queryVars[key] + ',' + data);
     else
@@ -523,8 +529,7 @@ void PURL::Parse(const char * cstr)
 
       // if the URL is of type HostOnly, then this is the hostname
       if (schemeInfo.type == HostOnly) {
-        hostname = uphp;
-        UnmangleString(hostname, LoginTranslation);
+        hostname = UntranslateString(uphp, LoginTranslation);
       } 
 
       // if the URL is of type UserPasswordHostPort, then parse it
@@ -536,13 +541,11 @@ void PURL::Parse(const char * cstr)
           PINDEX pos3 = uphp.Find(":");
           // if no password...
           if (pos3 > pos2)
-            username = uphp(0, pos2-1);
+            username = UntranslateString(uphp(0, pos2-1), LoginTranslation);
           else {
-            username = uphp(0, pos3-1);
-            password = uphp(pos3+1, pos2-1);
-            UnmangleString(password, LoginTranslation);
+            username = UntranslateString(uphp(0, pos3-1), LoginTranslation);
+            password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
           }
-          UnmangleString(username, LoginTranslation);
           uphp.Delete(0, pos2+1);
         }
       }
@@ -552,13 +555,12 @@ void PURL::Parse(const char * cstr)
           schemeInfo.type == UserPasswordHostPort) {
         pos = uphp.Find(":");
         if (pos == P_MAX_INDEX) {
-          hostname = uphp;
+          hostname = UntranslateString(uphp, LoginTranslation);
           port = schemeInfo.defaultPort;
         } else {
-          hostname = uphp.Left(pos);
+          hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
           port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
         }
-        UnmangleString(hostname, LoginTranslation);
         if (hostname.IsEmpty())
           hostname = PIPSocket::GetHostName();
       }
@@ -568,8 +570,7 @@ void PURL::Parse(const char * cstr)
   // chop off any trailing fragment
   pos = url.Find('#');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    fragment = url(pos+1, P_MAX_INDEX);
-    UnmangleString(fragment, PathTranslation);
+    fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -584,8 +585,7 @@ void PURL::Parse(const char * cstr)
   // chop off any trailing parameters
   pos = url.Find(';');
   if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    parameters = url(pos+1, P_MAX_INDEX);
-    UnmangleString(parameters, PathTranslation);
+    parameters = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -595,7 +595,7 @@ void PURL::Parse(const char * cstr)
   if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
   for (pos = 0; pos < path.GetSize(); pos++) {
-    UnmangleString(path[pos], PathTranslation);
+    path[pos] = UntranslateString(path[pos], PathTranslation);
     if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
       path.RemoveAt(pos--);
       path.RemoveAt(pos--);
