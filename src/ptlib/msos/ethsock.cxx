@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.20  1999/10/29 03:34:19  robertj
+ * Fixed possible crash accessing IP addresses from SNMP tables.
+ *
  * Revision 1.19  1999/10/14 01:34:55  robertj
  * Fixed backward compatibility problem with old SNMP header file.
  *
@@ -392,11 +395,9 @@ PWin32AsnAny::~PWin32AsnAny()
     case ASN_SEQUENCE :
       SnmpUtilMemFree(asnValue.sequence.stream);
       break;
-#ifdef ASN_IPADDRESS
     case ASN_IPADDRESS :
       SnmpUtilMemFree(asnValue.address.stream);
       break;
-#endif
 #ifdef ASN_OPAQUE
     case ASN_OPAQUE :
       SnmpUtilMemFree(asnValue.arbitrary.stream);
@@ -418,16 +419,13 @@ BOOL PWin32AsnAny::GetInteger(AsnInteger & i)
 
 BOOL PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
 {
-#ifdef ASN_IPADDRESS
-  if (asnType != ASN_IPADDRESS)
+  if (asnType != ASN_IPADDRESS ||
+      asnValue.address.stream == NULL ||
+      asnValue.address.length < sizeof(addr))
     return FALSE;
 
   memcpy(&addr, asnValue.address.stream, sizeof(addr));
   return TRUE;
-#else
-  addr = 0;
-  return FALSE;
-#endif
 }
 
 
@@ -610,10 +608,8 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
   while (GetNextOid(oid, value)) {
     if (!(baseOid *= oid))
       break;
-#ifdef ASN_IPADDRESS
     if (value.asnType != ASN_IPADDRESS)
       break;
-#endif
 
     oid[9] = 2;
     AsnInteger ifIndex = -1;
@@ -621,7 +617,7 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
       break;
 
     if (ifIndex == ifNum) {
-      memcpy(&gwAddr, value.asnValue.address.stream, sizeof(gwAddr));
+      value.GetIpAddress(gwAddr);
       break;
     }
 
@@ -1705,13 +1701,11 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
   while (snmp.GetNextOid(oid, value)) {
     if (!(baseOid *= oid))
       break;
-#ifdef ASN_IPADDRESS
     if (value.asnType != ASN_IPADDRESS)
       break;
-#endif
 
     Address ipAddr;
-    memcpy(&ipAddr, value.asnValue.address.stream, sizeof(ipAddr));
+    value.GetIpAddress(ipAddr);
 
     oid[9] = 2;
     AsnInteger ifIndex = -1;
