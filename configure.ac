@@ -434,6 +434,7 @@ default_httpsvc=yes
 default_soap=yes
 default_xmlrpc=yes
 default_jabber=yes
+default_configfile=yes
 
 if test "${enable_openh323}x" = "yesx" ; then
   default_resolver=yes
@@ -464,6 +465,7 @@ if test "${enable_openh323}x" = "yesx" ; then
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
+  default_configfile=no
 elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
@@ -493,6 +495,7 @@ elif test "${enable_minsize}x" = "yesx" ; then
   default_soap=no
   default_xmlrpc=no
   default_jabber=no
+  default_configfile=no
 fi
 
 
@@ -1720,6 +1723,28 @@ else
   AC_DEFINE(P_HTTPSVC, 1)
 fi
 AC_SUBST(HAS_HTTPSVC)
+
+dnl ########################################################################
+dnl check for enabling config file support
+
+dnl MSWIN_DISPLAY    config_file,Config file protocol support
+dnl MSWIN_DEFINE     config_file,P_CONFIG_FILE
+
+AC_ARG_ENABLE(configfile,
+       [  --disable-configfile    disable config file support])
+
+if test "${enable_configfile}z" = "z" ; then
+  enable_configfile=$default_configfile
+fi
+
+HAS_CONFIG_FILE=
+if test "$enable_configfile" = "no" ; then
+  AC_MSG_NOTICE(Config file support disabled)
+else
+  HAS_CONFIG_FILE=1
+  AC_DEFINE(P_CONFIG_FILE, 1)
+fi
+AC_SUBST(HAS_CONFIG_FILE)
 
 dnl ########################################################################
 dnl check for sound support
