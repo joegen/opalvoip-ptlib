@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.12  2003/06/11 22:17:53  dereksmithies
+ * Add fake video device which display text, on --videoinput 5
+ *
  * Revision 1.11  2003/03/17 07:46:23  robertj
  * Migrated vflip member variable and functions into PVideoDevice class.
  *
@@ -73,6 +76,12 @@
 #pragma interface
 #endif
 
+#define MAX_L_HEIGHT 11
+
+typedef struct {
+    unsigned char ascii;
+    char *line[MAX_L_HEIGHT];
+} OneVFakeLetterData;
 
 
 /** This class defines a video input device that
@@ -168,6 +177,13 @@ class PFakeVideoInputDevice : public PVideoInputDevice
      */
     void GrabOriginalMovingBlocksFrame(BYTE *resFrame);
 
+    /**Generate a textual output on the fake video image
+     */
+    void GrabTextVideoFrame(BYTE *resFrame);
+    
+    /**Get the stucture holding required letter for GetTextVideoFrame()
+     */
+    OneVFakeLetterData *FindLetter(unsigned ascii);
 
     /** Fills a region of the image with a constant colour.
      */
@@ -255,7 +271,12 @@ class PFakeVideoInputDevice : public PVideoInputDevice
  protected:
    PINDEX videoFrameSize;
    int    grabCount;    
+
+   PString textLine[MAX_L_HEIGHT];
 };
+
+
+
 
 #endif
 
