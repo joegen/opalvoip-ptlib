@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.32  2004/04/03 23:53:09  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.31  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -340,6 +345,7 @@ class PHashTable : public PCollection
     // Member variables
     class Element {
       public:
+        friend class Table;
         PObject * key;
         PObject * data;
         Element * next;
