@@ -14,7 +14,7 @@
 YWinCEOStream cerr;
 YWinCEOStream cout;
 #else
-#include "YWinCEOStream.h"
+#include "../../../include/ptlib/wince/YWinCEOStream.h"
 #endif
 
 #define BufferSize 1024
