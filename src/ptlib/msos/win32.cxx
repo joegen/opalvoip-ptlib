@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.35 1996/08/08 10:03:43 robertj Exp $
+ * $Id: win32.cxx,v 1.36 1996/10/08 13:03:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.36  1996/10/08 13:03:47  robertj
+ * Added new error messages.
+ *
  * Revision 1.35  1996/08/08 10:03:43  robertj
  * Fixed static error text returned when no osError value.
  *
@@ -410,7 +413,8 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     { WSAESHUTDOWN,             "Connection shutdown" },
     { WSAETIMEDOUT,             "Timed out" },
     { WSAEMSGSIZE,              "Message larger than buffer" },
-    { WSAEWOULDBLOCK,           "Would block" }
+    { WSAEWOULDBLOCK,           "Would block" },
+    { 0x1000000,                "Unexpected error in protocol" }
   };
 
   for (PINDEX i = 0; i < PARRAYSIZE(win32_errlist); i++)
