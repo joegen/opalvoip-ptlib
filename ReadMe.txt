@@ -122,6 +122,13 @@ For unix.
 	compile, most unix systems have these. WARNING: there is a bug in most 
 	of the bison.simple files. See below for details.
 
+	PWLib requires GNU Make. If GNU Make (gmake) is not your default make
+	program (eg FreeBSD users), you will need to install GNU Make first
+	and then use
+		cd ~/pwlib
+		gmake both
+
+
 	If you are getting huge numbers of errors during the compile, then it 
         is likely your platform is not supported, or you have incorrectly set 
         the OSTYPE and MACHTYPE variables.
