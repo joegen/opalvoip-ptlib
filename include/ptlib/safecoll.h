@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.11  2004/10/14 12:31:45  rjongbloed
+ * Added synchronous mode for safe collection RemoveAll() to wait until all objects
+ *   have actually been deleted before returning.
+ *
  * Revision 1.10  2004/10/04 12:54:33  rjongbloed
  * Added functions for locking an unlocking to "auto-unlock" classes.
  *
@@ -370,7 +374,9 @@ class PSafeCollection : public PObject
   public:
     /**Remove all objects in collection.
       */
-    virtual void RemoveAll();
+    virtual void RemoveAll(
+      BOOL synchronous = FALSE  /// Wait till objects are deleted before returning
+    );
 
     /**Disallow the automatic delete any objects that have been removed.
        Objects are simply removed from the collection and not marked for
