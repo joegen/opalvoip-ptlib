@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.25  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.24  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -578,7 +581,7 @@ class PConfig : public PObject
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/config.h"
+#include "msos/ptlib/config.h"
 #else
 #include "unix/ptlib/config.h"
 #endif

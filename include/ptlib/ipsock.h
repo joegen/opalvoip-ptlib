@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.62  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.61  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -227,9 +230,7 @@
 #pragma interface
 #endif
 
-#ifndef _PSOCKET
 #include <ptlib/socket.h>
-#endif
 
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.
@@ -749,7 +750,7 @@ class PIPSocket : public PSocket
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/ipsock.h"
+#include "msos/ptlib/ipsock.h"
 #else
 #include "unix/ptlib/ipsock.h"
 #endif
