@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.17 1997/01/12 04:13:07 robertj Exp $
+ * $Id: contain.h,v 1.18 1997/07/08 13:01:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.18  1997/07/08 13:01:30  robertj
+ * DLL support.
+ *
  * Revision 1.17  1997/01/12 04:13:07  robertj
  * Changed library to support NT 4.0 API changes.
  *
@@ -82,7 +85,7 @@
 #pragma warning(disable:4711)  // auto inlining warning
 #pragma warning(disable:4097)  // typedef synonym for class
 
-#if _MSC_VER>=800 && !defined(PMAKEDLL)
+#if _MSC_VER>=800
 #define PHAS_TEMPLATES
 #endif
 
@@ -119,17 +122,6 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 
 #define NEAR __near
 
-#endif
-
-
-#ifdef PMAKEDLL
-#ifdef _WIN32
-#define PEXPORT __declspec(dllexport)
-#else
-#define PEXPORT extern __export
-#endif
-#else
-#define PEXPORT
 #endif
 
 
