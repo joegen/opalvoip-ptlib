@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.15 1996/03/11 10:29:50 robertj Exp $
+ * $Id: http.cxx,v 1.16 1996/03/16 05:00:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,14 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.16  1996/03/16 05:00:26  robertj
+ * Added ParseReponse() for splitting reponse line into code and info.
+ * Added client side support for HTTP socket.
+ * Added hooks for proxy support in HTTP socket.
+ * Added translation type to TranslateString() to accommodate query variables.
+ * Defaulted scheme field in URL to "http".
+ * Inhibited output of port field on string conversion of URL according to scheme.
+ *
  * Revision 1.15  1996/03/11 10:29:50  robertj
  * Fixed bug in help image HTML.
  *
@@ -138,14 +146,23 @@ void PURL::ReadFrom(istream & stream)
 }
 
 
-PString PURL::TranslateString(const PString & str)
+PString PURL::TranslateString(const PString & str, TranslationType type)
 {
   PString xlat = str;
 
+  PString unsafeChars = ";/?:@=&#%+";
+  if (type != QueryTranslation)
+    unsafeChars += ' ';
+
   PINDEX pos = (PINDEX)-1;
-  PString unsafeChars = " ;/?:@=&#%+";
   while ((pos = xlat.FindOneOf(unsafeChars, pos+1)) != P_MAX_INDEX)
     xlat.Splice(psprintf("%%%02X", xlat[pos]), pos, 1);
+
+  if (type == QueryTranslation) {
+    pos = (PINDEX)-1;
+    while ((pos = xlat.Find(' ', pos+1)) != P_MAX_INDEX)
+      xlat[pos] = '+';
+  }
 
   return xlat;
 }
@@ -189,11 +206,12 @@ static void SplitVars(const PString & queryStr, PStringToString & queryVars)
 
 void PURL::Parse(const char * cstr)
 {
-  scheme = hostname = PCaselessString();
+  scheme = "http";
+  hostname = PCaselessString();
   pathStr = username = password = parameters = fragment = queryStr = PString();
   path.SetSize(0);
   queryVars.RemoveAll();
-  port = 80;
+  port = 0;
   absolutePath = TRUE;
 
   // copy the string so we can take bits off it
@@ -249,6 +267,8 @@ void PURL::Parse(const char * cstr)
       port = (WORD)url(pos2+1, pos).AsInteger();
     }
     UnmangleString(hostname);
+    if (hostname.IsEmpty())
+      hostname = PIPSocket::GetHostName();
     url.Delete(0, pos);
   }
 
@@ -310,7 +330,13 @@ PString PURL::AsString(UrlFormat fmt) const
         str << "localhost";
       else
         str << hostname;
-      if (port != 80)
+      if (!(scheme == "http" && port == 80) &&
+          !(scheme == "ftp" && port == 21) &&
+          !(scheme == "gopher" && port == 70) &&
+          !(scheme == "nntp" && port == 119) &&
+          !(scheme == "telnet" && port == 23) &&
+          !(scheme == "wais" && port == 210) &&
+          !(scheme == "prospero" && port == 1525))
         str << ':' << port;
     }
   }
@@ -502,26 +528,73 @@ PHTTPSocket::PHTTPSocket(PSocket & socket, const PHTTPSpace & space)
 }
 
 
-BOOL PHTTPSocket::GetDocument(const PString & url)
+BOOL PHTTPSocket::WriteCommand(Commands cmd,
+                               const PURL & url,
+                               const PMIMEInfo & outMIME,
+                               const PString & dataBody,
+                               PMIMEInfo & replyMIME)
 {
-  WriteCommand(GET, url);
-  return FALSE;
+  if (!PApplicationSocket::WriteCommand(cmd, url.AsString() & "HTTP/1.0"))
+    return FALSE;
+
+  if (!outMIME.Write(*this))
+    return FALSE;
+
+  if (!WriteString(dataBody))
+    return FALSE;
+
+  if (!ReadResponse())
+    return FALSE;
+
+  if (lastResponseInfo.Left(8) == "HTTP/0.9")
+    return TRUE;
+
+  return replyMIME.Read(*this);
 }
 
 
-BOOL PHTTPSocket::GetHeader(const PString & url)
+BOOL PHTTPSocket::GetDocument(const PURL & url,
+                              const PMIMEInfo & outMIME,
+                              PMIMEInfo & replyMIME)
 {
-  WriteCommand(HEAD, url);
-  return FALSE;
+  return WriteCommand(GET, url, outMIME, PString(), replyMIME);
 }
 
 
-BOOL PHTTPSocket::PostData(const PString & url, const PStringToString & data)
+BOOL PHTTPSocket::GetHeader(const PURL & url,
+                            const PMIMEInfo & outMIME,
+                            PMIMEInfo & replyMIME)
 {
-  WriteCommand(POST, url);
-  for (PINDEX i = 0; i < data.GetSize(); i++)
-    WriteString(data.GetKeyAt(i) + " = " + data.GetDataAt(i));
-  return FALSE;
+  return WriteCommand(HEAD, url, outMIME, PString(), replyMIME);
+}
+
+
+BOOL PHTTPSocket::PostData(const PURL & url,
+                           const PMIMEInfo & outMIME,
+                           const PStringToString & data,
+                           PMIMEInfo & replyMIME)
+{
+  PStringStream body;
+  body << data;
+  return WriteCommand(HEAD, url, outMIME, body, replyMIME);
+}
+
+
+PINDEX PHTTPSocket::ParseResponse(const PString & line)
+{
+  PINDEX endVer = line.Find(' ');
+  if (endVer == P_MAX_INDEX || line.Left(endVer) != "HTTP/1.0") {
+    UnRead(line);
+    lastResponseCode = 200;
+    lastResponseInfo = "HTTP/0.9";
+    return 0;
+  }
+
+  lastResponseInfo = line.Left(endVer);
+  PINDEX endCode = line.Find(' ', endVer+1);
+  lastResponseCode = line(endVer+1,endCode-1).AsInteger();
+  lastResponseInfo &= line.Mid(endCode);
+  return 0;
 }
 
 
@@ -586,14 +659,33 @@ BOOL PHTTPSocket::ProcessCommand()
         OnError(BadRequest, "incomplete entity-body received");
         return FALSE;
       }
+      SetReadTimeout(0);
+      while (ReadChar() >= 0)
+        ;
+      SetReadTimeout(PMaxTimeInterval);
     }
   }
   else {
     int count = 0;
-    while (Read(entityBody.GetPointer(count+100)+count, 100))
+    while (Read(entityBody.GetPointer(count+1000)+count, 1000))
       count += GetLastReadCount();
+    entityBody.SetSize(count+1);
   }
 
+  // If the incoming URL is of a proxy type then call OnProxy() which will
+  // probably just go OnError(). Even if a full URL is provided in the
+  // command we should check to see if it is a local server request and process
+  // it anyway even though we are not a proxy. The usage of GetHostName()
+  // below are to catch every way of specifying the host (name, alias, any of
+  // several IP numbers etc).
+  if (url.GetScheme() != "http" ||
+      (url.GetPort() != 0 && url.GetPort() != GetPort()) ||
+      (!url.GetHostName().IsEmpty() &&
+         PIPSocket::GetHostName(url.GetHostName()) != PIPSocket::GetHostName()))
+    return OnProxy((Commands)cmd, url, mimeInfo, entityBody);
+
+
+  // Handle the local request
   switch (cmd) {
     case GET :
       return OnGET(url, mimeInfo);
@@ -650,6 +742,15 @@ BOOL PHTTPSocket::OnPOST(const PURL & url,
 }
 
 
+BOOL PHTTPSocket::OnProxy(Commands,
+                          const PURL &,
+                          const PMIMEInfo &,
+                          const PString &)
+{
+  return OnError(BadGateway, "Proxy not implemented.");
+}
+
+
 BOOL PHTTPSocket::OnUnknown(const PCaselessString & command)
 {
   return OnError(BadRequest, command);
@@ -687,9 +788,10 @@ void PHTTPSocket::StartResponse(StatusCode code,
 
   httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
   *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
-        << statusInfo->code <<  statusInfo->text << "\r\n";
+        << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
-  headers.SetAt(ContentLengthStr, PString(PString::Unsigned, bodySize));
+  if (bodySize != 0 || !headers.Contains(ContentLengthStr))
+    headers.SetAt(ContentLengthStr, PString(PString::Unsigned, bodySize));
   headers.Write(*this);
 }
 
@@ -1760,8 +1862,8 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
   html << PHTML::Table();
   if (option != InsertIntoForm)
     html << PHTML::Paragraph()
-         << "    " << PHTML::SubmitButton("Accept")
-         << "    " << PHTML::ResetButton("Reset")
+         << ' ' << PHTML::SubmitButton("Accept")
+         << ' ' << PHTML::ResetButton("Reset")
          << PHTML::Form();
 
   if (option == CompleteHTML) {
@@ -1775,7 +1877,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
                      const PStringToString & data,
                      PHTML & msg)
 {
-  msg = "Error in POST";
+  msg = "Error in Request";
   if (data.GetSize() == 0) {
     msg << "No parameters changed." << PHTML::Body();
     request.code = PHTTPSocket::NoContent;
@@ -1803,7 +1905,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
       field.SetValue(data[name]);
   }
 
-  msg  = "Accepted new configuration";
+  msg = "Accepted New Configuration";
   msg << PHTML::Body();
   return TRUE;
 }
