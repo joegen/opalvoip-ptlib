@@ -687,6 +687,16 @@ PString PFilePath::GetType() const
 }
 
 
+void PFilePath::SetType(const PString & type)
+{
+  PINDEX dot = FindLast('.');
+  if (dot != P_MAX_INDEX)
+    Splice(type, dot, GetLength()-dot);
+  else
+    *this += type;
+}
+
+
 PString PFilePath::GetFileName() const
 
 {
