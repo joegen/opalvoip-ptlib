@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.7 1995/01/01 01:07:33 robertj Exp $
+ * $Id: ipsock.h,v 1.8 1995/01/02 12:28:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.7  1995/01/01 01:07:33  robertj
+ * Revision 1.8  1995/01/02 12:28:24  robertj
+ * Documentation.
+ * Added more socket functions.
+ *
+ * Revision 1.7  1995/01/01  01:07:33  robertj
  * More implementation.
  *
  * Revision 1.6  1994/12/15  12:47:14  robertj
@@ -46,21 +50,55 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
   public:
 
-#ifdef P_HAS_BERKELEY_SOCKETS
+  // New functions for class
+    typedef BYTE Address[4];
 
-    BOOL LookupHost(
-      const PString & host_address,
-      sockaddr_in * address
+    BOOL GetAddress(
+      Address & addr    // Variable to receive hosts IP address
     );
-    /* Internal function used when the library is using a Berkley sockets
-       compatible system. It will obtain the address in a socket ready form
-       given a host domain name or dot form IP address as a string.
+    static BOOL GetAddress(
+      const PString & hostname,
+      /* Name of host to get address for. This may be either a domain name or
+         an IP number in "dot" format.
+       */
+      Address & addr    // Variable to receive hosts IP address
+    );
+    /* Get the Internet Protocol address for the specified host.
+
+       Returns: the IP number for the host.
      */
 
-    virtual WORD    GetPort(const PString & service) const = 0;
-    virtual PString GetService(WORD port) const = 0;
+    PStringArray GetHostAliases() const;
+    static PStringArray GetHostAliases(
+      const PString & hostname
+      /* Name of host to get address for. This may be either a domain name or
+         an IP number in "dot" format.
+       */
+    );
+    /* Get the alias host names for the specified host.
 
-#endif
+       Returns: array of strings for each alias for the host.
+     */
+
+    virtual WORD GetPort(
+      const PString & service   // Name of service to get port number for.
+    ) const = 0;
+    /* Get the port number for the specified service.
+    
+       The exact behviour of this function is dependent on whether TCP or UDP
+       transport is being used. The $H$PTCPSocket and $H$PUDPSocket classes
+       will implement this function.
+     */
+
+    virtual PString GetService(
+      WORD port   // Number for service to find name of.
+    ) const = 0;
+    /* Get the service name from the port number.
+    
+       The exact behviour of this function is dependent on whether TCP or UDP
+       transport is being used. The $H$PTCPSocket and $H$PUDPSocket classes
+       will implement this function.
+     */
 
 
 // Class declaration continued in platform specific header file ///////////////
