@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.17  2000/11/14 14:56:24  rogerh
+ * Fix #define parameters (fd should be just f)
+ *
  * Revision 1.16  2000/11/14 14:52:32  rogerh
  * Fix SET/GET typo error
  *
@@ -86,11 +89,11 @@ extern "C" int ioctl(int, int, void *);
 
 
 #ifndef	TCSETATTR
-#define	TCSETATTR(f,t)	::ioctl(fd,TCSETAW,t)
+#define	TCSETATTR(f,t)	::ioctl(f,TCSETAW,t)
 #endif
 
 #ifndef	TCGETATTR
-#define	TCGETATTR(f,t)	::ioctl(fd,TCGETA,t)
+#define	TCGETATTR(f,t)	::ioctl(f,TCGETA,t)
 #endif
 
 //#define BINARY_LOCK	1
