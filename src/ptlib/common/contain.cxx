@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.109  2002/01/26 23:57:45  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.108  2002/01/22 01:03:57  craigs
  * Added operator += and operator + functions to PStringArray and PStringList
  * Added AppendString operator to PStringArray
@@ -2103,7 +2106,7 @@ int PStringStream::Buffer::sync()
 }
 
 streampos PStringStream::Buffer::seekoff(streamoff off,
-#ifdef __MWERKS__
+#if defined(__MWERKS__) || defined(GCC3)
                                  ios::seekdir dir, ios::openmode mode)
 #else
                                  ios::seek_dir dir, int mode)
@@ -2165,20 +2168,21 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
 
 
 PStringStream::PStringStream()
+    : iostream(cout.rdbuf())
 {
   init(new PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const PString & str)
-  : PString(str)
+    : PString(str), iostream(cout.rdbuf())
 {
   init(new PStringStream::Buffer(this));
 }
 
 
 PStringStream::PStringStream(const char * cstr)
-  : PString(cstr)
+  : PString(cstr), iostream(cout.rdbuf())
 {
   init(new PStringStream::Buffer(this));
 }
