@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.28  2001/01/24 06:58:46  yurik
+ * More WinCe related changes
+ *
  * Revision 1.27  2001/01/24 06:08:49  yurik
  * Windows CE port-related changes
  *
@@ -161,7 +164,11 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;
   friend class PApplication;
+#ifndef _WIN32_WCE
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+#else
+  friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+#endif
 
 #endif
 };
