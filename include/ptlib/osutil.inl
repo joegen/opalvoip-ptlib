@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.57 1998/01/04 08:04:27 robertj Exp $
+ * $Id: osutil.inl,v 1.58 1998/01/26 00:31:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.58  1998/01/26 00:31:38  robertj
+ * Added functions to get/set 64bit integers from a PConfig.
+ * Added multiply and divide operators to PTimeInterval.
+ *
  * Revision 1.57  1998/01/04 08:04:27  robertj
  * Changed gmtime and locatime to use operating system specific functions.
  *
@@ -233,6 +237,18 @@ PINLINE PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
 
 PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
   { milliseconds -= t.milliseconds; return *this; }
+
+PINLINE PTimeInterval PTimeInterval::operator*(int f) const
+  { return PTimeInterval(milliseconds * f); }
+
+PINLINE PTimeInterval & PTimeInterval::operator*=(int f)
+  { milliseconds *= f; return *this; }
+
+PINLINE PTimeInterval PTimeInterval::operator/(int f) const
+  { return PTimeInterval(milliseconds / f); }
+
+PINLINE PTimeInterval & PTimeInterval::operator/=(int f)
+  { milliseconds /= f; return *this; }
 
 
 PINLINE BOOL PTimeInterval::operator==(const PTimeInterval & t) const
@@ -595,6 +611,12 @@ PINLINE long PConfig::GetInteger(const PString & key, long dflt) const
 
 PINLINE void PConfig::SetInteger(const PString & key, long value)
   { SetInteger(defaultSection, key, value); }
+
+PINLINE PInt64 PConfig::GetInt64(const PString & key, PInt64 dflt) const
+  { return GetInt64(defaultSection, key, dflt); }
+
+PINLINE void PConfig::SetInt64(const PString & key, PInt64 value)
+  { SetInt64(defaultSection, key, value); }
 
 PINLINE double PConfig::GetReal(const PString & key, double dflt) const
   { return GetReal(defaultSection, key, dflt); }
