@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.52  2002/05/08 05:38:53  robertj
+ * Added PHTTPTailFile resource to do a unix 'tail -f' of a file.
+ *
  * Revision 1.51  2001/10/31 01:34:47  robertj
  * Added extra const for constant HTTP tag name strings.
  * Changes to support HTTP v1.1 chunked transfer encoding.
@@ -1645,6 +1648,81 @@ class PHTTPFileRequest : public PHTTPRequest
     );
 
     PFile file;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPTailFile
+
+/** This object describes a HyperText Transport Protocol resource which is a
+   single file. The file can be anywhere in the file system and is mapped to
+   the specified URL location in the HTTP name space defined by the
+   #PHTTPSpace# class.
+
+   The difference between this and PHTTPFile is that it continually outputs
+   the contents of the file, as per the unix "tail -f" command.
+ */
+class PHTTPTailFile : public PHTTPFile
+{
+  PCLASSINFO(PHTTPTailFile, PHTTPFile)
+
+  public:
+    /** Contruct a new simple file resource for the HTTP space. If no MIME
+       content type is specified then a default type is used depending on the
+       file type. For example, "text/html" is used of the file type is
+       ".html" or ".htm". The default for an unknown type is
+       "application/octet-stream".
+     */
+    PHTTPTailFile(
+      const PString & filename     // file in file system and URL name.
+    );
+    PHTTPTailFile(
+      const PString & filename,    // file in file system and URL name.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    PHTTPTailFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file       // Location of file in file system.
+    );
+    PHTTPTailFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PString & contentType  // MIME content type for the file.
+    );
+    PHTTPTailFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+    PHTTPTailFile(
+      const PURL & url,            // Name of the resource in URL space.
+      const PFilePath & file,      // Location of file in file system.
+      const PString & contentType, // MIME content type for the file.
+      const PHTTPAuthority & auth  // Authorisation for the resource.
+    );
+
+
+  // Overrides from class PHTTPResource
+    /** Get the headers for block of data (eg HTML) that the resource contains.
+       This will fill in all the fields of the <CODE>outMIME</CODE> parameter
+       required by the resource and return the status for the load.
+
+       @return
+       TRUE if all OK, FALSE if an error occurred.
+     */
+    virtual BOOL LoadHeaders(
+      PHTTPRequest & request    // Information on this request.
+    );
+
+    /** Get a block of data that the resource contains.
+
+       @return
+       TRUE if more to load.
+     */
+    virtual BOOL LoadData(
+      PHTTPRequest & request,    // Information on this request.
+      PCharArray & data          // Data used in reply.
+    );
 };
 
 
