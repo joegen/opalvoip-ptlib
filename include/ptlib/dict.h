@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.6 1995/02/11 04:10:35 robertj Exp $
+ * $Id: dict.h,v 1.7 1995/02/22 10:50:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.6  1995/02/11 04:10:35  robertj
+ * Revision 1.7  1995/02/22 10:50:29  robertj
+ * Changes required for compiling release (optimised) version.
+ *
+ * Revision 1.6  1995/02/11  04:10:35  robertj
  * Fixed dictionary MACRO for templates.
  *
  * Revision 1.5  1995/02/05  00:48:03  robertj
@@ -206,7 +209,7 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
 
 PDECLARE_CONTAINER(PAbstractSet, PHashTable)
   public:
-    PINLINE PAbstractSet();
+    PAbstractSet();
     /* Create a new, empty, set.
 
        Note that by default, objects placed into the list will be deleted when
@@ -494,7 +497,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 
 PDECLARE_CLASS(PAbstractDictionary, PHashTable)
   public:
-    PINLINE PAbstractDictionary();
+    PAbstractDictionary();
     /* Create a new, empty, dictionary.
 
        Note that by default, objects placed into the dictionary will be deleted
