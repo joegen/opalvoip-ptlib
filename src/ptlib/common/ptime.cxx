@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.4 1996/02/25 03:07:47 robertj Exp $
+ * $Id: ptime.cxx,v 1.5 1996/02/25 11:22:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.5  1996/02/25 11:22:13  robertj
+ * Added check for precision field in stream when outputting time interval..
+ *
  * Revision 1.4  1996/02/25 03:07:47  robertj
  * Changed PrintOn and ReadFrom on PTimeInterval to use dd:hh:mm:ss.mmm format.
  *
@@ -49,6 +52,10 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & strm) const
 {
+  int decs = strm.precision();
+  if (decs > 3)
+    decs = 3;
+
   long tmp = milliseconds/86400000;
   if (tmp > 0)
     strm << tmp << ':';
@@ -61,13 +68,9 @@ void PTimeInterval::PrintOn(ostream & strm) const
   if (tmp > 0)
     strm << tmp << ':';
 
-  strm << (milliseconds%60000)/1000 << '.';
-
-  char oldfill = strm.fill();
-  strm.fill('0');
-  strm.width(3);
-  strm << (milliseconds%1000);
-  strm.fill(oldfill);
+  strm << (milliseconds%60000)/1000;
+  if (decs > 0)
+    strm << '.' << setfill('0') << setw(decs) << (milliseconds%1000);
 }
 
 
@@ -76,22 +79,17 @@ void PTimeInterval::ReadFrom(istream &strm)
   long day = 0;
   long hour = 0;
   long min = 0;
-  long msec = 0;
-  long sec;
+  float sec;
   strm >> sec;
   while (strm.peek() == ':') {
     day = hour;
     hour = min;
-    min = sec;
+    min = (long)sec;
     strm.get();
     strm >> sec;
   }
-  if (strm.peek() == '.') {
-    strm.get();
-    strm >> msec;
-  }
 
-  SetInterval(msec, sec, min, hour, day);
+  SetInterval(((long)(sec*1000))%1000, (int)sec, min, hour, day);
 }
 
 
