@@ -26,6 +26,9 @@
  * Based on code originally by Bob Jenkins.
  *
  * $Log: random.cxx,v $
+ * Revision 1.3  2001/02/28 04:27:35  robertj
+ * Fixed stupid error in random number seeding, infinite loop.
+ *
  * Revision 1.2  2001/02/27 03:33:44  robertj
  * Changed random number generator due to licensing issues.
  *
@@ -81,7 +84,7 @@ void PRandom::SetSeed(DWORD seed)
    m=randmem;
    r=randrsl;
 
-   for (i=0; i<RandSize; i)
+   for (i=0; i<RandSize; i++)
      r[i] = seed++;
 
    a=b=c=d=e=f=g=h=0x9e3779b9;  /* the golden ratio */
