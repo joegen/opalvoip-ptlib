@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.38  2003/04/22 23:39:09  craigs
+ * Changed some functions from protected to public for MacOSX. Thanks to Hugo Santos
+ *
  * Revision 1.37  2003/04/17 14:44:44  craigs
  * Removed MacOS specific defines to make some attributes public
  * Thanks to Hugo Santos and apologies to Roger Hardiman
@@ -838,13 +841,14 @@ class PASN_Choice : public PASN_Object
     void EncodeXER(PXER_Stream &) const;
 #endif
 
+    PASN_Choice & operator=(const PASN_Choice & other);
+
   protected:
     PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PString & nameSpec);
 
     PASN_Choice(const PASN_Choice & other);
-    PASN_Choice & operator=(const PASN_Choice & other);
 
     BOOL CheckCreate() const;
 
@@ -971,12 +975,13 @@ class PASN_Array : public PASN_ConstrainedObject
 
     virtual PASN_Object * CreateObject() const = 0;
 
+    PASN_Array & operator=(const PASN_Array & other);
+
   protected:
     PASN_Array(unsigned tag = UniversalSequence,
                TagClass tagClass = UniversalTagClass);
 
     PASN_Array(const PASN_Array & other);
-    PASN_Array & operator=(const PASN_Array & other);
 
     PASN_ObjectArray array;
 };
