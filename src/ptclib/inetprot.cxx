@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.59  2005/04/06 19:34:14  dsandras
+ * Fixed typo in previous commit.
+ *
  * Revision 1.58  2005/04/06 07:56:58  dsandras
  * Added continuation line support in MimeInfo to fix problem reported by Jan Schiefer thanks to Craig Southeren.
  *
@@ -745,8 +748,10 @@ void PMIMEInfo::ReadFrom(istream &strm)
       lastLine = line;
     }
   }
-  if (!lastLine.IsEmpty())
-    AddMIME(line);
+
+  if (!lastLine.IsEmpty()) {
+    AddMIME(lastLine);
+  }
 }
 
 
