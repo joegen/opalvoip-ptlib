@@ -29,11 +29,15 @@
 //
 // 
 
+#ifndef _WIN32_WCE
 #include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <errno.h>
 #include <stdlib.h>
+#else
+#include <stdlibx.h>
+#endif // !_WIN32_WCE
 #include <time.h>
 
 #if defined(__GNUC__) && __GNUC__ > 2
@@ -44,7 +48,10 @@
 
 #ifdef WIN32
 
+#ifndef _WIN32_WCE
 #include <winsock2.h>
+#endif // !_WIN32_WCE
+
 #include <stdlib.h>
 #include <io.h>
 
