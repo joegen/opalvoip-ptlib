@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.16  2003/03/01 17:05:05  rogerh
+ * Mac OS X updates from Shawn Pai-Hsiang Hsiao
+ *
  * Revision 1.15  2003/02/24 17:49:02  rogerh
  * Add Mac Core Audio changes from Shawn.
  *
@@ -183,6 +186,7 @@ class JRingBuffer;
     void *caCBData;
     int caBufLen;
     float *caBuf;
+    void *caConverterRef;
     pthread_mutex_t caMutex;
     pthread_cond_t caCond;
 #endif
