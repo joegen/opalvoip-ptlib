@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.108  2003/03/31 09:03:04  robertj
+# Added ILS support file.
+#
 # Revision 1.107  2003/03/28 03:03:28  craigs
 # Added LDAP sources
 #
@@ -380,7 +383,8 @@ CFLAGS += -DPTRACING=1
 
 
 ifdef HAS_OPENLDAP
-LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx
+LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx \
+               $(COMPONENT_SRC_DIR)/pils.cxx
 endif
 
 ifdef HAS_OPENSSL
