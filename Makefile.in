@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.2  2003/05/16 19:10:23  shawn
+# Replaces "so" with @SHAREDLIBEXT@ so `make install' works on platforms
+# that do not use "so" as shared library filename extension.
+#
 # Revision 1.1  2003/04/28 01:09:24  craigs
 # Initial version
 #
@@ -152,7 +156,7 @@ docs:
 	doc++ --dir html --tables pwlib.dxx
 
 install:
-	cp -df lib/*so* $(PREFIX)/lib/
+	cp -df lib/*@SHAREDLIBEXT@* $(PREFIX)/lib/
 	cp -rf include/ptclib/ $(PREFIX)/include/
 	cp -rf include/ptlib/ $(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(PREFIX)/include/
@@ -161,7 +165,7 @@ install:
 	cp make/ptlib-config $(PREFIX)/bin/
 	mkdir -p $(PREFIX)/share/pwlib/
 	cp -rf make $(PREFIX)/share/pwlib/
-	ln -s $(PREFIX)/lib/$(PTLIB_FILE) $(PREFIX)/lib/libpt.so
+	ln -s $(PREFIX)/lib/$(PTLIB_FILE) $(PREFIX)/lib/libpt.@SHAREDLIBEXT@
 	chmod -R a+r $(PREFIX)/include/ptlib $(PREFIX)/include/ptclib $(PREFIX)/include/ptlib.h $(PREFIX)/share/pwlib
 	chmod a+rx $(PREFIX)/bin/ptlib-config
 
