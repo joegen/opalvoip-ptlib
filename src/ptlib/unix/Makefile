@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.83  2001/11/27 22:42:13  robertj
+# Changed to make system to better support non-shared library building.
+#
 # Revision 1.82  2001/11/25 23:28:04  robertj
 # Fixed correct setting of HAS_VIDEO_CAPTURE compile flag
 #
@@ -492,7 +495,8 @@ $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 
 #######################################################
 
-LIB_BASENAME = $(PTLIB_FILE)
+LIB_BASENAME=$(PTLIB_BASE)
+LIB_FILENAME=$(PTLIB_FILE)
 
 include $(PWLIBDIR)/make/lib.mak
 
