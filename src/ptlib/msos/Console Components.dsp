@@ -283,6 +283,10 @@ SOURCE=..\..\ptclib\xmpp_c2s.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\xmpp_muc.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\xmpp_roster.cxx
 # End Source File
 # End Group
@@ -456,6 +460,10 @@ SOURCE=..\..\..\include\ptclib\xmpp.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\xmpp_c2s.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\xmpp_muc.h
 # End Source File
 # Begin Source File
 
