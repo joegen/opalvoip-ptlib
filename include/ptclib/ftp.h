@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.9  1998/11/30 02:50:45  robertj
+ * New directory structure
+ *
  * Revision 1.8  1998/09/23 06:19:26  robertj
  * Added open source copyright license.
  *
@@ -64,8 +67,8 @@
 #pragma interface
 #endif
 
-#include <inetprot.h>
-#include <sockets.h>
+#include <ptclib/inetprot.h>
+#include <ptlib/sockets.h>
 
 
 PDECLARE_CLASS(PFTP, PInternetProtocol)
