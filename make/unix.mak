@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.47  1999/08/09 12:46:07  robertj
+# Added support for libc5 and libc6 compiles under Linux (libc6 uses pthreads).
+#
 # Revision 1.46  1999/07/31 03:53:16  robertj
 # Allowed for override of object directory suffix
 #
@@ -207,8 +210,17 @@ endif
 
 ifeq ($(OSTYPE),linux)
 
+# Enable pthreads if we are using glibc 6
+ifneq (,$(shell grep define.\*__GNU_LIBRARY__.\*6 /usr/include/features.h))
+P_PTHREADS	= 1
+else
+ifndef PTLIB_ALT
+PTLIB_ALT = libc5
+endif
+endif
+
+
 # P_SSL		= $(PWLIBDIR)
-#P_PTHREADS	= 1
 
 # i486 Linux for x86, using gcc 2.7.2
 STDCCFLAGS	+= -DP_LINUX
