@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.37  2001/03/14 01:16:11  robertj
+ * Fixed signals processing, now uses housekeeping thread to handle signals
+ *   synchronously. This also fixes issues with stopping PServiceProcess.
+ *
  * Revision 1.36  2001/03/13 03:47:18  robertj
  * Added ability to set pid file from command line.
  *
@@ -331,6 +335,8 @@ int PServiceProcess::_main(void *)
       PError << "error: must specify file name for -l" << endl;
       helpAndExit = TRUE;
     }
+    else if (PDirectory::Exists(systemLogFile))
+      systemLogFile = PDirectory(systemLogFile) + PProcess::Current().GetFile().GetFileName() + ".log";
   }
 
   if (helpAndExit) {
@@ -426,28 +432,19 @@ int PServiceProcess::_main(void *)
 
     // Need to get rid of the config write thread before fork, as on
     // pthreads platforms the forked process does not have the thread
-    delete configFiles;
-    CreateConfigFilesDictionary();
+    CommonDestruct();
 
     pid_t pid = fork();
     switch (pid) {
+      case 0 : // The forked process
+        break;
+
       case -1 : // Failed
         PError << "Fork failed creating daemon process." << endl;
         return -1;
 
-      case 0 : // The forked process
-        pidFileToRemove = pidfilename;
-        // set the SIGINT and SIGQUIT to ignore so the child process doesn't
-        // inherit them from the parent
-        signal(SIGINT,  SIG_IGN);
-        signal(SIGQUIT, SIG_IGN);
-
-        // and set ourselves as out own process group so we don't get signals
-        // from our parent's terminal (hopefully!)
-        PSETPGRP();
-        break;
-
-      default :
+      default : // Parent process
+        cout << "Daemon started with pid " << pid << endl;
         if (!pidfilename) {
           // Write out the child pid to magic file in /var/run (at least for linux)
           ofstream pidfile(pidfilename);
@@ -459,6 +456,15 @@ int PServiceProcess::_main(void *)
         }
         return 0;
     }
+
+    // Set ourselves as out own process group so we don't get signals
+    // from our parent's terminal (hopefully!)
+    PSETPGRP();
+
+    CommonConstruct();
+    SignalTimerChange();
+
+    pidFileToRemove = pidfilename;
   }
 #endif
 
@@ -513,6 +519,7 @@ void PServiceProcess::PXOnSignal(int sig)
   switch (sig) {
     case SIGINT :
     case SIGTERM :
+      OnStop();
       Terminate();
       break;
 

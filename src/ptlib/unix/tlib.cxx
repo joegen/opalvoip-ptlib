@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.53  2001/03/14 01:16:11  robertj
+ * Fixed signals processing, now uses housekeeping thread to handle signals
+ *   synchronously. This also fixes issues with stopping PServiceProcess.
+ *
  * Revision 1.52  2001/03/07 07:31:25  yurik
  * refined BeOS constants
  *
@@ -377,6 +381,11 @@ void PXSignalHandler(int sig)
   PProcess & process = PProcess::Current();
   process.pxSignals |= 1 << sig;
   process.PXOnAsyncSignal(sig);
+#ifdef P_PTHREADS
+  // Inform house keeping thread we have a signal to be processed
+  BYTE ch;
+  write(process.timerChangePipe[1], &ch, 1);
+#endif
   signal(sig, PXSignalHandler);
 }
 
@@ -429,9 +438,9 @@ void SetSignals(void (*handler)(int))
 #ifdef SIGPROF
   signal(SIGPROF, HANDLER(handler));
 #endif
-//#ifdef SIGCHLD		
+#ifdef SIGCHLD		
 //  signal(SIGCHLD, HANDLER(handler));
-//#endif
+#endif
 }
 
 #if 0
@@ -491,6 +500,7 @@ void PProcess::CommonConstruct()
 void PProcess::CommonDestruct()
 {
   delete configFiles;
+  configFiles = NULL;
   SetSignals(NULL);
 }
 
