@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.55  2003/04/23 00:35:47  craigs
+ * Fixed problem with pmachdep.h and MacOSX thanks to Hugo Santos
+ *
  * Revision 1.54  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -429,7 +432,9 @@ typedef int socklen_t;
 
 #include <paths.h>
 #include <errno.h>
-//#include <dlfcn.h>
+#if P_DYNALINK
+#include <dlfcn.h>
+#endif
 #include <termios.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>
