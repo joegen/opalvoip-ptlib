@@ -1,11 +1,14 @@
 /*
  * ASN Library
  *
- * $Id: pasn.cxx,v 1.4 1997/07/20 08:34:37 craigs Exp $
+ * $Id: pasn.cxx,v 1.5 1997/08/20 09:00:37 craigs Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.5  1997/08/20 09:00:37  craigs
+ * Fixed problems with decoding of PASNNull
+ *
  * Revision 1.4  1997/07/20 08:34:37  craigs
  * Added ASN NULL type
  *
@@ -1218,9 +1221,10 @@ PASNNull::PASNNull()
 
 PASNNull::PASNNull(const PBYTEArray & buffer, PINDEX & ptr)
 {
-  PAssert((buffer.GetSize() - ptr ) >= 2 &&
-          (buffer[0] == 0x05) &&
-          (buffer[1] != 0x00),
+  PINDEX s = buffer.GetSize() - ptr;
+  PAssert(((buffer.GetSize() - ptr ) >= 2) &&
+          (buffer[ptr+0] == 0x05) &&
+          (buffer[ptr+1] == 0x00),
     "Attempt to decode non-null");
   ptr += 2 ;
 }
@@ -1255,6 +1259,12 @@ PString PASNNull::GetTypeAsString() const
 {
   return PString("Null");
 }
+
+PString PASNNull::GetString() const
+{
+  return PString();
+}
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
