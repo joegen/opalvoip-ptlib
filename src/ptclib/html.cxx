@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.9 1996/04/14 02:52:04 robertj Exp $
+ * $Id: html.cxx,v 1.10 1996/04/29 12:21:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.10  1996/04/29 12:21:22  robertj
+ * Fixed spelling error in assert.
+ * Fixed check box HTML, should always have a value.
+ * Added display of value of unclosed HTML element.
+ *
  * Revision 1.9  1996/04/14 02:52:04  robertj
  * Added hidden fields to HTML.
  *
@@ -77,7 +82,7 @@ PHTML::~PHTML()
 {
 #ifndef NDEBUG
   for (PINDEX i = 0; i < PARRAYSIZE(elementSet); i++)
-    PAssert(elementSet[i] == 0, "Failed to close elements");
+    PAssert(elementSet[i] == 0, psprintf("Failed to close element %u", i));
 #endif
 }
 
@@ -132,7 +137,7 @@ void PHTML::Toggle(ElementInSet elmt)
 void PHTML::Element::Output(PHTML & html) const
 {
   PAssert(reqElement == NumElementsInSet || html.Is(reqElement),
-                                                "HTML element out of centext");
+                                                "HTML element out of context");
 
   if (crlf == OpenCRLF && !html.Is(inElement))
     html << "\r\n";
@@ -173,7 +178,7 @@ PHTML::Head::Head()
 
 void PHTML::Head::Output(PHTML & html) const
 {
-  PAssert(!html.Is(InBody), "HTML element out of centext");
+  PAssert(!html.Is(InBody), "HTML element out of context");
   if (!html.Is(InHTML))
     html << HTML();
   Element::Output(html);
@@ -220,7 +225,7 @@ PHTML::Title::Title(const PString & titleStr)
 
 void PHTML::Title::Output(PHTML & html) const
 {
-  PAssert(!html.Is(InBody), "HTML element out of centext");
+  PAssert(!html.Is(InBody), "HTML element out of context");
   if (!html.Is(InHead))
     html << Head();
   if (html.Is(InTitle)) {
@@ -917,6 +922,7 @@ PHTML::CheckBox::CheckBox(const char * type,
 void PHTML::CheckBox::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
+  html << " VALUE=TRUE";
   if (checkedFlag)
     html << " CHECKED";
 }
