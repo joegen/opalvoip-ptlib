@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.29  2002/06/25 02:23:13  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.28  2002/04/19 02:06:06  robertj
  * Moved systemLogFile to protected status so can be used in applications.
  *
@@ -226,7 +230,7 @@ extern "C" char ** __argv;
 
 #endif
 
-  friend void PAssertFunc(const char * file, int line, const char * msg);
+  friend void PAssertFunc(const char *);
 
 
 #endif
