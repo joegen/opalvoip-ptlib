@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.46  1999/06/09 02:05:20  robertj
+ * Added ability to open file as standard input, output and error streams.
+ *
  * Revision 1.45  1999/05/06 06:11:50  robertj
  * Fixed date to be forgiving of rubbish at end of date string.
  * Fixed PTime::GetHour() etc to not crash on time=-1.
@@ -702,15 +705,36 @@ BOOL PFile::Open(OpenMode mode, int opts)
       if (opts == ModeDefault)
         opts = MustExist;
       break;
+
     case WriteOnly :
       oflags |= O_WRONLY;
       if (opts == ModeDefault)
         opts = Create|Truncate;
       break;
-    default :
+
+    case ReadWrite :
       oflags |= O_RDWR;
       if (opts == ModeDefault)
         opts = Create;
+      break;
+
+    case StandardInput :
+      path = "\\\\.\\StandardInput";
+      os_handle = 0;
+      return TRUE;
+
+    case StandardOutput :
+      path = "\\\\.\\StandardOutput";
+      os_handle = 1;
+      return TRUE;
+
+    case StandardError :
+      path = "\\\\.\\StandardError";
+      os_handle = 2;
+      return TRUE;
+
+    default :
+      PAssertAlways(PInvalidParameter);
   }
 
   if ((opts&Create) != 0)

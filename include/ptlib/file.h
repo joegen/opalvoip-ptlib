@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.31  1999/06/09 02:05:20  robertj
+ * Added ability to open file as standard input, output and error streams.
+ *
  * Revision 1.30  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -161,11 +164,17 @@ class PFile : public PChannel
      */
     enum OpenMode {
       /// File can be read but not written.
-      ReadOnly,     
+      ReadOnly,
       /// File can be written but not read.
-      WriteOnly,    
+      WriteOnly,
       /// File can be both read and written.
-      ReadWrite     
+      ReadWrite,
+      /// Standard input (implies read only).
+      StandardInput,
+      /// Standard output (implies write only).
+      StandardOutput,
+      /// Standard error (implies write only).
+      StandardError
     };
 
     /**When a file is opened, a number of options may be associated with the
@@ -509,6 +518,9 @@ class PFile : public PChannel
        the specified options. If the file object already has an open file then
        it is closed.
        
+       Note: if #mode# is StandardInput, StandardOutput or StandardError,
+       then the #name# parameter is ignored.
+
        @return
        TRUE if the file was successfully opened.
      */
