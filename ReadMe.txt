@@ -302,7 +302,9 @@ OpenBSD support.
 
 6.4 Mac OS X (Darwin) Issues
 ----------------------------
-Port Maintained by Roger Hardiman <roger@freebsd.org>
+Port Maintained by Roger Hardiman <roger@freebsd.org> but recently
+Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu> has been leading
+development.
 Threads cannot be suspended once they are running, and trying to Suspend
 a running thread will generate an Assertion Error.
 Theads can be created in 'suspended' mode and then started with Resume
@@ -316,7 +318,9 @@ localtime_r() and gm_time() are missing.
 So in osutil.cxx I have implemented os_localtime() and os_gmtime()
 with localtime() and gm_time() which may not be thread safe.
 
-There is no audio support due to a lack of documentation and hardware.
+Audio is supported through the Enlightenment Sound Daemon (esd) or EsounD.
+You must have this installed this, and set the ESDDIR environment
+variable to point to it prior to compiling PWLib.
 
 There is no video support due to a lack of documentation and hardware.
 
