@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.8 1994/12/21 11:55:09 robertj Exp $
+ * $Id: ptlib.inl,v 1.9 1995/03/12 04:59:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.8  1994/12/21 11:55:09  robertj
+ * Revision 1.9  1995/03/12 04:59:58  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.8  1994/12/21  11:55:09  robertj
  * Fixed file paths returning correct string type.
  *
  * Revision 1.7  1994/10/23  05:38:57  robertj
@@ -35,6 +39,7 @@
  * Initial revision
  */
 
+#include <direct.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,7 +51,11 @@ PINLINE PTimeInterval PTimer::Tick()
   { return GetTickCount()&0x7fffffff; }
 
 PINLINE unsigned PTimer::Resolution()
+#if defined(_WIN32)
+  { return 1; }
+#else
   { return 55; }
+#endif
 
 #else
 
@@ -62,38 +71,22 @@ PINLINE unsigned PTimer::Resolution()
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
+PINLINE BOOL PDirectory::IsSeparator(char c)
+  { return c == ':' || c == '/' || c == '\\'; }
+
 PINLINE BOOL PDirectory::Exists(const PString & p)
   { return _access(p+".", 0) == 0; }
 
 PINLINE BOOL PDirectory::Create(const PString & p, int)
-  { return mkdir(p) == 0; }
+  { return _mkdir(p) == 0; }
 
 PINLINE BOOL PDirectory::Remove(const PString & p)
-  { return rmdir(p) == 0; }
+  { return _rmdir(p) == 0; }
 
 
 PINLINE BOOL PDirectory::Restart(int scanMask)
   { return Open(scanMask); }
 
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PFilePath
-
-PINLINE PCaselessString PFilePath::GetVolume() const
-  { return Left(Find(':')+1); }
-
-PINLINE PCaselessString PFilePath::GetPath() const
-  { return operator()(Find(':')+1, FindLast('\\')); }
-
-PINLINE PCaselessString PFilePath::GetTitle() const
-  { return operator()(FindLast('\\')+1, FindLast('.')-1); }
-
-PINLINE PCaselessString PFilePath::GetType() const
-  { return operator()(FindLast('.'), P_MAX_INDEX); }
-
-PINLINE PCaselessString PFilePath::GetFileName() const
-  { return operator()(FindLast('\\')+1, P_MAX_INDEX); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,11 +100,25 @@ PINLINE BOOL PFile::Exists(const PString & name)
 // PPipeChannel
 
 PINLINE BOOL PPipeChannel::CanReadAndWrite()
+#if defined(_WIN32)
+  { return TRUE; }
+#else
   { return FALSE; }
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
+
+#if defined(_WIN32)
+
+PINLINE PThread * PThread::Current()
+  { return (PThread *)threads.GetAt(GetCurrentThreadId()); }
+
+PINLINE void PThread::Sleep(const PTimeInterval & delay)
+  { ::Sleep(delay.GetMilliseconds()); }
+
+#else
 
 PINLINE BOOL PThread::IsOnlyThread() const
   { return link == this; }
@@ -125,15 +132,7 @@ PINLINE void PThread::ClearBlock()
 PINLINE BOOL PThread::IsNoLongerBlocked()
   { return !isBlocked(blocker); }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
-
-PINLINE PProcess::~PProcess()
-  { }
-
-PINLINE void PProcess::OperatingSystemYield()
-  { }
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
