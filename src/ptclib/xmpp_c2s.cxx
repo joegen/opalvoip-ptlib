@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.6  2004/05/09 07:23:50  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.5  2004/05/02 08:58:15  csoutheren
  * Removed warnings when compling without SASL
  *
@@ -109,11 +112,12 @@ BOOL XMPP::C2S::TCPTransport::Close()
 
 ///////////////////////////////////////////////////////
 
-XMPP::C2S::StreamHandler::StreamHandler(const JID& jid, const PString& pwd)
+XMPP::C2S::StreamHandler::StreamHandler(const JID& jid, const PString& pwd, BOOL newAccount)
   : m_VersionMajor(1), m_VersionMinor(0),
+    m_NewAccount(newAccount),
     m_JID(jid), m_Password(pwd),
 #if P_SASL2
-    m_SASL("xmpp", m_JID.GetShortFormat(), m_JID.GetUser(), m_Password),
+    m_SASL("xmpp", BareJID(m_JID), m_JID.GetUser(), m_Password),
 #endif
     m_HasBind(FALSE), m_HasSession(FALSE),
     m_State(XMPP::C2S::StreamHandler::Null)
@@ -194,13 +198,73 @@ void XMPP::C2S::StreamHandler::SetState(XMPP::C2S::StreamHandler::StreamState s)
 }
 
 
-PNotifierList& XMPP::C2S::StreamHandler::IQQueryHandlers(const PString& xml_namespace)
+PNotifierList& XMPP::C2S::StreamHandler::IQNamespaceHandlers(const PString& xml_namespace)
 {
-  if (!m_IQQueryHandlers.Contains(xml_namespace))
-    m_IQQueryHandlers.SetAt(xml_namespace, new PNotifierList);
+  if (!m_IQNamespaceHandlers.Contains(xml_namespace))
+    m_IQNamespaceHandlers.SetAt(xml_namespace, new PNotifierList);
 
-  return m_IQQueryHandlers[xml_namespace];
+  return m_IQNamespaceHandlers[xml_namespace];
 }
+
+
+PNotifierList& XMPP::C2S::StreamHandler::MessageSenderHandlers(const JID& from)
+{
+  if (!m_MessageSenderHandlers.Contains(from))
+    m_MessageSenderHandlers.SetAt(from, new PNotifierList);
+
+  return m_MessageSenderHandlers[from];
+}
+
+
+BOOL XMPP::C2S::StreamHandler::Discover(const PString& xmlns, const PString& jid, PNotifier * responseHandler, const PString& node)
+{
+  if (!IsEstablished()) {
+    PTRACE(1, "XMPP\tDisco: invalid stream state");
+    return FALSE;
+  }
+  else if (responseHandler == NULL) {
+    PTRACE(1, "XMPP\tDisco: invalid response handler");
+    return FALSE;
+  }
+
+  PXMLElement * query = new PXMLElement(NULL, XMPP::IQQuery);
+  query->SetAttribute(XMPP::Namespace, xmlns);
+
+  if (!node.IsEmpty())
+    query->SetAttribute("node", node);
+
+  XMPP::IQ * iq = new XMPP::IQ(XMPP::IQ::Get, query);
+  iq->SetTo(jid);
+  iq->GetResponseHandlers().Add(responseHandler);
+  
+  return Send(iq);
+}
+
+
+BOOL XMPP::C2S::StreamHandler::DiscoverItems(const PString& jid, PNotifier * responseHandler, const PString& node)
+{
+  if (node.IsEmpty())
+    PTRACE(3, "XMPP\tDisco: discovering items for " << jid);
+  else {
+    PTRACE(3, "XMPP\tDisco: discovering items for " << jid << ", node " << node);
+  }
+
+  return Discover("http://jabber.org/protocol/disco#items", jid, responseHandler, node);
+}
+
+
+BOOL XMPP::C2S::StreamHandler::DiscoverInfo(const PString& jid, PNotifier * responseHandler, const PString& node)
+{
+  if (node.IsEmpty())
+    PTRACE(3, "XMPP\tDisco: discovering info for " << jid);
+  else {
+    PTRACE(3, "XMPP\tDisco: discovering info for " << jid << ", node " << node);
+  }
+
+  return Discover("http://jabber.org/protocol/disco#info", jid, responseHandler, node);
+}
+
+
 
 
 void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
@@ -216,6 +280,60 @@ void XMPP::C2S::StreamHandler::OnOpen(XMPP::Stream& stream, INT extra)
 
   stream.Reset();
   stream.Write(streamOn);
+
+  /* Now read the server response: we need this as we must figure out whether the
+     server support the new XMPP protocol or it is an old jabber server
+  */
+  PString data;
+  PString buf;
+  PINDEX beg = P_MAX_INDEX, end = P_MAX_INDEX;
+
+  while(beg == P_MAX_INDEX || end == P_MAX_INDEX) {
+    if (!((PChannel&)stream).Read(buf.GetPointer(256), 255)) {
+      // Error!!!
+      stream.Close();
+      return;
+    }
+    data += buf;
+  
+    if (beg == P_MAX_INDEX)
+      beg = data.Find("<stream:stream ");
+    if (beg != P_MAX_INDEX)
+      end = data.Find('>', beg);
+    if (end != P_MAX_INDEX) {
+      buf = data.Mid(beg, end - beg + 1);
+      PINDEX v = buf.Find("version='");
+
+      if (v == P_MAX_INDEX) {
+        m_VersionMajor = 0;
+        m_VersionMinor = 9;
+      } else {
+        buf = buf.Mid(v + 9);
+        int maj, min;
+        if (sscanf(buf.GetPointer(), "%d.%d", &maj, &min) != 2) {
+          m_VersionMajor = 0;
+          m_VersionMinor = 9;
+        } else {
+          m_VersionMajor = maj < 1 ? (WORD)0 : (WORD)1;
+          m_VersionMinor = maj < 1 ? (WORD)9 : (WORD)0;
+        }
+      }
+    }
+  }
+
+  PXMLStreamParser * parser = stream.GetParser();
+
+  // Now we have to feed to the parser whatever we read so far
+  if (parser == NULL || !parser->Parse(data, data.GetLength(), FALSE)) {
+    // Error!!!
+    stream.Close();
+    return;
+  }
+
+  PXMLElement * root = parser->GetXMLTree();
+
+  if (root != NULL)
+    m_StreamID = root->GetAttribute("id");
 
   BaseStreamHandler::OnOpen(stream, extra);
 
@@ -237,8 +355,29 @@ void XMPP::C2S::StreamHandler::OnClose(XMPP::Stream& stream, INT extra)
 }
 
 
+void XMPP::C2S::StreamHandler::StartRegistration()
+{
+    PString reg(PString::Printf, "<iq type='set' to='%s' id='reg1'>"
+                                     "<query xmlns='jabber:iq:register'>"
+                                        "<username>%s</username>"
+                                        "<password>%s</password>"
+                                     "</query></iq>",
+                                     (const char *)m_JID.GetServer(),
+                                     (const char *)m_JID.GetUser(),
+                                     (const char *)m_Password);
+
+    m_Stream->Write(reg);
+    SetState(XMPP::C2S::StreamHandler::RegStarted);
+}
+
+
 void XMPP::C2S::StreamHandler::StartAuthNegotiation()
 {
+  if (m_NewAccount) {
+    StartRegistration();
+    return;
+  }
+
 #if P_SASL2
   // We have SASL, but we might have not found a mechanism in
   // common, or we are just supporting the old jabber protocol
@@ -303,6 +442,10 @@ void XMPP::C2S::StreamHandler::OnElement(PXML& pdu)
   {
   case Null:
     HandleNullState(pdu);
+    break;
+
+  case RegStarted:
+    HandleRegStartedState(pdu);
     break;
 
   case TLSStarted:
@@ -384,7 +527,7 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
     if (ourMechSet.Contains(mech->GetData())) // Hit
       break;
   }
-  if (mech != 0)
+  if (mech != NULL)
     m_Mechanism = mech->GetData();
 #endif
 
@@ -396,6 +539,20 @@ void XMPP::C2S::StreamHandler::HandleNullState(PXML& pdu)
   }
   else*/
     StartAuthNegotiation();
+}
+
+
+void XMPP::C2S::StreamHandler::HandleRegStartedState(PXML& pdu)
+{
+  PXMLElement * elem = pdu.GetRootElement();
+
+  if (elem->GetName() != "iq" || elem->GetAttribute("type") != "result") {
+    Stop();
+    return;
+  }
+
+  m_NewAccount = FALSE;
+  StartAuthNegotiation();
 }
 
 
@@ -456,7 +613,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
 
   elem = elem->GetElement(XMPP::IQQuery);
 
-  if (elem == 0) { // Authentication succeded
+  if (elem == NULL) { // Authentication succeded
     SetState(XMPP::C2S::StreamHandler::Established);
   }
   else {
@@ -468,7 +625,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
     PXMLElement * item;
     BOOL uid = FALSE, pwd = FALSE, digest = FALSE, res = FALSE;
 
-    while ((item = (PXMLElement *)elem->GetElement(i++)) != 0) {
+    while ((item = (PXMLElement *)elem->GetElement(i++)) != NULL) {
       PString name = item->GetName();
 
       if (name *= "username")
@@ -487,24 +644,19 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
     if (res)
       auth += "<resource>" + m_JID.GetResource() + "</resource>";
 
-/*
     if (digest) {
-      // We need the stream id, an attribute of the root element
-      PXMLElement * stream = m_Stream->GetParser()->GetXMLTree();
-      PString id = stream ? stream->GetAttribute("id") : PString::Empty();
-
       PMessageDigest::Result bin_digest;
-      PMessageDigestSHA1::Encode(id + m_Password, bin_digest);
+      PMessageDigestSHA1::Encode(m_StreamID + m_Password, bin_digest);
       PString digest;
 
       const BYTE * data = bin_digest.GetPointer();
 
-      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i += 4)
-        digest.sprintf("%08x", *((unsigned *)&(data[i])));
+      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i++)
+        digest.sprintf("%02x", (unsigned)data[i]);
 
       auth += "<digest>" + digest + "</digest>";
     }
-    else*/ if (pwd)
+    else if (pwd)
       auth += "<password>" + m_Password + "</password>";
 
     auth += "</query></iq>";
@@ -527,8 +679,8 @@ void XMPP::C2S::StreamHandler::HandleStreamSentState(PXML& pdu)
   </stream:features>
   */
 
-  m_HasBind = pdu.GetRootElement()->GetElement("bind") != 0;
-  m_HasSession = pdu.GetRootElement()->GetElement("session") != 0;
+  m_HasBind = pdu.GetRootElement()->GetElement("bind") != NULL;
+  m_HasSession = pdu.GetRootElement()->GetElement("session") != NULL;
 
   if (m_HasBind)
   {
@@ -566,7 +718,7 @@ void XMPP::C2S::StreamHandler::HandleBindSentState(PXML& pdu)
       return;
     }
 
-    if ((elem = elem->GetElement("bind")) == 0 || (elem = elem->GetElement("jid")) == 0)
+    if ((elem = elem->GetElement("bind")) == NULL || (elem = elem->GetElement("jid")) == NULL)
     {
       Stop();
       return;
@@ -645,7 +797,13 @@ void XMPP::C2S::StreamHandler::OnError(PXML& pdu)
 
 void XMPP::C2S::StreamHandler::OnMessage(XMPP::Message& pdu)
 {
-  m_MessageHandlers.Fire(pdu);
+  JID from = pdu.GetFrom();
+
+  /* Fire the generic message handles only if there isn't a notifier list 
+  for this particular originator or the list is empty
+  */
+  if (!m_MessageSenderHandlers.Contains(from) || !m_MessageSenderHandlers[from].Fire(pdu))
+    m_MessageHandlers.Fire(pdu);
 }
 
 
@@ -658,7 +816,7 @@ void XMPP::C2S::StreamHandler::OnPresence(XMPP::Presence& pdu)
 void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
 {
   XMPP::IQ::IQType type = pdu.GetType();
-  XMPP::IQ * origMsg = 0;
+  XMPP::IQ * origMsg = NULL;
 
   if (type == XMPP::IQ::Result || type == XMPP::IQ::Error) {
     PString id = pdu.GetID();
@@ -672,15 +830,15 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
     m_PendingIQsLock.Signal();
   }
 
-  if (origMsg != 0)
+  if (origMsg != NULL)
     origMsg->GetResponseHandlers().Fire(pdu);
 
-  // If it's a "query" iq, let's see if someone is registered to handled it
-  PXMLElement * query = pdu.GetElement(XMPP::IQQuery);
-  PString xmlns = query != 0 ? query->GetAttribute(XMPP::Namespace) : PString::Empty();
+  // Let's see if someone is registered to handle this namespace
+  PXMLElement * query = (PXMLElement *)pdu.GetRootElement()->GetElement(0);
+  PString xmlns = query != NULL ? query->GetAttribute(XMPP::Namespace) : PString::Empty();
 
-  if (!xmlns.IsEmpty() && m_IQQueryHandlers.Contains(xmlns))
-    m_IQQueryHandlers[xmlns].Fire(pdu);
+  if (!xmlns.IsEmpty() && m_IQNamespaceHandlers.Contains(xmlns))
+    m_IQNamespaceHandlers[xmlns].Fire(pdu);
 
   // Now the "normal" handlers
   m_IQHandlers.Fire(pdu);
@@ -696,5 +854,6 @@ void XMPP::C2S::StreamHandler::OnIQ(XMPP::IQ& pdu)
 #endif // P_EXPAT
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
 
