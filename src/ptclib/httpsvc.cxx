@@ -1,11 +1,17 @@
 /*
- * $Id: httpsvc.cxx,v 1.12 1997/01/03 06:33:23 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.13 1997/01/28 11:45:19 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.13  1997/01/28 11:45:19  robertj
+ * .
+ *
+ * Revision 1.13  1997/01/27 10:22:37  robertj
+ * Numerous changes to support OEM versions of products.
+ *
  * Revision 1.12  1997/01/03 06:33:23  robertj
  * Removed slash from operating system version string, so says Windows NT rather than Windows/NT
  *
@@ -64,7 +70,8 @@ PHTTPServiceProcess::PHTTPServiceProcess(
                   WORD buildNumber,     // Build number of the product
 
                   const char * _homePage,  // WWW address of manufacturers home page
-                  const char * _email      // contact email for manufacturer
+                  const char * _email,     // contact email for manufacturer
+                  const PTEACypher::Key * sigKey // Signature key for encryption of HTML files
                 )
   : PServiceProcess(manuf, name, majorVersion,
                     minorVersion, status, buildNumber),
@@ -74,10 +81,14 @@ PHTTPServiceProcess::PHTTPServiceProcess(
     email = _email;
   else
     email = EMAIL;
+
   if (_homePage != NULL)
     homePage = _homePage;
   else
     homePage = HOME_PAGE;
+
+  if (sigKey != NULL)
+    signatureKey = *sigKey;
 
   restartThread = NULL;
 }
@@ -523,15 +534,167 @@ PServiceHTML::PServiceHTML(const char * title, const char * help)
 }
 
 
+PString PServiceHTML::ExtractSignature(PString & out)
+{
+  return ExtractSignature(*this, out);
+}
+
+
+PString PServiceHTML::ExtractSignature(const PString & html,
+                                       PString & out,
+                                       const char * keyword)
+{
+  PString signature;
+  out = PString();
+
+  // search for all comment blocks
+  PINDEX  lastPos = 0, endPos = 0;
+  PINDEX  pos;
+  while ((pos    = html.Find("<!--", lastPos)) != P_MAX_INDEX &&
+         (endPos = html.Find("-->", pos))      != P_MAX_INDEX) {
+
+    // add in the text before the comment and move the ptr to the end of
+    // the comment
+    if (pos > lastPos)
+      out += html(lastPos, pos-1);
+    lastPos = endPos+3;
+
+    // tokenise the text inside the comment
+    PStringArray tokens = html(pos+4, endPos-1).Trim().Tokenise(" \n", FALSE);
+
+    // if this is a signature, then retreive it
+    if (tokens[0] *= keyword) {
+      PINDEX len = tokens.GetSize();
+      if (tokens[1] != "signature" || len != 3)
+        out += html(pos, endPos+2);
+      else
+        signature = tokens[2];
+    }
+  }
+
+  out += html(lastPos, P_MAX_INDEX);
+  return signature;
+}
+
+
+PString PServiceHTML::CalculateSignature()
+{
+  return CalculateSignature(*this);
+}
+
+
+PString PServiceHTML::CalculateSignature(const PString & out)
+{
+  return CalculateSignature(out, PHTTPServiceProcess::Current()->GetSignatureKey());
+}
+
+
+PString PServiceHTML::CalculateSignature(const PString & out,
+                                         const PTEACypher::Key & sig)
+{
+  // calculate the MD5 digest of the HTML data
+  PMessageDigest5::Code md5;
+  PMessageDigest5::Encode(out, md5);
+
+  // encode it
+  PTEACypher cypher(sig);
+  return cypher.Encode(&md5, sizeof(md5));
+}
+
+
+BOOL PServiceHTML::CheckSignature()
+{
+  return CheckSignature(*this);
+}
+
+
+BOOL PServiceHTML::CheckSignature(const PString & html)
+{
+  // extract the signature from the file
+  PString out;
+  PString signature = ExtractSignature(html, out);
+
+  // calculate the signature on the data
+  PString checkSignature = CalculateSignature(out);
+
+  // return TRUE or FALSE
+  return checkSignature == signature;
+}
+
+
+BOOL PServiceHTML::ProcessMacros(PString & text,
+                                 const PString & filename,
+                                 BOOL needSignature)
+{
+  PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+
+  if (needSignature) {
+    if (!CheckSignature(text)) {
+      PHTML html = "Invalid OEM Signature";
+      html << "The HTML file \""
+           << filename
+           << "\" contains an invalid signature for \""
+           << process.GetName()
+           << "\" by \""
+           << process.GetManufacturer()
+           << '"'
+           << PHTML::Body();
+      text = html;
+      return FALSE;
+    }
+  }
+
+  for (;;) {
+    PINDEX pos = text.Find("<!--#equival");
+    PINDEX end = text.Find("-->", pos);
+    if (pos == P_MAX_INDEX || end == P_MAX_INDEX)
+      break;
+
+    PString subs;
+    PCaselessString cmd = text(pos+12, end-1).Trim();
+    if (cmd == "os")
+      subs = PProcess::GetOSClass() & PProcess::GetOSName();
+    else if (cmd == "version")
+      subs = PProcess::GetOSVersion();
+    else if (cmd == "registration") {
+      PConfig sconf("Secured Options");
+      PHTML out = PHTML::InBody;
+      out << PHTML::Heading(3)
+          << sconf.GetString("Name", sconf.GetString("Pending:Name",
+                             "*** Unregistered Demonstration Copy ***"))
+          << PHTML::Heading(3)
+          << PHTML::Heading(4)
+          << sconf.GetString("Company", sconf.GetString("Pending:Company"))
+          << PHTML::Heading(4);
+
+      out << PHTML::Paragraph()
+          << PHTML::HotLink("/register.html")
+          << (sconf.GetString("Name").IsEmpty()
+                                   ? "Register Now!" : "View Registration")
+          << PHTML::HotLink();
+    }
+
+    text.Splice(subs, pos, end-pos+3);
+  }
+
+  return TRUE;
+}
+
+
 ///////////////////////////////////////////////////////////////////
 
 void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
 {
+  PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), needSignature);
+
   PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+
   text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
-               process.GetPageGraphic());
+               process.GetPageGraphic(), TRUE);
+  text.Replace("<!--Standard_Equivalence_Header-->",
+               process.GetPageGraphic(), TRUE);
   text.Replace("<!--Standard_Copyright_Header-->",
-               process.GetCopyrightText());
+               process.GetCopyrightText(), TRUE);
 }
 
 
