@@ -772,6 +772,8 @@ EXPORTS
     ??4PChannelStreamBuffer@@QAEAAV0@ABV0@@Z @516 NONAME ;public: class PChannelStreamBuffer & __thiscall PChannelStreamBuffer::operator=(class PChannelStreamBuffer const &)
     ??4PCharArray@@QAEAAV0@ABV0@@Z @517 NONAME ;public: class PCharArray & __thiscall PCharArray::operator=(class PCharArray const &)
     ??4PContainer@@QAEAAV0@ABV0@@Z @519 NONAME ;public: class PContainer & __thiscall PContainer::operator=(class PContainer const &)
+    ??4PDirectory@@QAEAAV0@ABVPString@@@Z @3538 NONAME ;public: class PDirectory & __thiscall PDirectory::operator=(class PString const &)
+    ??4PDirectory@@QAEAAV0@PBD@Z @3539 NONAME ;public: class PDirectory & __thiscall PDirectory::operator=(char const *)
     ??4PDWORDArray@@QAEAAV0@ABV0@@Z @3238 NONAME ;public: class PDWORDArray & __thiscall PDWORDArray::operator=(class PDWORDArray const &)
     ??4PFilePath@@QAEAAV0@ABV0@@Z @520 NONAME ;public: class PFilePath & __thiscall PFilePath::operator=(class PFilePath const &)
     ??4PFilePath@@QAEAAV0@ABVPString@@@Z @521 NONAME ;public: class PFilePath & __thiscall PFilePath::operator=(class PString const &)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.33  2001/02/13 06:55:21  robertj
+ * Fixed problem with operator= in PDirectory class, part of larger change previously made.
+ *
  * Revision 1.32  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -284,6 +287,18 @@ class PDirectory : public PFilePathString
      */
     PDirectory(
       const PString & pathname    /// Directory path name for new object.
+    );
+
+    /**Set the directory to the specified path.
+     */
+    PDirectory & operator=(
+      const PString & pathname    /// Directory path name for new object.
+    );
+
+    /**Set the directory to the specified path.
+     */
+    PDirectory & operator=(
+      const char * cpathname      /// Directory path name for new object.
     );
   //@}
 
