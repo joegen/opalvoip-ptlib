@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.34  2003/06/23 06:44:11  csoutheren
+# Added minor revision into the soname for the libraries as requested by Damien Sandras
+#
 # Revision 1.33  2003/05/29 09:03:36  rjongbloed
 # Changed SONAME so includes minor version number to allow for API changes.
 #
@@ -107,6 +110,7 @@
 ifneq ($(OSTYPE),Darwin)
   LIBNAME_MAJ	= $(LIB_FILENAME).$(MAJOR_VERSION)
   LIBNAME_MIN	= $(LIBNAME_MAJ).$(MINOR_VERSION)
+  LIB_SONAME	= $(LIBNAME_MAJ).$(MINOR_VERSION).$(BUILD_NUMBER)
   ifeq ($(BUILD_TYPE),.)
     LIBNAME_PAT	= $(LIBNAME_MIN).$(BUILD_NUMBER)
   else
@@ -115,6 +119,7 @@ ifneq ($(OSTYPE),Darwin)
 else
   LIBNAME_MAJ	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(LIB_SUFFIX),$(LIB_FILENAME))
   LIBNAME_MIN	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(LIB_SUFFIX),$(LIB_FILENAME))
+  LIB_SONAME 	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
   ifeq ($(BUILD_TYPE),.)
     LIBNAME_PAT	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
   else
@@ -169,11 +174,11 @@ ifeq ($(P_SHAREDLIB),1)
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
-    LDSOOPTS = -Bdynamic -G -h $(LIBNAME_MIN)
+    LDSOOPTS = -Bdynamic -G -h $(LIB_SONAMEN)
     LD = ld
   else
     ifneq ($(OSTYPE),Darwin)
-      LDSOOPTS += -Wl,-soname,$(LIBNAME_MIN)
+      LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
     endif
     LD = $(CPLUS)
   endif
