@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.84  2003/04/28 04:41:22  robertj
+ * Changed URL parsing so if a default scheme is present then explicit scheme
+ *   must be "known" to avoid ambiguity with host:port parsing.
+ *
  * Revision 1.83  2003/04/10 00:13:56  robertj
  * Fixed correct decoding of user/password/host/port field, for non h323 schemes.
  *
@@ -361,7 +365,7 @@ struct schemeStruct {
 #define DEFAULT_SCHEME 0
 #define FILE_SCHEME    1
 
-static schemeStruct const schemeInfo[] = {
+static schemeStruct const SchemeTable[] = {
 //  scheme       user   host   @def   defhost query  params frags  path   rel    port
   { "http",      TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
   { "file",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
@@ -383,21 +387,21 @@ static schemeStruct const schemeInfo[] = {
   { NULL,        FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
-static const schemeStruct & GetSchemeInfo(const PCaselessString & scheme)
+static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
 {
   PINDEX i;
-  for (i = 0; schemeInfo[i].name != NULL; i++) {
-    if (scheme == schemeInfo[i].name)
-      return schemeInfo[i];
+  for (i = 0; SchemeTable[i].name != NULL; i++) {
+    if (scheme == SchemeTable[i].name)
+      return &SchemeTable[i];
   }
-  return schemeInfo[i];
+  return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL
 
 PURL::PURL()
-  : scheme(schemeInfo[DEFAULT_SCHEME].name),
+  : scheme(SchemeTable[DEFAULT_SCHEME].name),
     port(0),
     relativePath(FALSE)
 {
@@ -417,7 +421,7 @@ PURL::PURL(const PString & str, const char * defaultScheme)
 
 
 PURL::PURL(const PFilePath & filePath)
-  : scheme(schemeInfo[FILE_SCHEME].name),
+  : scheme(SchemeTable[FILE_SCHEME].name),
     port(0),
     relativePath(FALSE)
 {
@@ -570,28 +574,33 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
 
   PINDEX pos;
 
-  static const PString reservedChars = "=;/#?";
-
+  // get information which tells us how to parse URL for this
+  // particular scheme
+  const schemeStruct * schemeInfo = NULL;
+    
   // determine if the URL has a scheme
   scheme = PString::Empty();
-  if (isalpha(url[0])) {
-    for (pos = 0; url[pos] != '\0' && reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
-      if (url[pos] == ':') {
-        scheme = url.Left(pos);
-        url.Delete(0, pos+1);
-        break;
-      }
-    }
+
+  // Character set as per RFC2396
+  pos = 0;
+  while (isalnum(url[pos]) || url[pos] == '+' || url[pos] == '-' || url[pos] == '.')
+    pos++;
+
+  // Have explicit scheme
+  if (url[pos] == ':') {
+    schemeInfo = GetSchemeInfo(url.Left(pos));
+    if (schemeInfo == NULL && defaultScheme == NULL)
+      schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+    if (schemeInfo != NULL)
+      url.Delete(0, pos+1);
   }
 
-  // if there is no scheme, then default to http for the local
-  // on the default port
-  if (scheme.IsEmpty()) {
-    if (defaultScheme != NULL)
-      scheme = defaultScheme;
-    else
-      scheme = schemeInfo[DEFAULT_SCHEME].name;
-  }
+  // if there is no scheme, then use default
+  if (schemeInfo == NULL && defaultScheme != NULL)
+    schemeInfo = GetSchemeInfo(defaultScheme);
+  if (schemeInfo == NULL)
+    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+  scheme = schemeInfo->name;
 
   // Super special case!
   if (scheme == "callto") {
@@ -651,12 +660,8 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     return;
   }
 
-  // get information which tells us how to parse URL for this
-  // particular scheme
-  const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
-    
   // if the URL should have leading slash, then remove it if it has one
-  if (schemeInfo.hasHostPort && schemeInfo.hasPath) {
+  if (schemeInfo->hasHostPort && schemeInfo->hasPath) {
     if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
       url.Delete(0, 2);
     else
@@ -664,15 +669,15 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
   }
 
   // parse user/password/host/port
-  if (!relativePath && schemeInfo.hasHostPort) {
+  if (!relativePath && schemeInfo->hasHostPort) {
     PString endHostChars;
-    if (schemeInfo.hasPath)
+    if (schemeInfo->hasPath)
       endHostChars += '/';
-    if (schemeInfo.hasQuery)
+    if (schemeInfo->hasQuery)
       endHostChars += '?';
-    if (schemeInfo.hasParameters)
+    if (schemeInfo->hasParameters)
       endHostChars += ';';
-    if (schemeInfo.hasFragments)
+    if (schemeInfo->hasFragments)
       endHostChars += '#';
     if (endHostChars.IsEmpty())
       pos = P_MAX_INDEX;
@@ -686,7 +691,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
       url = PString::Empty();
 
     // if the URL is of type UserPasswordHostPort, then parse it
-    if (schemeInfo.hasUserPassword) {
+    if (schemeInfo->hasUserPassword) {
       // extract username and password
       PINDEX pos2 = uphp.Find('@');
       PINDEX pos3 = uphp.Find(':');
@@ -696,7 +701,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
           break;
 
         case P_MAX_INDEX :
-          if (schemeInfo.defaultToUserIfNoAt) {
+          if (schemeInfo->defaultToUserIfNoAt) {
             if (pos3 == P_MAX_INDEX)
               username = UntranslateString(uphp, LoginTranslation);
             else {
@@ -719,7 +724,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     }
 
     // if the URL does not have a port, then this is the hostname
-    if (schemeInfo.defaultPort == 0)
+    if (schemeInfo->defaultPort == 0)
       hostname = UntranslateString(uphp, LoginTranslation);
     else {
       // determine if the URL has a port number
@@ -735,12 +740,12 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
         port = (WORD)uphp.Mid(pos+1).AsUnsigned();
       }
 
-      if (hostname.IsEmpty() && schemeInfo.defaultHostToLocal)
+      if (hostname.IsEmpty() && schemeInfo->defaultHostToLocal)
         hostname = PIPSocket::GetHostName();
     }
   }
 
-  if (schemeInfo.hasQuery) {
+  if (schemeInfo->hasQuery) {
     // chop off any trailing query
     pos = url.Find('?');
     if (pos != P_MAX_INDEX) {
@@ -749,7 +754,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     }
   }
 
-  if (schemeInfo.hasParameters) {
+  if (schemeInfo->hasParameters) {
     // chop off any trailing parameters
     pos = url.Find(';');
     if (pos != P_MAX_INDEX) {
@@ -758,7 +763,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     }
   }
 
-  if (schemeInfo.hasFragments) {
+  if (schemeInfo->hasFragments) {
     // chop off any trailing fragment
     pos = url.Find('#');
     if (pos != P_MAX_INDEX) {
@@ -767,7 +772,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     }
   }
 
-  if (schemeInfo.hasPath)
+  if (schemeInfo->hasPath)
     SetPathStr(url);   // the hierarchy is what is left
   else {
   // if the rest of the URL isn't a path, then we are finished!
@@ -775,19 +780,19 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     Recalculate();
   }
 
-  if (port == 0 && schemeInfo.defaultPort != 0 && !relativePath) {
+  if (port == 0 && schemeInfo->defaultPort != 0 && !relativePath) {
     // Yes another horrible, horrible special case!
     if (scheme == "h323" && paramVars("type") == "gk")
       port = DEFAULT_H323RAS_PORT;
     else
-      port = schemeInfo.defaultPort;
+      port = schemeInfo->defaultPort;
   }
 }
 
 
 PFilePath PURL::AsFilePath() const
 {
-  if (scheme != schemeInfo[FILE_SCHEME].name)
+  if (scheme != SchemeTable[FILE_SCHEME].name)
     return PString::Empty();
 
   PStringStream str;
@@ -821,21 +826,23 @@ PString PURL::AsString(UrlFormat fmt) const
   if (scheme.IsEmpty())
     return PString::Empty();
 
-  const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+  const schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+  if (schemeInfo == NULL)
+    schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
 
   if (fmt == HostPortOnly) {
     str << scheme << ':';
 
     if (relativePath) {
-      if (schemeInfo.relativeImpliesScheme)
+      if (schemeInfo->relativeImpliesScheme)
         return PString::Empty();
       return str;
     }
 
-    if (schemeInfo.hasPath && schemeInfo.hasHostPort)
+    if (schemeInfo->hasPath && schemeInfo->hasHostPort)
       str << "//";
 
-    if (schemeInfo.hasUserPassword) {
+    if (schemeInfo->hasUserPassword) {
       if (!username) {
         str << TranslateString(username, LoginTranslation);
         if (!password)
@@ -844,11 +851,11 @@ PString PURL::AsString(UrlFormat fmt) const
       }
     }
 
-    if (schemeInfo.hasHostPort)
+    if (schemeInfo->hasHostPort)
       str << hostname;
 
-    if (schemeInfo.defaultPort != 0) {
-      if (port != schemeInfo.defaultPort)
+    if (schemeInfo->defaultPort != 0) {
+      if (port != schemeInfo->defaultPort)
         str << ':' << port;
     }
 
@@ -856,7 +863,7 @@ PString PURL::AsString(UrlFormat fmt) const
   }
 
   // URIOnly and PathOnly
-  if (schemeInfo.hasPath) {
+  if (schemeInfo->hasPath) {
     for (i = 0; i < path.GetSize(); i++) {
       if (i > 0 || !relativePath)
         str << '/';
@@ -1049,7 +1056,7 @@ BOOL PURL::OpenBrowser(const PString & url)
 void PURL::Recalculate()
 {
   if (scheme.IsEmpty())
-    scheme = schemeInfo[0].name;
+    scheme = SchemeTable[DEFAULT_SCHEME].name;
 
   urlString = AsString(HostPortOnly) + AsString(URIOnly);
 }
