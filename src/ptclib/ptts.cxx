@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.4  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.3  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -39,8 +42,6 @@
 #pragma implementation "ptts.h"
 #endif
 
-#define P_HASWIN32SAPI   1
-
 
 ////////////////////////////////////////////////////////////
 
@@ -49,7 +50,7 @@
 #if P_SAPI
 
 #ifndef _WIN32_DCOM
-   #define _WIN32_DCOM 1
+#define _WIN32_DCOM 1
 #endif
 
 #include <objbase.h>
@@ -691,4 +692,5 @@ TTS_FUNCTION_SET_MIRROR_PARM(SetVolume, volume)
 unsigned PTextToSpeech::GetVolume()
 TTS_FUNCTION_GET_MIRROR_PARM(GetVolume, volume)
 
-////////////////////////////////////////////////////////////
+
+// End Of File ///////////////////////////////////////////////////////////////

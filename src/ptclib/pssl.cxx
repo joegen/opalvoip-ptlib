@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.35 2002/11/06 22:47:25 robertj Exp $
+ * $Id: pssl.cxx,v 1.36 2003/04/16 08:00:19 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.36  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.35  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -194,11 +197,18 @@ extern "C" {
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <openssl/crypto.h>
-#include <openssl/buffer.h>
 #include <openssl/rand.h>
 
 };
+
+
+#ifdef _MSC_VER
+#pragma comment(lib, P_SSL_LIB1)
+#pragma comment(lib, P_SSL_LIB2)
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 PARRAY(PSSLMutexArrayBase, PMutex);
 class PSSLMutexArray : public PSSLMutexArrayBase

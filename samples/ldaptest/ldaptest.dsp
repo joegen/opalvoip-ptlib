@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\include\pwlib\mswin" /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /D P_LDAP=0$(OPENLDAPFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /D P_SAPI=0$(SAPIFLAG) /Yu"precompile.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"precompile.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "NDEBUG" /d "_AFXDLL"
@@ -69,7 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\include\pwlib\mswin" /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /D P_LDAP=0$(OPENLDAPFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /D P_SAPI=0$(SAPIFLAG) /Yu"precompile.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /D "PTRACING" /Yu"precompile.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0xc09 /d "_DEBUG" /d "_AFXDLL"

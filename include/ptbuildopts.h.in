@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.2  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.1  2003/04/16 07:15:59  craigs
  * Initial version
  *
@@ -39,7 +42,8 @@
 //
 //
 
-#undef	PBYTE_ORDER
+#undef PBYTE_ORDER
+
 
 /////////////////////////////////////////////////
 //
@@ -49,6 +53,12 @@
 
 #undef P_HAS_IPV6 
 
+#if defined(_MSC_VER) && P_HAS_IPV6
+#pragma include_alias(<winsock2.h>, <@IPV6_DIR@/winsock2.h>)
+#pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
+#endif
+
+
 /////////////////////////////////////////////////
 //
 // OpenSSL library for secure sockets layer
@@ -56,46 +66,48 @@
 
 #undef P_SSL 
 
-#define P_SSL_SSL_H       <@SSL_DIR@/inc32/openssl/ssl.h>
-#define P_SSL_SAFESTACK_H <@SSL_DIR@/inc32/openssl/safestack.h>
-#define P_SSL_STACK_H     <@SSL_DIR@/inc32/openssl/stack.h>
-#define P_SSL_CRYPTO_H    <@SSL_DIR@/inc32/openssl/crypto.h>
-#define P_SSL_OPENSSLV_H  <@SSL_DIR@/inc32/openssl/opensslv.h>
-#define P_SSL_LHASH_H     <@SSL_DIR@/inc32/openssl/lhash.h>
-#define P_SSL_BUFFER_H    <@SSL_DIR@/inc32/openssl/buffer.h>
-#define P_SSL_BIO_H       <@SSL_DIR@/inc32/openssl/bio.h>
-#define P_SSL_PEM_H       <@SSL_DIR@/inc32/openssl/pem.h>
-#define P_SSL_EVP_H       <@SSL_DIR@/inc32/openssl/evp.h>
-#define P_SSL_MD2_H       <@SSL_DIR@/inc32/openssl/md2.h>
-#define P_SSL_CONF_H      <@SSL_DIR@/inc32/openssl/opensslconf.h>
-#define P_SSL_MD5_H       <@SSL_DIR@/inc32/openssl/md5.h>
-#define P_SSL_SHA_H       <@SSL_DIR@/inc32/openssl/sha.h>
-#define P_SSL_RIPEMD_H    <@SSL_DIR@/inc32/openssl/ripemd.h>
-#define P_SSL_DES_H       <@SSL_DIR@/inc32/openssl/des.h>
-#define P_SSL_EOS2_H      <@SSL_DIR@/inc32/openssl/e_os2.h>
-#define P_SSL_RC4_H       <@SSL_DIR@/inc32/openssl/rc4.h>
-#define P_SSL_RC2_H       <@SSL_DIR@/inc32/openssl/rc2.h>
-#define P_SSL_RC5_H       <@SSL_DIR@/inc32/openssl/rc5.h>
-#define P_SSL_BLOWFISH_H  <@SSL_DIR@/inc32/openssl/blowfish.h>
-#define P_SSL_CAST_H      <@SSL_DIR@/inc32/openssl/cast.h>
-#define P_SSL_IDEA_H      <@SSL_DIR@/inc32/openssl/idea.h>
-#define P_SSL_MDC2_H      <@SSL_DIR@/inc32/openssl/mdc2.h>
-#define P_SSL_RSA_H       <@SSL_DIR@/inc32/openssl/rsa.h>
-#define P_SSL_BN_H        <@SSL_DIR@/inc32/openssl/bn.h>
-#define P_SSL_DSA_H       <@SSL_DIR@/inc32/openssl/dsa.h>
-#define P_SSL_DH_H        <@SSL_DIR@/inc32/openssl/dh.h>
-#define P_SSL_OBJECTS_H   <@SSL_DIR@/inc32/openssl/objects.h>
-#define P_SSL_ASN1_H      <@SSL_DIR@/inc32/openssl/asn1.h>
-#define P_SSL_X509_H      <@SSL_DIR@/inc32/openssl/x509.h>
-#define P_SSL_X509VFY_H   <@SSL_DIR@/inc32/openssl/x509_vfy.h>
-#define P_SSL_PKCS7_H     <@SSL_DIR@/inc32/openssl/pkcs7.h>
-#define P_SSL_PEM2_H      <@SSL_DIR@/inc32/openssl/pem2.h>
-#define P_SSL_SSL2_H      <@SSL_DIR@/inc32/openssl/ssl2.h>
-#define P_SSL_SSL3_H      <@SSL_DIR@/inc32/openssl/ssl3.h>
-#define P_SSL_TLS1_H      <@SSL_DIR@/inc32/openssl/tls1.h>
-#define P_SSL_SSL23_H     <@SSL_DIR@/inc32/openssl/ssl23.h>
-#define P_SSL_ERR_H       <@SSL_DIR@/inc32/openssl/err.h>
-#define P_SSL_RAND_H      <@SSL_DIR@/inc32/openssl/rand.h>
+#if defined(_MSC_VER) && P_SSL
+#pragma include_alias(<openssl/ssl.h>,        <@SSL_DIR@/inc32/openssl/ssl.h>)
+#pragma include_alias(<openssl/safestack.h>,  <@SSL_DIR@/inc32/openssl/safestack.h>)
+#pragma include_alias(<openssl/stack.h>,      <@SSL_DIR@/inc32/openssl/stack.h>)
+#pragma include_alias(<openssl/crypto.h>,     <@SSL_DIR@/inc32/openssl/crypto.h>)
+#pragma include_alias(<openssl/opensslv.h>,   <@SSL_DIR@/inc32/openssl/opensslv.h>)
+#pragma include_alias(<openssl/lhash.h>,      <@SSL_DIR@/inc32/openssl/lhash.h>)
+#pragma include_alias(<openssl/buffer.h>,     <@SSL_DIR@/inc32/openssl/buffer.h>)
+#pragma include_alias(<openssl/bio.h>,        <@SSL_DIR@/inc32/openssl/bio.h>)
+#pragma include_alias(<openssl/pem.h>,        <@SSL_DIR@/inc32/openssl/pem.h>)
+#pragma include_alias(<openssl/evp.h>,        <@SSL_DIR@/inc32/openssl/evp.h>)
+#pragma include_alias(<openssl/md2.h>,        <@SSL_DIR@/inc32/openssl/md2.h>)
+#pragma include_alias(<openssl/opensslconf.h>,<@SSL_DIR@/inc32/openssl/opensslconf.h>)
+#pragma include_alias(<openssl/md5.h>,        <@SSL_DIR@/inc32/openssl/md5.h>)
+#pragma include_alias(<openssl/sha.h>,        <@SSL_DIR@/inc32/openssl/sha.h>)
+#pragma include_alias(<openssl/ripemd.h>,     <@SSL_DIR@/inc32/openssl/ripemd.h>)
+#pragma include_alias(<openssl/des.h>,        <@SSL_DIR@/inc32/openssl/des.h>)
+#pragma include_alias(<openssl/e_os2.h>,      <@SSL_DIR@/inc32/openssl/e_os2.h>)
+#pragma include_alias(<openssl/rc4.h>,        <@SSL_DIR@/inc32/openssl/rc4.h>)
+#pragma include_alias(<openssl/rc2.h>,        <@SSL_DIR@/inc32/openssl/rc2.h>)
+#pragma include_alias(<openssl/rc5.h>,        <@SSL_DIR@/inc32/openssl/rc5.h>)
+#pragma include_alias(<openssl/blowfish.h>,   <@SSL_DIR@/inc32/openssl/blowfish.h>)
+#pragma include_alias(<openssl/cast.h>,       <@SSL_DIR@/inc32/openssl/cast.h>)
+#pragma include_alias(<openssl/idea.h>,       <@SSL_DIR@/inc32/openssl/idea.h>)
+#pragma include_alias(<openssl/mdc2.h>,       <@SSL_DIR@/inc32/openssl/mdc2.h>)
+#pragma include_alias(<openssl/rsa.h>,        <@SSL_DIR@/inc32/openssl/rsa.h>)
+#pragma include_alias(<openssl/bn.h>,         <@SSL_DIR@/inc32/openssl/bn.h>)
+#pragma include_alias(<openssl/dsa.h>,        <@SSL_DIR@/inc32/openssl/dsa.h>)
+#pragma include_alias(<openssl/dh.h>,         <@SSL_DIR@/inc32/openssl/dh.h>)
+#pragma include_alias(<openssl/objects.h>,    <@SSL_DIR@/inc32/openssl/objects.h>)
+#pragma include_alias(<openssl/asn1.h>,       <@SSL_DIR@/inc32/openssl/asn1.h>)
+#pragma include_alias(<openssl/x509.h>,       <@SSL_DIR@/inc32/openssl/x509.h>)
+#pragma include_alias(<openssl/x509_vfy.h>,   <@SSL_DIR@/inc32/openssl/x509_vfy.h>)
+#pragma include_alias(<openssl/pkcs7.h>,      <@SSL_DIR@/inc32/openssl/pkcs7.h>)
+#pragma include_alias(<openssl/pem2.h>,       <@SSL_DIR@/inc32/openssl/pem2.h>)
+#pragma include_alias(<openssl/ssl2.h>,       <@SSL_DIR@/inc32/openssl/ssl2.h>)
+#pragma include_alias(<openssl/ssl3.h>,       <@SSL_DIR@/inc32/openssl/ssl3.h>)
+#pragma include_alias(<openssl/tls1.h>,       <@SSL_DIR@/inc32/openssl/tls1.h>)
+#pragma include_alias(<openssl/ssl23.h>,      <@SSL_DIR@/inc32/openssl/ssl23.h>)
+#pragma include_alias(<openssl/err.h>,        <@SSL_DIR@/inc32/openssl/err.h>)
+#pragma include_alias(<openssl/rand.h>,       <@SSL_DIR@/inc32/openssl/rand.h>)
+#endif
 
 #define P_SSL_DIR         "@SSL_DIR@/"
 
@@ -116,8 +128,11 @@
 
 #undef P_EXPAT 
 
-#define P_EXPAT_HEADER  <@EXPAT_DIR@/lib/expat.h>
-#define P_EXPAT_DIR     "@EXPAT_DIR@"
+#if defined(_MSC_VER) && P_EXPAT
+#pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
+#endif
+
+#define P_EXPAT_DIR     "@EXPAT_DIR@/"
 
 #ifdef _DEBUG
 #define P_EXPAT_LIBDIR P_EXPAT_DIR "Debug"
@@ -135,13 +150,14 @@
 
 #undef P_LDAP 
 
-#define P_LDAP_LDAP_H       <@LDAP_DIR@/include/ldap.h>
-#define P_LDAP_LBER_H       <@LDAP_DIR@/include/lber.h>
-#define P_LDAP_LBER_TYPES_H <@LDAP_DIR@/include/lber_types.h>
-#define P_LDAP_FEATURES_H   <@LDAP_DIR@/include/ldap_features.h>
+#if defined(_MSC_VER) && P_LDAP
+#pragma include_alias(<ldap.h>,          <@LDAP_DIR@/include/ldap.h>)
+#pragma include_alias(<lber.h>,          <@LDAP_DIR@/include/lber.h>)
+#pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
+#pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
+#endif
 
 #define P_LDAP_LIBRARY      "@LDAP_DIR@/DLLRelease/openldap.lib"
-
 
 
 /////////////////////////////////////////////////
@@ -151,7 +167,10 @@
 
 #undef P_DNS 
 
-#define P_DNS_HEADER  <@DNS_DIR@/Include/windns.h>
+#ifdef _MSC_VER
+#pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
+#endif
+
 #define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 
 
@@ -168,7 +187,8 @@
 // Runtime dynamic link libraries
 //
 
-#undef  P_DYNALINK
+#undef P_DYNALINK
+
 
 /////////////////////////////////////////////////
 //
@@ -176,6 +196,7 @@
 //
 
 #undef NO_VIDEO_CAPTURE
+
 
 /////////////////////////////////////////////////
 //
@@ -187,5 +208,6 @@
 
 
 #endif // _PT_BUILDOPTS_H
+
 
 // End Of File ///////////////////////////////////////////////////////////////

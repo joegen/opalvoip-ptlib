@@ -1,11 +1,32 @@
 /*
  * pdns.cxx
  *
- * PWLib library for DNS lookup services
+ * Portable Windows Library
  *
- * Copyright 2003 Equivalence
+ * Copyright (c) 2003 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.4  2003/04/16 08:00:19  robertj
+ * Windoes psuedo autoconf support
+ *
  * Revision 1.3  2003/04/15 08:14:32  craigs
  * Added single string form of GetSRVRecords
  *
@@ -24,18 +45,28 @@
 #include <ptlib.h>
 
 #include <ptclib/pdns.h>
+
+#if P_DNS
+
 #include <ptclib/random.h>
 
-#ifdef WIN32
+#if defined(_WIN32)
+
 #include <windns.h>
+
+#pragma comment(lib, P_DNS_LIBRARY)
+
 #else
+
 #define	P_HAS_RESOLVER	1
-#endif
 
 #if P_HAS_RESOLVER
 #include <resolv.h>
 #include <arpa/nameser.h>
 #endif
+
+#endif
+
 
 /////////////////////////////////////////////////
 
@@ -43,6 +74,7 @@ PDNS::Record::Record()
 { 
   used = FALSE; 
 }
+
 
 /////////////////////////////////////////////////
 
@@ -297,7 +329,8 @@ DNS_STATUS DnsQuery_A(const char * service,
 }
 
 
-#endif
+#endif // P_HAS_RESOLVER
+
 
 /////////////////////////////////////////////////
 
@@ -602,4 +635,8 @@ PDNS::MXRecord * PDNS::MXRecordList::GetNext()
   return (PDNS::MXRecord *)GetAt(lastIndex++);
 }
 
-///////////////////////////////////////////////////////
+
+#endif // P_DNS
+
+
+// End Of File ///////////////////////////////////////////////////////////////
