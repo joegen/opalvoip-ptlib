@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.13  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.12  1998/09/23 06:20:16  robertj
  * Added open source copyright license.
  *
@@ -236,8 +239,9 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T>
-PDECLARE_CLASS(PBaseArray, PAbstractArray)
+template <class T> class PBaseArray : public PAbstractArray
+{
+  PCLASSINFO(PBaseArray, PAbstractArray)
 /* This template class maps the PAbstractArray to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -726,8 +730,9 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T>
-PDECLARE_CLASS(PArray, PArrayObjects)
+template <class T> class PArray : public PArrayObjects
+{
+  PCLASSINFO(PArray, PArrayObjects)
 /* This template class maps the PArrayObjects to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 

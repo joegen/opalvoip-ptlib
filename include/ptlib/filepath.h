@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.14  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.13  1998/11/30 08:57:16  robertj
  * Fixed problem where if += is used on PFilePath, it no longer may be normalised.
  *
@@ -81,7 +84,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File Specification
 
-PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
+class PFilePath : public PFILE_PATH_STRING
+{
+  PCLASSINFO(PFilePath, PFILE_PATH_STRING)
 /* This class describes a full description for a file on the particular
    platform. This will always uniquely identify the file on currently mounted
    volumes.
