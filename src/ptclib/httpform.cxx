@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.32  2000/09/05 09:52:24  robertj
+ * Fixed bug in HTTP form updating SELECT fields from registry.
+ *
  * Revision 1.31  2000/06/19 11:35:01  robertj
  * Fixed bug in setting current value of options in select form fields.
  *
@@ -358,6 +361,8 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
   static PRegularExpression EndOption("<[ \t\r\n]*/?option[^>]*>",
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish) && pos < end) {
+    if (start == P_MAX_INDEX)
+      start = text.Find('>', pos)+1;
     PCaselessString option = text(pos, start-1);
     PINDEX before, after;
     if (FindInputValue(option, before, after)) {
@@ -365,7 +370,7 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
       finish = pos + after - 1;
     }
     PINDEX selpos = option.Find("selected");
-    PString thisValue = text(start, finish);
+    PString thisValue = text(start, finish).Trim();
     if (thisValue == myValue) {
       if (selpos == P_MAX_INDEX) {
         text.Splice(" selected", pos+7, 0);
