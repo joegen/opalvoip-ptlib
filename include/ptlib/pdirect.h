@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.4 1993/08/21 01:50:33 robertj Exp $
+ * $Id: pdirect.h,v 1.5 1993/12/31 06:45:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.4  1993/08/21 01:50:33  robertj
+ * Revision 1.5  1993/12/31 06:45:38  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.4  1993/08/21  01:50:33  robertj
  * Made Clone() function optional, default will assert if called.
  *
  * Revision 1.3  1993/07/14  12:49:16  robertj
@@ -79,15 +82,15 @@ DECLARE_CLASS(PDirectory, PContainer)
       // Return the full, unambigous, path name for the directory
 
     BOOL Change() const;
-    inline static BOOL Change(const PString & p);
+    PINLINE static BOOL Change(const PString & p);
       // Change to the specified directory.
       
     BOOL Create(int perm = PDefaultPerms) const;
-    inline static BOOL Create(const PString & p, int perm = PDefaultPerms);
+    PINLINE static BOOL Create(const PString & p, int perm = PDefaultPerms);
       // Create a new directory with the specified permissions
       
     BOOL Remove() const;
-    inline static BOOL Remove(const PString & p);
+    PINLINE static BOOL Remove(const PString & p);
       // Delete the specified directory.
       
 

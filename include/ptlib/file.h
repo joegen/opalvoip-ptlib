@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.9 1993/09/27 16:35:25 robertj Exp $
+ * $Id: file.h,v 1.10 1993/12/31 06:45:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.9  1993/09/27 16:35:25  robertj
+ * Revision 1.10  1993/12/31 06:45:38  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.9  1993/09/27  16:35:25  robertj
  * Changed GetName() to GetTitle(), better naming convention.
  * Moved internal functions to private section.
  *
@@ -101,7 +104,7 @@ DECLARE_CLASS(PFile, PContainer)
 
 
     BOOL Exists() const;
-    inline static BOOL Exists(const PString & name);
+    PINLINE static BOOL Exists(const PString & name);
       // Return TRUE if the file exists.
       
     BOOL Access(OpenMode mode) const;
@@ -109,11 +112,11 @@ DECLARE_CLASS(PFile, PContainer)
       // Return TRUE if the file may be opened in the specified mode
       
     BOOL Remove() const;
-    inline static BOOL Remove(const PString & name);
+    PINLINE static BOOL Remove(const PString & name);
       // Delete the specified file.
       
     BOOL Rename(const PString & newname);
-    inline static BOOL Rename(const PString & oldname, const PString & newname);
+    PINLINE static BOOL Rename(const PString & oldname, const PString & newname);
       // Change the specified files name. Note that this object then refers to
       // the new filename.
 
