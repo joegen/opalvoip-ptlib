@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.32  2001/02/14 02:30:59  robertj
+ * Moved HTTP Service Macro facility to public API so can be used by apps.
+ * Added ability to specify the service macro keyword, defaults to "macro".
+ * Added machine macro to get the OS version and hardware.
+ *
  * Revision 1.31  2000/12/14 08:09:41  robertj
  * Fixed missing immediate expiry date on string and file service HTTP resourcer.
  *
@@ -189,6 +194,7 @@ class PHTTPServiceProcess : public PServiceProcess
 
     virtual PString GetCopyrightText();
 
+    const PString & GetMacroKeyword() const { return macroKeyword; }
     const PTime & GetCompilationDate() const { return compilationDate; }
     const PString & GetHomePage() const { return manufacturersHomePage; }
     const PString & GetEMailAddress() const { return manufacturersEmail; }
@@ -209,6 +215,7 @@ class PHTTPServiceProcess : public PServiceProcess
   protected:
     PSocket  * httpListeningSocket;
     PHTTPSpace httpNameSpace;
+    PString    macroKeyword;
 
     PTEACypher::Key productKey;
     PStringArray    securedKeys;
@@ -220,7 +227,6 @@ class PHTTPServiceProcess : public PServiceProcess
     PString    manufacturersEmail;
     PString    productNameHTML;
     PString    gifHTML;
-
 
     void ShutdownListener();
     void BeginRestartSystem();
@@ -405,6 +411,36 @@ class PServiceHTML : public PHTML
                               const PString & filename,
                               unsigned options);
 };
+
+
+///////////////////////////////////////////////////////////////
+
+class PServiceMacro : public PObject
+{
+  public:
+    PServiceMacro(const char * name);
+    PServiceMacro(const PCaselessString & name);
+    Comparison Compare(const PObject & obj) const;
+    virtual PString Translate(PHTTPRequest & request, const PString & args) const;
+  protected:
+    const char * macroName;
+    PServiceMacro * link;
+    static PServiceMacro * list;
+  friend class PServiceMacros_list;
+};
+
+
+#define P_EMPTY
+
+#define PCREATE_SERVICE_MACRO(name, request, args) \
+  class PServiceMacro_##name : public PServiceMacro { \
+    public: \
+      PServiceMacro_##name() : PServiceMacro(#name) { } \
+      PString Translate(PHTTPRequest & request, const PString & args) const; \
+  }; \
+  static const PServiceMacro_##name serviceMacro_##name; \
+  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args) const
+
 
 
 ///////////////////////////////////////////////////////////////
