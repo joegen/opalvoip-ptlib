@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.24 1995/01/09 12:31:51 robertj Exp $
+ * $Id: osutils.cxx,v 1.25 1995/01/10 11:44:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.24  1995/01/09 12:31:51  robertj
+ * Revision 1.25  1995/01/10 11:44:15  robertj
+ * Removed PString parameter in stdarg function for GNU C++ compatibility.
+ *
+ * Revision 1.24  1995/01/09  12:31:51  robertj
  * Removed unnecesary return value from I/O functions.
  *
  * Revision 1.23  1994/12/12  10:09:24  robertj
@@ -536,9 +539,11 @@ int PChannelStreamBuffer::overflow(int c)
       return EOF;
   }
 
-  if (c != EOF)
-    if (!channel->Write(&c, 1))
+  if (c != EOF) {
+    char ch = (char)c;
+    if (!channel->Write(&ch, 1))
       return EOF;
+  }
 
   return 0;
 }
