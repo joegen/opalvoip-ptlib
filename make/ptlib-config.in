@@ -13,9 +13,10 @@ MACHTYPE="@MACHTYPE@"
 OSTYPE="@OSTYPE@"
 OSRELEASE="@OSRELEASE@"
 SHAREDLIBEXT="@SHAREDLIBEXT@"
+INSTALLPREFIX="@INSTALLPREFIX@"
 
 # usage="Usage: ptlib-config [--prefix[=DIR]] [--exec-prefix[=DIR]] [--version] [--libs] [--cflags]"
-usage="Usage: ptlib-config [--version] [--ptlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext]"
+usage="Usage: ptlib-config [--version] [--pwlibdir] [--ccflags] [--ldflags] [--libs] [--machtype] [--ostype] [--osrelease] [--sharedlibext] [--prefix]"
 
 if test $# -eq 0; then
       echo "${usage}" 1>&2
@@ -32,7 +33,7 @@ while test $# -gt 0; do
     --version)
       echo $VERSION
       ;;
-    --dir)
+    --pwlibdir)
       echo $PWLIBDIR
       ;;
     --ldflags)
@@ -56,6 +57,9 @@ while test $# -gt 0; do
     --sharedlibext)
       echo $SHAREDLIBEXT
       ;;
+    --prefix)
+      echo $INSTALLPREFIX
+      ;;
     --all)
       echo VERSION      = $VERSION
       echo PWLIBDIR     = $PWLIBDIR
@@ -66,6 +70,7 @@ while test $# -gt 0; do
       echo OSTYPE       = $OSTYPE
       echo OSRELEASE    = $OSRELEASE
       echo SHAREDLIBEXT = $SHAREDLIBEXT
+      echo PREFIX       = $INSTALLPREFIX
       ;;
 
     *)
