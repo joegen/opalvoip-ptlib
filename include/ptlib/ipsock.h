@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.14 1995/10/14 14:57:26 robertj Exp $
+ * $Id: ipsock.h,v 1.15 1995/12/10 11:32:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.15  1995/12/10 11:32:11  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.14  1995/10/14 14:57:26  robertj
  * Added internet address to string conversion functionality.
  *
@@ -86,26 +89,6 @@ PDECLARE_CLASS(PIPSocket, PSocket)
      */
 
 
-  // Overrides from class PSocket.
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    /* Open a socket to a remote host on the specified port number. This is an
-       "accepting" socket. When a "listening" socket has a pending connection
-       to make, this will accept a connection made by the "connecting" socket
-       created to establish a link.
-
-       The port that the socket uses is the one used in the <A>Listen()</A>
-       command of the <CODE>socket</CODE> parameter.
-
-       Note that this function will block until a remote system connects to the
-       port number specified in the "listening" socket.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully opened.
-     */
-
-
   // New functions for class
 #ifdef P_HAS_BERKELEY_SOCKETS
     class Address : public in_addr {
@@ -129,9 +112,14 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         Address();
         Address(const Address & addr);
         Address(const PString & dotNotation);
+        Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
         Address & operator=(const Address & addr);
         operator PString() const;
-        operator DWORD() const;
+        operator DWORD() const { return Net2Host(S_un.S_addr); }
+        BYTE Byte1() const { return S_un.S_un_b.s_b1; }
+        BYTE Byte2() const { return S_un.S_un_b.s_b2; }
+        BYTE Byte3() const { return S_un.S_un_b.s_b3; }
+        BYTE Byte4() const { return S_un.S_un_b.s_b4; }
     };
 
     static BOOL GetAddress(
@@ -243,11 +231,18 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     virtual WORD GetPortByService(
       const PString & service   // Name of service to get port number for.
     ) const = 0;
+    static WORD GetPortByService(
+      const char * protocol,  // Protocol type for port lookup
+      const char * service    // Name of service to get port number for.
+    );
     /* Get the port number for the specified service.
     
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
        classes will implement this function.
+
+       The static version of the function is independent of the socket type as
+       its first parameter may be "tcp" or "udp", 
 
        <H2>Returns:</H2>
        Port number for service name.
@@ -256,11 +251,18 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     virtual PString GetServiceByPort(
       WORD port   // Number for service to find name of.
     ) const = 0;
+    static PString GetServiceByPort(
+      const char * protocol,  // Protocol type for port lookup
+      WORD port   // Number for service to find name of.
+    );
     /* Get the service name from the port number.
     
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
        classes will implement this function.
+
+       The static version of the function is independent of the socket type as
+       its first parameter may be "tcp" or "udp", 
 
        <H2>Returns:</H2>
        Service name for port number.
@@ -268,27 +270,6 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
 
   protected:
-    static WORD GetPortByService(
-      const char * protocol,  // Protocol type for port lookup
-      const char * service    // Name of service to get port number for.
-    );
-    /* Get the port number for the specified service.
-
-       <H2>Returns:</H2>
-       Port number for service name and protocol.
-     */
-
-    static PString GetServiceByPort(
-      const char * protocol,  // Protocol type for port lookup
-      WORD port   // Number for service to find name of.
-    );
-    /* Get the service name from the port number.
-
-       <H2>Returns:</H2>
-       Service name for port number and protocol.
-     */
-
-
 #ifdef P_HAS_BERKELEY_SOCKETS
     BOOL _Socket(
       int type  // Type of socket to open.
@@ -308,9 +289,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        TRUE if successful.
      */
 
-    BOOL _Listen(
-      unsigned queueSize   // Number of pending accepts that may be queued.
-    );
+    BOOL _Bind();
     /* Bind a socket to the protocol and listen for connections from remote
        hosts.
 
