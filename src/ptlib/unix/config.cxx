@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.31  2001/09/14 07:36:27  robertj
+ * Fixed bug where fails to read last line of config file if not ended with '\n'.
+ *
  * Revision 1.30  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -316,7 +319,6 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
 BOOL PXConfig::ReadFromFile (const PFilePath & filename)
 {
   PINDEX len;
-  PString line;
 
   // clear out all information
   RemoveAll();
@@ -329,7 +331,9 @@ BOOL PXConfig::ReadFromFile (const PFilePath & filename)
   PXConfigSection * currentSection = NULL;
 
   // read lines in the file
-  while (file.ReadLine(line)) {
+  while (file.good()) {
+    PString line;
+    file >> line;
     line = line.Trim();
     if ((len = line.GetLength()) > 0) {
 
