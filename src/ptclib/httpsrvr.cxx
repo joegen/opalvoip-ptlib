@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.22  1998/10/25 01:02:41  craigs
+ * Added ability to specify per-directory authorisation for PHTTPDirectory
+ *
  * Revision 1.21  1998/10/13 14:06:23  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -120,6 +123,8 @@
 // maximum delay between characters whilst reading a line of text
 #define	READLINE_TIMEOUT	30
 
+//  filename to use for directory access directives
+static PString accessFilename = "_access";
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSpace
@@ -1068,19 +1073,32 @@ BOOL PHTTPResource::CheckAuthority(PHTTPServer & server,
                             const PHTTPRequest & request,
                      const PHTTPConnectionInfo & connectInfo)
 {
-  if (authority == NULL || !authority->IsActive())
+  if (authority == NULL)
     return TRUE;
+
+  return CheckAuthority(*authority, server, request, connectInfo);
+}
+    
+    
+BOOL PHTTPResource::CheckAuthority(PHTTPAuthority & authority,
+                                      PHTTPServer & server,
+                               const PHTTPRequest & request,
+                        const PHTTPConnectionInfo & connectInfo)
+{
+  if (!authority.IsActive())
+    return TRUE;
+
 
   // if this is an authorisation request...
   if (request.inMIME.Contains(PHTTP::AuthorizationTag) &&
-      authority->Validate(request, request.inMIME[PHTTP::AuthorizationTag]))
+      authority.Validate(request, request.inMIME[PHTTP::AuthorizationTag]))
     return TRUE;
 
   // it must be a request for authorisation
   PMIMEInfo headers;
   server.SetDefaultMIMEInfo(headers, connectInfo);
   headers.SetAt(PHTTP::WWWAuthenticateTag,
-                       "Basic realm=\"" + authority->GetRealm(request) + "\"");
+                       "Basic realm=\"" + authority.GetRealm(request) + "\"");
   headers.SetAt(PHTTP::ContentTypeTag, "text/html");
 
   const httpStatusCodeStruct * statusInfo =
@@ -1363,7 +1381,7 @@ PString PHTTPFile::LoadText(PHTTPRequest & request)
 // PHTTPDirectory
 
 PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
-  : PHTTPFile(url, 0), basePath(dir)
+  : PHTTPFile(url, 0), basePath(dir), allowDirectoryListing(TRUE)
 {
 }
 
@@ -1371,14 +1389,14 @@ PHTTPDirectory::PHTTPDirectory(const PURL & url, const PDirectory & dir)
 PHTTPDirectory::PHTTPDirectory(const PURL & url,
                                const PDirectory & dir,
                                const PHTTPAuthority & auth)
-  : PHTTPFile(url, PString(), auth), basePath(dir)
+  : PHTTPFile(url, PString(), auth), basePath(dir), allowDirectoryListing(TRUE)
 {
 }
 
 
 PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME,
-								   PHTTPServer & server)
+                                 const PMIMEInfo & inMIME,
+								                 PHTTPServer & server)
   : PHTTPFileRequest(url, inMIME, server)
 {
 }
@@ -1392,39 +1410,104 @@ PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
 }
 
 
-BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
+void PHTTPDirectory::EnableAuthorisation(const PString & realm)
 {
+  authorisationRealm = realm;
+}
+
+
+BOOL PHTTPDirectory::FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations)
+{
+  PFilePath fn = dir + accessFilename;
+  PTextFile file;
+  BOOL first = TRUE;
+  if (file.Open(fn, PFile::ReadOnly)) {
+    PString line;
+    while (file.ReadLine(line)) {
+      if (first) {
+        realm = line.Trim();
+        first = FALSE;
+      } else {
+        PStringArray tokens = line.Tokenise(':');
+        if (tokens.GetSize() > 1)
+          authorisations.SetAt(tokens[0].Trim(), tokens[1].Trim());
+      }
+    }
+    return TRUE;
+  }
+    
+  if (dir.IsRoot() || (dir == basePath))
+    return FALSE;
+
+  return FindAuthorisations(dir.GetParent(), realm, authorisations);
+}
+
+BOOL PHTTPDirectory::CheckAuthority(PHTTPServer & server,
+                             const PHTTPRequest & request,
+                      const PHTTPConnectionInfo & conInfo)
+{
+  PFilePath & realPath = ((PHTTPDirRequest&)request).realPath;
+
+  // construct the real path name
   const PStringArray & path = request.url.GetPath();
-  PFilePath realPath = basePath;
+  realPath = basePath;
   PINDEX i;
   for (i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
     realPath += path[i] + PDIR_SEPARATOR;
 
+  // append the last path element
   if (i < path.GetSize())
     realPath += path[i];
 
-  // See if its a normal file
+  // if access control is enabled, then search parent directories for password files
+  PStringToString authorisations;
+  PString newRealm;
+  if (authorisationRealm.IsEmpty() ||
+      !FindAuthorisations(realPath.GetDirectory(), newRealm, authorisations) ||
+      authorisations.GetSize() == 0)
+    return TRUE;
+
+  PHTTPMultiSimpAuth authority(newRealm, authorisations);
+  return PHTTPResource::CheckAuthority(authority, server, request, conInfo);
+}
+
+BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
+{
+  PFilePath & realPath = ((PHTTPDirRequest&)request).realPath;
+    
+  // if not able to obtain resource information, then consider the resource "not found"
   PFileInfo info;
   if (!PFile::GetInfo(realPath, info)) {
     request.code = PHTTP::NotFound;
     return FALSE;
   }
 
-  // Now try and open it
+  // if the resource is a file, and the file can't be opened, then return "not found"
   PFile & file = ((PHTTPDirRequest&)request).file;
   if (info.type != PFileInfo::SubDirectory) {
-    if (!file.Open(realPath, PFile::ReadOnly)) {
+    if (!file.Open(realPath, PFile::ReadOnly) ||
+        (!authorisationRealm.IsEmpty() && realPath.GetFileName() == accessFilename)) {
       request.code = PHTTP::NotFound;
       return FALSE;
     }
+  } 
+
+  // resource is a directory - if index files disabled, then return "not found"
+  else if (!allowDirectoryListing) {
+    request.code = PHTTP::NotFound;
+    return FALSE;
   }
+
+  // else look for index files
   else {
+    PINDEX i;
     for (i = 0; i < PARRAYSIZE(HTMLIndexFiles); i++)
       if (file.Open(realPath +
                           PDIR_SEPARATOR + HTMLIndexFiles[i], PFile::ReadOnly))
         break;
   }
 
+  // open the file and return information
   PString & fakeIndex = ((PHTTPDirRequest&)request).fakeIndex;
   if (file.IsOpen()) {
     contentType = PMIMEInfo::GetContentType(file.GetFilePath().GetType());
@@ -1433,6 +1516,7 @@ BOOL PHTTPDirectory::LoadHeaders(PHTTPRequest & request)
     return TRUE;
   }
 
+  // construct a directory listing
   contentType = "text/html";
   PHTML reply = "Directory of " + request.url.AsString();
   PDirectory dir = realPath;
