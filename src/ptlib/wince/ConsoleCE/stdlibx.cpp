@@ -140,7 +140,7 @@ int	_open( const char *filename, int oflag , int pmode)
         /*
          * set up variable argument list stuff
          */
-        if ( !(pmode & _S_IWRITE) )
+        if ( oflag & _O_RDONLY )
             fileattrib = FILE_ATTRIBUTE_READONLY;
     }
 
@@ -175,6 +175,7 @@ int	_open( const char *filename, int oflag , int pmode)
     /*
      * try to open/create the file
      */
+
     if ( (osfh = CreateFile( A2T(filename),
                              fileaccess,
                              fileshare,
