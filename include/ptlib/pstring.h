@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.28 1997/06/08 04:48:58 robertj Exp $
+ * $Id: pstring.h,v 1.29 1997/06/10 11:36:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.29  1997/06/10 11:36:32  craigs
+ * Added inline statements to allow compilation uder Unix
+ *
  * Revision 1.28  1997/06/08 04:48:58  robertj
  * Added regular expressions.
  * Fixed non-template class descendent order.
@@ -1794,11 +1797,11 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 #define PSTRING_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
   private: \
-    PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); } \
-    PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); } \
-    BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); } \
-    BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); } \
-    BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); } \
+    inline PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); } \
+    inline PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); } \
+    inline BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); } \
+    inline BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); } \
+    inline BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
