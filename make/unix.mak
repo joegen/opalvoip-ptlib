@@ -21,12 +21,17 @@ ifeq ($(HOSTTYPE),i486-linux)
 P_LINUX		= 1
 else
 ifndef MACHTYPE
+ifeq ($(HOSTTYPE),i386-linux)
+P_LINUX		= 1
+else
+ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 #P_LINUX	= 1
 #P_SUN4  	= 1
 #P_SOLARIS	= 1
 #P_HPUX		= 1
 #P_ULTRIX	= 1
 
+endif
 endif
 endif
 endif
@@ -93,7 +98,7 @@ ifdef P_SOLARIS
 else
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
-LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl
+
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
 OBJ_SUFFIX	= solaris
@@ -101,7 +106,13 @@ LDFLAGS		:= -R/usr/local/gnu/lib
 STATIC_LIBS	= libstdc++.a libg++.a 
 SYSLIBDIR	= /usr/local/gnu/lib
 
-P_SSL		= $(PWLIBDIR)
+#P_SSL		= $(PWLIBDIR)
+P_PTHREADS	= 1
+
+STATIC_LIBS	:= libstdc++.a libg++.a 
+SYSLIBDIR	:= /usr/local/gnu/lib
+
+ifdef P_PTHREADS
 ENDLDLIBS	:= $(ENDLDLIBS) -lpthread
 endif
 
@@ -150,11 +161,19 @@ endif # DEBUG
 
 
 # define SSL variables
-SSLDIR		= $(PWLIBDIR)/SSLeay-0.6.6
-CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/out/include -I$(SSLDIR)/crypto
-LDFLAGS		:= $(LDFLAGS) -L$(SSLDIR)/out/lib
+SSLEAY		= $(HOME)/src/SSLeay-0.6.6
+SSLDIR		= /usr/local/ssl
+
+SSLEAY		:= $(HOME)/src/SSLeay-0.6.6
 SSLDIR		:= /usr/local/ssl
 CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
+LDFLAGS		:= $(LDFLAGS) -L$(SSLDIR)/lib
+ENDLDLIBS	:= $(ENDLDLIBS) -lssl -lcrypto
+#
+endif
+#
+
+CFLAGS          := $(CFLAGS) -DP_PLATFORM_HAS_THREADS -DP_PTHREADS
 # define Posix threads stuff
 ifdef P_PTHREADS
 #
