@@ -170,12 +170,13 @@ class PXMLElement : public PXMLObject {
 		              const PString & value,
 			                 BOOL setDirty = TRUE);
 
-    PString GetAttribute(const PCaselessString & key);
+    PString GetAttribute(const PCaselessString & key) const;
     BOOL HasAttribute(const PCaselessString & key);
-    BOOL GetAttribute(const PCaselessString & key) const;
 
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
+
+    PString GetData() const;
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
