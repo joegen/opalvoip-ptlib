@@ -197,6 +197,10 @@ SOURCE=.\remconn.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\safecoll.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\Common\serial.cxx
 # End Source File
 # Begin Source File
@@ -353,6 +357,10 @@ SOURCE=..\..\..\Include\PtLib\Ptime.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\Remconn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\safecoll.h
 # End Source File
 # Begin Source File
 

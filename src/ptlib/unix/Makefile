@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.90  2002/05/01 04:16:43  robertj
+# Added thread safe collection classes.
+#
 # Revision 1.89  2002/04/18 05:12:20  robertj
 # Changed /usr/include to SYSINCDIR helps with X-compiling, thanks Bob Lindell
 #
@@ -470,6 +473,7 @@ SOURCES	= \
 	channel.cxx \
 	osutil.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
+	$(COMMON_SRC_DIR)/safecoll.cxx \
 	tlib.cxx \
 	switch.cxx \
 	assert.cxx \
