@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.12 1996/03/04 12:38:56 robertj Exp $
+ * $Id: ptlib.inl,v 1.13 1996/03/31 09:08:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.13  1996/03/31 09:08:23  robertj
+ * Added mutex to thread dictionary access.
+ *
  * Revision 1.12  1996/03/04 12:38:56  robertj
  * Moved calculation of stackTop to platform dependent code.
  *
@@ -127,9 +130,6 @@ PINLINE BOOL PPipeChannel::CanReadAndWrite()
 // PThread
 
 #if defined(_WIN32)
-
-PINLINE PThread * PThread::Current()
-  { return(PThread*)PProcess::Current()->threads.GetAt(GetCurrentThreadId()); }
 
 PINLINE void PThread::Sleep(const PTimeInterval & delay)
   { ::Sleep(delay.GetMilliseconds()); }
