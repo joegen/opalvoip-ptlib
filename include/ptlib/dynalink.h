@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.12  2003/05/14 00:42:32  rjongbloed
+ * Added missing virtual keyword to PDynaLink functions.
+ *
  * Revision 1.11  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -106,17 +109,17 @@ class PDynaLink : public PObject
        @return
        TRUE if the library was loaded.
      */
-    BOOL Open(
+    virtual BOOL Open(
       const PString & name    /// Name of the dynamically loadable module.
     );
 
     /**Close the dyna-link library.
      */
-    void Close();
+    virtual void Close();
 
     /**Dyna-link module is loaded and may be accessed.
      */
-    BOOL IsLoaded() const;
+    virtual BOOL IsLoaded() const;
 
     /**Get the name of the loaded library. If the library is not loaded
        this may return an empty string.
@@ -127,7 +130,7 @@ class PDynaLink : public PObject
        @return
        String for the library name.
      */
-    PString GetName(
+    virtual PString GetName(
       BOOL full = FALSE  /// Flag for full or short path name
     ) const;
 
