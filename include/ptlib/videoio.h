@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.40  2004/04/18 12:49:22  csoutheren
+ * Patches to video code thanks to Guilhem Tardy (hope I get it right this time :)
+ *
  * Revision 1.39  2004/01/18 14:23:30  dereksmithies
  * Add new function to make opening of video input devices easier.
  *
@@ -238,10 +241,16 @@ class PVideoDevice : public PObject
     };
 
     enum StandardSizes {
+      CIF16Width = 1408,
+      CIF16Height = 1152,
+      CIF4Width = 704,
+      CIF4Height = 576,
       CIFWidth = 352,
       CIFHeight = 288,
       QCIFWidth = 176,
-      QCIFHeight = 144
+      QCIFHeight = 144,
+      SQCIFWidth = 144,
+      SQCIFHeight = 96,
     };
 
     struct OpenArgs {
@@ -740,7 +749,11 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
       unsigned height,
       const BYTE * data,
       BOOL endFrame = TRUE
-    ) = 0;
+    );
+
+    /**Indicate frame may be displayed.
+      */
+    virtual BOOL EndFrame() = 0;
 
   protected:
     PBYTEArray frameStore;
