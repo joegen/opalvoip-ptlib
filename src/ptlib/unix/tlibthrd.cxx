@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.18  1999/07/15 13:05:33  robertj
+ * Fixed problem with getting EINTR in semaphore wait, is normal, not error.
+ *
  * Revision 1.17  1999/07/11 13:42:13  craigs
  * pthreads support for Linux
  *
@@ -258,8 +261,8 @@ void PThread::PX_NewThread(BOOL startSuspended)
   PX_suspendCount = startSuspended ? 1 : 0;
 
   // throw the thread
-  pthread_attr_t threadAttr;
-  pthread_attr_init(&threadAttr);
+//  pthread_attr_t threadAttr;
+//  pthread_attr_init(&threadAttr);
   PAssertOS(pthread_create(&PX_threadId, NULL, PX_ThreadStart, this) == 0);
 }
 
