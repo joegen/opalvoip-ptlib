@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.25  2004/03/13 06:30:52  rjongbloed
+ * Virtualised parse function.
+ *
  * Revision 1.24  2003/04/04 05:18:08  robertj
  * Added "callto", "tel" and fixed "h323" URL types.
  *
@@ -180,15 +183,15 @@ class PURL : public PObject
   /**@name New functions for class. */
   //@{
     /**Parse the URL string into the fields in the object instance. */
-    void Parse(
+    inline BOOL Parse(
       const char * cstr,   /// URL as a string to parse.
       const char * defaultScheme = NULL /// Default scheme for URL
-    );
+    ) { return InternalParse(cstr, defaultScheme); }
     /**Parse the URL string into the fields in the object instance. */
-    void Parse(
+    inline BOOL Parse(
       const PString & str, /// URL as a string to parse.
       const char * defaultScheme = NULL /// Default scheme for URL
-    ) { Parse((const char *)str, defaultScheme); }
+    ) { return InternalParse((const char *)str, defaultScheme); }
 
     /**Print/String output representation formats. */
     enum UrlFormat {
@@ -352,6 +355,10 @@ class PURL : public PObject
   //@}
 
   protected:
+    virtual BOOL InternalParse(
+      const char * cstr,         /// URL as a string to parse.
+      const char * defaultScheme /// Default scheme for URL
+    );
     void Recalculate();
     PString urlString;
 
