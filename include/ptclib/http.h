@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.54  2002/10/02 08:54:34  craigs
+ * Added support for XMLRPC server
+ *
  * Revision 1.53  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -652,6 +655,8 @@ class PHTTPConnectionInfo : public PObject
     void ResetMultipartFormInfo()
       { multipartFormInfoArray.RemoveAll(); }
 
+    PString GetEntityBody() const   { return entityBody; }
+
   protected:
     BOOL Initialise(PHTTPServer & server, PString & args);
     void DecodeMultipartFormInfo(const PString & type, const PString & entityBody);
@@ -665,6 +670,7 @@ class PHTTPConnectionInfo : public PObject
     BOOL            isProxyConnection;
     int             majorVersion;
     int             minorVersion;
+    PString         entityBody;        // original entity body (POST only)
     long            entityBodyLength;
     PTimeInterval   persistenceTimeout;
     unsigned        persistenceMaximum;
@@ -913,6 +919,7 @@ class PHTTPRequest : public PObject
     const PMultipartFormInfoArray & multipartFormInfo; // multipart form information, if any
     PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
+    PString entityBody;             // original entity body (POST only)
     PINDEX contentSize;             // Size of the body of the resource data.
     PIPSocket::Address origin;      // IP address of origin host for request
     PIPSocket::Address localAddr;   // IP address of local interface for request
