@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.15 1998/01/03 22:35:04 craigs Exp $
+ * $Id: channel.cxx,v 1.16 1998/03/26 05:01:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.16  1998/03/26 05:01:12  robertj
+ * Added PMutex and PSyncPoint classes.
+ *
  * Revision 1.15  1998/01/03 22:35:04  craigs
  * Added PThread support
  *
@@ -59,7 +62,7 @@
 #include <ptlib.h>
 #include <sys/ioctl.h>
 
-PSemaphore PX_iostreamMutex;
+PMutex PX_iostreamMutex;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
