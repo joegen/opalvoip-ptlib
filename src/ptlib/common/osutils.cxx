@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.39 1995/12/23 03:40:40 robertj Exp $
+ * $Id: osutils.cxx,v 1.40 1996/01/02 12:52:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.40  1996/01/02 12:52:47  robertj
+ * Added thread for timers.
+ * Fixed bug in cooperative threading semaphores.
+ *
  * Revision 1.39  1995/12/23 03:40:40  robertj
  * Changed version number system
  *
@@ -692,6 +696,8 @@ void PProcess::TimerThread::Main()
 
 void PProcess::SignalTimerChange()
 {
+  if (timerThread == (void *)-1)
+    return;
   if (timerThread == NULL)
     timerThread = PNEW TimerThread;
   timerThread->semaphore.Signal();
@@ -2071,7 +2077,7 @@ void PThread::Yield()
 
       case BlockedSem :
       case SuspendedBlockSem :
-        if (thread->blockingSemaphore->timeout != 0)
+        if (thread->blockingSemaphore->timeout == 0)
           thread->blockingSemaphore->Signal();
         break;
 
@@ -2134,7 +2140,8 @@ PProcess::PProcess(const char * manuf, const char * name,
 PProcess::~PProcess()
 {
 #if defined(P_PLATFORM_HAS_THREADS)
-  delete timerThread;
+  if (timerThread != (void *)-1)
+    delete timerThread;
 #endif
 }
 
