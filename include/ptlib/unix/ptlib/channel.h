@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.9 1996/08/03 12:08:19 craigs Exp $
+ * $Id: channel.h,v 1.10 1998/01/03 22:58:25 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.10  1998/01/03 22:58:25  craigs
+ * Added PThread support
+ *
  * Revision 1.9  1996/08/03 12:08:19  craigs
  * Changed for new common directories
  *
@@ -39,8 +42,15 @@
 #pragma interface
 
 #include <pmachdep.h>
+#include <semaphor.h>
 
 #include "../../common/ptlib/channel.h"
+
+#ifdef P_PTHREADS
+  protected:
+     PSemaphore mutex;
+#endif
+
   public:
     enum {
       PXReadBlock,
@@ -49,8 +59,10 @@
       PXConnectBlock
     };
   protected:
-    BOOL PXSetIOBlock(int type, PTimeInterval timeout = PMaxTimeInterval);
-    BOOL PXSetIOBlock(int type, int blockHandle, PTimeInterval timeout = PMaxTimeInterval);
+    BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
+    BOOL PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
+
+  protected:
     PString channelName;
 };
 
