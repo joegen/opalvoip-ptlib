@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.21 1995/06/17 11:12:52 robertj Exp $
+ * $Id: pdirect.h,v 1.22 1995/10/14 15:02:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.22  1995/10/14 15:02:22  robertj
+ * Added function to get parent directory.
+ *
  * Revision 1.21  1995/06/17 11:12:52  robertj
  * Documentation update.
  *
@@ -197,6 +200,15 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
 
 
   // New member functions
+    PDirectory GetParent() const;
+    /* Get the directory for the parent to the current directory. If the
+       directory is already the root directory it returns the root directory
+       again.
+
+       <H2>Returns:</H2>
+       parent directory.
+     */
+
     PFILE_PATH_STRING GetVolume() const;
     /* Get the volume name that the directory is in.
     
