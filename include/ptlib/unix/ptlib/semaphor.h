@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.7  1999/01/09 03:35:56  robertj
+ * Fixed problem with closing thread waiting on semaphore.
+ *
  * Revision 1.6  1998/11/30 22:07:05  robertj
  * New directory structure.
  *
@@ -61,12 +64,11 @@
     unsigned currentCount;
     unsigned maximumCount;
     unsigned queuedLocks;
+  friend BOOL PThread::Terminate();
 #else
     PQUEUE(ThreadQueue, PThread);
     ThreadQueue waitQueue;
 #endif
-friend void SemaSignal(PSemaphore & sema, BOOL PX_enableDebugOutput);
-friend void SemaWait(PSemaphore & sema, BOOL PX_enableDebugOutput);
 };
 
 #endif
