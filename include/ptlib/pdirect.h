@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.10 1994/04/11 14:16:27 robertj Exp $
+ * $Id: pdirect.h,v 1.11 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.10  1994/04/11 14:16:27  robertj
+ * Revision 1.11  1994/04/20 12:17:44  robertj
+ * Split name into PFilePath
+ *
+ * Revision 1.10  1994/04/11  14:16:27  robertj
  * Added function for determining if character is a valid directory separator.
  *
  * Revision 1.9  1994/04/01  14:14:57  robertj
@@ -36,7 +39,6 @@
 
 #define _PDIRECTORY
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // File System
 
@@ -50,7 +52,7 @@ enum PFileTypes {
   PSocketDevice = 64,
   PUnknownFileType = 256,
   PAllFiles = PRegularFile|PSymbolicLink|PSubDirectory|
-                       PCharDevice|PBlockDevice|PFifo|PSocketDevice|PUnknownFileType
+                 PCharDevice|PBlockDevice|PFifo|PSocketDevice|PUnknownFileType
 };
 
 
@@ -69,6 +71,16 @@ enum PPermissions {
   PDefaultPerms = PUserRead|PUserWrite|PGroupRead|PWorldRead
 };
 
+
+struct PFileInfo {
+  PFileTypes type;
+  PTime      created;
+  PTime      modified;
+  PTime      accessed;
+  DWORD      size;
+  int        permissions;
+  BOOL       hidden;
+};
 
 
 PDECLARE_CONTAINER(PDirectory, PContainer)
@@ -125,14 +137,19 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
     void Close();
       // Close the directory after a file list scan.
       
-    PString Entry() const;
-      // Return the filename (without the volume or directory path) of the
-      // current file in the directory scan.
-      
+    PString GetEntryName() const;
+      // Return the name (without the volume or directory path) of the
+      // current entry in the directory scan. This may be the name of a file
+      // or a subdirectory or even a link or device for operating systems that
+      // support them.
+
     BOOL IsSubDir() const;
       // Return TRUE if the directory entry currently being scanned is itself
       // another directory entry.
       
+    BOOL GetInfo(PFileInfo & info) const;
+      // Get information on the current directory entry
+
 
   protected:
     // Overrides from class PContainer

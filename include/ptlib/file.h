@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.14 1994/04/01 14:11:03 robertj Exp $
+ * $Id: file.h,v 1.15 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.14  1994/04/01 14:11:03  robertj
+ * Revision 1.15  1994/04/20 12:17:44  robertj
+ * Split name into PFilePath
+ *
+ * Revision 1.14  1994/04/01  14:11:03  robertj
  * Added const to functions.
  * Added SetName function.
  *
@@ -59,27 +62,32 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
 
-PDECLARE_CONTAINER(PFile, PContainer)
+PDECLARE_CONTAINER(PFile, PChannel)
 
   public:
     PFile();
-      // Create a unique temporary file name, without opening the file.
-      
-    PFile(const PString & name);
-      // Create a file object with the spcified name without opening the file.
-      
+      // Create a file object but do not open it. It does not initially
+      // have a valid file name.
+
     enum OpenMode {
       ReadOnly, 
       WriteOnly, 
       ReadWrite
     };
     enum OpenOptions {
-      Normal = 0,
-      Create = 1,
-      Truncate = 2,        
-      Exclusive = 4
+      ModeDefault = -1, // File option depends on the OpenMode parameter
+      MustExist = 0,    // File open fails if file does not exist
+      Create = 1,       // File is created if it does not exist
+      Truncate = 2,     // File is set to zero length if it already exists
+      Exclusive = 4     // File open fails if file already exists
     };
-    PFile(const PString & name, OpenMode mode, int opts = Normal);
+
+    PFile(OpenMode mode, int opts = ModeDefault);
+      // Create a unique temporary file name, and open the file for reading
+      // and writing, creating the file. The file is initially empty.
+      
+    PFile(const PFilePath & name,
+                           OpenMode mode = ReadWrite, int opts = ModeDefault);
       // Create a file object with name and open it in the specified mode.
       
 
@@ -89,34 +97,46 @@ PDECLARE_CONTAINER(PFile, PContainer)
       // essentially if they have the same full path name.
 
 
-    // New member functions
-    PString GetVolume() const;
-      // Get the drive/volume name component of the full file specification.
-      // Note this may not be relevent on some platforms and returns "".
+    // Overrides from class PChannel
+    virtual BOOL IsOpen() const;
+      // Return TRUE if the channel is currently open.
       
-    PString GetPath() const;
-      // Get the directory path component of the full file specification.
+    virtual BOOL Read(void * buf, PINDEX len);
+      // Low level read from the channel. This function will block until the
+      // requested number of characters were read.
 
-    PString GetTitle() const;
-      // Get the title component of the full file specification.
+    virtual int ReadChar();
+      // Read a single 8 bit byte from the channel. If one was not available
+      // then the function returns immediately with a -1 return value.
 
-    PString GetType() const;
-      // Get the file type component of the full file specification. Note that
-      // on some platforms this may not actually be part of the GetFullName()
-      // string.
+    virtual BOOL Write(const void * buf, PINDEX len);
+      // Low level write to the channel. This function will block until the
+      // requested number of characters were written.
 
-    PString GetFileName() const;
-      // Get the actual directory entry name component of the full file
-      // specification. This may be identical to GetName()+GetType() or
-      // simply GetName() depending on the platform.
+    virtual BOOL WriteChar(char c);
+      // Write a single character to the channel. This function does not block
+      // and will return FALSE if it could not write the character.
 
-    PString GetFullName() const;
-      // Return the full, unambiguous, path name for the file. This is
-      // always GetVolume()+GetPath()+GetFileName().
+    virtual PINDEX GetInputAvailable();
+      // Return the number of characters that may be read from the channel
+      // without causing the Read() function to block.
 
-    void SetName(const PString & str);
+    virtual PINDEX GetOutputAvailable();
+      // Return the number of characters that may be written to the channel
+      // without causing the Write() function to block.
+
+    virtual BOOL Close();
+      // Close the channel.
+
+
+    // New member functions
+    const PFilePath & GetFilePath() const;
+      // Return the file path.
+
+    void SetFilePath(const PString & str);
       // Set the name of the file object. This has no effect if the file is
       // currently open.
+
 
     BOOL Exists() const;
     PINLINE static BOOL Exists(const PString & name);
@@ -131,50 +151,33 @@ PDECLARE_CONTAINER(PFile, PContainer)
       // Delete the specified file.
       
     BOOL Rename(const PString & newname);
-    PINLINE static BOOL Rename(const PString & oldname, const PString & newname);
+    PINLINE static BOOL Rename(const PString & oldname,
+                                                     const PString & newname);
       // Change the specified files name. Note that this object then refers to
       // the new filename.
 
     BOOL Copy(const PString & newname);
     static BOOL Copy(const PString & oldname, const PString & newname);
-      // Make a copy of the specified file. Note that this object still refers to
-      // the original file.
+      // Make a copy of the specified file. Note that this object still refers
+      // to the original file.
 
 
-    struct Info {
-      PFileTypes type;
-      PTime created;
-      PTime modified;
-      PTime accessed;
-      DWORD filesize;
-      int   permissions;
-      BOOL  hidden;
-    };
-    BOOL GetInfo(Info & info) const;
-    static BOOL GetInfo(const PString & name, Info & info);
+    BOOL Open(OpenMode  mode = ReadWrite, int opts = ModeDefault);
+      // Open the file in the specified mode. If the file was already open then
+      // it is closed and re-opened. If there has not been a filename attached
+      // to the file object (via SetFilePath() or a previous open) then a new
+      // unique temporary filename is generated.
 
-    BOOL Open(OpenMode  mode, int opts = Normal);
-      // Open the file in the specified mode.
-      
-    BOOL IsOpen() const;
-      // Return TRUE if the file is currently open.
+    BOOL Open(const PFilePath & name,
+                          OpenMode  mode = ReadWrite, int opts = ModeDefault);
+      // Open the given filename in the specified mode. If the file object
+      // already has an open file then it is closed beforehand. The opts
+      // parameter, if ModeDefault will be MustExist for mode == ReadOnly,
+      // Create|Truncate for mode == WriteOnly and Create|Exclusive for
+      // mode == ReadWrite.
       
     int GetHandle() const;
       // Return the integer operating system handle for the file.
-
-    BOOL Read(void * buffer, size_t amount);
-      // Read a sequence of bytes into the specified buffer. Return TRUE if
-      // the required number of bytes was successfully read.
-      
-    BOOL Write(const void * buffer, size_t amount);
-      // Write a sequence of bytes from the specified buffer. Return TRUE if
-      // the required number of bytes was successfully written.
-
-    int ReadChar();
-      // Read a byte (0..255) from the file. Return -1 if error.
-      
-    BOOL WriteChar(BYTE c);
-      // Write a byte to the file. Return TRUE if byte was written.
 
     off_t GetLength() const;
       // Get the current size of the file.
@@ -199,49 +202,28 @@ PDECLARE_CONTAINER(PFile, PContainer)
     BOOL IsEndOfFile() const;
       // Return TRUE if at end of file.
       
-    BOOL Close();
-      // Close the open file.
-
-    enum Errors {
-      NoError,
-      FileNotFound,
-      FileExists,
-      DiskFull,
-      AccessDenied,
-      Miscellaneous
-    };
-    Errors GetErrorCode() const;
-      // Return the error result of the last file I/O operation in this object.
-    PString GetErrorText() const;
-      // Return a string indicating the error message that may be displayed to
-      // the user. The error for the last I/O operation in this object is used.
+    BOOL GetInfo(PFileInfo & info) const;
+    static BOOL GetInfo(const PFilePath & name, PFileInfo & info);
+      // Get information on the specified file
 
 
   protected:
-    // New member functions
+    // Overrides from class PChannel
     virtual BOOL FlushStreams();
-      // Flush stream based descendents of PFile
+      // Flush stream based descendents of PChannel
 
 
     // Member variables
-    PString fullname;
+    PFilePath path;
       // The fully qualified path name for the file.
       
     int os_handle;
       // The operating system file handle return by standard open() function.
 
-    int os_errno;
-      // The operating system error number as returned by errno.
-
 
   private:
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
-
-
-    // New member functions
-    void Construct();
-      // Common construction code.
 
 
 // Class declaration continued in platform specific header file ///////////////
