@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.77  2004/06/30 12:17:06  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.76  2004/06/29 08:20:46  rogerhardiman
  * The throws are needed on new and delete in GCC 2.95.x too.
  * This is now important as other code changes (factory and #include <string>)
@@ -281,6 +285,21 @@
 #else
 #include <signal.h>
 #endif
+
+
+PFactoryBase::FactoryMap & PFactoryBase::GetFactories()
+{
+  static FactoryMap factories;
+  return factories;
+}
+
+
+PFactoryBase::FactoryMap::~FactoryMap()
+{
+  FactoryMap::const_iterator entry;
+  for (entry = begin(); entry != end(); ++entry)
+    delete entry->second;
+}
 
 
 void PAssertFunc(const char * file,
