@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.31  2002/10/29 00:07:03  robertj
+ * Added IsValid() function to indicate that a PTime is set correctly.
+ *
  * Revision 1.30  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -257,6 +260,14 @@ class PTime : public PObject
 
   /**@name Access functions */
   //@{
+    /**Determine if the timestamp is valid.
+       This will return TRUE if the timestamp can be represented as a time
+       in the epoch. The epoch is the 1st January 1970.
+
+       In practice this means the time is > 13 hours to allow for time zones.
+      */
+    BOOL IsValid() const;
+
     /**Get the total microseconds since the epoch. The epoch is the 1st
        January 1970.
 
