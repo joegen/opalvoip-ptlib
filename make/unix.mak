@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.55  2000/01/16 12:39:10  craigs
+# Added detection of all known ix86 MACHTYPE variants
+#
 # Revision 1.54  2000/01/10 02:38:46  craigs
 # Fixed problem when creating dependencies with OpenSSL
 #
@@ -180,6 +183,25 @@ ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc i686-pc-linux-gnu))
 MACHTYPE := x86
 endif
 
+ifneq (,$(findstring i386, $(MACHTYPE)))
+MACHTYPE := x86
+endif
+
+ifneq (,$(findstring i486, $(MACHTYPE)))
+MACHTYPE := x86
+endif
+
+ifneq (,$(findstring i586, $(MACHTYPE)))
+MACHTYPE := x86
+endif
+
+ifneq (,$(findstring i686, $(MACHTYPE)))
+MACHTYPE := x86
+endif
+
+ifneq (,$(findstring x86, $(MACHTYPE)))
+MACHTYPE := x86
+endif
 
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
