@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.5  1999/03/10 04:26:57  robertj
+# More documentation changes.
+#
 # Revision 1.4  1999/03/09 08:07:00  robertj
 # Documentation support.
 #
@@ -104,8 +107,7 @@ bothclean :
 
 
 docs: 
-	@if [ ! -d html ] ; then mkdir -p html ; fi
-	doc++ -a -f -d html pwlib.dxx
+	doc++ -d html -a -f pwlib.dxx
 
 
 ifdef HAS_GUI
