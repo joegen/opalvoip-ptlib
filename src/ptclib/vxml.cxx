@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.34  2003/04/23 11:54:53  craigs
+ * Added ability to record audio
+ *
  * Revision 1.33  2003/04/10 04:19:43  robertj
  * Fixed incorrect timing on G.723.1 (framed codec)
  * Fixed not using correct codec file suffix for non PCM/G.723.1 codecs.
@@ -727,6 +730,10 @@ void PVXMLSession::DialogExecute(PThread &, INT)
         TraverseGrammar();  // this will set activeGrammar
       }
 
+      else if (nodeType *= "record") {
+		    TraverseRecord();		
+      }
+
       else if (nodeType *= "prompt") {
         // LATER:
         // check 'cond' attribute to see if the children of this node should be processed
@@ -735,19 +742,10 @@ void PVXMLSession::DialogExecute(PThread &, INT)
 
         // Update timeout of current recognition (if 'timeout' attribute is set)
         if (element->HasAttribute("timeout")) {
-          PString str = element->GetAttribute("timeout");
-          long msecs = str.AsInteger();
-          if (str.Find("ms"))
-            ;
-          else if (str.Find("s"))
-            msecs = msecs * 1000;
-          timeout = msecs;
+          PTimeInterval timeout = StringToTime(element->GetAttribute("timeout"));
         }
 
         // go on to process the children
-      }
-
-      else if (nodeType *= "record") {
       }
 
       else if (nodeType *= "say-as") {
@@ -803,25 +801,78 @@ BOOL PVXMLSession::OnUserInput(const PString & str)
 {
   PWaitAndSignal m(sessionMutex);
 
-  if (activeGrammar != NULL && activeGrammar->OnUserInput(str)) {
-    // execute whatever is going on
-    ExecuteWithoutLock();
+  // record
+  if (recording) {
+    if (recordDTMFTerm)
+	    RecordEnd();
+    return TRUE;
+  } 
 
+  // playback
+    else if (activeGrammar != NULL && activeGrammar->OnUserInput(str)) {
+    ExecuteWithoutLock();
     return TRUE;
   }
 
   return FALSE;
 }
 
-void PVXMLSession::StartRecord(const PFilePath & _recordfn, BOOL dtmfTerm, int maxTime, int finalSilence)
+BOOL PVXMLSession::TraverseRecord()
 {
-  recording          = TRUE;
-  recordFn           = _recordfn;
-  recordDTMFTerm     = dtmfTerm;
-  recordMaxTime      = maxTime;
-  recordFinalSilence = finalSilence;
-}
+	if (currentNode->IsElement()) {
 
+		PString strName;
+		PXMLElement * element = (PXMLElement *)currentNode;
+
+		// Get the name (name)
+		if (element->HasAttribute("name"))
+			strName = element->GetAttribute("name");
+		else if (element->HasAttribute("id"))
+			strName = element->GetAttribute("id");
+
+		// Get the destination filename (dest)
+		PString strDest("c:\\temp.wav");
+		if (element->HasAttribute("dest")) 
+			strDest = element->GetAttribute("dest");
+
+    // see if we need a beep
+    if (element->GetAttribute("beep").ToLower() *= "true") {
+      PBYTEArray beepData;
+      GetBeepData(beepData, 1000);
+      if (beepData.GetSize() != 0)
+        PlayData(beepData);
+    }
+
+		// For some reason, if the file is there the create 
+		// seems to fail. 
+		PFile::Remove(strDest);
+		PFilePath file(strDest);
+
+		// Get max record time (maxtime)
+		PTimeInterval maxTime = PMaxTimeInterval;
+		if (element->HasAttribute("maxtime")) 
+      maxTime = StringToTime(element->GetAttribute("maxtime"));
+
+		// Get terminating silence duration (finalsilence)
+		PTimeInterval termTime(3000);
+		if (element->HasAttribute("finalsilence")) 
+			termTime = StringToTime(element->GetAttribute("finalsilence"));
+
+		// Get dtmf term (dtmfterm)
+		BOOL dtmfTerm = TRUE;
+		if (element->HasAttribute("dtmfterm"))
+			dtmfTerm = !(element->GetAttribute("dtmfterm").ToLower() *= "false");
+
+    // create a semaphore, and then wait for the recording to terminate
+		StartRecording(file, dtmfTerm, maxTime, termTime);
+		recordSync.Wait(maxTime);
+
+    // when this returns, we are done
+		EndRecording();
+	}
+
+	return TRUE;
+}
 
 PString PVXMLSession::GetXMLError() const
 {
@@ -921,6 +972,19 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
   return TRUE;
 }
 
+
+void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
+{
+  if (outgoingChannel != NULL)
+    outgoingChannel->GetBeepData(data, ms);
+}
+
+
+BOOL PVXMLSession::PlaySilence(const PTimeInterval & timeout)
+{
+  return PlaySilence((PINDEX)timeout.GetMilliSeconds());
+}
+
 BOOL PVXMLSession::PlaySilence(PINDEX msecs)
 {
   if (outgoingChannel != NULL) {
@@ -986,21 +1050,40 @@ BOOL PVXMLSession::IsPlaying() const
   return (outgoingChannel != NULL) && outgoingChannel->IsPlaying();
 }
 
-BOOL PVXMLSession::StartRecording(const PFilePath & fn)
+BOOL PVXMLSession::StartRecording(const PFilePath & _recordFn, 
+                                               BOOL _recordDTMFTerm, 
+                              const PTimeInterval & _recordMaxTime, 
+                              const PTimeInterval & _recordFinalSilence)
 {
+  recording          = TRUE;
+  recordFn           = _recordFn;
+  recordDTMFTerm     = _recordDTMFTerm;
+  recordMaxTime      = _recordMaxTime;
+  recordFinalSilence = _recordFinalSilence;
+
   if (incomingChannel != NULL)
-    return incomingChannel->StartRecording(fn);
+    return incomingChannel->StartRecording(recordFn, (unsigned )recordFinalSilence.GetMilliSeconds());
 
   return FALSE;
+}
+
+void PVXMLSession::RecordEnd()
+{
+  if (recording)
+    recordSync.Signal();
 }
 
 BOOL PVXMLSession::EndRecording()
 {
-  if (incomingChannel != NULL)
-    return incomingChannel->EndRecording();
+  if (recording) {
+	  recording = FALSE;
+    if (incomingChannel != NULL)
+      return incomingChannel->EndRecording();
+  }
 
   return FALSE;
 }
+
 
 BOOL PVXMLSession::IsRecording() const
 {
@@ -1049,13 +1132,8 @@ BOOL PVXMLSession::TraverseAudio()
 
       // time is VXML 2.0
       else if (element->HasAttribute("time")) {
-        PString str = element->GetAttribute("time");
-        long msecs = str.AsInteger();
-        if (str.Find("ms"))
-          ;
-        else if (str.Find("s"))
-          msecs = msecs * 1000;
-        PlaySilence(msecs);
+        PTimeInterval time = StringToTime(element->GetAttribute("time"));
+        PlaySilence(time);
       }
       
       else if (element->HasAttribute("size")) {
@@ -1310,6 +1388,21 @@ void PVXMLSession::SayAs(const PString & className, const PString & text)
   }
 }
 
+PTimeInterval PVXMLSession::StringToTime(const PString & str)
+{
+  PTimeInterval timeout;
+
+  long msecs = str.AsInteger();
+  if (str.Find("ms") != P_MAX_INDEX)
+    ;
+  else if (str.Find("s") != P_MAX_INDEX)
+    msecs = msecs * 1000;
+
+  return PTimeInterval(msecs);
+}
+
+
+
 ///////////////////////////////////////////////////////////////
 
 PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
@@ -1334,10 +1427,11 @@ PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
     formatName = fmtName.Left(pos);
     sampleFrequency = fmtName.Mid(pos+1).AsUnsigned();
   }
-  closed = FALSE;
-  wavFile = NULL;
-  playing = FALSE;
-  frameLen = frameOffs = 0;
+  closed      = FALSE;
+  wavFile     = NULL;
+  playing     = FALSE;
+  recording   = FALSE;
+  frameLen    = frameOffs = 0;
   silentCount = 20;         // wait 20 frames before playing the OGM
 }
 
@@ -1432,16 +1526,31 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   if (closed)
     return FALSE;
 
-  delay.Delay((len+frameBytes-1)/frameBytes * frameTime);
+  unsigned msecs = (len+frameBytes-1)/frameBytes * frameTime;
+  delay.Delay(msecs);
 
   lastWriteCount = len;
+
   if (wavFile == NULL || !wavFile->IsOpen())
     return TRUE;
+
+  // only look for silence if nothing is playing
+  if (recording && !playing) {
+    if (!IsSilenceFrame(buf, len))
+      silenceRun = 0;
+    else {
+      silenceRun += msecs;
+      if (silenceRun > finalSilence) {
+        PTRACE(3, "PVXML\tTriggering end of record due to silence timeout");
+        vxml.RecordEnd();
+      }
+    }
+  }
 
   return WriteFrame(buf, len);
 }
 
-BOOL PVXMLChannel::StartRecording(const PFilePath & fn)
+BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence)
 {
   // if there is already a file open, close it
   EndRecording();
@@ -1449,11 +1558,18 @@ BOOL PVXMLChannel::StartRecording(const PFilePath & fn)
   // open the output file
   PWaitAndSignal mutex(channelMutex);
   wavFile = CreateWAVFile(fn);
-  PTRACE(3, "PVXML\tStarting recording to " << fn);
-  if (!wavFile->IsOpen()) {
+  if (wavFile == NULL || !wavFile->IsOpen()) {
     PTRACE(2, "PVXML\tCannot create record file " << fn);
+    delete wavFile;
     return FALSE;
   }
+
+  PTRACE(3, "PVXML\tStarting recording to " << fn);
+
+  // save the number of seconds of silence that will terminate recording
+  finalSilence = _finalSilence;
+  silenceRun = 0;
+  recording = TRUE;
 
   return TRUE;
 }
@@ -1461,6 +1577,10 @@ BOOL PVXMLChannel::StartRecording(const PFilePath & fn)
 BOOL PVXMLChannel::EndRecording()
 {
   PWaitAndSignal mutex(channelMutex);
+
+  recording = FALSE;
+
+  PTRACE(3, "PVXML\tRecording finished");
 
   if (wavFile == NULL)
     return TRUE;
@@ -1698,6 +1818,39 @@ void PVXMLChannelPCM::CreateSilenceFrame(PINDEX amount)
   memset(frameBuffer.GetPointer(), 0, frameLen);
 }
 
+BOOL PVXMLChannelPCM::IsSilenceFrame(const void * buf, PINDEX len) const
+{
+  // Calculate the average signal level of this frame
+  int sum = 0;
+
+  const short * pcm = (const short *)buf;
+  const short * end = pcm + len/2;
+  while (pcm != end) {
+    if (*pcm < 0)
+      sum -= *pcm++;
+    else
+      sum += *pcm++;
+  }
+
+  // calc average
+  unsigned level = sum / (len / 2);
+
+  return level < 500; // arbitrary level
+}
+
+static short beepData[] = { 0, 18784, 30432, 30400, 18784, 0, -18784, -30432, -30400, -18784 };
+
+
+void PVXMLChannelPCM::GetBeepData(PBYTEArray & data, unsigned ms)
+{
+  data.SetSize(0);
+  while (data.GetSize() < (PINDEX)((ms * 8) / 2)) {
+    PINDEX len = data.GetSize();
+    data.SetSize(len + sizeof(beepData));
+    memcpy(len + data.GetPointer(), beepData, sizeof(beepData));
+  }
+}
+
 ///////////////////////////////////////////////////////////////
 
 PVXMLChannelG7231::PVXMLChannelG7231(PVXMLSession & vxml, BOOL incoming)
@@ -1731,6 +1884,11 @@ void PVXMLChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
   memset(frameBuffer.GetPointer()+1, 0, 3);
 }
 
+BOOL PVXMLChannelG7231::IsSilenceFrame(const void * /*buf*/, PINDEX len) const
+{
+  return len = 4;
+}
+
 ///////////////////////////////////////////////////////////////
 
 PVXMLChannelG729::PVXMLChannelG729(PVXMLSession & vxml, BOOL incoming)
@@ -1756,6 +1914,11 @@ void PVXMLChannelG729::CreateSilenceFrame(PINDEX /*amount*/)
   memset(frameBuffer.GetPointer(), 0, 10);
 }
 
+BOOL PVXMLChannelG729::IsSilenceFrame(const void * /*buf*/, PINDEX /*len*/) const
+{
+  return FALSE;
+}
+
 ///////////////////////////////////////////////////////////////
 
 void PVXMLQueueFilenameItem::Play(PVXMLChannel & outgoingChannel)
@@ -1774,9 +1937,9 @@ void PVXMLQueueFilenameItem::Play(PVXMLChannel & outgoingChannel)
   }
 
   if (chan == NULL)
-    PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << "\"");
+    PTRACE(3, "PVXML\tCannot open file \"" << fn << "\"");
   else {
-    PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
+    PTRACE(3, "PVXML\tPlaying file \"" << fn << "\"");
     outgoingChannel.SetReadChannel(chan, TRUE);
   }
 }
