@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.28  1999/10/24 13:03:30  craigs
+ * Changed to capture io break signal
+ *
  * Revision 1.27  1999/09/23 06:52:16  robertj
  * Changed PSemaphore to use Posix semaphores.
  *
@@ -113,6 +116,10 @@
 #define	SUSPEND_SIG	SIGUSR1
 #define	RESUME_SIG	SIGUSR2
 
+#endif
+
+#ifdef  P_PTHREADS
+#define P_IO_BREAK_SIGNAL SIGPROF
 #endif
 
 PDECLARE_CLASS(HouseKeepingThread, PThread)
@@ -314,6 +321,7 @@ void * PThread::PX_ThreadStart(void * arg)
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
   sigaddset(&blockedSignals, RESUME_SIG);
+  sigaddset(&blockedSignals, P_IO_BREAK_SIGNAL);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
   // add thread to thread list
