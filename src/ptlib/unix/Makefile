@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.52  2000/02/15 23:11:34  robertj
+# Audio support for FreeBSD, thanks Roger Hardiman.
+#
 # Revision 1.51  2000/01/31 01:56:48  robertj
 # Fixed BeOS compatibility problem.
 #
@@ -232,7 +235,7 @@ SOUND_SOURCE = sunaudio.cxx
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
-SOUND_SOURCE = bsdaudio.cxx
+SOUND_SOURCE = oss.cxx
 endif
 
 ifeq ($(OSTYPE),beos)
