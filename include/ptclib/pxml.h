@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.15  2002/11/19 07:37:38  craigs
+ * Added locking functions and LoadURL function
+ *
  * Revision 1.14  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -38,6 +41,7 @@
 
 
 #include <ptlib.h>
+#include <ptclib/http.h>
 
 
 class PXMLObject;
@@ -68,6 +72,8 @@ class PXML : public PObject
     BOOL IsDirty() const;
 
     BOOL Load(const PString & data, int options = -1);
+    BOOL LoadURL(const PURL & url);
+    BOOL LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
     BOOL LoadFile(const PFilePath & fn, int options = -1);
 
     BOOL Save(int options = -1);
@@ -95,6 +101,8 @@ class PXML : public PObject
     PINDEX  GetErrorColumn() const { return errorCol; }
     PINDEX  GetErrorLine() const   { return errorLine; }
 
+    void Wait()     { rootMutex.Wait(); }
+    void Signal()   { rootMutex.Signal(); }
 
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
@@ -107,15 +115,17 @@ class PXML : public PObject
 				                          int hasInternalSubSet);
     virtual void EndDocTypeDecl();
 
-     // static methods to create XML tags
-     static PString CreateStartTag (const PString & text);
-     static PString CreateEndTag (const PString & text);
-     static PString CreateTagNoData (const PString & text);
-     static PString CreateTag (const PString & text, const PString & data);
+    // static methods to create XML tags
+    static PString CreateStartTag (const PString & text);
+    static PString CreateEndTag (const PString & text);
+    static PString CreateTagNoData (const PString & text);
+    static PString CreateTag (const PString & text, const PString & data);
 
   protected:
     void Construct();
     PXMLElement * rootElement;
+    PMutex rootMutex;
+
     PXMLElement * currentElement;
     PXMLData * lastElement;
     int options;
