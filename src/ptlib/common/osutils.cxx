@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.207  2003/09/17 09:02:14  csoutheren
+ * Removed memory leak detection code
+ *
  * Revision 1.206  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -774,14 +777,7 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
   PProcess & process = PProcess::Current();
 #endif
 
-#if PMEMORY_CHECK
-  int ignoreAllocations = -1;
-#endif
-
   if (filename != NULL) {
-#if PMEMORY_CHECK
-    ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE) ? 1 : 0;
-#endif
     PTextFile * traceOutput;
     if (options & AppendToFile) {
       traceOutput = new PTextFile(filename, PFile::ReadWrite);
@@ -806,11 +802,6 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
          << " on " << process.GetOSClass() << ' ' << process.GetOSName()
          << " (" << process.GetOSVersion() << '-' << process.GetOSHardware()
          << ") at " << PTime().AsString("yyyy/M/d h:mm:ss.uuu"));
-
-#if PMEMORY_CHECK
-  if (ignoreAllocations >= 0)
-    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations != 0);
-#endif
 }
 
 
@@ -1762,13 +1753,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   // cannot assure destruction at the right time we simply allocate it and
   // NEVER destroy it! This is OK as the only reason for its destruction is
   // the program is exiting and then who cares?
-#if PMEMORY_CHECK
-  BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
   PTraceMutex = new PMutex;
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
-#endif
 
 #ifndef P_RTEMS
   if (p_argv != 0 && p_argc > 0) {
@@ -1804,9 +1789,6 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
-#if PMEMORY_CHECK
-  PMemoryHeap::SetIgnoreAllocations(FALSE);
-#endif
   p_argc = c;
   p_argv = v;
   p_envp = e;
