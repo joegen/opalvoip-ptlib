@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.1 1996/01/23 13:06:18 robertj Exp $
+ * $Id: mime.h,v 1.2 1996/01/26 02:24:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.2  1996/01/26 02:24:27  robertj
+ * Further implemetation.
+ *
  * Revision 1.1  1996/01/23 13:06:18  robertj
  * Initial revision
  *
@@ -32,6 +35,15 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
  */
 
   public:
+    PMIMEInfo(
+      istream &strm   // Stream to read the objects contents from.
+    );
+    PMIMEInfo(
+      PApplicationSocket & socket   // Application socket to read MIME info.
+    );
+    // Construct a MIME infromation dictionary from the specified source.
+
+
   // Overrides from class PObject
     virtual void PrintOn(
       ostream &strm   // Stream to print the object into.
@@ -67,9 +79,19 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
        TRUE if the MIME information was successfully read.
      */
 
+    BOOL HasKey(
+      const PString & key       // Key into MIME dictionary to get info.
+    ) const { return GetAt(PCaselessString(key)) != NULL; }
+    /* Determine if the specified key is present in the MIME information
+       set.
+
+       <H2>Returns:</H2>
+       TRUE if the MIME variable is present.
+     */
+
     PString GetString(
-      const PString & key,    // Key into MIME dictionary to get information.
-      const PString & dflt    // Default value of field if not in MIME info.
+      const PString & key,       // Key into MIME dictionary to get info.
+      const PString & dflt       // Default value of field if not in MIME info.
     ) const;
     /* Get a string for the particular MIME info field with checking for
        existance. The <CODE>dflt</CODE> parameter is substituted if the field
@@ -80,7 +102,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
      */
 
     long GetInteger(
-      const PString & key,    // Key into MIME dictionary to get information.
+      const PString & key,    // Key into MIME dictionary to get info.
       long dflt               // Default value of field if not in MIME info.
     ) const;
     /* Get an integer value for the particular MIME info field with checking
@@ -90,6 +112,40 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
        <H2>Returns:</H2>
        Integer value for the MIME variable.
      */
+
+
+    static void SetAssociation(
+      const PStringToString & allTypes,  // MIME content type associations.
+      BOOL merge = TRUE                  // Flag for merging associations.
+    );
+    static void SetAssociation(
+      const PString & fileType,         // File type (extension) to match.
+      const PString & contentType       // MIME content type string.
+    ) { contentTypes.SetAt(fileType, contentType); }
+    /* Set an association between a file type and a MIME content type. The
+       content type is then sent for any file in the directory sub-tree that
+       has the same extension.
+
+       Note that if the <CODE>merge</CODE> parameter if TRUE then the
+       dictionary is merged into the current association list and is not a
+       simple replacement.
+
+       The default content type will be "application/octet-stream".
+     */
+
+    static PString GetContentType(
+      const PString & fileType   // File type (extension) to look up.
+    );
+    /* Look up the file type to MIME content type association dictionary and
+       return the MIME content type string. If the file type is not found in
+       the dictionary then the string "application/octet-stream" is returned.
+
+       <H2>Returns:</H2>
+       MIME content type for file type.
+     */
+
+  private:
+    static PStringToString contentTypes;
 };
 
 
