@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.54 1997/08/28 12:50:21 robertj Exp $
+ * $Id: win32.cxx,v 1.55 1998/01/26 00:57:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.55  1998/01/26 00:57:09  robertj
+ * Fixed uninitialised source in PConfig when getting environment.
+ *
  * Revision 1.54  1997/08/28 12:50:21  robertj
  * Fixed race condition in cleaning up threads on application termination.
  *
@@ -1607,28 +1610,33 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
       break;
 
     case Application :
-      PProcess & proc = PProcess::Current();
-      PFilePath appFile = proc.GetFile();
-      PFilePath cfgFile = appFile.GetVolume() + appFile.GetPath() + appFile.GetTitle() + ".INI";
-      if (PFile::Exists(cfgFile))
-        Construct(cfgFile); // Make a file based config
-      else {
-        location = "SOFTWARE\\";
-        if (!manuf)
-          location += manuf;
-        else if (!proc.GetManufacturer())
-          location += proc.GetManufacturer();
-        else
-          location += "PWLib";
-        location += PString(PDIR_SEPARATOR);
-        if (appname.IsEmpty())
-          location += proc.GetName();
-        else
-          location += appname;
-        location += "\\CurrentVersion\\";
-        source = Application;
+      {
+        PProcess & proc = PProcess::Current();
+        PFilePath appFile = proc.GetFile();
+        PFilePath cfgFile = appFile.GetVolume() + appFile.GetPath() + appFile.GetTitle() + ".INI";
+        if (PFile::Exists(cfgFile))
+          Construct(cfgFile); // Make a file based config
+        else {
+          location = "SOFTWARE\\";
+          if (!manuf)
+            location += manuf;
+          else if (!proc.GetManufacturer())
+            location += proc.GetManufacturer();
+          else
+            location += "PWLib";
+          location += PString(PDIR_SEPARATOR);
+          if (appname.IsEmpty())
+            location += proc.GetName();
+          else
+            location += appname;
+          location += "\\CurrentVersion\\";
+          source = Application;
+        }
       }
       break;
+
+    default :
+      source = src;
   }
 }
 
