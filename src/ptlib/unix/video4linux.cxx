@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.11  2001/03/08 03:59:13  robertj
+ * Fixed previous change, needed to allow for -1 as chammelNumber in Open().
+ *
  * Revision 1.10  2001/03/08 02:23:17  robertj
  * Added improved defaulting of video formats so Open() does not fail.
  *
@@ -75,9 +78,6 @@ PVideoInputDevice::PVideoInputDevice()
 {
   videoFd       = -1;
   canMap        = -1;
-  channelNumber = 1;
-  videoFormat   = PAL;    //With Auto, it fails to load on my bt848 system.
-                          //PAL video format ensures there is some display.
 }
 
 
@@ -102,10 +102,6 @@ static struct {
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
-  if( channelNumber < 0 ) {
-    return FALSE;
-  }
-  
   Close();
 
   deviceName = devName;
