@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.36  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.35  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -145,7 +148,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
                                 BOOL stderrSeparate,
                                 const PStringToString * environment)
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined(P_RTEMS)
   PAssertAlways("PPipeChannel::PlatformOpen");
   return FALSE;
 #else
@@ -155,33 +158,21 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
   else 
-#ifdef P_RTEMS
-    PAssert(socketpair(AF_INET,SOCK_STREAM,0,toChildPipe) == 0, POperatingSystemError);
-#else
     PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
-#endif
  
   // setup the pipe from the child
   if (mode == WriteOnly || mode == ReadWriteStd)
     fromChildPipe[0] = fromChildPipe[1] = -1;
   else
-#ifdef P_RTEMS
-    PAssert(socketpair(AF_INET,SOCK_STREAM,0,fromChildPipe) == 0, POperatingSystemError);
-#else
     PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
-#endif
 
   if (stderrSeparate)
-#ifdef P_RTEMS
-    PAssert(socketpair(AF_INET,SOCK_STREAM,0,stderrChildPipe) == 0, POperatingSystemError);
-#else
     PAssert(pipe(stderrChildPipe) == 0, POperatingSystemError);
-#endif
   else
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
   // fork to allow us to execute the child
-#if defined(__BEOS__) || defined(P_IRIX) || defined(P_RTEMS)
+#if defined(__BEOS__) || defined(P_IRIX)
   if ((childPid = fork()) != 0) {
 #else
   if ((childPid = vfork()) != 0) {
@@ -266,7 +257,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_RTEMS) || defined(P_QNX)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(__BEOS__) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(P_IRIX) || defined(P_QNX)
     extern char ** environ;
 #define __environ environ
 #endif
@@ -285,7 +276,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   exit(2);
   return FALSE;
-#endif // P_VXWORKS
+#endif // P_VXWORKS || P_RTEMS
 }
 
 

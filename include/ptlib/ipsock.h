@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.54  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.53  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -295,6 +298,10 @@ class PIPSocket : public PSocket
 #ifdef _WIN32
         BOOL operator==(unsigned u) const { return  operator==((DWORD)u); }
         BOOL operator!=(unsigned u) const { return !operator==((DWORD)u); }
+#endif
+#ifdef P_RTEMS
+        BOOL operator==(u_long u) const { return  operator==((DWORD)u); }
+        BOOL operator!=(u_long u) const { return !operator==((DWORD)u); }
 #endif
         BOOL operator==(int i) const      { return  operator==((DWORD)i); }
         BOOL operator!=(int i) const      { return !operator==((DWORD)i); }
