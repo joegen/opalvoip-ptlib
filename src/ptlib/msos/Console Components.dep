@@ -1807,45 +1807,45 @@
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\pssl.cxx : \
-	{$(INCLUDE)}"openssl\asn1.h"\
-	{$(INCLUDE)}"openssl\bio.h"\
-	{$(INCLUDE)}"openssl\blowfish.h"\
-	{$(INCLUDE)}"openssl\bn.h"\
-	{$(INCLUDE)}"openssl\cast.h"\
-	{$(INCLUDE)}"openssl\crypto.h"\
-	{$(INCLUDE)}"openssl\des.h"\
-	{$(INCLUDE)}"openssl\dh.h"\
-	{$(INCLUDE)}"openssl\dsa.h"\
-	{$(INCLUDE)}"openssl\e_os2.h"\
-	{$(INCLUDE)}"openssl\err.h"\
-	{$(INCLUDE)}"openssl\evp.h"\
-	{$(INCLUDE)}"openssl\idea.h"\
-	{$(INCLUDE)}"openssl\lhash.h"\
-	{$(INCLUDE)}"openssl\md2.h"\
-	{$(INCLUDE)}"openssl\md5.h"\
-	{$(INCLUDE)}"openssl\mdc2.h"\
-	{$(INCLUDE)}"openssl\objects.h"\
-	{$(INCLUDE)}"openssl\opensslconf.h"\
-	{$(INCLUDE)}"openssl\opensslv.h"\
-	{$(INCLUDE)}"openssl\pem.h"\
-	{$(INCLUDE)}"openssl\pem2.h"\
-	{$(INCLUDE)}"openssl\pkcs7.h"\
-	{$(INCLUDE)}"openssl\rand.h"\
-	{$(INCLUDE)}"openssl\rc2.h"\
-	{$(INCLUDE)}"openssl\rc4.h"\
-	{$(INCLUDE)}"openssl\rc5.h"\
-	{$(INCLUDE)}"openssl\ripemd.h"\
-	{$(INCLUDE)}"openssl\rsa.h"\
-	{$(INCLUDE)}"openssl\safestack.h"\
-	{$(INCLUDE)}"openssl\sha.h"\
-	{$(INCLUDE)}"openssl\ssl.h"\
-	{$(INCLUDE)}"openssl\ssl2.h"\
-	{$(INCLUDE)}"openssl\ssl23.h"\
-	{$(INCLUDE)}"openssl\ssl3.h"\
-	{$(INCLUDE)}"openssl\stack.h"\
-	{$(INCLUDE)}"openssl\tls1.h"\
-	{$(INCLUDE)}"openssl\x509.h"\
-	{$(INCLUDE)}"openssl\x509_vfy.h"\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
@@ -1873,45 +1873,45 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\ptclib\pssl.cxx : \
-	{$(INCLUDE)}"openssl\asn1.h"\
-	{$(INCLUDE)}"openssl\bio.h"\
-	{$(INCLUDE)}"openssl\blowfish.h"\
-	{$(INCLUDE)}"openssl\bn.h"\
-	{$(INCLUDE)}"openssl\cast.h"\
-	{$(INCLUDE)}"openssl\crypto.h"\
-	{$(INCLUDE)}"openssl\des.h"\
-	{$(INCLUDE)}"openssl\dh.h"\
-	{$(INCLUDE)}"openssl\dsa.h"\
-	{$(INCLUDE)}"openssl\e_os2.h"\
-	{$(INCLUDE)}"openssl\err.h"\
-	{$(INCLUDE)}"openssl\evp.h"\
-	{$(INCLUDE)}"openssl\idea.h"\
-	{$(INCLUDE)}"openssl\lhash.h"\
-	{$(INCLUDE)}"openssl\md2.h"\
-	{$(INCLUDE)}"openssl\md5.h"\
-	{$(INCLUDE)}"openssl\mdc2.h"\
-	{$(INCLUDE)}"openssl\objects.h"\
-	{$(INCLUDE)}"openssl\opensslconf.h"\
-	{$(INCLUDE)}"openssl\opensslv.h"\
-	{$(INCLUDE)}"openssl\pem.h"\
-	{$(INCLUDE)}"openssl\pem2.h"\
-	{$(INCLUDE)}"openssl\pkcs7.h"\
-	{$(INCLUDE)}"openssl\rand.h"\
-	{$(INCLUDE)}"openssl\rc2.h"\
-	{$(INCLUDE)}"openssl\rc4.h"\
-	{$(INCLUDE)}"openssl\rc5.h"\
-	{$(INCLUDE)}"openssl\ripemd.h"\
-	{$(INCLUDE)}"openssl\rsa.h"\
-	{$(INCLUDE)}"openssl\safestack.h"\
-	{$(INCLUDE)}"openssl\sha.h"\
-	{$(INCLUDE)}"openssl\ssl.h"\
-	{$(INCLUDE)}"openssl\ssl2.h"\
-	{$(INCLUDE)}"openssl\ssl23.h"\
-	{$(INCLUDE)}"openssl\ssl3.h"\
-	{$(INCLUDE)}"openssl\stack.h"\
-	{$(INCLUDE)}"openssl\tls1.h"\
-	{$(INCLUDE)}"openssl\x509.h"\
-	{$(INCLUDE)}"openssl\x509_vfy.h"\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
+	\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
@@ -2075,14 +2075,14 @@
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\pxml.cxx : \
-	"..\..\..\..\expat\lib\expat.h"\
+	\
 	"..\..\..\include\ptclib\pxml.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\ptclib\pxml.cxx : \
-	"..\..\..\..\expat\lib\expat.h"\
+	\
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
@@ -2090,7 +2090,7 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\ptclib\pxml.cxx : \
-	"..\..\..\..\expat\lib\expat.h"\
+	\
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptlib\msos\ptlib\videoio.h"\
 	
@@ -2098,7 +2098,7 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\ptclib\pxml.cxx : \
-	"..\..\..\..\expat\lib\expat.h"\
+	\
 	"..\..\..\include\ptclib\pxml.h"\
 	
 
