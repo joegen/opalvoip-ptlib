@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.11 1995/06/04 12:34:57 robertj Exp $
+ * $Id: pstring.h,v 1.12 1995/06/17 00:43:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.12  1995/06/17 00:43:40  robertj
+ * Added flag for PStringArray constructor to create caseless strings.
+ *
  * Revision 1.11  1995/06/04 12:34:57  robertj
  * Better C++ compatibility (with BC++)
  *
@@ -1243,8 +1246,23 @@ PDECLARE_ARRAY(PStringArray, PString)
  */
 
   public:
-    PStringArray(PINDEX count, char const * const * strarr);
-    PINDEX GetStringsIndex(const PString & str) const;
+    PStringArray(
+      PINDEX count,                 // Count of strings in array
+      char const * const * strarr,  // Array of C strings
+      BOOL caseless = FALSE         // New strings are to be PCaselessStrings
+    );
+    /* Create a PStringArray from the array of C strings.
+     */
+
+    PINDEX GetStringsIndex(
+      const PString & str // String to search for index of
+    ) const;
+    /* As for <A>GetValuesIndex()</A> but takes a PString argument so that
+       literals will be automatically converted.
+
+       <H2>Returns:</H2>
+       Index of string in array or P_MAX_INDEX if not found.
+     */
 };
 
 
