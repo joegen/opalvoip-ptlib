@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.21 1997/01/12 04:21:40 robertj Exp $
+ * $Id: ptime.h,v 1.22 1998/01/04 08:04:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.22  1998/01/04 08:04:27  robertj
+ * Changed gmtime and locatime to use operating system specific functions.
+ *
  * Revision 1.21  1997/01/12 04:21:40  robertj
  * Added IsPast() and IsFuture() functions for time comparison.
  *
@@ -470,6 +473,14 @@ PDECLARE_CLASS(PTime, PObject)
        code for date ordering.
      */
 
+    static struct tm * os_localtime(const time_t * clock, struct tm * t);
+    static struct tm * os_gmtime(const time_t * clock, struct tm * t);
+    /*
+      Threadsafe version of localtime library call.
+      We could make these calls non-static if we could put the struct tm inside the
+      instance. But these calls are usually made with const objects so that's not possible,
+      and we would require per-thread storage otherwise. Sigh...
+    */
 
   protected:
     // Member variables
