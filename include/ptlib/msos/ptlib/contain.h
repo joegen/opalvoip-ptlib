@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.6 1995/01/09 12:28:45 robertj Exp $
+ * $Id: contain.h,v 1.7 1995/03/12 04:59:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.6  1995/01/09 12:28:45  robertj
+ * Revision 1.7  1995/03/12 04:59:54  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.6  1995/01/09  12:28:45  robertj
  * Moved EXPORTED definition from applicat.h
  *
  * Revision 1.5  1995/01/06  10:47:08  robertj
@@ -32,17 +36,50 @@
 #define _OBJECT_H
 
 
+#ifdef _MSC_VER
+#pragma warning(disable:4201)  // nonstandard extension: nameless struct/union
+#pragma warning(disable:4251)  // disable warning exported structs
+#pragma warning(disable:4511)  // default copy ctor not generated warning
+#pragma warning(disable:4512)  // default assignment op not generated warning
+#pragma warning(disable:4514)  // unreferenced inline removed
+#pragma warning(disable:4699)  // precompiled headers
+#pragma warning(disable:4702)  // disable warning about unreachable code
+#pragma warning(disable:4705)  // disable warning about statement has no effect
+#pragma warning(disable:4710)  // inline not expanded warning
+#pragma warning(disable:4711)  // auto inlining warning
+#pragma warning(disable:4097)  // typedef synonym for class
+#endif
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
 
-#ifdef _WINDOWS
+#if defined(P_NT_CONSOLE) || defined(P_NT_GUI)
+#ifndef WIN32
+#define WIN32
+#endif
+#ifndef _WIN32
+#define _WIN32
+#endif
+#endif
+
+#if defined(P_QUICKWIN) || defined(P_DOSWIN)
+#ifndef _WINDOWS
+#define _WINDOWS
+#endif
+#endif
+
+#if defined(_WINDOWS) || defined(_WIN32)
 
 #define STRICT
 #include <windows.h>
 
-#define EXPORTED WINAPI _export
-
 #else
+
+typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
+typedef unsigned short WORD;  // 16 bit unsigned integer quantity
+typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
+typedef int            BOOL;  // type returned by expresion (i != j)
 
 #define TRUE 1
 #define FALSE 0
@@ -53,66 +90,81 @@
 
 
 #ifdef _WINDLL
+#ifdef _WIN32
+#define PCLASS class __declspec(dllexport)
+#else
 #define PCLASS class __export
+#endif
 #else
 #define PCLASS class
 #endif
 
 
+// Declaration for exported callback functions to OS
+#if defined(_WIN32)
+#define EXPORTED __stdcall
+#elif defined(_WINDOWS)
+#define EXPORTED WINAPI _export
+#else
+#define EXPORTED __far
+#endif
+
+
+// Declaration for static global variables (WIN16 compatibility)
+#if defined(_WIN32)
+#define PSTATIC
+#else
 #define PSTATIC __near
+#endif
 
 
-class PInteger64 {
+// Declaration for integer that is the same size as a void *
+#if defined(_WIN32)
+typedef int INT;
+#else
+typedef long INT;   
+#endif
+
+
+// Declaration for 64 bit unsigned integer quantity
+#if defined(_WIN32)
+typedef unsigned __int64 QWORD;
+#else
+class QWORD {
   public:
-    PInteger64() { }
-    PInteger64(unsigned long l) : low(l), high(0) { }
+    QWORD() { }
+    QWORD(unsigned long l) : low(l), high(0) { }
     operator unsigned long() const { return high != 0 ? 0xffffffff : low; }
-    unsigned long GetLow() const { return low; }
-    unsigned long GetHigh() const { return high; }
-    void SetLow(unsigned long l) { low = l; }
-    void SetHigh(unsigned long h) { high = h; }
-  private:
     unsigned long low, high;
 };
+#endif
 
 
-typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
-typedef unsigned short WORD;  // 16 bit unsigned integer quantity
-typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
-typedef PInteger64     QWORD; // 64 bit unsigned integer quantity
-typedef long           INT;   // Integer that is the same size as a void *
-typedef int            BOOL;  // type returned by expresion (i != j)
 
-
+// Standard array index type (depends on compiler)
+// Type used in array indexes especially that required by operator[] functions.
 #ifdef _MSC_VER
 
-#pragma warning(disable:4699)  // disable warning about precompiled headers
-
-// Type used in array indexes especially that required by operator[] functions.
-#define PINDEX            int
-#define P_MAX_INDEX       32767
-#define PABSINDEX(idx)    (((idx)<0?-(idx):(idx))&0x7fff)
+#define PINDEX int
+#if defined(_WIN32)
+const PINDEX P_MAX_INDEX = 0x7fffffff;
+#else
+const PINDEX P_MAX_INDEX = 0x7fff;
+#endif
+inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
 #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
 #else
 
-// Type used in array indexes especially that required by operator[] functions.
-#define PINDEX            unsigned
-#define P_MAX_INDEX       65535U
-#define PABSINDEX(idx)    (idx)
+#define PINDEX unsigned
+#if sizeof(int) == 4
+const PINDEX P_MAX_INDEX = 0xffffffff;
+#else
+const PINDEX P_MAX_INDEX = 0xffff;
+#endif
+#define PABSINDEX(idx) (idx)
 #define PASSERTINDEX(idx)
 
-#endif
-
-
-#ifdef _MSC_VER
-#pragma warning(disable:4251)  // disable warning exported structs
-#pragma warning(disable:4702)  // disable warning about unreachable code
-#pragma warning(disable:4705)  // disable warning about statement has no effect
-#pragma warning(disable:4511)  // default copy ctor not generated warning
-#pragma warning(disable:4512)  // default assignment op not generated warning
-#pragma warning(disable:4710)  // inline not expanded warning
-#pragma warning(disable:4711)  // auto inlining warning
 #endif
 
 
