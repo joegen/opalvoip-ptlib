@@ -159,6 +159,10 @@ SOURCE=..\..\ptclib\ipacl.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\memfile.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\modem.cxx
 # End Source File
 # Begin Source File
@@ -264,6 +268,10 @@ SOURCE=..\..\..\Include\PtCLib\inetprot.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\ipacl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\memfile.h
 # End Source File
 # Begin Source File
 
