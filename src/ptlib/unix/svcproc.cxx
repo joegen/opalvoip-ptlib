@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.48  2001/03/28 23:47:26  robertj
+ * Added start log message and version numbers to start and stop log messages
+ *
  * Revision 1.47  2001/03/28 05:36:14  robertj
  * Added milliseconds to system log time output.
  *
@@ -545,6 +548,7 @@ int PServiceProcess::InitialiseService()
 int PServiceProcess::_main(void *)
 {
   if ((terminationValue = InitialiseService()) < 0) {
+    PSYSTEMLOG(Warning, "Starting service process \"" << GetName() << "\" v" << GetVersion(TRUE));
     terminationValue = 1;
     if (OnStart()) {
       terminationValue = 0;
@@ -588,7 +592,7 @@ void PServiceProcess::Terminate()
 
   isTerminating = TRUE;
 
-  PSYSTEMLOG(Warning, "Terminating service process \"" << GetName() << '"');
+  PSYSTEMLOG(Warning, "Stopping service process \"" << GetName() << "\" v" << GetVersion(TRUE));
 
   // Avoid strange errors caused by threads (and the process itself!) being destoyed 
   // before they have EVER been scheduled
