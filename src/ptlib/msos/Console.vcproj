@@ -851,6 +851,20 @@
 			Filter="h;hpp;hxx;hm;inl;fi;fd">
 			<File
 				RelativePath="..\..\..\include\ptbuildopts.h">
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="./configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="./configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+"/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptbuildopts.h.in">
@@ -860,8 +874,7 @@
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-.\configure
-"
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -870,8 +883,7 @@
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-.\configure
-"
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
 			</File>
