@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.101  2004/04/11 03:20:41  csoutheren
+ * Added Unix implementation of PCriticalSection
+ *
  * Revision 1.100  2004/04/11 02:55:17  csoutheren
  * Added PCriticalSection for Windows
  * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
@@ -416,6 +419,9 @@ typedef long _Ios_Fmtflags;
 #define _BADOFF -1
 #endif
 
+#ifndef PCONTAINER_USES_CRITSEC
+#define	PCONTAINER_USES_CRITSEC	0
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Disable inlines when debugging for faster compiles (the compiler doesn't
