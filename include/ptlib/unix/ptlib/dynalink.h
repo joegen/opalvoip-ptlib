@@ -37,7 +37,7 @@
   protected:
     void * dllHandle;
 
-#endif // !__BEOS__ && !P_VXWORKS
+#endif // !P_VXWORKS && !P_RTEMS
 
 
 // End Of File ////////////////////////////////////////////////////////////////
