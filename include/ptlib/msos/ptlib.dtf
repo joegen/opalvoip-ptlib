@@ -42,9 +42,7 @@ EXPORTS
     ??0CMCDLL@PMail@@QAE@XZ @36 NONAME ;public: __thiscall PMail::CMCDLL::CMCDLL(void)
     ??0CMC_message_reference_ptr@@QAE@ABVPString@@@Z @37 NONAME ;public: __thiscall CMC_message_reference_ptr::CMC_message_reference_ptr(class PString const &)
     ??0Element@PAbstractList@@QAE@PAVPObject@@@Z @38 NONAME ;public: __thiscall PAbstractList::Element::Element(class PObject *)
-    ??0Element@PAbstractSortedList@@QAE@PAVPObject@@@Z @39 NONAME ;public: __thiscall PAbstractSortedList::Element::Element(class PObject *)
     ??0HouseKeepingThread@PProcess@@QAE@XZ @40 NONAME ;public: __thiscall PProcess::HouseKeepingThread::HouseKeepingThread(void)
-    ??0Info@PAbstractSortedList@@QAE@XZ @41 NONAME ;public: __thiscall PAbstractSortedList::Info::Info(void)
     ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @42 NONAME ;public: __thiscall PIPSocket::InterfaceEntry::InterfaceEntry(class PString const &,class InterfaceEntry::Address const &,class InterfaceEntry::Address const &,class PString const &)
     ??0MAPIDLL@PMail@@QAE@XZ @43 NONAME ;public: __thiscall PMail::MAPIDLL::MAPIDLL(void)
     ??0PAbstractArray@@QAE@ABV0@@Z @44 NONAME ;public: __thiscall PAbstractArray::PAbstractArray(class PAbstractArray const &)
@@ -1294,7 +1292,7 @@ EXPORTS
     ?DeleteObjectsToBeRemoved@PSafeCollection@@UAEXXZ @1259 NONAME ;public: virtual void __thiscall PSafeCollection::DeleteObjectsToBeRemoved(void)
     ?DeleteSection@PConfig@@UAEXABVPString@@@Z @2970 NONAME ;public: virtual void __thiscall PConfig::DeleteSection(class PString const &)
     ?DeleteSection@PConfig@@UAEXXZ @2971 NONAME ;public: virtual void __thiscall PConfig::DeleteSection(void)
-    ?DeleteSubTrees@Element@PAbstractSortedList@@QAEXH@Z @1261 NONAME ;public: void __thiscall PAbstractSortedList::Element::DeleteSubTrees(int)
+    ?DeleteSubTrees@PAbstractSortedList@@IAEXPAUElement@1@H@Z @3018 NONAME ;protected: void __thiscall PAbstractSortedList::DeleteSubTrees(struct PAbstractSortedList::Element *,int)
     ?DeleteValue@RegistryKey@@QAEHABVPString@@@Z @1262 NONAME ;public: int __thiscall RegistryKey::DeleteValue(class PString const &)
     ?Descend@PMultiMediaFile@@QAEHIAAU_MMCKINFO@@PAU2@@Z @1263 NONAME ;public: int __thiscall PMultiMediaFile::Descend(unsigned int,struct _MMCKINFO &,struct _MMCKINFO *)
     ?DestroyContents@PAbstractArray@@MAEXXZ @1264 NONAME ;protected: virtual void __thiscall PAbstractArray::DestroyContents(void)
@@ -1846,7 +1844,7 @@ EXPORTS
     ?InternalEndRead@PReadWriteMutex@@IAEXXZ @1766 NONAME ;protected: void __thiscall PReadWriteMutex::InternalEndRead(void)
     ?InternalFromUCS2@PString@@IAEXPBGH@Z @1767 NONAME ;protected: void __thiscall PString::InternalFromUCS2(unsigned short const *,int)
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @1768 NONAME ;protected: void __thiscall PReadWriteMutex::InternalStartRead(void)
-    ?InternalStringSelect@PSortedStringList@@KAHPBDHPAVElement@PAbstractSortedList@@AAPAV23@@Z @1769 NONAME ;protected: static int __cdecl PSortedStringList::InternalStringSelect(char const *,int,class PAbstractSortedList::Element *,class PAbstractSortedList::Element * &)
+    ?InternalStringSelect@PSortedStringList@@IBEHPBDHPAUElement@PAbstractSortedList@@@Z @3027 NONAME ;protected: int __thiscall PSortedStringList::InternalStringSelect(char const *,int,struct PAbstractSortedList::Element *)const 
     ?iNumGlobal@?1??WspiapiLoad@@9@4@4HB @2942 NONAME ;?iNumGlobal@?1??WspiapiLoad@@9@4@4HB
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @1770 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
     ?IsAny@Address@PIPSocket@@QAEHXZ @1771 NONAME ;public: int __thiscall PIPSocket::Address::IsAny(void)
@@ -2154,7 +2152,7 @@ EXPORTS
     ?IsValid@PFilePath@@SAHD@Z @2059 NONAME ;public: static int __cdecl PFilePath::IsValid(char)
     ?Kill@PPipeChannel@@QAEHH@Z @2060 NONAME ;public: int __thiscall PPipeChannel::Kill(int)
     ?Left@PString@@QBE?AV1@H@Z @2061 NONAME ;public: class PString  __thiscall PString::Left(int)const 
-    ?LeftRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2062 NONAME ;protected: void __thiscall PAbstractSortedList::LeftRotate(class PAbstractSortedList::Element *)
+    ?LeftRotate@PAbstractSortedList@@IAEXPAUElement@1@@Z @3020 NONAME ;protected: void __thiscall PAbstractSortedList::LeftRotate(struct PAbstractSortedList::Element *)
     ?LeftTrim@PString@@QBE?AV1@XZ @2063 NONAME ;public: class PString  __thiscall PString::LeftTrim(void)const 
     ?Lines@PString@@QBE?AVPStringArray@@XZ @2064 NONAME ;public: class PStringArray  __thiscall PString::Lines(void)const 
     ?Listen@PEthSocket@@UAEHIGW4Reusability@PSocket@@@Z @2065 NONAME ;public: virtual int __thiscall PEthSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
@@ -2198,7 +2196,6 @@ EXPORTS
     ?Move@PWin32OidBuffer@@QAEXPAEK@Z @2100 NONAME ;public: void __thiscall PWin32OidBuffer::Move(unsigned char *,unsigned long)
     ?Next@PDirectory@@QAEHXZ @2101 NONAME ;public: int __thiscall PDirectory::Next(void)
     ?Next@PSafePtrBase@@IAEXXZ @2102 NONAME ;protected: void __thiscall PSafePtrBase::Next(void)
-    ?nil@Element@PAbstractSortedList@@2V12@A @2103 NONAME ;public: static class PAbstractSortedList::Element  PAbstractSortedList::Element::nil
     ?NumCompare@PString@@QBE?AW4Comparison@PObject@@ABV1@HH@Z @2104 NONAME ;public: enum PObject::Comparison  __thiscall PString::NumCompare(class PString const &,int,int)const 
     ?NumCompare@PString@@QBE?AW4Comparison@PObject@@PBDHH@Z @2105 NONAME ;public: enum PObject::Comparison  __thiscall PString::NumCompare(char const *,int,int)const 
     ?OnContinue@PServiceProcess@@UAEXXZ @2106 NONAME ;public: virtual void __thiscall PServiceProcess::OnContinue(void)
@@ -2252,7 +2249,7 @@ EXPORTS
     ?OpenSocket@PWinSock@@EAEHXZ @2154 NONAME ;private: virtual int __thiscall PWinSock::OpenSocket(void)
     ?OpenSocketGQOS@PUDPSocket@@MAEHHHH@Z @2668 NONAME ;protected: virtual int __thiscall PUDPSocket::OpenSocketGQOS(int,int,int)
     ?OpenWaveFile@PMultiMediaFile@@QAEHABVPFilePath@@AAVPWaveFormat@@AAK@Z @2155 NONAME ;public: int __thiscall PMultiMediaFile::OpenWaveFile(class PFilePath const &,class PWaveFormat &,unsigned long &)
-    ?OrderSelect@Element@PAbstractSortedList@@QAEPAV12@H@Z @2156 NONAME ;public: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::OrderSelect(int)
+    ?OrderSelect@PAbstractSortedList@@IBEPAUElement@1@PAU21@H@Z @3021 NONAME ;protected: struct PAbstractSortedList::Element * __thiscall PAbstractSortedList::OrderSelect(struct PAbstractSortedList::Element *,int)const 
     ?os_accept@PSocket@@IAEHAAV1@PAUsockaddr@@PAH@Z @2157 NONAME ;protected: int __thiscall PSocket::os_accept(class PSocket &,struct sockaddr *,int *)
     ?os_close@PSocket@@IAEHXZ @2158 NONAME ;protected: int __thiscall PSocket::os_close(void)
     ?os_connect@PSocket@@IAEHPAUsockaddr@@H@Z @2159 NONAME ;protected: int __thiscall PSocket::os_connect(struct sockaddr *,int)
@@ -2299,7 +2296,7 @@ EXPORTS
     ?PPlugin_PVideoInputDevice_VideoForWindows_Registration_Instance@@3VPPlugin_PVideoInputDevice_VideoForWindows_Registration@@A @2787 NONAME ;class PPlugin_PVideoInputDevice_VideoForWindows_Registration  PPlugin_PVideoInputDevice_VideoForWindows_Registration_Instance
     ?PPlugin_PVideoOutputDevice_NULLOutput_GetVersion@@YAIXZ @2895 NONAME ;unsigned int __cdecl PPlugin_PVideoOutputDevice_NULLOutput_GetVersion(void)
     ?PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance@@3VPPlugin_PVideoOutputDevice_NULLOutput_Registration@@A @2896 NONAME ;class PPlugin_PVideoOutputDevice_NULLOutput_Registration  PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance
-    ?Predecessor@Element@PAbstractSortedList@@QBEPAV12@XZ @2190 NONAME ;public: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Predecessor(void)const 
+    ?Predecessor@PAbstractSortedList@@IBEPAUElement@1@PBU21@@Z @3022 NONAME ;protected: struct PAbstractSortedList::Element * __thiscall PAbstractSortedList::Predecessor(struct PAbstractSortedList::Element const *)const 
     ?PreInitialise@PProcess@@SAXHPAPAD0@Z @2191 NONAME ;public: static void __cdecl PProcess::PreInitialise(int,char * *,char * *)
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEIN__@@@Z @2192 NONAME ;private: unsigned long __thiscall PWaveBuffer::Prepare(struct HWAVEIN__ *)
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEOUT__@@AAH@Z @2193 NONAME ;private: unsigned long __thiscall PWaveBuffer::Prepare(struct HWAVEOUT__ *,int &)
@@ -2448,7 +2445,7 @@ EXPORTS
     ?RemoveAt@PAbstractSortedList@@UAEPAVPObject@@H@Z @2320 NONAME ;public: virtual class PObject * __thiscall PAbstractSortedList::RemoveAt(int)
     ?RemoveAt@PArrayObjects@@UAEPAVPObject@@H@Z @2321 NONAME ;public: virtual class PObject * __thiscall PArrayObjects::RemoveAt(int)
     ?RemoveConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@@Z @2322 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::RemoveConfiguration(class PString const &)
-    ?RemoveElement@PAbstractSortedList@@IAEXPAVElement@1@@Z @2323 NONAME ;protected: void __thiscall PAbstractSortedList::RemoveElement(class PAbstractSortedList::Element *)
+    ?RemoveElement@PAbstractSortedList@@IAEXPAUElement@1@@Z @3023 NONAME ;protected: void __thiscall PAbstractSortedList::RemoveElement(struct PAbstractSortedList::Element *)
     ?RemoveElement@Table@PHashTable@@QAEPAVPObject@@ABV3@@Z @2324 NONAME ;public: class PObject * __thiscall PHashTable::Table::RemoveElement(class PObject const &)
     ?Rename@PFile@@QAEHABVPString@@H@Z @2325 NONAME ;public: int __thiscall PFile::Rename(class PString const &,int)
     ?Rename@PFile@@SAHABVPFilePath@@ABVPString@@H@Z @2326 NONAME ;public: static int __cdecl PFile::Rename(class PFilePath const &,class PString const &,int)
@@ -2470,7 +2467,7 @@ EXPORTS
     ?RGBtoYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAEIHH@Z @2905 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PWithResize(unsigned char const *,unsigned char *,unsigned int,int,int)const 
     ?rgtGlobal@?1??WspiapiLoad@@9@4@4PAUWSPIAPI_FUNCTION@@A @2950 NONAME ;?rgtGlobal@?1??WspiapiLoad@@9@4@4PAUWSPIAPI_FUNCTION@@A
     ?Right@PString@@QBE?AV1@H@Z @2343 NONAME ;public: class PString  __thiscall PString::Right(int)const 
-    ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2344 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
+    ?RightRotate@PAbstractSortedList@@IAEXPAUElement@1@@Z @3024 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(struct PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @2345 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @2346 NONAME ;public: void __thiscall PTimer::RunContinuous(class PTimeInterval const &)
     ?SafeDereference@PSafeObject@@QAEXXZ @2347 NONAME ;public: void __thiscall PSafeObject::SafeDereference(void)
@@ -2679,7 +2676,7 @@ EXPORTS
     ?Stop@PVideoOutputDevice@@UAEHXZ @2953 NONAME ;public: virtual int __thiscall PVideoOutputDevice::Stop(void)
     ?Stop@PVideoOutputDevice_NULLOutput@@UAEHXZ @2915 NONAME ;public: virtual int __thiscall PVideoOutputDevice_NULLOutput::Stop(void)
     ?Stop@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2532 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Stop(class PServiceProcess *)
-    ?Successor@Element@PAbstractSortedList@@QBEPAV12@XZ @2533 NONAME ;public: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Successor(void)const 
+    ?Successor@PAbstractSortedList@@IBEPAUElement@1@PBU21@@Z @3025 NONAME ;protected: struct PAbstractSortedList::Element * __thiscall PAbstractSortedList::Successor(struct PAbstractSortedList::Element const *)const 
     ?Suspend@PThread@@UAEXH@Z @2534 NONAME ;public: virtual void __thiscall PThread::Suspend(int)
     ?sync@Buffer@PDebugStream@@UAEHXZ @2535 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::sync(void)
     ?sync@Buffer@PStringStream@@UAEHXZ @2536 NONAME ;public: virtual int __thiscall PStringStream::Buffer::sync(void)
@@ -2707,7 +2704,7 @@ EXPORTS
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @2558 NONAME ;public: virtual void __thiscall PArgList::UnknownOption(class PString const &)const 
     ?UnlockReadOnly@PSafeObject@@QBEXXZ @2559 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)const 
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @2560 NONAME ;public: void __thiscall PSafeObject::UnlockReadWrite(void)
-    ?ValueSelect@Element@PAbstractSortedList@@QAEHABVPObject@@AAPAV12@@Z @2561 NONAME ;public: int __thiscall PAbstractSortedList::Element::ValueSelect(class PObject const &,class PAbstractSortedList::Element * &)
+    ?ValueSelect@PAbstractSortedList@@IBEHPBUElement@1@ABVPObject@@AAPBU21@@Z @3026 NONAME ;protected: int __thiscall PAbstractSortedList::ValueSelect(struct PAbstractSortedList::Element const *,class PObject const &,struct PAbstractSortedList::Element const * &)const 
     ?VerifyHardwareFrameSize@PVideoInputDevice_VideoForWindows@@MAEHII@Z @2816 NONAME ;protected: virtual int __thiscall PVideoInputDevice_VideoForWindows::VerifyHardwareFrameSize(unsigned int,unsigned int)
     ?VideoHandler@PVideoInputDevice_VideoForWindows@@KGJPAUHWND__@@PAUvideohdr_tag@@@Z @2817 NONAME ;protected: static long __stdcall PVideoInputDevice_VideoForWindows::VideoHandler(struct HWND__ *,struct videohdr_tag *)
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @2564 NONAME ;public: class PString & __thiscall PString::vsprintf(char const *,char *)
