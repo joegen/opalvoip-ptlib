@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.4  2002/07/05 06:27:26  craigs
+ * Removed unused member variables
+ * Added OnEmptyAction callback
+ *
  * Revision 1.3  2002/07/02 06:23:51  craigs
  * Added recording functions
  *
@@ -251,6 +255,8 @@ class PVXMLSession : public PObject
 
     PString GetXMLError() const;
 
+    virtual BOOL OnEmptyAction()  { return TRUE; }
+
     virtual void ClearCall() { };
 
     virtual PString GetVar(const PString & str) const;
@@ -263,8 +269,6 @@ class PVXMLSession : public PObject
 
     PXML xmlFile;
     PVXMLDialogArray dialogArray;
-    PStringToString textMap;
-    PStringToString digitMap;
 
     PVXMLGrammar * activeGrammar;
 
