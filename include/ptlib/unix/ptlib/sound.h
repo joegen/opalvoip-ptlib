@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.7  2000/05/02 08:28:34  craigs
+ * Removed "memory leaks" caused by brain-dead GNU linker
+ *
  * Revision 1.6  2000/04/19 00:13:52  robertj
  * BeOS port changes.
  *
@@ -51,24 +54,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
-class PSoundHandleEntry : public PObject {
-  PCLASSINFO(PSoundHandleEntry, PObject)
-
-  public:
-    PSoundHandleEntry();
-
-    int handle;
-    int direction;
-
-    unsigned numChannels;
-    unsigned sampleRate;
-    unsigned bitsPerSample;
-    unsigned fragmentValue;
-    BOOL isInitialised;
-};
-
-PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
-
 #ifdef __BEOS__
 class PSoundInput;
 class PSoundPlayer;
@@ -86,7 +71,6 @@ class PSoundPlayer;
   protected:
     BOOL  Setup();
 
-    static PSoundHandleDict handleDict;
     static PMutex           dictMutex;
 
     Directions direction;
