@@ -3,10 +3,15 @@
 #include <ptlib.h>
 #include <sockets.h>
 
+#include <unistd.h>
+#include <net/if.h>
+#include <sys/sockio.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+extern PSemaphore PX_iostreamMutex;
 
 PSocket::~PSocket()
 {
@@ -15,18 +20,39 @@ PSocket::~PSocket()
 
 int PSocket::os_close()
 {
-  int status;
-  if (os_handle >= 0) {
-    PProcess::Current().PXAbortIOBlock(os_handle);
-    ::shutdown(os_handle, 2);
-    DWORD cmd = 0;
-    ::ioctl(os_handle, FIONBIO, &cmd);
-    status = ::close(os_handle);
-  } else 
-    status = 0;
+//PError << "Close requested for socket " << os_handle << endl;
+  if (os_handle < 0) {
+//PError << "Close requested for closed socket " << os_handle << endl;
+    lastError = NotOpen;
+    return FALSE;
+  }
 
+  // make sure we don't have any problems
+  PX_iostreamMutex.Wait();
+  int handle = os_handle;
   os_handle = -1;
-  return status;
+  flush();
+  PX_iostreamMutex.Signal();
+
+  // send a shutdown to the other end
+  ::shutdown(os_handle, 2);
+
+#ifndef P_PTHREADS
+  // abort any I/O block using this os_handle
+  PProcess::Current().PXAbortIOBlock(os_handle);
+
+  DWORD cmd = 0;
+  ::ioctl(os_handle, FIONBIO, &cmd);
+#endif
+
+  int stat;
+  while (1) {
+    stat = ::close(handle);
+    if (stat != EINTR)
+      break;
+  }
+
+  return ConvertOSError(stat);
 }
 
 int PSocket::os_socket(int af, int type, int protocol)
@@ -35,13 +61,17 @@ int PSocket::os_socket(int af, int type, int protocol)
   int handle;
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
-    // make the socket non-blocking
+    // make the socket non-blocking and close on exec
     DWORD cmd = 1;
-    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
+    if (
+#ifndef P_PTHREADS
+        !ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
+#endif
         !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
       ::close(handle);
       return -1;
     }
+//PError << "socket " << handle << " created" << endl;
   }
   return handle;
 }
@@ -73,13 +103,18 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
                        const PTimeInterval & timeout)
 {
+  int new_fd;
   if (!PXSetIOBlock(PXAcceptBlock, sock, timeout)) {
     errno = EINTR;
     return -1;
   }
 
-  int new_fd = ::accept(sock, addr, size);
-  return new_fd;
+  while (1) {
+    new_fd = ::accept(sock, addr, size);
+    if ((new_fd >= 0) || (errno != EPROTO))
+      return new_fd;
+    //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
+  }
 }
 
 int PSocket::os_select(int maxHandle,
@@ -89,12 +124,32 @@ int PSocket::os_select(int maxHandle,
           const PIntArray & osHandles,
       const PTimeInterval & timeout)
 {
-  return PThread::Current()->PXBlockOnIO(maxHandle,
+  struct timeval * tptr = NULL;
+
+#ifndef P_PTHREADS
+  int stat = PThread::Current()->PXBlockOnIO(maxHandle,
                                          readBits,
                                          writeBits,
                                          exceptionBits,
                                          timeout,
 					 osHandles);
+  if (stat <= 0)
+    return stat;
+
+  struct timeval tout = {0, 0};
+  tptr = &tout;
+#else
+  struct timeval   timeout_val;
+  if (timeout != PMaxTimeInterval) {
+    if (timeout.GetMilliSeconds() < 1000L*60L*60L*24L) {
+      timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
+      timeout_val.tv_sec  = timeout.GetSeconds();
+      tptr                = &timeout_val;
+    }
+  }
+#endif
+
+  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
 }
                      
 
@@ -130,6 +185,89 @@ PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
   p[1] = b2;
   p[2] = b3;
   p[3] = b4;
+}
+
+BOOL PIPSocket::IsLocalHost(const PString & hostname)
+{
+  if (hostname.IsEmpty())
+    return TRUE;
+
+  if (hostname *= "localhost")
+    return TRUE;
+
+  // lookup the host address using inet_addr, assuming it is a "." address
+  Address addr = hostname;
+  if (addr == 16777343)  // Is 127.0.0.1
+    return TRUE;
+  if (addr == (DWORD)-1)
+    return FALSE;
+
+  if (!GetHostAddress(hostname, addr))
+    return FALSE;
+
+  int fd = ::socket(PF_INET, SOCK_DGRAM, 0);
+  PAssert(fd >= 0, "could not open socket for ioctl");
+
+  // get number of interfaces
+  int ifNum;
+  PAssert (::ioctl(fd, SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+
+  struct ifconf ifConf;
+  PBYTEArray buffer;
+  ifConf.ifc_len  = ifNum * sizeof(ifreq);
+  ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
+  
+  if (ioctl(fd, SIOCGIFCONF, &ifConf) >= 0) {
+
+    int num = 0;
+    for (num = 0; num < ifNum; num++) {
+
+      ifreq * ifName = ifConf.ifc_req + num;
+      struct ifreq ifReq;
+      strcpy(ifReq.ifr_name, ifName->ifr_name);
+
+      if (ioctl(fd, SIOCGIFFLAGS, &ifReq) >= 0) {
+        int flags = ifReq.ifr_flags;
+        if (ioctl(fd, SIOCGIFADDR, &ifReq) >= 0) {
+          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
+            return TRUE;
+        }
+      }
+    }
+  }
+  return FALSE;
+}
+
+
+/////////////////////////////////////////////////////////
+//
+//  Application
+//
+
+PDECLARE_CLASS(App, PProcess)
+  public:
+    void Main();
+};
+
+
+PCREATE_PROCESS(App);
+
+void App::Main()
+{
+  PArgList args = GetArguments();
+
+  if (args.GetCount() < 1) {
+    PError << "usage: test hostname" << endl;
+    return;
+  }
+
+   PError << args[0];
+   if (IsLocalHost(args[0]))
+     PError << " is ";
+   else
+     PError << " isn't ";
+
+  PError << " a local alias" << endl;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -209,7 +347,7 @@ BOOL PSocket::os_sendto(
   }
 
   // attempt to read data
-  return ::sendto(os_handle, buf, len, flags, (sockaddr *)addr, addrlen);
+  return ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
 }
 
 BOOL PSocket::Read(void * buf, PINDEX len)
@@ -222,7 +360,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) 
     return FALSE;
 
-  if (ConvertOSError(lastReadCount = ::recv(os_handle, buf, len, 0)))
+  if (ConvertOSError(lastReadCount = ::recv(os_handle, (char *)buf, len, 0)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
