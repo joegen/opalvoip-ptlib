@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.20  2003/03/31 06:21:19  craigs
+ * Split the expat wrapper from the XML file handling to allow reuse of the parser
+ *
  * Revision 1.19  2003/01/13 02:14:02  robertj
  * Improved error logging for auto-loaded XML
  *
@@ -53,28 +56,94 @@
 #pragma interface
 #endif
 
-
 #include <ptlib.h>
 #include <ptclib/http.h>
-
-
-class PXMLObject;
-class PXMLElement;
-class PXMLData;
-
+#include <expat.h>
 
 ////////////////////////////////////////////////////////////
 
-class PXML : public PObject
+class PXMLElement;
+class PXMLData;
+
+class PXMLParser : public PObject
 {
-  PCLASSINFO(PXML, PObject);
+  PCLASSINFO(PXMLParser, PObject);
   public:
     enum Options {
       Indent              = 1,
       NewLineAfterElement = 2,
       NoIgnoreWhiteSpace  = 4,
       CloseExtended       = 8,
+      WithNS              = 16,
     };
+
+    PXMLParser(int options = -1);
+    ~PXMLParser();
+    BOOL Parse(const char * data, int dataLen, BOOL final);
+    void GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine);
+
+    virtual void StartElement(const char * name, const char **attrs);
+    virtual void EndElement(const char * name);
+    virtual void AddCharacterData(const char * data, int len);
+    virtual void XmlDecl(const char * version, const char * encoding, int standAlone);
+    virtual void StartDocTypeDecl(const char * docTypeName,
+		                              const char * sysid,
+				                          const char * pubid,
+				                          int hasInternalSubSet);
+    virtual void EndDocTypeDecl();
+    virtual void StartNamespaceDeclHandler(const XML_Char *prefix, const XML_Char *uri);
+    virtual void EndNamespaceDeclHandler(const XML_Char *prefix);
+
+    PString GetVersion() const  { return version; }
+    PString GetEncoding() const { return encoding; }
+    BOOL GetStandAlone() const  { return standAlone; }
+
+    PXMLElement * GetXMLTree() const;
+    PXMLElement * SetXMLTree(PXMLElement * newRoot);
+
+  protected:
+    int options;
+    XML_Parser expat;
+    PXMLElement * rootElement;
+    PXMLElement * currentElement;
+    PXMLData * lastElement;
+    PString version, encoding;
+    int standAlone;
+};
+
+class PXMLObject;
+class PXMLElement;
+class PXMLData;
+
+////////////////////////////////////////////////////////////
+
+class PXMLBase : public PObject
+{
+  public:
+    PXMLBase(int _options = -1)
+      : options(_options) { if (options < 0) options = 0; }
+
+    void SetOptions(int _options)
+      { options = _options; }
+
+    int GetOptions() const { return options; }
+
+    virtual BOOL IsNoIndentElement(
+      const PString & /*elementName*/
+    ) const
+    {
+      return FALSE;
+    }
+
+  protected:
+    int options;
+};
+
+
+class PXML : public PXMLBase
+{
+  PCLASSINFO(PXML, PObject);
+  public:
 
     PXML(
       int options = -1,
@@ -115,11 +184,6 @@ class PXML : public PObject
 
     void RemoveAll();
 
-    void SetOptions(int _options)
-      { options = _options; }
-
-    int GetOptions() const { return options; }
-
     BOOL IsNoIndentElement(
       const PString & elementName
     ) const;
@@ -145,17 +209,6 @@ class PXML : public PObject
     PDECLARE_NOTIFIER(PTimer,  PXML, AutoReloadTimeout);
     PDECLARE_NOTIFIER(PThread, PXML, AutoReloadThread);
 
-    // overrides for expat callbacks
-    virtual void StartElement(const char * name, const char **attrs);
-    virtual void EndElement(const char * name);
-    virtual void AddCharacterData(const char * data, int len);
-    virtual void XmlDecl(const char * version, const char * encoding, int standAlone);
-    virtual void StartDocTypeDecl(const char * docTypeName,
-		                              const char * sysid,
-				                          const char * pubid,
-				                          int hasInternalSubSet);
-    virtual void EndDocTypeDecl();
-
     // static methods to create XML tags
     static PString CreateStartTag (const PString & text);
     static PString CreateEndTag (const PString & text);
@@ -167,7 +220,6 @@ class PXML : public PObject
     PXMLElement * rootElement;
     PMutex rootMutex;
 
-    int options;
     BOOL loadFromFile;
     PFilePath loadFilename;
     PString version, encoding;
@@ -178,11 +230,6 @@ class PXML : public PObject
     PTimeInterval autoLoadWaitTime;
     PMutex autoLoadMutex;
     PString autoLoadError;
-
-    // these are only used whilst loading
-    PXMLElement * loadingRootElement;
-    PXMLElement * currentElement;
-    PXMLData * lastElement;
 
     PString errorString;
     PINDEX errorCol;
@@ -212,7 +259,7 @@ class PXMLObject : public PObject {
       parent = newParent;
     }
 
-    virtual void Output(ostream & strm, const PXML & xml, int indent) const = 0;
+    virtual void Output(ostream & strm, const PXMLBase & xml, int indent) const = 0;
 
     virtual BOOL IsElement() const = 0;
 
@@ -240,7 +287,7 @@ class PXMLData : public PXMLObject {
 
     PString GetString() const           { return value; }
 
-    void Output(ostream & strm, const PXML & xml, int indent) const;
+    void Output(ostream & strm, const PXMLBase & xml, int indent) const;
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
@@ -258,7 +305,8 @@ class PXMLElement : public PXMLObject {
 
     BOOL IsElement() const { return TRUE; }
 
-    void Output(ostream & strm, const PXML & xml, int indent) const;
+    void PrintOn(ostream & strm) const;
+    void Output(ostream & strm, const PXMLBase & xml, int indent) const;
 
     PCaselessString GetName() const
       { return name; }
@@ -314,9 +362,9 @@ class PXMLSettings : public PXML
 {
   PCLASSINFO(PXMLSettings, PXML);
   public:
-    PXMLSettings(int options = NewLineAfterElement | CloseExtended);
-    PXMLSettings(const PString & data, int options = NewLineAfterElement | CloseExtended);
-    PXMLSettings(const PConfig & data, int options = NewLineAfterElement | CloseExtended);
+    PXMLSettings(int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
+    PXMLSettings(const PString & data, int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
+    PXMLSettings(const PConfig & data, int options = PXMLParser::NewLineAfterElement | PXMLParser::CloseExtended);
 
     BOOL Load(const PString & data);
     BOOL LoadFile(const PFilePath & fn);
