@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.2  1999/03/05 07:03:27  robertj
+ * Some more BeOS port changes.
+ *
  * Revision 1.1  1999/03/02 05:41:59  robertj
  * More BeOS changes
  *
@@ -36,7 +39,6 @@
 
 #include <ptlib.h>
 
-#include <sys/audioio.h>
 
 
 PSound::PSound(unsigned channels,
@@ -130,7 +132,6 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
   PStringArray array;
 
-  array[0] = "/dev/audio";
 
   return array;
 }

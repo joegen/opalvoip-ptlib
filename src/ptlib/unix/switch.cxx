@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.17  1999/03/05 07:03:27  robertj
+ * Some more BeOS port changes.
+ *
  * Revision 1.16  1999/02/22 13:26:54  robertj
  * BeOS port changes.
  *
@@ -46,7 +49,7 @@
 
 #include <ptlib.h>
 
-#ifndef P_PTHREADS
+#if !defined(P_PTHREADS) && !defined(BE_THREADS)
 
 #ifdef P_LINUX
 #ifdef PPC
@@ -176,6 +179,6 @@ void PThread::FreeStack()
 #endif
 }
 
-#endif  // P_PTHREADS
+#endif  // !P_PTHREADS && !BE_THREADS
 
 

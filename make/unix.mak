@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.33  1999/02/22 00:55:07  robertj
-# BeOS port changes.
+# Revision 1.34  1999/03/05 07:03:27  robertj
+# Some more BeOS port changes.
+#
+# Revision 1.34  1999/03/05 07:03:27  robertj
+# Some more BeOS port changes.
 #
 # Revision 1.33  1999/02/22 00:55:07  robertj
 # BeOS port changes.
@@ -254,7 +257,13 @@ endif # solaris
 
 ####################################################
 
+ifeq ($(OSTYPE),beos)
+
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HAS_INT64
+
+# BeOS R4, using gcc from Cygnus version 2.9-beos-980929
+STDCCFLAGS	:= $(STDCCFLAGS)
+LDLIBS		:= $(LDLIBS) -lbe
 
 ifdef BE_THREADS
 STDCCFLAGS	:= $(STDCCFLAGS) -DBE_THREADS -DP_PLATFORM_HAS_THREADS
