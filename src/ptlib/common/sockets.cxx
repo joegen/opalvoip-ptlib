@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.175  2004/08/24 07:08:11  csoutheren
+ * Added use of recvmsg to determine which interface UDP packets arrive on
+ *
  * Revision 1.174  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -1354,6 +1357,9 @@ P_timeval & P_timeval::operator=(const PTimeInterval & time)
 PSocket::PSocket()
 {
   port = 0;
+#if P_HAS_RECVMSG
+  catchReceiveToAddr = FALSE;
+#endif
 }
 
 
@@ -2981,6 +2987,7 @@ BOOL PUDPSocket::OpenSocket()
 #endif
 #endif
 #endif
+
     return ConvertOSError(os_handle = os_socket(AF_INET,SOCK_DGRAM, 0));
 }
 
