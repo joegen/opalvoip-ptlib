@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.21 1996/09/14 13:09:10 robertj Exp $
+ * $Id: http.h,v 1.22 1996/10/26 03:31:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.22  1996/10/26 03:31:05  robertj
+ * Changed OnError so can pass in full HTML page as parameter.
+ *
  * Revision 1.21  1996/09/14 13:09:10  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -594,7 +597,7 @@ PDECLARE_CLASS(PHTTPServer, PHTTP)
 
     virtual BOOL OnError(
       StatusCode code,                         // Status code for the error response.
-      const PString & extra,                   // Extra information included in the response.
+      const PCaselessString & extra,           // Extra information included in the response.
       const PHTTPConnectionInfo & connectInfo
     );
     /* Write an error response for the specified code.
