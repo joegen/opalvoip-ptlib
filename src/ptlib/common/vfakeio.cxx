@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.17  2003/06/03 04:21:49  dereksmithies
+ * Add PTRACE statement, and tidy up format of one if statement.
+ *
  * Revision 1.16  2003/03/17 07:46:49  robertj
  * Migrated vflip member variable and functions into PVideoDevice class.
  *
@@ -173,7 +176,7 @@ BOOL PFakeVideoInputDevice::SetColourFormat(const PString & newFormat)
 
 BOOL PFakeVideoInputDevice::SetFrameRate(unsigned rate)
 {
-  if ( (rate < 1) || ( rate > 50) )
+  if ((rate < 1) || (rate > 50))
     PVideoDevice::SetFrameRate(10);
   else
     PVideoDevice::SetFrameRate(rate);
@@ -221,13 +224,15 @@ void PFakeVideoInputDevice::WaitFinishPreviousFrame()
   frameTimeError -= (int)delay.GetMilliSeconds();
   previousFrameTime = now;
 
-  if (frameTimeError > 0)
+  if (frameTimeError > 0) {
+    PTRACE(6, "FakeVideo\t Sleep for " << frameTimeError << " milli seconds");
 #ifdef P_LINUX
     usleep(frameTimeError * 1000);
 #else
     PThread::Current()->Sleep(frameTimeError);
 #endif
-} 
+  } 
+}
 
 
 BOOL PFakeVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
