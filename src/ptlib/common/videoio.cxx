@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.5  2000/11/09 00:20:58  robertj
+ * Added qcif size constants
+ *
  * Revision 1.4  2000/07/26 03:50:50  robertj
  * Added last error variable to video device.
  *
@@ -54,8 +57,8 @@ PVideoDevice::PVideoDevice(VideoFormat videofmt,
   channelNumber = channel;
   colourFormat = colourFmt;
   frameRate = 15;
-  frameWidth = CIF_WIDTH;
-  frameHeight = CIF_HEIGHT;
+  frameWidth = CIFWidth;
+  frameHeight = CIFHeight;
 }
 
 
