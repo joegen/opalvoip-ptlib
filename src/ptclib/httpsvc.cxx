@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.5 1996/08/19 13:39:55 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.6 1996/08/25 09:39:00 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.6  1996/08/25 09:39:00  robertj
+ * Prevented registration if no user etc entered.
+ *
  * Revision 1.5  1996/08/19 13:39:55  robertj
  * Fixed race condition in system restart logic.
  *
@@ -291,6 +294,19 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
     return FALSE;
 
   PSecureConfig sconf(productKey, securedKeys);
+
+  BOOL anyEmpty = FALSE;
+  for (PINDEX i = 0; i < fields.GetSize(); i++) 
+    anyEmpty = anyEmpty || fields[i].GetValue().Trim().IsEmpty();
+  if (anyEmpty) {
+    reply = "Registration Error";
+    reply << "Your registration information contains at least one empty "
+              "parameter. Please fill in all fields and try again."
+          << PHTML::Body();
+    request.code = PHTTPSocket::InternalServerError;
+    return FALSE;
+  }
+
   BOOL good = FALSE;
   switch (sconf.GetValidation()) {
     case PSecureConfig::Defaults :
