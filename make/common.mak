@@ -46,7 +46,7 @@ DEPS		:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
 #
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir $(DEPDIR) ; fi
-	@echo -n $(OBJDIR)/ > $@
+	@printf %s $(OBJDIR)/ > $@
 	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
 
 #
