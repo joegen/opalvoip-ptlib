@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.7  2002/06/19 05:43:17  robertj
+ * Added missing return for getting default allowance flag
+ *
  * Revision 1.6  2002/06/19 04:02:58  robertj
  * Added default allowance boolean if ACL empty.
  * Added ability to override the creation of ACL entry objects with descendents
@@ -313,7 +316,7 @@ class PIpAccessControlList : public PIpAccessControlList_base
 
     /**Get the default state for allowed access if the list is empty.
       */
-    BOOL GetDefaultAllowance() const { defaultAllowance; }
+    BOOL GetDefaultAllowance() const { return defaultAllowance; }
 
     /**Set the default state for allowed access if the list is empty.
       */
