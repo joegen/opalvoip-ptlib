@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.26 1996/10/08 13:07:39 robertj Exp $
+ * $Id: inetprot.cxx,v 1.27 1996/12/05 11:41:12 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.27  1996/12/05 11:41:12  craigs
+ * Fix problem with STAT command response containing lines not starting
+ * with response number
+ *
  * Revision 1.26  1996/10/08 13:07:39  robertj
  * Changed default for assert to be ignore, not abort.
  *
@@ -446,6 +450,7 @@ BOOL PInternetProtocol::ReadResponse()
   if (continuePos == 0)
     return TRUE;
 
+  PString prefix = line.Left(continuePos);
   char continueChar = line[continuePos];
   while (!isdigit(line[0]) || line[continuePos] == continueChar) {
     lastResponseInfo += '\n';
@@ -453,7 +458,10 @@ BOOL PInternetProtocol::ReadResponse()
       lastResponseInfo += GetErrorText();
       return FALSE;
     }
-    lastResponseInfo += line.Mid(continuePos+1);
+    if (line.Left(continuePos) == prefix)
+      lastResponseInfo += line.Mid(continuePos+1);
+    else
+      lastResponseInfo += line;
   }
 
   return TRUE;
