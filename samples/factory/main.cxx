@@ -1,7 +1,20 @@
 #include <ptlib.h>
 #include "abstract.h"
 
-int main(int argc, char *argv[])
+extern unsigned PTraceCurrentLevel;
+PAbstractFactory<PProcessStartup, PTraceLevelSetStartup<4> > level("SetTraceLevel");
+
+class Factory : public PProcess
+{
+  public:
+    Factory()
+    : PProcess() { }
+    void Main();
+};
+
+PCREATE_PROCESS(Factory)
+
+void Factory::Main()
 {
   PGenericFactory<AbstractClass>::KeyList keyList = PGenericFactory<AbstractClass>::GetKeyList();
   PGenericFactory<AbstractClass>::KeyList::const_iterator r;
@@ -11,7 +24,7 @@ int main(int argc, char *argv[])
     cout << "  " << *r << endl;
   cout << endl;
 
-  PINDEX i;
+  unsigned i;
   for (i = 0; i < keyList.size(); i++) {
     AbstractClass * c = PGenericFactory<AbstractClass>::CreateInstance(keyList[i]);
     if (c == NULL) 
