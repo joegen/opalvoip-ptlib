@@ -1,6 +1,7 @@
 #ifndef PMACHDEP_H
 #define PMACHDEP_H
 
+#include <netdb.h>
 
 #if ! defined (P_SUN4)
 
@@ -13,7 +14,6 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
-#include <netdb.h>
 
 extern "C" {
 char *mktemp(char *);
@@ -46,6 +46,7 @@ char * inet_ntoa(struct in_addr);
 
 struct hostent * gethostbyname(const char *);
 struct hostent * gethostbyaddr(const char *, int, int);
+struct servent * getservbyname(const char *, const char *);
 
 #define PSETPGRP()  setpgrp(0, 0)
 
