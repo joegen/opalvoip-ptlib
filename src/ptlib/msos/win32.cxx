@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.143  2005/01/11 06:57:15  csoutheren
+ * Fixed namespace collisions with plugin starup factories
+ *
  * Revision 1.142  2005/01/04 07:44:04  csoutheren
  * More changes to implement the new configuration methodology, and also to
  * attack the global static problem
@@ -516,7 +519,7 @@
 #include <process.h>
 #include <ptlib/msos/ptlib/debstrm.h>
 #include <winsock2.h>
-#include<ws2tcpip.h>
+#include <ws2tcpip.h>
 
 #ifndef _WIN32_WCE
 #pragma comment(lib, "mpr.lib")
