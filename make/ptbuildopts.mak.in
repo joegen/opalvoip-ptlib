@@ -2,7 +2,11 @@
 #
 
 ifndef PWLIBDIR
-PWLIBDIR   = @PWLIBDIR@
+	echo "No PWLIBDIR environment variable defined!"
+	echo "You need to define PWLIBDIR!"
+	echo "Try something like:"
+	echo "PWLIBDIR = $(HOME)/pwlib"
+	exit 1
 endif
 
 MACHTYPE   = @MACHTYPE@

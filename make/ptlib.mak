@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: ptlib.mak,v $
+# Revision 1.4  2005/02/23 21:29:52  dominance
+# have configure check for bison as we know we'll need it and stop implicit definition of PWLIBDIR. *geesh* that was about time, eh? ;)
+#
 # Revision 1.3  1998/12/02 02:37:31  robertj
 # New directory structure.
 #
@@ -35,7 +38,11 @@
 #
 
 ifndef PWLIBDIR
-PWLIBDIR=$(HOME)/pwlib
+	echo "No PWLIBDIR environment variable defined!"
+	echo "You need to define PWLIBDIR!"
+	echo "Try something like:"
+	echo "PWLIBDIR = $(HOME)/pwlib"
+	exit 1
 endif
 
 include $(PWLIBDIR)/make/unix.mak
