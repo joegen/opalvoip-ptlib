@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.29  2002/11/19 10:36:30  robertj
+ * Added functions to set anf get "file:" URL. as PFilePath and do the right
+ *   things with platform dependent directory components.
+ *
  * Revision 1.28  2002/11/08 03:39:27  craigs
  * Fixed problem with G.723.1 files
  *
@@ -145,44 +149,6 @@ PDirectory PVXMLSession::cacheDir;
 PVXMLCache * PVXMLSession::resourceCache = NULL;
 PINDEX       PVXMLSession::cacheCount = 0;
 
-//////////////////////////////////////////////////////////
-
-static PURL FilenameToURL(const PFilePath & fn)
-{
-  PString url;
-#ifdef WIN32
-  url = fn.GetDirectory() + fn.GetFileName();
-  PINDEX pos = url.Find(":");
-  if (pos > 0) {
-    url = url.Left(pos) + url.Mid(pos+1);
-  }
-  url = "file://" + url;
-  url.Replace('\\', '/', TRUE);
-#else
-  url = "file://" + fn.GetDirectory() + fn.GetFileName();
-#endif
-
-  return url;
-}
-
-//////////////////////////////////////////////////////////
-
-static PFilePath URLToFilename(const PURL & url)
-{
-  PFilePath fn;
-
-#ifdef WIN32
-  PString fnStr = url.GetPathStr();
-  if ((fnStr.GetSize() > 1) && (fnStr[1] == '/'))
-    fnStr = fnStr.Left(1) + ":" + fnStr.Mid(1);
-  fnStr.Replace('/', '\\', TRUE);
-  fn = fnStr;
-#else
-  fn = url.GetPathStr();
-#endif
-
-  return fn;
-}
 
 //////////////////////////////////////////////////////////
 
@@ -294,11 +260,13 @@ BOOL PVXMLSession::Load(const PString & source)
   return FALSE;
 }
 
+
 BOOL PVXMLSession::LoadFile(const PFilePath & filename)
 {
   // create a file URL from the filename
-  return LoadURL(FilenameToURL(filename));
+  return LoadURL(filename);
 }
+
 
 BOOL PVXMLSession::LoadURL(const PURL & url)
 {
@@ -489,7 +457,7 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
   // files on the local file system get loaded locally
   else if (url.GetScheme() *= "file") {
 
-    fn = URLToFilename(url);
+    fn = url.AsFilePath();
     loadFile = TRUE;
   }
 
@@ -536,25 +504,25 @@ BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString
 
 PXMLElement * PVXMLSession::FindForm(const PString & id)
 {
-	// NOTE: should have some flag to know if it is loaded
-	PXMLElement * root = xmlFile.GetRootElement();
-	if (root == NULL)
-		return NULL;
-
-	// Only handle search of top level nodes for <form> element
-	PINDEX i;
-	for (i = 0; i < root->GetSize(); i++) {
-		PXMLObject * xmlObject = root->GetElement(i); 
+  // NOTE: should have some flag to know if it is loaded
+  PXMLElement * root = xmlFile.GetRootElement();
+  if (root == NULL)
+    return NULL;
+  
+  // Only handle search of top level nodes for <form> element
+  PINDEX i;
+  for (i = 0; i < root->GetSize(); i++) {
+    PXMLObject * xmlObject = root->GetElement(i); 
     if (xmlObject->IsElement()) {
-			PXMLElement * xmlElement = (PXMLElement*)xmlObject;
-			if (
+      PXMLElement * xmlElement = (PXMLElement*)xmlObject;
+      if (
           (xmlElement->GetName() *= "form") && 
           (id.IsEmpty() || (xmlElement->GetAttribute("id") *= id))
          )
-				return xmlElement;
-		}
-	}
-	return NULL;
+        return xmlElement;
+    }
+  }
+  return NULL;
 }
 
 
@@ -1106,7 +1074,7 @@ BOOL PVXMLSession::TraverseAudio()
 
         // attempt to load the resource if a file
         else if (url.GetScheme() *= "file") {
-          fn = URLToFilename(url);
+          fn = url.AsFilePath();
           haveFn = TRUE;
         }
 
