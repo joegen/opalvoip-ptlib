@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.7 1995/03/12 04:59:54 robertj Exp $
+ * $Id: contain.h,v 1.8 1995/04/25 11:31:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.8  1995/04/25 11:31:18  robertj
+ * Changes for DLL support.
+ *
  * Revision 1.7  1995/03/12 04:59:54  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -127,7 +130,7 @@ typedef long INT;
 
 
 // Declaration for 64 bit unsigned integer quantity
-#if defined(_WIN32)
+#if defined(_MSC_VER) && defined(_WIN32)
 typedef unsigned __int64 QWORD;
 #else
 class QWORD {
@@ -171,7 +174,7 @@ const PINDEX P_MAX_INDEX = 0xffff;
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
 
-#include "../../common/object.h"
+#include "..\..\common\object.h"
 
 
 #endif // _OBJECT_H
