@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.20  1998/11/24 10:25:19  robertj
+ * Fixed environment variable on FreeBSD
+ *
  * Revision 1.19  1998/11/24 09:39:11  robertj
  * FreeBSD port.
  *
@@ -197,11 +200,9 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS)
+#if defined(P_SOLARIS) || defined(P_FREEBSD)
     extern char ** environ;
 #define __environ environ
-#elif defined(P_FREEBSD)
-    extern char ** __environ;
 #endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
