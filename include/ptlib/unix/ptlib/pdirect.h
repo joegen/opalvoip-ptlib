@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.1 1995/01/23 18:43:27 craigs Exp $
+ * $Id: pdirect.h,v 1.2 1996/08/03 12:08:19 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.2  1996/08/03 12:08:19  craigs
+ * Changed for new common directories
+ *
  * Revision 1.1  1995/01/23 18:43:27  craigs
  * Initial revision
  *
@@ -31,7 +34,7 @@
 
 #define	PFILE_PATH_STRING	PString
 
-#include "../../common/pdirect.h"
+#include "../../common/ptlib/pdirect.h"
   protected:
     DIR           * directory;
     struct dirent * entry;

@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.8 1996/05/03 13:12:07 craigs Exp $
+ * $Id: channel.h,v 1.9 1996/08/03 12:08:19 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.9  1996/08/03 12:08:19  craigs
+ * Changed for new common directories
+ *
  * Revision 1.8  1996/05/03 13:12:07  craigs
  * More Sun4 fixes
  *
@@ -37,7 +40,7 @@
 
 #include <pmachdep.h>
 
-#include "../../common/channel.h"
+#include "../../common/ptlib/channel.h"
   public:
     enum {
       PXReadBlock,
