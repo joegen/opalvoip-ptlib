@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.7 1996/05/02 12:01:47 craigs Exp $
+ * $Id: channel.h,v 1.8 1996/05/03 13:12:07 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.8  1996/05/03 13:12:07  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.7  1996/05/02 12:01:47  craigs
  * More Sun4 fixed
  *
@@ -31,6 +34,8 @@
 #ifndef _PCHANNEL
 
 #pragma interface
+
+#include <pmachdep.h>
 
 #include "../../common/channel.h"
   public:
