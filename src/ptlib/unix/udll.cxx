@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.14  2003/05/14 10:50:30  dereksmithies
+ * Quick hack to add the function: PDynaLink::GetName().  Fix me.
+ *
  * Revision 1.13  2003/05/06 06:59:12  robertj
  * Dynamic library support for MacOSX, thanks Hugo Santos
  *
@@ -364,6 +367,14 @@ void PDynaLink::Close()
 BOOL PDynaLink::IsLoaded() const
 {
   return dllHandle != NULL;
+}
+
+PString PDynaLink::GetName(BOOL full) const
+{
+  if (!IsLoaded())
+    return "";
+
+  return "loaded";
 }
 
 
