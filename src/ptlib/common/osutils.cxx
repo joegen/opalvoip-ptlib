@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.223  2004/05/23 12:34:38  rjongbloed
+ * Fixed PProcess startup up execution to after PProcess instance is created
+ *   so does not crash if using startup technique to initialise tracing.
+ *
  * Revision 1.222  2004/05/21 00:28:39  csoutheren
  * Moved PProcessStartup creation to PProcess::Initialise
  * Added PreShutdown function and called it from ~PProcess to handle PProcessStartup removal
@@ -1800,6 +1804,30 @@ int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
 
+typedef std::map<PString, PProcessStartup *> PProcessStartupList;
+
+int PProcess::_main(void *)
+{
+  Main();
+  return terminationValue;
+}
+
+
+void PProcess::PreInitialise(int c, char ** v, char ** e)
+{
+  p_argc = c;
+  p_argv = v;
+  p_envp = e;
+}
+
+
+static PProcessStartupList & GetPProcessStartupList()
+{
+  static PProcessStartupList list;
+  return list;
+}
+
+
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : manufacturer(manuf), productName(name)
@@ -1840,27 +1868,6 @@ PProcess::PProcess(const char * manuf, const char * name,
   InitialiseProcessThread();
 
   Construct();
-}
-
-
-int PProcess::_main(void *)
-{
-  Main();
-  return terminationValue;
-}
-
-typedef std::map<PString, PProcessStartup *> PProcessStartupList;
-
-static PProcessStartupList & GetPProcessStartupList()
-{
-  static PProcessStartupList list; return list;
-}
-
-void PProcess::PreInitialise(int c, char ** v, char ** e)
-{
-  p_argc = c;
-  p_argv = v;
-  p_envp = e;
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory
@@ -1886,6 +1893,7 @@ void PProcess::PreInitialise(int c, char ** v, char ** e)
     }
   }
 }
+
 
 void PProcess::PreShutdown()
 {
