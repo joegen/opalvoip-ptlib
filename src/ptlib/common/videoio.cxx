@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.41  2003/11/18 10:40:51  csoutheren
+ * Added pragma implementation to fix vtable link problems
+ *
  * Revision 1.40  2003/11/18 06:46:38  csoutheren
  * Changed to support video input plugins
  *
@@ -177,6 +180,8 @@
  * Added video I/O device classes.
  *
  */
+
+#pragma implementation "videoio.h"
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
