@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.38 1995/12/10 11:41:12 robertj Exp $
+ * $Id: osutils.cxx,v 1.39 1995/12/23 03:40:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.39  1995/12/23 03:40:40  robertj
+ * Changed version number system
+ *
  * Revision 1.38  1995/12/10 11:41:12  robertj
  * Added extra user information to processes and applications.
  * Implemented timer support in text only applications with platform threads.
@@ -2113,13 +2116,18 @@ void PThread::Yield()
 
 #if defined(_PPROCESS)
 
-PProcess::PProcess(const char * manuf, const char * name, const char * ver)
-  : manufacturer(manuf), productName(name), version(ver)
+PProcess::PProcess(const char * manuf, const char * name,
+                           WORD major, WORD minor, CodeStatus stat, WORD build)
+  : manufacturer(manuf), productName(name)
 {
   PProcessInstance = this;
 #if defined(P_PLATFORM_HAS_THREADS)
   timerThread = NULL;
 #endif
+  majorVersion = major;
+  minorVersion = minor;
+  status = stat;
+  buildNumber = build;
 }
 
 
@@ -2159,6 +2167,15 @@ void PProcess::Terminate()
 #else
   exit(terminationValue);
 #endif
+}
+
+
+PString PProcess::GetVersion(BOOL full) const
+{
+  const char * const statusLetter[NumCodeStatuses] =
+    { "alpha", "beta", "pl" };
+  return psprintf(full ? "%u.%u%s%u" : "%u.%u",
+                majorVersion, minorVersion, statusLetter[status], buildNumber);
 }
 
 
