@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.21 1996/07/27 04:15:07 robertj Exp $
+ * $Id: channel.h,v 1.22 1996/08/17 10:00:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.22  1996/08/17 10:00:19  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.21  1996/07/27 04:15:07  robertj
  * Created static version of ConvertOSError().
  * Created static version of GetErrorText().
@@ -89,9 +92,7 @@
 
 class PChannel;
 
-//PCLASS PChannelStreamBuffer : public streambuf, public PObject {
-//  PCLASSINFO(PChannelStreamBuffer, PObject)
-PCLASS PChannelStreamBuffer : public streambuf {
+class PEXPORT PChannelStreamBuffer : public streambuf {
 /* This class is necessary for implementing the standard C++ iostream interface
    on <A>PChannel</A> classes and its descendents. It is an internal class and
    should not ever be used by application writers.
@@ -127,7 +128,7 @@ PCLASS PChannelStreamBuffer : public streambuf {
 };
 
 
-PCLASS PChannel : public PObject, public iostream {
+class PEXPORT PChannel : public PObject, public iostream {
   PCLASSINFO(PChannel, PObject)
 /* Abstract class defining I/O channel semantics. An I/O channel can be a
    serial port, pipe, network socket or even just a simple file. Anything that
