@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.44  1999/07/11 13:42:13  craigs
+# pthreads support for Linux
+#
 # Revision 1.43  1999/07/03 04:31:53  robertj
 # Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
 #
@@ -199,7 +202,7 @@ endif
 ifeq ($(OSTYPE),linux)
 
 # P_SSL		= $(PWLIBDIR)
-# PTHREADS	= 1
+P_PTHREADS	= 1
 
 # i486 Linux for x86, using gcc 2.7.2
 STDCCFLAGS	+= -DP_LINUX
@@ -215,6 +218,11 @@ endif
 
 ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
+endif
+
+ifdef P_PTHREADS
+ENDLDLIBS	+= -lpthread
+STDCCFLAGS	+= -D_REENTRANT
 endif
 
 ifdef SHAREDLIB
