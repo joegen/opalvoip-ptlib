@@ -2,6 +2,39 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.06
+------------
+
+	Added better User Interface to make files.
+
+	Major ASN Parser enhancements for parameterised types etc.
+
+	Fixed problems with decoding of extensions (signed/unsigned bug) 
+	in ASN PER.
+
+	Fixed date parsing to be forgiving of rubbish at end of date string.
+	Fixed problem with not stopping date parse at end of line.
+	Fixed PTime::GetHour() etc to not crash on time=-1.
+
+	Fixed ugly little bug in the cooperative multithreading that meant 
+	that threads blocked on timers didn't always get rescheduled.
+
+	Changed channel output flush to remove double Write() call. This caused
+	problems on TCP/IP stuff getting a packet for the first byte and then
+	another pacet for the rest of the buffer.
+
+	Added retries to DNS lookup if get temporary error.
+
+	Fixed race condition in doing Select() on closed sockets. Could go 
+	into infinite wait.
+
+	Added ability to open file as standard input, output and error streams.
+
+	Added function to get default audio device.
+
+	Added initialisers to string containers (list, sorted list and set).
+
+
 Release 1.05
 ------------
 
