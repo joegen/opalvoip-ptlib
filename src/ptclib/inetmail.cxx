@@ -24,6 +24,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.30  2004/05/09 07:23:49  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.29  2004/05/02 08:58:15  csoutheren
  * Removed warnings when compling without SASL
  *
@@ -1020,8 +1023,8 @@ BOOL PPOP3Client::LogIn(const PString & username, const PString & password, int 
 
       const BYTE * data = bin_digest.GetPointer();
 
-      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i += 4)
-        digest.sprintf("%04x", *((unsigned *)&(data[i])));
+      for (PINDEX i = 0, max = bin_digest.GetSize(); i < max ; i++)
+        digest.sprintf("%02x", (unsigned)data[i]);
 
       if (ExecuteCommand(APOP, username + " " + digest) > 0)
         return loggedIn = TRUE;
@@ -1597,4 +1600,5 @@ BOOL PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
 
 
 // End Of File ///////////////////////////////////////////////////////////////
+
 
