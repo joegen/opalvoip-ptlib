@@ -819,12 +819,12 @@ else
   dnl if it works using crazy RedHat checks
   if test "${SSLHDR:-unset}" = "unset" ; then
     AC_CHECK_HEADERS(openssl/ssl.h,SSLHDR=1)
-    if test "${SSLHDR:-unset}" != "unset" ; then
+    if test "${SSLHDR:-unset}" = "unset" ; then
       AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
       AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
 #include <openssl/ssl.h>
 int main(int argc,char **argv){}]],SSLHDR=1)
-      if test ${SSLHDR:-unset} != "unset" ; then
+      if test "${SSLHDR:-unset}" != "unset" ; then
         AC_MSG_RESULT(yes)
         SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
         P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
