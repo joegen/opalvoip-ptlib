@@ -29,6 +29,20 @@ PRemoteConnection::~PRemoteConnection()
 }
 
 
+BOOL PRemoteConnection::Open(const PString & name,
+                             const PString & user,
+                             const PString & pass)
+{
+  if (name != remoteName) {
+    Close();
+    remoteName = name;
+  }
+  userName = user;
+  password = pass;
+  return Open();
+}
+
+
 BOOL PRemoteConnection::Open(const PString & name)
 {
   if (name != remoteName) {
@@ -109,6 +123,8 @@ BOOL PRemoteConnection::Open()
             PInvalidParameter);
     strcpy(params.szPhoneNumber, remoteName(1, P_MAX_INDEX));
   }
+  strcpy(params.szUserName, userName);
+  strcpy(params.szPassword, password);
 
   rasError = RasDial(NULL, NULL, &params, 0, NULL, &rasConnection);
   if (rasError == 0)
