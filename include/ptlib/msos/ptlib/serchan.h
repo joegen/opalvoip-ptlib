@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.4 1994/08/04 13:08:43 robertj Exp $
+ * $Id: serchan.h,v 1.5 1995/03/12 04:59:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.4  1994/08/04 13:08:43  robertj
+ * Revision 1.5  1995/03/12 04:59:59  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.4  1994/08/04  13:08:43  robertj
  * Added DCB so can set parameters on closed channel.
  *
  * Revision 1.3  1994/07/17  11:01:04  robertj
@@ -44,18 +48,24 @@
       // Close the channel.
 
 
-  protected:
+  private:
     BOOL SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow);
 
 
-  private:
+  // Member variables
+#if defined(_WIN32)
+    HANDLE  commsResource;
+    PString portName;
+#else
     static BOOL IsReadBlocked(PObject * obj);
     static BOOL IsWriteBlocked(PObject * obj);
 
     PTimer readTimer;
     PTimer writeTimer;
-#ifdef _WINDOWS
+#endif
+
+#if defined(_WINDOWS) || defined(_WIN32)
     enum { InputQueueSize = 2048, OutputQueueSize = 1024 };
     DCB deviceControlBlock;
 #else
