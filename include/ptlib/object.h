@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.36  1998/12/15 09:00:29  robertj
+ * Fixed 8 byte alignment problem in memory leak check code for sparc.
+ *
  * Revision 1.35  1998/11/03 00:57:19  robertj
  * Added allocation breakpoint variable.
  *
@@ -412,13 +415,15 @@ class PMemoryHeap {
       Header     * prev;
       Header     * next;
       size_t       size;
-      const char * fileName;
-      int          line;
-      const char * className;
       DWORD        request;
+      const char * className;
+      const char * fileName;
+      WORD         line;
       BYTE         flags;
-      static const char GuardBytes[7];
+      static const char GuardBytes[5];
       char         guard[sizeof(GuardBytes)];
+      // This structure should finish on an 8 byte boundary to avoid alignment
+      // problems on some processors (eg sparc)
     };
 #pragma pack()
 
