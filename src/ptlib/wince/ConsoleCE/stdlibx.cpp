@@ -33,6 +33,16 @@ int isdigit( int c ) { return _istdigit(c); }
 int ispunct( int c ) { return _istpunct(c); }
 #endif
 
+void __cdecl abort(void) { 
+	if(IDYES == MessageBox(NULL, _T("Abort?"), _T("stdlibx"), MB_YESNO))
+		exit(3);
+}
+
+void __cdecl perror(const char * s) {
+	USES_CONVERSION;
+	MessageBox(NULL, s && *s ? A2T(s) : _T("null"), _T("stdlibx"), MB_OK); 
+}
+
 long _lseek(int nHandle, long off, int orig)
 {
 	DWORD dwMoveMethod=FILE_BEGIN;
