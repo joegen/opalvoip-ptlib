@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.11  1999/03/09 08:01:46  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.10  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -74,11 +77,14 @@
 #include <ptlib/sockets.h>
 
 
+/**
+File Transfer Protocol base class.
+*/
 class PFTP : public PInternetProtocol
 {
-  PCLASSINFO(PFTP, PInternetProtocol)
+  PCLASSINFO(PFTP, PInternetProtocol);
   public:
-    // FTP commands
+    /// FTP commands
     enum Commands { 
       USER, PASS, ACCT, CWD, CDUP, SMNT, QUIT, REIN, PORT, PASV, TYPE,
       STRU, MODE, RETR, STOR, STOU, APPE, ALLO, REST, RNFR, RNTO, ABOR,
@@ -86,153 +92,175 @@ class PFTP : public PInternetProtocol
       NumCommands
     };
 
+    /// Types for file transfer
     enum RepresentationType {
       ASCII,
       EBCDIC,
       Image
     };
 
+    /// File transfer mode on data channel
     enum DataChannelType {
       NormalPort,
       Passive
     };
 
+    /// Listing types
     enum NameTypes {
       ShortNames,
       DetailedNames
     };
 
+    /** Send the PORT command for a transfer.
+     @return Boolean indicated PORT command was successful
+    */
     BOOL SendPORT(
-      const PIPSocket::Address & addr,  // Address for PORT connection.
-      WORD port                         // Port number for PORT connection.
+      const PIPSocket::Address & addr,
+     	/** Address for PORT connection.
+            IP address to connect back to */
+      WORD port /// Port number for PORT connection.
     );
-    // Send the PORT command for a transfer.
 
 
   protected:
+    /// Construct an ineternal File Transfer Protocol channel.
     PFTP();
-    // Construct an inetern File Ttransfer Protocol channel.
 };
 
 
+/**
+File Transfer Protocol client channel class.
+*/
 class PFTPClient : public PFTP
 {
-  PCLASSINFO(PFTPClient, PFTP)
+  PCLASSINFO(PFTPClient, PFTP);
   public:
+    /// Declare an FTP client socket.
     PFTPClient();
-    // Declare an FTP client socket.
 
+    /// Delete and close the socket.
     ~PFTPClient();
-    // Delete and close the socket.
 
 
-  // Overrides from class PSocket.
-    virtual BOOL Close();
-    /* Close the socket, and if connected as a client, QUITs from server.
+  /**@name Overrides from class PSocket. */
+  //@{
+    /** Close the socket, and if connected as a client, QUITs from server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was closed and the QUIT accepted by the server.
      */
+    virtual BOOL Close();
 
+  //@}
 
-  // New functions for class
-    BOOL LogIn(
-      const PString & username,   // User name for FTP log in.
-      const PString & password    // Password for the specified user name.
-    );
-    /* Log in to the remote host for FTP.
+  /**@name New functions for class */
+  //@{
+    /** Log in to the remote host for FTP.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the log in was successfull.
      */
+    BOOL LogIn(
+      const PString & username,   /// User name for FTP log in.
+      const PString & password    /// Password for the specified user name.
+    );
 
-    PString GetSystemType();
-    /* Get the type of the remote FTP server system, eg Unix, WindowsNT etc.
+    /** Get the type of the remote FTP server system, eg Unix, WindowsNT etc.
 
-       <H2>Returns:</H2>
+       @return
        String for the type of system.
      */
+    PString GetSystemType();
 
-    BOOL SetType(
-      RepresentationType type   // RepresentationTypeof file to transfer
-    );
-    /* Set the transfer type.
+    /** Set the transfer type.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if transfer type set.
      */
-
-    BOOL ChangeDirectory(
-      const PString & dirPath     // New directory
+    BOOL SetType(
+      RepresentationType type   /// RepresentationTypeof file to transfer
     );
-    /* Change the current directory on the remote FTP host.
 
-       <H2>Returns:</H2>
+    /** Change the current directory on the remote FTP host.
+
+       @return
        TRUE if the log in was successfull.
      */
+    BOOL ChangeDirectory(
+      const PString & dirPath     /// New directory
+    );
 
-    PString GetCurrentDirectory();
-    /* Get the current working directory on the remote FTP host.
+    /** Get the current working directory on the remote FTP host.
 
-       <H2>Returns:</H2>
+       @return
        String for the directory path, or empty string if an error occurred.
      */
+    PString GetCurrentDirectory();
 
-    PStringArray GetDirectoryNames(
-      NameTypes type = ShortNames,        // Detail level on a directory entry.
-      DataChannelType channel = Passive   // Data channel type.
-    );
-    PStringArray GetDirectoryNames(
-      const PString & path,               // Name to get details for.
-      NameTypes type = ShortNames,        // Detail level on a directory entry.
-      DataChannelType channel = Passive   // Data channel type.
-    );
-    /* Get a list of files from the current working directory on the remote
+    /** Get a list of files from the current working directory on the remote
        FTP host.
 
-       <H2>Returns:</H2>
+       @return
        String array for the files in the directory.
      */
-
-    PString GetFileStatus(
-      const PString & path,                // Path to get status for.
-      DataChannelType channel = Passive    // Data channel type.
+    PStringArray GetDirectoryNames(
+      NameTypes type = ShortNames,        /// Detail level on a directory entry.
+      DataChannelType channel = Passive   /// Data channel type.
     );
-    /* Get status information for the file path specified.
+    /** Get a list of files from the current working directory on the remote
+       FTP host.
 
-       <H2>Returns:</H2>
+       @return
+       String array for the files in the directory.
+     */
+    PStringArray GetDirectoryNames(
+      const PString & path,               /// Name to get details for.
+      NameTypes type = ShortNames,        /// Detail level on a directory entry.
+      DataChannelType channel = Passive   /// Data channel type.
+    );
+
+    /** Get status information for the file path specified.
+
+       @return
        String giving file status.
      */
-
-    PTCPSocket * GetFile(
-      const PString & filename,            // Name of file to get
-      DataChannelType channel = NormalPort // Data channel type.
+    PString GetFileStatus(
+      const PString & path,                /// Path to get status for.
+      DataChannelType channel = Passive    /// Data channel type.
     );
-    /* Begin retreiving a file from the remote FTP server. The second
+
+    /**Begin retreiving a file from the remote FTP server. The second
        parameter indicates that the transfer is on a normal or passive data
        channel. In short, a normal transfer the server connects to the
        client and in passive mode the client connects to the server.
 
-       <H2>Returns:</H2>
+       @return
        Socket to read data from, or NULL if an error occurred.
      */
-
-    PTCPSocket * PutFile(
-      const PString & filename,   // Name of file to get
-      DataChannelType channel = NormalPort // Data channel type.
+    PTCPSocket * GetFile(
+      const PString & filename,            /// Name of file to get
+      DataChannelType channel = NormalPort /// Data channel type.
     );
-    /* Begin storing a file to the remote FTP server. The second parameter
+
+    /**Begin storing a file to the remote FTP server. The second parameter
        indicates that the transfer is on a normal or passive data channel.
        In short, a normal transfer the server connects to the client and in
        passive mode the client connects to the server.
 
-       <H2>Returns:</H2>
+       @return
        Socket to write data to, or NULL if an error occurred.
      */
+    PTCPSocket * PutFile(
+      const PString & filename,   /// Name of file to get
+      DataChannelType channel = NormalPort /// Data channel type.
+    );
 
+  //@}
 
   protected:
-    BOOL OnOpen();
+    /// Call back to verify open succeeded in an PInternetProtocol class
+    virtual BOOL OnOpen();
+
     PTCPSocket * NormalClientTransfer(
       Commands cmd,
       const PString & args
@@ -242,125 +270,131 @@ class PFTPClient : public PFTP
       const PString & args
     );
 
+    /// Port number on remote system
     WORD remotePort;
 };
 
 
+/**
+File Transfer Protocol server channel class.
+*/
 class PFTPServer : public PFTP
 {
-  PCLASSINFO(PFTPServer, PFTP)
+  PCLASSINFO(PFTPServer, PFTP);
   public:
     enum { MaxIllegalPasswords = 3 };
 
+    /// declare a server socket
     PFTPServer();
     PFTPServer(
-      const PString & readyString   // Sign on string on connection ready.
+      const PString & readyString   /// Sign on string on connection ready.
     );
-    // declare a server socket
 
+    /// Delete the server, cleaning up passive sockets.
     ~PFTPServer();
-    // Delete the server, cleaning up passive sockets.
 
 
   // New functions for class
+    /**
+    Get the string printed when a user logs in default value is a string
+    giving the user name
+    */
     virtual PString GetHelloString(const PString & user) const;
-      // return the string printed when a user logs in
-      // default value is a string giving the user name
 
+    /// return the string printed just before exiting
     virtual PString GetGoodbyeString(const PString & user) const;
-      // return the string printed just before exiting
 
+    /// return the string to be returned by the SYST command
     virtual PString GetSystemTypeString() const;
-      // return the string to be returned by the SYST command
 
+    /// return the thirdPartyPort flag, allowing 3 host put and get.
     BOOL GetAllowThirdPartyPort() const { return thirdPartyPort; }
-      // return the thirdPartyPort flag, allowing 3 host put and get.
 
+    /// Set the thirdPartyPort flag.
     void SetAllowThirdPartyPort(BOOL state) { thirdPartyPort = state; }
-      // Set the thirdPartyPort flag.
 
-    BOOL ProcessCommand();
-    /* Process commands, dispatching to the appropriate virtual function. This
+    /** Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the QUIT command was
-       received or the <A>OnUnknown()</A> function returns FALSE.
+       received or the #OnUnknown()# function returns FALSE.
      */
+    BOOL ProcessCommand();
 
-    virtual BOOL DispatchCommand(
-      PINDEX code,          // Parsed command code.
-      const PString & args  // Arguments to command.
-    );
-    /* Dispatching to the appropriate virtual function. This is used when the
+    /** Dispatching to the appropriate virtual function. This is used when the
        socket is acting as a server.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if more processing may be done, FALSE if the QUIT command was
-       received or the <A>OnUnknown()</A> function returns FALSE.
+       received or the #OnUnknown()# function returns FALSE.
      */
-
-
-    virtual BOOL CheckLoginRequired(
-      PINDEX cmd    // Command to check if log in required.
+    virtual BOOL DispatchCommand(
+      PINDEX code,          /// Parsed command code.
+      const PString & args  /// Arguments to command.
     );
-    /* Check to see if the command requires the server to be logged in before
+
+
+    /** Check to see if the command requires the server to be logged in before
        it may be processed.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the command required the user to be logged in.
      */
-
-    virtual BOOL AuthoriseUser(
-      const PString & user,     // User name to authorise.
-      const PString & password, // Password supplied for the user.
-      BOOL & replied            // Indication that a reply was sent to client.
+    virtual BOOL CheckLoginRequired(
+      PINDEX cmd    /// Command to check if log in required.
     );
-    /* Validate the user name and password for access. After three invalid
+
+    /** Validate the user name and password for access. After three invalid
        attempts, the socket will close and FALSE is returned.
 
        Default implementation returns TRUE for all strings.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if user can access, otherwise FALSE
      */
+    virtual BOOL AuthoriseUser(
+      const PString & user,     /// User name to authorise.
+      const PString & password, /// Password supplied for the user.
+      BOOL & replied            /// Indication that a reply was sent to client.
+    );
 
+    /** Handle an unknown command.
+
+       @return
+       TRUE if more processing may be done, FALSE if the
+       #ProcessCommand()# function is to return FALSE.
+     */
     virtual BOOL OnUnknown(
-      const PCaselessString & command  // Complete command line received.
+      const PCaselessString & command  /// Complete command line received.
     );
-    /* Handle an unknown command.
 
-       <H2>Returns:</H2>
+    /** Handle an error in command.
+
+       @return
        TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
+       #ProcessCommand()# function is to return FALSE.
      */
-
     virtual void OnError(
-      PINDEX errorCode, // Error code to use
-      PINDEX cmdNum,    // Command that had the error.
-      const char * msg  // Error message.
+      PINDEX errorCode, /// Error code to use
+      PINDEX cmdNum,    /// Command that had the error.
+      const char * msg  /// Error message.
     );
-    /* Handle an error in command.
 
-       <H2>Returns:</H2>
-       TRUE if more processing may be done, FALSE if the
-       <A>ProcessCommand()</A> function is to return FALSE.
-     */
-
+    /// Called for syntax errors in commands.
     virtual void OnSyntaxError(
-      PINDEX cmdNum   // Command that had the syntax error.
+      PINDEX cmdNum   /// Command that had the syntax error.
     );
-    // Called for syntax errors in commands.
 
+    /// Called for unimplemented commands.
     virtual void OnNotImplemented(
-      PINDEX cmdNum   // Command that was not implemented.
+      PINDEX cmdNum   /// Command that was not implemented.
     );
-    // Called for unimplemented commands.
 
+    /// Called for successful commands.
     virtual void OnCommandSuccessful(
-      PINDEX cmdNum   // Command that had was successful.
+      PINDEX cmdNum   /// Command that had was successful.
     );
-    // Called for successful commands.
 
 
     // the following commands must be implemented by all servers
@@ -409,13 +443,14 @@ class PFTPServer : public PFTP
     virtual BOOL OnREST(const PCaselessString & args);
 
 
+    /// Send the specified file to the client.
     void SendToClient(
-      const PFilePath & filename    // File name to send.
+      const PFilePath & filename    /// File name to send.
     );
-    // Send the specified file to the client.
 
 
   protected:
+    /// Call back to verify open succeeded in an PInternetProtocol class
     BOOL OnOpen();
     void Construct();
 
