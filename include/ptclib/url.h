@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.24  2003/04/04 05:18:08  robertj
+ * Added "callto", "tel" and fixed "h323" URL types.
+ *
  * Revision 1.23  2002/12/10 04:40:34  robertj
  * Added test function for URL being empty.
  *
@@ -122,11 +125,13 @@ class PURL : public PObject
     PURL();
     /**Construct a new URL object from the URL string. */
     PURL(
-      const char * cstr     /// C string representation of the URL.
+      const char * cstr,    /// C string representation of the URL.
+      const char * defaultScheme = NULL /// Default scheme for URL
     );
     /**Construct a new URL object from the URL string. */
     PURL(
-      const PString & str   /// String representation of the URL.
+      const PString & str,  /// String representation of the URL.
+      const char * defaultScheme = NULL /// Default scheme for URL
     );
     /**Construct a new URL object from the file path. */
     PURL(
@@ -176,12 +181,14 @@ class PURL : public PObject
   //@{
     /**Parse the URL string into the fields in the object instance. */
     void Parse(
-      const char * cstr   /// URL as a string to parse.
+      const char * cstr,   /// URL as a string to parse.
+      const char * defaultScheme = NULL /// Default scheme for URL
     );
     /**Parse the URL string into the fields in the object instance. */
     void Parse(
-      const PString & str /// URL as a string to parse.
-    ) { Parse((const char *)str); }
+      const PString & str, /// URL as a string to parse.
+      const char * defaultScheme = NULL /// Default scheme for URL
+    ) { Parse((const char *)str, defaultScheme); }
 
     /**Print/String output representation formats. */
     enum UrlFormat {
