@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.133  2000/03/29 20:12:00  robertj
+ * Fixed GNU C++ warning
+ *
  * Revision 1.132  2000/03/29 01:55:52  robertj
  * Fixed infinite recursion on PProcess::Current() = NULL assertion.
  *
@@ -1295,7 +1298,7 @@ void PThread::PrintOn(ostream & strm) const
 {
   PString name = GetThreadName();
   if (name.IsEmpty())
-    name.sprintf("%s<%08x>", GetClass(), this);
+    name.sprintf("%s<%08x>", GetClass(), (INT)this);
   strm << name;
 }
 
