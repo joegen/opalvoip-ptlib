@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.18  2004/02/23 20:37:17  ykiryanov
+ * Changed function definition PXBlockIO to prototype one
+ *
  * Revision 1.17  2004/02/23 18:10:39  ykiryanov
  * Added a parameter to semaphore constructor to avoid ambiguity
  *
@@ -469,17 +472,12 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 }
 
 int PThread::PXBlockOnIO(int maxHandles,
-           fd_set & readBits,
-           fd_set & writeBits,
-           fd_set & exceptionBits,
+           fd_set * readBits,
+           fd_set * writeBits,
+           fd_set * exceptionBits,
            const PTimeInterval & timeout,
            const PIntArray & /*osHandles*/)
 {
-  // make sure we flush the buffer before doing a write
-  fd_set * read_fds      = &readBits;
-  fd_set * write_fds     = &writeBits;
-  fd_set * exception_fds = &exceptionBits;
-
   struct timeval * tptr = NULL;
   struct timeval   timeout_val;
   if (timeout != PMaxTimeInterval) { // Clean up for infinite timeout
@@ -491,7 +489,7 @@ int PThread::PXBlockOnIO(int maxHandles,
     }
   }
 
-  int retval = ::select(maxHandles, read_fds, write_fds, exception_fds, tptr);
+  int retval = ::select(maxHandles, readBits, writeBits, exceptionBits, tptr);
   PProcess::Current().PXCheckSignals();
   return retval;
 }
