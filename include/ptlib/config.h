@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.5 1994/07/27 05:58:07 robertj Exp $
+ * $Id: config.h,v 1.6 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
- * Revision 1.5  1994/07/27 05:58:07  robertj
+ * Revision 1.6  1994/08/21 23:43:02  robertj
+ * Removed default argument when of PString type (MSC crashes).
+ *
+ * Revision 1.5  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.4  1994/06/25  11:55:15  robertj
@@ -37,8 +40,10 @@ PDECLARE_CLASS(PConfig, PObject)
       System,
       Application
     };
-    PConfig(Source src, const PString & section = "Options");
-    PConfig(const PFilePath & filename, const PString & section = "Options");
+    PConfig(Source src = Application);
+    PConfig(Source src, const PString & section);
+    PConfig(const PFilePath & filename);
+    PConfig(const PFilePath & filename, const PString & section);
       // Create a new configuration object
 
 
@@ -68,7 +73,8 @@ PDECLARE_CLASS(PConfig, PObject)
       // Delete the particular variable in the specified section.
 
 
-    PString GetString(const PString & key, const PString & dflt = "");
+    PString GetString(const PString & key);
+    PString GetString(const PString & key, const PString & dflt);
     PString GetString(const PString & section,
                                     const PString & key, const PString & dflt);
       // Get a string variable determined by the key in the section.
@@ -111,6 +117,12 @@ PDECLARE_CLASS(PConfig, PObject)
     // Member variables
     PString defaultSection;
       // The current section for variable values.
+
+
+  private:
+    void Construct(Source src);
+    void Construct(const PFilePath & filename);
+      // Do common construction code
 
 
 // Class declaration continued in platform specific header file ///////////////
