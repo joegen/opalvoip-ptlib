@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.5 1995/01/10 11:43:41 robertj Exp $
+ * $Id: pstring.h,v 1.6 1995/01/15 04:50:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.5  1995/01/10 11:43:41  robertj
+ * Revision 1.6  1995/01/15 04:50:20  robertj
+ * Added inlines on friend functions, required by GNU compiler.
+ *
+ * Revision 1.5  1995/01/10  11:43:41  robertj
  * Removed PString parameter in stdarg function for GNU C++ compatibility.
  *
  * Revision 1.4  1995/01/09  12:33:44  robertj
@@ -282,7 +285,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        Returns: new string with concatenation of the object and parameter.
      */
 
-    friend PString operator+(
+    PINLINE friend PString operator+(
       const char * cstr,    // C string to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -295,7 +298,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        Returns: new string with concatenation of the object and parameter.
      */
 
-    friend PString operator+(
+    PINLINE friend PString operator+(
       char  c,              // Character to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -741,7 +744,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
       const char * cfmt,    // C string for output format.
       va_list args          // Extra parameters for $B$sprintf()$B$ call.
     );
-    friend PString pvsprintf(
+    PINLINE friend PString pvsprintf(
       const PString & fmt,  // String for output format.
       va_list args          // Extra parameters for $B$sprintf()$B$ call.
     );
