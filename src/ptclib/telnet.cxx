@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.cxx,v 1.1 1996/03/04 12:12:51 robertj Exp $
+ * $Id: telnet.cxx,v 1.2 1996/05/26 03:47:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.2  1996/05/26 03:47:08  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.1  1996/03/04 12:12:51  robertj
  * Initial revision
  *
@@ -187,7 +190,7 @@ BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
 }
 
 
-static PString GetTELNETOptionName(int code)
+static PString GetTELNETOptionName(PINDEX code)
 {
   static const char * name[] = {
     "TransmitBinary",
