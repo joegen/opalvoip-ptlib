@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.19 1996/02/08 12:19:16 robertj Exp $
+ * $Id: pstring.h,v 1.20 1996/02/19 13:17:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.20  1996/02/19 13:17:33  robertj
+ * Removed PCaselessString hash function to fix dictionary match failure.
+ * Added operator() to do string dictionary lookup with default value.
+ *
  * Revision 1.19  1996/02/08 12:19:16  robertj
  * Added new operators to PString for case insensitive compare and spaced concatenate.
  *
@@ -1261,22 +1265,6 @@ PDECLARE_CLASS(PCaselessString, PString)
        unique reference to that data.
      */
 
-    virtual PINDEX HashFunction() const;
-    /* Calculate a hash value for use in sets and dictionaries.
-    
-       The hash function for strings will produce a value based on the sum of
-       the first three characters of the string. This is a fairly basic
-       function and make no assumptions about the string contents. A user may
-       descend from PString and override the hash function if they can take
-       advantage of the types of strings being used, eg if all strings start
-       with the letter 'A' followed by 'B or 'C' then the current hash function
-       will not perform very well.
-
-       <H2>Returns:</H2>
-       hash value for string.
-     */
-
-
   protected:
   // Overrides from class PString
     virtual Comparison InternalCompare(
@@ -1706,6 +1694,8 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       : PAbstractDictionary() { } \
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
+    inline PString operator()(const K & key, const char * dflt = "") const \
+      { if (Contains(key)) return (PString &)GetRefAt(key); return dflt; } \
     inline PString & operator[](const K & key) const \
       { return (PString &)GetRefAt(key); } \
     inline virtual PString * GetAt(const K & key) const \
