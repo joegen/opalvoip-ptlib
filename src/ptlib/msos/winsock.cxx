@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.13 1996/03/04 12:41:02 robertj Exp $
+ * $Id: winsock.cxx,v 1.14 1996/03/10 13:16:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.14  1996/03/10 13:16:25  robertj
+ * Fixed ioctl of closed socket.
+ *
  * Revision 1.13  1996/03/04 12:41:02  robertj
  * Fixed bug in leaving socket in non-blocking mode.
  * Changed _Close to os_close to be consistent.
@@ -132,8 +135,10 @@ BOOL PSocket::Read(void * buf, PINDEX len)
   if (ConvertOSError(recvResult))
     lastReadCount = recvResult;
 
-  u_long state = 0;
-  ::ioctlsocket(os_handle, FIONBIO, &state);
+  if (os_handle >= 0) {
+    u_long state = 0;
+    ::ioctlsocket(os_handle, FIONBIO, &state);
+  }
 
   return lastReadCount > 0;
 }
@@ -151,8 +156,10 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
 
-  u_long state = 0;
-  ::ioctlsocket(os_handle, FIONBIO, &state);
+  if (os_handle >= 0) {
+    u_long state = 0;
+    ::ioctlsocket(os_handle, FIONBIO, &state);
+  }
 
   return lastWriteCount >= len;
 }
@@ -301,8 +308,10 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
     lastReadCount = recvResult;
   }
 
-  u_long state = 0;
-  ::ioctlsocket(os_handle, FIONBIO, &state);
+  if (os_handle >= 0) {
+    u_long state = 0;
+    ::ioctlsocket(os_handle, FIONBIO, &state);
+  }
 
   return lastReadCount > 0;
 }
@@ -325,8 +334,10 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
 
-  u_long state = 0;
-  ::ioctlsocket(os_handle, FIONBIO, &state);
+  if (os_handle >= 0) {
+    u_long state = 0;
+    ::ioctlsocket(os_handle, FIONBIO, &state);
+  }
 
   return lastWriteCount >= len;
 }
