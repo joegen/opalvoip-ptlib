@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.185  2004/04/12 03:35:27  csoutheren
+# Fixed problems with non-recursuve mutexes and critical sections on
+# older compilers and libc
+#
 # Revision 1.184  2004/02/26 11:19:07  csoutheren
 # Added changes for BeOS, thanks to Yuri Kiryanov
 # Added changes to fix link problems on some platforms, thanks to Klaus Kaempf
@@ -737,7 +741,7 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -Wc,-m486
 endif
 
-STDCCFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX -DFD_SETSIZE=1024
+STDCCFLAGS	+= -DP_QNX -DP_HAS_RECURSIVE_MUTEX=1 -DFD_SETSIZE=1024
 LDLIBS		+= -lasound
 ENDLDLIBS       += -lsocket -lstdc++
 
