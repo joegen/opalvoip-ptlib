@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.37  1999/02/23 07:19:22  robertj
+ * Added [] operator PIPSocket::Address to get the bytes out of an IP address.
+ *
  * Revision 1.36  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -185,6 +188,7 @@ class PIPSocket : public PSocket
         BYTE Byte2() const;
         BYTE Byte3() const;
         BYTE Byte4() const;
+        BYTE operator[](PINDEX idx) const;
       friend ostream & operator<<(ostream & s, const Address & a);
     };
 
