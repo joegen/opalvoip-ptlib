@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.142  2005/01/04 07:44:04  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.141  2004/11/17 12:50:44  csoutheren
  * Win32 DCOM support, thanks to Simon Horne
  *
@@ -525,6 +529,7 @@
   #pragma comment(lib, _OLE_LIB)
 #endif
 
+#include "../common/pglobalstatic.cxx"
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
