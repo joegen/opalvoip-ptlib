@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.8  1998/11/30 02:50:54  robertj
+ * New directory structure
+ *
  * Revision 1.7  1998/09/23 06:19:44  robertj
  * Added open source copyright license.
  *
@@ -57,7 +60,7 @@
 #pragma interface
 #endif
 
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 //
 // define some types used by the ASN classes
