@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.28 1994/12/12 13:13:12 robertj Exp $
+ * $Id: contain.inl,v 1.29 1995/01/09 12:36:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.28  1994/12/12 13:13:12  robertj
+ * Revision 1.29  1995/01/09 12:36:28  robertj
+ * Changes due to Mac port.
+ *
+ * Revision 1.28  1994/12/12  13:13:12  robertj
  * Fixed bugs in PString mods just made.
  *
  * Revision 1.27  1994/12/12  10:16:20  robertj
@@ -133,7 +136,7 @@ PINLINE PString::PString(int, const PString * str)
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
 
-PINLINE PObject::Comparison PString::CompareString(const char * cstr) const
+PINLINE PObject::Comparison PString::InternalCompare(const char * cstr) const
   { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
 
 PINLINE BOOL PString::MakeMinimumSize()
@@ -178,22 +181,22 @@ PINLINE BOOL PString::operator>=(const PObject & obj) const
   { return PObject::operator>=(obj); }
 
 PINLINE BOOL PString::operator==(const char * cstr) const
-  { return CompareString(cstr) == EqualTo; }
+  { return InternalCompare(cstr) == EqualTo; }
 
 PINLINE BOOL PString::operator!=(const char * cstr) const
-  { return CompareString(cstr) != EqualTo; }
+  { return InternalCompare(cstr) != EqualTo; }
 
 PINLINE BOOL PString::operator<(const char * cstr) const
-  { return CompareString(cstr) == LessThan; }
+  { return InternalCompare(cstr) == LessThan; }
 
 PINLINE BOOL PString::operator>(const char * cstr) const
-  { return CompareString(cstr) == GreaterThan; }
+  { return InternalCompare(cstr) == GreaterThan; }
 
 PINLINE BOOL PString::operator<=(const char * cstr) const
-  { return CompareString(cstr) != GreaterThan; }
+  { return InternalCompare(cstr) != GreaterThan; }
 
 PINLINE BOOL PString::operator>=(const char * cstr) const
-  { return CompareString(cstr) != LessThan; }
+  { return InternalCompare(cstr) != LessThan; }
 
 PINLINE void PString::Insert(const PString & str, PINDEX pos)
   { Insert((const char *)str, pos); }
