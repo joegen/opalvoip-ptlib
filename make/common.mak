@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.62  2001/10/12 06:18:41  robertj
+# Fixed check of change of version file for tagbuild
+#
 # Revision 1.61  2001/10/09 08:53:26  robertj
 # Added LIBDIRS variable so can go "make libs" and make all libraries.
 # Added "make version" target to display version of project.
@@ -528,7 +531,7 @@ else # ifndef CVS_TAG
 
 tagbuild ::
 	sed $(foreach dir,$(LIBDIRS), -e "s/ $(notdir $(dir)):.*/ $(notdir $(dir)): $(shell $(MAKE) -s -C $(dir) version)/") $(VERSION_FILE) > $(VERSION_FILE).new
-	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; \
+	@if test -e $(TMPRSRC) && diff -q $(VERSION_FILE) $(VERSION_FILE).new ; \
 		then mv -f $(VERSION_FILE).new $(VERSION_FILE) ; \
 		else rm -f $(VERSION_FILE).new ;  \
 	fi
