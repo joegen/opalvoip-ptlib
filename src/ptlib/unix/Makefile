@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.42  1999/04/16 14:37:41  craigs
+# Added build for getdate.y
+#
 # Revision 1.41  1999/03/02 05:41:59  robertj
 # More BeOS changes
 #
@@ -199,6 +202,7 @@ SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
 	  $(COMPONENT_SRC_DIR)/asner.cxx \
 	  $(SOUND_SOURCE) \
+	  $(COMMON_SRC_DIR)/getdate.tab.c \
 	  uicmp.cxx \
 	  $(COMMON_SRC_DIR)/sockets.cxx \
 	  socket.cxx \
@@ -251,6 +255,11 @@ CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 $(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
+$(OBJDIR)/getdate.tab.o:	$(COMMON_SRC_DIR)/getdate.tab.c
+	$(CC) $(CFLAGS) $(STDCFLAGS) -c $< -o $@
+
+$(COMMON_SRC_DIR)/getdate.tab.c:	$(COMMON_SRC_DIR)/getdate.y
+	bison $(COMMON_SRC_DIR)/getdate.y
 
 ifdef SHAREDLIB
 
