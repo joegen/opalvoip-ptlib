@@ -29,7 +29,20 @@ static pthread_mutex_t logMutex = {{ PTHREAD_MUTEX_INITIALIZER }};
 
 void PSystemLog::Output(Level level, const char * cmsg)
 {
-  if (PServiceProcess::Current().consoleMessages) {
+  PString systemLogFile = PServiceProcess::Current().systemLogFile;
+  if (systemLogFile.IsEmpty())
+    syslog(PwlibLogToUnixLog[level], "%s", cmsg);
+  else {
+#ifdef P_PTHREADS
+    pthread_mutex_lock(&logMutex);
+#endif
+
+    ostream * out;
+    if (systemLogFile == "-")
+      out = &PError;
+    else
+      out = new ofstream(systemLogFile, ios::app);
+
     static const char * const levelName[NumLogLevels+1] = {
       "Message",
       "Fatal error",
@@ -41,15 +54,15 @@ void PSystemLog::Output(Level level, const char * cmsg)
       "Debug3"
     };
     PTime now;
-#ifdef P_PTHREADS
-    pthread_mutex_lock(&logMutex);
-#endif
-    PError << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1] << ": " << cmsg << endl;
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t") << levelName[level+1] << '\t' << cmsg << endl;
+
+    if (out != &PError)
+      delete out;
+
 #ifdef P_PTHREADS
     pthread_mutex_unlock(&logMutex);
 #endif
-  } else
-    syslog(PwlibLogToUnixLog[level], "%s", cmsg);
+  }
 }
 
 PServiceProcess::PServiceProcess(const char * manuf,
@@ -92,7 +105,7 @@ int PServiceProcess::_main(void *)
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
 
-  args.Parse("vdchxp");
+  args.Parse("vdchxpkl:");
 
   const char * statusToStr[NumCodeStatuses] = { "Alpha", "Beta", "Release" };
 
@@ -107,39 +120,69 @@ int PServiceProcess::_main(void *)
     return 0;
   }
 
+#ifdef _PATH_VARRUN
+  if (args.HasOption('k')) {
+    PString pidfilename = _PATH_VARRUN + GetFile().GetFileName() + ".pid";
+    ifstream pidfile(pidfilename);
+    if (pidfile.is_open()) {
+      int pid;
+      pidfile >> pid;
+      if (kill(pid, SIGTERM) == 0)
+        return 0;
+      PError << "Could not kill process " << pid << " - " << strerror(errno) << endl;
+    }
+    else
+      PError << "Could not open pid file: " << pidfilename << endl;
+    return 2;
+  }
+#endif
+
   BOOL helpAndExit = FALSE;
 
   // if displaying help, then do it
   if (args.HasOption('h')) 
     helpAndExit = TRUE;
-
-  // if no arguments, then print help message
-  if (!helpAndExit && !args.HasOption('d') && !args.HasOption('x')) {
-    PError << "error: must specify one of -v, -d, -h or -x" << endl;
+  else if (!args.HasOption('d') && !args.HasOption('x')) {
+    PError << "error: must specify one of -v, -h, "
+#ifdef _PATH_VARRUN
+              "-k, "
+#endif
+              "-d or -x" << endl;
     helpAndExit = TRUE;
+  }
+
+  // set flag for console messages
+  if (args.HasOption('c'))
+    systemLogFile = '-';
+
+  if (args.HasOption('l')) {
+    systemLogFile = args.GetOptionString('l');
+    if (systemLogFile.IsEmpty()) {
+      PError << "error: must specify file name for -l" << endl;
+      helpAndExit = TRUE;
+    }
   }
 
   if (helpAndExit) {
     PError << "usage: [-c] -v|-d|-h|-x" << endl
+           << "        -h       output this help message and exit" << endl
            << "        -v    display version information and exit" << endl
            << "        -d    run as a daemon" << endl
 #ifdef _PATH_VARRUN
            << "        -p    do not write pid file" << endl
+           << "        -k    kill process in pid file" << endl
 #endif
-           << "        -c    output messages to stdout rather than syslog" << endl
-           << "        -h    output this help message and exit" << endl
-           << "        -x    execute as a normal program" << endl;
+           << "        -c       output messages to stdout rather than syslog" << endl
+           << "        -l file  output messages to file rather than syslog" << endl
+           << "        -x       execute as a normal program" << endl;
     return 0;
   }
 
-  // set flag for console messages
-  consoleMessages = args.HasOption('c');
-
   // open the system logger for this program
-  if (consoleMessages)
-    PError << "All output for " << GetName() << " is to the console." << endl;
-  else
+  if (systemLogFile.IsEmpty())
     openlog((const char *)GetName(), LOG_PID, LOG_DAEMON);
+  else if (systemLogFile == "-")
+    PError << "All output for " << GetName() << " is to console." << endl;
 
   // Run as a daemon, ie fork
   if (args.HasOption('d')) {
@@ -183,8 +226,12 @@ int PServiceProcess::_main(void *)
   if (OnStart())
     Main();
 
+  // Avoid strange errors caused by threads (and the process itself!) being destoyed 
+  // before they have EVER been scheduled
+  Yield();
+
   // close the system log
-  if (!consoleMessages)
+  if (systemLogFile.IsEmpty())
     closelog();
 
   // return the return value
@@ -205,20 +252,32 @@ void PServiceProcess::OnStop()
 }
 
 
-void PServiceProcess::PXOnSignal(int sig)
-{
-  if (sig == SIGINT)
-    return;
-  PProcess::PXOnSignal(sig);
-}
+static BOOL stoppingService = FALSE;
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
-  if (sig != SIGINT) 
-    return;
+  if (stoppingService || (sig != SIGINT && sig != SIGTERM))
+    PProcess::PXOnAsyncSignal(sig);
+}
 
-  OnStop();
-  exit(1);
+
+void PServiceProcess::PXOnSignal(int sig)
+{
+  switch (sig) {
+    case SIGINT :
+    case SIGTERM :
+      stoppingService = TRUE;
+      OnStop();
+      exit(1);
+
+    case SIGUSR1 :
+      OnPause();
+      break;
+
+    case SIGUSR2 :
+      OnContinue();
+      break;
+  }
 }
 
 int PSystemLog::Buffer::overflow(int c)
