@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.30  1999/08/12 12:12:47  robertj
+ * GCC 2.95 compatibility.
+ *
  * Revision 1.29  1999/06/23 14:19:46  robertj
  * Fixed core dump problem with SIGINT/SIGTERM terminating process.
  *
@@ -102,7 +105,7 @@ static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
 
 #ifdef P_PTHREADS
 
-static pthread_mutex_t logMutex = {{ PTHREAD_MUTEX_INITIALIZER }};
+static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
 
 #endif
 
