@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.46  1999/06/26 08:21:12  robertj
+ * Fixed bug in PFilePath::SetType finding dots outside of file name in path.
+ *
  * Revision 1.45  1999/06/14 08:39:57  robertj
  * Added PConsoleChannel class for access to stdin/stdout/stderr
  *
@@ -832,7 +835,7 @@ PString PFilePath::GetType() const
 
 void PFilePath::SetType(const PString & type)
 {
-  PINDEX dot = FindLast('.');
+  PINDEX dot = Find('.', FindLast('/'));
   if (dot != P_MAX_INDEX)
     Splice(type, dot, GetLength()-dot);
   else
