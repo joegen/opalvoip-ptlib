@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.47  2005/01/26 05:37:57  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.46  2004/07/06 10:12:52  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -1161,6 +1164,8 @@ void PTEACypher::DecodeBlock(const void * in, void * out)
 ///////////////////////////////////////////////////////////////////////////////
 // PSecureConfig
 
+#ifdef P_CONFIG_FILE
+
 static const char DefaultSecuredOptions[] = "Secured Options";
 static const char DefaultSecurityKey[] = "Validation";
 static const char DefaultExpiryDateKey[] = "Expiry Date";
@@ -1322,5 +1327,7 @@ void PSecureConfig::ResetPending()
   DeleteKey(expiryDateKey);
   DeleteKey(optionBitsKey);
 }
+
+#endif // P_CONFIG_FILE
 
 ///////////////////////////////////////////////////////////////////////////////
