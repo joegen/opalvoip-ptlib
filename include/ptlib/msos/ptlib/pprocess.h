@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.17 1997/04/27 05:50:25 robertj Exp $
+ * $Id: pprocess.h,v 1.18 1997/07/08 13:01:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.18  1997/07/08 13:01:12  robertj
+ * DLL support.
+ *
  * Revision 1.17  1997/04/27 05:50:25  robertj
  * DLL support.
  *
@@ -65,6 +68,7 @@
 
 #ifndef _PPROCESS
 
+extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -96,11 +100,8 @@
   friend void HouseKeepingThread::Main();
   friend UINT __stdcall PThread::MainFunction(void * thread);
   friend class PServiceProcess;
-
-#endif
-
-#if defined(_WINDOWS) || defined(_WIN32)
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+
 #endif
 };
 
