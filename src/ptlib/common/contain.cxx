@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.136  2003/12/04 13:12:41  csoutheren
+ * Fixed error in PRegularExpression that caused double delete when incorrect regular expression used
+ *
  * Revision 1.135  2003/09/17 09:02:13  csoutheren
  * Removed memory leak detection code
  *
@@ -2930,6 +2933,7 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
   if (expression != NULL) {
     regfree(expression);
     delete expression;
+    expression = NULL;
   }
   if (pattern == NULL || *pattern == '\0')
     return BadPattern;
