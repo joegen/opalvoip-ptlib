@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.55  2000/03/03 00:30:31  robertj
+# Removed ptclilb/proto directory.
+#
 # Revision 1.54  2000/02/24 11:03:27  craigs
 # Fixed problem with making PW programs
 #
@@ -200,36 +203,15 @@ TARGET  = $(LIBDIR)/$(PTLIB_FILE)
 ##########################################
 
 COMPONENT_SRC_DIR	= ../../ptclib
-PROTOCOLS_SRC_DIR	= ../../ptclib/proto
 COMMON_SRC_DIR		= ../common
-VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR) $(PROTOCOLS_SRC_DIR)
+VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-ifneq (,$(wildcard ../../ptclib/proto))
-
-PROTO_SOURCES	= \
-	$(PROTOCOLS_SRC_DIR)/httpsvc.cxx \
-	$(PROTOCOLS_SRC_DIR)/snmpclnt.cxx \
-	$(PROTOCOLS_SRC_DIR)/snmpserv.cxx \
-	$(PROTOCOLS_SRC_DIR)/psnmp.cxx \
-	$(PROTOCOLS_SRC_DIR)/pasn.cxx \
-	$(PROTOCOLS_SRC_DIR)/httpform.cxx \
-	$(PROTOCOLS_SRC_DIR)/httpclnt.cxx \
-	$(PROTOCOLS_SRC_DIR)/httpsrvr.cxx \
-	$(PROTOCOLS_SRC_DIR)/http.cxx \
-	$(PROTOCOLS_SRC_DIR)/html.cxx \
-	$(PROTOCOLS_SRC_DIR)/ftpclnt.cxx \
-	$(PROTOCOLS_SRC_DIR)/ftpsrvr.cxx \
-	$(PROTOCOLS_SRC_DIR)/ftp.cxx \
-	$(PROTOCOLS_SRC_DIR)/inetmail.cxx \
-	$(PROTOCOLS_SRC_DIR)/inetprot.cxx \
-	$(PROTOCOLS_SRC_DIR)/telnet.cxx
-endif
 
 ifdef OPENSSLDIR
-PROTO_SOURCES := $(PROTO_SOURCES) $(PROTOCOLS_SRC_DIR)/pssl.cxx 
+SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx 
 endif
 
 ifeq ($(OSTYPE),linux)
@@ -259,35 +241,52 @@ endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
-SOURCES	= $(PROTO_SOURCES) \
-	  $(COMPONENT_SRC_DIR)/ipacl.cxx \
-	  $(COMPONENT_SRC_DIR)/modem.cxx \
-	  $(COMPONENT_SRC_DIR)/cypher.cxx \
-	  $(COMPONENT_SRC_DIR)/random.cxx \
-	  $(COMPONENT_SRC_DIR)/socks.cxx \
-	  $(COMPONENT_SRC_DIR)/asner.cxx \
-	  $(SOUND_SOURCE) \
-	  $(GETDATE_SOURCE) \
-	  uicmp.cxx \
-	  $(COMMON_SRC_DIR)/sockets.cxx \
-	  socket.cxx \
-	  svcproc.cxx \
-	  remconn.cxx \
-	  config.cxx \
-	  udll.cxx \
-	  $(COMMON_SRC_DIR)/ptime.cxx \
-	  pipechan.cxx \
-	  serchan.cxx \
-	  $(COMMON_SRC_DIR)/sfile.cxx \
-	  channel.cxx \
-	  osutil.cxx \
-	  $(COMMON_SRC_DIR)/osutils.cxx \
-	  tlib.cxx \
-	  switch.cxx \
-	  assert.cxx \
-	  $(COMMON_SRC_DIR)/collect.cxx \
-	  $(COMMON_SRC_DIR)/contain.cxx \
-	  $(COMMON_SRC_DIR)/object.cxx   # must be last module
+SOURCES	= \
+	$(COMPONENT_SRC_DIR)/asner.cxx \
+	$(COMPONENT_SRC_DIR)/ipacl.cxx \
+	$(COMPONENT_SRC_DIR)/modem.cxx \
+	$(COMPONENT_SRC_DIR)/cypher.cxx \
+	$(COMPONENT_SRC_DIR)/random.cxx \
+	$(COMPONENT_SRC_DIR)/socks.cxx \
+	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
+	$(COMPONENT_SRC_DIR)/snmpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
+	$(COMPONENT_SRC_DIR)/psnmp.cxx \
+	$(COMPONENT_SRC_DIR)/pasn.cxx \
+	$(COMPONENT_SRC_DIR)/httpform.cxx \
+	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
+	$(COMPONENT_SRC_DIR)/http.cxx \
+	$(COMPONENT_SRC_DIR)/html.cxx \
+	$(COMPONENT_SRC_DIR)/ftpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/ftpsrvr.cxx \
+	$(COMPONENT_SRC_DIR)/ftp.cxx \
+	$(COMPONENT_SRC_DIR)/inetmail.cxx \
+	$(COMPONENT_SRC_DIR)/inetprot.cxx \
+	$(COMPONENT_SRC_DIR)/telnet.cxx \
+	$(SSL_SOURCE) \
+	$(SOUND_SOURCE) \
+	$(GETDATE_SOURCE) \
+	uicmp.cxx \
+	$(COMMON_SRC_DIR)/sockets.cxx \
+	socket.cxx \
+	svcproc.cxx \
+	remconn.cxx \
+	config.cxx \
+	udll.cxx \
+	$(COMMON_SRC_DIR)/ptime.cxx \
+	pipechan.cxx \
+	serchan.cxx \
+	$(COMMON_SRC_DIR)/sfile.cxx \
+	channel.cxx \
+	osutil.cxx \
+	$(COMMON_SRC_DIR)/osutils.cxx \
+	tlib.cxx \
+	switch.cxx \
+	assert.cxx \
+	$(COMMON_SRC_DIR)/collect.cxx \
+	$(COMMON_SRC_DIR)/contain.cxx \
+	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
 OBJS	= $(OBJDIR)/regex.o
 
