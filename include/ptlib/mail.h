@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.7  1999/02/10 13:20:53  robertj
+ * Added ability to have attachments in mail messages.
+ *
  * Revision 1.6  1998/09/23 06:20:51  robertj
  * Added open source copyright license.
  *
@@ -127,11 +130,20 @@ PDECLARE_CLASS(PMail, PObject)
       const char * body           // Text body of the mail message.
     );
     BOOL SendNote(
-      const PStringList & recipients, // Name of recipient of the mail message.
+      const PString & recipient,  // Name of recipient of the mail message.
+      const PString & subject,    // Subject name for the mail message.
+      const char * body,          // Text body of the mail message.
+      const PStringList & attachments
+                        // List of files to attach to the mail message.
+    );
+    BOOL SendNote(
+      const PString & recipient,  // Name of recipient of the mail message.
+      const PStringList & carbonCopies, // Name of CC recipients.
+      const PStringList & blindCarbons, // Name of BCC recipients.
       const PString & subject,        // Subject name for the mail message.
       const char * body,              // Text body of the mail message.
-	  BOOL blindCC = FALSE
-		// Indicates that all recipients are invisible to each other.
+      const PStringList & attachments
+                        // List of files to attach to the mail message.
     );
     /* Send a new simple mail message.
 
