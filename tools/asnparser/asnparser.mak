@@ -27,6 +27,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
 OUTDIR=.\Release
@@ -35,21 +38,10 @@ INTDIR=.\Release
 OutDir=.\Release
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\asnparser.exe"
 
-!ELSE 
 
-ALL : "PTLib - Win32 Release" "$(OUTDIR)\asnparser.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"PTLib - Win32 ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\asn_grammar.obj"
 	-@erase "$(INTDIR)\asn_lex.obj"
 	-@erase "$(INTDIR)\asnparser.pch"
@@ -61,40 +53,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -105,8 +64,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\asn_grammar.obj" \
 	"$(INTDIR)\asn_lex.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\PreCompile.obj" \
-	"..\..\Lib\PTLib.lib"
+	"$(INTDIR)\PreCompile.obj"
 
 "$(OUTDIR)\asnparser.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -123,7 +81,7 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Release
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "PTLib - Win32 Release" "$(OUTDIR)\asnparser.exe"
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\asnparser.exe"
    copy Release\asnparser.exe ..\..\lib > nul
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
@@ -135,21 +93,10 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\asnparser.exe"
 
-!ELSE 
 
-ALL : "PTLib - Win32 Debug" "$(OUTDIR)\asnparser.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"PTLib - Win32 DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\asn_grammar.obj"
 	-@erase "$(INTDIR)\asn_lex.obj"
 	-@erase "$(INTDIR)\asnparser.pch"
@@ -164,40 +111,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -208,8 +122,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\asn_grammar.obj" \
 	"$(INTDIR)\asn_lex.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\PreCompile.obj" \
-	"..\..\Lib\PTLibd.lib"
+	"$(INTDIR)\PreCompile.obj"
 
 "$(OUTDIR)\asnparser.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -224,21 +137,10 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\asnparser.exe"
 
-!ELSE 
 
-ALL : "PTLib - Win32 SSL Debug" "$(OUTDIR)\asnparser.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"PTLib - Win32 SSL DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\asn_grammar.obj"
 	-@erase "$(INTDIR)\asn_lex.obj"
 	-@erase "$(INTDIR)\asnparser.pch"
@@ -253,40 +155,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -297,8 +166,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\asn_grammar.obj" \
 	"$(INTDIR)\asn_lex.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\PreCompile.obj" \
-	"..\..\Lib\PTLibd.lib"
+	"$(INTDIR)\PreCompile.obj"
 
 "$(OUTDIR)\asnparser.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -313,21 +181,10 @@ INTDIR=.\Release
 OutDir=.\Release
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\asnparser.exe"
 
-!ELSE 
 
-ALL : "PTLib - Win32 SSL Release" "$(OUTDIR)\asnparser.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"PTLib - Win32 SSL ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\asn_grammar.obj"
 	-@erase "$(INTDIR)\asn_lex.obj"
 	-@erase "$(INTDIR)\asnparser.pch"
@@ -339,40 +196,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -383,8 +207,7 @@ LINK32_OBJS= \
 	"$(INTDIR)\asn_grammar.obj" \
 	"$(INTDIR)\asn_lex.obj" \
 	"$(INTDIR)\main.obj" \
-	"$(INTDIR)\PreCompile.obj" \
-	"..\..\Lib\PTLib.lib"
+	"$(INTDIR)\PreCompile.obj"
 
 "$(OUTDIR)\asnparser.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -401,11 +224,41 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Release
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "PTLib - Win32 SSL Release" "$(OUTDIR)\asnparser.exe"
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\asnparser.exe"
    copy Release\asnparser.exe ..\..\lib > nul
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -418,57 +271,6 @@ $(DS_POSTBUILD_DEP) : "PTLib - Win32 SSL Release" "$(OUTDIR)\asnparser.exe"
 
 
 !IF "$(CFG)" == "ASNParser - Win32 Release" || "$(CFG)" == "ASNParser - Win32 Debug" || "$(CFG)" == "ASNParser - Win32 SSL Debug" || "$(CFG)" == "ASNParser - Win32 SSL Release"
-
-!IF  "$(CFG)" == "ASNParser - Win32 Release"
-
-"PTLib - Win32 Release" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 Release" 
-   cd "..\..\..\tools\asnparser"
-
-"PTLib - Win32 ReleaseCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 Release" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\asnparser"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
-
-"PTLib - Win32 Debug" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 Debug" 
-   cd "..\..\..\tools\asnparser"
-
-"PTLib - Win32 DebugCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 Debug" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\asnparser"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
-
-"PTLib - Win32 SSL Debug" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 SSL Debug" 
-   cd "..\..\..\tools\asnparser"
-
-"PTLib - Win32 SSL DebugCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 SSL Debug" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\asnparser"
-
-!ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
-
-"PTLib - Win32 SSL Release" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 SSL Release" 
-   cd "..\..\..\tools\asnparser"
-
-"PTLib - Win32 SSL ReleaseCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\PTLib.mak CFG="PTLib - Win32 SSL Release" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\asnparser"
-
-!ENDIF 
-
 SOURCE=.\asn_grammar.cxx
 
 !IF  "$(CFG)" == "ASNParser - Win32 Release"

@@ -38,21 +38,10 @@ INTDIR=.\Release
 OutDir=.\Release
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\MergeSym.exe"
 
-!ELSE 
 
-ALL : "Console - Win32 Release" "$(OUTDIR)\MergeSym.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\MergeSym.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(OUTDIR)\MergeSym.exe"
@@ -68,8 +57,7 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=ptlibs.lib mpr.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\MergeSym.pdb" /machine:I386 /out:"$(OUTDIR)\MergeSym.exe" /libpath:"..\..\lib" 
 LINK32_OBJS= \
-	"$(INTDIR)\MergeSym.obj" \
-	"..\..\Lib\ptlibs.lib"
+	"$(INTDIR)\MergeSym.obj"
 
 "$(OUTDIR)\MergeSym.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -86,7 +74,7 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Release
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "Console - Win32 Release" "$(OUTDIR)\MergeSym.exe"
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\MergeSym.exe"
    copy Release\mergesym.exe ..\..\lib > nul
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
@@ -98,21 +86,10 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\MergeSym.exe"
 
-!ELSE 
 
-ALL : "Console - Win32 Debug" "$(OUTDIR)\MergeSym.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\MergeSym.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -131,8 +108,7 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=ptlibsd.lib mpr.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\MergeSym.pdb" /debug /machine:I386 /out:"$(OUTDIR)\MergeSym.exe" /pdbtype:sept /libpath:"..\..\lib" 
 LINK32_OBJS= \
-	"$(INTDIR)\MergeSym.obj" \
-	"..\..\Lib\ptlibsd.lib"
+	"$(INTDIR)\MergeSym.obj"
 
 "$(OUTDIR)\MergeSym.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -147,21 +123,10 @@ INTDIR=.\Release
 OutDir=.\Release
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\MergeSym.exe"
 
-!ELSE 
 
-ALL : "Console - Win32 SSL Release" "$(OUTDIR)\MergeSym.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 SSL ReleaseCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\MergeSym.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(OUTDIR)\MergeSym.exe"
@@ -177,8 +142,7 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=ptlibs.lib mpr.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:no /pdb:"$(OUTDIR)\MergeSym.pdb" /machine:I386 /out:"$(OUTDIR)\MergeSym.exe" /libpath:"..\..\lib" 
 LINK32_OBJS= \
-	"$(INTDIR)\MergeSym.obj" \
-	"..\..\Lib\ptlibs.lib"
+	"$(INTDIR)\MergeSym.obj"
 
 "$(OUTDIR)\MergeSym.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -195,7 +159,7 @@ ALL : $(DS_POSTBUILD_DEP)
 OutDir=.\Release
 # End Custom Macros
 
-$(DS_POSTBUILD_DEP) : "Console - Win32 SSL Release" "$(OUTDIR)\MergeSym.exe"
+$(DS_POSTBUILD_DEP) : "$(OUTDIR)\MergeSym.exe"
    copy Release\mergesym.exe ..\..\lib > nul
 	echo Helper for Post-build step > "$(DS_POSTBUILD_DEP)"
 
@@ -207,21 +171,10 @@ INTDIR=.\Debug
 OutDir=.\Debug
 # End Custom Macros
 
-!IF "$(RECURSE)" == "0" 
-
 ALL : "$(OUTDIR)\MergeSym.exe"
 
-!ELSE 
 
-ALL : "Console - Win32 SSL Debug" "$(OUTDIR)\MergeSym.exe"
-
-!ENDIF 
-
-!IF "$(RECURSE)" == "1" 
-CLEAN :"Console - Win32 SSL DebugCLEAN" 
-!ELSE 
 CLEAN :
-!ENDIF 
 	-@erase "$(INTDIR)\MergeSym.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
@@ -240,8 +193,7 @@ BSC32_SBRS= \
 LINK32=link.exe
 LINK32_FLAGS=ptlibsd.lib mpr.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"$(OUTDIR)\MergeSym.pdb" /debug /machine:I386 /out:"$(OUTDIR)\MergeSym.exe" /pdbtype:sept /libpath:"..\..\lib" 
 LINK32_OBJS= \
-	"$(INTDIR)\MergeSym.obj" \
-	"..\..\Lib\ptlibsd.lib"
+	"$(INTDIR)\MergeSym.obj"
 
 "$(OUTDIR)\MergeSym.exe" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
     $(LINK32) @<<
@@ -291,57 +243,6 @@ LINK32_OBJS= \
 
 
 !IF "$(CFG)" == "MergeSym - Win32 Release" || "$(CFG)" == "MergeSym - Win32 Debug" || "$(CFG)" == "MergeSym - Win32 SSL Release" || "$(CFG)" == "MergeSym - Win32 SSL Debug"
-
-!IF  "$(CFG)" == "MergeSym - Win32 Release"
-
-"Console - Win32 Release" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Release" 
-   cd "..\..\..\tools\MergeSym"
-
-"Console - Win32 ReleaseCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Release" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\MergeSym"
-
-!ELSEIF  "$(CFG)" == "MergeSym - Win32 Debug"
-
-"Console - Win32 Debug" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Debug" 
-   cd "..\..\..\tools\MergeSym"
-
-"Console - Win32 DebugCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 Debug" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\MergeSym"
-
-!ELSEIF  "$(CFG)" == "MergeSym - Win32 SSL Release"
-
-"Console - Win32 SSL Release" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Release" 
-   cd "..\..\..\tools\MergeSym"
-
-"Console - Win32 SSL ReleaseCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Release" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\MergeSym"
-
-!ELSEIF  "$(CFG)" == "MergeSym - Win32 SSL Debug"
-
-"Console - Win32 SSL Debug" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Debug" 
-   cd "..\..\..\tools\MergeSym"
-
-"Console - Win32 SSL DebugCLEAN" : 
-   cd "\Work\pwlib\src\ptlib\msos"
-   $(MAKE) /$(MAKEFLAGS) /F .\Console.mak CFG="Console - Win32 SSL Debug" RECURSE=1 CLEAN 
-   cd "..\..\..\tools\MergeSym"
-
-!ENDIF 
-
 SOURCE=.\MergeSym.cxx
 
 "$(INTDIR)\MergeSym.obj" : $(SOURCE) "$(INTDIR)"
