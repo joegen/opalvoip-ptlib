@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.67  2001/09/13 00:23:33  robertj
+ * Fixed problem where system log output can occur with no current thread.
+ *
  * Revision 1.66  2001/06/02 01:33:29  robertj
  * Thread name is always presend now so always use it in system log
  *    output  and make it wider in text output and tab area in window.
@@ -421,12 +424,20 @@ void PSystemLog::Output(Level level, const char * msg)
     if (hEventSource == NULL)
       return;
 
-    char thrdbuf[16];
-    PString threadName = PThread::Current()->GetThreadName();
-    if (!threadName)
-      strcpy(thrdbuf, threadName.Left(15));
+    PString threadName;
+    PThread * thread = PThread::Current();
+    if (thread != NULL)
+      threadName = thread->GetThreadName();
     else
-      sprintf(thrdbuf, "0x%08X", PThread::Current());
+      threadName.sprintf("%u", GetCurrentThreadId());
+
+    char thrdbuf[16];
+    if (threadName.IsEmpty())
+      sprintf(thrdbuf, "0x%08X", thread);
+    else {
+      strncpy(thrdbuf, threadName, sizeof(thrdbuf)-1);
+      thrdbuf[sizeof(thrdbuf)-1] = '\0';
+    }
 
     char errbuf[25];
     if (level > StdError && level < Info && err != 0)
