@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.12 1996/05/26 03:46:31 robertj Exp $
+ * $Id: cypher.cxx,v 1.13 1996/06/10 10:01:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.13  1996/06/10 10:01:23  robertj
+ * Fixed bug in getting cypher key, not copying all the bytes.
+ *
  * Revision 1.12  1996/05/26 03:46:31  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -621,7 +624,7 @@ PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
 
 void PSecureConfig::GetProductKey(PTEACypher::Key prodKey) const
 {
-  memcpy(prodKey, productKey, sizeof(prodKey));
+  memcpy(prodKey, productKey, sizeof(productKey));
 }
 
 
