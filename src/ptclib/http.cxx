@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.104  2004/06/03 13:30:58  csoutheren
+ * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
+ * Added documentaton on new PINSTANTIATE_FACTORY macro
+ * Added generic form of PINSTANTIATE_FACTORY
+ *
  * Revision 1.103  2004/06/03 12:47:58  csoutheren
  * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
  *
@@ -459,7 +464,7 @@ static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
 
 */
 
-INSTANTIATE_FACTORY(PURLScheme)
+PINSTANTIATE_FACTORY(PURLScheme)
 
 class PURLLegacyScheme : public PURLScheme
 {

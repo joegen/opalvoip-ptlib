@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.226  2004/06/03 13:30:58  csoutheren
+ * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
+ * Added documentaton on new PINSTANTIATE_FACTORY macro
+ * Added generic form of PINSTANTIATE_FACTORY
+ *
  * Revision 1.225  2004/06/03 12:47:59  csoutheren
  * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
  *
@@ -1822,7 +1827,7 @@ int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
 
-INSTANTIATE_FACTORY(PProcessStartup)
+PINSTANTIATE_FACTORY(PProcessStartup)
 
 typedef std::map<PString, PProcessStartup *> PProcessStartupList;
 
