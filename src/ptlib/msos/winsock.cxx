@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.53  2002/10/29 08:00:16  robertj
+ * Changed in_addr6 to more universally used in6_addr.
+ *
  * Revision 1.52  2002/10/19 06:12:20  robertj
  * Moved P_fd_set::Zero() from platform independent to platform dependent
  *   code as Win32 implementation is completely different from Unix.
@@ -656,7 +659,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   for (PINDEX i = 0; host_info->h_addr_list[i] != NULL; i++) {
 #if P_HAS_IPV6
     if (host_info->h_length == 16) {
-      if (addr == *(struct in_addr6 *)host_info->h_addr_list[i])
+      if (addr == *(struct in6_addr *)host_info->h_addr_list[i])
 	return TRUE;
     }
     else
