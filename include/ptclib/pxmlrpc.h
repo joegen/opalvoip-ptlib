@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.4  2002/08/06 01:04:03  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.3  2002/07/12 05:51:14  craigs
  * Added structs to XMLRPC response types
  *
@@ -20,8 +23,13 @@
 #ifndef _PXMLRPC_H
 #define _PXMLRPC_H
 
+#ifdef __GNUC__
+#pragma interface
+#endif
+
 #include <ptclib/pxml.h>
 #include <ptclib/url.h>
+
 
 class PXMLRPCStruct;
 
