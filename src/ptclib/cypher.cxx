@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.11 1996/04/09 03:32:45 robertj Exp $
+ * $Id: cypher.cxx,v 1.12 1996/05/26 03:46:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.12  1996/05/26 03:46:31  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.11  1996/04/09 03:32:45  robertj
  * Fixed bug in registration so now works in time zones other than Eastern Australia.
  *
@@ -695,7 +698,8 @@ BOOL PSecureConfig::ValidatePending()
   PString options(PString::Unsigned, (DWORD)optionBits);
 
   PMessageDigest5 digestor;
-  for (PINDEX i = 0; i < securedKeys.GetSize(); i++)
+  PINDEX i;
+  for (i = 0; i < securedKeys.GetSize(); i++)
     digestor.Process(GetString(pendingPrefix + securedKeys[i]).Trim());
   digestor.Process(expiry);
   digestor.Process(options);
