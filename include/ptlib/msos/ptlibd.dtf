@@ -630,7 +630,6 @@ EXPORTS
     ??2PVideoInputThread@@SAPAXI@Z @3368 NONAME ;public: static void * __cdecl PVideoInputThread::operator new(unsigned int)
     ??2PWaveBuffer@@SAPAXIPBDH@Z @3970 NONAME ;public: static void * __cdecl PWaveBuffer::operator new(unsigned int,char const *,int)
     ??2PWin32PacketBuffer@@SAPAXIPBDH@Z @3971 NONAME ;public: static void * __cdecl PWin32PacketBuffer::operator new(unsigned int,char const *,int)
-    ??2PWin32SnmpLibrary@@SAPAXIPBDH@Z @3972 NONAME ;public: static void * __cdecl PWin32SnmpLibrary::operator new(unsigned int,char const *,int)
     ??2PWORDArray@@SAPAXIPBDH@Z @3973 NONAME ;public: static void * __cdecl PWORDArray::operator new(unsigned int,char const *,int)
     ??2RouteEntry@PIPSocket@@SAPAXIPBDH@Z @3974 NONAME ;public: static void * __cdecl PIPSocket::RouteEntry::operator new(unsigned int,char const *,int)
     ??2Table@PHashTable@@SAPAXIPBDH@Z @3975 NONAME ;public: static void * __cdecl PHashTable::Table::operator new(unsigned int,char const *,int)
@@ -812,7 +811,6 @@ EXPORTS
     ??3PWin32PacketBuffer@@SAXPAX@Z @2447 NONAME ;public: static void __cdecl PWin32PacketBuffer::operator delete(void *)
     ??3PWin32PacketBuffer@@SAXPAXPBDH@Z @4027 NONAME ;public: static void __cdecl PWin32PacketBuffer::operator delete(void *,char const *,int)
     ??3PWin32SnmpLibrary@@SAXPAX@Z @2334 NONAME ;public: static void __cdecl PWin32SnmpLibrary::operator delete(void *)
-    ??3PWin32SnmpLibrary@@SAXPAXPBDH@Z @4028 NONAME ;public: static void __cdecl PWin32SnmpLibrary::operator delete(void *,char const *,int)
     ??3PWinSock@@SAXPAX@Z @499 NONAME ;public: static void __cdecl PWinSock::operator delete(void *)
     ??3PWORDArray@@SAXPAX@Z @3160 NONAME ;public: static void __cdecl PWORDArray::operator delete(void *)
     ??3PWORDArray@@SAXPAXPBDH@Z @4029 NONAME ;public: static void __cdecl PWORDArray::operator delete(void *,char const *,int)
@@ -971,11 +969,13 @@ EXPORTS
     ??6PTextSerialiser@@UAEAAVPSerialiser@@PBE@Z @611 NONAME ;public: virtual class PSerialiser & __thiscall PTextSerialiser::operator<<(unsigned char const *)
     ??7PString@@QBEHXZ @612 NONAME ;public: int __thiscall PString::operator!(void)const 
     ??8Address@PEthSocket@@QBEHABT01@@Z @2337 NONAME ;public: int __thiscall PEthSocket::Address::operator==( ?? ::Z volatile PEthSocket::* const &, ?? )const  throw( ?? )
+    ??8Address@PEthSocket@@QBEHPBE@Z @4146 NONAME ;public: int __thiscall PEthSocket::Address::operator==(unsigned char const *)const 
     ??8PObject@@QBEHABV0@@Z @613 NONAME ;public: int __thiscall PObject::operator==(class PObject const &)const 
     ??8PString@@QBEHABVPObject@@@Z @614 NONAME ;public: int __thiscall PString::operator==(class PObject const &)const 
     ??8PString@@QBEHPBD@Z @615 NONAME ;public: int __thiscall PString::operator==(char const *)const 
     ??8PTimeInterval@@QBEHABV0@@Z @616 NONAME ;public: int __thiscall PTimeInterval::operator==(class PTimeInterval const &)const 
     ??8PTimeInterval@@QBEHJ@Z @617 NONAME ;public: int __thiscall PTimeInterval::operator==(long)const 
+    ??9Address@PEthSocket@@QBEHPBE@Z @4147 NONAME ;public: int __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
     ??9PObject@@QBEHABV0@@Z @618 NONAME ;public: int __thiscall PObject::operator!=(class PObject const &)const 
     ??9PString@@QBEHABVPObject@@@Z @619 NONAME ;public: int __thiscall PString::operator!=(class PObject const &)const 
     ??9PString@@QBEHPBD@Z @620 NONAME ;public: int __thiscall PString::operator!=(char const *)const 
@@ -1894,6 +1894,7 @@ EXPORTS
     ?Current@PProcess@@SAAAV1@XZ @1231 NONAME ;public: static class PProcess & __cdecl PProcess::Current(void)
     ?Current@PServiceProcess@@SAAAV1@XZ @1232 NONAME ;public: static class PServiceProcess & __cdecl PServiceProcess::Current(void)
     ?Current@PThread@@SAPAV1@XZ @1233 NONAME ;public: static class PThread * __cdecl PThread::Current(void)
+    ?Current@PWin32SnmpLibrary@@SAAAV1@XZ @4145 NONAME ;public: static class PWin32SnmpLibrary & __cdecl PWin32SnmpLibrary::Current(void)
     ?Deallocate@PMemoryHeap@@SAXPAXPBD@Z @4037 NONAME ;public: static void __cdecl PMemoryHeap::Deallocate(void *,char const *)
     ?DebugOutput@PServiceProcess@@AAEXPBD@Z @1235 NONAME ;private: void __thiscall PServiceProcess::DebugOutput(char const *)
     ?Delete@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1237 NONAME ;public: virtual int __thiscall NT_ServiceManager::Delete(class PServiceProcess *)

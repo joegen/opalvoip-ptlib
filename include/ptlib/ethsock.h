@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.13  2001/10/03 03:15:05  robertj
+ * Changed to allow use of NULL pointer to indicate address of all zeros.
+ *
  * Revision 1.12  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -121,8 +124,8 @@ class PEthSocket : public PSocket
       Address & operator=(const Address & addr);
       Address & operator=(const PString & str);
 
-      BOOL operator==(const BYTE * eth) const    { return memcmp(b, eth, sizeof(b)) == 0; }
-      BOOL operator!=(const BYTE * eth) const    { return memcmp(b, eth, sizeof(b)) != 0; }
+      BOOL operator==(const BYTE * eth) const;
+      BOOL operator!=(const BYTE * eth) const;
       BOOL operator==(const Address & eth) const { return ls.l == eth.ls.l && ls.s == eth.ls.s; }
       BOOL operator!=(const Address & eth) const { return ls.l != eth.ls.l || ls.s != eth.ls.s; }
 
