@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.11.2.2  2003/10/20 03:43:28  dereksmithies
+# Remove surplus line.
+#
 # Revision 1.11.2.1  2003/10/07 01:33:18  csoutheren
 # Initial checkin of pwlib code to do plugins.
 # Modified from original code and concept provided by Snark of Gnomemeeting
@@ -196,8 +199,6 @@ install:
 	chmod a+r lib/*@SHAREDLIBEXT@*
 ifeq ($(HAS_PLUGINS), 1)
 	mkdir -p $(DESTDIR)$(LIBDIR)/pwlib
-else
-	mkdir -p $(DESTDIR)$(LIBDIR)
 endif
 	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
 	cp -rf include/ptclib/ $(DESTDIR)$(PREFIX)/include/
