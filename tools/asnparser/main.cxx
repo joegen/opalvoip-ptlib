@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.41  2003/02/18 10:50:41  craigs
+ * Added minor optimisation of outputted ASN code
+ * Added automatic insertion of defines to allow disabling of generated code
+ *
  * Revision 1.40  2002/11/27 11:42:52  robertj
  * Rearranged code to avoid GNU compiler problem.
  * Changed new classheader parameters to be full C literal like string for
@@ -139,7 +143,7 @@
 
 
 #define MAJOR_VERSION 1
-#define MINOR_VERSION 6
+#define MINOR_VERSION 7
 #define BUILD_TYPE    ReleaseCode
 #define BUILD_NUMBER 0
 
@@ -2452,66 +2456,78 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
       << "BOOL " << GetClassNameString() << "::CreateObject()\n"
          "{\n";
 
+  // special case: if choice is all NULLs then simply output code
+  BOOL allNull = TRUE;
+  for (i = 0; allNull && i < fields.GetSize(); i++) 
+    allNull = allNull && strcmp(fields[i].GetAncestorClass(), "PASN_Null") == 0;
 
-  // declare an array of flags indicating whether the tag has been output or not
-  PBYTEArray flags(fields.GetSize());
-  for (i = 0; i < fields.GetSize(); i++)
-    flags[i] = 0;
+  if (allNull) {
+    cxx << "  choice = (tag <= e_" << fields[fields.GetSize()-1].GetIdentifier() << ") ? new PASN_Null() : NULL;\n"
+        << "  return choice != NULL;\n";
+  }
 
-  // keep
-  outputEnum = FALSE;
-  for (i = 0; i < fields.GetSize(); i++) {
+  else {
 
-    if (fields[i].GetTag().mode == Tag::Automatic || !fields[i].IsChoice()) {
+    // declare an array of flags indicating whether the tag has been output or not
+    PBYTEArray flags(fields.GetSize());
+    for (i = 0; i < fields.GetSize(); i++)
+      flags[i] = 0;
 
-      // ignore this tag if output previously
-      if (flags[i] != 0)
-        continue;
+    // keep
+    outputEnum = FALSE;
+    for (i = 0; i < fields.GetSize(); i++) {
+
+      if (fields[i].GetTag().mode == Tag::Automatic || !fields[i].IsChoice()) {
+
+        // ignore this tag if output previously
+        if (flags[i] != 0)
+          continue;
     
-      if (!outputEnum) {
-        cxx << "  switch (tag) {\n";
-        outputEnum = TRUE;
-      }
+        if (!outputEnum) {
+          cxx << "  switch (tag) {\n";
+          outputEnum = TRUE;
+        }
 
-      // if the field has constraints, then output it alone
-      // otherwise, look for all fields with the same type
-      PString name = fields[i].GetTypeName();
-      if (fields[i].HasConstraints()) {
-        cxx << "    case e_" << fields[i].GetIdentifier() << " :\n";
-        flags[i] = 1;
-      } else {
-        PINDEX j;
-        for (j = i; j < fields.GetSize(); j++) {
-          if (fields[j].GetTypeName() == name) {
-            cxx << "    case e_" << fields[j].GetIdentifier() << " :\n";
-            flags[j] = 1;
+        // if the field has constraints, then output it alone
+        // otherwise, look for all fields with the same type
+        PString name = fields[i].GetTypeName();
+        if (fields[i].HasConstraints()) {
+          cxx << "    case e_" << fields[i].GetIdentifier() << " :\n";
+          flags[i] = 1;
+        } else {
+          PINDEX j;
+          for (j = i; j < fields.GetSize(); j++) {
+            if (fields[j].GetTypeName() == name) {
+              cxx << "    case e_" << fields[j].GetIdentifier() << " :\n";
+              flags[j] = 1;
+            }
           }
         }
+
+        cxx << "      choice = new " << name;
+        fields[i].GenerateCplusplusConstructor(hdr, cxx);
+        cxx << ";\n";
+        fields[i].GenerateCplusplusConstraints("    choice->", hdr, cxx);
+        cxx << "      return TRUE;\n";
       }
-
-      cxx << "      choice = new " << name;
-      fields[i].GenerateCplusplusConstructor(hdr, cxx);
-      cxx << ";\n";
-      fields[i].GenerateCplusplusConstraints("    choice->", hdr, cxx);
-      cxx << "      return TRUE;\n";
     }
-  }
 
-  if (outputEnum)
-    cxx << "  }\n"
-           "\n";
-
-  for (i = 0; i < fields.GetSize(); i++) {
-    if (fields[i].GetTag().mode != Tag::Automatic && fields[i].IsChoice())
-      cxx << "  choice = new " << fields[i].GetTypeName() << "(tag, tagClass);\n"
-             "  if (((PASN_Choice*)choice)->CreateObject())\n"
-             "    return TRUE;\n"
-             "  delete choice;\n"
+    if (outputEnum)
+      cxx << "  }\n"
              "\n";
-  }
 
-  cxx << "  choice = NULL;\n"
-         "  return FALSE;\n";
+    for (i = 0; i < fields.GetSize(); i++) {
+      if (fields[i].GetTag().mode != Tag::Automatic && fields[i].IsChoice())
+        cxx << "  choice = new " << fields[i].GetTypeName() << "(tag, tagClass);\n"
+               "  if (((PASN_Choice*)choice)->CreateObject())\n"
+               "    return TRUE;\n"
+               "  delete choice;\n"
+               "\n";
+    }
+
+    cxx << "  choice = NULL;\n"
+           "  return FALSE;\n";
+  }
 
   EndGenerateCplusplus(hdr, cxx);
 }
@@ -3657,6 +3673,8 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
   if (!hdrFile.Open(path, "", ".h"))
     return;
 
+  hdrFile << "#if ! H323_DISABLE_" << moduleName.ToUpper() << "\n\n";
+
   hdrFile << "#ifndef __" << moduleName.ToUpper() << "_H\n"
              "#define __" << moduleName.ToUpper() << "_H\n"
              "\n"
@@ -3684,6 +3702,8 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
              "#define new PNEW\n"
              "\n"
              "\n";
+
+  cxxFile << "#if ! H323_DISABLE_" << moduleName.ToUpper() << "\n\n";
 
   // Include the template closure file.
   if (hasTemplates)
@@ -3742,6 +3762,12 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                "\n";
 
   hdrFile << "#endif // __" << moduleName.ToUpper() << "_H\n"
+             "\n";
+
+  hdrFile << "#endif // if ! H323_DISABLE_" << moduleName.ToUpper() << "\n"
+             "\n";
+
+  cxxFile << "#endif // if ! H323_DISABLE_" << moduleName.ToUpper() << "\n"
              "\n";
 
   if (verbose)
