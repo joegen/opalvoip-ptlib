@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.14 1996/11/16 10:51:51 robertj Exp $
+ * $Id: assert.cxx,v 1.15 1996/11/18 11:30:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.15  1996/11/18 11:30:00  robertj
+ * Removed int 3 on non-debug versions.
+ *
  * Revision 1.14  1996/11/16 10:51:51  robertj
  * Changed assert to display message and break if in debug mode service.
  *
@@ -114,7 +117,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
                  file, line, msg != NULL ? msg : "", err);
     PSystemLog::Output(PSystemLog::Fatal, buf);
     delete [] buf;
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && defined(_DEBUG)
     if (((PServiceProcess*)PProcess::Current())->debugMode)
       __asm int 3;
 #endif
