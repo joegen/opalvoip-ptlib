@@ -916,6 +916,7 @@ EXPORTS
     ??4PWin32AsnOid@@QAEAAV0@ABUAsnObjectIdentifier@@@Z @4156 NONAME ;public: class PWin32AsnOid & __thiscall PWin32AsnOid::operator=(struct AsnObjectIdentifier const &)
     ??4PWORDArray@@QAEAAV0@ABV0@@Z @3248 NONAME ;public: class PWORDArray & __thiscall PWORDArray::operator=(class PWORDArray const &)
     ??5@YAAAVistream@@AAV0@AAVAddress@PIPSocket@@@Z @3048 NONAME ;class istream & __cdecl operator>>(class istream &,class PIPSocket::Address &)
+    ??5@YAAAVistream@@AAV0@AAVPObject@@@Z @4308 NONAME ;class istream & __cdecl operator>>(class istream &,class PObject &)
     ??5@YAAAVistream@@AAV0@AA_J@Z @3787 NONAME ;class istream & __cdecl operator>>(class istream &,__int64 &)
     ??5@YAAAVistream@@AAV0@AA_K@Z @3788 NONAME ;class istream & __cdecl operator>>(class istream &,unsigned __int64 &)
     ??5PArgList@@QAEAAV0@H@Z @537 NONAME ;public: class PArgList & __thiscall PArgList::operator>>(int)
@@ -2992,6 +2993,7 @@ EXPORTS
     ?PrintNumbersOn@PAbstractArray@@IBEXAAVostream@@HH@Z @1999 NONAME ;protected: void __thiscall PAbstractArray::PrintNumbersOn(class ostream &,int,int)const 
     ?PrintOn@InterfaceEntry@PIPSocket@@UBEXAAVostream@@@Z @3520 NONAME ;public: virtual void __thiscall PIPSocket::InterfaceEntry::PrintOn(class ostream &)const 
     ?PrintOn@PAbstractDictionary@@UBEXAAVostream@@@Z @2000 NONAME ;public: virtual void __thiscall PAbstractDictionary::PrintOn(class ostream &)const 
+    ?PrintOn@PArgList@@UBEXAAVostream@@@Z @4309 NONAME ;public: virtual void __thiscall PArgList::PrintOn(class ostream &)const 
     ?PrintOn@PBYTEArray@@UBEXAAVostream@@@Z @2001 NONAME ;public: virtual void __thiscall PBYTEArray::PrintOn(class ostream &)const 
     ?PrintOn@PCharArray@@UBEXAAVostream@@@Z @2002 NONAME ;public: virtual void __thiscall PCharArray::PrintOn(class ostream &)const 
     ?PrintOn@PCollection@@UBEXAAVostream@@@Z @2003 NONAME ;public: virtual void __thiscall PCollection::PrintOn(class ostream &)const 
@@ -3059,6 +3061,7 @@ EXPORTS
     ?ReadChar@PChannel@@UAEHXZ @2045 NONAME ;public: virtual int __thiscall PChannel::ReadChar(void)
     ?ReadCharWithTimeout@PChannel@@IAEHAAVPTimeInterval@@@Z @2046 NONAME ;protected: int __thiscall PChannel::ReadCharWithTimeout(class PTimeInterval &)
     ?ReadComplete@PWin32PacketBuffer@@QAEHAAVPWin32PacketDriver@@@Z @2404 NONAME ;public: int __thiscall PWin32PacketBuffer::ReadComplete(class PWin32PacketDriver &)
+    ?ReadFrom@PArgList@@UAEXAAVistream@@@Z @4310 NONAME ;public: virtual void __thiscall PArgList::ReadFrom(class istream &)
     ?ReadFrom@PIPDatagramSocket@@UAEHPAXHAAVAddress@PIPSocket@@AAG@Z @2047 NONAME ;public: virtual int __thiscall PIPDatagramSocket::ReadFrom(void *,int,class PIPSocket::Address &,unsigned short &)
     ?ReadFrom@PIPXSocket@@UAEHPAXHAAVAddress@1@AAG@Z @2048 NONAME ;public: virtual int __thiscall PIPXSocket::ReadFrom(void *,int,class PIPXSocket::Address &,unsigned short &)
     ?ReadFrom@PObject@@UAEXAAVistream@@@Z @2049 NONAME ;public: virtual void __thiscall PObject::ReadFrom(class istream &)
