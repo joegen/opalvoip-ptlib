@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.27  2004/05/02 18:00:54  ykiryanov
+ * Renamed unblock pipe to make code compatible with socket code
+ *
  * Revision 1.26  2004/05/02 16:59:09  ykiryanov
  * Fixed assert in setting priority to threads
  *
@@ -146,9 +149,9 @@ void PThread::InitialiseProcessThread()
   mStackSize = 0;
   mSuspendCount = 1;
   
-  PAssert(::pipe(mUnblockPipe) == 0, "Pipe creation failed in InitialiseProcessThread!");
-  PAssertOS(mUnblockPipe[0]);
-  PAssertOS(mUnblockPipe[1]);
+  PAssert(::pipe(unblockPipe) == 0, "Pipe creation failed in InitialiseProcessThread!");
+  PAssertOS(unblockPipe[0]);
+  PAssertOS(unblockPipe[1]);
   
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(mId, this);
@@ -180,8 +183,8 @@ PThread::PThread(PINDEX stackSize,
   threadName.sprintf(name, mId);
   ::rename_thread(mId, (const char*) threadName); // real, unique name - with id
 
-  PAssert(::pipe(mUnblockPipe) == 0, "Pipe creation failed in PThread constructor");
-  PX_NewHandle("Thread unblock pipe", PMAX(mUnblockPipe[0], mUnblockPipe[1]));
+  PAssert(::pipe(unblockPipe) == 0, "Pipe creation failed in PThread constructor");
+  PX_NewHandle("Thread unblock pipe", PMAX(unblockPipe[0], unblockPipe[1]));
 }
 
 PThread * PThread::Current()
@@ -207,8 +210,8 @@ PThread::~PThread()
   if (!IsTerminated())
     Terminate();
 
-  ::close(mUnblockPipe[0]);
-  ::close(mUnblockPipe[1]);
+  ::close(unblockPipe[0]);
+  ::close(unblockPipe[1]);
 }
 
 
@@ -418,7 +421,7 @@ int PThread::PXBlockOnIO(int maxHandles,
            const PTimeInterval & timeout,
            const PIntArray & ) // osHandles
 {
-  // Not implemented yet
+  // Redundant function - functionality moved to socket code
   return -1;
 }
 
@@ -462,16 +465,16 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
 
     // include the termination pipe into all blocking I/O functions
-    read_fds += mUnblockPipe[0];
+    read_fds += unblockPipe[0];
 
     P_timeval tval = timeout;
-    retval = ::select(PMAX(handle, mUnblockPipe[0])+1,
+    retval = ::select(PMAX(handle, unblockPipe[0])+1,
                       read_fds, write_fds, exception_fds, tval);
   } while (retval < 0 && errno == EINTR);
 
-  if ((retval == 1) && read_fds.IsPresent(mUnblockPipe[0])) {
+  if ((retval == 1) && read_fds.IsPresent(unblockPipe[0])) {
     BYTE ch;
-    ::read(mUnblockPipe[0], &ch, 1);
+    ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
     PTRACE(6, "PWLib\tUnblocked I/O");
@@ -483,7 +486,7 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 void PThread::PXAbortBlock(void) const
 {
   BYTE ch;
-  ::write(mUnblockPipe[1], &ch, 1);
+  ::write(unblockPipe[1], &ch, 1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
