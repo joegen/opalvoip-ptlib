@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.36 1998/02/03 06:20:25 robertj Exp $
+ * $Id: inetprot.cxx,v 1.37 1998/07/24 06:55:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.37  1998/07/24 06:55:00  robertj
+ * Improved robustness of base64 decoding.
+ *
  * Revision 1.36  1998/02/03 06:20:25  robertj
  * Fixed bug in Accept() function passing on to IP Accept().
  *
@@ -927,8 +930,10 @@ BOOL PBase64::ProcessDecoding(const char * cstr)
         return FALSE;
 
       case 97 : // '=' sign
-        if (quadPosition == 3 || (quadPosition == 2 && *cstr == '='))
+        if (quadPosition == 3 || (quadPosition == 2 && *cstr == '=')) {
+          quadPosition = 0;  // Reset this to zero, as have a perfect decode
           return TRUE; // Stop decoding now as must be at end of data
+        }
         perfectDecode = FALSE;  // Ignore '=' sign but flag decode as suspect
         break;
 
@@ -965,6 +970,7 @@ BOOL PBase64::ProcessDecoding(const char * cstr)
 
 PBYTEArray PBase64::GetDecodedData()
 {
+  perfectDecode = quadPosition == 0;
   decodedData.SetSize(decodeSize);
   PBYTEArray retval = decodedData;
   retval.MakeUnique();
@@ -976,14 +982,12 @@ PBYTEArray PBase64::GetDecodedData()
 
 BOOL PBase64::GetDecodedData(void * dataBlock, PINDEX length)
 {
-  if (decodeSize > length) {
-    decodeSize = length;
-    perfectDecode = FALSE;
-  }
-  memcpy(dataBlock, decodedData, decodeSize);
+  perfectDecode = quadPosition == 0;
+  BOOL bigEnough = length >= decodeSize;
+  memcpy(dataBlock, decodedData, bigEnough ? decodeSize : length);
   decodedData.SetSize(0);
   decodeSize = 0;
-  return perfectDecode;
+  return bigEnough;
 }
 
 
