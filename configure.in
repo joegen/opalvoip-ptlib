@@ -265,6 +265,14 @@ else
 fi
 
 dnl ########################################################################
+dnl check for long double
+
+AC_C_LONG_DOUBLE
+if test $ac_cv_c_long_double != yes ; then
+  AC_DEFINE(PNO_LONG_DOUBLE)
+fi
+
+dnl ########################################################################
 dnl check for pthreads library
 
 dnl MSWIN_DISPLAY semaphore,Semaphore Support
@@ -362,28 +370,36 @@ dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
 dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 
-AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
-if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-  RESOLVER_LIBS=""
+AC_ARG_ENABLE(resolver,
+       [  --disable-resolver      disable DNS resolver support in PWLIB],
+       resolver=$enableval)
+
+if test "$resolver" = "no" ; then
+  AC_DEFINE(P_DNS, 0)
 else
-  AC_MSG_CHECKING([for res_search in -lresolv])
-  LIBS="-lresolv"
-  AC_COMPILE_IFELSE([[
+  AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
+  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    RESOLVER_LIBS=""
+  else
+    AC_MSG_CHECKING([for res_search in -lresolv])
+    LIBS="-lresolv"
+    AC_COMPILE_IFELSE([[
 #include <netinet/in.h>
 #include <resolv.h>
 int main(int argc,char **argv){
  res_search (NULL, 0, 0, NULL, 0);
 }]],HAVE_RESOLVER=1)
-  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-    AC_MSG_RESULT(yes)
-    RESOLVER_LIBS="-lresolv"
-  else
-    AC_SEARCH_LIBS(__res_search, resolv, HAVE_RESOLVER=1)
+    if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+      AC_MSG_RESULT(yes)
+      RESOLVER_LIBS="-lresolv"
+    else
+      AC_SEARCH_LIBS(__res_search, resolv, HAVE_RESOLVER=1)
+    fi
   fi
-fi
 
-if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-  AC_DEFINE(P_DNS, 1, "resolver libraries found")
+  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    AC_DEFINE(P_DNS, 1, "resolver libraries found")
+  fi
 fi
 
 dnl ########################################################################
@@ -397,49 +413,58 @@ dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
 dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
-if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-  AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
-  
-  dnl posix4 is required by libldap_r on Solaris
-  if test "${OSTYPE:-unknown}" = "solaris"; then
-    OPENLDAPSYSLIBS=-lposix4
-  fi
+AC_ARG_ENABLE(openldap,
+       [  --disable-openldap      disable OpenLDAP support in PWLIB],
+       openldap=$enableval)
 
-  dnl check also for lldap_r presence (required for thread safe OpenLDAP?)
-  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-    AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
-  else
-    AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
+if test "$openldap" = "no" ; then
+  AC_SUBST(HAS_OPENLDAP, 0)
+  AC_DEFINE(P_LDAP, 0)
+else
+  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
+  
+    dnl posix4 is required by libldap_r on Solaris
+    if test "${OSTYPE:-unknown}" = "solaris"; then
+      OPENLDAPSYSLIBS=-lposix4
+    fi
+
+    dnl check also for lldap_r presence (required for thread safe OpenLDAP?)
     if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-      OPENLDAPINCLUDEDIR=/usr/local/include
-      OPENLDAPLIBDIR=/usr/local/lib
-      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-L/usr/local/lib -llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+      AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+    else
+      AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
+      if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+        OPENLDAPINCLUDEDIR=/usr/local/include
+        OPENLDAPLIBDIR=/usr/local/lib
+        AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-L/usr/local/lib -llber -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENLDAPSYSLIBS)
+      fi
     fi
   fi
-fi
 
-if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
-  AC_SUBST(HAS_OPENLDAP, 1)
-  AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
-  if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
-    STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
-  fi
-  if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
-  fi
+  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+    AC_SUBST(HAS_OPENLDAP, 1)
+    AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
+    if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
+      STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
+    fi
+    if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
+      LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
+    fi
   
-  dnl Not all Unices have SASL installed as a separate library (Solaris)
-  dnl Some newer Linux boxes have libsasl2 instead of libsasl
-  AC_CHECK_LIB(sasl, sasl_version, HAS_SASL=1, HAS_SASL=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
-  if test ${HAS_SASL:-unset} = "unset" ; then
-    AC_CHECK_LIB(sasl2, sasl_version, HAS_SASL2=1, HAS_SASL2=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
-  fi
-  if test ${HAS_SASL:-unset} != "unset" ; then
-    ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl"
-  elif test ${HAS_SASL2:-unset} != "unset" ; then
-    ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl2"
-  else
-    ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber"
+    dnl Not all Unices have SASL installed as a separate library (Solaris)
+    dnl Some newer Linux boxes have libsasl2 instead of libsasl
+    AC_CHECK_LIB(sasl, sasl_client_auth, HAS_SASL=1, HAS_SASL=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
+    if test ${HAS_SASL:-unset} = "unset" ; then
+      AC_CHECK_LIB(sasl2, sasl_version, HAS_SASL2=1, HAS_SASL2=,$LDFLAGS -llber -lldap -lldap_r $RESOLVER_LIBS $ENDLDLIBS $OPENDLAPSYSLIBS)
+    fi
+    if test ${HAS_SASL:-unset} != "unset" ; then
+      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl"
+    elif test ${HAS_SASL2:-unset} != "unset" ; then
+      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl2"
+    else
+      ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber"
+    fi
   fi
 fi
 
@@ -462,99 +487,113 @@ dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
 dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
-dnl check to see OPENSSLDIR is set
-dnl if it is, we assume it correct - no further checking required
-if test ${OPENSSLDIR:-unset} != "unset" ; then
-  AC_MSG_CHECKING([for ${OPENSSLDIR}/include/openssl/ssl.h])
-  if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
-    AC_MSG_RESULT(yes)
-    SSLHDR=1
-    SSLINCLUDEDIR="${OPENSSLDIR}/include"
-    SSLLIBDIR="${OPENSSLDIR}/lib"
-  else
-    AC_MSG_RESULT(no)
-  fi
-fi
+AC_ARG_ENABLE(openldap,
+       [  --disable-openssl       disable OpenSSL support in PWLIB],
+       openssl=$enableval)
 
+if test "$openssl" = "no" ; then
+  AC_DEFINE(P_SSL, 0)
+  AC_SUBST(HAS_OPENSSL, 0)
+else
 
-dnl if OPENSSLDIR is not set, then check to see if OpenSSL
-dnl is installed in the standard system dirs. And also see if
-dnl if it works using crazy RedHat checks
-if test "${SSLHDR:-unset}" = "unset" ; then
-  AC_CHECK_HEADERS(openssl/ssl.h,SSLDIR=1)
-  if test "${SSLHDR:-unset}" = "unset" ; then
-    AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
-    AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
-#include <openssl/ssl.h>
-int main(int argc,char **argv){}]],SSLHDR=1)
-    if test ${SSLHDR:-unset} != "unset" ; then
+  dnl check to see OPENSSLDIR is set
+  dnl if it is, we assume it correct - no further checking required
+  if test ${OPENSSLDIR:-unset} != "unset" ; then
+    AC_MSG_CHECKING([for ${OPENSSLDIR}/include/openssl/ssl.h])
+    if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
       AC_MSG_RESULT(yes)
-      SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+      SSLHDR=1
+      SSLINCLUDEDIR="${OPENSSLDIR}/include"
+      SSLLIBDIR="${OPENSSLDIR}/lib"
     else
       AC_MSG_RESULT(no)
     fi
   fi
-fi
 
-AC_SUBST(P_STATIC_ENDLDLIBS)
-AC_SUBST(P_STATIC_LDFLAGS)
 
-dnl if we have not found OpenSSL so far, then look for it in 
-dnl several standard places, and check for crazy RedHat install too
-if test "${SSLHDR:-unset}" = "unset" ; then
-
-  dnl We want to switch to C language to get .c extension for conftest files
-  AC_LANG_PUSH(C)
-
-  for openssl_dir in /usr/local/openssl /usr/local/ssl ; do
-    AC_MSG_CHECKING([for OpenSSL in $openssl_dir])
-    if test ! -f ${openssl_dir}/include/openssl/ssl.h ; then
-      AC_MSG_RESULT(no)
-    else
-      AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
-int main(int argc,char **argv){ return 0; }]])
-$CC $CFLAGS -I${openssl_dir}/include -c conftest.c > /dev/null 2>&1
-      if test $? = 0 ; then
+  dnl if OPENSSLDIR is not set, then check to see if OpenSSL
+  dnl is installed in the standard system dirs. And also see if
+  dnl if it works using crazy RedHat checks
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    AC_CHECK_HEADERS(openssl/ssl.h,SSLDIR=1)
+    if test "${SSLHDR:-unset}" = "unset" ; then
+      AC_MSG_CHECKING([if openssl/ssl.h works with OPENSSL_NO_KRB5])
+      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include <openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+      if test ${SSLHDR:-unset} != "unset" ; then
         AC_MSG_RESULT(yes)
-        SSLHDR=1
-        SSLCCFLAGS=""
-        SSLINCLUDEDIR="${openssl_dir}/include"
-        SSLLIBDIR="${openssl_dir}/lib"
-        break
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        P_STATIC_LDFLAGS="-L/usr/kerberos/lib"
+        P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
       else
         AC_MSG_RESULT(no)
-        AC_MSG_CHECKING([if ${openssl_dir}/include/openssl/ssl.h works with OPENSSL_NO_KRB5...])
-        AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
-#include "${openssl_dir}/include/openssl/ssl.h"
-int main(int argc,char **argv){}]])
-        $CC $CFLAGS -I${openssl_dir}/openssl/include -c conftest.c > /dev/null 2>&1
+      fi
+    fi
+  fi
+
+  AC_SUBST(P_STATIC_ENDLDLIBS)
+  AC_SUBST(P_STATIC_LDFLAGS)
+
+  dnl if we have not found OpenSSL so far, then look for it in 
+  dnl several standard places, and check for crazy RedHat install too
+  if test "${SSLHDR:-unset}" = "unset" ; then
+
+    dnl We want to switch to C language to get .c extension for conftest files
+    AC_LANG_PUSH(C)
+
+    for openssl_dir in /usr/local/openssl /usr/local/ssl ; do
+      AC_MSG_CHECKING([for OpenSSL in $openssl_dir])
+      if test ! -f ${openssl_dir}/include/openssl/ssl.h ; then
+        AC_MSG_RESULT(no)
+      else
+        AC_LANG_CONFTEST([[#include "${openssl_dir}/include/openssl/ssl.h"
+int main(int argc,char **argv){ return 0; }]])
+        $CC $CFLAGS -I${openssl_dir}/include -c conftest.c > /dev/null 2>&1
         if test $? = 0 ; then
           AC_MSG_RESULT(yes)
           SSLHDR=1
-          SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+          SSLCCFLAGS=""
           SSLINCLUDEDIR="${openssl_dir}/include"
           SSLLIBDIR="${openssl_dir}/lib"
           break
         else
           AC_MSG_RESULT(no)
+          AC_MSG_CHECKING([if ${openssl_dir}/include/openssl/ssl.h works with OPENSSL_NO_KRB5...])
+          AC_LANG_CONFTEST([[#define OPENSSL_NO_KRB5
+#include "${openssl_dir}/include/openssl/ssl.h"
+int main(int argc,char **argv){}]])
+          $CC $CFLAGS -I${openssl_dir}/openssl/include -c conftest.c > /dev/null 2>&1
+          if test $? = 0 ; then
+            AC_MSG_RESULT(yes)
+            SSLHDR=1
+            SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+            SSLINCLUDEDIR="${openssl_dir}/include"
+            SSLLIBDIR="${openssl_dir}/lib"
+            P_STATIC_LDFLAGS="-L/usr/kerberos/lib"
+            P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+            break
+          else
+            AC_MSG_RESULT(no)
+          fi
         fi
       fi
-    fi
-  done
-  AC_LANG_POP(C)
-fi
+    done
+    AC_LANG_POP(C)
+  fi
 
-if test ${SSLHDR:-unset} != "unset" ; then
-  AC_SUBST(HAS_OPENSSL, 1)
-  AC_DEFINE(P_SSL, 1, "OpenSSL found")
-  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
-    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+  if test ${SSLHDR:-unset} != "unset" ; then
+    AC_SUBST(HAS_OPENSSL, 1)
+    AC_DEFINE(P_SSL, 1, "OpenSSL found")
+    if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
+      STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+    fi
+    if test ${SSLLIBDIR:-unset} != "unset" ; then
+      LDFLAGS="$LDFLAGS -L${SSLLIBDIR}"
+    fi
+    STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
+    ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
   fi
-  if test ${SSLLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS -L${SSLLIBDIR}"
-  fi
-  STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
-  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
 fi
 
 dnl ########################################################################
@@ -568,27 +607,37 @@ dnl MSWIN_CHECK_DIR  expat,..\external\expat\
 dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 
-AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
-if test "${HAS_EXPAT:-unset}" != "unset" ; then
-  AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
-else
-  AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
-  if test "${HAS_EXPAT:-unset}" != "unset" ; then
-    EXPATINCLUDEDIR=/usr/local/include
-    EXPATLIBDIR=/usr/local/lib
-  fi
-fi
+AC_ARG_ENABLE(expat,
+       [  --disable-expat         disable XML support in PWLIB],
+       expat=$enableval)
 
-if test "${HAS_EXPAT:-unset}" != "unset" ; then
-  AC_SUBST(HAS_EXPAT, 1)
-  AC_DEFINE(P_EXPAT, 1, "expat found")
-  if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
-    STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
+if test "$expat" = "no" ; then
+  AC_SUBST(HAS_EXPAT, 0)
+  AC_DEFINE(P_EXPAT, 0)
+else
+
+  AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
+  if test "${HAS_EXPAT:-unset}" != "unset" ; then
+    AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
+  else
+    AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
+    if test "${HAS_EXPAT:-unset}" != "unset" ; then
+      EXPATINCLUDEDIR=/usr/local/include
+      EXPATLIBDIR=/usr/local/lib
+    fi
   fi
-  if test ${EXPATLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
+
+  if test "${HAS_EXPAT:-unset}" != "unset" ; then
+    AC_SUBST(HAS_EXPAT, 1)
+    AC_DEFINE(P_EXPAT, 1, "expat found")
+    if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
+      STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
+    fi
+    if test ${EXPATLIBDIR:-unset} != "unset" ; then
+      LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
+    fi
+    ENDLDLIBS="$ENDLDLIBS -lexpat"
   fi
-  ENDLDLIBS="$ENDLDLIBS -lexpat"
 fi
 
 
@@ -613,35 +662,44 @@ dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
-dnl SDL checks
-if test "${SDLLIB:-unset}" = "unset" ; then
-  SDLLIB=SDL
-fi
+AC_ARG_ENABLE(sdl,
+       [  --disable-sdl           disable SDL support in PWLIB],
+       sdl=$enableval)
 
-dnl Linux check
-AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
-if test "${HAS_SDL:-unset}" != "unset" ; then
-  AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
-fi
+if test "$sdl" = "no" ; then
+  AC_SUBST(HAS_SDL, 0)
+  AC_DEFINE(P_SDL, 0)
+else
+  dnl SDL checks
+  if test "${SDLLIB:-unset}" = "unset" ; then
+    SDLLIB=SDL
+  fi
 
-dnl freeBSD SDL check
-if test "${HAS_SDL:-unset}" = "unset" ; then
-  AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
+  dnl Linux check
+  AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
   if test "${HAS_SDL:-unset}" != "unset" ; then
-    SDLLIB=SDL-1.1
+    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
   fi
-fi
 
-if test "${HAS_SDL:-unset}" != "unset" ; then
-  AC_SUBST(HAS_SDL, 1)
-  AC_DEFINE(P_SDL, 1, "SDL found")
-  if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
-    STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
+  dnl freeBSD SDL check
+  if test "${HAS_SDL:-unset}" = "unset" ; then
+    AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
+    if test "${HAS_SDL:-unset}" != "unset" ; then
+      SDLLIB=SDL-1.1
+    fi
   fi
-  if test ${SDLLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
+
+  if test "${HAS_SDL:-unset}" != "unset" ; then
+    AC_SUBST(HAS_SDL, 1)
+    AC_DEFINE(P_SDL, 1, "SDL found")
+    if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
+      STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
+    fi
+    if test ${SDLLIBDIR:-unset} != "unset" ; then
+      LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
+    fi
+    ENDLDLIBS="$ENDLDLIBS -l${SDLLIB}"
   fi
-  ENDLDLIBS="$ENDLDLIBS -l${SDLLIB}"
 fi
 
 
@@ -654,13 +712,22 @@ dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
 
-AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
-[AC_TRY_COMPILE([#include <sys/types.h>
-                 #include <netinet/in.h>],
-                 [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
+AC_ARG_ENABLE(ipv6,
+       [  --disable-ipv6          disable IPV6 support in PWLIB],
+       ipv6=$enableval)
 
-if test $HAS_IPV6 = yes ; then
-  AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+if test "$ipv6" = "no" ; then
+  AC_DEFINE(P_HAS_IPV6, 0)
+  AC_SUBST(HAS_IPV6, 0)
+else
+  AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
+  [AC_TRY_COMPILE([#include <sys/types.h>
+                   #include <netinet/in.h>],
+                   [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
+
+  if test $HAS_IPV6 = yes ; then
+    AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+  fi
 fi
 
 dnl ########################################################################
@@ -672,7 +739,15 @@ dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 
-AC_DEFINE(P_HAS_QOS, 1)
+AC_ARG_ENABLE(qos,
+       [  --disable-qos           disable QOS support in PWLIB],
+       qos=$enableval)
+
+if test "$qos" = "no" ; then
+  AC_DEFINE(P_HAS_QOS, 0)
+else
+  AC_DEFINE(P_HAS_QOS, 1)
+fi
 
 dnl ########################################################################
 dnl check for video capture support.
@@ -681,14 +756,22 @@ dnl machine/ioctl_meteor on FreeBSD
 dnl i386/ioctl_meteor on OpenBSD
 dnl dev/ic/bt8xx on NetBSD
 
-HAS_VIDEO_CAPTURE=no
-AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
-AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
-if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
-  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux/BSD video capture")
-  AC_MSG_NOTICE(No Video Capture support)
+AC_ARG_ENABLE(video,
+       [  --disable-video         disable video device support in PWLIB],
+       video=$enableval)
+
+if test "$video" = "no" ; then
+  AC_DEFINE(NO_VIDEO_CAPTURE, 0)
+else
+  HAS_VIDEO_CAPTURE=no
+  AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=yes)
+  AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+  AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
+  AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
+  if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
+    AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux/BSD video capture")
+    AC_MSG_NOTICE(No Video Capture support)
+  fi
 fi
 
 
@@ -701,7 +784,9 @@ if test "$OSTYPE" = "solaris" ; then
 else
   AC_CHECK_FUNC(swab,USE_SYSTEM_SWAB=1)
 fi
-AC_DEFINE(USE_SYSTEM_SWAB)
+if test "x$ac_cv_func_swab" = "xyes" ; then
+  AC_DEFINE(USE_SYSTEM_SWAB)
+fi
 
 dnl ########################################################################
 dnl output make directives
