@@ -151,3 +151,11 @@ void PServiceProcess::OnContinue()
 void PServiceProcess::OnStop()
 {
 }
+
+
+void PServiceProcess::PXOnSigInt()
+{
+  OnStop();
+  exit(1);
+}
+
