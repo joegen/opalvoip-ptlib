@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.36  1999/07/02 05:10:33  robertj
+# Fixed bug in changing from debug default to opt build
+#
 # Revision 1.35  1999/06/28 09:12:01  robertj
 # Fixed problems with the order in which macros are defined especially on BeOS & Solaris
 #
@@ -259,7 +262,7 @@ ifdef DEBUG
 debug :: $(TARGET)
 
 opt ::
-	@$(MAKE) DEBUG= $(TARGET)
+	@$(MAKE) DEBUG= opt
 
 debugclean ::
 	rm -rf $(CLEAN_FILES)
