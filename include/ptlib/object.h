@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.22 1996/07/15 10:27:51 robertj Exp $
+ * $Id: object.h,v 1.23 1996/08/17 10:00:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.23  1996/08/17 10:00:23  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.22  1996/07/15 10:27:51  robertj
  * Changed endian classes to be memory mapped.
  *
@@ -175,16 +178,13 @@ enum PStandardAssertMessage {
 #define PAssertAlways(m) PAssertFunc(__FILE__, __LINE__, (m))
 
 
-void PAssertFunc(const char * file, int line, PStandardAssertMessage msg);
-void PAssertFunc(const char * file, int line, const char * msg);
+PEXPORT void PAssertFunc(const char * file, int line, PStandardAssertMessage msg);
+PEXPORT void PAssertFunc(const char * file, int line, const char * msg);
 
 
 // Declaration for standard error output
-#if defined(_WIN32) && defined(_WINDLL)
-extern __declspec(dllexport) ostream * PErrorStream;
-#else
-extern ostream * PSTATIC PErrorStream;
-#endif
+extern PEXPORT ostream * PSTATIC PErrorStream;
+
 
 /*$MACRO PError
    This macro is used to access the platform specific error output stream. This
@@ -754,7 +754,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
    starts the class declaration and then uses the <A>PCLASSINFO</A> macro to
    get all the run-time type functions.
  */
-#define PDECLARE_CLASS(cls, par) PCLASS cls : public par { PCLASSINFO(cls, par)
+#define PDECLARE_CLASS(cls, par) class PEXPORT cls : public par { PCLASSINFO(cls, par)
 
 
 class PSerialiser;
@@ -764,7 +764,7 @@ class PUnSerialiser;
 ///////////////////////////////////////////////////////////////////////////////
 // The root of all evil ... umm classes
 
-PCLASS PObject {
+class PEXPORT PObject {
 /* Ultimate parent class for all objects in the class library. This provides
    functionality provided to all classes, eg run-time types, default comparison
    operations, simple stream I/O and serialisation support.
@@ -1861,7 +1861,7 @@ PDECLARE_CLASS(PNotifier, PSmartPointer)
  */
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
   virtual void func(notifier & n, INT extra); \
-  PCLASS func##_PNotifier : public PNotifierFunction { \
+  class PEXPORT func##_PNotifier : public PNotifierFunction { \
     public: \
       func##_PNotifier(notifiee * obj) : PNotifierFunction(obj) { } \
       virtual void Call(PObject & note, INT extra) const \
