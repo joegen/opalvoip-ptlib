@@ -217,19 +217,25 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   if (!GetHostAddress(hostname, addr))
     return FALSE;
 
-  int fd = ::socket(PF_INET, SOCK_DGRAM, 0);
-  PAssert(fd >= 0, "could not open socket for ioctl");
+  PUDPSocket sock;
 
   // get number of interfaces
   int ifNum;
-  PAssert (::ioctl(fd, SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+#ifdef SIOCGIFNUM
+  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+#else
+  ifNum = 100;
+#endif
 
-  struct ifconf ifConf;
   PBYTEArray buffer;
+  struct ifconf ifConf;
   ifConf.ifc_len  = ifNum * sizeof(ifreq);
   ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
   
-  if (ioctl(fd, SIOCGIFCONF, &ifConf) >= 0) {
+  if (ioctl(sock.GetHandle(), SIOCGIFCONF, &ifConf) >= 0) {
+#ifndef SIOCGIFNUM
+    ifNum = ifConf.ifc_len / sizeof(ifreq);
+#endif
 
     int num = 0;
     for (num = 0; num < ifNum; num++) {
@@ -238,18 +244,15 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       struct ifreq ifReq;
       strcpy(ifReq.ifr_name, ifName->ifr_name);
 
-      if (ioctl(fd, SIOCGIFFLAGS, &ifReq) >= 0) {
+      if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
-        if (ioctl(fd, SIOCGIFADDR, &ifReq) >= 0) {
-          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr))) {
-            ::close(fd);
+        if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
+          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
             return TRUE;
-          }
         }
       }
     }
   }
-  ::close(fd);
   return FALSE;
 }
 
