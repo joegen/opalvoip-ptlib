@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.23 1997/10/30 10:21:26 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.24 1997/11/04 06:02:46 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.24  1997/11/04 06:02:46  robertj
+ * Allowed help gif file name to overridable in PServiceHTML, so can be in subdirectory.
+ *
  * Revision 1.23  1997/10/30 10:21:26  robertj
  * Added ability to customise regisration text by application.
  *
@@ -82,8 +85,8 @@
 #include <httpsvc.h>
 #include <sockets.h>
 
-#define HOME_PAGE 	"http://www.ozemail.com.au/~equival"
-#define EMAIL     	"equival@ozemail.com.au"
+#define HOME_PAGE 	"http://www.equival.com"
+#define EMAIL     	"equival@equival.com.au"
 #define	EQUIVALENCE	"Equivalence"
 
 
@@ -751,7 +754,7 @@ PString POrderPage::LoadText(PHTTPRequest & request)
 
 ///////////////////////////////////////////////////////////////////
 
-PServiceHTML::PServiceHTML(const char * title, const char * help)
+PServiceHTML::PServiceHTML(const char * title, const char * help, const char * helpGif)
 {
   PHTTPServiceProcess::Current().GetPageHeader(*this, title);
 
@@ -761,7 +764,7 @@ PServiceHTML::PServiceHTML(const char * title, const char * help)
     *this << title
           << ' '
           << PHTML::HotLink(help)
-          << PHTML::Image("/help.gif", "Help", 48, 23, "align=absmiddle")
+          << PHTML::Image(helpGif, "Help", 48, 23, "align=absmiddle")
           << PHTML::HotLink();
 
   *this << PHTML::Heading(1) << PHTML::Paragraph();
