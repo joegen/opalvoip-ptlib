@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.103  2004/06/03 12:47:58  csoutheren
+ * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
+ *
  * Revision 1.102  2004/06/01 07:28:45  csoutheren
  * Changed URL parsing to use abstract factory code
  *
@@ -455,6 +458,8 @@ static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
 }
 
 */
+
+INSTANTIATE_FACTORY(PURLScheme)
 
 class PURLLegacyScheme : public PURLScheme
 {
