@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.28  2000/04/29 08:14:52  robertj
+ * Added some documentation on string formats that can be parsed into a time.
+ *
  * Revision 1.27  2000/04/29 04:49:00  robertj
  * Added microseconds to string output.
  *
@@ -163,7 +166,20 @@ class PTime : public PObject
     ) { theTime = tsecs; microseconds = usecs; }
 
     /**Create a time object instance.
-       This initialises the time to the specified time, parsed from the string.
+       This initialises the time to the specified time, parsed from the
+       string. The string may be in many different formats, for example:
+          "5/03/1999 12:34:56"
+          "15/06/1999 12:34:56"
+          "15/06/01 12:34:56 PST"
+          "5/06/02 12:34:56"
+          "5/23/1999 12:34am"
+          "5/23/00 12:34am"
+          "1999/23/04 12:34:56"
+          "Mar 3, 1999 12:34pm"
+          "3 Jul 2004 12:34pm"
+          "12:34:56 5 December 1999"
+          "10 minutes ago"
+          "2 weeks"
      */
     PTime(
       const PString & str   /// Time and data as a string
@@ -211,9 +227,20 @@ class PTime : public PObject
     ) const;
 
     /**Input the time from the specified stream. If a parse error occurs the
-       time is set to the current time. The input is expected in the same
-       format as produced by the #AsString()# function with the
-       #ShortDateTime# parameter.
+       time is set to the current time. The string may be in many different
+       formats, for example:
+          "5/03/1999 12:34:56"
+          "15/06/1999 12:34:56"
+          "15/06/01 12:34:56 PST"
+          "5/06/02 12:34:56"
+          "5/23/1999 12:34am"
+          "5/23/00 12:34am"
+          "1999/23/04 12:34:56"
+          "Mar 3, 1999 12:34pm"
+          "3 Jul 2004 12:34pm"
+          "12:34:56 5 December 1999"
+          "10 minutes ago"
+          "2 weeks"
      */
     virtual void ReadFrom(
       istream & strm    /// Stream to input the time from.
