@@ -575,3 +575,4 @@ BOOL WritePrivateProfileString(
 { USES_CONVERSION; return AfxGetApp()->WriteProfileString(
 	A2T(lpAppName), A2T(lpKeyName), A2T(lpString));
 }
+
