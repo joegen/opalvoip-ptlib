@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.1 1997/10/10 10:38:05 robertj Exp $
+ * $Id: asner.cxx,v 1.2 1997/10/30 10:18:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.2  1997/10/30 10:18:34  robertj
+ * Fixed GNU C warnings.
+ *
  * Revision 1.1  1997/10/10 10:38:05  robertj
  * Initial revision
  *
@@ -15,11 +18,6 @@
 
 #include <ptlib.h>
 #include "perasn.h"
-
-#ifdef __GNUC__
-#pragma implementation "perasn.h"
-#endif
-
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -99,7 +97,7 @@ BOOL PPER_BitStream::Read(PChannel & chan)
     return FALSE;
 
   int data_len = 0;
-  for (PINDEX len_count = 0; len_count < len_len; len_count++) {
+  for (int len_count = 0; len_count < len_len; len_count++) {
     int len_part = chan.ReadChar();
     if (len_part < 0)
       return FALSE;
@@ -702,7 +700,7 @@ void PPER_Enumeration::Encode(PPER_BitStream & strm)
 
 void PPER_Enumeration::PrintOn(ostream & strm) const
 {
-  if (value < names.GetSize())
+  if ((PINDEX)value < names.GetSize())
     strm << names[value];
   else
     strm << '<' << value << '>';
