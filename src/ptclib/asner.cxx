@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.27  1999/08/19 15:43:07  robertj
+ * Fixed incorrect size of OID if zero length encoded.
+ *
  * Revision 1.26  1999/08/09 13:02:45  robertj
  * dded ASN compiler #defines for backward support of pre GCC 2.9 compilers.
  * Added ASN compiler #defines to reduce its memory footprint.
@@ -1006,7 +1009,7 @@ PString PASN_ObjectId::GetTypeAsString() const
 
 BOOL PASN_ObjectId::CommonDecode(PASN_Stream & strm, unsigned dataLen)
 {
-  value.SetSize(2);
+  value.SetSize(0);
 
   // handle zero length strings correctly
   if (dataLen == 0)
