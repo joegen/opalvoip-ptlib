@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.40 1996/05/15 10:18:48 robertj Exp $
+ * $Id: sockets.cxx,v 1.41 1996/05/18 09:09:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.41  1996/05/18 09:09:16  robertj
+ * Fixed opening of IP address 0, is now an error.
+ * Made GetHostName() return name part only, without domain.
+ *
  * Revision 1.40  1996/05/15 10:18:48  robertj
  * Added ICMP protocol socket, getting common ancestor to UDP.
  * Added timeout to accept function.
@@ -374,14 +378,10 @@ PString PIPSocket::GetName() const
 
 PString PIPSocket::GetHostName()
 {
-  PString name;
-  if (gethostname(name.GetPointer(50), 49) != 0)
+  char name[64];
+  if (gethostname(name, sizeof(name)-1) != 0)
     return "localhost";
-
-  if (name.Find('.') != P_MAX_INDEX)
-    return name;
-
-  return GetHostName(name);
+  return name;
 }
 
 
@@ -430,6 +430,8 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
   if ((temp = inet_addr((const char *)hostname)) != -1) {
+    if (temp == 0)
+      return FALSE;
     memcpy(&addr, &temp, sizeof(addr));
     return TRUE;
   }
@@ -564,7 +566,7 @@ PString PIPSocket::GetPeerHostName()
 
 void PIPSocket::SetPort(WORD newPort)
 {
-  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  PAssert(!IsOpen(), "Cannot change port number of opened TCP socket");
   port = newPort;
 }
 
