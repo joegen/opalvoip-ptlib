@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.3 1994/07/02 03:03:49 robertj Exp $
+ * $Id: channel.h,v 1.4 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.3  1994/07/02 03:03:49  robertj
+ * Revision 1.4  1994/07/17 10:46:06  robertj
+ * Unix support changes.
+ *
+ * Revision 1.3  1994/07/02  03:03:49  robertj
  * Changed to allow for platform dependent part.
  *
  * Revision 1.2  1994/06/25  11:55:15  robertj
@@ -71,10 +74,10 @@ PCLASS PChannel : public PContainer, public iostream {
 
 
     // New functions for class
-    virtual BOOL IsOpen() const = 0;
+    virtual BOOL IsOpen() const;
       // Return TRUE if the channel is currently open.
 
-    virtual PString GetName() const = 0;
+    virtual PString GetName() const;
       // Return the name of the channel.
 
 
@@ -87,7 +90,7 @@ PCLASS PChannel : public PContainer, public iostream {
     PTimeInterval GetReadTimeout() const;
       // Get the current read timeout.
 
-    virtual BOOL Read(void * buf, PINDEX len) = 0;
+    virtual BOOL Read(void * buf, PINDEX len);
       // Low level read from the channel. This function may block until the
       // requested number of characters were read or the read timeout was
       // reached. The return value indicates that at least one character was
@@ -129,7 +132,7 @@ PCLASS PChannel : public PContainer, public iostream {
     PTimeInterval GetWriteTimeout() const;
       // Get the current write timeout.
 
-    virtual BOOL Write(const void * buf, PINDEX len) = 0;
+    virtual BOOL Write(const void * buf, PINDEX len);
       // Low level write to the channel. This function will block until the
       // requested number of characters are written or the write timeout is
       // reached. The return value is TRUE if at least len bytes were written
@@ -163,7 +166,7 @@ PCLASS PChannel : public PContainer, public iostream {
       // characters written.
 
 
-    virtual BOOL Close() = 0;
+    virtual BOOL Close();
       // Close the channel.
 
 
@@ -191,7 +194,10 @@ PCLASS PChannel : public PContainer, public iostream {
 
 
   protected:
-    // member variables
+    // Member variables
+    int os_handle;
+      // The operating system file handle return by standard open() function.
+
     Errors lastError;
       // The platform independant error code.
 
@@ -214,5 +220,9 @@ PCLASS PChannel : public PContainer, public iostream {
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
 
+
+    // New functions for class
+    void Construct();
+      // Complete platform dependent construction.
 
 // Class declaration continued in platform specific header file ///////////////
