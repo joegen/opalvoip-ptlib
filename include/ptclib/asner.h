@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.39  2003/08/01 02:12:34  csoutheren
+ * Changed to allow easy isolation of PER, BER and XER encoding/decoding routines
+ *
  * Revision 1.38  2003/04/22 23:39:09  craigs
  * Changed some functions from protected to public for MacOSX. Thanks to Hugo Santos
  *
@@ -143,7 +146,7 @@
  * Fixed problems with using copy constructor/assignment oeprator on PASN_Objects.
  *
  * Revision 1.3  1997/12/18 05:08:13  robertj
- * Added function to get choice discriminator name.
+ * Added function to get choice discriminat`or name.
  *
  * Revision 1.2  1997/12/11 10:35:42  robertj
  * Support for new ASN file parser.
@@ -157,13 +160,20 @@
 #pragma interface
 #endif
 
+// provide options to omit vertain encodings, if needed
+#define     P_INCLUDE_PER
+#define     P_INCLUDE_BER
+#define     P_INCLUDE_XER
 
 class PASN_Stream;
 class PBER_Stream;
 class PPER_Stream;
+
 #if P_EXPAT
 class PXER_Stream;
 class PXMLElement;
+#else
+#undef      P_INCLUDE_XER
 #endif
 
 
@@ -368,8 +378,10 @@ class PASN_Integer : public PASN_ConstrainedObject
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#endif
 
     BOOL IsUnsigned() const;
 
@@ -413,9 +425,12 @@ class PASN_Enumeration : public PASN_Object
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
-#if P_EXPAT
+#endif
+
+#if P_INCLUDE_XER
     virtual BOOL DecodeXER(PXER_Stream & strm);
     virtual void EncodeXER(PXER_Stream & strm) const;
 #endif
@@ -537,10 +552,15 @@ class PASN_BitString : public PASN_ConstrainedObject
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_BER
     BOOL DecodeBER(PBER_Stream & strm, unsigned len);
     void EncodeBER(PBER_Stream & strm) const;
+#endif
+
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#endif
 
     BOOL DecodeSequenceExtensionBitmap(PPER_Stream & strm);
     void EncodeSequenceExtensionBitmap(PPER_Stream & strm) const;
@@ -590,8 +610,10 @@ class PASN_OctetString : public PASN_ConstrainedObject
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#endif
 
     BOOL DecodeSubType(PASN_Object &) const;
     void EncodeSubType(const PASN_Object &);
@@ -627,10 +649,15 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_BER
     BOOL DecodeBER(PBER_Stream & strm, unsigned len);
     void EncodeBER(PBER_Stream & strm) const;
+#endif
+
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#endif
 
   protected:
     PASN_ConstrainedString(const char * canonicalSet, PINDEX setSize,
@@ -703,10 +730,15 @@ class PASN_BMPString : public PASN_ConstrainedObject
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_BER
     BOOL DecodeBER(PBER_Stream & strm, unsigned len);
     void EncodeBER(PBER_Stream & strm) const;
+#endif
+
+#ifdef P_INCLUDE_PER
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+#endif
 
   protected:
     void Construct();
@@ -834,9 +866,12 @@ class PASN_Choice : public PASN_Object
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
 
+#ifdef P_INCLUDE_PER
     virtual BOOL DecodePER(PPER_Stream &);
     virtual void EncodePER(PPER_Stream &) const;
-#if P_EXPAT
+#endif
+
+#if P_INCLUDE_XER
     BOOL DecodeXER(PXER_Stream &);
     void EncodeXER(PXER_Stream &) const;
 #endif
@@ -899,21 +934,25 @@ class PASN_Sequence : public PASN_Object
     BOOL UnknownExtensionsDecode(PASN_Stream & strm);
     void UnknownExtensionsEncode(PASN_Stream & strm) const;
 
+#ifdef P_INCLUDE_BER
     BOOL PreambleDecodeBER(PBER_Stream & strm);
     void PreambleEncodeBER(PBER_Stream & strm) const;
     BOOL KnownExtensionDecodeBER(PBER_Stream & strm, PINDEX fld, PASN_Object & field);
     void KnownExtensionEncodeBER(PBER_Stream & strm, PINDEX fld, const PASN_Object & field) const;
     BOOL UnknownExtensionsDecodeBER(PBER_Stream & strm);
     void UnknownExtensionsEncodeBER(PBER_Stream & strm) const;
+#endif
 
+#ifdef P_INCLUDE_PER
     BOOL PreambleDecodePER(PPER_Stream & strm);
     void PreambleEncodePER(PPER_Stream & strm) const;
     BOOL KnownExtensionDecodePER(PPER_Stream & strm, PINDEX fld, PASN_Object & field);
     void KnownExtensionEncodePER(PPER_Stream & strm, PINDEX fld, const PASN_Object & field) const;
     BOOL UnknownExtensionsDecodePER(PPER_Stream & strm);
     void UnknownExtensionsEncodePER(PPER_Stream & strm) const;
+#endif
 
-#if P_EXPAT
+#if P_INCLUDE_XER
     virtual BOOL PreambleDecodeXER(PXER_Stream & strm);
     virtual void PreambleEncodeXER(PXER_Stream & strm) const;
     virtual BOOL KnownExtensionDecodeXER(PXER_Stream & strm, PINDEX fld, PASN_Object & field);
@@ -1058,190 +1097,16 @@ class PASN_Stream : public PBYTEArray
     void Construct();
 };
 
+#ifdef  P_INCLUDE_PER
+#include "asnper.h"
+#endif
 
-/** Class for ASN basic Encoding Rules stream.
-*/
-class PBER_Stream : public PASN_Stream
-{
-    PCLASSINFO(PBER_Stream, PASN_Stream);
-  public:
-    PBER_Stream();
-    PBER_Stream(const PBYTEArray & bytes);
-    PBER_Stream(const BYTE * buf, PINDEX size);
+#ifdef  P_INCLUDE_BER
+#include "asnber.h"
+#endif
 
-    PBER_Stream & operator=(const PBYTEArray & bytes);
-
-    virtual BOOL Read(PChannel & chan);
-    virtual BOOL Write(PChannel & chan);
-
-    virtual BOOL NullDecode(PASN_Null &);
-    virtual void NullEncode(const PASN_Null &);
-    virtual BOOL BooleanDecode(PASN_Boolean &);
-    virtual void BooleanEncode(const PASN_Boolean &);
-    virtual BOOL IntegerDecode(PASN_Integer &);
-    virtual void IntegerEncode(const PASN_Integer &);
-    virtual BOOL EnumerationDecode(PASN_Enumeration &);
-    virtual void EnumerationEncode(const PASN_Enumeration &);
-    virtual BOOL RealDecode(PASN_Real &);
-    virtual void RealEncode(const PASN_Real &);
-    virtual BOOL ObjectIdDecode(PASN_ObjectId &);
-    virtual void ObjectIdEncode(const PASN_ObjectId &);
-    virtual BOOL BitStringDecode(PASN_BitString &);
-    virtual void BitStringEncode(const PASN_BitString &);
-    virtual BOOL OctetStringDecode(PASN_OctetString &);
-    virtual void OctetStringEncode(const PASN_OctetString &);
-    virtual BOOL ConstrainedStringDecode(PASN_ConstrainedString &);
-    virtual void ConstrainedStringEncode(const PASN_ConstrainedString &);
-    virtual BOOL BMPStringDecode(PASN_BMPString &);
-    virtual void BMPStringEncode(const PASN_BMPString &);
-    virtual BOOL ChoiceDecode(PASN_Choice &);
-    virtual void ChoiceEncode(const PASN_Choice &);
-    virtual BOOL ArrayDecode(PASN_Array &);
-    virtual void ArrayEncode(const PASN_Array &);
-    virtual BOOL SequencePreambleDecode(PASN_Sequence &);
-    virtual void SequencePreambleEncode(const PASN_Sequence &);
-    virtual BOOL SequenceKnownDecode(PASN_Sequence &, PINDEX, PASN_Object &);
-    virtual void SequenceKnownEncode(const PASN_Sequence &, PINDEX, const PASN_Object &);
-    virtual BOOL SequenceUnknownDecode(PASN_Sequence &);
-    virtual void SequenceUnknownEncode(const PASN_Sequence &);
-
-    virtual PASN_Object * CreateObject(unsigned tag,
-                                       PASN_Object::TagClass tagClass,
-                                       BOOL primitive) const;
-
-    BOOL HeaderDecode(unsigned & tagVal,
-                      PASN_Object::TagClass & tagClass,
-                      BOOL & primitive,
-                      unsigned & len);
-    BOOL HeaderDecode(PASN_Object & obj, unsigned & len);
-    void HeaderEncode(const PASN_Object & obj);
-};
-
-
-/** Class for ASN Packed Encoding Rules stream.
-*/
-class PPER_Stream : public PASN_Stream
-{
-    PCLASSINFO(PPER_Stream, PASN_Stream);
-  public:
-    PPER_Stream(BOOL aligned = TRUE);
-    PPER_Stream(const PBYTEArray & bytes, BOOL aligned = TRUE);
-    PPER_Stream(const BYTE * buf, PINDEX size, BOOL aligned = TRUE);
-
-    PPER_Stream & operator=(const PBYTEArray & bytes);
-
-    unsigned GetBitsLeft() const;
-
-    virtual BOOL Read(PChannel & chan);
-    virtual BOOL Write(PChannel & chan);
-
-    virtual BOOL NullDecode(PASN_Null &);
-    virtual void NullEncode(const PASN_Null &);
-    virtual BOOL BooleanDecode(PASN_Boolean &);
-    virtual void BooleanEncode(const PASN_Boolean &);
-    virtual BOOL IntegerDecode(PASN_Integer &);
-    virtual void IntegerEncode(const PASN_Integer &);
-    virtual BOOL EnumerationDecode(PASN_Enumeration &);
-    virtual void EnumerationEncode(const PASN_Enumeration &);
-    virtual BOOL RealDecode(PASN_Real &);
-    virtual void RealEncode(const PASN_Real &);
-    virtual BOOL ObjectIdDecode(PASN_ObjectId &);
-    virtual void ObjectIdEncode(const PASN_ObjectId &);
-    virtual BOOL BitStringDecode(PASN_BitString &);
-    virtual void BitStringEncode(const PASN_BitString &);
-    virtual BOOL OctetStringDecode(PASN_OctetString &);
-    virtual void OctetStringEncode(const PASN_OctetString &);
-    virtual BOOL ConstrainedStringDecode(PASN_ConstrainedString &);
-    virtual void ConstrainedStringEncode(const PASN_ConstrainedString &);
-    virtual BOOL BMPStringDecode(PASN_BMPString &);
-    virtual void BMPStringEncode(const PASN_BMPString &);
-    virtual BOOL ChoiceDecode(PASN_Choice &);
-    virtual void ChoiceEncode(const PASN_Choice &);
-    virtual BOOL ArrayDecode(PASN_Array &);
-    virtual void ArrayEncode(const PASN_Array &);
-    virtual BOOL SequencePreambleDecode(PASN_Sequence &);
-    virtual void SequencePreambleEncode(const PASN_Sequence &);
-    virtual BOOL SequenceKnownDecode(PASN_Sequence &, PINDEX, PASN_Object &);
-    virtual void SequenceKnownEncode(const PASN_Sequence &, PINDEX, const PASN_Object &);
-    virtual BOOL SequenceUnknownDecode(PASN_Sequence &);
-    virtual void SequenceUnknownEncode(const PASN_Sequence &);
-
-    BOOL IsAligned() const { return aligned; }
-
-    BOOL SingleBitDecode();
-    void SingleBitEncode(BOOL value);
-
-    BOOL MultiBitDecode(unsigned nBits, unsigned & value);
-    void MultiBitEncode(unsigned value, unsigned nBits);
-
-    BOOL SmallUnsignedDecode(unsigned & value);
-    void SmallUnsignedEncode(unsigned value);
-
-    int LengthDecode(unsigned lower, unsigned upper, unsigned & len);
-    void LengthEncode(unsigned len, unsigned lower, unsigned upper);
-
-    int UnsignedDecode(unsigned lower, unsigned upper, unsigned & value);
-    void UnsignedEncode(int value, unsigned lower, unsigned upper);
-
-    void AnyTypeEncode(const PASN_Object * value);
-
-  protected:
-    BOOL aligned;
-};
-
-
-#if P_EXPAT
-/** Class for ASN XML Encoding Rules stream.
-*/
-class PXER_Stream : public PASN_Stream
-{
-    PCLASSINFO(PXER_Stream, PASN_Stream);
-  public:
-    PXER_Stream(PXMLElement * elem);
-    PXER_Stream(PXMLElement * elem, const PBYTEArray & bytes);
-    PXER_Stream(PXMLElement * elem, const BYTE * buf, PINDEX size);
-
-    virtual BOOL Read(PChannel & chan);
-    virtual BOOL Write(PChannel & chan);
-
-    virtual BOOL NullDecode(PASN_Null &);
-    virtual void NullEncode(const PASN_Null &);
-    virtual BOOL BooleanDecode(PASN_Boolean &);
-    virtual void BooleanEncode(const PASN_Boolean &);
-    virtual BOOL IntegerDecode(PASN_Integer &);
-    virtual void IntegerEncode(const PASN_Integer &);
-    virtual BOOL EnumerationDecode(PASN_Enumeration &);
-    virtual void EnumerationEncode(const PASN_Enumeration &);
-    virtual BOOL RealDecode(PASN_Real &);
-    virtual void RealEncode(const PASN_Real &);
-    virtual BOOL ObjectIdDecode(PASN_ObjectId &);
-    virtual void ObjectIdEncode(const PASN_ObjectId &);
-    virtual BOOL BitStringDecode(PASN_BitString &);
-    virtual void BitStringEncode(const PASN_BitString &);
-    virtual BOOL OctetStringDecode(PASN_OctetString &);
-    virtual void OctetStringEncode(const PASN_OctetString &);
-    virtual BOOL ConstrainedStringDecode(PASN_ConstrainedString &);
-    virtual void ConstrainedStringEncode(const PASN_ConstrainedString &);
-    virtual BOOL BMPStringDecode(PASN_BMPString &);
-    virtual void BMPStringEncode(const PASN_BMPString &);
-    virtual BOOL ChoiceDecode(PASN_Choice &);
-    virtual void ChoiceEncode(const PASN_Choice &);
-    virtual BOOL ArrayDecode(PASN_Array &);
-    virtual void ArrayEncode(const PASN_Array &);
-    virtual BOOL SequencePreambleDecode(PASN_Sequence &);
-    virtual void SequencePreambleEncode(const PASN_Sequence &);
-    virtual BOOL SequenceKnownDecode(PASN_Sequence &, PINDEX, PASN_Object &);
-    virtual void SequenceKnownEncode(const PASN_Sequence &, PINDEX, const PASN_Object &);
-    virtual BOOL SequenceUnknownDecode(PASN_Sequence &);
-    virtual void SequenceUnknownEncode(const PASN_Sequence &);
-
-    PXMLElement * GetCurrentElement()                   { return position; }
-    PXMLElement * SetCurrentElement(PXMLElement * elem) { return position = elem; }
-
-  protected:
-    PXMLElement * position;
-};
-#endif // P_EXPAT
-
+#ifdef  P_INCLUDE_XER
+#include "asnxer.h"
+#endif
 
 #endif // _ASNER_H
