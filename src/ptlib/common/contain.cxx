@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.115  2002/06/19 04:04:30  robertj
+ * Fixed bug in setting/getting bits from PBitArray, could exceed array bounds.
+ *
  * Revision 1.114  2002/06/17 09:16:18  robertj
  * Fixed strange deadlock woth gcc 3.0.2, thanks Artis Kugevics
  *
@@ -959,9 +962,9 @@ BOOL PBitArray::SetAt(PINDEX index, BOOL val)
     return FALSE;
 
   if (val)
-    theArray[(index+7)>>3] |= (1 << (index&7));
+    theArray[index>>3] |= (1 << (index&7));
   else
-    theArray[(index+7)>>3] &= ~(1 << (index&7));
+    theArray[index>>3] &= ~(1 << (index&7));
   return TRUE;
 }
 
@@ -972,7 +975,7 @@ BOOL PBitArray::GetAt(PINDEX index) const
   if (index >= GetSize())
     return FALSE;
 
-  return (theArray[(index+7)>>3]&(1 << (index&7))) != 0;
+  return (theArray[index>>3]&(1 << (index&7))) != 0;
 }
 
 
