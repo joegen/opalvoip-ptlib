@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.12  2002/10/08 11:58:01  craigs
+ * Fixed creation of struct params
+ *
  * Revision 1.11  2002/10/08 11:48:37  craigs
  * Added logging of incoming and outgoing XML at highest log level
  *
@@ -138,12 +141,12 @@ PXMLElement * PXMLRPCBlock::CreateBinary(const PBYTEArray & data)
 
 PXMLElement * PXMLRPCBlock::CreateStruct()
 {
-  return new PXMLElement(NULL, "struct");
+  return CreateValueElement(new PXMLElement(NULL, "struct"));
 }
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict)
 {
-  return CreateStruct(dict, "string");
+  return CreateValueElement(CreateStruct(dict, "string"));
 }
 
 PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PString & typeStr)
