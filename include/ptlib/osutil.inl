@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.44 1996/04/09 03:31:33 robertj Exp $
+ * $Id: osutil.inl,v 1.45 1996/04/14 02:53:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.45  1996/04/14 02:53:32  robertj
+ * Split serial and pipe channel into separate compilation units for Linux executable size reduction.
+ *
  * Revision 1.44  1996/04/09 03:31:33  robertj
  * Fixed bug in config GetTime() cannot use PTime(0) in western hemisphere.
  *
@@ -464,36 +467,6 @@ PINLINE size_t PStructuredFile::GetStructureSize()
 
 PINLINE void PStructuredFile::SetStructure(Element * struc, PINDEX num)
   { structure = struc; numElements = num; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PPipeChannel
-
-PINLINE PPipeChannel::PPipeChannel(const PString & subProgram,
-                                                OpenMode mode, BOOL searchPath)
-  { Construct(subProgram, NULL, mode, searchPath); }
-
-PINLINE PPipeChannel::PPipeChannel(const PString & subProgram,
-                const char * const * arguments, OpenMode mode, BOOL searchPath)
-  { Construct(subProgram, arguments, mode, searchPath); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PSerialChannel
-
-#ifdef _PSERIALCHANNEL
-
-PINLINE void PSerialChannel::ClearDTR()
-  { SetDTR(FALSE); }
-
-PINLINE void PSerialChannel::ClearRTS()
-  { SetRTS(FALSE); }
-
-PINLINE void PSerialChannel::ClearBreak()
-  { SetBreak(FALSE); }
-
-
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
