@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.32 2002/04/02 16:17:28 robertj Exp $
+ * $Id: pssl.cxx,v 1.33 2002/04/02 16:59:35 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.33  2002/04/02 16:59:35  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.32  2002/04/02 16:17:28  robertj
  * Fixed bug where returned TRUE when read count 0 or write count not len
  *   which is not according to Read()/Write() semantics. Could cause high CPU
@@ -992,7 +995,7 @@ BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 
     int writeResult = SSL_write(ssl, (const char *)buf, len);
     lastWriteCount = writeResult;
-    returnValue = writeResult >= len;
+    returnValue = lastWriteCount >= len;
     if (writeResult < 0 && GetErrorCode(LastWriteError) == NoError)
       ConvertOSError(-1, LastWriteError);
   }
