@@ -509,3 +509,4 @@ BOOL PXMLSettings::HasAttribute(const PCaselessString & section, const PString &
 ///////////////////////////////////////////////////////
 
 #endif 
+
