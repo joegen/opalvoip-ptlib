@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.cxx,v $
+ * Revision 1.4  2004/04/28 11:26:43  csoutheren
+ * Hopefully fixed SASL and SASL2 problems
+ *
  * Revision 1.3  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -47,11 +50,15 @@
 #include <ptclib/psasl.h>
 #include <ptclib/cypher.h>
 
-#if P_SASL
+#if P_SASL2
 
 extern "C" {
 
+#if P_HAS_SASL_SASL_H
 #include <sasl/sasl.h>
+#else
+#include <sasl.h>
+#endif
 
 };
 
@@ -342,6 +349,6 @@ BOOL PSASLClient::End()
     return FALSE;
 }
 
-#endif // P_SASL
+#endif // P_SASL2
 
 // End of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.128  2004/04/28 11:26:43  csoutheren
+# Hopefully fixed SASL and SASL2 problems
+#
 # Revision 1.127  2004/04/26 04:17:19  rjongbloed
 # Fixed GNU warnings
 #
@@ -443,12 +446,13 @@ PLUGIN_DIR		= ../../../plugins
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-ifeq (1,$(HAS_SASL))
+ifeq (1,$(HAS_SASL2))
 SASL_SOURCE := $(COMPONENT_SRC_DIR)/psasl.cxx 
+endif
+
 ifeq (1,$(HAS_OPENLDAP))
 LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx \
                $(COMPONENT_SRC_DIR)/pils.cxx
-endif
 endif
 
 ifeq (1,$(HAS_OPENSSL))
@@ -606,10 +610,13 @@ PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
 		  $(COMPONENT_SRC_DIR)/psoap.cxx \
-		  $(COMPONENT_SRC_DIR)/vxml.cxx \
-		  $(COMPONENT_SRC_DIR)/xmpp.cxx \
+		  $(COMPONENT_SRC_DIR)/vxml.cxx 
+
+ifeq (1,$(HAS_SASL2))
+PXML_SOURCE    += $(COMPONENT_SRC_DIR)/xmpp.cxx \
 		  $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
 		  $(COMPONENT_SRC_DIR)/xmpp_roster.cxx
+endif
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
