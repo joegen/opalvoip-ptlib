@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.21 1994/10/23 04:49:00 robertj Exp $
+ * $Id: osutil.inl,v 1.22 1994/10/24 00:07:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.21  1994/10/23 04:49:00  robertj
+ * Revision 1.22  1994/10/24 00:07:01  robertj
+ * Changed PFilePath and PDirectory so descends from either PString or
+ *     PCaselessString depending on the platform.
+ *
+ * Revision 1.21  1994/10/23  04:49:00  robertj
  * Chnaged PDirectory to descend of PString.
  * Added PDirectory Exists() function.
  * Implemented PPipeChannel.
@@ -277,14 +281,14 @@ PINLINE void PChannel::AbortCommandString()
 // PDirectory
 
 PINLINE PDirectory::PDirectory()
-  : PString(".") { Construct(); }
+  : PFILE_PATH_STRING(".") { Construct(); }
   
 PINLINE PDirectory::PDirectory(const PString & pathname)
-  : PString(pathname) { Construct(); }
+  : PFILE_PATH_STRING(pathname) { Construct(); }
   
 
 PINLINE void PDirectory::DestroyContents()
-  { Close(); PString::DestroyContents(); }
+  { Close(); PFILE_PATH_STRING::DestroyContents(); }
 
 PINLINE void PDirectory::CloneContents(const PDirectory * d)
   { CopyContents(*d); }
