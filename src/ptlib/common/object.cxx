@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.30  1998/10/15 07:48:56  robertj
+ * Added hex dump to memory leak.
+ * Added ability to ignore G++lib memory leaks.
+ *
  * Revision 1.29  1998/10/15 01:53:35  robertj
  * GNU compatibility.
  *
@@ -165,6 +169,7 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 #undef realloc
 #undef free
 
+
 void * operator new(size_t nSize)
 {
   return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
@@ -230,6 +235,7 @@ PMemoryHeap::PMemoryHeap()
   listTail = NULL;
 
   allocationRequest = 1;
+  firstRealObject = 0;
   flags = 0;
 
   allocFillChar = '\x5A';
@@ -261,7 +267,7 @@ PMemoryHeap::~PMemoryHeap()
       cin.get();
     }
 #endif
-    DumpObjectsSince(0, *leakDumpStream);
+    DumpObjectsSince(firstRealObject, *leakDumpStream);
   }
 
 #if defined(_WIN32)
@@ -301,6 +307,9 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
     PAssertAlways(POutOfMemory);
     return NULL;
   }
+
+  if (firstRealObject == 0 && file != NULL && line > 0)
+    firstRealObject = allocationRequest;
 
   currentMemoryUsage += nSize;
   if (currentMemoryUsage > peakMemoryUsage)
@@ -544,13 +553,18 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
 
-    void * data = (char *)&obj[1];
+    BYTE * data = (BYTE *)&obj[1];
+
     if (obj->fileName != NULL)
       strm << obj->fileName << '(' << obj->line << ") : ";
-    strm << '#' << obj->request << ' ' << data << " [" << obj->size << ']';
+
+    strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
+
     if (obj->className != NULL)
-      strm << " \"" << obj->className << '"';
-    strm << endl;
+      strm << '"' << obj->className << "\" ";
+
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), FALSE)
+                 << dec << setfill(' ') << endl;
   }
 }
 
