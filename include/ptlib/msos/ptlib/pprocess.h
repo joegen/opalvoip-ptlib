@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.18 1997/07/08 13:01:12 robertj Exp $
+ * $Id: pprocess.h,v 1.19 1998/03/20 03:18:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.19  1998/03/20 03:18:27  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.18  1997/07/08 13:01:12  robertj
  * DLL support.
  *
@@ -68,7 +71,10 @@
 
 #ifndef _PPROCESS
 
+#include <syncpoint.h>
+
 extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
@@ -85,13 +91,13 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
-    PSemaphore threadMutex;
+    PMutex threadMutex;
 
     PDECLARE_CLASS(HouseKeepingThread, PThread)
         public:
         HouseKeepingThread();
         void Main();
-        PSemaphore semaphore;
+        PSyncPoint breakBlock;
     };
     HouseKeepingThread * houseKeeper;
     // Thread for doing timers, thread clean up etc.
