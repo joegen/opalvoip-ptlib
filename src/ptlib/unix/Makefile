@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.73  2001/06/26 14:20:36  rogerh
+# Compile the generic video files on all platforms
+#
 # Revision 1.72  2001/05/29 03:34:39  craigs
 # Changed to use new HAS_OPENSSL define
 #
@@ -270,11 +273,23 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
-ifneq (,$(wildcard /usr/include/linux/videodev.h))
+# Video Capture. Include the generic video files, and then optionally
+# include the platform specific files which access video capture hardware.
+
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
-	        video4linux.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
+
+ifneq (,$(wildcard /usr/include/linux/videodev.h))
+VIDEO_SOURCE += video4linux.cxx
+endif
+
+ifeq ($(OSTYPE),FreeBSD)
+VIDEO_SOURCE += video4bsd.cxx
+endif
+
+ifeq ($(OSTYPE),OpenBSD)
+VIDEO_SOURCE += video4bsd.cxx
 endif
 
 #Set SOUND_SOURCE to dummyaudio, a file which links but does not
@@ -293,18 +308,10 @@ endif
 
 ifeq ($(OSTYPE),FreeBSD)
 SOUND_SOURCE = oss.cxx
-VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
-               $(COMMON_SRC_DIR)/videoio.cxx \
-	       video4bsd.cxx \
-	       $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
 SOUND_SOURCE = oss.cxx
-VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
-               $(COMMON_SRC_DIR)/videoio.cxx \
-	       video4bsd.cxx \
-	       $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),NetBSD)
