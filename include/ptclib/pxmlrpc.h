@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.17  2003/01/28 05:08:07  robertj
+ * Fixed copy constructor on function arguments and return value
+ *
  * Revision 1.16  2002/12/16 06:57:15  robertj
  * Added ability to specify certain elemets (by name) that are exempt from
  *   the indent formatting. Useful for XML/RPC where leading white space is
@@ -288,7 +291,7 @@ class PXMLRPCStructBase : public PObject {
   class name : public PXMLRPCStructBase { \
     public: name() { EndConstructor(); } \
     public: name(const name & other) { EndConstructor(); operator=(other); } \
-    name & operator=(const name & other) { PXMLRPCStructBase::operator=(other); return *this; }
+    public: name & operator=(const name & other) { PXMLRPCStructBase::operator=(other); return *this; }
 
 #define PXMLRPC_VARIABLE_CLASS(base, type, variable, xmltype, init, extras) \
     private: struct PXMLRPCVar_##variable : public PXMLRPCVariableBase { \
@@ -380,14 +383,11 @@ class PXMLRPCStructBase : public PObject {
 
 
 #define PXMLRPC_FUNC_MULTI_ARGS(name) \
-  class name##_in : public PXMLRPCStructBase { \
-    public: name##_in() { EndConstructor(); }
+  PXMLRPC_STRUCT_BEGIN(name##_in)
 
 
 #define PXMLRPC_FUNC_MULTI_REPLY(name) \
-  }; \
-  class name##_out : public PXMLRPCStructBase { \
-    public: name##_out() { EndConstructor(); }
+  }; PXMLRPC_STRUCT_BEGIN(name##_out)
 
 
 #define PXMLRPC_FUNC_NO_ARGS(name) \
