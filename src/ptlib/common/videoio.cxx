@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.48  2004/04/18 12:49:22  csoutheren
+ * Patches to video code thanks to Guilhem Tardy (hope I get it right this time :)
+ *
  * Revision 1.47  2004/04/03 23:53:10  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -570,12 +573,35 @@ BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 
 static struct {
-    unsigned dest_width, dest_height, device_width, device_height;
-} prefResizeTable[] = {    
+    unsigned asked_width, asked_height, device_width, device_height;
+} framesizeTab[] = {    
+    { 704, 576,    640, 480 },
+    { 640, 480,    704, 576 },
+    { 640, 480,    352, 288 },
+    { 352, 288,    704, 576 },
+    { 352, 288,    640, 480 },
+    { 352, 288,    352, 240 },
     { 352, 288,    320, 240 },
-    { 176, 144,    160, 120 },
+    { 352, 288,    176, 144 },
+    { 352, 240,    352, 288 },
+    { 352, 240,    320, 240 },
+    { 320, 240,    352, 288 },
+    { 320, 240,    352, 240 },
+    { 176, 144,    352, 288 },
+    { 176, 144,    352, 240 },
     { 176, 144,    320, 240 },
-    { 176, 144,    352, 288 }   //Generate small video when camera only does large.
+    { 176, 144,    176, 120 },
+    { 176, 144,    160, 120 },
+    { 176, 120,    352, 288 },
+    { 176, 120,    352, 240 },
+    { 176, 120,    320, 240 },
+    { 176, 120,    176, 144 },
+    { 176, 120,    160, 120 },
+    { 160, 120,    352, 288 },
+    { 160, 120,    352, 240 },
+    { 160, 120,    320, 240 },
+    { 160, 120,    176, 144 },
+    { 160, 120,    176, 120 },
 };
 
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
@@ -592,55 +618,56 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   }
   
   PTRACE(3,"PVidDev\tColour converter created for " << width << 'x' << height);
-  
-  PINDEX prefResizeIdx = 0;
-  while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
-    if ((prefResizeTable[prefResizeIdx].dest_width == width) &&
-        (prefResizeTable[prefResizeIdx].dest_height == height)) {
-
-      if (SetFrameSize(prefResizeTable[prefResizeIdx].device_width,
-                       prefResizeTable[prefResizeIdx].device_height)) {
-	BOOL converterOK= converter->SetDstFrameSize(width, height, bScaleNotCrop);
-	if (converterOK){
-  	  PTRACE(4,"PVidDev\tSetFrameSizeConverter succceded for "
-                 << prefResizeTable[prefResizeIdx].device_width << 'x'
-                 << prefResizeTable[prefResizeIdx].device_height
-                 << " --> " << width<< 'x' <<height);	       
-          converter->SetVFlipState(doVFlip);
-	  return TRUE;
-	}
-	PTRACE(2,"PVidDev\tSetFrameSizeConverter FAILED for "
-               << prefResizeTable[prefResizeIdx].device_width << 'x'
-               << prefResizeTable[prefResizeIdx].device_height 
-               << " --> " << width << 'x' << height);	       
-      }
-    }    
-    prefResizeIdx++;
-  }
-
-  // Failed to find a resolution the device can do so far, so try
-  // using the maximum width and height it claims it can do.
-  
-  // QUESTION: DO WE WANT A MAX SIZE INSANITY CHECK HERE.
 
   unsigned minWidth, minHeight, maxWidth, maxHeight;
-  GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
+  BOOL limits = GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
 
-  if (!SetFrameSize(maxWidth, maxHeight)){
-    PTRACE(2,"PVidDev\tHardware SetFrameSize FAILED for " << maxWidth << 'x' << maxHeight);
-    return FALSE;
+  for (PINDEX i = 0; i < PARRAYSIZE(framesizeTab); i++) {
+    if (framesizeTab[i].asked_width == width &&
+        framesizeTab[i].asked_height == height &&
+        (!limits ||
+         (framesizeTab[i].device_width >= minWidth &&
+          framesizeTab[i].device_width <= maxWidth &&
+          framesizeTab[i].device_height >= minHeight &&
+          framesizeTab[i].device_height <= maxHeight)) &&
+	SetFrameSize(framesizeTab[i].device_width,
+		     framesizeTab[i].device_height)) {
+      if (CanCaptureVideo() ?
+	  converter->SetDstFrameSize(width, height, bScaleNotCrop)
+			    :
+	  converter->SetSrcFrameSize(width, height) &&
+	  converter->SetDstFrameSize(framesizeTab[i].device_width,
+				     framesizeTab[i].device_height,
+				     bScaleNotCrop)) {
+	PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
+	       << framesizeTab[i].device_width << 'x' << framesizeTab[i].device_height
+	       << " to " << width << 'x' << height);
+
+	converter->SetVFlipState(doVFlip);
+	return TRUE;
+      }
+    }
   }
 
-  PTRACE(4,"PVidDev\tSuccess set hardware size to " << maxWidth << 'x' << maxHeight);
-  if (!converter->SetDstFrameSize(width, height, bScaleNotCrop)){
-    PTRACE(2,"PVidDev\tSetFrameSizeConverter FAILED for " << maxWidth << 'x' << maxHeight);
-    return FALSE;
+  if (CanCaptureVideo()) {
+    // Failed to find a resolution the device can do so far, so try
+    // using the maximum width and height it claims it can do.
+    if (limits &&
+	SetFrameSize(maxWidth, maxHeight)) {
+      if (converter->SetDstFrameSize(width, height, bScaleNotCrop)) {
+	  PTRACE(4,"PVideoDevice\tSetFrameSizeConverter succeeded for converting from "
+		 << maxWidth << 'x' << maxHeight
+		 << " to " << width << 'x' << height);
+
+	  converter->SetVFlipState(doVFlip);
+	  return TRUE;
+      }
+    }
   }
 
-  converter->SetVFlipState(doVFlip);
+  PTRACE(2,"PVideoDevice\tSetFrameSizeConverter failed for " << width << 'x' << height);
 
-  PTRACE(3,"PVidDev\tSetFrameSizeConvert SUCCEEDED for " << width << 'x' << height);
-  return TRUE;
+  return FALSE;
 }
 
 
@@ -876,7 +903,7 @@ BOOL PVideoOutputDevice::CanCaptureVideo() const
 
 PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
 {
-  PTRACE(6, "PPM\t Constructor of PVideoOutputDeviceRGB");
+  PTRACE(6, "RGB\t Constructor of PVideoOutputDeviceRGB");
 
   colourFormat = "RGB24";
   bytesPerPixel = 3;
