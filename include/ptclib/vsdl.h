@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.2  2003/04/28 08:44:42  craigs
+ * Fixed problem with include on linux
+ *
  * Revision 1.1  2003/04/28 07:04:20  craigs
  * Initial version from ohphone
  *
@@ -57,7 +60,7 @@
 #if	P_SDL
 
 #include <ptlib.h>
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 class PSDLVideoFrame : public PObject
 {
