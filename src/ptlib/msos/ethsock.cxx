@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.14  1998/11/22 11:30:10  robertj
+ * Check route table function to get a list
+ *
  * Revision 1.13  1998/11/20 03:17:43  robertj
  * Split rad and write buffers to separate pools.
  *
@@ -74,7 +77,7 @@
 #include <ptlib.h>
 #include <sockets.h>
 
-//#define USE_VPACKET
+#define USE_VPACKET
 #include <epacket.h>
 
 #include <snmp.h>
@@ -85,9 +88,11 @@
 
 
 #ifdef USE_VPACKET
-#define PACKET_SERVICE_NAME "VPacket"
+#define PACKET_SERVICE_NAME "Packet"
+#define PACKET_VXD_NAME     "VPacket"
 #else
 #define PACKET_SERVICE_NAME "EPacket"
+#define PACKET_VXD_NAME     "EPacket"
 #define GetQueryOidCommand(oid) IOCTL_EPACKET_QUERY_OID
 #endif
 
@@ -102,6 +107,8 @@ class PWin32AsnAny : public AsnAny
     PWin32AsnAny();
     PWin32AsnAny(const AsnAny & any)  { memcpy(this, &any, sizeof(*this)); }
     ~PWin32AsnAny();
+    BOOL GetInteger(AsnInteger & i);
+    BOOL GetIpAddress(PIPSocket::Address & addr);
 };
 
 
@@ -139,7 +146,7 @@ class PWin32SnmpLibrary : public PDynaLink
     PWin32SnmpLibrary();
 
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
-    BOOL GetOid(AsnObjectIdentifier & oid, in_addr & ip_address);
+    BOOL GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
     BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize);
     BOOL GetOid(AsnObjectIdentifier & oid, AsnAny & value);
 
@@ -338,6 +345,26 @@ PWin32AsnAny::~PWin32AsnAny()
 }
 
 
+BOOL PWin32AsnAny::GetInteger(AsnInteger & i)
+{
+  if (asnType != ASN_INTEGER)
+    return FALSE;
+
+  i = asnValue.number;
+  return TRUE;
+}
+
+
+BOOL PWin32AsnAny::GetIpAddress(PIPSocket::Address & addr)
+{
+  if (asnType != ASN_IPADDRESS)
+    return FALSE;
+
+  memcpy(&addr, asnValue.address.stream, sizeof(addr));
+  return TRUE;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PWin32AsnOid::PWin32AsnOid()
@@ -414,15 +441,11 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, AsnInteger & value)
   if (!GetOid(oid, any))
     return FALSE;
 
-  if (any.asnType != ASN_INTEGER)
-    return FALSE;
-
-  value = any.asnValue.number;
-  return TRUE;
+  return any.GetInteger(value);
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, in_addr & value)
+BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & value)
 {
   if (!IsLoaded())
     return FALSE;
@@ -431,11 +454,7 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, in_addr & value)
   if (!GetOid(oid, any))
     return FALSE;
 
-  if (any.asnType != ASN_IPADDRESS)
-    return FALSE;
-
-  memcpy(&value, any.asnValue.address.stream, sizeof(value));
-  return TRUE;
+  return any.GetIpAddress(value);
 }
 
 
@@ -770,7 +789,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
   DWORD rxsize;
 
   if (hDriver == INVALID_HANDLE_VALUE) {
-    hDriver = CreateFile("\\\\.\\" PACKET_SERVICE_NAME ".VXD",
+    hDriver = CreateFile("\\\\.\\" PACKET_VXD_NAME ".VXD",
                          GENERIC_READ | GENERIC_WRITE,
                          0,
                          NULL,
@@ -1003,7 +1022,7 @@ BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
     return FALSE;
   }
 
-  if (strncmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
+  if (strnicmp(name, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
     name.Delete(0, sizeof(PacketDeviceStr)-1);
 
   return TRUE;
@@ -1532,51 +1551,68 @@ PString PIPSocket::GetGatewayInterface()
 }
 
 
-BOOL PIPSocket::EnumRouteTable(Address & network,
-                               Address & mask,
-                               Address & destination,
-                               PString & ifName,
-                               BOOL begin)
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
   PWin32SnmpLibrary snmp;
-  PWin32AsnOid oid = "1.3.6.1.2.1.4.21.1.1.0.0.0.0";
 
-  if (begin)
-    oid[9] = 0;
-  else {
-    oid[10] = network.S_un.S_un_b.s_b1;
-    oid[11] = network.S_un.S_un_b.s_b2;
-    oid[12] = network.S_un.S_un_b.s_b3;
-    oid[13] = network.S_un.S_un_b.s_b4;
-  }
+  table.RemoveAll();
 
+  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.21.1";
+  PWin32AsnOid oid = baseOid;
+
+  DWORD lastVariable = 1;
   PWin32AsnAny value;
-  if (!snmp.GetNextOid(oid, value))
-    return FALSE;
+  PLongArray ifNum;
+  PINDEX idx = 0;
 
-  if (value.asnType != ASN_IPADDRESS) {
-    oid.Free();
-    return FALSE;
+  while (snmp.GetNextOid(oid, value) && (baseOid *= oid)) {
+    if (lastVariable != oid[9]) {
+      lastVariable = oid[9];
+      if (lastVariable == 2)
+        ifNum.SetSize(table.GetSize());
+      idx = 0;
+    }
+
+    switch (lastVariable) {
+      case 1 : // network address
+        {
+          Address addr;
+          if (!value.GetIpAddress(addr))
+            return FALSE;  // Very confused route table
+
+          table.Append(new RouteEntry(addr));
+          break;
+        }
+
+      case 2 : // device interface
+        if (!value.GetInteger(ifNum[idx]))
+          return FALSE;
+        break;
+
+      case 3 : // metric
+        if (!value.GetInteger(table[idx].metric))
+          return FALSE;
+        break;
+
+      case 7 : // Get destination (next hop)
+        if (!value.GetIpAddress(table[idx].destination))
+          return FALSE;
+        break;
+
+      case 11 : // Get mask
+        if (!value.GetIpAddress(table[idx].net_mask))
+          return FALSE;
+        break;
+    }
+
+    idx++;
   }
-
-  memcpy(&network, value.asnValue.address.stream, sizeof(network));
-
-  oid[9] = 11;
-  if (!snmp.GetOid(oid, mask))
-    return FALSE;
-
-  oid[9] = 7;
-  if (!snmp.GetOid(oid, destination))
-    return FALSE;
-
-  oid[9] = 2;
-  AsnInteger ifNumber;
-  if (!snmp.GetOid(oid, ifNumber))
-    return FALSE;
 
   oid.Free();
 
-  ifName = snmp.GetInterfaceName(ifNumber);
+  for (idx = 0; idx < table.GetSize(); idx++)
+    table[idx].interfaceName = snmp.GetInterfaceName(ifNum[idx]);
+
   return TRUE;
 }
 
