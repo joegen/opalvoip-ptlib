@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.25  2002/06/20 00:54:41  craigs
+ * Added explicit class names to some functions to alloew overriding
+ *
  * Revision 1.24  2002/06/12 07:28:16  craigs
  * Fixed problem with opening WAV files in read mode
  *
@@ -234,9 +237,9 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
   // We do not want to return this data by mistake.
 
   PINDEX readlen = len;
-  if ((off_t)(GetPosition() + len) > lenData) {
+  if ((off_t)(PWAVFile::GetPosition() + len) > lenData) {
     PTRACE(1, "WAV\tRead: Detected non audio data after the sound samples");
-    readlen = lenData-GetPosition(); 
+    readlen = lenData-PWAVFile::GetPosition(); 
   }
 
   if (!PFile::Read(buf, readlen))
@@ -374,8 +377,7 @@ off_t PWAVFile::GetDataLength()
 {
   if (isValidWAV) {
     // Updates data length before returns.
-    lenData = PFile::GetLength();
-    lenData -= lenHeader;
+    lenData = PFile::GetLength() - lenHeader;
     return lenData;
   }
   else
@@ -403,7 +405,7 @@ BOOL PWAVFile::SetFormat(unsigned fmt)
 // Because it is possible to process a file that we just created, or a
 // corrupted WAV file, we check each read.
 #define RETURN_ON_READ_FAILURE(readStat, len) \
-  if (readStat != TRUE || GetLastReadCount() != len) return (FALSE);
+  if (readStat != TRUE || PFile::GetLastReadCount() != len) return (FALSE);
 
 BOOL PWAVFile::ProcessHeader() {
 
@@ -530,8 +532,7 @@ BOOL PWAVFile::ProcessHeader() {
   numChannels   = hdr_num_channels;
   sampleRate    = hdr_samples_per_sec;
   bitsPerSample = hdr_bits_per_sample;
-  lenHeader     = size_riff_chunk + size_format_chunk
-		  + size_fact_chunk + size_data_chunk;
+  lenHeader     = size_riff_chunk + size_format_chunk + size_fact_chunk + size_data_chunk;
   lenData       = hdr_data_len;
 
   return (TRUE);
