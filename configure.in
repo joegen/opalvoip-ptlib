@@ -47,10 +47,10 @@ AC_SUBST(BUILD_NUMBER, $BUILD_NUMBER)
 
 AC_MSG_NOTICE(PTLib version is ${PWLIB_VERSION});
 
-AC_DEFINE_UNQUOTED(PWLIB_MAJOR,   $MAJOR_VERSION)
-AC_DEFINE_UNQUOTED(PWLIB_MINOR,   $MINOR_VERSION)
-AC_DEFINE_UNQUOTED(PWLIB_BUILD,   $BUILD_NUMBER)
-AC_DEFINE_UNQUOTED(PWLIB_VERSION, "$PWLIB_VERSION")
+AC_DEFINE_UNQUOTED([PWLIB_MAJOR],   [$MAJOR_VERSION], [Major version])
+AC_DEFINE_UNQUOTED([PWLIB_MINOR],   [$MINOR_VERSION], [Minor version])
+AC_DEFINE_UNQUOTED([PWLIB_BUILD],   [$BUILD_NUMBER], [Build number])
+AC_DEFINE_UNQUOTED([PWLIB_VERSION], ["$PWLIB_VERSION"], [pwlib version])
 
 dnl ########################################################################
 dnl set the OSTYPE and MACHTYPE
@@ -125,7 +125,7 @@ case "$target_cpu" in
 		   P_64BIT=1 ;
 		   ;;
 
-   alpha | alphaev56) MACHTYPE=alpha ;
+   alpha | alphaev56 | alphaev6 | alphaev67 | alphaev7) MACHTYPE=alpha ;
 		   P_64BIT=1 ;
 		   ;;
 
@@ -154,6 +154,9 @@ case "$target_cpu" in
 		   P_64BIT=1 ;
 		   ;;
 
+   s390)	   MACHTYPE=s390 ;
+		   ;;
+
    * )		   MACHTYPE=$target_cpu ;
 		   AC_MSG_WARN("CPU $target_cpu not recognized - proceed with caution!") ;;
 esac
@@ -169,10 +172,10 @@ AC_SUBST(TARGETDIR, $TARGETDIR)
 
 AC_DEFINE_UNQUOTED($OS_TAG, $OSRELEASE)
 
-AC_DEFINE(PHAS_TEMPLATES, 1)
+AC_DEFINE([PHAS_TEMPLATES], [1], [Templates found])
 
 if test "x$P_64BIT" != "x" ; then
-  AC_DEFINE(P_64BIT, 1)
+  AC_DEFINE([P_64BIT], [1], [64bit architecture])
 fi
 
 dnl BeOS has it;s own threading system
@@ -182,7 +185,7 @@ fi
 
 dnl posix semaphore support in darwin/macosx is broken
 if test ${OSTYPE} != Darwin ; then
-  AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
+  AC_DEFINE([P_HAS_SEMAPHORES], [1], [using semaphores])
 fi
 
 dnl ########################################################################
@@ -192,7 +195,7 @@ if test "x${SHAREDLIBEXT}" = "x" ; then
   SHAREDLIBEXT="so"
 fi
 AC_SUBST(SHAREDLIBEXT, $SHAREDLIBEXT)
-AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
+AC_DEFINE([P_SHAREDLIBEXT], [$SHAREDLIBEXT], [shared library extension])
 
 dnl ########################################################################
 dnl check the endianness
@@ -283,7 +286,7 @@ dnl check for long double
 
 AC_C_LONG_DOUBLE
 if test $ac_cv_c_long_double != yes ; then
-  AC_DEFINE(PNO_LONG_DOUBLE)
+  AC_DEFINE([PNO_LONG_DOUBLE], [], [No long double])
 fi
 
 dnl ########################################################################
@@ -389,7 +392,7 @@ else
 fi
 
 AC_SUBST(HAS_PLUGINS)
-AC_DEFINE_UNQUOTED(P_DEFAULT_PLUGIN_DIR, "${INSTALLPREFIX}/lib/pwlib")
+AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${LIBDIR}/pwlib"], [Default plugin directory])
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
@@ -721,9 +724,9 @@ AC_ARG_ENABLE(qos,
        qos=$enableval)
 
 if test "$qos" = "no" ; then
-  AC_DEFINE(P_HAS_QOS, 0)
+  AC_DEFINE([P_HAS_QOS], [0], [No QOS])
 else
-  AC_DEFINE(P_HAS_QOS, 1)
+  AC_DEFINE([P_HAS_QOS], [1], [Have QOS])
 fi
 
 
@@ -755,7 +758,10 @@ else
   dnl Linux check
   AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
   if test "${HAS_SDL:-unset}" != "unset" ; then
-    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
+    if test "${X11LIBDIR:-unset}" == "unset" ; then
+	X11LIBDIR=/usr/lib/X11R6
+    fi
+    AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -L${X11LIBDIR} -lpthread -lX11 -lXext -laa)
   fi
 
   dnl freeBSD SDL check
@@ -800,10 +806,11 @@ if test "$HAS_PLUGINS" = "0" ; then
     dnl AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=1)
     if test "${HAS_VIDEO_CAPTURE}" = "0" ; then
       AC_MSG_NOTICE(No Video Capture support)
+      AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
     fi
   fi
 fi
-AC_DEFINE(NO_VIDEO_CAPTURE)
+AC_SUBST(HAS_VIDEO_CAPTURE)
 
 dnl ########################################################################
 dnl check for various functions
@@ -834,7 +841,7 @@ else
   AC_CHECK_FUNC(swab,USE_SYSTEM_SWAB=1)
 fi
 if test "x$ac_cv_func_swab" = "xyes" ; then
-  AC_DEFINE(USE_SYSTEM_SWAB)
+  AC_DEFINE([USE_SYSTEM_SWAB], [], [Use system swab()])
 fi
 
 dnl ########################################################################
