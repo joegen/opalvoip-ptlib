@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.19  2002/10/10 05:39:51  robertj
+ * Fixed VxWorks port breaking other platforms.
+ *
  * Revision 1.18  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -107,8 +110,11 @@
 #ifdef _PMUTEX_PLATFORM_INCLUDE
 #undef _PMUTEX_PLATFORM_INCLUDE
 
-#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
+#ifdef VX_TASKS
     virtual ~PMutex();
+#endif
+
+#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
