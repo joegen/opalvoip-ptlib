@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.4  2002/12/11 03:38:35  robertj
+ * Added more tests
+ *
  * Revision 1.3  2002/12/02 01:08:29  robertj
  * Updated to latest safe collection classes, thanks Vladimir Nesic
  *
@@ -36,7 +39,6 @@ class TestObject : public PSafeObject
     Comparison Compare(const PObject & obj);
     void PrintOn(ostream & strm) const;
 
-  private:
     ThreadSafe & process;
     unsigned value;
 };
@@ -52,11 +54,21 @@ class ThreadSafe : public PProcess
 
   public:
     ThreadSafe();
+    ~ThreadSafe();
     void Main();
 
   private:
-    PDECLARE_NOTIFIER(PThread, ThreadSafe, TestThread);
-    void Test();
+    void Test1(PArgList & args);
+    void Test1Output();
+    PDECLARE_NOTIFIER(PThread, ThreadSafe, Test1Thread);
+
+    void Test2(PArgList & args);
+    PDECLARE_NOTIFIER(PThread, ThreadSafe, Test2Thread1);
+    PDECLARE_NOTIFIER(PThread, ThreadSafe, Test2Thread2);
+
+    void Test3(PArgList & args);
+    PDECLARE_NOTIFIER(PThread, ThreadSafe, Test3Thread1);
+    PDECLARE_NOTIFIER(PThread, ThreadSafe, Test3Thread2);
 
     PSafeList<TestObject> unsorted;
     PSafeList<TestObject> sorted;
