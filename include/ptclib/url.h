@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.9 1997/01/12 04:22:54 robertj Exp $
+ * $Id: url.h,v 1.10 1998/02/03 06:18:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.10  1998/02/03 06:18:49  robertj
+ * Fixed URL encoding to be closer to RFC
+ *
  * Revision 1.9  1997/01/12 04:22:54  robertj
  * Added has function so URL can be dictionary key.
  *
@@ -129,12 +132,13 @@ PDECLARE_CLASS(PURL, PObject)
      */
 
     enum TranslationType {
-       NormalTranslation,
+       LoginTranslation,
+       PathTranslation,
        QueryTranslation
     };
     static PString TranslateString(
       const PString & str,    // String to be translated
-      TranslationType type = NormalTranslation
+      TranslationType type
     );
     /* Translate a string from general form to one that can be included into
        a URL. All reserved characters are escaped.
