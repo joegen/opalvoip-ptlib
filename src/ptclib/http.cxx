@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.88  2003/06/02 02:46:45  rjongbloed
+ * Fixed issue with callto URL parsing incorrect username field.
+ * Added automatic removal of illegal (though common) "//" in callto URL.
+ *
  * Revision 1.87  2003/05/05 07:30:17  craigs
  * Fixed problem with URLs that do not specify schemes
  *
@@ -393,6 +397,7 @@ static schemeStruct const SchemeTable[] = {
   { "sip",       TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
   { "tel",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
   { "fax",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { "callto",    FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
   { NULL,        FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
@@ -597,27 +602,31 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
 
   // Have explicit scheme
   if (url[pos] == ':') {
-    PString tempScheme = url.Left(pos);
-    if (tempScheme == "callto")
-      scheme = "callto";
-    else {
-      schemeInfo = GetSchemeInfo(tempScheme);
-      if (schemeInfo == NULL && defaultScheme == NULL)
-        schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
-      if (schemeInfo != NULL)
-        url.Delete(0, pos+1);
+    schemeInfo = GetSchemeInfo(url.Left(pos));
+    if (schemeInfo == NULL && defaultScheme == NULL)
+      schemeInfo = &SchemeTable[PARRAYSIZE(SchemeTable)-1];
+    if (schemeInfo != NULL)
+      url.Delete(0, pos+1);
 
-      // if there is no scheme, then use default
-      if (schemeInfo == NULL && defaultScheme != NULL)
-        schemeInfo = GetSchemeInfo(defaultScheme);
-      if (schemeInfo == NULL)
-        schemeInfo = &SchemeTable[DEFAULT_SCHEME];
-      scheme = schemeInfo->name;
-    }
+    // if there is no scheme, then use default
+    if (schemeInfo == NULL && defaultScheme != NULL)
+      schemeInfo = GetSchemeInfo(defaultScheme);
+    if (schemeInfo == NULL)
+      schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+    scheme = schemeInfo->name;
   }
+
+  // if we could not match a scheme, then use the default scheme
+  if (schemeInfo == NULL) 
+    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
+
 
   // Super special case!
   if (scheme *= "callto") {
+    // Actually not part of MS spec, but a lot of people put in the // into
+    // the URL, so we take it out of it is there.
+    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
+      url.Delete(0, 2);
 
     // For some bizarre reason callto uses + instead of ; for paramters
     // We do a loop so that phone numbers of the form +61243654666 still work
@@ -673,10 +682,6 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     password = paramVars("password");
     return;
   }
-
-  // if we could not match a scheme, then use the default scheme
-  if (schemeInfo == NULL) 
-    schemeInfo = &SchemeTable[DEFAULT_SCHEME];
 
   // if the URL should have leading slash, then remove it if it has one
   if (schemeInfo != NULL && schemeInfo->hasHostPort && schemeInfo->hasPath) {
