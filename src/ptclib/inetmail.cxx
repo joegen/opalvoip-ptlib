@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.2 1996/03/16 04:51:28 robertj Exp $
+ * $Id: inetmail.cxx,v 1.3 1996/03/18 13:33:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.3  1996/03/18 13:33:16  robertj
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
+ *
  * Revision 1.2  1996/03/16 04:51:28  robertj
  * Changed lastResponseCode to an integer.
  * Added ParseReponse() for splitting reponse line into code and info.
@@ -764,7 +767,7 @@ BOOL PPOP3Socket::DeleteMessage(PINDEX messageNumber)
 }
 
 
-BOOL PPOP3Socket::ParseResponse(const PString & line)
+PINDEX PPOP3Socket::ParseResponse(const PString & line)
 {
   lastResponseCode = line[0] == '+';
   PINDEX endCode = line.Find(' ');
@@ -772,7 +775,7 @@ BOOL PPOP3Socket::ParseResponse(const PString & line)
     lastResponseInfo = line.Mid(endCode+1);
   else
     lastResponseInfo = PString();
-  return TRUE;
+  return 0;
 }
 
 
