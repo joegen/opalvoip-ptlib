@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.5 1996/01/30 23:32:40 robertj Exp $
+ * $Id: http.cxx,v 1.6 1996/02/03 11:11:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.6  1996/02/03 11:11:49  robertj
+ * Numerous bug fixes.
+ * Added expiry date and ismodifiedsince support.
+ *
  * Revision 1.5  1996/01/30 23:32:40  robertj
  * Added single .
  *
@@ -67,13 +71,13 @@ PObject::Comparison PURL::Compare(const PObject & obj) const
       if (c == EqualTo) {
         c = hostname.Compare(other.hostname);
         if (c == EqualTo) {
-          c = path.Compare(other.path);
+          c = pathStr.Compare(other.pathStr);
           if (c == EqualTo) {
             c = parameters.Compare(other.parameters);
             if (c == EqualTo) {
               c = fragment.Compare(other.fragment);
               if (c == EqualTo)
-                c = query.Compare(other.query);
+                c = queryStr.Compare(other.queryStr);
             }
           }
         }
@@ -101,8 +105,9 @@ void PURL::ReadFrom(istream & stream)
 void PURL::Parse(const char * cstr)
 {
   scheme = hostname = PCaselessString();
-  username = password = parameters = fragment = query = PString();
+  pathStr = username = password = parameters = fragment = queryStr = PString();
   path.SetSize(0);
+  queryVars.RemoveAll();
   port = 80;
   absolutePath = TRUE;
 
@@ -179,7 +184,15 @@ void PURL::Parse(const char * cstr)
   // chop off any trailing query
   pos = url.FindLast('?');
   if (pos != P_MAX_INDEX && pos > 0) {
-    query = url(pos+1, P_MAX_INDEX);
+    queryStr = url(pos+1, P_MAX_INDEX);
+    PStringArray tokens = queryStr.Tokenise("&=", TRUE);
+    for (PINDEX i = 0; i < tokens.GetSize(); i += 2) {
+      PCaselessString key = tokens[i];
+      if (queryVars.GetAt(key) != NULL) 
+        queryVars.SetAt(key, queryVars[key] + "," + tokens[i+1]);
+      else
+        queryVars.SetAt(key, tokens[i+1]);
+    }
     url.Delete(pos, P_MAX_INDEX);
   }
 
@@ -191,6 +204,7 @@ void PURL::Parse(const char * cstr)
   }
 
   // the hierarchy is what is left
+  pathStr = url;
   path = url.Tokenise('/', FALSE);
   absolutePath = path[0].IsEmpty();
   if (absolutePath)
@@ -240,8 +254,8 @@ PString PURL::AsString(UrlFormat fmt) const
     if (!parameters.IsEmpty())
       str << ";" << parameters;
 
-    if (!query.IsEmpty())
-      str << "?" << query;
+    if (!queryStr.IsEmpty())
+      str << "?" << queryStr;
 
     if (!fragment.IsEmpty())
       str << "#" << fragment;
@@ -552,6 +566,8 @@ static struct httpStatusCodeStruct {
   { "Bad Gateway",           502, 1 },
 };
 
+const char RFC1123TimeFormat[] = "www, dd MMM yyyy hh:mm:ssg";
+
 void PHTTPSocket::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 PINDEX bodySize)
@@ -563,12 +579,17 @@ void PHTTPSocket::StartResponse(StatusCode code,
   *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
         << statusInfo->code <<  statusInfo->text << "\r\n";
 
-  PTime now;
-  headers.SetAt("Date", now.AsString("www, dd MMM yyyy hh:mm:ssg")+" GMT");
-  headers.SetAt("MIME-Version", "1.0");
-  headers.SetAt("Server", GetServerName());
   headers.SetAt(ContentLengthStr, PString(PString::Unsigned, bodySize));
   headers.Write(*this);
+}
+
+
+void PHTTPSocket::SetDefaultMIMEInfo(PMIMEInfo & info)
+{
+  PTime now;
+  info.SetAt("Date", now.AsString(RFC1123TimeFormat)+" GMT");
+  info.SetAt("MIME-Version", "1.0");
+  info.SetAt("Server", GetServerName());
 }
 
 
@@ -577,6 +598,7 @@ void PHTTPSocket::OnError(StatusCode code, const PString & extra)
   httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
 
   PMIMEInfo headers;
+  SetDefaultMIMEInfo(headers);
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
@@ -689,15 +711,24 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
                           const PMIMEInfo & info)
 {
   if (CheckAuthority(socket, info)) {
-    PString data;
-    PMIMEInfo outMIME;
-    outMIME.SetAt(ContentTypeStr, contentType);
-    PHTTPSocket::StatusCode code = OnLoadData(url, info, data, outMIME);
-    if (code != PHTTPSocket::OK)
-      socket.OnError(code, url.AsString());
+    PString modSinceDate = info.GetString("If-Modified-Since", "");
+    if (!modSinceDate.IsEmpty() && IsModifiedSince(PTime(modSinceDate)))
+      socket.OnError(PHTTPSocket::NotModified, url.AsString());
     else {
-      socket.StartResponse(code, outMIME, data.GetSize());
-      socket.Write((const char *)data, data.GetSize());
+      PString data;
+      PMIMEInfo outMIME;
+      socket.SetDefaultMIMEInfo(outMIME);
+      PTime expiryDate;
+      if (GetExpirationDate(expiryDate))
+        outMIME.SetAt("Expires", expiryDate.AsString(RFC1123TimeFormat));
+      outMIME.SetAt(ContentTypeStr, contentType);
+      PHTTPSocket::StatusCode code = OnLoadData(url, info, data, outMIME);
+      if (code != PHTTPSocket::OK)
+        socket.OnError(code, url.AsString());
+      else {
+        socket.StartResponse(code, outMIME, data.GetSize());
+        socket.Write((const char *)data, data.GetSize());
+      }
     }
   }
 }
@@ -708,13 +739,18 @@ void PHTTPResource::OnHEAD(PHTTPSocket & socket,
                                 const PMIMEInfo & info)
 {
   if (CheckAuthority(socket, info)) {
-    PMIMEInfo reply;
     PString data;
-    PHTTPSocket::StatusCode code = OnLoadHead(url, info, data, reply);
+    PMIMEInfo outMIME;
+    socket.SetDefaultMIMEInfo(outMIME);
+    PTime expiryDate;
+    if (GetExpirationDate(expiryDate))
+      outMIME.SetAt("Expires", expiryDate.AsString(RFC1123TimeFormat));
+    outMIME.SetAt(ContentTypeStr, contentType);
+    PHTTPSocket::StatusCode code = OnLoadHead(url, info, data, outMIME);
     if (code != PHTTPSocket::OK)
       socket.OnError(code, url.AsString());
     else {
-      socket.StartResponse(code, reply, data.GetSize());
+      socket.StartResponse(code, outMIME, data.GetSize());
       socket.Write((const char *)data, data.GetSize());
     }
   }
@@ -744,6 +780,7 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
   if (authInfo.IsEmpty()) {
     // it must be a request for authorisation
     PMIMEInfo reply;
+    socket.SetDefaultMIMEInfo(reply);
     reply.SetAt("WWW-Authenticate",
                               "Basic realm=\"" + authority->GetRealm() + "\"");
     socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
@@ -754,6 +791,18 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     return TRUE;
 
   socket.OnError(PHTTPSocket::Forbidden, "");
+  return FALSE;
+}
+
+
+BOOL PHTTPResource::IsModifiedSince(const PTime &)
+{
+  return TRUE;
+}
+
+
+BOOL PHTTPResource::GetExpirationDate(PTime &)
+{
   return FALSE;
 }
 
