@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.36 2003/04/16 08:00:19 robertj Exp $
+ * $Id: pssl.cxx,v 1.37 2004/02/22 01:57:37 ykiryanov Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.37  2004/02/22 01:57:37  ykiryanov
+ * Put a fix for a compiler choke on BeOS when calling macro d2i_DHparams_bio in PSSLDiffieHellman::Load. Fast on Monday.
+ *
  * Revision 1.36  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -731,6 +734,18 @@ PSSLDiffieHellman::~PSSLDiffieHellman()
     DH_free(dh);
 }
 
+#ifdef __BEOS__
+// 2/21/04 Yuri Kiryanov - fix for compiler choke on BeOS for usage of
+// SSL function d2i_DHparams_bio below in PSSLDiffieHellman::Load
+#undef  d2i_DHparams_bio
+#define d2i_DHparams_bio(bp,x) \
+ (DH *)ASN1_d2i_bio( \
+         (char *(*)(...))(void *)DH_new, \
+         (char *(*)(...))(void *)d2i_DHparams, \
+         (bp), \
+         (unsigned char **)(x) \
+)
+#endif
 
 BOOL PSSLDiffieHellman::Load(const PFilePath & dhFile,
                              PSSLFileTypes fileType)
