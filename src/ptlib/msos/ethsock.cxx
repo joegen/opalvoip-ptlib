@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.16  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.15  1998/11/30 04:48:38  robertj
  * New directory structure
  *
@@ -79,15 +82,41 @@
 
 #include <ptlib.h>
 #include <ptlib/sockets.h>
+#include <snmp.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Stuff from ndis.h
+
+#define OID_802_3_PERMANENT_ADDRESS         0x01010101
+#define OID_802_3_CURRENT_ADDRESS           0x01010102
+
+#define OID_GEN_DRIVER_VERSION              0x00010110
+#define OID_GEN_CURRENT_PACKET_FILTER       0x0001010E
+#define OID_GEN_MEDIA_SUPPORTED             0x00010103
+
+#define NDIS_PACKET_TYPE_DIRECTED           0x0001
+#define NDIS_PACKET_TYPE_MULTICAST          0x0002
+#define NDIS_PACKET_TYPE_ALL_MULTICAST      0x0004
+#define NDIS_PACKET_TYPE_BROADCAST          0x0008
+#define NDIS_PACKET_TYPE_PROMISCUOUS        0x0020
+
+typedef enum _NDIS_MEDIUM {
+    NdisMedium802_3,
+    NdisMedium802_5,
+    NdisMediumFddi,
+    NdisMediumWan,
+    NdisMediumLocalTalk,
+    NdisMediumDix,              // defined for convenience, not a real medium
+    NdisMediumArcnetRaw,
+    NdisMediumArcnet878_2
+} NDIS_MEDIUM, *PNDIS_MEDIUM;                    
+
+///////////////////////////////////////////////////////////////////////////////
+
 
 #define USE_VPACKET
 #include <ptlib/epacket.h>
-
-#include <snmp.h>
-
-#pragma warning(disable:4201)
-#include "ndis.h"
-#pragma warning(default:4201)
 
 
 #ifdef USE_VPACKET
@@ -1529,7 +1558,6 @@ BOOL PIPSocket::GetGatewayAddress(Address & addr)
 {
   PWin32SnmpLibrary snmp;
 
-  AsnInteger ifNum = -1;
   PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
   if (!snmp.GetOid(gatewayOid, addr))
     return FALSE;
