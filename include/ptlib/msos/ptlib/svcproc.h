@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.30  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.29  2002/06/25 02:23:13  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -119,18 +122,8 @@
  */
 
 
-#ifndef _PSERVICEPROCESS
-
-
-#if defined(_MSC_VER) && !defined(_WIN32)
-extern "C" int __argc;
-extern "C" char ** __argv;
-#endif
-
-#ifdef __BORLANDC__
-#define __argc _argc
-#define __argv _argv
-#endif
+///////////////////////////////////////////////////////////////////////////////
+// PServiceProcess
 
 #undef PCREATE_PROCESS
 #define PCREATE_PROCESS(cls) \
@@ -141,18 +134,6 @@ extern "C" char ** __argv;
     }
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PServiceProcess
-
-#define _PSERVICEPROCESS_PLATFORM_INCLUDE
-#include "../../svcproc.h"
-
-#endif
-#ifdef _PSERVICEPROCESS_PLATFORM_INCLUDE
-#undef _PSERVICEPROCESS_PLATFORM_INCLUDE
-
-#ifdef _WIN32
   public:
     virtual const char * GetServiceDependencies() const;
       // Get a set of null terminated strings terminated with double null.
@@ -228,12 +209,6 @@ extern "C" char ** __argv;
     HWND                  controlWindow;
     HWND                  debugWindow;
 
-#endif
-
   friend void PAssertFunc(const char *);
-
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

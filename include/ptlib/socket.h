@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.44  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.43  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -173,9 +176,7 @@
 #pragma interface
 #endif
 
-#ifndef _PCHANNEL
 #include <ptlib/channel.h>
-#endif
 
 #ifdef __NUCLEUS_PLUS__
 #include <sys/socket.h>
@@ -590,7 +591,7 @@ class PSocket : public PChannel
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/socket.h"
+#include "msos/ptlib/socket.h"
 #else
 #include "unix/ptlib/socket.h"
 #endif
@@ -661,6 +662,20 @@ class P_timeval {
     struct timeval tval;
     BOOL infinite;
 };
+
+#ifdef _WIN32
+class PWinSock : public PSocket
+{
+  PCLASSINFO(PWinSock, PSocket)
+// Must be one and one only instance of this class, and it must be static!.
+  public:
+    PWinSock();
+    ~PWinSock();
+  private:
+    virtual BOOL OpenSocket();
+    virtual const char * GetProtocolName() const;
+};
+#endif
 
 #endif
 

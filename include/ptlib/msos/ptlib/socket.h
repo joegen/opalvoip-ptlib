@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.23  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.22  2003/01/11 05:10:51  robertj
  * Fixed Win CE compatibility issues, thanks Joerg Schoemer
  *
@@ -104,48 +107,8 @@
  *
  */
 
-#if !defined(_PSOCKET) && !defined(_PSOCKET_PLATFORM_INCLUDE)
-
-#if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
-
-#if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
-
-#include <winsock.h>
-
-#else // P_WINSOCKv1
-
-///IPv6 support
-// Needed for for IPv6 socket API. Must be included before "windows.h"
-#include <winsock2.h> // Version 2 of windows socket
-#include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
-
-#if P_HAS_IPV6 && !defined IPPROTO_IPV6
-#pragma warning(push)
-#pragma warning(disable:4127 4706)
-#include "tpipv6.h"  // For IPv6 Tech Preview.
-#pragma warning(pop)
-#endif
-
-#endif // P_WINSOCKv1
-
-
-#define PIPX
-
-#endif
-
-
-typedef int socklen_t;
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
-
-#define _PSOCKET_PLATFORM_INCLUDE
-#include "../../socket.h"
-#undef _PSOCKET_PLATFORM_INCLUDE
-
-#endif
-#ifdef _PSOCKET_PLATFORM_INCLUDE
 
   public:
     ~PSocket();
@@ -162,27 +125,6 @@ typedef int socklen_t;
   private:
 #ifdef PHAS_WINSOCK
     static BOOL WinSockStarted;
-#endif
-
-
-#endif
-
-
-#if !defined(_PSOCKET) && !defined(_PSOCKET_PLATFORM_INCLUDE)
-#define _PSOCKET
-
-class PWinSock : public PSocket
-{
-  PCLASSINFO(PWinSock, PSocket)
-// Must be one and one only instance of this class, and it must be static!.
-  public:
-    PWinSock();
-    ~PWinSock();
-  private:
-    virtual BOOL OpenSocket();
-    virtual const char * GetProtocolName() const;
-};
-
 #endif
 
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.22  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.21  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -95,43 +98,10 @@
  *
  */
 
-#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
-
-#if defined(_WIN32)
-
-#define P_PLATFORM_HAS_THREADS
-#undef Yield
-
-#else
-
-#include <malloc.h>
-#include <setjmp.h>
-
-#if defined(_MSC_VER) && !defined(_JMP_BUF_DEFINED)
-
-typedef int jmp_buf[9];
-#define setjmp _setjmp
-extern "C" int  __cdecl _setjmp(jmp_buf);
-extern "C" void __cdecl longjmp(jmp_buf, int);
-
-#endif
-
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-typedef DWORD PThreadIdentifier;
-
-#define _PTHREAD_PLATFORM_INCLUDE
-#include "../../thread.h"
-#undef _PTHREAD_PLATFORM_INCLUDE
-
-#endif
-#ifdef _PTHREAD_PLATFORM_INCLUDE
-
-#if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
 
@@ -143,51 +113,5 @@ typedef DWORD PThreadIdentifier;
     PINDEX originalStackSize;
 
     static UINT __stdcall MainFunction(void * thread);
-#else
-  public:
-    typedef BOOL (__far *BlockFunction)(PObject *);
-    void Block(BlockFunction isBlocked, PObject * obj);
-      // Flag the thread as blocked. The scheduler will call the specified
-      // function with the obj parameter to determine if the thread is to be
-      // unblocked.
-
-  protected:
-    BOOL IsOnlyThread() const;
-      // Return TRUE if is only thread in process
-
-
-  private:
-    // Member fields
-    BlockFunction isBlocked;
-      // Callback function to determine if the thread is blocked on I/O.
-
-    PObject * blocker;
-      // When thread is blocked on I/O this is the object to pass to isBlocked.
-
-#ifdef _WINDOWS
-    unsigned stackUsed;
-      // High water mark for stack allocated for the thread
-#endif
-#endif
-
-
-#endif
-
-
-#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
-#define _PTHREAD
-
-inline PThread::PThread()
-  { }
-
-inline PThreadIdentifier PThread::GetThreadId() const
-  { return threadId; }
-
-inline PThreadIdentifier PThread::GetCurrentThreadId()
-  { return ::GetCurrentThreadId(); }
-
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.9  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.8  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -39,48 +42,13 @@
  *
  */
 
-#ifndef _PCONFIG
-
-
-class RegistryKey
-{
-  public:
-    enum OpenMode {
-      ReadOnly,
-      ReadWrite,
-      Create
-    };
-    RegistryKey(const PString & subkey, OpenMode mode);
-    ~RegistryKey();
-
-    BOOL EnumKey(PINDEX idx, PString & str);
-    BOOL EnumValue(PINDEX idx, PString & str);
-    BOOL DeleteKey(const PString & subkey);
-    BOOL DeleteValue(const PString & value);
-    BOOL QueryValue(const PString & value, PString & str);
-    BOOL QueryValue(const PString & value, DWORD & num, BOOL boolean);
-    BOOL SetValue(const PString & value, const PString & str);
-    BOOL SetValue(const PString & value, DWORD num);
-  private:
-    HKEY key;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfig
 
-#define _PCONFIG_PLATFORM_INCLUDE
-#include "../../config.h"
-
-#endif
-#ifdef _PCONFIG_PLATFORM_INCLUDE
-#undef _PCONFIG_PLATFORM_INCLUDE
-
   protected:
     Source  source;
     PString location;
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////
