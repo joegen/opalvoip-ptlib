@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.12 1995/03/14 12:41:54 robertj Exp $
+ * $Id: object.h,v 1.13 1995/04/25 12:04:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.13  1995/04/25 12:04:35  robertj
+ * Fixed borland compatibility.
+ * Fixed function hiding ancestor virtuals.
+ *
  * Revision 1.12  1995/03/14 12:41:54  robertj
  * Updated documentation to use HTML codes.
  *
@@ -146,7 +150,11 @@ void PAssertFunc(const char * file, int line, const char * msg);
 
 
 // Declaration for standard error output
+#if defined(_WIN32) && defined(_WINDLL)
+extern __declspec(dllexport) ostream * PErrorStream;
+#else
 extern ostream * PSTATIC PErrorStream;
+#endif
 
 /*$MACRO PError
    This macro is used to access the platform specific error output stream. This
@@ -774,6 +782,9 @@ class PSerialRegistration {
        function to construct objects.
      */
 
+    enum { HashTableSize = 41 };
+    // Constant for size of hash table.
+
   protected:
     const char * className;
     // This serialiser registrations class
@@ -786,9 +797,6 @@ class PSerialRegistration {
 
     PSerialRegistration * clash;
     // Pointer to next registration when a hash clash occurs.
-
-    enum { HashTableSize = 41 };
-    // Constant for size of hash table.
 
     static PINDEX HashFunction(
       const char * className    // Class name to calculate hash function for.
@@ -863,7 +871,7 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
    <A><CODE>Serialise()</CODE></A> function is called and it is up to that
    function to output in binary or text.
 
-   To a large extent, if only the << operator is used on the <A>PSerialser</A> 
+   To a large extent, if only the << operator is used on the <A>PSerialser</A>
    instance, the text and binary versions of the
    <A><CODE>Serialise()</CODE></A> function can be made identical.
 
@@ -937,8 +945,8 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
 
 PDECLARE_CLASS(PTextSerialiser, PSerialiser)
 /* This serialiser class serialises each object using ASCII text. This gives
-   the highest level of portability for streams and platforms at the expense
-   if larger amounts of data.
+	the highest level of portability for streams and platforms at the expense
+	if larger amounts of data.
  */
 
   public:
@@ -963,6 +971,7 @@ PDECLARE_CLASS(PTextSerialiser, PSerialiser)
     PSerialiser & operator<<(const char *);
     PSerialiser & operator<<(const unsigned char *);
     PSerialiser & operator<<(const signed char *);
+    virtual PSerialiser & operator<<(PObject & obj);
     /* Output the data to the serialiser object. When the operator is executed
        on a <A>PObject</A> descendent then that objects
        <A><CODE>Serialise()</CODE></A> function is called.
@@ -1009,6 +1018,7 @@ PDECLARE_CLASS(PBinarySerialiser, PSerialiser)
     PSerialiser & operator<<(const char *);
     PSerialiser & operator<<(const unsigned char *);
     PSerialiser & operator<<(const signed char *);
+    virtual PSerialiser & operator<<(PObject & obj);
     /* Output the data to the serialiser object. When the operator is executed
        on a <A>PObject</A> descendent then that objects
        <A><CODE>Serialise()</CODE></A> function is called.
