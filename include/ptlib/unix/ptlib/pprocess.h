@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.28  2004/04/02 03:37:07  ykiryanov
+ * Added timerChangePipe, to make code better
+ *
  * Revision 1.27  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -180,19 +183,12 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
     PLIST(ThreadList, PThread);
     ThreadList autoDeleteThreads;
     PMutex deleteThreadMutex;
+    PHouseKeepingThread * housekeepingThread;
 
-    PDECLARE_CLASS(HouseKeepingThread, PThread)
-        public:
-        HouseKeepingThread();
-        void Main();
-        PSyncPoint breakBlock;
-    };
-    friend class HouseKeepingThread;
-    HouseKeepingThread * houseKeeper;
-    // Thread for doing timers, thread clean up etc.
-
-  friend PThread * PThread::Current();
-  friend int32 PThread::ThreadFunction(void * thread);
+    int        timerChangePipe[2];
+    
+    friend PThread * PThread::Current();
+    friend int32 PThread::ThreadFunction(void * thread);
 
 #elif defined(VX_TASKS)
 
