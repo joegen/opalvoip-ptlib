@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.12  2001/03/30 07:20:37  robertj
+ * Some drivers (QuickCam) use key frame bit to indicate grab complete.
+ *
  * Revision 1.11  2001/03/08 22:57:15  robertj
  * Added new VerifyHardwareFrameSize() function
  *
@@ -465,7 +468,7 @@ LRESULT CALLBACK PVideoInputDevice::VideoHandler(HWND hWnd, LPVIDEOHDR vh)
 
 LRESULT PVideoInputDevice::HandleVideo(LPVIDEOHDR vh)
 {
-  if (vh->dwFlags & VHDR_DONE) {
+  if ((vh->dwFlags&(VHDR_DONE|VHDR_KEYFRAME)) != 0) {
     lastFrameMutex.Wait();
     lastFramePtr = vh->lpData;
     lastFrameSize = vh->dwBytesUsed;
