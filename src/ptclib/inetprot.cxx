@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.33 1997/11/06 10:26:48 robertj Exp $
+ * $Id: inetprot.cxx,v 1.34 1998/01/26 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.34  1998/01/26 00:46:48  robertj
+ * Fixed Connect functions on PInternetProtocol so propagates read timeout variable so can adjust the connect timeout..
+ *
  * Revision 1.33  1997/11/06 10:26:48  robertj
  * Fixed bug in debug dump of MIME dictionary, did not have linefeeds between entries.
  *
@@ -263,19 +266,38 @@ BOOL PInternetProtocol::Connect(const PString & address, WORD port)
   if (port == 0)
     return Connect(address, defaultServiceName);
 
-  return AttachSocket(new PTCPSocket(address, port));
+  if (readTimeout == PMaxTimeInterval)
+    return AttachSocket(new PTCPSocket(address, port));
+
+  PTCPSocket * s = new PTCPSocket(port);
+  s->SetReadTimeout(readTimeout);
+  s->Connect(address);
+  return AttachSocket(s);
 }
 
 
 BOOL PInternetProtocol::Connect(const PString & address, const PString & service)
 {
-  return AttachSocket(new PTCPSocket(address, service));
+  if (readTimeout == PMaxTimeInterval)
+    return AttachSocket(new PTCPSocket(address, service));
+
+  PTCPSocket * s = new PTCPSocket;
+  s->SetReadTimeout(readTimeout);
+  s->SetPort(service);
+  s->Connect(address);
+  return AttachSocket(s);
 }
 
 
 BOOL PInternetProtocol::Accept(PSocket & listener)
 {
-  return AttachSocket(new PTCPSocket(listener));
+  if (readTimeout == PMaxTimeInterval)
+    return AttachSocket(new PTCPSocket(listener));
+
+  PTCPSocket * s = new PTCPSocket;
+  s->SetReadTimeout(readTimeout);
+  Accept(listener);
+  return AttachSocket(s);
 }
 
 
