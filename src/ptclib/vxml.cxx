@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.50  2004/07/27 00:00:41  csoutheren
+ * Allowed Close to set closed flag before attepting lock of channels
+ *
  * Revision 1.49  2004/07/26 07:25:02  csoutheren
  * Fixed another problem with thread starvation due to delaying inside a mutex lock
  *
@@ -2321,11 +2324,11 @@ BOOL PVXMLChannel::IsOpen() const
 
 BOOL PVXMLChannel::Close()
 { 
+  closed = TRUE; 
   PWaitAndSignal m1(channelReadMutex);
   PWaitAndSignal m2(channelWriteMutex);
 
   PDelayChannel::Close(); 
-  closed = TRUE; 
   return TRUE; 
 }
 
