@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.26  2002/01/16 07:51:16  robertj
+ * MSVC compatibilty changes
+ *
  * Revision 1.25  2002/01/14 02:59:41  robertj
  * Added preferred colour format selection, thanks Walter Whitlock
  *
@@ -143,6 +146,12 @@ PVideoDevice::~PVideoDevice()
 {
   if (converter)
     delete converter;
+}
+
+
+BOOL PVideoDevice::Close()
+{
+  return TRUE;  
 }
 
 
@@ -496,11 +505,77 @@ unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
 }
  
 
-BOOL PVideoDevice::Close()
+BOOL PVideoDevice::CanCaptureVideo()
 {
-  return TRUE;  
+  return deviceCanCaptureVideo;
 }
 
+
+int PVideoDevice::GetBrightness()
+{
+  return frameBrightness;
+}
+
+
+BOOL PVideoDevice::SetBrightness(unsigned newBrightness)
+{
+  frameBrightness = newBrightness;
+  return TRUE;
+}
+
+
+int PVideoDevice::GetWhiteness()
+{
+  return frameWhiteness;
+}
+
+
+BOOL PVideoDevice::SetWhiteness(unsigned newWhiteness)
+{
+  frameWhiteness = newWhiteness;
+  return TRUE;
+}
+
+
+int PVideoDevice::GetColour()
+{
+  return frameColour;
+}
+
+
+BOOL PVideoDevice::SetColour(unsigned newColour)
+{
+  frameColour=newColour;
+  return TRUE;
+}
+
+
+int PVideoDevice::GetContrast()
+{
+  return frameContrast;
+}
+
+
+BOOL PVideoDevice::SetContrast(unsigned newContrast)
+{
+  frameContrast=newContrast;
+  return TRUE;
+}
+
+
+int PVideoDevice::GetHue()
+{
+  return frameHue;
+}
+
+
+BOOL PVideoDevice::SetHue(unsigned newHue)
+{
+  frameHue=newHue;
+  return TRUE;
+}
+
+    
 BOOL PVideoDevice::GetParameters (int *whiteness, int *brightness, 
                                       int *colour, int *contrast, int *hue)
 {
@@ -514,6 +589,24 @@ BOOL PVideoDevice::GetParameters (int *whiteness, int *brightness,
   *whiteness  = frameWhiteness;
 
   return TRUE;
+}
+
+
+BOOL PVideoDevice::GetVFlipState()
+{
+  return FALSE;
+}
+
+
+BOOL PVideoDevice::SetVFlipState(BOOL /*newVFlipState*/)
+{
+  return FALSE;
+}
+
+
+BOOL PVideoDevice::ToggleVFlipState()
+{
+  return FALSE;
 }
 
 
