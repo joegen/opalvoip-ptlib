@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.4  2003/05/16 02:03:07  rjongbloed
+ * Fixed being able to manually disable a "feature" when does a full disk search.
+ *
  * Revision 1.3  2003/05/05 08:39:52  robertj
  * Added ability to explicitly disable a feature, or tell configure exactly
  *   where features library is so it does not need to search for it.
@@ -142,6 +145,11 @@ class Feature
     {
       if (found)
         return true;
+
+      if (defineName[0] == '\0') {
+        found = false;
+        return true;
+      }
 
       if (includeName[0] == '\0') {
         found = true;
