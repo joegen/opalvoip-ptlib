@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.81  2004/10/24 03:43:55  rjongbloed
+ * Used correct test for inclusion of pragma implementation
+ *
  * Revision 1.80  2004/10/23 10:55:40  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -284,9 +287,9 @@
 //
  */
 
-#ifndef _WIN32_WCE
+#ifdef __GNUC__
 #pragma implementation "pfactory.h"
-#endif // !_WIN32_WCE
+#endif // __GNUC__
 
 #include <ptlib.h>
 #include <ctype.h>
