@@ -60,7 +60,7 @@ class PSoundChannelALSA: public PSoundChannel
        unsigned _numChannels,
        unsigned _sampleRate,
        unsigned _bitsPerSample);
-  BOOL Setup();
+  BOOL Setup(int nBytes = 480);
   BOOL Close();
   BOOL Write(const void * buf, PINDEX len);
   BOOL Read(void * buf, PINDEX len);
@@ -101,8 +101,15 @@ class PSoundChannelALSA: public PSoundChannel
 
   snd_pcm_t *os_handle; /* Handle, different from the PChannel handle */
   int card_nr;
-  int frame_bytes; /* Number of bytes in a frame */
-  snd_pcm_uframes_t period_size;
-  unsigned int periods;
+
   PMutex device_mutex;
+
+  /**number of 30 (or 20) ms long sound intervals stored by ALSA. Typically, 2.*/
+  PINDEX storedPeriods;
+
+  /**Total number of bytes of audio stored by ALSA.  Typically, 2*480 or 960.*/
+  PINDEX storedSize;
+
+  /** Number of bytes in a ALSA frame. a frame may only be 4ms long*/
+  int frameBytes; 
 };

@@ -28,6 +28,11 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.25  2004/12/02 01:19:48  dereksmithies
+ * Ensure ALSA is initialised to a default of 2 stored buffers.
+ * Improve reporting of errors.
+ * Thanks to various people who have been patiently reporting errors.
+ *
  * Revision 1.24  2004/11/07 20:23:00  dsandras
  * Removed erroneous update of lastReadCount in previous commit.
  *
@@ -47,10 +52,12 @@
  * Added DSNOOP plugin support.
  *
  * Revision 1.18  2004/05/14 10:15:26  dominance
- * Fixes direct opening of sound output devices. The list of devices does no longer return NULL in that case. Patch provided by Julien Puydt <julien.puydt@laposte.net>.
+ * Fixes direct opening of sound output devices. The list of devices does no longer return NULL in that case. 
+ * Patch provided by Julien Puydt <julien.puydt@laposte.net>.
  *
  * Revision 1.17  2004/04/03 10:33:45  dsandras
- * Use PStringToOrdinal to store the detected devices, that fixes problems if there is a discontinuity in the succession of soundcard ID's. For example the user has card ID 1 and 3, but not 2.
+ * Use PStringToOrdinal to store the detected devices, that fixes problems if there is a discontinuity in the 
+ * succession of soundcard ID's. For example the user has card ID 1 and 3, but not 2.
  *
  * Revision 1.16  2004/03/13 12:36:14  dsandras
  * Added support for DMIX plugin output.
@@ -129,9 +136,10 @@ PSoundChannelALSA::PSoundChannelALSA (const PString &device,
 
 void PSoundChannelALSA::Construct()
 {
-  frame_bytes = 0;
-  period_size = 0;
-  periods = 0;
+  frameBytes = 480;
+  storedPeriods = 2;
+  storedSize = storedPeriods * frameBytes;
+
   card_nr = 0;
   os_handle = NULL;
 }
@@ -259,6 +267,12 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
 
   Close();
 
+  direction = _dir;
+  mNumChannels = _numChannels;
+  mSampleRate = _sampleRate;
+  mBitsPerSample = _bitsPerSample;
+  isInitialised = FALSE;
+
   os_handle = NULL;
 
   if (_dir == Recorder)
@@ -301,12 +315,9 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
     snd_pcm_nonblock (os_handle, 0);
    
   /* save internal parameters */
-  direction = _dir;
+
   device = real_device_name;
-  mNumChannels = _numChannels;
-  mSampleRate = _sampleRate;
-  mBitsPerSample = _bitsPerSample;
-  isInitialised = FALSE;
+
 
   PTRACE (1, "ALSA\tDevice " << real_device_name << " Opened");
 
@@ -314,11 +325,11 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
 }
 
 
-BOOL PSoundChannelALSA::Setup()
+BOOL PSoundChannelALSA::Setup(int nBytes)
 {
   snd_pcm_hw_params_t *hw_params = NULL;
-  snd_pcm_uframes_t buffer_size = 0;
-  
+  PStringStream msg;
+
   int err = 0;
   enum _snd_pcm_format val = SND_PCM_FORMAT_UNKNOWN;
   BOOL no_error = TRUE;
@@ -343,31 +354,39 @@ BOOL PSoundChannelALSA::Setup()
   val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
 #endif
 
-  frame_bytes = (mNumChannels * (snd_pcm_format_width (val) / 8));
+  frameBytes = (mNumChannels * (snd_pcm_format_width (val) / 8));
 
   snd_pcm_hw_params_alloca (&hw_params);
 
   if ((err = snd_pcm_hw_params_any (os_handle, hw_params)) < 0) {
-
-    PTRACE (1, "ALSA\tCannot initialize hardware parameter structure " <<
-	    snd_strerror (err));
+    msg << "Cannot initialize hardware parameter structure " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    cerr << msg << endl;
     no_error = FALSE;
   }
 
 
   if ((err = snd_pcm_hw_params_set_access (os_handle, hw_params, 
 					   SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-
-    PTRACE (1, "ALSA\tCannot set access type " <<
-	    snd_strerror (err));
+    msg << "Cannot set access type " <<  snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    cerr << msg << endl;
     no_error = FALSE;
   }
 
 
   if ((err = snd_pcm_hw_params_set_format (os_handle, hw_params, val)) < 0) {
+    msg << "Cannot set sample format " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    no_error = FALSE;
+  }
 
-    PTRACE (1, "ALSA\tCannot set sample format " <<
-             snd_strerror (err));
+
+  if ((err = snd_pcm_hw_params_set_channels (os_handle, hw_params, 
+					     mNumChannels)) < 0) {
+    msg << "Cannot set channel count " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    cerr << msg << endl;
     no_error = FALSE;
   }
 
@@ -376,54 +395,50 @@ BOOL PSoundChannelALSA::Setup()
 					      hw_params, 
 					      &mSampleRate,
 					      NULL)) < 0) {
-
-    PTRACE (1, "ALSA\tCannot set sample rate " <<
-	    snd_strerror (err));
+    msg << "Cannot set sample rate " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
     no_error = FALSE;
   }
 
 
-  if ((err = snd_pcm_hw_params_set_channels (os_handle, hw_params, 
-					     mNumChannels)) < 0) {
 
-    PTRACE (1, "ALSA\tCannot set channel count " <<
-             snd_strerror (err));
-    no_error = FALSE;
-  }
+ /*****The buffer time is TWICE  the period time.
+       bufferTime is the time to play the stored data.
+            periodTime is the duration played in micro seconds.
+            For GSM, period time is 20 milliseconds.
+	    For most other codecs, period time is 30 milliseconds.
+  ******/
+  unsigned int period_time = nBytes * 1000 * 1000 / (2 * mSampleRate);
+  unsigned int buffer_time = period_time * storedPeriods;
+  PTRACE(3, "Alsa\tBuffer time is " << buffer_time);
+  PTRACE(3, "Alsa\tPeriod time is " << period_time);
 
 
   // Ignore errors here 
-  if (periods && period_size) {
+  if ((err = snd_pcm_hw_params_set_buffer_time_near (os_handle, 
+						     hw_params, 
+						     &buffer_time, 
+						     NULL)) < 0) {
+    msg << "Cannot set buffer_time to  " << (buffer_time / 1000) << " ms " << snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    cerr << msg << endl;
+    }
 
-    if ((err = snd_pcm_hw_params_set_period_size_near (os_handle, 
+    if ((err = snd_pcm_hw_params_set_period_time_near (os_handle, 
 						       hw_params, 
-						       &period_size, 
-						       0)) < 0)
-      PTRACE (1, "ALSA\tCannot set period size " <<
-	      snd_strerror (err));
-    
-    if ((err = snd_pcm_hw_params_set_periods_near (os_handle, 
-						   hw_params, 
-						   &periods,
-						   0)) < 0)
-      PTRACE (1, "ALSA\tCannot set number of periods " <<
-	      snd_strerror (err));
-
-    buffer_size = periods*period_size/frame_bytes;
-      
-    if ((err = (int) snd_pcm_hw_params_set_buffer_size_near (os_handle, 
-							     hw_params, 
-							     &buffer_size))
-	< 0)
-      PTRACE (1, "ALSA\tCannot set buffer size " <<
-	      snd_strerror (err));
-  }
-    
-  
+						       &period_time,
+						   0)) < 0) {
+      msg << "Cannot set period_time to " << (period_time / 1000) << " ms   " << snd_strerror (err);
+      PTRACE (1, "ALSA\t" << msg);
+      cerr << msg << endl;
+    }
+	      
+        
   if ((err = snd_pcm_hw_params (os_handle, hw_params)) < 0) {
 
-    PTRACE (1, "ALSA\tCannot set parameters " <<
-	    snd_strerror (err));
+    msg << "Cannot set parameters " <<      snd_strerror (err);
+    PTRACE (1, "ALSA\t" << msg);
+    cerr << msg << endl;
     no_error = FALSE;
   }
 
@@ -458,7 +473,7 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
   lastWriteCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup() || !len || !os_handle)
+  if (!isInitialised && !Setup(len) || !len || !os_handle)
     return FALSE;
 
   do {
@@ -466,13 +481,13 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
       
     /* the number of frames to read is the buffer length 
        divided by the size of one frame */
-    r = snd_pcm_writei (os_handle, (char *) &buf2 [pos], len / frame_bytes);
+    r = snd_pcm_writei (os_handle, (char *) &buf2 [pos], len / frameBytes);
 
     if (r > 0) {
 
-      pos += r * frame_bytes;
-      len -= r * frame_bytes;
-      lastWriteCount += r * frame_bytes;
+      pos += r * frameBytes;
+      len -= r * frameBytes;
+      lastWriteCount += r * frameBytes;
     }
     else {
 
@@ -513,7 +528,7 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
   lastReadCount = 0;
   PWaitAndSignal m(device_mutex);
 
-  if (!isInitialised && !Setup() || !len || !os_handle)
+  if (!isInitialised && !Setup(len) || !len || !os_handle)
     return FALSE;
 
   memset ((char *) buf, 0, len);
@@ -522,13 +537,13 @@ BOOL PSoundChannelALSA::Read (void * buf, PINDEX len)
 
     /* the number of frames to read is the buffer length 
        divided by the size of one frame */
-    r = snd_pcm_readi (os_handle, (char *) &buf2 [pos], len / frame_bytes);
+    r = snd_pcm_readi (os_handle, (char *) &buf2 [pos], len / frameBytes);
 
     if (r > 0) {
 
-      pos += r * frame_bytes;
-      len -= r * frame_bytes;
-      lastReadCount += r * frame_bytes;
+      pos += r * frameBytes;
+      len -= r * frameBytes;
+      lastReadCount += r * frameBytes;
     }
     else {
 
@@ -606,8 +621,9 @@ unsigned PSoundChannelALSA::GetSampleSize() const
 
 BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 {
-  periods = count;
-  period_size = size / (frame_bytes ? frame_bytes : 2);
+  storedPeriods = count;
+
+  storedSize = size;
 
   return TRUE;
 }
@@ -615,8 +631,8 @@ BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 
 BOOL PSoundChannelALSA::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  size = period_size * (frame_bytes ? frame_bytes : 2);
-  count = periods;
+  size = storedSize;
+  count = storedPeriods;
   
   return FALSE;
 }
