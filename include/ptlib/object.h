@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.72  2001/05/03 06:27:29  robertj
+ * Added return value to PMemoryCheck::SetIgnoreAllocations() so get previous state.
+ *
  * Revision 1.71  2001/03/24 01:11:10  robertj
  * Added missing PTRACE_IF define in non PTRACING mode.
  *
@@ -706,8 +709,9 @@ class PMemoryHeap {
     /** Ignore/Monitor allocations.
        Set internal flag so that allocations are not included in the memory
        leak check on program termination.
+       Returns the previous state.
      */
-    static void SetIgnoreAllocations(
+    static BOOL SetIgnoreAllocations(
       BOOL ignore  /// New flag for allocation ignoring.
     );
 

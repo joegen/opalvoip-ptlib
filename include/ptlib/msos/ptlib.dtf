@@ -423,6 +423,7 @@ EXPORTS
     ??3PIntArray@@SAXPAX@Z @2625 NONAME ;public: static void __cdecl PIntArray::operator delete(void *)
     ??3PIPCacheData@@SAXPAX@Z @2626 NONAME ;public: static void __cdecl PIPCacheData::operator delete(void *)
     ??3PLongArray@@SAXPAX@Z @2627 NONAME ;public: static void __cdecl PLongArray::operator delete(void *)
+    ??3PMutex@@SAXPAX@Z @2894 NONAME ;public: static void __cdecl PMutex::operator delete(void *)
     ??3POrdinalToString@@SAXPAX@Z @2628 NONAME ;public: static void __cdecl POrdinalToString::operator delete(void *)
     ??3PShortArray@@SAXPAX@Z @2629 NONAME ;public: static void __cdecl PShortArray::operator delete(void *)
     ??3PSimpleThread@@SAXPAX@Z @2630 NONAME ;public: static void __cdecl PSimpleThread::operator delete(void *)
