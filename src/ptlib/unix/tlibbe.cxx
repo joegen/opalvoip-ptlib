@@ -68,7 +68,9 @@ PThread::PThread()
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 Priority priorityLevel)
+                 Priority priorityLevel,
+                 const PString & name)
+  : threadName(name)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   autoDelete = deletion == AutoDeleteThread;
