@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.11  2002/08/06 07:45:28  craigs
+ * Added lots of stuff from OpalVXML
+ *
  * Revision 1.10  2002/07/29 15:08:50  craigs
  * Added autodelete option to PlayFile
  *
@@ -65,19 +68,48 @@
 
 #if P_EXPAT
 
+#define G7231_FRAME_SIZE  30
+
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
 
-PVXMLSession::PVXMLSession()
+PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
-  activeGrammar = NULL;
-  recording     = FALSE;
-  vxmlThread    = NULL;
+  activeGrammar   = NULL;
+  recording       = FALSE;
+  vxmlThread      = NULL;
+  incomingChannel = NULL;
+  outgoingChannel = NULL;
+  loaded          = FALSE;
+  forceEnd        = FALSE;
+  textToSpeech    = NULL;
+
+  SetTextToSpeech(_tts, autoDelete);
+}
+
+PVXMLSession::~PVXMLSession()
+{
+  if ((textToSpeech != NULL) && autoDeleteTextToSpeech) {
+    delete textToSpeech;
+  }
+}
+
+void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
+{
+  PWaitAndSignal m(sessionMutex);
+
+  if (autoDeleteTextToSpeech && (textToSpeech != NULL))
+    delete textToSpeech;
+
+  autoDeleteTextToSpeech = autoDelete;
+  textToSpeech = _tts;
 }
 
 BOOL PVXMLSession::Load(const PFilePath & filename)
 {
   PWaitAndSignal m(sessionMutex);
+
+  loaded = TRUE;
 
   if (!xmlFile.LoadFile(filename)) {
     PString err = "Cannot open root document " + filename + " - " + GetXMLError();
@@ -110,6 +142,50 @@ BOOL PVXMLSession::Load(const PFilePath & filename)
   return TRUE;
 }
 
+BOOL PVXMLSession::Open(BOOL isPCM)
+{
+  PWaitAndSignal m(sessionMutex);
+
+  PVXMLOutgoingChannel * out; 
+  PVXMLIncomingChannel * in; 
+
+  if (isPCM) {
+    out = new PVXMLOutgoingChannelPCM(*this);
+    in  = new PVXMLIncomingChannelPCM(*this);
+  } else {
+    out = new PVXMLOutgoingChannelG7231(*this);
+    in  = new PVXMLIncomingChannelG7231(*this);
+  }
+
+  BOOL stat = PIndirectChannel::Open(out, in);
+
+  if (stat) {
+    outgoingChannel = out;
+    incomingChannel = in;
+  }
+
+  return stat;
+}
+
+void PVXMLSession::EndSession()
+{
+  PWaitAndSignal m(sessionMutex);
+
+  if (outgoingChannel == NULL)
+    return;
+
+  if (vxmlThread != NULL) {
+    vxmlThread->WaitForTermination();
+  }
+
+  if (outgoingChannel != NULL)
+    outgoingChannel->Close();
+
+  if (outgoingChannel != NULL)
+    incomingChannel->Close();
+}
+
+
 BOOL PVXMLSession::Execute()
 {
   PWaitAndSignal m(sessionMutex);
@@ -120,6 +196,12 @@ BOOL PVXMLSession::Execute()
 
 BOOL PVXMLSession::ExecuteWithoutLock()
 {
+  if (forceEnd) {
+    OnEndSession();
+    EndSession(); 
+    return TRUE;
+  }
+
   // check to see if a vxml thread has stopped since last we looked
   if ((vxmlThread != NULL) && (vxmlThread->IsTerminated())) {
     delete vxmlThread;
@@ -127,9 +209,15 @@ BOOL PVXMLSession::ExecuteWithoutLock()
     return vxmlStatus;
   }
 
-  // if there is already a thread running, a grammar defined or we are recording,
-  // then no need to exec the script
-  if ((vxmlThread != NULL) || (activeGrammar != NULL) || recording)
+  // if:
+  //    no script has been loaded or
+  //    there is already a thread running or
+  //    a grammar defined or
+  //    recording is in progress
+  //    no outgoing channel
+  // then just return silence
+  //
+  if (!loaded || (vxmlThread != NULL) || (activeGrammar != NULL) || recording || (outgoingChannel == NULL))
     return TRUE;
 
   // throw a thread to execute the VXML, because this can take some time
@@ -156,7 +244,7 @@ void PVXMLSession::DialogExecute(PThread &, INT)
   // if all forms defined, nothing playing, and nothing recording, then end of call
   if ((activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
     if (OnEmptyAction())
-      ClearCall();
+      forceEnd = TRUE;
   }
 
   vxmlStatus = FALSE;
@@ -259,7 +347,81 @@ void PVXMLSession::SetVar(const PString & ostr, const PString & val)
   documentVars.SetAt(str, val);
 }
 
+BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
+{
+  if (outgoingChannel != NULL)
+    outgoingChannel->QueueFile(fn, repeat, delay, autoDelete);
+
+  return TRUE;
+}
+
+BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
+{
+  if (outgoingChannel != NULL)
+    outgoingChannel->QueueData(data, repeat, delay);
+
+  return TRUE;
+}
+
+BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
+{
+  if (textToSpeech != NULL) {
+    PFilePath fname("tts", NULL);
+    fname = fname + ".wav";
+    if (!textToSpeech->OpenFile(fname)) {
+      PTRACE(2, "PVXML\tcannot open file " << fname);
+    } else {
+      BOOL spoken = textToSpeech->Speak(text, type);
+      if (!textToSpeech->Close()) {
+        PTRACE(2, "PVXML\tcannot close TTS engine");
+      }
+      if (!spoken) {
+        PTRACE(2, "PVXML\tcannot speak text using TTS engine");
+      } else if (!PlayFile(fname, repeat, delay, TRUE)) {
+        PTRACE(2, "PVXML\tCannot play " << fname);
+      } else {
+        PTRACE(2, "PVXML\tText queued");
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+
+BOOL PVXMLSession::IsPlaying() const
+{
+  return (outgoingChannel != NULL) && outgoingChannel->IsPlaying();
+}
+
+BOOL PVXMLSession::StartRecording(const PFilePath & fn)
+{
+  if (incomingChannel != NULL)
+    return incomingChannel->StartRecording(fn);
+
+  return FALSE;
+}
+
+BOOL PVXMLSession::EndRecording()
+{
+  if (incomingChannel != NULL)
+    return incomingChannel->EndRecording();
+
+  return FALSE;
+}
+
+BOOL PVXMLSession::IsRecording() const
+{
+  return (incomingChannel != NULL) && incomingChannel->IsRecording();
+}
+
+PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mode, int opts, unsigned fmt)
+{ 
+  return new PWAVFile(fn, mode, opts, fmt); 
+}
+
 ///////////////////////////////////////////////////////////////
+
 PVXMLElement::PVXMLElement(PVXMLSession & _vxml, PXMLElement & _xmlElement)
   : vxml(_vxml), xmlElement(_xmlElement)
 {
@@ -445,34 +607,34 @@ BOOL PVXMLFormItem::ProcessPrompt(PXMLElement & rootElement)
 void PVXMLFormItem::SayAs(const PString & className, const PString & text)
 {
   if (!text.IsEmpty()) {
-    PVXMLSession::TextType type = PVXMLSession::Literal;
+    PTextToSpeech::TextType type = PTextToSpeech::Literal;
 
     if (className *= "digits")
-      type = PVXMLSession::Digits;
+      type = PTextToSpeech::Digits;
 
     else if (className *= "literal")
-      type = PVXMLSession::Literal;
+      type = PTextToSpeech::Literal;
 
     else if (className *= "number")
-      type = PVXMLSession::Number;
+      type = PTextToSpeech::Number;
 
     else if (className *= "currency")
-      type = PVXMLSession::Currency;
+      type = PTextToSpeech::Currency;
 
     else if (className *= "time")
-      type = PVXMLSession::Time;
+      type = PTextToSpeech::Time;
 
     else if (className *= "date")
-      type = PVXMLSession::Date;
+      type = PTextToSpeech::Date;
 
     else if (className *= "phone")
-      type = PVXMLSession::Phone;
+      type = PTextToSpeech::Phone;
 
     else if (className *= "ipaddress")
-      type = PVXMLSession::IPAddress;
+      type = PTextToSpeech::IPAddress;
 
     else if (className *= "duration")
-      type = PVXMLSession::Duration;
+      type = PTextToSpeech::Duration;
 
     vxml.PlayText(text, type);
   }
@@ -686,8 +848,24 @@ BOOL PVXMLDigitsGrammar::OnUserInput(char ch)
 
 //////////////////////////////////////////////////////////////////
 
+BOOL PVXMLChannel::IsOpen() const
+{
+  return !closed;
+}
+
+BOOL PVXMLChannel::Close()
+{ 
+  PWaitAndSignal m(channelMutex);
+
+  PIndirectChannel::Close(); 
+  closed = TRUE; 
+  return TRUE; 
+}
+
+//////////////////////////////////////////////////////////////////
+
 PVXMLOutgoingChannel::PVXMLOutgoingChannel(PVXMLSession & _vxml)
-  : PVXMLChannel(_vxml)
+  : PVXMLChannel(_vxml, FALSE)
 {
   playing = FALSE;
   frameLen = frameOffs = 0;
@@ -712,13 +890,13 @@ BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
 
 void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
 {
-  PTRACE(3, "OpalVXML\tEnqueueing file " << fn << " for playing");
+  PTRACE(3, "PVXML\tEnqueueing file " << fn << " for playing");
   QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay, autoDelete));
 }
 
 void PVXMLOutgoingChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  PTRACE(3, "OpalVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
+  PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   QueueItem(new PVXMLQueueDataItem(data, repeat, delay));
 }
 
@@ -744,6 +922,9 @@ void PVXMLOutgoingChannel::FlushQueue()
 BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 {
   PWaitAndSignal m(channelMutex);
+
+  if (closed)
+    return FALSE;
 
   // Create the frame buffer using the amount of bytes the codec wants to
   // read. Different codecs use different read sizes.
@@ -811,7 +992,7 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
         playing = FALSE;
         doSilence = TRUE;
 
-        PTRACE(3, "OpalVXML\tFinished playing " << totalData << " bytes");
+        PTRACE(3, "PVXML\tFinished playing " << totalData << " bytes");
         PIndirectChannel::Close();
 
         // get the item that was just playing
@@ -833,7 +1014,7 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 
         // if delay required, then setup the delay
         if (delay != 0) {
-          PTRACE(3, "OpalVXML\tDelaying for " << delay);
+          PTRACE(3, "PVXML\tDelaying for " << delay);
           delayTimer = delay;
         }
 
@@ -864,11 +1045,156 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
   return TRUE;
 }
 
-BOOL PVXMLOutgoingChannel::Close()
+PWAVFile * PVXMLOutgoingChannel::CreateWAVFile(const PFilePath & fn)
+{ 
+  PWAVFile * file = vxml.CreateWAVFile(fn, PFile::ReadOnly, PFile::ModeDefault, GetWavFileType()); 
+  if (!IsWAVFileValid(*file)) {
+    delete file;
+    file = NULL;
+  }
+
+  return file;
+}
+
+///////////////////////////////////////////////////////////////
+
+static BOOL CheckWAVFileValid(PWAVFile & chan, BOOL mustBePCM)
 {
-  PWaitAndSignal mutex(channelMutex);
-  PIndirectChannel::Close();
+  // Check the wave file header
+  if (!chan.IsValid()) {
+    PTRACE(1, chan.GetName() << " wav file header invalid");
+    return FALSE;
+  }
+
+  // Check the wave file format
+  if (mustBePCM) {
+    if (chan.GetFormat() != PWAVFile::fmt_PCM) {
+      PTRACE(1, chan.GetName() << " is not a PCM format wav file");
+      PTRACE(1, "It is format " << chan.GetFormat() );
+      return FALSE;
+    }
+
+    if ((chan.GetSampleRate() != 8000) &&
+        (chan.GetChannels() != 1) &&
+        (chan.GetSampleSize() != 16)) {
+      PTRACE(1, chan.GetName() << " is not a 16 Bit, Mono, 8000 Hz (8Khz) PCM wav file");
+      PTRACE(1, "It is " << chan.GetSampleSize() << " bits, "
+                         << (chan.GetChannels()==1 ? "mono " : "stereo ")
+                         << chan.GetSampleRate() << " Hz");
+      return FALSE;
+    }
+  }
+
+  else if ((chan.GetFormat() != PWAVFile::fmt_MSG7231) && 
+      (chan.GetFormat() != PWAVFile::fmt_VivoG7231)) {
+    PTRACE(1, chan.GetName() << " is not a G.723.1 format wav file");
+    PTRACE(1, "It is format " << chan.GetFormat() );
+    return FALSE;
+  }
+
   return TRUE;
+}
+
+static int GetG7231FrameLen(BYTE firstByte)
+{
+  static int g7231Lens[] = { 24, 20, 4, 1 };
+  return g7231Lens[firstByte & 4];
+}
+
+///////////////////////////////////////////////////////////////
+
+PVXMLOutgoingChannelPCM::PVXMLOutgoingChannelPCM(PVXMLSession & vxml)
+  : PVXMLOutgoingChannel(vxml)
+{
+}
+
+BOOL PVXMLOutgoingChannelPCM::IsWAVFileValid(PWAVFile & chan) 
+{
+  return CheckWAVFileValid(chan, TRUE);
+}
+
+void PVXMLOutgoingChannelPCM::DelayFrame(PINDEX amount)
+{
+  delay.Delay(amount / 16);
+}
+
+BOOL PVXMLOutgoingChannelPCM::ReadFrame(PINDEX amount)
+{
+  frameOffs = 0;
+  frameLen  = amount;
+
+  BOOL result = PIndirectChannel::Read(frameBuffer.GetPointer(), frameLen);
+
+  // if we did not read a full frame of audio, fill the end of the
+  // frame with zeros.
+  PINDEX count = GetLastReadCount();
+  if (count < frameLen)
+    memset(frameBuffer.GetPointer()+count, 0, frameLen-count);
+
+  return result;
+}
+
+void PVXMLOutgoingChannelPCM::CreateSilenceFrame(PINDEX amount)
+{
+  frameOffs = 0;
+  frameLen  = amount;
+  memset(frameBuffer.GetPointer(), 0, frameLen);
+}
+
+///////////////////////////////////////////////////////////////
+
+PVXMLOutgoingChannelG7231::PVXMLOutgoingChannelG7231(PVXMLSession & vxml)
+  : PVXMLOutgoingChannel(vxml)
+{
+}
+
+void PVXMLOutgoingChannelG7231::QueueFile(const PString & ofn, PINDEX repeat, PINDEX delay)
+{
+  PString fn = ofn;;
+
+  // add in _g7231 prefix, if not there already
+  PINDEX pos = ofn.FindLast('.');
+  if (pos == P_MAX_INDEX) {
+    if (fn.Right(6) != "_g7231")
+      fn += "_g7231";
+  } else {
+    PString basename = ofn.Left(pos);
+    PString ext      = ofn.Mid(pos+1);
+    if (basename.Right(6) != "_g7231")
+      basename += "_g7231";
+    fn = basename + "." + ext;
+  }
+  PVXMLOutgoingChannel::QueueFile(fn, repeat, delay);
+}
+
+BOOL PVXMLOutgoingChannelG7231::IsWAVFileValid(PWAVFile & chan) 
+{
+  return CheckWAVFileValid(chan, FALSE);
+}
+
+void PVXMLOutgoingChannelG7231::DelayFrame(PINDEX /*amount*/)
+{
+  delay.Delay(30);
+}
+
+BOOL PVXMLOutgoingChannelG7231::ReadFrame(PINDEX /*amount*/)
+{
+  if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
+    return FALSE;
+
+  frameOffs = 0;
+  frameLen = GetG7231FrameLen(frameBuffer[0]);
+
+  return PIndirectChannel::Read(frameBuffer.GetPointer()+1, frameLen-1);
+}
+
+void PVXMLOutgoingChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
+{
+  frameOffs = 0;
+  frameLen  = 4;
+
+  frameBuffer[0] = 2;
+  memset(frameBuffer.GetPointer()+1, 0, 3);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -879,23 +1205,23 @@ void PVXMLQueueFilenameItem::Play(PVXMLOutgoingChannel & outgoingChannel)
   if ((fn.Right(4)).ToLower() == ".wav") {
     PWAVFile * chan = outgoingChannel.CreateWAVFile(fn);
     if (chan == NULL) {
-      PTRACE(3, "OpalVXML\tCannot create WAV file");
+      PTRACE(3, "PVXML\tCannot open outgoing WAV file");
     }
     else if (!chan->IsOpen()) {
-      PTRACE(3, "OpalVXML\tCannot open file \"" << chan->GetName() << '"');
+      PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << '"');
       delete chan;
     } else {
-      PTRACE(3, "OpalVXML\tPlaying file \"" << chan->GetName() << "\"");
+      PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
       outgoingChannel.SetReadChannel(chan, TRUE);
     }
   } else { // raw file (eg .sw)
     PFile *chan;
     chan = new PFile(fn);
     if (!chan->Open(PFile::ReadOnly)) {
-      PTRACE(3, "OpalVXML\tCannot open file \"" << chan->GetName() << "\"");
+      PTRACE(3, "PVXML\tCannot open file \"" << chan->GetName() << "\"");
       delete chan;
     } else {
-      PTRACE(3, "OpalVXML\tPlaying file \"" << chan->GetName() << "\"");
+      PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
       outgoingChannel.SetReadChannel(chan, TRUE);
     }
   }
@@ -906,14 +1232,14 @@ void PVXMLQueueFilenameItem::Play(PVXMLOutgoingChannel & outgoingChannel)
 void PVXMLQueueDataItem::Play(PVXMLOutgoingChannel & outgoingChannel)
 {
   PMemoryFile * chan = new PMemoryFile(data);
-  PTRACE(3, "OpalVXML\tPlaying " << data.GetSize() << " bytes");
+  PTRACE(3, "PVXML\tPlaying " << data.GetSize() << " bytes");
   outgoingChannel.SetReadChannel(chan, TRUE);
 }
 
 ///////////////////////////////////////////////////////////////
 
 PVXMLIncomingChannel::PVXMLIncomingChannel(PVXMLSession & _vxml)
-  : PVXMLChannel(_vxml)
+  : PVXMLChannel(_vxml, TRUE)
 {
   wavFile = NULL;
 }
@@ -926,6 +1252,9 @@ PVXMLIncomingChannel::~PVXMLIncomingChannel()
 BOOL PVXMLIncomingChannel::Write(const void * buf, PINDEX len)
 {
   PWaitAndSignal mutex(channelMutex);
+
+  if (closed)
+    return FALSE;
 
   DelayFrame(len);
 
@@ -943,9 +1272,9 @@ BOOL PVXMLIncomingChannel::StartRecording(const PFilePath & fn)
   // open the output file
   PWaitAndSignal mutex(channelMutex);
   wavFile = CreateWAVFile(fn);
-  PTRACE(3, "OpalVXML\tStarting recording to " << fn);
+  PTRACE(3, "PVXML\tStarting recording to " << fn);
   if (!wavFile->IsOpen()) {
-    PTRACE(2, "OpalVXML\tCannot create record file " << fn);
+    PTRACE(2, "PVXML\tCannot create record file " << fn);
     return FALSE;
   }
 
@@ -966,5 +1295,52 @@ BOOL PVXMLIncomingChannel::EndRecording()
   
   return TRUE;
 }
+
+PWAVFile * PVXMLIncomingChannel::CreateWAVFile(const PFilePath & fn)
+{ 
+  return vxml.CreateWAVFile(fn, PFile::WriteOnly, PFile::ModeDefault, GetWavFileType()); 
+}
+
+///////////////////////////////////////////////////////////////
+
+PVXMLIncomingChannelPCM::PVXMLIncomingChannelPCM(PVXMLSession & vxml)
+  : PVXMLIncomingChannel(vxml)
+{
+}
+
+BOOL PVXMLIncomingChannelPCM::WriteFrame(const void * buf, PINDEX len)
+{
+  //cerr << "Writing PCM " << len << endl;
+  return wavFile->Write(buf, len);
+}
+
+void PVXMLIncomingChannelPCM::DelayFrame(PINDEX len)
+{
+  delay.Delay(len/16);
+}
+
+///////////////////////////////////////////////////////////////
+// Override some of the IncomingChannelPCM functions to write
+// G723.1 data instead of PCM data.
+
+PVXMLIncomingChannelG7231::PVXMLIncomingChannelG7231(PVXMLSession & vxml)
+  : PVXMLIncomingChannel(vxml)
+{
+}
+
+BOOL PVXMLIncomingChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
+{
+  int frameLen = GetG7231FrameLen(*(BYTE *)buf);
+  return wavFile->Write(buf, frameLen);
+}
+
+void PVXMLIncomingChannelG7231::DelayFrame(PINDEX /*len*/)
+{
+  // Ignore the len parameter as that is the compressed size.
+  // We must delay by the actual sample time.
+  delay.Delay(G7231_FRAME_SIZE);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////
 
 #endif 
