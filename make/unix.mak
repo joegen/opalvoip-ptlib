@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.66  2000/03/09 14:22:04  rogerh
+# OpenBSD requires -lossaudio for OSS Audio support
+#
 # Revision 1.65  2000/03/08 12:17:09  rogerh
 # Add OpenBSD support
 #
@@ -403,6 +406,7 @@ STDCCFLAGS	+= -m486
 endif
 
 STDCCFLAGS	+= -DP_OPENBSD
+LDLIBS		+= -lossaudio
 
 ifdef P_PTHREADS
 CFLAGS	+= -pthread
