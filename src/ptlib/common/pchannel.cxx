@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.15  2001/09/27 10:23:42  craigs
+ * CHanged ReadString to allow read until end of input with P_MAX_INDEX arg
+ *
  * Revision 1.14  2001/09/11 02:36:52  robertj
  * Fixed crash bug when ReadString() gets I/O error.
  *
@@ -257,10 +260,22 @@ BOOL PChannel::ReadBlock(void * buf, PINDEX len)
 PString PChannel::ReadString(PINDEX len)
 {
   PString str;
-  if (!ReadBlock(str.GetPointer(len+1), len))
-    return PString();
 
-  str.SetSize(lastReadCount+1);
+  if (len == P_MAX_INDEX) {
+    PINDEX l = 0;
+    for (;;) {
+      char * p = l + str.GetPointer(l+1000+1);
+      if (!Read(p, 1000))
+        break;
+      l += lastReadCount;
+    }
+    str.SetSize(l+1);
+  } else {
+    if (!ReadBlock(str.GetPointer(len+1), len))
+      return PString();
+    str.SetSize(lastReadCount+1);
+  }
+
   return str;
 }
 
