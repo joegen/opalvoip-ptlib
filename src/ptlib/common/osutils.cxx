@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.209  2003/11/13 21:42:32  csoutheren
+ * Fixed problem with thread name display under Windows thanks to Ted Szoczei
+ *
  * Revision 1.208  2003/11/08 01:42:19  rjongbloed
  * Added thread names to DevStudio display, thanks Ted Szoczei
  *
@@ -1878,32 +1881,45 @@ PString PThread::GetThreadName() const
   return threadName; 
 }
 
- 
+#if defined(_MSC_VER)
+
+typedef struct tagTHREADNAME_INFO
+{
+  DWORD dwType ;                       // must be 0x1000
+  LPCSTR szName ;                      // pointer to name (in user addr space)
+  DWORD dwThreadID ;                   // thread ID (-1=caller thread, but seems to set more than one thread's name)
+  DWORD dwFlags ;                      // reserved for future use, must be zero
+} THREADNAME_INFO ;
+
+
+void SetWinDebugThreadName (THREADNAME_INFO * info)
+{
+  __try
+  {
+    RaiseException (0x406D1388, 0, sizeof(THREADNAME_INFO)/sizeof(DWORD), (DWORD *) info) ;
+  }                              // if not running under debugger exception comes back
+  __except(EXCEPTION_CONTINUE_EXECUTION)
+  {                              // just keep on truckin'
+  }
+}
+#endif
+
+
 void PThread::SetThreadName(const PString & name)
 {
   if (name.IsEmpty())
     threadName = psprintf("%s:%08x", GetClass(), (INT)this);
   else
     threadName = psprintf(name, (INT)this);
-#if defined(_MSC_VER) && defined(_DEBUG)
-  if (threadId) {                             // make thread name known to debugger
-    struct tagTHREADNAME_INFO
-    {
-      DWORD dwType;          // must be 0x1000
-      LPCSTR szName;         // pointer to name (in user addr space)
-      DWORD dwThreadID;      // thread ID (-1=caller thread, but don't use it, it seems to name other threads too)
-      DWORD dwFlags;         // reserved for future use, must be zero
-    } info;
-    info.dwType = 0x1000;
-    info.szName = (const char *) threadName;
-    info.dwThreadID = threadId;
-    info.dwFlags = 0;
-    RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (DWORD *)&info);
+
+#if defined(_MSC_VER)
+  if (threadId) {       // make thread name known to debugger
+    THREADNAME_INFO Info = { 0x1000, (const char *) threadName, threadId, 0 } ;
+    SetWinDebugThreadName (&Info) ;
   }
 #endif
 }
-
-
+ 
 PThread * PThread::Create(const PNotifier & notifier,
                           INT parameter,
                           AutoDeleteFlag deletion,
