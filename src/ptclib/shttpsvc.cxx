@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.6  2001/08/28 06:44:45  craigs
+ * Added ability to override PHTTPServer creation
+ *
  * Revision 1.5  2001/05/24 01:01:28  robertj
  * Fixed GNU C++ warning
  *
@@ -101,7 +104,8 @@ PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
     return NULL;
   }
 
-  PHTTPServer * server = new PHTTPServer(httpNameSpace);
+  PHTTPServer * server = OnCreateHTTPServer(httpNameSpace);
+
   server->GetConnectionInfo().SetPersistenceMaximumTransations(0);
   if (server->Open(ssl))
     return server;
