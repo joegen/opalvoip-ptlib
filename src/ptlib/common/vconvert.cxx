@@ -25,6 +25,9 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.4  2001/03/03 06:13:01  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.3  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -37,6 +40,11 @@
  */
 
 #include <ptlib.h>
+
+#ifdef __GNUC__
+#pragma implementation "vconvert.h"
+#endif
+
 #include <ptlib/vconvert.h>
 
 
