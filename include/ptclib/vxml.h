@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.14  2002/08/27 02:19:13  craigs
+ * Added <break> command in prompt blocks
+ * Fixed potential deadlock
+ *
  * Revision 1.13  2002/08/15 04:11:16  robertj
  * Fixed shutdown problems with closing vxml session, leaks a thread.
  * Fixed potential problems with indirect channel Close() function.
@@ -280,6 +284,7 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual BOOL PlaySilence(PINDEX msecs = 0);
 
     virtual BOOL StartRecording(const PFilePath & fn);
     virtual BOOL EndRecording();
@@ -325,7 +330,6 @@ class PVXMLSession : public PIndirectChannel
     BOOL loaded;
 
     PThread * vxmlThread;
-    BOOL vxmlStatus;
     BOOL forceEnd;
 
     PVXMLIncomingChannel * incomingChannel;
