@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.54  2000/05/02 02:58:49  robertj
+ * Fixed MSVC warning about unused parameters.
+ *
  * Revision 1.53  2000/05/02 02:01:18  craigs
  * Changed stricmp and added implementation of PServiceMacro::Translate
  *
@@ -1071,7 +1074,7 @@ class PServiceMacro : public PObject
     PServiceMacro(const char * name);
     PServiceMacro(const PCaselessString & name);
     Comparison Compare(const PObject & obj) const;
-    virtual PString Translate(PHTTPRequest & request, const PString & args) const { return PString(); };
+    virtual PString Translate(PHTTPRequest & request, const PString & args) const;
   protected:
     const char * macroName;
     PServiceMacro * link;
@@ -1101,6 +1104,12 @@ PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
   PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
   return (Comparison)strcasecmp(macroName, ((const PServiceMacro &)obj).macroName);
 }
+
+
+PString PServiceMacro::Translate(PHTTPRequest &, const PString &) const
+{
+  return PString();
+};
 
 
 
