@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.54 1996/12/05 11:46:39 craigs Exp $
+ * $Id: sockets.cxx,v 1.55 1996/12/12 09:23:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.55  1996/12/12 09:23:27  robertj
+ * Fixed name cache to cache missing names as well.
+ * Fixed new connect with specific local port so can be re-used (simultaneous FTP session bug)
+ *
  * Revision 1.54  1996/12/05 11:46:39  craigs
  * Fixed problem with Win95 recvfrom not having timeouts
  *
@@ -483,7 +487,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 
 PDECLARE_CLASS(PIPCacheData, PObject)
   public:
-    PIPCacheData(struct hostent * ent);
+    PIPCacheData(struct hostent * ent, const char * original);
     const PString & GetHostName() const { return hostname; }
     const PIPSocket::Address & GetHostAddress() const { return address; }
     const PStringArray & GetHostAliases() const { return aliases; }
@@ -495,9 +499,12 @@ PDECLARE_CLASS(PIPCacheData, PObject)
     PTime              birthDate;
 };
 
-PIPCacheData::PIPCacheData(struct hostent * host_info)
+PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 {
-  PAssertNULL(host_info);
+  if (host_info == NULL) {
+    address.s_addr = 0;
+    return;
+  }
 
   hostname = host_info->h_name;
   memcpy(&address, host_info->h_addr, sizeof(address));
@@ -509,6 +516,12 @@ PIPCacheData::PIPCacheData(struct hostent * host_info)
 
   for (i = 0; host_info->h_addr_list[i] != NULL; i++)
     aliases[count++] = inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]);
+
+  for (i = 0; i < count; i++)
+    if (aliases[i] *= original)
+      return;
+
+  aliases[i++] = original;
 }
 
 
@@ -580,15 +593,13 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   PCaselessString key = name;
   PIPCacheData * host = GetAt(key);
   if (host == NULL || host->HasAged()) {
-    struct hostent * host_info = ::gethostbyname(name);
-    if (host_info != NULL)
-      host = new PIPCacheData(host_info);
-    else
-      host = NULL;
+    mutex.Signal();
+    host = new PIPCacheData(::gethostbyname(name), name);
+    mutex.Wait();
     SetAt(key, host);
   }
 
-  return host;
+  return host->GetHostAddress() != 0 ? host : NULL;
 }
 
 
@@ -663,20 +674,18 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
   PIPCacheKey key = addr;
   PIPCacheData * host = GetAt(key);
   if (host == NULL || host->HasAged()) {
+    mutex.Signal();
     struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
-    if (host_info == NULL)
-      host = NULL;
-    else {
 #if defined(_WIN32) || defined(WINDOWS)
-      if (host_info->h_addr_list[0] != NULL)
-        host_info->h_addr_list[1] = NULL;
+    if (host_info != NULL && host_info->h_addr_list[0] != NULL)
+      host_info->h_addr_list[1] = NULL;
 #endif
-      host = new PIPCacheData(host_info);
-    }
+    host = new PIPCacheData(host_info, inet_ntoa(addr));
+    mutex.Wait();
     SetAt(key, host);
   }
 
-  return host;
+  return host->GetHostAddress() != 0 ? host : NULL;
 }
 
 
@@ -924,6 +933,10 @@ BOOL PIPSocket::Connect(WORD localPort, const Address & addr)
   // attempt to connect
   sockaddr_in sin;
   if (localPort != 0) {
+    if (!SetOption(SO_REUSEADDR, 1)) {
+      os_close();
+      return FALSE;
+    }
     memset(&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = htonl(INADDR_ANY);
