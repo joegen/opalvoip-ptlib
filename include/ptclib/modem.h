@@ -1,5 +1,5 @@
 /*
- * $Id: modem.h,v 1.6 1995/01/06 10:31:02 robertj Exp $
+ * $Id: modem.h,v 1.7 1995/03/14 12:41:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: modem.h,v $
- * Revision 1.6  1995/01/06 10:31:02  robertj
+ * Revision 1.7  1995/03/14 12:41:51  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.6  1995/01/06  10:31:02  robertj
  * Documentation.
  *
  * Revision 1.5  1994/08/23  11:32:52  robertj
@@ -70,7 +73,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     /* Create a modem object on the serial port specified. If no port was
        specified do not open it. It does not initially have a valid port name.
        
-       See the $H$PSerialChannel class for more information on the parameters.
+       See the <A>PSerialChannel</A> class for more information on the
+       parameters.
      */
 
     PModem(
@@ -99,9 +103,11 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Open the modem serial channel on the specified port.
        
-       See the $H$PSerialChannel class for more information on the parameters.
+       See the <A>PSerialChannel</A> class for more information on the
+       parameters.
        
-       Returns: TRUE if the modem serial port was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the modem serial port was successfully opened.
      */
 
     virtual BOOL Open(
@@ -111,7 +117,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        variables in the configuration file. Note that it assumed that the
        correct configuration file section is already set.
 
-       Returns: TRUE if the modem serial port was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the modem serial port was successfully opened.
      */
 
     virtual void SaveSettings(
@@ -126,8 +133,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem initialisation meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \s before the string.
      */
@@ -135,16 +142,18 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetInitString() const;
     /* Get the modem initialisation meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for initialisation command.
+       <H2>Returns:</H2>
+       string for initialisation command.
      */
 
     BOOL CanInitialise() const;
     /* The modem is in a state that allows the initialise to start.
     
-       Returns: TRUE if the $B$Initialise()$B$ function may proceeed.
+       <H2>Returns:</H2>
+       TRUE if the <A><CODE>Initialise()</CODE></A> function may proceeed.
      */
 
     BOOL Initialise();
@@ -153,8 +162,9 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       Returns: TRUE if command string sent successfully and the objects state
-                has changed.
+       <H2>Returns:</H2>
+       TRUE if command string sent successfully and the objects state has
+       changed.
      */
 
     void SetDeinitString(
@@ -162,8 +172,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem de-initialisation meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \s before the string.
      */
@@ -171,16 +181,18 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetDeinitString() const;
     /* Get the modem de-initialisation meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for de-initialisation command.
+       <H2>Returns:</H2>
+       string for de-initialisation command.
      */
 
     BOOL CanDeinitialise() const;
     /* The modem is in a state that allows the de-initialise to start.
     
-       Returns: TRUE if the $B$Deinitialise()$B$ function may proceeed.
+       <H2>Returns:</H2>
+       TRUE if the <A><CODE>Deinitialise()</CODE></A> function may proceeed.
      */
 
     BOOL Deinitialise();
@@ -189,8 +201,9 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       Returns: TRUE if command string sent successfully and the objects state
-                has changed.
+       <H2>Returns:</H2>
+       TRUE if command string sent successfully and the objects state has
+       changed.
      */
 
     void SetPreDialString(
@@ -198,8 +211,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem pre-dial meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \s before the string.
      */
@@ -207,10 +220,11 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetPreDialString() const;
     /* Get the modem pre-dial meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for pre-dial command.
+       <H2>Returns:</H2>
+       string for pre-dial command.
      */
 
     void SetPostDialString(
@@ -218,20 +232,21 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem post-dial meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Note there is $U$not$U$ an implied \s before the string, unlike the
+       Note there is <EM>not</EM> an implied \s before the string, unlike the
        pre-dial string.
      */
 
     PString GetPostDialString() const;
     /* Get the modem post-dial meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for post-dial command.
+       <H2>Returns:</H2>
+       string for post-dial command.
      */
 
     void SetBusyString(
@@ -239,8 +254,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem busy response meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \w120s before the string. Also the \s and \d
        commands do not operate and will simply terminate the string match.
@@ -249,10 +264,11 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetBusyString() const;
     /* Get the modem busy response meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for busy response command.
+       <H2>Returns:</H2>
+       string for busy response command.
      */
 
     void SetNoCarrierString(
@@ -260,8 +276,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem no carrier response meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \w120s before the string. Also the \s and \d
        commands do not operate and will simply terminate the string match.
@@ -270,10 +286,11 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetNoCarrierString() const;
     /* Get the modem no carrier response meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for no carrier response command.
+       <H2>Returns:</H2>
+       string for no carrier response command.
      */
 
     void SetConnectString(
@@ -281,8 +298,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem connect response meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \w120s before the string. Also the \s and \d
        commands do not operate and will simply terminate the string match.
@@ -291,16 +308,18 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetConnectString() const;
     /* Get the modem connect response meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for connect response command.
+       <H2>Returns:</H2>
+       string for connect response command.
      */
 
     BOOL CanDial() const;
     /* The modem is in a state that allows the dial to start.
     
-       Returns: TRUE if the $B$Dial()$B$ function may proceeed.
+       <H2>Returns:</H2>
+       TRUE if the <A><CODE>Dial()</CODE></A> function may proceeed.
      */
 
     BOOL Dial(const PString & number);
@@ -310,10 +329,12 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        sent with all replies met.
 
        The string sent to the modem is the concatenation of the pre-dial
-       string, a \s, the $B$number$B$ parameter and the post-dial string.
+       string, a \s, the <CODE>number</CODE> parameter and the post-dial
+       string.
 
-       Returns: TRUE if command string sent successfully and the objects state
-                has changed.
+       <H2>Returns:</H2>
+       TRUE if command string sent successfully and the objects state has
+       changed.
      */
 
     void SetHangUpString(
@@ -321,8 +342,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     );
     /* Set the modem hang up meta-command string.
 
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
        Note there is an implied \s before the string.
      */
@@ -330,16 +351,18 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     PString GetHangUpString() const;
     /* Get the modem hang up meta-command string.
     
-       See the $H$PChannel::SendCommandString() function for more information
-       on the format of the command string.
+       See the <A>PChannel::SendCommandString()</A> function for more
+       information on the format of the command string.
 
-       Returns: string for hang up command.
+       <H2>Returns:</H2>
+       string for hang up command.
      */
 
     BOOL CanHangUp() const;
     /* The modem is in a state that allows the hang up to start.
     
-       Returns: TRUE if the $B$HangUp()$B$ function may proceeed.
+       <H2>Returns:</H2>
+       TRUE if the <A><CODE>HangUp()</CODE></A> function may proceeed.
      */
 
     BOOL HangUp();
@@ -348,14 +371,16 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       Returns: TRUE if command string sent successfully and the objects state
-                has changed.
+       <H2>Returns:</H2>
+       TRUE if command string sent successfully and the objects state has
+       changed.
      */
 
     BOOL CanSendUser() const;
     /* The modem is in a state that allows the user command to start.
     
-       Returns: TRUE if the $B$SendUser()$B$ function may proceeed.
+       <H2>Returns:</H2>
+       TRUE if the <A><CODE>SendUser()</CODE></A> function may proceeed.
      */
 
     BOOL SendUser(
@@ -366,7 +391,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        ie the serial port was open etc and the command was successfully
        sent with all replies met.
 
-       Returns: TRUE if command string sent successfully.
+       <H2>Returns:</H2>
+       TRUE if command string sent successfully.
      */
 
     void Abort();
@@ -378,7 +404,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
        of the meta-string processing. This function is only usefull when
        multi-threading is used.
 
-       Returns: TRUE if Read() operations are "safe".
+       <H2>Returns:</H2>
+       TRUE if <A><CODE>Read()</CODE></A> operations are "safe".
      */
 
     enum Status {
@@ -405,7 +432,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
     Status GetStatus() const;
     /* Get the modem objects current state.
 
-       Returns: modem status.
+       <H2>Returns:</H2>
+       modem status.
      */
 
 
