@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.12 1998/06/13 12:28:04 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.13 1998/06/13 15:03:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.13  1998/06/13 15:03:58  robertj
+ * More conditions for NOT shutting down write.
+ *
  * Revision 1.12  1998/06/13 12:28:04  robertj
  * Added shutdown to client command if no content length specified.
  *
@@ -193,7 +196,9 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 PMIMEInfo & replyMime)
 {
   if (WriteCommand(cmd, url, outMIME, dataBody)) {
-    if (!outMIME.Contains(ContentLengthTag))
+    if (!outMIME.Contains(ContentLengthTag) &&
+	!outMIME.Contains(ProxyConnectionTag) &&
+	!outMIME.Contains(ConnectionTag))
       Shutdown(ShutdownWrite);
     ReadResponse(replyMime);
   }
