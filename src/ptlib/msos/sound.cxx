@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.34  2003/05/29 08:57:38  rjongbloed
+ * Futher changes to not alter balance when changing volume setting, also fixed
+ *   correct return of volume level if balance not centred, thanks Diego Tártara
+ *
  * Revision 1.33  2003/05/01 00:17:40  robertj
  * Fixed setting of stereo volume levels, thanks Diego Tártara
  *
@@ -1425,45 +1429,103 @@ PString PSoundChannel::GetErrorText(ErrorGroup group) const
 
 BOOL PSoundChannel::SetVolume(unsigned newVolume)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+   if (!IsOpen())
+     return SetErrorValues(NotOpen, EBADF);
 
-  DWORD rawVolume = newVolume*65536/100;
-  if (rawVolume > 65535)
-    rawVolume = 65535;
+   DWORD rawVolume = newVolume*65536/100;
+   if (rawVolume > 65535)
+     rawVolume = 65535;
 
-  if (direction == Recorder) {
-    // Does not appear to be an input volume!!
-  }
-  else {
-    DWORD osError = waveOutSetVolume(hWaveOut, MAKELPARAM(rawVolume, rawVolume));
-    if (osError != MMSYSERR_NOERROR)
-      SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
-  }
+   WAVEOUTCAPS caps;
+   if (waveOutGetDevCaps((UINT) hWaveOut, &caps, sizeof(caps)) == MMSYSERR_NOERROR) {
+     // If the device does not support L/R volume only the low word matters
+     if ((caps.dwSupport & WAVECAPS_LRVOLUME) != 0) {
+       // Mantain balance
+       DWORD oldVolume = 0;
+       if (waveOutGetVolume(hWaveOut, &oldVolume) == MMSYSERR_NOERROR) {
+         // GetVolume() is supposed to return the value we intended to set.
+         // So do the proper calculations
+         // 1. (L + R) / 2 = rawVolume      -> GetVolume() formula
+         // 2. L / R       = oldL / oldR    -> Unmodified balance
+         // Being:
+         // oldL = LOWORD(oldVolume)
+         // oldR = HIWORD(oldVolume)
+         
+         DWORD rVol, lVol;
+         DWORD oldL, oldR;
+         
+         // Old volume values
+         oldL = LOWORD(oldVolume);
+         oldR = HIWORD(oldVolume);
+         
+         lVol = rVol = 0;
+         
+         // First sort out extreme cases
+         if ( oldL == oldR )
+           rVol = lVol = rawVolume;
+         else if ( oldL == 0 )
+           rVol = rawVolume;
+         else if ( oldR == 0 )
+           lVol = rawVolume;
+         else {
+           rVol = ::MulDiv( 2 * rawVolume, oldR, oldL + oldR );
+           lVol = ::MulDiv( rVol, oldL, oldR );
+         }
+         
+         rawVolume = MAKELPARAM(lVol, rVol);
+       }
+       else {
+         // Couldn't get current volume. Assume centered balance
+         rawVolume = MAKELPARAM(rawVolume, rawVolume);
+       }
+     }
+   }
+   else {
+     // Couldn't get device caps. Assume centered balance
+     // If the device does not support independant L/R volume
+     // the high-order word (R) is ignored
+     rawVolume = MAKELPARAM(rawVolume, rawVolume);
+   }
 
-  return TRUE;
+   if (direction == Recorder) {
+     // Does not appear to be an input volume!!
+   }
+   else {
+     DWORD osError = waveOutSetVolume(hWaveOut, rawVolume);
+     if (osError != MMSYSERR_NOERROR)
+       return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
+   }
+
+   return TRUE;
 }
+
 
 
 BOOL PSoundChannel::GetVolume(unsigned & oldVolume)
 {
-  if (!IsOpen())
-    return SetErrorValues(NotOpen, EBADF);
+   if (!IsOpen())
+     return SetErrorValues(NotOpen, EBADF);
 
-  DWORD rawVolume = 0;
+   DWORD rawVolume = 0;
 
-  if (direction == Recorder) {
-    // Does not appear to be an input volume!!
-  }
-  else {
-    DWORD osError = waveOutGetVolume(hWaveOut, &rawVolume);
-    if (osError != MMSYSERR_NOERROR)
-      SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
-  }
+   if (direction == Recorder) {
+     // Does not appear to be an input volume!!
+   }
+   else {
+     DWORD osError = waveOutGetVolume(hWaveOut, &rawVolume);
+     if (osError != MMSYSERR_NOERROR)
+       return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
+   }
 
-  oldVolume = rawVolume*100/65536;
-  return TRUE;
+   WAVEOUTCAPS caps;
+   if (waveOutGetDevCaps((UINT) hWaveOut, &caps, sizeof(caps)) == MMSYSERR_NOERROR &&
+                                               (caps.dwSupport & WAVECAPS_LRVOLUME) != 0)
+     rawVolume = (HIWORD(rawVolume) + LOWORD(rawVolume)) / 2;
+
+   oldVolume = rawVolume*100/65536;
+   return TRUE;
 }
+
 
 
 // End of File ///////////////////////////////////////////////////////////////
