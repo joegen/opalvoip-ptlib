@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.138  2002/10/10 04:43:44  robertj
+# VxWorks port, thanks Martijn Roest
+#
 # Revision 1.137  2002/10/03 04:12:45  robertj
 # Allowed for locally built (uninstalled) openssl library.
 #
@@ -474,6 +477,10 @@ ifneq (,$(findstring AIX,$(OSTYPE)))
 MACHTYPE := ppc
 endif
 
+ifneq (,$(findstring $(OS),VXWORKS))
+OSTYPE := VxWorks
+endif
+
 ifneq (,$(findstring netbsd,$(OSTYPE)))
 OSTYPE := NetBSD
 endif
@@ -571,7 +578,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks))
 
 default_target :
 	@echo
@@ -586,6 +593,7 @@ default_target :
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
 	@echo "              FreeBSD OpenBSD NetBSD beos Darwin Carbon"
+	@echo "              VxWorks"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -684,6 +692,10 @@ endif
 
 ifneq ($(findstring $(MACHTYPE),s390 s390x),)
 ENDIAN		:= PBIG_ENDIAN
+endif
+
+ifeq ($(MACHTYPE),ARM)
+ENDIAN		:= PLITTLE_ENDIAN
 endif
 
 ifdef P_PTHREADS
@@ -1085,6 +1097,25 @@ CC              := cc
 CPLUS           := c++
  
 endif # Carbon
+
+####################################################
+
+ifeq ($(OSTYPE),VxWorks)
+
+ifeq ($(MACHTYPE),ARM)
+STDCCFLAGS	+= -mcpu=arm8 -DCPU=ARMARCH4
+endif
+
+STDCCFLAGS	+= -DP_VXWORKS -DPHAS_TEMPLATES -DVX_TASKS
+STDCCFLAGS	+= -DNO_LONG_DOUBLE
+
+STDCCFLAGS	+= -Wno-multichar -Wno-format
+
+MEMORY_CHECK := 0
+
+STDCCFLAGS      += -DP_USE_PRAGMA
+
+endif # VxWorks
 
  
 ###############################################################################

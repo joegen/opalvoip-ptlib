@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.15  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.14  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -189,13 +192,13 @@ BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
   packet.sequence   = info.sequenceNum;
   packet.id         = info.identifier;
 
-  #ifndef BE_BONELESS
+#ifndef BE_BONELESS
   if (info.ttl != 0) {
     char ttl = (char)info.ttl;
     if (::setsockopt(os_handle, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) != 0)
       return FALSE;
   }
-  #endif
+#endif
 
   // set the send time
   packet.sendtime = PTimer::Tick().GetMilliSeconds();
@@ -268,14 +271,14 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 
 BOOL PICMPSocket::OpenSocket()
 {
-#ifndef BE_BONELESS
+#if !defined BE_BONELESS && !defined(P_VXWORKS)
   struct protoent * p = ::getprotobyname(GetProtocolName());
   if (p == NULL)
     return ConvertOSError(-1);
   return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_RAW, p->p_proto));
-#else  // Raw sockets not supported in BeOS R4.
+#else  // Raw sockets not supported in BeOS R4 or VxWorks.
   return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP));
-#endif //!__BEOS__
+#endif //!defined BE_BONELESS && !defined(P_VXWORKS)
 }
 
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.73  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.72  2002/10/03 01:27:51  robertj
  * Added fail safe _exit() as it appears raise(SIGQUIT) does not always dump
  *   core and exit the app causing endless SEGV's to appear the log file!
@@ -204,15 +207,28 @@
 #pragma implementation "svcproc.h"
 #include <ptlib/svcproc.h>
 
+#ifdef P_VXWORKS
+#include <logLib.h>
+#define LOG_EMERG			0
+#define LOG_ALERT			1
+#define LOG_CRIT			2
+#define LOG_ERR				3
+#define LOG_WARNING			4
+#define	LOG_NOTICE			5
+#define LOG_INFO			6
+#define LOG_DEBUG			7
+#else
 #include <syslog.h>
+#include <pwd.h>
+#include <grp.h>
+#endif
+
 #include <stdarg.h>
 #if (__GNUC__ >= 3)
 #include <fstream>
 #else
 #include <fstream.h>
 #endif
-#include <pwd.h>
-#include <grp.h>
 #include <signal.h>
 
 #include "uerror.h"
@@ -226,6 +242,7 @@
 
 #define	MAX_LOG_LINE_LEN	1024
 
+#ifndef P_VXWORKS
 static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_CRIT,    // LogFatal,   
   LOG_ERR,     // LogError,   
@@ -235,6 +252,7 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_DEBUG,
   LOG_DEBUG
 };
+#endif // !P_VXWORKS
 
 static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
   "Message",
@@ -276,8 +294,14 @@ static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
 void PSystemLog::Output(Level level, const char * cmsg)
 {
   PString systemLogFileName = PServiceProcess::Current().systemLogFileName;
-  if (systemLogFileName.IsEmpty())
+  if (systemLogFileName.IsEmpty()) {
+#ifdef P_VXWORKS
+    printf("%s\n",cmsg);
+    logMsg((char *)(const char)cmsg,0,0,0,0,0,0);
+#else
     syslog(PwlibLogToUnixLog[level], "%s", cmsg);
+#endif
+  }
   else {
 #ifdef P_PTHREADS
     pthread_mutex_lock(&logMutex);
@@ -300,6 +324,8 @@ void PSystemLog::Output(Level level, const char * cmsg)
     if (thread == NULL) {
 #ifdef P_MAC_MPTHREADS
       unsigned tid = (unsigned)MPCurrentTaskID();
+#elif defined(P_VXWORKS)
+      unsigned tid = ::taskIdSelf();
 #else
       unsigned tid = (unsigned) pthread_self();
 #endif
@@ -384,9 +410,11 @@ PServiceProcess::~PServiceProcess()
   if (!pidFileToRemove)
     PFile::Remove(pidFileToRemove);
 
+#ifndef P_VXWORKS
   // close the system log
   if (systemLogFileName.IsEmpty())
     closelog();
+#endif // !P_VXWORKS
 }
 
 
@@ -398,6 +426,7 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
+#ifndef P_VXWORKS
 static int KillProcess(int pid, int sig)
 {
   if (kill(pid, sig) != 0)
@@ -422,18 +451,16 @@ static int KillProcess(int pid, int sig)
 
   return 1;
 }
+#endif // !P_VXWORKS
 
 
 void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 {
-  PSYSTEMLOG(Warning, "PWLib/Unix error #"
-                      << code
-                      << "-"
-                      << str
-                      << endl);
+  PSYSTEMLOG(Warning, "PWLib\t" << GetOSClass() << " error #" << code << '-' << str);
 }
 
 
+#ifndef P_VXWORKS
 int PServiceProcess::InitialiseService()
 {
 #if PMEMORY_CHECK
@@ -747,6 +774,8 @@ int PServiceProcess::InitialiseService()
 
   return -1;
 }
+#endif // !P_VXWORKS
+
 
 int PServiceProcess::_main(void *)
 {
@@ -804,9 +833,11 @@ void PServiceProcess::Terminate()
   // Do the services stop code
   OnStop();
 
+#ifndef P_VXWORKS
   // close the system log
   if (systemLogFileName.IsEmpty())
     closelog();
+#endif // !P_VXWORKS
 
   // Now end the program
   exit(terminationValue);
@@ -857,6 +888,8 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
 #ifdef P_MAC_MPTHREADS
   unsigned tid = (unsigned)MPCurrentTaskID();
+#elif defined(P_VXWORKS)
+  unsigned tid = ::taskIdSelf();
 #else
   unsigned tid = (unsigned) pthread_self();
 #endif
@@ -878,15 +911,19 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   strcat(msg, ", aborting.\n");
 
   if (systemLogFileName.IsEmpty()) {
-    syslog(LOG_CRIT, 
-#ifdef __BEOS__ // (Some?) BeOS versions of syslog.h have syslog() (wrongly) declared without const 
-    (char *) 
-#endif 
-    msg); 
+#ifdef P_VXWORKS
+  logMsg((char *)msg,0,0,0,0,0,0);
+#else
+    syslog(LOG_CRIT, msg); 
     closelog();
+#endif // !P_VXWORKS
   }
   else {
+#ifdef P_VXWORKS
+    int fd = open(systemLogFileName, O_WRONLY|O_APPEND, FWRITE|FAPPEND);
+#else
     int fd = open(systemLogFileName, O_WRONLY|O_APPEND);
+#endif // !P_VXWORKS
     if (fd >= 0) {
       write(fd, msg, strlen(msg));
       close(fd);
@@ -922,6 +959,7 @@ void PServiceProcess::PXOnSignal(int sig)
       }
       break;
 
+#ifndef P_VXWORKS
     case SIGWINCH :
       if (currentLogLevel > PSystemLog::Fatal) {
         currentLogLevel = (PSystemLog::Level)(currentLogLevel-1);
@@ -929,6 +967,7 @@ void PServiceProcess::PXOnSignal(int sig)
         s << "Log level decreased to " << PLevelName[currentLogLevel+1];
       }
       break;
+#endif // !P_VXWORKS
   }
 }
 

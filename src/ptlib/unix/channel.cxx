@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.38  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.37  2002/06/09 16:53:17  rogerh
  * The default for osError in PChannel::GetErrorText() is already specified in
  * the prototype. (found by gcc 3.1)
@@ -337,7 +340,7 @@ BOOL PChannel::PXClose()
   os_handle = -1;
   IOSTREAM_MUTEX_SIGNAL();
 
-#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS)
+#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS) && !defined(VX_TASKS)
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 

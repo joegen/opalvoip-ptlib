@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.11  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -74,6 +77,8 @@
 #ifdef _PSERIALCHANNEL_PLATFORM_INCLUDE
 #undef _PSERIALCHANNEL_PLATFORM_INCLUDE
 
+#ifndef P_VXWORKS
+
   public:
     BOOL Close();
 
@@ -85,6 +90,8 @@
     BYTE   dataBits;
     Parity parityBits;
     BYTE   stopBits;
+
+#endif // !P_VXWORKS
 
 #endif
 

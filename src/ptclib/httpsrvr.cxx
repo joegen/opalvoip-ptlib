@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.44  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.43  2002/10/02 08:54:01  craigs
  * Added support for XMLRPC server
  *
@@ -776,7 +779,7 @@ static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
   static const httpStatusCodeStruct httpStatusDefn[] = {
     // First entry MUST be InternalServerError
     { "Internal Server Error",         PHTTP::InternalServerError, 1 },
-    { "OK",                            PHTTP::OK, 1 },
+    { "OK",                            PHTTP::RequestOK, 1 },
     { "Unauthorised",                  PHTTP::UnAuthorised, 1 },
     { "Forbidden",                     PHTTP::Forbidden, 1 },
     { "Not Found",                     PHTTP::NotFound, 1 },
@@ -923,7 +926,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
-    return statusInfo->code == OK;
+    return statusInfo->code == RequestOK;
   }
 
   PString reply;
@@ -949,7 +952,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
   headers.SetAt(ContentTypeTag, "text/html");
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
-  return statusInfo->code == OK;
+  return statusInfo->code == RequestOK;
 }
 
 
@@ -1089,7 +1092,7 @@ PHTTPRequest::PHTTPRequest(const PURL & _url,
     localAddr(0),
     localPort(0)
 {
-  code        = PHTTP::OK;
+  code        = PHTTP::RequestOK;
   contentSize = P_MAX_INDEX;
 
   PIPSocket * socket = server.GetSocket();
@@ -1286,9 +1289,11 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
             const PHTTPConnectionInfo & connectInfo,
                                    BOOL isGET)
 {
-  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag) &&
-                           !IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag]))) 
-    return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
+  // Nede to split songle if into 2 so the Tornado compiler won't end with
+  // 'internal compiler error'
+  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag))
+    if (!IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag])))
+      return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
   PHTTPRequest * request = CreateRequest(url,
                                          info,
@@ -1348,7 +1353,7 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
   if (CheckAuthority(server, *request, connectInfo)) {
     server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
     persist = OnPOSTData(*request, data);
-    if (request->code != PHTTP::OK)
+    if (request->code != PHTTP::RequestOK)
       persist = server.OnError(request->code, "", connectInfo) && persist;
   }
 
@@ -1366,12 +1371,12 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
   if (msg.Is(PHTML::InBody))
     msg << PHTML::Body();
 
-  if (request.code != PHTTP::OK)
+  if (request.code != PHTTP::RequestOK)
     return persist;
 
   if (msg.IsEmpty())
-    msg << PHTML::Title()    << (unsigned)PHTTP::OK << " OK" << PHTML::Body()
-        << PHTML::Heading(1) << (unsigned)PHTTP::OK << " OK" << PHTML::Heading(1)
+    msg << PHTML::Title()    << (unsigned)PHTTP::RequestOK << " OK" << PHTML::Body()
+        << PHTML::Heading(1) << (unsigned)PHTTP::RequestOK << " OK" << PHTML::Heading(1)
         << PHTML::Body();
 
   request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.125  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.124  2002/10/09 05:37:52  robertj
  * Fixed IPv6 version of ReadFrom() and WriteTo().
  *
@@ -657,6 +660,9 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       ::gethostbyname_r(name,
                         &host_info,
                         &ht_data);		    
+#elif defined P_VXWORKS
+      struct hostent hostEnt;
+      host_info = Vx_gethostbyname((char *)name, &hostEnt);
 #else
       host_info = ::gethostbyname_r(name,
 			 &hostEnt, buffer, REENTRANT_BUFFER_LEN,
@@ -772,11 +778,14 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                         buffer, REENTRANT_BUFFER_LEN,
                         &host_info,
                         &localErrNo);
-#elif P_AIX
+#elif defined P_AIX
       ::gethostbyaddr_r((char *)&addr, sizeof(addr),
                         PF_INET, 
                         &host_info,
                         &ht_data );
+#elif defined P_VXWORKS
+      struct hostent hostEnt;
+      host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
 #else
       host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
@@ -892,7 +901,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -904,7 +913,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -933,6 +942,9 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
   return 0;
 #elif defined(_WIN32_WCE)
   PAssertAlways("PSocket::GetPortByService: problem for WindowsCE as no port given.");
+  return 0;
+#elif defined(P_VXWORKS)
+  PAssertAlways("PSocket::GetPortByService: problem as no ::getservbyname in VxWorks");
   return 0;
 #else
   PINDEX space = service.FindOneOf(" \t\r\n");
@@ -964,7 +976,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE) && !defined(P_VXWORKS)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
@@ -1895,7 +1907,7 @@ PString PIPSocket::Address::AsString() const
   }
 #endif
 
-  return inet_ntoa(*this);
+  return inet_ntoa(v.four);
 }
 
 
@@ -2200,6 +2212,8 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
   PAssertAlways("WriteOutOfBand unavailable on Nucleus Plus");
   //int count = NU_Send(os_handle, (char *)buf, len, 0);
   int count = ::send(os_handle, (const char *)buf, len, 0);
+#elif defined(P_VXWORKS)
+  int count = ::send(os_handle, (char *)buf, len, MSG_OOB);
 #else
   int count = ::send(os_handle, (const char *)buf, len, MSG_OOB);
 #endif

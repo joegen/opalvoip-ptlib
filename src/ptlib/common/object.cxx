@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.61  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.60  2002/09/06 05:29:42  craigs
  * Reversed order of memory block check on delete to improve performance in
  * Linux debug mode
@@ -814,6 +817,8 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #else // PMEMORY_CHECK
 
+#ifndef P_VXWORKS
+
 void * operator new[](size_t nSize)
 {
   return malloc(nSize);
@@ -823,6 +828,8 @@ void operator delete[](void * ptr)
 {
   free(ptr);
 }
+
+#endif // !P_VXWORKS
 
 #endif // PMEMORY_CHECK
 
@@ -1505,6 +1512,36 @@ istream & operator>>(istream & stream, PUInt64 & v)
 
 
 #endif
+
+
+#ifdef P_TORNADO
+
+// the library provided with Tornado 2.0 does not contain implementation 
+// for the functions defined below, therefor the own implementation
+
+ostream & ostream::operator<<(PInt64 v)
+{
+  return *this << (long)(v >> 32) << (long)(v & 0xFFFFFFFF);
+}
+
+
+ostream & ostream::operator<<(PUInt64 v)
+{
+  return *this << (long)(v >> 32) << (long)(v & 0xFFFFFFFF);
+}
+
+istream & istream::operator>>(PInt64 & v)
+{
+  return *this >> (long)(v >> 32) >> (long)(v & 0xFFFFFFFF);
+}
+
+
+istream & istream::operator>>(PUInt64 & v)
+{
+  return *this >> (long)(v >> 32) >> (long)(v & 0xFFFFFFFF);
+}
+
+#endif // P_TORNADO
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.18  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.17  1998/11/30 21:51:49  robertj
  * New directory structure.
  *
@@ -44,6 +47,9 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#ifdef P_VXWORKS
+#include <socklib.h>
+#endif // P_VXWORKS
 
 #include "uerror.h"
 
