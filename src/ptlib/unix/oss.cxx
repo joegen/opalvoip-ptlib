@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.42  2002/06/09 16:33:45  rogerh
+ * Use new location of soundcard.h on FreeBSD
+ *
  * Revision 1.41  2002/06/05 12:29:15  craigs
  * Changes for gcc 3.1
  *
@@ -174,7 +177,11 @@
 #endif
 
 #ifdef P_FREEBSD
+#if P_FREEBSD >= 500000
+#include <sys/soundcard.h>
+#else
 #include <machine/soundcard.h>
+#endif
 #endif
 
 #if defined(P_OPENBSD) || defined(P_NETBSD)
