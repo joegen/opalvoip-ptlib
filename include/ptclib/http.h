@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.57  2002/12/03 22:37:36  robertj
+ * Removed get document that just returns a content length as the chunked
+ *   transfer encoding makes this very dangerous.
+ * Added GetTextDocument() to get a URL content into a PString.
+ * Added a version pf PostData() that gets the reponse content into a PString.
+ * Added ReadContentBody() that takes a PString, not just PBYTEArray.
+ *
  * Revision 1.56  2002/11/06 22:47:23  robertj
  * Fixed header comment (copyright etc)
  *
@@ -527,6 +534,10 @@ class PHTTPClient : public PHTTP
       PMIMEInfo & replyMIME,
       PBYTEArray & body
     );
+    BOOL ReadContentBody(
+      PMIMEInfo & replyMIME,
+      PString & body
+    );
 
 
     /** Get the document specified by the URL.
@@ -534,11 +545,12 @@ class PHTTPClient : public PHTTP
        @return
        TRUE if document is being transferred.
      */
-    BOOL GetDocument(
+    BOOL GetTextDocument(
       const PURL & url,         // Universal Resource Locator for document.
-      PINDEX & contentLength,   // Length of body to read
+      PString & document,       // Body read
       BOOL persist = TRUE
     );
+
     /** Get the document specified by the URL.
 
        @return
@@ -577,8 +589,26 @@ class PHTTPClient : public PHTTP
       BOOL persist = TRUE
     );
 
+    /** Post the data specified to the URL.
+
+       @return
+       TRUE if document is being transferred.
+     */
+    BOOL PostData(
+      const PURL & url,       // Universal Resource Locator for document.
+      PMIMEInfo & outMIME,    // MIME info in request
+      const PString & data,   // Information posted to the HTTP server.
+      PMIMEInfo & replyMIME,  // MIME info in response
+      PString & replyBody,    // Body of response
+      BOOL persist = TRUE
+    );
+
   protected:
     BOOL AssureConnect(const PURL & url, PMIMEInfo & outMIME);
+    BOOL InternalReadContentBody(
+      PMIMEInfo & replyMIME,
+      PAbstractArray & body
+    );
 
     PString userAgentName;
 };
