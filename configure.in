@@ -399,7 +399,7 @@ else
 fi
 
 AC_SUBST(HAS_PLUGINS)
-AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${LIBDIR}/pwlib"], [Default plugin directory])
+AC_DEFINE_UNQUOTED([P_DEFAULT_PLUGIN_DIR], ["${INSTALLPREFIX}/lib/pwlib"], [Default plugin directory])
 
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
