@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.26  1999/08/09 13:02:45  robertj
+ * dded ASN compiler #defines for backward support of pre GCC 2.9 compilers.
+ * Added ASN compiler #defines to reduce its memory footprint.
+ *
  * Revision 1.25  1999/08/08 15:45:59  robertj
  * Fixed incorrect encoding of unknown extensions.
  *
@@ -2341,6 +2345,116 @@ PASN_Object & PASN_Choice::GetObject() const
 }
 
 
+#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9
+
+PASN_Choice::operator PASN_Null &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Null::Class()), PInvalidCast);
+  return *(PASN_Null *)choice;
+}
+
+
+PASN_Choice::operator PASN_Boolean &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Boolean::Class()), PInvalidCast);
+  return *(PASN_Boolean *)choice;
+}
+
+
+PASN_Choice::operator PASN_Integer &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Integer::Class()), PInvalidCast);
+  return *(PASN_Integer *)choice;
+}
+
+
+PASN_Choice::operator PASN_Enumeration &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Enumeration::Class()), PInvalidCast);
+  return *(PASN_Enumeration *)choice;
+}
+
+
+PASN_Choice::operator PASN_Real &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Real::Class()), PInvalidCast);
+  return *(PASN_Real *)choice;
+}
+
+
+PASN_Choice::operator PASN_ObjectId &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_ObjectId::Class()), PInvalidCast);
+  return *(PASN_ObjectId *)choice;
+}
+
+
+PASN_Choice::operator PASN_BitString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_BitString::Class()), PInvalidCast);
+  return *(PASN_BitString *)choice;
+}
+
+
+PASN_Choice::operator PASN_OctetString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_OctetString::Class()), PInvalidCast);
+  return *(PASN_OctetString *)choice;
+}
+
+
+PASN_Choice::operator PASN_NumericString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_NumericString::Class()), PInvalidCast);
+  return *(PASN_NumericString *)choice;
+}
+
+
+PASN_Choice::operator PASN_PrintableString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_PrintableString::Class()), PInvalidCast);
+  return *(PASN_PrintableString *)choice;
+}
+
+
+PASN_Choice::operator PASN_VisibleString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_VisibleString::Class()), PInvalidCast);
+  return *(PASN_VisibleString *)choice;
+}
+
+
+PASN_Choice::operator PASN_IA5String &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_IA5String::Class()), PInvalidCast);
+  return *(PASN_IA5String *)choice;
+}
+
+
+PASN_Choice::operator PASN_GeneralString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_GeneralString::Class()), PInvalidCast);
+  return *(PASN_GeneralString *)choice;
+}
+
+
+PASN_Choice::operator PASN_BMPString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_BMPString::Class()), PInvalidCast);
+  return *(PASN_BMPString *)choice;
+}
+
+
+PASN_Choice::operator PASN_Sequence &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Sequence::Class()), PInvalidCast);
+  return *(PASN_Sequence *)choice;
+}
+
+
+#else
+
+
 PASN_Choice::operator PASN_Null &()
 {
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Null::Class()), PInvalidCast);
@@ -2549,6 +2663,9 @@ PASN_Choice::operator const PASN_Sequence &() const
   PAssert(PAssertNULL(choice)->IsDescendant(PASN_Sequence::Class()), PInvalidCast);
   return *(const PASN_Sequence *)choice;
 }
+
+
+#endif
 
 
 PObject::Comparison PASN_Choice::Compare(const PObject & obj) const
