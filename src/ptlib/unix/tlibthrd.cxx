@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.132  2004/06/01 07:42:20  csoutheren
+ * Restored memory allocation checking
+ * Added configure flag to enable, thanks to Derek Smithies
+ *
  * Revision 1.131  2004/05/21 00:49:16  csoutheren
  * Added PreShutdown to ~PProcess
  *
@@ -575,7 +579,13 @@ void PHouseKeepingThread::Main()
 void PProcess::SignalTimerChange()
 {
   if (housekeepingThread == NULL) {
+#if PMEMORY_CHECK
+    BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
     housekeepingThread = new PHouseKeepingThread;
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
+#endif
   }
 
   BYTE ch;
