@@ -3171,10 +3171,10 @@ EXPORTS
     ?AsInt64@PString@@QBE_JI@Z @889 NONAME
     ?AsInteger@PString@@QBEJI@Z @890 NONAME
     ?AsReal@PString@@QBENXZ @891 NONAME
-    ?Assign@PSafePtrBase@@IAEXABV1@@Z @893 NONAME
-    ?Assign@PSafePtrBase@@IAEXABVPSafeCollection@@@Z @6745 NONAME
-    ?Assign@PSafePtrBase@@IAEXH@Z @894 NONAME
-    ?Assign@PSafePtrBase@@IAEXPAVPSafeObject@@@Z @895 NONAME
+    ?Assign@PSafePtrBase@@QAEXABV1@@Z @7338 NONAME
+    ?Assign@PSafePtrBase@@QAEXABVPSafeCollection@@@Z @7339 NONAME
+    ?Assign@PSafePtrBase@@QAEXH@Z @7340 NONAME
+    ?Assign@PSafePtrBase@@QAEXPAVPSafeObject@@@Z @7341 NONAME
     ?AssignContents@PAbstractArray@@MAEXABVPContainer@@@Z @896 NONAME
     ?AssignContents@PAbstractList@@MAEXABVPContainer@@@Z @897 NONAME
     ?AssignContents@PAbstractSet@@MAEXABVPContainer@@@Z @898 NONAME
