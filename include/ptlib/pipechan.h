@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.14  1998/10/29 11:29:17  robertj
+ * Added ability to set environment in sub-process.
+ *
  * Revision 1.13  1998/10/26 09:11:05  robertj
  * Added ability to separate out stdout from stderr on pipe channels.
  *
@@ -112,11 +115,13 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     };
     // Channel mode for the pipe to the sub-process.
 
+    PPipeChannel();
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
@@ -128,46 +133,21 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        */
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
-      const PStringArray & argumentList,  // Array of arguments to sub-program.
+      const PStringArray & argumentList, // Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
     );
     /* Create a new pipe channel allowing the subProgram to be executed and
-       data transferred from its stdin/stdout.
+       data transferred from its stdin/stdout/stderr.
        
-       If the mode is <CODE>ReadOnly</CODE> then the <CODE>stdout</CODE> of the
-       sub-program is supplied via the <A>Read()</A> calls of the PPipeChannel.
-       The sub-programs input is set to the platforms null device (eg
-       /dev/nul).
-
-       If mode is <CODE>WriteOnly</CODE> then <A>Write()</A> calls of the
-       PPipeChannel are suppied to the sub-programs <CODE>stdin</CODE> and its
-       <CODE>stdout</CODE> is sent to the null device.
-       
-       If mode is <CODE>ReadWrite</CODE> then both read and write actions can
-       occur.
-
-       The <CODE>subProgram</CODE> parameter may contain just the path of the
-       program to be run or a program name and space separated arguments,
-       similar to that provided to the platforms command processing shell.
-       Which use of this parameter is determiend by whether arguments are
-       passed via the <CODE>argumentPointers</CODE> or
-       <CODE>argumentList</CODE> parameters.
-
-       The <CODE>searchPath</CODE> parameter indicates that the system PATH
-       for executables should be searched for the sub-program. If FALSE then
-       only the explicit or implicit path contained in the
-       <CODE>subProgram</CODE> parameter is searched for the executable.
-
-       The <CODE>stderrSeparate</CODE> parameter indicates that the standard
-       error stream is not included in line with the standard output stream.
-       In this case, data in this stream must be read using the
-       <A>ReadStandardError()</A> function.
+       See the <A>Open()</A> function for details of various parameters.
      */
 
   ~PPipeChannel();
@@ -246,6 +226,72 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
      */
 
   // New member functions
+    BOOL Open(
+      const PString & subProgram,  // Sub program name or command line.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
+    );
+    BOOL Open(
+      const PString & subProgram,  // Sub program name or command line.
+      const char * const * argumentPointers,
+      /* This is an array of argument strings for the sub-program. The array
+         is terminated with a NULL pointer. If the parameter itself is NULL
+         then this is equivalent to first constructor, without the parameter
+         at all.
+       */
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
+    );
+    BOOL Open(
+      const PString & subProgram,  // Sub program name or command line.
+      const PStringArray & argumentList, // Array of arguments to sub-program.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
+      const char * environment = NULL // Environment for sub-process
+    );
+    /* Open a new pipe channel allowing the subProgram to be executed and
+       data transferred from its stdin/stdout/stderr.
+       
+       If the mode is <CODE>ReadOnly</CODE> then the <CODE>stdout</CODE> of the
+       sub-program is supplied via the <A>Read()</A> calls of the PPipeChannel.
+       The sub-programs input is set to the platforms null device (eg
+       /dev/nul).
+
+       If mode is <CODE>WriteOnly</CODE> then <A>Write()</A> calls of the
+       PPipeChannel are suppied to the sub-programs <CODE>stdin</CODE> and its
+       <CODE>stdout</CODE> is sent to the null device.
+       
+       If mode is <CODE>ReadWrite</CODE> then both read and write actions can
+       occur.
+
+       The <CODE>subProgram</CODE> parameter may contain just the path of the
+       program to be run or a program name and space separated arguments,
+       similar to that provided to the platforms command processing shell.
+       Which use of this parameter is determiend by whether arguments are
+       passed via the <CODE>argumentPointers</CODE> or
+       <CODE>argumentList</CODE> parameters.
+
+       The <CODE>searchPath</CODE> parameter indicates that the system PATH
+       for executables should be searched for the sub-program. If FALSE then
+       only the explicit or implicit path contained in the
+       <CODE>subProgram</CODE> parameter is searched for the executable.
+
+       The <CODE>stderrSeparate</CODE> parameter indicates that the standard
+       error stream is not included in line with the standard output stream.
+       In this case, data in this stream must be read using the
+       <A>ReadStandardError()</A> function.
+
+       The <CODE>environment</CODE> parameter is a null terminated sequence
+       of null terminated strings of the form name=value. If NULL is passed
+       then the same invironment as calling process uses is passed to the
+       child process.
+     */
+
     const PFilePath & GetSubProgram() const;
     /* Get the full file path for the sub-programs executable file.
 
@@ -331,24 +377,6 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     // Member variables
     PFilePath subProgName;
     // The fully qualified path name for the sub-program executable.
-
-
-  private:
-    void Construct(
-      const PString & subProgram,  // Sub program name or command line.
-      const char * const * argumentPointers,
-      /* This is an array of argument strings for the sub-program. The array
-         is terminated with a NULL pointer. If the parameter itself is NULL
-         then this is equivalent to first constructor, without the parameter
-         at all.
-       */
-      OpenMode mode,       // Mode for the pipe channel.
-      BOOL searchPath,     // Flag for system PATH to be searched.
-      BOOL stderrSeparate  // Standard error is on separate pipe
-    );
-    /* Common, platform dependent, construction code for the pipe channel. This
-       is called by all of the constructors.
-     */
 
 
 // Class declaration continued in platform specific header file ///////////////
