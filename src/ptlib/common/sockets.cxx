@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.185  2005/02/07 12:12:30  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.184  2005/02/07 00:47:18  csoutheren
  * Changed IPV6 code to use standard IPV6 macros
  *
@@ -2502,11 +2506,18 @@ BOOL PIPSocket::Address::IsBroadcast() const
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
                                           const Address & _mask,
-                                          const PString & _macAddr)
+                                          const PString & _macAddr
+#if P_HAS_IPV6
+                                         ,const PString & _ip6Addr
+#endif
+                                         )
   : name(_name.Trim()),
     ipAddr(_addr),
     netMask(_mask),
     macAddr(_macAddr)
+#if P_HAS_IPV6
+    , ip6Addr(_ip6Addr)
+#endif
 {
 }
 
@@ -2514,6 +2525,10 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
   strm << ipAddr;
+#if P_HAS_IPV6
+  if (!ip6Addr)
+    strm << " [" << ip6Addr << ']';
+#endif
   if (!macAddr)
     strm << " <" << macAddr << '>';
   if (!name)
