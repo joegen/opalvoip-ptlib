@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.15  2002/06/25 02:26:05  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.14  2001/09/03 08:13:54  robertj
  * Changed "stack dump" option to "run debugger" when get assert.
  *
@@ -77,26 +81,18 @@
 #include <ctype.h>
 #include <signal.h>
 
-void PAssertFunc (const char * file, int line, const char * msg)
+void PAssertFunc(const char * msg)
 
 {
 #ifdef __BEOS__
-	// Print location in Eddie-compatible format
-    PError << "Assertion fail: " << file << ":" << line << endl;
-	if ( msg != NULL )
-	{
-		PError << msg << endl;
-	}
-	else
-	{
-		msg = "Assertion failed";
-	}
-	// Pop up the debugger dialog that gives the user the necessary choices
-	// "Ignore" is not supported on BeOS but you can instruct the
-	// debugger to continue executing.
-	// Note: if you choose "debug" you get a debug prompt. Type bdb to
-	// start the Be Debugger.
-	debugger(msg);
+  // Print location in Eddie-compatible format
+  PError << msg << endl;
+  // Pop up the debugger dialog that gives the user the necessary choices
+  // "Ignore" is not supported on BeOS but you can instruct the
+  // debugger to continue executing.
+  // Note: if you choose "debug" you get a debug prompt. Type bdb to
+  // start the Be Debugger.
+  debugger(msg);
 #else
   static BOOL inAssert;
   if (inAssert)
@@ -104,16 +100,10 @@ void PAssertFunc (const char * file, int line, const char * msg)
   inAssert = TRUE;
 
   ostream & trace = PTrace::Begin(0, file, line);
-  trace << "PWLib\tAssertion fail";
-  if (msg != NULL)
-    trace << ": " << msg;
-  trace << PTrace::End;
+  trace << "PWLib\t" << msg << PTrace::End;
 
-  if (&trace != &PError) {
-    PError << "Assertion fail: File " << file << ", Line " << line << endl;
-    if (msg != NULL)
-      PError << msg << endl;
-  }
+  if (&trace != &PError)
+    PError << msg << endl;
 
 #ifndef P_VXWORKS
 
