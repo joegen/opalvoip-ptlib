@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CC CFLAGS ac_ct_CC CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CC CFLAGS ac_ct_CC CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_OPENSSL HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4654,7 +4654,7 @@ _ACEOF
   if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
     LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
   fi
-  ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
+  ENDLDLIBS="$ENDLDLIBS -lldap -lldap_r -llber -lsasl"
 fi
 
 
@@ -4849,12 +4849,16 @@ rm -f conftest.$ac_objext conftest.$ac_ext
       echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
       SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+      P_STATIC_LDFLAGS="-L/usr/kerboros/lib"
+      P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
     else
       echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
     fi
   fi
 fi
+
+
 
 
 if test "${SSLHDR:-unset}" = "unset" ; then
@@ -6826,6 +6830,8 @@ s,@EGREP@,$EGREP,;t t
 s,@HAS_REGEX@,$HAS_REGEX,;t t
 s,@HAS_PLUGINS@,$HAS_PLUGINS,;t t
 s,@HAS_OPENLDAP@,$HAS_OPENLDAP,;t t
+s,@P_STATIC_ENDLDLIBS@,$P_STATIC_ENDLDLIBS,;t t
+s,@P_STATIC_LDFLAGS@,$P_STATIC_LDFLAGS,;t t
 s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@HAS_EXPAT@,$HAS_EXPAT,;t t
 s,@HAS_SDL@,$HAS_SDL,;t t
