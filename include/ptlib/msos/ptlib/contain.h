@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.11 1996/01/28 02:54:27 robertj Exp $
+ * $Id: contain.h,v 1.12 1996/03/31 09:07:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.12  1996/03/31 09:07:29  robertj
+ * Removed bad define in NT headers.
+ *
  * Revision 1.11  1996/01/28 02:54:27  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  *
@@ -86,6 +89,8 @@
 
 #define STRICT
 #include <windows.h>
+
+#undef DELETE   // Remove define from NT headers.
 
 #else
 
