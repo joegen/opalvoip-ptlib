@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.16  2000/11/14 14:52:32  rogerh
+ * Fix SET/GET typo error
+ *
  * Revision 1.15  2000/11/12 23:30:41  craigs
  * Fixed problems with serial port configuration
  *
@@ -87,7 +90,7 @@ extern "C" int ioctl(int, int, void *);
 #endif
 
 #ifndef	TCGETATTR
-#define	TCSETATTR(f,t)	::ioctl(fd,TCGETA,t)
+#define	TCGETATTR(f,t)	::ioctl(fd,TCGETA,t)
 #endif
 
 //#define BINARY_LOCK	1
