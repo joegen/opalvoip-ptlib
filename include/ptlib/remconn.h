@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.9 1998/02/03 06:28:46 robertj Exp $
+ * $Id: remconn.h,v 1.10 1998/07/24 06:58:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.10  1998/07/24 06:58:27  robertj
+ * Added ability to get IP number of RAS connection.
+ *
  * Revision 1.9  1998/02/03 06:28:46  robertj
  * Added more error codes.
  *
@@ -72,6 +75,11 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     void Close();
 
     const PString & GetName() const { return remoteName; }
+    /* Get the name of the RAS connection.
+
+       <H2>Returns:</H2>
+       String for IP address, or empty string if none.
+     */
 
     enum Status {
       Idle,
@@ -90,8 +98,25 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       NumStatuses
     };
     Status GetStatus() const;
+    /* Get the current status of the RAS connection.
+
+       <H2>Returns:</H2>
+       Status code.
+     */
+
+    PString GetAddress();
+    /* Get the IP address in dotted decimal form for the RAS connection.
+
+       <H2>Returns:</H2>
+       String for IP address, or empty string if none.
+     */
 
     DWORD GetErrorCode() const { return osError; }
+    /* Get the error code for the last operation.
+
+       <H2>Returns:</H2>
+       Operating system error code.
+     */
 
 
     static PStringArray GetAvailableNames();
