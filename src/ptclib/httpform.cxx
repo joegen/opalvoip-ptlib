@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.1 1996/06/28 12:56:20 robertj Exp $
+ * $Id: httpform.cxx,v 1.2 1996/08/08 13:34:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.2  1996/08/08 13:34:10  robertj
+ * Removed redundent call.
+ *
  * Revision 1.1  1996/06/28 12:56:20  robertj
  * Initial revision
  *
@@ -637,7 +640,6 @@ void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
       text.Splice(html, start, end - start + 17);
     }
   }
-  PHTTPForm::OnLoadedText(request, text);
 }
 
 
