@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.14  1998/10/22 04:33:11  robertj
+ * Fixed bug in constrained strings and PER, incorrect order of character set.
+ *
  * Revision 1.13  1998/09/23 06:21:49  robertj
  * Added open source copyright license.
  *
@@ -1554,10 +1557,9 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
   else {
     characterSet.SetSize(setSize);
     PINDEX count = 0;
-    for (PINDEX i = 0; i < setSize; i++) {
-      if (memchr(canonicalSet, *set, canonicalSetSize) != NULL)
-        characterSet[count++] = *set;
-      set++;
+    for (PINDEX i = 0; i < canonicalSetSize; i++) {
+      if (memchr(set, canonicalSet[i], setSize) != NULL)
+        characterSet[count++] = canonicalSet[i];
     }
     PAssert(count > 0, PInvalidParameter);
     characterSet.SetSize(count);
