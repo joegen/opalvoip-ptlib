@@ -26,6 +26,10 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.11  2001/05/14 05:10:38  robertj
+ * Fixed problems with video colour converters registration, could not rely
+ *   on static PList being initialised before all registration instances.
+ *
  * Revision 1.10  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -70,6 +74,9 @@
 #include <ptlib/vconvert.h>
 
 
+static PColourConverterRegistration * RegisteredColourConvertersListHead = NULL;
+
+
 #define PSTANDARD_COLOUR_CONVERTER(from,to) \
   PCOLOUR_CONVERTER(P_##from##_##to,#from,#to)
 
@@ -79,36 +86,35 @@
 
 PColourConverterRegistration::PColourConverterRegistration(const PString & srcColourFormat,
                                                            const PString & destColourFormat)
-  : PString(srcColourFormat+'\t'+destColourFormat)
+  : PCaselessString(srcColourFormat+'\t'+destColourFormat)
 {
-  PColourConverter::converters.Register(this);
+  PColourConverterRegistration * test = RegisteredColourConvertersListHead;
+  while (test != NULL) {
+    if (*test == *this)
+      return;
+    test = test->link;
+  }
+
+  link = RegisteredColourConvertersListHead;
+  RegisteredColourConvertersListHead = this;
 }
 
-
-PColourConverterRegistrations::PColourConverterRegistrations()
-{
-  DisallowDeleteObjects();
-}
-
-
-void PColourConverterRegistrations::Register(PColourConverterRegistration * reg)
-{
-  if (GetValuesIndex(*reg) ==P_MAX_INDEX)
-    Append(reg);
-}
-
-
-PColourConverterRegistrations PColourConverter::converters;
 
 PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
                                             const PString & destColourFormat,
                                             unsigned width,
                                             unsigned height)
 {
-  PINDEX idx = converters.GetValuesIndex(srcColourFormat+'\t'+destColourFormat);
-  if (idx == P_MAX_INDEX)
-    return NULL;
-  return ((PColourConverterRegistration&)converters[idx]).Create(width, height);
+  PString converterName = srcColourFormat + '\t' + destColourFormat;
+
+  PColourConverterRegistration * find = RegisteredColourConvertersListHead;
+  while (find != NULL) {
+    if (*find == converterName)
+      return find->Create(width, height);
+    find = find->link;
+  }
+
+  return NULL;
 }
 
 
