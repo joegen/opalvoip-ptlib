@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.137  2002/10/03 04:12:45  robertj
+# Allowed for locally built (uninstalled) openssl library.
+#
 # Revision 1.136  2002/09/16 01:08:59  robertj
 # Added #define so can select if #pragma interface/implementation is used on
 #   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -1278,7 +1281,7 @@ endif
 ifdef  OPENSSLDIR
 ifneq (,$(wildcard $(OPENSSLDIR)))
 STDCCFLAGS	+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
-LDFLAGS		+= -L$(OPENSSLDIR)/lib
+LDFLAGS		+= -L$(OPENSSLDIR)/lib -L$(OPENSSLDIR)
 ENDLDLIBS	+= -lssl -lcrypto
 HAS_OPENSSL	= 1
 endif
