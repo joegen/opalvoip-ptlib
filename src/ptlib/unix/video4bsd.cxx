@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.11  2001/03/08 03:59:13  robertj
+ * Fixed previous change, needed to allow for -1 as chammelNumber in Open().
+ *
  * Revision 1.10  2001/03/08 02:23:17  robertj
  * Added improved defaulting of video formats so Open() does not fail.
  *
@@ -82,9 +85,6 @@ PVideoInputDevice::PVideoInputDevice()
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
-  if( channelNumber < 0 )
-    return FALSE;
-
   Close();
 
   deviceName = devName;
