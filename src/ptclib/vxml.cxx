@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.26  2002/09/18 06:37:40  robertj
+ * Added functions to load vxml directly, via file or URL. Old function
+ *   intelligently picks which one to use.
+ *
  * Revision 1.25  2002/09/03 04:38:14  craigs
  * Added VXML 2.0 time attribute to <break>
  *
@@ -262,18 +266,30 @@ void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
   textToSpeech = _tts;
 }
 
-BOOL PVXMLSession::Load(const PString & filename)
+BOOL PVXMLSession::Load(const PString & source)
 {
-  loaded = TRUE;
+  // Lets try and guess what was passed, if file exists then is file
+  PFilePath file = source;
+  if (PFile::Exists(file))
+    return LoadFile(file);
 
-  // backwards compatbility for apps using ::Load
-  PINDEX pos = filename.Find(':');
+  // see if looks like URL
+  PINDEX pos = source.Find(':');
   if (pos != P_MAX_INDEX) {
-    PString scheme = filename.Left(pos);
+    PString scheme = source.Left(pos);
     if ((scheme *= "http") || (scheme *= "https") || (scheme *= "file"))
-      return LoadURL(filename);
+      return LoadURL(source);
   }
 
+  // See if is actual VXML
+  if (PCaselessString(source).Find("<vxml") != P_MAX_INDEX)
+    return LoadVXML(source);
+
+  return FALSE;
+}
+
+BOOL PVXMLSession::LoadFile(const PFilePath & filename)
+{
   // create a file URL from the filename
   return LoadURL(FilenameToURL(filename));
 }
@@ -284,25 +300,31 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
   PBYTEArray data;
   PString contentType;
   if (!RetrieveResource(url, data, contentType)) {
-    PTRACE(1, "PVXML\tcannot load document " + url.AsString());
-    loaded = TRUE;
+    PTRACE(1, "PVXML\tCannot load document " << url);
     return FALSE;
   }
 
-  PString xmlText((const char *)(const BYTE *)data, data.GetSize());
+  if (!LoadVXML(PString((const char *)(const BYTE *)data, data.GetSize()))) {
+    PTRACE(1, "PVXML\tCannot load VXML in " << url);
+    return FALSE;
+  }
+
+  rootURL = url;
+  return TRUE;
+}
+
+BOOL PVXMLSession::LoadVXML(const PString & xmlText)
+{
+  PWaitAndSignal m(sessionMutex);
+
+  loaded = FALSE;
+  rootURL = PString::Empty();
 
   // parse the XML
   if (!xmlFile.Load(xmlText)) {
-    PString err = "Cannot parse root document " + url.AsString() + " - " + GetXMLError();
-    PTRACE(1, "PVXML\t" << err);
-    loaded = TRUE;
+    PTRACE(1, "PVXML\tCannot parse root document: " << GetXMLError());
     return FALSE;
   }  
-
-  // parse the VXML
-  PWaitAndSignal m(sessionMutex);
-  loaded = TRUE;
-  rootURL = url;
 
   PXMLElement * root = xmlFile.GetRootElement();
   if (root == NULL)
@@ -310,11 +332,12 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
 
   // find the first form
   if ((currentForm = FindForm("")) == NULL)
-	  return FALSE;
+    return FALSE;
 
   // start processing with this <form> element
   currentNode = currentForm;
 
+  loaded = TRUE;
   return TRUE;
 }
 
