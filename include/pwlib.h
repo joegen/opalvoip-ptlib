@@ -866,6 +866,9 @@ typedef int PDIMENSION;
   private:
     int initValue, initMin, initMax;
       // These are only used to initialise the MS-Windows scroll bar
+
+    BOOL tracking;
+      // Indication that continuous scrolling is occurring.
 };
 
 
