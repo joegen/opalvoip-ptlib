@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.12  1999/01/09 03:35:52  robertj
+ * Fixed problem with closing thread waiting on semaphore.
+ *
  * Revision 1.11  1998/11/30 22:07:23  robertj
  * New directory structure.
  *
@@ -96,6 +99,7 @@ class PSemaphore;
 #ifdef P_PTHREADS
 
   public:
+    void PXSetWaitingSemaphore(PSemaphore * sem);
     //void InitialiseProcessThread();
     static void * PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
@@ -110,6 +114,9 @@ class PSemaphore;
 
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
+
+    PSemaphore * PX_waitingSemaphore;
+    pthread_mutex_t PX_WaitSemMutex;
 
 #else
 
