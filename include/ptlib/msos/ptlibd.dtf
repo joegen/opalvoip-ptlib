@@ -552,6 +552,7 @@ EXPORTS
     ??2PStringToString@@SAPAXIPBDH@Z @402 NONAME ;public: static void * __cdecl PStringToString::operator new(unsigned int,char const *,int)
     ??2PSystemLog@@SAPAXI@Z @403 NONAME ;public: static void * __cdecl PSystemLog::operator new(unsigned int)
     ??2PTCPSocket@@SAPAXIPBDH@Z @2542 NONAME ;public: static void * __cdecl PTCPSocket::operator new(unsigned int,char const *,int)
+    ??2PTextFile@@SAPAXI@Z @3547 NONAME ;public: static void * __cdecl PTextFile::operator new(unsigned int)
     ??2PTime@@SAPAXIPBDH@Z @404 NONAME ;public: static void * __cdecl PTime::operator new(unsigned int,char const *,int)
     ??2PTimeInterval@@SAPAXIPBDH@Z @405 NONAME ;public: static void * __cdecl PTimeInterval::operator new(unsigned int,char const *,int)
     ??2PUnsignedArray@@SAPAXIPBDH@Z @3144 NONAME ;public: static void * __cdecl PUnsignedArray::operator new(unsigned int,char const *,int)
@@ -2299,6 +2300,7 @@ EXPORTS
     ?ICMP@@3VPICMPDLL@@A @1652 NONAME ;class PICMPDLL  ICMP
     ?IllegalArgumentIndex@PArgList@@UBEXH@Z @1653 NONAME ;public: virtual void __thiscall PArgList::IllegalArgumentIndex(int)const 
     ?Include@PStringSet@@QAEXABVPString@@@Z @1654 NONAME ;public: void __thiscall PStringSet::Include(class PString const &)
+    ?Initialise@PTrace@@SAXIPBDI@Z @3548 NONAME ;public: static void __cdecl PTrace::Initialise(unsigned int,char const *,unsigned int)
     ?InitialiseCapture@PVideoInputDevice@@IAEHXZ @3376 NONAME ;protected: int __thiscall PVideoInputDevice::InitialiseCapture(void)
     ?InitialiseProcessThread@PThread@@IAEXXZ @1655 NONAME ;protected: void __thiscall PThread::InitialiseProcessThread(void)
     ?InProgress@PWin32PacketBuffer@@QBEHXZ @2388 NONAME ;public: int __thiscall PWin32PacketBuffer::InProgress(void)const 

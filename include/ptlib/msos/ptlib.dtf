@@ -77,6 +77,7 @@ EXPORTS
     ??0PDynaLink@@QAE@XZ @67 NONAME ;public: __thiscall PDynaLink::PDynaLink(void)
     ??0PEthSocket@@QAE@HHH@Z @1807 NONAME ;public: __thiscall PEthSocket::PEthSocket(int,int,int)
     ??0PFakeVideoInputDevice@@QAE@W4VideoFormat@PVideoDevice@@HW4ColourFormat@2@@Z @2545 NONAME ;public: __thiscall PFakeVideoInputDevice::PFakeVideoInputDevice(enum PVideoDevice::VideoFormat,int,enum VideoFormat::ColourFormat)
+    ??0PFile@@QAE@XZ @2670 NONAME ;public: __thiscall PFile::PFile(void)
     ??0PFilePath@@QAE@ABVPString@@@Z @72 NONAME ;public: __thiscall PFilePath::PFilePath(class PString const &)
     ??0PFilePath@@QAE@PBD0@Z @73 NONAME ;public: __thiscall PFilePath::PFilePath(char const *,char const *)
     ??0PFilePath@@QAE@PBD@Z @74 NONAME ;public: __thiscall PFilePath::PFilePath(char const *)
@@ -326,6 +327,7 @@ EXPORTS
     ??1PSyncPoint@@UAE@XZ @248 NONAME ;public: virtual __thiscall PSyncPoint::~PSyncPoint(void)
     ??1PSystemLog@@UAE@XZ @249 NONAME ;public: virtual __thiscall PSystemLog::~PSystemLog(void)
     ??1PTCPSocket@@UAE@XZ @250 NONAME ;public: virtual __thiscall PTCPSocket::~PTCPSocket(void)
+    ??1PTextFile@@UAE@XZ @2671 NONAME ;public: virtual __thiscall PTextFile::~PTextFile(void)
     ??1PTextSerialiser@@UAE@XZ @252 NONAME ;public: virtual __thiscall PTextSerialiser::~PTextSerialiser(void)
     ??1PTextUnSerialiser@@UAE@XZ @253 NONAME ;public: virtual __thiscall PTextUnSerialiser::~PTextUnSerialiser(void)
     ??1PThread@@UAE@XZ @254 NONAME ;public: virtual __thiscall PThread::~PThread(void)
@@ -399,6 +401,7 @@ EXPORTS
     ??3PStringToString@@SAXPAX@Z @2638 NONAME ;public: static void __cdecl PStringToString::operator delete(void *)
     ??3PSystemLog@@SAXPAX@Z @2639 NONAME ;public: static void __cdecl PSystemLog::operator delete(void *)
     ??3PTCPSocket@@SAXPAX@Z @2640 NONAME ;public: static void __cdecl PTCPSocket::operator delete(void *)
+    ??3PTextFile@@SAXPAX@Z @2672 NONAME ;public: static void __cdecl PTextFile::operator delete(void *)
     ??3PUnsignedArray@@SAXPAX@Z @2641 NONAME ;public: static void __cdecl PUnsignedArray::operator delete(void *)
     ??3PVideoInputThread@@SAXPAX@Z @2642 NONAME ;public: static void __cdecl PVideoInputThread::operator delete(void *)
     ??3PWaveBuffer@@SAXPAX@Z @2643 NONAME ;public: static void __cdecl PWaveBuffer::operator delete(void *)
@@ -669,6 +672,8 @@ EXPORTS
     ??_7PSystemLog@@6BPObject@@@ @527 NONAME ;const  PSystemLog::`vftable'{for `PObject'}
     ??_7PTCPSocket@@6Biostream@@@ @528 NONAME ;const  PTCPSocket::`vftable'{for `iostream'}
     ??_7PTCPSocket@@6BPObject@@@ @529 NONAME ;const  PTCPSocket::`vftable'{for `PObject'}
+    ??_7PTextFile@@6Biostream@@@ @2673 NONAME ;const  PTextFile::`vftable'{for `iostream'}
+    ??_7PTextFile@@6BPObject@@@ @2674 NONAME ;const  PTextFile::`vftable'{for `PObject'}
     ??_7PTextSerialiser@@6B@ @532 NONAME ;const  PTextSerialiser::`vftable'
     ??_7PTextUnSerialiser@@6B@ @533 NONAME ;const  PTextUnSerialiser::`vftable'
     ??_7PThread@@6B@ @534 NONAME ;const  PThread::`vftable'
@@ -737,6 +742,8 @@ EXPORTS
     ??_8PSystemLog@@7Bostream@@@ @572 NONAME ;const  PSystemLog::`vbtable'{for `ostream'}
     ??_8PTCPSocket@@7Bistream@@@ @573 NONAME ;const  PTCPSocket::`vbtable'{for `istream'}
     ??_8PTCPSocket@@7Bostream@@@ @574 NONAME ;const  PTCPSocket::`vbtable'{for `ostream'}
+    ??_8PTextFile@@7Bistream@@@ @2675 NONAME ;const  PTextFile::`vbtable'{for `istream'}
+    ??_8PTextFile@@7Bostream@@@ @2676 NONAME ;const  PTextFile::`vbtable'{for `ostream'}
     ??_8PUDPSocket@@7Bistream@@@ @577 NONAME ;const  PUDPSocket::`vbtable'{for `istream'}
     ??_8PUDPSocket@@7Bostream@@@ @578 NONAME ;const  PUDPSocket::`vbtable'{for `ostream'}
     ??_8PVideoChannel@@7Bistream@@@ @2509 NONAME ;const  PVideoChannel::`vbtable'{for `istream'}
@@ -991,6 +998,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PSyncPoint@@UBE?AW4Comparison@PObject@@ABV3@@Z @758 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSyncPoint::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSystemLog@@UBE?AW4Comparison@PObject@@ABV3@@Z @759 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSystemLog::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PTCPSocket@@UBE?AW4Comparison@PObject@@ABV3@@Z @760 NONAME ;public: virtual enum PObject::Comparison  __thiscall PTCPSocket::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PTextFile@@UBE?AW4Comparison@PObject@@ABV3@@Z @2677 NONAME ;public: virtual enum PObject::Comparison  __thiscall PTextFile::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PTextSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @762 NONAME ;public: virtual enum PObject::Comparison  __thiscall PTextSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PTextUnSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @763 NONAME ;public: virtual enum PObject::Comparison  __thiscall PTextUnSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PThread@@UBE?AW4Comparison@PObject@@ABV3@@Z @764 NONAME ;public: virtual enum PObject::Comparison  __thiscall PThread::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1240,6 +1248,7 @@ EXPORTS
     ?GetClass@PSyncPoint@@UBEPBDI@Z @964 NONAME ;public: virtual char const * __thiscall PSyncPoint::GetClass(unsigned int)const 
     ?GetClass@PSystemLog@@UBEPBDI@Z @965 NONAME ;public: virtual char const * __thiscall PSystemLog::GetClass(unsigned int)const 
     ?GetClass@PTCPSocket@@UBEPBDI@Z @966 NONAME ;public: virtual char const * __thiscall PTCPSocket::GetClass(unsigned int)const 
+    ?GetClass@PTextFile@@UBEPBDI@Z @2678 NONAME ;public: virtual char const * __thiscall PTextFile::GetClass(unsigned int)const 
     ?GetClass@PTextSerialiser@@UBEPBDI@Z @968 NONAME ;public: virtual char const * __thiscall PTextSerialiser::GetClass(unsigned int)const 
     ?GetClass@PTextUnSerialiser@@UBEPBDI@Z @969 NONAME ;public: virtual char const * __thiscall PTextUnSerialiser::GetClass(unsigned int)const 
     ?GetClass@PThread@@UBEPBDI@Z @970 NONAME ;public: virtual char const * __thiscall PThread::GetClass(unsigned int)const 
@@ -1510,6 +1519,7 @@ EXPORTS
     ?HasPlayCompleted@PSoundChannel@@QAEHXZ @2056 NONAME ;public: int __thiscall PSoundChannel::HasPlayCompleted(void)
     ?ICMP@@3VPICMPDLL@@A @1191 NONAME ;class PICMPDLL  ICMP
     ?IllegalArgumentIndex@PArgList@@UBEXH@Z @1192 NONAME ;public: virtual void __thiscall PArgList::IllegalArgumentIndex(int)const 
+    ?Initialise@PTrace@@SAXIPBDI@Z @2679 NONAME ;public: static void __cdecl PTrace::Initialise(unsigned int,char const *,unsigned int)
     ?InitialiseCapture@PVideoInputDevice@@IAEHXZ @2450 NONAME ;protected: int __thiscall PVideoInputDevice::InitialiseCapture(void)
     ?InitialiseProcessThread@PThread@@IAEXXZ @1194 NONAME ;protected: void __thiscall PThread::InitialiseProcessThread(void)
     ?Insert@PAbstractDictionary@@UAEHABVPObject@@PAV2@@Z @1195 NONAME ;public: virtual int __thiscall PAbstractDictionary::Insert(class PObject const &,class PObject *)
@@ -1625,6 +1635,7 @@ EXPORTS
     ?IsClass@PSyncPoint@@UBEHPBD@Z @1282 NONAME ;public: virtual int __thiscall PSyncPoint::IsClass(char const *)const 
     ?IsClass@PSystemLog@@UBEHPBD@Z @1283 NONAME ;public: virtual int __thiscall PSystemLog::IsClass(char const *)const 
     ?IsClass@PTCPSocket@@UBEHPBD@Z @1284 NONAME ;public: virtual int __thiscall PTCPSocket::IsClass(char const *)const 
+    ?IsClass@PTextFile@@UBEHPBD@Z @2680 NONAME ;public: virtual int __thiscall PTextFile::IsClass(char const *)const 
     ?IsClass@PTextSerialiser@@UBEHPBD@Z @1286 NONAME ;public: virtual int __thiscall PTextSerialiser::IsClass(char const *)const 
     ?IsClass@PTextUnSerialiser@@UBEHPBD@Z @1287 NONAME ;public: virtual int __thiscall PTextUnSerialiser::IsClass(char const *)const 
     ?IsClass@PThread@@UBEHPBD@Z @1288 NONAME ;public: virtual int __thiscall PThread::IsClass(char const *)const 
@@ -1745,6 +1756,7 @@ EXPORTS
     ?IsDescendant@PSyncPoint@@UBEHPBD@Z @1370 NONAME ;public: virtual int __thiscall PSyncPoint::IsDescendant(char const *)const 
     ?IsDescendant@PSystemLog@@UBEHPBD@Z @1371 NONAME ;public: virtual int __thiscall PSystemLog::IsDescendant(char const *)const 
     ?IsDescendant@PTCPSocket@@UBEHPBD@Z @1372 NONAME ;public: virtual int __thiscall PTCPSocket::IsDescendant(char const *)const 
+    ?IsDescendant@PTextFile@@UBEHPBD@Z @2681 NONAME ;public: virtual int __thiscall PTextFile::IsDescendant(char const *)const 
     ?IsDescendant@PTextSerialiser@@UBEHPBD@Z @1374 NONAME ;public: virtual int __thiscall PTextSerialiser::IsDescendant(char const *)const 
     ?IsDescendant@PTextUnSerialiser@@UBEHPBD@Z @1375 NONAME ;public: virtual int __thiscall PTextUnSerialiser::IsDescendant(char const *)const 
     ?IsDescendant@PThread@@UBEHPBD@Z @1376 NONAME ;public: virtual int __thiscall PThread::IsDescendant(char const *)const 
