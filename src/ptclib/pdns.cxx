@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.6  2003/04/22 23:21:37  craigs
+ * Swapped includes at request of Shawn Hsiao for compatiobility with MacOSX
+ *
  * Revision 1.5  2003/04/16 14:21:12  craigs
  * Added set of T_SRV for MacOS
  *
@@ -64,8 +67,8 @@
 #define	P_HAS_RESOLVER	1
 
 #if P_HAS_RESOLVER
-#include <resolv.h>
 #include <arpa/nameser.h>
+#include <resolv.h>
 #endif
 
 #endif
