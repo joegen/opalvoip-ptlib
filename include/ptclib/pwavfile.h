@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.7  2002/01/11 16:33:46  rogerh
+ * Create a PWAVFile Open() function, which processes the WAV header
+ *
  * Revision 1.6  2001/10/16 13:27:37  rogerh
  * Add support for writing G.723.1 WAV files.
  * MS Windows can play G.723.1 WAV Files in Media Player and Sound Recorder.
@@ -145,6 +148,25 @@ class PWAVFile : public PFile
     virtual BOOL Write(
       const void * buf,   /// Pointer to a block of memory to receive the write bytes.
       PINDEX len    /// Maximum number of bytes to write to the channel.
+    );
+
+    /**Open the specified WAV file name in the specified mode and with
+       the specified options. If the file object already has an open file then
+       it is closed.
+       This reads (and validates) the header for existing
+       files, or creates a new header for new files.
+       
+       Note: if #mode# is StandardInput, StandardOutput or StandardError,   
+       then the #name# parameter is ignored.
+
+       @return
+       TRUE if the file was successfully opened.
+     */
+    virtual BOOL Open(
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault,    // #OpenOptions enum# for open operation.
+      WaveType type = PCM_WavFile /// Type of WAV File to create
     );
 
     /** Close the file channel.

@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.16  2002/01/11 16:33:46  rogerh
+ * Create a PWAVFile Open() function, which processes the WAV header
+ *
  * Revision 1.15  2001/10/16 13:27:37  rogerh
  * Add support for writing G.723.1 WAV files.
  * MS Windows can play G.723.1 WAV Files in Media Player and Sound Recorder.
@@ -202,6 +205,44 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
   return (rval);
 }
 
+BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts, WaveType type)
+{
+  if (!(PFile::Open(name, mode, opts))) return FALSE;
+
+  // The file should be open now. Check the header
+  isValidWAV = FALSE;
+  header_needs_updating = FALSE;
+
+  if (!IsOpen()) return FALSE; 
+
+  waveType = type;
+
+  // Try and process the WAV file header information.
+  // Either ProcessHeader() or GenerateHeader() must be called.
+
+  if (PFile::GetLength() > 0) {
+    // try and process the WAV file header information
+    if (mode == ReadOnly || mode == ReadWrite) {
+      isValidWAV = ProcessHeader();
+    }
+    if (mode == WriteOnly) {
+      lenData = -1;
+      GenerateHeader();
+    }
+  }
+  else {
+    // generate header
+    if (mode == ReadWrite || mode == WriteOnly) {
+      lenData = -1;
+      GenerateHeader();
+    }
+    if (mode == ReadOnly) {
+      isValidWAV = FALSE; // ReadOnly on a zero length file
+    }
+  }
+  return TRUE;
+}
+ 
 BOOL PWAVFile::Close()
 {
   if (header_needs_updating)
