@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.4  1998/11/30 22:07:27  robertj
+ * New directory structure.
+ *
  * Revision 1.3  1998/09/24 04:12:06  robertj
  * Added open software license.
  *
@@ -48,7 +51,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimer
 
-#include "../../common/ptlib/timer.h"
+#include "../../timer.h"
 };
 
 
