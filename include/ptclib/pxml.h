@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.23  2004/04/21 00:35:02  csoutheren
+ * Added a stream parser for protocols like XMPP where each child of the root is to be considered a separate document/message.
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.22  2003/04/27 23:54:13  craigs
  * Removed deprecated options
  *
@@ -384,6 +388,22 @@ class PXMLSettings : public PXML
     BOOL    HasAttribute(const PCaselessString & section, const PString & key) const;
 
     void ToConfig(PConfig & cfg) const;
+};
+
+////////////////////////////////////////////////////////////
+
+class PXMLStreamParser : public PXMLParser
+{
+  PCLASSINFO(PXMLStreamParser, PXMLParser);
+  public:
+    PXMLStreamParser();
+
+    virtual void EndElement(const char * name);
+    virtual PXML * Read(PChannel * channel);
+
+  protected:
+    BOOL rootOpen;
+    PQueue<PXML> messages;
 };
 
 #endif

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.39  2004/04/21 00:35:02  csoutheren
+ * Added a stream parser for protocols like XMPP where each child of the root is to be considered a separate document/message.
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.38  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -1088,6 +1092,64 @@ void PXMLSettings::ToConfig(PConfig & cfg) const
         cfg.SetString(sectionName, key, dat);
     }
   }	
+}
+
+///////////////////////////////////////////////////////
+
+PXMLStreamParser::PXMLStreamParser() :
+  rootOpen(TRUE)
+{
+}
+
+
+void PXMLStreamParser::EndElement(const char * name)
+{
+  PXMLElement * element = currentElement;
+
+  PXMLParser::EndElement(name);
+
+  if (currentElement == rootElement) {
+      if (element == rootElement) { // stream closed
+        rootOpen = FALSE;
+      }
+      else {
+        PINDEX i = rootElement->FindObject(element);
+
+        if (i != P_MAX_INDEX) {
+          PXML tmp;
+          element = (PXMLElement *)element->Clone(0);
+          rootElement->RemoveElement(i);
+
+          PXML * msg = new PXML;
+          msg->SetRootElement(element);
+          messages.Enqueue(msg);
+        }
+     }
+  }
+}
+
+
+PXML * PXMLStreamParser::Read(PChannel * channel)
+{
+  char buf[256];
+
+  channel->SetReadTimeout(1000);
+
+  while (rootOpen) {
+    if (messages.GetSize() != 0)
+      return messages.Dequeue();
+
+    if (!channel->Read(buf, sizeof(buf) - 1) || !channel->IsOpen())
+      return 0;
+
+    buf[channel->GetLastReadCount()] = 0;
+
+    if (!Parse(buf, channel->GetLastReadCount(), FALSE))
+      return 0;
+  }
+
+  channel->Close();
+  return 0;
 }
 
 ///////////////////////////////////////////////////////
