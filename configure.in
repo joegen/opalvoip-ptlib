@@ -359,15 +359,24 @@ dnl to ensure that it is always called
 
 dnl MSWIN Open SSL,openssl,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\,..\external\openssl\,\openssl\,c:\openssl\
 
-dnl see if openssl.h is in the system include paths
-AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
-
 dnl check to see OPENSSLDIR is set
 if test ${OPENSSLDIR:-unset} != "unset" ; then
-  echo "Using ${OPENSSLDIR} for SSL"
-  HAVE_LIBSSL=1
-  SSLINCLUDEDIR="${OPENSSLDIR}/include"
-  SSLLIBDIR="${OPENSSLDIR}/lib"
+  
+  echo -n "Checking ${OPENSSLDIR}/include/openssl for SSL... "
+  if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
+    echo "yes"
+    SSLHDR=1
+    SSLINCLUDEDIR="${OPENSSLDIR}/include"
+    SSLLIBDIR="${OPENSSLDIR}/lib"
+  else
+    echo "no"
+  fi
+fi
+
+
+if test "${SSLHDR:-unset}" = "unset" ; then
+  dnl see if openssl.h is in the system include paths
+  AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
 
 else
 
