@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.20  1998/12/21 06:47:20  robertj
+ * Solaris 5.7 support.
+ *
  * Revision 1.19  1998/12/04 12:38:07  robertj
  * Fixed signal include
  *
@@ -117,7 +120,9 @@ typedef int socklen_t;
 #define PSETPGRP()  setpgrp()
 
 #define	INADDR_NONE	-1
+#if P_SOLARIS < 7
 typedef int socklen_t;
+#endif
 
 #define HAS_IFREQ
 
