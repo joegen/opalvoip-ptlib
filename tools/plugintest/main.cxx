@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.1.2.4  2003/10/13 02:46:02  dereksmithies
+ * Now generates sound through dynamically loaded OSS sound channel.
+ *
  * Revision 1.1.2.3  2003/10/12 21:22:12  dereksmithies
  * Add ability to play sample sound out PSoundChannel - illustrating operation of plugins.
  *
@@ -135,21 +138,20 @@ void PluginTest::Main()
 	goto end_program;
       }
 
-      cout << "sound channel has a handle of " << snd->GetHandle() << endl;
       if (!snd->IsOpen()) {
 	cout << "Sound device is not open. Sorry. End program now." << endl;
 	goto end_program;
       }
-      
+
       if (!snd->SetBuffers(SAMPLES, 2)) {
 	cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
 	goto end_program;
       }
 
-      snd->SetVolume(90);
+      snd->SetVolume(100);
 
       PWORDArray audio(SAMPLES);
-      int i, pointsPerCycle = 80;
+      int i, pointsPerCycle = 8;
       int volume = 80;
       double angle;
 
