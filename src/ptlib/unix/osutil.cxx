@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.68  2002/02/11 02:26:54  craigs
+ * Fixed problem with reading lines of length > 100 chares from text files
+ * Thanks to Ohnuma Masato
+ *
  * Revision 1.67  2002/01/26 23:58:15  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -898,7 +902,7 @@ BOOL PTextFile::ReadLine (PString & line)
 
   while (1) {
     len += LINE_SIZE_STEP;
-    ptr = base = line.GetPointer(len);
+    ptr = base = line.GetPointer(len) + len - LINE_SIZE_STEP;
     while ((ptr - base) < LINE_SIZE_STEP-1) {
       if ((ch = ReadChar()) < 0) {
         ConvertOSError(errno);
