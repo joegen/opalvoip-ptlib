@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.24  2001/12/08 00:59:44  robertj
+ * Added hint for BT879 chips, thanks Damian Sandras.
+ *
  * Revision 1.23  2001/12/06 22:15:09  dereks
  * Additional debugging lines
  *
@@ -155,7 +158,7 @@ static struct {
      palettes.  It also doesn't return a useful value from CGPICT calls
      to readback the palette.
    */
-  { "^BT8(4|7)8",
+  { "^BT8(4|7)(8|9)",
     "Brooktree BT848 and BT878 based capture boards",
     HINT_CSWIN_ZERO_FLAGS |
     HINT_CSPICT_ALWAYS_WORKS |
