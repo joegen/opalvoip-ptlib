@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.10 1996/06/17 11:34:48 robertj Exp $
+ * $Id: ptime.cxx,v 1.11 1996/07/15 12:43:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.11  1996/07/15 12:43:01  robertj
+ * Fixed MSVC 4.1 compiler bug.
+ *
  * Revision 1.10  1996/06/17 11:34:48  robertj
  * Fixed bug in NOT localising RFC1123 time.
  *
@@ -415,7 +418,7 @@ PString PTime::AsString(const char * format, int zone) const
         break;
 
       default :
-        str += *format++;
+        str += PString(*format++);
     }
   }
 
