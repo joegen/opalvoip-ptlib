@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.11 1998/05/21 04:58:54 robertj Exp $
+ * $Id: asner.cxx,v 1.12 1998/05/26 05:29:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.12  1998/05/26 05:29:23  robertj
+ * Workaroung for g++ iostream bug.
+ *
  * Revision 1.11  1998/05/21 04:58:54  robertj
  * GCC comptaibility.
  *
@@ -1342,13 +1345,14 @@ void PASN_OctetString::PrintOn(ostream & strm) const
   strm << ' ' << value.GetSize() << " octets {\n";
   PINDEX i = 0;
   while (i < value.GetSize()) {
-    strm << setw(indent) << ' ';
+    strm << setw(indent) << " " << hex << setfill('0');
     PINDEX j;
-    for (j = 0; j < 16; j++)
+    for (j = 0; j < 16; j++) {
       if (i+j < value.GetSize())
-        strm << hex << setfill('0') << setw(2) << (unsigned)value[i+j] << ' ';
+        strm << setw(2) << (unsigned)value[i+j] << ' ';
       else
         strm << "   ";
+    }
     strm << "  ";
     for (j = 0; j < 16; j++) {
       if (i+j < value.GetSize()) {
@@ -1361,7 +1365,7 @@ void PASN_OctetString::PrintOn(ostream & strm) const
     strm << dec << setfill(' ') << '\n';
     i += 16;
   }
-  strm << setw(indent-1) << '}';
+  strm << setw(indent-1) << "}";
 }
 
 
@@ -1908,11 +1912,11 @@ void PASN_BMPString::PrintOn(ostream & strm) const
   strm << ' ' << sz << " characters {\n";
   PINDEX i = 0;
   while (i < sz) {
-    strm << setw(indent) << ' ';
+    strm << setw(indent) << " " << hex << setfill('0');
     PINDEX j;
     for (j = 0; j < 8; j++)
       if (i+j < sz)
-        strm << hex << setfill('0') << setw(4) << value[i+j] << ' ';
+        strm << setw(4) << value[i+j] << ' ';
       else
         strm << "     ";
     strm << "  ";
@@ -1928,7 +1932,7 @@ void PASN_BMPString::PrintOn(ostream & strm) const
     strm << dec << setfill(' ') << '\n';
     i += 8;
   }
-  strm << setw(indent-1) << '}';
+  strm << setw(indent-1) << "}";
 }
 
 
@@ -2495,9 +2499,9 @@ PObject * PASN_Sequence::Clone() const
 void PASN_Sequence::PrintOn(ostream & strm) const
 {
   int indent = strm.precision() + 2;
-  strm << setprecision(indent) << "{\n";
+  strm << "{\n";
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
-    strm << setw(indent) << ' ' << "field[" << i << "] <";
+    strm << setw(indent+6) << "field[" << i << "] <";
     switch (fields[i].GetTagClass()) {
       case UniversalTagClass :
         strm << "Universal";
@@ -2517,7 +2521,7 @@ void PASN_Sequence::PrintOn(ostream & strm) const
          << fields[i].GetTypeAsString() << "> = "
          << fields[i] << '\n';
   }
-  strm << setw(indent-1) << '}';
+  strm << setw(indent-1) << "}";
 }
 
 
@@ -2930,11 +2934,11 @@ void PASN_Array::SetSize(PINDEX newSize)
 
 void PASN_Array::PrintOn(ostream & strm) const
 {
-  int indent = strm.precision()+2;
+  int indent = strm.precision() + 2;
   strm << array.GetSize() << " entries {\n";
   for (PINDEX i = 0; i < array.GetSize(); i++)
-    strm << setw(indent+1) << '[' << i << "]=" << setprecision(indent) << array[i] << '\n';
-  strm << setw(indent-1) << '}';
+    strm << setw(indent+1) << "[" << i << "]=" << setprecision(indent) << array[i] << '\n';
+  strm << setw(indent-1) << "}";
 }
 
 
@@ -3067,11 +3071,11 @@ void PASN_Stream::PrintOn(ostream & strm) const
        << " {\n";
   PINDEX i = 0;
   while (i < GetSize()) {
-    strm << setw(indent) << ' ';
+    strm << setw(indent) << " " << hex << setfill('0');
     PINDEX j;
     for (j = 0; j < 16; j++)
       if (i+j < GetSize())
-        strm << hex << setfill('0') << setw(2) << (unsigned)(BYTE)theArray[i+j] << ' ';
+        strm << setw(2) << (unsigned)(BYTE)theArray[i+j] << ' ';
       else
         strm << "   ";
     strm << "  ";
@@ -3086,7 +3090,7 @@ void PASN_Stream::PrintOn(ostream & strm) const
     strm << dec << setfill(' ') << '\n';
     i += 16;
   }
-  strm << setw(indent-1) << '}';
+  strm << setw(indent-1) << "}";
 }
 
 
