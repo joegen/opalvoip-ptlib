@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.34  2000/06/26 13:58:42  robertj
+ * Nucleus port (again)
+ *
  * Revision 1.33  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -141,7 +144,9 @@
 #include <ptlib/channel.h>
 #endif
 
+#ifdef __NUCLEUS_PLUS__
 #include <sys/socket.h>
+#endif
 
 class PSocket;
 
