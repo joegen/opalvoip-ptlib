@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.20  1999/05/13 04:59:24  robertj
+ * Increased amount of buffering on output request write.
+ *
  * Revision 1.19  1999/05/11 12:23:52  robertj
  * Fixed bug introduced in last revision to have arbitrary HTTP commands, missing CRLF.
  *
@@ -275,11 +278,12 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
                                const PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
-  if (!WriteString(cmdName & url & "HTTP/1.0\r\n"))
-    return FALSE;
-
-  if (!outMIME.Write(*this))
-    return FALSE;
+  if (cmdName.IsEmpty())
+    *this << "GET";
+  else
+    *this << cmdName;
+  *this << ' ' << url << " HTTP/1.0\r\n"
+        << setfill('\r') << outMIME;
 
   PINDEX len = dataBody.GetSize()-1;
   if (!Write((const char *)dataBody, len))
