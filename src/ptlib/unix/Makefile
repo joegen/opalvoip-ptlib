@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.71  2001/02/27 01:05:24  robertj
+# Updated regular expression parser to latest version from Henry Spencer.
+#
 # Revision 1.70  2001/02/23 08:42:17  rogerh
 # Add dummyaudio as the default SOUND_SOURCE
 #
@@ -372,7 +375,7 @@ SOURCES	= \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
-OBJS	= $(OBJDIR)/regex.o
+OBJS	= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
 
 CLEAN_FILES = $(GETDATE_SOURCE)
 
@@ -388,15 +391,25 @@ alllibs:
 	$(MAKE) bothshared
 
 
+$(OBJDIR)/regcomp.o: $(COMMON_SRC_DIR)/regex/regcomp.c
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+
+$(OBJDIR)/regexec.o: $(COMMON_SRC_DIR)/regex/regexec.c
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+
+$(OBJDIR)/regerror.o: $(COMMON_SRC_DIR)/regex/regerror.c
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+
+$(OBJDIR)/regfree.o: $(COMMON_SRC_DIR)/regex/regfree.c
+	$(CC) $(CFLAGS) $(DEBUG_FLAG) $(OPTCCFLAGS) -c -DPOSIX_MISTAKE -I$(COMMON_SRC_DIR)/regex -o $@ -c $<
+
+
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
-
-$(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
-	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
