@@ -46,7 +46,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLibd.pdb"
 				SubSystem="0"
-				ImportLibrary=".\..\..\..\Lib/PTLibd.lib"
+				ImportLibrary=".\..\..\..\Lib\PTLibd.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -118,7 +118,7 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLib.pdb"
 				SubSystem="2"
-				ImportLibrary=".\..\..\..\Lib/PTLib.lib"
+				ImportLibrary=".\..\..\..\Lib\PTLib.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -207,7 +207,8 @@
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;
-copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul"
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul
+"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibs.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
@@ -228,7 +229,8 @@ copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; n
 				<Tool
 					Name="VCCustomBuildTool"
 					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;
-copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul"
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul
+"
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibsd.lib"
 					Outputs="$(IntDir)\$(TargetName).def"/>
 			</FileConfiguration>
