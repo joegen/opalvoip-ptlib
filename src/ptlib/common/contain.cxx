@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.19 1994/07/17 10:46:06 robertj Exp $
+ * $Id: contain.cxx,v 1.20 1994/07/25 03:38:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.19  1994/07/17 10:46:06  robertj
+ * Revision 1.20  1994/07/25 03:38:38  robertj
+ * Added more memory tests.
+ *
+ * Revision 1.19  1994/07/17  10:46:06  robertj
  * Added number conversions to PString.
  *
  * Revision 1.18  1994/06/25  11:55:15  robertj
@@ -132,6 +135,7 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 #ifdef PMEMORY_CHECK
 
+static const char GuardBytes[] = "\x55\x5a\xaa\xff\xaa\xa5\x55";
 static const int PointerHashTableSize = 6001;
 
 static struct {
@@ -140,18 +144,23 @@ static struct {
   const char * className;
 } PointerHashTable[PointerHashTableSize];
 
+
 static inline int PointerHashFunction(void * ptr)
   { return (int)(((((long)ptr)&0x7fffffff)>>3)%PointerHashTableSize); }
 
+
 void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
 {
-  void * obj = malloc(nSize);
-  PAssertNULL(obj);
+  void * obj = malloc(nSize+sizeof(GuardBytes));
+  if (obj == NULL) {
+    PAssertAlways(POutOfMemory);
+    return NULL;
+  }
 
   int forward, backward, entry;
   forward = backward = PointerHashFunction(obj);
   for (;;) {
-    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr == NULL) {
+    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr==NULL){
       entry = forward;
       break;
     }
@@ -162,11 +171,15 @@ void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
     }
     backward--;
     PAssert(forward < PointerHashTableSize && backward >= 0,
-                                                     "Point hash table full");
+                                                    "Pointer hash table full");
   }
+
   PointerHashTable[entry].ptr = obj;
   PointerHashTable[entry].size = nSize;
   PointerHashTable[entry].className = className;
+
+  memcpy((char *)obj+nSize, GuardBytes, sizeof(GuardBytes));
+
   return obj;
 }
 
@@ -186,16 +199,25 @@ void PObject::DeallocateObjectMemory(void * ptr, const char * className)
       break;
     }
     backward--;
-    PAssert(forward < PointerHashTableSize && backward >= 0,
-                                              "Deallocating invalid pointer");
+    if (forward >= PointerHashTableSize || backward < 0) {
+      PAssertAlways("Deallocating invalid pointer");
+      free(ptr);
+      return;
+    }
   }
 
-#ifndef __GNUC__
   PAssert(PointerHashTable[entry].className == className,
-                                         "Deallocated pointer class changed");
-#endif
-  PointerHashTable[entry].ptr = NULL;
+                                          "Deallocated pointer class changed");
+
+  size_t size = PointerHashTable[entry].size;
+
+  PAssert(memcmp((char *)ptr+size, GuardBytes, sizeof(GuardBytes)) == 0,
+                                                       "Heap pointer overrun");
+
+  memset(ptr, 0x55, size);  // Make use of freed pointer a bad idea
   free(ptr);
+
+  PointerHashTable[entry].ptr = NULL;
 }
 
 
@@ -215,20 +237,6 @@ void PDumpMemoryLeaks()
   }
 }
 
-
-#else
-
-void * PObject::operator new(size_t nSize)
-{
-  void * obj = malloc(nSize);
-  return PAssertNULL(obj);
-}
-
-
-void PObject::operator delete(void * ptr)
-{
-  free(ptr);
-}
 
 #endif
 
@@ -348,6 +356,9 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
 
 void PAbstractArray::DestroyContents()
 {
+#ifdef PMEMORY_CHECK
+  memset(theArray, 0x55, elementSize*GetSize());
+#endif
   free(theArray);
   theArray = NULL;
 }
