@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.12  2001/06/01 00:53:59  robertj
+ * Added certificate constructor that takes a PBYTEArray
+ *
  * Revision 1.11  2001/05/16 06:02:05  craigs
  * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
  *
@@ -97,15 +100,16 @@ class PSSLCertificate : public PObject
     );
 
     /**Create certificate from the binary data specified.
-       If the xorSeed is non-zero then it is used in a simple XOR encryption
-       of the static data allowing it to be hidden in the binary executable.
-       This does not need to be cryptographically strong as it is only
-       intended to prevent simple scanning for the key in a binary file.
       */
     PSSLCertificate(
       const BYTE * certData,  /// Certificate data
-      PINDEX certSize,        /// Size of certificate data
-      BYTE xorSeed = 0        /// XOR seed value for data hiding
+      PINDEX certSize        /// Size of certificate data
+    );
+
+    /**Create certificate from the binary data specified.
+      */
+    PSSLCertificate(
+      const PBYTEArray & certData  /// Certificate data
     );
 
     /**Create a copy of the certificate.
