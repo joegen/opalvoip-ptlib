@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.3 1996/01/28 02:46:07 robertj Exp $
+ * $Id: mime.h,v 1.4 1996/01/28 14:14:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.4  1996/01/28 14:14:30  robertj
+ * Further implementation of secure config.
+ *
  * Revision 1.3  1996/01/28 02:46:07  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  *
@@ -132,6 +135,31 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
        Note that if the <CODE>merge</CODE> parameter if TRUE then the
        dictionary is merged into the current association list and is not a
        simple replacement.
+
+       The default values placed in this dictionary are:
+          <PRE>
+          ".txt", "text/plain"
+          ".text", "text/plain"
+          ".html", "text/html"
+          ".htm", "text/html"
+          ".aif", "audio/aiff"
+          ".aiff", "audio/aiff"
+          ".au", "audio/basic"
+          ".snd", "audio/basic"
+          ".wav", "audio/wav"
+          ".gif", "image/gif"
+          ".xbm", "image/x-bitmap"
+          ".tif", "image/tiff"
+          ".tiff", "image/tiff"
+          ".jpg", "image/jpeg"
+          ".jpe", "image/jpeg"
+          ".jpeg", "image/jpeg"
+          ".avi", "video/avi"
+          ".mpg", "video/mpeg"
+          ".mpeg", "video/mpeg"
+          ".qt", "video/quicktime"
+          ".mov", "video/quicktime"
+          </PRE>
 
        The default content type will be "application/octet-stream".
      */
