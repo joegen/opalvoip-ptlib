@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.78  2001/12/17 11:06:46  robertj
+ * Removed assert on NULL PThread::Current(), can occur if thread from other
+ *   subsystem to pwlib
+ *
  * Revision 1.77  2001/10/03 05:11:50  robertj
  * Fixed PSyncPoint wait with timeout when have pending signals.
  *
@@ -670,7 +674,7 @@ PThread * PThread::Current()
   process.threadMutex.Wait();
   PThread * thread = process.activeThreads.GetAt((unsigned)pthread_self());
   process.threadMutex.Signal();
-  return PAssertNULL(thread);
+  return thread;
 }
 
 
