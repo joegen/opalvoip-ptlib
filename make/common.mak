@@ -50,6 +50,10 @@ ifdef	PROG
 
 all:	$(OBJDIR)/$(PROG)
 
+ifdef BUILDFILES
+OBJS		:= $(OBJS) buildnum.o
+endif
+
 $(OBJDIR)/$(PROG):	$(OBJS) $(PTLIB_FILE)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG) $(LDLIBS)
 
@@ -100,6 +104,18 @@ libdir:
 	ln -s ../unix/src/ptlib.mak $(LIBDIR)/ptlib.mak
 	ln -s ../xlib/src/xlib.mak $(LIBDIR)/xlib.mak
 	ln -s ../xlib/src/pwlib.mak $(LIBDIR)/pwlib.mak
+
+######################################################################
+#
+# rules for creating build number files
+#
+######################################################################
+ifdef BUILDFILES
+buildnum.o:	$(SOURCES) $(BUILDFILES) 
+	buildinc buildnum.c
+	cc -o buildnum.o -c buildnum.c
+
+endif
 
 ######################################################################
 #
