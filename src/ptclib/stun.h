@@ -35,7 +35,7 @@ extern "C" {
 }
 #endif
 
-#include <iostream.h>
+#include <iostream>
 
 
 // define some basic types
