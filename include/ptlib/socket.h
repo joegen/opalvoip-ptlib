@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.6 1995/01/02 12:16:17 robertj Exp $
+ * $Id: socket.h,v 1.7 1995/01/03 09:36:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.6  1995/01/02 12:16:17  robertj
+ * Revision 1.7  1995/01/03 09:36:19  robertj
+ * Documentation.
+ *
+ * Revision 1.6  1995/01/02  12:16:17  robertj
  * Moved constructor to platform dependent code.
  *
  * Revision 1.5  1994/08/23  11:32:52  robertj
@@ -38,12 +41,24 @@
 
 
 PDECLARE_CLASS(PSocket, PChannel)
-  public:
-    virtual BOOL Open (const PString & address, WORD portnum);
-      // connect to another host 
+/* A network communications channel. This is based on the concepts in the
+   Berkley Sockets library.
+   
+   A socket represents a bidirectional communications channel to a $I$port$I$
+   at a remote $I$host$I$.
+ */
 
-    virtual BOOL Accept (const PString & address);
-      // wait for another host to establish a connection 
+  public:
+    virtual BOOL Open(
+      const PString & hostname,   // Remote host address.
+      WORD portnum                // Remote port number.
+    ) = 0;
+    // Open a connection to another host using the port number.
+
+    virtual BOOL Accept(
+      const PString & hostname
+    );
+    // Wait for another host to establish a connection 
 
 
 // Class declaration continued in platform specific header file ///////////////
