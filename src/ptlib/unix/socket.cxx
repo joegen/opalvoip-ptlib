@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.91  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.90  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -288,6 +291,16 @@
 
 
 //////////////////////////////////////////////////////////////////////////////
+// P_fd_set
+
+void P_fd_set::Construct()
+{
+  max_fd = PProcess::Current().GetMaxHandles();
+  set = (fd_set *)new char[(max_fd+7)>>3];
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 
 PSocket::~PSocket()
 {
@@ -392,9 +405,9 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * siz
 #if !defined(P_PTHREADS) && !defined(P_MAC_MPTHREADS)
 
 int PSocket::os_select(int maxHandle,
-                   fd_set & readBits,
-                   fd_set & writeBits,
-                   fd_set & exceptionBits,
+                   fd_set * readBits,
+                   fd_set * writeBits,
+                   fd_set * exceptionBits,
           const PIntArray & osHandles,
       const PTimeInterval & timeout)
 {
@@ -407,33 +420,33 @@ int PSocket::os_select(int maxHandle,
   if (stat <= 0)
     return stat;
 
-  struct timeval instant = {0, 0};
-  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, &instant);
+  P_timeval instant;
+  return ::select(maxHandle, readBits, writeBits, exceptionBits, instant);
 }
                      
 #else
 
 int PSocket::os_select(int width,
-                   fd_set & readBits,
-                   fd_set & writeBits,
-                   fd_set & exceptionBits,
+                   fd_set * readBits,
+                   fd_set * writeBits,
+                   fd_set * exceptionBits,
           const PIntArray & ,
       const PTimeInterval & timeout)
 {
   int unblockPipe = PThread::Current()->unblockPipe[0];
-  FD_SET(unblockPipe, &readBits);
+  FD_SET(unblockPipe, readBits);
   width = PMAX(width, unblockPipe+1);
 
   do {
-    struct timeval tval;
-    int result = ::select(width, &readBits, &writeBits, &exceptionBits, timeout.AsTimeVal(tval));
+    P_timeval tval = timeout;
+    int result = ::select(width, readBits, writeBits, exceptionBits, tval);
     if (result >= 0) {
-      if (FD_ISSET(unblockPipe, &readBits)) {
-        FD_CLR(unblockPipe, &readBits);
+      if (FD_ISSET(unblockPipe, readBits)) {
+        FD_CLR(unblockPipe, readBits);
         if (result == 1) {
           BYTE ch;
           ::read(unblockPipe, &ch, 1);
-          FD_CLR(unblockPipe, &readBits);
+          FD_CLR(unblockPipe, readBits);
           errno = EINTR;
           return -1;
         }

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.17  2002/10/17 12:57:24  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.16  2002/10/17 09:50:10  craigs
  * Added typedef for SOCKET to allow compilation on Linux
  *
@@ -103,6 +106,7 @@
 #else
 #include <sys/time.h>
 #endif
+
 
 typedef	int SOCKET;
 
