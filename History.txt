@@ -2,6 +2,24 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.07
+------------
+
+	Improved tracing yet again. Now has options for adding timestamps,
+	thread ID etc to the trace output as well as the file/line number.
+
+	Fixed bug in the output code in ASN compiler for string constraints
+	under PER. They were not being set on the correct object causing
+	decode failures (usually via assert).
+
+	Added PConsoleChannel class to allow access to stdin/stdout/stderr
+	as a PWLib channel. Primarily this is for allow read from stdin to
+	not block the cooperative multithreading.
+
+	Fixed bug in printing PTimeInterval objects, would leave fll char
+	set to '0'. Also ignored stream width parameter.
+
+
 Release 1.06
 ------------
 
