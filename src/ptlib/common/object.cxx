@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.43  2000/01/05 00:29:12  robertj
+ * Fixed alignment problems in memory checking debug functions.
+ *
  * Revision 1.42  1999/11/01 00:17:20  robertj
  * Added override of new functions for MSVC memory check code.
  *
@@ -233,9 +236,7 @@ void operator delete[](void * ptr)
 
 
 DWORD PMemoryHeap::allocationBreakpoint;
-
-const char PMemoryHeap::Header::GuardBytes[] =
-  { '\x11', '\x55', '\x5a', '\xaa', '\xee', '\xaa', '\xa5', '\x55', '\x11' };
+char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
 
 
 PMemoryHeap::Wrapper::Wrapper()
@@ -287,6 +288,9 @@ PMemoryHeap::PMemoryHeap()
   currentObjects = 0;
   peakObjects = 0;
   totalObjects = 0;
+
+  for (PINDEX i = 0; i < Header::NumGuardBytes; i++)
+    Header::GuardBytes[i] = (i&1) == 0 ? '\x55' : '\xaa';
 
 #if defined(_WIN32)
   InitializeCriticalSection(&mutex);
