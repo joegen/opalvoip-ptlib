@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.90  2001/03/29 04:50:41  robertj
+# Added STANDARD_TARGETS macro for all standard targets such as opt debug etc
+# Changed "all" target for first target to be "default_target" so use makefile
+# can have "all" as a target
+#
 # Revision 1.89  2001/03/07 06:55:27  yurik
 # Changed email to current one
 #
@@ -345,12 +350,20 @@ MACHTYPE := ppc
 endif
 
 
-.PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
+STANDARD_TARGETS=\
+opt         debug         both \
+optdepend   debugdepend   bothdepend \
+optshared   debugshared   bothshared \
+optnoshared debugnoshared bothnoshared \
+optclean    debugclean    clean \
+release tagbuild
+
+.PHONY: all $(STANDARD_TARGETS)
 
 
 ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin AIX Nucleus))
 
-all ::
+default_target :
 	@echo
 	@echo ######################################################################
 	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed.  This may"
@@ -373,25 +386,17 @@ all ::
 	@echo ######################################################################
 	@echo
 
-debug :: all
-opt :: all
-both :: all
-release :: all
-clean :: all
-debugclean :: all
-optclean :: all
-debugdepend :: all
-optdepend :: all
-bothdepend :: all
+$(STANDARD_TARGETS) :: default_target
 
 else
 
-all ::
+default_target :
 	@echo "The following targets are available:"
 	@echo "    make debug       Make debug version of application"
 	@echo "    make opt         Make optimised version of application"
 	@echo "    make both        Make both versions of application"
 	@echo "    make release     Package up optimised version int tar.gz file"
+	@echo "    make tagbuild    Do a CVS tag of the source, and bump build number"
 	@echo "    make clean       Remove both debug and optimised files"
 	@echo "    make debugclean  Remove debug files"
 	@echo "    make optclean    Remove optimised files"
