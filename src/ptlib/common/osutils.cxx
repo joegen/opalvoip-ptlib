@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.228  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.227  2004/06/30 12:17:06  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -764,6 +767,13 @@
 #include <vector>
 
 #include <ctype.h>
+
+#ifdef _WIN32
+namespace PWLibStupidWindowsHacks {
+extern int loadSoundStuff;
+extern int loadVideoStuff;
+};
+#endif
 
 class PSimpleThread : public PThread
 {
@@ -1905,6 +1915,12 @@ PProcess::PProcess(const char * manuf, const char * name,
   InitialiseProcessThread();
 
   Construct();
+
+#ifdef _WIN32
+  PWLibStupidWindowsHacks::loadSoundStuff = 1;
+  PWLibStupidWindowsHacks::loadVideoStuff = 1;
+
+#endif
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory

@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.49  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.48  2004/04/18 12:49:22  csoutheren
  * Patches to video code thanks to Guilhem Tardy (hope I get it right this time :)
  *
@@ -210,7 +213,26 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#ifdef _WIN32
+namespace PWLibStupidWindowsHacks {
+  int loadVideoStuff;
+};
+#endif
 
+namespace PWLib {
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoInputDevice> > vidinChannelFactoryAdapter("PVideoInputDevice", TRUE);
+  PFactory<PDevicePluginAdapterBase>::Worker< PDevicePluginAdapter<PVideoOutputDevice> > vidoutChannelFactoryAdapter("PVideoOutputDevice", TRUE);
+};
+
+PVideoInputDevice * PDevicePluginFactory<PVideoInputDevice>::Worker::Create(const PString & type) const
+{
+  return PVideoInputDevice::CreateDevice(type);
+}
+
+PVideoOutputDevice * PDevicePluginFactory<PVideoOutputDevice>::Worker::Create(const PString & type) const
+{
+  return PVideoOutputDevice::CreateDevice(type);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
