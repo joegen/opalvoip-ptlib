@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.15  2004/02/22 23:59:28  ykiryanov
+ * Added missing functions: PProcess::SetMaxHandles(), PThread::GetCurrentThreadId(), PThread::PXAbortBlock(), PSyncPoint::Signal(), ::Wait(), ::Wait(timeout), ::WillBlock()
+ *
  * Revision 1.14  2004/02/22 04:35:04  ykiryanov
  * Removed PMutex desctructor
  *
@@ -406,6 +409,11 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
   return 0; // ???
 }
 
+PThreadIdentifier PThread::GetCurrentThreadId(void)
+{
+  return ::find_thread(NULL);
+}
+
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   // make sure we flush the buffer before doing a write
@@ -481,8 +489,12 @@ int PThread::PXBlockOnIO(int maxHandles,
   return retval;
 }
 
+void PThread::PXAbortBlock(void) const
+{
+}
+
 ///////////////////////////////////////////////////////////////////////////////
-// PProcess::TimerThread
+// PProcess
 
 void PProcess::Construct()
 {
@@ -540,9 +552,10 @@ void PProcess::SignalTimerChange()
     houseKeeper->breakBlock.Signal();
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
+BOOL PProcess::SetMaxHandles(int)
+{
+  return TRUE;
+}
 
 PProcess::~PProcess()
 {
@@ -815,5 +828,31 @@ PSyncPoint::PSyncPoint()
   
   PAssertOS( semId >= B_NO_ERROR );
 }
+
+void PSyncPoint::Signal()
+{
+  PSemaphore::Signal();
+}
+                                                                                                      
+void PSyncPoint::Wait()
+{
+  PSemaphore::Wait();
+}
+                                                                                                      
+BOOL PSyncPoint::Wait(const PTimeInterval & timeout)
+{
+  return PSemaphore::Wait(timeout);
+}
+                                                                                                      
+BOOL PSyncPoint::WillBlock() const
+{
+  return PSemaphore::WillBlock();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// Extra functionality not found in BeOS
+
+int seteuid(uid_t uid) { return 0; }
+int setegid(gid_t gid) { return 0; }
 
 // End Of File ///////////////////////////////////////////////////////////////
