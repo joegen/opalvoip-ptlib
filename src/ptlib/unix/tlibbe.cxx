@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.29  2004/05/23 22:20:37  ykiryanov
+ * Got rid of 2 housekeeper thread problem
+ *
  * Revision 1.28  2004/05/21 00:49:16  csoutheren
  * Added PreShutdown to ~PProcess
  *
@@ -106,7 +109,7 @@ class PMutex;
 
 int PX_NewHandle(const char *, int);
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // Threads
 
 static int const priorities[] = {
@@ -123,11 +126,9 @@ int32 PThread::ThreadFunction(void * threadPtr)
 
   PProcess & process = PProcess::Current();
 
-  process.activeThreadMutex.Wait();
+  process.threadMutex.Wait();
   process.activeThreads.SetAt((unsigned) thread->mId, thread);
-  process.activeThreadMutex.Signal();
-
-  process.SignalTimerChange();
+  process.threadMutex.Signal();
 
   thread->Main();
 
@@ -193,9 +194,9 @@ PThread::PThread(PINDEX stackSize,
 PThread * PThread::Current()
 {
   PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
+  process.threadMutex.Wait();
   PThread * thread = process.activeThreads.GetAt((unsigned)find_thread(NULL));
-  process.activeThreadMutex.Signal();
+  process.threadMutex.Signal();
   return thread;    
 }
 
@@ -205,9 +206,9 @@ PThread::~PThread()
   PProcess & process = PProcess::Current();
   if(process.GetThreadId() != GetThreadId())
   {
-    process.activeThreadMutex.Wait();
+    process.threadMutex.Wait();
     process.activeThreads.RemoveAt((unsigned) mId);
-    process.activeThreadMutex.Signal();
+    process.threadMutex.Signal();
   }
 
   if (!IsTerminated())
@@ -294,7 +295,6 @@ BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix
 
 void PThread::Suspend(BOOL susp)
 {
-  //debugger("Suspend");
 
   PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
@@ -509,10 +509,7 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 
 void PProcess::Construct()
 {
-  // get the file descriptor limit
-  struct rlimit rl;
-  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-  maxHandles = rl.rlim_cur;
+  maxHandles = FOPEN_MAX;
   PTRACE(4, "PWLib\tMaximum per-process file handles is " << maxHandles);
 
   ::pipe(timerChangePipe);
@@ -545,11 +542,10 @@ void PHouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
-  activeThreadMutex.Wait();
-  if (housekeepingThread == NULL) {
+  if (housekeepingThread == NULL)
+  {  
     housekeepingThread = new PHouseKeepingThread;
   }
-  activeThreadMutex.Signal();
 
   BYTE ch;
   write(timerChangePipe[1], &ch, 1);
@@ -557,21 +553,6 @@ void PProcess::SignalTimerChange()
 
 BOOL PProcess::SetMaxHandles(int newMax)
 {
-  // get the current process limit
-  struct rlimit rl;
-  PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-
-  // set the new current limit
-  rl.rlim_cur = newMax;
-  if (setrlimit(RLIMIT_NOFILE, &rl) == 0) {
-    PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
-    maxHandles = rl.rlim_cur;
-    if (maxHandles == newMax) {
-      PTRACE(2, "PWLib\tNew maximum per-process file handles set to " << maxHandles);
-      return TRUE;
-    }
-  }    
-
   return FALSE;
 }
 
@@ -586,6 +567,7 @@ PProcess::~PProcess()
     housekeepingThread->WaitForTermination();
     delete housekeepingThread;
   }
+
   CommonDestruct();
 }
 
@@ -831,7 +813,7 @@ BOOL PMutex::WillBlock() const
   return PSemaphore::WillBlock();
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // Extra functionality not found in BeOS
 
 int seteuid(uid_t uid) { return 0; }
