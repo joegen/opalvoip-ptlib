@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.13  2001/03/08 21:46:11  dereks
+ * Removed check when setting framesize. Thanks Mark Cooke
+ *
  * Revision 1.12  2001/03/08 08:31:34  robertj
  * Numerous enhancements to the video grabbing code including resizing
  *   infrastructure to converters. Thanks a LOT, Mark Cooke.
@@ -360,9 +363,6 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  if ((frameWidth == width) && (frameHeight == height))
-    return TRUE;
-
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
   
