@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.36  2002/01/24 05:57:38  rogerh
+ * Fix warning
+ *
  * Revision 1.35  2002/01/24 05:55:52  rogerh
  * fill lastReadCount (in the base class) when doing a Read.
  *
@@ -721,7 +724,7 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
       PTRACE(6, "OSS\tRead interrupted");
     }
 
-    if (lastReadCount != (int)len)
+    if (lastReadCount != len)
       PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
     else
       PTRACE(6, "OSS\tRead completed");
