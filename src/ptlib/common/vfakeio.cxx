@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.4  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.3  2001/03/02 06:52:33  yurik
  * Got rid of unknown for WinCE pragma
  *
@@ -37,25 +40,20 @@
  *
  */
 
-#ifndef _WIN32_WCE
+#ifdef __GNUC__
 #pragma implementation "vfakeio.h"
 #endif
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
-//#include <ptlib/vfakeio.h>
-#include <ptlib/vconvert.h>
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFakeVideoInputDevice
 
-PFakeVideoInputDevice::PFakeVideoInputDevice(VideoFormat /*videoFmt*/,
-                                              int channel,
-                                              ColourFormat /*colourFmt*/)
+PFakeVideoInputDevice::PFakeVideoInputDevice()
 {
-  channelNumber = channel; 
   lastTick = PTimer::Tick();  
   msBetweenFrames= 100;  
   grabCount = 0;
@@ -127,9 +125,9 @@ BOOL PFakeVideoInputDevice::SetChannel(int newChannel)
 }
 
 
-BOOL PFakeVideoInputDevice::SetColourFormat(ColourFormat /*newFormat*/)
+BOOL PFakeVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
-  return TRUE;
+  return PVideoDevice::SetColourFormat(newFormat);
 }
 
 
@@ -163,7 +161,7 @@ BOOL PFakeVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
 
-  videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
+  videoFrameSize = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
 }
