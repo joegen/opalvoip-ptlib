@@ -36,17 +36,18 @@ int ispunct( int c ) { return _istpunct(c); }
 long _lseek(int nHandle, long off, int orig)
 {
 	DWORD dwMoveMethod=FILE_BEGIN;
-	switch(SEEK_SET)
+	switch(orig)
 	{
 		case SEEK_SET: dwMoveMethod=FILE_BEGIN; break;
 		case SEEK_CUR: dwMoveMethod=FILE_CURRENT; break;
 		case SEEK_END: dwMoveMethod=FILE_END; break;
 	}
-	return SetFilePointer((HANDLE)nHandle,orig,NULL,dwMoveMethod);
+	return SetFilePointer((HANDLE)nHandle,off,NULL,dwMoveMethod);
 }
 
 int  _close(int nHandle)
 {
+        FlushFileBuffers((HANDLE)nHandle);
 	return (CloseHandle((HANDLE)nHandle)) ? 0 : -1;
 }
 int  _read(int nHandle, void *p, unsigned int s)
@@ -205,20 +206,37 @@ int	_chsize( int nHandle, long size )
 int _mkdir(const char *sDir)
 {	
 	USES_CONVERSION;
-	return (CreateDirectory(A2T(sDir),NULL) ? 0 : -1);
+        PString folderName = sDir;
+
+        if (folderName[folderName.GetLength() - 1] == PDIR_SEPARATOR) {
+           folderName.Delete(folderName.GetLength() - 1, 1);
+        }
+
+        return (CreateDirectory(A2T(folderName),NULL) ? 0 : -1);
 }
 
 int  _rmdir(const char *sDir)
 {	
 	USES_CONVERSION;
-	return (RemoveDirectory(A2T(sDir)) ? 0 : -1);
+        PString folderName = sDir;
+
+        if (folderName[folderName.GetLength() - 1] == PDIR_SEPARATOR) {
+            folderName.Delete(folderName.GetLength() - 1, 1);
+        }
+
+        return (RemoveDirectory(A2T(folderName)) ? 0 : -1);
 }
 
 int  _access(const char *sName, int mode)
 {
 	USES_CONVERSION;
 	WIN32_FIND_DATA FindFileData;
-	HANDLE file = FindFirstFile(A2T(sName),&FindFileData);
+
+        PString test(sName);
+        if (test[test.GetLength() - 1] == '.' && test[test.GetLength() - 2] == PDIR_SEPARATOR)
+            test.Delete(test.GetLength() - 2, 2);
+
+        HANDLE file = FindFirstFile(A2T((const char*) test), &FindFileData);
 	if (file == INVALID_HANDLE_VALUE ) return -1;
 	FindClose(file);
 	switch(mode)
