@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.48  2001/12/13 09:17:01  robertj
+ * Added function to convert PString to IP address with error checking that can
+ *   distinguish between 0.0.0.0 or 255.255.255.255 and illegal address.
+ *
  * Revision 1.47  2001/09/14 08:00:38  robertj
  * Added new versions of Conenct() to allow binding to a specific local interface.
  *
@@ -244,6 +248,11 @@ class PIPSocket : public PSocket
 
         /// Format an address as a string
         PString AsString() const;
+
+        /// Convert string to IP address. Returns TRUE if was a valid address.
+        BOOL FromString(
+          const PString & str
+        );
 
         /// Format an address as a string
         operator PString() const;
