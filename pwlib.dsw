@@ -3,21 +3,6 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "ASNParser"=.\tools\asnparser\asnparser.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "Console"=.\src\ptlib\msos\Console.dsp - Package Owner=<4>
 
 Package=<5>
@@ -53,6 +38,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name Console
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Console Components
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -82,6 +70,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name Console
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Console Components
     End Project Dependency
 }}}
 
