@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2004/06/02 08:30:22  csoutheren
+ * Tweaks to avoid some problems with reading single bytes from a PCM stream
+ *
  * Revision 1.2  2003/09/26 13:41:31  rjongbloed
  * Added special test to give more indicative error if try to compile without Expat support.
  *
@@ -53,18 +56,18 @@ void ChannelCopyThread::Main()
 
     from.SetReadTimeout(P_MAX_INDEX);
     PBYTEArray readData;
-    if (!from.Read(readData.GetPointer(BUFFER_SIZE), 1)) {
+    if (!from.Read(readData.GetPointer(BUFFER_SIZE), 2)) {
       PTRACE(2, "Read error 1");
       break;
     }
     from.SetReadTimeout(0);
-    if (!from.Read(readData.GetPointer()+1, BUFFER_SIZE-1)) {
+    if (!from.Read(readData.GetPointer()+2, BUFFER_SIZE-2)) {
       if (from.GetErrorCode(PChannel::LastReadError) != PChannel::Timeout) {
         PTRACE(2, "Read error 2");
         break;
       }
     }
-    readData.SetSize(from.GetLastReadCount()+1);
+    readData.SetSize(from.GetLastReadCount()+2);
 
     if (readData.GetSize() > 0) {
       if (!to.Write((const BYTE *)readData, readData.GetSize())) {
@@ -84,7 +87,16 @@ Vxmltest::Vxmltest()
 void Vxmltest::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("");
+  args.Parse(
+             "t.-trace."
+             "o:output:"
+             );
+
+#if PTRACING
+  PTrace::Initialise(args.GetOptionCount('t'),
+                     args.HasOption('o') ? (const char *)args.GetOptionString('o') : NULL,
+         PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+#endif
 
   if (args.GetCount() < 1) {
     PError << "usage: vxmltest [opts] doc\n";
@@ -97,7 +109,7 @@ void Vxmltest::Main()
     return;
   }
 
-  PVXMLSession vxml(&tts, FALSE);
+  vxml = new PVXMLSession(&tts, FALSE);
   PString device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
   PSoundChannel player;
   if (!player.Open(device, PSoundChannel::Player)) {
@@ -106,21 +118,41 @@ void Vxmltest::Main()
   }
   cout << "Using audio device \"" << device << "\"" << endl;
 
-  if (!vxml.Load(args[0])) {
-    PError << "error: cannot loading VXML document \"" << args[0] << "\" - " << vxml.GetXMLError() << endl;
+  if (!vxml->Load(args[0])) {
+    PError << "error: cannot loading VXML document \"" << args[0] << "\" - " << vxml->GetXMLError() << endl;
     return;
   }
 
-  if (!vxml.Open(TRUE)) {
+  if (!vxml->Open(TRUE)) {
     PError << "error: cannot open VXML device in PCM mode" << endl;
     return;
   }
 
   cout << "Starting media" << endl;
-  PThread * thread1 = new ChannelCopyThread(vxml, player);
+  PThread * thread1 = new ChannelCopyThread(*vxml, player);
+
+  inputRunning = TRUE;
+  PThread * inputThread = PThread::Create(PCREATE_NOTIFIER(InputThread), 0, NoAutoDeleteThread);
 
   thread1->WaitForTermination();
+
+  inputRunning = FALSE;
+  cout << "Press a key to continue" << endl;
+  inputThread->WaitForTermination();
+
   cout << "Media finished" << endl;
+}
+
+void Vxmltest::InputThread(PThread &, INT)
+{
+  PConsoleChannel console(PConsoleChannel::StandardInput);
+
+  while (inputRunning) {
+    console.SetReadTimeout(100);
+    int ch = console.ReadChar();
+    if (ch > 0)
+      vxml->OnUserInput(PString((char)ch));
+  }
 }
 
 
