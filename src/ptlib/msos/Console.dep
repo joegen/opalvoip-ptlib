@@ -123,21 +123,15 @@
 
 !ENDIF 
 
-..\common\collect.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\contain.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\common\regex\regex.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\contain.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\contain.inl"\
 	"..\common\regex\regex.h"\
 	
@@ -147,7 +141,6 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\ethsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -173,7 +166,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\ethsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -207,7 +199,6 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\icmp.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -232,7 +223,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\icmp.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -257,20 +247,17 @@
 !ENDIF 
 
 .\mail.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
 	
 
 ..\common\object.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\osutils.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
@@ -278,25 +265,15 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\osutils.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
 	
 
 !ENDIF 
 
-..\Common\pchannel.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
-..\Common\pconfig.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\pethsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -321,7 +298,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\pethsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -345,115 +321,44 @@
 
 !ENDIF 
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 .\pipe.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\pipe.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\pipechan.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\pipechan.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\msos\ptlib\pipechan.h"\
-	"..\..\..\Include\PtLib\Pipechan.h"\
-	
-
-!ENDIF 
-
-..\common\ptime.cxx : \
-	"..\..\..\include\ptlib.h"\
 	
 
 !IF  "$(CFG)" == "Console - Win32 Release"
-
-.\ptlib.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
 
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\ptlib.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ptlib.inl"\
 	"..\..\..\include\ptlib\osutil.inl"\
 	
 
 !ENDIF 
 
-..\common\pvidchan.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 .\remconn.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
 	"..\..\..\Include\PtLib\Remconn.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\remconn.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\msos\ptlib\remconn.h"\
-	"..\..\..\Include\PtLib\Remconn.h"\
-	
-
-!ENDIF 
 
 ..\common\safecoll.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\safecoll.h"\
 	
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 ..\Common\serial.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\Common\serial.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\Include\PtLib\Serchan.h"\
-	
-
-!ENDIF 
-
-..\common\sfile.cxx : \
-	"..\..\..\include\ptlib.h"\
 	
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\sockets.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -478,7 +383,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 ..\common\sockets.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -502,14 +406,9 @@
 
 !ENDIF 
 
-.\sound.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\svcproc.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
@@ -518,7 +417,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\svcproc.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	"..\..\..\include\ptlib\msos\ptlib\svcproc.h"\
 	"..\..\..\Include\PtLib\Svcproc.h"\
@@ -526,89 +424,30 @@
 
 !ENDIF 
 
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 ..\common\vconvert.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\vconvert.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\vconvert.h"\
-	
-
-!ENDIF 
-
-..\common\vfakeio.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
-!IF  "$(CFG)" == "Console - Win32 Release"
 
 .\vfw.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\vfw.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\vconvert.h"\
-	
-
-!ENDIF 
-
-!IF  "$(CFG)" == "Console - Win32 Release"
 
 ..\common\videoio.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\vconvert.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-..\common\videoio.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\vconvert.h"\
-	
-
-!ENDIF 
 
 .\win32.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\
 	
 
-.\wincfg.cxx : \
-	"..\..\..\include\ptlib.h"\
-	
-
-!IF  "$(CFG)" == "Console - Win32 Release"
-
 .\winserial.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
-
-!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
-
-.\winserial.cxx : \
-	"..\..\..\include\ptlib.h"\
-	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
-	"..\..\..\Include\PtLib\Serchan.h"\
-	
-
-!ENDIF 
 
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\winsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -633,7 +472,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\winsock.cxx : \
-	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\

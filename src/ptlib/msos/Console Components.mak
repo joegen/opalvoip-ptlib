@@ -54,6 +54,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Inetmail.obj"
 	-@erase "$(INTDIR)\Inetprot.obj"
 	-@erase "$(INTDIR)\ipacl.obj"
+	-@erase "$(INTDIR)\memfile.obj"
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
@@ -70,6 +71,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Telnet.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vxml.obj"
 	-@erase "$(OUTDIR)\ptclib.lib"
 
 "$(OUTDIR)" :
@@ -135,6 +137,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Inetmail.obj" \
 	"$(INTDIR)\Inetprot.obj" \
 	"$(INTDIR)\ipacl.obj" \
+	"$(INTDIR)\memfile.obj" \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
@@ -148,7 +151,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\vxml.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -200,6 +204,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Inetprot.sbr"
 	-@erase "$(INTDIR)\ipacl.obj"
 	-@erase "$(INTDIR)\ipacl.sbr"
+	-@erase "$(INTDIR)\memfile.obj"
+	-@erase "$(INTDIR)\memfile.sbr"
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\modem.sbr"
 	-@erase "$(INTDIR)\Pasn.obj"
@@ -230,6 +236,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Telnet.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vxml.obj"
+	-@erase "$(INTDIR)\vxml.sbr"
 	-@erase "$(OUTDIR)\Console Components.bsc"
 	-@erase "$(OUTDIR)\ptclibd.lib"
 
@@ -292,6 +300,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Inetmail.sbr" \
 	"$(INTDIR)\Inetprot.sbr" \
 	"$(INTDIR)\ipacl.sbr" \
+	"$(INTDIR)\memfile.sbr" \
 	"$(INTDIR)\modem.sbr" \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
@@ -305,7 +314,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\vxml.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -331,6 +341,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Inetmail.obj" \
 	"$(INTDIR)\Inetprot.obj" \
 	"$(INTDIR)\ipacl.obj" \
+	"$(INTDIR)\memfile.obj" \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
@@ -344,7 +355,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\vxml.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -664,6 +676,24 @@ SOURCE=..\..\ptclib\ipacl.cxx
 
 !ENDIF 
 
+SOURCE=..\..\ptclib\memfile.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\memfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\memfile.obj"	"$(INTDIR)\memfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=..\..\Ptclib\modem.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
@@ -911,6 +941,24 @@ SOURCE=..\..\Ptclib\Telnet.cxx
 
 
 "$(INTDIR)\Telnet.obj"	"$(INTDIR)\Telnet.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\vxml.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\vxml.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\vxml.obj"	"$(INTDIR)\vxml.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
