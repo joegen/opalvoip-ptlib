@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.29  2003/11/18 10:50:26  csoutheren
+ * Changed name of Windows sound device
+ *
  * Revision 1.28  2003/11/14 05:59:09  csoutheren
  * Added Read function, thanks to Derek Smithies
  *
@@ -133,7 +136,7 @@
 #include <ptlib/pluginmgr.h>
 
 #if defined(_WIN32)
-PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_Win32);
+PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_WindowsMultimedia);
 #endif
 
 
