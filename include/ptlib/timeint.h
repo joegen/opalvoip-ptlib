@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.15 1996/05/15 10:19:29 robertj Exp $
+ * $Id: timeint.h,v 1.16 1998/01/26 00:49:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.16  1998/01/26 00:49:53  robertj
+ * Added multiply and divide operators to PTimeInterval.
+ *
  * Revision 1.15  1996/05/15 10:19:29  robertj
  * Changed millisecond access functions to get 64 bit integer.
  *
@@ -236,6 +239,42 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     
        <H2>Returns:</H2>
        reference to first time interval.
+     */
+
+    PTimeInterval operator*(
+      int factor   // factor to multiply.
+    ) const;
+    /* Multiply the time interval by a factor yielding a third time interval.
+    
+       <H2>Returns:</H2>
+       the time intervals times the factor.
+     */
+
+    PTimeInterval & operator*=(
+      int factor   // factor to multiply.
+    );
+    /* Multiply the time interval by a factor.
+    
+       <H2>Returns:</H2>
+       reference to time interval.
+     */
+
+    PTimeInterval operator/(
+      int factor   // factor to divide.
+    ) const;
+    /* Divide the time interval by a factor yielding a third time interval.
+    
+       <H2>Returns:</H2>
+       the time intervals divided by the factor.
+     */
+
+    PTimeInterval & operator/=(
+      int factor   // factor to divide.
+    );
+    /* Divide the time interval by a factor.
+    
+       <H2>Returns:</H2>
+       reference to time interval.
      */
 
     BOOL operator==(
