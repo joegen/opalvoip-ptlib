@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.19  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.18  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -92,307 +95,318 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Difference between two system times
 
-class PTimeInterval : public PObject
-{
-  PCLASSINFO(PTimeInterval, PObject)
-/* This class defines an arbitrary time interval to millisecond accuracy. The
+/** This class defines an arbitrary time interval to millisecond accuracy. The
    interval can be both positive and negative.
    
    A long int is used to store the time interval so it is limited to LONG_MAX
    (found in the standard C header file limits.h) milliseconds. This is
    approximately 596 hours for 32 bit integers.
    
-   There is a constant, <CODE>PMaxTimeInterval</CODE> which defines the
+   There is a constant, #PMaxTimeInterval# which defines the
    maximum number of milliseconds that a time interval may be.
  */
+class PTimeInterval : public PObject
+{
+  PCLASSINFO(PTimeInterval, PObject);
 
   public:
-    PTimeInterval(
-      int milliseconds = 0  // Number of milliseconds for interval.
-    );
-    PTimeInterval(
-      PInt64 mseconds       // Number of milliseconds for interval.
-    );
-    PTimeInterval(
-      long millisecs,       // Number of milliseconds for interval.
-      long seconds = 0,     // Number of seconds for interval.
-      long minutes = 0,     // Number of minutes for interval.
-      long hours = 0,       // Number of hours for interval.
-      int days = 0          // Number of days for interval.
-    );
-    /* Create a new time interval object. The time interval, in milliseconds,
+  /**@name Construction */
+  //@{
+    /** Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-
-       <PRE><CODE>
+\begin{verbatim}
               PTimeInterval(120000)
               PTimeInterval(60000, 60)
               PTimeInterval(60000, 0, 1)
               PTimeInterval(0, 60, 1)
               PTimeInterval(0, 0, 2)
-       </CODE></PRE>
+\end{verbatim}
      */
+    PTimeInterval(
+      int milliseconds = 0  /// Number of milliseconds for interval.
+    );
+    PTimeInterval(
+      PInt64 mseconds       /// Number of milliseconds for interval.
+    );
+    PTimeInterval(
+      long millisecs,       /// Number of milliseconds for interval.
+      long seconds = 0,     /// Number of seconds for interval.
+      long minutes = 0,     /// Number of minutes for interval.
+      long hours = 0,       /// Number of hours for interval.
+      int days = 0          /// Number of days for interval.
+    );
+  //@}
 
-
-  // Overrides from class PObject
-    PObject * Clone() const;
-    /* Create a new copy of the time interval. It is the responsibility of the
+  /**@name Overrides from class PObject */
+  //@{
+    /** Create a new copy of the time interval. It is the responsibility of the
        called to delete the object.
        
-       <H2>Returns:</H2>
+       @return
        new time interval on heap.
      */
+    PObject * Clone() const;
 
-    virtual Comparison Compare(
-      const PObject & obj   // Time interval to compare against.
-    ) const;
-    /* Rank the two time intervals. This ranks the intervals as you would
+    /** Rank the two time intervals. This ranks the intervals as you would
        expect for two integers.
        
-       <H2>Returns:</H2>
-       <CODE>EqualTo</CODE>, <CODE>LessThan</CODE> or <CODE>GreaterThan</CODE>
+       @return
+       #EqualTo#, #LessThan# or #GreaterThan#
        depending on their relative rank.
      */
-
-    virtual void PrintOn(
-      ostream & strm    // I/O stream to output the time interval.
+    virtual Comparison Compare(
+      const PObject & obj   /// Time interval to compare against.
     ) const;
-    /* Output the time interval to the I/O stream. This outputs the number of
+
+    /** Output the time interval to the I/O stream. This outputs the number of
        milliseconds as a signed decimal integer number.
      */
+    virtual void PrintOn(
+      ostream & strm    /// I/O stream to output the time interval.
+    ) const;
 
-    virtual void ReadFrom(
-      istream & strm    // I/O stream to input the time interval from.
-    );
-    /* Input the time interval from the I/O stream. This expects the input
+    /** Input the time interval from the I/O stream. This expects the input
        to be a signed decimal integer number.
      */
+    virtual void ReadFrom(
+      istream & strm    /// I/O stream to input the time interval from.
+    );
+  //@}
 
-
-  // New member functions
-    PInt64 GetMilliSeconds() const;
-    /* Get the number of milliseconds for the time interval.
+  /**@name Access functions */
+  //@{
+    /** Get the number of milliseconds for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        very long integer number of milliseconds.
      */
+    PInt64 GetMilliSeconds() const;
 
-    long GetSeconds() const;
-    /* Get the number of whole seconds for the time interval.
+    /** Get the number of whole seconds for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        long integer number of seconds.
      */
+    long GetSeconds() const;
 
-    long GetMinutes() const;
-    /* Get the number of whole minutes for the time interval.
+    /** Get the number of whole minutes for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        integer number of minutes.
      */
+    long GetMinutes() const;
 
-    int GetHours() const;
-    /* Get the number of whole hours for the time interval.
+    /** Get the number of whole hours for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        integer number of hours.
      */
+    int GetHours() const;
 
-    int GetDays() const;
-    /* Get the number of whole days for the time interval.
+    /** Get the number of whole days for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        integer number of days.
      */
+    int GetDays() const;
 
-    DWORD GetInterval() const;
-    /* Get the number of milliseconds for the time interval.
+    /** Get the number of milliseconds for the time interval.
     
-       <H2>Returns:</H2>
+       @return
        long integer number of milliseconds.
      */
+    DWORD GetInterval() const;
 
-
-    void SetInterval(
-      PInt64 milliseconds = 0,  // Number of milliseconds for interval.
-      long seconds = 0,         // Number of seconds for interval.
-      long minutes = 0,         // Number of minutes for interval.
-      long hours = 0,           // Number of hours for interval.
-      int days = 0              // Number of days for interval.
-    );
-    /* Set the value of the time interval. The time interval, in milliseconds,
+    /** Set the value of the time interval. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
        are equivalent:
-       <PRE><CODE>
+\begin{verbatim}
               SetInterval(120000)
               SetInterval(60000, 60)
               SetInterval(60000, 0, 1)
               SetInterval(0, 60, 1)
               SetInterval(0, 0, 2)
-       </CODE></PRE>
+\end{verbatim}
      */
+    void SetInterval(
+      PInt64 milliseconds = 0,  /// Number of milliseconds for interval.
+      long seconds = 0,         /// Number of seconds for interval.
+      long minutes = 0,         /// Number of minutes for interval.
+      long hours = 0,           /// Number of hours for interval.
+      int days = 0              /// Number of days for interval.
+    );
+  //@}
 
-    PTimeInterval operator+(
-      const PTimeInterval & interval   // Time interval to add.
-    ) const;
-    /* Add the two time intervals yielding a third time interval.
+  /**@name Operations */
+  //@{
+    /** Add the two time intervals yielding a third time interval.
     
-       <H2>Returns:</H2>
+       @return
        sum of the time intervals.
      */
+    PTimeInterval operator+(
+      const PTimeInterval & interval   /// Time interval to add.
+    ) const;
 
-    PTimeInterval & operator+=(
-      const PTimeInterval & interval   // Time interval to add.
-    );
-    /* Add the second time interval to the first time interval.
+    /** Add the second time interval to the first time interval.
     
-       <H2>Returns:</H2>
+       @return
        reference to first time interval.
      */
+    PTimeInterval & operator+=(
+      const PTimeInterval & interval   /// Time interval to add.
+    );
 
-    PTimeInterval operator-(
-      const PTimeInterval & interval   // Time interval to subtract.
-    ) const;
-    /* Subtract the two time intervals yielding a third time interval.
+    /** Subtract the two time intervals yielding a third time interval.
     
-       <H2>Returns:</H2>
+       @return
        difference of the time intervals.
      */
+    PTimeInterval operator-(
+      const PTimeInterval & interval   /// Time interval to subtract.
+    ) const;
 
-    PTimeInterval & operator-=(
-      const PTimeInterval & interval   // Time interval to subtract.
-    );
-    /* Subtract the second time interval from the first time interval.
+    /** Subtract the second time interval from the first time interval.
     
-       <H2>Returns:</H2>
+       @return
        reference to first time interval.
      */
+    PTimeInterval & operator-=(
+      const PTimeInterval & interval   /// Time interval to subtract.
+    );
 
-    PTimeInterval operator*(
-      int factor   // factor to multiply.
-    ) const;
-    /* Multiply the time interval by a factor yielding a third time interval.
+    /** Multiply the time interval by a factor yielding a third time interval.
     
-       <H2>Returns:</H2>
+       @return
        the time intervals times the factor.
      */
+    PTimeInterval operator*(
+      int factor   /// factor to multiply.
+    ) const;
 
-    PTimeInterval & operator*=(
-      int factor   // factor to multiply.
-    );
-    /* Multiply the time interval by a factor.
+    /** Multiply the time interval by a factor.
     
-       <H2>Returns:</H2>
+       @return
        reference to time interval.
      */
+    PTimeInterval & operator*=(
+      int factor   /// factor to multiply.
+    );
 
-    PTimeInterval operator/(
-      int factor   // factor to divide.
-    ) const;
-    /* Divide the time interval by a factor yielding a third time interval.
+    /** Divide the time interval by a factor yielding a third time interval.
     
-       <H2>Returns:</H2>
+       @return
        the time intervals divided by the factor.
      */
+    PTimeInterval operator/(
+      int factor   /// factor to divide.
+    ) const;
 
-    PTimeInterval & operator/=(
-      int factor   // factor to divide.
-    );
-    /* Divide the time interval by a factor.
+    /** Divide the time interval by a factor.
     
-       <H2>Returns:</H2>
+       @return
        reference to time interval.
      */
+    PTimeInterval & operator/=(
+      int factor   /// factor to divide.
+    );
+  //@}
 
-    BOOL operator==(
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator==(
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+  /**@name Comparison functions */
+  //@{
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are equal.
      */
+    BOOL operator==(
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator==(
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
 
-    BOOL operator!=(
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator!=(
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are not equal.
      */
+    BOOL operator!=(
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator!=(
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
 
-    BOOL operator> (
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator> (
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are greater than.
      */
+    BOOL operator> (
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator> (
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
 
-    BOOL operator>=(
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator>=(
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are greater than or equal.
      */
+    BOOL operator>=(
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator>=(
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
 
-    BOOL operator< (
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator< (
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are less than.
      */
+    BOOL operator< (
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator< (
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
 
-    BOOL operator<=(
-      const PTimeInterval & interval   // Time interval to compare.
-    ) const;
-    BOOL operator<=(
-      long msecs    // Time interval as integer milliseconds to compare.
-    ) const;
-    /* Compare to the two time intervals. This is provided as an override to
+    /** Compare to the two time intervals. This is provided as an override to
        the default in PObject so that comparisons can be made to integer
        literals that represent milliseconds.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if intervals are less than or equal.
      */
-
+    BOOL operator<=(
+      const PTimeInterval & interval   /// Time interval to compare.
+    ) const;
+    BOOL operator<=(
+      long msecs    /// Time interval as integer milliseconds to compare.
+    ) const;
+  //@}
 
   protected:
   // Member variables
+    /// Number of milliseconds in time interval.
     PInt64 milliseconds;
-    // Number of milliseconds in time interval.
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
