@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.10 1996/03/31 08:50:51 robertj Exp $
+ * $Id: pipechan.h,v 1.11 1997/01/03 05:25:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.11  1997/01/03 05:25:05  robertj
+ * Added Wait and Kill functions.
+ *
  * Revision 1.10  1996/03/31 08:50:51  robertj
  * Changed string list to array.
  * Added function to idicate if sub-process is running.
@@ -209,13 +212,6 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        sub-program.
      */
 
-    int GetReturnCode() const;
-    /* Get the return code from the most recent Close;
-
-       <H2>Returns:</H2>
-       Return code from the closing process
-     */
-
   // New member functions
     const PFilePath & GetSubProgram() const;
     /* Get the full file path for the sub-programs executable file.
@@ -245,6 +241,34 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        
        <H2>Returns:</H2>
        TRUE if the program associated with the PPipeChannel is still running
+     */
+
+    int GetReturnCode() const;
+    /* Get the return code from the most recent Close;
+
+       <H2>Returns:</H2>
+       Return code from the closing process
+     */
+
+    int WaitForTermination();
+    int WaitForTermination(
+      const PTimeInterval & timeout  // Amount of time to wait for process.
+    );
+    /* This function will block and wait for the sub-program to terminate.
+    
+       <H2>Returns:</H2>
+       Return code from the closing process
+     */
+    
+    BOOL Kill(
+      int signal = 9  // Signal code to be sent to process.
+    );
+    /* This function will terminate the sub-program using the signal code
+       specified.
+     
+       <H2>Returns:</H2>
+       TRUE if the process received the signal. Note that this does not mean
+       that the process has actually terminated.
      */
 
     static BOOL CanReadAndWrite();
