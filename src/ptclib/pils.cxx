@@ -1,5 +1,5 @@
 /*
- * pldap.cxx
+ * pils.cxx
  *
  * Microsoft Internet Location Server Protocol interface class.
  *
@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.cxx,v $
+ * Revision 1.5  2003/06/05 23:19:52  rjongbloed
+ * Changed LDAP version to be compatible with ILS servers.
+ *
  * Revision 1.4  2003/04/11 00:07:56  robertj
  * More for Microsoft IP address specification wierdness (registration side).
  *
@@ -86,6 +89,7 @@ ostream & operator<<(ostream & s, PILSSession::MSIPAddress & a)
 PILSSession::PILSSession()
   : PLDAPSession("objectClass=RTPerson")
 {
+  protocolVersion = 2;
 }
 
 
