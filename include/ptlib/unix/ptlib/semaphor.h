@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.9  1999/09/23 06:52:16  robertj
+ * Changed PSemaphore to use Posix semaphores.
+ *
  * Revision 1.8  1999/03/02 05:41:58  robertj
  * More BeOS changes
  *
@@ -59,16 +62,27 @@
 
 #include <ptlib/thread.h>
 
+
+#if defined(P_PTHREADS)
+#define P_HAS_SEMAPHORES
+#include <semaphore.h>
+#endif
+
+
 #include "../../semaphor.h"
 #ifdef P_PTHREADS
 
   protected:
+#ifdef P_HAS_SEMAPHORES
+    sem_t semId;
+#else
     pthread_mutex_t mutex;
     pthread_cond_t  condVar;
     unsigned currentCount;
     unsigned maximumCount;
     unsigned queuedLocks;
   friend BOOL PThread::Terminate();
+#endif
 
 #elif defined(BE_THREADS)
 

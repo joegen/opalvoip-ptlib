@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.7  1999/09/23 06:52:16  robertj
+ * Changed PSemaphore to use Posix semaphores.
+ *
  * Revision 1.6  1999/09/02 11:56:35  robertj
  * Fixed problem with destroying PMutex that is already locked.
  *
@@ -62,6 +65,9 @@
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
     virtual BOOL WillBlock() const;
+#ifdef P_HAS_SEMAPHORES
+    pthread_mutex_t mutex;
+#endif
 #endif
 #ifdef BE_THREADS
   protected:
