@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.114  2001/12/13 09:18:07  robertj
+ * Added function to convert PString to IP address with error checking that can
+ *   distinguish between 0.0.0.0 or 255.255.255.255 and illegal address.
+ * Added ability to decode bracketed IP addresss [10.1.2.3] as host name.
+ *
  * Revision 1.113  2001/09/14 08:00:38  robertj
  * Added new versions of Conenct() to allow binding to a specific local interface.
  *
@@ -1233,9 +1238,17 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
   if (hostname.IsEmpty())
     return FALSE;
 
-  // lookup the host address using inet_addr, assuming it is a "." address
-  addr = hostname;
-  if (addr != 0)
+  // Check for special case of "[ipaddr]"
+  if (hostname[0] == '[') {
+    PINDEX end = hostname.Find(']');
+    if (end != P_MAX_INDEX) {
+      if (addr.FromString(hostname(1, end-1)))
+        return TRUE;
+    }
+  }
+
+  // Assuming it is a "." address and return if so
+  if (addr.FromString(hostname))
     return TRUE;
 
   // otherwise lookup the name as a host name
@@ -1538,6 +1551,44 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 PString PIPSocket::Address::AsString() const
 {
   return inet_ntoa(*this);
+}
+
+
+BOOL PIPSocket::Address::FromString(const PString & dotNotation)
+{
+  if (::strspn(dotNotation, "0123456789.") < ::strlen(dotNotation))
+    return FALSE;
+
+  PINDEX dot1 = dotNotation.Find('.');
+  if (dot1 == P_MAX_INDEX)
+    return FALSE;
+
+  PINDEX dot2 = dotNotation.Find('.', dot1+1);
+  if (dot2 == P_MAX_INDEX)
+    return FALSE;
+
+  PINDEX dot3 = dotNotation.Find('.', dot2+1);
+  if (dot3 == P_MAX_INDEX)
+    return FALSE;
+
+  unsigned b1 = dotNotation(0, dot1-1).AsUnsigned();
+  if (b1 > 255)
+    return FALSE;
+
+  unsigned b2 = dotNotation(dot1+1, dot2-1).AsUnsigned();
+  if (b2 > 255)
+    return FALSE;
+
+  unsigned b3 = dotNotation(dot2+1, dot3-1).AsUnsigned();
+  if (b3 > 255)
+    return FALSE;
+
+  unsigned b4 = dotNotation.Mid(dot3+1).AsUnsigned();
+  if (b4 > 255)
+    return FALSE;
+
+  *this = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
+  return TRUE;
 }
 
 
