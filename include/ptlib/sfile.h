@@ -1,5 +1,5 @@
 /*
- * $Id: sfile.h,v 1.7 1994/08/23 11:32:52 robertj Exp $
+ * $Id: sfile.h,v 1.8 1995/01/14 06:19:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sfile.h,v $
- * Revision 1.7  1994/08/23 11:32:52  robertj
+ * Revision 1.8  1995/01/14 06:19:39  robertj
+ * Documentation
+ *
+ * Revision 1.7  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.6  1994/08/22  00:46:48  robertj
@@ -37,45 +40,106 @@
 
 
 PDECLARE_CLASS(PStructuredFile, PFile)
-  // A class representing a a structured file that is portable accross CPU
-  // architectures (as in the XDR protocol).
+/* A class representing a a structured file that is portable accross CPU
+   architectures (as in the XDR protocol).
+   
+   This differs from object serialisation in that the access is always to a
+   disk file and is random access. It would primarily be used for database
+   type applications.
+ */
 
   public:
     PStructuredFile();
-      // Create a structured file object but do not open it. It does not
-      // initially have a valid file name.
+    /* Create a structured file object but do not open it. It does not
+       initially have a valid file name. However, an attempt to open the file
+       using the $B$Open()$B$ function will generate a unique temporary file.
+       
+       The initial structure size is one byte.
+     */
 
-    PStructuredFile(OpenMode mode, int opts = ModeDefault);
-      // Create a unique temporary file name for the structured file object,
-      // then open it for reading and writing. It is initially empty.
+    PStructuredFile(
+      OpenMode mode,          // Mode in which to open the file.
+      int opts = ModeDefault  // $H$OpenOptions for open operation.
+    );
+    /* Create a unique temporary file name, and open the file in the specified
+       mode and using the specified options. Note that opening a new, unique,
+       temporary file name in ReadOnly mode will always fail. This would only
+       be usefull in a mode and options that will create the file.
+
+       The $B$IsOpen()$B$ function may be used after object construction to
+       determine if the file was successfully opened.
+     */
       
-    PStructuredFile(const PFilePath & name,
-                           OpenMode mode = ReadWrite, int opts = ModeDefault);
-      // Create a new structured file object with the specified name and open
-      // or create it according to the specified options.
+    PStructuredFile(
+      const PFilePath & name,     // Name of file to open.
+      OpenMode mode = ReadWrite,  // Mode in which to open the file.
+      int opts = ModeDefault      // $H$OpenOptions for open operation.
+    );
+    /* Create a structured file object with the specified name and open it in
+       the specified mode and with the specified options.
+
+       The $B$IsOpen()$B$ function may be used after object construction to
+       determine if the file was successfully opened.
+     */
 
 
-    // New member functions
+  // New member functions
     BOOL Read(void * buffer);
-      // Read a sequence of bytes into the specified buffer. Return TRUE if
-      // the required number of bytes was successfully read.
+    /* Read a sequence of bytes into the specified buffer, translating the
+       structure according to the specification made in the
+       $B$SetStructure()$B$ function.
+
+       Returns: TRUE if the structure was successfully read.
+     */
       
     BOOL Write(void * buffer);
-      // Write a sequence of bytes into the specified buffer. Return TRUE if
-      // the required number of bytes was successfully written.
+    /* Write a sequence of bytes into the specified buffer, translating the
+       structure according to the specification made in the
+       $B$SetStructure()$B$ function.
+
+       Returns: TRUE if the structure was successfully written.
+     */
 
 
-    // New member functions
+  // New member functions
     size_t GetStructureSize();
-      // Get the size of each structure in the file.
+    /* Get the size of each structure in the file.
 
-    void SetStructureSize(size_t newSize);
-      // Set the size of each structure in the file.
+       Returns: number of bytes in a structure.
+     */
+
+    enum ElementType {
+      Character,    // Element is a single character.
+      Integer16,    // Element is a 16 bit integer.
+      Integer32,    // Element is a 32 bit integer.
+      Integer64,    // Element is a 64 bit integer.
+      Float32,      // Element is a 32 bit IEE floating point number.
+      Float64,      // Element is a 64 bit IEE floating point number.
+      Float80,      // Element is a 80 bit IEE floating point number.
+      NumElementTypes
+    };
+    // All element types ina structure
+
+    struct Element {
+      ElementType type;   // Type of element in structure.
+      PINDEX      count;  // Count of elements of this type.
+    };
+    // Elements in the structure definition.
+
+    void SetStructure(
+      Element * structure,  // Array of structure elements
+      PINDEX numElements    // Number of structure elements in structure.
+    );
+    // Set the structure of each record in the file.
 
 
   protected:
-    // Member variables
+  // Member variables
     size_t structureSize;
+    // Number of bytes in structure.
+
+    Element * structure;
+    PINDEX numElements;
 
 
 // Class declaration continued in platform specific header file ///////////////
