@@ -332,17 +332,14 @@ SOURCE=..\..\Ptclib\Telnet.cxx
 
 !IF  "$(CFG)" == "Console Componets - Win32 Release"
 
+# ADD CPP /Yc"ptlib.h"
+
 !ELSEIF  "$(CFG)" == "Console Componets - Win32 Debug"
 
-# ADD CPP /Yu"ptlib.h"
+# ADD CPP /Yc"ptlib.h"
 
 !ENDIF 
 
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\Ptclib\Url.cxx
-# ADD CPP /Yc"ptlib.h"
 # End Source File
 # End Group
 # Begin Group "Header Files"
