@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.20 1995/03/14 12:42:00 robertj Exp $
+ * $Id: pdirect.h,v 1.21 1995/06/17 11:12:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.21  1995/06/17 11:12:52  robertj
+ * Documentation update.
+ *
  * Revision 1.20  1995/03/14 12:42:00  robertj
  * Updated documentation to use HTML codes.
  *
@@ -141,7 +144,7 @@ PDECLARE_CLASS(PFileInfo, PObject)
 
     int permissions;
     /* A bit mask of all the file acces permissions. See the
-       <A>Permissions</A> enum for the possible bit values.
+       <A>Permissions enum</A> for the possible bit values.
        
        Not all platforms support all permissions.
      */
@@ -168,8 +171,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
    The path always has a trailing separator.
 
    Some platforms allow more than one character to act as a directory separator
-   so when doing any processing the <A><CODE>IsSeparator()</CODE></A> function
-   should be used to determine if a character is a possible separator.
+   so when doing any processing the <A>IsSeparator()</A> function should be
+   used to determine if a character is a possible separator.
 
    The directory may be opened to gain access to the list of files that it
    contains. Note that the directory does <EM>not</EM> contain the "." and ".."
@@ -280,9 +283,9 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
       int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
     );
     /* Open the directory for scanning its list of files. Once opened the
-       <A><CODE>GetEntryName()</CODE></A> function may be used to get the
-       current directory entry and the <A><CODE>Next()</CODE></A> function
-       used to move to the next directory entry.
+       <A>GetEntryName()</A> function may be used to get the current directory
+       entry and the <A>Next()</A> function used to move to the next directory
+       entry.
        
        Only files that are of a type that is specified in the mask will be
        returned.
@@ -299,8 +302,8 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
       int scanMask = PFileInfo::AllFiles    // Mask of files to provide.
     );
     /* Restart file list scan from the beginning of directory. This is similar
-       to the <A><CODE>Open()</CODE></A> command but does not require that the
-       directory be closed (using <A><CODE>Close()</CODE></A>) first.
+       to the <A>Open()</A> command but does not require that the directory be
+       closed (using <A>Close()</A>) first.
 
        Only files that are of a type that is specified in the mask will be
        returned.
@@ -317,8 +320,7 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
     /* Move to the next file in the directory scan.
     
        Only files that are of a type that is specified in the mask passed to
-       the <A><CODE>Open()</CODE></A> or <A><CODE>Restart()</CODE></A>
-       functions will be returned.
+       the <A>Open()</A> or <A>Restart()</A> functions will be returned.
 
        Note that the directory scan will <EM>not</EM> return the "." and ".."
        entries that some platforms support.
