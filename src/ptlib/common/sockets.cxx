@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.70 1998/05/07 05:20:25 robertj Exp $
+ * $Id: sockets.cxx,v 1.71 1998/08/21 05:26:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.71  1998/08/21 05:26:10  robertj
+ * Fixed bug where write streams out to non-stream socket.
+ * Added ethernet socket.
+ *
  * Revision 1.70  1998/05/07 05:20:25  robertj
  * Fixed DNS lookup so only works around bug in old Win95 and not OSR2
  *
@@ -220,14 +224,6 @@
  * Initial revision
  *
  */
-
-#ifdef __GNUC__
-#pragma implementation "socket.h"
-#pragma implementation "ipsock.h"
-#pragma implementation "udpsock.h"
-#pragma implementation "tcpsock.h"
-#pragma implementation "ipdsock.h"
-#endif
 
 #include <ptlib.h>
 #include <sockets.h>
@@ -1194,6 +1190,23 @@ const char * PTCPSocket::GetProtocolName() const
 }
 
 
+BOOL PTCPSocket::Write(const void * buf, PINDEX len)
+{
+  flush();
+  PINDEX writeCount = 0;
+
+  while (len > 0) {
+    if (!os_sendto(((char *)buf)+writeCount, len, 0, NULL, 0))
+      return FALSE;
+    writeCount += lastWriteCount;
+    len -= lastWriteCount;
+  }
+
+  lastWriteCount = writeCount;
+  return TRUE;
+}
+
+
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 {
   if (PIPSocket::Listen(queueSize, newPort, reuse) &&
@@ -1274,12 +1287,7 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
   sockAddr.sin_family = AF_INET;
   sockAddr.sin_addr = addr;
   sockAddr.sin_port = htons(port);
-  int sendResult = os_sendto(buf, len, 0,
-                             (struct sockaddr *)&sockAddr, sizeof(sockAddr));
-  if (ConvertOSError(sendResult))
-    lastWriteCount = sendResult;
-
-  return lastWriteCount >= len;
+  return os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
 }
 
 
@@ -1348,5 +1356,137 @@ BOOL PUDPSocket::Write(const void * buf, PINDEX len)
   else
     return PIPDatagramSocket::WriteTo(buf, len, sendAddress, sendPort);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PEthSocket::Address::Address()
+{
+  memset(b, 0xff, sizeof(b));
+}
+
+
+PEthSocket::Address::Address(const BYTE * addr)
+{
+  memcpy(b, PAssertNULL(addr), sizeof(b));
+}
+
+
+PEthSocket::Address::Address(const Address & addr)
+{
+  ls.l = addr.ls.l;
+  ls.s = addr.ls.s;
+}
+
+
+PEthSocket::Address::Address(const PString & str)
+{
+  operator=(str);
+}
+
+
+PEthSocket::Address & PEthSocket::Address::operator=(const Address & addr)
+{
+  ls.l = addr.ls.l;
+  ls.s = addr.ls.s;
+  return *this;
+}
+
+
+PEthSocket::Address & PEthSocket::Address::operator=(const PString & str)
+{
+  memset(b, 0, sizeof(b));
+
+  int shift = 0;
+  PINDEX byte = 5;
+  PINDEX pos = str.GetLength();
+  while (pos-- > 0) {
+    int c = str[pos];
+    if (c != '-') {
+      if (isdigit(c))
+        b[byte] |= (c - '0') << shift;
+      else if (isxdigit(c))
+        b[byte] |= (toupper(c) - 'A' + 10) << shift;
+      else {
+        memset(this, 0, sizeof(*this));
+        return *this;
+      }
+      if (shift == 0)
+        shift = 4;
+      else {
+        shift = 0;
+        byte--;
+      }
+    }
+  }
+
+  return *this;
+}
+
+
+PEthSocket::Address::operator PString() const
+{
+  return psprintf("%02X-%02X-%02X-%02X-%02X-%02X", b[0], b[1], b[2], b[3], b[4], b[5]);
+}
+
+
+const char * PEthSocket::GetProtocolName() const
+{
+  return "eth";
+}
+
+
+BOOL PEthSocket::Listen(unsigned, WORD, Reusability)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr)
+{
+  PIPSocket::Address net_mask;
+  return EnumIpAddress(0, addr, net_mask);
+}
+
+
+BOOL PEthSocket::GetIpAddress(PIPSocket::Address & addr, PIPSocket::Address & net_mask)
+{
+  return EnumIpAddress(0, addr, net_mask);
+}
+
+
+BOOL PEthSocket::ReadPacket(PBYTEArray & buffer,
+                            Address & dest,
+                            Address & src,
+                            WORD & type,
+                            PINDEX & length,
+                            BYTE * & payload)
+{
+  Frame * frame = (Frame *)buffer.GetPointer(sizeof(Frame));
+  const PINDEX MinFrameSize = sizeof(frame->dst_addr)+sizeof(frame->src_addr)+sizeof(frame->snap.length);
+
+  do {
+    if (!Read(frame, sizeof(*frame)))
+      return FALSE;
+  } while (lastReadCount < MinFrameSize);
+
+  dest = frame->dst_addr;
+  src = frame->src_addr;
+  WORD len_or_type = ntohs(frame->snap.length);
+  if (len_or_type > sizeof(frame->snap.payload)) {
+    type = len_or_type;
+    length = lastReadCount - MinFrameSize;
+    payload = frame->ether.payload;
+  }
+  else {
+    type = ntohs(frame->snap.type);
+    length = len_or_type;
+    payload = frame->snap.payload;
+  }
+
+  return TRUE;
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
