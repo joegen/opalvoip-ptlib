@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.13  2004/03/22 10:15:27  rjongbloed
+ * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
+ *   when goes out of scope.
+ *
  * Revision 1.12  2002/12/11 03:21:28  robertj
  * Updated documentation for read/write mutex.
  *
@@ -361,6 +365,82 @@ class PReadWriteMutex : public PObject
     void EndNest();
     void InternalStartRead();
     void InternalEndRead();
+};
+
+
+/**This class starts a read operation for the PReadWriteMutex on construction
+   and automatically ends the read operation on destruction.
+
+  This is very usefull for constructs such as:
+\begin{verbatim}
+    void func()
+    {
+      PReadWaitAndSignal mutexWait(myMutex);
+      if (condition)
+        return;
+      do_something();
+      if (other_condition)
+        return;
+      do_something_else();
+    }
+\end{verbatim}
+ */
+class PReadWaitAndSignal {
+  public:
+    /**Create the PReadWaitAndSignal wait instance.
+       This will wait on the specified PReadWriteMutex using the #StartRead()#
+       function before returning.
+      */
+    PReadWaitAndSignal(
+      const PReadWriteMutex & rw,   /// PReadWriteMutex descendent to wait/signal.
+      BOOL start = TRUE    /// Start read operation on PReadWriteMutex before returning.
+    );
+    /** End read operation on the PReadWriteMutex.
+        This will execute the EndRead() function on the PReadWriteMutex that
+        was used in the construction of this instance.
+     */
+    ~PReadWaitAndSignal();
+
+  protected:
+    PReadWriteMutex & mutex;
+};
+
+
+/**This class starts a write operation for the PReadWriteMutex on construction
+   and automatically ends the write operation on destruction.
+
+  This is very usefull for constructs such as:
+\begin{verbatim}
+    void func()
+    {
+      PWriteWaitAndSignal mutexWait(myMutex);
+      if (condition)
+        return;
+      do_something();
+      if (other_condition)
+        return;
+      do_something_else();
+    }
+\end{verbatim}
+ */
+class PWriteWaitAndSignal {
+  public:
+    /**Create the PWriteWaitAndSignal wait instance.
+       This will wait on the specified PReadWriteMutex using the #StartWrite()#
+       function before returning.
+      */
+    PWriteWaitAndSignal(
+      const PReadWriteMutex & rw,   /// PReadWriteMutex descendent to wait/signal.
+      BOOL start = TRUE    /// Start write operation on PReadWriteMutex before returning.
+    );
+    /** End write operation on the PReadWriteMutex.
+        This will execute the EndWrite() function on the PReadWriteMutex that
+        was used in the construction of this instance.
+     */
+    ~PWriteWaitAndSignal();
+
+  protected:
+    PReadWriteMutex & mutex;
 };
 
 
