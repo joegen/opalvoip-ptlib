@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.4  2000/07/26 03:50:50  robertj
+ * Added last error variable to video device.
+ *
  * Revision 1.3  2000/07/25 13:38:26  robertj
  * Added frame rate parameter to video frame grabber.
  *
@@ -68,7 +71,7 @@ class PVideoDeviceBitmap : PBYTEArray
   public:
     PVideoDeviceBitmap(unsigned width, unsigned height, PVideoDevice::ColourFormat fmt);
     PVideoDeviceBitmap(HWND hWnd);
-    BOOL ApplyFormat(HWND hWnd);
+    BOOL ApplyFormat(HWND hWnd) { return capSetVideoFormat(hWnd, theArray, GetSize()); }
 
     BITMAPINFO * operator->() const { return (BITMAPINFO *)theArray; }
 };
@@ -130,18 +133,8 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow)
   if (capGetVideoFormat(hCaptureWindow, theArray, sz))
     return;
 
-  PTRACE(1, "capGetVideoFormat: failed - " << GetLastError());
+  PTRACE(1, "capGetVideoFormat: failed - " << ::GetLastError());
   SetSize(0);
-}
-
-
-BOOL PVideoDeviceBitmap::ApplyFormat(HWND hWnd)
-{
-  if (capSetVideoFormat(hWnd, theArray, GetSize()))
-    return TRUE;
-
-  PTRACE(1, "capSetVideoFormat: failed - " << GetLastError());
-  return FALSE;
 }
 
 
@@ -153,7 +146,7 @@ PCapStatus::PCapStatus(HWND hWnd)
   if (capGetStatus(hWnd, this, sizeof(*this)))
     return;
 
-  PTRACE(1, "capGetStatus: failed - " << GetLastError());
+  PTRACE(1, "capGetStatus: failed - " << ::GetLastError());
 }
 
 
@@ -181,6 +174,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   if (hCaptureWindow == NULL) {
     delete captureThread;
     captureThread = NULL;
+    return FALSE;
   }
 
   if (startImmediate)
@@ -217,7 +211,8 @@ BOOL PVideoInputDevice::Start()
   if (capCaptureSequenceNoFile(hCaptureWindow))
     return TRUE;
 
-  PTRACE(1, "capCaptureSequenceNoFile: failed - " << GetLastError());
+  lastError = ::GetLastError();
+  PTRACE(1, "capCaptureSequenceNoFile: failed - " << lastError);
   return FALSE;
 }
 
@@ -227,7 +222,8 @@ BOOL PVideoInputDevice::Stop()
   if (capCaptureStop(hCaptureWindow))
     return TRUE;
 
-  PTRACE(1, "capCaptureStop: failed - " << GetLastError());
+  lastError = ::GetLastError();
+  PTRACE(1, "capCaptureStop: failed - " << lastError);
   return FALSE;
 }
 
@@ -252,7 +248,8 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
   memset(&parms, 0, sizeof(parms));
 
   if (!capCaptureGetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    PTRACE(1, "capCaptureGetSetup: failed - " << GetLastError());
+    lastError = ::GetLastError();
+    PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
     return FALSE;
   }
 
@@ -265,7 +262,8 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
   parms.fLimitEnabled = FALSE;
 
   if (!capCaptureSetSetup(hCaptureWindow, &parms, sizeof(parms))) {
-    PTRACE(1, "capCaptureSetSetup: failed - " << GetLastError());
+    lastError = ::GetLastError();
+    PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
     return FALSE;
   }
 
@@ -316,6 +314,8 @@ BOOL PVideoInputDevice::SetColourFormat(ColourFormat colourFmt)
 
   PVideoDeviceBitmap bitmapInfo(frameWidth, frameHeight, colourFmt);
   if (!bitmapInfo.ApplyFormat(hCaptureWindow)) {
+    lastError = ::GetLastError();
+    PTRACE(1, "capSetVideoFormat: failed - " << lastError);
     PVideoDevice::SetColourFormat(oldFormat);
     return FALSE;
   }
@@ -415,6 +415,7 @@ BOOL PVideoInputDevice::InitialiseCapture()
                                                frameHeight + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
                                                (HWND)0,
                                                0)) == NULL) {
+    lastError = ::GetLastError();
     PTRACE(1, "capCreateCaptureWindow: failed");
     return FALSE;
   }
@@ -422,7 +423,8 @@ BOOL PVideoInputDevice::InitialiseCapture()
   capSetCallbackOnError(hCaptureWindow, ErrorHandler);
 
   if (!capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler)) {
-    PTRACE(1, "capSetCallbackOnVideoStream: failed - " << GetLastError());
+    lastError = ::GetLastError();
+    PTRACE(1, "capSetCallbackOnVideoStream: failed - " << lastError);
     return FALSE;
   }
 
@@ -441,7 +443,8 @@ BOOL PVideoInputDevice::InitialiseCapture()
 
   // Use first driver available.
   if (!capDriverConnect(hCaptureWindow, devId)) {
-    PTRACE(1, "capDriverConnect: failed - " << GetLastError());
+    lastError = ::GetLastError();
+    PTRACE(1, "capDriverConnect: failed - " << lastError);
     return FALSE;
   }
 
@@ -450,7 +453,8 @@ BOOL PVideoInputDevice::InitialiseCapture()
   CAPDRIVERCAPS driverCaps;
   memset(&driverCaps, 0, sizeof(driverCaps));
   if (!capDriverGetCaps(hCaptureWindow, &driverCaps, sizeof(driverCaps))) {
-    PTRACE(1, "capGetDriverCaps: failed - " << GetLastError());
+    lastError = ::GetLastError();
+    PTRACE(1, "capGetDriverCaps: failed - " << lastError);
     return FALSE;
   }
 
