@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.cxx,v $
+ * Revision 1.14  1999/02/10 13:20:53  robertj
+ * Added ability to have attachments in mail messages.
+ *
  * Revision 1.13  1998/11/30 04:48:40  robertj
  * New directory structure
  *
@@ -229,38 +232,69 @@ BOOL PMail::SendNote(const PString & recipient,
                      const PString & subject,
                      const char * body)
 {
-  PStringList recipients;
-  recipients.AppendString(recipient);
-  return SendNote(recipients, subject, body);
+  PStringList dummy;
+  return SendNote(recipient, dummy, dummy, subject, body, dummy);
 }
 
 
-BOOL PMail::SendNote(const PStringList & recipients,
+BOOL PMail::SendNote(const PString & recipient,
                      const PString & subject,
                      const char * body,
-					 BOOL blindCC)
+                     const PStringList & attachments)
+{
+  PStringList dummy;
+  return SendNote(recipient, dummy, dummy, subject, body, attachments);
+}
+
+
+BOOL PMail::SendNote(const PString & recipient,
+                     const PStringList & carbonCopies,
+                     const PStringList & blindCarbons,
+                     const PString & subject,
+                     const char * body,
+                     const PStringList & attachments)
 {
 #if P_HAS_CMC
   if (cmc.IsLoaded()) {
     CMC_message message;
     memset(&message, 0, sizeof(message));
 
-    message.recipients = new CMC_recipient[recipients.GetSize()];
-    memset(message.recipients, 0, recipients.GetSize()*sizeof(CMC_recipient));
+    PINDEX size = carbonCopies.GetSize() + blindCarbons.GetSize() + 1;
+    message.recipients = new CMC_recipient[size];
+    memset(message.recipients, 0, size*sizeof(CMC_recipient));
 
-    for (PINDEX i = 0 ; i < recipients.GetSize(); i++) {
-      message.recipients[i].role =
-              i != 0 ? blindCC ? CMC_ROLE_BCC : CMC_ROLE_CC : CMC_ROLE_TO;
-      message.recipients[i].name = (CMC_string)(const char *)recipients[i];
+    message.recipients[0].role = CMC_ROLE_TO;
+    message.recipients[0].name = (CMC_string)(const char *)recipient;
+
+    PINDEX count = 0;
+    PINDEX i;
+    for (i = 0 ; i < carbonCopies.GetSize(); i++) {
+      message.recipients[++count].role = CMC_ROLE_CC;
+      message.recipients[count].name = (CMC_string)(const char *)carbonCopies[i];
     }
-    message.recipients[i-1].recip_flags = CMC_RECIP_LAST_ELEMENT;
+    for (i = 0 ; i < blindCarbons.GetSize(); i++) {
+      message.recipients[++count].role = CMC_ROLE_BCC;
+      message.recipients[count].name = (CMC_string)(const char *)blindCarbons[i];
+    }
+    message.recipients[count].recip_flags = CMC_RECIP_LAST_ELEMENT;
 
     message.subject = (CMC_string)(const char *)subject;
     message.text_note = (CMC_string)body;
     message.message_flags = CMC_MSG_LAST_ELEMENT;
 
-    lastError = cmc.send(sessionId,&message,0,(CMC_ui_id)hUserInterface,NULL);
+    if (!attachments.IsEmpty()) {
+      message.attachments = new CMC_attachment[attachments.GetSize()];
+      memset(message.attachments, 0, attachments.GetSize()*sizeof(CMC_attachment));
+      for (i = 0 ; i < attachments.GetSize(); i++) {
+        message.attachments[i].attach_type = CMC_ATT_OID_BINARY;
+        message.attachments[i].attach_filename = (CMC_string)(const char *)attachments[i];
+      }
+      message.attachments[i-1].attach_flags = CMC_ATT_LAST_ELEMENT;
+    }
 
+    lastError = cmc.send(sessionId, &message, 0, (CMC_ui_id)hUserInterface, NULL);
+
+    delete [] message.attachments;
     delete [] message.recipients;
 
     return lastError == CMC_SUCCESS;
@@ -272,17 +306,35 @@ BOOL PMail::SendNote(const PStringList & recipients,
     MapiMessage message;
     memset(&message, 0, sizeof(message));
 
-    message.nRecipCount = recipients.GetSize();
+    message.nRecipCount = carbonCopies.GetSize() + blindCarbons.GetSize() + 1;
     message.lpRecips = new MapiRecipDesc[message.nRecipCount];
     memset(message.lpRecips, 0, message.nRecipCount*sizeof(MapiRecipDesc));
 
-    for (PINDEX i = 0 ; i < recipients.GetSize(); i++) {
-      message.lpRecips[i].ulRecipClass = i != 0 ? blindCC ? MAPI_BCC : MAPI_CC : MAPI_TO;
-      message.lpRecips[i].lpszName = (char *)(const char *)recipients[i];
+    message.lpRecips[0].ulRecipClass = MAPI_TO;
+    message.lpRecips[0].lpszName = (char *)(const char *)recipient;
+
+    PINDEX count = 0;
+    PINDEX i;
+    for (i = 0 ; i < carbonCopies.GetSize(); i++) {
+      message.lpRecips[++count].ulRecipClass = MAPI_CC;
+      message.lpRecips[count].lpszName = (char *)(const char *)carbonCopies[i];
+    }
+    for (i = 0 ; i < blindCarbons.GetSize(); i++) {
+      message.lpRecips[++count].ulRecipClass = MAPI_BCC;
+      message.lpRecips[count].lpszName = (char *)(const char *)blindCarbons[i];
     }
 
     message.lpszSubject = (char *)(const char *)subject;
     message.lpszNoteText = (char *)body;
+
+    if (!attachments.IsEmpty()) {
+      message.lpFiles = new MapiFileDesc[attachments.GetSize()];
+      memset(message.lpFiles, 0, attachments.GetSize()*sizeof(MapiFileDesc));
+      for (i = 0 ; i < attachments.GetSize(); i++) {
+        message.lpFiles[i].nPosition = (DWORD)-1;
+        message.lpFiles[i].lpszPathName = (CMC_string)(const char *)attachments[i];
+      }
+    }
 
     lastError = mapi.SendMail(sessionId, (HWND)hUserInterface, &message, 0, 0);
 
