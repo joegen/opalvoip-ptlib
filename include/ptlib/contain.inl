@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.44  2002/01/22 01:03:57  craigs
+ * Added operator += and operator + functions to PStringArray and PStringList
+ * Added AppendString operator to PStringArray
+ *
  * Revision 1.43  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -384,9 +388,20 @@ PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINLINE PINDEX PStringArray::AppendString(const PString & str)
+  { return Append(str.Clone()); }
+
+PINLINE PStringArray & PStringArray::operator += (const PString & str)
+  { Append(str.Clone()); return *this; }
+
+PINLINE PStringArray PStringArray::operator + (const PStringArray & v)
+  { PStringArray arr = *this; arr += v; return arr; }
+
+PINLINE PStringArray PStringArray::operator + (const PString & v)
+  { PStringArray arr = *this; arr += v; return arr; }
+
 PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -397,7 +412,6 @@ PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
   { PObject * obj = GetAt(index);
                        PAssert(obj != NULL, PInvalidArrayIndex); return *obj; }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PStringList::AppendString(const PString & str)
@@ -407,9 +421,17 @@ PINLINE PINDEX PStringList::InsertString(
                                    const PString & before, const PString & str)
   { return Insert(before, str.Clone()); }
 
+PINLINE PStringList & PStringList::operator += (const PString & str)
+  { Append(str.Clone()); return *this; }
+
+PINLINE PStringList PStringList::operator + (const PStringList & v)
+  { PStringList arr = *this; arr += v; return arr; }
+
+PINLINE PStringList PStringList::operator + (const PString & v)
+  { PStringList arr = *this; arr += v; return arr; }
+
 PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
