@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.43  2001/05/22 23:37:42  robertj
+ * Fixed problem with assigning a constrained string value to itself, which
+ *   can occur when changing constraints.
+ *
  * Revision 1.42  2001/04/30 10:47:33  robertj
  * Fixed stupid error in last patch.
  *
@@ -1862,7 +1866,7 @@ PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
   if (str == NULL)
     str = "";
 
-  value = PString();
+  PStringStream newValue;
 
   PINDEX len = strlen(str);
 
@@ -1874,15 +1878,16 @@ PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
   for (PINDEX i = 0; i < len; i++) {
     PINDEX sz = characterSet.GetSize();
     if (sz == 0 || memchr(characterSet, str[i], sz) != NULL)
-      value += str[i];
+      newValue << str[i];
   }
 
   // Make sure string meets minimum length constraint
   while ((int)len < lowerLimit) {
-    value += characterSet[0];
+    newValue << characterSet[0];
     len++;
   }
 
+  value = newValue;
   return *this;
 }
 
