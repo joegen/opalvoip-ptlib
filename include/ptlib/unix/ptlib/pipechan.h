@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.7  1998/11/30 22:06:55  robertj
+ * New directory structure.
+ *
  * Revision 1.6  1998/10/26 11:09:19  robertj
  * Added separation of stdout and stderr.
  *
@@ -53,7 +56,7 @@
 
 #include <signal.h>
 
-#include "../../common/ptlib/pipechan.h"
+#include "../../pipechan.h"
   protected:
     int toChildPipe[2];
     int fromChildPipe[2];
