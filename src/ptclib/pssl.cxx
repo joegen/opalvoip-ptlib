@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.15 2000/11/03 10:00:43 robertj Exp $
+ * $Id: pssl.cxx,v 1.16 2000/11/14 08:33:16 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.16  2000/11/14 08:33:16  robertj
+ * Added certificate and private key classes.
+ *
  * Revision 1.15  2000/11/03 10:00:43  robertj
  * Fixed initialisation of SSL, needed random number seed for some modes.
  *
@@ -124,6 +127,7 @@
 
 #include <ptclib/pssl.h>
 
+
 #define USE_SOCKETS
 
 extern "C" {
@@ -136,18 +140,202 @@ extern "C" {
 
 };
 
+PARRAY(PSSLMutexArrayBase, PMutex);
+class PSSLMutexArray : public PSSLMutexArrayBase
+{
+    PCLASSINFO(PSSLMutexArray, PSSLMutexArrayBase);
+  public:
+    PSSLMutexArray();
+};
+
+
+#define new PNEW
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PARRAY(PMutexArray, PMutex);
-static PMutexArray LockMutexes;
+PSSLMutexArray::PSSLMutexArray()
+{
+  // Initialise all of the mutexes for multithreaded operation.
+  SetSize(CRYPTO_num_locks());
+  for (PINDEX i = 0; i < GetSize(); i++)
+    SetAt(i, new PMutex);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static PBYTEArray ConvertXOR(const BYTE * data, PINDEX size, BYTE xorSeed)
+{
+  PBYTEArray clear(size);
+
+  clear[0] = (BYTE)(data[0] ^ xorSeed);
+  for (PINDEX i = 1; i < size; i++)
+    clear[i] = (BYTE)(data[i] ^ clear[i-1]);
+
+  return clear;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PSSLCertificate::PSSLCertificate()
+{
+  certificate = NULL;
+}
+
+
+PSSLCertificate::PSSLCertificate(const PFilePath & certFile, int fileType)
+{
+  certificate = NULL;
+
+  BIO *in = BIO_new(BIO_s_file_internal());
+  if (in == NULL) {
+    SSLerr(SSL_F_SSL_USE_PRIVATEKEY_FILE,ERR_R_BUF_LIB);
+    return;
+  }
+
+  if (BIO_read_filename(in, (char *)(const char *)certFile) <= 0)
+    SSLerr(SSL_F_SSL_USE_PRIVATEKEY_FILE,ERR_R_SYS_LIB);
+  else {
+    if (fileType < 0)
+      fileType = certFile.GetType() == ".pem" ? SSL_FILETYPE_PEM : SSL_FILETYPE_ASN1;
+
+    switch (fileType) {
+      case SSL_FILETYPE_ASN1 :
+        certificate = d2i_X509_bio(in, NULL);
+        if (certificate == NULL)
+	  SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_ASN1_LIB);
+        break;
+
+      case SSL_FILETYPE_PEM :
+        certificate = PEM_read_bio_X509(in, NULL, NULL, NULL);
+        if (certificate == NULL)
+	  SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE, ERR_R_PEM_LIB);
+        break;
+
+      default :
+	SSLerr(SSL_F_SSL_CTX_USE_CERTIFICATE_FILE,SSL_R_BAD_SSL_FILETYPE);
+    }
+  }
+
+  BIO_free(in);
+}
+
+
+PSSLCertificate::PSSLCertificate(const BYTE * certData, PINDEX certSize, BYTE xorSeed)
+{
+  if (xorSeed == 0)
+    certificate = d2i_X509(NULL, (unsigned char **)&certData, certSize);
+  else {
+    PBYTEArray realCert = ConvertXOR(certData, certSize, xorSeed);
+    BYTE * realCertPtr = realCert.GetPointer();
+    certificate = d2i_X509(NULL, &realCertPtr, certSize);
+  }
+}
+
+
+PSSLCertificate::PSSLCertificate(const PSSLCertificate & cert)
+{
+  if (cert.certificate == NULL)
+    certificate = NULL;
+  else
+    certificate = X509_dup(cert.certificate);
+}
+
+
+PSSLCertificate & PSSLCertificate::operator=(const PSSLCertificate & cert)
+{
+  if (certificate != NULL)
+    X509_free(certificate);
+  if (cert.certificate == NULL)
+    certificate = NULL;
+  else
+    certificate = X509_dup(cert.certificate);
+
+  return *this;
+}
+
+
+PSSLCertificate::~PSSLCertificate()
+{
+  if (certificate != NULL)
+    X509_free(certificate);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PSSLPrivateKey::PSSLPrivateKey()
+{
+  key = NULL;
+}
+
+
+PSSLPrivateKey::PSSLPrivateKey(const PFilePath & keyFile)
+{
+  key = NULL;
+
+  BIO *in = BIO_new(BIO_s_file_internal());
+  if (in == NULL) {
+    SSLerr(SSL_F_SSL_USE_PRIVATEKEY_FILE,ERR_R_BUF_LIB);
+    return;
+  }
+
+  if (BIO_read_filename(in, (char *)(const char *)keyFile) <= 0)
+    SSLerr(SSL_F_SSL_USE_PRIVATEKEY_FILE,ERR_R_SYS_LIB);
+  else
+    key = PEM_read_bio_PrivateKey(in, NULL, NULL, NULL);
+
+  BIO_free(in);
+}
+
+
+PSSLPrivateKey::PSSLPrivateKey(const BYTE * keyData, PINDEX keySize, BYTE xorSeed)
+{
+  if (xorSeed == 0)
+    key = d2i_AutoPrivateKey(NULL, (BYTE **)&keyData, keySize);
+  else {
+    PBYTEArray realKey = ConvertXOR(keyData, keySize, xorSeed);
+    BYTE * realKeyPtr = realKey.GetPointer();
+    key = d2i_AutoPrivateKey(NULL, &realKeyPtr, keySize);
+  }
+}
+
+
+PSSLPrivateKey::PSSLPrivateKey(const PSSLPrivateKey & privKey)
+{
+  key = privKey.key;
+}
+
+
+PSSLPrivateKey & PSSLPrivateKey::operator=(const PSSLPrivateKey & privKey)
+{
+  if (key != NULL)
+    EVP_PKEY_free(key);
+
+  key = privKey.key;
+
+  return *this;
+}
+
+
+PSSLPrivateKey::~PSSLPrivateKey()
+{
+  if (key != NULL)
+    EVP_PKEY_free(key);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/)
 {
+  static PSSLMutexArray mutexes;
   if ((mode & CRYPTO_LOCK) != 0)
-    LockMutexes[n].Wait();
+    mutexes[n].Wait();
   else
-    LockMutexes[n].Signal();
+    mutexes[n].Signal();
 }
 
 
@@ -168,23 +356,17 @@ static int VerifyCallBack(int ok, X509_STORE_CTX * ctx)
 }
 
 
-static PMutex InitialisationMutex;
-
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
   PINDEX i;
 
+  static PMutex InitialisationMutex;
   InitialisationMutex.Wait();
 
   static BOOL needInitialisation = TRUE;
   if (needInitialisation) {
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
-
-    // Initialise all of the mutexes for multithreaded operation.
-    LockMutexes.SetSize(CRYPTO_num_locks());
-    for (i = 0; i < LockMutexes.GetSize(); i++)
-      LockMutexes.SetAt(i, new PMutex);
 
     // Seed the random number generator
     BYTE seed[128];
@@ -250,31 +432,15 @@ BOOL PSSLContext::SetCAFile(const PFilePath & caFile)
 }
 
 
-static int DetermineFileType(const PFilePath & filename, int fileType)
+BOOL PSSLContext::UseCertificate(const PSSLCertificate & certificate)
 {
-  if (fileType >= 0)
-    return fileType;
-
-  if (filename.GetType() *= ".pem")
-    return SSL_FILETYPE_PEM;
-
-  return SSL_FILETYPE_ASN1;
+  return SSL_CTX_use_certificate(context, certificate) > 0;
 }
 
 
-BOOL PSSLContext::UseCertificate(const PFilePath & certFile, int fileType)
+BOOL PSSLContext::UsePrivateKey(const PSSLPrivateKey & key)
 {
-  return SSL_CTX_use_certificate_file(context,
-                                      certFile,
-                                      DetermineFileType(certFile, fileType)) > 0;
-}
-
-
-BOOL PSSLContext::UsePrivateKey(const PFilePath & keyFile, int fileType)
-{
-  if (SSL_CTX_use_PrivateKey_file(context,
-                                  keyFile,
-                                  DetermineFileType(keyFile, fileType)) <= 0)
+  if (SSL_CTX_use_PrivateKey(context, key) <= 0)
     return FALSE;
 
   return SSL_CTX_check_private_key(context);
@@ -332,38 +498,69 @@ PSSLChannel::~PSSLChannel()
 
 BOOL PSSLChannel::Read(void * buf, PINDEX len)
 {
-  lastReadCount = 0;
+  flush();
 
-  int readResult = SSL_read(ssl, (char *)buf, len);
-  if (!ConvertOSError(readResult))
-    return FALSE;
+  channelPointerMutex.StartRead();
 
-  lastReadCount = readResult;
-  return TRUE;
+  BOOL returnValue = FALSE;
+  if (readChannel == NULL) {
+    lastError = NotOpen;
+    osError = EBADF;
+  }
+  else if (readTimeout == 0 && SSL_pending(ssl) == 0) {
+    lastError = Timeout;
+    osError = ETIMEDOUT;
+  }
+  else {
+    readChannel->SetReadTimeout(readTimeout);
+
+    int readResult = SSL_read(ssl, (char *)buf, len);
+    returnValue = ConvertOSError(readResult);
+
+    lastError = readChannel->GetErrorCode();
+    osError = readChannel->GetErrorNumber();
+    lastReadCount = readResult;
+  }
+
+  channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 {
-  lastWriteCount = 0;
+  flush();
 
-  while (len > 0) {
-    int writeResult = SSL_write(ssl, ((char *)buf)+lastWriteCount, len);
-    if (!ConvertOSError(writeResult))
-      return FALSE;
+  channelPointerMutex.StartRead();
 
-    lastWriteCount += writeResult;
-    len -= writeResult;
+  BOOL returnValue;
+  if (writeChannel == NULL) {
+    lastError = NotOpen;
+    osError = EBADF;
+    returnValue = FALSE;
+  }
+  else {
+    writeChannel->SetWriteTimeout(writeTimeout);
+
+    int writeResult = SSL_write(ssl, (const char *)buf, len);
+
+    returnValue = ConvertOSError(writeResult);
+    lastError = writeChannel->GetErrorCode();
+    osError = writeChannel->GetErrorNumber();
+    lastWriteCount = writeResult;
   }
 
-  return TRUE;
+  channelPointerMutex.EndRead();
+
+  return returnValue;
 }
 
 
 BOOL PSSLChannel::Close()
 {
-  SSL_shutdown(ssl);
-  return PIndirectChannel::Close();
+  BOOL ok = SSL_shutdown(ssl);
+  return PIndirectChannel::Close() && ok;
 }
 
 
@@ -387,7 +584,7 @@ PString PSSLChannel::GetErrorText() const
     return PIndirectChannel::GetErrorText();
 
   char buf[200];
-  return ERR_error_string(osError&0x1fffffff, buf);
+  return ERR_error_string(osError&0x7fffffff, buf);
 }
 
 
@@ -439,26 +636,9 @@ BOOL PSSLChannel::Connect(PChannel * channel, BOOL autoDelete)
 }
 
 
-PSSLChannel::CertificateStatus PSSLChannel::SetClientCertificate(const PString & privateCert)
+BOOL PSSLChannel::UseCertificate(const PSSLCertificate & certificate)
 {
-  return SetClientCertificate(privateCert, privateCert);
-}
-
-
-PSSLChannel::CertificateStatus PSSLChannel::SetClientCertificate(const PString & privateCert,
-                                                                 const PString & privateKey)
-{
-  // set up certificate and key 
-  if (!SSL_use_certificate_file(ssl, privateCert, X509_FILETYPE_PEM))
-    return PSSLChannel::UnknownCertificate;
-
-  if (!SSL_use_RSAPrivateKey_file(ssl, privateKey, X509_FILETYPE_PEM))
-    return PSSLChannel::UnknownPrivateKey;
-
-  if (!SSL_check_private_key(ssl))
-    return PSSLChannel::PrivateKeyMismatch;
-
-  return PSSLChannel::CertificateOK;
+  return SSL_use_certificate(ssl, certificate);
 }
 
 
