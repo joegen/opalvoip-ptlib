@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.4  1999/06/30 13:50:21  craigs
+ * Added code to allow full duplex audio
+ *
  * Revision 1.3  1998/11/30 22:07:13  robertj
  * New directory structure.
  *
@@ -40,9 +43,32 @@
 #pragma interface
 
 ///////////////////////////////////////////////////////////////////////////////
+// declare type for sound handle dictionary
+
+class PSoundHandleEntry : public PObject {
+  PCLASSINFO(PSoundHandleEntry, PObject)
+
+  public:
+    PSoundHandleEntry();
+
+    int handle;
+    int direction;
+};
+
+PDICTIONARY(PSoundHandleDict, PString, PSoundHandleEntry);
+
+///////////////////////////////////////////////////////////////////////////////
 // PSound
 
 #include "../../sound.h"
+
+  BOOL Close();
+
+  protected:
+    static PSoundHandleDict handleDict;
+    static PMutex           dictMutex;
+    int direction;
+    PString device;
 };
 
 
