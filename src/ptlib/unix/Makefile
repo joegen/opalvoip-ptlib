@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.61  2000/07/26 02:40:30  robertj
+# Added video I/O devices.
+#
 # Revision 1.60  2000/06/21 01:01:22  robertj
 # AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
 #
@@ -230,6 +233,10 @@ ifdef OPENSSLDIR
 SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx 
 endif
 
+ifneq (,$(wildcard /usr/include/linux/videodev.h))
+V4L_SOURCE := $(COMMON_SRC_DIR)/videoio.cxx video4linux.cxx 
+endif
+
 ifeq ($(OSTYPE),linux)
 SOUND_SOURCE = oss.cxx
 endif
@@ -292,6 +299,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/telnet.cxx \
 	$(SSL_SOURCE) \
+	$(V4L_SOURCE) \
 	$(SOUND_SOURCE) \
 	$(GETDATE_SOURCE) \
 	uicmp.cxx \
