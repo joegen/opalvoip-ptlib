@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.6 1995/12/10 12:06:00 robertj Exp $
+ * $Id: winsock.cxx,v 1.7 1996/01/02 12:57:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.7  1996/01/02 12:57:17  robertj
+ * Unix compatibility.
+ *
  * Revision 1.6  1995/12/10 12:06:00  robertj
  * Numerous fixes for sockets.
  *
@@ -129,9 +132,15 @@ BOOL PSocket::Close()
 {
   if (!IsOpen())
     return FALSE;
-  BOOL ret = ConvertOSError(closesocket(os_handle));
+  return ConvertOSError(_Close());
+}
+
+
+int PSocket::_Close()
+{
+  int err = closesocket(os_handle);
   os_handle = -1;
-  return ret;
+  return err;
 }
 
 
@@ -158,6 +167,45 @@ BOOL PSocket::ConvertOSError(int error)
       lastError = Miscellaneous;
   }
   return FALSE;
+}
+
+
+PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
+{
+  S_un.S_un_b.s_b1 = b1;
+  S_un.S_un_b.s_b2 = b2;
+  S_un.S_un_b.s_b3 = b3;
+  S_un.S_un_b.s_b4 = b4;
+}
+
+
+PIPSocket::Address::operator DWORD() const
+{
+  return PSocket::Net2Host(S_un.S_addr);
+}
+
+
+BYTE PIPSocket::Address::Byte1() const
+{
+  return S_un.S_un_b.s_b1;
+}
+
+
+BYTE PIPSocket::Address::Byte2() const
+{
+  return S_un.S_un_b.s_b2;
+}
+
+
+BYTE PIPSocket::Address::Byte3() const
+{
+  return S_un.S_un_b.s_b3;
+}
+
+
+BYTE PIPSocket::Address::Byte4() const
+{
+  return S_un.S_un_b.s_b4;
 }
 
 
