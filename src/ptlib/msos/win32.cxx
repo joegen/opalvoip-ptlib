@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.47 1997/06/08 04:42:41 robertj Exp $
+ * $Id: win32.cxx,v 1.48 1997/06/16 13:15:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.48  1997/06/16 13:15:53  robertj
+ * Added function to get a dyna-link libraries name.
+ *
  * Revision 1.47  1997/06/08 04:42:41  robertj
  * Added DLL file extension string function.
  *
@@ -2248,6 +2251,19 @@ void PDynaLink::Close()
 BOOL PDynaLink::IsLoaded() const
 {
   return _hDLL != NULL;
+}
+
+
+PString PDynaLink::GetName(BOOL full) const
+{
+  PString str;
+  if (_hDLL != NULL) {
+    GetModuleFileName(_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
+    if (!full)
+      str.Delete(0, str.FindLast('\\')+1);
+  }
+  str.MakeMinimumSize();
+  return str;
 }
 
 
