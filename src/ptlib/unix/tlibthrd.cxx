@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.104  2002/11/04 16:01:27  rogerh
+ * Using pthread_cancel and not pthread_kill with SIGKILL to terminate a thread
+ * On FreeBSD the thread does not have a handler for SIGKILL, it passes it up
+ * to the main process which gets killed! Assume the other BSDs are the same.
+ *
  * Revision 1.103  2002/10/24 00:40:56  robertj
  * Put back ability to terminate a thread from that threads context (removed
  *   in revision 1.101) but requires that destructor not do so.
@@ -875,11 +880,7 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-  pthread_kill(PX_threadId, SIGKILL);
-#else
   pthread_cancel(PX_threadId);
-#endif
 }
 
 
