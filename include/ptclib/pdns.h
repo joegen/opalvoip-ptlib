@@ -6,6 +6,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: pdns.h,v $
+ * Revision 1.3  2003/04/15 08:14:06  craigs
+ * Added single string form of GetSRVRecords
+ *
  * Revision 1.2  2003/04/15 08:06:24  craigs
  * Added Unix implementation
  *
@@ -86,6 +89,10 @@ class PDNS : public PObject
                               const PString & type,
 		                          const PString & domain,
 		                    PDNS::SRVRecordList & serviceList);
+
+    static BOOL GetSRVRecords(const PString & service,
+		                    PDNS::SRVRecordList & serviceList);
+
 
     static BOOL GetMXRecords(const PString & domain,
 		                    PDNS::MXRecordList & serviceList);
