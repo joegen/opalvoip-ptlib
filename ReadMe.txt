@@ -47,6 +47,21 @@ not) include them in the base line code. Just do not send us any mail starting
 with the words "Why did you..." as the answer is quite likely to be "Because!"
 
 
+CVS Access
+----------
+
+There is a public CVS archive available at cvs.openh323.org. Note that there are
+still some parts of PWLib that are not available, so make sure you use the
+modules provided for check out and do not just try and check out "pwlib" on it's
+own. If you do all you will get is this file.
+
+The modules available are:
+	ptlib_unix
+	pwlilb_xwin
+	ptlib_win32
+	pwlib_win32
+
+
 Building PWLib
 --------------
 
