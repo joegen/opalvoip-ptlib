@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.46  1998/11/02 12:53:52  robertj
+ * Fixed yet another bug in the object array SetSize() for unix systems.
+ *
  * Revision 1.45  1998/10/31 14:01:58  robertj
  * Fixed ANSI scoping of for loop variable.
  *
@@ -252,8 +255,8 @@ BOOL PArrayObjects::SetSize(PINDEX newSize)
 {
   PINDEX sz = theArray->GetSize();
   if (reference->deleteObjects && sz > 0) {
-    for (PINDEX i = sz-1; i >= newSize; i--) {
-      PObject * obj = theArray->GetAt(i);
+    for (PINDEX i = sz; i > newSize; i--) {
+      PObject * obj = theArray->GetAt(i-1);
       if (obj != NULL)
         delete obj;
     }
