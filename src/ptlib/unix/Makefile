@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.99  2002/11/05 01:43:39  robertj
+# Added missing VxWorks files.
+#
 # Revision 1.98  2002/10/21 13:01:33  rogerh
 # bison 1.5 and above need -o to specify the output filename
 #
@@ -446,8 +449,7 @@ SOUND_SOURCE = macosaudio.cxx \
 endif
 
 ifeq ($(OSTYPE),VxWorks)
-VPATH_CXX += ./vxworks 
-SOUND_SOURCE = ./vxworks/vxaudio.cxx
+SOUND_SOURCE = vxaudio.cxx
 endif
 
 ifdef HAS_ESD
