@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.24  2004/10/12 23:28:07  csoutheren
+ * Fixed problem with bogus DOCTYPE being output
+ *
  * Revision 1.23  2004/04/21 00:35:02  csoutheren
  * Added a stream parser for protocols like XMPP where each child of the root is to be considered a separate document/message.
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -213,6 +216,9 @@ class PXML : public PXMLBase
     PINDEX  GetErrorColumn() const { return errorCol; }
     PINDEX  GetErrorLine() const   { return errorLine; }
 
+    PString GetDocType() const         { return docType; }
+    void SetDocType(const PString & v) { docType = v; }
+
     PMutex & GetMutex() { return rootMutex; }
 
     PDECLARE_NOTIFIER(PTimer,  PXML, AutoReloadTimeout);
@@ -245,6 +251,8 @@ class PXML : public PXMLBase
     PINDEX errorLine;
 
     PSortedStringList noIndentElements;
+
+    PString docType;
 };
 
 ////////////////////////////////////////////////////////////
