@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.7 1994/10/23 05:38:57 robertj Exp $
+ * $Id: ptlib.inl,v 1.8 1994/12/21 11:55:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.7  1994/10/23 05:38:57  robertj
+ * Revision 1.8  1994/12/21 11:55:09  robertj
+ * Fixed file paths returning correct string type.
+ *
+ * Revision 1.7  1994/10/23  05:38:57  robertj
  * PipeChannel implementation.
  * Added directory exists function.
  *
@@ -77,19 +80,19 @@ PINLINE BOOL PDirectory::Restart(int scanMask)
 ///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
-PINLINE PString PFilePath::GetVolume() const
+PINLINE PCaselessString PFilePath::GetVolume() const
   { return Left(Find(':')+1); }
 
-PINLINE PString PFilePath::GetPath() const
+PINLINE PCaselessString PFilePath::GetPath() const
   { return operator()(Find(':')+1, FindLast('\\')); }
 
-PINLINE PString PFilePath::GetTitle() const
+PINLINE PCaselessString PFilePath::GetTitle() const
   { return operator()(FindLast('\\')+1, FindLast('.')-1); }
 
-PINLINE PString PFilePath::GetType() const
+PINLINE PCaselessString PFilePath::GetType() const
   { return operator()(FindLast('.'), P_MAX_INDEX); }
 
-PINLINE PString PFilePath::GetFileName() const
+PINLINE PCaselessString PFilePath::GetFileName() const
   { return operator()(FindLast('\\')+1, P_MAX_INDEX); }
 
 
