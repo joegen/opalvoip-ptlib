@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.4  2003/11/12 05:17:25  csoutheren
+ * Added more backwards compatibility functions for PSoundChannel
+ *
  * Revision 1.3  2003/11/12 04:42:02  csoutheren
  * Removed non-specific code when compiling for WIn32
  *
@@ -101,16 +104,24 @@ PSoundChannel * PSoundChannel::CreateOpenedChannel(
   return sndChan;
 }
 
+
+PStringList PSoundChannel::GetDeviceNames(
+      Directions dir    // Sound I/O direction
+    )
+{
+  PStringArray names = GetDriverNames();
+  if (names.GetSize() > 0)
+    return GetDeviceNames(names[0], dir);
+  return PStringList();
+}
+
 PString PSoundChannel::GetDefaultDevice(
       Directions dir    // Sound I/O direction
 )
 {
-  PStringArray names = GetDriverNames();
-  if (names.GetSize() > 0) {
-    PStringList devices = GetDeviceNames(names[0], dir);
-    if (devices.GetSize() > 0)
-      return devices[0];
-  }
+  PStringList devices = GetDeviceNames(dir);
+  if (devices.GetSize() > 0)
+    return devices[0];
 
   return PString::Empty();
 }
