@@ -1,5 +1,5 @@
 /*
- * $Id: icmpsock.h,v 1.4 1996/11/04 03:57:16 robertj Exp $
+ * $Id: icmpsock.h,v 1.5 1997/02/05 11:52:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.5  1997/02/05 11:52:07  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.4  1996/11/04 03:57:16  robertj
  * Rewrite of ping for Win32 support.
  *
@@ -47,7 +50,7 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
     class PingInfo {
       public:
         PingInfo(WORD seqNum = 0,
-                 WORD id = (WORD)PProcess::Current()->GetProcessID())
+                 WORD id = (WORD)PProcess::Current().GetProcessID())
           { identifier = id; sequenceNum = seqNum; }
 
         WORD identifier;         // Arbitrary identifier for the ping.
