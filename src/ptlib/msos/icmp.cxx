@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.14  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.13  1999/08/08 09:29:37  robertj
  * Changed Success to PingSuccess to avoid namespace collision with X define of the same name
  *
@@ -194,17 +198,13 @@ BOOL PICMPSocket::Ping(const PString & host)
 
 BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
 {
-  if (!ICMP.IsLoaded()) {
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!ICMP.IsLoaded())
+    return SetErrorValues(NotOpen, EBADF);
 
   // find address of the host
   PIPSocket::Address addr;
-  if (!GetHostAddress(host, addr)) {
-    lastError = BadParameter;
-    return FALSE;
-  }
+  if (!GetHostAddress(host, addr))
+    return SetErrorValues(BadParameter, EINVAL);
 
   IPINFO requestOptions;
   requestOptions.Ttl = info.ttl;     /* Time To Live (used for traceroute) */

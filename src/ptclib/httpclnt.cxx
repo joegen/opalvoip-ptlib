@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.22  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.21  2001/02/22 05:27:14  robertj
  * Added "nicer" version of GetDocument in HTTP client class.
  *
@@ -260,7 +264,7 @@ int PHTTPClient::ExecuteCommand(const PString & cmdName,
   }
   else {
     lastResponseCode = -1;
-    lastResponseInfo = GetErrorText();
+    lastResponseInfo = GetErrorText(LastWriteError);
   }
 
   return lastResponseCode;
@@ -324,7 +328,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
   if (bad) {
     lastResponseCode = -1;
-    lastResponseInfo = GetErrorText();
+    lastResponseInfo = GetErrorText(LastReadError);
     if (lastResponseInfo.IsEmpty())
       lastResponseInfo = "Remote shutdown";
     return FALSE;
@@ -333,7 +337,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
   if (replyMIME.Read(*this))
     return TRUE;
 
-  return lastError == NoError;
+  return GetErrorCode(LastReadError) == NoError;
 }
 
 

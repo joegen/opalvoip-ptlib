@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.12  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.11  2001/06/04 10:13:38  robertj
  * Added compare function to compare value of os_handle.
  * Added has function based on os_handle value.
@@ -168,8 +172,8 @@ PChannel::PChannel()
   : readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
 {
   os_handle = -1;
-  osError = 0;
-  lastError = NoError;
+  memset(lastErrorCode, 0, sizeof(lastErrorCode));
+  memset(lastErrorNumber, 0, sizeof(lastErrorNumber));
   lastReadCount = lastWriteCount = 0;
   init(new PChannelStreamBuffer(this));
   Construct();
@@ -502,6 +506,30 @@ PChannel * PChannel::GetBaseWriteChannel() const
 }
 
 
+PString PChannel::GetErrorText(ErrorGroup group) const
+{
+  return GetErrorText(lastErrorCode[group], lastErrorNumber[group]);
+}
+
+
+BOOL PChannel::ConvertOSError(int status, ErrorGroup group)
+{
+  Errors lastError;
+  int osError;
+  BOOL ok = ConvertOSError(status, lastError, osError);
+  SetErrorValues(lastError, osError, group);
+  return ok;
+}
+
+
+BOOL PChannel::SetErrorValues(Errors errorCode, int errorNum, ErrorGroup group)
+{
+  lastErrorCode[NumErrorGroups] = lastErrorCode[group] = errorCode;
+  lastErrorNumber[NumErrorGroups] = lastErrorNumber[group] = errorNum;
+  return errorCode == NoError;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PIndirectChannel
 
@@ -607,8 +635,7 @@ BOOL PIndirectChannel::Read(void * buf, PINDEX len)
 
   BOOL returnValue;
   if (readChannel == NULL) {
-    lastError = NotOpen;
-    osError = EBADF;
+    SetErrorValues(NotOpen, EBADF, LastReadError);
     returnValue = FALSE;
   }
   else {
@@ -616,8 +643,9 @@ BOOL PIndirectChannel::Read(void * buf, PINDEX len)
 
     returnValue = readChannel->Read(buf, len);
 
-    lastError = readChannel->GetErrorCode();
-    osError = readChannel->GetErrorNumber();
+    SetErrorValues(readChannel->GetErrorCode(LastReadError),
+                   readChannel->GetErrorNumber(LastReadError),
+                   LastReadError);
     lastReadCount = readChannel->GetLastReadCount();
   }
 
@@ -635,8 +663,7 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 
   BOOL returnValue;
   if (writeChannel == NULL) {
-    lastError = NotOpen;
-    osError = EBADF;
+    SetErrorValues(NotOpen, EBADF, LastWriteError);
     returnValue = FALSE;
   }
   else {
@@ -644,8 +671,9 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 
     returnValue = writeChannel->Write(buf, len);
 
-    lastError = writeChannel->GetErrorCode();
-    osError = writeChannel->GetErrorNumber();
+    return SetErrorValues(writeChannel->GetErrorCode(LastWriteError),
+                          writeChannel->GetErrorNumber(LastWriteError),
+                          LastWriteError);
     lastWriteCount = writeChannel->GetLastWriteCount();
   }
 
@@ -674,15 +702,15 @@ BOOL PIndirectChannel::Shutdown(ShutdownValue value)
 }
 
 
-PString PIndirectChannel::GetErrorText() const
+PString PIndirectChannel::GetErrorText(ErrorGroup group) const
 {
   if (readChannel != NULL)
-    return readChannel->GetErrorText();
+    return readChannel->GetErrorText(group);
 
   if (writeChannel != NULL)
-    return writeChannel->GetErrorText();
+    return writeChannel->GetErrorText(group);
 
-  return PChannel::GetErrorText();
+  return PChannel::GetErrorText(group);
 }
 
 
@@ -739,11 +767,8 @@ BOOL PIndirectChannel::OnOpen()
 
 BOOL PIndirectChannel::SetReadChannel(PChannel * channel, BOOL autoDelete)
 {
-  if (readChannel != NULL) {
-    lastError = Miscellaneous;
-    osError = EBADF;
-    return FALSE;
-  }
+  if (readChannel != NULL)
+    return SetErrorValues(DeviceInUse, EEXIST);
 
   channelPointerMutex.StartWrite();
 
@@ -758,11 +783,8 @@ BOOL PIndirectChannel::SetReadChannel(PChannel * channel, BOOL autoDelete)
 
 BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
 {
-  if (writeChannel != NULL) {
-    lastError = Miscellaneous;
-    osError = EBADF;
-    return FALSE;
-  }
+  if (writeChannel != NULL)
+    return SetErrorValues(DeviceInUse, EEXIST);
 
   channelPointerMutex.StartWrite();
 
@@ -829,11 +851,8 @@ BOOL PFile::Rename(const PString & newname, BOOL force)
 
 BOOL PFile::Close()
 {
-  if (os_handle < 0) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   flush();
 
@@ -860,7 +879,7 @@ BOOL PFile::Read(void * buffer, PINDEX amount)
 #else
   lastReadCount = _read(GetHandle(), buffer, amount);
 #endif
-  return ConvertOSError(lastReadCount) && lastReadCount > 0;
+  return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
 }
 
 
@@ -872,7 +891,7 @@ BOOL PFile::Write(const void * buffer, PINDEX amount)
 #else
   lastWriteCount = _write(GetHandle(), buffer, amount);
 #endif
-  return ConvertOSError(lastWriteCount) && lastWriteCount >= amount;
+  return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= amount;
 }
 
 

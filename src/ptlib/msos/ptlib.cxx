@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.58  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.57  2001/06/04 10:15:01  robertj
  * Fixed bug if tried to get file info on empty file path.
  *
@@ -982,7 +986,7 @@ BOOL PConsoleChannel::Read(void * buffer, PINDEX length)
 {
   flush();
   lastReadCount = _read(os_handle, buffer, length);
-  return ConvertOSError(lastReadCount) && lastReadCount > 0;
+  return ConvertOSError(lastReadCount, LastReadError) && lastReadCount > 0;
 }
 
 
@@ -990,7 +994,7 @@ BOOL PConsoleChannel::Write(const void * buffer, PINDEX length)
 {
   flush();
   lastWriteCount = _write(os_handle, buffer, length);
-  return ConvertOSError(lastWriteCount) && lastWriteCount >= length;
+  return ConvertOSError(lastWriteCount, LastWriteError) && lastWriteCount >= length;
 }
 
 

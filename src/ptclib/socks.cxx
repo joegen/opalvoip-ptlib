@@ -8,6 +8,10 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.cxx,v $
+ * Revision 1.5  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.4  1999/11/23 08:45:10  robertj
  * Fixed bug in user/pass authentication version, thanks Dmitry <dipa@linkline.com>
  *
@@ -391,8 +395,7 @@ BOOL PSocksSocket::GetPeerAddress(Address & addr, WORD & port)
 
 void PSocksSocket::SetErrorCodes(PChannel::Errors errCode, int osErr)
 {
-  lastError = errCode;
-  osError = osErr;
+  SetErrorValues(errCode, osErr);
 }
 
 
@@ -668,8 +671,7 @@ BOOL PSocksUDPSocket::WriteTo(const void * buf, PINDEX len, const Address & addr
 
 void PSocksUDPSocket::SetErrorCodes(PChannel::Errors errCode, int osErr)
 {
-  lastError = errCode;
-  osError = osErr;
+  SetErrorValues(errCode, osErr);
 }
 
 

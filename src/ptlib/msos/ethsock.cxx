@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.27  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.26  2001/09/09 02:03:49  yurik
  * no message
  *
@@ -1381,10 +1385,8 @@ BOOL PEthSocket::Connect(const PString & newName)
 {
   Close();
 
-  if (!driver->BindInterface(newName)) {
-    osError = driver->GetLastError()|0x40000000;
-    return FALSE;
-  }
+  if (!driver->BindInterface(newName))
+    return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 
   interfaceName = newName;
   os_handle = 1;
@@ -1403,8 +1405,7 @@ BOOL PEthSocket::GetAddress(Address & addr)
   if (driver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(addr), addr.b))
     return TRUE;
 
-  osError = driver->GetLastError()|0x40000000;
-  return FALSE;
+  return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 }
 
 
@@ -1416,15 +1417,10 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
     if (driver->EnumIpAddress(idx, addr, net_mask))
       return TRUE;
 
-    osError = ENOENT;
-    lastError = NotFound;
-  }
-  else {
-    osError = EBADF;
-    lastError = NotOpen;
+    return SetErrorValues(NotFound, ENOENT);
   }
 
-  return FALSE;
+  return SetErrorValues(NotOpen, EBADF);
 }
 
 
@@ -1442,17 +1438,12 @@ static const struct {
 
 BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD filter = 0;
-  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter)) {
-    osError = driver->GetLastError()|0x40000000;
-    return FALSE;
-  }
+  if (!driver->QueryOid(OID_GEN_CURRENT_PACKET_FILTER, filter))
+    return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 
   if (filter == 0)
     return PEthSocket::FilterDirected;
@@ -1470,11 +1461,8 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
 
 BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD bits = 0;
   for (PINDEX i = 0; i < PARRAYSIZE(FilterMasks); i++) {
@@ -1482,10 +1470,8 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
       bits |= FilterMasks[i].ndis;
   }
 
-  if (!driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits)) {
-    osError = driver->GetLastError()|0x40000000;
-    return FALSE;
-  }
+  if (!driver->SetOid(OID_GEN_CURRENT_PACKET_FILTER, bits))
+    return SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
 
   filterType = type;
   return TRUE;
@@ -1495,14 +1481,13 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
 PEthSocket::MediumTypes PEthSocket::GetMedium()
 {
   if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
+    SetErrorValues(NotOpen, EBADF);
     return NumMediumTypes;
   }
 
   DWORD medium = 0xffffffff;
   if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0xffffffff) {
-    osError = driver->GetLastError()|0x40000000;
+    SetErrorValues(Miscellaneous, driver->GetLastError()|PWIN32ErrorFlag);
     return NumMediumTypes;
   }
 
@@ -1521,11 +1506,8 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
 
 BOOL PEthSocket::Read(void * data, PINDEX length)
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   PINDEX idx;
   PINDEX numBuffers = readBuffers.GetSize();
@@ -1538,11 +1520,11 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
       if (buffer.InProgress()) {
         if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
           if (!buffer.ReadComplete(*driver))
-            return ConvertOSError(-1);
+            return ConvertOSError(-1, LastReadError);
       }
       else {
         if (!buffer.ReadAsync(*driver))
-          return ConvertOSError(-1);
+          return ConvertOSError(-1, LastReadError);
       }
 
       if (buffer.IsCompleted() && buffer.IsType(filterType)) {
@@ -1561,14 +1543,14 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
         break;
 
       if (::GetLastError() != ERROR_INVALID_HANDLE || retries == 0)
-        return ConvertOSError(-1);
+        return ConvertOSError(-1, LastReadError);
 
       retries--;
     }
 
     idx = result - WAIT_OBJECT_0;
     if (!readBuffers[idx].ReadComplete(*driver))
-      return ConvertOSError(-1);
+      return ConvertOSError(-1, LastReadError);
 
   } while (!readBuffers[idx].IsType(filterType));
 
@@ -1579,11 +1561,8 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
 
 BOOL PEthSocket::Write(const void * data, PINDEX length)
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   HANDLE handles[MAXIMUM_WAIT_OBJECTS];
   PINDEX numBuffers = writeBuffers.GetSize();
@@ -1594,12 +1573,12 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
     if (buffer.InProgress()) {
       if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
         if (!buffer.WriteComplete(*driver))
-          return ConvertOSError(-1);
+          return ConvertOSError(-1, LastWriteError);
     }
 
     if (!buffer.InProgress()) {
       lastWriteCount = buffer.PutData(data, length);
-      return ConvertOSError(buffer.WriteAsync(*driver) ? 0 : -1);
+      return ConvertOSError(buffer.WriteAsync(*driver) ? 0 : -1, LastWriteError);
     }
 
     handles[idx] = buffer.GetEvent();
@@ -1607,14 +1586,14 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
 
   DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
   if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers)
-    return ConvertOSError(-1);
+    return ConvertOSError(-1, LastWriteError);
 
   idx = result - WAIT_OBJECT_0;
   if (!writeBuffers[idx].WriteComplete(*driver))
-    return ConvertOSError(-1);
+    return ConvertOSError(-1, LastWriteError);
 
   lastWriteCount = writeBuffers[idx].PutData(data, length);
-  return ConvertOSError(writeBuffers[idx].WriteAsync(*driver) ? 0 : -1);
+  return ConvertOSError(writeBuffers[idx].WriteAsync(*driver) ? 0 : -1, LastWriteError);
 }
 
 
