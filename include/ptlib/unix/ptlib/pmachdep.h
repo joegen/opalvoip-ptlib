@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.47  2002/06/27 07:51:48  robertj
+ * GNU 3.1 compatibility under Solaris
+ *
  * Revision 1.46  2001/10/11 02:20:54  robertj
  * Added IRIX support (no audio/video), thanks Andre Schulze.
  *
@@ -274,6 +277,7 @@ typedef int socklen_t;
 
 #define HAS_IFREQ
 
+#if __GNUC__ < 3
 extern "C" {
 
 int ftime (struct timeb *);
@@ -281,6 +285,7 @@ pid_t wait3(int *status, int options, struct rusage *rusage);
 int gethostname(char *, int);
 
 };
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_SUN4)
