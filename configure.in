@@ -317,6 +317,11 @@ fi
 
 
 dnl ########################################################################
+dnl look for SDL
+dnl MSWIN SDL,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\
+
+
+dnl ########################################################################
 dnl Speech
 
 dnl MSWIN Speech API,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
