@@ -76,10 +76,19 @@ PINLINE PString PTime::GetTimePM()
 PINLINE PTimeInterval & PTimeInterval::operator =(const PTimeInterval & timeInterval)
   { milliseconds = timeInterval.milliseconds; return *this; }
 
+PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & copy)
+  { milliseconds = copy.milliseconds; }
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE BOOL PDirectory::IsSubDir() const
   { return (entryInfo == NULL) ? FALSE : (entryInfo->type == PFileInfo::SubDirectory); }
+
+PINLINE BOOL PDirectory::IsRoot() const
+  { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
+
+PINLINE BOOL PDirectory::IsSeparator(char ch)
+  { return ch == PDIR_SEPARATOR; }
 
 PINLINE BOOL PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
