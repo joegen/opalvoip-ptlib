@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.45 1997/02/05 11:50:58 robertj Exp $
+ * $Id: win32.cxx,v 1.46 1997/03/28 04:36:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.46  1997/03/28 04:36:30  robertj
+ * Added assert for error in thread cleanup wait.
+ *
  * Revision 1.45  1997/02/05 11:50:58  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -2044,6 +2047,7 @@ void PProcess::HouseKeepingThread::Main()
       delay = nextTimer.GetInterval();
 
     DWORD status = WaitForMultipleObjects(numHandles, handles, FALSE, delay);
+    PAssertOS(status != WAIT_FAILED);
 
     delete [] handles;
 
