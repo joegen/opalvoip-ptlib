@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.22 1996/10/26 03:31:05 robertj Exp $
+ * $Id: http.h,v 1.23 1997/01/12 04:15:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.23  1997/01/12 04:15:19  robertj
+ * Globalised MIME tag strings.
+ *
  * Revision 1.22  1996/10/26 03:31:05  robertj
  * Changed OnError so can pass in full HTML page as parameter.
  *
@@ -306,6 +309,33 @@ PDECLARE_CLASS(PHTTP, PInternetProtocol)
       ServiceUnavailable,          // 503 - server temporarily unable to service request
       GatewayTimeout               // 504 - timeout whilst talking to gateway
     };
+
+    // Common MIME header tags
+    static const PCaselessString AllowTag;
+    static const PCaselessString AuthorizationTag;
+    static const PCaselessString ContentEncodingTag;
+    static const PCaselessString ContentLengthTag;
+    static const PCaselessString ContentTypeTag;
+    static const PCaselessString DateTag;
+    static const PCaselessString ExpiresTag;
+    static const PCaselessString FromTag;
+    static const PCaselessString IfModifiedSinceTag;
+    static const PCaselessString LastModifiedTag;
+    static const PCaselessString LocationTag;
+    static const PCaselessString PragmaTag;
+    static const PCaselessString PragmaNoCacheTag;
+    static const PCaselessString RefererTag;
+    static const PCaselessString ServerTag;
+    static const PCaselessString UserAgentTag;
+    static const PCaselessString WWWAuthenticateTag;
+    static const PCaselessString MIMEVersionTag;
+    static const PCaselessString ConnectionTag;
+    static const PCaselessString KeepAliveTag;
+    static const PCaselessString ProxyConnectionTag;
+    static const PCaselessString ProxyAuthorizationTag;
+    static const PCaselessString ProxyAuthenticateTag;
+    static const PCaselessString ForwardedTag;
+
 
   protected:
     PHTTP();
