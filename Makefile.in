@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.11  2003/09/01 09:37:04  dsandras
+# Fixed DESTDIR support thanks to Stefan Brüns <lurchi@kawo1.rwth-aachen.de>.
+#
 # Revision 1.10  2003/08/27 09:46:07  dsandras
 # Readded DESTDIR support (thanks to Stefan Bruens <lurch@gmx.li>)
 #
@@ -185,6 +188,7 @@ install:
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	mkdir -p $(DESTDIR)$(PREFIX)/bin
 	mkdir -p $(DESTDIR)$(PREFIX)/share/pwlib
+	mkdir -p $(DESTDIR)$(LIBDIR)
 	chmod a+r lib/*@SHAREDLIBEXT@*
 	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
 	cp -rf include/ptclib/ $(DESTDIR)$(PREFIX)/include/
