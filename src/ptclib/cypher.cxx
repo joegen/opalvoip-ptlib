@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.37  2003/04/17 12:12:59  robertj
+ * Added windows library inclusion for optional openssl.
+ *
  * Revision 1.36  2003/04/17 07:34:46  robertj
  * Fixed correct test for P_SSL
  *
@@ -506,6 +509,14 @@ void PMessageDigest5::Complete(Code & codeResult)
 #if P_SSL
 
 #include <openssl/sha.h>
+
+
+#ifdef _MSC_VER
+#pragma comment(lib, P_SSL_LIB1)
+#pragma comment(lib, P_SSL_LIB2)
+#endif
+
+
 
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
