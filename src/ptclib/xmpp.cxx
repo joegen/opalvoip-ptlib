@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.cxx,v $
+ * Revision 1.4  2004/04/27 06:19:12  rjongbloed
+ * Fixed GCC 3.4 warnings and improved crash avoidance with NULL pointers.
+ *
  * Revision 1.3  2004/04/26 04:17:19  rjongbloed
  * Fixed GNU warnings
  *
@@ -481,7 +484,8 @@ PString XMPP::Message::GetLanguage() const
 
 PXMLElement * XMPP::Message::GetSubjectElement(const PString& lang)
 {
-  PAssertNULL(rootElement);
+  if (PAssertNULL(rootElement) == NULL)
+    return NULL;
 
   PXMLElement * dfltSubj = NULL;
   PINDEX i = 0;
@@ -511,7 +515,8 @@ PString XMPP::Message::GetSubject(const PString& lang)
 
 PXMLElement * XMPP::Message::GetBodyElement(const PString& lang)
 {
-  PAssertNULL(rootElement);
+  if (PAssertNULL(rootElement) == NULL)
+    return NULL;
 
   PXMLElement * dfltBody = NULL;
   PINDEX i = 0;
@@ -733,7 +738,8 @@ BYTE XMPP::Presence::GetPriority() const
 
 PXMLElement * XMPP::Presence::GetStatusElement(const PString& lang)
 {
-  PAssertNULL(rootElement);
+  if (PAssertNULL(rootElement) == NULL)
+    return NULL;
 
   PXMLElement * dfltStatus = NULL;
   PINDEX i = 0;
@@ -994,7 +1000,8 @@ void XMPP::IQ::SetType(const PString& type)
 
 void XMPP::IQ::SetBody(PXMLElement * body)
 {
-  PAssertNULL(rootElement);
+  if (PAssertNULL(rootElement) == NULL)
+    return;
 
   while(rootElement->HasSubObjects())
     rootElement->RemoveElement(0);
