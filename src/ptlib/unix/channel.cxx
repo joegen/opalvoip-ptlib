@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.2 1995/01/23 22:58:01 craigs Exp $
+ * $Id: channel.cxx,v 1.3 1995/02/15 20:28:14 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
- * Revision 1.2  1995/01/23 22:58:01  craigs
- * Changes for HPUX and Sun 4
+ * Revision 1.3  1995/02/15 20:28:14  craigs
+ * Removed sleep after pipe channel open
  *
+// Revision 1.2  1995/01/23  22:58:01  craigs
+// Changes for HPUX and Sun 4
+//
  */
 
 #pragma implementation "channel.h"
@@ -747,8 +750,6 @@ void PPipeChannel::Construct(const PString & subProgram,
 
     PError << "fatal error: child process failed to exec" << endl;
   }
-
-sleep(1);
 
   // setup the pipe to the child
   if (toChildPipe[0] != -1) 
