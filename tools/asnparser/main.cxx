@@ -1326,15 +1326,15 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "  strm << \"{\\n\";\n";
 
   for (i = 0; i < numFields; i++) {
+    PString id = fields[i].GetIdentifier();
     if (fields[i].IsOptional())
-      cxx << "  if (HasOptionalField(e_" << fields[i].GetIdentifier() << "))\n"
+      cxx << "  if (HasOptionalField(e_" << id << "))\n"
              "  ";
-    cxx << "  strm << setw(indent) << ' ' << \""
-        << fields[i].GetIdentifier() << " = \" << setprecision(indent) << m_"
-        << fields[i].GetIdentifier() << " << '\\n';\n";
+    cxx << "  strm << setw(indent+" << id.GetLength()+3 << ") << \""
+        << id << " = \" << setprecision(indent) << m_" << id << " << '\\n';\n";
   }
 
-  cxx << "  strm << setw(indent-1) << '}';\n"
+  cxx << "  strm << setw(indent-1) << \"}\";\n"
          "}\n"
          "#endif\n"
          "\n"
