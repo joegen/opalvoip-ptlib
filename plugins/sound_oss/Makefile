@@ -28,7 +28,9 @@ LIB_FILENAME=$(BASE_FILE)
 include ../../make/lib.mak
 
 fred:
-	echo $(TARGET)
-	echo $(LIB_SUFFIX)
-
+	@echo ""
+	@echo "target is " $(TARGET)
+	@echo "lib suffix is" $(LIB_SUFFIX)
+	@echo "PWLIBDIR is " $(PWLIBDIR)
+	@echo ""
 
