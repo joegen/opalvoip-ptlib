@@ -24,9 +24,12 @@
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
  *
- * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
+ * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.16  2004/02/23 00:02:20  ykiryanov
+ * Changed my e-mail to ykiryanov at users.sourceforge.net. Just in case someone wants to collaborate
+ *
  * Revision 1.15  2004/02/22 23:59:28  ykiryanov
  * Added missing functions: PProcess::SetMaxHandles(), PThread::GetCurrentThreadId(), PThread::PXAbortBlock(), PSyncPoint::Signal(), ::Wait(), ::Wait(timeout), ::WillBlock()
  *
