@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.34  2001/08/17 19:18:15  yurik
+ * Fixed compile error in release mode
+ *
  * Revision 1.33  2001/08/16 18:38:05  yurik
  * Fixed assert function
  *
@@ -439,11 +442,14 @@ void PAssertFunc(const char * file, int line, const char * msg)
   }
 
 #else
+
+#ifdef _DEBUG
     do
     { 
 		if ( AfxAssertFailedLine(file, line) )
 			AfxDebugBreak(); 
     } while (0);
+#endif // _DEBUG
 
 #endif // _WIN32_WCE
 }
