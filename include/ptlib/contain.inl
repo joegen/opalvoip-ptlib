@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.7 1993/12/16 00:51:46 robertj Exp $
+ * $Id: contain.inl,v 1.8 1993/12/22 05:54:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.7  1993/12/16 00:51:46  robertj
+ * Revision 1.8  1993/12/22 05:54:08  robertj
+ * Checked for severe out of memory condition in containers.
+ *
+ * Revision 1.7  1993/12/16  00:51:46  robertj
  * Made some container functions const.
  *
  * Revision 1.6  1993/12/15  21:10:10  robertj
@@ -58,7 +61,7 @@ inline istream & operator>>(istream &strm, PObject & obj)
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PContainer::PContainer(PINDEX initialSize)
-  : reference(new Reference(initialSize)) { }
+  : reference(PAssertNULL(new Reference(initialSize))) { }
 
 inline PContainer::Reference::Reference(PINDEX initialSize)
   : size(initialSize), count(1) { }
@@ -203,7 +206,7 @@ inline PArrayObjects::~PArrayObjects()
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractList::PAbstractList()
-  : info(new Info) { }
+  : info(PAssertNULL(new Info)) { }
 
 inline PAbstractList::~PAbstractList()
  { DestroyContents(); }
@@ -212,7 +215,7 @@ inline PAbstractList::~PAbstractList()
 ///////////////////////////////////////////////////////////////////////////////
 
 inline PAbstractSortedList::PAbstractSortedList()
-  : info(new Info) { }
+  : info(PAssertNULL(new Info)) { }
 
 inline PAbstractSortedList::~PAbstractSortedList()
   { DestroyContents(); }
