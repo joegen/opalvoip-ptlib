@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.72  1998/10/31 12:50:47  robertj
+ * Removed ability to start threads immediately, race condition with vtable (Main() function).
+ * Rearranged PPipChannel functions to help with multi-platform-ness.
+ *
  * Revision 1.71  1998/10/29 11:29:20  robertj
  * Added ability to set environment in sub-process.
  *
@@ -755,13 +759,47 @@ PPipeChannel::PPipeChannel()
 }
 
 
-BOOL PPipeChannel::Open(const PString & subProgram,
-                        const char * const * arguments,
-                        OpenMode mode,
-                        BOOL searchPath,
-                        BOOL stderrSeparate,
-                        const char * environment)
+BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
+                                const PStringArray & argumentList,
+                                OpenMode mode,
+                                BOOL searchPath,
+                                BOOL stderrSeparate,
+                                const PStringToString * environment)
 {
+  subProgName = subProgram;
+
+  const char * prog = NULL;
+  PStringStream cmdLine;
+  if (searchPath)
+    cmdLine << subProgram;
+  else
+    prog = subProgram;
+
+  for (PINDEX i = 0; i < argumentList.GetSize(); i++) {
+    cmdLine << ' ';
+    if (argumentList[i].Find(' ') == P_MAX_INDEX)
+      cmdLine << argumentList[i];
+    else if (argumentList[i].Find('"') == P_MAX_INDEX)
+      cmdLine << '"' << argumentList[i] << '"';
+    else
+      cmdLine << '\'' << argumentList[i] << '\'';
+  }
+
+  PCharArray envBuf;
+  char * envStr = NULL;
+  if (environment != NULL) {
+    PINDEX size = 0;
+    for (PINDEX e = 0; e < environment->GetSize(); e++) {
+      PString str = environment->GetKeyAt(e) + '=' + environment->GetDataAt(e);
+      PINDEX len = str.GetLength() + 1;
+      envBuf.SetSize(size + len);
+      memcpy(envBuf.GetPointer()+size, (const char *)str, len);
+      size += len;
+    }
+    envStr = envBuf.GetPointer();
+  }
+
+
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
   startup.cb = sizeof(startup);
@@ -798,24 +836,8 @@ BOOL PPipeChannel::Open(const PString & subProgram,
     }
   }
 
-  const char * prog = NULL;
-  PString cmdLine;
-  if (searchPath)
-    cmdLine = subProgram + " ";
-  else
-    prog = subProgram;
-
-  if (arguments != NULL) {
-    while (*arguments != NULL) {
-      cmdLine += *arguments;
-      cmdLine += ' ';
-      arguments++;
-    }
-  }
-
   if (ConvertOSError(CreateProcess(prog, cmdLine.GetPointer(),
-                                   NULL, NULL, TRUE, 0,
-                                   (void *)(const char *)environment,
+                                   NULL, NULL, TRUE, 0, envStr,
                                    NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
   else {
@@ -2134,14 +2156,13 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 InitialSuspension start,
                  Priority priorityLevel)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   autoDelete = deletion == AutoDeleteThread;
   originalStackSize = stackSize;
-  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this,
-                   start == StartSuspended ? CREATE_SUSPENDED : 0, &threadId);
+  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction,
+                                        this, CREATE_SUSPENDED, &threadId);
   PAssertOS(threadHandle != NULL);
   SetPriority(priorityLevel);
   if (autoDelete) {
@@ -2291,7 +2312,7 @@ PThread * PThread::Current()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
+  : PThread(1000, NoAutoDeleteThread, LowPriority)
 {
   Resume();
 }
