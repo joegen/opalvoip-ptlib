@@ -2267,7 +2267,6 @@ EXPORTS
     ?os_gmtime@PTime@@SAPAUtm@@PBJPAU2@@Z @2160 NONAME ;public: static struct tm * __cdecl PTime::os_gmtime(long const *,struct tm *)
     ?os_localtime@PTime@@SAPAUtm@@PBJPAU2@@Z @2161 NONAME ;public: static struct tm * __cdecl PTime::os_localtime(long const *,struct tm *)
     ?os_recvfrom@PSocket@@IAEHPAXHHPAUsockaddr@@PAH@Z @2162 NONAME ;protected: int __thiscall PSocket::os_recvfrom(void *,int,int,struct sockaddr *,int *)
-    ?os_select@PSocket@@KAHHPAUfd_set@@00ABV?$PScalarArray@H@@ABVPTimeInterval@@@Z @2163 NONAME ;protected: static int __cdecl PSocket::os_select(int,struct fd_set *,struct fd_set *,struct fd_set *,class PScalarArray<int> const &,class PTimeInterval const &)
     ?os_sendto@PSocket@@IAEHPBXHHPAUsockaddr@@H@Z @2164 NONAME ;protected: int __thiscall PSocket::os_sendto(void const *,int,int,struct sockaddr *,int)
     ?os_socket@PSocket@@IAEHHHH@Z @2165 NONAME ;protected: int __thiscall PSocket::os_socket(int,int,int)
     ?Output@PSystemLog@@SAXW4Level@1@PBD@Z @2166 NONAME ;public: static void __cdecl PSystemLog::Output(enum PSystemLog::Level,char const *)
