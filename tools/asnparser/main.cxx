@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.17  1999/07/01 12:21:46  robertj
+ * Changed PASN_Choice cast operators so no longer "break" const-ness of object.
+ *
  * Revision 1.16  1999/06/30 08:57:19  robertj
  * Fixed bug in encodeing sequence of constrained primitive type. Constraint not set.
  * Fixed bug in not emitting namespace use clause.
@@ -1975,7 +1978,7 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   // Generate declarations for generated functions
   hdr << "    PASN_Object * CreateObject() const;\n"
-         "    " << baseTypeName << " & operator[](PINDEX i);\n";
+         "    " << baseTypeName << " & operator[](PINDEX i) const;\n";
 
   // Generate implementation for functions
   cxx << GetTemplatePrefix()
@@ -1994,7 +1997,7 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "\n"
          "\n"
       << GetTemplatePrefix()
-      << baseTypeName << " & " << GetClassNameString() << "::operator[](PINDEX i)\n"
+      << baseTypeName << " & " << GetClassNameString() << "::operator[](PINDEX i) const\n"
          "{\n"
          "  return (" << baseTypeName << " &)array[i];\n";
 
@@ -2139,9 +2142,18 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   for (i = 0; i < fields.GetSize(); i++) {
     PString type = fields[i].GetTypeName();
     if (!typesOutput.Contains(type)) {
-      hdr << "    operator " << type << " &() const;\n";
+      hdr << "    operator " << type << " &();\n";
+      hdr << "    operator const " << type << " &() const;\n";
       cxx << GetTemplatePrefix()
-          << GetClassNameString() << "::operator " << type << " &() const\n"
+          << GetClassNameString() << "::operator " << type << " &()\n"
+             "{\n"
+             "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+             "  return *(" << type << " *)choice;\n"
+             "}\n"
+             "\n"
+             "\n"
+          << GetTemplatePrefix()
+          << GetClassNameString() << "::operator const " << type << " &() const\n"
              "{\n"
              "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
              "  return *(" << type << " *)choice;\n"
