@@ -1218,7 +1218,6 @@ EXPORTS
     ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@@std@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPSoundChannel@@VPString@@@@ABVPString@@@Z @6914 NONAME
     ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@@std@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPVideoInputDevice@@VPString@@@@ABVPString@@@Z @6915 NONAME
     ??A?$map@VPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@U?$less@VPString@@@std@@V?$allocator@U?$pair@$$CBVPString@@PAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@@std@@@5@@std@@QAEAAPAVWorkerBase@?$PFactory@VPVideoOutputDevice@@VPString@@@@ABVPString@@@Z @6916 NONAME
-    ??A?$PArray@VPString@@@@QBEAAVPString@@H@Z @4775 NONAME
     ??A?$PArray@VPWaveBuffer@@@@QBEAAVPWaveBuffer@@H@Z @4776 NONAME
     ??A?$PArray@VPWin32PacketBuffer@@@@QBEAAVPWin32PacketBuffer@@H@Z @4777 NONAME
     ??A?$PBaseArray@D@@QAEAADH@Z @4778 NONAME
@@ -1246,7 +1245,7 @@ EXPORTS
     ??AAddress@PIPSocket@@QBEEH@Z @572 NONAME
     ??APArgList@@QBE?AVPString@@H@Z @573 NONAME
     ??APStringArray@@QAEAAVPString@@H@Z @574 NONAME
-    ??APStringArray@@QBEAAVPString@@H@Z @4795 NONAME
+    ??APStringArray@@QBE?AVPString@@H@Z @7316 NONAME
     ??APWin32AsnOid@@QAEAAIH@Z @4796 NONAME
     ??B?$fpos@H@std@@QBEJXZ @4797 NONAME
     ??B?$PBaseArray@D@@QBEPBDXZ @4798 NONAME
