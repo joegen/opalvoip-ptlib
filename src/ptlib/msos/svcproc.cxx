@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.50  1999/02/16 08:08:07  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.49  1999/01/29 12:20:19  robertj
  * Changed service process to output trace info to the Win32 debug output.
  *
@@ -552,6 +555,7 @@ int PServiceProcess::_main(void * arg)
   SetTerminationValue(0);
 
   MSG msg;
+  msg.message = WM_QUIT+1; //Want somethingthat is not WM_QUIT
   do {
     switch (MsgWaitForMultipleObjects(1, &terminationEvent,
                                       FALSE, INFINITE, QS_ALLINPUT)) {
