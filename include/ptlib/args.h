@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.12  1998/10/28 00:59:46  robertj
+ * New improved argument parsing.
+ *
  * Revision 1.11  1998/09/23 06:20:14  robertj
  * Added open source copyright license.
  *
@@ -80,7 +83,13 @@ PDECLARE_CLASS(PArgList, PObject)
 */
 
   public:
-    PArgList();
+    PArgList(
+      const char * theArgStr = NULL,   // A string constituting the arguments
+      const char * argumentSpecPtr = NULL
+      /* The specification C string for argument options. See description for
+         details.
+       */
+    );
     PArgList(
       int theArgc,     // Count of argument strings in theArgv
       char ** theArgv, // An array of strings constituting the arguments
@@ -108,18 +117,21 @@ PDECLARE_CLASS(PArgList, PObject)
      */
 
     void SetArgs(
+      const PString & theArgStr // A string constituting the arguments
+    );
+    void SetArgs(
       int theArgc,     // Count of argument strings in theArgv
       char ** theArgv  // An array of strings constituting the arguments
     );
       // Set the internal copy of the program arguments.
 
-    void Parse(
+    BOOL Parse(
       const char * theArgumentSpec
       /* The specification string for argument options. See description for
          details.
        */
     );
-    void Parse(
+    BOOL Parse(
       const PString & theArgumentStr
       /* The specification string for argument options. See description for
          details.
@@ -129,16 +141,24 @@ PDECLARE_CLASS(PArgList, PObject)
        parameters.
        
        The specification string consists of case significant letters for each
-       option. If the letter is followed by the ':' character then the option
-       has an associated string. This string must be in the argument or in the
-       next argument.
+       option. If the letter is followed by a '-' character then a long name
+       version of the option is present. This is terminated either by a ';' or
+       a ':' character. If the single letter or long name is followed by the
+       ':' character then the option has may have an associated string. This
+       string must be within the argument or in the next argument.
+
+       For example, "ab:c" allows for "-a -b arg -barg -c" and
+       "a-an-arg;b-option:c" allows for "-a --an-arg --option arg -c".
      */
 
     PINDEX GetOptionCount(
       char optionChar  // Character letter code for the option
     ) const;
     PINDEX GetOptionCount(
-      const char * optionStr // String letter code for the option
+      const char * optionStr // String code for the option
+    ) const;
+    PINDEX GetOptionCount(
+      const PString & optionName // String code for the option
     ) const;
     /* Get the count of the number of times the option was specified on the
        command line.
@@ -153,6 +173,9 @@ PDECLARE_CLASS(PArgList, PObject)
     BOOL HasOption(
       const char * optionStr // String letter code for the option
     ) const;
+    BOOL HasOption(
+      const PString & optionName // String code for the option
+    ) const;
     /* Get the whether the option was specified on the command line.
 
        <H2>Returns:</H2>
@@ -166,6 +189,10 @@ PDECLARE_CLASS(PArgList, PObject)
     PString GetOptionString(
       const char * optionStr,   // String letter code for the option
       const char * dflt = NULL  // Default value of the option string
+    ) const;
+    PString GetOptionString(
+      const PString & optionName, // String code for the option
+      const char * dflt = NULL    // Default value of the option string
     ) const;
     /* Get the string associated with an option e.g. -ofile or -o file
        would return the string "file". An option may have an associated string
@@ -235,7 +262,7 @@ PDECLARE_CLASS(PArgList, PObject)
      */
 
     virtual void UnknownOption(
-      char option   // Option that was illegally placed on command line.
+      const PString & option   // Option that was illegally placed on command line.
     ) const;
     /* This function is called when an unknown option was specified on the
        command line. The default behaviour is to output a message to the
@@ -243,7 +270,7 @@ PDECLARE_CLASS(PArgList, PObject)
      */
 
     virtual void MissingArgument(
-      char option  // Option for which the associated string was missing.
+      const PString & option  // Option for which the associated string was missing.
     ) const;
     /* This function is called when an option that requires an associated
        string was specified on the command line but no associated string was
@@ -254,23 +281,30 @@ PDECLARE_CLASS(PArgList, PObject)
 
   protected:
     // Member variables
-    int     arg_count;
-    // The original program argument count as provided by main().
+    PStringArray argumentArray;
+    // The original program arguments.
 
-    char ** arg_values;
-    // The original program argument list as provided by main().
+    PString      optionLetters;
+    // The specification letters for options
 
-    PString      argumentSpec;
-    // The specification for options
+    PStringArray optionNames;
+    // The specification strings for options
 
     PIntArray    optionCount;
     // The count of the number of times an option appeared in the command line.
 
-    PStringArray argumentList;
+    PStringArray optionString;
     // The array of associated strings to options.
+
+    PIntArray    parameterIndex;
+    // The index of each .
 
     int          shift;
     // Shift count for the parameters in the argument list.
+
+  private:
+    PINDEX GetOptionCountByIndex(PINDEX idx) const;
+    PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
 };
 
 
