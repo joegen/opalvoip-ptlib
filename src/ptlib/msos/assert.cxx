@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.15 1996/11/18 11:30:00 robertj Exp $
+ * $Id: assert.cxx,v 1.16 1997/01/04 06:52:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.16  1997/01/04 06:52:04  robertj
+ * Removed the press a key to continue under win  '95.
+ *
  * Revision 1.15  1996/11/18 11:30:00  robertj
  * Removed int 3 on non-debug versions.
  *
@@ -69,9 +72,9 @@
 
 static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
 {
-  PString wndClassName;
-  GetClassName(hWnd, wndClassName.GetPointer(100), 100);
-  if (wndClassName != "ConsoleWindowClass" && wndClassName != "tty")
+  char wndClassName[100];
+  GetClassName(hWnd, wndClassName, sizeof(wndClassName));
+  if (strcmp(wndClassName, "ConsoleWindowClass") != 0)
     return TRUE;
 
   DWORD wndProcess;
