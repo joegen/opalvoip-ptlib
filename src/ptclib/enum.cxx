@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.4  2004/07/19 13:55:41  csoutheren
+ * Work-around for crash on gcc 3.5-20040704
+ *
  * Revision 1.3  2004/06/05 01:58:37  rjongbloed
  * Fixed MSVC 6 compatibility
  *
@@ -173,7 +176,6 @@ PDNS::NAPTRRecord * PDNS::NAPTRRecordList::GetNext(const char * service)
   return NULL;
 }
 
-
 static PString ApplyRegex(const PString & orig, const PString & regexStr)
 {
   // must have at least 3 delimiters and two chars of text
@@ -202,7 +204,12 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   }
 
   // make sure we have some strings
-  if (strings[0].IsEmpty() || strings[1].IsEmpty()) {
+  // CRS: this construct avoids a gcc crash with gcc 3.5-20040704/
+  // when using the following:
+  // if (strings[0].IsEmpty() || strings[1].IsEmpty()) {
+  PString & str1 = strings[0]; 
+  PString & str2 = strings[1]; 
+  if (str1.IsEmpty() || str2.IsEmpty()) {
     PTRACE(1, "ENUM regex does not parse into two string: " << regexStr);
     return PString::Empty();
   }
@@ -245,6 +252,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
 
   return value;
 }
+
 
 BOOL PDNS::ENUMLookup(
    const PString & e164,
