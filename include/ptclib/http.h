@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.25 1997/10/03 13:30:15 craigs Exp $
+ * $Id: http.h,v 1.26 1997/10/30 10:22:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.26  1997/10/30 10:22:52  robertj
+ * Added multiple user basic authorisation scheme.
+ *
  * Revision 1.25  1997/10/03 13:30:15  craigs
  * Added ability to access client socket from within HTTP resources
  *
@@ -826,6 +829,86 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
     PString realm;
     PString username;
     PString password;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPMultiSimpAuth
+
+PDECLARE_CLASS(PHTTPMultiSimpAuth, PHTTPAuthority)
+/* This class describes the simple authorisation mechanism for a Universal
+   Resource Locator, a fixed realm, multiple usernames and passwords.
+ */
+
+  public:
+    PHTTPMultiSimpAuth(
+      const PString & realm      // Name space for the username and password.
+    );
+    PHTTPMultiSimpAuth(
+      const PString & realm,             // Name space for the usernames.
+      const PStringToString & userList // List of usernames and passwords.
+    );
+    // Construct the simple authorisation structure.
+
+
+  // Overrides from class PObject.
+    virtual PObject * Clone() const;
+    /* Create a copy of the class on the heap. This is used by the
+       <A>PHTTPResource</A> classes for maintaining authorisation to
+       resources.
+
+       <H2>Returns:</H2>
+       pointer to new copy of the class instance.
+     */
+
+
+  // Overrides from class PHTTPAuthority.
+    virtual PString GetRealm(
+      const PHTTPRequest & request   // Request information.
+    ) const;
+    /* Get the realm or name space for the user authorisation name and
+       password as required by the basic authorisation system of HTTP/1.0.
+
+       <H2>Returns:</H2>
+       String for the authorisation realm name.
+     */
+
+    virtual BOOL Validate(
+      const PHTTPRequest & request,  // Request information.
+      const PString & authInfo       // Authority information string.
+    ) const;
+    /* Validate the user and password provided by the remote HTTP client for
+       the realm specified by the class instance.
+
+       <H2>Returns:</H2>
+       TRUE if the user and password are authorised in the realm.
+     */
+
+    virtual BOOL IsActive() const;
+    /* Determine if the authirisation is to be applied. This could be used to
+       distinguish between net requiring authorisation and requiring autorisation
+       but having no password.
+
+       The default behaviour is to return TRUE.
+
+       <H2>Returns:</H2>
+       TRUE if the authorisation in the realm is to be applied.
+     */
+
+    void AddUser(
+      const PString & username,   // Username that this object wiull authorise.
+      const PString & password    // Password for the above username.
+    );
+    /* Get the user name allocated to this simple authorisation.
+
+       <H2>Returns:</H2>
+       String for the authorisation user name.
+     */
+
+
+  protected:
+    PString realm;
+    PStringToString users;
 };
 
 
