@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.19 1996/03/04 13:07:33 robertj Exp $
+ * $Id: win32.cxx,v 1.20 1996/03/10 13:16:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.20  1996/03/10 13:16:49  robertj
+ * Implemented system version functions.
+ *
  * Revision 1.19  1996/03/04 13:07:33  robertj
  * Allowed for auto deletion of threads on termination.
  *
@@ -1602,19 +1605,33 @@ void PProcess::Construct()
 
 PString PProcess::GetOSClass()
 {
-  return "WIN32";
+  return "Windows";
 }
 
 
 PString PProcess::GetOSName()
 {
-  return "NT";
+  OSVERSIONINFO info;
+  info.dwOSVersionInfoSize = sizeof(info);
+  GetVersionEx(&info);
+  switch (info.dwPlatformId) {
+    case VER_PLATFORM_WIN32s :
+      return "32s";
+    case 1 : //VER_PLATFORM_WIN32_WINDOWS :
+      return "95";
+    case VER_PLATFORM_WIN32_NT :
+      return "NT";
+  }
+  return "?";
 }
 
 
 PString PProcess::GetOSVersion()
 {
-  return "3.51";
+  OSVERSIONINFO info;
+  info.dwOSVersionInfoSize = sizeof(info);
+  GetVersionEx(&info);
+  return psprintf("v%u.%u", info.dwMajorVersion, info.dwMinorVersion);
 }
 
 
