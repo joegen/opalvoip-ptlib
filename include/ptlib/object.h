@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.66  2001/02/09 04:41:27  robertj
+ * Removed added non memrycheck implementations of new/delete when using GNU C++.
+ *
  * Revision 1.65  2001/02/07 04:47:49  robertj
  * Added changes for possible random crashes in multi DLL environment
  *   due to memory allocation wierdness, thanks Milan Dimitrijevic.
@@ -908,6 +911,12 @@ inline void operator delete[](void * ptr, const char *, int)
 
 #define PNEW new
 
+#ifdef __GNUC__
+
+#define PNEW_AND_DELETE_FUNCTIONS
+
+#else
+
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize) \
       { return malloc(nSize); } \
@@ -918,7 +927,6 @@ inline void operator delete[](void * ptr, const char *, int)
     void operator delete[](void * ptr) \
       { free(ptr); }
 
-#ifndef __GNUC__
 void * operator new(size_t nSize);
 void * operator new[](size_t nSize);
 
