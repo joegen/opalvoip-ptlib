@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.4  2003/12/29 03:29:26  csoutheren
+ * Allowed access to Windows sound channel declaration, just in case it is required
+ *
  * Revision 1.3  2003/12/29 02:00:40  csoutheren
  * Moved some declarations to sound_win32.h to allow access
  *
@@ -152,118 +155,13 @@
  */
 
 #include <ptlib.h>
-#include <mmsystem.h>
 #include <process.h>
 
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
-#pragma comment(lib, "winmm.lib")
 
 class PSound;
-
-class PWaveBuffer : public PBYTEArray
-{
-  PCLASSINFO(PWaveBuffer, PBYTEArray);
-  private:
-    PWaveBuffer(PINDEX sz = 0);
-    ~PWaveBuffer();
-
-    PWaveBuffer & operator=(const PSound & sound);
-
-    DWORD Prepare(HWAVEOUT hWaveOut, PINDEX & count);
-    DWORD Prepare(HWAVEIN hWaveIn);
-    DWORD Release();
-
-    void PrepareCommon(PINDEX count);
-
-    HWAVEOUT hWaveOut;
-    HWAVEIN  hWaveIn;
-    WAVEHDR  header;
-
-  friend class PSoundChannelWin32;
-};
-
-PARRAY(PWaveBufferArray, PWaveBuffer);
-
-class PSoundChannelWin32: public PSoundChannel
-{
- public:
-    PSoundChannelWin32();
-    void Construct();
-    PSoundChannelWin32(const PString &device,
-                     PSoundChannel::Directions dir,
-                     unsigned numChannels,
-                     unsigned sampleRate,
-                     unsigned bitsPerSample);
-    ~PSoundChannelWin32();
-    static PStringArray GetDeviceNames(PSoundChannel::Directions = Player);
-    static PString GetDefaultDevice(PSoundChannel::Directions);
-    BOOL Open(const PString & _device,
-              Directions _dir,
-              unsigned _numChannels,
-              unsigned _sampleRate,
-              unsigned _bitsPerSample);
-    BOOL Setup();
-    BOOL Close();
-    BOOL IsOpen() const;
-    BOOL Write(const void * buf, PINDEX len);
-    BOOL Read(void * buf, PINDEX len);
-    BOOL SetFormat(unsigned numChannels,
-                   unsigned sampleRate,
-                   unsigned bitsPerSample);
-    unsigned GetChannels() const;
-    unsigned GetSampleRate() const;
-    unsigned GetSampleSize() const;
-    BOOL SetBuffers(PINDEX size, PINDEX count);
-    BOOL GetBuffers(PINDEX & size, PINDEX & count);
-    BOOL PlaySound(const PSound & sound, BOOL wait);
-    BOOL PlayFile(const PFilePath & filename, BOOL wait);
-    BOOL HasPlayCompleted();
-    BOOL WaitForPlayCompletion();
-    BOOL RecordSound(PSound & sound);
-    BOOL RecordFile(const PFilePath & filename);
-    BOOL StartRecording();
-    BOOL IsRecordBufferFull();
-    BOOL AreAllRecordBuffersFull();
-    BOOL WaitForRecordBufferFull();
-    BOOL WaitForAllRecordBuffersFull();
-    BOOL Abort();
-    BOOL SetVolume(unsigned newVal);
-    BOOL GetVolume(unsigned &devVol);
-
-  public:
-    // Overrides from class PChannel
-    virtual PString GetName() const;
-      // Return the name of the channel.
-
-      
-    PString GetErrorText(ErrorGroup group = NumErrorGroups) const;
-    // Get a text form of the last error encountered.
-
-    BOOL SetFormat(const PWaveFormat & format);
-
-    BOOL Open(const PString & device, Directions dir,const PWaveFormat & format);
-	// Open with format other than PCM
-	
-  protected:
-    PString     deviceName;
-    Directions  direction;
-    HWAVEIN     hWaveIn;
-    HWAVEOUT    hWaveOut;
-    HANDLE      hEventDone;
-    PWaveFormat waveFormat;
-
-    PWaveBufferArray buffers;
-    PINDEX           bufferIndex;
-    PINDEX           bufferByteOffset;
-    PMutex           bufferMutex;
-
-  private:
-    BOOL OpenDevice(unsigned id);
-
-	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
-};
 
 PCREATE_SOUND_PLUGIN(WindowsMultimedia, PSoundChannelWin32);
 
