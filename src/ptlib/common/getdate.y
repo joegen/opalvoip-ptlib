@@ -21,6 +21,7 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4131 4701)
