@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "..\..\..\Lib\Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "NDEBUG" /D "PTRACING" /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /Yu"ptlib.h" /Fd"..\..\..\Lib\PTCLib.pdb" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /I "$(OPENLDAPDIR)/include" /D "NDEBUG" /D "PTRACING" /D P_LDAP=0$(OPENLDAPFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /Yu"ptlib.h" /Fd"..\..\..\Lib\PTCLib.pdb" /FD /c
 # ADD BASE RSC /l 0xc09
 # ADD RSC /l 0xc09
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\..\..\Lib\Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_EXPAT=0$(EXPATFLAG) /D P_SAPI=0$(SAPIFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /FR /Yu"ptlib.h" /Fd"..\..\..\Lib\PTCLibd.pdb" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /I "$(OPENLDAPDIR)/include" /D "_DEBUG" /D P_SAPI=0$(SAPIFLAG) /D "PTRACING" /D P_LDAP=0$(OPENLDAPFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SSL=0$(OPENSSLFLAG) /D P_HAS_IPV6=0$(IPV6FLAG) /FR /Yu"ptlib.h" /Fd"..\..\..\Lib\PTCLibd.pdb" /FD /c
 # ADD BASE RSC /l 0xc09
 # ADD RSC /l 0xc09
 BSC32=bscmake.exe
@@ -168,6 +168,21 @@ SOURCE=..\..\Ptclib\modem.cxx
 # Begin Source File
 
 SOURCE=..\..\Ptclib\Pasn.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\pldap.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+# ADD CPP /D P_LDAP=0$(OPENLDAPFLAG)
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+# ADD CPP /D P_LDAP=0$(OPENLDAPFLAG)
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -328,6 +343,10 @@ SOURCE=..\..\..\Include\PtCLib\modem.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pasn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pldap.h
 # End Source File
 # Begin Source File
 
