@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.49  1999/04/24 05:16:26  robertj
+ * Fixed incorrect date in copyright notice.
+ *
  * Revision 1.48  1998/11/30 05:37:46  robertj
  * New directory structure
  *
@@ -283,7 +286,6 @@ void PHTTPServiceProcess::ShutdownListener()
 
 PString PHTTPServiceProcess::GetCopyrightText()
 {
-  PTime compilationDate = PString(__DATE__);
   PHTML html(PHTML::InBody);
   html << "Copyright &copy;"
        << compilationDate.AsString("yyyy") << " by "
