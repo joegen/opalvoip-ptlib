@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.15  1998/10/30 10:42:29  robertj
+ * Better function arrangement for multi platforming.
+ *
  * Revision 1.14  1998/10/29 11:29:17  robertj
  * Added ability to set environment in sub-process.
  *
@@ -120,29 +123,29 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
       const PString & subProgram,  // Sub program name or command line.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
-    );
-    PPipeChannel(
-      const PString & subProgram,  // Sub program name or command line.
-      const char * const * argumentPointers,
-      /* This is an array of argument strings for the sub-program. The array
-         is terminated with a NULL pointer. If the parameter itself is NULL
-         then this is equivalent to first constructor, without the parameter
-         at all.
-       */
-      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
-      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
       const PStringArray & argumentList, // Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+    );
+    PPipeChannel(
+      const PString & subProgram,  // Sub program name or command line.
+      const PStringToString & environment, // Array of arguments to sub-program.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+    );
+    PPipeChannel(
+      const PString & subProgram,  // Sub program name or command line.
+      const PStringArray & argumentList, // Array of arguments to sub-program.
+      const PStringToString & environment, // Array of arguments to sub-program.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     /* Create a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout/stderr.
@@ -230,29 +233,29 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
       const PString & subProgram,  // Sub program name or command line.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
-    );
-    BOOL Open(
-      const PString & subProgram,  // Sub program name or command line.
-      const char * const * argumentPointers,
-      /* This is an array of argument strings for the sub-program. The array
-         is terminated with a NULL pointer. If the parameter itself is NULL
-         then this is equivalent to first constructor, without the parameter
-         at all.
-       */
-      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
-      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     BOOL Open(
       const PString & subProgram,  // Sub program name or command line.
       const PStringArray & argumentList, // Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
       BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
-      BOOL stderrSeparate = FALSE, // Standard error is on separate pipe
-      const char * environment = NULL // Environment for sub-process
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+    );
+    BOOL Open(
+      const PString & subProgram,  // Sub program name or command line.
+      const PStringToString & environment, // Array of arguments to sub-program.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
+    );
+    BOOL Open(
+      const PString & subProgram,  // Sub program name or command line.
+      const PStringArray & argumentList, // Array of arguments to sub-program.
+      const PStringToString & environment, // Array of arguments to sub-program.
+      OpenMode mode = ReadWrite,   // Mode for the pipe channel.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     /* Open a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout/stderr.
@@ -377,6 +380,15 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     // Member variables
     PFilePath subProgName;
     // The fully qualified path name for the sub-program executable.
+
+
+  private:
+    BOOL PlatformOpen(const PString & subProgram,
+                      const PStringArray & arguments,
+                      OpenMode mode,
+                      BOOL searchPath,
+                      BOOL stderrSeparate,
+                      const PStringToString * environment);
 
 
 // Class declaration continued in platform specific header file ///////////////
