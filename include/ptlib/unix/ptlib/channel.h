@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.11 1998/03/26 04:55:53 robertj Exp $
+ * $Id: channel.h,v 1.12 1998/05/25 09:57:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.12  1998/05/25 09:57:15  robertj
+ * Fixed problem with socket/channel close with active thread block.
+ *
  * Revision 1.11  1998/03/26 04:55:53  robertj
  * Added PMutex and PSyncPoint
  *
@@ -64,6 +67,8 @@
   protected:
     BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
     BOOL PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
+
+    int  PXClose();
 
   protected:
     PString channelName;
