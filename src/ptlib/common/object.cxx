@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.69  2004/04/03 07:41:01  csoutheren
+ * Fixed compile problem with ostringstream/ostrstream
+ *
  * Revision 1.68  2004/04/03 06:54:28  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -309,7 +312,11 @@ void PAssertFunc(const char * file, int line, const char * className, const char
 #endif
 
 #ifndef _WIN32_WCE
+  #if (__GNUC__ >= 3)
+  ostringstream str;
+  #else
   ostrstream str;
+  #endif
   str << "Assertion fail: ";
   if (msg != NULL)
     str << msg << ", ";
@@ -320,7 +327,7 @@ void PAssertFunc(const char * file, int line, const char * className, const char
     str << ", Error=" << err;
   str << ends;
 
-  PAssertFunc(str.str());
+  PAssertFunc(str.str().c_str());
 #endif // !_WIN32_WCE
 }
 
