@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.5 1995/03/12 04:59:57 robertj Exp $
+ * $Id: pprocess.h,v 1.6 1995/04/25 11:17:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.6  1995/04/25 11:17:11  robertj
+ * Fixes for DLL use in WIN32.
+ *
  * Revision 1.5  1995/03/12 04:59:57  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -40,9 +43,13 @@
 };
 
 
-#ifndef _WINDLL
+#if defined(_WIN32) || !defined(_WINDLL)
 
+#if defined(_WIN32) && defined(_WINDLL)
+extern __declspec(dllexport) PProcess * PProcessInstance;
+#else
 extern PProcess * PSTATIC PProcessInstance;
+#endif
 
 inline PProcess::PProcess()
   { PProcessInstance = this; }
