@@ -29,8 +29,12 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.27  1998/12/02 02:37:41  robertj
-# New directory structure.
+# Revision 1.28  1999/01/02 00:55:48  robertj
+# Improved OSTYPE detection.
+# Supported solaris x86
+#
+# Improved OSTYPE detection.
+# Supported solaris x86
 #
 # Revision 1.27  1998/12/02 02:37:41  robertj
 # New directory structure.
@@ -50,11 +54,11 @@
 # Revision 1.22  1998/09/24 04:20:53  robertj
 # Added open software license.
 #
-DEBUG=1
+
 
 ifndef DEBUG
 DEBUG := 1
-PWLIBDIR = $(HOME)/pwlib
+endif
 
 ifndef PWLIBDIR
 PWLIBDIR := $(HOME)/pwlib
@@ -62,39 +66,49 @@ PWLIBDIR := $(HOME)/pwlib
 
 ###############################################################################
 #
-ifeq ($(OSTYPE),mklinux)
-OSTYPE=linux
-MACHTYPE=ppc
+#  Normalise environment variables so have OSTYPE and MACHTYPE correct
+#
 
 ifndef OSTYPE
-ifeq ($(HOSTTYPE),i486-linux)
-OSTYPE=linux
-MACHTYPE=x86
+OSTYPE := $(shell uname -s)
+endif
 
 ifndef MACHTYPE
-ifeq ($(HOSTTYPE),i386-linux)
-OSTYPE=linux
-MACHTYPE=x86
+MACHTYPE := $(shell uname -m)
+endif
+
 ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux))
 OSTYPE   := linux
-ifeq ($(MACHTYPE),i486)
-MACHTYPE=x86
+MACHTYPE := x86
+endif
 
 ifeq ($(OSTYPE),Linux)
-ifeq ($(MACHTYPE),i386)
-MACHTYPE=x86
+OSTYPE := linux
+endif
+
 ifeq ($(OSTYPE),mklinux)
 OSTYPE   := linux
-ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
-ifndef OSTYPE
-error ::
-	@echo Must define OSTYPE environment variable
+MACHTYPE := ppc
+endif
 
-ifndef MACHTYPE
-error ::
-	@echo Must define MACHTYPE environment variable
+ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
+OSTYPE := solaris
+endif
+
+ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc))
+MACHTYPE := x86
+endif
+
+
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris))
+
+all ::
+	@echo ######################################################################
+	@echo "Warning: OSTYPE=$(OSTYPE) support has not been confirmed. If you get"
+	@echo "         it working please send patches to support@equival.com.au"
 	@echo ######################################################################
 	@echo
+
 
 ####################################################
 #
@@ -108,43 +122,41 @@ endif # DEBUG
 ifeq ($(OSTYPE),linux)
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX
-ENDIAN=PLITTLE_ENDIAN
 
 else
-ENDIAN=PBIG_ENDIAN
+endif
 
 ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
 # i486 Linux for x86, using gcc 2.7.2
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64
 
 endif
 
-OBJ_SUFFIX	= pic
+OBJ_SUFFIX	:= pic
 ifdef SHAREDLIB
 ifndef PROG
 PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
-STATIC_LIBS	= libstdc++.a libg++.a libm.a libc.a
-SYSLIBDIR	= /usr/lib
+endif # PROG
+endif # SHAREDLIB
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
 
 endif # linux
 #
-#  Sunos 4.1.x
+#  FreeBSD
 #
 ####################################################
 
 
 ####################################################
 
-ENDIAN=PLITTLE_ENDIAN
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD -DP_HAS_INT64
 endif
 CFLAGS	:= $(CFLAGS) -pthread
 endif
@@ -176,23 +188,25 @@ endif # sunos
 
 ####################################################
 
-P_PTHREADS	= 1
+#  Solaris (Sunos 5.x)
 
 #P_SSL		= $(PWLIBDIR)
-ENDIAN=PLITTLE_ENDIAN
+P_PTHREADS	:= 1
 
-ENDIAN=PBIG_ENDIAN
+ifeq ($(MACHTYPE),x86)
 DEBUG_FLAG	:= -gstabs+
 else
+ENDIAN		:= PBIG_ENDIAN
+endif
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE) -DP_HAS_INT64
 
 # Sparc Solaris 2.x, using gcc 2.7.2
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
 LDFLAGS		:= -R/usr/local/gnu/lib
-STATIC_LIBS	= libstdc++.a libg++.a 
-SYSLIBDIR	= /usr/local/gnu/lib
+
+#RANLIB		:= 1
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /usr/local/gnu/lib
@@ -211,7 +225,9 @@ endif # beos
 
 ####################################################
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX  -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
+ifeq ($(OSTYPE),ultrix)
+
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX -DP_HAS_INT64
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
@@ -245,8 +261,8 @@ endif # DEBUG
 
 
 # define SSL variables
-SSLEAY		= $(HOME)/src/SSLeay-0.6.6
-SSLDIR		= /usr/local/ssl
+
+ifdef P_SSL
 
 SSLEAY		:= $(HOME)/src/SSLeay-0.6.6
 SSLDIR		:= /usr/local/ssl
@@ -266,13 +282,23 @@ ifdef P_PTHREADS
 CPLUS		= g++
 
 #
+# Make sure some things are defined
+#
+
+ifndef ENDIAN
+ENDIAN		:= PLITTLE_ENDIAN
+endif
+
+ifndef DEBUG_FLAG
+DEBUG_FLAG	:= -g
+endif
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_PTHREADS
+#
 endif
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -Wall
-#STDCCFLAGS      := $(STDCCFLAGS) -fomit-frame-pointer
-#STDCCFLAGS      := $(STDCCFLAGS) -fno-default-inline
+STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR -Wall
 
-# not normally used
+# compiler flags for all modes
 STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 #STDCCFLAGS	:= $(STDCCFLAGS) -fomit-frame-pointer
 #STDCCFLAGS	:= $(STDCCFLAGS) -fno-default-inline
@@ -282,16 +308,15 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 ifdef	DEBUG
 
 LIBID		= d
-STDCCFLAGS	:= $(STDCCFLAGS) -DPMEMORY_CHECK=1 -D_DEBUG
-STDCCFLAGS	:= $(STDCCFLAGS) -g
+STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
 LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
 
 else
 
 LIBID		= r
 OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 #OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
+#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
 LDFLAGS		:= $(LDFLAGS) -s
 
 endif # DEBUG
