@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.26 1996/11/16 10:48:49 robertj Exp $
+ * $Id: ipsock.h,v 1.27 1996/11/30 12:10:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.27  1996/11/30 12:10:00  robertj
+ * Added Connect() variant so can set the local port number on link.
+ *
  * Revision 1.26  1996/11/16 10:48:49  robertj
  * Fixed missing const in PIPSocket::Address stream output operator..
  *
@@ -150,6 +153,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
       const PString & address   // Address of remote machine to connect to.
     );
     virtual BOOL Connect(
+      const Address & addr      // Address of remote machine to connect to.
+    );
+    virtual BOOL Connect(
+      WORD localPort,           // Local port number for connection
       const Address & addr      // Address of remote machine to connect to.
     );
     /* Connect a socket to a remote host on the specified port number. This is
