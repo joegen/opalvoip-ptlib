@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.172  2003/05/22 12:17:06  dsandras
+# Removed unneeded code since Firewire support has been moved to configure.
+#
 # Revision 1.171  2003/05/06 09:47:20  robertj
 # Fixed up MacOSX changes so is compatible with previous "API" not requiring
 #   downstream libraries to change
@@ -320,37 +323,6 @@ STDCCFLAGS	+= -fPIC
 endif # PROG
 endif # P_SHAREDLIB
 
-ifdef TRY_1394DC
-ifneq (,$(wildcard $(SYSINCDIR)/libdc1394/dc1394_control.h))
-ifneq (,$(shell grep drop_frames $(SYSINCDIR)/libdc1394/dc1394_control.h))
-ENDLDLIBS      += -lraw1394 -ldc1394_control
-STDCCFLAGS     += -DTRY_1394DC
-TRY_1394DC     =  1
-else
-$(error "Libdc1394 is installed but its version is older than required. The 1394 camera module will not be compiled.")
-TRY_1394DC     =
-endif
-else
-$(error "TRY_1394DC is defined but $(SYSINCDIR)/libdc1394/dc1394_control.h does not exist.")
-endif
-endif
-
-
-ifdef TRY_1394AVC   
-ifneq (,$(wildcard $(SYSINCDIR)/libavc1394/avc1394.h))   
-ifneq (,$(wildcard $(SYSINCDIR)/libdv/dv.h))   
-ENDLDLIBS      += -lraw1394 -lavc1394 -lrom1394 -ldv   
-STDCCFLAGS     += -DTRY_1394AVC   
-TRY_1394AVC    = 1   
-else   
-$(error "You need the libdv headers. Ignoring TRY_1394AVC")   
-TRY_1394AVC     =   
-endif   
-else   
-$(error "You need the libavc1394 headers. Ignoring TRY_1394AVC")   
-TRY_1394AVC     =   
-endif   
-endif
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
