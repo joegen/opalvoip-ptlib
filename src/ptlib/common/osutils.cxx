@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.177  2002/01/26 15:04:44  yurik
+ * Fixed trace stream to a file
+ *
  * Revision 1.176  2001/12/18 23:22:54  robertj
  * Fixed problem for if excecutable is "renamed" using unix exec() and the
  *   argv0 does not point to executable file.
@@ -636,15 +639,12 @@ void PSetErrorStream(ostream * s)
 
 //////////////////////////////////////////////////////////////////////////////
 
-#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(__NUCLEUS_PLUS__) 
 static ostream * PTraceStream = &cerr;
 #else
 
 #ifdef __NUCLEUS_PLUS__ 
 static ostream * PTraceStream = 0L;
-#endif
-#ifdef _WIN32_WCE
-static YWinCEOStream * PTraceStream = &cerr;
 #endif
 
 #endif
@@ -656,15 +656,12 @@ static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
 {
-#if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(__NUCLEUS_PLUS__)
   PTraceStream = s != NULL ? s : &cerr;
 #else
 
 #ifdef __NUCLEUS_PLUS__ 
   PTraceStream = s;
-#endif
-#ifdef _WIN32_WCE
-  PTraceStream = &cerr;
 #endif
 
 #endif
