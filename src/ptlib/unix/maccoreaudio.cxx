@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.9  2003/05/16 17:49:19  shawn
+ * Audio code for CoreAudio of Mac OS X now uses multiple playback buffers.
+ *
  * Revision 1.8  2003/03/21 11:05:34  rogerh
  * Audio changes for Mac OS X from Shawn.
  *
@@ -302,8 +305,8 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
 struct myData {
   int numChannels;
   int chunkSamples;
-  int *bufLenPtr;
-  short *buf;
+  char *endOfBuffer;
+  char **consumerOffsetPtr, **producerOffsetPtr;
   void *converterRef;
   pthread_mutex_t *myMutex;
   pthread_cond_t *myCond;
@@ -323,9 +326,11 @@ ACwriteInputProc(AudioConverterRef inAudioConverter,
     PTRACE(6, "writeInputProc called and sent "
 	   << writeConverterBufferLen << " and wants " << *outDataSize
 	   << endl);
+    /*
     if (writeConverterBufferLen < *outDataSize) {
       *outDataSize = writeConverterBufferLen;
     }
+    */
     *outData     = writeConverterBuffer;
     writeConverterBufferLen = 0;
   }
@@ -352,12 +357,25 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
   UInt32 *bufLenPtr = (UInt32 *)&(outOutputData->mBuffers[0].mDataByteSize);
   struct myData *data = (struct myData *)inClientData;
   OSStatus theStatus;
+  UInt32 chunkLen;
 
+  PTRACE(6, "COREAUDIO: PlaybackIOProc called"<<endl);
   pthread_mutex_lock(data->myMutex);
 
   /* convert caBuf to bufPtr */
-  writeConverterBufferLen = *(data->bufLenPtr);
-  writeConverterBuffer    = data->buf;
+  if (*(data->producerOffsetPtr) <= *(data->consumerOffsetPtr)) {
+    chunkLen = 0;
+  }
+  else {
+    chunkLen = data->chunkSamples*sizeof(short);
+  }
+
+  PTRACE(6, "COREAUDIO: PlaybackIOProc in conversion with " <<
+	 (*data->producerOffsetPtr-*data->consumerOffsetPtr)/(data->chunkSamples*sizeof(short)) <<
+	 " buffers" << endl);
+
+  writeConverterBufferLen = chunkLen;
+  writeConverterBuffer    = *data->consumerOffsetPtr;
   theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
 				       ACwriteInputProc,
 				       NULL,
@@ -365,7 +383,7 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
 				       (void *)bufPtr);
   if (theStatus != 0) {
     PTRACE(6, "Warning: audio converter (write) failed " << theStatus
-	   << " converted " << *bufLenPtr << " of " << *(data->bufLenPtr)
+	   << " converted " << *bufLenPtr << " of " << chunkLen
 	   <<endl);
   }
 
@@ -376,7 +394,9 @@ OSStatus PlaybackIOProc(AudioDeviceID inDevice,
     }
   }
 
-  *(data->bufLenPtr) = 0;
+  if (*(data->consumerOffsetPtr) + chunkLen < data->endOfBuffer) {
+    (*(data->consumerOffsetPtr)) += chunkLen;
+  }
   pthread_mutex_unlock(data->myMutex);
   pthread_cond_signal(data->myCond);
 
@@ -424,21 +444,33 @@ OSStatus RecordIOProc(AudioDeviceID inDevice,
   UInt32 *bufLenPtr = (UInt32 *)&(inInputData->mBuffers[0].mDataByteSize);
   struct myData *data = (struct myData *)inClientData;
   OSStatus theStatus;
+  UInt32 chunkLen;
 
   pthread_mutex_lock(data->myMutex);
 
+  if (*(data->producerOffsetPtr) >= data->endOfBuffer) {
+    chunkLen = 0;
+  }
+  else {
+    chunkLen = data->chunkSamples*sizeof(short);
+
+  }
+  PTRACE(6, "COREAUDIO: RecordIOProc in conversion with " <<
+	 (*data->producerOffsetPtr-*data->consumerOffsetPtr)/(data->chunkSamples*sizeof(short)) <<
+	 " buffers" << endl);
   readConverterBufferLen = *bufLenPtr;
   readConverterBuffer    = bufPtr;
-  *(data->bufLenPtr) = data->chunkSamples*sizeof(short);
   theStatus = AudioConverterFillBuffer((AudioConverterRef)data->converterRef,
 				       ACreadInputProc,
 				       NULL,
-				       (UInt32*)data->bufLenPtr,
-				       (void *)data->buf);
+				       (UInt32*)&chunkLen,
+				       (void *)(*(data->producerOffsetPtr)));
   if (theStatus != 0) {
     PTRACE(6, "Warning: audio converter (read) failed " << theStatus
 	   << endl);
   }
+
+  (*(data->producerOffsetPtr)) += chunkLen;
 
   pthread_mutex_unlock(data->myMutex);
   pthread_cond_signal(data->myCond);
@@ -722,7 +754,13 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
     PTRACE(1, "can not set converter quality " << theStatus);
   }
 
-  UInt32 primeMethod = kConverterPrimeMethod_None;
+  UInt32 primeMethod;
+  if (direction == Player) {
+     primeMethod = kConverterPrimeMethod_Normal;
+  }
+  else {
+    primeMethod = kConverterPrimeMethod_None;
+  }
 
   theStatus =
     AudioConverterSetProperty((AudioConverterRef)caConverterRef,
@@ -778,17 +816,15 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     return FALSE;
   }
   */
-  caBuf = (short *)malloc(size);
+  caBufLen = size*count;
+  caBuf = (char *)malloc(caBufLen+size); // at one as trailing buffer
   // caBuf = (float *)malloc((int)theRange.mMaximum);
   if (!caBuf) {
     PTRACE(1, "can not init caBuf for callback function\n");
     return FALSE;
   }
-
-  /*
-   * Prepares clientData for callback function
-   */
-  caBufLen = 0;
+  consumerOffset = caBuf;
+  producerOffset = caBuf;
 
   struct myData *clientData;
   clientData = (struct myData *)malloc(sizeof(struct myData));
@@ -796,13 +832,14 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     PTRACE(1, "can not allocate memory for clientData\n");
     return FALSE;
   }
-  clientData->numChannels  = caNumChannels;
-  clientData->chunkSamples = chunkSamples;
-  clientData->bufLenPtr    = &caBufLen;
-  clientData->buf          = caBuf;
-  clientData->converterRef = caConverterRef;
-  clientData->myMutex      = &caMutex;
-  clientData->myCond       = &caCond;
+  clientData->numChannels       = caNumChannels;
+  clientData->chunkSamples      = chunkSamples;
+  clientData->endOfBuffer       = caBuf+caBufLen;
+  clientData->consumerOffsetPtr = &(consumerOffset);
+  clientData->producerOffsetPtr = &(producerOffset);
+  clientData->converterRef      = caConverterRef;
+  clientData->myMutex           = &caMutex;
+  clientData->myCond            = &caCond;
 
   caCBData = (void *)clientData; // remembers it so we can free it
 
@@ -854,7 +891,7 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     return FALSE;
   }
 
-  PTRACE(1, "CoreAudio buffer size set to " << bufferByteCount);
+  PTRACE(6, "CoreAudio buffer size set to " << bufferByteCount);
 
   theStatus = AudioDeviceSetProperty(caDevID,
 				     0,
@@ -892,7 +929,7 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
 BOOL PSoundChannel::Write(const void * buf, int len)
 {
   UInt32 totalSamples, chunkLen, playedSamples;
-
+  int diff;
   char *playedOffset;
 
   if (caDevID < 0) {
@@ -908,7 +945,7 @@ BOOL PSoundChannel::Write(const void * buf, int len)
   totalSamples = len/(mBitsPerSample/8);
 
   PTRACE(6, "Write called with len " << len
-	 << " and chunkLen " << chunkSamples*2);
+	 << " and chunkLen " << chunkSamples*2 << endl);
 
   playedSamples = 0;
   while (playedSamples < totalSamples) {
@@ -922,11 +959,26 @@ BOOL PSoundChannel::Write(const void * buf, int len)
     playedOffset = ((char *)buf)+(playedSamples*sizeof(short));
 
     pthread_mutex_lock(&caMutex);
-    while (caBufLen > 0)
-      pthread_cond_wait(&caCond, &caMutex);
 
-    memcpy(caBuf, playedOffset, chunkLen);
-    caBufLen = chunkLen;
+    while (TRUE) {
+      if (consumerOffset > caBuf) { /* move to the beginning of caBuf */
+	bcopy(consumerOffset, caBuf, (producerOffset-consumerOffset));
+	diff = consumerOffset-caBuf;
+	consumerOffset -= diff;
+	producerOffset -= diff;
+	bzero(producerOffset+chunkSamples*sizeof(short), diff);  /* clear the rest */
+      }
+
+      if (producerOffset >= caBuf+caBufLen) {
+	pthread_cond_wait(&caCond, &caMutex);
+      }
+      else {
+	break;
+      }
+    }
+
+    memcpy(producerOffset, playedOffset, chunkLen);
+    producerOffset += chunkLen;
 
     playedSamples += chunkSamples;
 
@@ -978,7 +1030,7 @@ BOOL PSoundChannel::WaitForPlayCompletion()
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
 {
   UInt32 totalSamples, recordedSamples;
-
+  int diff;
   char *recordedOffset;
 
   if (caDevID < 0) {
@@ -997,24 +1049,39 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   totalSamples = len/(mBitsPerSample/8);
 
   PTRACE(6, "Read called with len " << len << " and chunkLen "
-	 << chunkSamples*2);
+	 << chunkSamples*2 << endl);
   recordedSamples = 0;
+
   while (recordedSamples < totalSamples) {
+
     pthread_mutex_lock(&caMutex);
-    while (caBufLen == 0)
-      pthread_cond_wait(&caCond, &caMutex);
+
+    while (TRUE) {
+      if (producerOffset <= consumerOffset) {
+	pthread_cond_wait(&caCond, &caMutex);
+	continue;
+      }
+      else {
+	break;
+      }
+    }
+
 
     recordedOffset = ((char *)buf)+(recordedSamples*sizeof(short));
     if (recordedSamples + chunkSamples <= totalSamples) {
-      memcpy(recordedOffset, caBuf, chunkSamples*sizeof(short));
+      memcpy(recordedOffset, consumerOffset, chunkSamples*sizeof(short));
     }
     else {
-      memcpy(recordedOffset, caBuf,
+      memcpy(recordedOffset, consumerOffset,
 	     (totalSamples-recordedSamples)*sizeof(short));
     }
 
     recordedSamples += chunkSamples;
-    caBufLen = 0;
+    consumerOffset += chunkSamples*sizeof(short);
+    diff = consumerOffset-caBuf;
+    bcopy(consumerOffset, caBuf, producerOffset-consumerOffset);
+    consumerOffset -= diff;
+    producerOffset -= diff;
 
     pthread_mutex_unlock(&caMutex);
   }
