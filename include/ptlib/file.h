@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.34  2000/09/27 05:58:07  craigs
+ * Added virtual to PFile::Open to allow overriding in descandant classes
+ *
  * Revision 1.33  2000/07/09 14:05:46  robertj
  * Added file share options.
  *
@@ -513,7 +516,7 @@ class PFile : public PChannel
        @return
        TRUE if the file was successfully opened.
      */
-    BOOL Open(
+    virtual BOOL Open(
       OpenMode mode = ReadWrite,  // Mode in which to open the file.
       int opts = ModeDefault      // Options for open operation.
     );
