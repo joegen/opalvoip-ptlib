@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\msos\include" /I "..\..\common" /D "NDEBUG" /YX /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\msos\include" /I "..\..\common" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=0$(OPENSSLFLAG) /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -73,7 +73,7 @@ PostBuild_Cmds=copy Release\mergesym.exe ..\..\lib > nul
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /D "_DEBUG" /YX /FD /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=0$(OPENSSLFLAG) /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -98,7 +98,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W4 /GX /O2 /I "..\..\msos\include" /I "..\..\common" /D "NDEBUG" /YX /FD /c
-# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\msos\include" /I "..\..\common" /D "NDEBUG" /YX /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /I "..\..\msos\include" /I "..\..\common" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=1 /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "NDEBUG"
 # ADD RSC /l 0xc09 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -128,7 +128,7 @@ PostBuild_Cmds=copy Release\mergesym.exe ..\..\lib > nul
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /D "_DEBUG" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /D "_DEBUG" /YX /FD /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=1 /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
