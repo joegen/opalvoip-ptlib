@@ -8,6 +8,10 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.6  2003/12/19 00:34:27  csoutheren
+ * Ensured that older compilers do not get confused about functions wth empty
+ * parameter lists. Thanks to Kilian Krause
+ *
  * Revision 1.5  2003/11/19 09:29:19  csoutheren
  * Added super hack to avoid problems with multiple plugins in a single file
  *
@@ -118,7 +122,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 //////////////////////////////////////////////////////
 
 #define PCREATE_DYNAMIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
-extern "C" unsigned PWLibPlugin_GetAPIVersion () \
+extern "C" unsigned PWLibPlugin_GetAPIVersion (void) \
 { return PWLIB_PLUGIN_API_VERSION; } 
 
 
