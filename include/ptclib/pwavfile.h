@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.5  2001/10/15 11:48:15  rogerh
+ * Add GetFormat to return the format of a WAV file
+ *
  * Revision 1.4  2001/07/23 01:20:20  rogerh
  * Add updates from Shawn - ensure isvalidWAV is false for zero length files.
  * GetDataLength uses actual file size to support file updates as well as appends.
@@ -161,7 +164,11 @@ class PWAVFile : public PFile
 
   /**@name Member variable access */
   //@{
-    /**Get how many channels the WAV file has. Typically this is 1 for
+    /**Find out the format of the WAV file. Eg 0x01 for PCM, 0x42 or 0x111 for G.723.1.
+    */
+    unsigned GetFormat() const;
+
+    /**Find out the number of channels the WAV file has. Typically this is 1 for
        mono and 2 for stereo.
     */
     unsigned GetChannels() const;
@@ -199,6 +206,7 @@ class PWAVFile : public PFile
 
     BOOL     isValidWAV;
 
+    unsigned waveFormat;
     unsigned numChannels;
     unsigned sampleRate;
     unsigned bitsPerSample;
