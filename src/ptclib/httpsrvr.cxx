@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.40  2002/05/08 05:38:54  robertj
+ * Added PHTTPTailFile resource to do a unix 'tail -f' of a file.
+ *
  * Revision 1.39  2002/04/12 08:15:23  robertj
  * Fixed warning on older GNU compilers, also guarantees numeric output.
  *
@@ -1718,6 +1721,82 @@ PString PHTTPFile::LoadText(PHTTPRequest & request)
     PAssert(file.Read(text.GetPointer(count+1), count), PLogicError);
   PAssert(file.Close(), PLogicError);
   return text;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPTailFile
+
+PHTTPTailFile::PHTTPTailFile(const PString & filename)
+  : PHTTPFile(filename)
+{
+}
+
+
+PHTTPTailFile::PHTTPTailFile(const PString & filename,
+                             const PHTTPAuthority & auth)
+  : PHTTPFile(filename, auth)
+{
+}
+
+
+PHTTPTailFile::PHTTPTailFile(const PURL & url,
+                             const PFilePath & file)
+  : PHTTPFile(url, file)
+{
+}
+
+
+PHTTPTailFile::PHTTPTailFile(const PURL & url,
+                             const PFilePath & file,
+                             const PString & contentType)
+  : PHTTPFile(url, file, contentType)
+{
+}
+
+
+PHTTPTailFile::PHTTPTailFile(const PURL & url,
+                             const PFilePath & file,
+                             const PHTTPAuthority & auth)
+  : PHTTPFile(url, file, auth)
+{
+}
+
+
+PHTTPTailFile::PHTTPTailFile(const PURL & url,
+                             const PFilePath & file,
+                             const PString & contentType,
+                             const PHTTPAuthority & auth)
+  : PHTTPFile(url, file, contentType, auth)
+{
+}
+
+
+BOOL PHTTPTailFile::LoadHeaders(PHTTPRequest & request)
+{
+  if (!PHTTPFile::LoadHeaders(request))
+    return FALSE;
+
+  request.contentSize = P_MAX_INDEX;
+  return TRUE;
+}
+
+
+BOOL PHTTPTailFile::LoadData(PHTTPRequest & request, PCharArray & data)
+{
+  PFile & file = ((PHTTPFileRequest&)request).file;
+
+  if (file.GetPosition() == 0)
+    file.SetPosition(file.GetLength()-request.url.GetQueryVars()("offset", "10000").AsUnsigned());
+
+  while (file.GetPosition() >= file.GetLength()) {
+    if (!request.server.Write(NULL, 0))
+      return FALSE;
+    PThread::Sleep(200);
+  }
+
+  PINDEX count = file.GetLength() - file.GetPosition();
+  return file.Read(data.GetPointer(count), count);
 }
 
 
