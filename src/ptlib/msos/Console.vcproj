@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="Console"
+	ProjectGUID="{E61B4DFB-0CAB-46DD-BB02-1AFFD61DB7F5}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -955,6 +956,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Pdirect.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\pfactory.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Pipechan.h">
