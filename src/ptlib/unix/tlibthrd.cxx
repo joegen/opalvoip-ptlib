@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.73  2001/09/19 17:37:47  craigs
+ * Added support for nested mutexes under Linux
+ *
  * Revision 1.72  2001/09/18 06:53:35  robertj
  * Made sure suspend can't exit early if get spurious signal
  *
@@ -1020,9 +1023,17 @@ BOOL PSemaphore::WillBlock() const
 PMutex::PMutex()
   : PSemaphore(1, 1)
 {
-  ownerThreadId = 0;
+#ifdef P_HAS_RECURSIVE_MUTEX
+  pthread_mutexattr_t attr;
+  pthread_mutexattr_init(&attr);
+  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
+  pthread_mutex_init(&mutex, &attr);
+#else
+  ownerThreadId = UINT_MAX;
+  lockCount = 0;
 #ifdef P_HAS_SEMAPHORES
   pthread_mutex_init(&mutex, NULL);
+#endif
 #endif
 }
 
@@ -1038,22 +1049,46 @@ PMutex::~PMutex()
 
 void PMutex::Wait()
 {
+#ifndef P_HAS_RECURSIVE_MUTEX
   pthread_t currentThreadId = pthread_self();
-  PAssert(ownerThreadId != currentThreadId, "Nested mutex deadlock");
+
+  // if the mutex is already acquired by this thread,
+  // then just increment the lock count
+  if (pthread_equal(ownerThreadId, currentThreadId)) {
+    lockCount++;
+    return;
+  }
+#endif
+
+  // acquire the lock for real
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
+
+#ifndef P_HAS_RECURSIVE_MUTEX
+  // set flags
+  PAssert((ownerThreadId == UINT_MAX) && (lockCount == 0), "PMutex acquired whilst locked by another thread");
   ownerThreadId = currentThreadId;
+#endif
 }
 
 
 BOOL PMutex::Wait(const PTimeInterval & waitTime)
 {
+  // if waiting indefinitely, then do so
   if (waitTime == PMaxTimeInterval) {
     Wait();
     return TRUE;
   }
 
+#ifndef P_HAS_RECURSIVE_MUTEX
+  // get the current thread ID
   pthread_t currentThreadId = pthread_self();
-  PAssert(ownerThreadId != currentThreadId, "Nested mutex deadlock");
+
+  // if we already have the mutex, return immediately
+  if (pthread_equal(ownerThreadId, currentThreadId)) {
+    lockCount++;
+    return TRUE;
+  }
+#endif
 
   // create absolute finish time 
   PTime finishTime;
@@ -1061,11 +1096,14 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
+#ifndef P_HAS_RECURSIVE_MUTEX
+      PAssert((ownerThreadId == UINT_MAX) && (lockCount == 0), "PMutex acquired whilst locked by another thread");
       ownerThreadId = currentThreadId;
+#endif
       return TRUE;
     }
 
-    PThread::Yield(); // One time slice
+    PThread::Current()->Sleep(10); // sleep for 10ms
   } while (PTime() < finishTime);
 
   return FALSE;
@@ -1074,8 +1112,21 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 
 void PMutex::Signal()
 {
-  ownerThreadId = 0;
-  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+#ifndef P_HAS_RECURSIVE_MUTEX
+  PAssert(pthread_equal(ownerThreadId, pthread_self()), "PMutex signal failed - no matching wait or signal by wrong thread");
+
+  // if lock was recursively acquired, then decrement the counter
+  if (lockCount > 0) {
+    lockCount--;
+    return;
+  }
+
+  // otherwise mark mutex as available
+  ownerThreadId = UINT_MAX;
+#endif
+
+  // and unlock for sure
+  PAssert(pthread_mutex_unlock(&mutex) == 0, "PMutex signal failed - no matching wait or signal by wrong thread");
 }
 
 
@@ -1092,6 +1143,3 @@ PSyncPoint::PSyncPoint()
   : PSemaphore(0, 1)
 {
 }
-
-
-

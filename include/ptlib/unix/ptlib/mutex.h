@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.14  2001/09/19 17:37:47  craigs
+ * Added support for nested mutexes under Linux
+ *
  * Revision 1.13  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -95,7 +98,10 @@
   protected:
 
 #if defined(P_PTHREADS)
+#ifndef P_HAS_RECURSIVE_MUTEX
     pthread_t ownerThreadId;
+    PINDEX lockCount;
+#endif
 #endif
 
 #if defined(P_PTHREADS) && defined(P_HAS_SEMAPHORES)
@@ -107,7 +113,6 @@
 #endif
 
 #endif
-
 
 #endif
 
