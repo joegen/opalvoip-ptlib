@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.12 1996/06/29 11:37:28 craigs Exp $
+# $Id: Makefile,v 1.13 1996/07/03 06:32:18 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.13  1996/07/03 06:32:18  craigs
+# Removed spurious lines causing warnings during library make
+#
 # Revision 1.12  1996/06/29 11:37:28  craigs
 # Added unix system type to object directories
 # Added support for Linux shared libraries
@@ -149,9 +152,6 @@ else
 	ranlib $(PTLIB_FILE)
 endif
 
-
-	@if [ ! -e $(LIBDIR)/lib$(PTLIB).so.1 ] ; then ln -s $(PTLIB_FILE) $(LIBDIR)/lib$(PTLIB).so.1
-	@if [ ! -e $(LIBDIR)/lib$(PTLIB).so ] ; then ln -s $(LIBDIR)/lib$(PTLIB).so.1 $(LIBDIR)/lib$(PTLIB).so
 endif
 
 
