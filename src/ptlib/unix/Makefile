@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.22 1998/01/04 09:41:20 robertj Exp $
+# $Id: Makefile,v 1.23 1998/01/05 09:09:29 robertj Exp $
 # $Log: Makefile,v $
+# Revision 1.23  1998/01/05 09:09:29  robertj
+# New dependencies technique
+#
 # Revision 1.22  1998/01/04 09:41:20  robertj
 # Changed perasn.cxx to asner.cxx
 #
@@ -135,7 +138,7 @@ endif
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
 $(OBJDIR)/regex.o:	../../common/ptlib/src/regex.cxx
-	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -w -c $< -o $@
 
 thelot:
 	make alllibs
@@ -184,4 +187,4 @@ else
 endif
 
 endif
-# Do not delete this line - make depend depends upon it
+
