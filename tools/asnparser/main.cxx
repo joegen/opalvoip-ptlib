@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.35  2001/08/03 09:01:02  robertj
+ * Added assignement operator with RHS of PWORDArray to classes
+ *   descended from PASN_BMPString.
+ *
  * Revision 1.34  2001/06/14 02:09:20  robertj
  * Corrected support for ASN object class type reference constructs
  *   ie TYPE-IDENTIFIER.&Type encoded as octet string.
@@ -285,7 +289,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 0)
+  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 1)
 {
 }
 
@@ -2513,39 +2517,30 @@ int StringTypeBase::GetBraceTokenContext() const
 }
 
 
+static void GenerateOperator(const char * rhsType, ostream & hdr, ostream & cxx, const TypeBase & actualType)
+{
+  hdr << "    " << actualType.GetIdentifier() << " & operator=(const " << rhsType << " v)";
+  if (Module->UsingInlines())
+    hdr << " { SetValue(v);  return *this; }\n";
+  else {
+    hdr << ";\n";
+    cxx << actualType.GetTemplatePrefix()
+        << actualType.GetIdentifier() << " & "
+        << actualType.GetClassNameString() << "::operator=(const " << rhsType << " v)\n"
+           "{\n"
+           "  SetValue(v);\n"
+           "  return *this;\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+}
+
+
 void StringTypeBase::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v)";
-  if (Module->UsingInlines())
-    hdr << " { SetValue(v);  return *this; }\n";
-  else {
-    hdr << ";\n";
-    cxx << actualType.GetTemplatePrefix()
-        << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(const char * v)\n"
-           "{\n"
-           "  SetValue(v);\n"
-           "  return *this;\n"
-           "}\n"
-           "\n"
-           "\n";
-  }
-
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PString & v)";
-  if (Module->UsingInlines())
-    hdr << " { SetValue(v);  return *this; }\n";
-  else {
-    hdr << ";\n";
-    cxx << actualType.GetTemplatePrefix()
-        << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
-           "{\n"
-           "  SetValue(v);\n"
-           "  return *this;\n"
-           "}\n"
-           "\n"
-           "\n";
-  }
+  GenerateOperator("char *", hdr, cxx, actualType);
+  GenerateOperator("PString &", hdr, cxx, actualType);
 }
 
 
@@ -2560,6 +2555,13 @@ BMPStringType::BMPStringType()
 const char * BMPStringType::GetAncestorClass() const
 {
   return "PASN_BMPString";
+}
+
+
+void BMPStringType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
+{
+  StringTypeBase::GenerateOperators(hdr, cxx, actualType);
+  GenerateOperator("PWORDArray &", hdr, cxx, actualType);
 }
 
 

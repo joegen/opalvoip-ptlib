@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.13  2001/08/03 09:01:02  robertj
+ * Added assignement operator with RHS of PWORDArray to classes
+ *   descended from PASN_BMPString.
+ *
  * Revision 1.12  2001/06/14 02:09:20  robertj
  * Corrected support for ASN object class type reference constructs
  *   ie TYPE-IDENTIFIER.&Type encoded as octet string.
@@ -724,6 +728,7 @@ class BMPStringType : public StringTypeBase
   public:
     BMPStringType();
     virtual const char * GetAncestorClass() const;
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType);
 };
 
 
