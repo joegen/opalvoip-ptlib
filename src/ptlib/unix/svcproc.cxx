@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.52  2001/04/20 05:08:42  robertj
+ * Removed dump of thread in SEGV signal, it does not work.
+ *
  * Revision 1.51  2001/04/17 03:13:21  robertj
  * Added dump of thread address in SEGV etc log output.
  *
@@ -643,15 +646,15 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
       return;
 
     case SIGSEGV :
-      msg = "\nCaught segmentation fault (SIGSEGV) in thread 0x%08x, aborting.\n";
+      msg = "\nCaught segmentation fault (SIGSEGV), aborting.\n";
       break;
 
     case SIGFPE :
-      msg = "\nCaught floating point exception (SIGFPE) in thread 0x%08x, aborting.\n";
+      msg = "\nCaught floating point exception (SIGFPE), aborting.\n";
       break;
 
     case SIGBUS :
-      msg = "\nCaught bus error (SIGBUS) in thread 0x%08x, aborting.\n";
+      msg = "\nCaught bus error (SIGBUS), aborting.\n";
       break;
 
     default :
@@ -659,17 +662,14 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
       return;
   }
 
-  char buf[100];
-  sprintf(buf, msg, PThread::Current());
-
   if (systemLogFile.IsEmpty()) {
-    syslog(LOG_CRIT, buf);
+    syslog(LOG_CRIT, msg);
     closelog();
   }
   else {
     int fd = open(systemLogFile, O_WRONLY|O_APPEND);
     if (fd >= 0) {
-      write(fd, buf, strlen(buf));
+      write(fd, msg, strlen(msg));
       close(fd);
     }
   }
