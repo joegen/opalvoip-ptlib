@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.82  2002/07/30 08:37:34  robertj
+ * Removed peer host as bad DNS makes it useless due to huge timeout.
+ *
  * Revision 1.81  2002/07/30 04:51:26  craigs
  * Added MonitorInfo macro
  *
@@ -1502,10 +1505,6 @@ PCREATE_SERVICE_MACRO(MonitorInfo,request,P_EMPTY)
 {
   const PTime & compilationDate = PHTTPServiceProcess::Current().GetCompilationDate();
 
-  PString peerHost = "N/A";
-  if (request.origin != 0)
-    peerHost = PIPSocket::GetHostName(request.origin);
-
   PString peerAddr = "N/A";
   if (request.origin != 0)
     peerAddr = request.origin.AsString();
@@ -1534,7 +1533,6 @@ PCREATE_SERVICE_MACRO(MonitorInfo,request,P_EMPTY)
               << "Start Date: "       << PProcess::Current().GetStartTime().AsString(timeFormat, PTime::GMT) << "\n"
               << "Current Date: "     << now.AsString(timeFormat, PTime::GMT) << "\n"
               << "Up time: "          << upTime << "\n"
-              << "Peer Host: "        << peerHost << "\n"
               << "Peer Addr: "        << peerAddr << "\n"
               << "Local Host: "       << PIPSocket::GetHostName() << "\n"
               << "Local Addr: "       << localAddr << "\n"
