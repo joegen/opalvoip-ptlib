@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.29  1999/10/30 13:44:11  craigs
+ * Added correct method of aborting socket operations asynchronously
+ *
  * Revision 1.28  1999/10/24 13:03:30  craigs
  * Changed to capture io break signal
  *
@@ -170,8 +173,21 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
   }
 
-  int retval = ::select(handle+1, read_fds, write_fds, exception_fds, tptr);
+  // include the termination pipe into all blocking I/O functions
+  int width = handle+1;
+  FD_SET(termPipe[0], read_fds);
+  width = PMAX(width, termPipe[0]+1);
+
+  int retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
   PProcess::Current().PXCheckSignals();
+
+  if ((retval == 1) && FD_ISSET(termPipe[0], read_fds)) {
+    BYTE ch;
+    ::read(termPipe[0], &ch, 1);
+    errno = EINTR;
+    retval =  -1;
+  }
+
   return retval;
 }
 
@@ -256,6 +272,7 @@ void PThread::InitialiseProcessThread()
   PX_waitingSemaphore = NULL;
   PX_threadId         = pthread_self();
   PX_suspendCount     = 0;
+  ::pipe(termPipe);
 
   PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
   PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
@@ -279,6 +296,8 @@ PThread::PThread(PINDEX stackSize,
 
   PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
 
+  ::pipe(termPipe);
+
   // throw the new thread
   PX_NewThread(TRUE);
 }
@@ -288,6 +307,9 @@ PThread::~PThread()
 {
   if (!IsTerminated())
     Terminate();
+
+  ::close(termPipe[0]);
+  ::close(termPipe[1]);
 
   PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
   PAssertOS(pthread_mutex_destroy(&PX_suspendMutex) == 0);
@@ -321,7 +343,7 @@ void * PThread::PX_ThreadStart(void * arg)
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
   sigaddset(&blockedSignals, RESUME_SIG);
-  sigaddset(&blockedSignals, P_IO_BREAK_SIGNAL);
+  //sigaddset(&blockedSignals, P_IO_BREAK_SIGNAL);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
   // add thread to thread list
@@ -447,7 +469,13 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 BOOL PThread::IsTerminated() const
 {
-  return PX_threadId == 0 || pthread_kill(PX_threadId, P_IO_BREAK_SIGNAL) != 0;
+  if (PX_threadId == 0) 
+    return TRUE;
+
+  if (pthread_kill(PX_threadId, 0) != 0) 
+    return TRUE;
+
+  return FALSE;
 }
 
 
@@ -556,6 +584,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
 
 void PThread::WaitForTermination() const
 {
+  BYTE ch;
+  ::write(termPipe[1], &ch, 1);
+
   while (!IsTerminated())
     Current()->Sleep(10);
 }
@@ -563,6 +594,9 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
+  BYTE ch;
+  ::write(termPipe[1], &ch, 1);
+
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
