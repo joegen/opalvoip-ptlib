@@ -780,6 +780,8 @@ localtime_r() and gm_time() are missing.
 So in osutil.cxx I have implemented os_localtime() and os_gmtime()
 with localtime() and gm_time() which may not be thread safe.
 
+There is also no implementation for dynamic library functions.
+
 Audio is supported using the coreaudio library.
 
 Video support is being added by Shawn and users interested in this should
