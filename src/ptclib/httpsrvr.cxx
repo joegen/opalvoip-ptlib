@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.6 1997/02/09 04:09:30 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.7 1997/03/20 13:01:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.7  1997/03/20 13:01:32  robertj
+ * Fixed bug in proxy POST having unexpexted reset of connection.
+ *
  * Revision 1.6  1997/02/09 04:09:30  robertj
  * Fixed GCC warning
  *
@@ -313,6 +316,8 @@ BOOL PHTTPServer::ProcessCommand()
       url.SetPort(myPort);
   }
 
+  BOOL persist;
+
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
   // command we should check to see if it is a local server request and process
@@ -322,30 +327,30 @@ BOOL PHTTPServer::ProcessCommand()
   if (url.GetScheme() != "http" ||
       (url.GetPort() != 0 && url.GetPort() != myPort) ||
       !PIPSocket::IsLocalHost(url.GetHostName()))
-    return OnProxy((Commands)cmd, url, mimeInfo, connectInfo) && connectInfo.IsPersistant();
+    persist = OnProxy((Commands)cmd, url, mimeInfo, connectInfo);
+  else {
+    PString entityBody = ReadEntityBody(connectInfo);
 
-  PString entityBody = ReadEntityBody(connectInfo);
+    // Handle the local request
+    PStringToString postData;
+    switch (cmd) {
+      case GET :
+        persist = OnGET(url, mimeInfo, connectInfo);
+        break;
 
-  // Handle the local request
-  PStringToString postData;
-  BOOL persist = TRUE;
-  switch (cmd) {
-    case GET :
-      persist = OnGET(url, mimeInfo, connectInfo);
-      break;
+      case HEAD :
+        persist = OnHEAD(url, mimeInfo, connectInfo);
+        break;
 
-    case HEAD :
-      persist = OnHEAD(url, mimeInfo, connectInfo);
-      break;
+      case POST :
+        PURL::SplitQueryVars(entityBody, postData);
+        persist = OnPOST(url, mimeInfo, postData, connectInfo);
+        break;
 
-    case POST :
-      PURL::SplitQueryVars(entityBody, postData);
-      persist = OnPOST(url, mimeInfo, postData, connectInfo);
-      break;
-
-    case P_MAX_INDEX:
-    default:
-      persist = OnUnknown(args, connectInfo);
+      case P_MAX_INDEX:
+      default:
+        persist = OnUnknown(args, connectInfo);
+    }
   }
 
   flush();
