@@ -3802,7 +3802,7 @@ EXPORTS
     ?PlayFile@PSoundChannelWin32@@UAEHABVPFilePath@@H@Z @2781 NONAME
     ?PlaySoundA@PSoundChannel@@UAEHABVPSound@@H@Z @2782 NONAME
     ?PlaySoundA@PSoundChannelWin32@@UAEHABVPSound@@H@Z @2783 NONAME
-    ?PLoadPluginDirectory@@YAXAAVPPluginManager@@ABVPDirectory@@@Z @4827 NONAME
+    ?PLoadPluginDirectory@@YAXAAVPPluginManager@@ABVPDirectory@@PBD@Z @5464 NONAME
     ?pluginLoaderStartupFactory@@3V?$PAbstractSingletonFactory@VPProcessStartup@@VPluginLoaderStartup@@VPString@@@@A @4910 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_GetVersion@@YAIXZ @2784 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_Registration_Instance@@3VPPlugin_PSoundChannel_WindowsMultimedia_Registration@@A @2785 NONAME
