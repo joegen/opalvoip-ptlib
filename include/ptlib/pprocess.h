@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.32 1998/04/01 01:56:21 robertj Exp $
+ * $Id: pprocess.h,v 1.33 1998/04/07 13:33:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.33  1998/04/07 13:33:53  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.32  1998/04/01 01:56:21  robertj
  * Fixed standard console mode app main() function generation.
  *
@@ -379,7 +382,7 @@ PDECLARE_CLASS(PProcess, PThread)
        <CODE>_main()</CODE>. The user should never call this function.
      */
 
-    virtual int _main();
+    virtual int _main(void * arg = NULL);
     // Main function for process, called from real main after initialisation
 
   protected:
