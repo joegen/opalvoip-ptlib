@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.54  2004/12/03 02:06:05  csoutheren
+ * Ensure FlushQueue called OnStop for queued elements
+ *
  * Revision 1.53  2004/08/09 11:10:34  csoutheren
  * Changed SetTextToSpeech to return ptr to new engine
  *
@@ -2694,8 +2697,10 @@ void PVXMLChannel::FlushQueue()
 
   PWaitAndSignal m(queueMutex);
   PVXMLPlayable * qItem;
-  while ((qItem = playQueue.Dequeue()) != NULL)
+  while ((qItem = playQueue.Dequeue()) != NULL) {
+    qItem->OnStop();
     delete qItem;
+  }
 }
 
 ///////////////////////////////////////////////////////////////
