@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.27  1998/10/01 09:05:11  robertj
+ * Fixed bug in nested composite field names, array indexes not being set correctly.
+ *
  * Revision 1.26  1998/09/23 06:22:11  robertj
  * Added open source copyright license.
  *
@@ -503,15 +506,19 @@ void PHTTPCompositeField::SetName(const PString & newName)
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     PHTTPField & field = fields[i];
+
+    PString firstPartOfName = psprintf(fullName, i+1);
     PString subFieldName;
-    if (field.GetName().Find(fullName) == 0)
-      subFieldName = field.GetName().Mid(fullName.GetLength());
+    if (field.GetName().Find(firstPartOfName) == 0)
+      subFieldName = field.GetName().Mid(firstPartOfName.GetLength());
     else
       subFieldName = field.GetName();
-    if (subFieldName[0] == '\\' || newName[newName.GetLength()-1] == '\\')
-      field.SetName(newName + subFieldName);
+
+    firstPartOfName = psprintf(newName, i+1);
+    if (subFieldName[0] == '\\' || firstPartOfName[firstPartOfName.GetLength()-1] == '\\')
+      field.SetName(firstPartOfName + subFieldName);
     else
-      field.SetName(newName & subFieldName);
+      field.SetName(firstPartOfName & subFieldName);
   }
 
   PHTTPField::SetName(newName);
