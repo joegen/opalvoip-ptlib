@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.38  1999/03/09 09:34:05  robertj
+ * Fixed typo's.
+ *
  * Revision 1.37  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -2052,7 +2055,7 @@ template <class K> class PStringDictionary : public PAbstractDictionary
 
 
 #define PSTRING_DICTIONARY(cls, K) \
-  class cls ; public PAbstractDictionary { \
+  class cls : public PAbstractDictionary { \
   PCLASSINFO(cls, PAbstractDictionary) \
   protected: \
     inline cls(int dummy, const cls * c) \
