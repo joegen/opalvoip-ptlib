@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.14  2001/10/15 11:48:15  rogerh
+ * Add GetFormat to return the format of a WAV file
+ *
  * Revision 1.13  2001/10/15 07:27:38  rogerh
  * Add support for reading WAV fils containing G.723.1 audio data.
  *
@@ -226,6 +229,15 @@ off_t PWAVFile::GetPosition() const
 }
 
 
+unsigned PWAVFile::GetFormat() const
+{
+  if (isValidWAV)
+    return waveFormat;
+  else
+    return 0;
+}
+
+
 unsigned PWAVFile::GetChannels() const
 {
   if (isValidWAV)
@@ -408,6 +420,7 @@ BOOL PWAVFile::ProcessHeader() {
   }
 
   // set the class variables
+  waveFormat    = format;
   numChannels   = num_channels;
   sampleRate    = samples_per_sec;
   bitsPerSample = bits_per_sample;
