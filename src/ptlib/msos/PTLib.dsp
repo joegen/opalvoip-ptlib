@@ -118,10 +118,10 @@ SOURCE=..\..\..\Lib\Release\ptlib.def
 # Begin Source File
 
 SOURCE=.\ptlib.dtf
+USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
-USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 # Begin Custom Build - Merging exported library symbols
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
@@ -130,7 +130,7 @@ InputPath=.\ptlib.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
-	copy /y $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
+	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 	
 # End Custom Build
 
@@ -174,7 +174,7 @@ InputPath=.\ptlibd.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
-	copy /y $(InputPath)+null $(IntDir)\$(TargetName).def 
+	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 	
 # End Custom Build
 
