@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.12  2003/07/29 11:25:23  csoutheren
+ * Added support for system swab function
+ *
  * Revision 1.11  2003/06/23 15:17:20  ykiryanov
  * Modified for WinCE compatibility - Undef'd P_HAS_IPV6 in case of WinCE build
  *
@@ -279,6 +282,11 @@
 #undef P_PTHREADS
 #undef P_HAS_SEMAPHORES
 
+/////////////////////////////////////////////////
+//
+// various functions
+//
+#undef USE_SYSTEM_SWAB
 
 #endif // _PT_BUILDOPTS_H
 

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.85  2003/07/29 11:25:23  csoutheren
+# Added support for system swab function
+#
 # Revision 1.84  2003/07/24 22:01:42  dereksmithies
 # Add fixes from Peter Nixon  for fixing install problems. Thanks.
 #
@@ -296,12 +299,12 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 #
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
-	@printf %s $(OBJDIR)/ > $@
+	@printf %s $(OBJDIR) > $@
 	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
-	@printf %s $(OBJDIR)/ > $@
+	@printf %s $(OBJDIR) > $@
 	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 #
