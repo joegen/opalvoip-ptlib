@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.12 1996/08/17 10:00:35 robertj Exp $
+ * $Id: svcproc.h,v 1.13 1996/08/19 13:36:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.13  1996/08/19 13:36:41  robertj
+ * Moved PSYSTEMLOG macro to common code.
+ *
  * Revision 1.12  1996/08/17 10:00:35  robertj
  * Changes for Windows DLL support.
  *
@@ -125,9 +128,6 @@
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
 };
-
-
-#define PSYSTEMLOG(l, v) PSystemLog(PSystemLog::l) << v
 
 
 inline PServiceProcess * PServiceProcess::Current()
