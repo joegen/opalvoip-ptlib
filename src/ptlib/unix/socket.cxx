@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.81  2001/12/17 23:33:50  robertj
+ * Solaris 8 porting changes, thanks James Dugal
+ *
  * Revision 1.80  2001/12/10 07:07:27  rogerh
  * Take out some #includes which were already in pachdep.h. Fixes openBSD 2.9
  *
@@ -1213,6 +1216,192 @@ BOOL get_ifname(int index, char *name) {
     return FALSE;
   }
 
+}
+
+
+#elif defined(P_SOLARIS)
+
+/* jpd@louisiana.edu - influenced by Merit.edu's Gated 3.6 routine: krt_rtread_sunos5.c */
+
+#include <sys/stream.h>
+#include <stropts.h>
+#include <sys/tihdr.h>
+#include <sys/tiuser.h>
+#include <inet/common.h>
+#include <inet/mib2.h>
+#include <inet/ip.h>
+
+#ifndef T_CURRENT
+#define T_CURRENT       MI_T_CURRENT
+#endif
+
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
+#define task_pagesize 512
+    char buf[task_pagesize];  /* = task_block_malloc(task_pagesize);*/
+    int flags;
+    int j = 0;
+    int	sd, i, rc;
+    struct strbuf strbuf;
+    struct T_optmgmt_req *tor = (struct T_optmgmt_req *) buf;
+    struct T_optmgmt_ack *toa = (struct T_optmgmt_ack *) buf;
+    struct T_error_ack	*tea = (struct T_error_ack *) buf;
+    struct opthdr *req;
+
+    sd = open("/dev/ip", O_RDWR);
+    if (sd < 0) {
+#ifdef SOL_COMPLAIN
+      perror("can't open mib stream");
+#endif
+      goto Return;
+    }
+
+    strbuf.buf = buf;
+
+    tor->PRIM_type = T_OPTMGMT_REQ;
+    tor->OPT_offset = sizeof(struct T_optmgmt_req);
+    tor->OPT_length = sizeof(struct opthdr);
+    tor->MGMT_flags = T_CURRENT;
+    req = (struct opthdr *) (tor + 1);
+    req->level = MIB2_IP;		/* any MIB2_xxx value ok here */
+    req->name = 0;
+    req->len = 0;
+
+    strbuf.len = tor->OPT_length + tor->OPT_offset;
+    flags = 0;
+    rc = putmsg(sd, &strbuf, (struct strbuf *) 0, flags);
+    if (rc == -1) {
+#ifdef SOL_COMPLAIN
+      perror("putmsg(ctl)");
+#endif
+      goto Return;
+    }
+    /*
+     * each reply consists of a ctl part for one fixed structure
+     * or table, as defined in mib2.h.  The format is a T_OPTMGMT_ACK,
+     * containing an opthdr structure.  level/name identify the entry,
+     * len is the size of the data part of the message.
+     */
+    req = (struct opthdr *) (toa + 1);
+    strbuf.maxlen = task_pagesize;
+    while (++j) {
+	flags = 0;
+	rc = getmsg(sd, &strbuf, (struct strbuf *) 0, &flags);
+	if (rc == -1) {
+#ifdef SOL_COMPLAIN
+	  perror("getmsg(ctl)");
+#endif
+	  goto Return;
+	}
+	if (rc == 0
+	    && strbuf.len >= sizeof(struct T_optmgmt_ack)
+	    && toa->PRIM_type == T_OPTMGMT_ACK
+	    && toa->MGMT_flags == T_SUCCESS
+	    && req->len == 0) {
+	  errno = 0;		/* just to be darned sure it's 0 */
+	  goto Return;		/* this is EOD msg */
+	}
+
+	if (strbuf.len >= sizeof(struct T_error_ack)
+	    && tea->PRIM_type == T_ERROR_ACK) {
+	    errno = (tea->TLI_error == TSYSERR) ? tea->UNIX_error : EPROTO;
+#ifdef SOL_COMPLAIN
+	    perror("T_ERROR_ACK in mibget");
+#endif
+	    goto Return;
+	}
+			
+	if (rc != MOREDATA
+	    || strbuf.len < sizeof(struct T_optmgmt_ack)
+	    || toa->PRIM_type != T_OPTMGMT_ACK
+	    || toa->MGMT_flags != T_SUCCESS) {
+	    errno = ENOMSG;
+	    goto Return;
+	}
+
+	if (req->level != MIB2_IP
+	    || req->name != MIB2_IP_ROUTE) {  /* == 21 */
+	    /* If this is not the routing table, skip it */
+	  /* Note we don't bother with IPv6 (MIB2_IP6_ROUTE) ... */
+	    strbuf.maxlen = task_pagesize;
+	    do {
+		rc = getmsg(sd, (struct strbuf *) 0, &strbuf, &flags);
+	    } while (rc == MOREDATA) ;
+	    continue;
+	}
+
+	strbuf.maxlen = (task_pagesize / sizeof (mib2_ipRouteEntry_t)) * sizeof (mib2_ipRouteEntry_t);
+	strbuf.len = 0;
+	flags = 0;
+	do {
+	    rc = getmsg(sd, (struct strbuf * ) 0, &strbuf, &flags);
+	    
+	    switch (rc) {
+	    case -1:
+#ifdef SOL_COMPLAIN
+	      perror("mibget getmsg(data) failed.");
+#endif
+	      goto Return;
+
+	    default:
+#ifdef SOL_COMPLAIN
+	      fprintf(stderr,"mibget getmsg(data) returned %d, strbuf.maxlen = %d, strbuf.len = %d",
+			      rc,
+			      strbuf.maxlen,
+			      strbuf.len);
+#endif
+	      goto Return;
+
+	    case MOREDATA:
+	    case 0:
+	      {
+		mib2_ipRouteEntry_t *rp = (mib2_ipRouteEntry_t *) strbuf.buf;
+		mib2_ipRouteEntry_t *lp = (mib2_ipRouteEntry_t *) (strbuf.buf + strbuf.len);
+
+		do {
+		  char name[16];
+#ifdef SOL_DEBUG_RT
+		  printf("%s -> %s mask %s metric %d %d %d %d %d ifc %.*s type %d/%x/%x\n",
+			       inet_ntoa(rp->ipRouteDest),
+			       inet_ntoa(rp->ipRouteNextHop),
+			       inet_ntoa(rp->ipRouteMask),
+			       rp->ipRouteMetric1,
+			       rp->ipRouteMetric2,
+			       rp->ipRouteMetric3,
+			       rp->ipRouteMetric4,
+			       rp->ipRouteMetric5,
+			       rp->ipRouteIfIndex.o_length,
+			       rp->ipRouteIfIndex.o_bytes,
+			       rp->ipRouteType,
+			       rp->ipRouteInfo.re_ire_type,
+			       rp->ipRouteInfo.re_flags
+				);
+#endif
+		  if (rp->ipRouteInfo.re_ire_type & (IRE_BROADCAST|IRE_CACHE|IRE_LOCAL)) continue;
+		  RouteEntry * entry = new RouteEntry(rp->ipRouteDest);
+		  entry->net_mask = rp->ipRouteMask;
+		  entry->destination = rp->ipRouteNextHop;
+		  strncpy(name, rp->ipRouteIfIndex.o_bytes, rp->ipRouteIfIndex.o_length);
+		  name[rp->ipRouteIfIndex.o_length] = '\0';
+		  entry->interfaceName = name;
+		  entry->metric =  rp->ipRouteMetric1;
+		  table.Append(entry);
+		} while (++rp < lp) ;
+	      }
+	      break;
+	    }
+	} while (rc == MOREDATA) ;
+    }
+
+ Return:
+    i = errno;
+    (void) close(sd);
+    errno = i;
+    /*task_block_reclaim(task_pagesize, buf);*/
+    if (errno)
+      return (FALSE);
+    else
+      return (TRUE);
 }
 
 
