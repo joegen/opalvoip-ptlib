@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.6 1996/05/15 10:13:15 robertj Exp $
+ * $Id: sockets.h,v 1.7 1996/08/08 10:08:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.7  1996/08/08 10:08:53  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.6  1996/05/15 10:13:15  robertj
  * Added ICMP protocol socket, getting common ancestor to UDP.
  *
@@ -79,18 +82,6 @@
 // PTCPSocket
 
 #include <tcpsock.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PTelnetSocket
-
-#include <telnet.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PApplicationSocket
-
-#include <appsock.h>
 
 
 #endif // _SOCKETS_H
