@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.147  2002/11/22 10:59:27  robertj
+# Added PREFIX variable to move the include directory, required by packagers.
+#
 # Revision 1.146  2002/11/22 10:14:07  robertj
 # QNX port, thanks Xiaodan Tang
 #
@@ -1332,7 +1335,12 @@ SHELL		:= /bin/sh
 
 # Directories
 
+ifdef PREFIX
+UNIX_INC_DIR	= $(PREFIX)/include/ptlib/unix
+else
 UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
+endif
+
 ifndef UNIX_SRC_DIR
 UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
 endif
