@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.86  2003/05/02 13:50:23  craigs
+ * Fixed a problem with callto:localhost
+ *
  * Revision 1.85  2003/05/02 13:20:33  craigs
  * Fixed callto problems
  *
@@ -649,7 +652,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
           if (type == "ip" || type == "host")
             hostname = UntranslateString(url, LoginTranslation);
           else
-            username = UntranslateString(url, LoginTranslation);
+            username = UntranslateString(url.Mid(7), LoginTranslation);
         }
       }
     }
