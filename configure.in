@@ -7,6 +7,16 @@ PWLIBDIR=`pwd`
 AC_SUBST(PWLIBDIR)
 
 dnl ########################################################################
+dnl set the PREFIX accordingly
+if test "x$prefix" = "xNONE"; then
+   INSTALLPREFIX="/usr/local"
+else
+   INSTALLPREFIX="${prefix}"
+fi
+
+AC_SUBST(INSTALLPREFIX)
+
+dnl ########################################################################
 dnl extract the PWLIB version
 MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
 MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
@@ -411,6 +421,7 @@ AC_SUBST(ENDLDLIBS)
 
 AC_CONFIG_FILES(make/ptbuildopts.mak)
 AC_CONFIG_FILES(make/ptlib-config)
+AC_CONFIG_FILES(Makefile)
 
 dnl ########################################################################
 dnl output header file
