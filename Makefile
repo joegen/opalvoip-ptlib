@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.20  2001/04/23 00:44:30  robertj
+# Spelt update correctly!
+#
 # Revision 1.19  2001/04/23 00:43:55  robertj
 # Added make update target to get from cvs and rebuild
 #
@@ -119,7 +122,7 @@ $(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
 
 update:
-	cvs upate
+	cvs update
 	$(MAKE) bothdepend both
 
 ptlib:
