@@ -1008,6 +1008,7 @@ EXPORTS
     ??GPTime@@QBE?AV0@ABVPTimeInterval@@@Z @654 NONAME ;public: class PTime  __thiscall PTime::operator-(class PTimeInterval const &)const 
     ??GPTime@@QBE?AVPTimeInterval@@ABV0@@Z @655 NONAME ;public: class PTimeInterval  __thiscall PTime::operator-(class PTime const &)const 
     ??GPTimeInterval@@QBE?AV0@ABV0@@Z @656 NONAME ;public: class PTimeInterval  __thiscall PTimeInterval::operator-(class PTimeInterval const &)const 
+    ??GPTimeInterval@@QBE?AV0@XZ @3797 NONAME ;public: class PTimeInterval  __thiscall PTimeInterval::operator-(void)const 
     ??H@YA?AVPString@@DABV0@@Z @657 NONAME ;class PString  __cdecl operator+(char,class PString const &)
     ??H@YA?AVPString@@PBDABV0@@Z @658 NONAME ;class PString  __cdecl operator+(char const *,class PString const &)
     ??HPString@@QBE?AV0@ABV0@@Z @659 NONAME ;public: class PString  __thiscall PString::operator+(class PString const &)const 
