@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.130  2003/03/31 01:24:23  robertj
+ * Added ReadFrom functions for standard container classes such as
+ *   PIntArray and PStringList etc
+ *
  * Revision 1.129  2003/03/05 08:48:32  robertj
  * Added PStringArray::ToCharAray() function at suggestion of Ravelli Rossano
  *
@@ -882,6 +886,37 @@ long PAbstractArray::GetNumberValueAt(PINDEX) const
 }
 
 
+void PAbstractArray::ReadNumbersFrom(istream & strm, BOOL is_signed)
+{
+  PINDEX size = 0;
+  SetSize(size+10);
+
+  while (strm.good()) {
+    if (is_signed) {
+      long num;
+      strm >> num;
+      SetNumberValueAt(size, num);
+    }
+    else {
+      unsigned long unum;
+      strm >> unum;
+      SetNumberValueAt(size, unum);
+    }
+
+    if (++size >= GetSize())
+      SetSize(size+10);
+  }
+
+  SetSize(size);
+}
+
+
+void PAbstractArray::SetNumberValueAt(PINDEX, long)
+{
+  PAssertAlways(PUnimplementedFunction);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void PCharArray::PrintOn(ostream & strm) const
@@ -904,6 +939,21 @@ void PCharArray::PrintOn(ostream & strm) const
 }
 
 
+void PCharArray::ReadFrom(istream &strm)
+{
+  PINDEX size = 0;
+  SetSize(size+100);
+
+  while (strm.good()) {
+    strm >> theArray[size++];
+    if (size >= GetSize())
+      SetSize(size+100);
+  }
+
+  SetSize(size);
+}
+
+
 void PShortArray::PrintOn(ostream & strm) const
 {
   PrintNumbersOn(strm, sizeof(short), TRUE);
@@ -913,6 +963,18 @@ void PShortArray::PrintOn(ostream & strm) const
 long PShortArray::GetNumberValueAt(PINDEX idx) const
 {
   return ((short *)theArray)[idx];
+}
+
+
+void PShortArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, TRUE);
+}
+
+
+void PShortArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((short *)theArray)[idx] = (short)num;
 }
 
 
@@ -928,6 +990,18 @@ long PIntArray::GetNumberValueAt(PINDEX idx) const
 }
 
 
+void PIntArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, TRUE);
+}
+
+
+void PIntArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((int *)theArray)[idx] = (int)num;
+}
+
+
 void PLongArray::PrintOn(ostream & strm) const
 {
   PrintNumbersOn(strm, sizeof(long), TRUE);
@@ -937,6 +1011,18 @@ void PLongArray::PrintOn(ostream & strm) const
 long PLongArray::GetNumberValueAt(PINDEX idx) const
 {
   return ((long *)theArray)[idx];
+}
+
+
+void PLongArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, TRUE);
+}
+
+
+void PLongArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((long *)theArray)[idx] = num;
 }
 
 
@@ -952,6 +1038,18 @@ long PBYTEArray::GetNumberValueAt(PINDEX idx) const
 }
 
 
+void PBYTEArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, FALSE);
+}
+
+
+void PBYTEArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((BYTE *)theArray)[idx] = (BYTE)num;
+}
+
+
 void PWORDArray::PrintOn(ostream & strm) const
 {
   PrintNumbersOn(strm, sizeof(WORD), FALSE);
@@ -961,6 +1059,18 @@ void PWORDArray::PrintOn(ostream & strm) const
 long PWORDArray::GetNumberValueAt(PINDEX idx) const
 {
   return ((WORD *)theArray)[idx];
+}
+
+
+void PWORDArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, FALSE);
+}
+
+
+void PWORDArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((WORD *)theArray)[idx] = (WORD)num;
 }
 
 
@@ -976,6 +1086,18 @@ long PUnsignedArray::GetNumberValueAt(PINDEX idx) const
 }
 
 
+void PUnsignedArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, FALSE);
+}
+
+
+void PUnsignedArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((unsigned *)theArray)[idx] = (unsigned)num;
+}
+
+
 void PDWORDArray::PrintOn(ostream & strm) const
 {
   PrintNumbersOn(strm, sizeof(DWORD), FALSE);
@@ -985,6 +1107,18 @@ void PDWORDArray::PrintOn(ostream & strm) const
 long PDWORDArray::GetNumberValueAt(PINDEX idx) const
 {
   return ((DWORD *)theArray)[idx];
+}
+
+
+void PDWORDArray::ReadFrom(istream &strm)
+{
+  ReadNumbersFrom(strm, FALSE);
+}
+
+
+void PDWORDArray::SetNumberValueAt(PINDEX idx, long num)
+{
+  ((DWORD *)theArray)[idx] = (DWORD)num;
 }
 
 
@@ -2564,6 +2698,16 @@ PStringArray::PStringArray(const PSortedStringList & list)
 }
 
 
+void PStringArray::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    AppendString(str);
+  }
+}
+
+
 PString & PStringArray::operator[](PINDEX index)
 {
   PASSERTINDEX(index);
@@ -2650,6 +2794,16 @@ PStringList & PStringList::operator += (const PStringList & v)
 }
 
 
+void PStringList::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    AppendString(str);
+  }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PSortedStringList::PSortedStringList(PINDEX count,
@@ -2684,6 +2838,16 @@ PSortedStringList::PSortedStringList(const PStringList & list)
     AppendString(list[i]);
 }
 
+
+
+void PSortedStringList::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    AppendString(str);
+  }
+}
 
 
 PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
@@ -2747,6 +2911,16 @@ PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
 }
 
 
+void PStringSet::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    Include(str);
+  }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 POrdinalToString::POrdinalToString(PINDEX count, const Initialiser * init)
@@ -2754,6 +2928,21 @@ POrdinalToString::POrdinalToString(PINDEX count, const Initialiser * init)
   while (count-- > 0) {
     SetAt(init->key, init->value);
     init++;
+  }
+}
+
+
+void POrdinalToString::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    POrdinalKey key;
+    char equal;
+    PString str;
+    strm >> key >> ws >> equal >> str;
+    if (equal != '=')
+      SetAt(key, PString::Empty());
+    else
+      SetAt(key, str.Mid(equal+1));
   }
 }
 
@@ -2770,6 +2959,20 @@ PStringToOrdinal::PStringToOrdinal(PINDEX count,
     else
       SetAt(init->key, init->value);
     init++;
+  }
+}
+
+
+void PStringToOrdinal::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    PINDEX equal = str.FindLast('=');
+    if (equal == P_MAX_INDEX)
+      SetAt(str, 0);
+    else
+      SetAt(str.Left(equal), str.Mid(equal+1).AsInteger());
   }
 }
 
@@ -2793,6 +2996,20 @@ PStringToString::PStringToString(PINDEX count,
       else
         SetAt(init->key, init->value);
     init++;
+  }
+}
+
+
+void PStringToString::ReadFrom(istream & strm)
+{
+  while (strm.good()) {
+    PString str;
+    strm >> str;
+    PINDEX equal = str.Find('=');
+    if (equal == P_MAX_INDEX)
+      SetAt(str, PString::Empty());
+    else
+      SetAt(str.Left(equal), str.Mid(equal+1));
   }
 }
 
