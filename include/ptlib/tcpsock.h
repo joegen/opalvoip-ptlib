@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.22  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.21  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -101,64 +104,62 @@
 #endif
 
 
+/** A socket that uses the TCP transport on the Internet Protocol.
+ */
 class PTCPSocket : public PIPSocket
 {
-  PCLASSINFO(PTCPSocket, PIPSocket)
-/* Create a socket channel that uses the TCP transport on the Internal
-   Protocol.
- */
-
+  PCLASSINFO(PTCPSocket, PIPSocket);
   public:
-    PTCPSocket(
-      WORD port = 0             // Port number to use for the connection.
-    );
-    PTCPSocket(
-      const PString & service   // Service name to use for the connection.
-    );
-    PTCPSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port                 // Port number to use for the connection.
-    );
-    PTCPSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      const PString & service   // Service name to use for the connection.
-    );
-    PTCPSocket(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    PTCPSocket(
-      PTCPSocket & tcpSocket    // Listening socket making the connection.
-    );
-    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+  /**@name Construction. */
+  //@{
+    /**Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
 
        Note thate the "copy" constructor here is areally a "listening" socket
        the same as the PSocket & parameter version.
      */
+    PTCPSocket(
+      WORD port = 0             /// Port number to use for the connection.
+    );
+    PTCPSocket(
+      const PString & service   /// Service name to use for the connection.
+    );
+    PTCPSocket(
+      const PString & address,  /// Address of remote machine to connect to.
+      WORD port                 /// Port number to use for the connection.
+    );
+    PTCPSocket(
+      const PString & address,  /// Address of remote machine to connect to.
+      const PString & service   /// Service name to use for the connection.
+    );
+    PTCPSocket(
+      PSocket & socket          /// Listening socket making the connection.
+    );
+    PTCPSocket(
+      PTCPSocket & tcpSocket    /// Listening socket making the connection.
+    );
+  //@}
 
-
-  // Overrides from class PObject.
-    virtual PObject * Clone() const;
-    /* Create a copy of the class on the heap. The exact semantics of the
+  /**@name Overrides from class PObject. */
+  //@{
+    /** Create a copy of the class on the heap. The exact semantics of the
        descendent class determine what is required to make a duplicate of the
-       instance. Not all classes can even <EM>do</EM> a clone operation.
+       instance. Not all classes can even {\bf do} a clone operation.
        
-       The main user of the clone function is the <A>PDictionary</A> class as
+       The main user of the clone function is the #PDictionary# class as
        it requires copies of the dictionary keys.
 
        The default behaviour is for this function to assert.
 
-       <H2>Returns:</H2>
+       @return
        pointer to new copy of the class instance.
      */
+    virtual PObject * Clone() const;
+  //@}
 
-
-  // Overrides from class PChannel.
-    virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
-    );
-    /* Low level write to the channel. This function will block until the
+  /**@name Overrides from class PChannel. */
+  //@{
+    /** Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
        reached. The GetLastWriteCount() function returns the actual number
        of bytes written.
@@ -169,82 +170,92 @@ class PTCPSocket : public PIPSocket
        This override repeatedly writes if there is no error until all of the
        requested bytes have been written.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if at least len bytes were written to the channel.
      */
-
-
-  // Overrides from class PSocket.
-    virtual BOOL Listen(
-      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0,           // Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+    virtual BOOL Write(
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
     );
-    /* Listen on a socket for a remote host on the specified port number. This
+  //@}
+
+  /**@name Overrides from class PSocket. */
+  //@{
+    /** Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
        a connection by initiating a connection to this socket. An active socket
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
-       If the <CODE>port</CODE> parameter is zero then the port number as
+       If the #port# parameter is zero then the port number as
        defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
+       #PIPSocket::SetPort()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
+      WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
     );
-    /* Open a socket to a remote host on the specified port number. This is an
+
+    /** Open a socket to a remote host on the specified port number. This is an
        "accepting" socket. When a "listening" socket has a pending connection
        to make, this will accept a connection made by the "connecting" socket
        created to establish a link.
 
-       The port that the socket uses is the one used in the <A>Listen()</A>
-       command of the <CODE>socket</CODE> parameter.
+       The port that the socket uses is the one used in the #Listen()#
+       command of the #socket# parameter.
 
        Note that this function will block until a remote system connects to the
        port number specified in the "listening" socket.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-
-  // New functions for class
-    virtual BOOL WriteOutOfBand(
-      const void * buf,   // Data to be written as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
+    virtual BOOL Accept(
+      PSocket & socket          /// Listening socket making the connection.
     );
-    /* Write out of band data from the TCP/IP stream. This data is sent as TCP
+  //@}
+
+  /**@name New functions for class. */
+  //@{
+    /** Write out of band data from the TCP/IP stream. This data is sent as TCP
        URGENT data which does not follow the usual stream sequencing of the
        normal channel data.
 
        This is subject to the write timeout and sets the
-       <CODE>lastWriteCount</CODE> member variable in the same way as usual
-       <A>PChannel::Write()</A> function.
+       #lastWriteCount# member variable in the same way as usual
+       #PChannel::Write()# function.
        
-       <H2>Returns:</H2>
+       @return
        TRUE if all the bytes were sucessfully written.
      */
-
-    virtual void OnOutOfBand(
-      const void * buf,   // Data to be received as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
+    virtual BOOL WriteOutOfBand(
+      const void * buf,   /// Data to be written as URGENT TCP data.
+      PINDEX len          /// Number of bytes pointed to by #buf#.
     );
-    /* This is callback function called by the system whenever out of band data
+
+    /** This is callback function called by the system whenever out of band data
        from the TCP/IP stream is received. A descendent class may interpret
        this data according to the semantics of the high level protocol.
 
        The default behaviour is for the out of band data to be ignored.
      */
+    virtual void OnOutOfBand(
+      const void * buf,   /// Data to be received as URGENT TCP data.
+      PINDEX len          /// Number of bytes pointed to by #buf#.
+    );
+  //@}
 
 
   protected:
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

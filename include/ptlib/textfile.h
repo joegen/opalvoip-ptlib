@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: textfile.h,v $
+ * Revision 1.15  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.14  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -78,69 +81,80 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Text Files
 
-class PTextFile : public PFile
-{
-  PCLASSINFO(PTextFile, PFile)
-/* A class representing a a structured file that is portable accross CPU
+/** A class representing a a structured file that is portable accross CPU
    architectures. Essentially this will normalise the end of line character
    which differs fromplatform to platform.
  */
+class PTextFile : public PFile
+{
+  PCLASSINFO(PTextFile, PFile);
 
   public:
-    PTextFile();
-    /* Create a text file object but do not open it. It does not initially
+  /**@name Construction */
+  //@{
+    /** Create a text file object but do not open it. It does not initially
        have a valid file name. However, an attempt to open the file using the
-       <A>PFile::Open()</A> function will generate a unique temporary file.
+       #PFile::Open()# function will generate a unique temporary file.
      */
+    PTextFile();
 
-    PTextFile(
-      OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // <A>OpenOptions enum</A> for open operation.
-    );
-    /* Create a unique temporary file name, and open the file in the specified
+    /** Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The <A>PChannel::IsOpen()</A> function may be used after object
+       The #PChannel::IsOpen()# function may be used after object
        construction to determine if the file was successfully opened.
      */
-      
     PTextFile(
-      const PFilePath & name,    // Name of file to open.
-      OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault     // <A>OpenOptions enum</A> for open operation.
+      OpenMode mode,          /// Mode in which to open the file.
+      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
     );
-    /* Create a text file object with the specified name and open it in the
+      
+    /** Create a text file object with the specified name and open it in the
        specified mode and with the specified options.
 
-       The <A>PChannel::IsOpen()</A> function may be used after object
+       The #PChannel::IsOpen()# function may be used after object
        construction to determine if the file was successfully opened.
      */
+    PTextFile(
+      const PFilePath & name,    /// Name of file to open.
+      OpenMode mode = ReadWrite, /// Mode in which to open the file.
+      int opts = ModeDefault     /// #OpenOptions enum# for open operation.
+    );
+  //@}
 
-
-  // New member functions
-    BOOL ReadLine(PString & str);
-    /* Read a line from the text file. What constitutes an end of line in the
+  /**@name Line I/O functions */
+  //@{
+    /** Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the <A>PChannel::GetLastError()</A> function to determine if there
+       Use the #PChannel::GetLastError()# function to determine if there
        was some error other than end of file.
        
-       <H2>Returns:</H2>
+       @return
        TRUE if successful, FALSE if at end of file or a read error.
      */
+    BOOL ReadLine(
+      PString & str  /// String into which line of text is read.
+    );
 
-    BOOL WriteLine(const PString & str);
-    /* Read a line from the text file. What constitutes an end of line in the
+    /** Read a line from the text file. What constitutes an end of line in the
        file is platform dependent.
        
-       Use the <A>PChannel::GetLastError()</A> function to determine the
+       Use the #PChannel::GetLastError()# function to determine the
        failure mode.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if successful, FALSE if an error occurred.
      */
+    BOOL WriteLine(
+      const PString & str  /// String to write with end of line terminator.
+    );
+  //@}
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

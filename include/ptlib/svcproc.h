@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.16  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.15  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -92,35 +95,56 @@
 #pragma interface
 #endif
 
+/** This class abstracts the operating system dependent error logging facility.
+To send messages to the system error log, the PSYSTEMLOG macro should be used. 
+  */
+
 class PSystemLog : public PObject, public iostream {
-  PCLASSINFO(PSystemLog, PObject)
+  PCLASSINFO(PSystemLog, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+    /// define the different error log levels
     enum Level {
-      StdError = -1, // Log from standard error stream
-      Fatal,    // Log a fatal error
-      Error,    // Log a non-fatal error
-      Warning,  // Log a warning
-      Info,     // Log general information
-      Debug,    // Log debugging information
-      Debug2,   // Log more debugging information
-      Debug3,   // Log even more debugging information
+      /// Log from standard error stream
+      StdError = -1,
+      /// Log a fatal error
+      Fatal,   
+      /// Log a non-fatal error
+      Error,    
+      /// Log a warning
+      Warning,  
+      /// Log general information
+      Info,     
+      /// Log debugging information
+      Debug,    
+      /// Log more debugging information
+      Debug2,   
+      /// Log even more debugging information
+      Debug3,   
+
       NumLogLevels
     };
-    // Type of log message.
 
-    PSystemLog(Level level) { logLevel = level; buffer.log = this; init(&buffer); }
-    // Create a system log stream
+    /// Create a system log stream
+    PSystemLog(
+     Level level   /// only messages at this level or higher will be logged
+    ) { logLevel = level; buffer.log = this; init(&buffer); }
 
+    /// Destroy the string stream, deleting the stream buffer
     ~PSystemLog() { flush(); }
-    // Destroy the string stream, deleting the stream buffer
+  //@}
 
-    static void Output(
-      Level level,      // Log level for this log message.
-      const char * msg  // Message to be logged
-    );
-    /* Log an error into the system log.
+  /**@name Output functions */
+  //@{
+    /** Log an error into the system log.
      */
+    static void Output(
+      Level level,      /// Log level for this log message.
+      const char * msg  /// Message to be logged
+    );
+  //@}
 
 
   private:
@@ -141,6 +165,10 @@ class PSystemLog : public PObject, public iostream {
 };
 
 
+/** Log a message to the system log.
+The current log level is checked and if allowed, the second argument is evaluated
+as a stream output sequence which is them output to the system log.
+*/
 #define PSYSTEMLOG(l, v) \
   if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::l) { \
     PSystemLog s(PSystemLog::l); \
@@ -149,101 +177,114 @@ class PSystemLog : public PObject, public iostream {
 
 
 
+/** A process type that runs as a "background" service.
+    This may be a service under the Windows NT operating system, or a "daemon" under Unix, or a hidden application under Windows.
+ */
 class PServiceProcess : public PProcess
 {
-  PCLASSINFO(PServiceProcess, PProcess)
-/* A process type that may be a service under the Windows NT operating system.
- */
+  PCLASSINFO(PServiceProcess, PProcess);
 
   public:
+  /**@name Construction */
+  //@{
+    /** Create a new service process.
+     */
     PServiceProcess(
-      const char * manuf,   // Name of manufacturer
-      const char * name,    // Name of product
-      WORD majorVersion,    // Major version number of the product
-      WORD minorVersion,    // Minor version number of the product
-      CodeStatus status,    // Development status of the product
-      WORD buildNumber      // Build number of the product
+      const char * manuf,   /// Name of manufacturer
+      const char * name,    /// Name of product
+      WORD majorVersion,    /// Major version number of the product
+      WORD minorVersion,    /// Minor version number of the product
+      CodeStatus status,    /// Development status of the product
+      WORD buildNumber      /// Build number of the product
     );
-    /* Create a new service process.
-     */
+  //@}
 
-
-  // Overrides from class PProcess
-    virtual int _main(void * arg = NULL);
-    /* Internal initialisation function called directly from
-       <CODE>main()</CODE>. The user should never call this function.
-     */
-
-
-  // New functions for class
-    static PServiceProcess & Current();
-    /* Get the current service process object.
-
-       <H2>Returns:</H2>
-       Pointer to service process.
-     */
-
-
-    void SetLogLevel(
-      PSystemLog::Level level  // New log level
-    ) { currentLogLevel = level; }
-    /* Set the level at which errors are logged. Only messages higher than or
-       equal to the specified level will be logged.
-    
-       The default is <CODE>LogError</CODE> allowing fatal errors and ordinary\
-       errors to be logged and warning and information to be ignored.
-
-       If in debug mode then the default is <CODE>LogInfo</CODE> allowing all
-       messages to be displayed.
-     */
-
-    PSystemLog::Level GetLogLevel() const { return currentLogLevel; }
-    /* Get the current level for logging.
-
-       <H2>Returns:</H2>
-       Log level.
-     */
-
-    virtual BOOL OnStart() = 0;
-    /* Called when the service is started. This typically initialises the
+  /**@name Callback functions */
+  //@{
+    /** Called when the service is started. This typically initialises the
        service and returns TRUE if the service is ready to run. The
-       <CODE>Main()</CODE> function is then executed.
+       #Main()# function is then executed.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if service may start, FALSE if an initialisation failure occurred.
      */
+    virtual BOOL OnStart() = 0;
 
-    virtual void OnStop();
-    /* Called by the system when the service is stopped. One return from this
+    /** Called by the system when the service is stopped. One return from this
        function there is no guarentee that any more user code will be executed.
        Any cleaning up or closing of resource must be done in here.
      */
+    virtual void OnStop();
 
-    virtual BOOL OnPause();
-    /* Called by the system when the service is to be paused. This will
+    /** Called by the system when the service is to be paused. This will
        suspend any actions that the service may be executing. Usually this is
        less expensive in resource allocation etc than stopping and starting
        the service.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the service was successfully paused.
      */
+    virtual BOOL OnPause();
 
+    /** Resume after the service was paused.
+     */
     virtual void OnContinue();
-    /* Resume after the service was paused.
-     */
 
-    virtual void OnControl() = 0;
-    /* The Control menu option was used in the SysTray menu.
+    /** The Control menu option was used in the SysTray menu.
      */
+    virtual void OnControl() = 0;
+  //@}
+
+  /**@name Miscellaneous functions */
+  //@{
+    /** Get the current service process object.
+
+       @return
+       Pointer to service process.
+     */
+    static PServiceProcess & Current();
+
+
+    /** Set the level at which errors are logged. Only messages higher than or
+       equal to the specified level will be logged.
+    
+       The default is #LogError# allowing fatal errors and ordinary\
+       errors to be logged and warning and information to be ignored.
+
+       If in debug mode then the default is #LogInfo# allowing all
+       messages to be displayed.
+     */
+    void SetLogLevel(
+      PSystemLog::Level level  /// New log level
+    ) { currentLogLevel = level; }
+
+    /** Get the current level for logging.
+
+       @return
+       Log level.
+     */
+    PSystemLog::Level GetLogLevel() const { return currentLogLevel; }
+  //@}
+
+
+    /* Internal initialisation function called directly from
+       #main()#. The user should never call this function.
+     */
+    virtual int _main(void * arg = NULL);
 
 
   protected:
   // Member variables
+    /// Flag to indicate service is run in simulation mode.
     BOOL debugMode;
+
+    /// Current log level for #PSYSTEMLOG# calls.
     PSystemLog::Level currentLogLevel;
 
     friend void PSystemLog::Output(PSystemLog::Level, const char *);
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

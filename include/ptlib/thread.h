@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.20  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.19  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -97,15 +100,12 @@ class PSemaphore;
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-class PThread : public PObject
-{
-  PCLASSINFO(PThread, PObject)
-/* This class defines a thread of execution in the system. A <I>thread</I> is
+/** This class defines a thread of execution in the system. A {\it thread} is
    an independent flow of processor instructions. This differs from a
-   <I>process</I> which also embodies a program address space and resource
+   {\it process} which also embodies a program address space and resource
    allocation. So threads can share memory and resources as they run in the
    context of a given process. A process always contains at least one thread.
-   This is reflected in this library by the <A>PProcess</A> class being
+   This is reflected in this library by the #PProcess# class being
    descended from the PThread class.
 
    The implementation of a thread is platform dependent. Not all platforms
@@ -120,57 +120,70 @@ class PThread : public PObject
    them using a cooperative co-routine technique. This requires that each
    thread of execution within a process, voluntarily yields control to other
    threads. This will occur if the thread is blocked inside an I/O function
-   on a <A>PChannel</A> or when the <A>PThread::Yield()</A> function is
+   on a #PChannel# or when the #PThread::Yield()# function is
    explicitly called.
    
-   Note that this is <EM>cooperative</EM>. An endless loop will stop all
+   Note that this is {\bf cooperative}. An endless loop will stop all
    threads in a process, possibly all processes on some platforms. If a
    lengthy operation is to take place that does not involve blocking I/O,
    eg pure computation or disk file I/O, then it is the responsiblity of the
    programmer to assure enough yielding for background threads to execute.
  */
+class PThread : public PObject
+{
+  PCLASSINFO(PThread, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+    /// Codes for thread priorities.
     enum Priority {
-      LowestPriority,   // Will only run if all other threads are blocked.
-      LowPriority,      // Runs approximately half as often as normal.
-      NormalPriority,   // Normal priority for a thread.
-      HighPriority,     // Runs approximately twice as often as normal.
-      HighestPriority,  // Is only thread that will run, unless blocked.
+      /// Will only run if all other threads are blocked.
+      LowestPriority,   
+
+      /// Runs approximately half as often as normal.
+      LowPriority,      
+
+      /// Normal priority for a thread.
+      NormalPriority,   
+
+      /// Runs approximately twice as often as normal.
+      HighPriority,     
+
+      /// Is only thread that will run, unless blocked.
+      HighestPriority,  
+
       NumPriorities
     };
-    // Codes for thread priorities.
 
+    /// Codes for thread autodelete flag
     enum AutoDeleteFlag {
-      AutoDeleteThread,   // Automatically delete thread object on termination.
-      NoAutoDeleteThread  // Don't delete thread as it may not be on heap.
+      /// Automatically delete thread object on termination.
+      AutoDeleteThread,   
+
+      /// Don't delete thread as it may not be on heap.
+      NoAutoDeleteThread  
     };
 
-    PThread(
-      PINDEX stackSize,                 // Size of stack to use for thread.
-      AutoDeleteFlag deletion = AutoDeleteThread,
-        // Automatically delete PThread instance on termination of thread.
-      Priority priorityLevel = NormalPriority  // Initial priority of thread.
-    );
-    /* Create a new thread instance. Unless the <CODE>startSuspended</CODE>
-       parameter is TRUE, the threads <A>Main()</A> function is called to
+    /** Create a new thread instance. Unless the #startSuspended#
+       parameter is TRUE, the threads #Main()# function is called to
        execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
        never be predicted. Thus never assume that on return from this
        constructor that the thread has executed any code at all. The only
-       guarentee is that it will <EM>not</EM> be executed if the thread is
+       guarentee is that it will {\bf not} be executed if the thread is
        started suspended.
 
        If synchronisation is required between threads then the use of
        semaphores is essential.
 
-       If the <CODE>deletion</CODE> is set to <CODE>AutoDeleteThread</CODE>
+       If the #deletion# is set to #AutoDeleteThread#
        then the PThread is assumed to be allocated with the new operator and
        may be freed using the delete operator as soon as the thread is
        terminated or executes to completion (usually the latter).
 
-       The stack size specified is <EM>not</EM> simply in bytes. It is a value
+       The stack size specified is {\bf not} simply in bytes. It is a value
        that is multiplied by a factor into bytes depending on the target
        platform. For example a Unix system with a RISC processor may use
        significantly more stack than an MS-DOS platform. These sizes are
@@ -178,136 +191,146 @@ class PThread : public PObject
        Windows NT, the stack size is only an initial size and the stack will
        automatically be increased as required.
      */
+    PThread(
+      PINDEX stackSize,                 /// Size of stack to use for thread.
+      AutoDeleteFlag deletion = AutoDeleteThread,
+        /// Automatically delete PThread instance on termination of thread.
+      Priority priorityLevel = NormalPriority  /// Initial priority of thread.
+    );
 
-    ~PThread();
-    /* Destroy the thread, this simply calls the <A>Terminate()</A> function
+    /** Destroy the thread, this simply calls the #Terminate()# function
        with all its restrictions and penalties. See that function for more
        information.
 
        Note that the correct way for a thread to terminate is to return from
-       the <A>Main()</A> function.
+       the #Main()# function.
      */
+    ~PThread();
+  //@}
 
-
-  // New functions for class
-    static PThread * Current();
-    /* Get the currently running thread object instance. It is possible, even
-       likely, that the smae code may be executed in the context of differenct
-       threads. Under some circumstances it may be necessary to know what the
-       current codes thread is and this static function provides that
-       information.
-
-       <H2>Returns:</H2>
-       pointer to current thread.
-     */
-
-    virtual void Main() = 0;
-    /* User override function for the main execution routine of the thread. A
-       descendent class must provide the code that will be executed in the
-       thread within this function.
-       
-       Note that the correct way for a thread to terminate is to return from
-       this function.
-     */
-
-    virtual void Restart();
-    /* Restart a terminated thread using the same stack priority etc that
+  /**@name Control functions */
+  //@{
+    /** Restart a terminated thread using the same stack priority etc that
        was current when the thread terminated.
        
        If the thread is still running then this function is ignored.
      */
+    virtual void Restart();
 
-    virtual void Terminate();
-    /* Terminate the thread. It is highly recommended that this is not used
+    /** Terminate the thread. It is highly recommended that this is not used
        except in abnormal abort situations as not all clean up of resources
        allocated to the thread will be executed. This is especially true in
        C++ as the destructors of objects that are automatic variables are not
        called causing at the very least the possiblity of memory leaks.
 
        Note that the correct way for a thread to terminate is to return from
-       the <A>Main()</A> function or self terminate by calling
-       <A>Terminate()</A> within the context of the thread which can then
+       the #Main()# function or self terminate by calling
+       #Terminate()# within the context of the thread which can then
        assure that all resources are cleaned up.
      */
+    virtual void Terminate();
 
-    virtual BOOL IsTerminated() const;
-    /* Determine if the thread has been terminated or ran to completion.
+    /** Determine if the thread has been terminated or ran to completion.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the thread has been terminated.
      */
+    virtual BOOL IsTerminated() const;
 
-    void WaitForTermination() const;
-    BOOL WaitForTermination(
-      const PTimeInterval & maxWait  // Maximum time to wait for termination.
-    ) const;
-    /* Block and wait for the thread to terminate.
+    /** Block and wait for the thread to terminate.
 
-       <H2>Returns:</H2>
+       @return
        FALSE if the thread has not terminated and the timeout has expired.
      */
+    void WaitForTermination() const;
+    BOOL WaitForTermination(
+      const PTimeInterval & maxWait  /// Maximum time to wait for termination.
+    ) const;
 
-    virtual void Suspend(
-      BOOL susp = TRUE    // Flag to suspend or resume a thread.
-    );
-    /* Suspend or resume the thread.
+    /** Suspend or resume the thread.
     
-       If <CODE>susp</CODE> is TRUE this increments an internal count of
+       If #susp# is TRUE this increments an internal count of
        suspensions that must be matched by an equal number of calls to
-       <A>Resume()</A> or <CODE>Suspend(FALSE)</CODE> before the
+       #Resume()# or #Suspend(FALSE)# before the
        thread actually executes again.
 
-       If <CODE>susp</CODE> is FALSE then this decrements the internal count of
+       If #susp# is FALSE then this decrements the internal count of
        suspensions. If the count is <= 0 then the thread will run. Note that
        the thread will not be suspended until an equal number of
-       <CODE>Suspend(TRUE)</CODE> calls are made.
+       #Suspend(TRUE)# calls are made.
      */
+    virtual void Suspend(
+      BOOL susp = TRUE    /// Flag to suspend or resume a thread.
+    );
 
+    /** Resume thread execution, this is identical to
+       #Suspend(FALSE)#.
+     */
     virtual void Resume();
-    /* Resume thread execution, this is identical to
-       <CODE>Suspend(FALSE)</CODE>.
-     */
 
-    virtual BOOL IsSuspended() const;
-    /* Determine if the thread is currently suspended. This checks the
+    /** Determine if the thread is currently suspended. This checks the
        suspension count and if greater than zero returns TRUE for a suspended
        thread.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if thread is suspended.
      */
+    virtual BOOL IsSuspended() const;
 
+    /// Suspend the current thread for the specified amount of time.
     virtual void Sleep(
-      const PTimeInterval & delay   // Time interval to sleep for.
+      const PTimeInterval & delay   /// Time interval to sleep for.
     );
-    // Suspend the current thread for the specified amount of time.
 
-    virtual void SetPriority(
-      Priority priorityLevel    // New priority for thread.
-    );
-    /* Set the priority of the thread relative to other threads in the current
+    /** Set the priority of the thread relative to other threads in the current
        process.
      */
+    virtual void SetPriority(
+      Priority priorityLevel    /// New priority for thread.
+    );
 
-    virtual Priority GetPriority() const;
-    /* Get the current priority of the thread in the current process.
+    /** Get the current priority of the thread in the current process.
 
-       <H2>Returns:</H2>
+       @return
        current thread priority.
      */
+    virtual Priority GetPriority() const;
+  //@}
 
-    static void Yield();
-    /* Yield to another thread. If there are no other threads then this
+  /**@name Miscellaneous */
+  //@{
+    /** User override function for the main execution routine of the thread. A
+       descendent class must provide the code that will be executed in the
+       thread within this function.
+       
+       Note that the correct way for a thread to terminate is to return from
+       this function.
+     */
+    virtual void Main() = 0;
+
+    /** Get the currently running thread object instance. It is possible, even
+       likely, that the smae code may be executed in the context of differenct
+       threads. Under some circumstances it may be necessary to know what the
+       current codes thread is and this static function provides that
+       information.
+
+       @return
+       pointer to current thread.
+     */
+    static PThread * Current();
+
+    /** Yield to another thread. If there are no other threads then this
        function does nothing. Note that on most platforms the threading is
        cooperative and this function must be called for other threads to run
        at all. There may be an implicit call to Yield within the I/O functions
-       of <A>PChannel</A> classes. This is so when a thread is I/O blocked then
+       of #PChannel# classes. This is so when a thread is I/O blocked then
        other threads can, as far as possible, continue to run.
        
        If the platform directly supports multiple threads then this function
        will do nothing.
      */
-
+    static void Yield();
+  //@}
 
   protected:
     void InitialiseProcessThread();
@@ -350,7 +373,7 @@ class PThread : public PObject
     );
     /* Allocate the stack for the thread.
 
-       The stack size specified is <EM>not</EM> simply in bytes. It is a value
+       The stack size specified is {\bf not} simply in bytes. It is a value
        that is multiplied by a factor into bytes depending on the target
        platform. For example a Unix system with a RISC processor may use
        significantly more stack than an MS-DOS platform. These sizes are
@@ -370,7 +393,7 @@ class PThread : public PObject
      */
 
     void BeginThread();
-    /* Function to start <A>Main()</A> and exit when completed.
+    /* Function to start #Main()# and exit when completed.
 
        This function is not present for platforms that support threads.
      */
@@ -380,7 +403,7 @@ class PThread : public PObject
     );
     /* Do the machinations needed to jump to the current thread. This is a
        platform dependent function that utilises the standard C
-       <CODE>setjmp()</CODE> and <CODE>longjmp()</CODE> functions to implement
+       #setjmp()# and #longjmp()# functions to implement
        the co-routines.
     
        This function is not present for platforms that support threads.
@@ -399,13 +422,13 @@ class PThread : public PObject
        been scheduled has its dynamic priority increased so that next time
        the scheduler is looking for a thread to run it has a better chance of
        executing. Once a thread is executed the dynamic priority is set back
-       to the base priority as set by <A>SetPriority()</A>.
+       to the base priority as set by #SetPriority()#.
 
        This variable is not present for platforms that support threads.
      */
 
     int suspendCount;
-    /* The threads count of calls to <A>Suspend()</A> or <A>Resume()</A>.
+    /* The threads count of calls to #Suspend()# or #Resume()#.
        If <=0 then can run, if >0 means suspended and is not to be scheduled.
 
        This variable is not present for platforms that support threads.
@@ -413,7 +436,7 @@ class PThread : public PObject
 
     PTimer sleepTimer;
     /* Time for thread to remain asleep. Thread is not scheduled while this
-       is running after a <A>Sleep()</A> call.
+       is running after a #Sleep()# call.
 
        This variable is not present for platforms that support threads.
      */
@@ -442,9 +465,9 @@ class PThread : public PObject
       Sleeping,         // Thread is sleeping until sleepTimer is up.
       Suspended,        // Thread is currently suspended.
       BlockedIO,        // Thread is currently blocked in I/O.
-      SuspendedBlockIO, // Thread is blocked <EM>and</EM> suspended.
+      SuspendedBlockIO, // Thread is blocked {\bf and} suspended.
       BlockedSem,       // Thread is currently blocked by a semaphore.
-      SuspendedBlockSem,// Thread is blocked <EM>and</EM> suspended.
+      SuspendedBlockSem,// Thread is blocked {\bf and} suspended.
       Terminating,      // Thread is terminating but has not died yet.
       Terminated        // Thread has terminated.
     } status;
@@ -475,5 +498,8 @@ class PThread : public PObject
     friend class PSemaphore;
 #endif
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
