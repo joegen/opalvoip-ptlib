@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2003/11/04 03:21:26  dereksmithies
+ * Fix compile on windows OS.
+ *
  * Revision 1.3  2003/04/29 00:57:21  dereks
  * Add user interface, option setting for format/input/fake. Works on Linux.
  *
@@ -34,6 +37,7 @@
  * Initial version
  *
  */
+
 
 #include "precompile.h"
 #include "main.h"
@@ -139,7 +143,8 @@ void VidTest::Main()
   PINDEX width = channel->GetGrabWidth();
   PINDEX height = channel->GetGrabHeight();
   PINDEX bytesInFrame = (width * height * 3) >> 1;
-  unsigned char dataBuffer[bytesInFrame];
+
+  PBYTEArray dataBuffer(bytesInFrame);
 
   display->SetFrameSize(width, height);
   display->SetColourFormatConverter("YUV420P");
@@ -148,7 +153,7 @@ void VidTest::Main()
 
 
   for( ;; ) {
-    channel->Read(dataBuffer, bytesInFrame);
+    channel->Read(dataBuffer.GetPointer(), bytesInFrame);
     channel->Write((const void *)dataBuffer, 0);
      if (!exitFlag.WillBlock())
       break;
