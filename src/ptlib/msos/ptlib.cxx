@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.8 1994/10/23 05:42:39 robertj Exp $
+ * $Id: ptlib.cxx,v 1.9 1994/10/30 11:26:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.8  1994/10/23 05:42:39  robertj
+ * Revision 1.9  1994/10/30 11:26:54  robertj
+ * Fixed set current directory function.
+ * Changed PFilePath to be case insignificant according to platform.
+ *
+ * Revision 1.8  1994/10/23  05:42:39  robertj
  * PipeChannel headers.
  * ConvertOSError function added.
  * Numerous implementation enhancements.
@@ -214,11 +218,8 @@ void PDirectory::Construct()
 
 BOOL PDirectory::Change(const PString & p)
 {
-  if (p[1] == ':') {
-    if (_chdrive(toupper(p[0])-'A'+1) < 0)
-      return FALSE;
-  }
-  return chdir(p(0, p.GetLength()-1)) == 0;
+  PDirectory d = p;
+  return _chdrive(toupper(d[0])-'A'+1) == 0 && _chdir(d + ".") == 0;
 }
 
 
@@ -280,20 +281,20 @@ void PDirectory::Close()
 // File Path
 
 PFilePath::PFilePath(const PString & str)
-  : PString(FixPath(str, FALSE))
+  : PFILE_PATH_STRING(FixPath(str, FALSE))
 {
 }
 
 
 PFilePath::PFilePath(const char * cstr)
-  : PString(FixPath(cstr, FALSE))
+  : PFILE_PATH_STRING(FixPath(cstr, FALSE))
 {
 }
 
 
 PFilePath & PFilePath::operator=(const PString & str)
 {
-  PString::operator=(FixPath(str, FALSE));
+  PFILE_PATH_STRING::operator=(FixPath(str, FALSE));
   return *this;
 }
 
