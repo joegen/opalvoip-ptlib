@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.9 1996/02/15 14:42:41 robertj Exp $
+ * $Id: inetprot.cxx,v 1.10 1996/02/19 13:31:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.10  1996/02/19 13:31:26  robertj
+ * Changed stuff to use new & operator..
+ *
  * Revision 1.9  1996/02/15 14:42:41  robertj
  * Fixed warning for long to int conversion.
  *
@@ -286,7 +289,7 @@ BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
   if (param.IsEmpty())
     return WriteLine(commandNames[cmdNumber]);
   else
-    return WriteLine(commandNames[cmdNumber] + " " + param);
+    return WriteLine(commandNames[cmdNumber] & param);
 }
 
 
@@ -318,14 +321,14 @@ BOOL PApplicationSocket::WriteResponse(const PString & code,
                                        const PString & info)
 {
   if (info.FindOneOf(CRLF) == P_MAX_INDEX)
-    return WriteString(code + ' ' + info + CRLF);
+    return WriteString(code & info + CRLF);
 
   PStringArray lines = info.Lines();
   for (PINDEX i = 0; i < lines.GetSize()-1; i++)
     if (!WriteString(code + '-' + lines[i] + CRLF))
       return FALSE;
 
-  return WriteString(code + ' ' + lines[i] + CRLF);
+  return WriteString(code & lines[i] + CRLF);
 }
 
 
@@ -1676,12 +1679,12 @@ void PPOP3Socket::OnUIDL(PINDEX msg)
     WriteResponse(okResponse,
               PString(PString::Unsigned, messageIDs.GetSize()) + " messages.");
     for (PINDEX i = 1; i <= messageIDs.GetSize(); i++)
-      WriteLine(PString(PString::Unsigned, i) + ' ' + messageIDs[i-1]);
+      WriteLine(PString(PString::Unsigned, i) & messageIDs[i-1]);
   }
   else if (msg < 1 || msg > messageSizes.GetSize())
     WriteResponse(errResponse, "No such message.");
   else
-    WriteLine(PString(PString::Unsigned, msg) + ' ' + messageIDs[msg-1]);
+    WriteLine(PString(PString::Unsigned, msg) & messageIDs[msg-1]);
 }
 
 
