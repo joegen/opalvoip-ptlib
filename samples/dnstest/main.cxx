@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2003/04/22 23:25:13  craigs
+ * Changed help message for SRV records
+ *
  * Revision 1.2  2003/04/15 08:15:16  craigs
  * Added single string form of GetSRVRecords
  *
@@ -31,7 +34,7 @@ DNSTest::DNSTest()
 void Usage()
 {
   PError << "usage: dnstest -t MX hostname\n"
-            "       dnstest -t SRV service prtoocol domain\n"
+            "       dnstest -t SRV service    (i.e. _ras._udp._example.com)\n"
   ;
 }
 
