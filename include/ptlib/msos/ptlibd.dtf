@@ -82,7 +82,7 @@ EXPORTS
     ??0HouseKeepingThread@PProcess@@QAE@XZ @58 NONAME ;public: __thiscall PProcess::HouseKeepingThread::HouseKeepingThread(void)
     ??0Info@PAbstractList@@QAE@XZ @59 NONAME ;public: __thiscall PAbstractList::Info::Info(void)
     ??0Info@PAbstractSortedList@@QAE@XZ @60 NONAME ;public: __thiscall PAbstractSortedList::Info::Info(void)
-    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@0@Z @3057 NONAME ;public: __thiscall PIPSocket::InterfaceEntry::InterfaceEntry(class PString const &,class InterfaceEntry::Address const &,class PString const &)
+    ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @3691 NONAME ;public: __thiscall PIPSocket::InterfaceEntry::InterfaceEntry(class PString const &,class InterfaceEntry::Address const &,class InterfaceEntry::Address const &,class PString const &)
     ??0MAPIDLL@PMail@@QAE@XZ @61 NONAME ;public: __thiscall PMail::MAPIDLL::MAPIDLL(void)
     ??0NT_ServiceManager@@QAE@XZ @62 NONAME ;public: __thiscall NT_ServiceManager::NT_ServiceManager(void)
     ??0PAbstractArray@@QAE@ABV0@@Z @63 NONAME ;public: __thiscall PAbstractArray::PAbstractArray(class PAbstractArray const &)

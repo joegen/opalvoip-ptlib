@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.22  2001/03/05 04:18:27  robertj
+ * Added net mask to interface info returned by GetInterfaceTable()
+ *
  * Revision 1.21  2000/03/06 03:59:22  robertj
  * Fixed warning about handle types, thanks Steve Bennett
  *
@@ -1710,6 +1713,11 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
     Address ipAddr;
     value.GetIpAddress(ipAddr);
 
+    oid[9] = 3;
+    Address netMask;
+    if (!snmp.GetOid(oid, netMask))
+      break;
+
     oid[9] = 2;
     AsnInteger ifIndex = -1;
     if (!snmp.GetOid(oid, ifIndex))
@@ -1732,7 +1740,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
       name.MakeMinimumSize();
     }
 
-    table.Append(new InterfaceEntry(name, ipAddr, macAddr));
+    table.Append(new InterfaceEntry(name, ipAddr, netMask, macAddr));
 
     oid[9] = 1;
   }
