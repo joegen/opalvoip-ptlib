@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.94 1998/05/25 09:05:56 robertj Exp $
+ * $Id: osutils.cxx,v 1.95 1998/05/30 13:28:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.95  1998/05/30 13:28:18  robertj
+ * Changed memory check code so global statics are not included in leak check.
+ * Fixed deadlock in cooperative threading.
+ * Added PSyncPointAck class.
+ *
  * Revision 1.94  1998/05/25 09:05:56  robertj
  * Fixed close of channels on destruction.
  *
@@ -1548,6 +1553,95 @@ void PArgList::MissingArgument(char option) const
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+#if defined(_PPROCESS)
+
+static PProcess * PProcessInstance;
+int PProcess::argc;
+char ** PProcess::argv;
+char ** PProcess::envp;
+
+PProcess::PProcess(const char * manuf, const char * name,
+                           WORD major, WORD minor, CodeStatus stat, WORD build)
+  : manufacturer(manuf), productName(name)
+{
+  PProcessInstance = this;
+  terminationValue = 0;
+
+  majorVersion = major;
+  minorVersion = minor;
+  status = stat;
+  buildNumber = build;
+
+  arguments.SetArgs(argc-1, argv+1);
+
+  executableFile = PString(argv[0]);
+  if (!PFile::Exists(executableFile))
+    executableFile += ".exe";
+
+  if (productName.IsEmpty())
+    productName = executableFile.GetTitle().ToLower();
+
+  InitialiseProcessThread();
+
+  Construct();
+}
+
+
+int PProcess::_main(void *)
+{
+  Main();
+  return terminationValue;
+}
+
+
+void PProcess::PreInitialise(int c, char ** v, char ** e)
+{
+  argc = c;
+  argv = v;
+  envp = e;
+#ifdef PMEMORY_CHECK
+  extern BOOL PMainExecuted;
+  PMainExecuted = TRUE;
+#endif
+}
+
+
+PProcess & PProcess::Current()
+{
+  PAssertNULL(PProcessInstance);
+  return *PProcessInstance;
+}
+
+
+PObject::Comparison PProcess::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(PProcess::Class()), PInvalidCast);
+  return productName.Compare(((const PProcess &)obj).productName);
+}
+
+
+void PProcess::Terminate()
+{
+#ifdef _WINDLL
+  FatalExit(terminationValue);
+#else
+  exit(terminationValue);
+#endif
+}
+
+
+PString PProcess::GetVersion(BOOL full) const
+{
+  const char * const statusLetter[NumCodeStatuses] =
+    { "alpha", "beta", "pl" };
+  return psprintf(full && buildNumber != 0 ? "%u.%u%s%u" : "%u.%u",
+                majorVersion, minorVersion, statusLetter[status], buildNumber);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PThread
 
 #ifndef P_PLATFORM_HAS_THREADS
@@ -1710,200 +1804,119 @@ void PThread::BeginThread()
 
 void PThread::Yield()
 {
-  // Determine the next thread to schedule
-  PProcess * process = &PProcess::Current();
+  do {
+    PThread * current = PProcessInstance->currentThread;
+    if (current == PProcessInstance)
+      PProcessInstance->GetTimerList()->Process();
+    else {
+      char stackUsed;
+      PAssert(&stackUsed > current->stackBase, "Stack overflow!");
+    }
 
-  // The following is static as the SwitchContext function invalidates all
-  // automatic variables in this function call.
-  static PThread * current;
-  current = process->currentThread;
-
-  if (current == process)
-    process->GetTimerList()->Process();
-  else
-    PAssert((char *)&process > process->stackBase, "Stack overflow!");
-
-  if (current->status == Running) {
-    if (current->basePriority != HighestPriority && current->link != current)
+    if (current->status == Running) {
+      if (current->link == current)
+        return;
+      if (current->basePriority == HighestPriority)
+        return;
       current->status = Waiting;
-    else
-      return;
-  }
+    }
 
-  static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
-  current->dynamicPriority = dynamicLevel[current->basePriority];
+    static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
+    current->dynamicPriority = dynamicLevel[current->basePriority];
 
-  PThread * next = NULL; // Next thread to be scheduled
-  PThread * prev = current; // Need the thread in the previous link
-  PThread * start = current;  // Need thread in list that is the "start"
-  PThread * thread = current->link;
-  BOOL pass = 0;
-  BOOL canUseLowest = TRUE;
-  for (;;) {
-    switch (thread->status) {
-      case Waiting :
-        if (thread->dynamicPriority == 0)
-          next = thread;
-        else if (thread->dynamicPriority > 0) {
-          thread->dynamicPriority--;
-          canUseLowest = FALSE;
-        }
-        else if (pass > 1 && canUseLowest)
-          thread->dynamicPriority++;
-        break;
-
-      case Sleeping :
-        if (thread->sleepTimer == 0) {
-          if (thread->IsSuspended())
-            thread->status = Suspended;
-          else
+    PThread * next = NULL; // Next thread to be scheduled
+    PThread * prev = current; // Need the thread in the previous link
+    PThread * start = current;  // Need thread in list that is the "start"
+    PThread * thread = current->link;
+    BOOL pass = 0;
+    BOOL canUseLowest = TRUE;
+    for (;;) {
+      switch (thread->status) {
+        case Waiting :
+          if (thread->dynamicPriority == 0) {
             next = thread;
-        }
+            next->status = Running;
+          }
+          else if (thread->dynamicPriority > 0) {
+            thread->dynamicPriority--;
+            canUseLowest = FALSE;
+          }
+          else if (pass > 1 && canUseLowest)
+            thread->dynamicPriority++;
+          break;
+
+        case Sleeping :
+          if (thread->sleepTimer == 0) {
+            if (thread->IsSuspended())
+              thread->status = Suspended;
+            else {
+              next = thread;
+              next->status = Running;
+            }
+          }
+          break;
+
+        case BlockedIO :
+          if (thread->IsNoLongerBlocked()) {
+            thread->ClearBlock();
+            next = thread;
+            next->status = Running;
+          }
+          break;
+
+        case BlockedSem :
+        case SuspendedBlockSem :
+          if (thread->blockingSemaphore->timeout == 0)
+            thread->blockingSemaphore->Signal();
+          break;
+
+        case Starting :
+          if (!thread->IsSuspended())
+            next = thread;
+          break;
+
+        case Terminating :
+          if (thread == current)         // Cannot self terminate
+            next = PProcessInstance;     // So switch to process thread first
+          else {
+            prev->link = thread->link;   // Unlink it from the list
+            if (thread == start)         // If unlinking the "start" thread
+              start = prev;              //    then we better make it still in list
+            thread->status = Terminated; // Flag thread as terminated
+            if (thread->autoDelete)
+              delete thread;             // Destroy if auto-delete
+            thread = prev;
+          }
+          break;
+
+        default :
+          break;
+      }
+
+      if (next != NULL) // Have a thread to run
         break;
 
-      case BlockedIO :
-        if (thread->IsNoLongerBlocked()) {
-          thread->ClearBlock();
-          next = thread;
-        }
-        break;
-
-      case BlockedSem :
-      case SuspendedBlockSem :
-        if (thread->blockingSemaphore->timeout == 0)
-          thread->blockingSemaphore->Signal();
-        break;
-
-      case Starting :
-        if (!thread->IsSuspended())
-          next = thread;
-        break;
-
-      case Terminating :
-        prev->link = thread->link;   // Unlink it from the list
-        thread->status = Terminated;
-        if (thread == start)         // If unlinking the "start" thread
-          start = prev;      //    then we better make it still in list
-        if (thread != current && thread->autoDelete) {
-          delete thread;
-          thread = prev;
-        }
-        break;
-
-      default :
-        break;
+      // Need to have previous thread so can unlink a terminating thread
+      prev = thread;
+      thread = thread->link;
+      if (thread == start) {
+        pass++;
+        if (pass > 3) // Everything is blocked
+          PProcessInstance->OperatingSystemYield();
+      }
     }
 
-    if (next != NULL) // Have a thread to run
-      break;
+    PProcessInstance->currentThread = next;
 
-    // Need to have previous thread so can unlink a terminating thread
-    prev = thread;
-    thread = thread->link;
-    if (thread == start) {
-      pass++;
-      if (pass > 3) // Everything is blocked
-        process->OperatingSystemYield();
-    }
-  }
+    next->SwitchContext(current);
 
-  process->currentThread = next;
-  if (next->status != Starting)
-    next->status = Running;
-
-  next->SwitchContext(current);
-
-  if (current->status == Terminated && current->autoDelete)
-    delete current;
+    // Could get here with a self terminating thread, so go around again if all
+    // we did was switch stacks, and do not actually have a running thread.
+  } while (PProcessInstance->currentThread->status != Running);
 }
 
 
 #endif
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
-
-#if defined(_PPROCESS)
-
-static PProcess * PProcessInstance;
-int PProcess::argc;
-char ** PProcess::argv;
-char ** PProcess::envp;
-
-PProcess::PProcess(const char * manuf, const char * name,
-                           WORD major, WORD minor, CodeStatus stat, WORD build)
-  : manufacturer(manuf), productName(name)
-{
-  PProcessInstance = this;
-  terminationValue = 0;
-
-  majorVersion = major;
-  minorVersion = minor;
-  status = stat;
-  buildNumber = build;
-
-  arguments.SetArgs(argc-1, argv+1);
-
-  executableFile = PString(argv[0]);
-  if (!PFile::Exists(executableFile))
-    executableFile += ".exe";
-
-  if (productName.IsEmpty())
-    productName = executableFile.GetTitle().ToLower();
-
-  InitialiseProcessThread();
-
-  Construct();
-}
-
-
-int PProcess::_main(void *)
-{
-  Main();
-  return terminationValue;
-}
-
-
-void PProcess::PreInitialise(int c, char ** v, char ** e)
-{
-  argc = c;
-  argv = v;
-  envp = e;
-}
-
-
-PProcess & PProcess::Current()
-{
-  PAssertNULL(PProcessInstance);
-  return *PProcessInstance;
-}
-
-
-PObject::Comparison PProcess::Compare(const PObject & obj) const
-{
-  PAssert(obj.IsDescendant(PProcess::Class()), PInvalidCast);
-  return productName.Compare(((const PProcess &)obj).productName);
-}
-
-
-void PProcess::Terminate()
-{
-#ifdef _WINDLL
-  FatalExit(terminationValue);
-#else
-  exit(terminationValue);
-#endif
-}
-
-
-PString PProcess::GetVersion(BOOL full) const
-{
-  const char * const statusLetter[NumCodeStatuses] =
-    { "alpha", "beta", "pl" };
-  return psprintf(full && buildNumber != 0 ? "%u.%u%s%u" : "%u.%u",
-                majorVersion, minorVersion, statusLetter[status], buildNumber);
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1994,6 +2007,25 @@ PSyncPoint::PSyncPoint()
 
 
 #endif
+
+void PSyncPointAck::Signal()
+{
+  PSyncPoint::Signal();
+  ack.Wait();
+}
+
+
+void PSyncPointAck::Signal(const PTimeInterval & wait)
+{
+  PSyncPoint::Signal();
+  ack.Wait(wait);
+}
+
+
+void PSyncPointAck::Acknowledge()
+{
+  ack.Signal();
+}
 
 
 #endif
