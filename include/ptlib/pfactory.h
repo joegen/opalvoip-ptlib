@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.9  2004/06/03 12:47:58  csoutheren
+ * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
+ *
  * Revision 1.8  2004/06/01 05:44:12  csoutheren
  * Added typedefs to allow access to types
  * Changed singleton class to use new so as to allow full cleanup
@@ -195,11 +198,7 @@ class PGenericFactory
     PGenericFactory()
     { }
 
-    static PGenericFactory & GetFactory()
-    {
-      static PGenericFactory factory;
-      return factory;
-    }
+    static PGenericFactory & GetFactory();
 
     PMutex mutex;
     KeyMap_T keyMap;
@@ -208,6 +207,13 @@ class PGenericFactory
     PGenericFactory(const PGenericFactory &) {}
     void operator=(const PGenericFactory &) {}
 };
+
+#define INSTANTIATE_FACTORY(Abstract_T) \
+PGenericFactory<Abstract_T> & PGenericFactory<Abstract_T>::GetFactory() \
+{ \
+  static PGenericFactory<Abstract_T> factory; \
+  return factory; \
+} \
 
 
 template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
