@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.83  2004/09/23 05:00:10  csoutheren
+ * Extra proofing against possible NULL pointers
+ *
  * Revision 1.82  2004/04/03 23:53:10  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -500,7 +503,6 @@ void PDirectory::Close()
 }
 
 void PDirectory::Construct ()
-
 {
   directory   = NULL;
   entryBuffer = NULL;
@@ -550,7 +552,7 @@ BOOL PDirectory::Next()
       if (entryPtr == NULL)
         return FALSE;
 #else
-      if ((entryPtr = readdir(directory)) == NULL)
+      if ((entryPtr = ::readdir(directory)) == NULL)
         return FALSE;
       *entryBuffer = *entryPtr;
       strcpy(entryBuffer->d_name, entryPtr->d_name);
@@ -596,6 +598,9 @@ PString PDirectory::GetEntryName() const
 
 BOOL PDirectory::GetInfo(PFileInfo & info) const
 {
+  if (entryInfo == NULL)
+    return FALSE;
+
   info = *entryInfo;
   return TRUE;
 }
