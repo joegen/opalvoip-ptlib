@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.40  2000/06/21 01:01:21  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.39  2000/05/12 01:37:38  rogerh
  * Add netinet/tcp.h to NetBSD and OpenBSD too.
  *
@@ -376,6 +379,34 @@ typedef int socklen_t;
 #define HAS_IFREQ
  
 #define PSETPGRP()  setpgrp(0, 0)
+
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined (P_AIX)
+
+#include <errno.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <sys/uio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <dlfcn.h>
+#include <net/if.h>
+#include <strings.h>
+
+#define HAS_IFREQ
+
+#define PSETPGRP()  setpgrp()
 
 #else
 

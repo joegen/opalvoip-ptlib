@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.82  2000/06/21 01:01:21  robertj
+# AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+#
 # Revision 1.81  2000/05/18 22:23:21  rogerh
 # Fix RANLIB usage on the BSD machines. RANLIB can now be used to
 # specify the ranlib executable. P_USE_RANLIB must now be set to
@@ -275,6 +278,10 @@ ifneq (,$(findstring macos,$(OSTYPE)))
 OSTYPE := macos
 endif
 
+ifneq (,$(findstring AIX,$(OSTYPE)))
+MACHTYPE := ppc
+endif
+
 ifneq (,$(findstring netbsd,$(OSTYPE)))
 OSTYPE := NetBSD
 endif
@@ -315,7 +322,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos AIX))
 
 all ::
 	@echo
@@ -499,6 +506,35 @@ endif
 P_USE_RANLIB		:= 1
 
 endif # NetBSD
+
+
+####################################################
+
+ifeq ($(OSTYPE),AIX)
+
+P_PTHREADS	:= 1
+
+STDCCFLAGS	+= -DP_AIX  
+# -pedantic -g
+# LDLIBS		+= -lossaudio
+
+#ifdef P_PTHREADS
+ENDLDLIBS	+= -lpthread
+STDCCFLAGS	+= -D_REENTRANT 
+#-DP_HAS_SEMAPHORES
+#endif
+
+
+STDCCFLAGS	+= -mminimal-toc
+
+
+ifdef P_PTHREADS
+#CFLAGS	+= -pthread
+endif
+
+#P_USE_RANLIB		:= 1
+
+endif # AIX
 
 
 ####################################################
