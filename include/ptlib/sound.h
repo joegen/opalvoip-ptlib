@@ -1,5 +1,5 @@
 /*
- * $Id: sound.h,v 1.8 1995/01/16 09:42:05 robertj Exp $
+ * $Id: sound.h,v 1.9 1995/03/14 12:42:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sound.h,v $
- * Revision 1.8  1995/01/16 09:42:05  robertj
+ * Revision 1.9  1995/03/14 12:42:40  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.8  1995/01/16  09:42:05  robertj
  * Documentation.
  *
  * Revision 1.7  1994/08/23  11:32:52  robertj
@@ -45,8 +48,9 @@ PDECLARE_CLASS(PSound, PObject)
    possible. The class is provided mainly for the playback of sound files on
    the system.
 
-   The most common sound to use is the static function $B$Beep()$B$ which
-   emits the system standard "warning" or "attention" sound.
+   The most common sound to use is the static function
+   <A><CODE>Beep()</CODE></A> which emits the system standard "warning" or
+   "attention" sound.
  */
 
   public:
