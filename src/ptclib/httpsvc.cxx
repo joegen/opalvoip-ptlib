@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.32 1998/03/17 10:14:39 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.33 1998/03/20 03:18:15 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.33  1998/03/20 03:18:15  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.32  1998/03/17 10:14:39  robertj
  * Rewrite of registration page to allow for HTML file override.
  *
@@ -132,8 +135,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     compilationDate(inf.compilationDate),
     manufacturersHomePage(inf.manufHomePage != NULL ? inf.manufHomePage : HOME_PAGE),
     manufacturersEmail(inf.email != NULL ? inf.email : EMAIL),
-    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
-    httpThreadClosed(0)
+    productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName)
 {
   if (inf.gifHTML != NULL)
     gifHTML = inf.gifHTML;
