@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.16  1998/11/02 10:06:39  robertj
+ * Added capability of pip output to go to stdout/stderr.
+ *
  * Revision 1.15  1998/10/30 10:42:29  robertj
  * Better function arrangement for multi platforming.
  *
@@ -114,7 +117,10 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     enum OpenMode {
       ReadOnly,   // Pipe is only from the sub-process to the current process.
       WriteOnly,  // Pipe is only from the current process to the sub-process.
-      ReadWrite   // Pipe is bidirectional between current and sub-processes.
+      ReadWrite,  // Pipe is bidirectional between current and sub-processes.
+      ReadWriteStd
+      /* Pipe is bidirectional between current and sub-processes but the write
+         side goes to stdout and stderr */
     };
     // Channel mode for the pipe to the sub-process.
 
