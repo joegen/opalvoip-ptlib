@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.68  2004/06/30 12:17:04  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.67  2004/05/27 04:46:42  csoutheren
  * Removed vestigal Macintosh code
  *
@@ -785,7 +789,7 @@ class PProcessStartup : public PObject
     virtual void OnShutdown() { }
 };
 
-typedef PGenericFactory<PProcessStartup> PProcessStartupFactory;
+typedef PFactory<PProcessStartup> PProcessStartupFactory;
 
 // using an inline definition rather than a #define crashes gcc 2.95. Go figure
 #define P_DEFAULT_TRACE_OPTIONS	( PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine )
