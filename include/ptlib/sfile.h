@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.13  1998/09/24 07:24:01  robertj
+ * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
+ *
  * Revision 1.12  1998/09/23 06:21:23  robertj
  * Added open source copyright license.
  *
@@ -140,7 +143,7 @@ PDECLARE_CLASS(PStructuredFile, PFile)
 
 
   // New member functions
-    size_t GetStructureSize();
+    PINDEX GetStructureSize() { return structureSize; }
     /* Get the size of each structure in the file.
 
        <H2>Returns:</H2>
@@ -174,7 +177,7 @@ PDECLARE_CLASS(PStructuredFile, PFile)
 
   protected:
   // Member variables
-    size_t structureSize;
+    PINDEX structureSize;
     // Number of bytes in structure.
 
     Element * structure;
