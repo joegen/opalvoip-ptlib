@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.37  2003/03/06 02:43:43  dereks
+ * Make error messages slightly more descriptive.
+ *
  * Revision 1.36  2002/09/09 22:16:54  dereks
  * update hints for spca50x camera.
  *
@@ -502,7 +505,7 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
   struct video_channel channel;
   channel.channel = channelNumber;
   if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
-    PTRACE(1,"VideoInputDevice:: Get Channel info failed : "<< ::strerror(errno));    
+    PTRACE(1,"VideoInputDevice:: Get info on channel " << channelNumber << " failed : "<< ::strerror(errno));    
     return FALSE;
   }
   
@@ -511,7 +514,7 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
 
   // set the information
   if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
-    PTRACE(1,"VideoInputDevice:: Setchannel info failed : "<< ::strerror(errno));    
+    PTRACE(1,"VideoInputDevice:: Set info on channel " << channelNumber << " failed : "<< ::strerror(errno));    
     return FALSE;
   }
   
