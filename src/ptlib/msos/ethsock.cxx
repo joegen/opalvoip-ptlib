@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.7  1998/10/06 10:24:41  robertj
+ * Fixed hang when using reset command, removed the command!
+ *
  * Revision 1.6  1998/09/24 03:30:45  robertj
  * Added open software license.
  *
@@ -50,17 +53,16 @@
 
 #include <ptlib.h>
 #include <sockets.h>
+#include <epacket.h>
 
-#include <winioctl.h>
-#include <winsvc.h>
 #include <snmp.h>
 
-
-#pragma warning(disable:4201 4245 4514)
+#pragma warning(disable:4201)
 #include "ndis.h"
+#pragma warning(default:4201)
 
 
-static const char PacketServiceName[] = "PACKET";
+#define PACKET_SERVICE_NAME "EPacket"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -166,7 +168,6 @@ class PWin32PacketDriver
                    void * output, DWORD outSize,
                    DWORD & received);
 
-    virtual DWORD GetQueryOidCommand(UINT oid) const = 0;
     BOOL QueryOid(UINT oid, DWORD & data);
     BOOL QueryOid(UINT oid, UINT len, BYTE * data);
     BOOL SetOid(UINT oid, DWORD data);
@@ -190,8 +191,6 @@ class PWin32PacketVxD : public PWin32PacketDriver
 
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
-
-    virtual DWORD GetQueryOidCommand(UINT oid) const;
 };
 
 
@@ -207,22 +206,7 @@ class PWin32PacketSYS : public PWin32PacketDriver
 
     virtual BOOL BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap);
     virtual BOOL BeginWrite(const void * buf, DWORD len, PWin32Overlapped & overlap);
-
-    virtual DWORD GetQueryOidCommand(UINT oid) const;
 };
-
-
-#define FILE_DEVICE_PROTOCOL        0x8000
-
-#define IOCTL_PROTOCOL_QUERY_OID    CTL_CODE(FILE_DEVICE_PROTOCOL, 0 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_SET_OID      CTL_CODE(FILE_DEVICE_PROTOCOL, 1 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_STATISTICS   CTL_CODE(FILE_DEVICE_PROTOCOL, 2 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_RESET        CTL_CODE(FILE_DEVICE_PROTOCOL, 3 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_READ         CTL_CODE(FILE_DEVICE_PROTOCOL, 4 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_WRITE        CTL_CODE(FILE_DEVICE_PROTOCOL, 5 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_MACNAME      CTL_CODE(FILE_DEVICE_PROTOCOL, 6 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_BIND         CTL_CODE(FILE_DEVICE_PROTOCOL, 7 , METHOD_BUFFERED, FILE_ANY_ACCESS)
-#define IOCTL_PROTOCOL_UNBIND       CTL_CODE(FILE_DEVICE_PROTOCOL, 8 , METHOD_BUFFERED, FILE_ANY_ACCESS)
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -562,8 +546,8 @@ BOOL PWin32PacketDriver::CompleteIO(DWORD & received, PWin32Overlapped & overlap
 BOOL PWin32PacketDriver::QueryOid(UINT oid, UINT len, BYTE * data)
 {
   PWin32OidBuffer buf(oid, len);
-  DWORD rxsize;
-  if (!IoControl(GetQueryOidCommand(oid), buf, buf, buf, buf, rxsize))
+  DWORD rxsize = 0;
+  if (!IoControl(IOCTL_EPACKET_QUERY_OID, buf, buf, buf, buf, rxsize))
     return FALSE;
 
   if (rxsize == 0)
@@ -581,8 +565,8 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
   oidData[1] = sizeof(data);
   oidData[2] = 0x12345678;
 
-  DWORD rxsize;
-  if (!IoControl(GetQueryOidCommand(oid),
+  DWORD rxsize = 0;
+  if (!IoControl(IOCTL_EPACKET_QUERY_OID,
                  oidData, sizeof(oidData),
                  oidData, sizeof(oidData),
                  rxsize))
@@ -598,9 +582,9 @@ BOOL PWin32PacketDriver::QueryOid(UINT oid, DWORD & data)
 
 BOOL PWin32PacketDriver::SetOid(UINT oid, UINT len, const BYTE * data)
 {
-  DWORD rxsize;
+  DWORD rxsize = 0;
   PWin32OidBuffer buf(oid, len, data);
-  return IoControl(IOCTL_PROTOCOL_SET_OID, buf, buf, buf, buf, rxsize);
+  return IoControl(IOCTL_EPACKET_SET_OID, buf, buf, buf, buf, rxsize);
 }
 
 
@@ -611,7 +595,7 @@ BOOL PWin32PacketDriver::SetOid(UINT oid, DWORD data)
   oidData[1] = sizeof(data);
   oidData[2] = data;
   DWORD rxsize;
-  return IoControl(IOCTL_PROTOCOL_SET_OID,
+  return IoControl(IOCTL_EPACKET_SET_OID,
                    oidData, sizeof(oidData), oidData, sizeof(oidData), rxsize);
 }
 
@@ -640,8 +624,11 @@ BOOL PWin32PacketVxD::EnumInterfaces(PINDEX idx, PString & name)
 
 BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
 {
+  BYTE buf[20];
+  DWORD rxsize;
+
   if (hDriver == INVALID_HANDLE_VALUE) {
-    hDriver = CreateFile("\\\\.\\VPACKET.VXD",
+    hDriver = CreateFile("\\\\.\\EPACKET.VXD",
                          GENERIC_READ | GENERIC_WRITE,
                          0,
                          NULL,
@@ -654,6 +641,18 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
       dwError = ::GetLastError();
       return FALSE;
     }
+
+    rxsize = 0;
+    if (!IoControl(IOCTL_EPACKET_VERSION, NULL, 0, buf, sizeof(buf), rxsize)) {
+      dwError = ::GetLastError();
+      return FALSE;
+    }
+
+    if (rxsize != 2 || buf[0] < 1 || buf[1] < 1) {  // Require driver version 1.1
+      Close();
+      dwError = ERROR_BAD_DRIVER;
+      return FALSE;
+    }
   }
 
   PString devName;
@@ -663,27 +662,19 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
   else
     devName = interfaceName;
   
-  BYTE rxbuf[20];
-  DWORD rxsize;
-  if (!IoControl(IOCTL_PROTOCOL_BIND,
-                 (const char *)devName, devName.GetLength()+1,
-                 rxbuf, sizeof(rxbuf), rxsize)) {
-    dwError = ::GetLastError();
-    return FALSE;
-  }
-
   rxsize = 0;
-  if (!IoControl(IOCTL_PROTOCOL_MACNAME,
-                 rxbuf, sizeof(rxbuf),
-                 rxbuf, sizeof(rxbuf), rxsize)) {
+  if (!IoControl(IOCTL_EPACKET_BIND,
+                 (const char *)devName, devName.GetLength()+1,
+                 buf, sizeof(buf), rxsize) || rxsize == 0) {
     dwError = ::GetLastError();
+    if (dwError == 0)
+      dwError = ERROR_BAD_DRIVER;
     return FALSE;
   }
 
-  if (rxsize == 0) {
-    dwError = ERROR_PATH_NOT_FOUND;
+  // Get a random OID to verify that the driver did actually open
+  if (!QueryOid(OID_GEN_DRIVER_VERSION, 2, buf))
     return FALSE;
-  }
 
   dwError = ERROR_SUCCESS;
   return TRUE;
@@ -693,7 +684,7 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
 BOOL PWin32PacketVxD::BeginRead(void * buf, DWORD size, DWORD & received, PWin32Overlapped & overlap)
 {
   received = 0;
-  if (DeviceIoControl(hDriver, IOCTL_PROTOCOL_READ,
+  if (DeviceIoControl(hDriver, IOCTL_EPACKET_READ,
                       buf, size, buf, size, &received, &overlap)) {
     dwError = ERROR_SUCCESS;
     return TRUE;
@@ -708,7 +699,7 @@ BOOL PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 {
   DWORD rxsize = 0;
   BYTE dummy[2];
-  if (DeviceIoControl(hDriver, IOCTL_PROTOCOL_WRITE,
+  if (DeviceIoControl(hDriver, IOCTL_EPACKET_WRITE,
                       (void *)buf, len, dummy, sizeof(dummy), &rxsize, &overlap)) {
     dwError = ERROR_SUCCESS;
     return TRUE;
@@ -719,12 +710,6 @@ BOOL PWin32PacketVxD::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 }
 
 
-DWORD PWin32PacketVxD::GetQueryOidCommand(UINT oid) const
-{
-  return oid >= 0x01000000 ? IOCTL_PROTOCOL_QUERY_OID : IOCTL_PROTOCOL_STATISTICS;
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
 PWin32PacketSYS::PWin32PacketSYS()
@@ -732,7 +717,7 @@ PWin32PacketSYS::PWin32PacketSYS()
   // Start the packet driver service
   SC_HANDLE hManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
   if (hManager != NULL) {
-    HANDLE hService = OpenService(hManager, PacketServiceName, SERVICE_START);
+    HANDLE hService = OpenService(hManager, PACKET_SERVICE_NAME, SERVICE_START);
     if (hService != NULL) {
       StartService(hService, 0, NULL);
       dwError = ::GetLastError();
@@ -743,11 +728,11 @@ PWin32PacketSYS::PWin32PacketSYS()
 }
 
 
-static const char DevicePacketStr[] = "\\Device\\Packet_";
+static const char PacketDeviceStr[] = "\\Device\\" PACKET_SERVICE_NAME "_";
 
 BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
 {
-  RegistryKey registry("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\Packet\\Linkage",
+  RegistryKey registry("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\" PACKET_SERVICE_NAME "\\Linkage",
                        RegistryKey::ReadOnly);
   PString exports;
   if (!registry.QueryValue("Export", exports))
@@ -762,8 +747,8 @@ BOOL PWin32PacketSYS::EnumInterfaces(PINDEX idx, PString & name)
     return FALSE;
   }
 
-  if (strncmp(ptr, DevicePacketStr, sizeof(DevicePacketStr)-1) == 0)
-    ptr += sizeof(DevicePacketStr)-1;
+  if (strncmp(ptr, PacketDeviceStr, sizeof(PacketDeviceStr)-1) == 0)
+    ptr += sizeof(PacketDeviceStr)-1;
 
   name = ptr;
   return TRUE;
@@ -775,13 +760,13 @@ BOOL PWin32PacketSYS::BindInterface(const PString & interfaceName)
   Close();
 
   if (!DefineDosDevice(DDD_RAW_TARGET_PATH,
-                       "Packet_" + interfaceName,
-                       DevicePacketStr + interfaceName)) {
+                       PACKET_SERVICE_NAME "_" + interfaceName,
+                       PacketDeviceStr + interfaceName)) {
     dwError = ::GetLastError();
     return FALSE;
   }
 
-  hDriver = CreateFile("\\\\.\\Packet_" + interfaceName,
+  hDriver = CreateFile("\\\\.\\" PACKET_SERVICE_NAME "_" + interfaceName,
                        GENERIC_READ | GENERIC_WRITE,
                        0,
                        NULL,
@@ -823,12 +808,6 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
   dwError = ::GetLastError();
   return dwError == ERROR_IO_PENDING;
-}
-
-
-DWORD PWin32PacketSYS::GetQueryOidCommand(UINT) const
-{
-  return IOCTL_PROTOCOL_QUERY_OID;
 }
 
 
@@ -901,27 +880,28 @@ BOOL PEthSocket::Connect(const PString & newName)
   }
 
   Address myAddr;
-  if (!GetAddress(myAddr))
-    return FALSE;
+  if (GetAddress(myAddr)) {
+    os_handle = 1;
+    for (;;) {
+      Address itsAddr;
+      PWin32AsnOid ifPhysAddressOid = "1.3.6.1.2.1.2.2.1.6.0";
+      ifPhysAddressOid[ifPhysAddressOid.idLength-1] = os_handle;
+      if (!snmp->GetOid(ifPhysAddressOid, &itsAddr, sizeof(itsAddr)))
+        break;
 
-  os_handle = 1;
-  for (;;) {
-    Address itsAddr;
-    PWin32AsnOid ifPhysAddressOid = "1.3.6.1.2.1.2.2.1.6.0";
-    ifPhysAddressOid[ifPhysAddressOid.idLength-1] = os_handle;
-    if (!snmp->GetOid(ifPhysAddressOid, &itsAddr, sizeof(itsAddr)))
-      break;
+      ifPhysAddressOid.Free();
+      if (itsAddr == myAddr) {
+        interfaceName = newName;
+        return TRUE;
+      }
 
-    ifPhysAddressOid.Free();
-    if (itsAddr == myAddr) {
-      interfaceName = newName;
-      return TRUE;
+      os_handle++;
     }
-
-    os_handle++;
+    os_handle = -1;
   }
 
-  os_handle = -1;
+  osError = driver->GetLastError();
+  driver->Close();
   return FALSE;
 }
 
@@ -951,8 +931,7 @@ PString PEthSocket::GetGatewayInterface() const
       while (tempDriver->EnumInterfaces(idx++, name)) {
         if (tempDriver->BindInterface(name)) {
           Address ifAddr;
-          if (tempDriver->BindInterface(name) &&
-              tempDriver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(ifAddr), ifAddr.b) &&
+          if (tempDriver->QueryOid(OID_802_3_CURRENT_ADDRESS, sizeof(ifAddr), ifAddr.b) &&
               ifAddr == gwAddr) {
             delete tempDriver;
             return name;
@@ -1068,13 +1047,6 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
   }
 
   return MediumUnknown;
-}
-
-
-BOOL PEthSocket::ResetAdaptor()
-{
-  DWORD received;
-  return driver->IoControl(IOCTL_PROTOCOL_RESET, NULL, 0, NULL, 0, received);
 }
 
 
