@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.187  2002/04/30 06:21:38  robertj
+ * Fixed PReadWriteMutex class to implement text book algorithm!
+ *
  * Revision 1.186  2002/04/30 03:39:21  robertj
  * Changed PTimer::Stop() so does not return until timer is REALLY stopped, in
  *   particular when a possibly executing OnTimeout() function has completed.
@@ -2389,28 +2392,56 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 void PReadWriteMutex::StartRead()
 {
   starvationPreventer.Wait();
+   readMutex.Wait();
+    readerCountMutex.Wait();
+
+     readerCount++;
+     if (readerCount == 1)
+       writeMutex.Wait();
+
+    readerCountMutex.Signal();
+   readMutex.Signal();
   starvationPreventer.Signal();
-  ++readers;
 }
 
 
 void PReadWriteMutex::EndRead()
 {
-  --readers;
+  readerCountMutex.Wait();
+
+  readerCount--;
+  if (readerCount == 0)
+   writeMutex.Signal();
+
+  readerCountMutex.Signal();
 }
 
 
 void PReadWriteMutex::StartWrite()
 {
-  starvationPreventer.Wait();
-  readers.WaitCondition();
+  writerCountMutex.Wait();
+
+  writerCount++;
+  if (writerCount == 1)
+    readMutex.Wait();
+
+  writerCountMutex.Signal();
+
+  writeMutex.Wait();
 }
 
 
 void PReadWriteMutex::EndWrite()
 {
-  starvationPreventer.Signal();
-  readers.Signal();
+  writeMutex.Signal();
+
+  writerCountMutex.Wait();
+
+  writerCount--;
+  if (writerCount == 0)
+    readMutex.Signal();
+
+  writerCountMutex.Signal();
 }
 
 
