@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.33  2003/04/10 04:19:43  robertj
+ * Fixed incorrect timing on G.723.1 (framed codec)
+ * Fixed not using correct codec file suffix for non PCM/G.723.1 codecs.
+ *
  * Revision 1.32  2003/04/08 05:09:14  craigs
  * Added ability to use commands as an audio source
  *
@@ -1368,7 +1372,7 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
   PINDEX pos = ofn.FindLast('.');
   if (pos == P_MAX_INDEX) {
     if (fn.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
-      fn += "_g7231";
+      fn += wavFilePrefix;
   }
   else {
     PString basename = ofn.Left(pos);
@@ -1428,7 +1432,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   if (closed)
     return FALSE;
 
-  delay.Delay(len / frameBytes * frameTime);
+  delay.Delay((len+frameBytes-1)/frameBytes * frameTime);
 
   lastWriteCount = len;
   if (wavFile == NULL || !wavFile->IsOpen())
@@ -1595,7 +1599,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 
   // delay to synchronise to frame boundary
   if (frameBoundary)
-    delay.Delay(amount / frameBytes * frameTime);
+    delay.Delay((amount+frameBytes-1)/frameBytes * frameTime);
 
   return TRUE;
 }
