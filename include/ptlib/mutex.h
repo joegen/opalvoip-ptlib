@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.4  1999/02/16 08:12:22  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.3  1998/11/30 02:50:59  robertj
  * New directory structure
  *
@@ -48,7 +51,9 @@
 #include <ptlib/semaphor.h>
 
 
-PDECLARE_CLASS(PMutex, PSemaphore)
+class PMutex : public PSemaphore
+{
+  PCLASSINFO(PMutex, PSemaphore)
 /* This class defines a thread mutual exclusion object. A mutex is where a
    piece of code or data cannot be accessed by more than one thread at a time.
    To prevent this the PMutex is used in the following manner:
