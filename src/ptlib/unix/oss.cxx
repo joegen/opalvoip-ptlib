@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.9  1999/08/24 13:40:26  craigs
+ * Fixed problem with EINTR causing sound channel reads and write to fail
+ * Thanks to phil@netroedge.com!
+ *
  * Revision 1.8  1999/08/17 09:42:22  robertj
  * Fixed close of sound channel in loopback mode closing stdin!
  *
@@ -357,8 +361,12 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
   if (!Setup())
     return FALSE;
 
-  if (os_handle > 0)
-   return ConvertOSError(::write(os_handle, buf, len));
+  if (os_handle > 0) {
+    while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
+      if (GetErrorCode() != Interrupted)
+        return FALSE;
+    return TRUE;
+  }
 
   int index = 0;
 
@@ -379,8 +387,12 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   if (!Setup())
     return FALSE;
 
-  if (os_handle > 0)
-    return ConvertOSError(::read(os_handle, (void *)buf, len));
+  if (os_handle > 0) {
+    while (!ConvertOSError(::read(os_handle, (void *)buf, len)))
+      if (GetErrorCode() != Interrupted)
+        return FALSE;
+    return TRUE;
+  }
 
   int index = 0;
 
