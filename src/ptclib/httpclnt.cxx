@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.28  2002/05/28 01:41:50  robertj
+ * Fixed bug in reading chunked data, thanks David Iodice
+ *
  * Revision 1.27  2001/10/30 07:02:28  robertj
  * Fixed problem with bad servers causing endless loops in client.
  *
@@ -431,6 +434,7 @@ BOOL PHTTPClient::ReadContentBody(PMIMEInfo & replyMIME, PBYTEArray & body)
     // Read the chunk
     if (!ReadBlock(body.GetPointer(bytesRead+chunkLength)+bytesRead, chunkLength))
       return FALSE;
+    bytesRead+= chunkLength;
 
     // Read the trailing CRLF
     if (!ReadLine(chunkLengthLine))
