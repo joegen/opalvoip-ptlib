@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: defaultgui.mak,v $
+# Revision 1.11  2001/05/29 02:50:35  robertj
+# Allowed for GUI type of none
+#
 # Revision 1.10  2000/10/06 08:19:52  rogerh
 # Fix bug introduced in last commit. Only build motif when pwlib source exists
 #
@@ -158,7 +161,9 @@ endif
 
 ifdef PWLIB_GUI
 ifndef  GUI_TYPE
+ifneq (none,$(PWLIB_GUI))
 GUI_TYPE = $(PWLIB_GUI)
+endif
 endif
 endif
 
