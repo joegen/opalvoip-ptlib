@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.29 1997/12/11 10:40:29 robertj Exp $
+ * $Id: ptlib.cxx,v 1.30 1998/01/05 10:38:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.30  1998/01/05 10:38:25  robertj
+ * Unix pthreads compatibility, added threadsafe time functions.
+ *
  * Revision 1.29  1997/12/11 10:40:29  robertj
  * Fixed bug in SetType() function of FilePath.
  *
@@ -131,6 +134,21 @@ ostream & PGetErrorStream()
 void PSetErrorStream(ostream * s)
 {
   PErrorStream = s;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTime
+
+struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
+{
+  return ::localtime(clock);
+}
+
+
+struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
+{
+  return ::gmtime(clock);
 }
 
 
