@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.12 1996/07/27 04:09:23 robertj Exp $
+ * $Id: pprocess.h,v 1.13 1996/08/08 10:09:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.13  1996/08/08 10:09:08  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.12  1996/07/27 04:09:23  robertj
  * Changed thread creation to use C library function instead of direct WIN32.
  *
@@ -54,7 +57,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include "../../common/pprocess.h"
+#include "../../common/ptlib/pprocess.h"
   public:
     ~PProcess();
 
