@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.h,v $
+ * Revision 1.4  2004/02/20 16:27:52  ykiryanov
+ * if'd LDAP code to enable non-LDAP builds
+ *
  * Revision 1.3  2003/04/11 00:07:46  robertj
  * More for Microsoft IP address specification wierdness (registration side).
  *
@@ -43,6 +46,7 @@
 #pragma interface
 #endif
 
+#if P_LDAP
 
 #include <ptlib/sockets.h>
 #include <ptclib/pldap.h>
@@ -137,6 +141,7 @@ class PILSSession : public PLDAPSession
     );
 };
 
+#endif // P_LDAP
 
 #endif // _PILS_H
 
