@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.9 1995/12/10 11:48:54 robertj Exp $
+ * $Id: thread.h,v 1.10 1996/03/31 09:08:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.10  1996/03/31 09:08:42  robertj
+ * Added mutex to thread dictionary access.
+ *
  * Revision 1.9  1995/12/10 11:48:54  robertj
  * Fixed bug in application shutdown of child threads.
  *
@@ -70,6 +73,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 #if defined(P_PLATFORM_HAS_THREADS)
 #if defined(_WIN32)
   protected:
+    void RegisterWithProcess(BOOL terminating);
     HANDLE threadHandle;
     DWORD  threadId;
 #endif
