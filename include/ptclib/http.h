@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.29 1998/04/14 03:42:59 robertj Exp $
+ * $Id: http.h,v 1.30 1998/06/16 03:33:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.30  1998/06/16 03:33:33  robertj
+ * Changed TCP connection shutdown to be parameterised.
+ * Propagated persistence and proxy flags in new connection info instances.
+ *
  * Revision 1.29  1998/04/14 03:42:59  robertj
  * Fixed error code propagation in HTTP client.
  *
@@ -383,7 +387,8 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
                        const PString & url,
                        const PMIMEInfo & outMIME,
                        const PString & dataBody,
-                       PMIMEInfo & replyMime);
+                       PMIMEInfo & replyMime,
+                       BOOL persist = TRUE);
 
     BOOL WriteCommand(Commands cmd,
                       const PString & url,
@@ -404,7 +409,8 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
     BOOL GetDocument(
       const PURL & url,         // Universal Resource Locator for document.
       PMIMEInfo & outMIME,      // MIME info in request
-      PMIMEInfo & replyMIME     // MIME info in response
+      PMIMEInfo & replyMIME,    // MIME info in response
+      BOOL persist = TRUE
     );
     /* Get the document specified by the URL.
 
@@ -415,7 +421,8 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
     BOOL GetHeader(
       const PURL & url,         // Universal Resource Locator for document.
       PMIMEInfo & outMIME,      // MIME info in request
-      PMIMEInfo & replyMIME     // MIME info in response
+      PMIMEInfo & replyMIME,    // MIME info in response
+      BOOL persist = TRUE
     );
     /* Get the header for the document specified by the URL.
 
@@ -428,7 +435,8 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
       const PURL & url,             // Universal Resource Locator for document.
       PMIMEInfo & outMIME,          // MIME info in request
       const PStringToString & data, // Information posted to the HTTP server.
-      PMIMEInfo & replyMIME         // MIME info in response
+      PMIMEInfo & replyMIME,        // MIME info in response
+      BOOL persist = TRUE
     );
     /* Post the data specified to the URL.
 
@@ -664,7 +672,11 @@ PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
 */
   public:
     PHTTPConnectionInfo(PHTTP::Commands cmd);
-    PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & url, const PMIMEInfo & mime);
+    PHTTPConnectionInfo(PHTTP::Commands cmd,
+                        const PURL & url,
+                        const PMIMEInfo & mime,
+                        BOOL persist,
+                        BOOL proxy);
     void Construct(PHTTPServer & server, int majorVersion, int MinorVersion);
 
     PHTTP::Commands GetCommand() const { return command; }
