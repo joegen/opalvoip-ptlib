@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.5  1998/11/30 02:55:15  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/24 03:30:09  robertj
  * Added open software license.
  *
@@ -69,7 +72,7 @@
 #define EHOSTUNREACH            (WSAEHOSTUNREACH|0x40000000)
 
 
-#include "../../common/ptlib/ipsock.h"
+#include "../../ipsock.h"
 };
 
 
