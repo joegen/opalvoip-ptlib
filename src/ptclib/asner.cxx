@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.81  2003/04/28 02:50:33  robertj
+ * Fixed problem with spaces in type name, thanks Federico Pinna
+ *
  * Revision 1.80  2003/02/26 04:37:21  robertj
  * Tidied some comments
  *
@@ -4242,7 +4245,9 @@ void PXER_Stream::ArrayEncode(const PASN_Array & array)
   PXMLElement * elem = position;
 
   for (PINDEX i = 0; i < (PINDEX)size; i++) {
-    position = elem->AddChild(new PXMLElement(elem, array[i].GetTypeAsString()));
+    PString name = array[i].GetTypeAsString();
+    name.Replace(" ", "_", TRUE);
+    position = elem->AddChild(new PXMLElement(elem, name));
     array[i].Encode(*this);
   }
 
