@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.109  2004/08/05 12:09:35  rjongbloed
+ * Added macros for "remove const" and "down cast" funcions with and without RTTI.
+ * Added ability to disable Asserts.
+ * Change PAssert macros so pass through the boolean result so that they can be used
+ *   in if statements, allowing a chance to continue if ignore assert.
+ *
  * Revision 1.108  2004/07/11 07:56:35  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -466,6 +472,21 @@ typedef long _Ios_Fmtflags;
 ///////////////////////////////////////////////////////////////////////////////
 // Declare the debugging support
 
+#ifndef P_USE_ASSERTS
+#define P_USE_ASSERTS 1
+#endif
+
+#if !P_USE_ASSERTS
+
+#define PAssert(b, m) (b)
+#define PAssert2(b, c, m) (b)
+#define PAssertOS(b) (b)
+#define PAssertNULL(p) (p)
+#define PAssertAlways(m)
+#define PAssertAlways2(c, m)
+
+#else // P_USE_ASSERTS
+
 /// Standard assert messages for the PAssert macro.
 enum PStandardAssertMessage {
   PLogicError,              // A logic error occurred.
@@ -492,7 +513,8 @@ file and line number the macro was instantiated on, plus the message described
 by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
 */
-#define PAssert(b, m) if(b);else PAssertFunc(__FILE__, __LINE__, __CLASS__, (m))
+#define PAssert(b, m) \
+          ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,(m)),false))
 
 /** This macro is used to assert that a condition must be TRUE.
 If the condition is FALSE then an assert function is called with the source
@@ -501,7 +523,8 @@ by the #msg# parameter. This parameter may be either a standard value
 from the #PStandardAssertMessage# enum or a literal string.
 The #c# parameter specifies the class name that the error occurred in
 */
-#define PAssert2(b, c, m) if(b);else PAssertFunc(__FILE__, __LINE__, (c), (m))
+#define PAssert2(b, c, m) \
+          ((b)?true:(PAssertFunc(__FILE__,__LINE__,(c),(m)),false))
 
 /** This macro is used to assert that an operating system call succeeds.
 If the condition is FALSE then an assert function is called with the source
@@ -510,7 +533,7 @@ described by the #POperatingSystemError# value in the #PStandardAssertMessage#
 enum.
  */
 #define PAssertOS(b) \
-              if(b);else PAssertFunc(__FILE__, __LINE__, __CLASS__, POperatingSystemError)
+          ((b)?true:(PAssertFunc(__FILE__,__LINE__,__CLASS__,POperatingSystemError),false))
 
 /** This macro is used to assert that a pointer must be non-null.
 If the pointer is NULL then an assert function is called with the source file
@@ -540,10 +563,13 @@ enum or a literal string.
 */
 #define PAssertAlways2(c, m) PAssertFunc(__FILE__, __LINE__, (c), (m))
 
+#endif // P_USE_ASSERTS
 
 void PAssertFunc(const char * file, int line, const char * className, PStandardAssertMessage msg);
 void PAssertFunc(const char * file, int line, const char * className, const char * msg);
 void PAssertFunc(const char * full_msg);
+
+
 
 
 /** Get the stream being used for error output.
@@ -1224,6 +1250,16 @@ of compatibility with documentation systems.
 #define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
 #define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
 
+#define PRemoveConst(cls, ptr)  (const_cast<cls*>(ptr))
+
+#if P_USE_ASSERTS
+template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const char * file, int line) 
+  { if (obj == NULL) PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return obj; }
+#define PDownCast(cls, ptr) PAssertCast<cls>(dynamic_cast<cls*>(ptr),__FILE__,__LINE__)
+#else
+#define PDownCast(cls, ptr) (dynamic_cast<cls*>(ptr))
+#endif
+
 #include <typeinfo>
 
 #ifndef PCLASSNAME
@@ -1241,6 +1277,16 @@ of compatibility with documentation systems.
 
 #define PIsDescendant(ptr, cls)    ((ptr)->InternalIsDescendant(cls::Class()))
 #define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str))
+
+#define PRemoveConst(cls, ptr)  ((cls*)(ptr))
+
+#if P_USE_ASSERTS
+template<class BaseClass> inline BaseClass * PAssertCast(PObject * obj, const char * file, int line) 
+  { if (obj->InternalIsDescendant(BaseClass::Class()) return (BaseClass *)obj; PAssertFunc(file, line, BaseClass::Class(), PInvalidCast); return NULL; }
+#define PDownCast(cls, ptr) PAssertCast<cls>((ptr),__FILE__,__LINE__)
+#else
+#define PDownCast(cls, ptr) ((cls*)(ptr))
+#endif
 
 #define PBASECLASSINFO(cls, par) \
   public: \
