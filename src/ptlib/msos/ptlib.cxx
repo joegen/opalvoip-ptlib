@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.39  1998/10/13 14:13:17  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.38  1998/09/24 03:30:53  robertj
  * Added open software license.
  *
@@ -731,23 +734,8 @@ BOOL PTextFile::WriteLine(const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#if defined(_DEBUG) && defined(_MSC_VER)
-void PDumpObjects(void *userPortion, size_t)
-{
-  PObject * obj = (PObject *)userPortion;
-  _CrtDbgReport(_CRT_WARN, NULL, 0, NULL, "class = %s\n", obj->GetClass());
-}
-#endif
-
 void PProcess::Construct()
 {
-#if defined(_DEBUG) && defined(_MSC_VER)
-  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
-  _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
-  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
-  _CrtSetDumpClient(PDumpObjects);
-#endif
-
   PSetErrorStream(&cerr);
 
 #if !defined(_WIN32) && defined(_MSC_VER) && defined(_WINDOWS)
