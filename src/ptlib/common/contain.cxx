@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.66 1997/07/08 13:14:41 robertj Exp $
+ * $Id: contain.cxx,v 1.67 1997/12/11 13:32:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.67  1997/12/11 13:32:49  robertj
+ * Added AsUnsigned() function to convert string to DWORD.
+ *
  * Revision 1.66  1997/07/08 13:14:41  robertj
  * Fixed bug where freeing null pointer.
  *
@@ -1314,6 +1317,14 @@ long PString::AsInteger(unsigned base) const
   PAssert(base >= 2 && base <= 36, PInvalidParameter);
   char * dummy;
   return strtol(theArray, &dummy, base);
+}
+
+
+DWORD PString::AsUnsigned(unsigned base) const
+{
+  PAssert(base >= 2 && base <= 36, PInvalidParameter);
+  char * dummy;
+  return strtoul(theArray, &dummy, base);
 }
 
 
