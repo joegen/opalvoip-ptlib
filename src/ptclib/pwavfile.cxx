@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.12  2001/09/29 07:41:42  rogerh
+ * Add fix from Patrick Koorevaar <pkoorevaar@hotmail.com>
+ *
  * Revision 1.11  2001/08/15 12:52:20  rogerh
  * Fix typo
  *
@@ -483,6 +486,8 @@ BOOL PWAVFile::UpdateHeader()
   PFile::SetPosition(lenHeader - 4);
   PInt32l data_len = lenData;
   if (!PFile::Write(&data_len,4)) return (FALSE);
+
+  header_needs_updating = FALSE;
 
   return (TRUE);
 }
