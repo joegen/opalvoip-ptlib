@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.34  2000/04/07 05:45:49  rogerh
+ * Add extra include to Mac OS X section
+ *
  * Revision 1.33  2000/04/06 11:05:32  rogerh
  * Add MACOSX support from Kevin Packard
  *
@@ -317,6 +320,7 @@ typedef int socklen_t;
 #include <sys/sockio.h>
 #include <sys/signal.h>
 #include <net/if.h>
+#include <sys/ioctl.h>
  
 typedef int socklen_t;
  
