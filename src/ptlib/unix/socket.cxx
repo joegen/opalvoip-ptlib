@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.72  2001/09/19 00:41:20  robertj
+ * Fixed GetInterfaceTable so does not add duplicate interfaces into list.
+ * Changed the loop condition to allow for BSD variable length records.
+ *
  * Revision 1.71  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -1024,27 +1028,24 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
   PUDPSocket sock;
 
 #ifndef __BEOS__
-  int ifNum;
-
-#ifdef SIOCGIFNUM
-  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
-#else
-  ifNum = 100;
-#endif
 
   PBYTEArray buffer;
   struct ifconf ifConf;
-  ifConf.ifc_len  = ifNum * sizeof(ifreq);
-  ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
   
-  if (ioctl(sock.GetHandle(), SIOCGIFCONF, &ifConf) >= 0) {
-#ifndef SIOCGIFNUM
-    ifNum = ifConf.ifc_len / sizeof(ifreq);
+#ifdef SIOCGIFNUM
+  int ifNum;
+  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+  ifConf.ifc_len = ifNum * sizeof(ifreq);
+#else
+  ifConf.ifc_len = 100 * sizeof(ifreq); // That's a LOT of interfaces!
 #endif
 
-    int num = 0;
+  ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
+
+  if (ioctl(sock.GetHandle(), SIOCGIFCONF, &ifConf) >= 0) {
+    void * ifEndList = (char *)ifConf.ifc_req + ifConf.ifc_len;
     ifreq * ifName = ifConf.ifc_req;
-    for (num = 0; num < ifNum; num++) {
+    while (ifName < ifEndList) {
 
       struct ifreq ifReq;
       strcpy(ifReq.ifr_name, ifName->ifr_name);
@@ -1054,36 +1055,36 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
         if (flags & IFF_UP) {
           PString name(ifReq.ifr_name);
 
-          PString            macAddr;
-          PIPSocket::Address addr;
-          PIPSocket::Address mask;
-
-#ifdef SIO_Get_MAC_Address
+          PString macAddr;
+#if defined(SIO_Get_MAC_Address)
           if (ioctl(sock.GetHandle(), SIO_Get_MAC_Address, &ifReq) >= 0) {
-            BYTE * p = (BYTE *)ifReq.ifr_macaddr;
-            PEthSocket::Address a(p);
+            PEthSocket::Address a((BYTE *)ifReq.ifr_macaddr);
             macAddr = (PString)a;
           }
 #endif
 
-          if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) 
-            addr = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr);
+          if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
+            PIPSocket::Address addr = ((sockaddr_in *)&ifReq.ifr_addr)->sin_addr;
 
-          if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) 
-            mask = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr);
-
-          list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr));
+            if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) {
+              PIPSocket::Address mask = ((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
+              PINDEX i;
+              for (i = 0; i < list.GetSize(); i++) {
+                if (list[i].GetName() == name &&
+                    list[i].GetAddress() == addr &&
+                    list[i].GetNetMask() == mask)
+                  break;
+              }
+              if (i >= list.GetSize())
+                list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr));
+            }
+          }
         }
       }
 
-#ifndef MAX
-#define MAX(x,y) ( (x) > (y) ? (x) : (y) )
-#endif
-
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
       // move the ifName pointer along to the next ifreq entry
-      ifName = (struct ifreq *) ((char *)&ifName->ifr_addr
-                    + MAX(ifName->ifr_addr.sa_len, sizeof(ifName->ifr_addr)));
+      ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #else
       ifName++;
 #endif
