@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.146  2003/01/11 05:10:51  robertj
+ * Fixed Win CE compatibility issues, thanks Joerg Schoemer
+ *
  * Revision 1.145  2002/12/16 08:04:46  robertj
  * Fixed correct error check for gethostbyname_r, thanks Vladimir Toncar
  *
@@ -679,7 +682,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
 #ifndef _WIN32_WCE
     address = *(DWORD *)host_info->h_addr;
 #else
-    address = PIPSocket::Address(h_length, host_info->h_addr);
+    address = PIPSocket::Address(host_info->h_length, (const BYTE *)host_info->h_addr);
 #endif
   aliases.AppendString(host_info->h_name);
 
