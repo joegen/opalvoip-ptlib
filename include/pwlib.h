@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.37 1995/04/02 09:27:25 robertj Exp $
+ * $Id: pwlib.h,v 1.38 1995/07/31 12:06:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
+ * Revision 1.38  1995/07/31 12:06:04  robertj
+ * Split off pop up window from balloon.
+ *
  * Revision 1.37  1995/04/02 09:27:25  robertj
  * Added "balloon" help.
  *
@@ -502,6 +505,12 @@
 // PScrollable
 
 #include <scrollab.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPopUp
+
+#include <popup.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
