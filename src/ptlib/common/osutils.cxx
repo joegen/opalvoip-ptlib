@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.89 1998/02/03 06:19:55 robertj Exp $
+ * $Id: osutils.cxx,v 1.90 1998/02/05 13:33:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.90  1998/02/05 13:33:12  robertj
+ * Fixed close of non-autodelete PIndirectChannels
+ *
  * Revision 1.89  1998/02/03 06:19:55  robertj
  * Added new function to read a block with minimum number of bytes.
  *
@@ -962,6 +965,8 @@ PString PIndirectChannel::GetName() const
 
 BOOL PIndirectChannel::Close()
 {
+  BOOL retval = TRUE;
+
   flush();
 
   PChannel * r = readChannel;
@@ -970,13 +975,19 @@ BOOL PIndirectChannel::Close()
   readChannel = NULL;
   writeChannel = NULL;
 
-  if (readAutoDelete)
-    delete r;
+  if (r != NULL) {
+    retval = r->Close();
+    if (readAutoDelete)
+      delete r;
+  }
 
-  if (writeAutoDelete && r != w)
-    delete w;
+  if (r != w && w != NULL) {
+    retval = w->Close() && retval;
+    if (writeAutoDelete)
+      delete w;
+  }
 
-  return TRUE;
+  return retval;
 }
 
 
