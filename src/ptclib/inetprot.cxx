@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.50  2001/09/11 03:27:46  robertj
+ * Improved error processing on high level protocol failures, usually
+ *   caused by unexpected shut down of a socket.
+ *
  * Revision 1.49  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -564,7 +568,12 @@ BOOL PInternetProtocol::ReadResponse()
   PString line;
   if (!ReadLine(line)) {
     lastResponseCode = -1;
-    lastResponseInfo = GetErrorText(LastReadError);
+    if (GetErrorCode(LastReadError) != NoError)
+      lastResponseInfo = GetErrorText(LastReadError);
+    else {
+      lastResponseInfo = "Remote shutdown";
+      SetErrorValues(ProtocolFailure, 0, LastReadError);
+    }
     return FALSE;
   }
 
@@ -578,7 +587,10 @@ BOOL PInternetProtocol::ReadResponse()
          (!isdigit(line[0]) && strncmp(line, prefix, continuePos) != 0)) {
     lastResponseInfo += '\n';
     if (!ReadLine(line)) {
-      lastResponseInfo += GetErrorText(LastReadError);
+      if (GetErrorCode(LastReadError) != NoError)
+        lastResponseInfo += GetErrorText(LastReadError);
+      else
+        SetErrorValues(ProtocolFailure, 0, LastReadError);
       return FALSE;
     }
     if (line.Left(continuePos) == prefix)

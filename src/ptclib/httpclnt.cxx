@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.23  2001/09/11 03:27:46  robertj
+ * Improved error processing on high level protocol failures, usually
+ *   caused by unexpected shut down of a socket.
+ *
  * Revision 1.22  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -326,11 +330,15 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
       bad = FALSE;
   }
 
+
   if (bad) {
     lastResponseCode = -1;
-    lastResponseInfo = GetErrorText(LastReadError);
-    if (lastResponseInfo.IsEmpty())
+    if (GetErrorCode(LastReadError) != NoError)
+      lastResponseInfo = GetErrorText(LastReadError);
+    else {
       lastResponseInfo = "Remote shutdown";
+      SetErrorValues(ProtocolFailure, 0, LastReadError);
+    }
     return FALSE;
   }
 
@@ -402,7 +410,7 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
     if (host.IsEmpty()) {
       lastResponseCode = BadRequest;
       lastResponseInfo = "No host specified";
-      return FALSE;
+      return SetErrorValues(ProtocolFailure, 0, LastReadError);
     }
 
     if (!Connect(host, url.GetPort())) {
