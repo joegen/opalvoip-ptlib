@@ -29,6 +29,8 @@
  * $log$
  */
 
+#ifndef __BEOS__
+
 #ifndef _PDYNALINK
 
 #pragma interface
@@ -48,5 +50,5 @@
 
 #endif
 
-
+#endif // !__BEOS__
 // End Of File ////////////////////////////////////////////////////////////////

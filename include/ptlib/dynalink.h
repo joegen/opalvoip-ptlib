@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.8  2001/06/30 06:59:06  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.7  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -51,6 +54,7 @@
  *
  */
 
+#ifndef __BEOS__
 #define _PDYNALINK
 
 #ifdef __GNUC__
@@ -156,5 +160,5 @@ class PDynaLink : public PObject
 #include <ptlib/dynalink.h>
 };
 
-
+#endif // !__BEOS__
 // End Of File ///////////////////////////////////////////////////////////////

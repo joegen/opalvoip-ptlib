@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.93  2001/06/30 06:59:06  yurik
+# Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+#
 # Revision 1.92  2001/05/29 03:32:53  craigs
 # Added additional checks for OpenSSL
 #
@@ -641,22 +644,29 @@ BE_THREADS := 1
 # be droppped.
 #BE_BONE := 1
 
-LDLIBS		+= -lbe -lmedia -lgame
+SYSLIBS     += -lbe -lmedia -lgame -lroot
 
 ifdef BE_THREADS
 STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
 endif
 
-STDCCFLAGS	+= -Wno-multichar
+STDCCFLAGS	+= -Wno-multichar -Wno-format
 
 ifdef BE_BONE
-LDLIBS		+= -lsocket -lbind
-STDCCFLAGS	+= -DBE_BONE
+SYSLIBS		+= -lsocket -lbind
 else
-#####LDLIBS      += -lnet
+SYSLIBS     += -lnet
+STDCCFLAGS  += -DBE_BONELESS
 endif
 
+LDLIBS		+= $(SYSLIBS)
+
 MEMORY_CHECK := 0
+
+ifdef PROFILE
+STDCCFLAGS += -p
+LDFLAGS += -p
+endif
 
 endif # beos
 
