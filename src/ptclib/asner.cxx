@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.36  2001/01/24 04:37:07  robertj
+ * Added more bulletproofing to ASN structures to obey constraints.
+ *
  * Revision 1.35  2001/01/03 01:20:13  robertj
  * Fixed error in BlockEncode, should ByteAlign() even on zero length strings.
  *
@@ -541,6 +544,18 @@ void PASN_Integer::PrintOn(ostream & strm) const
     strm << (int)value;
   else
     strm << value;
+}
+
+
+void PASN_Integer::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if ((int)value < lowerLimit)
+      value = lowerLimit;
+    else if (value > upperLimit)
+      value = upperLimit;
+  }
 }
 
 
@@ -1249,7 +1264,14 @@ void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 
 BOOL PASN_BitString::SetSize(unsigned nBits)
 {
-  totalBits = nBits;
+  if (constraint == Unconstrained)
+    totalBits = nBits;
+  else if (totalBits < (unsigned)lowerLimit)
+    totalBits = lowerLimit;
+  else if ((unsigned)totalBits > upperLimit)
+    totalBits = upperLimit;
+  else
+    totalBits = nBits;
   return bitData.SetSize((nBits+7)/8);
 }
 
@@ -1280,19 +1302,6 @@ void PASN_BitString::Invert(unsigned bit)
 {
   if (bit < totalBits)
     bitData[(PINDEX)(bit>>3)] ^= 1 << (7 - (bit&7));
-}
-
-
-void PASN_BitString::SetConstraints(ConstraintType type, int lower, unsigned upper)
-{
-  PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
-  if (constraint != Unconstrained) {
-    if (totalBits < (unsigned)lowerLimit)
-      SetSize(lowerLimit);
-    else if ((unsigned)totalBits > upperLimit)
-      SetSize(upperLimit);
-  }
 }
 
 
@@ -1327,6 +1336,14 @@ void PASN_BitString::PrintOn(ostream & strm) const
       offset++;
     }
   }
+}
+
+
+void PASN_BitString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PAssert(lower >= 0, PInvalidParameter);
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  SetSize(GetSize());
 }
 
 
@@ -1530,19 +1547,6 @@ PString PASN_OctetString::AsString() const
 }
 
 
-void PASN_OctetString::SetConstraints(ConstraintType type, int lower, unsigned upper)
-{
-  PAssert(lower >= 0, PInvalidParameter);
-  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
-  if (constraint != Unconstrained) {
-    if (value.GetSize() < (PINDEX)lowerLimit)
-      value.SetSize(lowerLimit);
-    else if ((unsigned)value.GetSize() > upperLimit)
-      value.SetSize(upperLimit);
-  }
-}
-
-
 PObject::Comparison PASN_OctetString::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PASN_OctetString::Class()), PInvalidCast);
@@ -1585,6 +1589,19 @@ void PASN_OctetString::PrintOn(ostream & strm) const
     i += 16;
   }
   strm << setw(indent-1) << "}";
+}
+
+
+void PASN_OctetString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PAssert(lower >= 0, PInvalidParameter);
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if (value.GetSize() < (PINDEX)lowerLimit)
+      value.SetSize(lowerLimit);
+    else if ((unsigned)value.GetSize() > upperLimit)
+      value.SetSize(upperLimit);
+  }
 }
 
 
@@ -1722,12 +1739,26 @@ PASN_ConstrainedString::PASN_ConstrainedString(const char * canonical, PINDEX si
 PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
 {
   value = PString();
+
   PINDEX len = strlen(str);
+
+  // Can't copy any more characters than the upper constraint
+  if ((unsigned)len > upperLimit)
+    len = upperLimit;
+
+  // Now copy individual characters, if they are in character set constraint
   for (PINDEX i = 0; i < len; i++) {
     PINDEX sz = characterSet.GetSize();
     if (sz == 0 || memchr(characterSet, str[i], sz) != NULL)
       value += str[i];
   }
+
+  // Make sure string meets minimum length constraint
+  while ((int)len < lowerLimit) {
+    value += characterSet[0];
+    len++;
+  }
+
   return *this;
 }
 
@@ -1770,6 +1801,8 @@ void PASN_ConstrainedString::SetCharacterSet(const char * set, PINDEX setSize, C
   charSetAlignedBits = 1;
   while (charSetUnalignedBits > charSetAlignedBits)
     charSetAlignedBits <<= 1;
+
+  operator=((const char *)value);
 }
 
 
@@ -1784,6 +1817,19 @@ PObject::Comparison PASN_ConstrainedString::Compare(const PObject & obj) const
 void PASN_ConstrainedString::PrintOn(ostream & strm) const
 {
   strm << value.ToLiteral();
+}
+
+
+void PASN_ConstrainedString::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PAssert(lower >= 0, PInvalidParameter);
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if (value.GetSize() < (PINDEX)lowerLimit)
+      value.SetSize(lowerLimit);
+    else if ((unsigned)value.GetSize() > upperLimit)
+      value.SetSize(upperLimit);
+  }
 }
 
 
@@ -2031,34 +2077,54 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
 
 PASN_BMPString & PASN_BMPString::operator=(const PString & str)
 {
-  PINDEX sz = str.GetLength();
-  value.SetSize(sz);
+  PINDEX paramSize = str.GetLength();
+
+  // Can't copy any more than the upper constraint
+  if ((unsigned)paramSize > upperLimit)
+    paramSize = upperLimit;
+
+  // Number of bytes must be at least lhe lower constraint
+  PINDEX newSize = (int)paramSize < lowerLimit ? lowerLimit : paramSize;
+  value.SetSize(newSize);
 
   PINDEX count = 0;
-  for (PINDEX i = 0; i < sz; i++) {
+  for (PINDEX i = 0; i < paramSize; i++) {
     WORD c = (BYTE)str[i];
     if (IsLegalCharacter(c))
       value[count++] = c;
   }
 
-  value.SetSize(count);
+  // Pad out with the first character till required size
+  while (count < newSize)
+    value[count++] = firstChar;
+
   return *this;
 }
 
 
 PASN_BMPString & PASN_BMPString::operator=(const PWORDArray & array)
 {
-  PINDEX sz = array.GetSize();
-  value.SetSize(sz);
+  PINDEX paramSize = array.GetSize();
+
+  // Can't copy any more than the upper constraint
+  if ((unsigned)paramSize > upperLimit)
+    paramSize = upperLimit;
+
+  // Number of bytes must be at least lhe lower constraint
+  PINDEX newSize = (int)paramSize < lowerLimit ? lowerLimit : paramSize;
+  value.SetSize(newSize);
 
   PINDEX count = 0;
-  for (PINDEX i = 0; i < sz; i++) {
+  for (PINDEX i = 0; i < paramSize; i++) {
     WORD c = array[i];
     if (IsLegalCharacter(c))
       value[count++] = c;
   }
 
-  value.SetSize(count);
+  // Pad out with the first character till required size
+  while (count < newSize)
+    value[count++] = firstChar;
+
   return *this;
 }
 
@@ -3457,6 +3523,19 @@ void PASN_Array::PrintOn(ostream & strm) const
   for (PINDEX i = 0; i < array.GetSize(); i++)
     strm << setw(indent+1) << "[" << i << "]=" << setprecision(indent) << array[i] << '\n';
   strm << setw(indent-1) << "}";
+}
+
+
+void PASN_Array::SetConstraints(ConstraintType type, int lower, unsigned upper)
+{
+  PAssert(lower >= 0, PInvalidParameter);
+  PASN_ConstrainedObject::SetConstraints(type, lower, upper);
+  if (constraint != Unconstrained) {
+    if (GetSize() < (PINDEX)lowerLimit)
+      SetSize(lowerLimit);
+    else if (GetSize() > (PINDEX)upperLimit)
+      SetSize(upperLimit);
+  }
 }
 
 
