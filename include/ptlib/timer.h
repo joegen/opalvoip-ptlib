@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.27  2003/09/17 09:01:00  csoutheren
+ * Moved PSmartPointer and PNotifier into seperate files
+ * Added detection for system regex libraries on all platforms
+ *
  * Revision 1.26  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -119,6 +123,8 @@
 #endif
 
 class PThread;
+
+#include <ptlib/notifier.h>
 
 /**
    A class representing a system timer. The time interval ancestor value is
