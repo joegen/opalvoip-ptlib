@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.28  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.27  1998/09/23 06:20:18  robertj
  * Added open source copyright license.
  *
@@ -129,19 +132,20 @@
 
 class PChannel;
 
+/* Buffer class used in PChannel stream.
+This class is necessary for implementing the standard C++ iostream interface
+on #PChannel# classes and its descendents. It is an internal class and
+should not ever be used by application writers.
+*/
 class PChannelStreamBuffer : public streambuf {
-/* This class is necessary for implementing the standard C++ iostream interface
-   on <A>PChannel</A> classes and its descendents. It is an internal class and
-   should not ever be used by application writers.
- */
 
   protected:
+    /* Construct the streambuf for standard streams on a channel. This is used
+       internally by the #PChannel# class.
+     */
     PChannelStreamBuffer(
       PChannel * chan   // Channel the buffer operates on.
     );
-    /* Construct the streambuf for standard streams on a channel. This is used
-       internally by the <A>PChannel</A> class.
-     */
 
     virtual int overflow(int=EOF);
     virtual int underflow();
@@ -165,15 +169,13 @@ class PChannelStreamBuffer : public streambuf {
 };
 
 
-class PChannel : public PObject, public iostream {
-  PCLASSINFO(PChannel, PObject)
-/* Abstract class defining I/O channel semantics. An I/O channel can be a
+/** Abstract class defining I/O channel semantics. An I/O channel can be a
    serial port, pipe, network socket or even just a simple file. Anything that
    requires opening and closing then reading and/or writing from.
 
-   A descendent would typically have constructors and an Open() function which
-   enables access to the I/O channel it represents. The <A>Read()</A> and
-   <A>Write()</A> functions would then be overridden to the platform and I/O
+   A descendent would typically have constructors and an #Open()# function which
+   enables access to the I/O channel it represents. The #Read()# and
+   #Write()# functions would then be overridden to the platform and I/O
    specific mechanisms required.
 
    The general model for a channel is that the channel accepts and/or supplies
@@ -181,73 +183,96 @@ class PChannel : public PObject, public iostream {
    functions that allow certain types of transfer. These include direct
    transfers, buffered transfers (via iostream) or asynchronous transfers.
 
-   The model also has the fundamental state of the channel being <I>open</I>
-   or <I>closed</I>. A channel instance that is closed contains sufficient
+   The model also has the fundamental state of the channel being {\it open}
+   or {\it closed}. A channel instance that is closed contains sufficient
    information to describe the channel but does not allocate or lock any
    system resources. An open channel allocates or locks the particular system
    resource. The act of opening a channel is a key event that may fail. In this
    case the channel remains closed and error values are set.
  */
+class PChannel : public PObject, public iostream {
+  PCLASSINFO(PChannel, PObject);
 
   public:
+  /**@name Construction */
+  //@{
+      /// Create the channel.
     PChannel();
-      // Create the channel.
 
+      /// Close down the channel.
     ~PChannel();
-      // Close down the channel.
+  //@}
 
+  /**@name Information functions */
+  //@{
+    /** Determine if the channel is currently open.
+       This indicates that read and write operations can be executed on the
+       channel. For example, in the #PFile# class it returns if the file is
+       currently open.
 
-    // New functions for class
-    virtual PString GetName() const;
-    /* Get the platform and I/O channel type name of the channel. For example,
-       it would return the filename in <A>PFile</A> type channels.
-
-       <H2>Returns:</H2>
-       the name of the channel.
+       @return TRUE if the channel is open.
      */
-
-    virtual BOOL Close();
-    /* Close the channel, shutting down the link to the data source.
-
-       <H2>Returns:</H2>
-       TRUE if the channel successfully closed.
-     */
-
     virtual BOOL IsOpen() const;
-    /* Determine if the channel is currently open and read and write operations
-       can be executed on it. For example, in the <A>PFile</A> class it returns
-       if the file is currently open.
 
-       <H2>Returns:</H2>
-       TRUE if the channel is open.
+    /** Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in #PFile# type channels.
+
+       @return the name of the channel.
      */
+    virtual PString GetName() const;
 
+    /** Get the integer operating system handle for the channel.
 
-    void SetReadTimeout(
-      const PTimeInterval & time  // The new time interval for read operations.
-    );
-    /* Set the timeout for read operations. This may be zero for immediate
-       return of data through to PMaxMilliseconds which will wait forever for
+       @return
+       standard OS descriptor integer.
+     */
+    int GetHandle() const;
+
+    /** Get the base channel of channel indirection using PIndirectChannel.
+       This function returns the eventual base channel for reading of a series
+       of indirect channels provided by descendents of #PIndirectChannel#.
+
+       The behaviour for this function is to return "this".
+       
+       @return
+       Pointer to base I/O channel for the indirect channel.
+     */
+    virtual PChannel * GetBaseReadChannel() const;
+
+    /** Get the base channel of channel indirection using PIndirectChannel.
+       This function returns the eventual base channel for writing of a series
+       of indirect channels provided by descendents of #PIndirectChannel#.
+
+       The behaviour for this function is to return "this".
+       
+       @return
+       Pointer to base I/O channel for the indirect channel.
+     */
+    virtual PChannel * GetBaseWriteChannel() const;
+  //@}
+
+  /**@name Reading functions */
+  //@{
+    /** Set the timeout for read operations. This may be zero for immediate
+       return of data through to #PMaxMilliseconds# which will wait forever for
        the read request to be filled.
        
        Note that this function may not be available, or meaningfull, for all
        channels. In that case it is set but ignored.
      */
+    void SetReadTimeout(
+      const PTimeInterval & time  /// The new time interval for read operations.
+    );
 
-    PTimeInterval GetReadTimeout() const;
-    /* Get the timeout for read operations. Note that this function may not be
+    /** Get the timeout for read operations. Note that this function may not be
        available, or meaningfull, for all channels. In that case it returns the
        previously set value.
 
-       <H2>Returns:</H2>
-       time interval for read operations.
+       @return time interval for read operations.
      */
+    PTimeInterval GetReadTimeout() const;
 
-    virtual BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Low level read from the channel. This function may block until the
+    /** Low level read from the channel. This function may block until the
        requested number of characters were read or the read timeout was
        reached. The GetLastReadCount() function returns the actual number
        of bytes read.
@@ -255,63 +280,63 @@ class PChannel : public PObject, public iostream {
        The GetErrorCode() function should be consulted after Read() returns
        FALSE to determine what caused the failure.
 
-       <H2>Returns:</H2>
+       @return
        TRUE indicates that at least one character was read from the channel.
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
+    virtual BOOL Read(
+      void * buf,   /// Pointer to a block of memory to receive the read bytes.
+      PINDEX len    /// Maximum number of bytes to read into the buffer.
+    );
 
-    PINDEX GetLastReadCount() const;
-    /* Get the number of bytes read by the last Read() call. This will be from
+    /**Get the number of bytes read by the last Read() call. This will be from
        0 to the maximum number of bytes as passed to the Read() call.
        
        Note that the number of bytes read may often be less than that asked
        for. Aside from the most common case of being at end of file, which the
        applications semantics may regard as an exception, there are some cases
-       where this is normal. For example, if a <A>PTextFile</A> channel on the
+       where this is normal. For example, if a PTextFile channel on the
        MSDOS platform is read from, then the translation of CR/LF pairs to \n
        characters will result in the number of bytes returned being less than
        the size of the buffer supplied.
 
-       <H2>Returns:</H2>
+       @return
        the number of bytes read.
      */
+    PINDEX GetLastReadCount() const;
 
-    virtual int ReadChar();
-    /* Read a single 8 bit byte from the channel. If one was not available
+    /** Read a single 8 bit byte from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
        function gives with a -1 return value.
 
-       <H2>Returns:</H2>
+       @return
        byte read or -1 if no character could be read.
      */
+    virtual int ReadChar();
 
-    BOOL ReadBlock(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Read len bytes into the buffer from the channel. This function uses
+    /** Read len bytes into the buffer from the channel. This function uses
        Read(), so most remarks pertaining to that function also apply to this
        one. The only difference being that this function will not return until
        all of the bytes have been read, or an error occurs.
 
-       <H2>Returns:</H2>
-       TRUE if the read of <CODE>len</CODE> bytes was sucessfull.
+       @return
+       TRUE if the read of #len# bytes was sucessfull.
      */
+    BOOL ReadBlock(
+      void * buf,   /// Pointer to a block of memory to receive the read bytes.
+      PINDEX len    /// Maximum number of bytes to read into the buffer.
+    );
 
-    PString ReadString(PINDEX len);
-    /* Read <CODE>len</CODE> character into a string from the channel. This
+    /** Read #len# character into a string from the channel. This
        function simply uses ReadBlock(), so all remarks pertaining to that
        function also apply to this one.
 
-       <H2>Returns:</H2>
+       @return
        String that was read.
      */
+    PString ReadString(PINDEX len);
 
-    virtual BOOL ReadAsync(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Begin an asynchronous read from channel. The read timeout is used as in
+    /** Begin an asynchronous read from channel. The read timeout is used as in
        other read operations, in this case calling the OnReadComplete()
        function.
 
@@ -319,45 +344,47 @@ class PChannel : public PObject, public iostream {
        will do a sychronous read is in the Read() function with the addition
        of calling the OnReadComplete() before returning.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the read was sucessfully queued.
      */
-
-    virtual void OnReadComplete(
-      void * buf, // Pointer to a block of memory that received the read bytes.
-      PINDEX len  // Actual number of bytes to read into the buffer.
+    virtual BOOL ReadAsync(
+      void * buf,   /// Pointer to a block of memory to receive the read bytes.
+      PINDEX len    /// Maximum number of bytes to read into the buffer.
     );
-    /* User callback function for when a ReadAsync() call has completed or
+
+    /** User callback function for when a #ReadAsync()# call has completed or
        timed out. The original pointer to the buffer passed in ReadAsync() is
        passed to the function.
      */
-
-
-    void SetWriteTimeout(
-      const PTimeInterval & time // The new time interval for write operations.
+    virtual void OnReadComplete(
+      void * buf, /// Pointer to a block of memory that received the read bytes.
+      PINDEX len  /// Actual number of bytes to read into the buffer.
     );
-    /* Set the timeout for write operations to complete. This may be zero for
+  //@}
+
+  /**@name Writing functions */
+  //@{
+    /** Set the timeout for write operations to complete. This may be zero for
        immediate return through to PMaxMilliseconds which will wait forever for
        the write request to be completed.
        
        Note that this function may not be available, or meaningfull,  for all
        channels. In this case the parameter is et but ignored.
      */
+    void SetWriteTimeout(
+      const PTimeInterval & time /// The new time interval for write operations.
+    );
 
-    PTimeInterval GetWriteTimeout() const;
-    /* Get the timeout for write operations to complete. Note that this
+    /** Get the timeout for write operations to complete. Note that this
        function may not be available, or meaningfull, for all channels. In
        that case it returns the previously set value.
 
-       <H2>Returns:</H2>
+       @return
        time interval for writing.
      */
+    PTimeInterval GetWriteTimeout() const;
 
-    virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
-    );
-    /* Low level write to the channel. This function will block until the
+    /** Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
        reached. The GetLastWriteCount() function returns the actual number
        of bytes written.
@@ -365,94 +392,119 @@ class PChannel : public PObject, public iostream {
        The GetErrorCode() function should be consulted after Write() returns
        FALSE to determine what caused the failure.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if at least len bytes were written to the channel.
      */
+    virtual BOOL Write(
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
+    );
 
-    PINDEX GetLastWriteCount() const;
-    /* Get the number of bytes written by the last Write() call.
+    /** Get the number of bytes written by the last Write() call.
        
        Note that the number of bytes written may often be less, or even more,
        than that asked for. A common case of it being less is where the disk
        is full. An example of where the bytes written is more is as follows.
-       On a <A>PTextFile</A> channel on the MSDOS platform, there is
+       On a #PTextFile# channel on the MSDOS platform, there is
        translation of \n to CR/LF pairs. This will result in the number of
        bytes returned being more than that requested.
 
-       <H2>Returns:</H2>
+       @return
        the number of bytes written.
      */
+    PINDEX GetLastWriteCount() const;
 
-    BOOL WriteChar(int c);
-    /* Write a single character to the channel. This function simply uses the
+    /** Write a single character to the channel. This function simply uses the
        Write() function so all comments on that function also apply.
        
        Note that this asserts if the value is not in the range 0..255.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the byte was successfully written.
      */
+    BOOL WriteChar(int c);
 
-    BOOL WriteString(const PString & str);
-    /* Write a string to the channel. This function simply uses the Write()
+    /** Write a string to the channel. This function simply uses the Write()
        function so all comments on that function also apply.
 
-       <H2>Returns:</H2>
-       TRUE if the string was completely written.
+       @return
+       TRUE if the character written.
      */
+    BOOL WriteString(const PString & str);
 
-    virtual BOOL WriteAsync(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
-    );
-    /* Begin an asynchronous write from channel. The write timeout is used as
+    /** Begin an asynchronous write from channel. The write timeout is used as
        in other write operations, in this case calling the OnWriteComplete()
        function. Note that if the channel is not capable of asynchronous write
        then this will do a sychronous write as in the Write() function with
        the addition of calling the OnWriteComplete() before returning.
 
-       <H2>Returns:</H2>
+       @return
        TRUE of the write operation was succesfully queued.
      */
-
-    virtual void OnWriteComplete(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+    virtual BOOL WriteAsync(
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
     );
-    /* User callback function for when a WriteAsync() call has completed or
+
+    /** User callback function for when a WriteAsync() call has completed or
        timed out. The original pointer to the buffer passed in WriteAsync() is
        passed in here and the len parameter is the actual number of characters
        written.
      */
-
-
-    BOOL SendCommandString(
-      const PString & command  // Command to send to the channel
+    virtual void OnWriteComplete(
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
     );
-    /* Send a command meta-string. A meta-string is a string of characters
+  //@}
+
+  /**@name Miscellaneous functions */
+  //@{
+    /** Close the channel, shutting down the link to the data source.
+
+       @return TRUE if the channel successfully closed.
+     */
+    virtual BOOL Close();
+
+    enum ShutdownValue {
+      ShutdownRead         = 0,
+      ShutdownWrite        = 1,
+      ShutdownReadAndWrite = 2
+    };
+
+    /** Close one or both of the data streams associated with a channel.
+
+       The default behavour is to do nothing and return FALSE.
+
+       @return
+       TRUE if the shutdown was successfully performed.
+     */
+    virtual BOOL Shutdown(
+      ShutdownValue option
+    );
+
+    /** Send a command meta-string. A meta-string is a string of characters
        that may contain escaped commands. The escape command is the \ as in
        the C language.
 
        The escape commands are:
-
-          <DL>
-          <DT><CODE>\a</CODE><DD>    alert (ascii value 7)
-          <DT><CODE>\b</CODE><DD>    backspace (ascii value 8)
-          <DT><CODE>\f</CODE><DD>    formfeed (ascii value 12)
-          <DT><CODE>\n</CODE><DD>    newline (ascii value 10)
-          <DT><CODE>\r</CODE><DD>    return (ascii value 13)
-          <DT><CODE>\t</CODE><DD>    horizontal tab (ascii value 9)
-          <DT><CODE>\v</CODE><DD>    vertical tab (ascii value 11)
-          <DT><CODE>\\</CODE><DD>    backslash
-          <DT><CODE>\ooo</CODE><DD>  where ooo is octal number, ascii value ooo
-          <DT><CODE>\xhh</CODE><DD>  where hh is hex number (ascii value 0xhh)
-          <DT><CODE>\0</CODE><DD>    null character (ascii zero)
-          <DT><CODE>\dns</CODE><DD>  delay for n seconds
-          <DT><CODE>\dnm</CODE><DD>  delay for n milliseconds
-          <DT><CODE>\s</CODE><DD>    characters following this, up to a \w
+\begin{description}
+          \item[#\a#]    alert (ascii value 7)
+          \item[#\b#]    backspace (ascii value 8)
+          \item[#\f#]    formfeed (ascii value 12)
+          \item[#\n#]    newline (ascii value 10)
+          \item[#\r#]    return (ascii value 13)
+          \item[#\t#]    horizontal tab (ascii value 9)
+          \item[#\v#]    vertical tab (ascii value 11)
+          \item[#\\#]    backslash
+          \item[#\ooo#]  where ooo is octal number, ascii value ooo
+          \item[#\xhh#]  where hh is hex number (ascii value 0xhh)
+          \item[#\0#]    null character (ascii zero)
+          \item[#\dns#]  delay for n seconds
+          \item[#\dnm#]  delay for n milliseconds
+          \item[#\s#]    characters following this, up to a \w
                                      command or the end of string, are to be
                                      sent to modem
-          <DT><CODE>\wns</CODE><DD>  characters following this, up to a \s, \d
+          \item[#\wns#]  characters following this, up to a \s, \d
                                      or another \w or the end of the string are
                                      expected back from the modem. If the
                                      string is not received within n seconds,
@@ -463,93 +515,86 @@ class PChannel : public PObject, public iostream {
                                      \w in which case all characters are
                                      ignored from the modem until n seconds of
                                      no data.
-          <DT><CODE>\wnm</CODE><DD>  as for above but timeout is in
+          \item[#\wnm#]  as for above but timeout is in
                                      milliseconds.
-
-       <H2>Returns:</H2>
+\end{description}
+       @return
        TRUE if the command string was completely processed.
      */
+    BOOL SendCommandString(
+      const PString & command  /// Command to send to the channel
+    );
 
-    void AbortCommandString();
-    /* Abort a command string that is in progress. Note that as the
+    /** Abort a command string that is in progress. Note that as the
        SendCommandString() function blocks the calling thread when it runs,
        this can only be called from within another thread.
      */
+    void AbortCommandString();
+  //@}
 
-
-    int GetHandle() const;
-    /* Get the integer operating system handle for the channel.
-
-       <H2>Returns:</H2>
-       standard OS descriptor integer.
+  /**@name Error functions */
+  //@{
+    /** Normalised error codes.
+        The error result of the last file I/O operation in this object.
      */
-
-
-    enum ShutdownValue {
-      ShutdownRead         = 0,
-      ShutdownWrite        = 1,
-      ShutdownReadAndWrite = 2
-    };
-
-    virtual BOOL Shutdown(
-      ShutdownValue option
-    );
-    /* Close one or both of the data streams associated with a channel.
-
-       The default behavour is to do nothing and return FALSE.
-
-       <H2>Returns:</H2>
-       TRUE if the shutdown was successfully performed.
-     */
-
-
-    virtual PChannel * GetBaseReadChannel() const;
-    /* This function returns the eventual base channel for reading of a series
-       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
-
-       The behaviour for this function is to return "this".
-       
-       <H2>Returns:</H2>
-       Pointer to base I/O channel for the indirect channel.
-     */
-
-    virtual PChannel * GetBaseWriteChannel() const;
-    /* This function returns the eventual base channel for writing of a series
-       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
-
-       The behaviour for this function is to return "this".
-       
-       <H2>Returns:</H2>
-       Pointer to base I/O channel for the indirect channel.
-     */
-
-
     enum Errors {
       NoError,
-      NotFound,       // Open fail due to device or file not found
-      FileExists,     // Open fail due to file already existing
-      DiskFull,       // Write fail due to disk full
-      AccessDenied,   // Operation fail due to insufficient privilege
-      DeviceInUse,    // Open fail due to device already open for exclusive use
-      BadParameter,   // Operation fail due to bad parameters
-      NoMemory,       // Operation fail due to insufficient memory
-      NotOpen,        // Operation fail due to channel not being open yet
-      Timeout,        // Operation failed due to a timeout
-      Interrupted,    // Operation was interrupted
-      BufferTooSmall, // Operations buffer was too small for data.
+      /// Open fail due to device or file not found
+      NotFound,       
+      /// Open fail due to file already existing
+      FileExists,     
+      /// Write fail due to disk full
+      DiskFull,       
+      /// Operation fail due to insufficient privilege
+      AccessDenied,   
+      /// Open fail due to device already open for exclusive use
+      DeviceInUse,    
+      /// Operation fail due to bad parameters
+      BadParameter,   
+      /// Operation fail due to insufficient memory
+      NoMemory,       
+      /// Operation fail due to channel not being open yet
+      NotOpen,        
+      /// Operation failed due to a timeout
+      Timeout,        
+      /// Operation was interrupted
+      Interrupted,    
+      /// Operations buffer was too small for data.
+      BufferTooSmall, 
+      /// Miscellaneous error.
       Miscellaneous
     };
+    /** Get normalised error code.
+      Return the error result of the last file I/O operation in this object.
+      @return Normalised error code.
+      */
     Errors GetErrorCode() const;
-      // Return the error result of the last file I/O operation in this object.
 
+    /** Get OS errro code.
+      Return the operating system error number of the last file I/O
+      operation in this object.
+      @return Operating System error code.
+      */
     int GetErrorNumber() const;
-      // Return the operating system error number of the last file I/O
-      // operation in this object.
 
+      /** Get error message description.
+        Return a string indicating the error message that may be displayed to
+       the user. The error for the last I/O operation in this object is used.
+      @return Operating System error description string.
+       */
     PString GetErrorText() const;
-    static PString GetErrorText(Errors lastError, int osError = 0);
-      // Return a string indicating the error message that may be displayed to
-      // the user. The error for the last I/O operation in this object is used.
+
+      /** Get error message description.
+        Return a string indicating the error message that may be displayed to
+       the user. The #osError# parameter is used unless zero, in which case
+       the #lastError# parameter is used.
+      @return Operating System error description string.
+       */
+    static PString GetErrorText(
+      Errors lastError,   /// Error code to translate.
+      int osError = 0     /// OS error number to translate.
+    );
+  //@}
 
 
   protected:
@@ -558,45 +603,58 @@ class PChannel : public PObject, public iostream {
     // Prevent usage by external classes
 
 
+    /** Convert an operating system error into platform independent error.
+      The internal error codes are set by this function. They may be obtained
+      via the #GetErrorCode()# and #GetErrorNumber()# functions.
+       
+       @return TRUE if there was no error.
+     */
     BOOL ConvertOSError(int error);
-    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
-    /* Convert an operating system error into platform independent error. This
-       will set the lastError and osError member variables for access by
+
+    /** Convert an operating system error into platform independent error.
+       This will set the lastError and osError member variables for access by
        GetErrorCode() and GetErrorNumber().
        
-       <H2>Returns:</H2>
-       TRUE if there was no error.
+       @return TRUE if there was no error.
      */
+    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
 
-    int ReadCharWithTimeout(PTimeInterval & timeout);
-      // Read a character with specified timeout, adjust for amount of time it took.
+    /** Read a character with specified timeout.
+      This reads a single character from the channel waiting at most the
+      amount of time specified for it to arrive. The #timeout# parameter
+      is adjusted for amount of time it actually took, so it can be used
+      for a multiple character timeout.
 
-    BOOL ReceiveCommandString(int nextChar,
-                            const PString & reply, PINDEX & pos, PINDEX start);
-      // Receive a (partial) command string, determine if completed yet.
+       @return TRUE if there was no error.
+     */
+    int ReadCharWithTimeout(
+      PTimeInterval & timeout  // Timeout for read.
+    );
+
+    // Receive a (partial) command string, determine if completed yet.
+    BOOL ReceiveCommandString(
+      int nextChar,
+      const PString & reply,
+      PINDEX & pos,
+      PINDEX start
+    );
 
 
     // Member variables
+    /// The operating system file handle return by standard open() function.
     int os_handle;
-      // The operating system file handle return by standard open() function.
-
+    /// The platform independant error code.
     Errors lastError;
-      // The platform independant error code.
-
+    /// The operating system error number (eg as returned by errno).
     int osError;
-      // The operating system error number (eg as returned by errno).
-
+    /// Number of byte last read by the Read() function.
     PINDEX lastReadCount;
-      // Number of byte last read by the Read() function.
-
+    /// Number of byte last written by the Write() function.
     PINDEX lastWriteCount;
-      // Number of byte last written by the Write() function.
-
+    /// Timeout for read operations.
     PTimeInterval readTimeout;
-      // Timeout for read operations.
-
+    /// Timeout for write operations.
     PTimeInterval writeTimeout;
-      // Timeout for write operations.
 
 
   private:
@@ -608,5 +666,8 @@ class PChannel : public PObject, public iostream {
     BOOL abortCommandString;
       // Flag to abort the transmission of a command in SendCommandString().
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

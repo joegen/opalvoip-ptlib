@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.4  1999/03/09 02:59:49  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.3  1999/02/16 08:12:00  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -46,148 +49,185 @@
 #endif
 
 
-class PIndirectChannel : public PChannel
-{
-  PCLASSINFO(PIndirectChannel, PChannel)
-/* This is a channel that operates indirectly through another channel(s). This
+/**This is a channel that operates indirectly through another channel(s). This
    allows for a protocol to operate through a "channel" mechanism and for its
    low level byte exchange (Read and Write) to operate via a completely
    different channel, eg TCP or Serial port etc.
  */
+class PIndirectChannel : public PChannel
+{
+  PCLASSINFO(PIndirectChannel, PChannel);
 
   public:
-    PIndirectChannel();
-    /* Create a new indirect channel without any channels to redirect to. If
+  /**@name Construction */
+  //@{
+    /**Create a new indirect channel without any channels to redirect to. If
        an attempt to read or write is made before Open() is called the the
        functions will assert.
      */
+    PIndirectChannel();
 
-  ~PIndirectChannel();
-  // Close the indirect channel, deleting read/write channels if desired.
+    /// Close the indirect channel, deleting read/write channels if desired.
+    ~PIndirectChannel();
+  //@}
 
 
-  // Overrides from class PObject
-    Comparison Compare(
-      const PObject & obj   // Another indirect channel to compare against.
-    ) const;
-    /* Determine if the two objects refer to the same indirect channel. This
+  /**@name Overrides from class PObject */
+  //@{
+    /**Determine if the two objects refer to the same indirect channel. This
        actually compares the channel pointers.
 
-       <H2>Returns:</H2>
+       @return
        EqualTo if channel pointer identical.
      */
+    Comparison Compare(
+      const PObject & obj   /// Another indirect channel to compare against.
+    ) const;
+  //@}
 
 
-  // Overrides from class PChannel
-    virtual PString GetName() const;
-    /* Get the name of the channel. This is a combination of the channel
+  /**@name Overrides from class PChannel */
+  //@{
+    /**Get the name of the channel. This is a combination of the channel
        pointers names (or simply the channel pointers name if the read and
        write channels are the same) or empty string if both null.
     
-       <H2>Returns:</H2>
+       @return
        string for the channel names.
      */
+    virtual PString GetName() const;
 
-    virtual BOOL Close();
-    /* Close the channel. This will detach itself from the read and write
+    /**Close the channel. This will detach itself from the read and write
        channels and delete both of them if they are auto delete.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel is closed.
      */
+    virtual BOOL Close();
 
-    virtual BOOL IsOpen() const;
-    /* Determine if the channel is currently open and read and write operations
-       can be executed on it. For example, in the <A>PFile</A> class it returns
+    /**Determine if the channel is currently open and read and write operations
+       can be executed on it. For example, in the #PFile# class it returns
        if the file is currently open.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel is open.
      */
+    virtual BOOL IsOpen() const;
 
-    virtual BOOL Read(
-      void * buf,   // Pointer to a block of memory to receive the read bytes.
-      PINDEX len    // Maximum number of bytes to read into the buffer.
-    );
-    /* Low level read from the channel. This function may block until the
+    /**Low level read from the channel. This function may block until the
        requested number of characters were read or the read timeout was
        reached. The GetLastReadCount() function returns the actual number
        of bytes read.
 
-       This will use the <CODE>readChannel</CODE> pointer to actually do the
-       read. If <CODE>readChannel</CODE> is null the this asserts.
+       This will use the #readChannel# pointer to actually do the
+       read. If #readChannel# is null the this asserts.
 
        The GetErrorCode() function should be consulted after Read() returns
        FALSE to determine what caused the failure.
 
-       <H2>Returns:</H2>
+       @return
        TRUE indicates that at least one character was read from the channel.
        FALSE means no bytes were read due to timeout or some other I/O error.
      */
-
-    virtual BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+    virtual BOOL Read(
+      void * buf,   /// Pointer to a block of memory to receive the read bytes.
+      PINDEX len    /// Maximum number of bytes to read into the buffer.
     );
-    /* Low level write to the channel. This function will block until the
+
+    /**Low level write to the channel. This function will block until the
        requested number of characters are written or the write timeout is
        reached. The GetLastWriteCount() function returns the actual number
        of bytes written.
 
-       This will use the <CODE>writeChannel</CODE> pointer to actually do the
-       write. If <CODE>writeChannel</CODE> is null the this asserts.
+       This will use the #writeChannel# pointer to actually do the
+       write. If #writeChannel# is null the this asserts.
 
        The GetErrorCode() function should be consulted after Write() returns
        FALSE to determine what caused the failure.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if at least len bytes were written to the channel.
      */
-
-    virtual BOOL Shutdown(
-      ShutdownValue option
+    virtual BOOL Write(
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
     );
-    /* Close one or both of the data streams associated with a channel.
+
+    /**Close one or both of the data streams associated with a channel.
 
        The behavour here is to pass the shutdown on to its read and write
        channels.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the shutdown was successfully performed.
      */
+    virtual BOOL Shutdown(
+      ShutdownValue option   /// Flag for shut down of read, write or both.
+    );
 
 
+    /**This function returns the eventual base channel for reading of a series
+       of indirect channels provided by descendents of #PIndirectChannel#.
+
+       The behaviour for this function is to return "this".
+       
+       @return
+       Pointer to base I/O channel for the indirect channel.
+     */
     virtual PChannel * GetBaseReadChannel() const;
-    /* This function returns the eventual base channel for reading of a series
-       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
+
+    /**This function returns the eventual base channel for writing of a series
+       of indirect channels provided by descendents of #PIndirectChannel#.
 
        The behaviour for this function is to return "this".
        
-       <H2>Returns:</H2>
+       @return
        Pointer to base I/O channel for the indirect channel.
      */
-
     virtual PChannel * GetBaseWriteChannel() const;
-    /* This function returns the eventual base channel for writing of a series
-       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
+  //@}
 
-       The behaviour for this function is to return "this".
-       
-       <H2>Returns:</H2>
-       Pointer to base I/O channel for the indirect channel.
+  /**@name Channel establish functions */
+  //@{
+    /**Set the channel for both read and write operations. This then checks
+       that they are open and then calls the OnOpen() virtual function. If
+       it in turn returns TRUE then the Open() function returns success.
+
+       @return
+       TRUE if both channels are set, open and OnOpen() returns TRUE.
      */
-
-
-  // New member functions
     BOOL Open(
       PChannel & channel
-        // Channel to be used for both read and write operations.
+        /// Channel to be used for both read and write operations.
     );
+
+    /**Set the channel for both read and write operations. This then checks
+       that they are open and then calls the OnOpen() virtual function. If
+       it in turn returns TRUE then the Open() function returns success.
+
+       The channel pointed to by #channel# may be automatically deleted
+       when the PIndirectChannel is destroyed or a new subchannel opened.
+
+       @return
+       TRUE if both channels are set, open and OnOpen() returns TRUE.
+     */
     BOOL Open(
       PChannel * channel,
-        // Channel to be used for both read and write operations.
-      BOOL autoDelete = TRUE   // Automatically delete the channel
+        /// Channel to be used for both read and write operations.
+      BOOL autoDelete = TRUE   /// Automatically delete the channel
     );
+
+    /**Set the channel for both read and write operations. This then checks
+       that they are open and then calls the OnOpen() virtual function. If
+       it in turn returns TRUE then the Open() function returns success.
+
+       The channels pointed to by #readChannel# and #writeChannel# may be
+       automatically deleted when the PIndirectChannel is destroyed or a
+       new subchannel opened.
+
+       @return
+       TRUE if both channels are set, open and OnOpen() returns TRUE.
+     */
     BOOL Open(
       PChannel * readChannel,
         // Channel to be used for both read operations.
@@ -196,76 +236,70 @@ class PIndirectChannel : public PChannel
       BOOL autoDeleteRead = TRUE,  // Automatically delete the read channel
       BOOL autoDeleteWrite = TRUE  // Automatically delete the write channel
     );
-    /* Set the channel for both read and write operations. This then checks
-       that they are open and then calls the OnOpen() virtual function. If
-       it in turn returns TRUE then the Open() function returns success.
 
-       <H2>Returns:</H2>
-       TRUE if both channels are set, open and OnOpen() returns TRUE.
-     */
-
-    PChannel * GetReadChannel() const;
-    /* Get the channel used for read operations.
+    /**Get the channel used for read operations.
     
-       <H2>Returns:</H2>
+       @return
        pointer to the read channel.
      */
+    PChannel * GetReadChannel() const;
 
+    /**Set the channel for read operations.
+
+       @return
+       Returns TRUE if both channels are set and are both open.
+     */
     BOOL SetReadChannel(
       PChannel * channel,
-        // Channel to be used for both read operations.
-      BOOL autoDelete = TRUE   // Automatically delete the channel
+        /// Channel to be used for both read operations.
+      BOOL autoDelete = TRUE   /// Automatically delete the channel
     );
-    /* Set the channel for read operations.
 
-       <H2>Returns:</H2>
-       Returns TRUE if both channels are set and are both open.
-     */
-
-    PChannel * GetWriteChannel() const;
-    /* Get the channel used for write operations.
+    /**Get the channel used for write operations.
     
-       <H2>Returns:</H2>
+       @return
        pointer to the write channel.
      */
+    PChannel * GetWriteChannel() const;
 
-    BOOL SetWriteChannel(
-      PChannel * channel,
-        // Channel to be used for both write operations.
-      BOOL autoDelete = TRUE   // Automatically delete the channel
-    );
-    /* Set the channel for read operations.
+    /**Set the channel for read operations.
 
-       <H2>Returns:</H2>
+       @return
        Returns TRUE if both channels are set and are both open.
     */
+    BOOL SetWriteChannel(
+      PChannel * channel,
+        /// Channel to be used for both write operations.
+      BOOL autoDelete = TRUE   /// Automatically delete the channel
+    );
+  //@}
 
 
   protected:
-    virtual BOOL OnOpen();
-    /* This callback is executed when the Open() function is called with
+    /**This callback is executed when the Open() function is called with
        open channels. It may be used by descendent channels to do any
        handshaking required by the protocol that channel embodies.
 
        The default behaviour is to simply return TRUE.
 
-       <H2>Returns:</H2>
+       @return
        Returns TRUE if the protocol handshaking is successful.
      */
+    virtual BOOL OnOpen();
 
 
-    // Member variables
+  // Member variables
+    /// Channel for read operations.
     PChannel * readChannel;
-    // Channel for read operations.
 
+    /// Automatically delete read channel on destruction.
     BOOL readAutoDelete;
-    // Automatically delete read channel on destruction.
 
+    /// Channel for write operations.
     PChannel * writeChannel;
-    // Channel for write operations.
 
+    /// Automatically delete write channel on destruction.
     BOOL writeAutoDelete;
-    // Automatically delete write channel on destruction.
 };
 
 
