@@ -1114,6 +1114,7 @@ else
     AC_MSG_NOTICE(VXML disabled)
   else
     AC_DEFINE(P_VXML, 1)
+    HAS_VXML=1
   fi
 
   dnl ########################################################################
@@ -1129,6 +1130,7 @@ else
     AC_MSG_NOTICE(Jabber disabled)
   else
     AC_DEFINE(P_JABBER, 1)
+    HAS_JABBER=1
   fi
 
   dnl ########################################################################
@@ -1144,6 +1146,7 @@ else
     AC_MSG_NOTICE(XMLRPC disabled)
   else
     AC_DEFINE(P_XMLRPC, 1)
+     HAS_XMLRPC=1
   fi
   
   dnl ########################################################################
@@ -1159,6 +1162,7 @@ else
     AC_MSG_NOTICE(SOAP disabled)
   else
     AC_DEFINE(P_SOAP, 1)
+    HAS_SOAP=1
   fi
 fi
 
