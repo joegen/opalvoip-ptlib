@@ -5,6 +5,7 @@
 
 #include <syslog.h>
 #include <stdarg.h>
+#include <fstream.h>
 
 #include "uerror.h"
 
@@ -16,6 +17,7 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_WARNING, // LogWarning, 
   LOG_INFO,    // LogInfo,    
 };
+
 
 void PSystemLog::Output(Level level, const char * cmsg)
 {
@@ -49,6 +51,14 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
                       << endl);
 }
 
+#ifdef _PATH_VARRUN
+void killpidfile()
+{
+  PString pidfilename = _PATH_VARRUN + PProcess::Current()->GetFile().GetFileName() + ".pid";
+  PFile::Remove(pidfilename);
+}
+#endif
+
 int PServiceProcess::_main(int parmArgc,
                       char ** parmArgv,
                       char ** parmEnvp)
@@ -67,7 +77,7 @@ int PServiceProcess::_main(int parmArgc,
   // parse arguments so we can grab what we want
   PArgList args = GetArguments();
 
-  args.Parse("vdchx");
+  args.Parse("vdchxp");
 
   const char * statusToStr[NumCodeStatuses] = { "Alpha", "Beta", "Release" };
 
@@ -97,7 +107,10 @@ int PServiceProcess::_main(int parmArgc,
   if (helpAndExit) {
     PError << "usage: [-c] -v|-d|-h|-x" << endl
            << "        -v    display version information and exit" << endl
-           << "        -d    run as a daemon (NOT IMPLEMENTED)" << endl
+           << "        -d    run as a daemon" << endl
+#ifdef _PATH_VARRUN
+           << "        -p    do not write pid file" << endl
+#endif
            << "        -c    output messages to stdout rather than syslog" << endl
            << "        -h    output this help message and exit" << endl
            << "        -x    execute as a normal program" << endl;
@@ -110,6 +123,44 @@ int PServiceProcess::_main(int parmArgc,
   // open the system logger for this program
   if (!consoleMessages)
     openlog((const char *)GetName(), LOG_PID, LOG_DAEMON);
+
+  // Run as a daemon, ie fork
+  if (args.HasOption('d')) {
+    pid_t pid = fork();
+    switch (pid) {
+      case -1 : // Failed
+        PError << "Fork failed creating daemon process." << endl;
+        return -1;
+
+      case 0 : // The forked process
+#ifdef _PATH_VARRUN
+        atexit(killpidfile);
+#endif
+        // set the SIGINT and SIGQUIT to ignore so the child process doesn't
+        // inherit them from the parent
+        signal(SIGINT,  SIG_IGN);
+        signal(SIGQUIT, SIG_IGN);
+
+        // and set ourselves as out own process group so we don't get signals
+        // from our parent's terminal (hopefully!)
+        PSETPGRP();
+        break;
+
+      default :
+#ifdef _PATH_VARRUN
+        if (!args.HasOption('p')) {
+          // Write out the child pid to magic file in /var/run (at least for linux)
+          PString pidfilename = _PATH_VARRUN + GetFile().GetFileName() + ".pid";
+          ofstream pidfile(pidfilename);
+          if (pidfile.is_open())
+            pidfile << pid;
+          else
+            PError << "Could not write pid to file: " << pidfilename << endl;
+        }
+#endif
+        return 0;
+    }
+  }
 
   // call the main function
   if (OnStart())
