@@ -733,6 +733,22 @@ PARRAY(PPointArray, PPoint);
 ///////////////////////////////////////////////////////////////////////////////
 // PControl
 
+typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
+  // Callback type declaration. The code that handles the interaction of a
+  // control is placed in the Interactor that the control resides in.
+  // This is done instead of the true object oriented way of creating a
+  // descendent class because it would cause a class explosion of monumental
+  // proportion if every control in every dialog had to have its own class!
+  // So we fall back to a more C way of doing things to make life a lot easier.
+  //
+  // The PControl * parameter is a pointer to the control that is doing the
+  // notification of a change. The option parameter indicates the type of
+  // notification that is happening, e.g. for a list box it indicates whether
+  // the user selected an item or double clicked on an item.
+#define PMAKE_CONTROL_NOTIFY(f) ((PControlNotifyFunction)(void (PInteractor:: *)(PControl *, int))f)
+#define PCALL_CONTROL_NOTIFY(f, w, c, o) (((w)->*(f))((c), (o)))
+
+
 #include "../../common/control.h"
   public:
     // Overrides from class PInteractor
@@ -1398,6 +1414,19 @@ class PResourceData;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMenuItem
+
+typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
+  // Callback type declaration. The code that handles the interaction of a
+  // menu item is placed in the Top Level Window that the menu resides in.
+  // This is done instead of the true object oriented way of creating a
+  // descendent class because it would cause a class explosion of monumental
+  // proportion if every menu item in every menu had to have its own class!
+  // So we fall back to a more C way of doing things to make life a lot easier.
+  //
+  // The PMenuItem * parameter is a pointer to the menu item that was selected.
+#define PMAKE_MENU_NOTIFY(f) ((PMenuNotifyFunction)(void (PTopLevelWindow:: *)(PMenuItem *))f)
+#define PCALL_MENU_NOTIFY(f, w, m) (((w)->*(f))(m))
+
 
 #include "../../common/menuitem.h"
 };
