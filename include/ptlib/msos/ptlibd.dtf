@@ -3151,6 +3151,8 @@ EXPORTS
     ?SetBreak@PSerialChannel@@QAEXH@Z @2147 NONAME ;public: void __thiscall PSerialChannel::SetBreak(int)
     ?SetBrightness@PVideoDevice@@UAEHI@Z @3858 NONAME ;public: virtual int __thiscall PVideoDevice::SetBrightness(unsigned int)
     ?SetBuffers@PSoundChannel@@QAEHHH@Z @2709 NONAME ;public: int __thiscall PSoundChannel::SetBuffers(int,int)
+    ?SetBufferSize@PChannel@@QAEHH@Z @4226 NONAME ;public: int __thiscall PChannel::SetBufferSize(int)
+    ?SetBufferSize@PChannelStreamBuffer@@IAEHH@Z @4227 NONAME ;protected: int __thiscall PChannelStreamBuffer::SetBufferSize(int)
     ?SetCanCaptureVideo@PVideoDevice@@MAEXH@Z @3859 NONAME ;protected: virtual void __thiscall PVideoDevice::SetCanCaptureVideo(int)
     ?SetChannel@PFakeVideoInputDevice@@UAEHH@Z @3489 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetChannel(int)
     ?SetChannel@PVideoDevice@@UAEHH@Z @3460 NONAME ;public: virtual int __thiscall PVideoDevice::SetChannel(int)
