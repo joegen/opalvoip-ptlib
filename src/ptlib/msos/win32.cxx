@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.89  2000/03/04 08:07:27  robertj
+ * Fixed problem with window not appearing when assert on GUI based win32 apps.
+ *
  * Revision 1.88  2000/02/29 12:26:15  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -1287,6 +1290,12 @@ DWORD PProcess::GetProcessID() const
 
 
 BOOL PProcess::IsServiceProcess() const
+{
+  return FALSE;
+}
+
+
+BOOL PProcess::IsGUIProcess() const
 {
   return FALSE;
 }
