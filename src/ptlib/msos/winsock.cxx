@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.54  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.53  2002/10/29 08:00:16  robertj
  * Changed in_addr6 to more universally used in6_addr.
  *
@@ -211,6 +214,8 @@
 #include <nspapi.h>
 #include <svcguid.h>
 
+#include <wsipx.h>
+#include <wsnwlink.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // PWinSock

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.69  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.68  2003/06/29 01:40:50  ykiryanov
  * Added include <ptlib/wince/time.h> as in PPC2003 we have also another time.h now
  *
@@ -262,7 +265,7 @@
 
 #if !P_USE_INLINES
 #include <ptlib/osutil.inl>
-#include <ptlib/ptlib.inl>
+#include <ptlib/msos/ptlib/ptlib.inl>
 #endif
 
 #ifdef _WIN32_WCE

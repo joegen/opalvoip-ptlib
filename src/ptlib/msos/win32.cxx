@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.128  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.127  2003/02/26 01:12:52  robertj
  * Fixed race condition where thread can terminatebefore an IsSuspeded() call
  *   occurs and cause an assert, thanks Sebastian Meyer
@@ -464,7 +467,7 @@
 #include <ptlib.h>
 
 #include <process.h>
-#include <ptlib/debstrm.h>
+#include <ptlib/msos/ptlib/debstrm.h>
 #include <winsock.h>
 
 #define new PNEW
