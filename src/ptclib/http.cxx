@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.61  2001/10/03 00:26:34  robertj
+ * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
+ *
  * Revision 1.60  2001/09/28 00:45:42  robertj
  * Broke out internal static function for unstranslating URL strings.
  *
@@ -719,6 +722,8 @@ const char * PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
 const char * PHTTP::MIMEVersionTag     = "MIME-Version";
 const char * PHTTP::ConnectionTag      = "Connection";
 const char * PHTTP::KeepAliveTag       = "Keep-Alive";
+const char * PHTTP::TransferEncodingTag= "Transfer-Encoding";
+const char * PHTTP::ChunkedTag         = "chunked";
 const char * PHTTP::ProxyConnectionTag = "Proxy-Connection";
 const char * PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
 const char * PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
