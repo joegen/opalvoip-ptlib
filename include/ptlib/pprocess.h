@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.27 1997/02/05 11:51:56 robertj Exp $
+ * $Id: pprocess.h,v 1.28 1997/04/27 05:50:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.28  1997/04/27 05:50:13  robertj
+ * DLL support.
+ *
  * Revision 1.27  1997/02/05 11:51:56  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -105,7 +108,7 @@
  */
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
-    { static cls instance; return PProcessInstance->_main(argc, argv, envp); }
+    { static cls instance; return ((PProcess*)&instance)->_main(argc, argv, envp); }
 
 /*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
    This macro is used to declare the components necessary for a user PWLib
