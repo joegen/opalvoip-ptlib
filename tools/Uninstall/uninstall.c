@@ -6,6 +6,9 @@
  *  Copyright 1997 by Equivalence Pty Ltd
  *
  *  $Log: uninstall.c,v $
+ *  Revision 1.3  1999/08/20 05:56:22  robertj
+ *  Fixed display of error on removing directory already removed.
+ *
  *  Revision 1.2  1999/07/16 03:21:26  robertj
  *  Changed directory removal so does not show error it is already gone
  *
@@ -246,8 +249,11 @@ BOOL DelTree(const char * dir)
     head = next;
   }
 
-  if (!RemoveDirectory(dir) && GetLastError() != ERROR_FILE_NOT_FOUND)
-    vMessageBox(NULL, IDS_ERROR_DELETING_DIR, MB_ICONWARNING|MB_OK, dir, GetLastError());
+  if (!RemoveDirectory(dir)) {
+    DWORD err = GetLastError();
+    if (err != ERROR_FILE_NOT_FOUND && err != ERROR_PATH_NOT_FOUND)
+      vMessageBox(NULL, IDS_ERROR_DELETING_DIR, MB_ICONWARNING|MB_OK, dir, err);
+  }
 
   return TRUE;
 }
