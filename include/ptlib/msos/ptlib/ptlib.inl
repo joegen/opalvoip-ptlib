@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.19  1998/11/30 03:02:17  robertj
+ * Moved PPipeChannel code to .cxx file to avoid linking unused code.
+ *
  * Revision 1.18  1998/11/14 23:37:06  robertj
  * Fixed file path directory extraction, not able to return root directory
  *
@@ -148,17 +151,6 @@ PINLINE BOOL PDirectory::Restart(int scanMask)
 
 PINLINE BOOL PFile::Exists(const PFilePath & name)
   { return _access(name, 0) == 0; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PPipeChannel
-
-PINLINE BOOL PPipeChannel::CanReadAndWrite()
-#if defined(_WIN32)
-  { return TRUE; }
-#else
-  { return FALSE; }
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
