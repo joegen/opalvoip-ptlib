@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.13 1995/12/10 11:43:34 robertj Exp $
+ * $Id: tcpsock.h,v 1.14 1996/02/25 03:01:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.14  1996/02/25 03:01:27  robertj
+ * Moved some socket functions to platform dependent code.
+ *
  * Revision 1.13  1995/12/10 11:43:34  robertj
  * Numerous fixes for sockets.
  *
@@ -185,7 +188,5 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        The default behaviour is for the out of band data to be ignored.
      */
 
-
-  protected:
 
 // Class declaration continued in platform specific header file ///////////////
