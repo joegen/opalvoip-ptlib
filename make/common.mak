@@ -31,7 +31,7 @@ $(OBJDIR)/%.o : %.cxx
 #
 # create list of object files 
 #
-OBJS		:= $(OBJS) $(SOURCES:cxx=o)
+OBJS		:= $(SOURCES:cxx=o) $(OBJS)
 OBJS		:= $(EXTERNALOBJS) $(patsubst %.o, $(OBJDIR)/%.o, $(notdir $(OBJS)))
 
 #
