@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.16  2000/11/10 01:08:11  robertj
+ * Added content transfer encoding and automatic base64 translation.
+ *
  * Revision 1.15  2000/11/09 06:01:58  robertj
  * Added MIME version and content disposition to RFC822 class.
  *
@@ -917,7 +920,10 @@ class PRFC822Channel : public PIndirectChannel
        messages contained therein, and allow a new part to begin.
 
        The user may adjust the parts content type and other header fields
-       after this call and before the first write of the parts body.
+       after this call and before the first write of the parts body. The
+       default Content-Type is "text/plain".
+
+       Note that all header fields are cleared from the previous part.
       */
     void NextPart(
       const PString & boundary
@@ -963,6 +969,8 @@ class PRFC822Channel : public PIndirectChannel
        This must be called before any writes are done to the channel. It may
        be set again immediately after any call to NextPart() when multipart
        mime is being used.
+
+       The default Content-Type is "text/plain".
       */
     void SetContentType(
       const PString & contentType   /// Content type in form major/minor
@@ -972,9 +980,25 @@ class PRFC822Channel : public PIndirectChannel
        This must be called before any writes are done to the channel. It may
        be set again immediately after any call to NextPart() when multipart
        mime is being used.
+
+       Note that this will alter the Content-Type field to 
       */
     void SetContentAttachment(
-      const PString & filename   /// Attachment filename
+      const PFilePath & filename   /// Attachment filename
+    );
+
+    /**Set the content transfer encoding.
+       This must be called before any writes are done to the channel. It may
+       be set again immediately after any call to NextPart() when multipart
+       mime is being used.
+
+       If the encoding is "base64" (case insensitive) and , all writes will be
+       treated as binary and translated into base64 encoding before output to
+       the underlying channel.
+      */
+    void SetTransferEncoding(
+      const PString & encoding,   /// Encoding type
+      BOOL autoTranslate = TRUE   /// Automatically convert to encoding type
     );
 
 
@@ -1022,12 +1046,12 @@ class PRFC822Channel : public PIndirectChannel
   protected:
     BOOL OnOpen();
 
-    BOOL writeHeaders;
-    PMIMEInfo headers;
-
-    BOOL writePartHeaders;
-    PMIMEInfo partHeaders;
-    PStringList  boundaries;
+    BOOL        writeHeaders;
+    PMIMEInfo   headers;
+    BOOL        writePartHeaders;
+    PMIMEInfo   partHeaders;
+    PStringList boundaries;
+    PBase64   * base64;
 };
 
 
