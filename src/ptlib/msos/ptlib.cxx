@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.74  2004/12/08 00:49:37  csoutheren
+ * Fixed weird problem with not returning correct filetype when filename has multiple
+ *  "." and slashes
+ *
  * Revision 1.73  2004/10/23 10:51:40  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -713,8 +717,11 @@ PCaselessString PFilePath::GetTitle() const
 
 PCaselessString PFilePath::GetType() const
 {
-  PINDEX dot = Find('.', FindLast('\\'));
-  if (dot == P_MAX_INDEX)
+  PINDEX slash = FindLast('\\');
+  if (slash == P_MAX_INDEX)
+    slash = 0;
+  PINDEX dot = FindLast('.');
+  if (dot < slash)
     return PCaselessString();
   return operator()(dot, P_MAX_INDEX);
 }
