@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.9  2004/08/12 12:37:40  rjongbloed
+ * Fixed bug recently introduced so removes deleted object from deletion list.
+ * Also changed removal list to be correct type.
+ *
  * Revision 1.8  2004/08/05 12:15:56  rjongbloed
  * Added classes for auto unlocking read only and read write mutex on
  *   PSafeObject - similar to PWaitAndSIgnal.
@@ -426,12 +430,12 @@ class PSafeCollection : public PObject
     void SafeRemoveObject(PSafeObject * obj);
     PDECLARE_NOTIFIER(PTimer, PSafeCollection, DeleteObjectsTimeout);
 
-    PCollection  * collection;
-    mutable PMutex collectionMutex;
-    BOOL           deleteObjects;
-    PAbstractList  toBeRemoved;
-    PMutex         removalMutex;
-    PTimer         deleteObjectsTimer;
+    PCollection  *     collection;
+    mutable PMutex     collectionMutex;
+    BOOL               deleteObjects;
+    PList<PSafeObject> toBeRemoved;
+    PMutex             removalMutex;
+    PTimer             deleteObjectsTimer;
 
   friend class PSafePtrBase;
 };
