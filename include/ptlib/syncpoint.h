@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.5  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.4  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -51,15 +54,35 @@
 #include <ptlib/semaphor.h>
 
 
+/** This class defines a thread synchonisation object.
+  This form of semaphore is used to indicate an {\it event} has occurred. A
+  thread may block on theis sync point and wait until another thread signals
+  that it may continue. eg:
+\begin{verbatim}
+    ... thread one
+    while (condition) {
+      sync.Wait();
+      do_something();
+    }
+
+    ... thread 2
+    do_something_else();
+    sync.Signal();    // At this point thread 1 wake up and does something.
+    do_yet_more();
+
+\end{verbatim}
+ */
 class PSyncPoint : public PSemaphore
 {
-  PCLASSINFO(PSyncPoint, PSemaphore)
-/* This class defines a thread synchonisation object.
- */
+  PCLASSINFO(PSyncPoint, PSemaphore);
 
   public:
-    PSyncPoint();
-    /* Create a new sync point.
+    /** Create a new sync point.
      */
+    PSyncPoint();
+
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.15  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.14  1999/02/16 08:11:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -76,117 +79,140 @@
 #endif
 
 
-class PStructuredFile : public PFile
-{
-  PCLASSINFO(PStructuredFile, PFile)
-/* A class representing a a structured file that is portable accross CPU
+/**A class representing a a structured file that is portable accross CPU
    architectures (as in the XDR protocol).
    
    This differs from object serialisation in that the access is always to a
    disk file and is random access. It would primarily be used for database
    type applications.
  */
+class PStructuredFile : public PFile
+{
+  PCLASSINFO(PStructuredFile, PFile);
 
   private:
     BOOL Read(void * buf, PINDEX len) { return PFile::Read(buf, len); }
     BOOL Write(const void * buf, PINDEX len) { return PFile::Write(buf, len); }
 
   public:
-    PStructuredFile();
-    /* Create a structured file object but do not open it. It does not
+  /**@name Construction */
+  //@{
+    /**Create a structured file object but do not open it. It does not
        initially have a valid file name. However, an attempt to open the file
-       using the <A>PFile::Open()</A> function will generate a unique
+       using the #PFile::Open()# function will generate a unique
        temporary file.
        
        The initial structure size is one byte.
      */
+    PStructuredFile();
 
-    PStructuredFile(
-      OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // <A>OpenOptions enum</A> for open operation.
-    );
-    /* Create a unique temporary file name, and open the file in the specified
+    /**Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The <A>PChannel::IsOpen()</A> function may be used after object
+       The #PChannel::IsOpen()# function may be used after object
        construction to determine if the file was successfully opened.
      */
-      
     PStructuredFile(
-      const PFilePath & name,    // Name of file to open.
-      OpenMode mode = ReadWrite, // Mode in which to open the file.
-      int opts = ModeDefault     // <A>OpenOptions enum</A> for open operation.
+      OpenMode mode,          /// Mode in which to open the file.
+      int opts = ModeDefault  /// #OpenOptions enum# for open operation.
     );
-    /* Create a structured file object with the specified name and open it in
+      
+    /**Create a structured file object with the specified name and open it in
        the specified mode and with the specified options.
 
-       The <A>PChannel::IsOpen()</A> function may be used after object
+       The #PChannel::IsOpen()# function may be used after object
        construction to determine if the file was successfully opened.
      */
+    PStructuredFile(
+      const PFilePath & name,    /// Name of file to open.
+      OpenMode mode = ReadWrite, /// Mode in which to open the file.
+      int opts = ModeDefault     /// #OpenOptions enum# for open operation.
+    );
+  //@}
 
-
-  // New member functions
-    BOOL Read(void * buffer);
-    /* Read a sequence of bytes into the specified buffer, translating the
+  /**@name Structured I/O functions */
+  //@{
+    /**Read a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       <A>SetStructure()</A> function.
+       #SetStructure()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the structure was successfully read.
      */
+    BOOL Read(
+      void * buffer   /// Pointer to structure to receive data.
+    );
       
-    BOOL Write(void * buffer);
-    /* Write a sequence of bytes into the specified buffer, translating the
+    /**Write a sequence of bytes into the specified buffer, translating the
        structure according to the specification made in the
-       <A>SetStructure()</A> function.
+       #SetStructure()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the structure was successfully written.
      */
+    BOOL Write(
+      const void * buffer   /// Pointer to structure to write data from.
+    );
+  //@}
 
+  /**@name Structure definition functions */
+  //@{
+    /**Get the size of each structure in the file.
 
-  // New member functions
-    PINDEX GetStructureSize() { return structureSize; }
-    /* Get the size of each structure in the file.
-
-       <H2>Returns:</H2>
+       @return
        number of bytes in a structure.
      */
+    PINDEX GetStructureSize() { return structureSize; }
 
+    /// All element types in a structure
     enum ElementType {
-      Character,    // Element is a single character.
-      Integer16,    // Element is a 16 bit integer.
-      Integer32,    // Element is a 32 bit integer.
-      Integer64,    // Element is a 64 bit integer.
-      Float32,      // Element is a 32 bit IEE floating point number.
-      Float64,      // Element is a 64 bit IEE floating point number.
-      Float80,      // Element is a 80 bit IEE floating point number.
+      /// Element is a single character.
+      Character,    
+      /// Element is a 16 bit integer.
+      Integer16,    
+      /// Element is a 32 bit integer.
+      Integer32,    
+      /// Element is a 64 bit integer.
+      Integer64,    
+      /// Element is a 32 bit IEE floating point number.
+      Float32,      
+      /// Element is a 64 bit IEE floating point number.
+      Float64,      
+      /// Element is a 80 bit IEE floating point number.
+      Float80,      
       NumElementTypes
     };
-    // All element types ina structure
 
+    /// Elements in the structure definition.
     struct Element {
-      ElementType type;   // Type of element in structure.
-      PINDEX      count;  // Count of elements of this type.
+      /// Type of element in structure.
+      ElementType type;   
+      /// Count of elements of this type.
+      PINDEX      count;  
     };
-    // Elements in the structure definition.
 
+    /** Set the structure of each record in the file. */
     void SetStructure(
-      Element * structure,  // Array of structure elements
-      PINDEX numElements    // Number of structure elements in structure.
+      Element * structure,  /// Array of structure elements
+      PINDEX numElements    /// Number of structure elements in structure.
     );
-    // Set the structure of each record in the file.
-
+  //@}
 
   protected:
   // Member variables
+    /// Number of bytes in structure.
     PINDEX structureSize;
-    // Number of bytes in structure.
 
+    /// Array of elements in the structure.
     Element * structure;
+
+    /// Number of elements in the array.
     PINDEX numElements;
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.31  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.30  1999/02/16 08:11:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -137,152 +140,171 @@ class PSocket;
 PLIST(PSocketList, PSocket);
 
 
-class PSocket : public PChannel
-{
-  PCLASSINFO(PSocket, PChannel)
-/* A network communications channel. This is based on the concepts in the
+/**A network communications channel. This is based on the concepts in the
    Berkley Sockets library.
    
-   A socket represents a bidirectional communications channel to a <I>port</I>
-   at a remote <I>host</I>.
+   A socket represents a bidirectional communications channel to a {\it port}
+   at a remote {\it host}.
  */
+class PSocket : public PChannel
+{
+  PCLASSINFO(PSocket, PChannel);
 
   protected:
     PSocket();
 
   public:
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number. This is
+  /**@name Socket establishment functions */
+  //@{
+    /**Connect a socket to a remote host on the specified port number. This is
        typically used by the client or initiator of a communications channel.
        This connects to a "listening" socket at the other end of the
        communications channel.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully connected to the remote host.
      */
+    virtual BOOL Connect(
+      const PString & address   /// Address of remote machine to connect to.
+    );
 
 
+    /// Flags to reuse of port numbers in Listen() function.
     enum Reusability {
       CanReuseAddress,
       AddressIsExclusive
     };
 
-    virtual BOOL Listen(
-      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
-      WORD port = 0,           // Port number to use for the connection.
-      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
-    );
-    /* Listen on a socket for a remote host on the specified port number. This
+    /**Listen on a socket for a remote host on the specified port number. This
        may be used for server based applications. A "connecting" socket begins
        a connection by initiating a connection to this socket. An active socket
        of this type is then used to generate other "accepting" sockets which
        establish a two way communications channel with the "connecting" socket.
 
-       If the <CODE>port</CODE> parameter is zero then the port number as
+       If the #port# parameter is zero then the port number as
        defined by the object instance construction or the descendent classes
        SetPort() or SetService() function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  /// Number of pending accepts that may be queued.
+      WORD port = 0,           /// Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive /// Can/Cant listen more than once.
     );
-    /* Open a socket to a remote host on the specified port number. This is an
+
+
+    /**Open a socket to a remote host on the specified port number. This is an
        "accepting" socket. When a "listening" socket has a pending connection
        to make, this will accept a connection made by the "connecting" socket
        created to establish a link.
 
-       The port that the socket uses is the one used in the <A>Listen()</A>
-       command of the <CODE>socket</CODE> parameter. Note an error occurs if
-       the <CODE>socket</CODE> parameter has not had the <A>Listen()</A>
+       The port that the socket uses is the one used in the #Listen()#
+       command of the #socket# parameter. Note an error occurs if
+       the #socket# parameter has not had the #Listen()#
        function called on it.
 
        Note that this function will block until a remote system connects to the
        port number specified in the "listening" socket. The time that the
        function will block is determined by the read timeout of the
-       <CODE>socket</CODE> parameter. This will normally be
-       <CODE>PMaxTimeInterval</CODE> which indicates an infinite time.
+       #socket# parameter. This will normally be
+       #PMaxTimeInterval# which indicates an infinite time.
 
        The default behaviour is to assert.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the channel was successfully opened.
      */
-
-
-    BOOL SetOption(
-      int option,
-      int value
+    virtual BOOL Accept(
+      PSocket & socket          /// Listening socket making the connection.
     );
-    BOOL SetOption(
-      int option,
-      const void * valuePtr,
-      PINDEX valueSize
-    );
-    /* Set options on the socket. These options are defined as Berkeley socket
-       options of the class SOL_SOCKET.
 
-       <H2>Returns:</H2>
-       TRUE if the option was successfully set.
-     */
+    /**Close one or both of the data streams associated with a socket 
 
-    BOOL GetOption(
-      int option,
-      int & value
-    );
-    BOOL GetOption(
-      int option,
-      void * valuePtr,
-      PINDEX valueSize
-    );
-    /* Get options on the socket. These options are defined as Berkeley socket
-       options of the class SOL_SOCKET.
-
-       <H2>Returns:</H2>
-       TRUE if the option was successfully retreived.
-     */
-
-    virtual BOOL Shutdown(
-      ShutdownValue option
-    );
-    /* Close one or both of the data streams associated with a socket 
-
-       <H2>Returns:</H2>
+       @return
        TRUE if the shutdown was performed
      */
-
-    static WORD GetProtocolByName(
-      const PString & name      // Name of protocol
+    virtual BOOL Shutdown(
+      ShutdownValue option   /// Flag for shutdown of read, write or both.
     );
-    /* Get the number of the protocol associated with the specified name.
+  //@}
 
-       <H2>Returns:</H2>
+  /**@name Socket options functions */
+  //@{
+    /**Set options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       @return
+       TRUE if the option was successfully set.
+     */
+    BOOL SetOption(
+      int option,   /// Option to set.
+      int value     /// New value for option.
+    );
+
+    /**Set options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       @return
+       TRUE if the option was successfully set.
+     */
+    BOOL SetOption(
+      int option,             /// Option to set.
+      const void * valuePtr,  /// Pointer to new value for option.
+      PINDEX valueSize        /// Size of new value.
+    );
+
+    /**Get options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       @return
+       TRUE if the option was successfully retreived.
+     */
+    BOOL GetOption(
+      int option,   /// Option to get.
+      int & value   /// Integer to receive value.
+    );
+
+    /**Get options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       @return
+       TRUE if the option was successfully retreived.
+     */
+    BOOL GetOption(
+      int option,       /// Option to get.
+      void * valuePtr,  /// Pointer to buffer for value.
+      PINDEX valueSize  /// Size of buffer to receive value.
+    );
+  //@}
+
+  /**@name Port/Service database functions */
+  //@{
+    /**Get the number of the protocol associated with the specified name.
+
+       @return
        Number of protocol or 0 if the protocol was not found.
      */
-
-    static PString GetNameByProtocol(
-      WORD proto                // Number of protocol
+    static WORD GetProtocolByName(
+      const PString & name      /// Name of protocol
     );
-    /* Get the name of the protocol number specified.
 
-       <H2>Returns:</H2>
+    /**Get the name of the protocol number specified.
+
+       @return
        Name of protocol or the number if the protocol was not found.
      */
-
-
-    virtual WORD GetPortByService(
-      const PString & service   // Name of service to get port number for.
-    ) const;
-    static WORD GetPortByService(
-      const char * protocol,     // Protocol type for port lookup
-      const PString & service    // Name of service to get port number for.
+    static PString GetNameByProtocol(
+      WORD proto                /// Number of protocol
     );
-    /* Get the port number for the specified service name.
+
+
+    /**Get the port number for the specified service name. */
+    virtual WORD GetPortByService(
+      const PString & service   /// Name of service to get port number for.
+    ) const;
+    /**Get the port number for the specified service name.
     
        A name is a unique string contained in a system database. The parameter
        here may be either this unique name, an integer value or both separated
@@ -290,24 +312,25 @@ class PSocket : public PChannel
        used if the name cannot be found in the database.
     
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       transport is being used. The #PTCPSocket# and #PUDPSocket#
        classes will implement this function.
 
        The static version of the function is independent of the socket type as
        its first parameter may be "tcp" or "udp", 
 
-       <H2>Returns:</H2>
+       @return
        Port number for service name, or 0 if service cannot be found.
      */
-
-    virtual PString GetServiceByPort(
-      WORD port   // Number for service to find name of.
-    ) const;
-    static PString GetServiceByPort(
-      const char * protocol,  // Protocol type for port lookup
-      WORD port   // Number for service to find name of.
+    static WORD GetPortByService(
+      const char * protocol,     /// Protocol type for port lookup
+      const PString & service    /// Name of service to get port number for.
     );
-    /* Get the service name from the port number.
+
+    /**Get the service name from the port number. */
+    virtual PString GetServiceByPort(
+      WORD port   /// Number for service to find name of.
+    ) const;
+    /**Get the service name from the port number.
     
        A service name is a unique string contained in a system database. The
        parameter here may be either this unique name, an integer value or both
@@ -315,24 +338,26 @@ class PSocket : public PChannel
        integer value is used if the name cannot be found in the database.
     
        The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
+       transport is being used. The #PTCPSocket# and #PUDPSocket#
        classes will implement this function.
 
        The static version of the function is independent of the socket type as
        its first parameter may be "tcp" or "udp", 
 
-       <H2>Returns:</H2>
+       @return
        Service name for port number.
      */
+    static PString GetServiceByPort(
+      const char * protocol,  /// Protocol type for port lookup
+      WORD port   /// Number for service to find name of.
+    );
 
 
+    /**Set the port number for the channel. */
     void SetPort(
-      WORD port   // New port number for the channel.
+      WORD port   /// New port number for the channel.
     );
-    void SetPort(
-      const PString & service   // Service name to describe the port number.
-    );
-    /* Set the port number for the channel. This a 16 bit number representing
+    /**Set the port number for the channel. This a 16 bit number representing
        an agreed high level protocol type. The string version looks up a
        database of names to find the number for the string name.
 
@@ -344,77 +369,86 @@ class PSocket : public PChannel
        The port number may not be changed while the port is open and the
        function will assert if an attempt is made to do so.
      */
+    void SetPort(
+      const PString & service   /// Service name to describe the port number.
+    );
 
-    WORD GetPort() const;
-    /* Get the port the TCP socket channel object instance is using.
+    /**Get the port the TCP socket channel object instance is using.
 
-       <H2>Returns:</H2>
+       @return
        Port number.
      */
+    WORD GetPort() const;
 
-    PString GetService() const;
-    /* Get a service name for the port number the TCP socket channel object
+    /**Get a service name for the port number the TCP socket channel object
        instance is using.
 
-       <H2>Returns:</H2>
+       @return
        string service name or a string representation of the port number if no
        service with that number can be found.
      */
+    PString GetService() const;
+  //@}
 
-
+  /**@name Multiple socket selection functions */
+  //@{
+    /// List of sockets used for #Select()# function
     class SelectList : public PSocketList
     {
       PCLASSINFO(SelectList, PSocketList)
       public:
         SelectList()
           { DisallowDeleteObjects(); }
-        void operator+=(PSocket & sock)
+        /** Add a socket to list .*/
+        void operator+=(PSocket & sock /** Socket to add. */)
           { Append(&sock); }
-        void operator-=(PSocket & sock)
+        /** Remove a socket from list .*/
+        void operator-=(PSocket & sock /** Socket to remove. */)
           { Remove(&sock); }
     };
 
+    /**Select a socket with available data. */
     static int Select(
-      PSocket & sock1,        // First socket to check for readability.
-      PSocket & sock2         // Second socket to check for readability.
+      PSocket & sock1,        /// First socket to check for readability.
+      PSocket & sock2         /// Second socket to check for readability.
     );
+    /**Select a socket with available data. */
     static int Select(
-      PSocket & sock1,        // First socket to check for readability.
-      PSocket & sock2,        // Second socket to check for readability.
-      const PTimeInterval & timeout // Timeout for wait on read/write data.
+      PSocket & sock1,        /// First socket to check for readability.
+      PSocket & sock2,        /// Second socket to check for readability.
+      const PTimeInterval & timeout /// Timeout for wait on read/write data.
     );
+    /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read       // List of sockets to check for readability.
+      SelectList & read       /// List of sockets to check for readability.
     );
+    /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      // List of sockets to check for readability.
-      const PTimeInterval & timeout // Timeout for wait on read/write data.
+      SelectList & read,      /// List of sockets to check for readability.
+      const PTimeInterval & timeout /// Timeout for wait on read/write data.
     );
+    /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      // List of sockets to check for readability.
-      SelectList & write      // List of sockets to check for writability.
+      SelectList & read,      /// List of sockets to check for readability.
+      SelectList & write      /// List of sockets to check for writability.
     );
+    /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      // List of sockets to check for readability.
-      SelectList & write,     // List of sockets to check for writability.
-      const PTimeInterval & timeout // Timeout for wait on read/write data.
+      SelectList & read,      /// List of sockets to check for readability.
+      SelectList & write,     /// List of sockets to check for writability.
+      const PTimeInterval & timeout /// Timeout for wait on read/write data.
     );
+    /**Select a socket with available data. */
     static Errors Select(
-      SelectList & read,      // List of sockets to check for readability.
-      SelectList & write,     // List of sockets to check for writability.
-      SelectList & except     // List of sockets to check for exceptions.
+      SelectList & read,      /// List of sockets to check for readability.
+      SelectList & write,     /// List of sockets to check for writability.
+      SelectList & except     /// List of sockets to check for exceptions.
     );
-    static Errors Select(
-      SelectList & read,      // List of sockets to check for readability.
-      SelectList & write,     // List of sockets to check for writability.
-      SelectList & except,    // List of sockets to check for exceptions.
-      const PTimeInterval & timeout // Timeout for wait on read/write data.
-    );
-    /* Select a socket with available data. This function will block until the
+    /**Select a socket with available data. This function will block until the
        timeout or data is available to be read or written to the specified
        sockets.
 
-       The <CODE>read</CODE>, <CODE>write</CODE> and <CODE>except</CODE> lists
+       The #read#, #write# and #except# lists
        are modified by the call so that only the sockets that have data
        available are present. If the call timed out then all of these lists
        will be empty.
@@ -422,7 +456,7 @@ class PSocket : public PChannel
        If no timeout is specified then the call will block until a socket
        has data available.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if the select was successful or timed out, FALSE if an error
        occurred. If a timeout occurred then the lists returned will be empty.
 
@@ -431,26 +465,36 @@ class PSocket : public PChannel
        enum, 0 for a timeout, -1 for the first socket having read data,
        -2 for the second socket and -3 for both.
      */
+    static Errors Select(
+      SelectList & read,      /// List of sockets to check for readability.
+      SelectList & write,     /// List of sockets to check for writability.
+      SelectList & except,    /// List of sockets to check for exceptions.
+      const PTimeInterval & timeout /// Timeout for wait on read/write data.
+    );
+  //@}
 
-
+  /**@name Integer conversion functions */
+  //@{
+    /// Convert from host to network byte order
     inline static WORD  Host2Net(WORD  v) { return htons(v); }
+    /// Convert from host to network byte order
     inline static DWORD Host2Net(DWORD v) { return htonl(v); }
-      // Convert from host to network byte order
 
+    /// Convert from network to host byte order
     inline static WORD  Net2Host(WORD  v) { return ntohs(v); }
+    /// Convert from network to host byte order
     inline static DWORD Net2Host(DWORD v) { return ntohl(v); }
-      // Convert from network to host byte order
-
+  //@}
 
   protected:
-    virtual BOOL OpenSocket() = 0;
-    /* This function calls os_socket() with the correct parameters for the
+    /*This function calls os_socket() with the correct parameters for the
        socket protocol type.
      */
+    virtual BOOL OpenSocket() = 0;
 
-    virtual const char * GetProtocolName() const = 0;
-    /* This function returns the protocol name for the socket type.
+    /**This function returns the protocol name for the socket type.
      */
+    virtual const char * GetProtocolName() const = 0;
 
 
     int os_close();
@@ -490,8 +534,11 @@ class PSocket : public PChannel
 
 
   // Member variables
+    /// Port to be used by the socket when opening the channel.
     WORD port;
-    // Port to be used by the socket when opening the channel.
 
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////

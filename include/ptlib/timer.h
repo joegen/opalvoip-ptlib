@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.17  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.16  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -88,163 +91,169 @@
 
 class PThread;
 
-
-class PTimer : public PTimeInterval
-{
-  PCLASSINFO(PTimer, PTimeInterval)
-/* A class representing a system timer. The time interval ancestor value is
+/**
+   A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
 
-   A timer on completion calls the virtual function <A>OnTimeout()</A>. This
+   A timer on completion calls the virtual function #OnTimeout()#. This
    will in turn call the callback function provided by the instance. The user
    may either override the virtual function or set a callback as desired.
    
    Note that only one timeout function can be executed at a time. The timeout
-   function is also executed in the context of the <A>PProcess</A> instances
+   function is also executed in the context of the #PProcess# instances
    thread of execution.
    
-   A list of active timers is maintained by the applications <A>PProcess</A> 
+   A list of active timers is maintained by the applications #PProcess# 
    instance. This is used for sstealing the processor time to decrement the
    timers and call the timeout functions. A consequence of this is that no
    static timer instances can be running when the program terminates.
  */
+class PTimer : public PTimeInterval
+{
+  PCLASSINFO(PTimer, PTimeInterval);
 
   public:
-    PTimer(
-      long milliseconds = 0,  // Number of milliseconds for timer.
-      int seconds = 0,        // Number of seconds for timer.
-      int minutes = 0,        // Number of minutes for timer.
-      int hours = 0,          // Number of hours for timer.
-      int days = 0            // Number of days for timer.
-    );
-    PTimer(
-      const PTimeInterval & time    // New time interval for timer.
-    );
-    /* Create a new timer object and start it in one shot mode for the
+  /**@name Construction */
+  //@{
+    /** Create a new timer object and start it in one shot mode for the
        specified amount of time. If the time was zero milliseconds then the
-       timer is <EM>not</EM> started, ie the callback function is not executed
+       timer is {\bf not} started, ie the callback function is not executed
        immediately.
-     */
+      */
+    PTimer(
+      long milliseconds = 0,  /// Number of milliseconds for timer.
+      int seconds = 0,        /// Number of seconds for timer.
+      int minutes = 0,        /// Number of minutes for timer.
+      int hours = 0,          /// Number of hours for timer.
+      int days = 0            /// Number of days for timer.
+    );
+    PTimer(
+      const PTimeInterval & time    /// New time interval for timer.
+    );
 
-    PTimer & operator=(
-      DWORD milliseconds            // New time interval for timer.
-    );
-    PTimer & operator=(
-      const PTimeInterval & time    // New time interval for timer.
-    );
-    /* Restart the timer in one shot mode using the specified time value. If
+    /** Restart the timer in one shot mode using the specified time value. If
        the timer was already running, the "time left" is simply reset.
 
-       <H2>Returns:</H2>
+       @return
        reference to the timer.
      */
+    PTimer & operator=(
+      DWORD milliseconds            /// New time interval for timer.
+    );
+    PTimer & operator=(
+      const PTimeInterval & time    /// New time interval for timer.
+    );
 
-    virtual ~PTimer();
-    /* Destroy the timer object, removing it from the applications timer list
+    /** Destroy the timer object, removing it from the applications timer list
        if it was running.
      */
+    virtual ~PTimer();
+  //@}
 
-
-  // New functions for class
-    void RunContinuous(
-      const PTimeInterval & time    // New time interval for timer.
-    );
-    /* Start a timer in continous cycle mode. Whenever the timer runs out it
+  /**@name Control functions */
+  //@{
+    /** Start a timer in continous cycle mode. Whenever the timer runs out it
        is automatically reset to the time specified. Thus, it calls the
        notification function every time interval.
      */
+    void RunContinuous(
+      const PTimeInterval & time    // New time interval for timer.
+    );
 
-    void Stop();
-    /* Stop a running timer. The imer will not call the notification function
+    /** Stop a running timer. The imer will not call the notification function
        and is reset back to the original timer value. Thus when the timer
        is restarted it begins again from the beginning.
      */
+    void Stop();
 
-    BOOL IsRunning() const;
-    /* Determine if the timer is currently running. This really is only useful
+    /** Determine if the timer is currently running. This really is only useful
        for one shot timers as repeating timers are always running.
        
-       <H2>Returns:</H2>
+       @return
        TRUE if timer is still counting.
      */
+    BOOL IsRunning() const;
 
-    void Pause();
-    /* Pause a running timer. This differs from the <A>Stop()</A> function in
+    /** Pause a running timer. This differs from the #Stop()# function in
        that the timer may be resumed at the point that it left off. That is
        time is "frozen" while the timer is paused.
      */
+    void Pause();
 
-    void Resume();
-    /* Restart a paused timer continuing at the time it was paused. The time
+    /** Restart a paused timer continuing at the time it was paused. The time
        left at the moment the timer was paused is the time until the next
        call to the notification function.
      */
+    void Resume();
 
-    BOOL IsPaused() const;
-    /* Determine if the timer is currently paused.
+    /** Determine if the timer is currently paused.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if timer paused.
      */
+    BOOL IsPaused() const;
+  //@}
 
-    const PNotifier & GetNotifier() const;
-    /* Get the current call back function that is called whenever the timer
-       expires. This is called by the <A>OnTimeout()</A> function.
+  /**@name Notification functions */
+  //@{
+    /**This function is called on time out. That is when the system timer
+       processing decrements the timer from a positive value to less than or
+       equal to zero. The interval is then reset to zero and the function
+       called.
+       
+       The default behaviour of this function is to call the #PNotifier# 
+       callback function.
+     */
+    virtual void OnTimeout();
 
-       <H2>Returns:</H2>
+    /** Get the current call back function that is called whenever the timer
+       expires. This is called by the #OnTimeout()# function.
+
+       @return
        current notifier for the timer.
      */
+    const PNotifier & GetNotifier() const;
 
+    /** Set the call back function that is called whenever the timer expires.
+       This is called by the #OnTimeout()# function.
+     */
     void SetNotifier(
       const PNotifier & func  // New notifier function for the timer.
     );
-    /* Set the call back function that is called whenever the timer expires.
-       This is called by the <A>OnTimeout()</A> function.
-     */
+  //@}
 
-    static PTimeInterval Tick();
-    /* Get the number of milliseconds since some arbtrary point in time. This
+  /**@name Global real time functions */
+  //@{
+    /** Get the number of milliseconds since some arbtrary point in time. This
        is a platform dependent function that yields a real time counter.
        
        Note that even though this function returns milliseconds, the value may
        jump in minimum quanta according the platforms timer system, eg under
        MS-DOS and MS-Windows the values jump by 55 every 55 milliseconds. The
-       <A>Resolution()</A> function may be used to determine what the minimum
+       #Resolution()# function may be used to determine what the minimum
        time interval is.
     
-       <H2>Returns:</H2>
+       @return
        millisecond counter.
      */
+    static PTimeInterval Tick();
 
-    static unsigned Resolution();
-    /* Get the smallest number of milliseconds that the timer can be set to.
+    /** Get the smallest number of milliseconds that the timer can be set to.
        All actual timing events will be rounded up to the next value. This is
-       typically the platforms internal timing units used in the <A>Tick()</A>
+       typically the platforms internal timing units used in the #Tick()#
        function.
        
-       <H2>Returns:</H2>
+       @return
        minimum number of milliseconds per timer "tick".
      */
-
-
-  protected:
-  // System callback functions.
-    virtual void OnTimeout();
-    /* This function is called on time out. That is when the system timer
-       processing decrements the timer from a positive value to less than or
-       equal to zero. The interval is then reset to zero and the function
-       called.
-       
-       The default behaviour of this function is to call the <A>PNotifier</A> 
-       callback function.
-     */
-
+    static unsigned Resolution();
+  //@}
 
   private:
     void StartRunning(
       BOOL once   // Flag for one shot or continuous.
     );
-    /* Start or restart the timer from the <CODE>resetTime</CODE> variable.
+    /* Start or restart the timer from the #resetTime# variable.
        This is an internal function.
      */
 
@@ -253,10 +262,10 @@ class PTimer : public PTimeInterval
       PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
     );
     /* Process the timer decrementing it by the delta amount and calling the
-       <A>OnTimeout()</A> when zero. This is used internally by the
-       <A>PTimerList::Process()</A> function.
+       #OnTimeout()# when zero. This is used internally by the
+       #PTimerList::Process()# function.
 
-       <H2>Returns:</H2>
+       @return
        TRUE if is no longer running.
      */
 
@@ -281,5 +290,8 @@ class PTimer : public PTimeInterval
 
   friend class PTimerList;
   
+#ifdef DOC_PLUS_PLUS
+};
+#endif
   
 // Class declaration continued in platform specific header file ///////////////
