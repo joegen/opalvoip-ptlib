@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.18  2001/08/22 02:04:43  robertj
+ * Resolved confusion with YUV411P and YUV420P video formats, thanks Mark Cooke.
+ *
  * Revision 1.17  2001/08/20 07:01:26  robertj
  * Fixed wierd problems with YUV411P and YUV420P formats, thanks Mark Cooke.
  *
@@ -111,7 +114,7 @@
 #define HINT_ONLY_WORKS_PREF_PALETTE        0x0040  /// Camera always (and only) opens at pref palette.
 #define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
 
-  
+
 static struct {
   char     *name_regexp;        // String used to match the driver name
   char     *name;               // String used for ptrace output
@@ -120,8 +123,7 @@ static struct {
 } driver_hints[] = {
 
     /**Philips usb web cameras
-    
-       Native format is 420.  Use 420P as it's closer to 411P
+       Native format is 420(P) so use it.
      */
     
   { "^Philips [0-9]+ webcam$",
