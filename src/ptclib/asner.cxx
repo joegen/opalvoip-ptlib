@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.68  2002/10/29 07:26:45  robertj
+ * Fixed subtle bug when encoding or decoding Octet String with 1 or 2 bytes
+ *   in it, was not byte aligned correctly.
+ *
  * Revision 1.67  2002/09/26 23:53:20  robertj
  * Fixed incorrect asserts in PASN_Enumerated, thanks Platzer Wolfgang
  *
@@ -1959,6 +1963,9 @@ BOOL PASN_OctetString::DecodePER(PPER_Stream & strm)
   if (!SetSize(nBytes))   // 16.5
     return FALSE;
 
+  if (upperLimit != lowerLimit)
+    return strm.BlockDecode(value.GetPointer(), nBytes) == nBytes;
+
   unsigned theBits;
   switch (nBytes) {
     case 0 :
@@ -1993,6 +2000,11 @@ void PASN_OctetString::EncodePER(PPER_Stream & strm) const
 
   PINDEX nBytes = value.GetSize();
   ConstrainedLengthEncode(strm, nBytes);
+
+  if (upperLimit != lowerLimit) {
+    strm.BlockEncode(value, nBytes);
+    return;
+  }
 
   switch (nBytes) {
     case 0 :  // 16.5
