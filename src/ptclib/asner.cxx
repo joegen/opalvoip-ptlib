@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.28  1999/11/22 23:15:43  robertj
+ * Fixed bug in PASN_Choice::Compare(), should make sure choices are the same before comparing.
+ *
  * Revision 1.27  1999/08/19 15:43:07  robertj
  * Fixed incorrect size of OID if zero length encoded.
  *
@@ -2683,6 +2686,12 @@ PObject::Comparison PASN_Choice::Compare(const PObject & obj) const
     return LessThan;
 
   if (other.choice == NULL)
+    return GreaterThan;
+
+  if (tag < other.tag)
+    return LessThan;
+
+  if (tag > other.tag)
     return GreaterThan;
 
   return choice->Compare(*other.choice);
