@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.2  1999/01/31 00:57:18  robertj
+ * Fixed bug when opening an already open file, should close it!
+ *
  * Revision 1.1  1998/11/30 12:46:19  robertj
  * Initial revision
  *
@@ -714,6 +717,7 @@ BOOL PFile::Write(const void * buffer, PINDEX amount)
 
 BOOL PFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 {
+  Close();
   SetFilePath(name);
   return Open(mode, opts);
 }
