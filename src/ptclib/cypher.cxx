@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.4 1996/02/15 14:43:28 robertj Exp $
+ * $Id: cypher.cxx,v 1.5 1996/02/25 02:53:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.5  1996/02/25 02:53:05  robertj
+ * Further secure config development.
+ *
  * Revision 1.4  1996/02/15 14:43:28  robertj
  * Allowed no secured config data at all to be "valid". All vars will then be guarenteed to default.
  *
@@ -558,6 +561,14 @@ void PTEACypher::DecodeBlock(const BYTE * in, BYTE * out)
 // PSecureConfig
 
 static const char SecuredOptions[] = "Secured Options";
+static const char ValidationKey[] = "Validation";
+static const char PendingPrefix[] = "Pending:";
+
+PSecureConfig::PSecureConfig(const PStringArray & securedKeys, Source src)
+  : PConfig(SecuredOptions, src), securedKey(securedKeys)
+{
+}
+
 
 PSecureConfig::PSecureConfig(const char * const * securedKeys,
                              PINDEX count,
@@ -565,6 +576,15 @@ PSecureConfig::PSecureConfig(const char * const * securedKeys,
   : PConfig(SecuredOptions, src), securedKey(count, securedKeys)
 {
 }
+
+
+PSecureConfig::PSecureConfig(const PStringArray & securedKeys,
+                             const PString & securedSection,
+                             Source src)
+  : PConfig(securedSection, src), securedKey(securedKeys)
+{
+}
+
 
 PSecureConfig::PSecureConfig(const char * const * securedKeys,
                              PINDEX count,
@@ -575,39 +595,97 @@ PSecureConfig::PSecureConfig(const char * const * securedKeys,
 }
 
 
-void PSecureConfig::SetValidation(const char * validationKey)
+BOOL PSecureConfig::SetValidation()
 {
-  SetString(validationKey, CalculateValidation());
+  return SetValidation(ValidationKey);
 }
 
 
-BOOL PSecureConfig::IsValid(const char * validationKey)
+BOOL PSecureConfig::SetValidation(const PString & validationKey)
 {
-  PString key = GetString(validationKey);
-  if (!key.IsEmpty())
-    return key == CalculateValidation();
+  PString vkey = GetString(validationKey);
+  if (vkey.IsEmpty())
+    return FALSE;
 
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
-    if (!GetString(securedKey[i]).IsEmpty())
-      return FALSE;
+  if (vkey != CalculateValidation(PendingKeys))
+    return FALSE;
+
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
+    PString str = GetString(PendingPrefix + securedKey[i]);
+    if (!str.IsEmpty())
+      SetString(securedKey[i], str);
+    DeleteKey(PendingPrefix + securedKey[i]);
+  }
+  DeleteKey(PendingPrefix + validationKey);
 
   return TRUE;
 }
 
 
-PString PSecureConfig::CalculateValidation()
+void PSecureConfig::UnsetValidation()
+{
+  UnsetValidation(ValidationKey);
+}
+
+
+void PSecureConfig::UnsetValidation(const PString & validationKey)
+{
+  if (GetBoolean(PendingPrefix + validationKey))
+    return;
+
+  SetBoolean(PendingPrefix + validationKey, TRUE);
+
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
+    PString str = GetString(securedKey[i]);
+    if (!str.IsEmpty())
+      SetString(PendingPrefix + securedKey[i], str);
+    DeleteKey(securedKey[i]);
+  }
+
+  DeleteKey(validationKey);
+}
+
+
+PSecureConfig::ValidationState PSecureConfig::GetValidation() const
+{
+  return GetValidation(ValidationKey);
+}
+
+
+PSecureConfig::ValidationState
+              PSecureConfig::GetValidation(const PString & validationKey) const
+{
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
+    if (!GetString(securedKey[i]).IsEmpty())
+      return GetString(validationKey) == CalculateValidation(SecuredKeys)
+                                                           ? IsValid : Invalid;
+  return GetBoolean(PendingPrefix + validationKey) ? Pending : Defaults;
+}
+
+
+PString PSecureConfig::CalculateDigest(DigestType keyType) const
 {
   PMessageDigest5 digestor;
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
-    digestor.Process(GetString(securedKey[i]));
-  PMessageDigest5::Code digest;
-  digestor.Complete(digest);
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
+    PString key;
+    if (keyType == PendingKeys)
+      key = PendingPrefix + securedKey[i];
+    else
+      key = securedKey[i];
+    digestor.Process(GetString(key));
+  }
+  return digestor.Complete();
+}
 
+
+PString PSecureConfig::CalculateValidation(DigestType keyType) const
+{
   PTEACypher::Key key;
-  memset(key, 42, sizeof(key));
-  memcpy(key, digest, PMIN(sizeof(key), sizeof(digest)));
+  PBase64::Decode(CalculateDigest(keyType), key, sizeof(key));
   PTEACypher crypt(key);
-  return crypt.Encode(PProcess::Current()->GetName() + SecuredOptions);
+  PMessageDigest5::Code code;
+  PMessageDigest5::Encode(PProcess::Current()->GetName()&SecuredOptions,code);
+  return crypt.Encode(code, sizeof(code)-1);
 }
 
 
