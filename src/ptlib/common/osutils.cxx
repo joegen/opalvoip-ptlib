@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.212  2004/04/03 06:54:29  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.211  2004/03/22 10:15:27  rjongbloed
  * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
  *   when goes out of scope.
@@ -932,11 +935,14 @@ ostream & PTrace::End(ostream & s)
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
      must suffer with blank lines in that case.
    */
-#if __GNUC__ >= 3
-  s << endl;
-#else
   ::streambuf & rb = *s.rdbuf();
-  if (((s.flags()&ios::unitbuf) != 0) || (rb.out_waiting() > 0)) {
+  if (((s.flags()&ios::unitbuf) != 0) ||
+#ifdef __USE_STL__
+          rb.pubseekoff(0, ios::cur, ios::out) > 0
+#else
+          rb.out_waiting() > 0
+#endif
+      ) {
     if ((PTraceOptions&SystemLogStream) != 0) {
       // Get the trace level for this message and set the stream width to that
       // level so that the PSystemLog can extract the log level back out of the
@@ -948,7 +954,6 @@ ostream & PTrace::End(ostream & s)
     else
       s << endl;
   }
-#endif
 
   PTraceMutex->Signal();
 
