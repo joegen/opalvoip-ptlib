@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.5 1994/12/12 10:08:30 robertj Exp $
+ * $Id: object.h,v 1.6 1995/01/03 09:39:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.5  1994/12/12 10:08:30  robertj
+ * Revision 1.6  1995/01/03 09:39:06  robertj
+ * Put standard malloc style memory allocation etc into memory check system.
+ *
+ * Revision 1.5  1994/12/12  10:08:30  robertj
  * Renamed PWrapper to PSmartPointer..
  *
  * Revision 1.4  1994/12/05  11:23:28  robertj
@@ -98,9 +101,18 @@ extern ostream * PSTATIC PErrorStream;
 #if defined(PMEMORY_CHECK)
 
 void * PMemoryCheckAllocate(size_t nSize,
-                        const char * file, int line, const char * className);
+                         const char * file, int line, const char * className);
+void * PMemoryCheckAllocate(size_t count,
+                                    size_t size, const char * file, int line);
+void * PMemoryCheckReallocate(void * ptr,
+                                   size_t nSize, const char * file, int line);
 void   PMemoryCheckDeallocate(void * ptr, const char * className);
 
+#define PMALLOC(s)    PMemoryCheckAllocate(s, __FILE__, __LINE__, NULL)
+#define PCALLOC(n,s)  PMemoryCheckAllocate(n, s, __FILE__, __LINE__)
+#define PREALLOC(p,s) PMemoryCheckReallocate(p, s, __FILE__, __LINE__)
+#define PFREE(p)      PMemoryCheckDeallocate(p, NULL)
+#define PNEW          new(__FILE__, __LINE__)
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
       { return PMemoryCheckAllocate(nSize, file, line, Class()); } \
@@ -109,12 +121,20 @@ void   PMemoryCheckDeallocate(void * ptr, const char * className);
     void operator delete(void * ptr) \
       { PMemoryCheckDeallocate(ptr, Class()); }
 
-#define PNEW new(__FILE__, __LINE__)
-
 #else // defined(PMEMORY_CHECK)
 
+#define PMALLOC(s)    malloc(s)
+#define PCALLOC(n,s)  calloc(n, s)
+#ifdef __GNUC__
+inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
+  { return realloc(p, s <= 4 ? 4 : s); }
+#define PREALLOC(p,s) p_realloc(p, s)
+#else
+#define PREALLOC(p,s) realloc(p, s)
+#endif
+#define PFREE(p)      free(p)
+#define PNEW          new
 #define PNEW_AND_DELETE_FUNCTIONS
-#define PNEW new
 
 #endif // defined(PMEMORY_CHECK)
 
