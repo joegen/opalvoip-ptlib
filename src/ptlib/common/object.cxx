@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.58  2002/08/13 01:28:42  robertj
+ * Added allocation number to memory statistics dump to aid in leak finding.
+ *
  * Revision 1.57  2002/06/28 05:17:06  yurik
  * ifndef'd ostrstream as it does not yet exist on wince
  *
@@ -742,6 +745,7 @@ void PMemoryHeap::InternalDumpStatistics(ostream & strm)
 
   strm << ".\nPeak objects created: " << peakObjects
        << "\nTotal objects created: " << totalObjects
+       << "\nNext allocation request: " << allocationRequest
        << '\n' << endl;
 }
 
