@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.46  2002/11/22 06:20:26  robertj
+ * Added extra space around data entry fields.
+ * Added borders around arrays and composite fields.
+ * Added multi-line data entry for HTTPStringField > 128 characters.
+ *
  * Revision 1.45  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -616,7 +621,7 @@ void PHTTPCompositeField::GetHTMLTag(PHTML & html) const
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     if (i != 0 && html.Is(PHTML::InTable))
-      html << PHTML::TableData("NOWRAP");
+      html << PHTML::TableData("NOWRAP ALIGN=CENTER");
     fields[i].GetHTMLTag(html);
   }
 }
@@ -861,7 +866,7 @@ void PHTTPFieldArray::AddArrayControlBox(PHTML & html, PINDEX fld) const
 
 void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::TableStart();
+  html << PHTML::TableStart("border=1 cellspacing=0 cellpadding=8");
   baseField->GetHTMLHeading(html);
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     html << PHTML::TableRow() << PHTML::TableData("NOWRAP");
@@ -1145,7 +1150,10 @@ PHTTPField * PHTTPStringField::NewField() const
 
 void PHTTPStringField::GetHTMLTag(PHTML & html) const
 {
-  html << PHTML::InputText(fullName, size, value);
+  if (size < 128)
+    html << PHTML::InputText(fullName, size, value);
+  else
+    html << PHTML::TextArea(fullName, (size+79)/80, 80) << value << PHTML::TextArea(fullName);
 }
 
 
@@ -1953,7 +1961,7 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
   if (!html.Is(PHTML::InForm))
     html << PHTML::Form("POST");
 
-  html << PHTML::TableStart();
+  html << PHTML::TableStart("cellspacing=8");
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (field.NotYetInHTML()) {
