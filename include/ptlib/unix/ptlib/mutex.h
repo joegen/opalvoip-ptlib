@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.4  1999/01/09 03:35:09  robertj
+ * Improved efficiency of mutex to use pthread functions directly.
+ *
  * Revision 1.3  1998/11/30 22:06:51  robertj
  * New directory structure.
  *
@@ -46,6 +49,13 @@
 // PMutex
 
 #include "../../mutex.h"
+#ifdef P_PTHREADS
+  public:
+    virtual void Wait();
+    virtual BOOL Wait(const PTimeInterval & timeout);
+    virtual void Signal();
+    virtual BOOL WillBlock() const;
+#endif
 };
 
 
