@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.41 1995/01/09 12:36:18 robertj Exp $
+ * $Id: contain.h,v 1.42 1995/03/14 12:41:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.41  1995/01/09 12:36:18  robertj
+ * Revision 1.42  1995/03/14 12:41:13  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.41  1995/01/09  12:36:18  robertj
  * Removed unnecesary return value from I/O functions.
  * Changes due to Mac port.
  *
@@ -161,7 +164,7 @@
 // Abstract container class
 
 PDECLARE_CLASS(PContainer, PObject)
-/* Abstract class to embody the base functionality of a $I$container$I$.
+/* Abstract class to embody the base functionality of a <I>container</I>.
 
    Fundamentally, a container is an object that contains other objects. There
    are two main areas of support for tha that are provided by this class. The
@@ -173,7 +176,7 @@ PDECLARE_CLASS(PContainer, PObject)
    The second area of support is for reference integrity. When an instance of
    a container is copied to another instance, the two instance contain the
    same thing. There can therefore be multiple references to the same things.
-   When one reference is destroyed this must $U$not$U$ destroy the contained
+   When one reference is destroyed this must <EM>not</EM> destroy the contained
    object as it may be referenced by another instance of a container class.
    To this end a reference count is provided by the PContainer class. This
    assures that the container only destroys the objects it contains when there
@@ -218,7 +221,8 @@ PDECLARE_CLASS(PContainer, PObject)
        things the container contains. For some types of containers this will
        always return 1.
 
-       Returns: number of objects in container.
+       <H2>Returns:</H2>
+       number of objects in container.
      */
 
     virtual BOOL SetSize(
@@ -232,8 +236,9 @@ PDECLARE_CLASS(PContainer, PObject)
        inherently only contain one item. The function returns TRUE always and
        the new value is ignored.
 
-       Returns: TRUE if the size was successfully changed. The value FALSE
-                usually indicates failure due to insufficient memory.
+       <H2>Returns:</H2>
+       TRUE if the size was successfully changed. The value FALSE usually
+       indicates failure due to insufficient memory.
      */
 
     BOOL SetMinSize(
@@ -248,14 +253,16 @@ PDECLARE_CLASS(PContainer, PObject)
     /* Determine if the container is empty, that is there are no objects in its
        contents.
 
-       Returns: TRUE if GetSize() returns zero.
+       <H2>Returns:</H2>
+       TRUE if <A><CODE>GetSize()</CODE></A> returns zero.
      */
 
     BOOL IsUnique() const;
     /* Determine if this instance is the one and only reference to the
        container contents.
 
-       Returns: TRUE if the reference count is one.
+       <H2>Returns:</H2>
+       TRUE if the reference count is one.
      */
 
     virtual BOOL MakeUnique();
@@ -264,7 +271,8 @@ PDECLARE_CLASS(PContainer, PObject)
        to make a unique reference. If the instance was already unique then
        the function does nothing.
 
-       Returns: TRUE if the instance was already unique.
+       <H2>Returns:</H2>
+       TRUE if the instance was already unique.
      */
 
 
@@ -274,8 +282,8 @@ PDECLARE_CLASS(PContainer, PObject)
       const PContainer * cont  // Container class to clone.
     );
     /* Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does $U$not$U$ create
-       another reference.
+       new unique reference of a copy of the contents. It does <EM>not</EM>
+       create another reference.
 
        The dummy parameter is there to prevent the contructor from being
        invoked automatically by the compiler when a pointer is used by accident
@@ -306,7 +314,7 @@ PDECLARE_CLASS(PContainer, PObject)
        block itself.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should $U$not$U$ be called.
+       the ancestor function should <EM>not</EM> be called.
      */
 
     void CloneContents(const PContainer * src);
@@ -320,11 +328,11 @@ PDECLARE_CLASS(PContainer, PObject)
        they too should also be cloned and not simply copied.
 
        This function will get called once for every class in the heirarchy, so
-       the ancestor function should $U$not$U$ be called.
+       the ancestor function should <EM>not</EM> be called.
        
-       $B$$U$Note well$U$$B$, the logic of the function must be able to accept
-       the passed in parameter to clone being the same instance as the
-       destination object, ie during execution $F$this == src$F$.
+       <B><EM>Note well</EM></B>, the logic of the function must be able to
+       accept the passed in parameter to clone being the same instance as the
+       destination object, ie during execution <CODE>this == src</CODE>.
      */
 
     void Destruct();
@@ -351,12 +359,12 @@ PDECLARE_CLASS(PContainer, PObject)
    some standard function behaviour.
 
    This may be used when multiple inheritance requires a special class
-   declaration. Normally, the $H$PDECLARE_CONTAINER macro would be used, which
-   includes this macro in it.
+   declaration. Normally, the <A>PDECLARE_CONTAINER</A> macro would be used,
+   which includes this macro in it.
 
    The default implementation for contructors, destructor, the assignment
    operator and the MakeUnique() function is as follows:
-   $F$
+   <PRE><CODE>
         cls(const cls & c)
           : par(c)
         {
@@ -388,10 +396,10 @@ PDECLARE_CLASS(PContainer, PObject)
           CloneContents(c);
           return FALSE;
         }
-    $F$
+    </PRE></CODE>
     Then the DestroyContents(), CloneContents() and CopyContents() functions
-    are declared and must be implemted by the programmer. See the $H$PContainer
-    class for more information on these functions.
+    are declared and must be implemented by the programmer. See the
+    <A>PContainer</A> class for more information on these functions.
  */
 #define PCONTAINERINFO(cls, par) \
     PCLASSINFO(cls, par) \
@@ -410,11 +418,11 @@ PDECLARE_CLASS(PContainer, PObject)
 
 
 /*$MACRO PDECLARE_CONTAINER(cls, par)
-   This macro is used to declare a descendent of $H$PContainer class. It
+   This macro is used to declare a descendent of <A>PContainer</A> class. It
    declares all the functions that should be implemented for a working
    container class.
 
-   See the $H$PCONTAINERINFO macro for more information.
+   See the <A>PCONTAINERINFO</A> macro for more information.
  */
 #define PDECLARE_CONTAINER(cls, par) \
                              PCLASS cls : public par { PCONTAINERINFO(cls, par)
@@ -425,7 +433,7 @@ PDECLARE_CLASS(PContainer, PObject)
 
 PDECLARE_CLASS(PCollection, PContainer)
 /* A collection is a container that collects together descendents of the
-   $H$PObject class. The objects contained in the collection are always
+   <A>PObject</A> class. The objects contained in the collection are always
    pointers to objects, not the objects themselves. The life of an object in
    the collection should be carefully considered. Typically, it is allocated
    by the user of the collection when it is added. The collection then
@@ -452,8 +460,9 @@ PDECLARE_CLASS(PCollection, PContainer)
    last location or an end of the list, incurring an overhead.
 
    All collection classes implement a base set of functions, though they may
-   be meaningless or degenerative in some collection types eg $B$Insert()$B$$
-   for $H$PSortedList will degenerate to be the same as $B$Append()$B$.
+   be meaningless or degenerative in some collection types eg
+   <A><CODE>Insert()</CODE></A> for <A>PSortedList</A> will degenerate to be
+   the same as <A><CODE>Append()</CODE></A>.
  */
 
   public:
@@ -468,9 +477,11 @@ PDECLARE_CLASS(PCollection, PContainer)
       ostream &strm   // Output stream to print the collection.
     ) const;
     /* Print the collection on the stream. This simply executes the
-       $B$PrintOn()$B$ function on each element in the collection.
+       <A><CODE>PrintOn()</CODE></A> function on each element in the
+       collection.
 
-       Returns: the stream printed to.
+       <H2>Returns:</H2>
+       the stream printed to.
      */
 
     // New functions for class
@@ -481,10 +492,11 @@ PDECLARE_CLASS(PCollection, PContainer)
     
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object at the "end" of the collection at
-       all. For example, in a $H$PSortedList the object is placed in the
+       all. For example, in a <A>PSortedList</A> the object is placed in the
        correct ordinal position in the list.
 
-       Returns: index of the newly added object.
+       <H2>Returns:</H2>
+       index of the newly added object.
      */
 
     virtual PINDEX Insert(
@@ -493,18 +505,20 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) = 0;
     /* Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the $B$Append()$B$ function is performed.
+       the <A><CODE>Append()</CODE></A> function is performed.
        
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object before the specified object at
-       all. For example, in a $H$PSortedList the object is placed in the
+       all. For example, in a <A>PSortedList</A> the object is placed in the
        correct ordinal position in the list.
 
        Note that the object values are compared for the search of the
-       $B$before$B$ parameter, not the pointers. So the objects in the
-       collection must correctly implement the $B$Comapre()$B$ function.
+       <CODE>before</CODE> parameter, not the pointers. So the objects in the
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function.
 
-       Returns: index of the newly inserted object.
+       <H2>Returns:</H2>
+       index of the newly inserted object.
      */
 
     virtual PINDEX InsertAt(
@@ -513,14 +527,15 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) = 0;
     /* Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the $B$Append()$B$ function is performed.
+       equivalent of the <A><CODE>Append()</CODE></A> function is performed.
 
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object at the specified index at all.
-       For example, in a $H$PSortedList the object is placed in the correct
+       For example, in a <A>PSortedList</A> the object is placed in the correct
        ordinal position in the list.
 
-       Returns: index of the newly inserted object.
+       <H2>Returns:</H2>
+       index of the newly inserted object.
      */
 
     virtual BOOL Remove(
@@ -533,7 +548,8 @@ PDECLARE_CLASS(PCollection, PContainer)
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       Returns: TRUE if the object was in the collection.
+       <H2>Returns:</H2>
+       TRUE if the object was in the collection.
      */
 
     virtual PObject * RemoveAt(
@@ -545,15 +561,17 @@ PDECLARE_CLASS(PCollection, PContainer)
        Note if the index is beyond the size of the collection then the
        function will assert.
 
-       Returns: pointer to the object being removed, or NULL if it was deleted.
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
      */
 
     virtual void RemoveAll();
     /* Remove all of the elements in the collection. This operates by
-       continually calling $B$RemoveAt()$B$ until there are no objects left.
+       continually calling <A><CODE>RemoveAt()</CODE></A> until there are no
+       objects left.
 
-       The objects are removed from the last, at index $F$(GetSize()-1)$F$
-       toward the first at index zero.
+       The objects are removed from the last, at index
+       <CODE>(GetSize()-1)</CODE> toward the first at index zero.
      */
 
     virtual BOOL SetAt(
@@ -565,13 +583,14 @@ PDECLARE_CLASS(PCollection, PContainer)
        set then the old object is also deleted.
 
        The exact semantics depends on the specific type of the collection. For
-       some, eg $H$PSortedList, the object inserted will not stay at the
+       some, eg <A>PSortedList</A>, the object inserted will not stay at the
        ordinal position. Also the exact behaviour when the index is greater
        than the size of the collection depends on the collection type, eg in
        an array collection the array is expanded to accommodate the new index,
        whereas in a list it will return FALSE.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     virtual PObject * GetAt(
@@ -580,7 +599,8 @@ PDECLARE_CLASS(PCollection, PContainer)
     /* Get the object at the specified ordinal position. If the index was
        greater than the size of the collection then NULL is returned.
 
-       Returns: pointer to object at the specified index.
+       <H2>Returns:</H2>
+       pointer to object at the specified index.
      */
 
     virtual PINDEX GetObjectsIndex(
@@ -590,7 +610,8 @@ PDECLARE_CLASS(PCollection, PContainer)
        object pointers are compared, not the values. The fastest search
        algorithm is employed depending on the collection type.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
     virtual PINDEX GetValuesIndex(
@@ -598,10 +619,12 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) const = 0;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Comapre()$B$ function. The
-       fastest search algorithm is employed depending on the collection type.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. The fastest search algorithm is employed depending on the
+       collection type.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
     void AllowDeleteObjects(
@@ -612,17 +635,18 @@ PDECLARE_CLASS(PCollection, PContainer)
        the colelction is deleted due to all references being destroyed, the
        object is deleted.
 
-       For example: $F$
+       For example:
+              <PRE><CODE>
               coll.SetAt(2, new PString("one"));
               coll.SetAt(2, new PString("Two"));
-              $F$
+              </PRE></CODE>
        would automatically delete the string containing "one" on the second
        call to SetAt().
      */
 
     void DisallowDeleteObjects();
     /* Disallow the deletion of the objects contained in the collection. See
-       the $H$AllowDeleteObjects() function for more details.
+       the <A>AllowDeleteObjects()</A> function for more details.
      */
 
   protected:
@@ -631,8 +655,8 @@ PDECLARE_CLASS(PCollection, PContainer)
       const PCollection * coll  // Collection class to clone.
     );
     /* Constructor used in support of the Clone() function. This creates a
-       new unique reference of a copy of the contents. It does $U$not$U$ create
-       another reference.
+       new unique reference of a copy of the contents. It does <EM>not</EM>
+       create another reference.
 
        The dummy parameter is there to prevent the contructor from being
        invoked automatically by the compiler when a pointer is used by accident
