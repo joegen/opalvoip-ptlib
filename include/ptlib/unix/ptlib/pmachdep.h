@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.29  2000/01/20 08:20:57  robertj
+ * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
+ *
  * Revision 1.28  1999/08/09 01:51:42  robertj
  * Added missing paths include (esp. for VARRUN in svcproc)
  *
@@ -106,7 +109,6 @@ typedef size_t socklen_t;
 #define P_THREAD_SAFE_CLIB
 
 #include <pthread.h>
-extern "C" int sigwait(sigset_t *set);
 #endif
 
 #include <paths.h>
@@ -123,8 +125,6 @@ extern "C" int sigwait(sigset_t *set);
 #define HAS_IFREQ
 
 #define PSETPGRP()  setpgrp(0, 0)
-
-typedef int socklen_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_SOLARIS)
