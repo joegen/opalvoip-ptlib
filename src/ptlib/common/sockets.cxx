@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.177  2004/11/16 00:31:44  csoutheren
+ * Added Cygwin support (needs to have gethostbyname_r fixed)
+ *
  * Revision 1.176  2004/10/26 18:27:28  ykiryanov
  * Added another for of SetOption to set SO_REUSEADDR for BeOS
  *
@@ -1084,7 +1087,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       localErrNo = h_errno;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif defined(P_RTEMS)
+#elif defined(P_RTEMS) || defined(P_CYGWIN)
 
     host_info = ::gethostbyname(name);
     localErrNo = h_errno;
@@ -1217,7 +1220,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       localErrNo = h_errno;
     } while (localErrNo == TRY_AGAIN && --retry > 0);
 
-#elif defined P_RTEMS
+#elif defined P_RTEMS || defined P_CYGWIN
 
     host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
