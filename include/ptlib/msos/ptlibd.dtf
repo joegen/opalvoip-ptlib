@@ -867,6 +867,8 @@ EXPORTS
     ??4PWin32AsnOid@@QAEAAV0@ABUAsnObjectIdentifier@@@Z @2336 NONAME ;public: class PWin32AsnOid & __thiscall PWin32AsnOid::operator=(struct AsnObjectIdentifier const &)
     ??4PWORDArray@@QAEAAV0@ABV0@@Z @3248 NONAME ;public: class PWORDArray & __thiscall PWORDArray::operator=(class PWORDArray const &)
     ??5@YAAAVistream@@AAV0@AAVAddress@PIPSocket@@@Z @3048 NONAME ;class istream & __cdecl operator>>(class istream &,class PIPSocket::Address &)
+    ??5@YAAAVistream@@AAV0@AA_J@Z @3787 NONAME ;class istream & __cdecl operator>>(class istream &,__int64 &)
+    ??5@YAAAVistream@@AAV0@AA_K@Z @3788 NONAME ;class istream & __cdecl operator>>(class istream &,unsigned __int64 &)
     ??5PArgList@@QAEAAV0@H@Z @537 NONAME ;public: class PArgList & __thiscall PArgList::operator>>(int)
     ??5PBinaryUnSerialiser@@UAEAAVPUnSerialiser@@AAC@Z @538 NONAME ;public: virtual class PUnSerialiser & __thiscall PBinaryUnSerialiser::operator>>(signed char &)
     ??5PBinaryUnSerialiser@@UAEAAVPUnSerialiser@@AAD@Z @539 NONAME ;public: virtual class PUnSerialiser & __thiscall PBinaryUnSerialiser::operator>>(char &)
