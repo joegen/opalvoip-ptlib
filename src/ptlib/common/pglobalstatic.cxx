@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pglobalstatic.cxx,v $
+ * Revision 1.4  2005/01/31 08:05:41  csoutheren
+ * More patches for MacOSX, thanks to Hannes Friederich
+ *
  * Revision 1.3  2005/01/11 06:57:15  csoutheren
  * Fixed namespace collisions with plugin starup factories
  *
@@ -97,7 +100,8 @@
   PLOAD_FACTORY_DECLARE(PluginLoaderStartup, PString)
 #endif
 
-
+// Should be enclosed with an #ifdef __WIN32__ or similiar
+// otherwise, linking will fail on MacOSX with ./configure --disable-audio
 namespace PWLibStupidWindowsHacks 
 {
 
