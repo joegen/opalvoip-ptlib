@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.28  2003/03/31 06:20:56  craigs
+ * Split the expat wrapper from the XML file handling to allow reuse of the parser
+ *
  * Revision 1.27  2003/01/13 02:14:02  robertj
  * Improved error logging for auto-loaded XML
  *
@@ -70,25 +73,25 @@
 
 
 ////////////////////////////////////////////////////
-//
+
 static void PXML_StartElement(void * userData, const char * name, const char ** attrs)
 {
-  ((PXML *)userData)->StartElement(name, attrs);
+  ((PXMLParser *)userData)->StartElement(name, attrs);
 }
 
 static void PXML_EndElement(void * userData, const char * name)
 {
-  ((PXML *)userData)->EndElement(name);
+  ((PXMLParser *)userData)->EndElement(name);
 }
 
 static void PXML_CharacterDataHandler(void * userData, const char * data, int len)
 {
-  ((PXML *)userData)->AddCharacterData(data, len);
+  ((PXMLParser *)userData)->AddCharacterData(data, len);
 }
 
 static void PXML_XmlDeclHandler(void * userData, const char * version, const char * encoding, int standalone)
 {
-  ((PXML *)userData)->XmlDecl(version, encoding, standalone);
+  ((PXMLParser *)userData)->XmlDecl(version, encoding, standalone);
 }
 
 static void PXML_StartDocTypeDecl(void * userData,
@@ -97,22 +100,173 @@ static void PXML_StartDocTypeDecl(void * userData,
 		            const char * pubid,
 			             int hasInternalSubSet)
 {
-  ((PXML *)userData)->StartDocTypeDecl(docTypeName, sysid, pubid, hasInternalSubSet);
+  ((PXMLParser *)userData)->StartDocTypeDecl(docTypeName, sysid, pubid, hasInternalSubSet);
 }
 
 static void PXML_EndDocTypeDecl(void * userData)
 {
-  ((PXML *)userData)->EndDocTypeDecl();
+  ((PXMLParser *)userData)->EndDocTypeDecl();
 }
 
-////////////////////////////////////////////////////
+static void PXML_StartNamespaceDeclHandler(void *userData,
+                                 const XML_Char *prefix,
+                                 const XML_Char *uri)
+{
+  ((PXMLParser *)userData)->StartNamespaceDeclHandler(prefix, uri);
+}
+
+static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
+{
+  ((PXMLParser *)userData)->EndNamespaceDeclHandler(prefix);
+}
+
+PXMLParser::PXMLParser(int _options)
+{
+  BOOL useNS = FALSE;
+  if (_options == WithNS) {
+    useNS = TRUE;
+    options = -1;
+  } else if ((options > 0) && ((options & WithNS) != 0)) {
+    useNS = TRUE;
+    options = _options & (!WithNS);
+  } 
+
+  if (options < 0)
+    options = 0;
+
+  if (useNS)
+    expat = XML_ParserCreateNS(NULL, '|');
+  else
+    expat = XML_ParserCreate(NULL);
+
+  XML_SetUserData(expat, this);
+
+  XML_SetElementHandler      (expat, PXML_StartElement, PXML_EndElement);
+  XML_SetCharacterDataHandler(expat, PXML_CharacterDataHandler);
+  XML_SetXmlDeclHandler      (expat, PXML_XmlDeclHandler);
+  XML_SetDoctypeDeclHandler  (expat, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
+  XML_SetNamespaceDeclHandler(expat, PXML_StartNamespaceDeclHandler, PXML_EndNamespaceDeclHandler);
+
+  rootElement = NULL;
+  currentElement = NULL;
+  lastElement    = NULL;
+}
+
+PXMLParser::~PXMLParser()
+{
+  XML_ParserFree(expat);
+}
+
+PXMLElement * PXMLParser::GetXMLTree() const
+{ 
+  return rootElement; 
+}
+
+PXMLElement * PXMLParser::SetXMLTree(PXMLElement * newRoot)
+{ 
+  PXMLElement * oldRoot = rootElement;
+  rootElement = newRoot; 
+  return oldRoot;
+}
+
+BOOL PXMLParser::Parse(const char * data, int dataLen, BOOL final)
+{
+  return XML_Parse(expat, data, dataLen, final) != 0;  
+}
+
+void PXMLParser::GetErrorInfo(PString & errorString, PINDEX & errorCol, PINDEX & errorLine)
+{
+  XML_Error err = XML_GetErrorCode(expat);
+  errorString = PString(XML_ErrorString(err));
+  errorCol    = XML_GetCurrentColumnNumber(expat);
+  errorLine   = XML_GetCurrentLineNumber(expat);
+}
+
+void PXMLParser::StartElement(const char * name, const char **attrs)
+{
+  PXMLElement * newElement = new PXMLElement(currentElement, name);
+  if (currentElement != NULL)
+    currentElement->AddSubObject(newElement, FALSE);
+
+  while (attrs[0] != NULL) {
+    newElement->SetAttribute(PString(attrs[0]), PString(attrs[1]));
+    attrs += 2;
+  }
+
+  currentElement = newElement;
+  lastElement    = NULL;
+
+  if (rootElement == NULL)
+    rootElement = currentElement;
+}
+
+void PXMLParser::EndElement(const char * /*name*/)
+{
+  currentElement = currentElement->GetParent();
+  lastElement    = NULL;
+}
+
+void PXMLParser::AddCharacterData(const char * data, int len)
+{
+  PString str(data, len);
+
+  if (lastElement != NULL) {
+    PAssert(!lastElement->IsElement(), "lastElement set by non-data element");
+    if ((options & NoIgnoreWhiteSpace) == 0)
+      str = str.Trim();
+    lastElement->SetString(lastElement->GetString() & str, FALSE);
+  } else {
+    if ((options & NoIgnoreWhiteSpace) == 0) {
+      str = str.Trim();
+      if (str.IsEmpty()) 
+        return;
+    }
+    PXMLData * newElement = new PXMLData(currentElement, str);
+    currentElement->AddSubObject(newElement, FALSE);
+    lastElement = newElement;
+  }
+}
+
+
+void PXMLParser::XmlDecl(const char * _version, const char * _encoding, int _standAlone)
+{
+  version    = _version;
+  encoding   = _encoding;
+  standAlone = _standAlone;
+}
+
+void PXMLParser::StartDocTypeDecl(const char * /*docTypeName*/,
+		                              const char * /*sysid*/,
+				                          const char * /*pubid*/,
+				                          int /*hasInternalSubSet*/)
+{
+}
+
+void PXMLParser::EndDocTypeDecl()
+{
+}
+
+void PXMLParser::StartNamespaceDeclHandler(const XML_Char * /*prefix*/, 
+                                           const XML_Char * /*uri*/)
+{
+}
+
+void PXMLParser::EndNamespaceDeclHandler(const XML_Char * /*prefix*/)
+{
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 
 PXML::PXML(int options, const char * noIndentElements)
+  : PXMLBase(options) 
 {
   Construct(options, noIndentElements);
 }
 
 PXML::PXML(const PString & data, int options, const char * noIndentElements)
+  : PXMLBase(options) 
 {
   Construct(options, noIndentElements);
   Load(data);
@@ -145,8 +299,6 @@ PXML::PXML(const PXML & xml)
 void PXML::Construct(int _options, const char * _noIndentElements)
 {
   rootElement    = NULL;
-  currentElement = NULL;
-  lastElement    = NULL;
   options        = _options > 0 ? _options : 0;
   loadFromFile   = FALSE;
   standAlone     = -2;
@@ -356,27 +508,23 @@ BOOL PXML::Load(const PString & data, int _options)
   if (_options >= 0)
     options = _options;
 
-  loadingRootElement = NULL;
+  BOOL stat = FALSE;
+  PXMLElement * loadingRootElement = NULL;
 
-  XML_Parser parser = XML_ParserCreate(NULL);
-  XML_SetUserData(parser, this);
+  {
+    PXMLParser parser(options);
+    int done = 1;
+    stat = parser.Parse(data, data.GetLength(), done) != 0;
+  
+    if (!stat)
+      parser.GetErrorInfo(errorString, errorCol, errorLine);
 
-  XML_SetElementHandler      (parser, PXML_StartElement, PXML_EndElement);
-  XML_SetCharacterDataHandler(parser, PXML_CharacterDataHandler);
-  XML_SetXmlDeclHandler      (parser, PXML_XmlDeclHandler);
-  XML_SetDoctypeDeclHandler  (parser, PXML_StartDocTypeDecl, PXML_EndDocTypeDecl);
+    version    = parser.GetVersion();
+    encoding   = parser.GetEncoding();
+    standAlone = parser.GetStandAlone();
 
-  int done = 1;
-  BOOL stat = XML_Parse(parser, (const char *)data, data.GetLength(), done) != 0;
-
-  if (!stat) {
-    XML_Error err = XML_GetErrorCode(parser);
-    errorString = PString(XML_ErrorString(err));
-    errorCol    = XML_GetCurrentColumnNumber(parser);
-    errorLine   = XML_GetCurrentLineNumber(parser);
+    loadingRootElement = parser.GetXMLTree();
   }
-
-  XML_ParserFree(parser);
 
   if (stat) {
     if (loadingRootElement == NULL) {
@@ -480,71 +628,10 @@ BOOL PXML::RemoveElement(PINDEX idx)
 
 PINDEX PXML::GetNumElements() const
 {
-	if (rootElement == NULL) return 0;
-	else return rootElement->GetSize();
-}
-
-void PXML::StartElement(const char * name, const char **attrs)
-{
-  PXMLElement * newElement = new PXMLElement(currentElement, name);
-  if (currentElement != NULL)
-    currentElement->AddSubObject(newElement, FALSE);
-
-  while (attrs[0] != NULL) {
-    newElement->SetAttribute(PString(attrs[0]), PString(attrs[1]));
-    attrs += 2;
-  }
-
-  currentElement = newElement;
-  lastElement    = NULL;
-
-  if (loadingRootElement == NULL) 
-    loadingRootElement = currentElement;
-}
-
-void PXML::EndElement(const char * /*name*/)
-{
-  currentElement = currentElement->GetParent();
-  lastElement    = NULL;
-}
-
-void PXML::AddCharacterData(const char * data, int len)
-{
-  PString str(data, len);
-
-  if (lastElement != NULL) {
-    PAssert(!lastElement->IsElement(), "lastElement set by non-data element");
-    if ((options & NoIgnoreWhiteSpace) == 0)
-      str = str.Trim();
-    lastElement->SetString(lastElement->GetString() & str, FALSE);
-  } else {
-    if ((options & NoIgnoreWhiteSpace) == 0) {
-      str = str.Trim();
-      if (str.IsEmpty()) 
-        return;
-    }
-    PXMLData * newElement = new PXMLData(currentElement, str);
-    currentElement->AddSubObject(newElement, FALSE);
-    lastElement = newElement;
-  }
-}
-
-void PXML::XmlDecl(const char * _version, const char * _encoding, int _standAlone)
-{
-  version    = _version;
-  encoding   = _encoding;
-  standAlone = _standAlone;
-}
-
-void PXML::StartDocTypeDecl(const char * /*_docTypeName*/,
-	                    const char * /*sysid*/,
-			    const char * /*pubid*/,
-			             int /*hasInternalSubSet*/)
-{
-}
-
-void PXML::EndDocTypeDecl()
-{
+	if (rootElement == NULL) 
+    return 0;
+	else 
+    return rootElement->GetSize();
 }
 
 BOOL PXML::IsNoIndentElement(const PString & elementName) const
@@ -555,7 +642,7 @@ BOOL PXML::IsNoIndentElement(const PString & elementName) const
 
 void PXML::PrintOn(ostream & strm) const
 {
-  BOOL newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
+  BOOL newLine = (options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0;
 
 //<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
@@ -659,18 +746,18 @@ PXMLData::PXMLData(PXMLElement * _parent, const char * data, int len)
   value = PString(data, len);
 }
 
-void PXMLData::Output(ostream & strm, const PXML & xml, int indent) const
+void PXMLData::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
   int options = xml.GetOptions();
   if (xml.IsNoIndentElement(parent->GetName()))
-    options &= ~PXML::Indent;
+    options &= ~PXMLParser::Indent;
 
-  if (options & PXML::Indent)
+  if (options & PXMLParser::Indent)
     strm << setw(indent-1) << " ";
 
   strm << value;
 
-  if ((options & (PXML::Indent|PXML::NewLineAfterElement)) != 0)
+  if ((options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0)
     strm << endl;
 }
 
@@ -779,13 +866,19 @@ BOOL PXMLElement::HasAttribute(const PCaselessString & key)
   return attributes.Contains(key);
 }
 
-void PXMLElement::Output(ostream & strm, const PXML & xml, int indent) const
+void PXMLElement::PrintOn(ostream & strm) const
+{
+  PXMLBase xml(-1);
+  Output(strm, xml, 0);
+}
+
+void PXMLElement::Output(ostream & strm, const PXMLBase & xml, int indent) const
 {
   int options = xml.GetOptions();
 
-  BOOL newLine = (options & (PXML::Indent|PXML::NewLineAfterElement)) != 0;
+  BOOL newLine = (options & (PXMLParser::Indent|PXMLParser::NewLineAfterElement)) != 0;
 
-  if ((options & PXML::Indent) != 0)
+  if ((options & PXMLParser::Indent) != 0)
     strm << setw(indent-1) << " ";
 
   strm << '<' << name;
@@ -798,15 +891,15 @@ void PXMLElement::Output(ostream & strm, const PXML & xml, int indent) const
     }
   }
 
-  if (((options & PXML::CloseExtended) != 0) &&
-      ((options & PXML::NoIgnoreWhiteSpace) == 0) &&
+  if (((options & PXMLParser::CloseExtended) != 0) &&
+      ((options & PXMLParser::NoIgnoreWhiteSpace) == 0) &&
       (subObjects.GetSize() == 0)) {
     strm << " />";
     if (newLine)
       strm << endl;
   }
   else {
-    BOOL indenting = (options & PXML::Indent) != 0 && !xml.IsNoIndentElement(name);
+    BOOL indenting = (options & PXMLParser::Indent) != 0 && !xml.IsNoIndentElement(name);
 
     strm << '>';
     if (indenting)
