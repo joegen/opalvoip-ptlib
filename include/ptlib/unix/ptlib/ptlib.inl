@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.23  2002/06/27 06:45:00  robertj
+ * Changed "" to PString::Empty() where assigning to PString.
+ *
  * Revision 1.22  2002/01/26 23:56:43  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -97,7 +100,7 @@ PINLINE BOOL PDirectory::Change(const PString & p)
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PString PFilePath::GetVolume() const
-  { return PString(""); }
+  { return PString::Empty(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 
