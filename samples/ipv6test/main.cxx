@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.6  2005/02/07 12:12:34  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.5  2005/02/03 12:38:00  csoutheren
  * Added tests for URL parsing
  *
@@ -202,11 +206,7 @@ void IPV6Test::Main()
 
     for (PINDEX i=0; i < if_table.GetSize(); i++) {
       PIPSocket::InterfaceEntry if_entry = if_table[i];
-      cout << i << " " << if_entry.GetName() << " "
-                       << if_entry.GetAddress() << " "
-                       << if_entry.GetNetMask() << " "
-                       << if_entry.GetMACAddress() << "."
-                       << endl;
+      cout << i << " " << if_entry << endl;
     }
 	cout << "manual check";
     cout << endl;
