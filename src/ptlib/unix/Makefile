@@ -2,10 +2,10 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.23 1998/01/05 09:09:29 robertj Exp $
+# $Id: Makefile,v 1.24 1998/01/26 07:25:21 robertj Exp $
 # $Log: Makefile,v $
-# Revision 1.23  1998/01/05 09:09:29  robertj
-# New dependencies technique
+# Revision 1.24  1998/01/26 07:25:21  robertj
+# Removed tiny files, as now have pragma in the common files.
 #
 # Revision 1.22  1998/01/04 09:41:20  robertj
 # Changed perasn.cxx to asner.cxx
@@ -91,32 +91,33 @@ SOURCES		= switch.cxx \
 		  svcproc.cxx \
 		  utfile.cxx \
 		  usfile.cxx \
-		  uftp.cxx \
-		  umailsock.cxx \
-		  utelnet.cxx \
-		  uappsock.cxx \
-		  uhtml.cxx \
-		  ucypher.cxx \
-		  uhttp.cxx \
-		  uhttpsvc.cxx \
-		  uhttpform.cxx \
-		  uasn.cxx \
-		  usnmp.cxx \
-		  usocket.cxx \
+		  socket.cxx \
 		  uicmp.cxx \
-		  ussl.cxx \
 		  udll.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
 		  $(COMMONSRC)/ptime.cxx \
 		  $(COMMONSRC)/collect.cxx \
-		  $(COMMONSRC)/snmpclnt.cxx \
-		  $(COMMONSRC)/snmpserv.cxx \
+		  $(COMMONSRC)/sockets.cxx \
+		  $(COMMONSRC)/inetprot.cxx \
 		  $(COMMONSRC)/httpclnt.cxx \
 		  $(COMMONSRC)/httpsrvr.cxx \
+		  $(COMMONSRC)/html.cxx \
+		  $(COMMONSRC)/http.cxx \
+		  $(COMMONSRC)/httpform.cxx \
+		  $(COMMONSRC)/httpsvc.cxx \
+		  $(COMMONSRC)/inetmail.cxx \
+		  $(COMMONSRC)/ftp.cxx \
 		  $(COMMONSRC)/ftpclnt.cxx \
 		  $(COMMONSRC)/ftpsrvr.cxx \
+		  $(COMMONSRC)/telnet.cxx \
+		  $(COMMONSRC)/pasn.cxx \
+		  $(COMMONSRC)/psnmp.cxx \
+		  $(COMMONSRC)/snmpclnt.cxx \
+		  $(COMMONSRC)/snmpserv.cxx \
+		  $(COMMONSRC)/cypher.cxx \
+		  $(COMMONSRC)/pssl.cxx \
 		  $(COMMONSRC)/asner.cxx 
 
 OBJS	= $(OBJDIR)/regex.o
@@ -138,7 +139,7 @@ endif
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
 $(OBJDIR)/regex.o:	../../common/ptlib/src/regex.cxx
-	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -w -c $< -o $@
+	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
 thelot:
 	make alllibs
@@ -187,4 +188,4 @@ else
 endif
 
 endif
-
+# Do not delete this line - make depend depends upon it
