@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.8 1996/03/12 11:31:06 robertj Exp $
+ * $Id: pprocess.h,v 1.9 1996/03/31 09:08:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.9  1996/03/31 09:08:04  robertj
+ * Added mutex to thread dictionary access.
+ *
  * Revision 1.8  1996/03/12 11:31:06  robertj
  * Moved PProcess destructor to platform dependent code.
  *
@@ -49,7 +52,10 @@
 #if defined(P_PLATFORM_HAS_THREADS)
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
-    ThreadDict threads;
+    ThreadDict activeThreads;
+    PSemaphore threadMutex;
+  friend PThread * PThread::Current();
+  friend void PThread::RegisterWithProcess(BOOL terminating);
 #endif
 
 #if defined(_WINDOWS) || defined(_WIN32)
