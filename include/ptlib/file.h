@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.7 1993/08/27 18:17:47 robertj Exp $
+ * $Id: file.h,v 1.8 1993/08/31 03:38:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.7  1993/08/27 18:17:47  robertj
+ * Revision 1.8  1993/08/31 03:38:02  robertj
+ * Changed PFile::Status to PFile::Info due to X-Windows compatibility.
+ *
+ * Revision 1.7  1993/08/27  18:17:47  robertj
  * Moved code from MS-DOS platform to common files.
  *
  * Revision 1.6  1993/08/21  04:40:19  robertj
@@ -116,7 +119,7 @@ DECLARE_CLASS(PFile, PContainer)
       // the original file.
 
 
-    struct Status {
+    struct Info {
       PFileTypes type;
       PTime created;
       PTime modified;
@@ -124,8 +127,8 @@ DECLARE_CLASS(PFile, PContainer)
       DWORD filesize;
       int permissions;
     };
-    BOOL GetStatus(Status & status) const;
-    static BOOL GetStatus(const PString & name, Status & status);
+    BOOL GetInfo(Info & info) const;
+    static BOOL GetInfo(const PString & name, Info & info);
 
     BOOL Open(OpenMode  mode, int opts = Normal);
       // Open the file in the spcvified mode.
