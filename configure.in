@@ -322,11 +322,8 @@ else
   if test "$HAS_REGEX" = "yes" ; then
     AC_CHECK_FUNC(regcomp, HAS_REGEX=yes)
     if test "$HAS_REGEX" = "yes" ; then
-      AC_MSG_RESULT(yes)
       AC_SUBST(HAS_REGEX, 1)
       AC_DEFINE(P_REGEX, 1, "Regex library found")
-    else
-      AC_MSG_RESULT(no)
     fi
   fi
 fi
