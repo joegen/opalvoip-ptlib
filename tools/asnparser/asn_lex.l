@@ -1,3 +1,4 @@
+%option nounput nodefault
 %{
 /*
  * asn_lex.l
@@ -31,6 +32,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.12  2001/01/16 13:26:32  rogerh
+ * Remove warnings by caused by unused default output and yyunput definitions.
+ * Submitted by Jac Goudsmit <jac_goudsmit@yahoo.com>
+ *
  * Revision 1.11  2000/09/11 12:27:37  robertj
  * Fixed missing ! in lexical scanner, thanks Luca Faustin <luca.faustin@ipc.it>
  *
