@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.8  1999/10/09 01:22:07  robertj
+ * Fixed error display for sound channels.
+ *
  * Revision 1.7  1999/09/23 04:28:44  robertj
  * Allowed some Win32 only access to wave format in sound channel
  *
@@ -845,8 +848,10 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
 
   while (size > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
-    if ((buffer.header.dwFlags&WHDR_DONE) == 0)
+    if ((buffer.header.dwFlags&WHDR_DONE) == 0) {
+      osError = MMSYSERR_ERROR;
       return FALSE; // No free buffers
+    }
 
     // Can't write more than a buffer full
     PINDEX count = size;
@@ -949,8 +954,10 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
       return FALSE;
 
     // Read the waveform data subchunk
-    if (!mmio.Read(buffer.GetPointer(), count))
+    if (!mmio.Read(buffer.GetPointer(), count)) {
+      osError = mmio.GetLastError();
       break;
+    }
 
     if ((osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
       break;
@@ -998,7 +1005,7 @@ BOOL PSoundChannel::StartRecording()
   // Start the first read, queue all the buffers
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     PWaveBuffer & buffer = buffers[i];
-    if ((buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
+    if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
       return FALSE;
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
       return FALSE;
@@ -1043,7 +1050,7 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
   bufferByteOffset += lastReadCount;
   if (bufferByteOffset >= buffer.GetSize()) {
-    if ((buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
+    if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
       return FALSE;
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
       return FALSE;
@@ -1114,8 +1121,10 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
   }
 
   for (i = 0; i < buffers.GetSize(); i++) {
-    if (!mmio.Write(buffers[i], buffers[i].header.dwBytesRecorded))
+    if (!mmio.Write(buffers[i], buffers[i].header.dwBytesRecorded)) {
+      osError = mmio.GetLastError();
       return FALSE;
+    }
   }
 
   return TRUE;
