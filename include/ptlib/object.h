@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.75  2001/10/18 19:56:26  yurik
+ * Fixed WinCE x86 compilation problems with memory check off
+ *
  * Revision 1.74  2001/08/12 11:26:07  robertj
  * Put back PMEMORY_CHECK taken out by the Carbon port.
  *
@@ -971,7 +974,7 @@ inline void operator delete[](void * ptr, const char *, int)
 
 #define PNEW new
 
-#ifdef __GNUC__
+#if defined(__GNUC__) || (defined(_WIN32_WCE) && defined(_X86_))
 
 #define PNEW_AND_DELETE_FUNCTIONS
 
