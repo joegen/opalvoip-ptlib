@@ -25,6 +25,13 @@
  * All Rights Reserved.
  *
  * Contributor(s): Yuri Kiryanov, BeVox Group, yk@altavista.net.
+ *
+ * $Log: tlibbe.cxx,v $
+ * Revision 1.10  2001/01/16 12:32:06  rogerh
+ * Remove duplicate SetAutoDelete() function. Submitted by
+ * Jac Goudsmit <jac_goudsmit@yahoo.com>
+ *
+ *
  */
 
 class PProcess;
@@ -273,12 +280,6 @@ BOOL PThread::IsSuspended() const
 
   PAssert(result == B_OK && threadId == info.thread, "Thread info inaccessible");
   return info.state == B_THREAD_SUSPENDED;
-}
-
-void PThread::SetAutoDelete(AutoDeleteFlag deletion)
-{
-  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(), PLogicError);
-  autoDelete = deletion == AutoDeleteThread;
 }
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
