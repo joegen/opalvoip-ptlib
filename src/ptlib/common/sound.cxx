@@ -25,6 +25,11 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.7  2004/04/03 23:53:10  csoutheren
+ * Added various changes to improce compatibility with the Sun Forte compiler
+ *   Thanks to Brian Cameron
+ * Added detection of readdir_r version
+ *
  * Revision 1.6  2004/04/02 04:07:54  ykiryanov
  * Added ifndef BeOS for PSound
  *
@@ -76,7 +81,7 @@ PStringList PSoundChannel::GetDeviceNames(const PString & driverName,
   if (descr != NULL)
     return PStringList(descr->GetDeviceNames(dir));
   else
-    return PStringList::PStringList();
+    return PStringList();
 }
 
 PSoundChannel * PSoundChannel::CreateChannel(const PString & driverName, PPluginManager * _pluginMgr)
