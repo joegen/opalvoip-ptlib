@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.3 1994/07/17 11:01:04 robertj Exp $
+ * $Id: mswin.cxx,v 1.4 1994/07/21 12:35:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Revision 1.4  1994/07/21 12:35:18  robertj
+ * *** empty log message ***
+ *
+ * Revision 1.3  1994/07/17  11:01:04  robertj
  * Ehancements, implementation, bug fixes etc.
  *
  * Revision 1.2  1994/07/02  03:18:09  robertj
@@ -158,6 +161,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
   lastReadCount = 0;
 
   if (!IsOpen()) {
+    PThread::Yield();
     osError = EBADF;
     lastError = NotOpen;
     return FALSE;

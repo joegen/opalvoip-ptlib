@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
+ * $Id: thread.h,v 1.3 1994/07/21 12:35:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Revision 1.3  1994/07/21 12:35:18  robertj
+ * *** empty log message ***
+ *
+ * Revision 1.2  1994/07/02  03:18:09  robertj
  * Multi-threading implementation.
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
@@ -30,7 +33,6 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
 #endif
 
-class PProcess;
 
 typedef BOOL (__far *PThreadBlockFunction)(PObject *);
 
@@ -49,62 +51,19 @@ typedef BOOL (__far *PThreadBlockFunction)(PObject *);
     BOOL IsOnlyThread() const;
       // Return TRUE if is only thread in process
 
-    virtual void SwitchContext(PThread * from);
-      // Do the machinations needed to jump to the current thread
-
 
   private:
-    void BeginThread();
-      // Function to start Main() and exit when completed.
-
-
     // Member fields
-    Priority basePriority;
-      // Threads priority level, realtive to other threads.
-
-    int dynamicPriority;
-      // Threads priority during this scheduled slice.
-
-    int suspendCount;
-      // Threads count of calls to Suspend() or Resume(). If <=0 then can run,
-      // if >0 means suspended and is not to be scheduled.
-
-    PTimer sleepTimer;
-      // Time for thread to remain asleep. Thread is not scheduled while this
-      // is running after a Sleep() call.
-
     PThreadBlockFunction isBlocked;
       // Callback function to determine if the thread is blocked on I/O.
 
     PObject * blocker;
       // When thread is blocked on I/O this is the object to pass to isBlocked.
 
-    PThread * link;
-      // Link to next thread in circular list
-
-    enum {
-      Starting,
-      Running,
-      Waiting,
-      Sleeping,
-      Suspended,
-      Blocked,
-      Terminating,
-      Terminated
-    } status;
-      // Thread status for scheduler handling
-
-    jmp_buf context;
-      // Buffer for context switching
-
-    char NEAR * stackBase;
-      // Base of stack allocated for the thread
-
-    char NEAR * stackTop;
-      // Top of stack allocated for the thread
-
+#ifdef _WINDOWS
     unsigned stackUsed;
       // High water mark for stack allocated for the thread
+#endif
 };
 
 
