@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.25  2000/10/02 20:58:06  robertj
+ * Fixed bug where subsequent config file opening uses first opened filename.
+ *
  * Revision 1.24  2000/08/30 04:45:02  craigs
  * Added ability to have multiple lines with the same key
  *
@@ -548,8 +551,7 @@ PConfig::PConfig(int, const PString & name)
 void PConfig::Construct(const PFilePath & theFilename)
 
 {
-  PFilePath filename;
-  config = configDict->GetFileConfigInstance(filename, theFilename);
+  config = configDict->GetFileConfigInstance(theFilename, theFilename);
 }
 
 PConfig::~PConfig()
