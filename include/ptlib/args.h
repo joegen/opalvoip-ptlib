@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.3 1994/07/27 05:58:07 robertj Exp $
+ * $Id: args.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.3  1994/07/27 05:58:07  robertj
+ * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.3  1994/07/27  05:58:07  robertj
  * Synchronisation.
  *
  * Revision 1.2  1994/07/17  10:46:06  robertj
@@ -21,6 +24,11 @@
 
 #ifndef _PARGLIST
 #define _PARGLIST
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 PCLASS PArgList {
   public:

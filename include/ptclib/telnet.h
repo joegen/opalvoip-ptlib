@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
+ * $Id: telnet.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.3  1994/08/21  23:43:02  robertj
  * Changed type of socket port number for better portability.
  *
  * Revision 1.2  1994/07/25  03:36:03  robertj
@@ -17,8 +20,12 @@
  */
 
 #ifndef _PTELNETSOCKET
-
 #define _PTELNETSOCKET
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 

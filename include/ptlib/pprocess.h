@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.8 1994/08/21 23:43:02 robertj Exp $
+ * $Id: pprocess.h,v 1.9 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.8  1994/08/21 23:43:02  robertj
+ * Revision 1.9  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.8  1994/08/21  23:43:02  robertj
  * Added function to get the user name of the owner of a process.
  *
  * Revision 1.7  1994/08/04  11:51:04  robertj
@@ -30,6 +33,10 @@
 
 
 #define _PPROCESS
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

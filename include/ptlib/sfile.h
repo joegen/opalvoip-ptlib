@@ -1,5 +1,5 @@
 /*
- * $Id: sfile.h,v 1.5 1994/04/20 12:17:44 robertj Exp $
+ * $Id: sfile.h,v 1.6 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: sfile.h,v $
- * Revision 1.5  1994/04/20 12:17:44  robertj
+ * Revision 1.6  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.5  1994/04/20  12:17:44  robertj
  * PFilePath split
  *
  * Revision 1.4  1994/01/03  04:42:23  robertj
@@ -25,6 +28,9 @@
 
 #define _PSTRUCTUREDFILE
 
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 PDECLARE_CLASS(PStructuredFile, PFile)
