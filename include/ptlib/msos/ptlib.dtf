@@ -2271,6 +2271,7 @@ EXPORTS
     ?Signal@PSyncPointAck@@QAEXABVPTimeInterval@@@Z @1716 NONAME ;public: void __thiscall PSyncPointAck::Signal(class PTimeInterval const &)
     ?Signal@PSyncPointAck@@UAEXXZ @1717 NONAME ;public: virtual void __thiscall PSyncPointAck::Signal(void)
     ?SignalTimerChange@PProcess@@QAEXXZ @1718 NONAME ;public: void __thiscall PProcess::SignalTimerChange(void)
+    ?SimpleConvert@PColourConverter@@MAEHPBEPAEPAH@Z @2876 NONAME ;protected: virtual int __thiscall PColourConverter::SimpleConvert(unsigned char const *,unsigned char *,int *)
     ?Sleep@PThread@@UAEXABVPTimeInterval@@@Z @1719 NONAME ;public: virtual void __thiscall PThread::Sleep(class PTimeInterval const &)
     ?Splice@PString@@QAEXPBDHH@Z @1721 NONAME ;public: void __thiscall PString::Splice(char const *,int,int)
     ?sprintf@PString@@QAAAAV1@PBDZZ @1722 NONAME ;public: class PString & __cdecl PString::sprintf(char const *,...)

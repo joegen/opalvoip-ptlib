@@ -25,6 +25,11 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.7  2001/03/08 23:36:02  robertj
+ * Added backward compatibility SetFrameSize() function.
+ * Added internal SimpleConvert() function for same type converters.
+ * Fixed some documentation.
+ *
  * Revision 1.6  2001/03/08 08:31:34  robertj
  * Numerous enhancements to the video grabbing code including resizing
  *   infrastructure to converters. Thanks a LOT, Mark Cooke.
@@ -113,19 +118,29 @@ class PColourConverter : public PObject
 
     /**Set the frame size to be used.
 
-       Default behaviour sets the frameWidth and frameHeight variables and
-       returns the IsOpen() status.
+       Default behaviour calls SetSrcFrameSize() and SetDstFrameSize().
+    */
+    virtual BOOL SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
+
+    /**Set the source frame size to be used.
+
+       Default behaviour sets the srcFrameWidth and srcFrameHeight variables and
+       recalculates the frame buffer size in bytes then returns TRUE if the size
+       was calculated correctly.
     */
     virtual BOOL SetSrcFrameSize(
       unsigned width,   /// New width of frame
       unsigned height   /// New height of frame
     );
 
-    /**Set the target frame size to be used.
+    /**Set the destination frame size to be used.
 
-       The default behaviour sets the target frame size, and the
-       scale / crop preference.  If the converter can't resize frames,
-       this call fails.
+       Default behaviour sets the dstFrameWidth and dstFrameHeight variables,
+       and the scale / crop preference. It then recalculates the frame buffer
+       size in bytes then returns TRUE if the size was calculated correctly.
     */
     virtual BOOL SetDstFrameSize(
       unsigned width,   /// New width of target frame
@@ -207,6 +222,12 @@ class PColourConverter : public PObject
 
 
   protected:
+    virtual BOOL SimpleConvert(
+      const BYTE * srcFrameBuffer,  /// Frame store for source pixels
+      BYTE * dstFrameBuffer,        /// Frame store for destination pixels
+      PINDEX * bytesReturned        /// Bytes written to dstFrameBuffer
+    );
+
     PString  srcColourFormat;
     PString  dstColourFormat;
     unsigned srcFrameWidth;
