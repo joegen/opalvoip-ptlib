@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.4  2004/05/18 02:32:08  csoutheren
+ * Fixed linking problems with PGenericFactory classes
+ *
  * Revision 1.3  2004/05/13 15:10:51  csoutheren
  * Removed warnings under Windows
  *
@@ -45,12 +48,14 @@
 #include <ptlib.h>
 #include <string>
 #include <map>
+#include <vector>
 
 #ifdef _WIN32
 #pragma warning(disable:4786)
 #endif
 
-/*
+/**
+ *
  * These templates implement an Abstract Factory that allows
  * creation of a class "factory" that can be used to create
  * "concrete" instance that are descended from a abstract case class
@@ -59,40 +64,45 @@
  * concrete class is registered by instantiating the PAbstractFactory
  * class as follows:
  *
- *       PAbstractFactory<A, B> baseCodecFactory("B");
+ *       PAbstractFactory<A, B> aFactory("B");
  *
  * To instantiate the an object of type B, use the following
  *
- *       B * codec = PGenericFactory<BaseCodec>::CreateInstance("B");
+ *       B * codec = PGenericFactory<A>::CreateInstance("B");
+ *
+ * A vector containing the names of all of the concrete classes for an
+ * abstract type can be obtained as follows:
+ *
+ *       std::vector<PString> list = PGenericFactory<A>::GetKeyList()
+ *
+ * Note that these example assumes that the "key" type for the factory
+ * registration is of the default type PString. If a different key type
+ * is needed, then it is necessary to specify the key type:
+ *
+ *       PAbstractFactory<C, D, unsigned> aFactory(42);
+ *       C * codec = PGenericFactory<A, unsigned>::CreateInstance(42);
+ *       std::vector<unsigned> list = PGenericFactory<A, unsigned>::GetKeyList()
+ *
+ * Finally, note that the factory lists are all thread safe for addition,
+ * creation, and obtaining the key lists
  *  
  */
 
-template <class AbstractType, typename TypeKey = std::string>
+template <class AbstractType, typename TypeKey = PString>
 class PGenericFactory
 {
   public:
     typedef AbstractType * (*CreatorFunctionType)();
     typedef std::map<TypeKey, CreatorFunctionType> KeyMap;
+    typedef std::vector<TypeKey> KeyList;
 
     static PGenericFactory & GetFactory()
     { static PGenericFactory factory; return factory; }
 
     static AbstractType * CreateInstance(const TypeKey & key)
-    { return GetFactory()._CreateInstance(key); }
-
-    static void Register(const TypeKey & key, CreatorFunctionType func)
-    { return GetFactory()._Register(key, func); }
-
-    PMutex & GetMutex()
-    { return mutex; }
-
-    KeyMap & GetKeyMap()
-    { return keyMap; }
-
-  protected:
-    AbstractType * _CreateInstance(const TypeKey & key) const
     {
-      PWaitAndSignal m(mutex);
+      PWaitAndSignal m(GetMutex());
+      KeyMap & keyMap = GetKeyMap();
       AbstractType * instance = NULL;
       typename KeyMap::const_iterator entry = keyMap.find(key);
       if (entry != keyMap.end())
@@ -100,23 +110,40 @@ class PGenericFactory
       return instance;
     }
 
-    void _Register(const TypeKey & key, CreatorFunctionType func)
-    { PWaitAndSignal m(mutex); keyMap[key] = func; }
+    static void Register(const TypeKey & key, CreatorFunctionType func)
+    {
+      PWaitAndSignal m(GetMutex());
+      KeyMap & keyMap = GetKeyMap();
+      keyMap[key] = func;
+    }
 
-  protected:
-    PMutex mutex;
-    KeyMap keyMap;
+    static KeyList GetKeyList()
+    { 
+      PWaitAndSignal m(GetMutex());
+      KeyMap & keyMap = GetKeyMap();
+      KeyList list;
+      typename KeyMap::const_iterator entry;
+      for (entry = keyMap.begin(); entry != keyMap.end(); ++entry)
+        list.push_back(entry->first);
+      return list;
+    }
+
+    static PMutex & GetMutex()
+    { static PMutex mutex; return mutex; }
+
+    static KeyMap & GetKeyMap()
+    { static KeyMap keyMap; return keyMap; }
 };
 
-template <class AbstractType, class ConcreteType>
+template <class AbstractType, class ConcreteType, typename TypeKey = PString>
 class PAbstractFactory
 {
   public:
     static AbstractType * CreateInstance()
     { return new ConcreteType; }
 
-    PAbstractFactory(const std::string & key)
-    { PGenericFactory<AbstractType>::GetFactory().Register(key, &CreateInstance); }
+    PAbstractFactory(const TypeKey & key)
+    { PGenericFactory<AbstractType>::Register(key, &CreateInstance); }
 };
 
 

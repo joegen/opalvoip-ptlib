@@ -274,11 +274,16 @@ fi
 
 GCSECTIONS=0
 
-AC_MSG_CHECKING(if linker accepts --gc-sections)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CFLAGS -Wl,--gc-sections conftest.cc > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
+dnl Remove --gc-sections as the linker crashes when linking
+dnl static executables with this option
+dnl AC_MSG_CHECKING(if linker accepts --gc-sections)
+dnl C_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+dnl CXX $CFLAGS -Wl,--gc-sections conftest.cc > /dev/null 2>&1
+dnl if test $? = 0 ; then
+
+if test 0 = 1 ;  then
+
+  dnl  AC_MSG_RESULT(yes)
 
   AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
   AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
@@ -291,16 +296,21 @@ if test $? = 0 ; then
     AC_MSG_RESULT(no)
   fi
 
-  AC_MSG_CHECKING(if compiler accepts -fdata-sections)
-  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-  $CXX $CFLAGS -fdata-sections -c conftest.cc > /dev/null 2>&1
-  if test $? = 0 ; then
-    AC_MSG_RESULT(yes)
-    STDCCFLAGS="$STDCCFLAGS -fdata-sections"
-    GCSECTIONS=1
-  else
-    AC_MSG_RESULT(no)
-  fi
+  dnl remove data-sections as not only does is case the linker to
+  dnl crash on some platforms, but seems to be broken w.r.t
+  dnl closure of templates with static member functions
+  dnl see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=8249
+  dnl
+  dnl AC_MSG_CHECKING(if compiler accepts -fdata-sections)
+  dnl AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  dnl $CXX $CFLAGS -fdata-sections -c conftest.cc > /dev/null 2>&1
+  dnl if test $? = 0 ; then
+  dnl   AC_MSG_RESULT(yes)
+  dnl   STDCCFLAGS="$STDCCFLAGS -fdata-sections"
+  dnl   GCSECTIONS=1
+  dnl else
+  dnl   AC_MSG_RESULT(no)
+  dnl fi
 
   dnl as much as this flag would help, there is no known linker
   dnl that can handle pwlib when it has been compiled with it
@@ -320,10 +330,8 @@ if test $? = 0 ; then
       P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -Wl,--gc-sections"
     fi
   fi
-
-else
-  AC_MSG_RESULT(no)
 fi
+
 
 AC_LANG_POP(C++)
 
