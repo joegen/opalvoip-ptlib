@@ -362,6 +362,9 @@ shared libraries to compile. (otherwise there is an error with -soname)
 You can get around this by using the static libraries and
 compiling with make optnoshared and make debugnoshared
 
+There is currently no implementation of GetRouteTable() in socket.cxx
+so OpenH323Proxy will not work.
+
 
 7. Conclusion
 -------------
