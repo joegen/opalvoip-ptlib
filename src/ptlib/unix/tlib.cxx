@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.38  1999/01/11 12:10:39  robertj
+ * Improved operating system version display.
+ *
  * Revision 1.37  1999/01/08 01:31:01  robertj
  * Support for pthreads under FreeBSD
  *
@@ -179,18 +182,29 @@ PString PProcess::GetOSClass()
 
 PString PProcess::GetOSName()
 {
-#if defined(P_LINUX)
-  return PString("Linux");
-#elif defined(P_FREEBSD)
-  return PString("FreeBSD");
-#elif defined(P_HPUX9)
-  return PString("HP/UX");
-#elif defined(P_SUN4)
-  return PString("SunOS");
-#elif defined(P_SOLARIS)
-  return PString("Solaris");
+#if defined(HAS_UNAME)
+  struct utsname info;
+  uname(&info);
+#ifdef P_SOLARIS
+  return PString(info.sysname) & info.release;
 #else
+  return PString(info.sysname);
+#endif
+#else
+#warning No GetOSName specified
   return PString("Unknown");
+#endif
+}
+
+PString PProcess::GetOSHardware()
+{
+#if defined(HAS_UNAME)
+  struct utsname info;
+  uname(&info);
+  return PString(info.machine);
+#else
+#warning No GetOSHardware specified
+  return PString("unknown");
 #endif
 }
 
@@ -199,10 +213,14 @@ PString PProcess::GetOSVersion()
 #if defined(HAS_UNAME)
   struct utsname info;
   uname(&info);
+#ifdef P_SOLARIS
+  return PString(info.version);
+#else
   return PString(info.release);
+#endif
 #else
 #warning No GetOSVersion specified
-  return PString("unknown");
+  return PString("?.?");
 #endif
 }
 
