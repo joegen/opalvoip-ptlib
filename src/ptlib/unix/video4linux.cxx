@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.22  2001/11/30 00:14:46  dereks
+ * Fix frame rate limitation.
+ *
  * Revision 1.21  2001/11/28 05:10:19  robertj
  * Added enable of TV card sound when grabbing, thanks Santiago Garcia Mantinan
  *
@@ -597,6 +600,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
       previousFrameTime = now;
     }  while(frameTimeError > 0) ;
 
+    return TRUE;
   }
   return GetFrameDataNoDelay(buffer,bytesReturned);
 }
