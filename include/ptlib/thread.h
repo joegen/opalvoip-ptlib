@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.2 1994/07/02 03:03:49 robertj Exp $
+ * $Id: thread.h,v 1.3 1994/07/21 12:33:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.2  1994/07/02 03:03:49  robertj
+ * Revision 1.3  1994/07/21 12:33:49  robertj
+ * Moved cooperative threads to common.
+ *
+ * Revision 1.2  1994/07/02  03:03:49  robertj
  * Added restartable threads.
  *
  * Revision 1.1  1994/06/25  11:55:15  robertj
@@ -110,6 +113,64 @@ PDECLARE_CLASS(PThread, PObject)
   private:
     PThread(const PThread &) { }
     PThread & operator=(const PThread &) { return *this; }
+
+#ifndef P_PLATFORM_HAS_THREADS
+    void AllocateStack(PINDEX stackSize);
+      // Allocate the stack for the thread.
+
+    void ClearBlock();
+      // Clear the blocked thread.
+
+    BOOL CheckBlock();
+      // Check if the thread is no longer blocked.
+
+    void BeginThread();
+      // Function to start Main() and exit when completed.
+
+    virtual void SwitchContext(PThread * from);
+      // Do the machinations needed to jump to the current thread
+
+
+    // Member fields
+    Priority basePriority;
+      // Threads priority level, realtive to other threads.
+
+    int dynamicPriority;
+      // Threads priority during this scheduled slice.
+
+    int suspendCount;
+      // Threads count of calls to Suspend() or Resume(). If <=0 then can run,
+      // if >0 means suspended and is not to be scheduled.
+
+    PTimer sleepTimer;
+      // Time for thread to remain asleep. Thread is not scheduled while this
+      // is running after a Sleep() call.
+
+    PThread * link;
+      // Link to next thread in circular list
+
+    enum {
+      Starting,
+      Running,
+      Waiting,
+      Sleeping,
+      Suspended,
+      Blocked,
+      Terminating,
+      Terminated
+    } status;
+      // Thread status for scheduler handling
+
+    jmp_buf context;
+      // Buffer for context switching
+
+    char PSTATIC * stackBase;
+      // Base of stack allocated for the thread, PSTATIC is for DOS-Windows.
+
+    char PSTATIC * stackTop;
+      // Top of stack allocated for the thread
+
+#endif
 
 
 // Class declaration continued in platform specific header file ///////////////

@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.16 1994/07/17 10:46:06 robertj Exp $
+ * $Id: osutil.inl,v 1.17 1994/07/21 12:33:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.16  1994/07/17 10:46:06  robertj
+ * Revision 1.17  1994/07/21 12:33:49  robertj
+ * Moved cooperative threads to common.
+ *
+ * Revision 1.16  1994/07/17  10:46:06  robertj
  * Moved file handle to PChannel.
  *
  * Revision 1.15  1994/07/02  03:03:49  robertj
@@ -525,6 +528,32 @@ PINLINE void PArgList::operator<<(int sh)
 
 PINLINE void PArgList::operator>>(int sh)
   { Shift(-sh); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PThread
+
+#ifndef P_PLATFORM_HAS_THREADS
+
+PINLINE PThread * PThread::Current()
+  { return PProcess::Current()->currentThread; }
+
+PINLINE BOOL PThread::IsTerminated() const
+  { return status == Terminated; }
+
+PINLINE void PThread::Resume()
+  { Suspend(FALSE); }
+
+PINLINE BOOL PThread::IsSuspended() const
+  { return suspendCount > 0; }
+
+PINLINE void PThread::SetPriority(Priority priorityLevel)
+  { basePriority = priorityLevel; }
+
+PINLINE PThread::Priority PThread::GetPriority() const
+  { return basePriority; }
+
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.12 1994/07/17 10:46:06 robertj Exp $
+ * $Id: osutils.cxx,v 1.13 1994/07/21 12:33:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.12  1994/07/17 10:46:06  robertj
+ * Revision 1.13  1994/07/21 12:33:49  robertj
+ * Moved cooperative threads to common.
+ *
+ * Revision 1.12  1994/07/17  10:46:06  robertj
  * Fixed timer bug.
  * Moved handle from file to channel.
  * Changed args to use container classes.
@@ -1648,6 +1651,228 @@ void PArgList::MissingArgument(char option) const
 #else
   cerr << "option \"" << option << "\" requires argument\n";
 #endif
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PThread
+
+#ifndef P_PLATFORM_HAS_THREADS
+
+void PThread::InitialiseProcessThread()
+{
+  basePriority = NormalPriority;  // User settable priority
+  dynamicPriority = 0;            // Only thing running
+  suspendCount = 0;               // Not suspended (would not be a good idea)
+  ClearBlock();                   // No I/O blocking function
+  status = Running;               // Thread is already running
+  stackBase = NULL;
+  link = this;
+  ((PProcess*)this)->currentThread = this;
+}
+
+
+PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
+{
+  basePriority = priorityLevel;   // Threads user settable priority level
+  dynamicPriority = 0;            // Run immediately
+
+  suspendCount = startSuspended ? 1 : 0;
+
+  AllocateStack(stackSize);
+  PAssert(stackBase != NULL, "Insufficient near heap for thread");
+
+  stackTop = stackBase + stackSize;
+
+  status = Terminated; // Set to this so Restart() works
+  Restart();
+}
+
+
+void PThread::Restart()
+{
+  if (status != Terminated) // Is already running
+    return;
+
+  ClearBlock();             // No I/O blocking function
+
+  PThread * current = Current();
+  link = current->link;
+  current->link = this;
+
+  status = Starting;
+}
+
+
+void PThread::Terminate()
+{
+  if (link == this || status == Terminated)
+    return;   // Is only thread or already terminated
+
+  BOOL doYield = status == Running;
+  status = Terminating;
+  if (doYield);
+    Yield(); // Never returns from here
+}
+
+
+void PThread::Suspend(BOOL susp)
+{
+  // Suspend/Resume the thread
+  if (susp)
+    suspendCount++;
+  else
+    suspendCount--;
+
+  switch (status) {
+    case Running : // Suspending itself, yield to next thread
+      if (IsSuspended()) {
+        status = Suspended;
+        Yield();
+      }
+      break;
+
+    case Waiting :
+      if (IsSuspended())
+        status = Suspended;
+      break;
+
+    case Suspended :
+      if (!IsSuspended())
+        status = Waiting;
+      break;
+
+    default :
+      break;
+  }
+}
+
+
+void PThread::Sleep(const PTimeInterval & time)
+{
+  sleepTimer = time;
+  switch (status) {
+    case Running : // Suspending itself, yield to next thread
+      status = Sleeping;
+      Yield();
+      break;
+
+    case Waiting :
+    case Suspended :
+      status = Sleeping;
+      break;
+
+    default :
+      break;
+  }
+}
+
+
+void PThread::BeginThread()
+{
+  if (IsSuspended()) { // Begins suspended
+    status = Suspended;
+    Yield();
+  }
+  else
+    status = Running;
+
+  Main();
+
+  status = Terminating;
+  Yield(); // Never returns from here
+}
+
+
+void PThread::Yield()
+{
+  // Determine the next thread to schedule
+  PProcess * process = PProcess::Current();
+  PThread * current = process->currentThread;
+  if (current->status == Running) {
+    if (current->basePriority != HighestPriority && current->link != current)
+      current->status = Waiting;
+    else {
+      current->SwitchContext(current);
+      return;
+    }
+  }
+
+  static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
+  current->dynamicPriority = dynamicLevel[current->basePriority];
+
+  PThread * next = NULL; // Next thread to be scheduled
+  PThread * prev = current; // Need the thread in the previous link
+  PThread * thread = current->link;
+  BOOL pass = 0;
+  BOOL canUseLowest = TRUE;
+  for (;;) {
+    switch (thread->status) {
+      case Waiting :
+        if (thread->dynamicPriority == 0)
+          next = thread;
+        else if (thread->dynamicPriority > 0) {
+          thread->dynamicPriority--;
+          canUseLowest = FALSE;
+        }
+        else if (pass > 1 && canUseLowest)
+          thread->dynamicPriority++;
+        break;
+
+      case Sleeping :
+        if (!thread->sleepTimer.IsRunning()) {
+          if (thread->IsSuspended())
+            thread->status = Suspended;
+          else
+            next = thread;
+        }
+        break;
+
+      case Blocked :
+        if (thread->CheckBlock()) {
+          thread->ClearBlock();
+          if (thread->IsSuspended())
+            thread->status = Suspended;
+          else
+            next = thread;
+        }
+        break;
+
+      case Starting :
+        next = thread;
+        break;
+
+      case Terminating :
+        prev->link = thread->link;   // Unlink it from the list
+        thread->status = Terminated;
+        break;
+
+      default :
+        break;
+    }
+
+    if (next != NULL) // Have a thread to run
+      break;
+
+    // Need to have previous thread so can unlink a terminating thread
+    prev = thread;
+    thread = thread->link;
+    if (thread == current) {
+      pass++;
+      if (pass > 3) { // Everything is blocked
+        process->OperatingSystemYield();
+        process->GetTimerList()->Process();
+      }
+    }
+  }
+
+  process->currentThread = next;
+  if (next->status != Starting)
+    next->status = Running;
+  next->SwitchContext(current);
 }
 
 

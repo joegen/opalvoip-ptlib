@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.3 1994/06/25 11:55:15 robertj Exp $
+ * $Id: pprocess.h,v 1.4 1994/07/21 12:33:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.3  1994/06/25 11:55:15  robertj
+ * Revision 1.4  1994/07/21 12:33:49  robertj
+ * Moved cooperative threads to common.
+ *
+ * Revision 1.3  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  */
@@ -88,6 +91,18 @@ PDECLARE_CLASS(PProcess, PThread)
 
     PTimerList timers;
       // List of active timers in system
+
+#ifndef P_PLATFORM_HAS_THREADS
+
+    virtual void OperatingSystemYield();
+      // Yield to the platforms operating system.
+
+    PThread * currentThread;
+      // Currently running thread in the process
+
+  friend class PThread;
+
+#endif
 
 
 // Class declaration continued in platform specific header file ///////////////
