@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.30  1998/09/24 08:21:11  robertj
+ * Fixed warning on GNU 6 library.
+ *
  * Revision 1.29  1998/09/24 07:55:51  robertj
  * Fixed warning on solaris build.
  *
@@ -132,7 +135,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
-  int optlen = sizeof(optval);
+  socklen_t optlen = sizeof(optval);
   getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen);
   if (optval == 0)
     return 0;
