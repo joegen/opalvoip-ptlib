@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.122  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.121  2002/06/04 00:25:31  robertj
  * Fixed incorrectly initialised trace indent, thanks Artis Kugevics
  *
@@ -445,8 +448,10 @@
 
 #include <process.h>
 #include <ptlib/debstrm.h>
+#include <winsock.h>
 
 #define new PNEW
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
