@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.2  2002/08/14 15:18:25  craigs
+ * Fixed Festval implementation
+ *
  * Revision 1.1  2002/08/06 04:45:58  craigs
  * Initial version
  *
@@ -382,7 +385,9 @@ BOOL PTextToSpeech_Festival::OpenChannel(PChannel *)
 
   Close();
   usingFile = FALSE;
-  return (opened = FALSE);
+  opened = FALSE;
+
+  return TRUE;
 }
 
 
@@ -393,6 +398,9 @@ BOOL PTextToSpeech_Festival::OpenFile(const PFilePath & fn)
   Close();
   usingFile = TRUE;
   path = fn;
+  opened = TRUE;
+
+  PTRACE(3, "TTS\tWriting speech to " << fn);
 
   return TRUE;
 }
@@ -409,6 +417,8 @@ BOOL PTextToSpeech_Festival::Close()
   if (usingFile)
     stat = Invoke(text, path);
 
+  text = PString();
+
   opened = FALSE;
 
   return stat;
@@ -419,8 +429,10 @@ BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
 {
   PWaitAndSignal m(mutex);
 
-  if (!IsOpen())
+  if (!IsOpen()) {
+    PTRACE(3, "TTS\tAttempt to speak whilst engine not open");
     return FALSE;
+  }
 
   PString str = ostr;
 
@@ -432,9 +444,12 @@ BOOL PTextToSpeech_Festival::Speak(const PString & ostr, TextType hint)
   };
 
   if (usingFile) {
+    PTRACE(3, "TTS\tSpeaking " << ostr);
     text = text & str;
     return TRUE;
   }
+
+  PTRACE(3, "TTS\tStream mode not supported for Festival");
 
   return FALSE;
 }
@@ -484,20 +499,36 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
   PString text = otext;
   text.Replace('\n', ' ', TRUE);
   text.Replace('\"', '\'', TRUE);
+  text.Replace('\\', ' ', TRUE);
+  text = "\"" + text + "\"";
 
-  PString cmdLine = "text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
+  PString cmdLine = "echo " + text + " | ./text2wave -F " + PString(PString::Unsigned, rate) + " -otype riff > " + fname;
+
+#if 1
+
+  system(cmdLine);
+  return TRUE;
+
+#else
 
   PPipeChannel cmd;
   int code = -1;
-  if (!cmd.Open(cmdLine, PPipeChannel::ReadWrite)) {
-    PTRACE(2, "OPENIVR\tCannot execute command " << cmd);
+  if (!cmd.Open(cmdLine, PPipeChannel::ReadWriteStd)) {
+    PTRACE(2, "TTS\tCannot execute command " << cmd);
   } else {
-    PTRACE(2, "OPENIVR\tCreating " << fname << " using " << cmd);
-    cmd.Write((const BYTE *)text, text.GetLength());
+    PTRACE(2, "TTS\tCreating " << fname << " using " << cmdLine);
+    cmd.Execute();
     code = cmd.WaitForTermination();
+    if (code >= 0) {
+      PTRACE(2, "TTS\tdata generated");
+    } else {
+      PTRACE(2, "TTS\tgeneration failed");
+    }
   }
 
   return code == 0;
+
+#endif
 }
 
 ////////////////////////////////////////////////////////////
