@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.26 1997/04/27 05:50:11 robertj Exp $
+ * $Id: object.h,v 1.27 1997/07/08 13:13:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.27  1997/07/08 13:13:45  robertj
+ * DLL support.
+ *
  * Revision 1.26  1997/04/27 05:50:11  robertj
  * DLL support.
  *
@@ -187,13 +190,13 @@ enum PStandardAssertMessage {
 #define PAssertAlways(m) PAssertFunc(__FILE__, __LINE__, (m))
 
 
-PEXPORT void PAssertFunc(const char * file, int line, PStandardAssertMessage msg);
-PEXPORT void PAssertFunc(const char * file, int line, const char * msg);
+void PAssertFunc(const char * file, int line, PStandardAssertMessage msg);
+void PAssertFunc(const char * file, int line, const char * msg);
 
 
 // Declaration for standard error output
-PEXPORT ostream & PGetErrorStream();
-PEXPORT void PSetErrorStream(ostream *);
+ostream & PGetErrorStream();
+void PSetErrorStream(ostream *);
 
 /*$MACRO PError
    This macro is used to access the platform specific error output stream. This
@@ -763,7 +766,7 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
    starts the class declaration and then uses the <A>PCLASSINFO</A> macro to
    get all the run-time type functions.
  */
-#define PDECLARE_CLASS(cls, par) class PEXPORT cls : public par { PCLASSINFO(cls, par)
+#define PDECLARE_CLASS(cls, par) class cls : public par { PCLASSINFO(cls, par)
 
 
 class PSerialiser;
@@ -773,7 +776,7 @@ class PUnSerialiser;
 ///////////////////////////////////////////////////////////////////////////////
 // The root of all evil ... umm classes
 
-class PEXPORT PObject {
+class PObject {
 /* Ultimate parent class for all objects in the class library. This provides
    functionality provided to all classes, eg run-time types, default comparison
    operations, simple stream I/O and serialisation support.
@@ -1870,7 +1873,7 @@ PDECLARE_CLASS(PNotifier, PSmartPointer)
  */
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
   virtual void func(notifier & n, INT extra); \
-  class PEXPORT func##_PNotifier : public PNotifierFunction { \
+  class func##_PNotifier : public PNotifierFunction { \
     public: \
       func##_PNotifier(notifiee * obj) : PNotifierFunction(obj) { } \
       virtual void Call(PObject & note, INT extra) const \
