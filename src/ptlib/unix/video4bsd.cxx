@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.4  2001/01/05 18:12:30  rogerh
+ * First fully working version of video4bsd.
+ * Note that Start() and Stop() are not called, hence the first time hacks
+ * in GetFrameData(). Also video is always grabbed in interlaced mode
+ * so it does not look as good as it could.
+ *
  * Revision 1.3  2001/01/05 14:52:36  rogerh
  * More work on the FreeBSD video capture code
  *
@@ -67,9 +73,11 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   Close();
 
   deviceName = devName;
-  videoFd = ::open((const char *)devName, O_RDWR);
-  if (videoFd < 0)
+  videoFd = ::open((const char *)devName, O_RDONLY);
+  if (videoFd < 0) {
+    videoFd = -1;
     return FALSE;
+  }
  
   // fill in a device capabilities structure
   videoCapability.minheight = 32;
@@ -109,6 +117,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     videoFd = -1;
     return FALSE;
   }
+
   return TRUE;    
 }
 
@@ -134,35 +143,12 @@ BOOL PVideoInputDevice::Close()
 
 BOOL PVideoInputDevice::Start()
 {
-
-  // If the mmap buffer is not set, then set it
-  if (canMap == -1) {
-    mmap_size = videoFrameSize;
-    videoBuffer = (BYTE *)::mmap(0, mmap_size, PROT_READ, MAP_SHARED, videoFd, 0);
-    if (videoBuffer < 0)
-      return FALSE;
-    else
-      canMap = 1;
-  }
-
-
-  // Start continuous capture mode
-  int mode = METEOR_CAP_CONTINOUS;
-  if (::ioctl(videoFd, METEORCAPTUR, &mode) < 0)
-    return FALSE;
-
   return TRUE;
 }
 
 
 BOOL PVideoInputDevice::Stop()
 {
-  // Stop capturing
-
-  int mode = METEOR_CAP_STOP_CONT;
-  if (::ioctl(videoFd, METEORCAPTUR, &mode) < 0)
-    return FALSE;
-
   return TRUE;
 }
 
@@ -235,22 +221,6 @@ BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
 
   ClearMapping();
 
-  // set the information
-  struct meteor_geomet geo;
-
-  // get the current geometry
-  if (ioctl(videoFd, METEORGETGEO, &geo) < 0) {
-    return FALSE;
-  }
-
-  // Set the colour format
-  geo.oformat = METEOR_GEO_YUV_422 | METEOR_GEO_YUV_12;
-
-  // set the new geometry
-  if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
-    return FALSE;
-  }
-
   videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
 
   return TRUE;
@@ -291,23 +261,6 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   
   ClearMapping();
 
-  // set the information
-  struct meteor_geomet geo;
-
-  // get the current geometry
-  if (ioctl(videoFd, METEORGETGEO, &geo) < 0) {
-    return FALSE;
-  }
-
-  geo.rows = frameHeight;
-  geo.columns = frameWidth;
-  geo.frames = 1;
-
-  // set the new geometry
-  if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
-    return FALSE;
-  }
-
   videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
   
   return TRUE;
@@ -323,9 +276,51 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
-  // simply memcpy the frame to our storage
+
+  // Hack time. It seems that the Start() and Stop() functions are not
+  // actually called, so we will have to initialise the frame grabber
+  // here on the first pass through this GetFrameData() function
+
+  if (canMap < 0) {
+
+    struct meteor_geomet geo;
+    geo.rows = frameHeight;
+    geo.columns = frameWidth;
+    geo.frames = 1;
+    geo.oformat = METEOR_GEO_YUV_422 | METEOR_GEO_YUV_12;
+
+
+    // set the new geometry
+    if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
+      return FALSE;
+    }
+
+    mmap_size = videoFrameSize;
+    videoBuffer = (BYTE *)::mmap(0, mmap_size, PROT_READ, 0, videoFd, 0);
+    if (videoBuffer < 0) {
+      return FALSE;
+    } else {
+      canMap = 1;
+    }
+ 
+    // put the grabber into continuous capture mode
+    int mode =  METEOR_CAP_CONTINOUS;
+    if (ioctl(videoFd, METEORCAPTUR, &mode) < 0 ) {
+      return FALSE;
+    }
+  }
+
+
+  // Copy a snapshot of the image from the mmap buffer
+  // Really there should be some synchronisation here to avoid tearing
+  // in the image, but we will worry about that later
+
   memcpy(buffer, videoBuffer, videoFrameSize);
 
+  if (bytesReturned != NULL)
+    *bytesReturned = videoFrameSize;
+
+  
   return TRUE;
 }
 
@@ -333,6 +328,14 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 void PVideoInputDevice::ClearMapping()
 {
   if (canMap == 1) {
+
+    // better stop grabbing first
+    // Really this should be in the Stop() function, but that is
+    // not actually called anywhere.
+
+    int mode =  METEOR_CAP_STOP_CONT;
+    ioctl(videoFd, METEORCAPTUR, &mode);
+
     if (videoBuffer != NULL)
       ::munmap(videoBuffer, mmap_size);
 
