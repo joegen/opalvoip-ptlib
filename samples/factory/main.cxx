@@ -66,5 +66,4 @@ void Factory::Main()
   DisplayFactory<PURLScheme, PString>("PURLScheme");
   DisplayFactory<PTextToSpeech, PString>("PTextToSpeech");
   DisplayFactory<PPluginModuleManager, PString>("PPluginModuleManager");
-  DisplayFactory<PWAVFileConverter, unsigned>("PWAVFileConverter");
 }
