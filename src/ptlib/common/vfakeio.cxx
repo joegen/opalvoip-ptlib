@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.24  2003/11/19 04:29:46  csoutheren
+ * Changed to support video output plugins
+ *
  * Revision 1.23  2003/08/12 22:04:18  dereksmithies
  * Add fix from Philippe Massicotte to fix segfaults on large images. Thanks!
  *
@@ -104,7 +107,19 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/vfakeio.h>
+#include <ptlib/videoio.h>
+
+
+#define NUM_PATTERNS 6
+
+
+#define MAX_L_HEIGHT 11
+
+typedef struct {
+    char ascii;
+    char *line[MAX_L_HEIGHT];
+} OneVFakeLetterData;
+
 
 /****
  * The fonts for these letters were written by  Sverre H. Huseby, and have been included
@@ -1225,14 +1240,208 @@ static OneVFakeLetterData vFakeLetterData[] = {
 };
 
 
-#define NUM_PATTERNS 6
 
+/** This class defines a video input device that
+    generates fictitous image data.
+*/
+class PVideoInputDevice_FakeVideo : public PVideoInputDevice
+{
+ PCLASSINFO(PVideoInputDevice_FakeVideo, PVideoInputDevice);
+ public:
+  /** Create a new (fake) video input device.
+   */
+    PVideoInputDevice_FakeVideo();
+
+
+    /**Open the device given the device name.
+      */
+    BOOL Open(
+      const PString & deviceName,   /// Device name to open
+      BOOL startImmediate = TRUE    /// Immediately start device
+    );
+
+    /**Determine of the device is currently open.
+      */
+    BOOL IsOpen() ;
+
+    /**Close the device.
+      */
+    BOOL Close();
+
+    /**Start the video device I/O.
+      */
+    BOOL Start();
+
+    /**Stop the video device I/O capture.
+      */
+    BOOL Stop();
+
+    /**Determine if the video device I/O capture is in progress.
+      */
+    BOOL IsCapturing();
+
+    /**Get a list of all of the drivers available.
+      */
+    static PStringList GetInputDeviceNames();
+
+    /**Get the maximum frame size in bytes.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    virtual PINDEX GetMaxFrameBytes();
+
+    BOOL GetFrame(PBYTEArray & frame);
+
+
+    /**Grab a frame. 
+
+       There will be a delay in returning, as specified by frame rate.
+      */
+    virtual BOOL GetFrameData(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// Optional bytes returned.
+    );
+
+    /**Grab a frame.
+
+       Do not delay according to the current frame rate.
+      */
+    virtual BOOL GetFrameDataNoDelay(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+    );
+
+
+    /**A test image that contains area of low and high resolution.
+       The picture changes every second*/
+    void GrabMovingBlocksTestFrame(BYTE *resFrame);
+    
+    /**a test image consisting of a horizontal line moving down the image, 
+       with a constantly varying background. */
+    void GrabMovingLineTestFrame(BYTE *resFrame);
+
+    /**Generate a constant image, which contains the colours for
+       a NTSC test frame.*/
+    void GrabNTSCTestFrame(BYTE *resFrame);
+        
+    /**Generate three bouncing boxes, which bounce from a different height
+      */
+    void GrabBouncingBoxes(BYTE *resFrame);
+    
+    /**Generate a static image, containing a constant field of grey.
+     */
+    void GrabBlankImage(BYTE *resFrame);
+
+    /**Generate the original form of the moving blocks test frame.
+     */
+    void GrabOriginalMovingBlocksFrame(BYTE *resFrame);
+
+    /**Generate a textual output on the fake video image
+     */
+    void GrabTextVideoFrame(BYTE *resFrame);
+    
+    /**Get the stucture holding required letter for GetTextVideoFrame()
+     */
+    OneVFakeLetterData *FindLetter(char ascii);
+
+    /** Fills a region of the image with a constant colour.
+     */
+    void FillRect(BYTE * frame,  unsigned width, unsigned height,
+		  int x,         int y,
+                  int rectWidth, int rectHeight,
+                  int r,         int g,          int b);
+
+    /** Given a preset interval of n milliseconds, this function
+        returns n msecs after the previous frame capture was initiated.
+	    */
+    virtual void WaitFinishPreviousFrame();
+
+    /**Set the video format to be used.
+
+       Default behaviour sets the value of the videoFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetVideoFormat(
+      VideoFormat videoFormat   /// New video format
+    );
+
+    /**Get the number of video channels available on the device.
+
+       Default behaviour returns 1.
+    */
+    virtual int GetNumChannels() ;
+
+    /**Set the video channel to be used on the device.
+
+       Default behaviour sets the value of the channelNumber variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetChannel(
+         int channelNumber  /// New channel number for device.
+    );
+    
+    /**Set the colour format to be used.
+
+       Default behaviour sets the value of the colourFormat variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetColourFormat(
+      const PString & colourFormat   // New colour format for device.
+    );
+    
+    /**Set the video frame rate to be used on the device.
+
+       Default behaviour sets the value of the frameRate variable and then
+       return the IsOpen() status.
+    */
+    virtual BOOL SetFrameRate(
+      unsigned rate  /// Frames per second
+    );
+         
+    /**Get the minimum & maximum size of a frame on the device.
+
+       Default behaviour returns the value 1 to UINT_MAX for both and returns
+       FALSE.
+    */
+    virtual BOOL GetFrameSizeLimits(
+      unsigned & minWidth,   /// Variable to receive minimum width
+      unsigned & minHeight,  /// Variable to receive minimum height
+      unsigned & maxWidth,   /// Variable to receive maximum width
+      unsigned & maxHeight   /// Variable to receive maximum height
+    ) ;
+
+    /**Set the frame size to be used.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
+         
+    void ClearMapping() { return ; }
+
+    /**Try all known video formats & see which ones are accepted by the video driver
+     */
+    virtual BOOL TestAllFormats()
+      { return TRUE; }
+   
+ protected:
+   PINDEX videoFrameSize;
+   int    grabCount;    
+
+   PString textLine[MAX_L_HEIGHT];
+};
+
+PCREATE_VIDINPUT_PLUGIN(FakeVideo, PVideoInputDevice_FakeVideo);
 
 ///////////////////////////////////////////////////////////////////////////////
-// PFakeVideoInputDevice
+// PVideoInputDevice_FakeVideo
 
 
-PFakeVideoInputDevice::PFakeVideoInputDevice()
+PVideoInputDevice_FakeVideo::PVideoInputDevice_FakeVideo()
 {
   grabCount = 0;
   SetFrameRate(10);
@@ -1241,43 +1450,43 @@ PFakeVideoInputDevice::PFakeVideoInputDevice()
 
 
 
-BOOL PFakeVideoInputDevice::Open(const PString & /*devName*/, BOOL /*startImmediate*/)
+BOOL PVideoInputDevice_FakeVideo::Open(const PString & /*devName*/, BOOL /*startImmediate*/)
 {
   return TRUE;    
 }
 
 
-BOOL PFakeVideoInputDevice::IsOpen() 
+BOOL PVideoInputDevice_FakeVideo::IsOpen() 
 {
   return TRUE;
 }
 
 
-BOOL PFakeVideoInputDevice::Close()
+BOOL PVideoInputDevice_FakeVideo::Close()
 {
   return TRUE;
 }
 
 
-BOOL PFakeVideoInputDevice::Start()
+BOOL PVideoInputDevice_FakeVideo::Start()
 {
   return TRUE;
 }
 
 
-BOOL PFakeVideoInputDevice::Stop()
+BOOL PVideoInputDevice_FakeVideo::Stop()
 {
   return TRUE;
 }
 
 
-BOOL PFakeVideoInputDevice::IsCapturing()
+BOOL PVideoInputDevice_FakeVideo::IsCapturing()
 {
   return IsOpen();
 }
 
 
-PStringList PFakeVideoInputDevice::GetInputDeviceNames()
+PStringList PVideoInputDevice_FakeVideo::GetInputDeviceNames()
 {
   PStringList list;
 
@@ -1287,31 +1496,31 @@ PStringList PFakeVideoInputDevice::GetInputDeviceNames()
 }
 
 
-BOOL PFakeVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
+BOOL PVideoInputDevice_FakeVideo::SetVideoFormat(VideoFormat newFormat)
 {
   return PVideoDevice::SetVideoFormat(newFormat);
 }
 
 
-int PFakeVideoInputDevice::GetNumChannels() 
+int PVideoInputDevice_FakeVideo::GetNumChannels() 
 {
   return NUM_PATTERNS;  
 }
 
 
-BOOL PFakeVideoInputDevice::SetChannel(int newChannel)
+BOOL PVideoInputDevice_FakeVideo::SetChannel(int newChannel)
 {
   return PVideoDevice::SetChannel(newChannel);
 }
 
 
-BOOL PFakeVideoInputDevice::SetColourFormat(const PString & newFormat)
+BOOL PVideoInputDevice_FakeVideo::SetColourFormat(const PString & newFormat)
 {
   return PVideoDevice::SetColourFormat(newFormat);
 }
 
 
-BOOL PFakeVideoInputDevice::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_FakeVideo::SetFrameRate(unsigned rate)
 {
   if ((rate < 1) || (rate > 50))
     PVideoDevice::SetFrameRate(10);
@@ -1322,7 +1531,7 @@ BOOL PFakeVideoInputDevice::SetFrameRate(unsigned rate)
 }
 
 
-BOOL PFakeVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
+BOOL PVideoInputDevice_FakeVideo::GetFrameSizeLimits(unsigned & minWidth,
                                            unsigned & minHeight,
                                            unsigned & maxWidth,
                                            unsigned & maxHeight) 
@@ -1336,7 +1545,7 @@ BOOL PFakeVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
 }
 
 
-BOOL PFakeVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_FakeVideo::SetFrameSize(unsigned width, unsigned height)
 {
   if (!PVideoDevice::SetFrameSize(width, height))
     return FALSE;
@@ -1347,12 +1556,12 @@ BOOL PFakeVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-PINDEX PFakeVideoInputDevice::GetMaxFrameBytes()
+PINDEX PVideoInputDevice_FakeVideo::GetMaxFrameBytes()
 {
   return videoFrameSize;
 }
 
-void PFakeVideoInputDevice::WaitFinishPreviousFrame()
+void PVideoInputDevice_FakeVideo::WaitFinishPreviousFrame()
 {
   frameTimeError += msBetweenFrames;
 
@@ -1371,8 +1580,18 @@ void PFakeVideoInputDevice::WaitFinishPreviousFrame()
   } 
 }
 
+BOOL PVideoInputDevice_FakeVideo::GetFrame(PBYTEArray & frame)
+{
+  PINDEX returned;
+  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
+    return FALSE;
 
-BOOL PFakeVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+  frame.SetSize(returned);
+  return TRUE;
+}
+
+
+BOOL PVideoInputDevice_FakeVideo::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {    
   WaitFinishPreviousFrame();
 
@@ -1384,7 +1603,7 @@ BOOL PFakeVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 }
 
 
-BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*bytesReturned*/)
+BOOL PVideoInputDevice_FakeVideo::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*bytesReturned*/)
 {
      grabCount++;
 
@@ -1416,7 +1635,7 @@ BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*byte
 }
 
 
-void PFakeVideoInputDevice::FillRect(BYTE * frame, unsigned width, unsigned height,
+void PVideoInputDevice_FakeVideo::FillRect(BYTE * frame, unsigned width, unsigned height,
 				     int xPos, int initialYPos,
 				     int rectWidth, int rectHeight,
 				     int r, int g,  int b)
@@ -1461,7 +1680,7 @@ void PFakeVideoInputDevice::FillRect(BYTE * frame, unsigned width, unsigned heig
   }
 }
 
-void PFakeVideoInputDevice::GrabBouncingBoxes(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabBouncingBoxes(BYTE *resFrame)
 {
   unsigned width = 0;
   unsigned height = 0;
@@ -1512,7 +1731,7 @@ void PFakeVideoInputDevice::GrabBouncingBoxes(BYTE *resFrame)
 			   		   
 }
 
-void PFakeVideoInputDevice::GrabNTSCTestFrame(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabNTSCTestFrame(BYTE *resFrame)
 {
     //  Test image # 1
     //  A static image is generated, consisting of a series of coloured block.
@@ -1625,7 +1844,7 @@ void PFakeVideoInputDevice::GrabNTSCTestFrame(BYTE *resFrame)
 }
 
 
-void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
+void PVideoInputDevice_FakeVideo::GrabMovingBlocksTestFrame(BYTE * resFrame)
 {
   // Test image # 2
   /*Brightness is set to alter, left to right.
@@ -1700,7 +1919,7 @@ void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
 }
 
 
-void PFakeVideoInputDevice::GrabMovingLineTestFrame(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabMovingLineTestFrame(BYTE *resFrame)
 {
     //  Test image # 3
     //  Faster image generation. Same every times system runs.
@@ -1727,7 +1946,7 @@ void PFakeVideoInputDevice::GrabMovingLineTestFrame(BYTE *resFrame)
 	  FillRect(resFrame, width, height, 0, hi,   width, 2, 0, 0, 0);
 }
 
-void PFakeVideoInputDevice::GrabBlankImage(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabBlankImage(BYTE *resFrame)
 {
   unsigned width=0;
   unsigned height=0;
@@ -1741,7 +1960,7 @@ void PFakeVideoInputDevice::GrabBlankImage(BYTE *resFrame)
                           200,200,200); //a light grey colour.                                                             
 }
 
-void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
+void PVideoInputDevice_FakeVideo::GrabOriginalMovingBlocksFrame(BYTE *frame)
 {
   unsigned w=0;
   unsigned h=0;
@@ -1779,7 +1998,7 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
       frame[framesize+(hi*halfWidth)+wi] = (BYTE)(((((hi*7)/halfHeight)+colourNumber)%7)*35+26);
 }
 
-void PFakeVideoInputDevice::GrabTextVideoFrame(BYTE *resFrame)
+void PVideoInputDevice_FakeVideo::GrabTextVideoFrame(BYTE *resFrame)
 {
   PINDEX i, j;
   unsigned width = 0;
@@ -1832,7 +2051,7 @@ void PFakeVideoInputDevice::GrabTextVideoFrame(BYTE *resFrame)
     }
 }
     
-OneVFakeLetterData *PFakeVideoInputDevice::FindLetter(char ascii)
+OneVFakeLetterData *PVideoInputDevice_FakeVideo::FindLetter(char ascii)
 {
   int q;
   int fontNumLetters = sizeof(vFakeLetterData) / sizeof(OneVFakeLetterData);
@@ -1843,6 +2062,138 @@ OneVFakeLetterData *PFakeVideoInputDevice::FindLetter(char ascii)
       return vFakeLetterData + q;
 
   return NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+/**This class defines a NULL video output device.
+   This will do precisely nothing with the output.
+ */
+class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
+{
+  PCLASSINFO(PVideoOutputDevice_NULLOutput, PVideoOutputDevice);
+
+  public:
+    /** Create a new video output device.
+     */
+    PVideoOutputDevice_NULLOutput();
+
+    /**Get a list of all of the drivers available.
+      */
+    static PStringList GetOutputDeviceNames();
+
+    /**Open the device given the device name.
+      */
+    virtual BOOL Open(
+      const PString & deviceName,   /// Device name to open
+      BOOL startImmediate = TRUE    /// Immediately start device
+    );
+
+    /**Start the video device I/O.
+      */
+    BOOL Start();
+
+    /**Stop the video device I/O capture.
+      */
+    BOOL Stop();
+
+    /**Close the device.
+      */
+    virtual BOOL Close();
+
+    /**Determine if the device is currently open.
+      */
+    virtual BOOL IsOpen();
+
+    /**Get the maximum frame size in bytes.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    virtual PINDEX GetMaxFrameBytes();
+
+    /**Set a section of the output frame buffer.
+      */
+    virtual BOOL SetFrameData(
+      unsigned x,
+      unsigned y,
+      unsigned width,
+      unsigned height,
+      const BYTE * data,
+      BOOL endFrame = TRUE
+    );
+
+    /**Indicate frame may be displayed.
+      */
+    virtual BOOL EndFrame();
+};
+
+PCREATE_VIDOUTPUT_PLUGIN(NULLOutput, PVideoOutputDevice_NULLOutput);
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoOutputDevice_NULLOutput
+
+PVideoOutputDevice_NULLOutput::PVideoOutputDevice_NULLOutput()
+{
+  deviceName = "NULL";
+}
+
+
+BOOL PVideoOutputDevice_NULLOutput::Open(const PString & /*deviceName*/,
+                                  BOOL /*startImmediate*/)
+{
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_NULLOutput::Close()
+{
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_NULLOutput::Start()
+{
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_NULLOutput::Stop()
+{
+  return TRUE;
+}
+
+BOOL PVideoOutputDevice_NULLOutput::IsOpen()
+{
+  return TRUE;
+}
+
+
+PStringList PVideoOutputDevice_NULLOutput::GetOutputDeviceNames()
+{
+  PStringList list;
+  list += "NULL";
+  return list;
+}
+
+
+PINDEX PVideoOutputDevice_NULLOutput::GetMaxFrameBytes()
+{
+  return CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
+}
+
+
+BOOL PVideoOutputDevice_NULLOutput::SetFrameData(unsigned /*x*/, unsigned /*y*/,
+                                          unsigned /*width*/, unsigned /*height*/,
+                                          const BYTE * /*data*/,
+                                          BOOL /*endFrame*/)
+{
+  return TRUE;
+}
+
+
+BOOL PVideoOutputDevice_NULLOutput::EndFrame()
+{
+  return TRUE;
 }
 
 
