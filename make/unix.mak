@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.99  2001/08/03 04:17:27  dereks
+# Add options for "CPUTYPE=crusoe", which is helpful for sony vaio notebook
+#
 # Revision 1.98  2001/08/02 03:23:36  robertj
 # Fixed exporting of new CPUTYPE variable so works in nested builds
 #
@@ -470,7 +473,12 @@ STDCCFLAGS	+= -DP_LINUX
 
 ifeq ($(MACHTYPE),x86)
 ifdef CPUTYPE
+ifeq ($(CPUTYPE),crusoe)
+STDCCFLAGS	+= -fomit-frame-pointer -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=0 
+STDCCFLAGS      += -malign-jumps=0 -malign-loops=0
+else
 STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+endif
 endif
 endif
 
