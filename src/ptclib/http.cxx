@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.105  2004/06/16 07:48:12  csoutheren
+ * Added assert to clarify usage of default scheme
+ *
  * Revision 1.104  2004/06/03 13:30:58  csoutheren
  * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
  * Added documentaton on new PINSTANTIATE_FACTORY macro
@@ -757,9 +760,9 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
   if (schemeInfo == NULL)
     schemeInfo = PGenericFactory<PURLScheme>::CreateInstance(DEFAULT_SCHEME);
 
-  //scheme = schemeInfo->name;
+  // if that fails, then there is nowehere to go
+  PAssert(schemeInfo != NULL, "Default scheme not available");
   scheme = schemeInfo->GetName();
-
   if (!schemeInfo->Parse(url, *this))
     return FALSE;
 
