@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.108  2004/07/12 09:17:20  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.107  2004/07/06 10:12:52  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -494,7 +497,11 @@ DEFINE_LEGACY_URL_SCHEME(tel,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, T
 DEFINE_LEGACY_URL_SCHEME(fax,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 
+#ifdef _WIN32
+
 PINSTANTIATE_FACTORY(PURLScheme, PString)
+
+#endif
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
