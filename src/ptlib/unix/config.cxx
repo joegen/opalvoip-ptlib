@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.33  2003/01/26 03:57:12  robertj
+ * Fixed problem with last change so can still operate if do not have write
+ *   access to the directory config file is in.
+ * Improved error reporting.
+ *
  * Revision 1.32  2003/01/24 12:12:20  robertj
  * Changed so that a crash in some other thread can no longer cause the
  *   config file to be truncated to zero bytes.
@@ -290,14 +295,16 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
                                    PFileInfo::UserExecute |
                                    PFileInfo::UserWrite |
                                    PFileInfo::UserRead)) {
-    PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
+    PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config directory");
     return FALSE;
   }
 
-  PFilePath tempfilename = filename + ".new";
   PTextFile file;
-  if (!file.Open(tempfilename, PFile::WriteOnly)) {
-    PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
+  if (!file.Open(filename + ".new", PFile::WriteOnly))
+    file.Open(filename, PFile::WriteOnly);
+
+  if (!file.IsOpen()) {
+    PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file: " + file.GetErrorText());
     return FALSE;
   }
 
@@ -318,13 +325,19 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
   file.SetLength(file.GetPosition());
   file.Close();
 
-  file.Rename(filename, TRUE);
+  if (file.GetFilePath() != filename) {
+    if (!file.Rename(filename, TRUE)) {
+      PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
+      return FALSE;
+    }
+  }
 
+  PTRACE(4, "PWLib\tSaved config file: " << filename);
   return TRUE;
 }
 
 
-BOOL PXConfig::ReadFromFile (const PFilePath & filename)
+BOOL PXConfig::ReadFromFile(const PFilePath & filename)
 {
   PINDEX len;
 
