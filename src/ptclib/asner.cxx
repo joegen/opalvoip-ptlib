@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.78  2003/01/24 23:43:43  robertj
+ * Fixed subtle problems with the use of MAX keyword for unsigned numbers,
+ *   should beUINT_MAX not INT_MAX, thanks Stevie Gray for pointing it out.
+ *
  * Revision 1.77  2002/12/17 07:00:15  robertj
  * Fixed incorrect encoding of arrays greater than 8192 and less than 16384
  *
@@ -854,7 +858,9 @@ void PASN_Integer::EncodePER(PPER_Stream & strm) const
     unsigned adjusted_value = value - lowerLimit;
 
     PINDEX nBits = 1; // Allow for sign bit
-    if (IsUnsigned() || (int)adjusted_value > 0)
+    if (IsUnsigned())
+      nBits = CountBits(adjusted_value+1);
+    else if ((int)adjusted_value > 0)
       nBits += CountBits(adjusted_value+1);
     else
       nBits += CountBits(-(int)adjusted_value+1);
