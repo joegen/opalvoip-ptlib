@@ -14,6 +14,9 @@ before STL became the answer to all our prayers. Unfortunately, due to intertia
 and the GNU C++ inadequate support of templates, this library will probably not
 be ported to STL in the near future.
 
+Still there is a lot here that can be usefull in producing portable applications
+without needing to alter the application source files at all.
+
  \begin{center}
  	{\Large{\bf Enjoy!}}
  \end{center}
@@ -58,6 +61,8 @@ be ported to STL in the near future.
 		A GUI application is very similar but is descended off
 		\Ref{PApplication} rather than \Ref{PProcess}, and would create a
 		window as a descendent off the \Ref{PMainWindow} class.
+
+	   @memo	Brief examples.
 	*/
 
     /**@name	GUI Mode Components
