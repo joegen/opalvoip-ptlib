@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.22 1996/03/31 08:51:22 robertj Exp $
+ * $Id: pstring.h,v 1.23 1996/05/26 03:27:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.23  1996/05/26 03:27:02  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.22  1996/03/31 08:51:22  robertj
  * Added RemoveAt() function to remove entries from dictionaries.
  *
@@ -1373,9 +1376,7 @@ PCLASS PStringStream : public PString, public iostream {
     PStringStream(int, const PStringStream &) { }
     PStringStream & operator=(const PStringStream &) { return *this; }
 
-    PCLASS Buffer : public PObject, public streambuf {
-      PCLASSINFO(Buffer, PObject)
-    
+    PCLASS Buffer : public streambuf {
       public:
         Buffer(PStringStream * str);
         Buffer(const Buffer & sbuf);
