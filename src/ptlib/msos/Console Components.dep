@@ -1,8 +1,20 @@
 # Microsoft Developer Studio Generated Dependency File, included by Console Components.mak
 
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
 ..\..\Ptclib\Asner.cxx : \
 	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\Ptclib\Asner.cxx : \
+	"..\..\..\Include\PtCLib\asner.h"\
+	"..\..\..\include\ptlib.h"\
+	
+
+!ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -131,12 +143,25 @@
 
 !ENDIF 
 
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
 ..\..\ptclib\delaychan.cxx : \
 	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	"..\..\..\include\ptlib.h"\
+	
+
+!ENDIF 
 
 ..\..\ptclib\dtmf.cxx : \
 	"..\..\..\include\ptclib\dtmf.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
@@ -144,6 +169,7 @@
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -170,6 +196,7 @@
 ..\..\Ptclib\Ftp.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -198,6 +225,7 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -224,6 +252,7 @@
 ..\..\Ptclib\Ftpclnt.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -252,6 +281,7 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -278,6 +308,7 @@
 ..\..\Ptclib\Ftpsrvr.cxx : \
 	"..\..\..\Include\PtCLib\ftp.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -300,10 +331,22 @@
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Html.cxx : \
 	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\Ptclib\Html.cxx : \
+	"..\..\..\Include\PtCLib\html.h"\
+	"..\..\..\include\ptlib.h"\
+	
+
+!ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -313,6 +356,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -342,6 +386,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -373,6 +418,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -402,6 +448,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -435,6 +482,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
@@ -451,6 +499,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
@@ -467,6 +516,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -496,6 +546,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -530,6 +581,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -564,6 +616,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -595,6 +648,7 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -622,6 +676,7 @@
 	"..\..\..\Include\PtCLib\inetmail.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -650,6 +705,7 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -676,6 +732,7 @@
 ..\..\Ptclib\Inetprot.cxx : \
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -703,6 +760,7 @@
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -728,6 +786,7 @@
 
 ..\..\ptclib\ipacl.cxx : \
 	"..\..\..\include\ptclib\ipacl.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -753,12 +812,14 @@
 
 ..\..\ptclib\memfile.cxx : \
 	"..\..\..\include\ptclib\memfile.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
@@ -767,6 +828,7 @@
 
 ..\..\Ptclib\modem.cxx : \
 	"..\..\..\Include\PtCLib\modem.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\include\ptlib\msos\ptlib\serchan.h"\
 	"..\..\..\Include\PtLib\Serchan.h"\
 	
@@ -777,6 +839,7 @@
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -802,6 +865,7 @@
 
 ..\..\Ptclib\Pasn.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -830,6 +894,7 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -856,6 +921,7 @@
 ..\..\Ptclib\Psnmp.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -924,6 +990,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -990,6 +1057,7 @@
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
 	"..\..\..\Include\PtCLib\pssl.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1012,16 +1080,29 @@
 	
 
 !ENDIF 
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\pwavfile.cxx : \
 	"..\..\..\include\ptclib\pwavfile.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\pwavfile.cxx : \
+	"..\..\..\include\ptclib\pwavfile.h"\
+	"..\..\..\include\ptlib.h"\
+	
+
+!ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\pxml.cxx : \
 	\
 	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1029,6 +1110,7 @@
 ..\..\ptclib\pxml.cxx : \
 	\
 	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !ENDIF 
@@ -1043,6 +1125,7 @@
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptclib\pxmlrpc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
@@ -1059,6 +1142,7 @@
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptclib\pxmlrpc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\ipsock.h"\
 	"..\..\..\include\ptlib\msos\ptlib\socket.h"\
@@ -1069,11 +1153,24 @@
 
 ..\..\ptclib\qchannel.cxx : \
 	"..\..\..\include\ptclib\qchannel.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\ptclib\random.cxx : \
 	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+..\..\ptclib\random.cxx : \
+	"..\..\..\include\ptclib\random.h"\
+	"..\..\..\include\ptlib.h"\
+	
+
+!ENDIF 
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
@@ -1088,6 +1185,7 @@
 	"..\..\..\Include\PtCLib\pssl.h"\
 	"..\..\..\include\ptclib\shttpsvc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1124,6 +1222,7 @@
 	"..\..\..\Include\PtCLib\pssl.h"\
 	"..\..\..\include\ptclib\shttpsvc.h"\
 	"..\..\..\Include\PtCLib\url.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1154,6 +1253,7 @@
 ..\..\Ptclib\Snmpclnt.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1180,6 +1280,7 @@
 ..\..\Ptclib\Snmpclnt.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1208,6 +1309,7 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1234,6 +1336,7 @@
 ..\..\Ptclib\Snmpserv.cxx : \
 	"..\..\..\Include\PtCLib\pasn.h"\
 	"..\..\..\Include\PtCLib\psnmp.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1261,6 +1364,7 @@
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1286,6 +1390,7 @@
 
 ..\..\Ptclib\socks.cxx : \
 	"..\..\..\Include\PtCLib\socks.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1313,6 +1418,7 @@
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1338,6 +1444,7 @@
 
 ..\..\Ptclib\Telnet.cxx : \
 	"..\..\..\Include\PtCLib\telnet.h"\
+	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Ethsock.h"\
 	"..\..\..\Include\PtLib\Icmpsock.h"\
 	"..\..\..\Include\PtLib\Ipdsock.h"\
@@ -1369,6 +1476,7 @@
 	"..\..\..\include\ptclib\pwavfile.h"\
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptclib\vxml.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
@@ -1379,6 +1487,7 @@
 	"..\..\..\include\ptclib\pwavfile.h"\
 	"..\..\..\include\ptclib\pxml.h"\
 	"..\..\..\include\ptclib\vxml.h"\
+	"..\..\..\include\ptlib.h"\
 	
 
 !ENDIF 
