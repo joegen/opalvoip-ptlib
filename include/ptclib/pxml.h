@@ -31,6 +31,11 @@
 #ifndef _PXML_H
 #define _PXML_H
 
+#ifdef __GNUC__
+#pragma interface
+#endif
+
+
 #include <ptlib.h>
 
 

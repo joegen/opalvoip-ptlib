@@ -6,6 +6,9 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.h,v $
+ * Revision 1.5  2002/08/05 05:40:45  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.4  1999/05/01 03:52:20  robertj
  * Fixed various egcs warnings.
  *
@@ -22,6 +25,11 @@
 
 #ifndef _SOCKS_H
 #define _SOCKS_H
+
+#ifdef __GNUC__
+#pragma interface
+#endif
+
 
 #include <ptlib/sockets.h>
 
