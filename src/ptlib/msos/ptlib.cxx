@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.34 1998/04/01 01:54:45 robertj Exp $
+ * $Id: ptlib.cxx,v 1.35 1998/05/21 04:27:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.35  1998/05/21 04:27:31  robertj
+ * Compensated for MSC run time library bug.
+ *
  * Revision 1.34  1998/04/01 01:54:45  robertj
  * Added memory leak checking to debug version.
  *
@@ -153,7 +156,19 @@ void PSetErrorStream(ostream * s)
 ostream & operator<<(ostream & s, PInt64 v)
 {
   char buffer[25];
-  return s << _i64toa(v, buffer, (s.flags()&ios::oct) ? 8 : ((s.flags()&ios::hex) ? 16 : 10));
+
+  if ((s.flags()&ios::hex) != 0)
+    return s << _ui64toa(v, buffer, 16);
+
+  if ((s.flags()&ios::oct) != 0)
+    return s << _ui64toa(v, buffer, 8);
+
+  if (v < 0) {
+    s << '-';
+    v = -v;
+  }
+
+  return s << _i64toa(v, buffer, 10);
 }
 
 
