@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.45  2002/02/15 04:29:49  robertj
+ * Added PString::Empty() to return the primordial empty string. Saves on a
+ *   couple of memory allocations for every empty string ever used.
+ *
  * Revision 1.44  2002/01/22 01:03:57  craigs
  * Added operator += and operator + functions to PStringArray and PStringList
  * Added AppendString operator to PStringArray
@@ -197,7 +201,7 @@ PINLINE BOOL PContainer::IsUnique() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PString::PString()
-  : PCharArray(1) { }
+  : PCharArray(Empty()) { }
 
 PINLINE PString::PString(const PString & str)
   : PCharArray(str) { }
