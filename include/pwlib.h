@@ -48,9 +48,18 @@ typedef int PDIMENSION;
 #define P_NULL_WINDOW (NULL)
 
 #ifdef WIN32
-#define EXPORTED
+
+#define EXPORTED __stdcall
+#define open  _open
+#define close _close
+#define lseek _lseek
+#define read  _read
+#define write _write
+
 #else
+
 #define EXPORTED FAR PASCAL _export
+
 #endif
 
 
@@ -74,11 +83,11 @@ typedef int PDIMENSION;
 
 #include "../../common/pdirect.h"
   protected:
-#ifdef MSDOS
-    struct find_t  fileinfo;
-#endif
 #ifdef WIN32
-    struct _finddata_t  fileinfo;
+    HANDLE hFindFile;
+    WIN32_FIND_DATA fileinfo;
+#else
+    struct find_t  fileinfo;
 #endif
 
     BOOL Filtered();
@@ -140,6 +149,9 @@ typedef int PDIMENSION;
     DWORD ToDWORD() const;
       // This will pack a PPoint object into the MS-Windows DWORD format.
 };
+
+
+PARRAY(PPointArray, PPoint);
 
 
 ///////////////////////////////////////////////////////////////////////////////
