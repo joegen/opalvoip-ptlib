@@ -31,7 +31,6 @@
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -96,7 +95,6 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -158,7 +156,6 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
@@ -220,7 +217,6 @@
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 ..\..\Ptclib\Cypher.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\Include\PtCLib\cypher.h"\
 	"..\..\..\Include\PtCLib\inetprot.h"\
 	"..\..\..\Include\PtCLib\mime.h"\
