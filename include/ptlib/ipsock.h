@@ -27,8 +27,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.67.2.2  2005/02/07 00:54:32  csoutheren
+ * Backported latest IPV6 changes from Atlas-devel
+ *
+ * Revision 1.73  2005/02/07 00:47:17  csoutheren
+ * Changed IPV6 code to use standard IPV6 macros
+ *
  * Revision 1.67.2.1  2005/02/04 05:19:08  csoutheren
  * Backported patches from Atlas-devel
+ *
+ * Revision 1.72  2005/02/04 05:50:27  csoutheren
+ * Extended IsRFC1918 to handle IPV6
  *
  * Revision 1.71  2005/01/16 21:27:01  csoutheren
  * Changed PIPSocket::IsAny to be const
@@ -440,7 +449,12 @@ class PIPSocket : public PSocket
         //  172.16.0.0  - 172.31.255.255
         //  192.168.0.0 - 192.168.255.255
         BOOL IsRFC1918() const 
-        { return (Byte1() == 10)
+        { 
+#if P_HAS_IPV6
+          if (version == 6) 
+            return IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six);
+#endif
+          return (Byte1() == 10)
                   ||
                   (
                     (Byte1() == 172)
