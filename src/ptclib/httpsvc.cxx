@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.10 1996/11/04 03:58:23 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.11 1996/11/16 10:50:26 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.11  1996/11/16 10:50:26  robertj
+ * ??
+ *
  * Revision 1.10  1996/11/04 03:58:23  robertj
  * Changed to accept separate copyright and manufacturer strings.
  *
@@ -406,7 +409,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "Order Form"
        << PHTML::Heading(1)
        << PHTML::Paragraph()
-       << PHTML::Form("POST", process.email)
+       << PHTML::Form("POST", "mailto:" + process.email)
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
@@ -415,15 +418,22 @@ PString POrderPage::LoadText(PHTTPRequest &)
   if (sconf.GetValidation() != PSecureConfig::IsValid) 
     prefix = sconf.GetPendingPrefix();
 
-  html << PHTML::HiddenField("product", process.GetName())
-       << PHTML::HiddenField("digest",  sconf.CalculatePendingDigest());
+  html << PHTML::HiddenField("product", process.GetName());
+
+  PMessageDigest5 digestor;
 
   PINDEX i;
-  for (i = 0; i < securedKeys.GetSize(); i++) 
-    html << PHTML::HiddenField(securedKeys[i],
-                              sconf.GetString(prefix + securedKeys[i]).Trim());
+  for (i = 0; i < securedKeys.GetSize(); i++) {
+    PString val = sconf.GetString(prefix + securedKeys[i]).Trim();
+    html << PHTML::HiddenField(securedKeys[i], val);
+    digestor.Process(val);
+  }
 
-  html << PHTML::TableStart()
+  PString digest = digestor.Complete();
+
+  html << PHTML::HiddenField("digest", digest)
+
+       << PHTML::TableStart()
        << PHTML::TableRow("valign=baseline")
          << PHTML::TableHeader("align=right")
            << "Card Type:"
@@ -477,9 +487,11 @@ PString POrderPage::LoadText(PHTTPRequest &)
       << PHTML::Small()
       << PHTML::PreFormat()
       << '"' << process.GetName() << "\" "
-      << sconf.CalculatePendingDigest();
+      << digest;
+
   for (i = 0; i < securedKeys.GetSize(); i++) 
     html << " \"" << sconf.GetString(prefix + securedKeys[i]).Trim() << '"';
+
   html << PHTML::PreFormat() << PHTML::Small()
        << PHTML::HRule()
        << process.GetCopyrightText()
