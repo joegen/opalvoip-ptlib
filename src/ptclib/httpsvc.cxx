@@ -1,14 +1,13 @@
 /*
- * $Id: httpsvc.cxx,v 1.9 1996/10/14 03:06:29 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.10 1996/11/04 03:58:23 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
- * Revision 1.9  1996/10/14 03:06:29  robertj
- * Fixed timestamp compatibility with linux.
- * Fixed E-mail strings.
+ * Revision 1.10  1996/11/04 03:58:23  robertj
+ * Changed to accept separate copyright and manufacturer strings.
  *
  * Revision 1.8  1996/10/08 13:08:29  robertj
  * Changed standard graphic to use PHTML class.
@@ -43,27 +42,56 @@
 #include <ptlib.h>
 #include <httpsvc.h>
 
-const PString EMailAddres = "equival@ozemail.com.au";
-const PString EMailURL = "mailto:" + EMailAddres;
-const PString HomePageURL = "http://www.ozemail.com.au/~equival";
+#define HOME_PAGE 	"http://www.ozemail.com.au/~equival"
+#define EMAIL     	"equival@ozemail.com.au"
+#define	EQUIVALENCE	"Equivalence"
 
 
 PHTTPServiceProcess::PHTTPServiceProcess(
-                  const char * _gifName,
-                  const char * manuf,   // Name of manufacturer
-                  const char * name,    // Name of product
+                  const char * name,      // Name of product
+                  const char * manuf,     // Name of manufacturer
+                  const char * _gifName,  // text for gif file in page headers
+
                   WORD majorVersion,    // Major version number of the product
                   WORD minorVersion,    // Minor version number of the product
                   CodeStatus status,    // Development status of the product
-                  WORD buildNumber      // Build number of the product
+                  WORD buildNumber,     // Build number of the product
+
+                  const char * _homePage,  // WWW address of manufacturers home page
+                  const char * _email      // contact email for manufacturer
                 )
   : PServiceProcess(manuf, name, majorVersion,
                     minorVersion, status, buildNumber),
-    gifText(_gifName)
+    gifText(_gifName) 
 {
+  if (_email != NULL)
+    email = _email;
+  else
+    email = EMAIL;
+  if (_homePage != NULL)
+    homePage = _homePage;
+  else
+    homePage = HOME_PAGE;
+
   restartThread = NULL;
 }
 
+
+PString PHTTPServiceProcess::GetCopyrightText()
+{
+  PTime compilationDate = PString(__DATE__);
+  PHTML html = PHTML::InBody;
+  html << "Copyright &copy;"
+       << compilationDate.AsString("yyyy") << " by "
+       << PHTML::HotLink(HOME_PAGE)
+       << EQUIVALENCE
+       << PHTML::HotLink()
+       << ", "
+       << PHTML::HotLink("mailto:" EMAIL)
+       << EMAIL
+       << PHTML::HotLink();
+  return html;
+}
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
@@ -79,10 +107,10 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << " Version " << GetVersion(TRUE)
        << ", " << compilationDate.AsString("d MMM yy")
        << PHTML::BreakLine()
-       << "Copyright &copy;" << compilationDate.AsString("yyyy") << " by "
-       << PHTML::HotLink(HomePageURL) << GetManufacturer() << PHTML::HotLink()
+       << "By "
+       << PHTML::HotLink(homePage) << GetManufacturer() << PHTML::HotLink()
        << ", "
-       << PHTML::HotLink(EMailURL) << EMailAddres << PHTML::HotLink()
+       << PHTML::HotLink("mailto:" + email) << email << PHTML::HotLink()
        << PHTML::TableEnd();
 
   return html;
@@ -303,7 +331,9 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
     AddDisclaimer(regPage, process.GetManufacturer());
   }
 
-  regPage << PHTML::Body();
+  regPage << process.GetCopyrightText()
+          << PHTML::Body();
+
   SetString(regPage);
   return PConfigPage::LoadText(request);
 }
@@ -376,7 +406,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "Order Form"
        << PHTML::Heading(1)
        << PHTML::Paragraph()
-       << PHTML::Form("POST", EMailURL)
+       << PHTML::Form("POST", process.email)
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
@@ -404,6 +434,8 @@ PString POrderPage::LoadText(PHTTPRequest &)
            << "Mastercard "
            << PHTML::RadioButton("PaymentType", "Bankcard")
            << "Bankcard "
+           << PHTML::RadioButton("PaymentType", "Amex")
+           << "Amex "
        << PHTML::TableRow("valign=baseline")
          << PHTML::TableHeader("align=right")
            << "Card Holder:"
@@ -421,6 +453,13 @@ PString POrderPage::LoadText(PHTTPRequest &)
            << "Expiry Date:"
          << PHTML::TableData("align=left")
            << PHTML::InputText("ExpiryDate", 8)
+
+       << PHTML::TableRow("valign=baseline")
+         << PHTML::TableHeader("align=right")
+           << "Validation Number (Amex only):"
+         << PHTML::TableData("align=left")
+           << PHTML::InputText("ValNum", 8)
+
       << PHTML::TableEnd()
       << PHTML::Paragraph()
       << "If you are paying by some other method, please enter the details "
@@ -441,7 +480,10 @@ PString POrderPage::LoadText(PHTTPRequest &)
       << sconf.CalculatePendingDigest();
   for (i = 0; i < securedKeys.GetSize(); i++) 
     html << " \"" << sconf.GetString(prefix + securedKeys[i]).Trim() << '"';
-  html << PHTML::PreFormat() << PHTML::Small() << PHTML::Body();
+  html << PHTML::PreFormat() << PHTML::Small()
+       << PHTML::HRule()
+       << process.GetCopyrightText()
+       << PHTML::Body();
 
   return html;
 }
@@ -473,6 +515,8 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
   PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
   text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
                process.GetPageGraphic());
+  text.Replace("<!--Standard_Copyright_Header-->",
+               process.GetCopyrightText());
 }
 
 
