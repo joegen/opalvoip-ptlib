@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.21 1997/10/30 10:19:19 robertj Exp $
+ * $Id: cypher.cxx,v 1.22 1998/01/26 02:49:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.22  1998/01/26 02:49:14  robertj
+ * GNU support.
+ *
  * Revision 1.21  1997/10/30 10:19:19  robertj
  * Fixed bug with having empty string in encrypted text.
  *
@@ -79,9 +82,13 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "cypher.h"
+#endif
+
 #include <ptlib.h>
-#include <mime.h>
 #include <cypher.h>
+#include <mime.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
