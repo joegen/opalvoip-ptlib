@@ -4791,7 +4791,7 @@ EXPORTS
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @1768 NONAME
     ?InternalStringSelect@PSortedStringList@@IBEHPBDHPAUElement@PAbstractSortedList@@@Z @3027 NONAME
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @1770 NONAME
-    ?IsAny@Address@PIPSocket@@QAEHXZ @1771 NONAME
+    ?IsAny@Address@PIPSocket@@QBEHXZ @7368 NONAME
     ?IsBroadcast@Address@PIPSocket@@QBEHXZ @1772 NONAME
     ?IsCapturing@PVideoInputDevice_FakeVideo@@UAEHXZ @2884 NONAME
     ?IsCapturing@PVideoInputDevice_VideoForWindows@@UAEHXZ @2759 NONAME
