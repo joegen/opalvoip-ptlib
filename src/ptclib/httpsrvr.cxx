@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.23  1998/10/31 12:49:23  robertj
+ * Added read/write mutex to the HTTP space variable to avoid thread crashes.
+ *
  * Revision 1.22  1998/10/25 01:02:41  craigs
  * Added ability to specify per-directory authorisation for PHTTPDirectory
  *
@@ -124,35 +127,51 @@
 #define	READLINE_TIMEOUT	30
 
 //  filename to use for directory access directives
-static PString accessFilename = "_access";
+static const PString accessFilename = "_access";
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSpace
 
 PHTTPSpace::PHTTPSpace()
 {
-  resource = NULL;
+  mutex = new PReadWriteMutex;
+  root = new Node(PString(), NULL);
 }
 
 
-PHTTPSpace::PHTTPSpace(const PString & nam, PHTTPSpace * parentNode)
-  : name(nam)
+void PHTTPSpace::DestroyContents()
+{
+  delete mutex;
+  delete root;
+}
+
+
+void PHTTPSpace::CloneContents(const PHTTPSpace * c)
+{
+  mutex = new PReadWriteMutex;
+  root = new Node(*c->root);
+}
+
+
+void PHTTPSpace::CopyContents(const PHTTPSpace & c)
+{
+  mutex = c.mutex;
+  root = c.root;
+}
+
+
+PHTTPSpace::Node::Node(const PString & nam, Node * parentNode)
+  : PString(nam)
 {
   parent = parentNode;
   resource = NULL;
 }
 
 
-PHTTPSpace::~PHTTPSpace()
+PHTTPSpace::Node::~Node()
 {
   delete resource;
-}
-
-
-PObject::Comparison PHTTPSpace::Compare(const PObject & obj) const
-{
-  PAssert(obj.IsDescendant(PHTTPSpace::Class()), PInvalidCast);
-  return name.Compare(((const PHTTPSpace &)obj).name);
 }
 
 
@@ -160,7 +179,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 {
   PAssert(res != NULL, PInvalidParameter);
   const PStringArray & path = res->GetURL().GetPath();
-  PHTTPSpace * node = this;
+  Node * node = root;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     if (path[i].IsEmpty())
       break;
@@ -168,9 +187,9 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
     if (node->resource != NULL)
       return FALSE;   // Already a resource in tree in partial path
 
-    PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
+    PINDEX pos = node->children.GetValuesIndex(path[i]);
     if (pos == P_MAX_INDEX)
-      pos = node->children.Append(new PHTTPSpace(path[i], node));
+      pos = node->children.Append(new Node(path[i], node));
 
     node = &node->children[pos];
   }
@@ -191,12 +210,12 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 BOOL PHTTPSpace::DelResource(const PURL & url)
 {
   const PStringArray & path = url.GetPath();
-  PHTTPSpace * node = this;
+  Node * node = root;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     if (path[i].IsEmpty())
       break;
 
-    PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
+    PINDEX pos = node->children.GetValuesIndex(path[i]);
     if (pos == P_MAX_INDEX)
       return FALSE;
 
@@ -210,7 +229,7 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
     return FALSE;   // Still a resource in tree further down path.
 
   do {
-    PHTTPSpace * par = node->parent;
+    Node * par = node->parent;
     par->children.Remove(node);
     node = par;
   } while (node != NULL && node->children.IsEmpty());
@@ -228,13 +247,13 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 {
   const PStringArray & path = url.GetPath();
 
-  PHTTPSpace * node = this;
+  Node * node = root;
   PINDEX i;
   for (i = 0; i < path.GetSize(); i++) {
     if (path[i].IsEmpty())
       break;
 
-    PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
+    PINDEX pos = node->children.GetValuesIndex(path[i]);
     if (pos == P_MAX_INDEX)
       return NULL;
 
@@ -245,7 +264,7 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
   }
 
   for (i = 0; i < PARRAYSIZE(HTMLIndexFiles); i++) {
-    PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(HTMLIndexFiles[i]));
+    PINDEX pos = node->children.GetValuesIndex(PString(HTMLIndexFiles[i]));
     if (pos != P_MAX_INDEX)
       return node->children[pos].resource;
   }
@@ -459,15 +478,26 @@ PString PHTTPServer::GetServerName() const
 }
 
 
+void PHTTPServer::SetURLSpace(const PHTTPSpace & space)
+{
+  urlSpace = space;
+}
+
+
 BOOL PHTTPServer::OnGET(const PURL & url,
                    const PMIMEInfo & info,
          const PHTTPConnectionInfo & connectInfo)
 {
+  urlSpace.StartRead();
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL) 
+  if (resource == NULL) {
+    urlSpace.EndRead();
     return OnError(NotFound, url.AsString(), connectInfo);
-  else 
-    return resource->OnGET(*this, url, info, connectInfo);
+  }
+
+  BOOL retval = resource->OnGET(*this, url, info, connectInfo);
+  urlSpace.EndRead();
+  return retval;
 }
 
 
@@ -475,11 +505,16 @@ BOOL PHTTPServer::OnHEAD(const PURL & url,
                     const PMIMEInfo & info,
           const PHTTPConnectionInfo & connectInfo)
 {
+  urlSpace.StartRead();
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL) 
+  if (resource == NULL) {
+    urlSpace.EndRead();
     return OnError(NotFound, url.AsString(), connectInfo);
-  else
-    return resource->OnHEAD(*this, url, info, connectInfo);
+  }
+
+  BOOL retval = resource->OnHEAD(*this, url, info, connectInfo);
+  urlSpace.EndRead();
+  return retval;
 }
 
 
@@ -488,11 +523,16 @@ BOOL PHTTPServer::OnPOST(const PURL & url,
               const PStringToString & data,
           const PHTTPConnectionInfo & connectInfo)
 {
+  urlSpace.StartRead();
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL) 
+  if (resource == NULL) {
+    urlSpace.EndRead();
     return OnError(NotFound, url.AsString(), connectInfo);
-  else
-    return resource->OnPOST(*this, url, info, data, connectInfo);
+  }
+
+  BOOL retval = resource->OnPOST(*this, url, info, data, connectInfo);
+  urlSpace.EndRead();
+  return retval;
 }
 
 
