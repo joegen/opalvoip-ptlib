@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.27  2003/11/12 10:25:41  csoutheren
+ * Changes to allow operation of static plugins under Windows
+ *
  * Revision 1.26  2003/11/12 05:18:04  csoutheren
  * Added more backwards compatibility functions for PSoundChannel
  *
@@ -125,6 +128,10 @@
 #endif
 
 #include <ptlib/pluginmgr.h>
+
+#if defined(_WIN32)
+PWLIB_STATIC_LOAD_PLUGIN(PSoundChannel_Win32);
+#endif
 
 
 /** A class representing a sound. A sound is a highly platform dependent
