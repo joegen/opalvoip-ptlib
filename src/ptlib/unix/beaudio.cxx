@@ -29,6 +29,9 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.11  2004/04/18 00:32:26  ykiryanov
+ * Fized compiler choking on <dynamic_cast>.
+ *
  * Revision 1.10  2004/04/02 03:29:07  ykiryanov
  * New improved code
  *
@@ -1462,7 +1465,8 @@ BOOL PSoundChannelBeOS::OpenRecorder(const PString &dev)
 #endif
 
 		// If the current buffer is not a resamplin buffer, re-create it 
-		P_ResamplingBuffer *buf=dynamic_cast<P_ResamplingBuffer*>(mBuffer);
+//YK		P_ResamplingBuffer *buf=dynamic_cast<P_ResamplingBuffer*>(mBuffer);
+		P_ResamplingBuffer* buf = (P_ResamplingBuffer*) mBuffer;
 		
 		if (buf==NULL)
 		{
