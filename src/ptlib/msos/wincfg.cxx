@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.11  2001/08/14 21:56:39  yurik
+ * More CE Unicode Registry API bug fixes
+ *
  * Revision 1.10  2001/08/14 15:41:13  yurik
  * Fixed bug in EnumKey for CE
  *
@@ -342,12 +345,11 @@ BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
 #ifndef _WIN32_WCE
   if( RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
 
-#else  
+#else // CE has only Unicode based API
   USES_CONVERSION;
   TCHAR tstr[MAX_PATH];
   LONG lResult = RegEnumKey(key, idx, tstr, MAX_PATH);
   str = T2A(tstr);
-
   if( lResult != ERROR_SUCCESS )
 #endif
     return FALSE;
@@ -363,8 +365,18 @@ BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
     return FALSE;
 
   DWORD sizeofname = MAX_PATH;
+#ifndef _WIN32_WCE
   if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
                          &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+
+#else  // CE has only Unicode based API
+  USES_CONVERSION;
+  TCHAR tstr[MAX_PATH];
+  LONG lResult = RegEnumValue(key, idx, tstr,
+      &sizeofname, NULL, NULL, NULL, NULL);
+  str = T2A(tstr);
+  if( lResult != ERROR_SUCCESS )
+#endif
     return FALSE;
 
   str.MakeMinimumSize();
@@ -405,9 +417,19 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
     case REG_MULTI_SZ :
     case REG_EXPAND_SZ :
     case REG_BINARY :
+#ifndef _WIN32_WCE
       return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
-
+#else  // CE has only Unicode based API
+	  {   USES_CONVERSION; TCHAR tstr[MAX_PATH];
+		  if( RegQueryValueEx(key, (char *)(const char *)value, NULL,
+					  &type, (LPBYTE) tstr, &size) == ERROR_SUCCESS )
+		  {
+			  str = T2A(tstr);
+			  return TRUE; 
+		  } 
+		}
+#endif
     case REG_DWORD : {
       DWORD num;
       size = sizeof(num);
@@ -472,9 +494,16 @@ BOOL RegistryKey::SetValue(const PString & value, const PString & str)
   if (key == NULL)
     return FALSE;
 
+#ifndef _WIN32_WCE
   return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
                 (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
-
+#else  // CE has only Unicode based API
+  USES_CONVERSION; 
+  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
+                (LPBYTE) A2T((const char *)str), 
+					( (str.GetLength()+1) * sizeof(TCHAR)/sizeof(char) )
+						) == ERROR_SUCCESS;
+#endif
 }
 
 
