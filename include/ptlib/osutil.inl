@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.85  2002/10/29 00:07:21  robertj
+ * Added IsValid() function to indicate that a PTime is set correctly.
+ *
  * Revision 1.84  2002/10/17 07:17:42  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -397,6 +400,9 @@ PINLINE PObject * PTime::Clone() const
 
 PINLINE void PTime::PrintOn(ostream & strm) const
   { strm << AsString(); }
+
+PINLINE BOOL PTime::IsValid() const
+  { return theTime > 46800; }
 
 PINLINE PInt64 PTime::GetTimestamp() const
   { return theTime*(PInt64)1000000 + microseconds; }
