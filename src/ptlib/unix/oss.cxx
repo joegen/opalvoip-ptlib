@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.48  2002/09/29 15:56:49  rogerh
+ * Revert back to checking for the /dev/soundcard directory to detect devfs.
+ * If seems that the .devfsd file is not removed when devfs is not being used.
+ *
  * Revision 1.47  2002/09/29 09:26:16  rogerh
  * Changes to sound card detection.
  * For Damien Sandras, allow /dev/dsp to be added to the list of sound devices
@@ -510,7 +514,8 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
   POrdinalToString dsp, mixer;
 
 #ifdef P_LINUX
-  if (PFile::Exists("/dev/.devfsd")) {
+  PDirectory devdir = "/dev/sound";
+  if (devdir.Open()) {
     CollectSoundDevices("/dev/sound", dsp, mixer, TRUE); // use names (devfs)
   } else {
     CollectSoundDevices("/dev", dsp, mixer, FALSE); // use major numbers
