@@ -327,7 +327,6 @@ EXPORTS
     ??0PVideoChannel@@QAE@ABVPString@@W4Directions@0@@Z @3419 NONAME ;public: __thiscall PVideoChannel::PVideoChannel(class PString const &,enum PVideoChannel::Directions)
     ??0PVideoChannel@@QAE@XZ @3420 NONAME ;public: __thiscall PVideoChannel::PVideoChannel(void)
     ??0PVideoDevice@@IAE@XZ @3658 NONAME ;protected: __thiscall PVideoDevice::PVideoDevice(void)
-    ??0PVideoDeviceBitmap@@QAE@IIABVPString@@@Z @3554 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned int,unsigned int,class PString const &)
     ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@@Z @3383 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *)
     ??0PVideoInputDevice@@QAE@XZ @3659 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(void)
     ??0PVideoInputThread@@QAE@AAVPVideoInputDevice@@@Z @3366 NONAME ;public: __thiscall PVideoInputThread::PVideoInputThread(class PVideoInputDevice &)
@@ -2490,6 +2489,9 @@ EXPORTS
     ?GetValuesIndex@PAbstractSortedList@@UBEHABVPObject@@@Z @1629 NONAME ;public: virtual int __thiscall PAbstractSortedList::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1630 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
     ?GetVersion@PProcess@@QBE?AVPString@@H@Z @1631 NONAME ;public: class PString  __thiscall PProcess::GetVersion(int)const 
+    ?GetVFlipState@PColourConverter@@QAEHXZ @4311 NONAME ;public: int __thiscall PColourConverter::GetVFlipState(void)
+    ?GetVFlipState@PFakeVideoInputDevice@@UAEHXZ @4312 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetVFlipState(void)
+    ?GetVFlipState@PVideoInputDevice@@UAEHXZ @4313 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetVFlipState(void)
     ?GetVideoFormat@PVideoDevice@@UBE?AW4VideoFormat@1@XZ @3335 NONAME ;public: virtual enum PVideoDevice::VideoFormat  __thiscall PVideoDevice::GetVideoFormat(void)const 
     ?GetVideoPlayer@PVideoChannel@@UAEPAVPVideoOutputDevice@@XZ @4305 NONAME ;public: virtual class PVideoOutputDevice * __thiscall PVideoChannel::GetVideoPlayer(void)
     ?GetVideoReader@PVideoChannel@@UAEPAVPVideoInputDevice@@XZ @4285 NONAME ;public: virtual class PVideoInputDevice * __thiscall PVideoChannel::GetVideoReader(void)
@@ -3123,7 +3125,7 @@ EXPORTS
     ?Resume@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2100 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Resume(class PServiceProcess *)
     ?RGBtoYUV420P@PStandardColourConverter@@IBEHPBEPAEPAHIH@Z @4272 NONAME ;protected: int __thiscall PStandardColourConverter::RGBtoYUV420P(unsigned char const *,unsigned char *,int *,unsigned int,int)const 
     ?RGBtoYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAEIH@Z @4273 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PSameSize(unsigned char const *,unsigned char *,unsigned int,int)const 
-    ?RGBtoYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAEI@Z @4274 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PWithResize(unsigned char const *,unsigned char *,unsigned int)const 
+    ?RGBtoYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAEIH@Z @4314 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PWithResize(unsigned char const *,unsigned char *,unsigned int,int)const 
     ?Right@PString@@QBE?AV1@H@Z @2110 NONAME ;public: class PString  __thiscall PString::Right(int)const 
     ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2111 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @2112 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
@@ -3281,6 +3283,9 @@ EXPORTS
     ?SetUserName@PProcess@@QAEHABVPString@@@Z @4231 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @2208 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @2209 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
+    ?SetVFlipState@PColourConverter@@QAEXH@Z @4315 NONAME ;public: void __thiscall PColourConverter::SetVFlipState(int)
+    ?SetVFlipState@PFakeVideoInputDevice@@UAEHH@Z @4316 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVFlipState(int)
+    ?SetVFlipState@PVideoInputDevice@@UAEHH@Z @4317 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetVFlipState(int)
     ?SetVideoFormat@PFakeVideoInputDevice@@UAEHW4VideoFormat@PVideoDevice@@@Z @3493 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?SetVideoFormat@PVideoDevice@@UAEHW4VideoFormat@1@@Z @3341 NONAME ;public: virtual int __thiscall PVideoDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?setw@@YA?AV__SMANIP_int@@H@Z @2210 NONAME ;class __SMANIP_int  __cdecl setw(int)
@@ -3327,8 +3332,14 @@ EXPORTS
     ?sync@PChannelStreamBuffer@@MAEHXZ @2246 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::sync(void)
     ?Terminate@PProcess@@UAEXXZ @2247 NONAME ;public: virtual void __thiscall PProcess::Terminate(void)
     ?Terminate@PThread@@UAEXXZ @2248 NONAME ;public: virtual void __thiscall PThread::Terminate(void)
+    ?TestAllFormats@PFakeVideoInputDevice@@UAEHXZ @4318 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::TestAllFormats(void)
+    ?TestAllFormats@PVideoInputDevice@@UAEHXZ @4319 NONAME ;public: virtual int __thiscall PVideoInputDevice::TestAllFormats(void)
     ?ThreadEntry@PServiceProcess@@AAEXXZ @2249 NONAME ;private: void __thiscall PServiceProcess::ThreadEntry(void)
     ?Tick@PTimer@@SA?AVPTimeInterval@@XZ @2250 NONAME ;public: static class PTimeInterval  __cdecl PTimer::Tick(void)
+    ?ToggleVFlipInput@PVideoChannel@@QAEHXZ @4320 NONAME ;public: int __thiscall PVideoChannel::ToggleVFlipInput(void)
+    ?ToggleVFlipState@PColourConverter@@QAEXXZ @4321 NONAME ;public: void __thiscall PColourConverter::ToggleVFlipState(void)
+    ?ToggleVFlipState@PFakeVideoInputDevice@@UAEHXZ @4322 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::ToggleVFlipState(void)
+    ?ToggleVFlipState@PVideoInputDevice@@UAEHXZ @4323 NONAME ;public: virtual int __thiscall PVideoInputDevice::ToggleVFlipState(void)
     ?Tokenise@PString@@QBE?AVPStringArray@@ABV1@H@Z @2251 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(class PString const &,int)const 
     ?Tokenise@PString@@QBE?AVPStringArray@@PBDH@Z @2252 NONAME ;public: class PStringArray  __thiscall PString::Tokenise(char const *,int)const 
     ?ToLiteral@PString@@QBE?AV1@XZ @2253 NONAME ;public: class PString  __thiscall PString::ToLiteral(void)const 
