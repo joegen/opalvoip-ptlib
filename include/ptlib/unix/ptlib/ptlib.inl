@@ -23,8 +23,8 @@
 #include <langinfo.h>
 #endif
 
-PINLINE PProcess * PProcess::Current()
-  { return PProcessInstance; }
+PINLINE PProcess & PProcess::Current()
+  { return *PProcessInstance; }
 
 PINLINE char ** PProcess::GetEnvp() const
   { return envp; }
