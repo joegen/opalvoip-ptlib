@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.3  2003/11/12 07:00:09  csoutheren
+ * Changed make compile under Windows
+ *
  * Revision 1.2  2003/11/12 06:35:12  csoutheren
  * Initial main version
  *
@@ -44,6 +47,12 @@
 #include <ptlib/pluginmgr.h>
 #include <ptlib/sound.h>
 #include "main.h"
+
+#include <math.h>
+
+#ifndef M_PI
+#define M_PI  3.1415926
+#endif
 
 PCREATE_PROCESS(PluginTest);
 
