@@ -2710,3 +2710,12 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
+    ??0PReadWriteMutex@@QAE@XZ @3038 NONAME ;public: __thiscall PReadWriteMutex::PReadWriteMutex(void)
+    ??1PReadWriteMutex@@UAE@XZ @3039 NONAME ;public: virtual __thiscall PReadWriteMutex::~PReadWriteMutex(void)
+    ??3PReadWriteMutex@@SAXPAX@Z @3040 NONAME ;public: static void __cdecl PReadWriteMutex::operator delete(void *)
+    ??_7PReadWriteMutex@@6B@ @3041 NONAME ;const  PReadWriteMutex::`vftable'
+    ?Class@PReadWriteMutex@@SAPBDXZ @3042 NONAME ;public: static char const * __cdecl PReadWriteMutex::Class(void)
+    ?CompareObjectMemoryDirect@PReadWriteMutex@@UBE?AW4Comparison@PObject@@ABV3@@Z @3043 NONAME ;public: virtual enum PObject::Comparison  __thiscall PReadWriteMutex::CompareObjectMemoryDirect(class PObject const &)const 
+    ?GetClass@PReadWriteMutex@@UBEPBDI@Z @3044 NONAME ;public: virtual char const * __thiscall PReadWriteMutex::GetClass(unsigned int)const 
+    ?IsClass@PReadWriteMutex@@UBEHPBD@Z @3045 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsClass(char const *)const 
+    ?IsDescendant@PReadWriteMutex@@UBEHPBD@Z @3046 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsDescendant(char const *)const 
