@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.16  2004/02/01 11:46:39  dsandras
+# Set default target to "optshared".
+#
 # Revision 1.15  2003/12/12 06:40:47  rogerhardiman
 # get plugins to install on FreeBSD
 #
@@ -166,7 +169,7 @@ exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
 export PWLIBDIR=@PWLIBDIR@
 
-all ::
+all :: optshared
 
 TARGETDIR=@TARGETDIR@
 
