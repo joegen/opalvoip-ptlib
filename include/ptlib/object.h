@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.33  1998/10/18 14:26:55  robertj
+ * Improved tracing functions.
+ *
  * Revision 1.32  1998/10/15 07:47:21  robertj
  * Added ability to ignore G++lib memory leaks.
  *
@@ -257,23 +260,36 @@ void PSetErrorStream(ostream *);
 ///////////////////////////////////////////////////////////////////////////////
 // Debug and tracing
 
-class PTrace {
+ostream & PGetTraceStream();
+void PSetTraceStream(ostream *);
+
+class PTraceBlock {
 /* This class is used for tracing the entry and exit of program blocks.
  */
   public:
-    inline PTrace(const char * traceName)
-      { PError << "Entering: " << (name = traceName) << endl; }
-    inline ~PTrace()
-      { PError << "Leaving : " << name << endl; }
+    inline PTraceBlock(const char * traceName)
+      { PGetTraceStream() << "Entering: " << (name = traceName) << endl; }
+    inline ~PTraceBlock()
+      { PGetTraceStream() << "Leaving : " << name << endl; }
   private:
     const char * name;
 };
 
-/*$MACRO PTRACE(name)
+/*$MACRO PTRACE_BLOCK(name)
    This macro creates a trace variable for tracking the entry and exit of
    program blocks.
  */
-#define PTRACE(n) PTrace __trace_instance(n)
+#define PTRACE_BLOCK(n) PTraceBlock __trace_block_instance(n)
+
+/*$MACRO PTRACE_LINE(name)
+   This macro outputs a trace of a file line execution.
+ */
+#define PTRACE_LINE() PGetTraceStream() << __FILE__ << '(' << __LINE__ << ')' << endl
+
+/*$MACRO PTRACE(name)
+   This macro outputs a trace of a file line execution.
+ */
+#define PTRACE(a) PGetTraceStream() << __FILE__ << '(' << __LINE__ << ')' << ' ' << a << endl
 
 
 #ifdef PMEMORY_CHECK
