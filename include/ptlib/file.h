@@ -1,5 +1,5 @@
 /*
- * $Id
+ * $Id: file.h,v 1.3 1993/07/14 12:49:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -7,7 +7,10 @@
  *
  * Copyright 1993 Equivalence
  *
- * $Log
+ * $Log: file.h,v $
+ * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Fixed RCS keywords.
+ *
  */
 
 
