@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.27  1999/04/24 11:50:11  robertj
+ * Changed HTTP command parser so will work if some idiot puts spaces in a URL.
+ *
  * Revision 1.26  1999/04/21 01:58:08  robertj
  * Fixed problem with reading data for request using second form of PHTTPRequestInfo constructor.
  *
@@ -319,36 +322,35 @@ BOOL PHTTPServer::ProcessCommand()
   if (!ReadCommand(cmd, args))
     return FALSE;
 
-  PStringArray tokens = args.Tokenise(" \t", FALSE);
-
   PHTTPConnectionInfo connectInfo((Commands)cmd);
 
   // if no tokens, error
-  if (tokens.IsEmpty()) {
+  if (args.IsEmpty()) {
     OnError(BadRequest, args, connectInfo);
     return FALSE;
   }
 
   // if only one argument, then it must be a version 0.9 simple request
-  if (tokens.GetSize() == 1) {
+  PINDEX lastSpacePos = args.FindLast(' ');
+  static const PCaselessString httpId = "HTTP/";
+  if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
     majorVersion = 0;
     minorVersion = 9;
   }
   else { // otherwise, attempt to extract a version number
-    PString verStr = tokens[1];
+    PCaselessString verStr = args.Mid(lastSpacePos + 6);
     PINDEX dotPos = verStr.Find('.');
-    static const PCaselessString httpId = "HTTP/";
-    if (dotPos == P_MAX_INDEX
-                      || verStr.GetLength() < 8 || httpId != verStr.Left(5)) {
-      OnError(BadRequest, "Malformed version number " + verStr, connectInfo);
+    if (dotPos == 0 || dotPos >= verStr.GetLength()) {
+      OnError(BadRequest, "Malformed version number: " + verStr, connectInfo);
       return FALSE;
     }
 
     // should actually check if the text contains only digits, but the
     // chances of matching everything else and it not being a valid number
     // are pretty small, so don't bother
-    majorVersion = (int)verStr(5, dotPos-1).AsInteger();
-    minorVersion = (int)verStr(dotPos+1, P_MAX_INDEX).AsInteger();
+    majorVersion = (int)verStr.Left(dotPos).AsInteger();
+    minorVersion = (int)verStr.Mid(dotPos+1).AsInteger();
+    args.Delete(lastSpacePos, P_MAX_INDEX);
   }
 
   // now that we've decided we did receive a HTTP request, increment the
@@ -386,9 +388,9 @@ BOOL PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistant
   if (cmd == CONNECT) 
-    connectInfo.SetURL("https://" + tokens[0], 0);
+    connectInfo.SetURL("https://" + args, 0);
   else
-    connectInfo.SetURL(tokens[0], myPort);
+    connectInfo.SetURL(args, myPort);
 
   BOOL persist;
 
