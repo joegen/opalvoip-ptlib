@@ -1,5 +1,5 @@
 /*
- * video4linux.cxx
+ * vfakeio.cxx
  *
  * Classes to support streaming video input (grabbing) and output.
  *
@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.2  2000/12/19 23:58:14  robertj
+ * Fixed MSVC compatibility issues.
+ *
  * Revision 1.1  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -38,15 +41,14 @@
 //#include <ptlib/vfakeio.h>
 #include <ptlib/vconvert.h>
 
-#include <sys/mman.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFakeVideoInputDevice
 
-PFakeVideoInputDevice::PFakeVideoInputDevice(VideoFormat videoFmt,
+PFakeVideoInputDevice::PFakeVideoInputDevice(VideoFormat /*videoFmt*/,
                                               int channel,
-                                              ColourFormat colourFmt)
+                                              ColourFormat /*colourFmt*/)
 {
   channelNumber = channel; 
   lastTick = PTimer::Tick();  
@@ -56,7 +58,7 @@ PFakeVideoInputDevice::PFakeVideoInputDevice(VideoFormat videoFmt,
 
 
 
-BOOL PFakeVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
+BOOL PFakeVideoInputDevice::Open(const PString & /*devName*/, BOOL /*startImmediate*/)
 {
   return TRUE;    
 }
@@ -120,7 +122,7 @@ BOOL PFakeVideoInputDevice::SetChannel(int newChannel)
 }
 
 
-BOOL PFakeVideoInputDevice::SetColourFormat(ColourFormat newFormat)
+BOOL PFakeVideoInputDevice::SetColourFormat(ColourFormat /*newFormat*/)
 {
   return TRUE;
 }

@@ -57,6 +57,7 @@ CLEAN :
 	-@erase "$(INTDIR)\pipechan.obj"
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
+	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\regex.obj"
 	-@erase "$(INTDIR)\remconn.obj"
 	-@erase "$(INTDIR)\serial.obj"
@@ -66,6 +67,8 @@ CLEAN :
 	-@erase "$(INTDIR)\svcproc.obj"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vconvert.obj"
+	-@erase "$(INTDIR)\vfakeio.obj"
 	-@erase "$(INTDIR)\vfw.obj"
 	-@erase "$(INTDIR)\videoio.obj"
 	-@erase "$(INTDIR)\win32.obj"
@@ -104,6 +107,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\pipechan.obj" \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
+	"$(INTDIR)\pvidchan.obj" \
 	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
@@ -116,7 +120,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\vfakeio.obj" \
+	"$(INTDIR)\vconvert.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -168,6 +174,8 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.sbr"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\ptlib.sbr"
+	-@erase "$(INTDIR)\pvidchan.obj"
+	-@erase "$(INTDIR)\pvidchan.sbr"
 	-@erase "$(INTDIR)\regex.obj"
 	-@erase "$(INTDIR)\regex.sbr"
 	-@erase "$(INTDIR)\remconn.obj"
@@ -184,6 +192,10 @@ CLEAN :
 	-@erase "$(INTDIR)\svcproc.sbr"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
+	-@erase "$(INTDIR)\vconvert.obj"
+	-@erase "$(INTDIR)\vconvert.sbr"
+	-@erase "$(INTDIR)\vfakeio.obj"
+	-@erase "$(INTDIR)\vfakeio.sbr"
 	-@erase "$(INTDIR)\vfw.obj"
 	-@erase "$(INTDIR)\vfw.sbr"
 	-@erase "$(INTDIR)\videoio.obj"
@@ -225,6 +237,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\pipechan.sbr" \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
+	"$(INTDIR)\pvidchan.sbr" \
 	"$(INTDIR)\regex.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
@@ -237,7 +250,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\win32.sbr" \
 	"$(INTDIR)\wincfg.sbr" \
 	"$(INTDIR)\winserial.sbr" \
-	"$(INTDIR)\winsock.sbr"
+	"$(INTDIR)\winsock.sbr" \
+	"$(INTDIR)\vfakeio.sbr" \
+	"$(INTDIR)\vconvert.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -263,6 +278,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\pipechan.obj" \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
+	"$(INTDIR)\pvidchan.obj" \
 	"$(INTDIR)\regex.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
@@ -275,7 +291,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\wincfg.obj" \
 	"$(INTDIR)\winserial.obj" \
-	"$(INTDIR)\winsock.obj"
+	"$(INTDIR)\winsock.obj" \
+	"$(INTDIR)\vfakeio.obj" \
+	"$(INTDIR)\vconvert.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -641,6 +659,24 @@ SOURCE=.\ptlib.cxx
 
 !ENDIF 
 
+SOURCE=..\common\pvidchan.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\pvidchan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\pvidchan.obj"	"$(INTDIR)\pvidchan.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=..\common\regex.cxx
 
 !IF  "$(CFG)" == "Console - Win32 Release"
@@ -763,6 +799,42 @@ SOURCE=.\svcproc.cxx
 
 
 "$(INTDIR)\svcproc.obj"	"$(INTDIR)\svcproc.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+
+
+!ENDIF 
+
+SOURCE=..\common\vconvert.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\vconvert.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\vconvert.obj"	"$(INTDIR)\vconvert.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\common\vfakeio.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\vfakeio.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\vfakeio.obj"	"$(INTDIR)\vfakeio.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
