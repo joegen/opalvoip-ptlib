@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.73  2000/04/05 02:50:16  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.72  2000/01/06 14:09:42  robertj
  * Fixed problems with starting up timers,losing up to 10 seconds
  *
@@ -357,10 +360,19 @@ PINLINE BOOL PTimeInterval::operator<=(long msecs) const
 // PTime
 
 PINLINE PObject * PTime::Clone() const
-  { return PNEW PTime(theTime); }
+  { return PNEW PTime(theTime, microseconds); }
 
 PINLINE void PTime::PrintOn(ostream & strm) const
   { strm << AsString(); }
+
+PINLINE PInt64 PTime::GetTimestamp() const
+  { return theTime*(PInt64)1000000 + microseconds; }
+
+PINLINE time_t PTime::GetTimeInSeconds() const
+  { return theTime; }
+
+PINLINE long PTime::GetMicrosecond() const
+  { return microseconds; }
 
 PINLINE int PTime::GetSecond() const
   { struct tm ts; return os_localtime(&theTime, &ts)->tm_sec; }
@@ -392,21 +404,6 @@ PINLINE BOOL PTime::IsPast() const
 PINLINE BOOL PTime::IsFuture() const
   { return theTime > time(NULL); }
 
-
-PINLINE PTime PTime::operator+(const PTimeInterval & t) const
-  { return PTime(theTime + t.GetSeconds()); }
-
-PINLINE PTime & PTime::operator+=(const PTimeInterval & t)
-  { theTime += t.GetSeconds(); return *this; }
-
-PINLINE PTimeInterval PTime::operator-(const PTime & t) const
-  { return PTimeInterval(0, (int)(theTime - t.theTime)); }
-
-PINLINE PTime PTime::operator-(const PTimeInterval & t) const
-  { return PTime(theTime - t.GetSeconds()); }
-
-PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
-  { theTime -= t.GetSeconds(); return *this; }
 
 PINLINE PString PTime::AsString(const PString & format, int zone) const
   { return AsString((const char *)format, zone); }
