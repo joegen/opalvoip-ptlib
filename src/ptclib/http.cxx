@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.95  2003/11/18 09:22:17  csoutheren
+ * Fixed problems with PURL::OpenBrowser, thanks to David Parr
+ *
  * Revision 1.94  2003/08/27 03:37:45  dereksmithies
  * Fix initialization of pathStr so it really is empty. BIG thanks to Diego Tartara.
  *
@@ -1089,8 +1092,9 @@ BOOL PURL::OpenBrowser(const PString & url)
   ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
   sei.cbSize = sizeof(SHELLEXECUTEINFO);
   sei.lpVerb = TEXT("open");
+  sei.lpFile = url;
 
-  if ((int) ShellExecuteEx(&sei) > 32)
+  if (ShellExecuteEx(&sei) >= 32)
     return TRUE;
 
 #ifndef _WIN32_WCE
