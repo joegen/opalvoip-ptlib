@@ -279,6 +279,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "vidtest"=.\samples\vidtest\vidtest.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "vxmltest"=.\samples\vxmltest\vxmltest.dsp - Package Owner=<4>
 
 Package=<5>
