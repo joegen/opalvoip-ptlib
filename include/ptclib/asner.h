@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.26  2002/05/14 06:59:31  robertj
+ * Added more bullet proofing so a malformed PDU cannot cause teh decoder
+ *   to try and allocate huge arrays and consume all CPU and memory on a
+ *   system. A configurable limit of 100 is set for things like SEQUENCE OF.
+ *
  * Revision 1.25  2001/12/13 09:13:28  robertj
  * Added function get get oid as a string.
  * Added functions to compare oid to PString.
@@ -207,6 +212,11 @@ class PASN_Object : public PObject
     virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual void SetCharacterSet(ConstraintType ctype, const char * charSet);
     virtual void SetCharacterSet(ConstraintType ctype, unsigned firstChar, unsigned lastChar);
+
+    static PINDEX GetMaximumArraySize();
+    static void SetMaximumArraySize(PINDEX sz);
+    static PINDEX GetMaximumStringSize();
+    static void SetMaximumStringSize(PINDEX sz);
 
   protected:
     PASN_Object(unsigned tag, TagClass tagClass, BOOL extend = FALSE);
@@ -518,7 +528,7 @@ class PASN_OctetString : public PASN_ConstrainedObject
     BYTE & operator[](PINDEX i) { return value[i]; }
     BYTE * GetPointer(PINDEX sz = 0) { return value.GetPointer(sz); }
     PINDEX GetSize() const { return value.GetSize(); }
-    BOOL SetSize(PINDEX newSize) { return value.SetSize(newSize); }
+    BOOL SetSize(PINDEX newSize);
 
     virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
@@ -810,7 +820,7 @@ class PASN_Sequence : public PASN_Object
     PASN_Sequence & operator=(const PASN_Sequence & other);
 
     PINDEX GetSize() const { return fields.GetSize(); }
-    void SetSize(PINDEX newSize);
+    BOOL SetSize(PINDEX newSize);
     PASN_Object & operator[](PINDEX i) const { return fields[i]; }
 
     BOOL HasOptionalField(PINDEX opt) const;
@@ -883,7 +893,7 @@ class PASN_Array : public PASN_ConstrainedObject
     PCLASSINFO(PASN_Array, PASN_ConstrainedObject);
   public:
     PINDEX GetSize() const { return array.GetSize(); }
-    void SetSize(PINDEX newSize);
+    BOOL SetSize(PINDEX newSize);
     PASN_Object & operator[](PINDEX i) const { return array[i]; }
     void RemoveAt(PINDEX i) { array.RemoveAt(i); }
     void RemoveAll() { array.RemoveAll(); }
