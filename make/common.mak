@@ -85,7 +85,7 @@ depend: $(SOURCES)
 ######################################################################
 
 clean:
-	rm -rf $(CLEAN_FILES) obj_r obj_d
+	rm -rf $(CLEAN_FILES) obj_$(OBJ_SUFFIX)*
 
 
 ######################################################################
@@ -96,6 +96,16 @@ clean:
 
 both:
 	make DEBUG=; make DEBUG=1
+
+shared:
+	make SHAREDLIB=1 
+
+bothshared:
+	make DEBUG= shared; make DEBUG=1 shared
+
+alllibs:
+	make both
+	make bothshared
 
 ######################################################################
 #
