@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.29  1999/01/16 04:00:05  robertj
+# Added bothclean target
+#
 # Revision 1.28  1998/12/02 02:36:57  robertj
 # New directory structure.
 #
@@ -216,6 +219,9 @@ bothshared:
 
 bothdepend:
 	$(MAKE) DEBUG= depend; $(MAKE) DEBUG=1 depend
+
+bothclean:
+	$(MAKE) DEBUG= clean; $(MAKE) DEBUG=1 clean
 
 static:
 	for f in $(STATIC_LIBS) ; do \
