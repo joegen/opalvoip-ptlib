@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.29  1998/11/30 02:51:58  robertj
+ * New directory structure
+ *
  * Revision 1.28  1998/09/23 06:21:25  robertj
  * Added open source copyright license.
  *
@@ -123,7 +126,7 @@
 
 
 #ifndef _PCHANNEL
-#include <channel.h>
+#include <ptlib/channel.h>
 #endif
 
 class PSocket;
