@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.11 1995/08/24 12:41:00 robertj Exp $
+ * $Id: msdos.cxx,v 1.12 1996/01/28 02:55:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
+ * Revision 1.12  1996/01/28 02:55:32  robertj
+ * WIN16 support.
+ *
  * Revision 1.11  1995/08/24 12:41:00  robertj
  * Changed PChannel so not a PContainer.
  *
@@ -76,7 +79,7 @@ PString PTime::GetTimePM()
 }
 
 
-PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
+PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
   static const char * const weekdays[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday",
@@ -85,7 +88,7 @@ PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
   static const char * const abbrev_weekdays[] = {
     "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
   };
-  return (abbreviated ? abbrev_weekdays : weekdays)[dayOfWeek];
+  return (type != FullName ? abbrev_weekdays : weekdays)[dayOfWeek];
 }
 
 
@@ -95,7 +98,7 @@ PString PTime::GetDateSeparator()
 }
 
 
-PString PTime::GetMonthName(Months month, BOOL abbreviated)
+PString PTime::GetMonthName(Months month, NameType type)
 {
   static const char * const months[] = { "",
     "January", "February", "March", "April", "May", "June",
@@ -105,7 +108,7 @@ PString PTime::GetMonthName(Months month, BOOL abbreviated)
     "Jan", "Feb", "Mar", "Apr", "May", "Jun",
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   };
-  return (abbreviated ? abbrev_months : months)[month];
+  return (type != FullName ? abbrev_months : months)[month];
 }
 
 
@@ -113,6 +116,19 @@ PTime::DateOrder PTime::GetDateOrder()
 {
   return DayMonthYear;
 }
+
+
+long PTime::GetTimeZone() const
+{
+  return 0;
+}
+
+
+PString PTime::GetTimeZoneString(TimeZoneType type) const
+{
+  return "";
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -470,7 +486,7 @@ void PConfig::Construct(Source src)
   switch (src) {
     case Application :
       PFilePath appFile = PProcess::Current()->GetFile();
-      configFile = appFile.GetVolume() +
+      location = appFile.GetVolume() +
                               appFile.GetPath() + appFile.GetTitle() + ".INI";
   }
 }
@@ -478,7 +494,7 @@ void PConfig::Construct(Source src)
 
 void PConfig::Construct(const PFilePath & file)
 {
-  configFile = file;
+  location = file;
 }
 
 
@@ -486,7 +502,7 @@ PStringList PConfig::GetSections()
 {
   PStringList sections;
 
-  if (!configFile.IsEmpty()) {
+  if (!location.IsEmpty()) {
     PAssertAlways(PUnimplementedFunction);
   }
 
@@ -498,7 +514,7 @@ PStringList PConfig::GetKeys(const PString &) const
 {
   PStringList keys;
 
-  if (configFile.IsEmpty()) {
+  if (location.IsEmpty()) {
     char ** ptr = _environ;
     while (*ptr != NULL) {
       PString buf = *ptr++;
@@ -515,7 +531,7 @@ PStringList PConfig::GetKeys(const PString &) const
 
 void PConfig::DeleteSection(const PString &)
 {
-  if (configFile.IsEmpty())
+  if (location.IsEmpty())
     return;
 
   PAssertAlways(PUnimplementedFunction);
@@ -524,7 +540,7 @@ void PConfig::DeleteSection(const PString &)
 
 void PConfig::DeleteKey(const PString &, const PString & key)
 {
-  if (configFile.IsEmpty()) {
+  if (location.IsEmpty()) {
     PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
     _putenv(key + "=");
   }
@@ -538,7 +554,7 @@ PString PConfig::GetString(const PString &,
 {
   PString str;
 
-  if (configFile.IsEmpty()) {
+  if (location.IsEmpty()) {
     PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
     char * env = getenv(key);
     if (env != NULL)
@@ -555,7 +571,7 @@ PString PConfig::GetString(const PString &,
 
 void PConfig::SetString(const PString &, const PString & key, const PString & value)
 {
-  if (configFile.IsEmpty()) {
+  if (location.IsEmpty()) {
     PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
     _putenv(key + "=" + value);
   }
