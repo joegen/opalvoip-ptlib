@@ -2921,6 +2921,7 @@ EXPORTS
     ?Exists@PFile@@QBEHXZ @4649 NONAME
     ?Exists@PFile@@SAHABVPFilePath@@@Z @4650 NONAME
     ?ExitSafetyMode@PSafePtrBase@@IAEXW4ExitSafetyModeOption@1@@Z @1302 NONAME
+    ?factoryLoader@?$PFactory@VPProcessStartup@@VPString@@@@2HA @5837 NONAME
     ?fill@std@@YAXPAPAVPPluginModuleManager@@0ABQAV2@@Z @5280 NONAME
     ?fill@std@@YAXPAVPString@@0ABV2@@Z @5281 NONAME
     ?FillRect@PVideoInputDevice_FakeVideo@@QAEXPAEIIHHHHHHH@Z @2861 NONAME
