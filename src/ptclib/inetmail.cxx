@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.25  2004/04/03 06:54:25  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.24  2003/02/20 00:16:06  craigs
  * Changed MIME_Version to MIME-Version
  *
@@ -1229,7 +1232,8 @@ BOOL PRFC822Channel::OnOpen()
   if (writeHeaders)
     return TRUE;
 
-  *this >> headers;
+  istream & this_stream = *this;
+  this_stream >> headers;
   return !bad();
 }
 

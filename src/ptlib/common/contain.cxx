@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.147  2004/04/03 06:54:25  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.146  2004/03/20 04:20:34  rjongbloed
  * Fixed some VxWorks port issues especially underrrun memory access in
  *   the PString::FindLast function,, thanks Eize Slange
@@ -2408,7 +2411,7 @@ int PStringStream::Buffer::sync()
 }
 
 streampos PStringStream::Buffer::seekoff(streamoff off,
-#if defined(__MWERKS__) || __GNUC__ >= 3
+#ifdef __USE_STL__
                                  ios::seekdir dir, ios::openmode mode)
 #else
                                  ios::seek_dir dir, int mode)

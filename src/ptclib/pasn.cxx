@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.16  2004/04/03 06:54:25  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.15  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -291,7 +294,7 @@ void PASNObject::EncodeASNInteger (PBYTEArray & buffer, PASNInt data, PASNObject
 
   // create a mask which is the top nine bits of a DWORD, or 0xFF800000
   // on a big endian machine
-  mask = 0x1FFL << ((8 * (sizeof(DWORD) - 1)) - 1);
+  mask = 0x1FFUL << ((8 * (sizeof(DWORD) - 1)) - 1);
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || ((data & mask) == mask))
@@ -305,7 +308,7 @@ void PASNObject::EncodeASNInteger (PBYTEArray & buffer, PASNInt data, PASNObject
 
   // insert the data
   PINDEX offs = buffer.GetSize();
-  mask = 0xFFL << (8 * (sizeof(DWORD) - 1));
+  mask = 0xFFUL << (8 * (sizeof(DWORD) - 1));
   while (intsize--) {
     buffer[offs++] = (u_char)((data & mask) >> (8 * (sizeof(DWORD) - 1)));
     data <<= 8;
@@ -319,7 +322,7 @@ void PASNObject::EncodeASNUnsigned (PBYTEArray & buffer, PASNUnsigned data, PASN
   WORD intsize = sizeof(data);
   int  add_null_byte = 0;
 
-  mask = 0xFFL << (8 * (sizeof(long) - 1));
+  mask = 0xFFUL << (8 * (sizeof(long) - 1));
   /* mask is 0xFF000000 on a big-endian machine */
   if ((u_char)((data & mask) >> (8 * (sizeof(PASNUnsigned) - 1))) & 0x80){
     /* if MSB is set */
@@ -406,7 +409,7 @@ WORD PASNObject::GetASNIntegerLength(PASNInt data)
 
   // create a mask which is the top nine bits of a DWORD, or 0xFF800000
   // on a big endian machine
-  mask = 0x1FFL << ((8 * (sizeof(DWORD) - 1)) - 1);
+  mask = 0x1FFUL << ((8 * (sizeof(DWORD) - 1)) - 1);
 
   // remove all sequences of nine 0's or 1's at the start of the value
   while ((((data & mask) == 0) || ((data & mask) == mask))
