@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.54  2000/01/10 02:38:46  craigs
+# Fixed problem when creating dependencies with OpenSSL
+#
 # Revision 1.53  2000/01/10 02:23:47  craigs
 # Updated for new OpenSSL
 #
@@ -473,7 +476,7 @@ endif # DEBUG
 
 # define OpenSSL variables if installed
 ifdef  OPENSSLDIR
-CFLAGS		+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
+STDCCFLAGS	+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
 LDFLAGS		+= -L$(OPENSSLDIR)/lib
 ENDLDLIBS	+= -lssl -lcrypto
 endif
