@@ -26,16 +26,24 @@ dnl set LIBDIR accordingly
 LIBDIR="${libdir}"
 AC_SUBST(LIBDIR)
 
+AC_ARG_ENABLE(audio,
+       [  --disable-audio        disable audio support])
+if test "${enable_audio}z" = "z" ; then
+  enable_audio=yes
+fi
+
+if test "${enable_audio}" = "yes" ; then
+
 dnl #########################################################################
 dnl check for Alsa sound support
 dnl ########################################################################
 
 AC_ARG_ENABLE(alsa, [  --enable-alsa           enable ALSA audio support],,enable_alsa=yes)
 
-if test "$enable_alsa" = "yes" ; then
+if test "${enable_alsa}z" != "yesz" ; then
   AC_CHECK_HEADER(alsa/asoundlib.h, ALSAHDR=1)
   AC_MSG_CHECKING(for ALSA sound support)
-  if test "${ALSAHDR:-unset}" != "unset"; then
+  if test "${ALSAHDR}z" != "z"; then
     AC_SUBST(HAS_ALSA, 1)
     AC_MSG_RESULT(yes)
   else
@@ -49,10 +57,10 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support],,enable_oss=yes)
 
-if test "$enable_oss" = "yes" ; then
+if test "${enable_oss}z" = "yesz" ; then
   AC_CHECK_HEADER(sys/soundcard.h, SNDCARDHDR=1)
   AC_MSG_CHECKING(for OSS sound support)
-  if test "${SNDCARDHDR:-unset}" != "unset"; then
+  if test "${SNDCARDHDR}z" != "z"; then
     AC_SUBST(HAS_OSS, 1)
     AC_MSG_RESULT(yes)
   else
@@ -60,11 +68,16 @@ if test "$enable_oss" = "yes" ; then
   fi
 fi
 
-AC_ARG_ENABLE(video,
-       [  --disable-video         disable video device support in PWLIB],
-       video=$enableval)
+fi # enable_audio
 
-if test "$video" != "no" ; then
+AC_ARG_ENABLE(video,
+       [  --disable-video         disable video device support in PWLIB])
+
+if test "${enable_video}z" = "z" ; then
+  enable_video=yes
+fi
+
+if test "$enable_video" = "yes" ; then
 
 dnl #########################################################################
 dnl check for V4L video support
@@ -72,10 +85,10 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(v4l, [  --enable-v4l            enable V4L video support],,enable_v4l=yes)
 
-if test "$enable_v4l" = "yes" ; then
+if test "${enable_v4l}" = "yesz" ; then
   AC_CHECK_HEADER(linux/videodev.h, V4LHDR=1)
   AC_MSG_CHECKING(for V4L video support)
-  if test "${V4LHDR:-unset}" != "unset"; then
+  if test "${V4LHDR}z" != "z"; then
     AC_SUBST(HAS_V4L, 1)
     AC_MSG_RESULT(yes)
   else
@@ -89,10 +102,10 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(v4l2, [  --enable-v4l2            enable V4L2 video support],,enable_v4l2=no)
 
-if test "$enable_v4l2" = "yes" ; then
+if test "${enable_v4l2}" = "yesz" ; then
   AC_CHECK_HEADER(linux/videodev2.h, V4L2HDR=1)
   AC_MSG_CHECKING(for V4L2 video support)
-  if test "${V4LHDR:-unset}" != "unset"; then
+  if test "${V4LHDR}z" != "z"; then
     AC_SUBST(HAS_V4L2, 1)
     AC_MSG_RESULT(yes)
   else
@@ -106,12 +119,12 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support],,enable_bsdvideo=yes)
 
-if test "$enable_bsdvideo" = "yes" ; then
+if test "${enable_bsdvideo}z" = "yesz" ; then
   AC_CHECK_HEADER(machine/ioctl_meteor.h, BSDVIDEOHDR=1)
   AC_CHECK_HEADER(i386/ioctl_meteor.h, BSDVIDEOHDR=1)
   AC_CHECK_HEADER(dev/ic/bt8xx.h, BSDVIDEOHDR=1)
   AC_MSG_CHECKING(for BSD video support)
-  if test "${BSDVIDEOHDR:-unset}" != "unset"; then
+  if test "${BSDVIDEOHDR}z" != "z"; then
     AC_SUBST(HAS_BSDVIDEOCAP, 1)
     AC_MSG_RESULT(yes)
   else
@@ -125,12 +138,12 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(avc, [  --enable-avc            enable IEEE1394/AVC video support],,enable_avc=yes)
 
-if test "$enable_avc" = "yes" ; then
+if test "${enable_avc}z" = "yesz" ; then
   AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
   AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
   AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
   AC_MSG_CHECKING(for IEEE1394/AVC video support)
-  if test "${AVC1394HDR:-unset}" != "unset" -a ${DVHDR:-unset} != "unset" -a "${RAW1394HDR:-unset}" != "unset"; then
+  if test "${AVC1394HDR}z" != "z" -a "${DVHDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
     AC_SUBST(HAS_AVC1394, 1)
     AC_MSG_RESULT(yes)
   else
@@ -144,11 +157,11 @@ dnl ########################################################################
 
 AC_ARG_ENABLE(dc, [  --enable-dc             enable IEEE1394/DC video support],,enable_dc=yes)
 
-if test "$enable_dc" = "yes" ; then
+if test "${enable_dc}" = "yesz" ; then
   AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
   AC_CHECK_HEADER(libraw1394/raw1394.h, RAW1394HDR=1)
   AC_MSG_CHECKING(for IEEE1394/DC video support)
-  if test "${DC1394HDR:-unset}" != "unset" -a ${RAW1394HDR:-unset} != "unset"; then
+  if test "${DC1394HDR}z" != "z" -a "${RAW1394HDR}z" != "z"; then
     AC_SUBST(HAS_DC1394, 1)
     AC_MSG_RESULT(yes)
     AC_MSG_CHECKING(if dc1394_dma_setup_capture has 12 parms)
