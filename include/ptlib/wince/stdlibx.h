@@ -158,7 +158,7 @@ LONG RegEnumKey(HKEY hKey, DWORD dwIndex, LPTSTR lpName, DWORD cbName);
 
 LONG RegDeleteKey( HKEY hKey, const char* lpSubKey );
 
-LONG RegEnumValue( HKEY hKey, DWORD dwIndex, LPTSTR lpValueName, LPDWORD lpcbValueName, 
+LONG RegEnumValueCe( HKEY hKey, DWORD dwIndex, LPTSTR lpValueName, LPDWORD lpcbValueName, 
 	LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData );
 
 LONG RegQueryValueEx( HKEY hKey, char* lpValueName, 
