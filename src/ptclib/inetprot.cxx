@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.11 1996/02/25 03:05:12 robertj Exp $
+ * $Id: inetprot.cxx,v 1.12 1996/02/25 11:16:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.12  1996/02/25 11:16:07  robertj
+ * Fixed bug in ReadResponse() for multi-line responses under FTP..
+ *
  * Revision 1.11  1996/02/25 03:05:12  robertj
  * Added decoding of Base64 to a block of memory instead of PBYTEArray.
  *
@@ -357,7 +360,7 @@ BOOL PApplicationSocket::ReadResponse(PString & code, PString & info)
   code = line.Left(endCode);
   info = line.Mid(endCode+1);
 
-  while (line[endCode] == '-') {
+  while (!isdigit(line[0]) || line[endCode] == '-') {
     info += '\n';
     if (!ReadLine(line))
       return FALSE;
