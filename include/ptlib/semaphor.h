@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.10  2001/01/27 23:40:09  yurik
+ * WinCE port-related - CreateEvent used instead of CreateSemaphore
+ *
  * Revision 1.9  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -200,6 +203,10 @@ class PSemaphore : public PObject
     PQUEUE(BlockedThreadsQueue, PThread);
     BlockedThreadsQueue blockedThreads;
     friend void PThread::Yield();
+#else
+#ifdef _WIN32_WCE
+    unsigned currentCount;
+#endif  
 #endif
 
 
