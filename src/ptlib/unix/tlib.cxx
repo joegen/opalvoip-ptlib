@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.66  2002/12/11 23:02:39  robertj
+ * Added ability to set user identity temporarily and permanently.
+ * Added ability to have username exclusively digits which corresponds to a uid.
+ * Added get and set users group functions.
+ *
  * Revision 1.65  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -233,6 +238,7 @@
 #else
 #include <sys/time.h>
 #include <pwd.h>
+#include <grp.h>
 #endif // P_VXWORKS
 #include <signal.h>
 #include <sys/wait.h>
@@ -430,7 +436,7 @@ PString PProcess::GetUserName() const
 }
 
 
-BOOL PProcess::SetUserName(const PString & username)
+BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
 {
 #ifdef P_VXWORKS
   PAssertAlways("PProcess::SetUserName - not implemented for VxWorks");
@@ -439,26 +445,130 @@ BOOL PProcess::SetUserName(const PString & username)
   if (username.IsEmpty())
     return seteuid(getuid()) != -1;
 
-  if (username[0] == '#')
-    return seteuid(username.Mid(1).AsUnsigned()) != -1;
+  int uid = -1;
 
+  if (username[0] == '#') {
+    PString s = username.Mid(1);
+    if (strspn(s, "1234567890") == strlen(s))
+      uid = s.AsInteger();
+  }
+  else {
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
-  struct passwd pwd;
-  char buffer[1024];
-  struct passwd * pw;
+    struct passwd pwd;
+    char buffer[1024];
+    struct passwd * pw;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
-  ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
+    ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
 #else
-  pw = ::getpwnam_r(username, &pwd, buffer, 1024);
+    pw = ::getpwnam_r(username, &pwd, buffer, 1024);
 #endif
 #else
-  struct passwd * pw = ::getpwnam(username);
+    struct passwd * pw = ::getpwnam(username);
 #endif
 
-  if (pw == NULL || pw->pw_name == NULL)
+    if (pw != NULL || pw->pw_name != NULL)
+      uid = pw->pw_uid;
+    else {
+      if (strspn(username, "1234567890") == strlen(username))
+       uid = username.AsInteger();
+    }
+  }
+
+  if (uid < 0)
     return FALSE;
 
-  return seteuid(pw->pw_uid) != -1;
+  if (permanent)
+    return setuid(uid) != -1;
+    
+  return seteuid(uid) != -1;
+#endif // P_VXWORKS
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// PProcess
+//
+// Return the effective group name of the process, eg "wheel" etc.
+
+PString PProcess::GetGroupName() const
+
+{
+#ifdef P_VXWORKS
+
+  return PString("VxWorks");
+
+#else
+
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+  struct group grp;
+  char buffer[1024];
+  struct group * gr;
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+  ::getgrgid_r(getegid(), &grp, buffer, 1024, &gr);
+#else
+  gr = ::getgrgid_r(getegid(), &grp, buffer, 1024);
+#endif
+#else
+  struct group * gr = ::getgrgid(getegid());
+#endif
+
+  char * ptr;
+  if (gr != NULL && gr->gr_name != NULL)
+    return PString(gr->gr_name);
+  else if ((ptr = getenv("GROUP")) != NULL)
+    return PString(ptr);
+  else
+    return PString("group");
+#endif // P_VXWORKS
+}
+
+
+BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
+{
+#ifdef P_VXWORKS
+  PAssertAlways("PProcess::SetGroupName - not implemented for VxWorks");
+  return FALSE;
+#else
+  if (groupname.IsEmpty())
+    return setegid(getgid()) != -1;
+
+  int gid = -1;
+
+  if (groupname[0] == '#') {
+    PString s = groupname.Mid(1);
+    if (strspn(s, "1234567890") == strlen(s))
+      gid = s.AsInteger();
+  }
+  else {
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
+    struct group grp;
+    char buffer[1024];
+    struct group * gr;
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
+    ::getgrnam_r(groupname, &grp, buffer, 1024, &gr);
+#else
+    gr = ::getgrnam_r(groupname, &grp, buffer, 1024);
+#endif
+#else
+    struct group * gr = ::getgrnam(groupname);
+#endif
+
+    if (gr != NULL || gr->gr_name != NULL)
+      gid = gr->gr_gid;
+    else {
+      if (strspn(groupname, "1234567890") == strlen(groupname))
+       gid = groupname.AsInteger();
+    }
+  }
+
+  if (gid < 0)
+    return FALSE;
+
+  if (permanent)
+    return setgid(gid) != -1;
+    
+  return setegid(gid) != -1;
 #endif // P_VXWORKS
 }
 
