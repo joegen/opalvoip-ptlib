@@ -792,6 +792,15 @@ typedef int PDIMENSION;
 #include "../../common/listbox.h"
   protected:
     // Overrides from class PInteractor
+    HWND GetHWND() const;
+      // Return the MS-Windows handle for the control.
+
+    virtual HWND GetHWND();
+      // Return the MS-Windows handle for the control, call CreateWindow() to
+      // create the window if it has not already been created.
+
+
+    // Overrides from class PInteractor
     virtual const char * GetWinClsName() const;
       // Return the MS-Windows class name used in CreateWindow().
 
@@ -999,6 +1008,8 @@ typedef int PDIMENSION;
 ///////////////////////////////////////////////////////////////////////////////
 // PDialog
 
+class PResourceData;
+
 #include "../../common/dialog.h"
   public:
     // Overrides from class PInteractor
@@ -1031,6 +1042,9 @@ typedef int PDIMENSION;
     PINDEX numResourceCreators;
       // Resource information needed for delayed creation of MS-Windows dialog.
 
+    PResourceData * strings;
+      // Resource strings for filling list boxes etc. Info for EnumDlgChildren.
+ 
     friend BOOL CALLBACK _export
                               EnumDlgChildren(HWND hWnd, PDialog FAR * dialog);
 };
