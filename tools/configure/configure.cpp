@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.15  2004/03/23 06:32:01  csoutheren
+ * Fixed problems with multiple directories in exclude spec
+ *
  * Revision 1.14  2004/03/16 01:45:17  rjongbloed
  * Fixed locating lbrary in pre-defined search directories.
  * Added version number to configure program.
@@ -87,7 +90,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 
 using namespace std;
@@ -418,16 +421,16 @@ int main(int argc, char* argv[])
   char * env = getenv("PWLIB_CONFIGURE_EXCLUDE_DIRS");
   if (env != NULL) {
     string str(env);
-    string::const_iterator r = str.begin();
-    while (r != str.end()) {
-      int n = str.find(';');
+    string::size_type offs = 0;
+    while (offs < str.length()) {
+      string::size_type n = str.find(';', offs);
       string dir;
       if (n != string::npos) {
-        dir = string(r, n);
-        r = str.begin() + n;
+        dir = str.substr(offs, n);
+        offs += n + 1;
       } else {
-        dir = string(r);
-        r = str.end();
+        dir = str.substr(offs);
+        offs += str.length();
       }
       excludeDirList.push_back(dir);
       cout << "Excluding " << dir << " from feature search" << endl;
