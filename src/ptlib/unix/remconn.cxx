@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.19  2003/12/02 10:46:15  csoutheren
+ * Added patch for Solaris, thanks to Michal Zygmuntowicz
+ *
  * Revision 1.18  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -50,6 +53,10 @@
 #ifdef P_VXWORKS
 #include <socklib.h>
 #endif // P_VXWORKS
+
+#ifdef P_SOLARIS
+#include <signal.h>
+#endif
 
 #include "uerror.h"
 
