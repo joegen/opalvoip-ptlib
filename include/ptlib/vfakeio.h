@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.14  2003/06/14 03:28:50  rjongbloed
+ * Further MSVC warning fix up
+ *
  * Revision 1.13  2003/06/14 02:58:44  rjongbloed
  * Fixed MSVC warning.
  *
@@ -186,12 +189,12 @@ class PFakeVideoInputDevice : public PVideoInputDevice
     
     /**Get the stucture holding required letter for GetTextVideoFrame()
      */
-    OneVFakeLetterData *FindLetter(unsigned ascii);
+    OneVFakeLetterData *FindLetter(char ascii);
 
     /** Fills a region of the image with a constant colour.
      */
     void FillRect(BYTE * frame,  unsigned width, unsigned height,
-		          int x,         int y,
+		  int x,         int y,
                   int rectWidth, int rectHeight,
                   int r,         int g,          int b);
 
