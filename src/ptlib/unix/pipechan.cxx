@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.21  1998/11/30 21:51:46  robertj
+ * New directory structure.
+ *
  * Revision 1.20  1998/11/24 10:25:19  robertj
  * Fixed environment variable on FreeBSD
  *
@@ -64,6 +67,7 @@
 #pragma implementation "pipechan.h"
 
 #include <ptlib.h>
+#include <ptlib/pipechan.h>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -76,7 +80,7 @@
 #include <termio.h>
 #endif
 
-#include "../../common/ptlib/src/pipechan.cxx"
+#include "../common/pipechan.cxx"
 
 
 ////////////////////////////////////////////////////////////////
