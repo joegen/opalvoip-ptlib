@@ -324,7 +324,6 @@ EXPORTS
     ??1SecurityID@@QAE@XZ @264 NONAME ;public: __thiscall SecurityID::~SecurityID(void)
     ??1SelectList@PSocket@@UAE@XZ @265 NONAME ;public: virtual __thiscall PSocket::SelectList::~SelectList(void)
     ??1Table@PHashTable@@UAE@XZ @266 NONAME ;public: virtual __thiscall PHashTable::Table::~Table(void)
-    ??1yytype@@QAE@XZ @267 NONAME ;public: __thiscall yytype::~yytype(void)
     ??4?$PBaseArray@D@@QAEAAV0@ABV0@@Z @268 NONAME ;public: class PBaseArray<char> & __thiscall PBaseArray<char>::operator=(class PBaseArray<char> const &)
     ??4?$PBaseArray@E@@QAEAAV0@ABV0@@Z @2100 NONAME ;public: class PBaseArray<unsigned char> & __thiscall PBaseArray<unsigned char>::operator=(class PBaseArray<unsigned char> const &)
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @1835 NONAME ;public: BT01 volatile PEthSocket::* & __thiscall PEthSocket::Address::operator=(...) throw( ?? )
@@ -1665,6 +1664,7 @@ EXPORTS
     ?OnPause@PServiceProcess@@UAEHXZ @1450 NONAME ;public: virtual int __thiscall PServiceProcess::OnPause(void)
     ?OnReadComplete@PChannel@@UAEXPAXH@Z @1451 NONAME ;public: virtual void __thiscall PChannel::OnReadComplete(void *,int)
     ?OnStop@PServiceProcess@@UAEXXZ @1452 NONAME ;public: virtual void __thiscall PServiceProcess::OnStop(void)
+    ?OnTimeout@PTimer@@UAEXXZ @2124 NONAME ;public: virtual void __thiscall PTimer::OnTimeout(void)
     ?OnWait@PCondMutex@@UAEXXZ @1454 NONAME ;public: virtual void __thiscall PCondMutex::OnWait(void)
     ?OnWriteComplete@PChannel@@UAEXPBXH@Z @1455 NONAME ;public: virtual void __thiscall PChannel::OnWriteComplete(void const *,int)
     ?Open@NT_ServiceManager@@AAEHPAVPServiceProcess@@@Z @1456 NONAME ;private: int __thiscall NT_ServiceManager::Open(class PServiceProcess *)
@@ -2040,6 +2040,7 @@ EXPORTS
     ?Write@PSocket@@UAEHPBXH@Z @1771 NONAME ;public: virtual int __thiscall PSocket::Write(void const *,int)
     ?Write@PSoundChannel@@UAEHPBXH@Z @2079 NONAME ;public: virtual int __thiscall PSoundChannel::Write(void const *,int)
     ?Write@PStructuredFile@@EAEHPBXH@Z @1772 NONAME ;private: virtual int __thiscall PStructuredFile::Write(void const *,int)
+    ?Write@PStructuredFile@@QAEHPBX@Z @2125 NONAME ;public: int __thiscall PStructuredFile::Write(void const *)
     ?Write@PTCPSocket@@UAEHPBXH@Z @1774 NONAME ;public: virtual int __thiscall PTCPSocket::Write(void const *,int)
     ?Write@PUDPSocket@@UAEHPBXH@Z @1775 NONAME ;public: virtual int __thiscall PUDPSocket::Write(void const *,int)
     ?WriteAsync@PChannel@@UAEHPBXH@Z @1776 NONAME ;public: virtual int __thiscall PChannel::WriteAsync(void const *,int)
@@ -2057,5 +2058,9 @@ EXPORTS
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?OnTimeout@PTimer@@UAEXXZ @2124 NONAME ;public: virtual void __thiscall PTimer::OnTimeout(void)
-    ?Write@PStructuredFile@@QAEHPBX@Z @2125 NONAME ;public: int __thiscall PStructuredFile::Write(void const *)
+    _PTimeGetChar@4 @2126 NONAME ;_PTimeGetChar@4
+    _PTimeGetDateOrder@0 @2127 NONAME ;_PTimeGetDateOrder@0
+    _PTimeIsDayName@12 @2128 NONAME ;_PTimeIsDayName@12
+    _PTimeIsMonthName@12 @2129 NONAME ;_PTimeIsMonthName@12
+    _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
+    _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
