@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.6  1999/07/08 08:39:53  robertj
+ * Fixed bug when breaking block by closing the PSoundChannel in other thread.
+ *
  * Revision 1.5  1999/06/24 14:01:25  robertj
  * Fixed bug in not returning correct default recorder (waveIn) device.
  *
@@ -981,7 +984,8 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
   if (!StartRecording())  // Start the first read, queue all the buffers
     return FALSE;
 
-  WaitForRecordBufferFull();
+  if (!WaitForRecordBufferFull())
+    return FALSE;
 
   PWaveBuffer & buffer = buffers[bufferIndex];
 
@@ -990,7 +994,7 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
   if (lastReadCount > size)
     lastReadCount = size;
 
-  if (lastReadCount == 0)
+  if (lastReadCount == 0 || bufferByteOffset == P_MAX_INDEX)
     return FALSE;
 
   memcpy(data, &buffer[bufferByteOffset], lastReadCount);
