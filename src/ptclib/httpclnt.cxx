@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.2 1996/10/08 13:12:03 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.3 1996/12/12 09:24:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.3  1996/12/12 09:24:44  robertj
+ * Persistent connection support.
+ *
  * Revision 1.2  1996/10/08 13:12:03  robertj
  * Fixed bug in HTTP/0.9 response, first 5 character not put back properly.
  *
@@ -183,14 +186,17 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 
 BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
-  PString http = ReadString(5);
+  PString http = ReadString(7);
   UnRead(http);
 
-  if (http != "HTTP/") {
+  if (http.Left(5) != "HTTP/" && http != "\r\nHTTP/") {
     lastResponseCode = PHTTP::OK;
     lastResponseInfo = "HTTP/0.9";
     return TRUE;
   }
+
+  if (http[0] == '\r' &&  http[1] == '\n')
+    ReadString(2);
 
   if (PHTTP::ReadResponse())
     return replyMIME.Read(*this);
