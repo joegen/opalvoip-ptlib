@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.39  2001/09/28 10:05:57  robertj
+ * Added check for "scientific" mode in PTimeInterval so does not print
+ *   out hours and minutes, but just rounded seconds.
+ *
  * Revision 1.38  2001/04/02 01:44:15  robertj
  * Fixed PTime::operator-, was adding usecs instead of subtracting.
  *
@@ -188,67 +192,85 @@ void PTimeInterval::PrintOn(ostream & stream) const
   if (precision > 3)
     precision = 3;
 
-  BOOL hadPrevious = FALSE;
-  long tmp;
-
   PStringStream str;
-  str.fill('0');
 
-  PInt64 ms = milliseconds;
-  if (ms < 0) {
-    str << '-';
-    ms = -ms;
+  if ((stream.flags()&ios::scientific) != 0) {
+    switch (precision) {
+      case 1 :
+        str << milliseconds/1000 << '.' << (int)(milliseconds%1000+50)/100;
+        break;
+
+      case 2 :
+        str << milliseconds/1000 << '.' << setw(2) << (int)(milliseconds%1000+5)/10;
+        break;
+
+      case 3 :
+        str << milliseconds/1000 << '.' << setw(3) << (int)(milliseconds%1000);
+        break;
+
+      default :
+        str << (milliseconds+500)/1000;
+    }
   }
+  else {
+    BOOL hadPrevious = FALSE;
+    long tmp;
 
-  if (precision < 0) {
-    precision = -precision;
-    if (precision > 3)
-      precision = 3;
+    str.fill('0');
 
-    tmp = (long)(ms/86400000);
-    if (tmp > 0 || width > (precision+10)) {
-      str << tmp << 'd';
+    PInt64 ms = milliseconds;
+    if (ms < 0) {
+      str << '-';
+      ms = -ms;
+    }
+
+    if (precision < 0) {
+      precision = -precision;
+      if (precision > 3)
+        precision = 3;
+
+      tmp = (long)(ms/86400000);
+      if (tmp > 0 || width > (precision+10)) {
+        str << tmp << 'd';
+        hadPrevious = TRUE;
+      }
+
+      tmp = (long)(ms%86400000)/3600000;
+    }
+    else
+      tmp = (long)(ms/3600000);
+
+    if (hadPrevious || tmp > 0 || width > (precision+7)) {
+      if (hadPrevious)
+        str.width(2);
+      str << tmp << ':';
       hadPrevious = TRUE;
     }
 
-    tmp = (long)(ms%86400000)/3600000;
-  }
-  else
-    tmp = (long)(ms/3600000);
+    tmp = (long)(ms%3600000)/60000;
+    if (hadPrevious || tmp > 0 || width > (precision+4)) {
+      if (hadPrevious)
+        str.width(2);
+      str << tmp << ':';
+      hadPrevious = TRUE;
+    }
 
-  if (hadPrevious || tmp > 0 || width > (precision+7)) {
     if (hadPrevious)
       str.width(2);
-    str << tmp << ':';
-    hadPrevious = TRUE;
-  }
+    str << (long)(ms%60000)/1000;
 
-  tmp = (long)(ms%3600000)/60000;
-  if (hadPrevious || tmp > 0 || width > (precision+4)) {
-    if (hadPrevious)
-      str.width(2);
-    str << tmp << ':';
-    hadPrevious = TRUE;
-  }
+    switch (precision) {
+      case 1 :
+        str << '.' << (int)(ms%1000)/100;
+        break;
 
-  if (hadPrevious)
-    str.width(2);
-  str << (long)(ms%60000)/1000;
+      case 2 :
+        str << '.' << setw(2) << (int)(ms%1000)/10;
+        break;
 
-  switch (precision) {
-    case 1 :
-      str << '.' << (int)(ms%1000)/100;
-      break;
-
-    case 2 :
-      str << '.' << setw(2) << (int)(ms%1000)/10;
-      break;
-
-    case 3 :
-      str << '.' << setw(3) << (int)(ms%1000);
-
-    default :
-      break;
+      case 3 :
+        str << '.' << setw(3) << (int)(ms%1000);
+    }
   }
 
   stream << str;
