@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.5  1998/10/29 11:29:18  robertj
+ * Added ability to set environment in sub-process.
+ *
  * Revision 1.4  1998/10/26 09:11:06  robertj
  * Added ability to separate out stdout from stderr on pipe channels.
  *
@@ -51,29 +54,13 @@
 
 #if defined(_PPIPECHANNEL)
 
-PBASEARRAY(PConstCharStarArray, const char *);
-
-PPipeChannel::PPipeChannel(const PString & subProgram,
-                           const PStringArray & arguments,
-                           OpenMode mode,
-                           BOOL searchPath,
-                           BOOL stderrSeparate)
-{
-  PConstCharStarArray args(arguments.GetSize()+1);
-  PINDEX i;
-  for (i = 0; i < arguments.GetSize(); i++)
-    args[i] = arguments[i];
-  args[i] = NULL;
-  Construct(subProgram, args, mode, searchPath, stderrSeparate);
-}
-
-
 PPipeChannel::PPipeChannel(const PString & subProgram,
                            OpenMode mode,
                            BOOL searchPath,
-                           BOOL stderrSeparate)
+                           BOOL stderrSeparate,
+                           const char * environment)
 {
-  Construct(subProgram, NULL, mode, searchPath, stderrSeparate);
+  Open(subProgram, NULL, mode, searchPath, stderrSeparate, environment);
 }
 
 
@@ -81,9 +68,21 @@ PPipeChannel::PPipeChannel(const PString & subProgram,
                            const char * const * arguments,
                            OpenMode mode,
                            BOOL searchPath,
-                           BOOL stderrSeparate)
+                           BOOL stderrSeparate,
+                           const char * environment)
 {
-  Construct(subProgram, arguments, mode, searchPath, stderrSeparate);
+  Open(subProgram, arguments, mode, searchPath, stderrSeparate, environment);
+}
+
+
+PPipeChannel::PPipeChannel(const PString & subProgram,
+                           const PStringArray & arguments,
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate,
+                           const char * environment)
+{
+  Open(subProgram, arguments, mode, searchPath, stderrSeparate, environment);
 }
 
 
@@ -97,6 +96,34 @@ PObject::Comparison PPipeChannel::Compare(const PObject & obj) const
 PString PPipeChannel::GetName() const
 {
   return subProgName;
+}
+
+
+PBASEARRAY(PConstCharStarArray, const char *);
+
+BOOL PPipeChannel::Open(const PString & subProgram,
+                        const PStringArray & arguments,
+                        OpenMode mode,
+                        BOOL searchPath,
+                        BOOL stderrSeparate,
+                        const char * environment)
+{
+  PConstCharStarArray args(arguments.GetSize()+1);
+  PINDEX i;
+  for (i = 0; i < arguments.GetSize(); i++)
+    args[i] = arguments[i];
+  args[i] = NULL;
+  return Open(subProgram, args, mode, searchPath, stderrSeparate, environment);
+}
+
+
+BOOL PPipeChannel::Open(const PString & subProgram,
+                        OpenMode mode,
+                        BOOL searchPath,
+                        BOOL stderrSeparate,
+                        const char * environment)
+{
+  return Open(subProgram, NULL, mode, searchPath, stderrSeparate, environment);
 }
 
 
