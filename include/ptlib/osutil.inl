@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.33 1995/12/23 03:49:46 robertj Exp $
+ * $Id: osutil.inl,v 1.34 1996/01/03 11:09:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.34  1996/01/03 11:09:33  robertj
+ * Added Universal Time and Time Zones to PTime class.
+ *
  * Revision 1.33  1995/12/23 03:49:46  robertj
  * Chnaged version numbers.
  * Added directory constructor from C string literal.
@@ -190,14 +193,14 @@ PINLINE BOOL PTimeInterval::operator<=(long msecs) const
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-PINLINE PTime::PTime(time_t t)
-  : theTime(t) { }
+PINLINE PTime::PTime(time_t t, PTime::TimeZone zone)
+  : theTime(t) { if (zone == GMT) t -= GetTimeZone(); }
 
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(theTime); }
 
 PINLINE void PTime::PrintOn(ostream & strm) const
-  { strm << AsString(ShortDateTime); }
+  { strm << AsString(); }
 
 PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
