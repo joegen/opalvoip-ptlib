@@ -35,6 +35,9 @@ MAJOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MAJOR_VERSION | cut -f3 -d' '`
 MINOR_VERSION=`cat ${PWLIBDIR}/version.h | grep MINOR_VERSION | cut -f3 -d' '`
 BUILD_NUMBER=`cat ${PWLIBDIR}/version.h | grep BUILD_NUMBER | cut -f3 -d' '`
 PWLIB_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${BUILD_NUMBER}"
+AC_SUBST(MAJOR_VERSION)
+AC_SUBST(MINOR_VERSION)
+AC_SUBST(BUILD_NUMBER)
 AC_SUBST(PWLIB_VERSION)
 AC_SUBST(MAJOR_VERSION, $MAJOR_VERSION)
 AC_SUBST(MINOR_VERSION, $MINOR_VERSION)
@@ -615,7 +618,7 @@ AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
 AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=yes)
 AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=yes)
 if test "${HAS_VIDEO_CAPTURE}" != "yes" ; then
-  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
+  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux/BSD video capture")
   echo "No Video Capture support"
 fi
 
