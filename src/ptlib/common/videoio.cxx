@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.31  2002/04/12 08:24:53  robertj
+ * Added text string output for tracing video format.
+ *
  * Revision 1.30  2002/04/07 22:49:32  rogerh
  * Add some comments
  *
@@ -139,6 +142,27 @@
 #include <ptlib/vconvert.h>
 
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#if PTRACING
+ostream & operator<<(ostream & strm, PVideoDevice::VideoFormat fmt)
+{
+  static const char * const VideoFormatNames[PVideoDevice::NumVideoFormats] = {
+    "PAL",
+    "NTSC",
+    "SECAM",
+    "Auto"
+  };
+
+  if (fmt < PVideoDevice::NumVideoFormats && VideoFormatNames[fmt] != NULL)
+    strm << VideoFormatNames[fmt];
+  else
+    strm << "VideoFormat<" << (unsigned)fmt << '>';
+
+  return strm;
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
