@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.61  2000/07/13 15:45:35  robertj
+ * Removed #define std that causes everyone so much grief!
+ *
  * Revision 1.60  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -233,7 +236,6 @@
 #include <iostream>
 #include <strstream>
 #else
-#define std
 #include <iostream.h>
 #ifndef __MWERKS__
 #include <iomanip.h>
