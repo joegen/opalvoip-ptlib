@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.42  2002/10/18 08:07:41  robertj
+ * Fixed use of FD_ZERO as (strangely) crashes on some paltforms and would
+ *   not have cleared enough of an enlarges fd_set anyway.
+ *
  * Revision 1.41  2002/10/17 07:17:42  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -599,10 +603,7 @@ class P_fd_set {
     P_fd_set & operator+=(SOCKET fd);
     P_fd_set & operator-=(SOCKET fd);
 
-    void Zero()
-      {
-        FD_ZERO(set);
-      }
+    void Zero();
 
     BOOL IsPresent(SOCKET fd) const
       {
