@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.65  2001/02/07 04:47:49  robertj
+ * Added changes for possible random crashes in multi DLL environment
+ *   due to memory allocation wierdness, thanks Milan Dimitrijevic.
+ *
  * Revision 1.64  2001/01/24 06:15:44  yurik
  * Windows CE port-related declarations
  *
@@ -900,14 +904,33 @@ inline void operator delete[](void * ptr, const char *, int)
 #endif
 
 
-#else // _DEBUG
+#else // PMEMORY_CHECK
 
 #define PNEW new
-#define PNEW_AND_DELETE_FUNCTIONS
+
+#define PNEW_AND_DELETE_FUNCTIONS \
+    void * operator new(size_t nSize) \
+      { return malloc(nSize); } \
+    void operator delete(void * ptr) \
+      { free(ptr); } \
+    void * operator new[](size_t nSize) \
+      { return malloc(nSize); } \
+    void operator delete[](void * ptr) \
+      { free(ptr); }
+
+#ifndef __GNUC__
+void * operator new(size_t nSize);
+void * operator new[](size_t nSize);
+
+void operator delete(void * ptr);
+void operator delete[](void * ptr);
+
+#endif
+
 #define runtime_malloc(s) malloc(s)
 #define runtime_free(p) free(p)
 
-#endif // _DEBUG
+#endif // PMEMORY_CHECK
 
 
 /** Declare all the standard PWlib class information.
