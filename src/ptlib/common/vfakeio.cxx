@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.26  2003/12/14 10:01:02  rjongbloed
+ * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
+ *
  * Revision 1.25  2003/11/19 09:29:45  csoutheren
  * Added super hack to avoid problems with multiple plugins in a single file
  *
@@ -1288,6 +1291,9 @@ class PVideoInputDevice_FakeVideo : public PVideoInputDevice
       */
     static PStringList GetInputDeviceNames();
 
+    virtual PStringList GetDeviceNames() const
+      { return GetInputDeviceNames(); }
+
     /**Get the maximum frame size in bytes.
 
        Note a particular device may be able to provide variable length
@@ -2087,6 +2093,9 @@ class PVideoOutputDevice_NULLOutput : public PVideoOutputDevice
     /**Get a list of all of the drivers available.
       */
     static PStringList GetOutputDeviceNames();
+
+    virtual PStringList GetDeviceNames() const
+      { return GetOutputDeviceNames(); }
 
     /**Open the device given the device name.
       */
