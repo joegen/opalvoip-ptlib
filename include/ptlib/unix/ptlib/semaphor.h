@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.11  2000/12/16 12:56:59  rogerh
+ * BeOS changes, submitted by Yuri Kiryanov <openh323@kiryanov.com>
+ *
  * Revision 1.10  1999/10/22 10:18:49  craigs
  * Changed semaphore.h inclusion to be dependent upon P_HAS_SEMAPHORE
  *
@@ -88,9 +91,10 @@
 #elif defined(BE_THREADS)
 
   public:
-    PSemaphore( sem_id anId );
+    PSemaphore( sem_id anId, int32 benaphoreCount);
   protected:
     sem_id semId;
+    volatile int32 benaphoreCount;
 
 #else
 
