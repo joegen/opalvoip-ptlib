@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.1 1994/10/30 12:06:56 robertj Exp $
+ * $Id: winsock.cxx,v 1.2 1995/01/03 09:43:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
- * Revision 1.1  1994/10/30 12:06:56  robertj
- * Initial revision
+ * Revision 1.2  1995/01/03 09:43:27  robertj
+ * Moved out of band stuff to common.
  *
+// Revision 1.1  1994/10/30  12:06:56  robertj
+// Initial revision
+//
 // Revision 1.1  1994/10/23  05:42:49  robertj
 // Initial revision
 //
@@ -134,18 +137,6 @@ BOOL PSocket::ConvertOSError(int error)
       lastError = Miscellaneous;
       osError |= 0x20000000;
   }
-  return FALSE;
-}
-
-
-BOOL PTCPSocket::ReadOutOfBand(void *, PINDEX)
-{
-  return FALSE;
-}
-
-
-BOOL PTCPSocket::WriteOutOfBand(const void *, PINDEX)
-{
   return FALSE;
 }
 
