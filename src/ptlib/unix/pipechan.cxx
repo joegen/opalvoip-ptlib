@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.18  1998/11/06 01:06:05  robertj
+ * Solaris environment variable name.
+ *
  * Revision 1.17  1998/11/05 09:42:01  robertj
  * Fixed bug in direct stdout mode opening redirected stdout.
  * Solaris support, missing environ declaration.
@@ -188,7 +191,8 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   // Set up new environment if one specified.
   if (environment != NULL) {
 #ifdef P_SOLARIS
-    extern char ** __environ;
+    extern char ** environ;
+#define __environ environ
 #endif
     __environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
     for (i = 0; i < environment->GetSize(); i++) {
