@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.36  1998/11/30 21:51:58  robertj
+ * New directory structure.
+ *
  * Revision 1.35  1998/11/24 09:39:22  robertj
  * FreeBSD port.
  *
@@ -82,7 +85,7 @@
 
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 
 extern PSemaphore PX_iostreamMutex;
@@ -810,7 +813,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 }
 
 
-#include "ptlib/src/pethsock.cxx"
+#include "../common/pethsock.cxx"
 
 
 ///////////////////////////////////////////////////////////////////////////////
