@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.10  2003/11/06 09:13:20  rjongbloed
+ * Improved the Windows configure system to allow multiple defines based on file existence. Needed for SDL support of two different distros.
+ *
  * Revision 1.9  2003/07/22 22:55:20  dereksmithies
  * Add memory allocation feature.
  *
@@ -97,12 +100,13 @@ PSDLVideoFrame::~PSDLVideoFrame()
 
 void PSDLVideoFrame::PrintOn(ostream & strm) const
 {
-  strm << PString(width) << "x" << PString(height);
+  strm << width << 'x' << height;
 }
 
 
 void PSDLVideoFrame::Initialise(unsigned newWidth, 
-			       unsigned newHeight, Uint8 *_data)
+                                unsigned newHeight,
+                                Uint8 * _data)
 {
   width = newWidth;
   height = newHeight;

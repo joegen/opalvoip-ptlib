@@ -135,7 +135,8 @@ AC_DEFINE(P_SHAREDLIBEXT, $SHAREDLIBEXT, "shared library extension")
 dnl ########################################################################
 dnl check the endianness
 
-dnl MSWIN Byte Order,,PBYTE_ORDER,PLITTLE_ENDIAN
+dnl MSWIN_DISPLAY byteorder,Byte Order
+dnl MSWIN_DEFINE  byteorder,PBYTE_ORDER=PLITTLE_ENDIAN
 
 AC_C_BIGENDIAN()
 if test ${ac_cv_c_bigendian} = yes ; then
@@ -214,7 +215,8 @@ fi
 dnl ########################################################################
 dnl check for pthreads library
 
-dnl MSWIN Semaphore Support,,P_HAS_SEMAPHORES
+dnl MSWIN_DISPLAY semaphore,Semaphore Support
+dnl MSWIN_DEFINE  semaphore,P_HAS_SEMAPHORES
 
 dnl Linux, Mac OS X use libpthread and -lpthread
 dnl FreeBSD uses the -pthread compiler option and uses libc_r
@@ -291,7 +293,10 @@ dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
 dnl but needs resolv.h included which defines res_search as __res_search
 
-dnl MSWIN DNS Resolver,resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
+dnl MSWIN_DISPLAY    resolver,DNS Resolver
+dnl MSWIN_CHECK_FILE resolver,include\windns.h,P_DNS=1
+dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
+dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 
 AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
@@ -319,7 +324,13 @@ fi
 dnl ########################################################################
 dnl look for OpenLDAP
 
-dnl MSWIN Open LDAP,openldap,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\,..\external\openldap\,\openldap\,c:\openldap\
+dnl MSWIN_DISPLAY    openldap,Open LDAP
+dnl MSWIN_CHECK_FILE openldap,include\ldap.h|OpenLDAP,P_LDAP=1
+dnl MSWIN_DIR_SYMBOL openldap,LDAP_DIR
+dnl MSWIN_CHECK_DIR  openldap,..\openldap\
+dnl MSWIN_CHECK_DIR  openldap,..\external\openldap\
+dnl MSWIN_CHECK_DIR  openldap,\openldap\
+dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
@@ -357,7 +368,13 @@ dnl As if that is not enough, autoconf gets very confused if configure.in
 dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
 dnl to ensure that it is always called
 
-dnl MSWIN Open SSL,openssl,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\,..\external\openssl\,\openssl\,c:\openssl\
+dnl MSWIN_DISPLAY    openssl,Open SSL
+dnl MSWIN_CHECK_FILE openssl,inc32\openssl\ssl.h,P_SSL=1
+dnl MSWIN_DIR_SYMBOL openssl,SSL_DIR
+dnl MSWIN_CHECK_DIR  openssl,..\openssl\
+dnl MSWIN_CHECK_DIR  openssl,..\external\openssl\
+dnl MSWIN_CHECK_DIR  openssl,\openssl\
+dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
 dnl check to see OPENSSLDIR is set
 if test ${OPENSSLDIR:-unset} != "unset" ; then
@@ -469,7 +486,13 @@ fi
 dnl ########################################################################
 dnl look for expat XML parser
 
-dnl MSWIN Expat XML,expat,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\,..\external\expat\,\expat,c:\expat\
+dnl MSWIN_DISPLAY    expat,Expat XML
+dnl MSWIN_CHECK_FILE expat,lib\expat.h,P_EXPAT=1
+dnl MSWIN_DIR_SYMBOL expat,EXPAT_DIR
+dnl MSWIN_CHECK_DIR  expat,..\expat\
+dnl MSWIN_CHECK_DIR  expat,..\external\expat\
+dnl MSWIN_CHECK_DIR  expat,\expat
+dnl MSWIN_CHECK_DIR  expat,c:\expat\
 
 AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
 if test "${HAS_EXPAT:-unset}" != "unset" ; then
@@ -498,13 +521,23 @@ fi
 dnl ########################################################################
 dnl Speech
 
-dnl MSWIN Speech API,sapi,P_SAPI,1,@SAPI_DIR@,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
+dnl MSWIN_DISPLAY    sapi,Speech API
+dnl MSWIN_CHECK_FILE sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_DIR_SYMBOL sapi,SAPI_DIR
+dnl MSWIN_CHECK_DIR  sapi,\Program Files\Microsoft Speech SDK 5.1\
 
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
-dnl MSWIN Simple DirectMedia Layer,libsdl,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\,..\external\sdl\,\sdl\c:\sdl\
 
+dnl MSWIN_DISPLAY    libsdl,Simple DirectMedia Layer
+dnl MSWIN_CHECK_FILE libsdl,include\SDL_video.h,P_SDL=1
+dnl MSWIN_CHECK_FILE libsdl,lib\SDL.lib,P_SDL_LIBDIR="lib"
+dnl MSWIN_DIR_SYMBOL libsdl,SDL_DIR
+dnl MSWIN_CHECK_DIR  libsdl,..\sdl\
+dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl\
+dnl MSWIN_CHECK_DIR  libsdl,\sdl\
+dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
 AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
 if test "${HAS_SDL:-unset}" != "unset" ; then
@@ -526,7 +559,8 @@ fi
 dnl ########################################################################
 dnl check for dynamic library code (dlopen end friends)
 
-dnl MSWIN DLL Support,,P_DYNALINK
+dnl MSWIN_DISPLAY dll,DLL Support
+dnl MSWIN_DEFINE  dll,P_DYNALINK
 
 LIBS=""
 if test ${OSTYPE} != Darwin ; then
@@ -541,7 +575,11 @@ fi
 dnl ########################################################################
 dnl look for IPV6 functions
 
-dnl MSWIN IPv6 Support,ipv6,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program Files\Microsoft Visual Studio\VC98\Include\,\Program Files\Microsoft SDK\
+dnl MSWIN_DISPLAY    ipv6,IPv6 Support
+dnl MSWIN_CHECK_FILE ipv6,ws2tcpip.h|sin6_scope_id,P_HAS_IPV6=1
+dnl MSWIN_DIR_SYMBOL ipv6,IPV6_DIR
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
 
 AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
 [AC_TRY_COMPILE([#include <sys/types.h>
@@ -555,7 +593,12 @@ fi
 dnl ########################################################################
 dnl look for QoS functions
 
-dnl MSWIN QoS Support,ipv6,P_HAS_QOS,1,@QOS_DIR@,qossp.h,QOS_DESTADDR,\Program Files\Microsoft SDK\
+dnl MSWIN_DISPLAY    qos,QoS Support
+dnl MSWIN_CHECK_FILE qos,qossp.h|QOS_DESTADDR,P_HAS_QOS=1
+dnl MSWIN_DIR_SYMBOL qos,QOS_DIR
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
+dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
+
 AC_DEFINE(P_HAS_QOS, 1)
 
 dnl ########################################################################
