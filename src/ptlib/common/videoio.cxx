@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.4  2000/07/26 03:50:50  robertj
+ * Added last error variable to video device.
+ *
  * Revision 1.3  2000/07/26 02:13:48  robertj
  * Added some more "common" bounds checking to video device.
  *
@@ -46,6 +49,7 @@ PVideoDevice::PVideoDevice(VideoFormat videofmt,
                            unsigned channel,
                            ColourFormat colourFmt)
 {
+  lastError = 0;
   videoFormat = videofmt;
   channelNumber = channel;
   colourFormat = colourFmt;
