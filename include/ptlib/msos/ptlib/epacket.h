@@ -8,6 +8,9 @@
  * Original code by William Ingle (address unknown)
  *
  * $Log: epacket.h,v $
+ * Revision 1.5  1999/02/16 08:10:33  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.4  1998/10/23 04:09:07  robertj
  * Fixes for NT support.
  * Allowed both old and new driver by compilation option.
@@ -27,7 +30,9 @@
 #define __EPACKET_H
 
 #ifndef CTL_CODE
+#pragma warning(disable:4201)
 #include <winioctl.h>
+#pragma warning(default:4201)
 #endif
 
 #ifdef USE_VPACKET
