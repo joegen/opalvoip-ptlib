@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.94  2002/10/22 06:53:38  craigs
+ * Fixed signed/unsigned problem in GetRoutTable thanks to Thomas Jalsovsky
+ *
  * Revision 1.93  2002/10/19 06:12:20  robertj
  * Moved P_fd_set::Zero() from platform independent to platform dependent
  *   code as Win32 implementation is completely different from Unix.
@@ -1057,7 +1060,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
       return TRUE;
 
     char iface[20];
-    long net_addr, dest_addr, net_mask;
+    unsigned long net_addr, dest_addr, net_mask;
     int flags, refcnt, use, metric;
     procfile >> iface >> ::hex >> net_addr >> dest_addr >> flags 
                       >> ::dec >> refcnt >> use >> metric 
@@ -1127,7 +1130,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   limit = buf + space_needed;
   for (ptr = buf; ptr < limit; ptr += rtm->rtm_msglen) {
 
-    long net_addr, dest_addr, net_mask;
+    unsigned long net_addr, dest_addr, net_mask;
     int metric;
     char name[16];
 
@@ -1156,7 +1159,7 @@ BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
 
   struct sockaddr_in *sa_in;
 
-  long net_addr, dest_addr, net_mask;
+  unsigned long net_addr, dest_addr, net_mask;
   int metric;
 
   sa_in = (struct sockaddr_in *)(rtm + 1);
@@ -1478,7 +1481,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   PAssertAlways("PIPSocket::GetRouteTable()");
   for(;;){
     char iface[20];
-    long net_addr, dest_addr, net_mask;
+    unsigned long net_addr, dest_addr, net_mask;
     int  metric;
     RouteEntry * entry = new RouteEntry(net_addr);
     entry->net_mask = net_mask;
