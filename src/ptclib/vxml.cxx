@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.25  2002/09/03 04:38:14  craigs
+ * Added VXML 2.0 time attribute to <break>
+ *
  * Revision 1.24  2002/09/03 04:11:37  craigs
  * More changes from Alexander Kovatch
  *
@@ -118,7 +121,7 @@
 #define LARGE_BREAK_MSECS   5000
 
 // LATER: Lookup what this value should be
-#define DEFAULT_TIMEOUT     20000
+#define DEFAULT_TIMEOUT     10000
 
 #define CACHE_BUFFER_SIZE   1024
 
@@ -671,7 +674,7 @@ void PVXMLSession::DialogExecute(PThread &, INT)
     else {
       PXMLElement * element = (PXMLElement*)currentNode;
       PCaselessString nodeType = element->GetName();
-      PTRACE(1, "PVXML\tProcessing node of type " << nodeType);
+      PTRACE(3, "PVXML\tProcessing element: " << nodeType);
 
       if (nodeType *= "audio") {
         TraverseAudio();
@@ -1006,8 +1009,21 @@ BOOL PVXMLSession::TraverseAudio()
     }
 
     else if (element->GetName() *= "break") {
+
+      // msecs is VXML 1.0
       if (element->HasAttribute("msecs"))
         PlaySilence(element->GetAttribute("msecs").AsInteger());
+
+      // time is VXML 2.0
+      else if (element->HasAttribute("time")) {
+        PString str = element->GetAttribute("time");
+        long msecs = str.AsInteger();
+        if (str.Find("ms"))
+          ;
+        else 
+          msecs = msecs * 1000;
+        PlaySilence(msecs);
+      }
       
       else if (element->HasAttribute("size")) {
         PString size = element->GetAttribute("size");
