@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.5  2002/08/06 01:04:03  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.4  2002/08/02 05:42:10  robertj
  * Fixed confusion between in and out MIME.
  * Improved trace logging and error reporting.
@@ -26,17 +29,19 @@
 // This depends on the expat XML library by Jim Clark
 // See http://www.jclark.com/xml/expat.html for more information
 
+#include <ptlib.h>
+
 #ifdef __GNUC__
 #pragma implementation "pxmlrpc.h"
 #endif
 
-#include <ptlib.h>
+#include <ptclib/pxmlrpc.h>
+
 
 #if P_EXPAT
 
 #include <ptclib/mime.h>
 #include <ptclib/http.h>
-#include <ptclib/pxmlrpc.h>
 
 PXMLRPCRequest::PXMLRPCRequest(const PString & method)
   : PXML()
