@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.11  2002/12/04 00:31:13  robertj
+ * Fixed GNU compatibility
+ *
  * Revision 1.10  2002/12/04 00:15:56  robertj
  * Large enhancement to create automatically encoding and decoding structures
  *   using macros to build a class.
@@ -226,7 +229,7 @@ class PXMLRPCVariableBase : public PObject {
 
 
 class PXMLRPCStructBase : public PObject {
-    PCLASSINF(PXMLRPCStructBase, PObject);
+    PCLASSINFO(PXMLRPCStructBase, PObject);
   protected:
     PXMLRPCStructBase();
     void EndConstructor();
