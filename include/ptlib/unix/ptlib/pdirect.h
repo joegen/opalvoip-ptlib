@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.6  1998/11/10 12:59:05  robertj
+ * Fixed strange problems with readdir_r usage.
+ *
  * Revision 1.5  1998/11/05 10:33:53  robertj
  * Solaris compatibility.
  *
@@ -66,9 +69,9 @@
 #include "../../common/ptlib/pdirect.h"
   protected:
     DIR           * directory;
-    struct dirent * entry;
     PFileInfo     * entryInfo;
-    BYTE dirb[sizeof(struct dirent) + P_MAX_PATH];
+    struct dirent * entryBuffer;
+    struct dirent * entry;
 };
 
 #endif
