@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.7 1996/11/18 11:30:15 robertj Exp $
+ * $Id: mail.cxx,v 1.8 1997/02/05 11:48:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.8  1997/02/05 11:48:08  robertj
+ * Fixed compatibility with MSVC debug memory allocation macros.
+ *
  * Revision 1.7  1996/11/18 11:30:15  robertj
  * Fixed support for new libraries.
  *
@@ -292,7 +295,7 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
           msgIDs[m] = buf;
         }
       }
-      cmc.free(messages);
+      cmc.free_buf(messages);
     }
     return msgIDs;
   }
@@ -394,7 +397,7 @@ BOOL PMail::GetMessageHeader(const PString & id,
     else
       hdrInfo.originatorAddress = '"' + hdrInfo.originatorName + '"';
 
-    cmc.free(message);
+    cmc.free_buf(message);
     return TRUE;
   }
 #endif
@@ -453,7 +456,7 @@ BOOL PMail::GetMessageBody(const PString & id, PString & body, BOOL markAsRead)
       body = message->text_note;
 
     BOOL ok = (message->message_flags&CMC_MSG_TEXT_NOTE_AS_FILE) == 0;
-    cmc.free(message);
+    cmc.free_buf(message);
 
     return ok;
   }
@@ -521,7 +524,7 @@ BOOL PMail::GetMessageAttachments(const PString & id,
       } while (((attachment++)->attach_flags&CMC_ATT_LAST_ELEMENT) != 0);
     }
 
-    cmc.free(message);
+    cmc.free_buf(message);
     return TRUE;
   }
 #endif
@@ -569,7 +572,7 @@ BOOL PMail::MarkMessageRead(const PString & id)
     if (lastError != CMC_SUCCESS)
       return FALSE;
 
-    cmc.free(message);
+    cmc.free_buf(message);
     return TRUE;
   }
 #endif
@@ -634,7 +637,7 @@ PMail::LookUpResult PMail::LookUp(const PString & name, PString * fullName)
       case CMC_SUCCESS :
         if (fullName != NULL)
           *fullName = recip_out->name;
-        cmc.free(recip_out);
+        cmc.free_buf(recip_out);
         return ValidUser;
 
       case CMC_E_AMBIGUOUS_RECIPIENT :
@@ -784,7 +787,7 @@ PMail::CMCDLL::CMCDLL()
 {
   if (!GetFunction("cmc_logon", (Function &)logon) ||
       !GetFunction("cmc_logoff", (Function &)logoff) ||
-      !GetFunction("cmc_free", (Function &)free) ||
+      !GetFunction("cmc_free", (Function &)free_buf) ||
       !GetFunction("cmc_query_configuration", (Function &)query_configuration) ||
       !GetFunction("cmc_look_up", (Function &)look_up) ||
       !GetFunction("cmc_list", (Function &)list) ||
