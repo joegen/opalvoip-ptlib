@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.26  2001/09/09 02:03:49  yurik
+ * no message
+ *
  * Revision 1.25  2001/08/28 03:22:01  yurik
  * Fixed crash on snmp init bug
  *
@@ -1260,29 +1263,25 @@ PWin32PacketCe::PWin32PacketCe()
 	{
 		driver = CommBase + "\\" + str + "\\Parms\\TcpIp";
 		RegistryKey driverKey( driver, RegistryKey::ReadOnly );
-		if( driverKey.QueryValue( "IpAddress", ipAddress ) )
+		
+		if( driverKey.QueryValue( "IpAddress", ipAddress ) && (ipAddress != "0.0.0.0") )
 		{
-			if( ipAddress != "0.0.0.0" )
-			{
-				interfaces[interfaces.GetSize()] = str;
-				ipAddresses[ipAddresses.GetSize()] = ipAddress;
-				if( driverKey.QueryValue( "Subnetmask", netMask ) )
-					netMasks[netMasks.GetSize()] = netMask;
-				else
-					netMasks[netMasks.GetSize()] = "255.255.255.0";
-			}
+			interfaces[interfaces.GetSize()] = str;
+			ipAddresses[ipAddresses.GetSize()] = ipAddress;
+			if( driverKey.QueryValue( "Subnetmask", netMask ) )
+				netMasks[netMasks.GetSize()] = netMask;
 			else
-			{
-				if( driverKey.QueryValue( "DhcpIpAddress", ipAddress ) )
-				{
-					interfaces[interfaces.GetSize()] = str;
-					ipAddresses[ipAddresses.GetSize()] = ipAddress;
-					if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
-						netMasks[netMasks.GetSize()] = netMask;
-					else
-						netMasks[netMasks.GetSize()] = "255.255.255.0";
-				}
-			}
+				netMasks[netMasks.GetSize()] = "255.255.255.0";
+		}
+		else
+		if( driverKey.QueryValue( "DhcpIpAddress", ipAddress ) && (ipAddress != "0.0.0.0") )
+		{
+			interfaces[interfaces.GetSize()] = str;
+			ipAddresses[ipAddresses.GetSize()] = ipAddress;
+			if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
+				netMasks[netMasks.GetSize()] = netMask;
+			else
+				netMasks[netMasks.GetSize()] = "255.255.255.0";
 		}
 	}
 }
