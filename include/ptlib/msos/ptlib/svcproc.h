@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.11 1996/08/09 11:17:26 robertj Exp $
+ * $Id: svcproc.h,v 1.12 1996/08/17 10:00:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.12  1996/08/17 10:00:35  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.11  1996/08/09 11:17:26  robertj
  * Moved log macro to platform dependent header.
  *
@@ -127,12 +130,8 @@
 #define PSYSTEMLOG(l, v) PSystemLog(PSystemLog::l) << v
 
 
-#if defined(_WIN32) || !defined(_WINDLL)
-
 inline PServiceProcess * PServiceProcess::Current()
   { return (PServiceProcess *)PProcessInstance; }
-
-#endif
 
 
 #endif
