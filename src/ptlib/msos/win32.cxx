@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.120  2002/04/24 01:11:05  robertj
+ * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
+ *
  * Revision 1.119  2002/01/26 15:05:35  yurik
  * Removed extra ifdefs
  *
@@ -1091,6 +1094,10 @@ PThread::PThread(PINDEX stackSize,
 
   SetPriority(priorityLevel);
 
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
+
   if (autoDelete) {
     PProcess & process = PProcess::Current();
     process.deleteThreadMutex.Wait();
@@ -1294,6 +1301,9 @@ void PThread::InitialiseProcessThread()
   threadId = GetCurrentThreadId();
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(threadId, this);
+#if PTRACING
+  traceBlockIndentLevel = 0;
+#endif
 }
 
 
