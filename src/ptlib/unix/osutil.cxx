@@ -418,6 +418,12 @@ BOOL PFile::Open(OpenMode mode, int opt)
 }
 
 
+BOOL PFile::SetLength(off_t len)
+{
+  return ConvertOSError(ftruncate(GetHandle(), len));
+}
+
+
 BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
 {
   if (newname.Find('/') != P_MAX_INDEX) {
