@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.68  1998/10/15 02:20:26  robertj
+ * Added message for connection aborted error.
+ *
  * Revision 1.67  1998/10/13 14:13:36  robertj
  * Removed uneeded heap allocation.
  *
@@ -626,8 +629,10 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     { WSAECONNREFUSED,          "Connection refused" },
     { WSAEINVAL,                "Invalid operation" },
     { WSAENOTCONN,              "Socket not connected" },
+    { WSAECONNABORTED,          "Connection aborted" },
     { WSAECONNRESET,            "Connection reset" },
     { WSAESHUTDOWN,             "Connection shutdown" },
+    { WSAENOTSOCK,              "Socket closed or invalid" },
     { WSAETIMEDOUT,             "Timed out" },
     { WSAEMSGSIZE,              "Message larger than buffer" },
     { WSAEWOULDBLOCK,           "Would block" },
