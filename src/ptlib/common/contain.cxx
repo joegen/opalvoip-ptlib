@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.167  2005/01/09 06:35:05  rjongbloed
+ * Fixed ability to make Clone() or MakeUnique() of a sorted list.
+ *
  * Revision 1.166  2004/10/21 13:04:21  rjongbloed
  * Fixed possibility of const operator[] on PStringArray returning a NULL reference. This
  *   function should return a non-lvalue PString anyway as it is const!
@@ -2937,7 +2940,7 @@ PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 
   if (info->lastIndex != 0) {
     Element * prev;
-    while ((prev = Predecessor(info->lastElement)) != &info->nil &&
+    while ((prev = info->Predecessor(info->lastElement)) != &info->nil &&
                     ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
       info->lastElement = prev;
       info->lastIndex--;
