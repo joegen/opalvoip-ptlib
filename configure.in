@@ -123,6 +123,59 @@ fi
 
 AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
 
+dnl ########################################################################
+dnl look for compile flags
+AC_LANG(C++)
+AC_LANG(C)
+
+GCSECTIONS=0
+
+AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -ffunction-sections -c conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
+  GCSECTIONS=1
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if compiler accepts -fdata-sections)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -fdata-sections -c conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -fdata-sections"
+  GCSECTIONS=1
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CPLUSPLUS $CFLAGS -fvtable-gc -c conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
+  GCSECTIONS=1
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if compiler accepts -fno-rtti)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -fno-rtti"
+else
+  AC_MSG_RESULT(no)
+fi
+
+if test $GCSECTIONS = 1; then
+  LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+fi
 
 dnl ########################################################################
 dnl look for OpenSSL
@@ -229,7 +282,7 @@ if test ${SSLHDR:-unset} != "unset" ; then
     STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
   fi
   if test ${SSLLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$STDCCFLAGS -L${SSLLIBDIR}"
+    LDFLAGS="$LDFLAGS $STDCCFLAGS -L${SSLLIBDIR}"
   fi
   STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
   ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
@@ -487,6 +540,7 @@ if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
 fi
 
 AC_SUBST(STDCCFLAGS)
+AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
 
