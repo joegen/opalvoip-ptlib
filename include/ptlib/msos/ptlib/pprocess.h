@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.15 1996/10/08 13:05:18 robertj Exp $
+ * $Id: pprocess.h,v 1.16 1997/02/05 11:49:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.16  1997/02/05 11:49:37  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.15  1996/10/08 13:05:18  robertj
  * Rewrite to use standard window isntead of console window.
  *
@@ -108,8 +111,8 @@ extern PProcess * PProcessInstance;
 #endif
 
 
-inline PProcess * PProcess::Current()
-  { return PProcessInstance; }
+inline PProcess & PProcess::Current()
+  { return *PProcessInstance; }
 
 
 #endif
