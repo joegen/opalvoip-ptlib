@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.12 1994/01/13 03:40:22 robertj Exp $
+ * $Id: file.h,v 1.13 1994/03/07 07:38:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.12  1994/01/13 03:40:22  robertj
+ * Revision 1.13  1994/03/07 07:38:19  robertj
+ * Major enhancementsacross the board.
+ *
+ * Revision 1.12  1994/01/13  03:40:22  robertj
  * Added hidden flag to file info.
  *
  * Revision 1.12  1994/01/13  03:36:48  robertj
@@ -144,11 +147,14 @@ PDECLARE_CONTAINER(PFile, PContainer)
     static BOOL GetInfo(const PString & name, Info & info);
 
     BOOL Open(OpenMode  mode, int opts = Normal);
-      // Open the file in the spcvified mode.
+      // Open the file in the specified mode.
       
     BOOL IsOpen();
       // Return TRUE if the file is currently open.
       
+    int GetHandle() const;
+      // Return the integer operating system handle for the file.
+
     BOOL Read(void * buffer, size_t amount);
       // Read a sequence of bytes into the specified buffer. Return TRUE if
       // the required number of bytes was successfully read.
@@ -188,18 +194,14 @@ PDECLARE_CONTAINER(PFile, PContainer)
       AccessDenied,
       Miscellaneous
     };
-    Errors LastError(PString * errtext = NULL);
+    Errors GetErrorCode();
       // Return the error result of the last file I/O operation in this object.
-      // The string if not NULL will have a message indicating the error type
-      // that may be displayed to the user.
+    PString GetErrorText();
+      // Return a string indicating the error message that may be displayed to
+      // the user. The error for the last I/O operation in this object is used.
 
 
   protected:
-    // New member functions for class
-    int GetHandle() const;
-      // Return the integer operating system handle for the file.
-
-
     // Member variables
     PString fullname;
       // The fully qualified path name for the file.

@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.3 1994/01/03 04:42:23 robertj Exp $
+ * $Id: timer.h,v 1.4 1994/03/07 07:38:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.3  1994/01/03 04:42:23  robertj
+ * Revision 1.4  1994/03/07 07:38:19  robertj
+ * Major enhancementsacross the board.
+ *
+ * Revision 1.3  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.2  1993/08/31  03:38:02  robertj
@@ -22,7 +25,9 @@
 
 #define _PTIMER
 
+class PTextApplication;
 class PTimer;
+
 
 PDECLARE_CLASS(PTimerList, PAbstractSortedList)
   public:
@@ -42,7 +47,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
   // A class representing a system timer.
 
   public:
-    PTimer(PApplication * app, long milliseconds = 0,
+    PTimer(PTextApplication * app, long milliseconds = 0,
                    int seconds = 0,int minutes = 0,int hours = 0,int days = 0);
       // Create a new timer object
  
@@ -97,7 +102,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
 
 
     // Member variables
-    PApplication * owner;
+    PTextApplication * owner;
       // The application that the timer is running in.
 
     PMilliseconds targetTime;
