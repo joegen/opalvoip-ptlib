@@ -294,7 +294,6 @@ EXPORTS
     ??0timeval_class@@QAE@ABVPTimeInterval@@@Z @250 NONAME ;public: __thiscall timeval_class::timeval_class(class PTimeInterval const &)
     ??0Win95_ServiceManager@@QAE@XZ @251 NONAME ;public: __thiscall Win95_ServiceManager::Win95_ServiceManager(void)
     ??0Wrapper@PMemoryHeap@@QAE@XZ @252 NONAME ;public: __thiscall PMemoryHeap::Wrapper::Wrapper(void)
-    ??0yytype@@QAE@XZ @253 NONAME ;public: __thiscall yytype::yytype(void)
     ??0__SMANIP_int@@QAE@P6AAAVios@@AAV1@H@ZH@Z @254 NONAME ;public: __thiscall __SMANIP_int::__SMANIP_int(class ios & (__cdecl*)(class __SMANIP_int &,int),int)
     ??1?$PArray@VPString@@@@UAE@XZ @255 NONAME ;public: virtual __thiscall PArray<class PString>::~PArray<class PString>(void)
     ??1?$PArray@VPWaveBuffer@@@@UAE@XZ @2605 NONAME ;public: virtual __thiscall PArray<class PWaveBuffer>::~PArray<class PWaveBuffer>(void)
@@ -427,7 +426,6 @@ EXPORTS
     ??1SelectList@PSocket@@UAE@XZ @362 NONAME ;public: virtual __thiscall PSocket::SelectList::~SelectList(void)
     ??1Table@PHashTable@@UAE@XZ @363 NONAME ;public: virtual __thiscall PHashTable::Table::~Table(void)
     ??1Wrapper@PMemoryHeap@@QAE@XZ @364 NONAME ;public: __thiscall PMemoryHeap::Wrapper::~Wrapper(void)
-    ??1yytype@@QAE@XZ @365 NONAME ;public: __thiscall yytype::~yytype(void)
     ??2?$PArray@VPString@@@@SAPAXIPBDH@Z @366 NONAME ;public: static void * __cdecl PArray<class PString>::operator new(unsigned int,char const *,int)
     ??2?$PArray@VPWaveBuffer@@@@SAPAXIPBDH@Z @2609 NONAME ;public: static void * __cdecl PArray<class PWaveBuffer>::operator new(unsigned int,char const *,int)
     ??2?$PArray@VPWin32PacketBuffer@@@@SAPAXIPBDH@Z @2439 NONAME ;public: static void * __cdecl PArray<class PWin32PacketBuffer>::operator new(unsigned int,char const *,int)
@@ -2248,6 +2246,7 @@ EXPORTS
     ?OnPause@PServiceProcess@@UAEHXZ @1937 NONAME ;public: virtual int __thiscall PServiceProcess::OnPause(void)
     ?OnReadComplete@PChannel@@UAEXPAXH@Z @1938 NONAME ;public: virtual void __thiscall PChannel::OnReadComplete(void *,int)
     ?OnStop@PServiceProcess@@UAEXXZ @1939 NONAME ;public: virtual void __thiscall PServiceProcess::OnStop(void)
+    ?OnTimeout@PTimer@@UAEXXZ @2956 NONAME ;public: virtual void __thiscall PTimer::OnTimeout(void)
     ?OnWait@PCondMutex@@UAEXXZ @1941 NONAME ;public: virtual void __thiscall PCondMutex::OnWait(void)
     ?OnWriteComplete@PChannel@@UAEXPBXH@Z @1942 NONAME ;public: virtual void __thiscall PChannel::OnWriteComplete(void const *,int)
     ?Open@NT_ServiceManager@@AAEHPAVPServiceProcess@@@Z @1943 NONAME ;private: int __thiscall NT_ServiceManager::Open(class PServiceProcess *)
@@ -2839,5 +2838,10 @@ EXPORTS
     ?__LINE__Var@?1??_main@PServiceProcess@@UAEHPAX@Z@4FA @2905 NONAME ;short  `public: virtual int __thiscall PServiceProcess::_main(void *)'::`2'::__LINE__Var
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    __real@4@4008fa00000000000000 @2906 NONAME ;__real@4@4008fa00000000000000
-    ?OnTimeout@PTimer@@UAEXXZ @2956 NONAME ;public: virtual void __thiscall PTimer::OnTimeout(void)
+    _PTimeGetChar@4 @2967 NONAME ;_PTimeGetChar@4
+    _PTimeGetDateOrder@0 @2971 NONAME ;_PTimeGetDateOrder@0
+    _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
+    _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
+    __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
+    _PTimeIsDayName@12 @2973 NONAME ;_PTimeIsDayName@12
+    _PTimeIsMonthName@12 @2974 NONAME ;_PTimeIsMonthName@12
