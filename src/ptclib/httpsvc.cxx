@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.93  2004/03/23 04:41:05  csoutheren
+ * Fixed compile problem on Linux
+ *
  * Revision 1.92  2004/03/23 03:40:57  csoutheren
  * Change service process default to be more useful in some environments
  *
@@ -365,8 +368,8 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
     productNameHTML(inf.productHTML != NULL ? inf.productHTML : inf.productName),
     gifHTML(inf.gifHTML),
     copyrightHolder(inf.copyrightHolder != NULL ? inf.copyrightHolder : inf.manufacturerName),
-    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : manufacturersHomePage),
-    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : manufacturersEmail)
+    copyrightHomePage(inf.copyrightHomePage != NULL ? inf.copyrightHomePage : (const char *)manufacturersHomePage),
+    copyrightEmail(inf.copyrightEmail != NULL ? inf.copyrightEmail : (const char *)manufacturersEmail)
 {
   ignoreSignatures = FALSE;
 
