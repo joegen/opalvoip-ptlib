@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.27 2001/10/31 01:31:26 robertj Exp $
+ * $Id: pssl.cxx,v 1.28 2001/12/04 02:59:18 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.28  2001/12/04 02:59:18  robertj
+ * Fixed problem on platforms where a pointer is not the same size as an int.
+ *
  * Revision 1.27  2001/10/31 01:31:26  robertj
  * Added enhancements for saving/loading/creating certificates and keys.
  *
@@ -984,7 +987,7 @@ BOOL PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 //
 
 
-#define	PSSLSOCKET(bio)			((PSSLChannel *)(bio->num))
+#define	PSSLCHANNEL(bio)			((PSSLChannel *)(bio->ptr))
 
 extern "C" {
 
@@ -998,8 +1001,8 @@ typedef long (*lfptr)();
 static int Psock_new(BIO * bio)
 {
   bio->init     = 0;
-  bio->num      = 0;    // this is really (PSSLChannel *), not int
-  bio->ptr      = NULL;
+  bio->num      = 0;
+  bio->ptr      = NULL;    // this is really (PSSLChannel *)
   bio->flags    = 0;
 
   return(1);
@@ -1013,8 +1016,8 @@ static int Psock_free(BIO * bio)
 
   if (bio->shutdown) {
     if (bio->init) {
-      PSSLSOCKET(bio)->Shutdown(PSocket::ShutdownReadAndWrite);
-      PSSLSOCKET(bio)->Close();
+      PSSLCHANNEL(bio)->Shutdown(PSocket::ShutdownReadAndWrite);
+      PSSLCHANNEL(bio)->Close();
     }
     bio->init  = 0;
     bio->flags = 0;
@@ -1023,48 +1026,22 @@ static int Psock_free(BIO * bio)
 }
 
 
-static long Psock_ctrl(BIO * bio, int cmd, long num, void * ptr)
+static long Psock_ctrl(BIO * bio, int cmd, long num, void * /*ptr*/)
 {
-  long ret = 1;
-  int *ip;
-
   switch (cmd) {
-    case BIO_C_SET_FD:
-      Psock_free(bio);
-      bio->num      = *((int *)ptr);
-      bio->shutdown = (int)num;
-      bio->init     = 1;
-      break;
-
-    case BIO_C_GET_FD:
-      if (bio->init) {
-	ip = (int *)ptr;
-	if (ip != NULL)
-          *ip = bio->num;
-	ret = bio->num;
-      }
-      else
-        ret = -1;
-      break;
-
-    case BIO_CTRL_GET_CLOSE:
-      ret = bio->shutdown;
-      break;
-
     case BIO_CTRL_SET_CLOSE:
       bio->shutdown = (int)num;
-      break;
-
-    case BIO_CTRL_DUP:
-    case BIO_CTRL_FLUSH:
       return 1;
 
-    // Other BIO commands, return 0
-    default:
-      return 0;
+    case BIO_CTRL_GET_CLOSE:
+      return bio->shutdown;
+
+    case BIO_CTRL_FLUSH:
+      return 1;
   }
 
-  return ret;
+  // Other BIO commands, return 0
+  return 0;
 }
 
 
@@ -1077,10 +1054,10 @@ static int Psock_read(BIO * bio, char * out, int outl)
 
   // Skip over the polymorphic read, want to do real one
   PINDEX len = outl;
-  if (PSSLSOCKET(bio)->RawSSLRead(out, len))
+  if (PSSLCHANNEL(bio)->RawSSLRead(out, len))
     return len;
 
-  switch (PSSLSOCKET(bio)->GetErrorCode(PChannel::LastReadError)) {
+  switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastReadError)) {
     case PChannel::Interrupted :
     case PChannel::Timeout :
       BIO_set_retry_read(bio);
@@ -1102,10 +1079,10 @@ static int Psock_write(BIO * bio, const char * in, int inl)
   BIO_clear_retry_flags(bio);
 
   // Skip over the polymorphic write, want to do real one
-  if (PSSLSOCKET(bio)->PIndirectChannel::Write(in, inl))
-    return PSSLSOCKET(bio)->GetLastWriteCount();
+  if (PSSLCHANNEL(bio)->PIndirectChannel::Write(in, inl))
+    return PSSLCHANNEL(bio)->GetLastWriteCount();
 
-  switch (PSSLSOCKET(bio)->GetErrorCode(PChannel::LastWriteError)) {
+  switch (PSSLCHANNEL(bio)->GetErrorCode(PChannel::LastWriteError)) {
     case PChannel::Interrupted :
     case PChannel::Timeout :
       BIO_set_retry_write(bio);
@@ -1135,7 +1112,7 @@ static int Psock_puts(BIO * bio, const char * str)
 static BIO_METHOD methods_Psock =
 {
   BIO_TYPE_SOCKET,
-  "ptlib socket",
+  "PTLib-PSSLChannel",
 #if (OPENSSL_VERSION_NUMBER < 0x00906000)
   (ifptr)Psock_write,
   (ifptr)Psock_read,
@@ -1164,21 +1141,11 @@ BOOL PSSLChannel::OnOpen()
     return FALSE;
   }
 
+  // "Open" then bio
+  bio->ptr  = this;
+  bio->init = 1;
+
   SSL_set_bio(ssl, bio, bio);
-
-  BIO_set_fd(bio, (int)this, BIO_NOCLOSE);
-
-/*
-  if (ssl->rbio != NULL)
-    BIO_free((bio_st *)ssl->rbio);
-
-  if ((ssl->wbio != NULL) && (ssl->wbio != ssl->rbio))
-    BIO_free((bio_st *)ssl->wbio);
-
-  ssl->rbio = bio;
-  ssl->wbio = bio;
-  ret = 1;
-*/
   return TRUE;
 }
 
