@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.84  2001/01/16 14:21:02  rogerh
+# Move -Wall to start of STDCCFLAGS so it can be overridden later.
+# Make some BeOS changes. All submitted by Jac Goudsmit.
+#
 # Revision 1.83  2000/06/26 11:17:20  robertj
 # Nucleus++ port (incomplete).
 #
@@ -378,6 +382,9 @@ all ::
 endif
 
 
+# -Wall must be at the start of the options otherwise
+# any -W overrides won't have any effect
+STDCCFLAGS += -Wall
 
 ####################################################
 
@@ -592,7 +599,16 @@ ifeq ($(OSTYPE),beos)
 
 BE_THREADS := 0
 
-# BeOS R4, using gcc from Cygnus version 2.9-beos-980929
+# Uncomment the next line if you have BeOS R5
+#BE_THREADS := 1
+
+# Uncomment the next line if you have the
+# BeOS Network Environment (BONE) installed.
+# If you run a standard R5 install, comment it out.
+# NOTE: support for compiling without BONE will likely
+# be droppped.
+#BE_BONE := 1
+
 LDLIBS		+= -lbe -lmedia -lgame
 
 ifdef BE_THREADS
@@ -600,6 +616,13 @@ STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
 endif
 
 STDCCFLAGS	+= -Wno-multichar
+
+ifdef BE_BONE
+LDLIBS		+= -lsocket -lbind
+STDCCFLAGS	+= -DBE_BONE
+else
+#####LDLIBS      += -lnet
+endif
 
 MEMORY_CHECK := 0
 
@@ -838,7 +861,7 @@ endif
 
 
 # compiler flags for all modes
-STDCCFLAGS	+= -DPBYTE_ORDER=$(ENDIAN) -Wall
+STDCCFLAGS	+= -DPBYTE_ORDER=$(ENDIAN)
 #STDCCFLAGS	+= -fomit-frame-pointer
 #STDCCFLAGS	+= -fno-default-inline
 #STDCCFLAGS     += -Woverloaded-virtual
