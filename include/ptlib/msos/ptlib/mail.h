@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.3 1995/06/17 00:49:16 robertj Exp $
+ * $Id: mail.h,v 1.4 1995/07/02 01:22:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.4  1995/07/02 01:22:47  robertj
+ * Changed mail to use CMC then MAPI if available.
+ *
  * Revision 1.3  1995/06/17 00:49:16  robertj
  * Changed name to simply PMail.
  * Fixed types of MAPI calls.
@@ -22,10 +25,19 @@
 
 #ifndef _PMAIL
 
+#ifndef P_HAS_MAPI
+#define P_HAS_MAPI 1
+#endif
 
-#if defined(_WIN32)
+#ifndef P_HAS_CMC
+#define P_HAS_CMC 1
+#endif
+
+#if P_HAS_MAPI
 #include <mapi.h>
-#else
+#endif
+
+#if P_HAS_CMC
 #include <xcmc.h>
 #endif
 
@@ -33,30 +45,11 @@
 #include "../../common/mail.h"
 
   protected:
-    DWORD sessionId;
-    DWORD lastError;
+    DWORD  sessionId;
+    DWORD  lastError;
+    UINT   hUserInterface;
 
-#if defined(_WIN32)
-    PDECLARE_CLASS(MAPIDLL, PDynaLink)
-      public:
-        MAPIDLL();
-
-        ULONG (FAR PASCAL *Logon)(HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPLHANDLE);
-        ULONG (FAR PASCAL *Logoff)(LHANDLE, HWND, FLAGS, ULONG);
-        ULONG (FAR PASCAL *SendMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG);
-        ULONG (FAR PASCAL *SendDocuments)(HWND, LPSTR, LPSTR, LPSTR, ULONG);
-        ULONG (FAR PASCAL *FindNext)(LHANDLE, HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPSTR);
-        ULONG (FAR PASCAL *ReadMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiMessage FAR *);
-        ULONG (FAR PASCAL *SaveMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG, LPSTR);
-        ULONG (FAR PASCAL *DeleteMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG);
-        ULONG (FAR PASCAL *FreeBuffer)(LPVOID);
-        ULONG (FAR PASCAL *Address)(LHANDLE, HWND, LPSTR, ULONG, LPSTR, ULONG, lpMapiRecipDesc, FLAGS, ULONG, LPULONG, lpMapiRecipDesc FAR *);
-        ULONG (FAR PASCAL *Details)(LHANDLE, HWND,lpMapiRecipDesc, FLAGS, ULONG);
-        ULONG (FAR PASCAL *ResolveName)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiRecipDesc FAR *);
-    };
-    MAPIDLL mapi;
-    HWND uiHWND;
-#else
+#if P_HAS_CMC
     PDECLARE_CLASS(CMCDLL, PDynaLink)
       public:
         CMCDLL();
@@ -130,10 +123,27 @@
             CMC_extension FAR       *act_on_extensions
         );
     };
-    CMCDLL    cmc;
-    BOOL CMCLogOn(const char * service,
-                const char * username, const char * password, CMC_ui_id ui_id);
-    CMC_ui_id logOffHWND;
+    CMCDLL cmc;
+#endif
+#if P_HAS_MAPI
+    PDECLARE_CLASS(MAPIDLL, PDynaLink)
+      public:
+        MAPIDLL();
+
+        ULONG (FAR PASCAL *Logon)(HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPLHANDLE);
+        ULONG (FAR PASCAL *Logoff)(LHANDLE, HWND, FLAGS, ULONG);
+        ULONG (FAR PASCAL *SendMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG);
+        ULONG (FAR PASCAL *SendDocuments)(HWND, LPSTR, LPSTR, LPSTR, ULONG);
+        ULONG (FAR PASCAL *FindNext)(LHANDLE, HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPSTR);
+        ULONG (FAR PASCAL *ReadMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiMessage FAR *);
+        ULONG (FAR PASCAL *SaveMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG, LPSTR);
+        ULONG (FAR PASCAL *DeleteMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG);
+        ULONG (FAR PASCAL *FreeBuffer)(LPVOID);
+        ULONG (FAR PASCAL *Address)(LHANDLE, HWND, LPSTR, ULONG, LPSTR, ULONG, lpMapiRecipDesc, FLAGS, ULONG, LPULONG, lpMapiRecipDesc FAR *);
+        ULONG (FAR PASCAL *Details)(LHANDLE, HWND,lpMapiRecipDesc, FLAGS, ULONG);
+        ULONG (FAR PASCAL *ResolveName)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiRecipDesc FAR *);
+    };
+    MAPIDLL mapi;
 #endif
 };
 
