@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.67 1997/12/11 13:32:49 robertj Exp $
+ * $Id: contain.cxx,v 1.68 1998/01/26 00:37:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.68  1998/01/26 00:37:48  robertj
+ * Fixed PString & operator putting space in if right hand side is empty string, it shouldn't..
+ * Added Execute() functions to PRegularExpression that take PINDEX references instead of PIntArrays.
+ * Added FindRegEx function to PString that returns position and length.
+ *
  * Revision 1.67  1997/12/11 13:32:49  robertj
  * Added AsUnsigned() function to convert string to DWORD.
  *
@@ -848,8 +853,10 @@ PString & PString::operator+=(char ch)
 
 PString PString::operator&(const char * cstr) const
 {
-  PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  if (alen == 1)
+    return *this;
+  PINDEX olen = GetLength();
   PString str;
   PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
   str.SetSize(olen+alen+space);
@@ -877,8 +884,10 @@ PString PString::operator&(char c) const
 
 PString & PString::operator&=(const char * cstr)
 {
-  PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  if (alen == 1)
+    return *this;
+  PINDEX olen = GetLength();
   PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
   SetSize(olen+alen+space);
   if (space != 0)
@@ -925,8 +934,11 @@ PString PString::operator()(PINDEX start, PINDEX end) const
   if (start > len)
     return PString();
 
-  if (end >= len)
+  if (end >= len) {
+    if (start == 0)
+      return *this;
     end = len-1;
+  }
   len = end - start + 1;
 
   return PString(theArray+start, len);
@@ -1142,14 +1154,31 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 
 PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
 {
-  if (offset >= GetLength())
-    return P_MAX_INDEX;
-
-  PIntArray pos;
-  if (regex.Execute(&theArray[offset], pos))
-    return pos[0];
+  PINDEX pos, len;
+  if (FindRegEx(regex, pos, len, offset))
+    return pos;
 
   return P_MAX_INDEX;
+}
+
+
+BOOL PString::FindRegEx(const PRegularExpression & regex,
+                        PINDEX & pos,
+                        PINDEX & len,
+                        PINDEX offset,
+                        PINDEX maxPos) const
+{
+  if (offset >= GetLength())
+    return FALSE;
+
+  if (!regex.Execute(&theArray[offset], pos, len, 0))
+    return FALSE;
+
+  pos += offset;
+  if (pos+len > maxPos)
+    return FALSE;
+
+  return TRUE;
 }
 
 
@@ -1726,9 +1755,51 @@ BOOL PRegularExpression::Compile(const char * pattern, int flags)
     regfree(expression);
     delete expression;
   }
+  if (pattern == NULL || *pattern == '\0')
+    return BadPattern;
+
   expression = new regex_t;
   lastError = regcomp(expression, pattern, flags);
   return lastError == NoError;
+}
+
+
+BOOL PRegularExpression::Execute(const PString & str, PINDEX & start, int flags) const
+{
+  PINDEX dummy;
+  return Execute((const char *)str, start, dummy, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const PString & str, PINDEX & start, PINDEX & len, int flags) const
+{
+  return Execute((const char *)str, start, len, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, int flags) const
+{
+  PINDEX dummy;
+  return Execute(cstr, start, dummy, flags);
+}
+
+
+BOOL PRegularExpression::Execute(const char * cstr, PINDEX & start, PINDEX & len, int flags) const
+{
+  if (expression == NULL) {
+    ((PRegularExpression*)this)->lastError = NotCompiled;
+    return FALSE;
+  }
+
+  regmatch_t match;
+
+  ((PRegularExpression*)this)->lastError = regexec(expression, cstr, 1, &match, flags);
+  if (lastError != NoError)
+    return FALSE;
+
+  start = match.rm_so;
+  len = match.rm_eo - start;
+  return TRUE;
 }
 
 
@@ -1760,8 +1831,10 @@ BOOL PRegularExpression::Execute(const char * cstr,
                                  PIntArray & ends,
                                  int flags) const
 {
-  if (expression == NULL)
-    return NotCompiled;
+  if (expression == NULL) {
+    ((PRegularExpression*)this)->lastError = NotCompiled;
+    return FALSE;
+  }
 
   regmatch_t single_match;
   regmatch_t * matches = &single_match;
@@ -1787,6 +1860,24 @@ BOOL PRegularExpression::Execute(const char * cstr,
     delete [] matches;
 
   return lastError == NoError;
+}
+
+
+PString PRegularExpression::EscapeString(const PString & str)
+{
+  PString translated;
+
+  PINDEX lastPos = 0;
+  PINDEX nextPos;
+  while ((nextPos = str.FindOneOf("\\^$+?*.[]()|{}", lastPos+1)) != P_MAX_INDEX) {
+    translated += str(lastPos, nextPos-1) + "\\";
+    lastPos = nextPos;
+  }
+
+  if (lastPos == 0)
+    return str;
+
+  return translated + str.Mid(lastPos);
 }
 
 
