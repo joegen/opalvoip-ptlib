@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.84 1997/07/08 13:08:12 robertj Exp $
+ * $Id: osutils.cxx,v 1.85 1997/08/28 12:49:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.85  1997/08/28 12:49:00  robertj
+ * Fixed possible assert on exit of application.
+ *
  * Revision 1.84  1997/07/08 13:08:12  robertj
  * DLL support.
  *
@@ -328,7 +331,7 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 
 PTimer::~PTimer()
 {
-  PAssert(PThread::Current() != timeoutThread, "Timer destroyed in OnTimeout()");
+  PAssert(timeoutThread == NULL || PThread::Current() != timeoutThread, "Timer destroyed in OnTimeout()");
   if (state == Running)
     PProcess::Current().GetTimerList()->RemoveTimer(this);
 }
