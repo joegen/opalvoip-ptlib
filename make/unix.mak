@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.70  2000/04/06 20:12:33  craigs
+# Added install targets
+#
 # Revision 1.69  2000/04/06 11:37:51  rogerh
 # Add MacOS X support from Kevin Packard
 #
@@ -381,6 +384,7 @@ endif # SHAREDLIB
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
+#LDFLAGS		+= --no-whole-archive --cref
 
 endif # linux
 
@@ -536,6 +540,9 @@ ENDIAN		:= PBIG_ENDIAN
 endif
   
 RANLIB		:= 1
+
+CC              := cc
+CPLUS           := c++
  
 endif # macos
  
@@ -544,6 +551,18 @@ endif # macos
 #
 # Make sure some things are defined
 #
+
+ifndef	CC
+CC		:= gcc
+endif
+
+ifndef CPLUS
+CPLUS		:= g++
+endif
+
+ifndef INSTALL
+INSTALL		:= install
+endif
 
 ifndef P_SHAREDLIB
 P_SHAREDLIB=0
@@ -581,19 +600,22 @@ ifndef LIB_TYPE
 LIB_TYPE	=
 endif
 
+ifndef INSTALL_DIR
+INSTALL_DIR	= /usr/local
+endif
+
+ifndef INSTALLBIN_DIR
+INSTALLBIN_DIR	= $(INSTALL_DIR)/bin
+endif
+
+ifndef INSTALLLIB_DIR
+INSTALLLIB_DIR	= $(INSTALL_DIR)/lib
+endif
 
 ###############################################################################
 #
 # define some common stuff
 #
-
-ifeq ($(OSTYPE),macos)
-CC              := cc
-CPLUS           := c++
-else
-CC		:= gcc
-CPLUS		:= g++
-endif
 
 SHELL		:= /bin/sh
 
