@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.57  2000/01/25 04:05:23  robertj
+# Fixed make files for GUI systems and moved object directories to lib directory.
+#
 # Revision 1.56  2000/01/22 00:51:18  craigs
 # Added ability to compile in any directory, and to create shared libs
 #
@@ -325,7 +328,9 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-STDCCFLAGS	+= -DP_FREEBSD
+OSRELEASE	:= $(subst -RELEASE,,$(shell uname -r))
+
+STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
 
 ifdef P_PTHREADS
 CFLAGS	+= -pthread
@@ -473,8 +478,8 @@ UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
 UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
 
 OBJBASE		= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PW_OBJDIR	= $(PWLIBDIR)/$(OBJBASE)
 PW_LIBDIR	= $(PWLIBDIR)/lib
+PW_OBJDIR	= $(PW_LIBDIR)/$(OBJBASE)
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
