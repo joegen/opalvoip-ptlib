@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.24  2000/08/30 04:45:02  craigs
+ * Added ability to have multiple lines with the same key
+ *
  * Revision 1.23  2000/08/16 04:21:27  robertj
  * Fixed subtle difference between UNix and Win32 section names (ignore trailing backslash)
  *
@@ -288,7 +291,10 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
     file << "[" << (*this)[i] << "]" << endl;
     for (PINDEX j = 0; j < section.GetSize(); j++) {
       PXConfigValue & value = section[j];
-      file << value << "=" << value.GetValue() << endl;
+      PStringArray lines = value.GetValue().Tokenise('\n', TRUE);
+      PINDEX k;
+      for (k = 0; k < lines.GetSize(); k++) 
+        file << value << "=" << lines[k] << endl;
     }
     file << endl;
   }
@@ -337,8 +343,15 @@ BOOL PXConfig::ReadFromFile (const PFilePath & filename)
           if (equals > 0) {
             PString keyStr = line.Left(equals).Trim();
             PString valStr = line.Right(len - equals - 1).Trim();
-            PXConfigValue * value = new PXConfigValue(keyStr, valStr);
-            currentSection->GetList().Append(value);
+
+            PINDEX index;
+            if ((index = currentSection->GetList().GetValuesIndex(keyStr)) != P_MAX_INDEX)  {
+              PXConfigValue & value = currentSection->GetList()[index];
+              value.SetValue(value.GetValue() + '\n' + valStr);
+            } else {
+              PXConfigValue * value = new PXConfigValue(keyStr, valStr);
+              currentSection->GetList().Append(value);
+            }
           }
         }
       }
