@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.25 1995/01/10 11:44:15 robertj Exp $
+ * $Id: osutils.cxx,v 1.26 1995/01/11 09:45:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.25  1995/01/10 11:44:15  robertj
+ * Revision 1.26  1995/01/11 09:45:14  robertj
+ * Documentation and normalisation.
+ *
+ * Revision 1.25  1995/01/10  11:44:15  robertj
  * Removed PString parameter in stdarg function for GNU C++ compatibility.
  *
  * Revision 1.24  1995/01/09  12:31:51  robertj
@@ -144,14 +147,6 @@ void PTimeInterval::SetInterval(long millisecs,
 
 #if defined(_PTIME)
 
-PObject::Comparison PTime::Compare(const PObject & obj) const
-{
-  const PTime & other = (const PTime &)obj;
-  return theTime < other.theTime ? LessThan :
-         theTime > other.theTime ? GreaterThan : EqualTo;
-}
-
-
 PTime::PTime(int second, int minute, int hour, int day, int month, int year)
 {
   struct tm t;
@@ -172,8 +167,100 @@ PTime::PTime(int second, int minute, int hour, int day, int month, int year)
 }
 
 
+PObject::Comparison PTime::Compare(const PObject & obj) const
+{
+  const PTime & other = (const PTime &)obj;
+  return theTime < other.theTime ? LessThan :
+         theTime > other.theTime ? GreaterThan : EqualTo;
+}
+
+
+static BOOL IsTimeDateSeparator(istream &strm, const PString & sep)
+{
+  strm.eatwhite();  // Clear out white space
+  PINDEX pos = 0;
+  while (pos < sep.GetLength()) {
+    if (strm.eof())
+      return FALSE;
+    char c = (char)strm.peek();
+    if (c != sep[pos])
+      return FALSE;
+    strm.get();
+    pos++;
+  }
+  return TRUE;
+}
+
+
 void PTime::ReadFrom(istream &strm)
 {
+  *this = PTime();   // Default time in case of error
+
+  strm.eatwhite();  // Clear out white space
+  if (!isdigit(strm.peek()))   // No date or time?
+    return;
+
+  struct tm t;
+  t.tm_sec = 0;
+  t.tm_min = 0;
+  t.tm_hour = 0;
+  t.tm_mday = 1;
+  t.tm_mon = 1;
+  t.tm_year = 0;
+
+  int temp;       // Get first number
+  strm >> temp;
+  
+  if (IsTimeDateSeparator(strm, GetTimeSeparator())) {
+    t.tm_hour = temp;
+    strm >> t.tm_min;
+    if (IsTimeDateSeparator(strm, GetTimeSeparator()))
+      strm >> t.tm_sec;
+    if (isdigit(strm.peek())) {  // Has date?
+      strm >> t.tm_mday;
+      if (IsTimeDateSeparator(strm, GetDateSeparator())) {
+        strm >> t.tm_mon;
+        if (IsTimeDateSeparator(strm, GetDateSeparator()))
+          strm >> t.tm_year;
+      }
+    }
+  }
+  else if (IsTimeDateSeparator(strm, GetDateSeparator())) {
+    t.tm_mday = temp;
+    strm >> t.tm_mon;
+    if (IsTimeDateSeparator(strm, GetDateSeparator()))
+      strm >> t.tm_year;
+    if (isdigit(strm.peek())) {  // Has time?
+      strm >> t.tm_hour;
+      if (IsTimeDateSeparator(strm, GetTimeSeparator())) {
+        strm >> t.tm_min;
+        if (IsTimeDateSeparator(strm, GetTimeSeparator()))
+          strm >> t.tm_sec;
+      }
+    }
+  }
+  else
+    return;
+
+  switch (GetDateOrder()) {
+    case MonthDayYear :
+      temp = t.tm_mon;
+      t.tm_mon = t.tm_mday;
+      t.tm_mday = temp;
+      break;
+    case YearMonthDay :
+      temp = t.tm_year;
+      t.tm_year = t.tm_mday;
+      t.tm_mday = temp;
+    case DayMonthYear :
+      break;
+  }
+
+  if (t.tm_year < 80)
+    t.tm_year += 100;
+
+  theTime = mktime(&t);
+  PAssert(theTime != -1, PInvalidParameter);
 }
 
 
