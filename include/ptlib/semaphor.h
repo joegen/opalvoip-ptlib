@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.6  1998/11/19 05:17:37  robertj
+ * Added PWaitAndSignal class for easier mutexing.
+ *
  * Revision 1.5  1998/09/23 06:21:19  robertj
  * Added open source copyright license.
  *
@@ -52,6 +55,19 @@
 #endif
 
 #include <limits.h>
+
+
+class PWaitAndSignal {
+/* This class waits for the semaphore on construction and automatically
+   signals the semaphore on destruction. Any descendent of PSemaphore
+   may be used.
+ */
+  public:
+    PWaitAndSignal(PSemaphore & sem);
+    ~PWaitAndSignal();
+  protected:
+    PSemaphore & semaphore;
+};
 
 
 PDECLARE_CLASS(PSemaphore, PObject)
@@ -127,7 +143,6 @@ PDECLARE_CLASS(PSemaphore, PObject)
     /* Determine if the semaphore would block if the <A>Wait()</A> function
        were called.
      */
-
 
 #ifndef P_PLATFORM_HAS_THREADS
   protected:
