@@ -645,9 +645,9 @@ PString PTime::GetDateSeparator()
   return PString("/");
 #elif defined(P_LINUX) || defined(P_HPUX9)
 #  if defined(P_LINUX)
-     char * p = nl_langinfo(D_FMT);
-#  elif defined(P_HPUX9)
      char * p = _time_info->date; 
+#  elif defined(P_HPUX9)
+     char * p = nl_langinfo(D_FMT);
 #  endif
 
   char buffer[2];
