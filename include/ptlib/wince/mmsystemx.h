@@ -10,6 +10,8 @@
 
 #include <stdlibx.h>
 
+#if _WIN32_WCE < 400
+
 //
 // MMSystem extras
 //
@@ -69,6 +71,8 @@ typedef const MMCKINFO *LPCMMCKINFO;
 #ifndef HMMIO
 typedef HANDLE          HMMIO;          // a handle to an open file
 #endif
+
+#endif // _INC_MMSYSTEM
 
 HMMIO WINAPI mmioOpen(LPSTR pszFileName, LPMMIOINFO pmmioinfo, DWORD fdwOpen);
 
