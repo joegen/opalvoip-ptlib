@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.96  2004/01/17 17:44:17  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.95  2003/11/18 09:22:17  csoutheren
  * Fixed problems with PURL::OpenBrowser, thanks to David Parr
  *
@@ -597,7 +600,12 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 void PURL::Parse(const char * cstr, const char * defaultScheme)
 {
   hostname = PCaselessString();
-  pathStr = username = password = fragment = PString::Empty();
+
+  pathStr.MakeEmpty();
+  username.MakeEmpty();
+  password.MakeEmpty();
+  fragment.MakeEmpty();
+
   path.SetSize(0);
   queryVars.RemoveAll();
   port = 0;
@@ -615,7 +623,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
   const schemeStruct * schemeInfo = NULL;
     
   // determine if the URL has a scheme
-  scheme = PString::Empty();
+  scheme.MakeEmpty();
 
   // Character set as per RFC2396
   pos = 0;
@@ -730,7 +738,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
     if (pos != P_MAX_INDEX)
       url.Delete(0, pos);
     else
-      url = PString::Empty();
+      url.MakeEmpty();
 
     // if the URL is of type UserPasswordHostPort, then parse it
     if (schemeInfo->hasUsername) {
@@ -752,7 +760,7 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
               username = UntranslateString(uphp.Left(pos3), LoginTranslation);
               password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
             }
-            uphp = PString::Empty();
+            uphp.MakeEmpty();
           }
           break;
 
@@ -996,7 +1004,7 @@ void PURL::SetPath(const PStringArray & p)
 {
   path = p;
 
-  pathStr = PString::Empty();
+  pathStr.MakeEmpty();
   for (PINDEX i = 0; i < path.GetSize(); i++)
     pathStr += '/' + path[i];
 
