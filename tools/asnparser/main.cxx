@@ -79,10 +79,16 @@ ostream & operator<<(ostream & out, const StdError & e)
 
 PDECLARE_CLASS(App, PProcess)
   public:
+    App();
     void Main();
 };
 
 PCREATE_PROCESS(App);
+
+App::App()
+  : PProcess("Equivalence", "ASNParse", 1, 0, AlphaCode, 2)
+{
+}
 
 void App::Main()
 {
@@ -100,6 +106,10 @@ void App::Main()
          << prcFile.GetFilePath() << "\" :" << prcFile.GetErrorText() << endl;
     return;
   }
+
+  cout << GetName() << " version " << GetVersion(TRUE)
+       << " for " << GetOSClass() << ' ' << GetOSName()
+       << " by " << GetManufacturer() << endl;
 
   if (args.HasOption('d'))
     yydebug = 1;
@@ -1047,7 +1057,7 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   }
 
   // Generate enumerations and complete the constructor implementation
-  hdr << "    enum {\n";
+  hdr << "    enum Enumerations {\n";
   cxx << ", " << maxEnumValue << ", " << (extendable ? "TRUE" : "FALSE") << "\n"
          "#ifndef PASN_NOPRINTON\n"
          "      , \"";
@@ -1279,7 +1289,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
       if (outputEnum)
         hdr << ",\n";
       else {
-        hdr << "    enum {\n";
+        hdr << "    enum OptionalFields {\n";
         outputEnum = TRUE;
       }
       hdr << "      e_" << fields[i].GetIdentifier();
@@ -1558,7 +1568,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         cxx << "        \"";
       }
       else {
-        hdr << "    enum {\n";
+        hdr << "    enum Choices {\n";
         cxx << "\n"
                "#ifndef PASN_NOPRINTON\n"
                "      , \"";
