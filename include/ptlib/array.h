@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.7 1995/10/14 14:52:33 robertj Exp $
+ * $Id: array.h,v 1.8 1996/01/02 11:48:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.8  1996/01/02 11:48:46  robertj
+ * Removed requirement that PArray elements have parameterless constructor..
+ *
  * Revision 1.7  1995/10/14 14:52:33  robertj
  * Changed arrays to not break references.
  *
@@ -631,18 +634,6 @@ PDECLARE_CLASS(PArray, PArrayObjects)
        reference to the object at <CODE>index</CODE> position.
      */
 
-    T & operator[](
-      PINDEX index  // Index position in the collection of the object.
-    ) { return *(T *)(GetAt(index) != NULL ?  GetAt(index)
-                                           : ((*theArray)[index] = PNEW T)); }
-    /* Retrieve a reference  to the object in the array. If there was not an
-       object at that ordinal position or the index was beyond the size of the
-       array then the function will create a new object.
-
-       <H2>Returns:</H2>
-       reference to the object at <CODE>index</CODE> position.
-     */
-
 
   protected:
     PArray(int dummy, const PArray * c) : PArrayObjects(dummy, c) { }
@@ -703,9 +694,6 @@ PDECLARE_CLASS(PArray, PArrayObjects)
     inline T & operator[](PINDEX index) const\
       { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); \
                                            return *(T *)(*theArray)[index]; } \
-    inline T & operator[](PINDEX index) \
-      { return *(T *)((*theArray)[index] != NULL ?  (*theArray)[index] \
-                                          : ((*theArray)[index] = PNEW T)); } \
 
 #define PARRAY(cls, T) PDECLARE_ARRAY(cls, T) }
 
