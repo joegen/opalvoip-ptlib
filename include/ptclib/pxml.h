@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.21  2003/03/31 07:41:50  craigs
+ * Fixed problem with accidental introduced dependency on expat.h
+ *
  * Revision 1.20  2003/03/31 06:21:19  craigs
  * Split the expat wrapper from the XML file handling to allow reuse of the parser
  *
@@ -58,7 +61,6 @@
 
 #include <ptlib.h>
 #include <ptclib/http.h>
-#include <expat.h>
 
 ////////////////////////////////////////////////////////////
 
@@ -91,8 +93,8 @@ class PXMLParser : public PObject
 				                          const char * pubid,
 				                          int hasInternalSubSet);
     virtual void EndDocTypeDecl();
-    virtual void StartNamespaceDeclHandler(const XML_Char *prefix, const XML_Char *uri);
-    virtual void EndNamespaceDeclHandler(const XML_Char *prefix);
+    virtual void StartNamespaceDeclHandler(const char * prefix, const char * uri);
+    virtual void EndNamespaceDeclHandler(const char * prefix);
 
     PString GetVersion() const  { return version; }
     PString GetEncoding() const { return encoding; }
@@ -103,7 +105,7 @@ class PXMLParser : public PObject
 
   protected:
     int options;
-    XML_Parser expat;
+    void * expat;
     PXMLElement * rootElement;
     PXMLElement * currentElement;
     PXMLData * lastElement;
