@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.14  1998/11/02 10:07:34  robertj
+ * Added ReadStandardError implementation
+ *
  * Revision 1.13  1998/10/30 13:02:50  robertj
  * New pipe channel enhancements.
  *
@@ -315,4 +318,38 @@ BOOL PPipeChannel::Kill(int killType)
 }
 
 BOOL PPipeChannel::CanReadAndWrite()
-  { return TRUE; }
+{
+  return TRUE;
+}
+
+
+BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
+{
+  PAssert(IsOpen(), "Attempt to read from closed pipe");
+  PAssert(stderrChildPipe[0] != -1, "Attempt to read from write-only pipe");
+
+  os_handle = stderrChildPipe[0];
+  
+  BOOL status = FALSE;
+  int available;
+  if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
+    if (available != 0)
+      status = PChannel::Read(errors.GetPointer(available+1), available);
+    else if (wait) {
+      char firstByte;
+      status = PChannel::Read(&firstByte, 1);
+      if (status) {
+        errors = firstByte;
+        if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
+          if (available != 0)
+            status = PChannel::Read(errors.GetPointer(available+2)+1, available);
+        }
+      }
+    }
+  }
+
+  os_handle = 0;
+  return status;
+}
+
+
