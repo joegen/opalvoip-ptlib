@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.7 1994/08/04 11:51:04 robertj Exp $
+ * $Id: pprocess.h,v 1.8 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.7  1994/08/04 11:51:04  robertj
+ * Revision 1.8  1994/08/21 23:43:02  robertj
+ * Added function to get the user name of the owner of a process.
+ *
+ * Revision 1.7  1994/08/04  11:51:04  robertj
  * Moved OperatingSystemYield() to protected for Unix.
  *
  * Revision 1.6  1994/08/01  03:42:23  robertj
@@ -72,6 +75,9 @@ PDECLARE_CLASS(PProcess, PThread)
 
     const PFilePath & GetFile() const;
       // Return the processes executable image file path.
+
+    PString GetUserName() const;
+      // Return the effective user name of the process, eg "root" etc.
 
     PTimerList * GetTimerList();
       // Get the list of timers handled by the application.
