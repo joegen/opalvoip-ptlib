@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.11 1994/12/12 10:16:25 robertj Exp $
+ * $Id: collect.cxx,v 1.12 1994/12/13 11:50:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.11  1994/12/12 10:16:25  robertj
+ * Revision 1.12  1994/12/13 11:50:52  robertj
+ * Added MakeUnique() function to all container classes.
+ *
+ * Revision 1.11  1994/12/12  10:16:25  robertj
  * Restructuring and documentation of container classes.
  * Renaming of some macros for declaring container classes.
  * Added some extra functionality to PString.
@@ -87,8 +90,10 @@ void PArrayObjects::DestroyContents()
 
 void PArrayObjects::CloneContents(const PArrayObjects * array)
 {
-  for (PINDEX i = 0; i < array->GetSize(); i++) {
-    PObject * ptr = array->GetAt(i);
+  ObjPtrArray & oldArray = *array->theArray;
+  theArray = PNEW ObjPtrArray(oldArray.GetSize());
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PObject * ptr = oldArray[i];
     if (ptr != NULL)
       SetAt(i, ptr->Clone());
   }
@@ -225,11 +230,15 @@ void PAbstractList::CopyContents(const PAbstractList & list)
 
 void PAbstractList::CloneContents(const PAbstractList * list)
 {
+  Element * element = list->info->head;
+
   info = new Info;
   PAssertNULL(info);
-  for (Element * element = list->info->head;
-                                      element != NULL; element = element->next)
+
+  while (element != NULL) {
     Append(element->data->Clone());
+    element = element->next;
+  }
 }
 
 
@@ -466,11 +475,13 @@ void PAbstractSortedList::CopyContents(const PAbstractSortedList & list)
 
 void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
 {
-  info = new Info;
-  PAssertNULL(info);
   Element * element = list->info->root;
   while (element->left != NULL)
     element = element->left;
+
+  info = new Info;
+  PAssertNULL(info);
+
   while (element != NULL) {
     Append(element->data->Clone());
     element = element->Successor();
