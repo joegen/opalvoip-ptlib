@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.14 1996/08/17 10:00:36 robertj Exp $
+ * $Id: thread.h,v 1.15 1998/04/01 01:53:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.15  1998/04/01 01:53:14  robertj
+ * Fixed problem with NoAutoDelete threads.
+ *
  * Revision 1.14  1996/08/17 10:00:36  robertj
  * Changes for Windows DLL support.
  *
@@ -85,7 +88,6 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
-    DWORD CleanUpOnTerminated();
 
   protected:
     HANDLE threadHandle;
