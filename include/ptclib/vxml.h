@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.2  2002/06/27 05:39:18  craigs
+ * Fixed Linux warning
+ *
  * Revision 1.1  2002/06/27 05:28:17  craigs
  * Initial version
  *
@@ -252,3 +255,4 @@ class PVXMLSession : public PObject
 //////////////////////////////////////////////////////////////////
 
 #endif
+
