@@ -64,7 +64,7 @@ case "$target_os" in
   linux*)          OSTYPE=linux ;  
                    OSRELEASE="\"`uname -r`\"";
 		   OS_TAG="P_LINUX" ;
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+                   need_pragma=yes ;
                    ;;
 
   freebsd* )       OSTYPE=FreeBSD ;
@@ -72,27 +72,27 @@ case "$target_os" in
                    if test "x$OSRELEASE" = "x"; then
                      OSRELEASE="`sysctl -n kern.osreldate`" ;
                    fi
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+                   need_pragma=yes ;
 		   ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
 		   OS_TAG="P_OPENBSD" ;
                    OSRELEASE="`sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+                   need_pragma=yes ;
 		   ;;
 
   netbsd* )        OSTYPE=NetBSD ;
 		   OS_TAG="P_NETBSD" ;
                    OSRELEASE="`/sbin/sysctl -n kern.osrevision`" ;
 		   ENDLDLIBS="-lossaudio" ;
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+                   need_pragma=yes ;
 		   ;;
 
   solaris* | sunos* ) OSTYPE=solaris ;
 		   OS_TAG="P_SOLARIS" ;
                    OSRELEASE=`uname -r | sed "s/5\.//g"` ;
-		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+                   need_pragma=yes ;
 		   ;;
 
   darwin* )	   OSTYPE=Darwin ;
@@ -190,6 +190,31 @@ dnl BeOS has it;s own threading system
 if test ${OSTYPE} != beos ; then
   AC_DEFINE(P_PTHREADS, 1, "PThreads found")
 fi
+
+dnl ########################################################################
+dnl get the gcc version
+
+if test x$GXX = xyes ; then
+  gcc_version=`$CXX -dumpversion`
+  AC_MSG_NOTICE(gcc version is $gcc_version);
+  GXX_MAJOR=`echo $gcc_version | sed 's/\..*$//'`
+  GXX_MINOR=[`echo $gcc_version | sed -e 's/[0-9][0-9]*\.//' -e 's/\..*$//'`]
+  GXX_PATCH=[`echo $gcc_version | sed -e 's/[0-9][0-9]*\.[0-9][0-9]*\.//' -e 's/\..*$//'`]
+
+  dnl only enable pragma for gcc 4.0 and later
+  AC_MSG_CHECKING(checking if pragma implementation should be used)
+  if test ${GXX_MAJOR} -lt 4 ; then
+    if test "${need_pragma}" = "yes" ; then
+      STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
+      AC_MSG_RESULT(yes)
+    else
+      AC_MSG_RESULT(no)
+    fi
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+
 
 dnl ########################################################################
 dnl set the shared library extension, if not already set
