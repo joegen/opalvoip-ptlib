@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.22 1996/04/29 12:25:45 robertj Exp $
+ * $Id: http.cxx,v 1.23 1996/05/09 12:25:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.23  1996/05/09 12:25:02  robertj
+ * Fixed URL so is difference between path with and without trailing slash.
+ * Removed warnings in persistent connection stuff (still disabled though).
+ *
  * Revision 1.22  1996/04/29 12:25:45  robertj
  * Fixed check boxes in HTML forms.
  * Removed persistence (temporarily).
@@ -99,7 +103,6 @@
 #include <http.h>
 #include <ctype.h>
 
-//#define HAS_PERSISTANCE
 //#define STRANGE_NT_BUG
 
 #define DEFAULT_FTP_PORT	21
@@ -331,12 +334,10 @@ void PURL::Parse(const char * cstr)
 
   // the hierarchy is what is left
   pathStr = url;
-  path = url.Tokenise('/', FALSE);
+  path = url.Tokenise("/", FALSE);
   absolutePath = path[0].IsEmpty();
   if (absolutePath)
     path.RemoveAt(0);
-  if (path.GetSize() > 0 && path[path.GetSize()-1].IsEmpty())
-    path.RemoveAt(path.GetSize()-1);
   for (pos = 0; pos < path.GetSize(); pos++) {
     UnmangleString(path[pos]);
     if (pos > 0 && path[pos] == ".." && path[pos-1] != "..") {
@@ -439,6 +440,9 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
   const PStringArray & path = res->GetURL().GetPath();
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (path[i].IsEmpty())
+      break;
+
     if (node->resource != NULL)
       return FALSE;   // Already a resource in tree in partial path
 
@@ -467,6 +471,9 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
   const PStringArray & path = url.GetPath();
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (path[i].IsEmpty())
+      break;
+
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       return FALSE;
@@ -501,6 +508,9 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (path[i].IsEmpty())
+      break;
+
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
     if (pos == P_MAX_INDEX)
       return NULL;
@@ -2204,32 +2214,28 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
 
   isPersistant      = FALSE;
 
-#ifndef HAS_PERSISTANCE
-  isProxyConnection = FALSE;
-#else
-  PString str;
   // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
-  if (isProxyConnection)
-    str = mimeInfo[ProxyConnectionStr];
-  else if (mimeInfo.HasKey(ConnectionStr))
-    str = mimeInfo[ConnectionStr];
+  if (major >= 1 && minor >= 1) {
+    PString str;
+    isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
+    if (isProxyConnection)
+      str = mimeInfo[ProxyConnectionStr];
+    else if (mimeInfo.HasKey(ConnectionStr))
+      str = mimeInfo[ConnectionStr];
 
-  // get any connection options
-  if (!str.IsEmpty()) {
-    PStringArray tokens = str.Tokenise(", ", FALSE);
-    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
+    // get any connection options
+    if (!str.IsEmpty()) {
+      PStringArray tokens = str.Tokenise(", ", FALSE);
+      isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
+    }
   }
-#endif
+  else
+    isProxyConnection = FALSE;
 }
 
 void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
 {
-#ifdef HAS_PERSISTANCE
   isPersistant = newPersist;
-#else
-  isPersistant = FALSE;
-#endif
 }
 
 BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
