@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.62  2000/12/16 13:00:46  rogerh
+# BeOS changes, submitted by Yuri Kiryanov <openh323@kiryanov.com>
+#
 # Revision 1.61  2000/07/26 02:40:30  robertj
 # Added video I/O devices.
 #
@@ -268,8 +271,8 @@ VPATH_CXX += $(BEAUDIO_SRC_DIR)
 SOUND_SOURCE = beaudio.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundPlayer.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundInput.cxx \
-	$(BEAUDIO_SRC_DIR)/SoundConsumer.cxx \
-	$(BEAUDIO_SRC_DIR)/SoundUtils.cxx \
+	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
+	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx \
 	$(BEAUDIO_SRC_DIR)/BlockFIFO.cxx
 endif
 
