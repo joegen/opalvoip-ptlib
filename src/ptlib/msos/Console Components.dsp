@@ -179,6 +179,10 @@ SOURCE=..\..\ptclib\pssl.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pstun.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\ptts.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
@@ -235,7 +239,19 @@ SOURCE=..\..\Ptclib\socks.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\stun.cxx
+# ADD CPP /D "WIN32"
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Telnet.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\udp.cxx
+# ADD CPP /D "WIN32"
+# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
@@ -316,6 +332,10 @@ SOURCE=..\..\..\Include\PtCLib\psnmp.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pstun.h
 # End Source File
 # Begin Source File
 
