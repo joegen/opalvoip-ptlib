@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.157  2003/04/08 01:12:35  robertj
+ * Latest patch for IPv6 operation, thanks Sebastien Josset
+ *
  * Revision 1.156  2003/04/07 23:31:33  robertj
  * Fixed incorrect host to network byte order function, should be long!
  *
@@ -1804,11 +1807,6 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
 
   if (localPort != 0 || iface.IsValid()) {
     Psockaddr bind_sa(iface, localPort);
-
-    if (sa->sa_family != bind_sa->sa_family) {
-      os_close();
-      return FALSE;
-    }
 
     if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
