@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.25 1996/05/18 09:08:15 robertj Exp $
+ * $Id: http.cxx,v 1.26 1996/05/23 10:02:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,12 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
- * Revision 1.25  1996/05/18 09:08:15  robertj
- * Fixed yet another bug in checkboxes on HTML forms.
- *
- * Revision 1.24  1996/05/15 10:18:11  robertj
- * Fixed persistent connections.
- * Fixed bug crashing when no elements in HTTPSelection list field array.
+ * Revision 1.26  1996/05/23 10:02:13  robertj
+ * Added common function for GET and HEAD commands.
+ * Fixed status codes to be the actual status code instead of sequential enum.
+ * This fixed some problems with proxy pass through of status codes.
+ * Fixed bug in URL parsing of username and passwords.
  *
  * Revision 1.19.1.1  1996/04/17 11:08:22  craigs
  * New version by craig pending confirmation by robert
@@ -286,28 +285,31 @@ void PURL::Parse(const char * cstr)
     // remove the leading //
     url.Delete(0, 2);
 
+    // Find the end of the url hostname part
+    for (pos = 0; url[pos] != '\0'; pos++) {
+      if (reservedChars.Find(url[pos]) != P_MAX_INDEX)
+        break;
+    }
+
     // extract username and password
     PINDEX pos2 = url.Find('@');
-    if (pos2 != P_MAX_INDEX && pos2 > 0) {
-      pos = url.Find(":");
+    if (pos2 != P_MAX_INDEX && pos2 > 0 && pos2 < pos) {
+      PINDEX pos3 = url.Find(":");
 
       // if no password...
-      if (pos > pos2)
+      if (pos3 > pos2)
         username = url(0, pos2-1);
       else {
-        username = url(0, pos-1);
-        password = url(pos+1, pos2-1);
+        username = url(0, pos3-1);
+        password = url(pos3+1, pos2-1);
       }
       UnmangleString(username);
       UnmangleString(password);
       url.Delete(0, pos2+1);
+      pos -= pos2+1;
     }
 
     // determine if the URL has a port number
-    for (pos = 0; url[pos] != '\0'; pos++)
-      if (reservedChars.Find(url[pos]) != P_MAX_INDEX)
-        break;
-
     pos2 = url.Find(":");
     if (pos2 >= pos) 
       hostname = url.Left(pos);
@@ -902,47 +904,62 @@ BOOL PHTTPSocket::OnProxy(Commands cmd,
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) && cmd != CONNECT;
 }
 
-static struct httpStatusCodeStruct {
-  char *  text;
-  int     code;
-  BOOL    allowedBody;
-  int     majorVersion;
-  int     minorVersion;
-} httpStatusDefn[PHTTPSocket::NumStatusCodes-1000] = {
-  { "Continue",                      100, 1, 1, 1 },
-  { "Switching Protocols",           101, 1, 1, 1 },
-  { "OK",                            200, 1 },
-  { "Created",                       201, 1 },
-  { "Accepted",                      202, 1 },
-  { "Non-Authoritative Information", 203, 1, 1, 1 },
-  { "No Content",                    204, 0 },
-  { "Reset Content",                 205, 0, 1, 1 },
-  { "Partial Content",               206, 1, 1, 1 },
-  { "Multiple Choices",              300, 1, 1, 1 },
-  { "Moved Permanently",             301, 1 },
-  { "Moved Temporarily",             302, 1 },
-  { "See Other",                     303, 1, 1, 1 },
-  { "Not Modified",                  304, 0 },
-  { "Use Proxy",                     305, 1, 1, 1 },
-  { "Bad Request",                   400, 1 },
-  { "Unauthorised",                  401, 1 },
-  { "Payment Required",              402, 1, 1, 1 },
-  { "Forbidden",                     403, 1 },
-  { "Not Found",                     404, 1 },
-  { "Method Not Allowed",            405, 1, 1, 1 },
-  { "None Acceptable",               406, 1, 1, 1 },
-  { "Proxy Authetication Required",  407, 1, 1, 1 },
-  { "Request Timeout",               408, 1, 1, 1 },
-  { "Conflict",                      409, 1, 1, 1 },
-  { "Gone",                          410, 1, 1, 1 },
-  { "Length Required",               411, 1, 1, 1 },
-  { "Unless True",                   412, 1, 1, 1 },
-  { "Internal Server Error",         500, 1 },
-  { "Not Implemented",               501, 1 },
-  { "Bad Gateway",                   502, 1 },
-  { "Service Unavailable",           503, 1, 1, 1 },
-  { "Gateway Timeout",               504, 1, 1, 1 }
+struct httpStatusCodeStruct {
+  const char * text;
+  int  code;
+  BOOL allowedBody;
+  int  majorVersion;
+  int  minorVersion;
 };
+
+
+static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
+{
+  static const httpStatusCodeStruct httpStatusDefn[] = {
+    // First entry MUST be InternalServerError
+    { "Internal Server Error",         PHTTPSocket::InternalServerError, 1 },
+    { "OK",                            PHTTPSocket::OK, 1 },
+    { "Unauthorised",                  PHTTPSocket::UnAuthorised, 1 },
+    { "Forbidden",                     PHTTPSocket::Forbidden, 1 },
+    { "Not Found",                     PHTTPSocket::NotFound, 1 },
+    { "Not Modified",                  PHTTPSocket::NotModified },
+    { "No Content",                    PHTTPSocket::NoContent },
+    { "Bad Gateway",                   PHTTPSocket::BadGateway, 1 },
+    { "Bad Request",                   PHTTPSocket::BadRequest, 1 },
+    { "Continue",                      PHTTPSocket::Continue, 1, 1, 1 },
+    { "Switching Protocols",           PHTTPSocket::SwitchingProtocols, 1, 1, 1 },
+    { "Created",                       PHTTPSocket::Created, 1 },
+    { "Accepted",                      PHTTPSocket::Accepted, 1 },
+    { "Non-Authoritative Information", PHTTPSocket::NonAuthoritativeInformation, 1, 1, 1 },
+    { "Reset Content",                 PHTTPSocket::ResetContent, 0, 1, 1 },
+    { "Partial Content",               PHTTPSocket::PartialContent, 1, 1, 1 },
+    { "Multiple Choices",              PHTTPSocket::MultipleChoices, 1, 1, 1 },
+    { "Moved Permanently",             PHTTPSocket::MovedPermanently, 1 },
+    { "Moved Temporarily",             PHTTPSocket::MovedTemporarily, 1 },
+    { "See Other",                     PHTTPSocket::SeeOther, 1, 1, 1 },
+    { "Use Proxy",                     PHTTPSocket::UseProxy, 1, 1, 1 },
+    { "Payment Required",              PHTTPSocket::PaymentRequired, 1, 1, 1 },
+    { "Method Not Allowed",            PHTTPSocket::MethodNotAllowed, 1, 1, 1 },
+    { "None Acceptable",               PHTTPSocket::NoneAcceptable, 1, 1, 1 },
+    { "Proxy Authetication Required",  PHTTPSocket::ProxyAuthenticationRequired, 1, 1, 1 },
+    { "Request Timeout",               PHTTPSocket::RequestTimeout, 1, 1, 1 },
+    { "Conflict",                      PHTTPSocket::Conflict, 1, 1, 1 },
+    { "Gone",                          PHTTPSocket::Gone, 1, 1, 1 },
+    { "Length Required",               PHTTPSocket::LengthRequired, 1, 1, 1 },
+    { "Unless True",                   PHTTPSocket::UnlessTrue, 1, 1, 1 },
+    { "Not Implemented",               PHTTPSocket::NotImplemented, 1 },
+    { "Service Unavailable",           PHTTPSocket::ServiceUnavailable, 1, 1, 1 },
+    { "Gateway Timeout",               PHTTPSocket::GatewayTimeout, 1, 1, 1 }
+  };
+
+  // make sure the error code is valid
+  for (PINDEX i = 0; i < PARRAYSIZE(httpStatusDefn); i++)
+    if (code == httpStatusDefn[i].code)
+      return &httpStatusDefn[i];
+
+  return httpStatusDefn;
+}
+
 
 void PHTTPSocket::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
@@ -951,13 +968,7 @@ void PHTTPSocket::StartResponse(StatusCode code,
   if (majorVersion < 1) 
     return;
 
-  // make sure the error code is valid for the protocol version
-  for (PINDEX i = 0; code < 1000 && i < PHTTPSocket::NumStatusCodes; i++)
-    if (code == httpStatusDefn[i].code)
-      code = (StatusCode)(1000+i);
-  if (code < 1000 || code >= PHTTPSocket::NumStatusCodes+1000)
-    code = InternalServerError;
-  httpStatusCodeStruct * statusInfo = httpStatusDefn+code-1000;
+  const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
 
   // output the command line
   *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
@@ -1001,28 +1012,22 @@ BOOL PHTTPSocket::OnUnknown(const PCaselessString & cmd,
   return OnError(NotImplemented, cmd, connectInfo);
 }
 
-static compatibleErrors[] = { PHTTPSocket::Continue,
-                              PHTTPSocket::OK,
-                              PHTTPSocket::MultipleChoices,
-                              PHTTPSocket::BadRequest,
-                              PHTTPSocket::InternalServerError
-                            };
 
 BOOL PHTTPSocket::OnError(StatusCode code,
                      const PString & extra,
          const PHTTPConnectionInfo & connectInfo)
 {
-  httpStatusCodeStruct * statusInfo = httpStatusDefn+code-1000;
+  const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
 
-  if (!connectInfo.IsCompatible(statusInfo->majorVersion, statusInfo->minorVersion)) 
-    statusInfo = httpStatusDefn + compatibleErrors[(statusInfo->code/100)-1] - 1000;
+  if (!connectInfo.IsCompatible(statusInfo->majorVersion, statusInfo->minorVersion))
+    statusInfo = GetStatusCodeStruct((code/100)*100);
 
   PMIMEInfo headers;
   SetDefaultMIMEInfo(headers, connectInfo);
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
-    return statusInfo->code == 200;
+    return statusInfo->code == OK;
   }
 
   PHTML reply;
@@ -1042,7 +1047,7 @@ BOOL PHTTPSocket::OnError(StatusCode code,
   headers.SetAt(ContentTypeStr, "text/html");
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
-  return statusInfo->code == 200;
+  return statusInfo->code == OK;
 }
 
 
@@ -1146,10 +1151,27 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
                       const PMIMEInfo & info,
             const PHTTPConnectionInfo & connectInfo)
 {
+  return OnGETOrHEAD(socket, url, info, connectInfo, TRUE);
+}
+
+BOOL PHTTPResource::OnHEAD(PHTTPSocket & socket,
+                           const PURL & url,
+                      const PMIMEInfo & info,
+            const PHTTPConnectionInfo & connectInfo)
+{
+  return OnGETOrHEAD(socket, url, info, connectInfo, FALSE);
+}
+
+BOOL PHTTPResource::OnGETOrHEAD(PHTTPSocket & socket,
+                           const PURL & url,
+                      const PMIMEInfo & info,
+            const PHTTPConnectionInfo & connectInfo,
+                                   BOOL isGET)
+{
   if (!CheckAuthority(socket, info, connectInfo))
     return TRUE;
 
-  if (info.Contains(IfModifiedSinceStr) &&
+  if (isGET && info.Contains(IfModifiedSinceStr) &&
                            !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) 
     return socket.OnError(PHTTPSocket::NotModified, url.AsString(), connectInfo);
 
@@ -1160,65 +1182,44 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
   if (GetExpirationDate(expiryDate))
     request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
-  if (!LoadHeaders(*request)) {
-    BOOL stat = socket.OnError(request->code, url.AsString(), connectInfo);
-    delete request;
-    return stat;
+  BOOL retVal;
+
+  if (!LoadHeaders(*request)) 
+    retVal = socket.OnError(request->code, url.AsString(), connectInfo);
+  else if (!isGET)
+    retVal = request->outMIME.Contains(ContentLengthStr);
+  else {
+    hitCount++;
+    retVal = OnGETData(socket, url, connectInfo, *request);
   }
 
-  hitCount++;
-
-  if (!request->outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
-    request->outMIME.SetAt(ContentTypeStr, contentType);
-
-  PCharArray data;
-  if (LoadData(*request, data)) {
-    socket.StartResponse(request->code,request->outMIME,request->contentSize);
-    do {
-      socket.Write(data, data.GetSize());
-      data.SetSize(0);
-    } while (LoadData(*request, data));
-  }
-  else
-    socket.StartResponse(request->code, request->outMIME, data.GetSize());
-
-  socket.Write(data, data.GetSize());
-
-  BOOL retval = request->outMIME.Contains(ContentLengthStr);
-
-  delete request;
-  return retval;
-}
-
-
-BOOL PHTTPResource::OnHEAD(PHTTPSocket & socket,
-                            const PURL & url,
-                       const PMIMEInfo & info,
-             const PHTTPConnectionInfo & connectInfo)
-{
-  if (!CheckAuthority(socket, info, connectInfo))
-    return TRUE;
-
-  PHTTPRequest * request = CreateRequest(url, info);
-  socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
-
-  PTime expiryDate;
-  if (GetExpirationDate(expiryDate))
-    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
-
-  if (LoadHeaders(*request)) {
-    if (!request->outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
-      request->outMIME.SetAt(ContentTypeStr, contentType);
-    socket.StartResponse(request->code,request->outMIME,request->contentSize);
-  }
-  else
-    return socket.OnError(request->code, url.AsString(), connectInfo);
-
-  BOOL retVal = request->outMIME.Contains(ContentLengthStr);
   delete request;
   return retVal;
 }
 
+BOOL PHTTPResource::OnGETData(PHTTPSocket & socket,
+                               const PURL & /*url*/,
+                const PHTTPConnectionInfo & /*connectInfo*/,
+                             PHTTPRequest & request)
+{
+  if (!request.outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
+    request.outMIME.SetAt(ContentTypeStr, contentType);
+
+  PCharArray data;
+  if (LoadData(request, data)) {
+    socket.StartResponse(request.code, request.outMIME, request.contentSize);
+    do {
+      socket.Write(data, data.GetSize());
+      data.SetSize(0);
+    } while (LoadData(request, data));
+  }
+  else
+    socket.StartResponse(request.code, request.outMIME, data.GetSize());
+
+  socket.Write(data, data.GetSize());
+
+  return request.outMIME.Contains(ContentLengthStr);
+}
 
 BOOL PHTTPResource::OnPOST(PHTTPSocket & socket,
                             const PURL & url,
@@ -2198,13 +2199,16 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
-    if (&field == keyField) {
-      PString key = field.GetValue();
-      if (!key.IsEmpty())
-        cfg.SetString(key, valField->GetValue());
+    const PCaselessString & name = field.GetName();
+    if (data.Contains(name)) {
+      if (&field == keyField) {
+        PString key = field.GetValue();
+        if (!key.IsEmpty())
+          cfg.SetString(key, valField->GetValue());
+      }
+      else if (&field != valField)
+        cfg.SetString(name, field.GetValue());
     }
-    else if (&field != valField)
-      cfg.SetString(field.GetName(), field.GetValue());
   }
   return TRUE;
 }
