@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.65  2000/03/08 12:17:09  rogerh
+# Add OpenBSD support
+#
 # Revision 1.64  2000/03/08 07:09:38  rogerh
 # Fix typo in previous commit
 #
@@ -213,6 +216,11 @@ ifneq (,$(findstring freebsd,$(OSTYPE)))
 OSTYPE := FreeBSD
 endif
 
+#Convert bash shell OSTYPE of 'openbsd2.6' to 'OpenBSD'
+ifneq (,$(findstring openbsd,$(OSTYPE)))
+OSTYPE := OpenBSD
+endif
+
 ifneq (,$(findstring $(MACHTYPE),sun4))
 MACHTYPE := sparc
 endif
@@ -249,7 +257,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD solaris beos))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD solaris beos))
 
 all ::
 	@echo
@@ -263,7 +271,7 @@ all ::
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD beos"
+	@echo "              FreeBSD OpenBSD beos"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -369,7 +377,9 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
+ifndef OSRELEASE
 OSRELEASE	:= $(word 1,$(subst ., ,$(strip $(shell uname -r))))
+endif
 
 STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
 
@@ -380,6 +390,27 @@ endif
 RANLIB		:= 1
 
 endif # FreeBSD
+
+
+####################################################
+
+ifeq ($(OSTYPE),OpenBSD)
+
+P_PTHREADS	:= 1
+
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	+= -m486
+endif
+
+STDCCFLAGS	+= -DP_OPENBSD
+
+ifdef P_PTHREADS
+CFLAGS	+= -pthread
+endif
+
+RANLIB		:= 1
+
+endif # OpenBSD
 
 
 ####################################################

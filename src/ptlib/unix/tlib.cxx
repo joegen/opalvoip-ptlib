@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.48  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.47  1999/09/03 02:26:25  robertj
  * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
  *
@@ -180,7 +183,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
