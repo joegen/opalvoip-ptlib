@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.19 1996/02/15 14:47:34 robertj Exp $
+ * $Id: ptime.h,v 1.20 1996/05/09 12:16:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.20  1996/05/09 12:16:06  robertj
+ * Fixed syntax error found by Mac platform.
+ *
  * Revision 1.19  1996/02/15 14:47:34  robertj
  * Fixed bugs in time zone compensation (some in the C library).
  *
@@ -93,7 +96,7 @@ PDECLARE_CLASS(PTime, PObject)
     enum {
       UTC   = 0,
       GMT   = UTC,
-      Local = 9999,
+      Local = 9999
     };
 
     PTime();
