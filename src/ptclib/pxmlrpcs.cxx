@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.3  2002/10/17 12:51:01  rogerh
+ * Add a newline at the of the file to silence a gcc compiler warning.
+ *
  * Revision 1.2  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -199,3 +202,4 @@ PString PXMLRPCServerResource::FormatFault(PINDEX code, const PString & str)
 }
 
 #endif
+
