@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.9 1995/11/09 12:23:46 robertj Exp $
+ * $Id: contain.h,v 1.10 1996/01/23 13:23:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.10  1996/01/23 13:23:15  robertj
+ * Added const version of PMemoryPointer
+ *
  * Revision 1.9  1995/11/09 12:23:46  robertj
  * Added 64 bit integer support.
  * Added platform independent base type access classes.
@@ -141,8 +144,10 @@ typedef long INT;
 // Declaration for a pointer to arbitrary blocks of memory
 #if defined(_WIN32)
 typedef unsigned char * PMemoryPointer;
+typedef unsigned char const * PConstMemoryPointer;
 #else
 typedef unsigned char __huge * PMemoryPointer;
+typedef unsigned char __huge const * PConstMemoryPointer;
 #endif
 
 
