@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.3 1995/07/09 00:34:58 craigs Exp $
+ * $Id: channel.h,v 1.4 1996/01/26 11:06:31 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.4  1996/01/26 11:06:31  craigs
+ * Fixed problem with blocking Accept calls
+ *
  * Revision 1.3  1995/07/09 00:34:58  craigs
  * Latest and greatest omnibus change
  *
@@ -26,8 +29,16 @@
 #endif
 
 #include "../../common/channel.h"
+  public:
+    enum {
+      PXReadBlock,
+      PXWriteBlock,
+      PXOtherBlock,
+      PXAcceptBlock
+    };
   protected:
-    BOOL SetIOBlock(BOOL isRead);
+    BOOL PXSetIOBlock(int type);
+    BOOL PXSetIOBlock(int type, int blockHandle);
     PString channelName;
 };
 
