@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.115  2002/01/02 04:55:31  craigs
+ * Fixed problem when PSocket::GetPortByService called with a number
+ * that is a substring of a valid service name
+ *
  * Revision 1.114  2001/12/13 09:18:07  robertj
  * Added function to convert PString to IP address with error checking that can
  *   distinguish between 0.0.0.0 or 255.255.255.255 and illegal address.
@@ -887,15 +891,16 @@ WORD PSocket::GetPortByService(const PString & serviceName) const
 
 WORD PSocket::GetPortByService(const char * protocol, const PString & service)
 {
+  // if the string is a valid integer, then use integer value
+  // this avoids stupid problems like operating systems that match service
+  // names to substrings (like "2000" to "taskmaster2000")
+  if (service.AsInteger() > 0) 
+    return (WORD) service.AsInteger();
+
 #if defined( __NUCLEUS_PLUS__ )
-  if(!strcmp(protocol,"tcp") && service.AsInteger()>0) return service.AsInteger();
-  PAssertAlways
-  ("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
+  PAssertAlways("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
   return 0;
 #elif defined(_WIN32_WCE)
-  if( service.AsInteger() > 0 ) 
-    return (WORD) service.AsInteger();
- 
   PAssertAlways("PSocket::GetPortByService: problem for WindowsCE as no port given.");
   return 0;
 #else
