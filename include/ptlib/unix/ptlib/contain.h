@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.25  2004/05/12 04:36:18  csoutheren
+ * Fixed problems with using sem_wait and friends on systems that do not
+ * support atomic integers
+ *
  * Revision 1.24  2004/04/11 13:34:51  csoutheren
  * Sigh. gcc needs a namespace directive in order to compile correctly :(
  *
@@ -152,12 +156,6 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 
 #define	P_HAS_TYPEINFO	1
 #define	PCLASSNAME(cls)	(#cls)
-
-#if P_HAS_ATOMIC_INT
-#define PCONTAINER_USES_CRITSEC   0
-#else
-#define PCONTAINER_USES_CRITSEC   1
-#endif
 
 using namespace std;
 
