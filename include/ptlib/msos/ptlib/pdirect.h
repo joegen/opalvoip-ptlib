@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.3 1995/03/12 04:59:55 robertj Exp $
+ * $Id: pdirect.h,v 1.4 1996/08/08 10:09:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.4  1996/08/08 10:09:06  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.3  1995/03/12 04:59:55  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -42,7 +45,7 @@ const PINDEX P_MAX_PATH = _MAX_PATH;
 #define PFILE_PATH_STRING PCaselessString
 
 
-#include "../../common/pdirect.h"
+#include "../../common/ptlib/pdirect.h"
   protected:
 #if defined(_WIN32)
     HANDLE hFindFile;
