@@ -25,47 +25,53 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.22  1998/09/24 04:20:53  robertj
-# Added open software license.
+# Revision 1.23  1998/11/14 10:47:22  robertj
+# Support for PPC Linux, better arrangement of variables.
 #
-
+# Revision 1.23  1998/11/14 10:47:22  robertj
+# Support for PPC Linux, better arrangement of variables.
 #
-#  clean whitespace out of source file list
-#
-SOURCES		:= $(strip $(SOURCES))
 # Revision 1.22  1998/09/24 04:20:53  robertj
 
-#  defines for common Unix types
+
 ###############################################################################
 #
-ifeq ($(OSTYPE),solaris)
-P_SOLARIS	= 1
-else
+ifeq ($(OSTYPE),mklinux)
+OSTYPE		= linux
+MACHTYPE	= ppc
 
-ifeq ($(HOSTTYPE),sun4)
-P_SUN4  	= 1
-else
 ifndef OSTYPE
 ifeq ($(HOSTTYPE),i486-linux)
-P_LINUX		= 1
-else
+OSTYPE		= linux
+MACHTYPE	= x86
+
 ifndef MACHTYPE
 ifeq ($(HOSTTYPE),i386-linux)
-P_LINUX		= 1
-else
-ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
-#P_LINUX	= 1
-#P_SUN4  	= 1
-#P_SOLARIS	= 1
-#P_HPUX		= 1
-#P_ULTRIX	= 1
+OSTYPE		= linux
+MACHTYPE	= x86
+endif
 
-endif	# P_LINUX 486
-endif	# P_LINUX 386
-endif	# P_SUN4
-endif	# P_SOLARIS
+ifeq ($(OSTYPE),linux)
+
+ifndef MACHTYPE
+MACHTYPE	= x86
+ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux))
+OSTYPE   := linux
+ifeq ($(MACHTYPE),i486)
+MACHTYPE	= x86
+
+ifeq ($(OSTYPE),Linux)
+ifeq ($(MACHTYPE),i386)
+MACHTYPE	= x86
+ifeq ($(OSTYPE),mklinux)
+OSTYPE   := linux
+endif #linux
+
+ifeq ($(HOSTTYPE),sun4)
+OSTYPE		= sunos
+endif
+ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 	@echo
-#STDCCFLAGS	:= -DPHAS_TEMPLATES
 
 ####################################################
 #
@@ -73,33 +79,34 @@ endif	# P_SOLARIS
 #
 endif # DEBUG
 
-ifdef P_LINUX
+
+####################################################
+
+ifeq ($(OSTYPE),linux)
+
 ifeq ($(MACHTYPE),ppc)
-# i486 Linux for x86, using gcc 2.6.x
-#STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+ENDIAN=PBIG_ENDIAN
+else
+ENDIAN=PLITTLE_ENDIAN
+STDCCFLAGS	:= $(STDCCFLAGS) -m486
+
+ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
 # i486 Linux for x86, using gcc 2.7.2
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR -m486
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX -DP_HAS_INT64 -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR
 
 endif
-LIB_SUFFIX	= linuxpic
-ifdef PROG
-OBJ_SUFFIX	= linux
-else
-OBJ_SUFFIX	= linuxpic
+
+OBJ_SUFFIX	= pic
 ifdef SHAREDLIB
 ifndef PROG
-else
-OBJ_SUFFIX	= linux
-LIB_SUFFIX	= linux
 PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
-# P_SSL		= $(PWLIBDIR)
-
 STATIC_LIBS	= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	= /usr/lib
 
-endif # P_LINUX
+STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
+RANLIB		:= 1
 
 endif # FreeBSD
 #
@@ -107,15 +114,15 @@ endif # FreeBSD
 #
 ####################################################
 
-ifdef P_SUN4
+
 ####################################################
 
 ifeq ($(OSTYPE),sunos)
 
-OBJ_SUFFIX	= sun4
 # Sparc Sun 4x, using gcc 2.7.2
 
-endif # P_SUN4
+RANLIB		:= 1
+REQUIRES_SEPARATE_SWITCH = 1
 
 endif # sunos
 #
@@ -123,28 +130,34 @@ endif # sunos
 #
 ####################################################
 
-ifdef P_SOLARIS
+
+####################################################
+
+P_PTHREADS	= 1
+
+#P_SSL		= $(PWLIBDIR)
+ENDIAN=PLITTLE_ENDIAN
+
+ENDIAN=PBIG_ENDIAN
+DEBUG_FLAG	:= -gstabs+
 else
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=$(ENDIAN) -DPCHAR8=PANSI_CHAR 
 
 # Sparc Solaris 2.x, using gcc 2.7.2
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
-OBJ_SUFFIX	= solaris
 LDFLAGS		:= -R/usr/local/gnu/lib
 STATIC_LIBS	= libstdc++.a libg++.a 
 SYSLIBDIR	= /usr/local/gnu/lib
-
-#P_SSL		= $(PWLIBDIR)
-P_PTHREADS	= 1
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /usr/local/gnu/lib
 
 ifdef P_PTHREADS
 ENDLDLIBS	:= $(ENDLDLIBS) -lpthread
-endif # P_SOLARIS
+STDCCFLAGS	:= $(STDCCFLAGS) -D_REENTRANT
+endif
 
 endif # solaris
 #
@@ -152,31 +165,32 @@ endif # solaris
 #
 endif # beos
 
-ifdef P_ULTRIX
+
 ####################################################
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX  -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 
-OBJ_SUFFIX	= ultrix
+# R2000 Ultrix 4.2, using gcc 2.7.x
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
-endif # P_ULTRIX
 
-ifdef P_HPUX
+
 ####################################################
 
 ifeq ($(OSTYPE),hpux)
 
-OBJ_SUFFIX	= hpux
-
-endif # P_HPUX
+# HP/UX 9.x, using gcc 2.6.C3 (Cygnus version)
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 
+endif # hpux
 
 
 ###############################################################################
+#
 SHELL		= /bin/sh
 CPLUS		:= g++
 SHELL		:= /bin/sh
+OBJ_SUFFIX	= $(OSTYPE)_$(MACHTYPE)
+
 #
 # if there is no PWLIBDIR variable set, then set one
 #
@@ -257,16 +271,14 @@ LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
 #  set up for correct operating system
 #
 
-OS		= unix
-
 #
 # set name of the PT library
 #
 ifndef LIB_SUFFIX
 LIB_SUFFIX	= $(OBJ_SUFFIX)
 endif
-OSDIR		= $(PWLIBDIR)/$(OS)
-PTLIB		= pt_$(OS)_$(LIB_SUFFIX)_$(LIBID)
+OSDIR		= $(PWLIBDIR)/unix
+PTLIB		= pt_$(LIB_SUFFIX)_$(LIBID)
 
 ifndef SHAREDLIB
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
@@ -286,6 +298,16 @@ STDCCFLAGS	:= -I$(OSDIR)/include $(STDCCFLAGS)
 # add OS library
 #
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
+# add library directory to library path and include the library
+LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
+#
+LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
+#
+
+
+
+SOURCES		:= $(strip $(SOURCES))
+
 
 
 # End of unix.mak
