@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.1 1993/08/19 17:56:54 robertj Exp $
+ * $Id: contain.cxx,v 1.2 1993/08/21 01:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.2  1993/08/21 01:50:33  robertj
+ * Made Clone() function optional, default will assert if called.
+ *
  * Revision 1.8  1993/08/01  14:05:27  robertj
  * Added const to ToLower() and ToUpper() in the PString class.
  *
@@ -32,6 +35,13 @@
 #include <contain.h>
 #include <ctype.h>
 #include <stdlib.h>
+
+
+PObject * PObject::Clone() const
+{
+  PAssertAlways();
+  return NULL;
+}
 
 
 void * PObject::operator new(size_t nSize)

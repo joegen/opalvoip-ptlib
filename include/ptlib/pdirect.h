@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.3 1993/07/14 12:49:16 robertj Exp $
+ * $Id: pdirect.h,v 1.4 1993/08/21 01:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.3  1993/07/14 12:49:16  robertj
+ * Revision 1.4  1993/08/21 01:50:33  robertj
+ * Made Clone() function optional, default will assert if called.
+ *
+ * Revision 1.3  1993/07/14  12:49:16  robertj
  * Fixed RCS keywords.
  *
  */
@@ -67,7 +70,6 @@ DECLARE_CLASS(PDirectory, PContainer)
     virtual ~PDirectory();
 
     // Overrides from class PObject
-    PObject * Clone() const;
     Comparison Compare(const PObject & obj) const;
     virtual ostream & PrintOn(ostream & strm) const;
     virtual istream & ReadFrom(istream & strm);
