@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.20  2001/01/04 10:28:07  rogerh
+ * FreeBSD does not set the Baud Rate with c_cflags. Add the 'BSD' way
+ *
  * Revision 1.19  2001/01/03 10:56:01  rogerh
  * CBAUD is not defined on FreeBSD.
  *
@@ -127,8 +130,14 @@ void PSerialChannel::Construct()
   // set input mode: ignore breaks, ignore parity errors, do not strip chars,
   // no CR/NL conversion, no case conversion, no XON/XOFF control,
   // no start/stop
-  Termio.c_cflag = B9600 | CS8 | CSTOPB | CREAD | CLOCAL;
   Termio.c_iflag = IGNBRK | IGNPAR;
+  Termio.c_cflag = CS8 | CSTOPB | CREAD | CLOCAL;
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_
+  Termio.c_ispeed = Termio.c.ospeed = B9600;
+#else
+  Termio.c_cflag |= B9600;
+#endif
 
   // set output mode: no post process output, 
   Termio.c_oflag = 0;
@@ -363,10 +372,17 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 
   // save new baud rate
   baudRate = newBaudRate;
-#ifdef CBAUD
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_
+MACOSX)
+  // The BSD way
+  Termio.c_ispeed = baud; 
+  Termio.c_ospeed = baud;
+#else
+  // The Linux way
   Termio.c_cflag &= ~CBAUD;
-#endif
   Termio.c_cflag |= baud;
+#endif
 
   if (os_handle < 0)
     return TRUE;
