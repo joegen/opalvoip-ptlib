@@ -28,6 +28,12 @@
 #ifndef STUN_H
 #define STUN_H
 
+#ifdef P_RTEMS
+typedef int socklen_t;
+extern "C" {
+  int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *tv);
+}
+#endif
 
 #include <iostream.h>
 

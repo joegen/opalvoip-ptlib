@@ -26,6 +26,9 @@
  * Based on code originally by Bob Jenkins.
  *
  * $Log: random.cxx,v $
+ * Revision 1.5  2003/02/20 23:32:00  robertj
+ * More RTEMS support patches, thanks Sebastian Meyer.
+ *
  * Revision 1.4  2001/03/03 05:12:47  robertj
  * Fixed yet another transcription error of random number generator code.
  *
@@ -162,9 +165,15 @@ unsigned PRandom::Generate()
 }
 
 
+#ifdef P_RTEMS
+static PMutex mutex;
+#endif
+
 unsigned PRandom::Number()
 {
+#ifndef P_RTEMS
   static PMutex mutex;
+#endif
   PWaitAndSignal wait(mutex);
 
   static PRandom rand;
