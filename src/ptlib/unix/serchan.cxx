@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.18  2000/12/29 07:36:18  craigs
+ * Finally got working correctly!
+ *
  * Revision 1.17  2000/11/14 14:56:24  rogerh
  * Fix #define parameters (fd should be just f)
  *
@@ -213,7 +216,7 @@ BOOL PSerialChannel::Open(const PString & port,
   // attempt to open the device
   PString device_name = PString(DEV_PREFIX) + port;
   if ((os_handle = ::open((const char *)device_name, O_RDWR|O_NONBLOCK|O_NOCTTY)) < 0) {
-    lastError = AccessDenied;
+    ConvertOSError(os_handle);
     Close();
     return FALSE;
   }
@@ -228,29 +231,21 @@ BOOL PSerialChannel::Open(const PString & port,
   TCSETATTR(os_handle, &Termio);
 
   // now set the mode that was passed in
-  if (!SetSpeed(speed))
+  if (!SetSpeed(speed) ||
+      !SetDataBits(data) ||
+      !SetParity(parity) ||
+      !SetStopBits(stop) ||
+      !SetInputFlowControl(inputFlow) ||
+      !SetOutputFlowControl(outputFlow)) {
+    errno = EINVAL;
+    ConvertOSError(-1);
     return FALSE;
-
-  if (!SetDataBits(data))
-    return FALSE;
-
-  if (!SetParity(parity))
-    return FALSE;
-
-  if (!SetStopBits(stop))
-    return FALSE;
-
-  if (!SetInputFlowControl(inputFlow))
-    return FALSE;
-
-  if (!SetOutputFlowControl(outputFlow))
-    return FALSE;
+  }
 
   ::fcntl(os_handle, F_SETFD, 1);
 
   return TRUE;
 }
-
 
 BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 {
@@ -358,17 +353,20 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
   };
  
   if (baud == -1) {
-    lastError = BadParameter;
+    errno = EINVAL;
+    ConvertOSError(-1);
     return FALSE;
   }
 
   // save new baud rate
   baudRate = newBaudRate;
-
-  // set baud rate
-  memset(&Termio, 0, sizeof(Termio));
+  Termio.c_cflag &= ~CBAUD;
   Termio.c_cflag |= baud;
 
+  if (os_handle < 0)
+    return TRUE;
+
+  // initialise the port
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
 
@@ -398,6 +396,7 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
 #endif
 #ifdef CS8
     case 8:
+    case 0:  // default 
       flags = CS8;
       break;
 #endif
@@ -407,17 +406,18 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
   }
 
   if (flags == 0) {
-    lastError = BadParameter;
+    errno = EINVAL;
+    ConvertOSError(-1);
     return FALSE;
   }
 
+  // set the new number of data bits
+  dataBits = data;
+  Termio.c_cflag &= ~CSIZE;
+  Termio.c_cflag |= flags;
+
   if (os_handle < 0)
     return TRUE;
-
-  // set the new number of data bits
-  dataBits  = data;
-  memset(&Termio, 0, sizeof(Termio));
-  Termio.c_cflag |= flags;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
 }
@@ -431,12 +431,12 @@ BOOL PSerialChannel::SetParity(Parity parity)
 
   switch (parity) {
     case OddParity:
-    case DefaultParity:
       flags = PARODD | PARENB;
       break;
     case EvenParity:
       flags = PARENB;
     case NoParity:
+    case DefaultParity:
       flags = IGNPAR;
       break;
 
@@ -447,7 +447,8 @@ BOOL PSerialChannel::SetParity(Parity parity)
   }
 
   if (flags < 0) {
-    lastError = BadParameter;
+    errno = EINVAL;
+    ConvertOSError(-1);
     return FALSE;
   }
 
@@ -456,7 +457,7 @@ BOOL PSerialChannel::SetParity(Parity parity)
 
   // set the new parity
   parityBits = parity;
-  memset(&Termio, 0, sizeof(Termio));
+  Termio.c_cflag &= ~(PARENB|PARODD);
   Termio.c_cflag |= flags;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
@@ -470,18 +471,18 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
   int flags;
 
   switch (stop) {
-    case 1:
-      flags = 0;
-      break;
     case 2:
       flags = CSTOPB;
       break;
     default:
-      flags = -1;
+    case 1:
+      flags = 0;
+      break;
   }
 
   if (flags < 0) {
-    lastError = BadParameter;
+    errno = EINVAL;
+    ConvertOSError(-1);
     return FALSE;
   }
 
@@ -490,7 +491,7 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
 
   // set the new number of stop bits
   stopBits = stop;
-  memset(&Termio, 0, sizeof(Termio));
+  Termio.c_cflag &= ~CSTOPB;
   Termio.c_cflag |= flags;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
