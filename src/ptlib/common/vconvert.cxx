@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.30  2002/09/01 23:00:05  dereks
+ * Fix noise in flipped RGB image. Thanks Alex Phtahov.
+ *
  * Revision 1.29  2002/02/26 02:23:21  dereks
  * Reduced verbosity in PTRACE output for when video is enabled.
  *
@@ -665,7 +668,10 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   const BYTE    *yplane    = srcFrameBuffer;           		// 1 byte Y (luminance) for each pixel
   const BYTE    *uplane    = yplane+nbytes;              	// 1 byte U for a block of 4 pixels
   const BYTE    *vplane    = uplane+(nbytes >> 2);       	// 1 byte V for a block of 4 pixels
-  unsigned int   pixpos[4] = { 0, 1, srcFrameWidth, srcFrameWidth+1 };
+
+  unsigned int   pixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
+  unsigned int   originalPixpos[4] = {0, 1, srcFrameWidth, srcFrameWidth + 1};
+
   unsigned int   x, y, p;
 
   long     int   yvalue;
@@ -673,7 +679,7 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   long     int   l, r, g, b;
             
   if(flipVertical) {
-    dstImageFrame = dstFrameBuffer + ((srcFrameHeight-2) * srcFrameWidth * rgbIncrement);
+    dstImageFrame = dstFrameBuffer + ((srcFrameHeight - 2) * srcFrameWidth * rgbIncrement);
     pixpos[0] = srcFrameWidth;
     pixpos[1] = srcFrameWidth +1;
     pixpos[2] = 0;
@@ -698,7 +704,7 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
       
       for (p = 0; p < 4; p++)
       {
-        yvalue = *(yplane+pixpos[p])-16;
+        yvalue = *(yplane + originalPixpos[p])-16;
         
         if (yvalue < 0) yvalue = 0;
         
