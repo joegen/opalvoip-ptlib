@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.32  2002/07/31 07:30:11  craigs
+ * WaitForTermination now returns exit code of program, as required
+ *
  * Revision 1.31  2001/10/11 02:20:54  robertj
  * Added IRIX support (no audio/video), thanks Andre Schulze.
  *
@@ -348,10 +351,13 @@ BOOL PPipeChannel::IsRunning() const
 
 int PPipeChannel::WaitForTermination()
 {
+  int status;
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   if (kill (childPid, 0) == 0) {
-    while (wait3(NULL, WUNTRACED, NULL) != childPid)
+    while (wait3(&status, WUNTRACED, NULL) != childPid)
       ;
+    if (WIFEXITED(status) != 0)
+      return retVal = WEXITSTATUS(status);
   }
 #else
   if (kill (childPid, 0) == 0)
@@ -359,7 +365,7 @@ int PPipeChannel::WaitForTermination()
 #endif
 
   ConvertOSError(-1);
-  return -1;
+  return status;
 }
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
