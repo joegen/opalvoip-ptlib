@@ -8,6 +8,11 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.21  2004/06/03 13:30:59  csoutheren
+ * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
+ * Added documentaton on new PINSTANTIATE_FACTORY macro
+ * Added generic form of PINSTANTIATE_FACTORY
+ *
  * Revision 1.20  2004/06/03 12:47:59  csoutheren
  * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
  *
@@ -296,7 +301,7 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
   OnLoadPlugin(dll, code);
 }
 
-INSTANTIATE_FACTORY(PPluginModuleManager)
+PINSTANTIATE_FACTORY(PPluginModuleManager)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
