@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.34 1998/01/26 00:46:48 robertj Exp $
+ * $Id: inetprot.cxx,v 1.35 1998/01/26 02:49:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.35  1998/01/26 02:49:20  robertj
+ * GNU support.
+ *
  * Revision 1.34  1998/01/26 00:46:48  robertj
  * Fixed Connect functions on PInternetProtocol so propagates read timeout variable so can adjust the connect timeout..
  *
@@ -120,9 +123,14 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "inetprot.h"
+#pragma implementation "mime.h"
+#endif
+
 #include <ptlib.h>
-#include <inetprot.h>
 #include <sockets.h>
+#include <inetprot.h>
 #include <mime.h>
 
 

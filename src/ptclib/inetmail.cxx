@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.9 1997/07/14 11:47:14 robertj Exp $
+ * $Id: inetmail.cxx,v 1.10 1998/01/26 02:49:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.10  1998/01/26 02:49:20  robertj
+ * GNU support.
+ *
  * Revision 1.9  1997/07/14 11:47:14  robertj
  * Added "const" to numerous variables.
  *
@@ -38,6 +41,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "inetmail.h"
+#endif
 
 #include <ptlib.h>
 #include <sockets.h>
