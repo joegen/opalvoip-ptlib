@@ -25,6 +25,11 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.11  2004/08/20 01:46:45  dereksmithies
+ * Patch from Srinivas.Kandagatla so that a video device can be opened with
+ * either a)human friendly name,  or with b) the linux device name ("ov511++" or "/dev/video0").
+ * Many thanks.
+ *
  * Revision 1.10  2004/05/13 22:22:14  dereksmithies
  * Fix a problem with duplicate user friendly names.
  *
@@ -519,13 +524,19 @@ PString V4LNames::BuildUserFriendly(PString devname)
   return ufname;
 }
 
+/*
+  There is a duplication in the list of names.
+  Consequently, opening the device as "ov511++" or "/dev/video0" will work.
+*/
 PStringList V4LNames::GetInputDeviceNames()
 {
   PWaitAndSignal m(mutex);
   PStringList result;
-  for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++)
+  for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++) {
     result += GetUserFriendly (inputDeviceNames[i]);
- 
+    result += inputDeviceNames[i];
+  }
+
   return result;
 }
 
