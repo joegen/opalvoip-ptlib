@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.164  2001/05/03 06:26:22  robertj
+ * Fixed strange problem that occassionally crashes on exit. Mutex cannot be
+ *   destroyed before program exit.
+ *
  * Revision 1.163  2001/04/27 01:05:26  yurik
  * Exit crash removal try
  *
@@ -568,16 +572,12 @@ class PSimpleThread : public PThread
     INT parameter;
 };
 
-#if defined(_WIN32_WCE)
-#pragma init_seg(lib)
-
-static PMutex gTraceMutex;
-#endif
+static PMutex * PTraceMutex = NULL;
 
 #ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
 #else
-static ostream * PErrorStream = 0L;
+static ostream * PErrorStream = NULL;
 #endif
 
 ostream & PGetErrorStream()
@@ -642,11 +642,11 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 
   if (filename != NULL) {
 #if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(TRUE);
+    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
     PTextFile * traceOutput = new PTextFile;
 #if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(FALSE);
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
 #endif
     if (traceOutput->Open(filename, PFile::WriteOnly))
       PTrace::SetStream(traceOutput);
@@ -699,19 +699,24 @@ BOOL PTrace::CanTrace(unsigned level)
   return level <= PTraceLevelThreshold;
 }
 
-static PMutex & PTraceMutex()
-{
-#if !defined(_WIN32_WCE)
-  static PMutex mutex;
-  return mutex;
-#else
-  return gTraceMutex;
-#endif
-}
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
-  PTraceMutex().Wait();
+  if (PTraceMutex == NULL) {
+    // This flag must never be destroyed before it is finished with. As we
+    // cannot assure destruction at the right time we simply allocate it and
+    // NEVER destroy it! This is OK as the only reason for its destruction is
+    // the program is exiting and then who cares?
+#if PMEMORY_CHECK
+    BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+    PTraceMutex = new PMutex;
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
+#endif
+  }
+
+  PTraceMutex->Wait();
 
   if (level == UINT_MAX)
     return *PTraceStream;
@@ -795,7 +800,7 @@ ostream & PTrace::End(ostream & s)
       s << endl;
   }
 
-  PTraceMutex().Signal();
+  PTraceMutex->Signal();
 
   return s;
 }
