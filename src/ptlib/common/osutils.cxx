@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.69 1996/06/03 10:01:31 robertj Exp $
+ * $Id: osutils.cxx,v 1.70 1996/06/13 13:31:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.70  1996/06/13 13:31:05  robertj
+ * Rewrite of auto-delete threads, fixes Windows95 total crash.
+ *
  * Revision 1.69  1996/06/03 10:01:31  robertj
  * Fixed GNU support bug fix for the fix.
  *
@@ -444,39 +447,6 @@ PTimeInterval PTimerList::Process()
   return minTimeLeft;
 }
 
-
-#if defined(P_PLATFORM_HAS_THREADS)
-
-PProcess::TimerThread::TimerThread()
-  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
-{
-  Resume();
-}
-
-
-void PProcess::TimerThread::Main()
-{
-  for (;;) {
-    if (PProcess::Current()->GetTimerList()->Process() == PMaxTimeInterval)
-      semaphore.Wait();
-    else
-      semaphore.Wait(5000);
-  }
-}
-
-
-void PProcess::SignalTimerChange()
-{
-  if (timerThread == (PThread *)-1)
-    return;
-  if (timerThread == NULL)
-    timerThread = PNEW TimerThread;
-  else
-    timerThread->semaphore.Signal();
-}
-
-
-#endif
 
 #endif
 
