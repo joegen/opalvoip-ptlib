@@ -9,13 +9,17 @@ SOURCES		:= $(strip $(SOURCES))
 #  defines for common Unix types
 ###############################################################################
 #
+ifeq ($(OSTYPE),solaris)
+P_SOLARIS	= 1
+else
+
 ifeq ($(HOSTTYPE),sun4)
 P_SUN4  	= 1
-endif
+else
 ifndef OSTYPE
 ifeq ($(HOSTTYPE),i486-linux)
 P_LINUX		= 1
-endif
+else
 ifndef MACHTYPE
 #P_LINUX	= 1
 #P_SUN4  	= 1
@@ -23,6 +27,10 @@ ifndef MACHTYPE
 #P_HPUX		= 1
 #P_ULTRIX	= 1
 
+endif
+endif
+endif
+	@echo
 #STDCCFLAGS	:= -DPHAS_TEMPLATES
 
 ####################################################
@@ -62,9 +70,8 @@ endif # FreeBSD
 
 ifdef P_SUN4
 ####################################################
-# Sparc Sun 4x, using gcc 2.6.3
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SUN4 -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 
+ifeq ($(OSTYPE),sunos)
 
 OBJ_SUFFIX	= sun4
 # Sparc Sun 4x, using gcc 2.7.2
@@ -73,9 +80,10 @@ endif
 
 ifdef P_SOLARIS
 else
-# Sparc Solaris 2.x, using gcc 2.6.3
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PLITTLE_ENDIAN -DPCHAR8=PANSI_CHAR 
+
+STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
+RANLIB		:= 1
 OBJ_SUFFIX	= solaris
 
 endif
