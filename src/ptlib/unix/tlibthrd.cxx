@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.53  2000/12/21 12:36:32  craigs
+ * Removed potential to stop threads twice
+ *
  * Revision 1.52  2000/12/05 08:24:50  craigs
  * Fixed problem with EINTR causing havoc
  *
@@ -530,16 +533,18 @@ void PThread::PX_ThreadEnd(void * arg)
   PProcess & process = PProcess::Current();
   
   pthread_t id = thread->PX_GetThreadId();
-  thread->PX_threadId = 0;  // Prevent terminating terminated thread
+  if (id != 0) {
+    thread->PX_threadId = 0;  // Prevent terminating terminated thread
+
+    // remove this thread from the active thread list
+    process.threadMutex.Wait();
+    process.activeThreads.SetAt((unsigned)id, NULL);
+    process.threadMutex.Signal();
+  }
 
   // delete the thread if required
   if (thread->autoDelete)
     delete thread;
-
-  // remove this thread from the thread list
-  process.threadMutex.Wait();
-  process.activeThreads.SetAt((unsigned)id, NULL);
-  process.threadMutex.Signal();
 }
 
 
