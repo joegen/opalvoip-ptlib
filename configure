@@ -3830,7 +3830,7 @@ fi
 
   if test ${HAS_PTHREADS} = yes ; then
     ENDLDLIBS="$ENDLDLIBS -pthread"
-    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
   fi
 fi
 
