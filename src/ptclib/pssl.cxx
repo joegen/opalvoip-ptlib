@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.21 2001/05/16 06:31:37 robertj Exp $
+ * $Id: pssl.cxx,v 1.22 2001/05/29 03:33:54 craigs Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.22  2001/05/29 03:33:54  craigs
+ * Added options to be compatible with OpenSSL 0.9.6
+ *
  * Revision 1.21  2001/05/16 06:31:37  robertj
  * Fixed GNU C++ compatibility
  *
@@ -714,9 +717,12 @@ BOOL PSSLChannel::RawSSLRead(PChannel * chan, void * buf, PINDEX & len)
 
 extern "C" {
 
+#if (OPENSSL_VERSION_NUMBER < 0x00906000)
+
 typedef int (*ifptr)();
 typedef long (*lfptr)();
 
+#endif
 
 static int Psock_new(BIO * bio)
 {
@@ -746,7 +752,7 @@ static int Psock_free(BIO * bio)
 }
 
 
-static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
+static long Psock_ctrl(BIO * bio, int cmd, long num, void * ptr)
 {
   long ret = 1;
   int *ip;
@@ -825,7 +831,7 @@ static int Psock_read(BIO * bio, char * out, int outl)
 }
 
 
-static int Psock_write(BIO * bio, char * in, int inl)
+static int Psock_write(BIO * bio, const char * in, int inl)
 {
   int ret = 0;
 
@@ -844,7 +850,7 @@ static int Psock_write(BIO * bio, char * in, int inl)
 }
 
 
-static int Psock_puts(BIO * bio,char * str)
+static int Psock_puts(BIO * bio, const char * str)
 {
   int n,ret;
 
@@ -861,6 +867,7 @@ static BIO_METHOD methods_Psock =
 {
   BIO_TYPE_SOCKET,
   "ptlib socket",
+#if (OPENSSL_VERSION_NUMBER < 0x00906000)
   (ifptr)Psock_write,
   (ifptr)Psock_read,
   (ifptr)Psock_puts,
@@ -868,6 +875,15 @@ static BIO_METHOD methods_Psock =
   (lfptr)Psock_ctrl,
   (ifptr)Psock_new,
   (ifptr)Psock_free
+#else
+  Psock_write,
+  Psock_read,
+  Psock_puts,
+  NULL,
+  Psock_ctrl,
+  Psock_new,
+  Psock_free
+#endif
 };
 
 
