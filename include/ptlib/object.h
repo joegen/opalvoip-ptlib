@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.99  2004/04/09 11:54:46  csoutheren
+ * Added configure.in check for STL streams, and tested with gcc 2.95.3,
+ * gcc 3.3.1, and gcc 3.3.3
+ *
  * Revision 1.98  2004/04/09 07:53:51  rjongbloed
  * Fixed backward compatibility after STL streams change
  *
@@ -385,7 +389,7 @@
     #endif
   #else
     #include <iostream.h>
-    #include <strstrea.h>
+    #include <strstream.h>
     #ifndef __MWERKS__
       #include <iomanip.h>
     #endif
@@ -413,7 +417,7 @@ typedef long _Ios_Fmtflags;
 #ifdef _DEBUG
 #define P_USE_INLINES 0
 #else
-#define P_USE_INLINES 1
+#define P_USE_INLINES 0
 #endif
 #endif
 
