@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.12 1995/12/10 11:54:30 robertj Exp $
+ * $Id: config.h,v 1.13 1996/01/28 14:10:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
+ * Revision 1.13  1996/01/28 14:10:10  robertj
+ * Added time functions to PConfig.
+ *
  * Revision 1.12  1995/12/10 11:54:30  robertj
  * Added WIN32 registry support for PConfig objects.
  *
@@ -347,6 +350,46 @@ PDECLARE_CLASS(PConfig, PObject)
        The value is always formatted as a signed decimal or exponential form
        number with no leading or trailing blanks, ie it uses the %g formatter
        from the printf() function.
+     */
+
+    PTime GetTime(
+      const PString & key       // The key name for the variable.
+    );
+    PTime GetTime(
+      const PString & key,      // The key name for the variable.
+      const PTime & dflt        // Default value for the variable.
+    );
+    PTime GetTime(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key       // The key name for the variable.
+    );
+    PTime GetTime(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      const PTime & dflt        // Default value for the variable.
+    );
+    /* Get a <A>PTime</A> variable determined by the key in the section. If
+       the section name is not specified then the default section is used.
+
+       If the key is not present the value returned is the that provided by
+       the <CODE>dlft</CODE> parameter. Note that this is different from the
+       key being present but having no value, in which case zero is returned.
+
+       <H2>Returns:</H2>
+       time/date value of the variable.
+     */
+
+    void SetTime(
+      const PString & key,      // The key name for the variable.
+      const PTime & value       // New value to set for the variable.
+    );
+    void SetTime(
+      const PString & section,  // Section to use instead of the default.
+      const PString & key,      // The key name for the variable.
+      const PTime & value       // New value to set for the variable.
+    );
+    /* Set a <A>PTime</A> variable determined by the key in the section. If
+       the section name is not specified then the default section is used.
      */
 
 
