@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.6  2002/08/13 03:02:07  robertj
+ * Removed previous fix for memory leak, as object was already deleted.
+ *
  * Revision 1.5  2002/08/13 01:55:00  craigs
  * Fixed memory leak on PXMLRPCRequest class
  *
@@ -114,7 +117,6 @@ class PXMLRPCRequest : public PXML
   PCLASSINFO(PXMLRPCRequest, PXML);
   public:
     PXMLRPCRequest(const PString & method);
-    ~PXMLRPCRequest();
 
     PXMLRPCParams * GetParams()  { return params; }
 
