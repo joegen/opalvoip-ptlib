@@ -174,6 +174,11 @@ int	_open( const char *filename, int oflag , int pmode)
 	return (int)osfh;
 }
 
+int _sopen(const char *filename, int oflag , int pmode, ...)
+{ 
+	return _open(filename, oflag , pmode); 
+}
+
 int	_chsize( int nHandle, long size )
 {
 	if ((DWORD)size!=SetFilePointer((HANDLE)nHandle,size,NULL,FILE_BEGIN)) return -1;
