@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.10  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.9  1998/11/20 03:18:24  robertj
  * Split rad and write buffers to separate pools.
  *
@@ -68,7 +71,9 @@
 #endif
 
 
-PDECLARE_CLASS(PEthSocket, PSocket)
+class PEthSocket : public PSocket
+{
+  PCLASSINFO(PEthSocket, PSocket)
 /* This class describes a type of socket that will communicate using
    raw ethernet packets.
  */

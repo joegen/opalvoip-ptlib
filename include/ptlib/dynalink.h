@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.5  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.4  1998/09/23 06:20:29  robertj
  * Added open source copyright license.
  *
@@ -48,7 +51,9 @@
 #endif
 
 
-PDECLARE_CLASS(PDynaLink, PObject)
+class PDynaLink : public PObject
+{
+  PCLASSINFO(PDynaLink, PObject)
 /* A dynamic link library. This allows the loading at run time of code
    modules for use by an application.
  */

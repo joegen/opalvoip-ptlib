@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.29  1999/02/16 08:07:11  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.28  1998/09/23 06:20:35  robertj
  * Added open source copyright license.
  *
@@ -127,7 +130,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
 
-PDECLARE_CLASS(PFile, PChannel)
+class PFile : public PChannel
+{
+  PCLASSINFO(PFile, PChannel)
 /* This class represents a disk file. This is a particular type of I/O channel
    that has certain attributes. All platforms have a disk file, though exact
    details of naming convertions etc may be different.
