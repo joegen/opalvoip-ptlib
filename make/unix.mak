@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.92  2001/05/29 03:32:53  craigs
+# Added additional checks for OpenSSL
+#
 # Revision 1.91  2001/04/02 00:09:44  robertj
 # Added big endian flag for Linux on sparc, thanks Kawahara Taro.
 #
@@ -883,6 +886,13 @@ ifdef  OPENSSLDIR
 STDCCFLAGS	+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
 LDFLAGS		+= -L$(OPENSSLDIR)/lib
 ENDLDLIBS	+= -lssl -lcrypto
+HAS_OPENSSL	= 1
+else
+ifneq (,$(wildcard /usr/include/openssl))
+STDCCFLAGS	+= -DP_SSL -I/usr/include/openssl 
+ENDLDLIBS	+= -lssl -lcrypto
+HAS_OPENSSL	= 1
+endif
 endif
 
 
