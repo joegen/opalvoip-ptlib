@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.12 1997/02/14 13:53:59 robertj Exp $
+ * $Id: lists.h,v 1.13 1997/04/27 05:50:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.13  1997/04/27 05:50:10  robertj
+ * DLL support.
+ *
  * Revision 1.12  1997/02/14 13:53:59  robertj
  * Major rewrite of sorted list to use sentinel record instead of NULL pointers.
  *
@@ -841,11 +844,11 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
      */
 
 
-  protected:
     class Element {
       public:
         Element(PObject * theData);
 
+      private:
         void DeleteSubTrees(BOOL deleteObject);
         Element * Successor() const;
         Element * Predecessor() const;
@@ -858,14 +861,16 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
         PObject * data;
         PINDEX subTreeSize;
         enum { Red, Black } colour;
+
+      friend class PAbstractSortedList;
     };
     friend class Element;
 
-    static Element nil;
+  protected:
 
     class Info {
       public:
-        Info() { root = &nil; lastElement = NULL; }
+        Info();
         Element * root;
         Element * lastElement;
         PINDEX    lastIndex;
