@@ -618,6 +618,10 @@ PMutex::PMutex()
   PAssertOS( semId >= B_NO_ERROR );
 }
 
+PMutex::~PMutex()
+{
+}
+
 void PMutex::Wait()
 {
     PAssertOS( semId >= B_NO_ERROR );
