@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.111  2005/03/10 06:37:20  csoutheren
+ * Removed use of typeid on WIndows to get class name because it is not threadsafe
+ * In fact, lets just use #classname everywhere because that will always work
+ * Thanks to Vyacheslav Frolov
+ *
  * Revision 1.110  2004/08/14 14:17:29  csoutheren
  * Fixed problem with PAssert and associated functions caused by using expressions
  * as statements. inline functions are your friend :)
@@ -1274,9 +1279,7 @@ template<class BaseClass> inline BaseClass * PAssertCast(BaseClass * obj, const 
 
 #include <typeinfo>
 
-#ifndef PCLASSNAME
-#error	"Must define PCLASSNAME"
-#endif
+#define   PCLASSNAME(cls) (#cls)
 
 #define PBASECLASSINFO(cls, par) \
   public: \
