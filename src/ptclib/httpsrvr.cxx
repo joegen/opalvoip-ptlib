@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.39  2002/04/12 08:15:23  robertj
+ * Fixed warning on older GNU compilers, also guarantees numeric output.
+ *
  * Revision 1.38  2001/10/31 01:37:13  robertj
  * Fixed deleting of object added to http name space if add fails.
  * Changes to support HTTP v1.1 chunked transfer encoding.
@@ -1348,8 +1351,8 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
     return persist;
 
   if (msg.IsEmpty())
-    msg << PHTML::Title()    << PHTTP::OK << " OK" << PHTML::Body()
-        << PHTML::Heading(1) << PHTTP::OK << " OK" << PHTML::Heading(1)
+    msg << PHTML::Title()    << (unsigned)PHTTP::OK << " OK" << PHTML::Body()
+        << PHTML::Heading(1) << (unsigned)PHTTP::OK << " OK" << PHTML::Heading(1)
         << PHTML::Body();
   else {
     if (msg.Is(PHTML::InBody))
