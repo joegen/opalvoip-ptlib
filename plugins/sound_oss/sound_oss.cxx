@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.4  2003/11/18 10:59:06  csoutheren
+ * Removed ALSA compatibility hack as ALSA users can use the ALSA plugin
+ *
  * Revision 1.3  2003/11/14 05:58:00  csoutheren
  * Removed loopback code as this should be in a seperate plugin :)
  *
@@ -523,20 +526,8 @@ BOOL PSoundChannelOSS::Open(const PString & _device,
     // open the device in non-blocking mode to avoid hang if already open
     os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
 
-    if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-      // cannot open in read/write mode. Try in one direction only. (for ALSA)
-      if (_dir == Recorder) {
-        os_handle = ::open((const char *)_device, O_RDONLY | O_NONBLOCK);
-      } else {
-        os_handle = ::open((const char *)_device, O_WRONLY | O_NONBLOCK);
-      }
-
-      if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-        return ConvertOSError(os_handle);
-      }
-
-      // device opened, but in half duplex mode
-    }
+    if ((os_handle < 0) && (errno != EWOULDBLOCK)) 
+      return ConvertOSError(os_handle);
 
     // switch to blocking mode
     DWORD cmd = 0;
