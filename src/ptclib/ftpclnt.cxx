@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.8  2000/04/07 06:29:46  rogerh
+ * Add a short term workaround for an Internal Compiler Error on MAC OS X when
+ * returning certain types of PString. Submitted by Kevin Packard.
+ *
  * Revision 1.7  1998/12/23 00:34:55  robertj
  * Fixed normal TCP socket support after adding SOCKS support.
  *
@@ -145,7 +149,12 @@ PString PFTPClient::GetCurrentDirectory()
 
   } while (lastResponseInfo[quote2] != '"');
 
+#if defined(P_MACOSX)	// make Apple's gnu compiler happy
+  PString retval = lastResponseInfo(quote1+1, quote2-1);
+  return retval;
+#else
   return lastResponseInfo(quote1+1, quote2-1);
+#endif
 }
 
 
