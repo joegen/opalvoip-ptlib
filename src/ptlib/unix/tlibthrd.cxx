@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.126  2004/03/24 02:37:04  csoutheren
+ * Fixed problem with incorrect usage of sem_timedwait
+ *
  * Revision 1.125  2004/03/23 04:56:23  csoutheren
  * Added patches to use XPG6 threading under Linux if available
  * Thanks to Matthew Hodgson
@@ -465,6 +468,10 @@
 #include <sys/sysctl.h>
 // going to need the main thread for adjusting relative priority
 static pthread_t baseThread;
+#endif
+
+#ifdef P_HAS_SEMAPHORES_XPG6
+#include "semaphore.h"
 #endif
 
 int PX_NewHandle(const char *, int);
