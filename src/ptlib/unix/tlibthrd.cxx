@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.108  2003/01/06 18:49:15  rogerh
+ * Back out pthead_kill to pthread_cancel change on NetBSD
+ *
  * Revision 1.107  2002/12/11 05:39:26  robertj
  * Added logging for file handle changes.
  * Fixd bug where internal maxHandles not set when increased.
@@ -899,7 +902,11 @@ void PThread::Terminate()
   PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
+#if defined(P_NETBSD)
+  pthread_kill(PX_threadId,SIGKILL);
+#else
   pthread_cancel(PX_threadId);
+#endif
 }
 
 
