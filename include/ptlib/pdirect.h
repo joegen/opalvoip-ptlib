@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.32  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.31  2000/04/03 18:41:27  robertj
  * Fixed BeOS compatibility problem with openlog() function.
  *
@@ -127,6 +130,9 @@
 #pragma interface
 #endif
 
+#ifdef Fifo
+#undef Fifo
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // File System

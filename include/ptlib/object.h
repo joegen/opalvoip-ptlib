@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.60  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.59  2000/02/29 12:26:14  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -224,9 +227,17 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __USE_STL__
+#include <string>
+#include <iomanip>
+#include <iostream>
+#include <strstream>
+#else
+#define std
 #include <iostream.h>
 #ifndef __MWERKS__
 #include <iomanip.h>
+#endif
 #endif
 
 
