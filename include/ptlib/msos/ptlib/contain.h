@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.46  2004/06/19 09:10:24  csoutheren
+ * Removed MSVC warnings for <queue>
+ *
  * Revision 1.45  2004/06/01 23:25:20  csoutheren
  * Disabled warnings under MSVC
  *
@@ -490,6 +493,13 @@ extern "C" char ** __argv;
 
 // preload <algorithm> and kill warnings
 #include <algorithm>
+
+// preload <queue> and kill warnings
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4284)
+#include <queue>
+#pragma warning(pop)
 
 // VS.net won't work without this :(
 #if _MSC_VER>=1300
