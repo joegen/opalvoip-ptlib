@@ -172,6 +172,8 @@ EXPORTS
     ??0?$PList@VPNotifier@@@@QAE@XZ @3989 NONAME
     ??0?$PList@VPPluginService@@@@IAE@HPBV0@@Z @3601 NONAME
     ??0?$PList@VPPluginService@@@@QAE@XZ @3602 NONAME
+    ??0?$PList@VPSafeObject@@@@IAE@HPBV0@@Z @7050 NONAME
+    ??0?$PList@VPSafeObject@@@@QAE@XZ @7051 NONAME
     ??0?$PList@VPSocket@@@@IAE@HPBV0@@Z @40 NONAME
     ??0?$PList@VPSocket@@@@QAE@XZ @41 NONAME
     ??0?$PList@VPString@@@@IAE@HPBV0@@Z @42 NONAME
@@ -689,6 +691,7 @@ EXPORTS
     ??1?$PList@VPDynaLink@@@@UAE@XZ @3990 NONAME
     ??1?$PList@VPNotifier@@@@UAE@XZ @3991 NONAME
     ??1?$PList@VPPluginService@@@@UAE@XZ @3616 NONAME
+    ??1?$PList@VPSafeObject@@@@UAE@XZ @7052 NONAME
     ??1?$PList@VPSocket@@@@UAE@XZ @438 NONAME
     ??1?$PList@VPString@@@@UAE@XZ @439 NONAME
     ??1?$PList@VPThread@@@@UAE@XZ @440 NONAME
@@ -1074,6 +1077,7 @@ EXPORTS
     ??A?$PList@VPDynaLink@@@@QBEAAVPDynaLink@@H@Z @3992 NONAME
     ??A?$PList@VPNotifier@@@@QBEAAVPNotifier@@H@Z @3993 NONAME
     ??A?$PList@VPPluginService@@@@QBEAAVPPluginService@@H@Z @3622 NONAME
+    ??A?$PList@VPSafeObject@@@@QBEAAVPSafeObject@@H@Z @7053 NONAME
     ??A?$PList@VPSocket@@@@QBEAAVPSocket@@H@Z @1002 NONAME
     ??A?$PList@VPString@@@@QBEAAVPString@@H@Z @1003 NONAME
     ??A?$PList@VPThread@@@@QBEAAVPThread@@H@Z @1004 NONAME
@@ -1268,6 +1272,7 @@ EXPORTS
     ??_7?$PList@VPDynaLink@@@@6B@ @3994 NONAME
     ??_7?$PList@VPNotifier@@@@6B@ @3995 NONAME
     ??_7?$PList@VPPluginService@@@@6B@ @3624 NONAME
+    ??_7?$PList@VPSafeObject@@@@6B@ @7054 NONAME
     ??_7?$PList@VPSocket@@@@6B@ @1135 NONAME
     ??_7?$PList@VPString@@@@6B@ @1136 NONAME
     ??_7?$PList@VPThread@@@@6B@ @1137 NONAME
@@ -1598,6 +1603,7 @@ EXPORTS
     ??_R0?AV?$PList@VPDynaLink@@@@@8 @4028 NONAME
     ??_R0?AV?$PList@VPNotifier@@@@@8 @4029 NONAME
     ??_R0?AV?$PList@VPPluginService@@@@@8 @4030 NONAME
+    ??_R0?AV?$PList@VPSafeObject@@@@@8 @7055 NONAME
     ??_R0?AV?$PList@VPSocket@@@@@8 @4031 NONAME
     ??_R0?AV?$PList@VPString@@@@@8 @4032 NONAME
     ??_R0?AV?$PList@VPThread@@@@@8 @4033 NONAME
@@ -1855,6 +1861,7 @@ EXPORTS
     ??_R1A@?0A@A@?$PList@VPDynaLink@@@@8 @4257 NONAME
     ??_R1A@?0A@A@?$PList@VPNotifier@@@@8 @4258 NONAME
     ??_R1A@?0A@A@?$PList@VPPluginService@@@@8 @4259 NONAME
+    ??_R1A@?0A@A@?$PList@VPSafeObject@@@@8 @7056 NONAME
     ??_R1A@?0A@A@?$PList@VPSocket@@@@8 @4260 NONAME
     ??_R1A@?0A@A@?$PList@VPString@@@@8 @4261 NONAME
     ??_R1A@?0A@A@?$PList@VPThread@@@@8 @4262 NONAME
@@ -2093,6 +2100,7 @@ EXPORTS
     ??_R2?$PList@VPDynaLink@@@@8 @4474 NONAME
     ??_R2?$PList@VPNotifier@@@@8 @4475 NONAME
     ??_R2?$PList@VPPluginService@@@@8 @4476 NONAME
+    ??_R2?$PList@VPSafeObject@@@@8 @7057 NONAME
     ??_R2?$PList@VPSocket@@@@8 @4477 NONAME
     ??_R2?$PList@VPString@@@@8 @4478 NONAME
     ??_R2?$PList@VPThread@@@@8 @4479 NONAME
@@ -2322,6 +2330,7 @@ EXPORTS
     ??_R3?$PList@VPDynaLink@@@@8 @4683 NONAME
     ??_R3?$PList@VPNotifier@@@@8 @4684 NONAME
     ??_R3?$PList@VPPluginService@@@@8 @4685 NONAME
+    ??_R3?$PList@VPSafeObject@@@@8 @7058 NONAME
     ??_R3?$PList@VPSocket@@@@8 @4686 NONAME
     ??_R3?$PList@VPString@@@@8 @4687 NONAME
     ??_R3?$PList@VPThread@@@@8 @4688 NONAME
@@ -2551,6 +2560,7 @@ EXPORTS
     ??_R4?$PList@VPDynaLink@@@@6B@ @4892 NONAME
     ??_R4?$PList@VPNotifier@@@@6B@ @4893 NONAME
     ??_R4?$PList@VPPluginService@@@@6B@ @4894 NONAME
+    ??_R4?$PList@VPSafeObject@@@@6B@ @7059 NONAME
     ??_R4?$PList@VPSocket@@@@6B@ @4895 NONAME
     ??_R4?$PList@VPString@@@@6B@ @4896 NONAME
     ??_R4?$PList@VPThread@@@@6B@ @4897 NONAME
@@ -2919,6 +2929,7 @@ EXPORTS
     ?Class@?$PList@VPDynaLink@@@@SAPBDXZ @3998 NONAME
     ?Class@?$PList@VPNotifier@@@@SAPBDXZ @3999 NONAME
     ?Class@?$PList@VPPluginService@@@@SAPBDXZ @3639 NONAME
+    ?Class@?$PList@VPSafeObject@@@@SAPBDXZ @7060 NONAME
     ?Class@?$PList@VPSocket@@@@SAPBDXZ @1511 NONAME
     ?Class@?$PList@VPString@@@@SAPBDXZ @1512 NONAME
     ?Class@?$PList@VPThread@@@@SAPBDXZ @1513 NONAME
@@ -3073,6 +3084,7 @@ EXPORTS
     ?Clone@?$PList@VPDynaLink@@@@UBEPAVPObject@@XZ @4000 NONAME
     ?Clone@?$PList@VPNotifier@@@@UBEPAVPObject@@XZ @4001 NONAME
     ?Clone@?$PList@VPPluginService@@@@UBEPAVPObject@@XZ @3643 NONAME
+    ?Clone@?$PList@VPSafeObject@@@@UBEPAVPObject@@XZ @7061 NONAME
     ?Clone@?$PList@VPSocket@@@@UBEPAVPObject@@XZ @1647 NONAME
     ?Clone@?$PList@VPString@@@@UBEPAVPObject@@XZ @1648 NONAME
     ?Clone@?$PList@VPThread@@@@UBEPAVPObject@@XZ @1649 NONAME
@@ -3175,6 +3187,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @4002 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPNotifier@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @4003 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPPluginService@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3648 NONAME
+    ?CompareObjectMemoryDirect@?$PList@VPSafeObject@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @7062 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1741 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1742 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1743 NONAME
@@ -3617,6 +3630,7 @@ EXPORTS
     ?GetClass@?$PList@VPDynaLink@@@@UBEPBDI@Z @5397 NONAME
     ?GetClass@?$PList@VPNotifier@@@@UBEPBDI@Z @5398 NONAME
     ?GetClass@?$PList@VPPluginService@@@@UBEPBDI@Z @5399 NONAME
+    ?GetClass@?$PList@VPSafeObject@@@@UBEPBDI@Z @7063 NONAME
     ?GetClass@?$PList@VPSocket@@@@UBEPBDI@Z @5400 NONAME
     ?GetClass@?$PList@VPString@@@@UBEPBDI@Z @5401 NONAME
     ?GetClass@?$PList@VPThread@@@@UBEPBDI@Z @5402 NONAME
@@ -4215,6 +4229,7 @@ EXPORTS
     ?InternalIsDescendant@?$PList@VPDynaLink@@@@UBEHPBD@Z @5260 NONAME
     ?InternalIsDescendant@?$PList@VPNotifier@@@@UBEHPBD@Z @5261 NONAME
     ?InternalIsDescendant@?$PList@VPPluginService@@@@UBEHPBD@Z @5262 NONAME
+    ?InternalIsDescendant@?$PList@VPSafeObject@@@@UBEHPBD@Z @7064 NONAME
     ?InternalIsDescendant@?$PList@VPSocket@@@@UBEHPBD@Z @5263 NONAME
     ?InternalIsDescendant@?$PList@VPString@@@@UBEHPBD@Z @5264 NONAME
     ?InternalIsDescendant@?$PList@VPThread@@@@UBEHPBD@Z @5265 NONAME
