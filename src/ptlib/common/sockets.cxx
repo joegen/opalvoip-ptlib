@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.24 1996/02/08 12:27:22 robertj Exp $
+ * $Id: sockets.cxx,v 1.25 1996/02/13 13:08:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.25  1996/02/13 13:08:09  robertj
+ * Fixed usage of sock_addr structure, not being cleared correctly.
+ *
  * Revision 1.24  1996/02/08 12:27:22  robertj
  * Added function to get peer port as well as IP number..
  *
@@ -344,12 +347,13 @@ BOOL PIPSocket::_Connect(const PString & host)
     return FALSE;
 
   // attempt to connect
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  address.sin_port = htons(port);  // set the port
-  address.sin_addr = ipnum;
+  sockaddr_in sin;
+  memset(&sin, 0, sizeof(sin));
+  sin.sin_family = AF_INET;
+  sin.sin_port   = htons(port);  // set the port
+  sin.sin_addr   = ipnum;
   return ConvertOSError(::connect(os_handle,
-                               (struct sockaddr *)&address, sizeof(address)));
+                               (struct sockaddr *)&sin, sizeof(sin)));
 }
 
 
@@ -357,10 +361,10 @@ BOOL PIPSocket::_Bind()
 {
   // attempt to listen
   sockaddr_in sin;
-  sin.sin_family = AF_INET;
-  sin.sin_addr.s_addr = INADDR_ANY;
-  sin.sin_port = htons(port);  // set the port
-  memset(&sin.sin_addr, 0, sizeof(sin.sin_addr));
+  memset(&sin, 0, sizeof(sin));
+  sin.sin_family      = AF_INET;
+  sin.sin_addr.s_addr = htonl(INADDR_ANY);
+  sin.sin_port        = htons(port);       // set the port
 
   return ConvertOSError(bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)));
 }
