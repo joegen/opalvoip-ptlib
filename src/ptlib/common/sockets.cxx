@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.186  2005/02/13 23:01:36  csoutheren
+ * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
+ * address range as RFC1918
+ *
  * Revision 1.185  2005/02/07 12:12:30  csoutheren
  * Expanded interface list routines to include IPV6 addresses
  * Added IPV6 to GetLocalAddress
@@ -2502,6 +2506,30 @@ BOOL PIPSocket::Address::IsBroadcast() const
   return *this == broadcast4;
 }
 
+BOOL PIPSocket::Address::IsRFC1918() const 
+{ 
+#if P_HAS_IPV6
+  if (version == 6) {
+    if (IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six))
+      return TRUE;
+    if (IsV4Mapped())
+      return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();
+  }
+#endif
+  return (Byte1() == 10)
+          ||
+          (
+            (Byte1() == 172)
+            &&
+            (Byte2() >= 16) && (Byte2() <= 31)
+          )
+          ||
+          (
+            (Byte1() == 192) 
+            &&
+            (Byte2() == 168)
+          );
+}
 
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
