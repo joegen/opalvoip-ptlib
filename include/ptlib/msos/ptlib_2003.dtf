@@ -357,6 +357,7 @@ EXPORTS
     ??0FactoryMap@PFactoryBase@@QAE@XZ @6497 NONAME
     ??0HouseKeepingThread@PProcess@@QAE@XZ @40 NONAME
     ??0Info@PAbstractList@@QAE@XZ @4602 NONAME
+    ??0Info@PAbstractSortedList@@QAE@XZ @7363 NONAME
     ??0InterfaceEntry@PIPSocket@@QAE@ABVPString@@ABVAddress@1@10@Z @42 NONAME
     ??0iterator@?$vector@PAVPPluginModuleManager@@V?$allocator@PAVPPluginModuleManager@@@std@@@std@@QAE@PAPAVPPluginModuleManager@@@Z @5964 NONAME
     ??0iterator@?$vector@VPString@@V?$allocator@VPString@@@std@@@std@@QAE@PAVPString@@@Z @5965 NONAME
@@ -5001,7 +5002,7 @@ EXPORTS
     ?OpenSocket@PWinSock@@EAEHXZ @2154 NONAME
     ?OpenSocketGQOS@PUDPSocket@@MAEHHHH@Z @2668 NONAME
     ?OpenWaveFile@PMultiMediaFile@@QAEHABVPFilePath@@AAVPWaveFormat@@AAK@Z @2155 NONAME
-    ?OrderSelect@PAbstractSortedList@@IBEPAUElement@1@PAU21@H@Z @3021 NONAME
+    ?OrderSelect@Info@PAbstractSortedList@@QBEPAUElement@2@PAU32@H@Z @7364 NONAME
     ?os_accept@PSocket@@IAEHAAV1@PAUsockaddr@@PAH@Z @2157 NONAME
     ?os_close@PSocket@@IAEHXZ @2158 NONAME
     ?os_connect@PSocket@@IAEHPAUsockaddr@@H@Z @2159 NONAME
@@ -5053,7 +5054,7 @@ EXPORTS
     ?PPlugin_PVideoOutputDevice_NULLOutput_GetVersion@@YAIXZ @2895 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance@@3VPPlugin_PVideoOutputDevice_NULLOutput_Registration@@A @2896 NONAME
     ?PProcessStartup_PString@PWLibFactoryLoader@@3HA @7362 NONAME
-    ?Predecessor@PAbstractSortedList@@IBEPAUElement@1@PBU21@@Z @3022 NONAME
+    ?Predecessor@Info@PAbstractSortedList@@QBEPAUElement@2@PBU32@@Z @7365 NONAME
     ?PreInitialise@PProcess@@SAXHPAPAD0@Z @2191 NONAME
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEIN__@@@Z @2192 NONAME
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEOUT__@@AAH@Z @2193 NONAME
@@ -5493,7 +5494,7 @@ EXPORTS
     ?Stop@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2532 NONAME
     ?str@ostrstream@std@@QAEPADXZ @5397 NONAME
     ?str@strstreambuf@std@@QAEPADXZ @5398 NONAME
-    ?Successor@PAbstractSortedList@@IBEPAUElement@1@PBU21@@Z @3025 NONAME
+    ?Successor@Info@PAbstractSortedList@@QBEPAUElement@2@PBU32@@Z @7366 NONAME
     ?Suspend@PThread@@UAEXH@Z @2534 NONAME
     ?sync@Buffer@PDebugStream@@UAEHXZ @2535 NONAME
     ?sync@Buffer@PStringStream@@UAEHXZ @2536 NONAME
