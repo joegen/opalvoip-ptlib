@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.20  2002/02/14 05:11:50  robertj
+ * Minor optimisation in the operator[] for arrays of PObjects.
+ *
  * Revision 1.19  1999/11/30 00:22:54  robertj
  * Updated documentation for doc++
  *
@@ -1095,8 +1098,11 @@ template <class T> class PArray : public PArrayObjects
      */
     T & operator[](
       PINDEX index  /// Index position in the collection of the object.
-    ) const { PAssert(GetAt(index) != NULL, PInvalidArrayElement);
-                                                   return *(T *)GetAt(index); }
+    ) const {
+      PObject * obj = GetAt(index);
+      PAssert(obj != NULL, PInvalidArrayElement);
+      return *(T *)obj;
+    }
   //@}
 
   protected:
@@ -1157,8 +1163,9 @@ information.
     inline virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const\
-      { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); \
-                                           return *(T *)(*theArray)[index]; } \
+      { PObject * obj = GetAt(index); \
+        PAssert(obj != NULL, PInvalidArrayElement); \
+        return *(T *)obj; } \
   }
 
 #define PDECLARE_ARRAY(cls, T) \
