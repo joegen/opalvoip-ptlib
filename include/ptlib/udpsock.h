@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.10 1996/05/15 10:19:15 robertj Exp $
+ * $Id: udpsock.h,v 1.11 1996/09/14 13:09:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
+ * Revision 1.11  1996/09/14 13:09:43  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.10  1996/05/15 10:19:15  robertj
  * Added ICMP protocol socket, getting common ancestor to UDP.
  *
@@ -67,23 +73,10 @@ PDECLARE_CLASS(PUDPSocket, PIPDatagramSocket)
        a "listening" socket is specified then the channel is also opened.
      */
 
-  // Overrides from class PIPSocket.
-    virtual WORD GetPortByService(
-      const PString & service   // Name of service to get port number for.
-    ) const;
-    /* Get the port number for the specified service.
-    
-       <H2>Returns:</H2>
-       Port number for service name.
-     */
 
-    virtual PString GetServiceByPort(
-      WORD port   // Number for service to find name of.
-    ) const;
-    /* Get the service name from the port number.
-    
-       <H2>Returns:</H2>
-       Service name for port number.
-     */
+  protected:
+    virtual BOOL OpenSocket();
+    virtual const char * GetProtocolName() const;
+
 
 // Class declaration continued in platform specific header file ///////////////
