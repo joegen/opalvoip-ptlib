@@ -27,6 +27,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.61  2001/10/09 08:53:26  robertj
+# Added LIBDIRS variable so can go "make libs" and make all libraries.
+# Added "make version" target to display version of project.
+# Added inclusion of library versions into "make tagbuild" check in.
+#
 # Revision 1.60  2001/08/07 08:24:42  robertj
 # Fixed bug in tagbuild if have more than one BUILD_NUMBER in file.
 #
@@ -155,6 +160,10 @@
 # common rules
 #
 ######################################################################
+
+# Submodules built with make lib
+LIBDIRS += $(PWLIBDIR)
+
 
 ifndef OBJDIR
 ifneq   (,$(GUI_TYPE))
@@ -292,117 +301,6 @@ endif
 # ifdef PROG
 endif
 
-######################################################################
-#
-# common rule to make a release of the program
-#
-######################################################################
-
-ifdef DEBUG
-
-release ::
-	$(MAKE) DEBUG= release
-
-else
-
-ifndef RELEASEDIR
-RELEASEDIR=releases
-endif
-
-ifndef RELEASEBASEDIR
-RELEASEBASEDIR=$(PROG)
-endif
-
-ifndef VERSION
-
-ifndef VERSION_FILE
-  ifneq (,$(wildcard buildnum.h))
-    VERSION_FILE := buildnum.h
-  else
-    ifneq (,$(wildcard version.h))
-      VERSION_FILE := version.h
-    else
-      ifneq (,$(wildcard custom.cxx))
-        VERSION_FILE := custom.cxx
-      endif
-    endif
-  endif
-endif
-
-ifndef MAJOR_VERSION_DEFINE
-MAJOR_VERSION_DEFINE:=MAJOR_VERSION
-endif
-
-ifndef MINOR_VERSION_DEFINE
-MINOR_VERSION_DEFINE:=MINOR_VERSION
-endif
-
-ifndef BUILD_NUMBER_DEFINE
-BUILD_NUMBER_DEFINE:=BUILD_NUMBER
-endif
-
-
-ifdef VERSION_FILE
-ifndef MAJOR_VERSION
-MAJOR_VERSION:=$(strip $(subst \#define,, $(subst $(MAJOR_VERSION_DEFINE),,\
-			$(shell grep "define *$(MAJOR_VERSION_DEFINE) *" $(VERSION_FILE)))))
-endif
-ifndef MINOR_VERSION
-MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
-			$(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
-endif
-ifndef BUILD_TYPE
-BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
-			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
-			$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
-endif
-ifndef BUILD_NUMBER
-BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
-			$(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
-endif
-VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
-endif
-endif
-
-
-ifndef VERSION
-
-release ::
-	@echo Must define VERSION macro or have version.h/custom.cxx file.
-
-tagbuild ::
-	@echo Must define VERSION macro or have version.h/custom.cxx file.
-
-else # ifdef VERSION
-
-RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
-
-release :: $(TARGET) releasefiles
-	cp $(TARGET) $(RELEASEPROGDIR)/$(PROG)
-	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
-	rm -r $(RELEASEPROGDIR)
-
-releasefiles ::
-	-mkdir -p $(RELEASEPROGDIR)
-
-ifndef CVS_TAG
-CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
-endif
-
-tagbuild ::
-	cvs tag -c $(CVS_TAG)
-ifdef VERSION_FILE
-	let BLD=$(BUILD_NUMBER)+1 ; \
-	echo "Incrementing to build number $$BLD"; \
-	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
-	mv -f $(VERSION_FILE).new $(VERSION_FILE)
-	cvs commit -m "Incremented build number after tagging." $(VERSION_FILE)
-endif
-
-endif # else ifdef VERSION
-
-endif # else ifdef DEBUG
-
 
 ######################################################################
 #
@@ -435,7 +333,7 @@ optdepend ::
 	@$(MAKE) DEBUG= optdepend
 
 libs ::
-	$(MAKE) -C $(PWLIBDIR) debug
+	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i debug; done
 
 else
 
@@ -459,7 +357,7 @@ optdepend :: $(DEPS)
 	@echo Created dependencies.
 
 libs ::
-	$(MAKE) -C $(PWLIBDIR) opt
+	set -e; for i in $(LIBDIRS); do $(MAKE) -C $$i opt; done
 
 endif
 
@@ -490,9 +388,173 @@ bothnoshared ::
 
 ######################################################################
 #
+# common rule to make a release of the program
+#
+######################################################################
+
+ifdef DEBUG
+
+# Cannot do this in DEBUG mode, so do it without DEBUG
+
+release ::
+	$(MAKE) DEBUG= release
+
+else
+
+# if user has not defined VERSION macro, calculate it from version file
+ifndef VERSION
+
+# if have not explictly defined VERSION_FILE, locate a default
+
+ifndef VERSION_FILE
+  ifneq (,$(wildcard buildnum.h))
+    VERSION_FILE := buildnum.h
+  else
+    ifneq (,$(wildcard version.h))
+      VERSION_FILE := version.h
+    else
+      ifneq (,$(wildcard custom.cxx))
+        VERSION_FILE := custom.cxx
+      endif
+    endif
+  endif
+endif
+
+
+ifdef VERSION_FILE
+
+# Set default strings to search in VERSION_FILE
+
+ifndef MAJOR_VERSION_DEFINE
+MAJOR_VERSION_DEFINE:=MAJOR_VERSION
+endif
+
+ifndef MINOR_VERSION_DEFINE
+MINOR_VERSION_DEFINE:=MINOR_VERSION
+endif
+
+ifndef BUILD_NUMBER_DEFINE
+BUILD_NUMBER_DEFINE:=BUILD_NUMBER
+endif
+
+
+# If not specified, find the various version components in the VERSION_FILE
+
+ifndef MAJOR_VERSION
+MAJOR_VERSION:=$(strip $(subst \#define,, $(subst $(MAJOR_VERSION_DEFINE),,\
+			$(shell grep "define *$(MAJOR_VERSION_DEFINE) *" $(VERSION_FILE)))))
+endif
+ifndef MINOR_VERSION
+MINOR_VERSION:=$(strip $(subst \#define,, $(subst $(MINOR_VERSION_DEFINE),,\
+			$(shell grep "define *$(MINOR_VERSION_DEFINE)" $(VERSION_FILE)))))
+endif
+ifndef BUILD_TYPE
+BUILD_TYPE:=$(strip $(subst \#define,,$(subst BUILD_TYPE,,\
+			$(subst AlphaCode,alpha,$(subst BetaCode,beta,$(subst ReleaseCode,.,\
+			$(shell grep "define *BUILD_TYPE" $(VERSION_FILE))))))))
+endif
+ifndef BUILD_NUMBER
+BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
+			$(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
+endif
+
+
+# Build the VERSION string from the components
+
+VERSION:=$(MAJOR_VERSION).$(MINOR_VERSION)$(BUILD_TYPE)$(BUILD_NUMBER)
+
+
+# Build the CVS_TAG string from the components
+
+ifndef CVS_TAG
+CVS_TAG := v$(MAJOR_VERSION)_$(MINOR_VERSION)$(subst .,_,$(BUILD_TYPE))$(BUILD_NUMBER)
+endif
+
+endif # ifdef VERSION_FILE
+
+endif # ifndef VERSION
+
+
+# Check for VERSION either predefined or defined by previosu section from VERSION_FILE
+
+ifndef VERSION
+
+release ::
+	@echo Must define VERSION macro or have version.h/custom.cxx file.
+
+tagbuild ::
+	@echo Must define VERSION macro or have version.h/custom.cxx file.
+
+else # ifdef VERSION
+
+# "make release" definition
+
+ifndef RELEASEDIR
+RELEASEDIR=releases
+endif
+
+ifndef RELEASEBASEDIR
+RELEASEBASEDIR=$(PROG)
+endif
+
+RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
+
+release :: $(TARGET) releasefiles
+	cp $(TARGET) $(RELEASEPROGDIR)/$(PROG)
+	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
+	rm -r $(RELEASEPROGDIR)
+
+releasefiles ::
+	-mkdir -p $(RELEASEPROGDIR)
+
+
+version:
+	@echo v$(VERSION) "  CVS tag:" `cvs status Makefile | grep "Sticky Tag" | sed -e "s/(none)/HEAD/" -e "s/(.*)//" -e "s/^.*://"`
+
+
+ifndef VERSION_FILE
+
+tagbuild ::
+	@echo Must define VERSION_FILE macro or have version.h/custom.cxx file.
+
+else # ifndef VERSION_FILE
+
+ifndef CVS_TAG
+
+tagbuild ::
+	@echo Must define CVS_TAG macro or have version.h/custom.cxx file.
+
+else # ifndef CVS_TAG
+
+tagbuild ::
+	sed $(foreach dir,$(LIBDIRS), -e "s/ $(notdir $(dir)):.*/ $(notdir $(dir)): $(shell $(MAKE) -s -C $(dir) version)/") $(VERSION_FILE) > $(VERSION_FILE).new
+	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; \
+		then mv -f $(VERSION_FILE).new $(VERSION_FILE) ; \
+		else rm -f $(VERSION_FILE).new ;  \
+	fi
+	cvs commit -m "Pre-tagging check in for $(CVS_TAG)." $(VERSION_FILE)
+	cvs tag -c $(CVS_TAG)
+	let BLD=$(BUILD_NUMBER)+1 ; \
+	echo "Incrementing to build number $$BLD"; \
+	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
+	mv -f $(VERSION_FILE).new $(VERSION_FILE)
+	cvs commit -m "Incremented build number after tagging to $(CVS_TAG)." $(VERSION_FILE)
+
+endif # else ifndef CVS_TAG
+
+endif # else ifndef VERSION_FILE
+
+endif # else ifdef VERSION
+
+endif # else ifdef DEBUG
+
+
+######################################################################
+#
 # rules for creating build number files
 #
 ######################################################################
+
 ifdef BUILDFILES
 $(OBJDIR)/buildnum.o:	buildnum.c
 	cc -o $(OBJDIR)/buildnum.o -c buildnum.c
@@ -527,7 +589,9 @@ $(RESCXX) $(RESCODE): $(RESHDR)
 $(RESHDR): $(RESOURCE)
 	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
 	$(PWRC_CMD) -v $(RCFLAGS) $(RESOURCE)
-	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; then cp $(TMPRSRC) $(RESHDR) ; else rm -f $(TMPRSRC) ;  fi
+	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; \
+		then cp $(TMPRSRC) $(RESHDR) ; \
+		else rm -f $(TMPRSRC) ;  fi
 
 $(RESOURCE) : $(PWRC)
 
