@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.38  2004/04/25 10:30:08  rjongbloed
+# Fixed correct SONAME when using beta versions.
+#
 # Revision 1.37  2003/09/08 22:13:18  dereksmithies
 # Fix patch implementation. Thanks to  Zygmuntowicz Michal <m.zygmuntowicz@onet.pl>
 #
@@ -120,7 +123,6 @@
 ifneq ($(OSTYPE),Darwin)
   LIBNAME_MAJ	= $(LIB_FILENAME).$(MAJOR_VERSION)
   LIBNAME_MIN	= $(LIBNAME_MAJ).$(MINOR_VERSION)
-  LIB_SONAME	= $(LIBNAME_MAJ).$(MINOR_VERSION).$(BUILD_NUMBER)
   ifeq ($(BUILD_TYPE),.)
     LIBNAME_PAT	= $(LIBNAME_MIN).$(BUILD_NUMBER)
   else
@@ -129,13 +131,14 @@ ifneq ($(OSTYPE),Darwin)
 else
   LIBNAME_MAJ	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(LIB_SUFFIX),$(LIB_FILENAME))
   LIBNAME_MIN	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(LIB_SUFFIX),$(LIB_FILENAME))
-  LIB_SONAME 	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
   ifeq ($(BUILD_TYPE),.)
     LIBNAME_PAT	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION).$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
   else
     LIBNAME_PAT	= $(subst .$(LIB_SUFFIX),.$(MAJOR_VERSION).$(MINOR_VERSION)-$(BUILD_TYPE)$(BUILD_NUMBER).$(LIB_SUFFIX),$(LIB_FILENAME))
   endif
 endif
+
+LIB_SONAME	= $(LIBNAME_PAT)
 
 CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
