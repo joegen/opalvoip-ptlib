@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.h,v $
+ * Revision 1.4  2003/03/31 06:21:19  craigs
+ * Split the expat wrapper from the XML file handling to allow reuse of the parser
+ *
  * Revision 1.3  2003/02/09 23:31:39  robertj
  * Added referention PString's for efficiency.
  *
@@ -65,7 +68,7 @@ class PSOAPMessage : public PXML
 public:
   
   //! Construct a SOAP message 
-  PSOAPMessage( int options = PXML::Indent + PXML::NewLineAfterElement );
+  PSOAPMessage( int options = PXMLParser::Indent + PXMLParser::NewLineAfterElement );
 
   //! Construct a SOAP message with method name and namespace already provided
   PSOAPMessage( const PString & method, const PString & nameSpace );
