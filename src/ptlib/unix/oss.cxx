@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.25  2001/05/14 06:33:19  rogerh
+ * Add exit cases to loopback mode polling loops to allow the sound channel
+ * to close properly when a connection closes.
+ *
  * Revision 1.24  2001/02/07 03:34:29  craigs
  * Added ability get sound channel parameters
  *
@@ -459,11 +463,6 @@ BOOL PSoundChannel::Close()
   if (os_handle < 0)
     return TRUE;
 
-  if (os_handle == 0) {
-    os_handle = -1;
-    return TRUE;
-  }
-
   // the device must be in the dictionary
   dictMutex.Wait();
   SoundHandleEntry * entry;
@@ -476,12 +475,25 @@ BOOL PSoundChannel::Close()
   if (entry->direction == 0) {
     handleDict().RemoveAt(device);
     dictMutex.Signal();
-    return PChannel::Close();
+    if (os_handle == 0) { // indicates loopback device
+      os_handle = -1;
+      usleep(2000); // this delay will ensure the other usleep loops notice that
+                    // os_handle is no longer 0
+      return TRUE;
+    } else {
+      return PChannel::Close();
+    }
   }
 
   // flag this channel as closed
   dictMutex.Signal();
-  os_handle = -1;
+  if (os_handle == 0) {
+    os_handle = -1;
+    usleep(2000); // this delay will ensure the other usleep loops notice that
+                  // os_handle is no longer 0
+  } else {
+    os_handle = -1;
+  }
   return TRUE;
 }
 
@@ -505,7 +517,10 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
     if (endptr == LOOPBACK_BUFFER_SIZE)
       endptr = 0;
     while (((startptr - 1) == endptr) || ((endptr==LOOPBACK_BUFFER_SIZE - 1) && (startptr==0))) {
-      usleep(5000);
+      usleep(1000);
+      if (os_handle != 0) { // check if the loopback audio has been closed
+        return FALSE;
+      }
     }
   }
   return TRUE;
@@ -535,11 +550,18 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
     return TRUE;
   }
 
+  // os_handle = 0 indicated loopback mode
+
   int index = 0;
 
   while (len > 0) {
-    while (startptr == endptr)
-      usleep(5000);
+    // wait for data to arrive in the input buffer
+    while (startptr == endptr) {
+      usleep(1000);
+      if (os_handle != 0) { // check if the loopback audio has been closed
+        return FALSE;
+      }
+    }
     len--;
     ((char *)buf)[index++]=buffer[startptr++];
     if (startptr == LOOPBACK_BUFFER_SIZE)
@@ -761,8 +783,12 @@ BOOL PSoundChannel::WaitForPlayCompletion()
   }
 
   if (os_handle == 0) {
-    while (BYTESINBUF > 0)
+    while (BYTESINBUF > 0) {
       usleep(1000);
+      if (os_handle != 0) { // check if the loopback audio has been closed
+        return FALSE;
+      }
+    }
     return TRUE;
   }
 
