@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.75  2001/06/27 17:25:46  rogerh
+# Compile the dummyvideo.cxx file on platforms with no video capture hardware
+#
 # Revision 1.74  2001/06/26 15:49:15  rogerh
 # Define HAS_VIDEOCAPTURE on platforms with video capture code
 #
@@ -276,27 +279,31 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
-# Video Capture. Include the generic video files, and then optionally
-# include the platform specific files which access video capture hardware.
+# Video Capture. Set Video Capture Source to a dummy file, (which does not
+# actually do anything, and then override it with platform specific files
 
-VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
-                $(COMMON_SRC_DIR)/videoio.cxx \
-	        $(COMMON_SRC_DIR)/vconvert.cxx
+VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
-VIDEO_SOURCE += video4linux.cxx
+VIDEO_CAPTURE_SOURCE = video4linux.cxx
 STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),FreeBSD)
-VIDEO_SOURCE += video4bsd.cxx
+VIDEO_CAPTURE_SOURCE = video4bsd.cxx
 STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
-VIDEO_SOURCE += video4bsd.cxx
+VIDEO_CAPTURE_SOURCE = video4bsd.cxx
 STDCCFLAGS += -DHAS_VIDEOCAPTURE
 endif
+
+VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
+                $(COMMON_SRC_DIR)/videoio.cxx \
+		$(VIDEO_CAPTURE_SOURCE) \
+	        $(COMMON_SRC_DIR)/vconvert.cxx
+
 
 #Set SOUND_SOURCE to dummyaudio, a file which links but does not
 #actually play or record audio.
