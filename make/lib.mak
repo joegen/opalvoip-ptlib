@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.35  2003/07/29 12:33:34  csoutheren
+# Changed to ensure dynamic libraries using pwlib always dynamically link pwlib
+#
 # Revision 1.34  2003/06/23 06:44:11  csoutheren
 # Added minor revision into the soname for the libraries as requested by Damien Sandras
 #
@@ -139,12 +142,13 @@ $(LIBDIR)/$(LIB_FILENAME) : $(TARGETLIB)
 
 ifeq ($(P_SHAREDLIB),1)
 
+  ENDLDLIBS := $(SYSLIBS) $(ENDLDLIBS)
   ifeq ($(OSTYPE),beos)
     # BeOS requires different options when building shared libraries
     # Also, when building a shared library x that references symbols in libraries y,
     # the y libraries need to be added to the linker command
     LDSOOPTS = -nostdlib -nostart
-    EXTLIBS = $(SYSLIBS) -lstdc++.r4
+    EXTLIBS = -lstdc++.r4
   else
     ifeq ($(OSTYPE),Darwin)
       LDSOOPTS = -dynamiclib
@@ -189,6 +193,8 @@ ifeq ($(P_SHAREDLIB),1)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MIN) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
   $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
+	@echo EXTLIBS = $(EXTLIBS)
+	@echo SYSLIBS = $(SYSLIBS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
@@ -199,7 +205,6 @@ ifeq ($(P_SHAREDLIB),1)
 	ln -sf $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MIN)
 
 endif # P_SHAREDLIB
-
 
 $(STATIC_LIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
