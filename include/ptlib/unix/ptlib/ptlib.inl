@@ -97,12 +97,6 @@ PINLINE BOOL PDirectory::IsSeparator(char ch)
 PINLINE BOOL PDirectory::Change(const PString & p)
   { return chdir(p) == 0; }
 
-PINLINE BOOL PDirectory::Create(const PString & p, int perm)
-  { return mkdir(p, perm) == 0; }
-
-PINLINE BOOL PDirectory::Remove(const PString & p)
-  { return rmdir(p) == 0; }
-
 PINLINE BOOL PDirectory::Restart(int newScanMask)
   { scanMask = newScanMask; if (directory != NULL) rewinddir(directory); return TRUE; }
 
