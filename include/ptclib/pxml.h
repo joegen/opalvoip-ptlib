@@ -136,6 +136,8 @@ class PXMLObject : public PObject {
     PXMLElement * GetParent()
       { return parent; }
 
+    PXMLObject * GetNextObject();
+
     void SetParent(PXMLElement * newParent)
     { 
       PAssert(parent == NULL, "Cannot reparent PXMLElement");
@@ -144,8 +146,7 @@ class PXMLObject : public PObject {
 
     virtual void PrintOn(ostream & strm, int indent, int options) const = 0;
 
-    virtual BOOL IsElement() const { return FALSE; }
-    virtual BOOL IsData() const    { return FALSE; }
+    virtual BOOL IsElement() const = 0;
 
     void SetDirty();
     BOOL IsDirty() const { return dirty; }
@@ -165,7 +166,7 @@ class PXMLData : public PXMLObject {
     PXMLData(PXMLElement * _parent, const PString & data);
     PXMLData(PXMLElement * _parent, const char * data, int len);
 
-    BOOL IsData() const    { return TRUE; }
+    BOOL IsElement() const    { return FALSE; }
 
     void SetString(const PString & str, BOOL dirty = TRUE);
 
@@ -206,8 +207,8 @@ class PXMLElement : public PXMLObject {
     PXMLData    * AddChild    (PXMLData    * elem, BOOL dirty = TRUE);
 
     void SetAttribute(const PCaselessString & key,
-		              const PString & value,
-                                         BOOL setDirty = TRUE);
+		                  const PString & value,
+                      BOOL setDirty = TRUE);
 
     PString GetAttribute(const PCaselessString & key) const;
     PString GetKeyAttribute(PINDEX idx) const;
@@ -219,8 +220,10 @@ class PXMLElement : public PXMLObject {
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PXMLObject  * GetElement(PINDEX idx = 0) const;
 
+    PINDEX FindObject(PXMLObject * ptr) const;
+
     BOOL HasSubObjects() const
-      { return subObjects.GetSize(); }
+      { return subObjects.GetSize() != 0; }
 
     PXMLObjectArray  GetSubObjects() const
       { return subObjects; }
