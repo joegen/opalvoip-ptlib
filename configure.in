@@ -1,0 +1,240 @@
+AC_INIT(include/ptlib.h)
+
+dnl ########################################################################
+dnl set the OSTYPE and MACHTYPE
+
+AC_CANONICAL_TARGET()
+
+OSTYPE=
+
+case "$target_os" in
+  linux\-gnu)          OSTYPE=linux ;  
+                   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
+
+  freebsd)         OSTYPE=FreeBSD ;
+                   OSRELEASE=`sysctl -n kern.osreldate` ;
+                   STDCCFLAGS="-DP_FREEBSD=$OSRELEASE" ;;
+
+  openbsd)         OSTYPE=OpenBSD ;
+                   OSRELEASE=`sysctl -n kern.osrevision` ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_OPENBSD=$OSRELEASE" ;;
+
+  netbsd)          OSTYPE=NetBSD ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
+
+  solaris2 | sunos ) OSTYPE=solaris ;
+		   OSRELEASE="5.$OSVER" ;
+                   STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
+
+  darwin)	   OSTYPE=Darwin ;
+		   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="-DP_MACOSX=$OSRELEASE -DNO_LONG_DOUBLE";;
+
+  * )		   OSTYPE="$target_os" ;
+  		   OSRELEASE=`uname -r` ;
+                   STDCCFLAGS="-DP_UNKNOWN=$OSTYPE_$OSRELEASE" ;
+		   echo "OS $target_os not recognized - proceed with caution!" ;;
+esac
+
+MACHTYPE=
+
+case "$target_cpu" in
+   x86 | i686 | i586 | i486 | i386 ) MACHTYPE=x86 ;;
+
+   x86_64)	   MACHTYPE=x86_64 ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   alpha )         MACHTYPE=alpha ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   sparc )         MACHTYPE=sparc ;;
+
+   powerpc )       MACHTYPE=ppc ;;
+
+   ia64)	   MACHTYPE=ia64 ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   s390x)	   MACHTYPE=s390x ;
+                   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
+   * )		   MACHTYPE=$target_cpu ;
+		   echo "CPU $target_cpu not recognized - proceed with caution!" ;;
+esac
+
+AC_SUBST(MACHTYPE,  $MACHTYPE)
+AC_SUBST(OSTYPE,    $OSTYPE)
+AC_SUBST(OSRELEASE, $OSRELEASE)
+
+dnl ########################################################################
+dnl check the endianness
+
+AC_C_BIGENDIAN()
+if test ${WORDS_BIGENDIAN:-unset} != "unset" ; then
+  PBYTE_ORDER=PBIG_ENDIAN
+else
+  PBYTE_ORDER=PLITTLE_ENDIAN
+fi
+
+AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
+
+
+dnl ########################################################################
+dnl look for DNS resolver code (must be done before OpenLDAP)
+LIBS=""
+AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=$LIBS)
+if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
+  AC_DEFINE(P_DNS, 1, "resolver libraries found")
+fi
+
+dnl ########################################################################
+dnl look for OpenLDAP
+
+if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
+  AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
+  if test "${HAVE_OPENLDAP:-unset}" = "unset" ; then
+    AC_CHECK_LIB(ldap, ldap_open, HAVE_LIBOPENLDAP=1, HAVE_LIBOPENLDAP=,-llber $HAVE_RESOLVER)
+  else
+    AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
+    if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
+      OPENLDAPINCLUDEDIR=/usr/local/include
+      OPENLDAPLIBDIR=/usr/local/lib
+    fi
+  fi
+fi
+
+if test "${HAVE_LIBOPENLDAP:-unset}" = "unset" ; then
+  AC_DEFINE(P_LDAP, 0, "OpenLDAP not found")
+else
+  AC_SUBST(HAS_OPENLDAP, 1)
+  AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
+  if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${OPENLDAPINCLUDEDIR}"
+  fi
+  if test ${OPENLDAPLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${OPENLDAPLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
+fi
+
+dnl ifeq ($(OSTYPE),linux)
+dnl ENDLDLIBS	+= -lresolv	# only linux needs -lresolv
+dnl endif
+
+dnl ########################################################################
+dnl look for OpenSSL
+dnl check for environment vcariable, then assume standard system install
+
+if test ${OPENSSLDIR:-unset} != "unset" ; then
+  echo "Using ${OPENSSLDIR} for SSL"
+  HAVE_LIBSSL=1
+  SSLINCLUDEDIR="${OPENSSLDIR}/include"
+  SSLLIBDIR="${OPENSSLDIR}/lib"
+else 
+  AC_CHECK_LIB(ssl, SSL_new, HAVE_LIBSSL=1)
+fi
+
+if test "${HAVE_LIBSSL:-unset}" = "unset" ; then
+  AC_DEFINE(P_SSL, 0, "OpenSSL not found")
+else
+  AC_SUBST(HAS_OPEN_SSL, 1)
+  AC_DEFINE(P_SSL, 1, "OpenSSL found")
+  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+  fi
+  if test ${SSLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$STDCCFLAGS -L${SSLLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
+fi
+
+dnl ########################################################################
+dnl look for expat XML parser
+
+AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
+if test "${HAVE_EXPAT:-unset}" = "unset" ; then
+  AC_CHECK_LIB(expat, XML_ParserCreate, HAVE_LIBEXPAT=1, HAVE_LIBEXPAT=)
+else
+  AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
+  if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
+    EXPATINCLUDEDIR=/usr/local/include
+    EXPATLIBDIR=/usr/local/lib
+  fi
+fi
+
+if test "${HAVE_LIBEXPAT:-unset}" = "unset" ; then
+  AC_DEFINE(P_EXPAT, 0, "expat not found")
+else
+  AC_SUBST(HAS_EXPAT, 1)
+  AC_DEFINE(P_EXPAT, 1, "expat found")
+  if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${EXPATINCLUDEDIR}"
+  fi
+  if test ${EXPATLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS -L${EXPATLIBDIR}"
+  fi
+  ENDLDLIBS="$ENDLDLIBS -lexpat"
+fi
+
+dnl ########################################################################
+dnl check for pthreads library
+AC_CHECK_LIB(pthread, pthread_create, HAVE_PTHREADS=1, HAVE_PTHREADS=)
+
+if test "${HAVE_PTHREADS:=unset}" != unset ; then
+  AC_DEFINE(P_PTHREADS,       1, "PThreads found")
+  AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
+  ENDLDLIBS="$ENDLDLIBS -lpthread"
+  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+fi
+
+dnl ########################################################################
+dnl check for dynamic library code (dlopen end friends)
+LIBS=""
+AC_SEARCH_LIBS(dlopen, dl, HAVE_DYNALINK=$LIBS)
+if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+  AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
+fi
+
+dnl ########################################################################
+dnl look for IPV6 functions
+
+AC_CHECK_HEADERS(netinet6/in6.h, HAS_IPV6=1)
+AC_CHECK_FILE(/proc/net/if_inet6, HAS_IPV6=1)
+
+if test "${HAVE_IPV6:-unset}" != "unset" ; then
+  AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
+fi
+
+dnl ########################################################################
+dnl check for linux video devices
+
+AC_CHECK_HEADER(linux/videodev.h, HAS_LINUX_VIDEODEV_H=1)
+if test "${HAS_LINUX_VIDEODEV_H:-unset}" = unset ; then
+  AC_DEFINE(NO_VIDEO_CAPTURE, 1, "No Linux video capture")
+fi
+
+dnl ########################################################################
+dnl output make directives
+
+dnl resolver needs to be at the end
+if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
+  ENDLDLIBS="$ENDLDLIBS $HAVE_RESOLVER"
+fi
+
+dnl dl needs to be at the end
+if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+  ENDLDLIBS="$ENDLDLIBS $HAVE_DYNALINK"
+fi
+
+AC_SUBST(STDCCFLAGS)
+AC_SUBST(LDFLAGS)
+AC_SUBST(ENDLDLIBS)
+
+AC_CONFIG_FILES(make/ptbuildopts.mak)
+
+dnl ########################################################################
+dnl output header file
+
+AC_CONFIG_HEADERS(include/ptbuildopts.h)
+
+AC_OUTPUT()
