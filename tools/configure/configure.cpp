@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.10  2003/11/25 08:21:37  rjongbloed
+ * Fixed display of configured items
+ *
  * Revision 1.9  2003/11/06 09:13:20  rjongbloed
  * Improved the Windows configure system to allow multiple defines based on file existence. Needed for SDL support of two different distros.
  *
@@ -443,13 +446,9 @@ int main(int argc, char* argv[])
 
   for (feature = features.begin(); feature != features.end(); feature++) {
     cout << "  " << feature->displayName << ' ';
-    if (feature->checkFiles.empty()) {
-      if (feature->simpleDefineValue.empty())
-        cout << "defined";
-      else
-        cout << "set to " << feature->simpleDefineValue;
-    }
-    else if (feature->checkFiles.begin()->found)
+    if (feature->checkFiles.empty() && !feature->simpleDefineValue.empty())
+      cout << "set to " << feature->simpleDefineValue;
+    else if (feature->enabled && (feature->checkFiles.empty() || feature->checkFiles.begin()->found))
       cout << "enabled";
     else
       cout << "disabled";
