@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.6 1996/09/14 13:09:08 robertj Exp $
+ * $Id: ftp.h,v 1.7 1996/10/26 01:39:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.7  1996/10/26 01:39:41  robertj
+ * Added check for security breach using 3 way FTP transfer or use of privileged PORT.
+ *
  * Revision 1.6  1996/09/14 13:09:08  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -236,6 +239,11 @@ PDECLARE_CLASS(PFTPServer, PFTP)
     virtual PString GetSystemTypeString() const;
       // return the string to be returned by the SYST command
 
+    BOOL GetAllowThirdPartyPort() const { return thirdPartyPort; }
+      // return the thirdPartyPort flag, allowing 3 host put and get.
+
+    void SetAllowThirdPartyPort(BOOL state) { thirdPartyPort = state; }
+      // Set the thirdPartyPort flag.
 
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
@@ -287,6 +295,18 @@ PDECLARE_CLASS(PFTPServer, PFTP)
       const PCaselessString & command  // Complete command line received.
     );
     /* Handle an unknown command.
+
+       <H2>Returns:</H2>
+       TRUE if more processing may be done, FALSE if the
+       <A>ProcessCommand()</A> function is to return FALSE.
+     */
+
+    virtual void OnError(
+      PINDEX errorCode, // Error code to use
+      PINDEX cmdNum,    // Command that had the error.
+      const char * msg  // Error message.
+    );
+    /* Handle an error in command.
 
        <H2>Returns:</H2>
        TRUE if more processing may be done, FALSE if the
@@ -366,6 +386,7 @@ PDECLARE_CLASS(PFTPServer, PFTP)
     void Construct();
 
     PString readyString;
+    BOOL    thirdPartyPort;
 
     enum {
       NotConnected,
