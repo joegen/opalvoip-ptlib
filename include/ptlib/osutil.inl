@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.45 1996/04/14 02:53:32 robertj Exp $
+ * $Id: osutil.inl,v 1.46 1996/04/15 10:57:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.46  1996/04/15 10:57:57  robertj
+ * Moved some functions from INL to serial.cxx so unix linker can make smaller executables.
+ *
  * Revision 1.45  1996/04/14 02:53:32  robertj
  * Split serial and pipe channel into separate compilation units for Linux executable size reduction.
  *
@@ -467,66 +470,6 @@ PINLINE size_t PStructuredFile::GetStructureSize()
 
 PINLINE void PStructuredFile::SetStructure(Element * struc, PINDEX num)
   { structure = struc; numElements = num; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PModem
-
-#ifdef _PMODEM
-
-PINLINE void PModem::SetInitString(const PString & str)
-  { initCmd = str; }
-
-PINLINE PString PModem::GetInitString() const
-  { return initCmd; }
-
-PINLINE void PModem::SetDeinitString(const PString & str)
-  { deinitCmd = str; }
-
-PINLINE PString PModem::GetDeinitString() const
-  { return deinitCmd; }
-
-PINLINE void PModem::SetPreDialString(const PString & str)
-  { preDialCmd = str; }
-
-PINLINE PString PModem::GetPreDialString() const
-  { return preDialCmd; }
-
-PINLINE void PModem::SetPostDialString(const PString & str)
-  { postDialCmd = str; }
-
-PINLINE PString PModem::GetPostDialString() const
-  { return postDialCmd; }
-
-PINLINE void PModem::SetBusyString(const PString & str)
-  { busyReply = str; }
-
-PINLINE PString PModem::GetBusyString() const
-  { return busyReply; }
-
-PINLINE void PModem::SetNoCarrierString(const PString & str)
-  { noCarrierReply = str; }
-
-PINLINE PString PModem::GetNoCarrierString() const
-  { return noCarrierReply; }
-
-PINLINE void PModem::SetConnectString(const PString & str)
-  { connectReply = str; }
-
-PINLINE PString PModem::GetConnectString() const
-  { return connectReply; }
-
-PINLINE void PModem::SetHangUpString(const PString & str)
-  { hangUpCmd = str; }
-
-PINLINE PString PModem::GetHangUpString() const
-  { return hangUpCmd; }
-
-PINLINE PModem::Status PModem::GetStatus() const
-  { return status; }
-
-
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
