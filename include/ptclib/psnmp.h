@@ -1,11 +1,14 @@
 /*
- * $Id: psnmp.h,v 1.1 1996/09/14 12:58:57 robertj Exp $
+ * $Id: psnmp.h,v 1.2 1996/09/20 12:19:36 robertj Exp $
  *
  * SNMP Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: psnmp.h,v $
+ * Revision 1.2  1996/09/20 12:19:36  robertj
+ * Used read timeout instead of member variable.
+ *
  * Revision 1.1  1996/09/14 12:58:57  robertj
  * Initial revision
  *
@@ -221,7 +224,6 @@ PDECLARE_CLASS(PSNMPClient, PSNMP)
     PASNInt   requestId;
     PASNInt   version;
     PINDEX    retryMax;
-    PINDEX    timeoutMax;
     PINDEX    lastErrorIndex;
     ErrorType lastErrorCode;
 };
