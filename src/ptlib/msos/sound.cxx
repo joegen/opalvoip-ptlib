@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.18  2001/04/10 00:51:11  robertj
+ * Fixed bug in using incorrect function to delete event handle, thanks Victor H.
+ *
  * Revision 1.17  2001/03/15 23:39:29  robertj
  * Fixed bug with trying to write block larger than one buffer, thanks Norbert Oertel
  *
@@ -639,7 +642,7 @@ PSoundChannel::~PSoundChannel()
   Close();
 
   if (hEventDone != NULL)
-    DeleteObject(hEventDone);
+    CloseHandle(hEventDone);
 }
 
 
