@@ -24,6 +24,9 @@
  * Contributor(s): Jac Goudsmit <jac@be.com>.
  *
  * $Log: video4beos.cxx,v $
+ * Revision 1.4  2004/01/02 23:30:18  rjongbloed
+ * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
+ *
  * Revision 1.3  2002/04/10 08:40:36  rogerh
  * Simplify the SetVideoChannelFormat() code. Use the implementation in the
  * ancestor class.
@@ -86,12 +89,6 @@ BOOL PVideoInputDevice::Stop()
 BOOL PVideoInputDevice::IsCapturing()
 {
   return FALSE;
-}
-
-
-PStringList PVideoInputDevice::GetInputDeviceNames()
-{
-	return PStringList();
 }
 
 
