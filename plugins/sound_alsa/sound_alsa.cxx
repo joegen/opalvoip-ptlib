@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.8  2003/12/03 21:48:21  dsandras
+ * Better handling of buffer sizes. Removed unuseful code.
+ *
  * Revision 1.7  2003/11/25 20:13:48  dsandras
  * Added #pragma.
  *
@@ -315,7 +318,7 @@ BOOL PSoundChannelALSA::Setup()
 
     if ((err = snd_pcm_hw_params_set_period_size_near (os_handle, 
 						       hw_params, 
-						       periods * period_size, 
+						       period_size, 
 						       0)) < 0)
       PTRACE (1, "ALSA\tCannot set period size " <<
 	      snd_strerror (err));
@@ -334,6 +337,9 @@ BOOL PSoundChannelALSA::Setup()
   }
 
 
+  snd_pcm_hw_params_get_period_size(hw_params, &period_size);
+    
+  
   if ((err = snd_pcm_hw_params (os_handle, hw_params)) < 0) {
 
     PTRACE (1, "ALSA\tCannot set parameters " <<
@@ -379,6 +385,7 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
 
   do {
 
+      
     /* the number of frames to read is the buffer length 
        divided by the size of one frame */
     r = snd_pcm_writei (os_handle, (char *) &buf2 [pos], len / frame_bytes);
@@ -412,13 +419,6 @@ BOOL PSoundChannelALSA::Write (const void *buf, PINDEX len)
     
   } while (len > 0 && max_try < 5);
 
-
-  if (len != 0) {
-
-    memset ((char *) &buf2 [pos], 0, len);
-
-    PTRACE (1, "ALSA\tWrite Error, filling with zeros");
-  }
 
   return TRUE;
 }
@@ -528,7 +528,7 @@ unsigned PSoundChannelALSA::GetSampleSize() const
 BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 {
   periods = count;
-  period_size = size;
+  period_size = size / (frame_bytes ? frame_bytes : 2);
 
   return TRUE;
 }
@@ -536,7 +536,7 @@ BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 
 BOOL PSoundChannelALSA::GetBuffers(PINDEX & size, PINDEX & count)
 {
-  size = period_size;
+  size = period_size * (frame_bytes ? frame_bytes : 2);
   count = periods;
   
   return FALSE;
