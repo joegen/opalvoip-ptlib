@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.51  2000/01/31 01:56:48  robertj
+# Fixed BeOS compatibility problem.
+#
 # Revision 1.50  2000/01/22 00:52:06  craigs
 # Added ability to use in any directory, and to create shared libraries
 #
@@ -234,7 +237,7 @@ endif
 
 ifeq ($(OSTYPE),beos)
 BEAUDIO_SRC_DIR	= ./beaudio
-VPATH_CXX := $(BEAUDIO_SRC_DIR)
+VPATH_CXX += $(BEAUDIO_SRC_DIR)
 
 SOUND_SOURCE = beaudio.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundPlayer.cxx \
