@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.9  1998/11/30 04:52:04  robertj
+ * New directory structure
+ *
  * Revision 1.8  1998/10/13 14:06:31  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -65,7 +68,7 @@
 #endif
 
 #include <ptlib.h>
-#include <pasn.h>
+#include <ptclib/pasn.h>
 
 #define new PNEW
 
