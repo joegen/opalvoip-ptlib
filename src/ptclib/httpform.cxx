@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.17 1998/01/26 00:25:25 robertj Exp $
+ * $Id: httpform.cxx,v 1.18 1998/01/26 01:51:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.18  1998/01/26 01:51:37  robertj
+ * Fixed uninitialised variable.
+ *
  * Revision 1.17  1998/01/26 00:25:25  robertj
  * Major rewrite of HTTP forms management.
  *
@@ -700,7 +703,7 @@ void PHTTPFieldArray::GetHTMLTag(PHTML & html) const
 void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const
 {
   PString original = text(start, finish);
-  PINDEX origFinish;
+  PINDEX origFinish = finish;
 
   PINDEX fld = fields.GetSize();
   while (fld > 0) {
