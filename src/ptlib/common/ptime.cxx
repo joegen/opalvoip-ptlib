@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.18 1997/07/08 13:05:21 robertj Exp $
+ * $Id: ptime.cxx,v 1.19 1998/01/04 07:24:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.19  1998/01/04 07:24:32  robertj
+ * Added operating system specific versions of gmtime and localtime.
+ *
  * Revision 1.18  1997/07/08 13:05:21  robertj
  * Fixed bug in parsing time zone incorrectly.
  *
@@ -359,7 +362,8 @@ PString PTime::AsString(const char * format, int zone) const
   if (zone == Local) 
     zone = GetTimeZone();  // includes daylight savings time
   time_t realTime = theTime + zone*60;     // to correct timezone
-  struct tm * t = gmtime(&realTime);
+  struct tm ts;
+  struct tm * t = os_gmtime(&realTime, &ts);
 
   PINDEX repeatCount;
 
