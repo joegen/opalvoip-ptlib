@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.8 1993/08/31 03:38:02 robertj Exp $
+ * $Id: file.h,v 1.9 1993/09/27 16:35:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.8  1993/08/31 03:38:02  robertj
+ * Revision 1.9  1993/09/27 16:35:25  robertj
+ * Changed GetName() to GetTitle(), better naming convention.
+ * Moved internal functions to private section.
+ *
+ * Revision 1.8  1993/08/31  03:38:02  robertj
  * Changed PFile::Status to PFile::Info due to X-Windows compatibility.
  *
  * Revision 1.7  1993/08/27  18:17:47  robertj
@@ -78,8 +82,8 @@ DECLARE_CLASS(PFile, PContainer)
     PString GetPath() const;
       // Get the directory path component of the full file specification.
 
-    PString GetName() const;
-      // Get the name part component of the full file specification.
+    PString GetTitle() const;
+      // Get the title component of the full file specification.
 
     PString GetType() const;
       // Get the file type component of the full file specification. Note that
@@ -182,18 +186,10 @@ DECLARE_CLASS(PFile, PContainer)
 
 
   protected:
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-    virtual void DestroyContents();
-
-
-    // New member functions
-    void Construct();
-      // Common construction code.
-
     // New member functions for class
     int GetHandle() const;
-    
+      // Return the integer operating system handle for the file.
+
 
     // Member variables
     PString fullname;
@@ -203,7 +199,18 @@ DECLARE_CLASS(PFile, PContainer)
       // The operating system file handle return by standard open() function.
 
     int os_errno;
-      // The oeprating system error number as returned by errno.
+      // The operating system error number as returned by errno.
+
+
+  private:
+    // Overrides from class PContainer
+    virtual BOOL SetSize(PINDEX newSize);
+    virtual void DestroyContents();
+
+
+    // New member functions
+    void Construct();
+      // Common construction code.
 
 
 // Class declaration continued in platform specific header file ///////////////
