@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.13  2001/09/10 00:28:21  robertj
+ * Fixed extra CR in comments.
+ *
  * Revision 1.12  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
