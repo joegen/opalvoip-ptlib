@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.62  1998/10/28 03:26:42  robertj
+ * Added multi character arguments (-abc style) and options precede parameters mode.
+ *
  * Revision 1.61  1998/10/28 00:59:48  robertj
  * New improved argument parsing.
  *
@@ -647,8 +650,8 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
-PINLINE BOOL PArgList::Parse(const PString & theArgumentSpec)
-  { return Parse((const char *)theArgumentSpec); }
+PINLINE void PArgList::Parse(const PString & theArgumentSpec, BOOL optionsBeforeParams)
+  { Parse((const char *)theArgumentSpec, optionsBeforeParams); }
 
 PINLINE BOOL PArgList::HasOption(char option) const
   { return GetOptionCount(option) != 0; }
