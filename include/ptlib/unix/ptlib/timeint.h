@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.8  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.7  1998/11/30 22:07:25  robertj
  * New directory structure.
  *
@@ -57,14 +61,23 @@
 
 #pragma interface
 
-///////////////////////////////////////////////////////////////////////////////
-// PTimeInterval
-
 #include <time.h>
-
-#include "../../timeint.h"
-};
 
 #define PMaxTimeInterval PTimeInterval((long)0x7fffffff)
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+#define _PTIMEINTERVAL_PLATFORM_INCLUDE
+#include "../../timeint.h"
+
 #endif
+#ifdef _PTIMEINTERVAL_PLATFORM_INCLUDE
+#undef _PTIMEINTERVAL_PLATFORM_INCLUDE
+
+
+#endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

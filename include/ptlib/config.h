@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.22  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.21  2000/05/25 11:07:26  robertj
  * Added PConfig::HasKey() function to determine if value actually set.
  *
@@ -561,8 +565,10 @@ class PConfig : public PObject
       const PFilePath & filename  /// Explicit name of the configuration file.
     );
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file /////////////////
+// Include platform dependent part of class
+#include <ptlib/config.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

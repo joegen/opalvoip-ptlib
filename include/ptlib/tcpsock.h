@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.26  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.25  1999/09/28 00:08:59  robertj
  * Fixed some comment typoes
  *
@@ -270,8 +274,10 @@ class PTCPSocket : public PIPSocket
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/tcpsock.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

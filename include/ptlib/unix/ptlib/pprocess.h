@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.21  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.20  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -100,13 +104,19 @@
 
 #include <ptlib/syncpoint.h>
 
-PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
+PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+#define _PPROCESS_PLATFORM_INCLUDE
 #include "../../pprocess.h"
+
+#endif
+#ifdef _PPROCESS_PLATFORM_INCLUDE
+#undef _PPROCESS_PLATFORM_INCLUDE
+
   public:
     friend class PApplication;
     friend class PServiceProcess;
@@ -185,6 +195,8 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
   protected:
     PXFdDict     ioBlocks[3];
 #endif
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

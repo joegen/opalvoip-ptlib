@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.17  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.16  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -338,8 +342,9 @@ class PFilePath : public PFilePathString
     virtual void AssignContents(const PContainer & cont);
 
 
-#ifdef DOC_PLUS_PLUS
+// Include platform dependent part of class
+#include <ptlib/filepath.h>
 };
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+
+// End Of File ///////////////////////////////////////////////////////////////

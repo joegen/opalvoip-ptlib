@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.48  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.47  2001/03/09 05:50:48  robertj
  * Added ability to set default PConfig file or path to find it.
  *
@@ -588,8 +592,10 @@ class PProcess : public PThread
 
   friend class PThread;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/pprocess.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

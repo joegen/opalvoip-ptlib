@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.7  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.6  1998/11/30 02:55:27  robertj
  * New directory structure
  *
@@ -47,14 +51,18 @@
  *
  */
 
-
 #ifndef _PSEMAPHORE
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
+#define _PSEMAPHORE_PLATFORM_INCLUDE
 #include "../../semaphor.h"
+
+#endif
+#ifdef _PSEMAPHORE_PLATFORM_INCLUDE
+#undef _PSEMAPHORE_PLATFORM_INCLUDE
+
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return handle; }
@@ -62,7 +70,8 @@
     PSemaphore(HANDLE h);
     HANDLE handle;
 #endif
-};
-
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

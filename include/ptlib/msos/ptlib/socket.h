@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.17  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.16  1999/02/16 08:10:33  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -84,8 +88,7 @@
  *
  */
 
-#ifndef _PSOCKET
-
+#if !defined(_PSOCKET) && !defined(_PSOCKET_PLATFORM_INCLUDE)
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 
@@ -96,7 +99,19 @@
 #endif
 
 
+typedef int socklen_t;
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSocket
+
+#define _PSOCKET_PLATFORM_INCLUDE
 #include "../../socket.h"
+#undef _PSOCKET_PLATFORM_INCLUDE
+
+#endif
+#ifdef _PSOCKET_PLATFORM_INCLUDE
+
   public:
     ~PSocket();
       // close a socket
@@ -113,8 +128,13 @@
 #ifdef PHAS_WINSOCK
     static BOOL WinSockStarted;
 #endif
-};
 
+
+#endif
+
+
+#if !defined(_PSOCKET) && !defined(_PSOCKET_PLATFORM_INCLUDE)
+#define _PSOCKET
 
 class PWinSock : public PSocket
 {
@@ -127,10 +147,6 @@ class PWinSock : public PSocket
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 };
-
-
-typedef int socklen_t;
-
 
 #endif
 

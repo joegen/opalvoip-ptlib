@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.27  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.26  2001/03/23 05:35:06  robertj
  * Added ability for a service to output trace/system log to file while in debug mode.
  *
@@ -111,10 +115,36 @@
 #ifndef _PSERVICEPROCESS
 
 
+#if defined(_MSC_VER) && !defined(_WIN32)
+extern "C" int __argc;
+extern "C" char ** __argv;
+#endif
+
+#ifdef __BORLANDC__
+#define __argc _argc
+#define __argv _argv
+#endif
+
+#undef PCREATE_PROCESS
+#define PCREATE_PROCESS(cls) \
+  extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
+    { PProcess::PreInitialise(__argc, __argv, _environ); \
+      static cls instance; \
+      return instance._main(hInst); \
+    }
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PServiceProcess
 
+#define _PSERVICEPROCESS_PLATFORM_INCLUDE
 #include "../../svcproc.h"
+
+#endif
+#ifdef _PSERVICEPROCESS_PLATFORM_INCLUDE
+#undef _PSERVICEPROCESS_PLATFORM_INCLUDE
+
 #ifdef _WIN32
   public:
     virtual const char * GetServiceDependencies() const;
@@ -192,25 +222,9 @@
 #endif
 
   friend void PAssertFunc(const char * file, int line, const char * msg);
-};
-
-#if defined(_MSC_VER) && !defined(_WIN32)
-extern "C" int __argc;
-extern "C" char ** __argv;
-#endif
-
-#ifdef __BORLANDC__
-#define __argc _argc
-#define __argv _argv
-#endif
-
-#undef PCREATE_PROCESS
-#define PCREATE_PROCESS(cls) \
-  extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int) \
-    { PProcess::PreInitialise(__argc, __argv, _environ); \
-      static cls instance; \
-      return instance._main(hInst); \
-    }
 
 
 #endif
+
+
+// End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.13  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.12  1998/11/30 22:07:11  robertj
  * New directory structure.
  *
@@ -66,6 +70,8 @@
  */
 
 #ifndef _PSOCKET
+#define _PSOCKET
+
 
 #define	P_HAS_BERKELEY_SOCKETS
 
@@ -76,13 +82,22 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
 
+#define _PSOCKET_PLATFORM_INCLUDE
 #include "../../socket.h"
+
+#endif
+#ifdef _PSOCKET_PLATFORM_INCLUDE
+#undef _PSOCKET_PLATFORM_INCLUDE
+
   public:
     BOOL Read(void * ptr, PINDEX len);
     ~PSocket();
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.35  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.34  2000/09/27 05:58:07  craigs
  * Added virtual to PFile::Open to allow overriding in descandant classes
  *
@@ -642,9 +646,11 @@ class PFile : public PChannel
 
     /// File is to be removed when closed.
     BOOL removeOnClose;
-      
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+
+// Include platform dependent part of class
+#include <ptlib/file.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

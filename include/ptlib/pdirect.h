@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.34  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.33  2001/02/13 06:55:21  robertj
  * Fixed problem with operator= in PDirectory class, part of larger change previously made.
  *
@@ -531,8 +535,10 @@ class PDirectory : public PFilePathString
     /// Mask of file types that the directory scan will return.
     int scanMask;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/pdirect.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

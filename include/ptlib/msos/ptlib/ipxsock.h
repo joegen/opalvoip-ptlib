@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipxsock.h,v $
+ * Revision 1.4  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.3  1998/11/30 02:55:17  robertj
  * New directory structure
  *
@@ -43,9 +47,11 @@
 #include <wsipx.h>
 #include <wsnwlink.h>
 
-#include "../../ipxsock.h"
-};
 
+///////////////////////////////////////////////////////////////////////////////
+// PIPXSocket
+
+#include "../../ipxsock.h"
 
 #endif
 

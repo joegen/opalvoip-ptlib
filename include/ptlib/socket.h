@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.36  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.35  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -136,8 +140,6 @@
  * Added sockets to common, normalising to same comment standard.
  *
  */
-
-#define _PSOCKET
 
 #ifdef __GNUC__
 #pragma interface
@@ -557,8 +559,10 @@ class PSocket : public PChannel
     /// Port to be used by the socket when opening the channel.
     WORD port;
 
-#ifdef DOC_PLUS_PLUS
-};
-#endif
 
-// Class declaration continued in platform specific header file ///////////////
+// Include platform dependent part of class
+#include <ptlib/socket.h>
+};
+
+
+// End Of File ///////////////////////////////////////////////////////////////

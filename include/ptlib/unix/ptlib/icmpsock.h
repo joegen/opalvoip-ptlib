@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.6  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.5  1998/11/30 22:06:45  robertj
  * New directory structure.
  *
@@ -51,7 +55,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PICMPSocket
 
+#define _PICMPSOCKET_PLATFORM_INCLUDE
 #include "../../icmpsock.h"
+
+#endif
+#ifdef _PICMPSOCKET_PLATFORM_INCLUDE
+#undef _PICMPSOCKET_PLATFORM_INCLUDE
+
   protected:
     BOOL WritePing(
       const PString & host,   // Host to send ping.
@@ -71,6 +81,8 @@
        <H2>Returns:</H2>
        FALSE if an error occurred.
      */
-};
 
 #endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////

@@ -24,6 +24,10 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.5  2001/05/22 12:49:32  robertj
+ * Did some seriously wierd rewrite of platform headers to eliminate the
+ *   stupid GNU compiler warning about braces not matching.
+ *
  * Revision 1.4  2001/03/12 03:54:11  dereks
  * Make setting frame rate consistent with that for real video device.
  *
@@ -214,5 +218,5 @@ class PFakeVideoInputDevice : public PVideoInputDevice
 
 #endif
 
-////////////////////////////////////////////////////////
-//End of file.
+
+// End Of File ///////////////////////////////////////////////////////////////

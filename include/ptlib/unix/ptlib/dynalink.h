@@ -36,10 +36,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
 
+#define _PDYNALINK_PLATFORM_INCLUDE
 #include "../../dynalink.h"
-  protected:
-    void * dllHandle;
-};
-
 
 #endif
+#ifdef _PDYNALINK_PLATFORM_INCLUDE
+#undef _PDYNALINK_PLATFORM_INCLUDE
+
+  protected:
+    void * dllHandle;
+
+#endif
+
+
+// End Of File ////////////////////////////////////////////////////////////////
