@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.99.2.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.99  2004/03/23 05:08:21  csoutheren
  * Fixed problem with use of ShellExecuteEx function
  *
@@ -844,6 +849,7 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
       port = DEFAULT_H323RAS_PORT;
     else
       port = schemeInfo->defaultPort;
+    Recalculate();
   }
 
   return !IsEmpty();

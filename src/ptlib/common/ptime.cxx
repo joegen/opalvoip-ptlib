@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.45.4.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.45  2003/08/14 02:07:11  dereksmithies
  * Fix bug in AsString handling. Thanks Diego Tartara for pointing it out.
  *
@@ -255,11 +260,11 @@ PString PTimeInterval::AsString(int precision, Formats format, int width) const
   if (format == SecondsOnly) {
     switch (precision) {
       case 1 :
-        str << ms/1000 << '.' << (int)(ms%1000+50)/100;
+        str << ms/1000 << '.' << (int)(ms%1000)/100;
         break;
 
       case 2 :
-        str << ms/1000 << '.' << setw(2) << (int)(ms%1000+5)/10;
+        str << ms/1000 << '.' << setw(2) << (int)(ms%1000)/10;
         break;
 
       case 3 :
@@ -651,13 +656,13 @@ PString PTime::AsString(const char * format, int zone) const
           repeatCount++;
         switch (repeatCount) {
           case 1 :
-            str << ((microseconds+50000)/100000);
+            str << (microseconds/100000);
             break;
           case 2 :
-            str << setw(2) << ((microseconds+5000)/10000);
+            str << setw(2) << (microseconds/10000);
             break;
           case 3 :
-            str << setw(3) << ((microseconds+500)/1000);
+            str << setw(3) << (microseconds/1000);
             break;
           default :
             str << setw(6) << microseconds;

@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.6.2.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.6  2004/02/23 23:52:20  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -168,8 +173,6 @@
 #include <ptlib/msos/ptlib/sound_win32.h>
 
 #pragma comment(lib,    "winmm.lib")
-#pragma comment(linker, "/delayload:winmm.dll")
-#pragma comment(lib,    "Delayimp.lib")
 
 class PSound;
 
@@ -1256,6 +1259,28 @@ BOOL PSoundChannelWin32::StartRecording()
   return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
 }
 
+BOOL PSoundChannelWin32::IsRecordBufferDone()
+{
+  PWaitAndSignal mutex(bufferMutex);
+  return (buffers[bufferIndex].header.dwFlags & WHDR_DONE) != 0;
+}
+
+BOOL PSoundChannelWin32::WaitForRecordBufferDone()
+{
+  if (!StartRecording())
+    return FALSE;
+
+  while (!IsRecordBufferDone()) {
+    if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+      return FALSE;
+	  
+    PWaitAndSignal mutex(bufferMutex);
+    if (bufferByteOffset == P_MAX_INDEX)
+      return FALSE;
+  }
+  
+  return TRUE;
+}
 
 BOOL PSoundChannelWin32::Read(void * data, PINDEX size)
 {
@@ -1264,34 +1289,37 @@ BOOL PSoundChannelWin32::Read(void * data, PINDEX size)
   if (hWaveIn == NULL)
     return SetErrorValues(NotOpen, EBADF, LastReadError);
 
-  if (!WaitForRecordBufferFull())
-    return FALSE;
+  do {
+  
+    if (!WaitForRecordBufferDone())
+      return FALSE;
 
-  PWaitAndSignal mutex(bufferMutex);
+    PWaitAndSignal mutex(bufferMutex);
 
-  // Check to see if Abort() was called in another thread
-  if (bufferByteOffset == P_MAX_INDEX)
-    return FALSE;
+    // Check to see if Abort() was called in another thread
+    if (bufferByteOffset == P_MAX_INDEX)
+      return FALSE;
 
-  PWaveBuffer & buffer = buffers[bufferIndex];
+    PWaveBuffer & buffer = buffers[bufferIndex];
 
-  lastReadCount = buffer.header.dwBytesRecorded - bufferByteOffset;
-  if (lastReadCount > size)
-    lastReadCount = size;
+    lastReadCount = buffer.header.dwBytesRecorded - bufferByteOffset;
+    if (lastReadCount > size)
+      lastReadCount = size;
 
-  memcpy(data, &buffer[bufferByteOffset], lastReadCount);
+    memcpy(data, &buffer[bufferByteOffset], lastReadCount);
 
-  bufferByteOffset += lastReadCount;
-  if (bufferByteOffset >= (PINDEX)buffer.header.dwBytesRecorded) {
-    DWORD osError;
-    if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
-      return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
-    if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-      return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
-
-    bufferIndex = (bufferIndex+1)%buffers.GetSize();
-    bufferByteOffset = 0;
-  }
+    bufferByteOffset += lastReadCount;
+    if (bufferByteOffset >= (PINDEX)buffer.header.dwBytesRecorded) {
+      DWORD osError;
+      if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
+        return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
+      if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
+        return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
+ 
+      bufferIndex = (bufferIndex+1)%buffers.GetSize();
+      bufferByteOffset = 0;
+    }
+  } while (lastReadCount == 0);
 
   return TRUE;
 }

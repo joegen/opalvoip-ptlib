@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.cxx,v $
+ * Revision 1.19.4.1  2004/07/04 02:02:43  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.19  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -1012,7 +1017,7 @@ void PHTML::RadioButton::AddAttr(PHTML & html) const
 {
   InputField::AddAttr(html);
   PAssert(valueString != NULL, PInvalidParameter);
-  html << " VALUE=" << valueString;
+  html << " VALUE=\"" << valueString << "\"";
   if (checkedFlag)
     html << " CHECKED";
 }
@@ -1068,7 +1073,7 @@ void PHTML::InputRange::AddAttr(PHTML & html) const
   html << " SIZE=" << width
        << " MIN=" << minValue
        << " MAX=" << maxValue
-       << " VALUE=" << initValue;
+       << " VALUE=\"" << initValue << "\"";
 }
 
 

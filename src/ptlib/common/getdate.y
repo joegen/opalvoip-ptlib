@@ -894,7 +894,7 @@ static time_t RelativeMonth(time_t Start, time_t RelMonth, time_t yyTimezone)
 	return 0;
     tm = localtime(&Start);
     Month = 12 * tm->tm_year + tm->tm_mon + RelMonth;
-    Year = Month / 12;
+    Year = Month / 12 + 1900;
     Month = Month % 12 + 1;
     return DSTcorrect(Start,
 	    Convert(Month, (time_t)tm->tm_mday, Year,
