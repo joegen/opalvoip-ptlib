@@ -163,6 +163,10 @@ SOURCE=..\..\Ptclib\proto\Psnmp.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\random.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\proto\Snmpclnt.cxx
 # End Source File
 # Begin Source File
@@ -240,6 +244,10 @@ SOURCE=..\..\..\Include\PtCLib\psnmp.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\random.h
 # End Source File
 # Begin Source File
 
