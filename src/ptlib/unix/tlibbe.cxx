@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.22  2004/04/18 00:23:40  ykiryanov
+ * Rearranged code to be more reliable. We nearly there
+ *
  * Revision 1.21  2004/04/02 03:17:19  ykiryanov
  * New version, improved
  *
@@ -74,7 +77,6 @@ class PSemaphore;
 
 #include <ptlib.h>
 
-//#define DEBUG_SEMAPHORES
 //#define DEBUG_THREADS
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,7 +97,7 @@ int32 PThread::ThreadFunction(void * threadPtr)
   PProcess & process = PProcess::Current();
 
   process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(thread->threadId, thread);
+  process.activeThreads.SetAt((unsigned) thread->mId, thread);
   process.activeThreadMutex.Signal();
 
   process.SignalTimerChange();
@@ -106,9 +108,11 @@ int32 PThread::ThreadFunction(void * threadPtr)
 }
 
 PThread::PThread()
- : threadId(B_BAD_THREAD_ID),
-   priority(B_NORMAL_PRIORITY),
-   originalStackSize(0)
+ : autoDelete(TRUE),
+   mId(B_BAD_THREAD_ID),
+   mPriority(B_NORMAL_PRIORITY),
+   mStackSize(0),
+   mSuspendCount(0)
 {
 }
 
@@ -116,136 +120,126 @@ PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
                  Priority priorityLevel,
                  const PString & name)
-  : threadName(name)
+ : mId(B_BAD_THREAD_ID),
+   mPriority(B_NORMAL_PRIORITY),
+   mStackSize(0),
+   mSuspendCount(0)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   autoDelete = deletion == AutoDeleteThread;
-  originalStackSize = stackSize;
-
-  priority = priorities[priorityLevel];
-
-  PString str("PWLT");
-  str += threadName;
-  #ifdef DEBUG_THREADS
-  PError << "::spawn_thread(" << str << "), priority:" << priority << endl;
-  #endif
-
-  threadId =  ::spawn_thread(ThreadFunction, // Function 
-         (const char*) str, // Name
-         priority, // Priority 
+ 
+  mId =  ::spawn_thread(ThreadFunction, // Function 
+         (const char*) name, // Name
+         priorities[priorityLevel], // Priority 
          (void *) this); // Pass this as cookie
 
-  PAssertOS(threadId >= B_NO_ERROR);
+  PAssertOS(mId >= B_NO_ERROR);
+    
+  mSuspendCount = 1;
+  mStackSize = stackSize;
+  mPriority = priorities[priorityLevel];
+
+  threadName.sprintf(name, mId);
+  ::rename_thread(mId, (const char*) threadName); // real, unique name - with id
 
   #ifdef DEBUG_THREADS
-  PError << ", id: " << threadId << endl;
+  PError << ">>> Spawned thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
   #endif
-
-  ::pipe(unblockPipe);
   
-  if (autoDelete) 
-  {
-    PProcess & process = PProcess::Current();
-    process.deleteThreadMutex.Wait();
-    process.autoDeleteThreads.Append(this);
-    process.deleteThreadMutex.Signal();
-  }
+  ::pipe(mUnblockPipe);
 }
-
 
 PThread::~PThread()
 {
-  if (originalStackSize <= 0)
-    return;
-
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.SetAt(threadId, NULL);
-  process.activeThreadMutex.Signal();
-  
   if (!IsTerminated())
     Terminate();
 
-  ::close(unblockPipe[0]);
-  ::close(unblockPipe[1]);
+//  /*/ remove this thread from the active thread list
+  PProcess & process = PProcess::Current();
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt((unsigned) mId, NULL);
+  process.activeThreadMutex.Signal();
+//  */
+
+  ::close(mUnblockPipe[0]);
+  ::close(mUnblockPipe[1]);
 }
 
 
 void PThread::Restart()
 {
-  PAssert(IsTerminated(), "Cannot restart running thread");
+  if(!IsTerminated())
+    return;
 
-  PString str("PWLT");
-  str += threadName;
+  mId =  ::spawn_thread(ThreadFunction, // Function 
+         "PWLT", // Name
+          mPriority, 
+          (void *) this); // Pass this as cookie
+
+  PAssertOS(mId >= B_NO_ERROR);
+
+  threadName.sprintf("PWLib Thread %d", mId);
+  ::rename_thread(mId, (const char*) threadName); // real, unique name - with id
+
   #ifdef DEBUG_THREADS
-  PError << "::spawn_thread(" << str << "), priority:" << priority << endl;
+  PError << ">>> Spawned (restarted) thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
   #endif
-
-  threadId =  ::spawn_thread(ThreadFunction, // Function 
-         (const char*) str, // Name
-         priority, 
-         (void *) this); // Pass this as cookie
-         
-  #ifdef DEBUG_THREADS
-  PError << ", id: " << threadId << endl;
-  #endif
-
-  PAssertOS(threadId >= B_NO_ERROR);
 }
 
 
 void PThread::Terminate()
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
-  PAssert(originalStackSize > 0, PLogicError);
+  PAssert(mStackSize > 0, PLogicError);
 	
   if (Current() == this)
   {
-    sem_id semId = ::create_sem( 1, "PWST" );
-    if ( ::acquire_sem(semId) == B_NO_ERROR )
+    sem_id semId = ::create_sem( 1, "Current PThread terminate semaphore" );
+    if (::acquire_sem(semId) == B_NO_ERROR)
     {
       // Invalidate the thread
-      threadId = B_BAD_THREAD_ID;
+      mId = B_BAD_THREAD_ID;
       ::release_sem(semId);
       ::delete_sem(semId);
 		
       #ifdef DEBUG_THREADS
-      PError << "::exit_thread(0), id:" << threadId << endl;
+      PError << ">>> Exiting thread, id:" << mId << endl;
       #endif
       ::exit_thread(0);
     }
   }
   else 
   {
-    sem_id semId = ::create_sem( 1, "PWTS" );
-    if ( ::acquire_sem(semId) == B_NO_ERROR )
+    sem_id semId = ::create_sem( 1, "Non-current PThread terminate semaphore" );
+    if (::acquire_sem(semId) == B_NO_ERROR)
     {
       thread_id idToKill;
-      idToKill = threadId;
+      idToKill = mId;
 
       // Invalidate the thread
-      threadId = B_BAD_THREAD_ID;
+      mId = B_BAD_THREAD_ID;
 			
       // Kill it
       if (idToKill != B_BAD_THREAD_ID)
       { 
         ::release_sem(semId);
-	    ::delete_sem(semId);
+	::delete_sem(semId);
 
         #ifdef DEBUG_THREADS
-        PError << "::kill_thread(" << idToKill << ")" << endl;
+        PError << ">>> Killing thread, id: " << idToKill << endl;
         #endif
-	    ::kill_thread(idToKill);
+	
+        ::kill_thread(idToKill);
       }
     }
   }
-  PAssert(threadId == B_BAD_THREAD_ID, "Can't acquire semaphore to terminate thread");
+  PAssert(mId == B_BAD_THREAD_ID, "Can't acquire semaphore to terminate thread");
 }
 
 
 BOOL PThread::IsTerminated() const
 {
-  return threadId == B_BAD_THREAD_ID;
+  return mId == B_BAD_THREAD_ID;
 }
 
 
@@ -261,10 +255,10 @@ BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix
   status_t exit_value = B_NO_ERROR;
 
   #ifdef DEBUG_THREADS
-  PError << "::wait_for_thread(" << threadId << "), result:";
+  PError << "::wait_for_thread(" << mId << "), result:";
   #endif
 
-  result = ::wait_for_thread(threadId, &exit_value);
+  result = ::wait_for_thread(mId, &exit_value);
   if ( result == B_INTERRUPTED ) { // thread was killed.
     #ifdef DEBUG_THREADS
     PError << "B_INTERRUPTED" << endl;
@@ -292,10 +286,18 @@ BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix
 
 void PThread::Suspend(BOOL susp)
 {
+  //debugger("Suspend");
+
   PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
   {
-    status_t result = ::suspend_thread(threadId);
+    #ifdef DEBUG_THREADS
+    PError << "Suspending thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
+    #endif
+
+    status_t result = ::suspend_thread(mId);
+    if(B_OK == result)
+	::atomic_add(&mSuspendCount, 1);
 
     PAssert(result == B_OK, "Thread don't want to be suspended");
   }
@@ -307,7 +309,9 @@ void PThread::Suspend(BOOL susp)
 void PThread::Resume()
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
-  status_t result = ::resume_thread(threadId);
+  status_t result = ::resume_thread(mId);
+  if(B_OK == result)
+    ::atomic_add(&mSuspendCount, -1);
 
   PAssert(result == B_NO_ERROR, "Thread doesn't want to resume");
 }
@@ -315,11 +319,11 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  thread_info info;
-  status_t result = ::get_thread_info(threadId, &info);
+  #ifdef DEBUG_THREADS
+  PError << "Checking if thread suspended " << (const char*) threadName << ", id: " << mId << ", suspend count: " << mSuspendCount << endl;
+  #endif
 
-  PAssert(result == B_OK && threadId == info.thread, "Thread info inaccessible");
-  return info.state == B_THREAD_SUSPENDED;
+  return (mSuspendCount > 0);
 }
 
 void PThread::SetAutoDelete(AutoDeleteFlag deletion)
@@ -332,8 +336,8 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
-  priority = priorities[priorityLevel];
-  status_t result = ::set_thread_priority(threadId, priority );
+  mPriority = priorities[priorityLevel];
+  status_t result = ::set_thread_priority(mId, mPriority );
 
   PAssert(result == B_OK, "Thread priority change error");
 }
@@ -343,7 +347,7 @@ PThread::Priority PThread::GetPriority() const
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
-  switch (priority) {
+  switch (mPriority) {
     case 0 :
       return LowestPriority;
     case B_LOW_PRIORITY :
@@ -376,30 +380,27 @@ void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for
 
 void PThread::InitialiseProcessThread()
 {
-  originalStackSize = 0;
+  mStackSize = 0;
+
   autoDelete = FALSE;
   
-  ::pipe(unblockPipe);
-
-  threadId = ::find_thread(NULL);
-  PAssertOS(threadId >= B_NO_ERROR);
+  ::pipe(mUnblockPipe);
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(threadId, this);
+  ((PProcess *)this)->activeThreads.SetAt(mId, this);
 }
 
 
 PThread * PThread::Current()
 {
   PProcess & process = PProcess::Current();
+  thread_id currentId = GetCurrentThreadId();
+  PAssertOS(currentId >= B_NO_ERROR);
+
   process.activeThreadMutex.Wait();
-  
-  thread_id tId = ::find_thread(NULL);
-  PAssertOS(tId >= B_NO_ERROR);
-
-  PThread * thread = process.activeThreads.GetAt( tId );
-
+  PThread * thread = process.activeThreads.GetAt((unsigned) currentId);
   process.activeThreadMutex.Signal();
+
   return thread;
 }
 
@@ -437,6 +438,7 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
     #ifdef DEBUG_THREADS
     PError << "B_BAD_THREAD_ID" << endl;
     #endif
+  
     return 1;
   }
 
@@ -450,6 +452,8 @@ PThreadIdentifier PThread::GetCurrentThreadId(void)
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
+  int retval = 0;
+
   // make sure we flush the buffer before doing a write
   fd_set tmp_rfd, tmp_wfd, tmp_efd;
   fd_set * read_fds      = &tmp_rfd;
@@ -468,8 +472,10 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
   }
 
-  int retval;
-  
+  #ifdef DEBUG_THREADS
+  PError << ">> PXBlockOnIO Timeval, sec " << timeout_val.tv_sec << ", usec" << timeout_val.tv_usec << endl;
+  #endif
+
   for (;;) 
   { 
 	  FD_ZERO (read_fds);
@@ -496,8 +502,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 	
     // include the termination pipe into all blocking I/O functions
     int width = handle+1;
-    FD_SET(unblockPipe[0], read_fds);
-    width = PMAX(width, unblockPipe[0]+1);
+    FD_SET(mUnblockPipe[0], read_fds);
+    width = PMAX(width, mUnblockPipe[0]+1);
   
     retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
 
@@ -505,13 +511,15 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
       break;
   } // end for (;;)
 
-  if ((retval == 1) && FD_ISSET(unblockPipe[0], read_fds)) 
+  if ((retval == 1) && FD_ISSET(mUnblockPipe[0], read_fds)) 
   {
     BYTE ch;
-    ::read(unblockPipe[0], &ch, 1);
+    ::read(mUnblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
-    //PTRACE(1,"Unblocked I/O");
+    #ifdef DEBUG_THREADS
+    PError << ">>> Unblocked I/O" << endl;
+    #endif
   }
 
   return retval;
@@ -524,6 +532,8 @@ int PThread::PXBlockOnIO(int maxHandles,
            const PTimeInterval & timeout,
            const PIntArray & /*osHandles*/)
 {
+  int retval = 0;
+
   struct timeval * tptr = NULL;
   struct timeval   timeout_val;
   if (timeout != PMaxTimeInterval) 
@@ -537,15 +547,20 @@ int PThread::PXBlockOnIO(int maxHandles,
     }
   }
 
-  int retval = ::select(maxHandles, readBits, writeBits, exceptionBits, tptr);
+   #ifdef DEBUG_THREADS
+  PError << ">> PXBlockOnIO Timeval, sec " << timeout_val.tv_sec << ", usec" << timeout_val.tv_usec << endl;
+  #endif
+
+  retval = ::select(maxHandles, readBits, writeBits, exceptionBits, tptr);
   PProcess::Current().PXCheckSignals();
+
   return retval;
 }
 
 void PThread::PXAbortBlock(void) const
 {
   BYTE ch;
-  ::write(unblockPipe[1], &ch, 1);
+  ::write(mUnblockPipe[1], &ch, 1);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -553,7 +568,7 @@ void PThread::PXAbortBlock(void) const
 PDECLARE_CLASS(PHouseKeepingThread, PThread)
   public:
     PHouseKeepingThread()
-      : PThread(1000, NoAutoDeleteThread, NormalPriority, "Housekeeper")
+      : PThread(1000, NoAutoDeleteThread, NormalPriority, "PWLib Housekeeper")
       { closing = FALSE; Resume(); }
 
     void Main();
@@ -575,8 +590,6 @@ void PProcess::Construct()
 
 void PHouseKeepingThread::Main()
 {
-  debugger("Housekeeper");
-
   PProcess & process = PProcess::Current();
 
   while (!closing) {
