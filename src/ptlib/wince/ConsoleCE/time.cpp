@@ -7,7 +7,9 @@
 // time routines implementation
 //
 
-#include <time.h>
+#include <stdlibx.h>
+
+#include "./time.h"
 
 static tm tb;
 static int _lpdays[] = { -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 };
