@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.5  2004/04/12 03:35:26  csoutheren
+ * Fixed problems with non-recursuve mutexes and critical sections on
+ * older compilers and libc
+ *
  * Revision 1.4  2004/04/12 00:58:45  csoutheren
  * Fixed PAtomicInteger on Linux, and modified PMutex to use it
  *
@@ -125,6 +129,7 @@ class PAtomicInteger
       inline long operator++()            { InterlockedIncrement(&value); return value;}
       inline long operator--()            { InterlockedDecrement(&value); return value;}
       inline operator long () const       { return value; }
+      inline void SetValue(long v)        { value = v; }
     protected:
       long value;
 #elif P_HAS_ATOMIC_INT
@@ -135,6 +140,7 @@ class PAtomicInteger
       inline int operator++()            { __atomic_add(&value, 1); return value;}
       inline int unsigned operator--()   {  __atomic_add(&value, -1); return value;}
       inline operator int () const       { return value; }
+      inline void SetValue(int v)        { value = v; }
     protected:
       _Atomic_word value;
 #else 
@@ -145,9 +151,12 @@ class PAtomicInteger
       inline PAtomicInteger(int v = 0)
         : value(v) { }
       BOOL IsZero() const                { return value == 0; }
-      inline int operator++()            { PEnterAndLeave m(critsec); value++; return value;}
-      inline int operator--()            { PEnterAndLeave m(critsec); value--; return value;}
+      inline int operator++()            { PEnterAndLeave m(critSec); value++; return value;}
+      inline int operator--()            { PEnterAndLeave m(critSec); value--; return value;}
       inline operator int () const       { return value; }
+      inline void SetValue(int v)        { value = v; }
+   private:
+      PAtomicInteger & operator=(const PAtomicInteger & ref) { value = (int)ref; return *this; }
     protected:
       int value;
 #endif
