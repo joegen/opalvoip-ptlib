@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.37  2003/09/08 22:13:18  dereksmithies
+# Fix patch implementation. Thanks to  Zygmuntowicz Michal <m.zygmuntowicz@onet.pl>
+#
 # Revision 1.36  2003/09/08 22:07:41  dereksmithies
 # Add patch from Zygmuntowicz Michal <m.zygmuntowicz@onet.pl> for Solaris.
 # Many thanks!!!
@@ -182,7 +185,8 @@ ifeq ($(P_SHAREDLIB),1)
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
-    LD = ld
+     LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
+     LD = ld
   else
     ifneq ($(OSTYPE),Darwin)
       LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
