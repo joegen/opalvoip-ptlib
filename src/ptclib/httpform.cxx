@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.19 1998/01/26 02:49:17 robertj Exp $
+ * $Id: httpform.cxx,v 1.20 1998/02/03 06:26:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.20  1998/02/03 06:26:09  robertj
+ * Fixed propagation of inital values in arrays subfields.
+ * Fixed problem where hidden fields were being relaced with default values from PHTTPForm.
+ *
  * Revision 1.19  1998/01/26 02:49:17  robertj
  * GNU support.
  *
@@ -768,10 +772,10 @@ void PHTTPFieldArray::LoadFromConfig(PConfig & cfg)
   PString section, key;
   switch (SplitArraySizeKey(fullName, section, key)) {
     case 1 :
-      SetSize(cfg.GetInteger(key, fields.GetSize()-1));
+      SetSize(cfg.GetInteger(key, GetSize()));
       break;
     case 2 :
-      SetSize(cfg.GetInteger(section, key, fields.GetSize()-1));
+      SetSize(cfg.GetInteger(section, key, GetSize()));
   }
 
   PHTTPCompositeField::LoadFromConfig(cfg);
@@ -783,10 +787,10 @@ void PHTTPFieldArray::SaveToConfig(PConfig & cfg) const
   PString section, key;
   switch (SplitArraySizeKey(fullName, section, key)) {
     case 1 :
-      cfg.SetInteger(key, fields.GetSize()-1);
+      cfg.SetInteger(key, GetSize());
       break;
     case 2 :
-      cfg.SetInteger(section, key, fields.GetSize()-1);
+      cfg.SetInteger(section, key, GetSize());
   }
 
   PHTTPCompositeField::SaveToConfig(cfg);
@@ -839,14 +843,18 @@ void PHTTPFieldArray::SetAllValues(const PStringToString & data)
       newFields.Append(fieldPtr);
     }
     else if (control == ArrayControlAddTop) {
-      newFields.RemoveAt(pos);
-      newFields.InsertAt(0, fieldPtr);
-      lastFieldIsSet = TRUE;
+      if (i == size-1) {
+        newFields.RemoveAt(pos);
+        newFields.InsertAt(0, fieldPtr);
+        lastFieldIsSet = TRUE;
+      }
     }
     else if (control == ArrayControlAddBottom || control == ArrayControlAdd) {
-      newFields.RemoveAt(pos);
-      newFields.Append(fieldPtr);
-      lastFieldIsSet = TRUE;
+      if (i == size-1) {
+        newFields.RemoveAt(pos);
+        newFields.Append(fieldPtr);
+        lastFieldIsSet = TRUE;
+      }
     }
     else if (control == ArrayControlIgnore) {
       newFields.RemoveAt(pos);
@@ -916,7 +924,7 @@ PHTTPStringField::PHTTPStringField(const char * name,
 
 PHTTPField * PHTTPStringField::NewField() const
 {
-  return new PHTTPStringField(baseName, title, size, "", help);
+  return new PHTTPStringField(baseName, title, size, initialValue, help);
 }
 
 
@@ -965,7 +973,7 @@ PHTTPPasswordField::PHTTPPasswordField(const char * name,
 
 PHTTPField * PHTTPPasswordField::NewField() const
 {
-  return new PHTTPPasswordField(baseName, title, size, "", help);
+  return new PHTTPPasswordField(baseName, title, size, initialValue, help);
 }
 
 
@@ -1037,7 +1045,7 @@ PHTTPIntegerField::PHTTPIntegerField(const char * nam,
 
 PHTTPField * PHTTPIntegerField::NewField() const
 {
-  return new PHTTPIntegerField(baseName, title, low, high, 0, units, help);
+  return new PHTTPIntegerField(baseName, title, low, high, initialValue, units, help);
 }
 
 
@@ -1121,7 +1129,7 @@ PHTTPBooleanField::PHTTPBooleanField(const char * name,
 
 PHTTPField * PHTTPBooleanField::NewField() const
 {
-  return new PHTTPBooleanField(baseName, title, FALSE, help);
+  return new PHTTPBooleanField(baseName, title, initialValue, help);
 }
 
 
@@ -1345,7 +1353,7 @@ PHTTPRadioField::PHTTPRadioField(const char * name,
 
 PHTTPField * PHTTPRadioField::NewField() const
 {
-  return new PHTTPRadioField(baseName, title, values, titles, 0, help);
+  return new PHTTPRadioField(*this);
 }
 
 
@@ -1626,8 +1634,13 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   pos = len = 0;
   static PRegularExpression InputRegEx("<input[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>");
   while (FindSpliceField(InputRegEx, "", text, pos+len, fields, pos, len, start, finish, field)) {
-    if (field != NULL)
-      text.Splice(field->GetHTMLInput(text.Mid(pos, len)), pos, len);
+    if (field != NULL) {
+      static PRegularExpression HiddenRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?hidden\"?",
+                                            PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+      PString substr = text.Mid(pos, len);
+      if (substr.FindRegEx(HiddenRegEx) == P_MAX_INDEX)
+        text.Splice(field->GetHTMLInput(substr), pos, len);
+    }
   }
 
   pos = len = 0;
@@ -1709,35 +1722,16 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
                      const PStringToString & data,
                      PHTML & msg)
 {
-  PINDEX fld;
-
   PString prefix = request.url.GetQueryVars()("subformprefix");
   const PHTTPField * field = NULL;
-  if (!prefix) {
-    for (fld = 0; fld < fields.GetSize(); fld++) {
-      if ((field = fields[fld].LocateName(prefix)) != NULL)
-        break;
-    }
-  }
+  if (!prefix)
+    field = fields.LocateName(prefix);
+  if (field == NULL)
+    field = &fields;
 
   PStringStream errors;
-  BOOL good = TRUE;
-  if (field != NULL)
-    good = field->ValidateAll(data, errors);
-  else {
-    for (fld = 0; fld < fields.GetSize(); fld++) {
-      if (!fields[fld].ValidateAll(data, errors))
-        good = FALSE;
-    }
-  }
-
-  if (good) {
-    if (field != NULL)
-      ((PHTTPField *)field)->SetAllValues(data);
-    else {
-      for (fld = 0; fld < fields.GetSize(); fld++)
-        fields[fld].SetAllValues(data);
-    }
+  if (field->ValidateAll(data, errors)) {
+    ((PHTTPField *)field)->SetAllValues(data);
 
     if (msg.IsEmpty())
       msg = "Accepted New Configuration";
@@ -1839,8 +1833,7 @@ void PHTTPConfig::Construct()
 void PHTTPConfig::LoadFromConfig()
 {
   PConfig cfg(section);
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++)
-    fields[fld].LoadFromConfig(cfg);
+  fields.LoadFromConfig(cfg);
 }
 
 
