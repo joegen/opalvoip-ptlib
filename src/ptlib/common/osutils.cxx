@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.54 1996/03/04 12:22:46 robertj Exp $
+ * $Id: osutils.cxx,v 1.55 1996/03/05 14:05:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.55  1996/03/05 14:05:51  robertj
+ * Fixed some more bugs in scheduling.
+ *
  * Revision 1.54  1996/03/04 12:22:46  robertj
  * Fixed threading for unix stack check and loop list start point.
  *
@@ -1753,7 +1756,8 @@ void PThread::Yield()
 
   // The following is static as the SwitchContext function invalidates all
   // automatic variables in this function call.
-  static PThread * current = process->currentThread;
+  static PThread * current;
+  current = process->currentThread;
 
   if (current == process)
     process->GetTimerList()->Process();
@@ -1763,10 +1767,8 @@ void PThread::Yield()
   if (current->status == Running) {
     if (current->basePriority != HighestPriority && current->link != current)
       current->status = Waiting;
-    else {
-      current->SwitchContext(current);
+    else
       return;
-    }
   }
 
   static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
@@ -1814,7 +1816,8 @@ void PThread::Yield()
         break;
 
       case Starting :
-        next = thread;
+        if (!thread->IsSuspended())
+          next = thread;
         break;
 
       case Terminating :
