@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.2  2003/04/28 07:27:15  craigs
+ * Added missed functions
+ *
  * Revision 1.1  2003/04/28 07:03:55  craigs
  * Initial version from ohphone
  *
@@ -43,6 +46,43 @@ extern "C" {
 #include <SDL.h>
 
 };
+
+#ifdef _MSC_VER
+#pragma comment(lib, P_SDL_LIBRARY1)
+#pragma comment(lib, P_SDL_LIBRARY2)
+#endif
+
+PSDLVideoFrame::PSDLVideoFrame(unsigned newWidth, unsigned newHeight, const void *_data)
+{
+  Initialise(newWidth, newHeight, (Uint8 *)_data);
+}
+
+PSDLVideoFrame::PSDLVideoFrame(unsigned newWidth, unsigned newHeight, Uint8 *_data)
+{
+  Initialise(newWidth, newHeight, _data);
+}
+
+PSDLVideoFrame::~PSDLVideoFrame()
+{
+  delete data;
+}
+
+void PSDLVideoFrame::PrintOn(ostream & strm) const
+{
+  strm << PString(width) << "x" << PString(height);
+}
+
+
+void PSDLVideoFrame::Initialise(unsigned newWidth, 
+			       unsigned newHeight, Uint8 *_data)
+{
+  width = newWidth;
+  height = newHeight;
+  unsigned size = (width*height *3) >> 1;
+  data = new Uint8[size];
+  memcpy(data, _data, size);
+}
+
 
 PSDLVideoDevice::PSDLVideoDevice(const PString & _remoteName,
 			                                      BOOL _isEncoding, 
