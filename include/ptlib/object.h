@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.14 1995/06/04 12:34:19 robertj Exp $
+ * $Id: object.h,v 1.15 1995/06/17 11:12:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.15  1995/06/17 11:12:47  robertj
+ * Documentation update.
+ *
  * Revision 1.14  1995/06/04 12:34:19  robertj
  * Added trace functions.
  *
@@ -110,7 +113,7 @@ enum PStandardAssertMessage {
    is FALSE then an assert function is called with the source file and line
    number the macro was instantiated on, plus the message described by the
    <CODE>msg</CODE> parameter. This parameter may be either a standard value
-   from the <A>PStandardAssertMessage</A> enum or a literal string.
+   from the <A>PStandardAssertMessage enum</A> or a literal string.
  */
 #define PAssert(b, m) if(b);else PAssertFunc(__FILE__, __LINE__, (m))
 
@@ -119,7 +122,7 @@ enum PStandardAssertMessage {
    is FALSE then an assert function is called with the source file and line
    number the macro was instantiated on, plus the message described by the
    <CODE>POperatingSystemError</CODE> value in the
-   <A>PStandardAssertMessage</A> enum.
+   <A>PStandardAssertMessage enum</A>.
  */
 #define PAssertOS(b) \
               if(b);else PAssertFunc(__FILE__, __LINE__, POperatingSystemError)
@@ -129,7 +132,7 @@ enum PStandardAssertMessage {
    pointer is NULL then an assert function is called with the source file and
    line number the macro was instantiated on, plus the message described by the
    <CODE>PNullPointerReference</CODE> value in the
-   <A>PStandardAssertMessage</A> enum.
+   <A>PStandardAssertMessage enum</A>.
    
    Note that this evaluates the expression defined by <CODE>ptr</CODE> twice.
    To prevent incorrect behaviour with this, the macro will assume that the
@@ -142,7 +145,7 @@ enum PStandardAssertMessage {
    This macro is used to assert immediately. The assert function is called with
    the source file and line number the macro was instantiated on, plus the
    message described by the <CODE>msg</CODE> parameter. This parameter may be
-   either a standard value from the <A>PStandardAssertMessage</A> enum or a
+   either a standard value from the <A>PStandardAssertMessage enum</A> or a
    literal string.
  */
 #define PAssertAlways(m) PAssertFunc(__FILE__, __LINE__, (m))
@@ -163,9 +166,9 @@ extern ostream * PSTATIC PErrorStream;
    This macro is used to access the platform specific error output stream. This
    is to be used in preference to assuming <CODE>cerr</CODE> is always
    available. On Unix platforms this <EM>is</EM> <CODE>cerr</CODE> but for
-   MS-Windows this is another stream that uses the
-   <A><CODE>OutputDebugString()</CODE></A> Windows API function. Note that a
-   MS-DOS or Windows NT console application would still use <CODE>cerr</CODE>.
+   MS-Windows this is another stream that uses the OutputDebugString() Windows
+   API function. Note that a MS-DOS or Windows NT console application would
+   still use <CODE>cerr</CODE>.
 
    The PError stream would normally only be used for debugging information as
    a suitable display is not always available in windowed environments.
@@ -373,8 +376,7 @@ PCLASS PObject {
     static const char * Class() { return "PObject"; }
     /* Get the name of the class as a C string. This is a static function which
        returns the type of a specific class. It is primarily used as an
-       argument to the <A><CODE>IsClass()</CODE></A> or
-       <A><CODE>IsDescendant()</CODE></A> functions.
+       argument to the <A>IsClass()</A> or <A>IsDescendant()</A> functions.
        
        When comparing class names, always use the <CODE>strcmp()</CODE>
        function rather than comparing pointers. The pointers are not
@@ -414,7 +416,7 @@ PCLASS PObject {
     ) const;
     /* Determine if the dynamic type of the current instance is of the
        specified class. The class name is usually provided by the
-       <A><CODE>Class()</CODE></A> static function of the desired class.
+       <A>Class()</A> static function of the desired class.
     
        The <A>PCLASSINFO</A> macro declares an override of this function for
        the particular class. The user need not implement it.
@@ -428,7 +430,7 @@ PCLASS PObject {
     ) const;
     /* Determine if the dynamic type of the current instance is a descendent of
        the specified class. The class name is usually provided by the
-       <A><CODE>Class()</CODE></A> static function of the desired class.
+       <A>Class()</A> static function of the desired class.
     
        The <A>PCLASSINFO</A> macro declares an override of this function for
        the particular class. The user need not implement it.
@@ -443,8 +445,8 @@ PCLASS PObject {
       EqualTo = 0,      // Object is equal to parameter.
       GreaterThan = 1   // Object is greater than parameter.
     };
-    /* Result of the comparison operation performed by the
-       <A><CODE>Compare()</CODE></A> function.
+    /* Result of the comparison operation performed by the <A>Compare()</A>
+       function.
       */
 
     virtual Comparison Compare(
@@ -454,9 +456,8 @@ PCLASS PObject {
        usually overridden by descendent classes to yield the ranking according
        to the semantics of the object.
        
-       The default function is to use the
-       <A><CODE>CompareObjectMemoryDirect()</CODE></A> function to do a byte
-       wise memory comparison of the two objects.
+       The default function is to use the <A>CompareObjectMemoryDirect()</A>
+       function to do a byte wise memory comparison of the two objects.
 
        <H2>Returns:</H2>
        <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
@@ -468,7 +469,7 @@ PCLASS PObject {
     ) const;
     /* Determine the byte wise comparison of two objects. This is the default
        comparison operation for objects that do not explicitly override the
-       <A><CODE>Compare()</CODE></A> function.
+       <A>Compare()</A> function.
     
        The <A>PCLASSINFO</A> macro declares an override of this function for
        the particular class. The user need not implement it.
@@ -565,7 +566,7 @@ PCLASS PObject {
     ) const;
     /* Output the contents of the object to the stream. The exact output is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <A><CODE>operator<<</CODE></A> function.
+       primarily used by the standard <CODE><A>operator<<</A></CODE> function.
 
        The default behaviour is to print the class name.
      */
@@ -575,7 +576,7 @@ PCLASS PObject {
     );
     /* Input the contents of the object from the stream. The exact input is
        dependent on the exact semantics of the descendent class. This is
-       primarily used by the standard <A><CODE>operator>></CODE></A> function.
+       primarily used by the standard <CODE><A>operator>></A></CODE> function.
 
        The default behaviour is to do nothing.
      */
@@ -586,8 +587,7 @@ PCLASS PObject {
       const PObject & obj  // Object to print to the stream.
     ) { obj.PrintOn(strm); return strm; }
     /* Global function for using the standard << operator on objects descended
-       from PObject. This simply calls the objects
-       <A><CODE>PrintOn()</CODE></A> function.
+       from PObject. This simply calls the objects <A>PrintOn()</A> function.
        
        <H2>Returns:</H2>
        the <CODE>strm</CODE> parameter.
@@ -598,8 +598,7 @@ PCLASS PObject {
       PObject & obj    // Object to read inormation into.
     ) { obj.ReadFrom(strm); return strm; }
     /* Global function for using the standard >> operator on objects descended
-       from PObject. This simply calls the objects
-       <A><CODE>ReadFrom()</CODE></A> function.
+       from PObject. This simply calls the objects <A>ReadFrom()</A> function.
 
        <H2>Returns:</H2>
        the <CODE>strm</CODE> parameter.
@@ -631,21 +630,19 @@ PCLASS PObject {
       PSerialiser & strm   // Serialiser stream to serialise object into.
     );
     /* Serialise the object into the specified stream. This is similar to the
-       <A><CODE>PrintOn()</CODE></A> function that outputs the contents of the
-       object to a stream, but where <A><CODE>PrintOn()</CODE></A> usually
-       produces a human readable form of the object, this function outputs
-       enough data so that it can be reconstructed by the <A>PUnSerialiser</A>
-       class.
+       <A>PrintOn()</A> function that outputs the contents of the object to a
+       stream, but where <A>PrintOn()</A> usually produces a human readable
+       form of the object, this function outputs enough data so that it can be
+       reconstructed by the <A>PUnSerialiser</A> class.
        
        When the user implements this function they will usually be doing it for
        one of either the text of binary output versions. In some circumstances,
-       eg libraries, both need be supported so the
-       <A><CODE>IsDscendent()</CODE></A> function should be used on the
-       <CODE>strm</CODE> parameter to determine whether it is a
-       <A>PBinarySerialiser</A> class or a <A>PTextSerialiser</A> class and do
-       the appropriate output.
+       eg libraries, both need be supported so the <A>IsDscendent()</A>
+       function should be used on the <CODE>strm</CODE> parameter to determine
+       whether it is a <A>PBinarySerialiser</A> class or a
+       <A>PTextSerialiser</A> class and do the appropriate output.
 
-       To a large extent, if only the << operator is used on the
+       To a large extent, if only the <CODE><<</CODE> operator is used on the
        <A>PSerialiser</A> instance, the text and binary version can be made
        identical.
      */
@@ -654,19 +651,18 @@ PCLASS PObject {
       PUnSerialiser & strm   // Serialiser stream to serialise object into.
     );
     /* Un-serialise the object from the specified stream. This is similar to
-       the <A><CODE>ReadFrom()</CODE></A> function that inputs the contents of
-       the object from a stream, but where <A><CODE>ReadFrom()</CODE></A>
-       usually intrerprets a human readable form of the object, this function
-       inputs enough data so that it can be reconstructed from the data
-       provided by the <A><CODE>Serialise()</CODE></A> function.
+       the <A>ReadFrom()</A> function that inputs the contents of the object
+       from a stream, but where <A>ReadFrom()</A> usually intrerprets a human
+       readable form of the object, this function inputs enough data so that
+       it can be reconstructed from the data provided by the <A>Serialise()</A>
+       function.
 
        When the user implements this function they will usually be doing it for
        one of either the text of binary input versions. In some circumstances,
-       eg libraries, both need be supported so the
-       <A><CODE>IsDscendent()</CODE></A> function should be used on the
-       <CODE>strm</CODE> parameter to determine whether it is a
-       <A>PBinarySerialiser</A> class or a <A>PTextSerialiser</A> class and do
-       the appropriate input.
+       eg libraries, both need be supported so the <A>IsDscendent()</A>
+       function should be used on the <CODE>strm</CODE> parameter to determine
+       whether it is a <A>PBinarySerialiser</A> class or a
+       <A>PTextSerialiser</A> class and do the appropriate input.
 
        To a large extent, if only the >> operator is used on the
        <A>PUnSerialiser</A> instance, the text and binary version can be made
@@ -842,12 +838,12 @@ PDECLARE_CLASS(PSerialiser, PObject)
 
    Serialisation can be done in two manners: binary or text. This depends on
    the serialiser instance that was constructed. Each objects
-   <A><CODE>Serialise()</CODE></A> function is called and it is up to that
+   <A>PObject::Serialise()</A> function is called and it is up to that
    function to output in binary or text.
 
    To a large extent, if only the << operator is used on the
    <A>PSerialser</A> instance, the text and binary versions of the
-   <A><CODE>Serialise()</CODE></A> function can be made identical.
+   <A>PObject::Serialise()</A> function can be made identical.
 
    This class is an abstract class and descendents of <A>PTextSerialiser</A> or
    <A>PBinarySerialiser</A> should be created.
@@ -877,7 +873,7 @@ PDECLARE_CLASS(PSerialiser, PObject)
     virtual PSerialiser & operator<<(PObject &);
     /* Output the data to the serialiser object. When the operator is executed
        on a <A>PObject</A> descendent then that objects
-       <A><CODE>Serialise()</CODE></A> function is called.
+       <A>PObject::Serialise()</A> function is called.
      */
 
   protected:
@@ -894,12 +890,12 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
 
    Serialisation can be done in two manners: binary or text. This depends on
    the serialiser instance that was constructed. Each objects
-   <A><CODE>Serialise()</CODE></A> function is called and it is up to that
+   <A>PObject::Serialise()</A> function is called and it is up to that
    function to output in binary or text.
 
-   To a large extent, if only the << operator is used on the <A>PSerialser</A>
-   instance, the text and binary versions of the
-   <A><CODE>Serialise()</CODE></A> function can be made identical.
+   To a large extent, if only the <CODE><<</CODE> operator is used on the
+   <A>PSerialser</A> instance, the text and binary versions of the
+   <A>PObject::Serialise()</A> function can be made identical.
 
    This class is an abstract class and descendents of <A>PTextSerialiser</A> or
    <A>PBinarySerialiser</A> should be created.
@@ -929,7 +925,7 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
     virtual PUnSerialiser & operator>>(PObject &) = 0;
     /* Input the data from the un-serialiser object. When the operator is
        executed on a <A>PObject</A> descendent then that objects
-       <A><CODE>UnSerialise()</CODE></A> function is called.
+       <A>PObject::UnSerialise()</A> function is called.
      */
 
   protected:
@@ -942,8 +938,8 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
    This macro is used to declare functions required by the serialisation
    system. It is used in conjunction with the <A>PIMPLEMENT_SERIAL</A> macro.
 
-   This declares the <A><CODE>PreSerialise()</CODE></A> and
-   <A><CODE>Serialise()</CODE></A> functions which must be imeplemented by the
+   This declares the <A>PObject::PreSerialise()</A> and
+   <A>PObject::Serialise()</A> functions which must be imeplemented by the
    user. The un-serialisation and registration is declared and implemented by
    these two functions automatically.
  */
@@ -1000,7 +996,7 @@ PDECLARE_CLASS(PTextSerialiser, PSerialiser)
     virtual PSerialiser & operator<<(PObject & obj);
     /* Output the data to the serialiser object. When the operator is executed
        on a <A>PObject</A> descendent then that objects
-       <A><CODE>Serialise()</CODE></A> function is called.
+       <A>PObject::Serialise()</A> function is called.
      */
 };
 
@@ -1047,7 +1043,7 @@ PDECLARE_CLASS(PBinarySerialiser, PSerialiser)
     virtual PSerialiser & operator<<(PObject & obj);
     /* Output the data to the serialiser object. When the operator is executed
        on a <A>PObject</A> descendent then that objects
-       <A><CODE>Serialise()</CODE></A> function is called.
+       <A>PObject::Serialise()</A> function is called.
      */
 
   protected:
@@ -1086,7 +1082,7 @@ PDECLARE_CLASS(PTextUnSerialiser, PUnSerialiser)
     PUnSerialiser & operator>>(PObject &);
     /* Input the data from the un-serialiser object. When the operator is
        executed on a <A>PObject</A> descendent then that objects
-       <A><CODE>UnSerialise()</CODE></A> function is called.
+       <A>PObject::UnSerialise()</A> function is called.
      */
 };
 
@@ -1130,7 +1126,7 @@ PDECLARE_CLASS(PBinaryUnSerialiser, PUnSerialiser)
     PUnSerialiser & operator>>(PObject &);
     /* Input the data from the un-serialiser object. When the operator is
        executed on a <A>PObject</A> descendent then that objects
-       <A><CODE>UnSerialise()</CODE></A> function is called.
+       <A>PObject::UnSerialise()</A> function is called.
      */
 
   protected:
@@ -1183,7 +1179,7 @@ PDECLARE_CLASS(PSmartPointer, PObject)
    overwritten, the <A>PSmartObject</A> is deleted.
 
    A NULL value is possible for a smart pointer. It can be detected via the
-   <A><CODE>IsNULL()</CODE></A> function.
+   <A>IsNULL()</A> function.
  */
 
   public:
@@ -1282,8 +1278,9 @@ PDECLARE_CLASS(PSmartPointer, PObject)
    Note if this macro is used then the <A>PIMPLEMENT_POINTER</A> macro must be
    used to implement some inline functions that the pointer class declares.
    The separate declaration and definition is sometimes required due to the
-   order in which the PSmartPointer class and the PSmartObject class are
-   declared. They may require a circular reference under some circumstances.
+   order in which the <A>PSmartPointer</A> class and the <A>PSmartObject</A>
+   class are declared. They may require a circular reference under some
+   circumstances.
  */
 #define PDECLARE_POINTER_CLASS(cls, par, type) \
   PDECLARE_CLASS(cls, par) \
