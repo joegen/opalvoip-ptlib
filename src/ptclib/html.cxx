@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.8 1996/03/31 09:03:07 robertj Exp $
+ * $Id: html.cxx,v 1.9 1996/04/14 02:52:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.9  1996/04/14 02:52:04  robertj
+ * Added hidden fields to HTML.
+ *
  * Revision 1.8  1996/03/31 09:03:07  robertj
  * Changed HTML token so doesn't have trailing CRLF.
  *
@@ -751,6 +754,22 @@ void PHTML::InputField::AddAttr(PHTML & html) const
   PAssert(typeString != NULL && *typeString != '\0', PInvalidParameter);
   html << " TYPE=" << typeString;
   FormField::AddAttr(html);
+}
+
+
+PHTML::HiddenField::HiddenField(const char * fname,
+                                const char * value,
+                                const char * attr)
+  : InputField("hidden", fname, Enabled, attr)
+{
+  valueString = value;
+}
+
+void PHTML::HiddenField::AddAttr(PHTML & html) const
+{
+  InputField::AddAttr(html);
+  PAssert(valueString != NULL, PInvalidParameter);
+  html << " VALUE=\"" << valueString << '"';
 }
 
 
