@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.4 1996/07/27 04:14:49 robertj Exp $
+ * $Id: inetmail.h,v 1.5 1996/09/14 13:17:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.5  1996/09/14 13:17:59  robertj
+ * Renamed file and changed to be a protocol off new indirect channel to separate
+ *   the protocol from the low level byte transport channel.
+ *
  * Revision 1.4  1996/07/27 04:14:49  robertj
  * Redesign and reimplement of mail sockets.
  *
@@ -31,27 +35,28 @@
  *
  */
 
-#ifndef _PMAILSOCKETS
-#define _PMAILSOCKETS
+#ifndef _PMAILPROTOCOL
+#define _PMAILPROTOCOL
 
 #ifdef __GNUC__
 #pragma interface
 #endif
 
-#include <appsock.h>
-#include <mime.h>
+#include <inetprot.h>
+
+class PSocket;
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PPOP3Socket
+// PSMTP
 
-PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
+PDECLARE_CLASS(PSMTP, PInternetProtocol)
 /* A TCP/IP socket for the Simple Mail Transfer Protocol.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to send a message using the following procedure:
       <PRE><CODE>
-      PSMTPSocket mail("mailserver");
+      PSMTPClient mail("mailserver");
       if (mail.IsOpen()) {
         mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
         mail.Write(myMessage);
@@ -73,13 +78,40 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
 */
 
   public:
-    PSMTPSocket();
-    PSMTPSocket(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    PSMTPSocket(
-      PSocket & socket          // Listening socket making the connection.
-    );
+  // New functions for class.
+    enum Commands {
+      HELO, EHLO, QUIT, HELP, NOOP,
+      TURN, RSET, VRFY, EXPN, RCPT,
+      MAIL, SEND, SAML, SOML, DATA,
+      NumCommands
+    };
+
+  protected:
+    PSMTP();
+    // Create a new SMTP protocol channel.
+};
+
+
+PDECLARE_CLASS(PSMTPClient, PSMTP)
+/* A TCP/IP socket for the Simple Mail Transfer Protocol.
+
+   When acting as a client, the procedure is to make the connection to a
+   remote server, then to send a message using the following procedure:
+      <PRE><CODE>
+      PSMTPSocket mail("mailserver");
+      if (mail.IsOpen()) {
+        mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
+        mail.Write(myMessage);
+        if (!mail.EndMessage())
+          PError << "Mail send failed." << endl;
+      }
+      else
+         PError << "Mail conection failed." << endl;
+      </PRE></CODE>
+*/
+
+  public:
+    PSMTPClient();
     /* Create a TCP/IP SMPTP protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
@@ -87,35 +119,13 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        incoming call from a "listening" socket.
      */
 
-    ~PSMTPSocket();
-    /* Destroy the socket object. This will close the socket and if used as a
+    ~PSMTPClient();
+    /* Destroy the channel object. This will close the channel and as a
        client, QUIT from remote SMTP server.
      */
 
 
-  // Overrides from class PSocket.
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully connected to the remote host.
-     */
-
-
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    /* Open a socket to a remote host on the specified port number.
-
-       Note that this function will block until a remote system connects to the
-       port number specified in the "listening" socket.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully opened.
-     */
-
+  // Overrides from class PChannel.
     virtual BOOL Close();
     /* Close the socket, and if connected as a client, QUITs from server.
 
@@ -152,13 +162,58 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
      */
 
 
-    enum Commands {
-      HELO, EHLO, QUIT, HELP, NOOP,
-      TURN, RSET, VRFY, EXPN, RCPT,
-      MAIL, SEND, SAML, SOML, DATA,
-      NumCommands
-    };
+  protected:
+    BOOL OnOpen();
 
+    BOOL    haveHello;
+    BOOL    extendedHello;
+    BOOL    eightBitMIME;
+    PString fromAddress;
+    PStringList toNames;
+
+  private:
+    BOOL _BeginMessage();
+};
+
+
+PDECLARE_CLASS(PSMTPServer, PSMTP)
+/* A TCP/IP socket for the Simple Mail Transfer Protocol.
+
+   When acting as a client, the procedure is to make the connection to a
+   remote server, then to send a message using the following procedure:
+      <PRE><CODE>
+      PSMTPSocket mail("mailserver");
+      if (mail.IsOpen()) {
+        mail.BeginMessage("Me@here.com.au", "Fred@somwhere.com");
+        mail.Write(myMessage);
+        if (!mail.EndMessage())
+          PError << "Mail send failed." << endl;
+      }
+      else
+         PError << "Mail conection failed." << endl;
+      </PRE></CODE>
+
+    When acting as a server, a descendant class would be created to override
+    at least the <A>LookUpName()</A> and <A>HandleMessage()</A> functions.
+    Other functions may be overridden for further enhancement to the sockets
+    capabilities, but these two will give a basic SMTP server functionality.
+
+    The server socket thread would continuously call the
+    <A>ProcessMessage()</A> function until it returns FALSE. This will then
+    call the appropriate virtual function on parsing the SMTP protocol.
+*/
+
+  public:
+    PSMTPServer();
+    /* Create a TCP/IP SMPTP protocol socket channel. The parameterless form
+       creates an unopened socket, the form with the <CODE>address</CODE>
+       parameter makes a connection to a remote system, opening the socket. The
+       form with the <CODE>socket</CODE> parameter opens the socket to an
+       incoming call from a "listening" socket.
+     */
+
+
+  // New functions for class.
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
@@ -227,6 +282,8 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
 
 
   protected:
+    BOOL OnOpen();
+
     virtual void OnHELO(
       const PCaselessString & remoteHost  // Name of remote host.
     );
@@ -333,7 +390,6 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
 
 
   // Member variables
-    BOOL        haveHello;
     BOOL        extendedHello;
     BOOL        eightBitMIME;
     PString     fromAddress;
@@ -343,23 +399,19 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
     PINDEX      messageBufferSize;
     enum { WasMAIL, WasSEND, WasSAML, WasSOML } sendCommand;
     StuffState  endMIMEDetectState;
-
-  private:
-    void Construct();
-    BOOL _BeginMessage();
 };
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PPOP3Socket
+// PPOP3
 
-PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
+PDECLARE_CLASS(PPOP3, PInternetProtocol)
 /* A TCP/IP socket for the Post Office Protocol version 3.
 
    When acting as a client, the procedure is to make the connection to a
    remote server, then to retrieve a message using the following procedure:
       <PRE><CODE>
-      PPOP3Socket mail("popserver");
+      PPOP3Client mail("popserver");
       if (mail.IsOpen()) {
         if (mail.LogIn("Me", "password")) {
           if (mail.GetMessageCount() > 0) {
@@ -393,13 +445,68 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
  */
 
   public:
-    PPOP3Socket();
-    PPOP3Socket(
-      const PString & address   // Address of remote machine to connect to.
+    enum Commands {
+      USER, PASS, QUIT, RSET, NOOP, STAT,
+      LIST, RETR, DELE, APOP, TOP,  UIDL,
+      NumCommands
+    };
+
+
+  protected:
+    PPOP3();
+
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
     );
-    PPOP3Socket(
-      PSocket & socket          // Listening socket making the connection.
-    );
+    /* Parse a response line string into a response code and any extra info
+       on the line. Results are placed into the member variables
+       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
+
+       The default bahaviour looks for a space or a '-' and splits the code
+       and info either side of that character, then returns FALSE.
+
+       <H2>Returns:</H2>
+       Position of continuation character in response, 0 if no continuation
+       lines are possible.
+     */
+
+  // Member variables
+    static PString okResponse;
+    static PString errResponse;
+};
+
+
+PDECLARE_CLASS(PPOP3Client, PPOP3)
+/* A TCP/IP socket for the Post Office Protocol version 3.
+
+   When acting as a client, the procedure is to make the connection to a
+   remote server, then to retrieve a message using the following procedure:
+      <PRE><CODE>
+      PPOP3Client mail("popserver");
+      if (mail.IsOpen()) {
+        if (mail.LogIn("Me", "password")) {
+          if (mail.GetMessageCount() > 0) {
+            PUnsignedArray sizes = mail.GetMessageSizes();
+            for (PINDEX i = 0; i < sizes.GetSize(); i++) {
+              if (mail.BeginMessage(i+1))
+                mail.Read(myMessage, sizes[i]);
+              else
+                PError << "Error getting mail message." << endl;
+            }
+          }
+          else
+            PError << "No mail messages." << endl;
+        }
+        else
+           PError << "Mail log in failed." << endl;
+      }
+      else
+         PError << "Mail conection failed." << endl;
+      </PRE></CODE>
+ */
+
+  public:
+    PPOP3Client();
     /* Create a TCP/IP POP3 protocol socket channel. The parameterless form
        creates an unopened socket, the form with the <CODE>address</CODE>
        parameter makes a connection to a remote system, opening the socket. The
@@ -407,47 +514,13 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
        incoming call from a "listening" socket.
      */
 
-    ~PPOP3Socket();
-    /* Destroy the socket object. This will close the socket and if used as a
+    ~PPOP3Client();
+    /* Destroy the channel object. This will close the channel and as a
        client, QUIT from remote POP3 server.
      */
 
 
-  // Overrides from class PSocket.
-    virtual BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
-    );
-    /* Connect a socket to a remote host on the specified port number. This is
-       typically used by the client or initiator of a communications channel.
-       This connects to a "listening" socket at the other end of the
-       communications channel.
-
-       The port number as defined by the object instance construction or the
-       <A>PIPSocket::SetPort()</A> function.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully connected to the remote host.
-     */
-
-
-    virtual BOOL Accept(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    /* Open a socket to a remote host on the specified port number. This is an
-       "accepting" socket. When a "listening" socket has a pending connection
-       to make, this will accept a connection made by the "connecting" socket
-       created to establish a link.
-
-       The port that the socket uses is the one used in the <A>Listen()</A>
-       command of the <CODE>socket</CODE> parameter.
-
-       Note that this function will block until a remote system connects to the
-       port number specified in the "listening" socket.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was successfully opened.
-     */
-
+  // Overrides from class PChannel.
     virtual BOOL Close();
     /* Close the socket, and if connected as a client, QUITs from server.
 
@@ -522,12 +595,48 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
      */
 
 
-    enum Commands {
-      USER, PASS, QUIT, RSET, NOOP, STAT,
-      LIST, RETR, DELE, APOP, TOP,  UIDL,
-      NumCommands
-    };
+  protected:
+    BOOL OnOpen();
 
+  // Member variables
+    BOOL loggedIn;
+};
+
+
+PDECLARE_CLASS(PPOP3Server, PPOP3)
+/* A TCP/IP socket for the Post Office Protocol version 3.
+
+    When acting as a server, a descendant class would be created to override
+    at least the <A>HandleOpenMailbox()</A>, <A>HandleSendMessage()</A> and
+    <A>HandleDeleteMessage()</A> functions. Other functions may be overridden
+    for further enhancement to the sockets capabilities, but these will give a
+    basic POP3 server functionality.
+
+    The server socket thread would continuously call the
+    <A>ProcessMessage()</A> function until it returns FALSE. This will then
+    call the appropriate virtual function on parsing the POP3 protocol.
+ */
+
+  public:
+    PPOP3Server();
+    /* Create a TCP/IP POP3 protocol socket channel. The parameterless form
+       creates an unopened socket, the form with the <CODE>address</CODE>
+       parameter makes a connection to a remote system, opening the socket. The
+       form with the <CODE>socket</CODE> parameter opens the socket to an
+       incoming call from a "listening" socket.
+     */
+
+
+  // Overrides from class PChannel.
+    virtual BOOL Close();
+    /* Close the socket, and if connected as a client, QUITs from server.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was closed and the QUIT accepted by the server.
+     */
+
+
+  // New functions for class.
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
        is used when the socket is acting as a server.
@@ -578,20 +687,7 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
     
 
   protected:
-    virtual PINDEX ParseResponse(
-      const PString & line // Input response line to be parsed
-    );
-    /* Parse a response line string into a response code and any extra info
-       on the line. Results are placed into the member variables
-       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
-
-       The default bahaviour looks for a space or a '-' and splits the code
-       and info either side of that character, then returns FALSE.
-
-       <H2>Returns:</H2>
-       Position of continuation character in response, 0 if no continuation
-       lines are possible.
-     */
+    BOOL OnOpen();
 
     virtual void OnUSER(
       const PString & name  // Name of user.
@@ -657,23 +753,14 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
 
 
   // Member variables
-    BOOL loggedIn;
-
     PString        username;
     PUnsignedArray messageSizes;
     PStringArray   messageIDs;
     PBYTEArray     messageDeletions;
-
-    static PString okResponse;
-    static PString errResponse;
-
-
-  private:
-    void Construct();
 };
 
 
-#endif
+#endif  // _PMAILPROTOCOL
 
 
 // End Of File ///////////////////////////////////////////////////////////////
