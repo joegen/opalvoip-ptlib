@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.34  2003/11/18 10:39:06  csoutheren
+ * Fixed warnings regarding calling virtual Close in destructors
+ *
  * Revision 1.33  2003/11/18 06:46:15  csoutheren
  * Changed to support video input plugins
  *
@@ -600,6 +603,10 @@ class PVideoOutputDevice : public PVideoDevice
       */
     virtual ~PVideoOutputDevice() { Close(); };      
 
+    /**Close the device.
+      */
+    virtual BOOL Close() { return TRUE; }
+
     /** Is the device a camera, and obtain video
      */
     virtual BOOL CanCaptureVideo() const;
@@ -640,6 +647,10 @@ class PVideoOutputDeviceNULL : public PVideoOutputDevice
       const PString & deviceName,   /// Device name to open
       BOOL startImmediate = TRUE    /// Immediately start device
     );
+
+    /**Close the device.
+      */
+    virtual BOOL Close() = 0;
 
     /**Determine if the device is currently open.
       */
@@ -830,6 +841,9 @@ class PVideoInputDevice : public PVideoDevice
       const PString & deviceName,   /// Device name to open
       BOOL startImmediate = TRUE    /// Immediately start device
     ) = 0;
+
+    virtual BOOL Close(
+    ) { return TRUE; }
 
     /**Determine if the video device I/O capture is in progress.
       */
