@@ -28,6 +28,9 @@
  *
  */
 
+// This depends on the expat XML library by Jim Clark
+// See http://www.jclark.com/xml/expat.html for more information
+
 #ifdef __GNUC__
 #pragma implementation "pxml.h"
 #endif
@@ -257,11 +260,10 @@ void PXML::AddCharacterData(const char * data, int len)
   PString str(data, len);
 
   if (lastElement != NULL) {
-    if (currentElement->IsData()) {
-      if ((options & NoIgnoreWhiteSpace) == 0)
-        str = str.Trim();
-      lastElement->SetString(lastElement->GetString() & str, FALSE);
-    }
+    PAssert(lastElement->IsData(), "lastElement set by non-data element");
+    if ((options & NoIgnoreWhiteSpace) == 0)
+      str = str.Trim();
+    lastElement->SetString(lastElement->GetString() & str, FALSE);
   } else {
     if ((options & NoIgnoreWhiteSpace) == 0) {
       str = str.Trim();
