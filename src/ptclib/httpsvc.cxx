@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.7 1996/09/14 13:09:33 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.8 1996/10/08 13:08:29 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.8  1996/10/08 13:08:29  robertj
+ * Changed standard graphic to use PHTML class.
+ *
  * Revision 1.7  1996/09/14 13:09:33  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -59,16 +62,25 @@ PHTTPServiceProcess::PHTTPServiceProcess(
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
-  PString str;
-  str = PString("<table><tr><td>") + gifText +
-        "<td>" + GetOSClass() + '/' + GetOSName() +
-        " Version " + GetVersion(TRUE) +
-        ", " + PTime(__DATE__).AsString("d MMM yy") +
-        "<br>Copyright &copy;1996 by "
-        "<A HREF=\"" HOME_PAGE "\">" + GetManufacturer() + "</A>, "
-        "<A HREF=\"" EMAIL "\">equival@ozemail.com.au</A>"
-        "</table>";
-  return str;
+  PTime compilationDate = __DATE__;
+
+  PHTML html = PHTML::InBody;
+  html << PHTML::TableStart()
+       << PHTML::TableRow()
+       << PHTML::TableData()
+       << gifText
+       << PHTML::TableData()
+       << GetOSClass() << '/' << GetOSName()
+       << " Version " << GetVersion(TRUE)
+       << ", " << compilationDate.AsString("d MMM yy")
+       << PHTML::BreakLine()
+       << "Copyright &copy;" << compilationDate.AsString("yyyy") << " by "
+       << PHTML::HotLink(HOME_PAGE) << GetManufacturer() << PHTML::HotLink()
+       << ", "
+       << PHTML::HotLink(EMAIL) << EMAIL << PHTML::HotLink()
+       << PHTML::TableEnd();
+
+  return html;
 }
 
 
