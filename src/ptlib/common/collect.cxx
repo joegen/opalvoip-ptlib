@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.17 1996/01/28 14:11:45 robertj Exp $
+ * $Id: collect.cxx,v 1.18 1996/01/30 23:30:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.18  1996/01/30 23:30:40  robertj
+ * Added optimisation to sorted list GetAt() to use cached element.
+ *
  * Revision 1.17  1996/01/28 14:11:45  robertj
  * Fixed bug in sorted list for when getting entry one before last one cached.
  *
@@ -557,6 +560,8 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   else
     parent->right = element;
 
+  info->lastElement = element;
+
   element->MakeRed();
   while (element != info->root && !element->parent->IsBlack()) {
     if (element->parent == element->parent->parent->left) {
@@ -599,7 +604,6 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 
   reference->size++;
   info->lastIndex = info->root->ValueSelect(*obj, TRUE);
-  info->lastElement = element;
   return info->lastIndex;
 }
 
@@ -660,16 +664,18 @@ PObject * PAbstractSortedList::GetAt(PINDEX index) const
   if (index >= GetSize())
     return NULL;
 
-  if (index == info->lastIndex-1) {
-    info->lastIndex--;
-    info->lastElement = info->lastElement->Predecessor();
+  if (index != info->lastIndex) {
+    if (index == info->lastIndex-1) {
+      info->lastIndex--;
+      info->lastElement = info->lastElement->Predecessor();
+    }
+    else if (index == info->lastIndex+1) {
+      info->lastIndex++;
+      info->lastElement = info->lastElement->Successor();
+    }
+    else
+      info->lastElement = info->root->OrderSelect(index+1);
   }
-  else if (index == info->lastIndex+1) {
-    info->lastIndex++;
-    info->lastElement = info->lastElement->Successor();
-  }
-  else
-    info->lastElement = info->root->OrderSelect(index+1);
 
   return info->lastElement->data;
 }
