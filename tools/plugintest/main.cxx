@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2004/08/16 06:41:57  csoutheren
+ * Added options to get access to devices via the abstract factory interface
+ *
  * Revision 1.3  2003/11/12 07:00:09  csoutheren
  * Changed make compile under Windows
  *
@@ -78,6 +81,25 @@ void Usage()
 
 }
 
+ostream & operator << (ostream & strm, const std::vector<PString> & vec)
+{
+  for (std::vector<PString>::const_iterator r = vec.begin(); r != vec.end(); ++r)
+    strm << *r << endl;
+  return strm;
+}
+
+template <class DeviceType>
+void DisplayPluginTypes(const PString & type)
+{
+  cout << "   " << type << " : ";
+  std::vector<PString> services = PFactory<DeviceType>::GetKeyList();
+  if (services.size() == 0)
+    cout << "None available" << endl;
+  else
+    cout << setfill(',') << services << setfill(' ') << endl;
+}
+
+
 void PluginTest::Main()
 {
   PArgList & args = GetArguments();
@@ -87,8 +109,10 @@ void PluginTest::Main()
 	     "o-output:"             
 	     "h-help."               
 	     "l-list."               
+	     "L-List."               
 	     "s-service:"               
 	     "a-audio:"
+	     "A-Audio:"
 	     "d-directory:"          
 
 	     //"x-xamineOSS."          
@@ -130,6 +154,10 @@ void PluginTest::Main()
     return;
   }
 
+  if (args.HasOption('L')) {
+    DisplayPluginTypes<PSoundChannel>("PSoundChannel");
+  }
+
   if (args.HasOption('s')) {
     cout << "Available " << args.GetOptionString('s') << " :" <<endl;
     cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetDriverNames() << setfill(' ') << endl;
@@ -141,13 +169,25 @@ void PluginTest::Main()
   }
 
 
-  if (args.HasOption('a')) {
-    PString service = args.GetOptionString('a');
+  if (args.HasOption('a') || args.HasOption('A')) {
+    PString service;
+    BOOL useFactory = FALSE;
+    if (args.HasOption('a'))
+      service = args.GetOptionString('a');
+    else {
+      service = args.GetOptionString('A');
+      useFactory = TRUE;
+    }
     PString device;
     if (args.GetCount() > 0)
       device  = args[0];
     else if (service != "default") {
-      PStringList deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
+      PStringList deviceList;
+      if (useFactory)
+        deviceList = PStringList::container<std::vector<PString> >(PFactory<PSoundChannel>::GetKeyList());
+      else
+        deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
+
       if (deviceList.GetSize() == 0) {
         cout << "No devices for sound service " << service << endl;
         return;
