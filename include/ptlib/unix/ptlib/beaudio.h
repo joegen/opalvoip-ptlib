@@ -29,6 +29,9 @@
  * Bits by Jac Goudsmit
  *
  * $Log: beaudio.h,v $
+ * Revision 1.2  2004/05/30 04:55:57  ykiryanov
+ * Added include files
+ *
  * Revision 1.1  2004/05/14 08:36:44  ykiryanov
  * BeOS sound class declarations collected in separate file
  *
@@ -36,6 +39,8 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/dynalink.h>
+#include <ptlib/sound.h>
 #include <ptlib/socket.h>
 #include <ptlib/plugin.h>
 
