@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.6  1998/11/30 22:07:05  robertj
+ * New directory structure.
+ *
  * Revision 1.5  1998/09/24 04:11:52  robertj
  * Added open software license.
  *
@@ -48,9 +51,9 @@
 
 #pragma interface
 
-#include <thread.h>
+#include <ptlib/thread.h>
 
-#include "../../common/ptlib/semaphor.h"
+#include "../../semaphor.h"
 #ifdef P_PTHREADS
   protected:
     pthread_mutex_t mutex;
