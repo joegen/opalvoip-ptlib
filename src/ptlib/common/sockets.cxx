@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.111  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.110  2001/05/24 02:07:31  yurik
  * ::setsockopt on WinCE is now not called if option is not supported
  *
@@ -813,7 +816,7 @@ BOOL PSocket::SetOption(int option, const void * valuePtr, PINDEX valueSize, int
 
 BOOL PSocket::GetOption(int option, int & value, int level)
 {
-#ifdef __BEOS__
+#ifdef BE_BONELESS
   return FALSE;
 #else
   socklen_t valSize = sizeof(value);
@@ -825,7 +828,7 @@ BOOL PSocket::GetOption(int option, int & value, int level)
 
 BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize, int level)
 {
-#ifdef __BEOS__
+#ifdef BE_BONELESS
   return FALSE;
 #else
   return ConvertOSError(::getsockopt(os_handle, level, option,
@@ -842,7 +845,7 @@ BOOL PSocket::Shutdown(ShutdownValue value)
 
 WORD PSocket::GetProtocolByName(const PString & name)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct protoent * ent = getprotobyname(name);
   if (ent != NULL)
     return ent->p_proto;
@@ -854,7 +857,7 @@ WORD PSocket::GetProtocolByName(const PString & name)
 
 PString PSocket::GetNameByProtocol(WORD proto)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct protoent * ent = getprotobynumber(proto);
   if (ent != NULL)
     return ent->p_name;
@@ -913,7 +916,7 @@ PString PSocket::GetServiceByPort(WORD port) const
 
 PString PSocket::GetServiceByPort(const char * protocol, WORD port)
 {
-#if !defined(__BEOS__) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
+#if !defined(BE_BONELESS) && !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
   struct servent * serv = ::getservbyport(htons(port), protocol);
   if (serv != NULL)
     return PString(serv->s_name);
