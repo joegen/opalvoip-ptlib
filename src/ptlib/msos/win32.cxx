@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.88  2000/02/29 12:26:15  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.87  2000/01/06 14:09:42  robertj
  * Fixed problems with starting up timers,losing up to 10 seconds
  *
@@ -906,7 +909,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 Priority priorityLevel)
+                 Priority priorityLevel,
+                 const PString & name)
+  : threadName(name)
 {
   PAssert(stackSize > 0, PInvalidParameter);
   originalStackSize = stackSize;
