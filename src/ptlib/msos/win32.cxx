@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.125  2002/11/20 02:38:38  robertj
+ * Fixed file path parsing for common unix/dos path error.
+ *
  * Revision 1.124  2002/11/20 00:58:58  robertj
  * Made file path parsing slightly smarter for common unix/dos path error.
  *
@@ -743,7 +746,7 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
   // Look for special case of "\c:\" at start of string as some generalised
   // directory processing algorithms have a habit of adding a leading
   // PDIR_SEPARATOR as it would be for Unix.
-  if (partialpath.NumCompare("\\\\\\") ||
+  if (partialpath.NumCompare("\\\\\\") == EqualTo ||
         (partialpath.GetLength() > 3 &&
          partialpath[0] == PDIR_SEPARATOR &&
          partialpath[2] == ':'))
