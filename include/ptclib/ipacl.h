@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.8  2002/07/17 02:54:24  robertj
+ * Added access functions for member variables.
+ *
  * Revision 1.7  2002/06/19 05:43:17  robertj
  * Added missing return for getting default allowance flag
  *
@@ -143,9 +146,25 @@ class PIpAccessControlEntry : public PObject
       PIPSocket::Address & address    // Address to search for
     );
 
-    BOOL IsAllowed() const { return allowed; }
-    BOOL IsHidden()  const { return hidden; }
+    /**Get the domain part of entry.
+      */
+    const PString & GetDomain() const { return domain; }
 
+    /**Get the address part of entry.
+      */
+    const PIPSocket::Address & GetAddress() const { return address; }
+
+    /**Get the mask part of entry.
+      */
+    const PIPSocket::Address & GetMask() const { return mask; }
+
+    /**Get the allowed flag of entry.
+      */
+    BOOL IsAllowed() const { return allowed; }
+
+    /**Get the hidden flag of entry.
+      */
+    BOOL IsHidden()  const { return hidden; }
 
   protected:
     PString            domain;
