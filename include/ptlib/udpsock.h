@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.15  1999/03/09 02:59:51  robertj
+ * Changed comments to doc++ compatible documentation.
+ *
  * Revision 1.14  1999/02/16 08:11:17  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -77,48 +80,60 @@
 #pragma interface
 #endif
 
+/**
+   A socket channel that uses the UDP transport on the Internet Protocol.
+ */
 class PUDPSocket : public PIPDatagramSocket
 {
-  PCLASSINFO(PUDPSocket, PIPDatagramSocket)
-/* Create a socket channel that uses the UDP transport on the Internal
-   Protocol.
- */
+  PCLASSINFO(PUDPSocket, PIPDatagramSocket);
 
   public:
-    PUDPSocket(
-      WORD port = 0             // Port number to use for the connection.
-    );
-    PUDPSocket(
-      const PString & service   // Service name to use for the connection.
-    );
-    PUDPSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port                 // Port number to use for the connection.
-    );
-    PUDPSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      const PString & service   // Service name to use for the connection.
-    );
-    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+  /**@name Construction */
+  //@{
+    /** Create a UDP socket. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
      */
+    PUDPSocket(
+      WORD port = 0             /// Port number to use for the connection.
+    );
+    PUDPSocket(
+      const PString & service   /// Service name to use for the connection.
+    );
+    PUDPSocket(
+      const PString & address,  /// Address of remote machine to connect to.
+      WORD port                 /// Port number to use for the connection.
+    );
+    PUDPSocket(
+      const PString & address,  /// Address of remote machine to connect to.
+      const PString & service   /// Service name to use for the connection.
+    );
+  //@}
 
+  /**@name Overrides from class PSocket */
+  //@{
+    /** Override of PChannel functions to allow connectionless writes
+     */
     BOOL Write(
-      const void * buf, // Pointer to a block of memory to write.
-      PINDEX len        // Number of bytes to write.
+      const void * buf, /// Pointer to a block of memory to write.
+      PINDEX len        /// Number of bytes to write.
     );
-    /* Override of PChannel functions to allow connectionless writes
-     */
 
+    /** Override of PSocket functions to allow connectionless writes
+     */
     BOOL Connect(
-      const PString & address   // Address of remote machine to connect to.
+      const PString & address   /// Address of remote machine to connect to.
     );
-    /* Override of PSocket functions to allow connectionless writes
-     */
+  //@}
 
-    void SetSendAddress(const Address & address, WORD port);
-    /* Set the address to use for connectionless Write
+  /**@name New functions for class */
+  //@{
+    /** Set the address to use for connectionless Write().
      */
+    void SetSendAddress(
+      const Address & address,    /// IP address to send packets.
+      WORD port                   /// Port to send packets.
+    );
+  //@}
 
   protected:
     virtual BOOL OpenSocket();
@@ -126,5 +141,9 @@ class PUDPSocket : public PIPDatagramSocket
 
     Address sendAddress;
     WORD sendPort;
+
+#ifdef DOC_PLUS_PLUS
+};
+#endif
 
 // Class declaration continued in platform specific header file ///////////////
