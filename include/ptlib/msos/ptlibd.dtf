@@ -2482,3 +2482,5 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
+    ?IsServiceProcess@PProcess@@UBEHXZ @2534 NONAME ;public: virtual int __thiscall PProcess::IsServiceProcess(void)const 
+    ?IsServiceProcess@PServiceProcess@@UBEHXZ @2535 NONAME ;public: virtual int __thiscall PServiceProcess::IsServiceProcess(void)const 
