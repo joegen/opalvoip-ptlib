@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.47  1999/07/18 15:08:24  robertj
+ * Fixed 64 bit compatibility
+ *
  * Revision 1.46  1999/06/14 07:59:37  robertj
  * Enhanced tracing again to add options to trace output (timestamps etc).
  *
@@ -648,13 +651,13 @@ class PMemoryHeap {
     struct Header {
       Header     * prev;
       Header     * next;
-      size_t       size;
-      DWORD        request;
       const char * className;
       const char * fileName;
+      size_t       size;
+      DWORD        request;
       WORD         line;
       BYTE         flags;
-      static const char GuardBytes[5];
+      static const char GuardBytes[9];
       char         guard[sizeof(GuardBytes)];
     };
 #pragma pack()
