@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.112  2003/04/28 08:37:06  craigs
+# Added SDL
+#
 # Revision 1.111  2003/04/16 08:05:50  craigs
 # CHanged checks of variosu vars to use ifeq
 #
@@ -401,6 +404,10 @@ SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
               $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
+ifeq (1,$(HAS_SDL))
+SDL_SOURCE := $(COMPONENT_SRC_DIR)/vsdl.cxx
+endif
+
 # Video Capture. Set Video Capture Source to a dummy file, (which does not
 # actually do anything, and then override it with platform specific files
 
@@ -557,6 +564,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
+        $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
 	$(VIDEO_SOURCE) \
