@@ -29,8 +29,12 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.28 2001/12/04 02:59:18 robertj Exp $
+ * $Id: pssl.cxx,v 1.29 2001/12/06 04:06:03 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.29  2001/12/06 04:06:03  robertj
+ * Removed "Win32 SSL xxx" build configurations in favour of system
+ *   environment variables to select optional libraries.
+ *
  * Revision 1.28  2001/12/04 02:59:18  robertj
  * Fixed problem on platforms where a pointer is not the same size as an int.
  *
@@ -165,6 +169,7 @@
 #include <ptclib/pssl.h>
 #include <ptclib/mime.h>
 
+#if P_SSL
 
 #define USE_SOCKETS
 
@@ -1204,3 +1209,7 @@ int verify_callback(int ok, X509 * xs, X509 * xi, int depth, int error)
 
 #endif
 
+#endif // P_SSL
+
+
+// End of file ////////////////////////////////////////////////////////////////
