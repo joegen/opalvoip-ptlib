@@ -1,5 +1,5 @@
 /*
- * $Id: pwlib.h,v 1.33 1994/10/23 04:53:25 robertj Exp $
+ * $Id: pwlib.h,v 1.34 1995/01/07 04:39:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pwlib.h,v $
- * Revision 1.33  1994/10/23 04:53:25  robertj
+ * Revision 1.34  1995/01/07 04:39:38  robertj
+ * Redesigned font enumeration code and changed font styles.
+ *
+ * Revision 1.33  1994/10/23  04:53:25  robertj
  * Added PPixel subclasses
  *
  * Revision 1.32  1994/08/23  11:32:52  robertj
@@ -106,6 +109,12 @@
 // PRealFont
 
 #include <rfont.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFontFamily
+
+#include <fontfam.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
