@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.23  2003/02/21 05:07:27  robertj
+ * Fixed GetParam() for an int type so can accept i4/int/boolean type names.
+ *
  * Revision 1.22  2003/01/28 07:42:17  robertj
  * Improved trace output of errors.
  *
@@ -614,13 +617,15 @@ BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & result)
 BOOL PXMLRPCBlock::GetParam(PINDEX idx, int & val)
 {
   PString type, result; 
-  if (!GetExpectedParam(idx, type, result))
+  if (!GetParam(idx, type, result))
     return FALSE;
 
   if ((type != "i4") && 
       (type != "int") &&
-      (type != "boolean"))
+      (type != "boolean")) {
+    PTRACE(3, "XMLRPC\tExpected parm " << idx << " to be intger compatible, was " << type);
     return FALSE;
+  }
 
   val = result.AsInteger();
   return TRUE;
