@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.3  2003/04/28 14:29:45  craigs
+ * Started rearranging code
+ *
  * Revision 1.2  2003/04/28 08:44:42  craigs
  * Fixed problem with include on linux
  *
@@ -93,12 +96,12 @@ class PSDLDisplayThread : public PThread
 
  public:
   PSDLDisplayThread(BOOL _videoPIP);
-
   ~PSDLDisplayThread();
+
+  void Main();
  
   /** returns FALSE if the thread is closed, so cannot add frame.
       The frame is deleted by the thread - in all cases.*/
-
   BOOL AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding);
 
   BOOL IsOpen();
@@ -107,7 +110,6 @@ class PSDLDisplayThread : public PThread
   void RequestOpenWindow(BOOL isEncoding);
   void RequestCloseWindow(BOOL isEncoding);
 
-  void Main();
  protected:
   BOOL ScreenIsOpen();
   BOOL DisplayIsShutDown();
@@ -116,7 +118,6 @@ class PSDLDisplayThread : public PThread
 
   PSDLVideoFrame *GetNextFrame(BOOL isEncoding);
 
-  BOOL InitialiseSdl();
   BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
   void InitDisplayPosn();
   void InitDisplayPosn(unsigned w, unsigned h);
@@ -135,7 +136,8 @@ class PSDLDisplayThread : public PThread
 
   /**Handles all events that occur in the SDL window (resize and quit)
    */
-  void ProcessSdlEvents(void);
+  void ProcessSDLEvents(void);
+
   BOOL Redraw(BOOL isEncoding, PSDLVideoFrame *frame);
 
   enum { RemoteIndex = 0 };
@@ -143,6 +145,10 @@ class PSDLDisplayThread : public PThread
 
   const char * GetDirName(BOOL isEncoding) 
     { return (isEncoding ? "local" : "remote"); }
+
+  PMutex     mutex;  
+  PSyncPoint commandSync;
+  BOOL       threadRunning;
 
   SDL_Surface  *screen;
   SDL_Overlay  *overlay[2];
@@ -153,7 +159,6 @@ class PSDLDisplayThread : public PThread
   unsigned   oldScreenWidth, oldScreenHeight;
 
   PString  remoteName;
-  BOOL   threadOpen;
   BOOL   displayIsShutDown;
   BOOL   videoPIP;
 
@@ -163,8 +168,6 @@ class PSDLDisplayThread : public PThread
   PSDLVideoFrame *nextEncFrame;
   PSDLVideoFrame *nextRcvFrame;
   
-  PMutex     accessLock;  
-  PSyncPoint readFlag;
 };
 
 /**Display data to the SDL screen.
