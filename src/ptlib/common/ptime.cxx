@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.40  2001/10/16 07:44:06  robertj
+ * Added AsString() function to PTimeInterval.
+ *
  * Revision 1.39  2001/09/28 10:05:57  robertj
  * Added check for "scientific" mode in PTimeInterval so does not print
  *   out hours and minutes, but just rounded seconds.
@@ -186,94 +189,17 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & stream) const
 {
-  int width = stream.width();
-
   int precision = stream.precision();
-  if (precision > 3)
-    precision = 3;
 
-  PStringStream str;
-
-  if ((stream.flags()&ios::scientific) != 0) {
-    switch (precision) {
-      case 1 :
-        str << milliseconds/1000 << '.' << (int)(milliseconds%1000+50)/100;
-        break;
-
-      case 2 :
-        str << milliseconds/1000 << '.' << setw(2) << (int)(milliseconds%1000+5)/10;
-        break;
-
-      case 3 :
-        str << milliseconds/1000 << '.' << setw(3) << (int)(milliseconds%1000);
-        break;
-
-      default :
-        str << (milliseconds+500)/1000;
-    }
-  }
-  else {
-    BOOL hadPrevious = FALSE;
-    long tmp;
-
-    str.fill('0');
-
-    PInt64 ms = milliseconds;
-    if (ms < 0) {
-      str << '-';
-      ms = -ms;
-    }
-
-    if (precision < 0) {
-      precision = -precision;
-      if (precision > 3)
-        precision = 3;
-
-      tmp = (long)(ms/86400000);
-      if (tmp > 0 || width > (precision+10)) {
-        str << tmp << 'd';
-        hadPrevious = TRUE;
-      }
-
-      tmp = (long)(ms%86400000)/3600000;
-    }
-    else
-      tmp = (long)(ms/3600000);
-
-    if (hadPrevious || tmp > 0 || width > (precision+7)) {
-      if (hadPrevious)
-        str.width(2);
-      str << tmp << ':';
-      hadPrevious = TRUE;
-    }
-
-    tmp = (long)(ms%3600000)/60000;
-    if (hadPrevious || tmp > 0 || width > (precision+4)) {
-      if (hadPrevious)
-        str.width(2);
-      str << tmp << ':';
-      hadPrevious = TRUE;
-    }
-
-    if (hadPrevious)
-      str.width(2);
-    str << (long)(ms%60000)/1000;
-
-    switch (precision) {
-      case 1 :
-        str << '.' << (int)(ms%1000)/100;
-        break;
-
-      case 2 :
-        str << '.' << setw(2) << (int)(ms%1000)/10;
-        break;
-
-      case 3 :
-        str << '.' << setw(3) << (int)(ms%1000);
-    }
+  Formats fmt = NormalFormat;
+  if ((stream.flags()&ios::scientific) != 0)
+    fmt = SecondsOnly;
+  else if (precision < 0) {
+    fmt = IncludeDays;
+    precision = -precision;
   }
 
-  stream << str;
+  stream << AsString(precision, fmt, stream.width());
 }
 
 
@@ -293,6 +219,95 @@ void PTimeInterval::ReadFrom(istream &strm)
   }
 
   SetInterval(((long)(sec*1000))%1000, (int)sec, min, hour, day);
+}
+
+
+PString PTimeInterval::AsString(int precision, Formats format, int width) const
+{
+  PStringStream str;
+
+  if (precision > 3)
+    precision = 3;
+  else if (precision < 0)
+    precision = 0;
+
+  PInt64 ms = milliseconds;
+  if (ms < 0) {
+    str << '-';
+    ms = -ms;
+  }
+
+  if (format == SecondsOnly) {
+    switch (precision) {
+      case 1 :
+        str << ms/1000 << '.' << (int)(ms%1000+50)/100;
+        break;
+
+      case 2 :
+        str << ms/1000 << '.' << setw(2) << (int)(ms%1000+5)/10;
+        break;
+
+      case 3 :
+        str << ms/1000 << '.' << setw(3) << (int)(ms%1000);
+        break;
+
+      default :
+        str << (ms+500)/1000;
+    }
+
+    return str;
+  }
+
+  BOOL hadPrevious = FALSE;
+  long tmp;
+
+  str.fill('0');
+
+  if (format == IncludeDays) {
+    tmp = (long)(ms/86400000);
+    if (tmp > 0 || width > (precision+10)) {
+      str << tmp << 'd';
+      hadPrevious = TRUE;
+    }
+
+    tmp = (long)(ms%86400000)/3600000;
+  }
+  else
+    tmp = (long)(ms/3600000);
+
+  if (hadPrevious || tmp > 0 || width > (precision+7)) {
+    if (hadPrevious)
+      str.width(2);
+    str << tmp << ':';
+    hadPrevious = TRUE;
+  }
+
+  tmp = (long)(ms%3600000)/60000;
+  if (hadPrevious || tmp > 0 || width > (precision+4)) {
+    if (hadPrevious)
+      str.width(2);
+    str << tmp << ':';
+    hadPrevious = TRUE;
+  }
+
+  if (hadPrevious)
+    str.width(2);
+  str << (long)(ms%60000)/1000;
+
+  switch (precision) {
+    case 1 :
+      str << '.' << (int)(ms%1000)/100;
+      break;
+
+    case 2 :
+      str << '.' << setw(2) << (int)(ms%1000)/10;
+      break;
+
+    case 3 :
+      str << '.' << setw(3) << (int)(ms%1000);
+  }
+
+  return str;
 }
 
 
