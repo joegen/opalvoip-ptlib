@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.66.2.2  2004/08/10 13:11:10  csoutheren
+ * Integrated missing patch from trunk
+ *
+ * Revision 1.69  2004/04/24 07:01:04  rjongbloed
+ * Fixed breaking of all lists with PAssertNULL chane. Oops.
+ *
  * Revision 1.66.2.1  2004/08/07 12:04:45  csoutheren
  * Updated to compiler gcc 3.4/3.5
  *
@@ -527,7 +533,7 @@ BOOL PAbstractList::SetSize(PINDEX)
 
 PINDEX PAbstractList::Append(PObject * obj)
 {
-  if (PAssertNULL(obj))
+  if (PAssertNULL(obj) == NULL)
     return P_MAX_INDEX;
 
   Element * element = new Element(obj);
