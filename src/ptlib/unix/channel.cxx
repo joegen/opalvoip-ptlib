@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.39.4.1  2004/07/04 02:02:44  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.39  2003/04/23 00:37:04  craigs
  * More casts to avoid problems on MacOSX thanks to Shawn Hsiao
  *
@@ -175,6 +180,7 @@ void PChannel::Construct()
   px_lastBlockType = PXReadBlock;
   px_readThread = NULL;
   px_writeThread = NULL;
+  px_selectThread = NULL;
 }
 
 
@@ -336,6 +342,8 @@ int PChannel::PXClose()
   if (os_handle < 0)
     return -1;
 
+  PTRACE(6, "PWLib\tClosing channel, fd=" << os_handle);
+  
   // make sure we don't have any problems
   IOSTREAM_MUTEX_WAIT();
   flush();
@@ -355,7 +363,8 @@ int PChannel::PXClose()
 
   AbortIO(px_readThread, px_threadMutex);
   AbortIO(px_writeThread, px_threadMutex);
-
+  AbortIO(px_selectThread, px_threadMutex);
+  
   int stat;
   do {
     stat = ::close(handle);

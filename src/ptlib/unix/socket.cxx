@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.100.2.1  2004/07/04 02:02:44  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.100  2003/10/27 04:06:14  csoutheren
  * Added code to allow compilation of new QoS code on Unix
  *
@@ -469,36 +474,76 @@ int PSocket::os_select(int maxHandle,
                      
 #else
 
-int PSocket::os_select(int width,
-                   fd_set * readBits,
-                   fd_set * writeBits,
-                   fd_set * exceptionBits,
-          const PIntArray & ,
-      const PTimeInterval & timeout)
+PChannel::Errors PSocket::Select(SelectList & read,
+	SelectList & write,
+	SelectList & except,
+	const PTimeInterval & timeout)
 {
-  int unblockPipe = PThread::Current()->unblockPipe[0];
-  FD_SET(unblockPipe, readBits);
-  width = PMAX(width, unblockPipe+1);
-
-  do {
-    P_timeval tval = timeout;
-    int result = ::select(width, readBits, writeBits, exceptionBits, tval);
-    if (result >= 0) {
-      if (FD_ISSET(unblockPipe, readBits)) {
-        FD_CLR(unblockPipe, readBits);
-        if (result == 1) {
-          BYTE ch;
-          ::read(unblockPipe, &ch, 1);
-          FD_CLR(unblockPipe, readBits);
-          errno = EINTR;
-          return -1;
-        }
+  PINDEX i, j;
+  int maxfds = 0;
+  Errors lastError = NoError;
+  PThread * unblockThread = PThread::Current();
+  int unblockPipe = unblockThread->unblockPipe[0];
+  
+  P_fd_set fds[3];
+  SelectList * list[3] = { &read, &write, &except };
+  
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < list[i]->GetSize(); j++) {
+	  PSocket & socket = (*list[i])[j];
+	  if (!socket.IsOpen())
+	    lastError = NotOpen;
+      else {
+	    int h = socket.GetHandle();
+		fds[i] += h;
+		if (h > maxfds)
+		  maxfds = h;
       }
-      return result;
+	  socket.px_selectMutex.Wait();
+	  socket.px_selectThread = unblockThread;
     }
-  } while (errno == EINTR);
-  return -1;
-}
+  }
+  
+  int result = -1;
+  if (lastError == NoError) {
+    fds[0] += unblockPipe;
+	if (unblockPipe > maxfds)
+	  maxfds = unblockPipe;
+	  
+    P_timeval tval = timeout;
+	do {
+	  result = ::select(maxfds + 1, (fd_set*)fds[0], (fd_set*)fds[1], 
+	    (fd_set*)fds[2], tval);
+    } while (result < 0 && errno == EINTR);
+	
+	int osError;
+	if (ConvertOSError(result, lastError, osError)) {
+	  if (fds[0].IsPresent(unblockPipe)) {
+	    PTRACE(6, "PWLib\tSelect unblocked fd=" << unblockPipe);
+		BYTE ch;
+		::read(unblockPipe, &ch, 1);
+		lastError = Interrupted;
+      }
+    }
+  }
+  
+  for (i = 0; i < 3; i++) {
+  	for (j = 0; j < list[i]->GetSize(); j++) {
+	  PSocket & socket = (*list[i])[j];
+	  socket.px_selectThread = NULL;
+	  socket.px_selectMutex.Signal();
+	  if (lastError == NoError) {
+        int h = socket.GetHandle();
+	    if (h < 0)
+		  lastError = Interrupted;
+        else if (!fds[i].IsPresent(h))
+		  list[i]->RemoveAt(j--);
+      }
+    }
+  }
+  
+  return lastError;
+}	    
 
 #endif
 
