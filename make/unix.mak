@@ -186,7 +186,7 @@ else
 PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
 endif
 
-VPATH_CXX	:= $(VPATH_CXX) $(OSDIR)/src 
+VPATH_CXX	:= $(VPATH_CXX) $(OSDIR)/src $(COMMONDIR)/ptlib/src
 VPATH_H		:= $(VPATH_H) $(OSDIR)/include
 
 #
