@@ -1,4 +1,3 @@
-#
 # Makefile
 #
 # Make file for ptlib library
@@ -27,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.130  2004/10/28 20:07:11  csoutheren
+# Fixes for MacOSX platforms, thanks to Hannes Friederich
+#
 # Revision 1.129  2004/05/31 22:59:04  csoutheren
 # Added enum.cxx
 #
@@ -475,6 +477,10 @@ endif
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
+	        
+ifeq (1,$(USE_SHM_VIDEO_DEVICES))
+VIDEO_SOURCE	+= shmvideo.cxx
+endif
 
 ifeq ($(HAS_PLUGINS),0)
 
@@ -587,11 +593,11 @@ endif
 # 	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
 # 	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
 # endif
-# 
-# ifeq ($(OSTYPE),Darwin)
-# SOUND_SOURCE = maccoreaudio.cxx
-# endif
-# 
+
+ifeq ($(OSTYPE),Darwin)
+SOUND_SOURCE = maccoreaudio.cxx
+endif
+ 
 # ifeq ($(OSTYPE),VxWorks)
 # SOUND_SOURCE = vxaudio.cxx
 # endif
