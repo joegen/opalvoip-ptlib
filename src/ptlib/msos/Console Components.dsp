@@ -175,6 +175,10 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\psoap.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\pssl.cxx
 # End Source File
 # Begin Source File
@@ -328,6 +332,10 @@ SOURCE=..\..\..\Include\PtCLib\pasn.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\psnmp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\psoap.h
 # End Source File
 # Begin Source File
 
