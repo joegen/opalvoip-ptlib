@@ -221,6 +221,8 @@ EXPORTS
     ??0?$PFactory@VPSoundChannel@@VPString@@@@IAE@XZ @7119 NONAME
     ??0?$PFactory@VPVideoInputDevice@@VPString@@@@IAE@XZ @7120 NONAME
     ??0?$PFactory@VPVideoOutputDevice@@VPString@@@@IAE@XZ @7121 NONAME
+    ??0?$PList@VInterfaceEntry@PIPSocket@@@@IAE@HPBV0@@Z @7644 NONAME
+    ??0?$PList@VInterfaceEntry@PIPSocket@@@@QAE@XZ @7645 NONAME
     ??0?$PList@VPDynaLink@@@@IAE@HPBV0@@Z @3986 NONAME
     ??0?$PList@VPDynaLink@@@@QAE@XZ @3987 NONAME
     ??0?$PList@VPNotifier@@@@IAE@HPBV0@@Z @3988 NONAME
@@ -815,6 +817,7 @@ EXPORTS
     ??1?$PFactory@VPSoundChannel@@VPString@@@@MAE@XZ @7182 NONAME
     ??1?$PFactory@VPVideoInputDevice@@VPString@@@@MAE@XZ @7183 NONAME
     ??1?$PFactory@VPVideoOutputDevice@@VPString@@@@MAE@XZ @7184 NONAME
+    ??1?$PList@VInterfaceEntry@PIPSocket@@@@UAE@XZ @7646 NONAME
     ??1?$PList@VPDynaLink@@@@UAE@XZ @3990 NONAME
     ??1?$PList@VPNotifier@@@@UAE@XZ @3991 NONAME
     ??1?$PList@VPPluginService@@@@UAE@XZ @3616 NONAME
@@ -1237,6 +1240,7 @@ EXPORTS
     ??A?$PBaseArray@PAVElement@PHashTable@@@@QAEAAPAVElement@PHashTable@@H@Z @999 NONAME
     ??A?$PBaseArray@PAVElement@PHashTable@@@@QBEPAVElement@PHashTable@@H@Z @1000 NONAME
     ??A?$PBaseArray@PAVPObject@@@@QAEAAPAVPObject@@H@Z @1001 NONAME
+    ??A?$PList@VInterfaceEntry@PIPSocket@@@@QBEAAVInterfaceEntry@PIPSocket@@H@Z @7647 NONAME
     ??A?$PList@VPDynaLink@@@@QBEAAVPDynaLink@@H@Z @3992 NONAME
     ??A?$PList@VPNotifier@@@@QBEAAVPNotifier@@H@Z @3993 NONAME
     ??A?$PList@VPPluginService@@@@QBEAAVPPluginService@@H@Z @3622 NONAME
@@ -1471,6 +1475,7 @@ EXPORTS
     ??_7?$PFactory@VPSoundChannel@@VPString@@@@6B@ @7251 NONAME
     ??_7?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @7252 NONAME
     ??_7?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @7253 NONAME
+    ??_7?$PList@VInterfaceEntry@PIPSocket@@@@6B@ @7648 NONAME
     ??_7?$PList@VPDynaLink@@@@6B@ @3994 NONAME
     ??_7?$PList@VPNotifier@@@@6B@ @3995 NONAME
     ??_7?$PList@VPPluginService@@@@6B@ @3624 NONAME
@@ -1828,6 +1833,7 @@ EXPORTS
     ??_R0?AV?$PFactory@VPSoundChannel@@VPString@@@@@8 @7273 NONAME
     ??_R0?AV?$PFactory@VPVideoInputDevice@@VPString@@@@@8 @7274 NONAME
     ??_R0?AV?$PFactory@VPVideoOutputDevice@@VPString@@@@@8 @7275 NONAME
+    ??_R0?AV?$PList@VInterfaceEntry@PIPSocket@@@@@8 @7649 NONAME
     ??_R0?AV?$PList@VPDynaLink@@@@@8 @4028 NONAME
     ??_R0?AV?$PList@VPNotifier@@@@@8 @4029 NONAME
     ??_R0?AV?$PList@VPPluginService@@@@@8 @4030 NONAME
@@ -2109,6 +2115,7 @@ EXPORTS
     ??_R1A@?0A@A@?$PFactory@VPSoundChannel@@VPString@@@@8 @7292 NONAME
     ??_R1A@?0A@A@?$PFactory@VPVideoInputDevice@@VPString@@@@8 @7293 NONAME
     ??_R1A@?0A@A@?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @7294 NONAME
+    ??_R1A@?0A@A@?$PList@VInterfaceEntry@PIPSocket@@@@8 @7650 NONAME
     ??_R1A@?0A@A@?$PList@VPDynaLink@@@@8 @4257 NONAME
     ??_R1A@?0A@A@?$PList@VPNotifier@@@@8 @4258 NONAME
     ??_R1A@?0A@A@?$PList@VPPluginService@@@@8 @4259 NONAME
@@ -2370,6 +2377,7 @@ EXPORTS
     ??_R2?$PFactory@VPSoundChannel@@VPString@@@@8 @7310 NONAME
     ??_R2?$PFactory@VPVideoInputDevice@@VPString@@@@8 @7311 NONAME
     ??_R2?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @7312 NONAME
+    ??_R2?$PList@VInterfaceEntry@PIPSocket@@@@8 @7651 NONAME
     ??_R2?$PList@VPDynaLink@@@@8 @4474 NONAME
     ??_R2?$PList@VPNotifier@@@@8 @4475 NONAME
     ??_R2?$PList@VPPluginService@@@@8 @4476 NONAME
@@ -2622,6 +2630,7 @@ EXPORTS
     ??_R3?$PFactory@VPSoundChannel@@VPString@@@@8 @7328 NONAME
     ??_R3?$PFactory@VPVideoInputDevice@@VPString@@@@8 @7329 NONAME
     ??_R3?$PFactory@VPVideoOutputDevice@@VPString@@@@8 @7330 NONAME
+    ??_R3?$PList@VInterfaceEntry@PIPSocket@@@@8 @7652 NONAME
     ??_R3?$PList@VPDynaLink@@@@8 @4683 NONAME
     ??_R3?$PList@VPNotifier@@@@8 @4684 NONAME
     ??_R3?$PList@VPPluginService@@@@8 @4685 NONAME
@@ -2874,6 +2883,7 @@ EXPORTS
     ??_R4?$PFactory@VPSoundChannel@@VPString@@@@6B@ @7346 NONAME
     ??_R4?$PFactory@VPVideoInputDevice@@VPString@@@@6B@ @7347 NONAME
     ??_R4?$PFactory@VPVideoOutputDevice@@VPString@@@@6B@ @7348 NONAME
+    ??_R4?$PList@VInterfaceEntry@PIPSocket@@@@6B@ @7653 NONAME
     ??_R4?$PList@VPDynaLink@@@@6B@ @4892 NONAME
     ??_R4?$PList@VPNotifier@@@@6B@ @4893 NONAME
     ??_R4?$PList@VPPluginService@@@@6B@ @4894 NONAME
@@ -3266,6 +3276,7 @@ EXPORTS
     ?Class@?$PDictionary@VPOrdinalKey@@VPPointer@@@@SAPBDXZ @5965 NONAME
     ?Class@?$PDictionary@VPOrdinalKey@@VPThread@@@@SAPBDXZ @1510 NONAME
     ?Class@?$PDictionary@VPString@@VPDynaLink@@@@SAPBDXZ @5886 NONAME
+    ?Class@?$PList@VInterfaceEntry@PIPSocket@@@@SAPBDXZ @7654 NONAME
     ?Class@?$PList@VPDynaLink@@@@SAPBDXZ @3998 NONAME
     ?Class@?$PList@VPNotifier@@@@SAPBDXZ @3999 NONAME
     ?Class@?$PList@VPPluginService@@@@SAPBDXZ @3639 NONAME
@@ -3425,6 +3436,7 @@ EXPORTS
     ?Clone@?$PDictionary@VPOrdinalKey@@VPPointer@@@@UBEPAVPObject@@XZ @5969 NONAME
     ?Clone@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEPAVPObject@@XZ @1646 NONAME
     ?Clone@?$PDictionary@VPString@@VPDynaLink@@@@UBEPAVPObject@@XZ @5887 NONAME
+    ?Clone@?$PList@VInterfaceEntry@PIPSocket@@@@UBEPAVPObject@@XZ @7655 NONAME
     ?Clone@?$PList@VPDynaLink@@@@UBEPAVPObject@@XZ @4000 NONAME
     ?Clone@?$PList@VPNotifier@@@@UBEPAVPObject@@XZ @4001 NONAME
     ?Clone@?$PList@VPPluginService@@@@UBEPAVPObject@@XZ @3643 NONAME
@@ -3528,6 +3540,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PDictionary@VPOrdinalKey@@VPPointer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @5970 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @1740 NONAME
     ?CompareObjectMemoryDirect@?$PDictionary@VPString@@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @5888 NONAME
+    ?CompareObjectMemoryDirect@?$PList@VInterfaceEntry@PIPSocket@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @7656 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPDynaLink@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @4002 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPNotifier@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @4003 NONAME
     ?CompareObjectMemoryDirect@?$PList@VPPluginService@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @3648 NONAME
@@ -3967,6 +3980,7 @@ EXPORTS
     ?fixed@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5739 NONAME
     ?floatfield@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5740 NONAME
     ?FromString@Address@PIPSocket@@QAEHABVPString@@@Z @2035 NONAME
+    ?GetAddress@InterfaceEntry@PIPSocket@@QBE?AVAddress@2@XZ @7657 NONAME
     ?GetAddress@PEthSocket@@QAEHAATAddress@1@@Z @2036 NONAME
     ?GetAddress@PRemoteConnection@@QAE?AVPString@@XZ @2037 NONAME
     ?GetAllKeyValues@PConfig@@UBE?AVPStringToString@@ABVPString@@@Z @3930 NONAME
@@ -4032,6 +4046,7 @@ EXPORTS
     ?GetClass@?$PDictionary@VPOrdinalKey@@VPPointer@@@@UBEPBDI@Z @5976 NONAME
     ?GetClass@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEPBDI@Z @5396 NONAME
     ?GetClass@?$PDictionary@VPString@@VPDynaLink@@@@UBEPBDI@Z @5890 NONAME
+    ?GetClass@?$PList@VInterfaceEntry@PIPSocket@@@@UBEPBDI@Z @7658 NONAME
     ?GetClass@?$PList@VPDynaLink@@@@UBEPBDI@Z @5397 NONAME
     ?GetClass@?$PList@VPNotifier@@@@UBEPBDI@Z @5398 NONAME
     ?GetClass@?$PList@VPPluginService@@@@UBEPBDI@Z @5399 NONAME
@@ -4363,6 +4378,7 @@ EXPORTS
     ?GetName@PVideoChannel@@UBE?AVPString@@XZ @2383 NONAME
     ?GetNameByProtocol@PSocket@@SA?AVPString@@G@Z @2384 NONAME
     ?GetNest@PReadWriteMutex@@IBEPAVNest@1@XZ @2385 NONAME
+    ?GetNetworkInterface@PIPSocket@@SAHAAVAddress@1@@Z @7659 NONAME
     ?GetNextOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVPWin32AsnAny@@@Z @2386 NONAME
     ?GetNextStringsIndex@PSortedStringList@@QBEHABVPString@@@Z @2387 NONAME
     ?GetNotifiee@PSmartNotifieeRegistrar@@SAPAXI@Z @5979 NONAME
@@ -4643,6 +4659,7 @@ EXPORTS
     ?InternalIsDescendant@?$PDictionary@VPOrdinalKey@@VPPointer@@@@UBEHPBD@Z @5986 NONAME
     ?InternalIsDescendant@?$PDictionary@VPOrdinalKey@@VPThread@@@@UBEHPBD@Z @5259 NONAME
     ?InternalIsDescendant@?$PDictionary@VPString@@VPDynaLink@@@@UBEHPBD@Z @5892 NONAME
+    ?InternalIsDescendant@?$PList@VInterfaceEntry@PIPSocket@@@@UBEHPBD@Z @7660 NONAME
     ?InternalIsDescendant@?$PList@VPDynaLink@@@@UBEHPBD@Z @5260 NONAME
     ?InternalIsDescendant@?$PList@VPNotifier@@@@UBEHPBD@Z @5261 NONAME
     ?InternalIsDescendant@?$PList@VPPluginService@@@@UBEHPBD@Z @5262 NONAME
@@ -4810,6 +4827,7 @@ EXPORTS
     ?IsRecordBufferFull@PSoundChannel@@UAEHXZ @3711 NONAME
     ?IsRecordBufferFull@PSoundChannelWin32@@UAEHXZ @3712 NONAME
     ?IsRenderOpen@PVideoChannel@@UAEHXZ @2903 NONAME
+    ?IsRFC1918@Address@PIPSocket@@QBEHXZ @7661 NONAME
     ?IsRoot@PDirectory@@QBEHXZ @2904 NONAME
     ?IsRunning@PPipeChannel@@QBEHXZ @2905 NONAME
     ?IsRunning@PTimer@@QBEHXZ @2906 NONAME
