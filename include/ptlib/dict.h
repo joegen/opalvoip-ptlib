@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.18 1997/07/08 13:15:05 robertj Exp $
+ * $Id: dict.h,v 1.19 1997/12/11 10:27:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.19  1997/12/11 10:27:16  robertj
+ * Added type correct Contains() function to dictionaries.
+ *
  * Revision 1.18  1997/07/08 13:15:05  robertj
  * DLL support.
  *
@@ -159,20 +162,6 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
      */
 
 
-  // New functions for class
-    BOOL Contains(
-      const PObject & key   // Key to look for in the set.
-    ) const;
-    /* Determine if the value of the object is contained in the hash table. The
-       object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A>PObject::Compare()</A>
-       function. The hash table is used to locate the entry.
-
-       <H2>Returns:</H2>
-       TRUE if the object value is in the set.
-     */
-
-
   protected:
   // Overrides from class PContainer
     virtual BOOL SetSize(
@@ -188,6 +177,18 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
 
 
     // New functions for class
+    BOOL AbstractContains(
+      const PObject & key   // Key to look for in the set.
+    ) const;
+    /* Determine if the value of the object is contained in the hash table. The
+       object values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
+
+       <H2>Returns:</H2>
+       TRUE if the object value is in the set.
+     */
+
     virtual const PObject & AbstractGetKeyAt(
       PINDEX index  // Ordinal position in the hash table.
     ) const;
@@ -457,7 +458,10 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 
     BOOL operator[](
       const T & key  // Key to look for in the set.
-    ) { return Contains(key); }
+    ) { return AbstractContains(key); }
+    BOOL Contains(
+      const T & key  // Key to look for in the set.
+    ) { return AbstractContains(key); }
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
        collection must correctly implement the <A>PObject::Compare()</A>
@@ -544,7 +548,9 @@ PDECLARE_CLASS(PSet, PAbstractSet)
     inline void Exclude(const PObject * key) \
       { Remove(key); } \
     inline BOOL operator[](const K & key) \
-        { return Contains(key); } \
+        { return AbstractContains(key); } \
+    inline BOOL Contains(const K & key) \
+        { return AbstractContains(key); } \
     virtual const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
   }
@@ -804,6 +810,18 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        reference to the object indexed by the key.
      */
 
+    BOOL Contains(
+      const K & key   // Key to look for in the dictionary.
+      ) const { return AbstractContains(key); }
+    /* Determine if the value of the object is contained in the hash table. The
+       object values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
+
+       <H2>Returns:</H2>
+       TRUE if the object value is in the dictionary.
+     */
+
     virtual PObject * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
     ) { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; }
@@ -942,6 +960,18 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
        <H2>Returns:</H2>
        reference to the object indexed by the key.
+     */
+
+    BOOL Contains(
+      const K & key   // Key to look for in the dictionary.
+      ) const { return AbstractContains(key); }
+    /* Determine if the value of the object is contained in the hash table. The
+       object values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the <A>PObject::Compare()</A>
+       function. The hash table is used to locate the entry.
+
+       <H2>Returns:</H2>
+       TRUE if the object value is in the dictionary.
      */
 
     virtual POrdinalKey * GetAt(
@@ -1089,6 +1119,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return PNEW cls(0, this); } \
     D & operator[](const K & key) const \
       { return (D &)GetRefAt(key); } \
+    virtual BOOL Contains(const K & key) const \
+      { return AbstractContains(key); } \
     virtual PObject * RemoveAt(const K & key) \
       { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; } \
     virtual D * GetAt(const K & key) const \
@@ -1136,6 +1168,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return PNEW cls(0, this); } \
     inline PINDEX operator[](const K & key) const \
       { return (POrdinalKey &)GetRefAt(key); } \
+    virtual BOOL Contains(const K & key) const \
+      { return AbstractContains(key); } \
     inline virtual POrdinalKey * GetAt(const K & key) const \
       { return (POrdinalKey *)PAbstractDictionary::GetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
