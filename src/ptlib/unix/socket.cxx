@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.77  2001/10/28 23:00:10  robertj
+ * Fixed Solaris and IRIX compatibility issue, thanks Andre Schulze
+ *
  * Revision 1.76  2001/10/11 02:20:54  robertj
  * Added IRIX support (no audio/video), thanks Andre Schulze.
  *
@@ -229,7 +232,6 @@
 #include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
-#include <sys/sysctl.h>
 
 #include <net/if.h>
 #include <net/if_dl.h>
@@ -244,6 +246,13 @@
 
 #endif
 
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#include <sys/sysctl.h>
+#endif
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 
 PSocket::~PSocket()
 {
