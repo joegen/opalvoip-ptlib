@@ -27,6 +27,11 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.59  2003/05/24 10:57:05  rogerhardiman
+ * If a sound device cannot be opened in RW mode, try just 'R' or 'W' modes.
+ * Needed for USB web cams with Mics which are read only sound devices when using
+ * ALSA. Tested by Damien.
+ *
  * Revision 1.58  2003/02/02 18:54:22  rogerh
  * FreeBSD changes for support of dspN.M (eg dsp0.0) sound card entries.
  * Problem reported by Lars Eggert <larse@isi.edu>
@@ -701,8 +706,20 @@ BOOL PSoundChannel::Open(const PString & _device,
     } else {
       // open the device in non-blocking mode to avoid hang if already open
       os_handle = ::open((const char *)_device, O_RDWR | O_NONBLOCK);
+
       if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
-        return ConvertOSError(os_handle);
+        // cannot open in read/write mode. Try in one direction only. (for ALSA)
+        if (_dir == Recorder) {
+          os_handle = ::open((const char *)_device, O_RDONLY | O_NONBLOCK);
+        } else {
+          os_handle = ::open((const char *)_device, O_WRONLY | O_NONBLOCK);
+        }
+
+        if ((os_handle < 0) && (errno != EWOULDBLOCK)) {
+          return ConvertOSError(os_handle);
+        }
+
+        // device opened, but in half duplex mode
       }
 
       // switch to blocking mode
