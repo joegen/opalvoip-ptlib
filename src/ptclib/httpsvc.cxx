@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.35 1998/04/01 01:55:41 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.36 1998/04/21 02:43:40 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.36  1998/04/21 02:43:40  robertj
+ * Fixed conditional around wrong way for requiring signature on HTML files.
+ *
  * Revision 1.35  1998/04/01 01:55:41  robertj
  * Fixed bug for automatically including GIF file in HTTP name space.
  *
@@ -1375,14 +1378,14 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
   PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly),
-          needSignature ? PServiceHTML::NoOptions : PServiceHTML::NeedSignature);
+          needSignature ? PServiceHTML::NeedSignature : PServiceHTML::NoOptions);
 }
 
 void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
   PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly),
-          needSignature ? PServiceHTML::NoOptions : PServiceHTML::NeedSignature);
+          needSignature ? PServiceHTML::NeedSignature : PServiceHTML::NoOptions);
 }
 
 
