@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.55  2003/03/31 01:23:56  robertj
+ * Added ReadFrom functions for standard container classes such as
+ *   PIntArray and PStringList etc
+ *
  * Revision 1.54  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -551,6 +555,13 @@ class PCollection : public PContainer
     /**Print the collection on the stream. This simply executes the
        #PObject::PrintOn()# function on each element in the
        collection.
+
+       The default behaviour for collections is to print each element
+       separated by the stream fill character. Note that if the fill
+       character is the default ' ' then no separator is printed at all.
+
+       Also if the fill character is not ' ', the the streams width parameter
+       is set before each individual element of the colllection.
 
        @return the stream printed to.
      */

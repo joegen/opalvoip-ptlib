@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.56  2003/03/31 01:23:56  robertj
+ * Added ReadFrom functions for standard container classes such as
+ *   PIntArray and PStringList etc
+ *
  * Revision 1.55  2003/03/05 08:48:32  robertj
  * Added PStringArray::ToCharAray() function at suggestion of Ravelli Rossano
  *
@@ -2024,6 +2028,18 @@ PDECLARE_ARRAY(PStringArray, PString);
     );
   //@}
 
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
+
   /**@name New functions for class */
   //@{
     /**As for #GetValuesIndex()# but takes a PString argument so that
@@ -2127,6 +2143,18 @@ PDECLARE_LIST(PStringList, PString);
     );
   //@}
 
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
+
   /**@name Operations */
   //@{
     /** Append a string to the list.
@@ -2209,6 +2237,18 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     );
   //@}
 
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
+
   /**@name Operations */
   //@{
     /** Add a string to the list.
@@ -2273,6 +2313,18 @@ PDECLARE_SET(PStringSet, PString, TRUE);
       PINDEX count,                 /// Count of strings in array
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
     );
   //@}
 
@@ -2574,6 +2626,8 @@ class POrdinalToString : public PStringDictionary {
 #endif
 PDECLARE_STRING_DICTIONARY(POrdinalToString, POrdinalKey);
   public:
+  /**@name Construction */
+  //@{
     /// Structure for static array initialiser for class.
     struct Initialiser {
       /// Ordinal key for string.
@@ -2587,6 +2641,19 @@ PDECLARE_STRING_DICTIONARY(POrdinalToString, POrdinalKey);
       PINDEX count,                /// Count of strings in initialiser array
       const Initialiser * init     /// Array of Initialiser structures
     );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
 };
 
 /**This is a dictionary collection class of ordinals keyed by
@@ -2606,6 +2673,8 @@ class PStringToOrdinal : public POrdinalDictionary {
 #endif
 PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
   public:
+  /**@name Construction */
+  //@{
     /// Structure for static array initialiser for class.
     struct Initialiser {
       /// String key for ordinal.
@@ -2620,6 +2689,19 @@ PDECLARE_ORDINAL_DICTIONARY(PStringToOrdinal, PString);
       const Initialiser * init,    /// Array of Initialiser structures
       BOOL caseless = FALSE        /// New keys are to be PCaselessStrings
     );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
 };
 
 
@@ -2641,6 +2723,8 @@ class PStringToString : public PStringDictionary {
 #endif
 PDECLARE_STRING_DICTIONARY(PStringToString, PString);
   public:
+  /**@name Construction */
+  //@{
     /// Structure for static array initialiser for class.
     struct Initialiser {
       /// String key for string.
@@ -2656,6 +2740,19 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
       BOOL caselessKeys = FALSE,   /// New keys are to be PCaselessStrings
       BOOL caselessValues = FALSE  /// New values are to be PCaselessStrings
     );
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /** Input the contents of the object from the stream. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour reads '\n' separated strings until !strm.good().
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+  //@}
 };
 
 

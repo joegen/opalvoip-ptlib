@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.25  2003/03/31 01:23:56  robertj
+ * Added ReadFrom functions for standard container classes such as
+ *   PIntArray and PStringList etc
+ *
  * Revision 1.24  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -277,6 +281,8 @@ class PAbstractArray : public PContainer
   protected:
     void PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed) const;
     virtual long GetNumberValueAt(PINDEX idx) const;
+    void ReadNumbersFrom(istream & strm, BOOL is_signed);
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 
     /// Size of an element in bytes
     PINDEX elementSize;
@@ -577,6 +583,10 @@ PDECLARE_BASEARRAY(PCharArray, char);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 };
 
@@ -611,9 +621,14 @@ PDECLARE_BASEARRAY(PShortArray, short);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -647,9 +662,14 @@ PDECLARE_BASEARRAY(PIntArray, int);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -683,9 +703,14 @@ PDECLARE_BASEARRAY(PLongArray, long);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -719,9 +744,14 @@ PDECLARE_BASEARRAY(PBYTEArray, BYTE);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -755,9 +785,14 @@ PDECLARE_BASEARRAY(PWORDArray, WORD);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -791,9 +826,14 @@ PDECLARE_BASEARRAY(PUnsignedArray, unsigned);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -827,9 +867,14 @@ PDECLARE_BASEARRAY(PDWORDArray, DWORD);
     virtual void PrintOn(
       ostream & strm /// Stream to output to.
     ) const;
+    /// Read the array
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
   //@}
 
     virtual long GetNumberValueAt(PINDEX idx) const;
+    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
