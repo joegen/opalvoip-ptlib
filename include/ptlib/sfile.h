@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.14  1999/02/16 08:11:10  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.13  1998/09/24 07:24:01  robertj
  * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
  *
@@ -73,7 +76,9 @@
 #endif
 
 
-PDECLARE_CLASS(PStructuredFile, PFile)
+class PStructuredFile : public PFile
+{
+  PCLASSINFO(PStructuredFile, PFile)
 /* A class representing a a structured file that is portable accross CPU
    architectures (as in the XDR protocol).
    
