@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.5  1998/11/30 02:55:26  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/24 03:30:20  robertj
  * Added open software license.
  *
@@ -47,7 +50,7 @@
 #include <raserror.h>
 
 
-#include "../../common/ptlib/remconn.h"
+#include "../../remconn.h"
   private:
     // Win32 specific stuff
     HRASCONN rasConnection;
