@@ -374,7 +374,7 @@ dnl MSWIN IPv6 Support,P_HAS_IPV6,1,@IPV6_DIR@,ws2tcpip.h,sin6_scope_id,\Program
 AC_CACHE_CHECK([for IPv6 Support], HAS_IPV6,
 [AC_TRY_COMPILE([#include <sys/types.h>
                  #include <netinet/in.h>],
-                 [struct in6_addr s], HAS_IPV6=yes, HAS_IPV6=no)])
+                 [struct sockaddr_in6 s; s.sin6_scope_id = 0;], HAS_IPV6=yes, HAS_IPV6=no)])
 
 if test $HAS_IPV6 = yes ; then
   AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")

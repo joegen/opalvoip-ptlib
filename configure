@@ -4395,7 +4395,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 int
 main ()
 {
-struct in6_addr s
+struct sockaddr_in6 s; s.sin6_scope_id = 0;
   ;
   return 0;
 }
