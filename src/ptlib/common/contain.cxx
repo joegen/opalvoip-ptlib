@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.158  2004/05/04 11:10:37  rjongbloed
+ * Fixed usage of MakeEmpty() with PStringStream.
+ *
  * Revision 1.157  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -1502,6 +1505,14 @@ PString & PString::operator=(PUInt64 n)
 }
 
 
+PString & PString::MakeEmpty()
+{
+  SetSize(1);
+  *theArray = '\0';
+  return *this;
+}
+
+
 PObject * PString::Clone() const
 {
   return new PString(*this);
@@ -2614,6 +2625,14 @@ PStringStream::~PStringStream()
 {
   delete (PStringStream::Buffer *)rdbuf();
   init(NULL);
+}
+
+
+PString & PStringStream::MakeEmpty()
+{
+  *theArray = '\0';
+  flush();
+  return *this;
 }
 
 
