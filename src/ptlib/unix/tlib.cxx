@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.37  1999/01/08 01:31:01  robertj
+ * Support for pthreads under FreeBSD
+ *
  * Revision 1.36  1998/11/24 11:24:40  robertj
  * Added FreeBSD OSName
  *
@@ -210,7 +213,7 @@ PDirectory PProcess::PXGetHomeDir ()
   char *ptr;
   struct passwd *pw = NULL;
 
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
@@ -240,7 +243,7 @@ PDirectory PProcess::PXGetHomeDir ()
 PString PProcess::GetUserName() const
 
 {
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw = ::getpwuid_r(getuid(), &pwd, buffer, 1024);
