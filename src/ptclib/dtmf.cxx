@@ -11,6 +11,11 @@
  * Originally written by Poul-Henning Kamp <phk@freebsd.org>
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
+ * $Log: dtmf.cxx,v $
+ * Revision 1.3  2002/01/24 10:40:17  rogerh
+ * Add version log
+ *
+ *
  */
 
 #ifdef __GNUC__
