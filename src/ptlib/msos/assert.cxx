@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.30  2001/03/02 06:54:04  yurik
+ * Rephrased pragma message
+ *
  * Revision 1.29  2001/01/24 06:56:03  yurik
  * Correcting a typo in WinCE related code
  *
@@ -424,7 +427,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
     }
   }
 #else
-#pragma message("Assert is not yet implemented under WinCE\n")
+#pragma message("assert is yet to be implemented\n")
 #endif // _WIN32_WCE
 }
 
