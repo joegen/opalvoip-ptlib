@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.42  1999/06/28 09:12:01  robertj
+# Fixed problems with the order in which macros are defined especially on BeOS & Solaris
+#
 # Revision 1.41  1999/06/27 02:42:10  robertj
 # Fixed BeOS compatability.
 # Fixed error of platform name not supported, needed :: on main targets.
@@ -98,7 +101,7 @@
 
 
 ifndef PWLIBDIR
-PWLIBDIR := $(HOME)/pwlib
+PWLIBDIR = $(HOME)/pwlib
 endif
 
 
@@ -196,15 +199,15 @@ ifeq ($(OSTYPE),linux)
 # PTHREADS	= 1
 
 # i486 Linux for x86, using gcc 2.7.2
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_LINUX
+STDCCFLAGS	+= -DP_LINUX
 
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	:= -m486 $(STDCCFLAGS)
+STDCCFLAGS	+= -m486
 endif
 
 ifeq ($(MACHTYPE),alpha)
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_64BIT
+STDCCFLAGS	+= -DP_64BIT
 endif
 
 ifeq ($(MACHTYPE),ppc)
@@ -213,8 +216,8 @@ endif
 
 ifdef SHAREDLIB
 ifndef PROG
-OSTYPE		:= $(OSTYPE)_pic
-STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
+OSTYPE		+=_pic
+STDCCFLAGS	+= -fPIC
 endif # PROG
 endif # SHAREDLIB
 
@@ -232,13 +235,13 @@ ifeq ($(OSTYPE),FreeBSD)
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	:= -m486 $(STDCCFLAGS)
+STDCCFLAGS	+= -m486
 endif
 
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_FREEBSD
+STDCCFLAGS	+= -DP_FREEBSD
 
 ifdef P_PTHREADS
-CFLAGS	:= $(CFLAGS) -pthread
+CFLAGS	+= -pthread
 endif
 
 RANLIB		:= 1
@@ -276,9 +279,9 @@ endif
 OSRELEASE	:= $(subst 5.,,$(shell uname -r))
 
 # Sparc Solaris 2.x, using gcc 2.7.2
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
-LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
-LDFLAGS		:= -R/usr/local/gnu/lib
+STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
+LDLIBS		+= -lsocket -lnsl -ldl -lposix4
+LDFLAGS		+= -R/usr/local/gnu/lib
 
 #RANLIB		:= 1
 
@@ -286,8 +289,8 @@ STATIC_LIBS	:= libstdc++.a libg++.a
 SYSLIBDIR	:= /usr/local/gnu/lib
 
 ifdef P_PTHREADS
-ENDLDLIBS	:= $(ENDLDLIBS) -lpthread
-STDCCFLAGS	:= $(STDCCFLAGS) -D_REENTRANT
+ENDLDLIBS	+= -lpthread
+STDCCFLAGS	+= -D_REENTRANT
 endif
 
 endif # solaris
@@ -300,11 +303,10 @@ ifeq ($(OSTYPE),beos)
 BE_THREADS := 0
 
 # BeOS R4, using gcc from Cygnus version 2.9-beos-980929
-STDCCFLAGS	:= $(STDCCFLAGS)
-LDLIBS		:= $(LDLIBS) -lbe
+LDLIBS		+= -lbe
 
 ifdef BE_THREADS
-STDCCFLAGS	:= $(STDCCFLAGS) -DBE_THREADS -DP_PLATFORM_HAS_THREADS
+STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
 endif
 
 endif # beos
@@ -317,7 +319,7 @@ ifeq ($(OSTYPE),ultrix)
 ENDIAN	:= PBIG_ENDIAN
 
 # R2000 Ultrix 4.2, using gcc 2.7.x
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
+STDCCFLAGS	+= -DP_ULTRIX
 
 endif # ultrix
 
@@ -327,7 +329,7 @@ endif # ultrix
 ifeq ($(OSTYPE),hpux)
 
 # HP/UX 9.x, using gcc 2.6.C3 (Cygnus version)
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
+STDCCFLAGS	+= -DP_HPUX9
 
 endif # hpux
 
@@ -396,15 +398,15 @@ endif
 
 ifdef	DEBUG
 
-STDCCFLAGS	:= $(STDCCFLAGS) $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
-LDFLAGS		:= $(LDFLAGS) $(DEBLDFLAGS)
+STDCCFLAGS	+= $(DEBUG_FLAG) -D_DEBUG -DPMEMORY_CHECK=1
+LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
-OPTCCFLAGS	:= $(OPTCCFLAGS) -O2 -DNDEBUG
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -DP_USE_INLINES=1
-#OPTCCFLAGS	:= $(OPTCCFLAGS) -fconserve-space
-LDFLAGS		:= $(LDFLAGS) -s
+OPTCCFLAGS	+= -O2 -DNDEBUG
+#OPTCCFLAGS	+= -DP_USE_INLINES=1
+#OPTCCFLAGS	+= -fconserve-space
+LDFLAGS		+= -s
 
 endif # DEBUG
 
@@ -413,35 +415,35 @@ endif # DEBUG
 
 ifdef P_SSL
 
-SSLEAY		:= $(HOME)/src/SSLeay-0.6.6
+SSLEAY		 = $(HOME)/src/SSLeay-0.6.6
 SSLDIR		:= /usr/local/ssl
-CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
-LDFLAGS		:= $(LDFLAGS) -L$(SSLDIR)/lib
-ENDLDLIBS	:= $(ENDLDLIBS) -lssl -lcrypto
+CFLAGS		+= -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
+LDFLAGS		+= -L$(SSLDIR)/lib
+ENDLDLIBS	+= -lssl -lcrypto
 
 endif
 
 
 # define Posix threads stuff
 ifdef P_PTHREADS
-STDCCFLAGS	:= $(STDCCFLAGS) -DP_PTHREADS
+STDCCFLAGS	+= -DP_PTHREADS
 endif
 
 
 # compiler flags for all modes
-STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
-#STDCCFLAGS	:= $(STDCCFLAGS) -fomit-frame-pointer
-#STDCCFLAGS	:= $(STDCCFLAGS) -fno-default-inline
-#STDCCFLAGS     := $(STDCCFLAGS) -Woverloaded-virtual
-#STDCCFLAGS     := $(STDCCFLAGS) -fno-implement-inlines
+STDCCFLAGS	+= -DPBYTE_ORDER=$(ENDIAN) -Wall
+#STDCCFLAGS	+= -fomit-frame-pointer
+#STDCCFLAGS	+= -fno-default-inline
+#STDCCFLAGS     += -Woverloaded-virtual
+#STDCCFLAGS     += -fno-implement-inlines
 
 # add OS directory to include path
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(UNIX_INC_DIR)
+STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 
 
 # add library directory to library path and include the library
-LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
-LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
+LDFLAGS		+= -L$(LIBDIR)
+LDLIBS		+= -l$(PTLIB) 
 
 
 #  clean whitespace out of source file list
