@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.28  2003/11/14 05:59:09  csoutheren
+ * Added Read function, thanks to Derek Smithies
+ *
  * Revision 1.27  2003/11/12 10:25:41  csoutheren
  * Changes to allow operation of static plugins under Windows
  *
@@ -598,6 +601,24 @@ class PSoundChannel : public PChannel
 
   /**@name Record functions */
   //@{
+    /** Low level read from the channel. This function may block until the
+       requested number of characters were read or the read timeout was
+       reached. The GetLastReadCount() function returns the actual number
+       of bytes read.
+
+       The GetErrorCode() function should be consulted after Read() returns
+       FALSE to determine what caused the failure.
+
+       @return
+       TRUE indicates that at least one character was read from the channel.
+       FALSE means no bytes were read due to timeout or some other I/O error.
+     */
+    virtual BOOL Read(
+      void * buf,   /// Pointer to a block of memory to receive the read bytes.
+      PINDEX len    /// Maximum number of bytes to read into the buffer.
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->Read(buf, len); }
+
     /**Record into the sound object all of the buffer's of sound data. Use the
        SetBuffers() function to determine how long the recording will be made.
 
