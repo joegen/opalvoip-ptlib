@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.48  2000/09/20 23:59:35  craigs
+# Fixed problem with bothnoshared target
+#
 # Revision 1.47  2000/04/26 00:40:48  robertj
 # Redesigned version number system to have single file to change on releases.
 #
@@ -389,7 +392,7 @@ debugnoshared ::
 	$(MAKE) P_SHAREDLIB=0 debug
 
 bothnoshared ::
-	$(MAKE) optshared debugshared
+	$(MAKE) optnoshared debugnoshared
 
 
 
