@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.93  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.92  2004/04/03 07:41:00  csoutheren
  * Fixed compile problem with ostringstream/ostrstream
  *
@@ -747,6 +750,11 @@ these functions for correct operation. Either use this macro or the
 The use of the #PDECLARE_CLASS# macro is no longer recommended for reasons
 of compatibility with documentation systems.
 */
+
+/*
+
+  ORIGINAL
+
 #define PCLASSINFO(cls, par) \
   public: \
     static const char * Class() \
@@ -756,10 +764,47 @@ of compatibility with documentation systems.
     virtual BOOL IsClass(const char * clsName) const \
       { return strcmp(clsName, cls::Class()) == 0; } \
     virtual BOOL IsDescendant(const char * clsName) const \
-      { return strcmp(clsName, cls::Class()) == 0 || \
-                                               par::IsDescendant(clsName); } \
+      { return strcmp(clsName, cls::Class()) == 0 || par::IsDescendant(clsName); } \
     virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
       { return (Comparison)memcmp(this, &obj, sizeof(cls)); } 
+*/
+
+
+#if P_HAS_TYPEINFO
+
+#define PIsDescendant(ptr, cls)    (dynamic_cast<const cls *>(ptr) != NULL) 
+#define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str)) 
+
+#include <typeinfo.h>
+
+#define PBASECLASSINFO(cls, par) \
+  public: \
+    static inline const char * Class() \
+      { return 6 + typeid(cls).name(); } \
+    virtual BOOL InternalIsDescendant(const char * clsName) const \
+      { return strcmp(clsName, 6 + typeid(cls).name()) == 0 || par::InternalIsDescendant(clsName); } \
+
+#else // P_HAS_TYPEINFO
+
+#define PIsDescendant(ptr, cls)    ((ptr)->InternalIsDescendant(cls::Class()))
+#define PIsDescendantStr(ptr, str) ((ptr)->InternalIsDescendant(str))
+
+#define PBASECLASSINFO(cls, par) \
+  public: \
+    static const char * Class() \
+      { return #cls; } \
+    virtual BOOL InternalIsDescendant(const char * clsName) const \
+      { return strcmp(clsName, cls::Class()) == 0 || par::InternalIsDescendant(clsName); } \
+
+#endif // P_HAS_TYPEINFO
+
+
+#define PCLASSINFO(cls, par) \
+    PBASECLASSINFO(cls, par) \
+    virtual const char * GetClass() const \
+      { return cls::Class(); } \
+    virtual Comparison CompareObjectMemoryDirect(const PObject & obj) const \
+      { return (Comparison)memcmp(this, &obj, sizeof(cls)); } \
 
 /** Declare a class with PWLib class information.
 This macro is used to declare a new class with a single public ancestor. It
@@ -795,23 +840,24 @@ class PObject {
      */
     virtual ~PObject() { }
 
-  /**@name Run Time Type functions */
+    /**@name Run Time Type functions */
   //@{
     /** Get the name of the class as a C string. This is a static function which
-       returns the type of a specific class. It is primarily used as an
-       argument to the #IsClass()# or #IsDescendant()# functions.
+       returns the type of a specific class. 
        
        When comparing class names, always use the #strcmp()#
        function rather than comparing pointers. The pointers are not
        necessarily the same over compilation units depending on the compiler,
        platform etc.
 
-       The #PCLASSINFO# macro declares a version of this function for the
-       particular class.
-
        @return pointer to C string literal.
      */      
-    static const char * Class() { return "PObject"; }
+#if P_HAS_TYPEINFO
+    static inline const char * Class()    { return 6 + typeid(PObject).name(); }
+#else
+    static const char * Class()           { return "PObject"; }
+#endif
+
 
     /** Get the current dynamic type of the object instance.
 
@@ -825,26 +871,10 @@ class PObject {
 
        @return pointer to C string literal.
      */
-    virtual const char * GetClass(
-      unsigned ancestor = 0
-      /** Level of ancestor to get the class name for. A value of zero is the
-         instances class name, one is its ancestor, two for the ancestors
-         ancestor etc.
-       */
-    ) const;
+    virtual const char * GetClass() const { return Class(); }
 
-    /** Determine if the dynamic type of the current instance is of the
-       specified class. The class name is usually provided by the
-       #Class()# static function of the desired class.
-    
-       The #PCLASSINFO# macro declares an override of this function for
-       the particular class. The user need not implement it.
-
-       @return TRUE if object is of the class.
-     */
-    virtual BOOL IsClass(
-      const char * clsName    // Class name to compare against.
-    ) const;
+    BOOL IsClass(const char * cls) const 
+    { return strcmp(cls, GetClass()) == 0; }
 
     /** Determine if the dynamic type of the current instance is a descendent of
        the specified class. The class name is usually provided by the
@@ -855,9 +885,11 @@ class PObject {
 
        @return TRUE if object is descended from the class.
      */
-    virtual BOOL IsDescendant(
+    virtual BOOL InternalIsDescendant(
       const char * clsName    // Ancestor class name to compare against.
-    ) const;
+    ) const
+    { return IsClass(clsName); }
+
   //@}
 
   /**@name Comparison functions */

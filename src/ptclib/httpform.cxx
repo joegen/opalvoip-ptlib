@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.48  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.47  2003/03/24 04:31:03  robertj
  * Added function to set and get strings from PConfig in correct format for
  *   use with HTTP form array contsructs.
@@ -204,7 +207,7 @@ PHTTPField::PHTTPField(const char * nam, const char * titl, const char * hlp)
 
 PObject::Comparison PHTTPField::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PHTTPField::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PHTTPField), PInvalidCast);
   return fullName.Compare(((const PHTTPField &)obj).fullName);
 }
 
@@ -2240,7 +2243,7 @@ PHTTPField * PHTTPConfig::AddSectionField(PHTTPField * sectionFld,
                                           const char * suffix)
 {
   sectionField = PAssertNULL(sectionFld);
-  PAssert(!sectionField->IsDescendant(PHTTPCompositeField::Class()), "Section field is composite");
+  PAssert(!PIsDescendant(sectionField, PHTTPCompositeField), "Section field is composite");
   Add(sectionField);
 
   if (prefix != NULL)
