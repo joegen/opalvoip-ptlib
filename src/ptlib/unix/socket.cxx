@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.66  2001/08/07 02:27:22  robertj
+ * Fixed some incorrect error values returned in Read() and Write() functions.
+ *
  * Revision 1.65  2001/07/03 04:41:25  yurik
  * Corrections to Jac's submission from 6/28
  *
@@ -504,10 +507,8 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 
   // wait until select indicates there is data to read, or until
   // a timeout occurs
-  if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
-    lastError     = Timeout;
+  if (!PXSetIOBlock(PXReadBlock, readTimeout))
     return FALSE;
-  }
 
 #ifndef __BEOS__
   // attempt to read out of band data
@@ -517,12 +518,13 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
     OnOutOfBand(buffer, ooblen);
 #endif // !__BEOS__
 
-    // attempt to read non-out of band data
-  if (ConvertOSError(lastReadCount = ::recv(os_handle, (char *)buf, maxLen, 0)))
-    return lastReadCount > 0;
+  // attempt to read non-out of band data
+  int r = ::recv(os_handle, (char *)buf, maxLen, 0);
+  if (!ConvertOSError(r))
+    return FALSE;
 
-  lastReadCount = 0;
-  return FALSE;
+  lastReadCount = r;
+  return lastReadCount > 0;
 }
 
 
@@ -533,19 +535,18 @@ BOOL PSocket::os_recvfrom(
       sockaddr * addr, // Address from which the datagram was received.
       PINDEX * addrlen)
 {
-  if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
-    lastError     = Timeout;
-    lastReadCount = 0;
+  lastReadCount = 0;
+
+  if (!PXSetIOBlock(PXReadBlock, readTimeout))
     return FALSE;
-  }
 
   // attempt to read non-out of band data
-  if (ConvertOSError(lastReadCount =
-        ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen)))
-    return lastReadCount > 0;
+  int r = ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen);
+  if (!ConvertOSError(r))
+    return FALSE;
 
-  lastReadCount = 0;
-  return FALSE;
+  lastReadCount = r;
+  return lastReadCount > 0;
 }
 
 
@@ -580,10 +581,8 @@ BOOL PSocket::os_sendto(
   if (errno != EWOULDBLOCK)
     return ConvertOSError(-1);
 
-  if (!PXSetIOBlock(PXWriteBlock, writeTimeout)) {
-    lastError     = Timeout;
+  if (!PXSetIOBlock(PXWriteBlock, writeTimeout))
     return FALSE;
-  }
 
   // attempt to read data
   if (addr != NULL)
