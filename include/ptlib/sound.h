@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.16  2000/03/04 10:15:32  robertj
+ * Added simple play functions for sound files.
+ *
  * Revision 1.15  1999/05/28 14:04:10  robertj
  * Added function to get default audio device.
  *
@@ -148,6 +151,9 @@ class PSound : public PBYTEArray
 
   /**@name Access functions */
   //@{
+    /// Play the sound on the default sound device.
+    BOOL Play();
+
     /**Set the internal sound format to linear PCM at the specification in
        the parameters.
      */
@@ -183,6 +189,19 @@ class PSound : public PBYTEArray
 
   /**@name Miscellaneous functions */
   //@{
+    /**Play a sound file to the default device. If the #wait#
+       parameter is TRUE then the function does not return until the file has
+       been played. If FALSE then the sound play is begun asynchronously and
+       the function returns immediately.
+
+       @return
+       TRUE if the sound is playing or has played.
+     */
+    static BOOL PlayFile(
+      const PFilePath & file, /// Sound file to play.
+      BOOL wait = TRUE        /// Flag to play sound synchronously.
+    );
+
     /// Play the "standard" warning beep for the platform.
     static void Beep();
   //@}
