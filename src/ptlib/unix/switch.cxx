@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.23  2003/01/06 18:41:08  rogerh
+ * Add NetBSD patches, taken from the NetBSD pkg patches.
+ * Submitted by Andreas Wrede
+ *
  * Revision 1.22  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -85,8 +89,12 @@
 #endif
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD)  || defined(P_NETBSD)
 #define	SET_STACK	context[0]._jb[2] = (int)stackTop-16;
+#if defined(P_NETBSD)
+#include <sys/mman.h>
+#define        USE_MMAP        MAP_ANON | MAP_PRIVATE
+#endif
 #endif
 
 #ifdef __BEOS__
