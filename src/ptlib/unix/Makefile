@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.39  1999/02/22 13:24:47  robertj
+# Added first cut sound implmentation.
+#
 # Revision 1.38  1999/02/19 11:33:51  robertj
 # Added IP access control lists file.
 #
@@ -176,6 +179,7 @@ SOURCES	= $(PROTO_SOURCES) \
 	  $(COMPONENT_SRC_DIR)/cypher.cxx \
 	  $(COMPONENT_SRC_DIR)/socks.cxx \
 	  $(COMPONENT_SRC_DIR)/asner.cxx \
+	  sound.cxx \
 	  uicmp.cxx \
 	  $(COMMON_SRC_DIR)/sockets.cxx \
 	  socket.cxx \
