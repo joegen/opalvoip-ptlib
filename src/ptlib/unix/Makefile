@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.6 1996/04/17 11:12:20 craigs Exp $
+# $Id: Makefile,v 1.7 1996/05/02 10:53:24 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.7  1996/05/02 10:53:24  craigs
+# Fixed problem with SUN4 target
+#
 # Revision 1.6  1996/04/17 11:12:20  craigs
 # Latest version pre mibmaster release 1.0
 #
@@ -74,9 +77,15 @@ OBJS	:= $(OBJS) $(OBJDIR)/switch.o
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
 thelot:
-	make DEBUG=; make DEBUG=1
-	( cd ../../apps/mibmastr; make DEBUG=; make DEBUG=1 )
+	make both
+	( cd ../../apps/mibmastr; make clean ; make both; )
+	( cd ../../apps/firedoor; make clean ; make both; )
 
+distsrc:
+	(cd $(PWLIBDIR); \
+          find unix \( -name RCS -o -name obj_d -o -name obj_r \) -prune -o -type f -print > .list ; \
+          find common \( -name RCS -o -name obj_d -o -name obj_r \) -prune -o -type f -print >> .list ; \
+	  tar -czvf ptlib-src.tgz `cat .list` ; rm .list )
 
 #######################################################
 
