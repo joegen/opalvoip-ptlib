@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR CC CFLAGS ac_ct_CC CPP EGREP HAS_ALSA HAS_OSS HAS_V4L HAS_BSDVIDEOCAP HAS_AVC1394 HAS_DC1394 LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR CC CFLAGS ac_ct_CC CPP EGREP HAS_ALSA HAS_OSS HAS_V4L HAS_BSDVIDEOCAP HAS_AVC1394 HAS_DC1394 DC_CFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -4567,6 +4567,61 @@ echo $ECHO_N "checking for IEEE1394/DC video support... $ECHO_C" >&6
 
     echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
+    echo "$as_me:$LINENO: checking if dc1394_dma_setup_capture has 12 parms" >&5
+echo $ECHO_N "checking if dc1394_dma_setup_capture has 12 parms... $ECHO_C" >&6
+    cat >conftest.$ac_ext <<_ACEOF
+
+#include "libdc1394/dc1394_control.h"
+int main(int ac,char **av)
+{
+  raw1394handle_t handle;
+  nodeid_t node;
+  int channel;
+  int format;
+  int mode;
+  int speed;
+  int frame_rate;
+  int num_dma_buffers;
+  int do_extra_buffering;
+  int drop_frames;
+  const char *dma_device_file;
+  dc1394_cameracapture *camera;
+  dc1394_dma_setup_capture(handle, node, channel, format, mode, speed, frame_rate, num_dma_buffers,
+			   do_extra_buffering, drop_frames, dma_device_file, camera);
+  return 0;
+}
+
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  NEW_DC_API=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+NEW_DC_API=0
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+    if test "$NEW_DC_API" = "1" ; then
+      DC_CFLAGS=-DNEW_DC_API
+
+      echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+    else
+
+      echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+    fi
   else
     echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -4577,6 +4632,8 @@ fi
 
 
           ac_config_files="$ac_config_files Makefile"
+
+          ac_config_files="$ac_config_files vidinput_dc/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -5129,6 +5186,7 @@ do
   case "$ac_config_target" in
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+  "vidinput_dc/Makefile" ) CONFIG_FILES="$CONFIG_FILES vidinput_dc/Makefile" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
@@ -5234,6 +5292,7 @@ s,@HAS_V4L@,$HAS_V4L,;t t
 s,@HAS_BSDVIDEOCAP@,$HAS_BSDVIDEOCAP,;t t
 s,@HAS_AVC1394@,$HAS_AVC1394,;t t
 s,@HAS_DC1394@,$HAS_DC1394,;t t
+s,@DC_CFLAGS@,$DC_CFLAGS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
