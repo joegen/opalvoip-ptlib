@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.114  2001/10/23 05:42:48  robertj
+ * Fixed bug in retry loop waiting for termination, applies only to heavily
+ *   laoded Win98 class machines.
+ *
  * Revision 1.113  2001/10/07 16:05:59  yurik
  * Removed MFC dependency
  *
@@ -1157,7 +1161,7 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
       return TRUE;
     }
 
-    if (retries > 0)
+    if (retries == 0)
       return TRUE;
 
     retries--;
