@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.67  2001/03/16 03:33:21  robertj
+ * Fixed HTML signature code due to changes in encryption code.
+ *
  * Revision 1.66  2001/03/04 02:24:44  robertj
  * Removed default OnControl() from http service as cannot get port number.
  *
@@ -1043,36 +1046,20 @@ PString PServiceHTML::ExtractSignature(const PString & html,
                                        PString & out,
                                        const char * keyword)
 {
-  PString signature;
-  out = PString();
+  out = html;
 
-  // search for all comment blocks
-  PINDEX  lastPos = 0, endPos = 0;
-  PINDEX  pos;
-  while ((pos    = html.Find("<!--", lastPos)) != P_MAX_INDEX &&
-         (endPos = html.Find("-->", pos))      != P_MAX_INDEX) {
+  PRegularExpression SignatureRegEx("<?!--" + PString(keyword) + "[ \t\r\n]+"
+                                     "signature[ \t\r\n]+(-?[^-])+-->?",
+                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
 
-    // add in the text before the comment and move the ptr to the end of
-    // the comment
-    if (pos > lastPos)
-      out += html(lastPos, pos-1);
-    lastPos = endPos+3;
-
-    // tokenise the text inside the comment
-    PStringArray tokens = html(pos+4, endPos-1).Trim().Tokenise(" \n", FALSE);
-
-    // if this is a signature, then retreive it
-    if (tokens[0] *= keyword) {
-      PINDEX len = tokens.GetSize();
-      if (tokens[1] != "signature" || len != 3)
-        out += html(pos, endPos+2);
-      else
-        signature = tokens[2];
-    }
+  PINDEX pos, len;
+  if (out.FindRegEx(SignatureRegEx, pos, len)) {
+    PString tag = out.Mid(pos, len);
+    out.Delete(pos, len);
+    return tag(tag.Find("signature")+10, tag.FindLast('-')-2).Trim();
   }
 
-  out += html(lastPos, P_MAX_INDEX);
-  return signature;
+  return PString();
 }
 
 
@@ -1111,7 +1098,10 @@ PString PServiceHTML::CalculateSignature(const PString & out,
 
   // encode it
   PTEACypher cypher(sig);
-  return cypher.Encode(&md5, sizeof(md5));
+  BYTE buf[sizeof(md5)+7];
+  memcpy(buf, &md5, sizeof(md5));
+  memset(&buf[sizeof(md5)], 0, sizeof(buf)-sizeof(md5));
+  return cypher.Encode(buf, sizeof(buf));
 }
 
 
