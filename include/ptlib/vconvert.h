@@ -25,6 +25,10 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.5  2001/03/07 01:42:59  dereks
+ * miscellaneous video fixes. Works on linux now. Add debug statements
+ * (at PTRACE level of 1)
+ *
  * Revision 1.4  2001/03/03 23:25:07  robertj
  * Fixed use of video conversion function, returning bytes in destination frame.
  *
@@ -203,7 +207,7 @@ class PColourConverter : public PObject
 
 
 /**Declare a colour converter class with Convert() function.
-   This should anly be used once and at the global scope level for each
+   This should only be used once and at the global scope level for each
    converter. It declares everything needs so only the body of the Convert()
    function need be added.
   */

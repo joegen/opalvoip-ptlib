@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.8  2001/03/07 01:42:59  dereks
+ * miscellaneous video fixes. Works on linux now. Add debug statements
+ * (at PTRACE level of 1)
+ *
  * Revision 1.7  2001/03/07 00:10:05  robertj
  * Improved the device list, uses /proc, thanks Thorsten Westheider.
  *
@@ -63,8 +67,11 @@
 
 PVideoInputDevice::PVideoInputDevice()
 {
-  videoFd     = -1;
-  canMap      = -1;
+  videoFd       = -1;
+  canMap        = -1;
+  channelNumber = 1;
+  videoFormat   = PAL;    //With Auto, it fails to load on my bt848 system.
+                          //PAL video format ensures there is some display.
 }
 
 
@@ -89,35 +96,42 @@ static struct {
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
-  if( channelNumber < 0 )
+  if( channelNumber < 0 ) {
     return FALSE;
-
+  }
+  
   Close();
 
   deviceName = devName;
   videoFd = ::open((const char *)devName, O_RDWR);
-  if (videoFd < 0)
+  if (videoFd < 0) {
+    PTRACE(1,"PVideoInputDevice::Open failed : "<< ::strerror(errno));
     return FALSE;
+  }
   
   // get the device capabilities
-  if (::ioctl(videoFd, VIDIOCGCAP, &videoCapability) >= 0) {
-
-    // set height and width
-    frameHeight = videoCapability.maxheight;
-    frameWidth  = videoCapability.maxwidth;
+  if (::ioctl(videoFd, VIDIOCGCAP, &videoCapability) < 0)  {
+    PTRACE(1,"PVideoInputDevice:: get device capablilities failed : "<< ::strerror(errno));
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
+  }
   
-    // select the specified input and video format
-    if (!SetChannel(channelNumber)) {
-      ::close (videoFd);
-      videoFd = -1;
-      return FALSE;
-    } 
+  // set height and width
+  frameHeight = videoCapability.maxheight;
+  frameWidth  = videoCapability.maxwidth;
+  
+  // select the specified input and video format
+  if (!SetChannel(channelNumber)) {
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
+  } 
     
-    if (!SetVideoFormat(videoFormat)) {
-      ::close (videoFd);
-      videoFd = -1;
-      return FALSE;
-    }
+  if (!SetVideoFormat(videoFormat)) {
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
   }	 
   return TRUE;    
 }
@@ -205,18 +219,22 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
   // get channel information (to check if channel is valid)
   struct video_channel channel;
   channel.channel = channelNumber;
-  if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0)
+  if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice Get Channel info failed : "<< ::strerror(errno));    
     return FALSE;
-
+  }
+  
   // set channel information
   static int fmt[4] = { VIDEO_MODE_PAL, VIDEO_MODE_NTSC, 
                           VIDEO_MODE_SECAM, VIDEO_MODE_AUTO };
   channel.norm = fmt[newFormat];
 
   // set the information
-  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0)
+  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
     return FALSE;
-
+  }
+  
   return TRUE;  
 }
 
@@ -235,16 +253,20 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
   // get channel information (to check if channel is valid)
   struct video_channel channel;
   channel.channel = channelNumber;
-  if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0)
+  if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice:: Get Channel info failed : "<< ::strerror(errno));    
     return FALSE;
-
+  }
+  
   // set channel information
   channel.channel = channelNumber;
 
   // set the information
-  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0)
+  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice:: Setchannel info failed : "<< ::strerror(errno));    
     return FALSE;
-
+  }
+  
   return TRUE;
 }
 
@@ -265,17 +287,21 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 
   // get picture information
   struct video_picture pictureInfo;
-  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0)
+  if (::ioctl(videoFd, VIDIOCGPICT, &pictureInfo) < 0) {
+    PTRACE(1,"PVideoInputDevice::Get pict info failed : "<< ::strerror(errno));
     return FALSE;
-
+  }
+  
   // set colour format
   colourFormatCode = colourFormatTab[colourFormatIndex].code;
   pictureInfo.palette = colourFormatCode;
 
   // set the information
-  if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0)
+  if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0) {
+    PTRACE(1,"PVideoInputDevice::Set pict info failed : "<< ::strerror(errno));    
     return FALSE;
-
+  }
+  
   // set the new information
   return SetFrameSize(frameWidth, frameHeight);
 }
