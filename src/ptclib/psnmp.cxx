@@ -1,11 +1,14 @@
 /*
  * SNMP Library
  *
- * $Id: psnmp.cxx,v 1.1 1996/09/14 13:02:18 robertj Exp $
+ * $Id: psnmp.cxx,v 1.2 1996/11/04 03:59:19 robertj Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: psnmp.cxx,v $
+ * Revision 1.2  1996/11/04 03:59:19  robertj
+ * Added selectable read buffer size.
+ *
  * Revision 1.1  1996/09/14 13:02:18  robertj
  * Initial revision
  *
@@ -51,7 +54,9 @@ static char *SnmpErrorCodeTable[] =
 
   "no response",
   "malformed response",
-  "send failed"
+  "send failed",
+  "rx buff too small",
+  "tx data too big"
 };
 
 static char * TrapCodeToText[PSNMP::NumTrapTypes] = {
