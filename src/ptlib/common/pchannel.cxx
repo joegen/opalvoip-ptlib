@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.20  2003/02/10 01:01:03  robertj
+ * Fixed portability issue for lseek() calls, should just look for -1 return
+ *   value to indicate error, thanks Joerg Schoemer
+ *
  * Revision 1.19  2002/12/19 03:37:05  craigs
  * Simplified PChannel::WriteString
  *
@@ -944,7 +948,7 @@ off_t PFile::GetLength() const
 #else
   off_t pos = _lseek(GetHandle(), 0, SEEK_CUR);
   off_t len = _lseek(GetHandle(), 0, SEEK_END);
-  PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) == pos);
+  PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) != (off_t)-1);
   return len;
 #endif
 }
@@ -962,7 +966,7 @@ BOOL PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 #ifdef WOT_NO_FILESYSTEM
   return TRUE;
 #else
-  return _lseek(GetHandle(), pos, origin) == pos;
+  return _lseek(GetHandle(), pos, origin) != (off_t)-1;
 #endif
 }
 
