@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2379,11 +2379,11 @@ echo $ECHO_N "checking if linker accepts -felide-constructors... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 int main(int ac,char **av) { return 0; }
 _ACEOF
-$CXX $CFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
+$CXX $CXXFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
-  STDCCFLAGS="$STDCCFLAGS -felide-constructors"
+  STDCXXFLAGS="$STDCXXFLAGS -felide-constructors"
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -2394,11 +2394,11 @@ echo $ECHO_N "checking if linker accepts -Wreorder... $ECHO_C" >&6
 cat >conftest.$ac_ext <<_ACEOF
 int main(int ac,char **av) { return 0; }
 _ACEOF
-$CXX $CFLAGS -Wreorder conftest.cc > /dev/null 2>&1
+$STDCXX $CXXFLAGS -Wreorder conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
-  STDCCFLAGS="$STDCCFLAGS -Wreorder"
+  STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
 else
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -6205,6 +6205,7 @@ fi
 
 
 
+
           ac_config_files="$ac_config_files make/ptbuildopts.mak"
 
           ac_config_files="$ac_config_files make/ptlib-config"
@@ -6874,6 +6875,7 @@ s,@HAS_SDL@,$HAS_SDL,;t t
 s,@HAS_VIDEO_CAPTURE@,$HAS_VIDEO_CAPTURE,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
+s,@STDCXXFLAGS@,$STDCXXFLAGS,;t t
 s,@OPTSTDCCFLAGS@,$OPTSTDCCFLAGS,;t t
 s,@ENDLDLIBS@,$ENDLDLIBS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
