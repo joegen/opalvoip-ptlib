@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.51  2000/04/29 06:44:17  robertj
+ * Added some stuff to make sure symbols included in library.
+ *
  * Revision 1.50  2000/02/19 23:46:09  robertj
  * Fixed incorrect values for PFile::Access() function, thanks Stefan Ditscheid.
  *
@@ -870,6 +873,37 @@ void PProcess::Construct()
 #endif
 
   houseKeeper = NULL;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+#define INCLUDE_STUFF1(cls) \
+  cls i##cls; \
+  i##cls = i##cls
+
+#define INCLUDE_STUFF2(cls) \
+  INCLUDE_STUFF1(cls); \
+  i##cls.GetPointer(); \
+  i##cls.Attach(0, 0); \
+  i##cls.SetAt(0, 0); \
+  i##cls.GetAt(0); \
+  i##cls[0]
+
+void PDummyFunctionToMakeSureSymbolsAreInDEFFile()
+{
+  INCLUDE_STUFF2(PCharArray);
+  INCLUDE_STUFF2(PShortArray);
+  INCLUDE_STUFF2(PIntArray);
+  INCLUDE_STUFF2(PLongArray);
+  INCLUDE_STUFF2(PBYTEArray);
+  INCLUDE_STUFF2(PWORDArray);
+  INCLUDE_STUFF2(PUnsignedArray);
+  INCLUDE_STUFF2(PDWORDArray);
+  INCLUDE_STUFF1(PStringSet);
+  INCLUDE_STUFF1(POrdinalToString);
+  INCLUDE_STUFF1(PStringToOrdinal);
+  INCLUDE_STUFF1(PStringToString);
 }
 
 
