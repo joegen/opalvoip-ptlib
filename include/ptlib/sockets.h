@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.7 1996/08/08 10:08:53 robertj Exp $
+ * $Id: sockets.h,v 1.8 1996/09/14 13:09:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.8  1996/09/14 13:09:44  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.7  1996/08/08 10:08:53  robertj
  * Directory structure changes for common files.
  *
@@ -82,6 +88,18 @@
 // PTCPSocket
 
 #include <tcpsock.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIPXSocket
+
+#include <ipxsock.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSPXSocket
+
+#include <spxsock.h>
 
 
 #endif // _SOCKETS_H
