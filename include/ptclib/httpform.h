@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.h,v 1.7 1998/01/26 00:25:24 robertj Exp $
+ * $Id: httpform.h,v 1.8 1998/08/20 05:45:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: httpform.h,v $
+ * Revision 1.8  1998/08/20 05:45:33  robertj
+ * Fixed bug where substitutions did not always occur if near end of macro block.
+ *
  * Revision 1.7  1998/01/26 00:25:24  robertj
  * Major rewrite of HTTP forms management.
  *
@@ -129,7 +132,7 @@ PDECLARE_CLASS(PHTTPField, PObject)
        New field object instance.
      */
 
-    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const;
     // Splice expanded macro substitutions into text string
 
     virtual void GetHTMLTag(
@@ -250,7 +253,7 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const;
 
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
@@ -299,6 +302,8 @@ PDECLARE_CLASS(PHTTPCompositeField, PHTTPField)
 
     void Append(PHTTPField * fld);
     PHTTPField & operator[](PINDEX idx) const { return fields[idx]; }
+    void RemoveAt(PINDEX idx) { fields.RemoveAt(idx); }
+    void RemoveAll() { fields.RemoveAll(); }
 
   protected:
     PHTTPFieldList fields;
@@ -338,7 +343,7 @@ PDECLARE_CLASS(PHTTPFieldArray, PHTTPCompositeField)
 
     virtual PHTTPField * NewField() const;
 
-    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const;
+    virtual void ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const;
 
     virtual void GetHTMLTag(
       PHTML & html    // HTML to receive the field info.
@@ -708,6 +713,8 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     PHTTPField * Add(
       PHTTPField * fld
     );
+    void RemoveAllFields()
+      { fields.RemoveAll(); fieldNames.RemoveAll(); }
 
     enum BuildOptions {
       CompleteHTML,
