@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.58  2002/02/08 12:47:19  robertj
+ * Fixed incorrect encoding of integer, did not allow for sign bit, thanks Kevin Tran.
+ *
  * Revision 1.57  2002/02/01 01:17:36  robertj
  * Fixed bug in encoding empty strings (H.450 issue), thanks Frans Dams, Frank Derks et al.
  *
@@ -737,13 +740,15 @@ void PASN_Integer::EncodePER(PPER_Stream & strm) const
 {
   // X.691 Sections 12
 
-  if (ConstraintEncode(strm, (int)value)) { //  12.1
+  //  12.1
+  if (ConstraintEncode(strm, (int)value)) {
+    // 12.2.6
     PINDEX nBytes;
     unsigned adjusted_value = value - lowerLimit;
     if (adjusted_value == 0)
       nBytes = 1;
     else {
-      PINDEX nBits = CountBits(adjusted_value+1);
+      PINDEX nBits = CountBits(adjusted_value+1) + 1; // Add one for sign bit
       nBytes = (nBits+7)/8;
     }
     strm.LengthEncode(nBytes, 0, INT_MAX);
