@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.1 1994/04/01 14:38:42 robertj Exp $
+ * $Id: contain.h,v 1.2 1994/06/25 12:13:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.1  1994/04/01 14:38:42  robertj
+ * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Synchronisation.
+ *
+ * Revision 1.1  1994/04/01  14:38:42  robertj
  * Initial revision
  *
  */
@@ -17,11 +20,21 @@
 #define _CONTAIN_H
 
 
-#define STRICT
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Machine & Compiler dependent declarations
+
+#ifdef _WINDOWS
+
+#define STRICT
+#include <windows.h>
+
+#else
+
+#define TRUE 1
+#define FALSE 0
+
+#endif
+
 
 #ifdef _WINDLL
 #define PCLASS class __export
@@ -44,8 +57,8 @@ typedef unsigned long  DWORD; // 32 bit quantity
 // Type used in array indexes especially that required by operator[] functions.
 #define PINDEX            int
 #define P_MAX_INDEX       32767
-#define PABSINDEX(idx)    ((idx)<0?-(idx):(idx))
-#define PASSERTINDEX(idx) PAssert((idx) >= 0)
+#define PABSINDEX(idx)    (((idx)<0?-(idx):(idx))&0x7fff)
+#define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
 #else
 
@@ -60,7 +73,12 @@ typedef unsigned long  DWORD; // 32 bit quantity
 
 #ifdef _MSC_VER
 #pragma warning(disable:4251)  // disable warning exported structs
+#pragma warning(disable:4702)  // disable warning about unreachable code
 #pragma warning(disable:4705)  // disable warning about statement has no effect
+#pragma warning(disable:4511)  // default copy ctor not generated warning
+#pragma warning(disable:4512)  // default assignment op not generated warning
+#pragma warning(disable:4710)  // inline not expanded warning
+#pragma warning(disable:4711)  // auto inlining warning
 #endif
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.1 1994/04/01 14:39:35 robertj Exp $
+ * $Id: ptlib.cxx,v 1.2 1994/06/25 12:13:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.1  1994/04/01 14:39:35  robertj
- * Initial revision
+ * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Synchronisation.
  *
+// Revision 1.1  1994/04/01  14:39:35  robertj
+// Initial revision
+//
  */
 
 #include "ptlib.h"
@@ -18,6 +21,27 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <dos.h>
+#include <sys\stat.h>
+#include <malloc.h>
+
+#ifndef P_USE_INLINES
+#include <ptlib.inl>
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+PString PChannel::GetErrorText() const
+{
+  if (osError == 0)
+    return PString();
+
+  if (osError > 0 && osError < _sys_nerr)
+    return _sys_errlist[osError];
+
+  return psprintf("OS error %d", osError);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,7 +58,8 @@ void PDirectory::CopyContents(const PDirectory & dir)
 static PString FixPath(const PString & path, BOOL isDirectory)
 {
   PString curdir;
-  PAssert(getcwd(curdir.GetPointer(P_MAX_PATH), P_MAX_PATH) != NULL);
+  PAssert(getcwd(curdir.GetPointer(P_MAX_PATH),
+                                   P_MAX_PATH) != NULL, POperatingSystemError);
 
   PString fullpath;
 
@@ -54,7 +79,8 @@ static PString FixPath(const PString & path, BOOL isDirectory)
       fullpath += curdir(2, P_MAX_INDEX);
     else if (_chdrive(fullpath[0]-'A'+1) == 0) {
       PString otherdir;
-      PAssert(getcwd(otherdir.GetPointer(P_MAX_PATH), P_MAX_PATH) != NULL);
+      PAssert(getcwd(otherdir.GetPointer(P_MAX_PATH),
+                                   P_MAX_PATH) != NULL, POperatingSystemError);
       fullpath += otherdir(2, P_MAX_INDEX);
       _chdrive(curdir[0]-'A'+1);  // Put drive back
     }
@@ -112,8 +138,8 @@ BOOL PDirectory::Filtered()
   if (scanMask == PAllPermissions)
     return FALSE;
 
-  PFile::Info inf;
-  PAssert(PFile::GetInfo(path+fileinfo.name, inf));
+  PFileInfo inf;
+  PAssert(PFile::GetInfo(path+fileinfo.name, inf), POperatingSystemError);
   return (inf.type&scanMask) == 0;
 }
 
@@ -139,7 +165,7 @@ BOOL PDirectory::Next()
 }
 
 
-PString PDirectory::Entry() const
+PString PDirectory::GetEntryName() const
 {
   return fileinfo.name;
 }
@@ -158,38 +184,46 @@ void PDirectory::Close()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PFile
+// File Path
 
-PFile::PFile()
+PFilePath::PFilePath(const PString & str)
+  : PString(FixPath(str, FALSE))
 {
-  char * tmp = tempnam("C:\\", "PWL");
-  if (tmp != NULL) {
-    fullname = tmp;
-    free(tmp);
-  }
-  Construct();
 }
 
 
-void PFile::SetName(const PString & newName)
+PFilePath::PFilePath(const char * cstr)
+  : PString(FixPath(cstr, FALSE))
 {
-  fullname = FixPath(newName, FALSE);
+}
+
+
+PFilePath & PFilePath::operator=(const PString & str)
+{
+  PString::operator=(FixPath(str, FALSE));
+  return *this;
+}
+
+
+void PFilePath::SetType(const PString & type)
+{
+  *this = operator()(0, FindLast('.')-1) + type;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PFile
+
+void PFile::SetFilePath(const PString & newName)
+{
+  path = FixPath(newName, FALSE);
 }
 
 
 void PFile::CopyContents(const PFile & f)
 {
-  fullname = f.fullname;
+  path = f.path;
   os_handle = f.os_handle;
-  os_errno = f.os_errno;
-}
-
-
-void PFile::Construct()
-{
-  os_handle = -1;
-  os_errno = 0;
-  fullname = FixPath(fullname, FALSE);
 }
 
 
@@ -214,7 +248,7 @@ BOOL PFile::Access(const PString & name, OpenMode mode)
 }
 
 
-BOOL PFile::GetInfo(const PString & name, Info & info)
+BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   struct stat s;
   if (stat(name, &s) != 0)
@@ -223,7 +257,7 @@ BOOL PFile::GetInfo(const PString & name, Info & info)
   info.created =  (s.st_ctime < 0) ? 0 : s.st_ctime;
   info.modified = (s.st_mtime < 0) ? 0 : s.st_mtime;
   info.accessed = (s.st_atime < 0) ? 0 : s.st_atime;
-  info.filesize = s.st_size;
+  info.size = s.st_size;
 
   info.permissions = 0;
   if ((s.st_mode&S_IREAD) != 0)
@@ -255,20 +289,39 @@ BOOL PFile::GetInfo(const PString & name, Info & info)
 }
 
 
+BOOL PFile::IsTextFile() const
+{
+  return FALSE;
+}
+
+
 BOOL PFile::Open(OpenMode mode, int opts)
 {
   Close();
+  clear();
 
-  int oflags = (int)(IsDescendant(PTextFile::Class()) ? _O_TEXT : _O_BINARY);
+  if (path.IsEmpty()) {
+    char * tmp = tempnam("C:\\", "PWL");
+    path = PString(PAssertNULL(tmp));
+    free(tmp);
+  }
+
+  int oflags = IsTextFile() ? _O_TEXT : _O_BINARY;
   switch (mode) {
     case ReadOnly :
       oflags |= O_RDONLY;
+      if (opts == ModeDefault)
+        opts = MustExist;
       break;
     case WriteOnly :
       oflags |= O_WRONLY;
+      if (opts == ModeDefault)
+        opts = Create|Truncate;
       break;
     default :
       oflags |= O_RDWR;
+      if (opts == ModeDefault)
+        opts = Create;
   }
 
   if ((opts&Create) != 0)
@@ -278,8 +331,22 @@ BOOL PFile::Open(OpenMode mode, int opts)
   if ((opts&Truncate) != 0)
     oflags |= O_TRUNC;
 
-  BOOL ok = (os_handle = open(fullname, oflags, S_IREAD|S_IWRITE)) >= 0;
-  os_errno = ok ? 0 : errno;
+  BOOL ok = (os_handle = _open(path, oflags, S_IREAD|S_IWRITE)) >= 0;
+  osError = ok ? 0 : errno;
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+    case ENOENT :
+      lastError = NotFound;
+    case EEXIST :
+      lastError = FileExists;
+    case EACCES :
+      lastError = AccessDenied;
+    case ENOMEM :
+      lastError = NoMemory;
+    default :
+      lastError = Miscellaneous;
+  }
   return ok;
 }
 
@@ -287,67 +354,182 @@ BOOL PFile::Open(OpenMode mode, int opts)
 BOOL PFile::SetLength(off_t len)
 {
   BOOL ok = chsize(GetHandle(), len) == 0;
-  os_errno = ok ? 0 : errno;
+  osError = ok ? 0 : errno;
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+    case ENOSPC :
+      lastError = DiskFull;
+    case EACCES :
+      lastError = AccessDenied;
+    case ENOMEM :
+      lastError = NoMemory;
+    case EBADF :
+      lastError = NotOpen;
+    default :
+      lastError = Miscellaneous;
+  }
   return ok;
 }
 
 
-PFile::Errors PFile::GetErrorCode() const
+///////////////////////////////////////////////////////////////////////////////
+// PTextFile
+
+BOOL PTextFile::IsTextFile() const
 {
-  switch (os_errno) {
-    case 0 :
-      return NoError;
-
-    case ENOENT :
-      return FileNotFound;
-
-    case EEXIST :
-      return FileExists;
-
-    case ENOSPC :
-      return DiskFull;
-
-    case EACCES :
-      return AccessDenied;
-
-    default :
-      return Miscellaneous;
-  }
+  return TRUE;
 }
 
 
-PString PFile::GetErrorText() const
+BOOL PTextFile::Read(void * buf, PINDEX len)
 {
-  if (os_errno > 0 && os_errno < _sys_nerr)
-    return _sys_errlist[os_errno];
-  return PString();
+  BOOL retVal = PFile::Read(buf, len);
+  return retVal;
+}
+
+
+BOOL PTextFile::Write(const void * buf, PINDEX len)
+{
+  BOOL retVal = PFile::Write(buf, len);
+  return retVal;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextApplication
+// PTextFile
 
-int PTextApplication::Main(int argc, char ** argv)
+PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
 {
-  PreInitialise(argc, argv);
+  basePriority = priorityLevel;   // Threads user settable priority level
+  dynamicPriority = 0;            // Allow immediate scheduling
+  isBlocked = NULL;               // No I/O blocking function
 
-  if (Initialise()) {
-    terminationValue = 0;
-    MainBody();
-  }
+  suspendCount = startSuspended ? 1 : 0;
 
-  return Termination();
+  stackBase = (char NEAR *)_nmalloc(stackSize);
+  PAssert(stackBase != NULL, "Insufficient near heap for thread");
+
+  stackTop = stackBase + stackSize; // For stack checking code
+  stackUsed = 0;
+
+  PThread * current = Current();
+  link = current->link;
+  current->link = this;
+  status = Starting;
+  if (!startSuspended)
+    SwitchContext(current);
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+void PThread::Terminate()
+{
+  if (link == this) // Is only thread, cannot terminate it.
+    return;
 
-#if !defined(P_USE_INLINES)
+  if (status == Terminated) // Is already terminated
+    return;
 
-#include "../../common/osutil.inl"
-#include "ptlib.inl"
+  status = Terminating;
 
-#endif
+  // If current thread is self terminating then go to next thread
+  if (Current() == this)
+    Yield(); // Never returns from here
+}
+
+
+void PThread::Suspend(BOOL susp)
+{
+  // Suspend/Resume the thread
+  if (susp)
+    suspendCount++;
+  else
+    suspendCount--;
+
+  // Suspending itself, yield to next thread
+  if (IsSuspended() && Current() == this)
+    Yield();
+}
+
+
+void PThread::Sleep(const PTimeInterval & time)
+{
+  wakeUpTime = PTimer::Tick() + time;
+
+  // Current thread is going to sleep, so yield to other thread
+  if (Current() == this)
+    Yield();
+}
+
+
+void PThread::Yield()
+{
+  // Determine the next thread to schedule
+  PThread * current = Current();
+  PThread * prev = current; // Need the thread in the previous link
+  for (PThread * next = current->link; next != current; next = next->link) {
+    if (next->status == Terminating) {
+      prev->link = next->link;   // Unlink it from the list
+      _nfree(next->stackBase);   // Give stack back to the near heap
+      next->status = Terminated;
+      continue;
+    }
+
+    prev = next;
+
+    if (next->suspendCount > 0)
+      continue;
+
+    if (PTimer::Tick() < next->wakeUpTime)
+      continue;
+
+    if (next->isBlocked != NULL) {
+      if (next->isBlocked(next->blocker))
+        continue;
+      next->isBlocked = NULL;
+      break;
+    }
+
+    if (next->dynamicPriority <= 0)
+      break;
+
+    next->dynamicPriority--;
+  }
+
+  switch (next->basePriority) {
+    case LowPriority :
+      next->dynamicPriority = 3;
+      break;
+    case NormalPriority :
+      next->dynamicPriority = 1;
+      break;
+    case HighPriority :
+      next->dynamicPriority = 0;
+      break;
+  }
+
+  next->SwitchContext(current);
+}
+
+
+void PThread::Block(PThreadBlockFunction isBlockFun, PObject * obj)
+{
+  isBlocked = isBlockFun;
+  blocker = obj;
+  Yield();
+}
+
+
+void PThread::InitialiseProcessThread()
+{
+  basePriority = NormalPriority;  // User settable priority
+  dynamicPriority = 0;            // Allow immediate scheduling
+  suspendCount = 0;               // Not suspended (would not be a good idea)
+  isBlocked = NULL;               // No I/O blocking function
+  status = Running;               // Thread is already running
+  link = this;                    // Circular list - is only one
+  PProcess::Current()->currentThread = this;
+}
 
 
 // End Of File ///////////////////////////////////////////////////////////////

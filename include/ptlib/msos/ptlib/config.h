@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.1 1994/04/12 08:21:52 robertj Exp $
+ * $Id: config.h,v 1.2 1994/06/25 12:13:01 robertj Exp $
  */
 
 
@@ -10,6 +10,8 @@
 // PConfiguration
 
 #include "../../common/config.h"
+  protected:
+    PFilePath configFile;
 };
 
 
