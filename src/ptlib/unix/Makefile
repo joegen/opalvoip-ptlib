@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.106  2003/02/24 17:49:02  rogerh
+# Add Mac Core Audio changes from Shawn.
+#
 # Revision 1.105  2003/02/18 03:55:59  dereks
 # Add 1394AVC pathces from  Georgi Georgiev. Thanks!
 #
@@ -469,6 +472,10 @@ SOUND_SOURCE = macosaudio.cxx \
 	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
 	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
 	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
+endif
+
+ifeq ($(OSTYPE),Darwin)
+SOUND_SOURCE = maccoreaudio.cxx
 endif
 
 ifeq ($(OSTYPE),VxWorks)

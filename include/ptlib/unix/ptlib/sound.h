@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.15  2003/02/24 17:49:02  rogerh
+ * Add Mac Core Audio changes from Shawn.
+ *
  * Revision 1.14  2003/02/19 10:22:22  rogerh
  * Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
  *
@@ -172,6 +175,16 @@ class JRingBuffer;
 
 #ifdef USE_ESD
     PAdaptiveDelay writeDelay;
+#endif
+
+#ifdef P_MACOSX
+    int caDevID;
+    unsigned caNumChannels;
+    void *caCBData;
+    int caBufLen;
+    float *caBuf;
+    pthread_mutex_t caMutex;
+    pthread_cond_t caCond;
 #endif
 
 #endif
