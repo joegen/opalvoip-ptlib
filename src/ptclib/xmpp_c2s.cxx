@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.cxx,v $
+ * Revision 1.7  2004/05/13 14:51:30  csoutheren
+ * Fixed problems when comiling without SSL
+ *
  * Revision 1.6  2004/05/09 07:23:50  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -644,6 +647,7 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
     if (res)
       auth += "<resource>" + m_JID.GetResource() + "</resource>";
 
+#if P_SSL
     if (digest) {
       PMessageDigest::Result bin_digest;
       PMessageDigestSHA1::Encode(m_StreamID + m_Password, bin_digest);
@@ -656,7 +660,10 @@ void XMPP::C2S::StreamHandler::HandleNonSASLStartedState(PXML& pdu)
 
       auth += "<digest>" + digest + "</digest>";
     }
-    else if (pwd)
+    else 
+#endif
+
+    if (pwd)
       auth += "<password>" + m_Password + "</password>";
 
     auth += "</query></iq>";
