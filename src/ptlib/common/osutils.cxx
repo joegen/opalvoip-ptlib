@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.142  2000/06/02 01:38:07  craigs
+ * Fixed typos
+ *
  * Revision 1.141  2000/06/02 01:35:56  craigs
  * Added more guards for NULL PStrings in PConfigArg handling
  *
@@ -1260,7 +1263,7 @@ PString PConfigArgs::GetOptionString(char option, const char * dflt) const
   PString stropt = CharToString(option);
   if (stropt.IsEmpty()) {
     if (dflt != NULL)
-      return dflt
+      return dflt;
     return PString();
   }
 
@@ -1283,7 +1286,7 @@ PString PConfigArgs::GetOptionString(const PString & option, const char * dflt) 
   // if user has specified "no-option", then ignore config file
   if (PArgList::HasOption(negationPrefix + option)) {
     if (dflt != NULL)
-      return dflt
+      return dflt;
     return PString();
   }
 
