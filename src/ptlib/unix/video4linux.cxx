@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.28  2002/01/26 23:58:15  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.27  2002/01/16 03:43:01  dereks
  * Match every VIDIOCMCAPTURE with a VIDIOCSYNC.
  *
@@ -126,6 +129,7 @@
 #include <ptlib/vconvert.h>
 
 #include <sys/mman.h>
+#include <sys/time.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -313,9 +317,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     videoAudio.flags &= ~VIDEO_AUDIO_MUTE;
     videoAudio.mode = VIDEO_SOUND_MONO;
     ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
-  }
-
-  return TRUE;
+    } return TRUE;
 
  errorOpenVideoInputDevice:
     ::close (videoFd);
