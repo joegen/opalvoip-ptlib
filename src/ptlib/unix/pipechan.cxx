@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.13  1998/10/30 13:02:50  robertj
+ * New pipe channel enhancements.
+ *
  * Revision 1.12  1998/10/26 11:09:56  robertj
  * added separation of stdout and stderr.
  *
@@ -54,13 +57,23 @@
 //  PPipeChannel
 //
 
-void PPipeChannel::Construct(const PString & subProgram,
-                             const char * const * arguments,
-                             OpenMode mode,
-                             BOOL searchPath,
-                             BOOL stderrSeparate)
-
+PPipeChannel::PPipeChannel()
 {
+  toChildPipe[0] = toChildPipe[1] = -1;
+  fromChildPipe[0] = fromChildPipe[1] = -1;
+  stderrChildPipe[0] = stderrChildPipe[1] = -1;
+}
+
+
+BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
+                                const PStringArray & argumentList,
+                                OpenMode mode,
+                                BOOL searchPath,
+                                BOOL stderrSeparate,
+                                const PStringToString * environment)
+{
+  subProgName = subProgram;
+
   // setup the pipe to the child
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
@@ -78,118 +91,105 @@ void PPipeChannel::Construct(const PString & subProgram,
   else
     stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
-  // setup the arguments
-  const char * cmd;
-  char ** args;
-  PINDEX i, l;
-
-  // must declare this array outside the scope of the block
-  // below as we want the storage to last until the exec has been done
-  PStringArray array;
-
-  if (arguments != NULL) {
-    for (i = 0; arguments[i] != NULL; i++)
-      ;
-    l = i;
-    args = new char *[l+2];
-    for (i = 0; i < l; i++) 
-      args[i+1] = (char *)arguments[i];
-    cmd = subProgram;
-  } else {
-    array = subProgram.Tokenise(" ", FALSE);
-    l = array.GetSize();
-    args = new char *[l+1];
-    for (i = 1; i < l; i++) 
-      args[i] = array[i].GetPointer();
-    cmd     = array[0];
-    l--;
-  }
-  PString arg0Str = PFilePath(cmd).GetTitle();
-  args[0]   = arg0Str.GetPointer();
-  args[l+1] = NULL;
-
   // fork to allow us to execute the child
-  if ((childPid = vfork()) == 0) {
-
-    // the following code is in the child process
-
-    // if we need to write to the child, make sure the child's stdin
-    // is redirected
-    if (toChildPipe[0] != -1) {
-      ::close(STDIN_FILENO);
-      ::dup(toChildPipe[0]);
+  if ((childPid = vfork()) != 0) {
+    // setup the pipe to the child
+    if (toChildPipe[0] != -1) 
       ::close(toChildPipe[0]);
-      ::close(toChildPipe[1]);  
-    } else {
-      int fd = open("/dev/null", O_RDONLY);
-      PAssertOS(fd >= 0);
-      ::close(STDIN_FILENO);
-      ::dup(fd);
-      ::close(fd);
-    }
 
-    // if we need to read from the child, make sure the child's stdout
-    // and stderr is redirected
-    if (fromChildPipe[1] != -1) {
-      ::close(STDOUT_FILENO);
-      ::dup(fromChildPipe[1]);
-      ::close(STDERR_FILENO);
-      if (!stderrSeparate)
-        ::dup(fromChildPipe[1]);
+    if (fromChildPipe[1] != -1)
       ::close(fromChildPipe[1]);
-      ::close(fromChildPipe[0]); 
-    } else {
-      int fd = ::open("/dev/null", O_WRONLY);
-      PAssertOS(fd >= 0);
-      ::close(STDOUT_FILENO);
-      ::dup(fd);
-      ::close(STDERR_FILENO);
-      if (!stderrSeparate)
-        ::dup(fd);
-      ::close(fd);
-    }
-
-    if (stderrSeparate) {
-      ::dup(stderrChildPipe[1]);
+ 
+    if (stderrChildPipe[1] != -1)
       ::close(stderrChildPipe[1]);
-      ::close(stderrChildPipe[0]); 
-    }
+ 
+    if (childPid < 0)
+      return FALSE;
 
-    // set the SIGINT and SIGQUIT to ignore so the child process doesn't
-    // inherit them from the parent
-    signal(SIGINT,  SIG_IGN);
-    signal(SIGQUIT, SIG_IGN);
-
-    // and set ourselves as out own process group so we don't get signals
-    // from our parent's terminal (hopefully!)
-    PSETPGRP();
-
-    // execute the child as required
-    if (searchPath)
-      execvp(cmd, args);
-    else
-      execv(cmd, args);
-
-    exit(2);
+    os_handle = 0;
+    return TRUE;
   }
 
-  PAssert(childPid >= 0, POperatingSystemError);
+  // the following code is in the child process
 
-  // setup the pipe to the child
-  if (toChildPipe[0] != -1) 
+  // if we need to write to the child, make sure the child's stdin
+  // is redirected
+  if (toChildPipe[0] != -1) {
+    ::close(STDIN_FILENO);
+    ::dup(toChildPipe[0]);
     ::close(toChildPipe[0]);
+    ::close(toChildPipe[1]);  
+  } else {
+    int fd = open("/dev/null", O_RDONLY);
+    PAssertOS(fd >= 0);
+    ::close(STDIN_FILENO);
+    ::dup(fd);
+    ::close(fd);
+  }
 
-  if (fromChildPipe[1] != -1)
+  // if we need to read from the child, make sure the child's stdout
+  // and stderr is redirected
+  if (fromChildPipe[1] != -1) {
+    ::close(STDOUT_FILENO);
+    ::dup(fromChildPipe[1]);
+    ::close(STDERR_FILENO);
+    if (!stderrSeparate)
+      ::dup(fromChildPipe[1]);
     ::close(fromChildPipe[1]);
- 
-  if (stderrChildPipe[1] != -1)
-    ::close(stderrChildPipe[1]);
- 
-  if (args != NULL)
-    delete args;
+    ::close(fromChildPipe[0]); 
+  } else {
+    int fd = ::open("/dev/null", O_WRONLY);
+    PAssertOS(fd >= 0);
+    ::close(STDOUT_FILENO);
+    ::dup(fd);
+    ::close(STDERR_FILENO);
+    if (!stderrSeparate)
+      ::dup(fd);
+    ::close(fd);
+  }
 
-  os_handle = 0;
+  if (stderrSeparate) {
+    ::dup(stderrChildPipe[1]);
+    ::close(stderrChildPipe[1]);
+    ::close(stderrChildPipe[0]); 
+  }
+
+  // set the SIGINT and SIGQUIT to ignore so the child process doesn't
+  // inherit them from the parent
+  signal(SIGINT,  SIG_IGN);
+  signal(SIGQUIT, SIG_IGN);
+
+  // and set ourselves as out own process group so we don't get signals
+  // from our parent's terminal (hopefully!)
+  PSETPGRP();
+
+  // setup the arguments, not as we are about to execl or exit, we don't
+  // care about memory leaks, they are not real!
+  char ** args = (char **)calloc(argumentList.GetSize()+2, sizeof(char *));
+  args[0] = strdup(subProgName.GetTitle());
+  PINDEX i;
+  for (i = 0; i < argumentList.GetSize(); i++) 
+    args[i+1] = argumentList[i].GetPointer();
+
+  // Set up new environment if one specified.
+  if (environment != NULL) {
+    environ = (char **)calloc(environment->GetSize()+1, sizeof(char*));
+    for (i = 0; i < environment->GetSize(); i++) {
+      PString str = environment->GetKeyAt(i) + '=' + environment->GetDataAt(i);
+      environ[i] = strdup(str);
+    }
+  }
+
+  // execute the child as required
+  if (searchPath)
+    execvp(subProgram, args);
+  else
+    execv(subProgram, args);
+
+  exit(2);
+  return FALSE;
 }
+
 
 BOOL PPipeChannel::Close()
 {
