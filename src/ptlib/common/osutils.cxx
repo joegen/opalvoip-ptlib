@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.23 1994/12/12 10:09:24 robertj Exp $
+ * $Id: osutils.cxx,v 1.24 1995/01/09 12:31:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.23  1994/12/12 10:09:24  robertj
+ * Revision 1.24  1995/01/09 12:31:51  robertj
+ * Removed unnecesary return value from I/O functions.
+ *
+ * Revision 1.23  1994/12/12  10:09:24  robertj
  * Fixed flotain point configuration variable format.
  *
  * Revision 1.22  1994/11/28  12:38:23  robertj
@@ -111,15 +114,15 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 }
 
 
-ostream & PTimeInterval::PrintOn(ostream & strm) const
+void PTimeInterval::PrintOn(ostream & strm) const
 {
-  return strm << milliseconds;
+  strm << milliseconds;
 }
 
 
-istream & PTimeInterval::ReadFrom(istream &strm)
+void PTimeInterval::ReadFrom(istream &strm)
 {
-  return strm >> milliseconds;
+  strm >> milliseconds;
 }
 
 
@@ -166,9 +169,8 @@ PTime::PTime(int second, int minute, int hour, int day, int month, int year)
 }
 
 
-istream & PTime::ReadFrom(istream &strm)
+void PTime::ReadFrom(istream &strm)
 {
-  return strm;
 }
 
 
