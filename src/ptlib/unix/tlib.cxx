@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.73  2005/02/22 03:25:43  dereksmithies
+ * Add fix from huangzb@a-star.com.cn to correct a typo. Many thanks.
+ *
  * Revision 1.72  2005/01/26 05:38:05  csoutheren
  * Added ability to remove config file support
  *
@@ -721,7 +724,7 @@ void PProcess::CommonConstruct()
   tzset();
 #endif
 
-#ifdef P_CONFIG_FILES
+#ifdef P_CONFIG_FILE
   CreateConfigFilesDictionary();
 #endif
 }
