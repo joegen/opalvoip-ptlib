@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.80  2003/04/04 05:18:08  robertj
+ * Added "callto", "tel" and fixed "h323" URL types.
+ *
  * Revision 1.79  2002/12/02 00:17:03  robertj
  * Fixed URL parsing/display problems with non-path URL type eg mailto
  *
@@ -334,6 +337,8 @@ struct schemeStruct {
   const char * name;
   BOOL hasUserPassword;
   BOOL hasHostPort;
+  BOOL defaultToUserIfNoAt;
+  BOOL defaultHostToLocal;
   BOOL hasQuery;
   BOOL hasParameters;
   BOOL hasFragments;
@@ -346,24 +351,25 @@ struct schemeStruct {
 #define FILE_SCHEME    1
 
 static schemeStruct const schemeInfo[] = {
-//  scheme       user   host   query  params frags  path   rel    port
-  { "http",      TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
-  { "https",     FALSE, TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
-  { "gopher",    FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
-  { "wais",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
-  { "nntp",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
-  { "prospero",  FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
-  { "rtspu",     FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
-
-  { "ftp",       TRUE,  TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
-  { "telnet",    TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
-  { "mailto",    FALSE, FALSE, TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "news",      FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "h323",      TRUE,  TRUE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
-  { "sip",       TRUE,  TRUE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
-  { NULL,        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
+//  scheme       user   host   @def   defhost query  params frags  path   rel    port
+  { "http",      TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
+  { "https",     FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
+  { "gopher",    FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
+  { "wais",      FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
+  { "nntp",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
+  { "prospero",  FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
+  { "rtspu",     FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
+  { "ftp",       TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
+  { "telnet",    TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
+  { "mailto",    FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "news",      FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "h323",      TRUE,  TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
+  { "sip",       TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
+  { "tel",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { "fax",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { NULL,        FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
 static const schemeStruct & GetSchemeInfo(const PCaselessString & scheme)
@@ -387,15 +393,15 @@ PURL::PURL()
 }
 
 
-PURL::PURL(const char * str)
+PURL::PURL(const char * str, const char * defaultScheme)
 {
-  Parse(str);
+  Parse(str, defaultScheme);
 }
 
 
-PURL::PURL(const PString & str)
+PURL::PURL(const PString & str, const char * defaultScheme)
 {
-  Parse(str);
+  Parse(str, defaultScheme);
 }
 
 
@@ -537,7 +543,7 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 }
 
 
-void PURL::Parse(const char * cstr)
+void PURL::Parse(const char * cstr, const char * defaultScheme)
 {
   hostname = PCaselessString();
   pathStr = username = password = fragment = PString::Empty();
@@ -558,8 +564,7 @@ void PURL::Parse(const char * cstr)
   // determine if the URL has a scheme
   scheme = PString::Empty();
   if (isalpha(url[0])) {
-    for (pos = 0; url[pos] != '\0' &&
-                          reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
+    for (pos = 0; url[pos] != '\0' && reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
       if (url[pos] == ':') {
         scheme = url.Left(pos);
         url.Delete(0, pos+1);
@@ -570,8 +575,70 @@ void PURL::Parse(const char * cstr)
 
   // if there is no scheme, then default to http for the local
   // on the default port
-  if (scheme.IsEmpty())
-    scheme = schemeInfo[DEFAULT_SCHEME].name;
+  if (scheme.IsEmpty()) {
+    if (defaultScheme != NULL)
+      scheme = defaultScheme;
+    else
+      scheme = schemeInfo[DEFAULT_SCHEME].name;
+  }
+
+  // Super special case!
+  if (scheme == "callto") {
+
+    // For some bizarre reason callto uses + instead of ; for paramters
+    // We do a loop so that phone numbers of the form +61243654666 still work
+    do {
+      pos = url.Find('+');
+    } while (pos != P_MAX_INDEX && isdigit(url[pos+1]));
+
+    if (pos != P_MAX_INDEX) {
+      SplitVars(url(pos+1, P_MAX_INDEX), paramVars, '+', '=');
+      url.Delete(pos, P_MAX_INDEX);
+    }
+
+    hostname = paramVars("gateway");
+    if (!hostname)
+      username = UntranslateString(url, LoginTranslation);
+    else {
+      PCaselessString type = paramVars("type");
+      if (type == "directory") {
+        pos = url.Find('/');
+        if (pos == P_MAX_INDEX)
+          username = UntranslateString(url, LoginTranslation);
+        else {
+          hostname = UntranslateString(url.Left(pos), LoginTranslation);
+          username = UntranslateString(url.Mid(pos+1), LoginTranslation);
+        }
+      }
+      else {
+        // Now look for an @ and split user and host
+        pos = url.Find('@');
+        if (pos != P_MAX_INDEX) {
+          username = UntranslateString(url.Left(pos), LoginTranslation);
+          hostname = UntranslateString(url.Mid(pos+1), LoginTranslation);
+        }
+        else {
+          if (type == "ip" || type == "host")
+            hostname = UntranslateString(url, LoginTranslation);
+          else
+            username = UntranslateString(url, LoginTranslation);
+        }
+      }
+    }
+
+    // Allow for [ipv6] form
+    pos = hostname.Find(']');
+    if (pos == P_MAX_INDEX)
+      pos = 0;
+    pos = hostname.Find(':', pos);
+    if (pos != P_MAX_INDEX) {
+      port = (WORD)hostname.Mid(pos+1).AsUnsigned();
+      hostname.Delete(pos, P_MAX_INDEX);
+    }
+
+    password = paramVars("password");
+    return;
+  }
 
   // get information which tells us how to parse URL for this
   // particular scheme
@@ -592,42 +659,61 @@ void PURL::Parse(const char * cstr)
     if (pos != P_MAX_INDEX)
       url.Delete(0, pos);
     else
-      url = PString();
-
-    // if the URL is of type HostOnly, then this is the hostname
-    if (schemeInfo.defaultPort == 0)
-      hostname = UntranslateString(uphp, LoginTranslation);
+      url = PString::Empty();
 
     // if the URL is of type UserPasswordHostPort, then parse it
     if (schemeInfo.hasUserPassword) {
       // extract username and password
       PINDEX pos2 = uphp.Find('@');
-      if (pos2 != P_MAX_INDEX && pos2 > 0) {
-        PINDEX pos3 = uphp.Find(':');
-        // if no password...
-        if (pos3 > pos2)
-          username = UntranslateString(uphp(0, pos2-1), LoginTranslation);
-        else {
-          username = UntranslateString(uphp(0, pos3-1), LoginTranslation);
-          password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
-        }
-        uphp.Delete(0, pos2+1);
+      PINDEX pos3 = uphp.Find(':');
+      switch (pos2) {
+        case 0 :
+          uphp.Delete(0, 1);
+          break;
+
+        case P_MAX_INDEX :
+          if (schemeInfo.defaultToUserIfNoAt) {
+            if (pos3 == P_MAX_INDEX)
+              username = UntranslateString(uphp, LoginTranslation);
+            else {
+              username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+              password = UntranslateString(uphp.Mid(pos3+1), LoginTranslation);
+            }
+            uphp = PString::Empty();
+          }
+          break;
+
+        default :
+          if (pos3 > pos2)
+            username = UntranslateString(uphp.Left(pos2), LoginTranslation);
+          else {
+            username = UntranslateString(uphp.Left(pos3), LoginTranslation);
+            password = UntranslateString(uphp(pos3+1, pos2-1), LoginTranslation);
+          }
+          uphp.Delete(0, pos2+1);
       }
     }
 
-    // determine if the URL has a port number
-    if (schemeInfo.defaultPort != 0) {
-      pos = uphp.Find(':');
+    // if the URL does not have a port, then this is the hostname
+    if (schemeInfo.defaultPort == 0)
+      hostname = UntranslateString(uphp, LoginTranslation);
+    else {
+      // determine if the URL has a port number
+      // Allow for [ipv6] form
+      pos = uphp.Find(']');
+      if (pos == P_MAX_INDEX)
+        pos = 0;
+      pos = uphp.Find(':', pos);
       if (pos == P_MAX_INDEX) {
         hostname = UntranslateString(uphp, LoginTranslation);
         port = schemeInfo.defaultPort;
       }
       else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
-        port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
+        port = (WORD)uphp.Mid(pos+1).AsUnsigned();
       }
 
-      if (hostname.IsEmpty())
+      if (hostname.IsEmpty() && schemeInfo.defaultHostToLocal)
         hostname = PIPSocket::GetHostName();
     }
   }
@@ -635,7 +721,7 @@ void PURL::Parse(const char * cstr)
   if (schemeInfo.hasQuery) {
     // chop off any trailing query
     pos = url.Find('?');
-    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+    if (pos != P_MAX_INDEX) {
       SplitQueryVars(url(pos+1, P_MAX_INDEX), queryVars);
       url.Delete(pos, P_MAX_INDEX);
     }
@@ -644,7 +730,7 @@ void PURL::Parse(const char * cstr)
   if (schemeInfo.hasParameters) {
     // chop off any trailing parameters
     pos = url.Find(';');
-    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+    if (pos != P_MAX_INDEX) {
       SplitVars(url(pos+1, P_MAX_INDEX), paramVars, ';', '=');
       url.Delete(pos, P_MAX_INDEX);
     }
@@ -653,7 +739,7 @@ void PURL::Parse(const char * cstr)
   if (schemeInfo.hasFragments) {
     // chop off any trailing fragment
     pos = url.Find('#');
-    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+    if (pos != P_MAX_INDEX) {
       fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
       url.Delete(pos, P_MAX_INDEX);
     }
