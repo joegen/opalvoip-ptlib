@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.6  1999/07/06 08:55:05  robertj
+ * Fixed bug in PFile::Copy, does not write last chunk of data to new file.
+ *
  * Revision 1.5  1999/06/17 14:44:42  robertj
  * Fixed incorrect comparison of open write channel
  *
@@ -852,7 +855,7 @@ BOOL PFile::Copy(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 
   if (!oldfile.Read(buffer.GetPointer(), (int)amount))
     return FALSE;
-  if (!oldfile.Write((const char *)buffer, (int)amount))
+  if (!newfile.Write((const char *)buffer, (int)amount))
     return FALSE;
 
   return newfile.Close();
