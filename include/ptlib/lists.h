@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.28  2004/04/04 07:39:57  csoutheren
+ * Fixed cut-and-paste typo in VS.net 2003 changes that made all PLists sorted. Yikes!
+ *
  * Revision 1.27  2004/04/03 23:53:09  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -469,13 +472,13 @@ template <class T> class PList : public PAbstractList
  */
 #define PDECLARE_LIST(cls, T) \
   PLIST(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, PSortedList<T>) \
+  PDECLARE_CLASS(cls, PList<T>) \
   protected: \
     cls(int dummy, const cls * c) \
-      : PSortedList<T>(dummy, c) { } \
+      : PList<T>(dummy, c) { } \
   public: \
     cls() \
-      : PSortedList<T>() { } \
+      : PList<T>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
