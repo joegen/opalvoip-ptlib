@@ -8,6 +8,10 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.8  2002/02/13 02:08:12  robertj
+ * Added const to IsAllowed() function.
+ * Added missing function that takes a socket.
+ *
  * Revision 1.7  1999/02/25 13:01:11  robertj
  * Fixed subtle bug in GNU compiler not automatically casting IP address.
  *
@@ -512,7 +516,17 @@ BOOL PIpAccessControlList::InternalRemoveEntry(PIpAccessControlEntry & entry)
 }
 
 
-BOOL PIpAccessControlList::IsAllowed(PIPSocket::Address address)
+BOOL PIpAccessControlList::IsAllowed(PTCPSocket & socket) const
+{
+  PIPSocket::Address address;
+  if (socket.GetPeerAddress(address))
+    return IsAllowed(address);
+
+  return FALSE;
+}
+
+
+BOOL PIpAccessControlList::IsAllowed(PIPSocket::Address address) const
 {
   PINDEX size = GetSize();
   if (size == 0)
