@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.15 1995/04/25 11:33:35 robertj Exp $
+ * $Id: ptlib.cxx,v 1.16 1995/06/04 12:48:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.16  1995/06/04 12:48:06  robertj
+ * Changed unknown error string to hex.
+ * Added missing GetInfo function for directory entries
+ *
  * Revision 1.15  1995/04/25 11:33:35  robertj
  * Changes for DLL support.
  *
@@ -131,7 +135,7 @@ PString PChannel::GetErrorText() const
       return _sys_errlist[osError];
   }
 
-  return psprintf("OS error %d", osError);
+  return psprintf("OS error 0x%04x", osError);
 }
 
 
@@ -237,6 +241,12 @@ BOOL PDirectory::Filtered()
 BOOL PDirectory::IsRoot() const
 {
   return GetLength() == 3;
+}
+
+
+BOOL PDirectory::GetInfo(PFileInfo & info) const
+{
+  return PFile::GetInfo(*this + GetEntryName(), info);
 }
 
 
