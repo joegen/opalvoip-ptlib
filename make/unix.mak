@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.98  2001/08/02 03:23:36  robertj
+# Fixed exporting of new CPUTYPE variable so works in nested builds
+#
 # Revision 1.97  2001/08/02 03:02:27  robertj
 # Allowed the actual CPU type to be passed to the code generator instead of
 #   always using -m486. Use the CPUTYPE variable to override.
@@ -356,23 +359,17 @@ endif
 
 ifneq (,$(findstring i486, $(MACHTYPE)))
 MACHTYPE := x86
-ifndef CPUTYPE
-CPUTYPE := i486
-endif
+POSSIBLE_CPUTYPE := i486
 endif
 
 ifneq (,$(findstring i586, $(MACHTYPE)))
 MACHTYPE := x86
-ifndef CPUTYPE
-CPUTYPE := i586
-endif
+POSSIBLE_CPUTYPE := i586
 endif
 
 ifneq (,$(findstring i686, $(MACHTYPE)))
 MACHTYPE := x86
-ifndef CPUTYPE
-CPUTYPE := i686
-endif
+POSSIBLE_CPUTYPE := i686
 endif
 
 ifneq (,$(findstring x86, $(MACHTYPE)))
@@ -382,6 +379,13 @@ endif
 ifneq (,$(findstring powerpc, $(MACHTYPE)))
 MACHTYPE := ppc
 endif
+
+
+ifndef CPUTYPE
+CPUTYPE := $(POSSIBLE_CPUTYPE)
+export CPUTYPE
+endif
+
 
 
 STANDARD_TARGETS=\
