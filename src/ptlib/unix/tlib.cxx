@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.55  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.54  2001/03/29 03:24:31  robertj
  * Removed capture of SIGQUIT so can still dro a core on demand.
  *
@@ -202,7 +205,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX) || defined(__BEOS__)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
@@ -234,7 +237,7 @@ PString PProcess::GetOSClass()
 #ifndef __BEOS__
   return PString("Unix");
 #else
-  return PString("<Be,Inc.'s");
+  return PString("Be Inc.");
 #endif
 }
 
@@ -248,8 +251,6 @@ PString PProcess::GetOSName()
 #else
   return PString(info.sysname);
 #endif
-#elif defined(__BEOS__)
-  return PString("BeOS>");
 #else
 #warning No GetOSName specified
   return PString("Unknown");
@@ -262,8 +263,6 @@ PString PProcess::GetOSHardware()
   struct utsname info;
   uname(&info);
   return PString(info.machine);
-#elif defined(__BEOS__)
-  return PString( getenv ("HOSTTYPE") );
 #else
 #warning No GetOSHardware specified
   return PString("unknown");
@@ -280,8 +279,6 @@ PString PProcess::GetOSVersion()
 #else
   return PString(info.release);
 #endif
-#elif defined(__BEOS__)
-  return PString("R5");
 #else
 #warning No GetOSVersion specified
   return PString("?.?");

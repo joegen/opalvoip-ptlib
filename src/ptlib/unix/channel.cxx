@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.29  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.28  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -255,10 +258,10 @@ BOOL PChannel::PXClose()
   PX_iostreamMutex.Signal();
 
 #if !defined(P_PTHREADS) && !defined(BE_THREADS)
-#ifndef __BEOS__
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 
+#ifndef BE_BONELESS
   DWORD cmd = 0;
   ::ioctl(handle, FIONBIO, &cmd);
 #endif
@@ -269,8 +272,10 @@ BOOL PChannel::PXClose()
     stat = ::close(handle);
   } while (stat == -1 && errno == EINTR);
 
+#ifndef __BEOS__
   if (px_blockedThread != NULL)
     px_blockedThread->PXAbortIO();
+#endif
 
   return stat;
 }
