@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.3 1996/09/14 13:09:31 robertj Exp $
+ * $Id: httpform.cxx,v 1.4 1996/10/08 13:10:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.4  1996/10/08 13:10:34  robertj
+ * Fixed bug in boolean (checkbox) html forms, cannot be reset.
+ *
  * Revision 1.3  1996/09/14 13:09:31  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -663,16 +666,13 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   PConfig cfg(request.url.GetQueryVars()("section", section));
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name)) {
-      if (&field == keyField) {
-        PString key = field.GetValue();
-        if (!key)
-          cfg.SetString(key, valField->GetValue());
-      }
-      else if (&field != valField && &field != sectionField)
-        cfg.SetString(name, field.GetValue());
+    if (&field == keyField) {
+      PString key = field.GetValue();
+      if (!key)
+        cfg.SetString(key, valField->GetValue());
     }
+    else if (&field != valField && &field != sectionField)
+      cfg.SetString(field.GetName(), field.GetValue());
   }
   return TRUE;
 }
