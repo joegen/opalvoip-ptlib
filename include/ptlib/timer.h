@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.19  2000/08/30 03:16:59  robertj
+ * Improved multithreaded reliability of the timers under stress.
+ *
  * Revision 1.18  2000/01/06 14:09:42  robertj
  * Fixed problems with starting up timers,losing up to 10 seconds
  *
@@ -253,24 +256,23 @@ class PTimer : public PTimeInterval
   //@}
 
   private:
-    void StartRunning(
-      BOOL once   // Flag for one shot or continuous.
-    );
+    void Construct();
+
     /* Start or restart the timer from the #resetTime# variable.
        This is an internal function.
      */
-
-    BOOL Process(
-      const PTimeInterval & delta,    // Time interval since last call.
-      PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
+    void StartRunning(
+      BOOL once   // Flag for one shot or continuous.
     );
+
     /* Process the timer decrementing it by the delta amount and calling the
        #OnTimeout()# when zero. This is used internally by the
        #PTimerList::Process()# function.
-
-       @return
-       TRUE if is no longer running.
      */
+    void Process(
+      const PTimeInterval & delta,    // Time interval since last call.
+      PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
+    );
 
   // Member variables
     PNotifier callback;
@@ -285,13 +287,10 @@ class PTimer : public PTimeInterval
     enum { Stopped, Starting, Running, Paused } state;
     // Timer state.
 
-    PThread * timeoutThread;
-    /* Timer is currently executing its OnTimeout() function. This is to
-       prevent recursive calls when timer is in free running mode.
-     */
-
 
   friend class PTimerList;
+    PTimerList * timerList;
+
   
 #ifdef DOC_PLUS_PLUS
 };
