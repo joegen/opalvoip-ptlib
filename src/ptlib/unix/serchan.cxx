@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.28  2004/02/22 04:06:47  ykiryanov
+ * ifdef'd all functions because BeOS don't support it
+ *
  * Revision 1.27  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -150,7 +153,7 @@ void PSerialChannel::Construct()
   parityBits = NoParity;
   stopBits   = 1;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
 #else
 
@@ -177,7 +180,7 @@ void PSerialChannel::Construct()
 
 BOOL PSerialChannel::Close()
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
 #else
   if (os_handle >= 0) {
@@ -222,7 +225,7 @@ BOOL PSerialChannel::Open(const PString & port,
   // save the port name
   channelName = port;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -305,7 +308,7 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
   if (os_handle < 0)
     return TRUE;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -441,7 +444,7 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
   if (data == dataBits)
     return TRUE;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -499,7 +502,7 @@ BOOL PSerialChannel::SetParity(Parity parity)
   if (parity == parityBits)
     return TRUE;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -547,7 +550,7 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
   if (stop == stopBits)
     return TRUE;
 
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -629,7 +632,7 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 
 void PSerialChannel::SetDTR(BOOL mode)
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
 #else
 
@@ -655,7 +658,7 @@ void PSerialChannel::SetDTR(BOOL mode)
 
 void PSerialChannel::SetRTS(BOOL mode)
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
 #else
 
@@ -672,7 +675,7 @@ void PSerialChannel::SetRTS(BOOL mode)
 
 void PSerialChannel::SetBreak(BOOL mode)
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
 #else
 
@@ -687,7 +690,7 @@ void PSerialChannel::SetBreak(BOOL mode)
 
 BOOL PSerialChannel::GetCTS()
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -702,7 +705,7 @@ BOOL PSerialChannel::GetCTS()
 
 BOOL PSerialChannel::GetDSR()
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -718,7 +721,7 @@ BOOL PSerialChannel::GetDSR()
 
 BOOL PSerialChannel::GetDCD()
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
@@ -734,7 +737,7 @@ BOOL PSerialChannel::GetDCD()
 
 BOOL PSerialChannel::GetRing()
 {
-#ifdef P_VXWORKS
+#if defined(P_VXWORKS) || defined (__BEOS__)
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 #else
