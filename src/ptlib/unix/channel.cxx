@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.14 1997/02/14 09:18:36 craigs Exp $
+ * $Id: channel.cxx,v 1.15 1998/01/03 22:35:04 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.15  1998/01/03 22:35:04  craigs
+ * Added PThread support
+ *
  * Revision 1.14  1997/02/14 09:18:36  craigs
  * Changed for PProcess::Current being a reference rather that a ptr
  *
@@ -56,6 +59,8 @@
 #include <ptlib.h>
 #include <sys/ioctl.h>
 
+PSemaphore PX_iostreamMutex;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // PChannel::PXSetIOBlock
@@ -65,12 +70,12 @@
 //   can be used to determine which error occurred
 //
 
-BOOL PChannel::PXSetIOBlock (int type, PTimeInterval timeout)
+BOOL PChannel::PXSetIOBlock (int type, const PTimeInterval & timeout)
 {
   return PXSetIOBlock(type, os_handle, timeout);
 }
 
-BOOL PChannel::PXSetIOBlock (int type, int blockHandle, PTimeInterval timeout)
+BOOL PChannel::PXSetIOBlock (int type, int blockHandle, const PTimeInterval & timeout)
 {
   if (blockHandle < 0) {
     lastError = NotOpen;
@@ -81,7 +86,7 @@ BOOL PChannel::PXSetIOBlock (int type, int blockHandle, PTimeInterval timeout)
 
   // if select returned < 0, then covert errno into lastError and return FALSE
   if (stat < 0)
-    return ConvertOSError(-1);
+    return ConvertOSError(stat);
 
   // if the select succeeded, then return TRUE
   if (stat > 0) 
@@ -113,7 +118,6 @@ BOOL PChannel::Read(void * buf, PINDEX len)
 
 BOOL PChannel::Write(const void * buf, PINDEX len)
 {
-
   // if the os_handle isn't open, no can do
   if (os_handle < 0) {
     lastError = NotOpen;
@@ -121,7 +125,9 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
   }
 
   // flush the buffer before doing a write
+  PX_iostreamMutex.Wait();
   flush();
+  PX_iostreamMutex.Signal();
 
   lastWriteCount = 0;
   
@@ -150,17 +156,29 @@ BOOL PChannel::Close()
     return FALSE;
   }
 
-  // flush the buffer before doing a close
+  // make sure we don't have any problems
+  PX_iostreamMutex.Wait();
+  int handle = os_handle;
+  os_handle = -1;
   flush();
+  PX_iostreamMutex.Signal();
 
+#ifndef P_PTHREADS
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(os_handle);
 
-  int handle = os_handle;
-  os_handle = -1;
   DWORD cmd = 0;
-  ::ioctl(handle, FIONBIO, &cmd);
-  return ConvertOSError(::close(handle));
+  ::ioctl(os_handle, FIONBIO, &cmd);
+#endif
+
+  int stat;
+  while (1) {
+    stat = ::close(handle);
+    if (stat != EINTR)
+      break;
+  }
+
+  return ConvertOSError(stat);
 }
 
 PString PChannel::GetErrorText(Errors, int osError = 0)
