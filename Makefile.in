@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.22  2004/04/29 15:01:43  csoutheren
+# Fixed INSTALL var
+#
 # Revision 1.21  2004/04/29 14:07:06  csoutheren
 # Changed install target to use $(INSTALL)
 # Various makefile cleanups and verified install and uninstall targets
@@ -186,6 +189,8 @@ exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
 export PWLIBDIR=@PWLIBDIR@
 
+INSTALL=@INSTALL@
+
 default :: optshared
 
 all :: 
@@ -218,7 +223,13 @@ docs:
 	doc++ --dir html --tables pwlib.dxx
 
 install:
-	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)/
+	( for dir in $(DESTDIR)$(LIBDIR) \
+		     $(DESTDIR)$(PREFIX)/include/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
+                     $(DESTDIR)$(PREFIX)/include/ptclib \
+                     $(DESTDIR)$(PREFIX)/share/pwlib/make \
+          ; do mkdir -p $$dir ; chmod 555 $$dir ; done )
+	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
 	rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
 	ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ \
@@ -241,11 +252,6 @@ install:
 ifeq (1, $(HAS_PLUGINS))
 	$(INSTALL) -m 444 plugins/pwlib/*.so             $(DESTDIR)$(LIBDIR)
 endif
-	( for dir in $(DESTDIR)$(PREFIX)/include/ptlib \
-                     $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
-                     $(DESTDIR)$(PREFIX)/include/ptclib \
-                     $(DESTDIR)$(PREFIX)/share/pwlib/make \
-          ; do mkdir -p $$dir ; chmod 555 $$dir ; done )
 	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
 	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
 	$(INSTALL) -m 444 include/ptlib/*.h              $(DESTDIR)$(PREFIX)/include/ptlib
