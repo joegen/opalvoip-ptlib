@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.8  2005/02/13 23:04:18  csoutheren
+ * Put isrfc1918 option handling before first test (doh!)
+ *
  * Revision 1.7  2005/02/13 22:33:09  csoutheren
  * Added ability to test an IP address for RFC1918
  *
@@ -100,15 +103,6 @@ void IPV6Test::Main()
 #if ! P_HAS_IPV6
   cout << "error: IPV6 not included in PWLib" << endl;
 #else
-  {
-    // test #1 - check PIPSocket::IsIpAddressFamilyV6Supported
-    cout << "test #1: PIPSocket::IsIpAddressFamilyV6Supported ";
-    if (PIPSocket::IsIpAddressFamilyV6Supported())
-        cout << "OK";
-    else
-        cout << "failed";
-    cout << endl;
-  }
 
   if (args.HasOption("isrfc1918")) {
     if (args.GetCount() == 0) 
@@ -118,6 +112,16 @@ void IPV6Test::Main()
       cout << addr << " is " << (addr.IsRFC1918() ? "" : "not ") << "an RFC1918 address" << endl;
     }
     return;
+  }
+
+  {
+    // test #1 - check PIPSocket::IsIpAddressFamilyV6Supported
+    cout << "test #1: PIPSocket::IsIpAddressFamilyV6Supported ";
+    if (PIPSocket::IsIpAddressFamilyV6Supported())
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
   }
 
 
