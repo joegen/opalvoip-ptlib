@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.20  2001/11/28 04:45:14  robertj
+ * Added Win32 flipped RGB colour formats.
+ *
  * Revision 1.19  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -170,24 +173,32 @@ int PVideoDevice::GetChannel() const
 }
 
 
-  ///Colour format bit per pixel table.
+//Colour format bit per pixel table.
+// These are in rough order of colour gamut size
 static struct {
   const char * colourFormat;
   unsigned     bitsPerPixel;
 } colourFormatBPPTab[] = {
-  { "RGB24",   24 },  // These are in rough order of colour gamut size
+  { "RGB24",   24 },
+  { "RGB24F",  24 },
   { "RGB32",   32 },
+  { "RGB32F",  32 },
   { "YUV422",  16 },
   { "YUV422P", 16 },
   { "YUV411",  12 },
   { "YUV411P", 12 },
   { "RGB565",  16 },
+  { "RGB565F", 16 },
   { "RGB555",  16 },
+  { "RGB555F", 16 },
   { "YUV420",  12 },
   { "YUV420P", 12 },
+  { "IYUV",    12 },
+  { "I420",    12 },
   { "YUV410",  10 },
   { "YUV410P", 10 },
-  { "Grey",     8 }
+  { "Grey",     8 },
+  { "GreyF",    8 }
 };
 
 
