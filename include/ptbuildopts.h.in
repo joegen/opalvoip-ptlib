@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.34  2004/06/01 07:42:19  csoutheren
+ * Restored memory allocation checking
+ * Added configure flag to enable, thanks to Derek Smithies
+ *
  * Revision 1.33  2004/04/28 11:26:42  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -463,6 +467,7 @@
 #undef  P_HAS_ATOMIC_INT
 #undef  P_HAS_RECURSIVE_MUTEX
 #undef  P_NEEDS_GNU_CXX_NAMESPACE
+#undef  PMEMORY_CHECK
 
 #endif // _PT_BUILDOPTS_H
 
