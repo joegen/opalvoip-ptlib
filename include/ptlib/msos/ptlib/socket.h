@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.7 1995/12/10 11:49:43 robertj Exp $
+ * $Id: socket.h,v 1.8 1996/03/31 09:11:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.8  1996/03/31 09:11:40  robertj
+ * Fixed major performance problem in timeout read/write to sockets.
+ *
  * Revision 1.7  1995/12/10 11:49:43  robertj
  * Numerous fixes for sockets.
  *
@@ -57,7 +60,6 @@
 
   protected:
     BOOL ConvertOSError(int error);
-    BOOL _WaitForData(BOOL reading);
 
   private:
 #ifdef P_HAS_BERKELEY_SOCKETS
