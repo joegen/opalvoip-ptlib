@@ -1,3 +1,5 @@
+%expect 14
+
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
@@ -125,6 +127,8 @@ static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 
 
 %}
+
+%pure_parser
 
 %union {
     time_t		Number;
