@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.37.2.1  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
  * Revision 1.37  2004/03/23 04:48:42  csoutheren
  * Improved ability to start VXML scripts as needed
  *
@@ -1695,7 +1698,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         {
           PWaitAndSignal m(queueMutex);
           PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-          PAssertNULL(qItem);
+          //PAssertNULL(qItem);
 
           // get the delay time BEFORE deleting the info
           delay = qItem->delay;

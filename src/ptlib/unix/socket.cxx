@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.100.2.2  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
+ * Revision 1.103  2004/04/24 06:28:12  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.100.2.1  2004/07/04 02:02:44  csoutheren
  * Jumbo update patch for Janus to back-port several important changes
  * from the development tree. See ChangeLog.txt for details
@@ -343,8 +350,8 @@ void P_fd_set::Construct()
 
 void P_fd_set::Zero()
 {
-  PAssertNULL(set);
-  memset(set, 0, (max_fd+7)>>3);
+  if (PAssertNULL(set) != NULL)
+    memset(set, 0, (max_fd+7)>>3);
 }
 
 

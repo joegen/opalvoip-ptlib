@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.211.2.1  2004/08/07 12:04:45  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
+ * Revision 1.215  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.211  2004/03/22 10:15:27  rjongbloed
  * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
  *   when goes out of scope.
@@ -1400,7 +1407,8 @@ void PArgList::SetArgs(const PStringArray & theArgs)
 
 BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
-  PAssertNULL(spec);
+  if (PAssertNULL(spec) == NULL)
+    return FALSE;
 
   // Find starting point, start at shift if first Parse() call.
   PINDEX arg = optionLetters.IsEmpty() ? shift : 0;
