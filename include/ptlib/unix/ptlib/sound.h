@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.3  1998/11/30 22:07:13  robertj
+ * New directory structure.
+ *
  * Revision 1.2  1998/09/24 04:11:57  robertj
  * Added open software license.
  *
@@ -39,7 +42,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
 
-#include "../../common/ptlib/sound.h"
+#include "../../sound.h"
 };
 
 
