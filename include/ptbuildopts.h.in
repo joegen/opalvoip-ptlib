@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.29  2004/04/11 06:15:27  csoutheren
+ * Modified to use Atomic_word if available
+ *
  * Revision 1.28  2004/04/09 11:54:46  csoutheren
  * Added configure.in check for STL streams, and tested with gcc 2.95.3,
  * gcc 3.3.1, and gcc 3.3.3
@@ -423,6 +426,7 @@
 #undef	PNO_LONG_DOUBLE
 #undef	P_HAS_POSIX_READDIR_R
 #undef  P_HAS_STL_STREAMS
+#undef  P_HAS_ATOMIC_INT
 
 #endif // _PT_BUILDOPTS_H
 
