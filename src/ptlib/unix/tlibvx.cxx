@@ -184,8 +184,6 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-
   struct TASK_DESC info;
   STATUS result = ::taskInfoGet(PX_threadId, &info);
 
