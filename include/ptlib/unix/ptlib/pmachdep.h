@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.26  1999/03/02 05:41:58  robertj
+ * More BeOS changes
+ *
  * Revision 1.25  1999/02/26 04:10:39  robertj
  * More BeOS port changes
  *
@@ -234,6 +237,7 @@ struct servent * getservbyname(const char *, const char *);
 #include <errno.h>
 #include <termios.h>
 #include <sys/socket.h>
+#include <OS.h>
 
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
