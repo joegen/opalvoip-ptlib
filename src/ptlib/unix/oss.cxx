@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.53  2002/12/03 19:11:58  rogerh
+ * Open sound device in non blocking mode incase it is already open.
+ *
  * Revision 1.52  2002/11/28 12:15:24  rogerh
  * Change SetVolume/GetVolume to use the mic and not the igain for the input
  * volume.
@@ -558,12 +561,13 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
         ::close(fd);
       }
       else {
+
         // mixer failed but this could still be a valid dsp...
         // warning this is just a hack to make this work on strange mixer and dsp configurations
         // on my machine the first sound card registers 1 mixer and 2 dsp, so when my webcam
         // registers itself as dsp2 this test would fail...
-        int fd = ::open(dsp[cardnum], O_RDONLY);
-        if (fd >= 0) {
+        int fd = ::open(dsp[cardnum], O_RDONLY | O_NONBLOCK);
+        if (fd >= 0 || errno == EBUSY) {
           devices.AppendString(dsp[cardnum]);
           ::close(fd);
         }
@@ -572,8 +576,9 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
     else {
       // No mixer available, try and open it directly, this could fail if
       // the device happens to be open already
-      int fd = ::open(dsp[cardnum], O_RDONLY);
-      if (fd >= 0) {
+      int fd = ::open(dsp[cardnum], O_RDONLY | O_NONBLOCK);
+
+      if (fd >= 0 || errno == EBUSY) {
         devices.AppendString(dsp[cardnum]);
         ::close(fd);
       }
