@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.18  2001/04/17 06:30:37  robertj
+# Altered so can use tagbuild target in root directory.
+#
 # Revision 1.17  2001/03/20 03:33:18  robertj
 # Major improvement to multiple targets over subdirectories, thanks Jac Goudsmit
 #
@@ -80,11 +83,17 @@
 #
 #
 
+
+all : opt optnoshared bothdepend debug
+
+
 ifeq ($(OSTYPE),Nucleus)
 TARGETDIR=Nucleus++
 else
 TARGETDIR=unix
 endif
+
+include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
 ifneq ($(OSTYPE),Nucleus)
@@ -97,19 +106,13 @@ ifdef GUI_TYPE
 SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
 
-all : opt optnoshared bothdepend both
-
 
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   : P_SHAREDLIB=1
 optnoshared debugnoshared bothnoshared : P_SHAREDLIB=0
 
 # all these targets are just passed to all subdirectories
-opt         debug         both \
-optdepend   debugdepend   bothdepend \
-optshared   debugshared   bothshared \
-optnoshared debugnoshared bothnoshared \
-optclean    debugclean    clean :
+$(subst tagbuild,,$(STANDARD_TARGETS)) ::
 	set -e; $(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) $@;)
 
 ptlib:
