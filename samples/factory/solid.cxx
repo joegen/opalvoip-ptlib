@@ -9,7 +9,7 @@ class MySolidClass : public MyAbstractClass
     { return "Solid"; }
 };
 
-PAbstractFactory<MyAbstractClass, MySolidClass> solidFactory("solid");
+PFactory<MyAbstractClass>::Worker<MySolidClass> solidFactory("solid", true);
 
 class MySolid2Class : public MyAbstractClass
 {
@@ -18,4 +18,4 @@ class MySolid2Class : public MyAbstractClass
     { return "Solid2"; }
 };
 
-PAbstractSingletonFactory<MyAbstractClass, MySolid2Class> solid2Factory("solid2");
+PFactory<MyAbstractClass>::Worker<MySolid2Class> solid2Factory("solid2", true);
