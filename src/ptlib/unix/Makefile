@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.92  2002/06/27 05:39:34  craigs
+# Added vxml.cxx
+#
 # Revision 1.91  2002/06/27 03:53:01  robertj
 # Added PMemoryFile class.
 #
@@ -424,7 +427,8 @@ endif
 
 ifdef HAS_EXPAT
 PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
-		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx
+		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
+		  $(COMPONENT_SRC_DIR)/vxml.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
