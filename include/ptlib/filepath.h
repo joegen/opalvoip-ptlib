@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.13  1998/11/30 08:57:16  robertj
+ * Fixed problem where if += is used on PFilePath, it no longer may be normalised.
+ *
  * Revision 1.12  1998/09/23 06:20:37  robertj
  * Added open source copyright license.
  *
@@ -139,6 +142,40 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
        The partial file specification is translated into a canonical form
        which always absolutely references the file.
      */
+
+    PFilePath & operator+=(
+      const PString & str   // String to concatenate.
+    );
+    /* Concatenate a string to another string, modifiying that string.
+
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
+     */
+
+    PFilePath & operator+=(
+      const char * cstr  // C string to concatenate.
+    );
+    /* Concatenate a C string to a PString, modifiying that string. The
+       <CODE>cstr</CODE> parameter is typically a literal string, eg:
+
+       <CODE>        myStr += "fred";</CODE>
+
+       <H2>Returns:</H2>
+       reference to string that was concatenated to.
+     */
+
+    PFilePath & operator+=(
+      char ch   // Character to concatenate.
+    );
+    /* Concatenate a single character to a PString. The <CODE>ch</CODE>
+       parameter is typically a literal, eg:
+
+       <CODE>        myStr += '!';</CODE>
+
+       <H2>Returns:</H2>
+       new string with concatenation of the object and parameter.
+     */
+
 
 
   // New member functions
