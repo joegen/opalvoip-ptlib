@@ -170,4 +170,36 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
 }
 
 
+PStringArray PRemoteConnection::GetAvailableNames()
+{
+  RASENTRYNAME entry;
+  entry.dwSize = sizeof(RASENTRYNAME);
+
+  LPRASENTRYNAME entries = &entry;
+  DWORD size = sizeof(entry);
+  DWORD numEntries;
+
+  DWORD rasError = RasEnumEntries(NULL, NULL, entries, &size, &numEntries);
+
+  if (rasError == ERROR_BUFFER_TOO_SMALL) {
+    entries = new RASENTRYNAME[size/sizeof(RASENTRYNAME)];
+    entries[0].dwSize = sizeof(RASENTRYNAME);
+    rasError = RasEnumEntries(NULL, NULL, entries, &size, &numEntries);
+  }
+
+  PStringArray array;
+  if (rasError == 0) {
+    array.SetSize(numEntries);
+    for (DWORD i = 0; i < numEntries; i++)
+      array[i] = entries[i].szEntryName;
+  }
+
+  if (entries != &entry)
+    delete [] entries;
+
+  return array;
+}
+
+
+
 // End of File ////////////////////////////////////////////////////////////////
