@@ -3037,72 +3037,55 @@ fi
 
 
 if test ${HAS_PTHREADS} = yes ; then
-  echo "$as_me:$LINENO: checking for pthread_mutex_timedlock in -lpthread" >&5
-echo $ECHO_N "checking for pthread_mutex_timedlock in -lpthread... $ECHO_C" >&6
-if test "${ac_cv_lib_pthread_pthread_mutex_timedlock+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lpthread  $LIBS"
-cat >conftest.$ac_ext <<_ACEOF
+  echo "$as_me:$LINENO: checking if pthread_mutex_timedlock is available" >&5
+echo $ECHO_N "checking if pthread_mutex_timedlock is available... $ECHO_C" >&6
+  cat >conftest.$ac_ext <<_ACEOF
 #line $LINENO "configure"
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-
-/* Override any gcc2 internal prototype to avoid an error.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-/* We use char because int might match the return type of a gcc2
-   builtin and then its argument prototype would still apply.  */
-char pthread_mutex_timedlock ();
+#include <pthread.h>
 int
 main ()
 {
-pthread_mutex_timedlock ();
+pthread_mutex_timedlock(NULL, NULL);
   ;
   return 0;
 }
 _ACEOF
-rm -f conftest.$ac_objext conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); } &&
-         { ac_try='test -s conftest$ac_exeext'
+         { ac_try='test -s conftest.$ac_objext'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_lib_pthread_pthread_mutex_timedlock=yes
+  HAS_PTHREADS_XPG6=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-ac_cv_lib_pthread_pthread_mutex_timedlock=no
+HAS_PTHREADS_XPG6=no
 fi
-rm -f conftest.$ac_objext conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-echo "$as_me:$LINENO: result: $ac_cv_lib_pthread_pthread_mutex_timedlock" >&5
-echo "${ECHO_T}$ac_cv_lib_pthread_pthread_mutex_timedlock" >&6
-if test $ac_cv_lib_pthread_pthread_mutex_timedlock = yes; then
-  HAS_PTHREADS_XPG6=yes
-else
-  HAS_PTHREADS_XPG6=no
-fi
-
+rm -f conftest.$ac_objext conftest.$ac_ext
   if test ${HAS_PTHREADS_XPG6} = yes ; then
+    echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
 
 cat >>confdefs.h <<\_ACEOF
 #define P_PTHREADS_XPG6 1
 _ACEOF
 
+  else
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
   fi
 
   echo "$as_me:$LINENO: checking for sem_timedwait in -lpthread" >&5
@@ -5321,7 +5304,9 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "${ECHO_T}yes" >&6
         SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
         P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-        P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+        if test ${OSTYPE} = linux ; then
+                    P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+        fi
       else
         echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
@@ -5370,7 +5355,9 @@ echo "${ECHO_T}yes" >&6
             SSLINCLUDEDIR="${openssl_dir}/include"
             SSLLIBDIR="${openssl_dir}/lib"
             P_STATIC_LDFLAGS="$P_STATIC_LDFLAGS -L/usr/kerberos/lib"
-            P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+            if test ${OSTYPE} = linux ; then
+                            P_STATIC_ENDLDLIBS="-lkrb5 -lk5crypto -lcom_err"
+            fi
             break
           else
             echo "$as_me:$LINENO: result: no" >&5
