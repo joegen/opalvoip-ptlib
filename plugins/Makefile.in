@@ -1,0 +1,34 @@
+all ::
+
+TARGETDIR=@TARGETDIR@
+
+include ../make/ptlib.mak
+
+HAS_ALSA	= @HAS_ALSA@
+
+ifeq (1,$(HAS_ALSA))
+SUBDIRS		+= sound_alsa
+ifeq (,$(DEFAULT_SOUND))
+DEFAULT_SOUND	= sound_alsa
+endif
+endif
+
+HAS_OSS		= @HAS_OSS@
+
+ifeq (1,$(HAS_OSS))
+SUBDIRS += sound_oss
+ifeq (,$(DEFAULT_SOUND))
+DEFAULT_SOUND	= sound_oss
+endif
+endif
+
+
+$(subst tagbuild,,$(STANDARD_TARGETS)) ::
+	set -e; $(foreach dir,$(SUBDIRS),$(MAKE)  -C $(dir) opt;)
+
+default_sound:
+	@echo $(DEFAULT_SOUND)
+
+
+
+
