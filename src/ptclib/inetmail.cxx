@@ -24,6 +24,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.29  2004/05/02 08:58:15  csoutheren
+ * Removed warnings when compling without SASL
+ *
  * Revision 1.28  2004/04/28 11:26:43  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -183,10 +186,11 @@ BOOL PSMTPClient::Close()
 }
 
 
+#if P_SASL2
 BOOL PSMTPClient::LogIn(const PString & username,
                         const PString & password)
 {
-#if P_SASL2
+
   PString localHost;
   PIPSocket * socket = GetSocket();
   if (socket != NULL) {
@@ -267,10 +271,18 @@ BOOL PSMTPClient::LogIn(const PString & username,
   } while (result == PSASLClient::Continue);
   auth.End();
 
-#endif
-
   return TRUE;
 }
+
+#else
+
+BOOL PSMTPClient::LogIn(const PString &,
+                        const PString &)
+{
+  return TRUE;
+}
+
+#endif
 
 
 BOOL PSMTPClient::BeginMessage(const PString & from,
