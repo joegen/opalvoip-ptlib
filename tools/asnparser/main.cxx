@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.30  2001/02/22 22:31:01  robertj
+ * Added command line flag to display version number only.
+ *
  * Revision 1.29  2000/10/12 23:11:48  robertj
  * Fixed problem with BER encoding of ASN with optional fields.
  *
@@ -269,14 +272,15 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 3, BetaCode, 4)
+  : PProcess("Equivalence", "ASNParse", 1, 3, ReleaseCode, 0)
 {
 }
 
 void App::Main()
 {
   PArgList & args = GetArguments();
-  args.Parse("v-verbose."
+  args.Parse("V-version."
+             "v-verbose."
              "e-echo."
              "d-debug."
              "c-c++."
@@ -298,6 +302,7 @@ void App::Main()
 
   if (args.GetCount() < 1 || args.GetCount() > 1 || numFiles == 0) {
     PError << "usage: asnparse [options] asnfile\n"
+              "  -V --version        Display version and exit\n"
               "  -v --verbose        Verbose output (multiple times for more verbose)\n"
               "  -e --echo           Echo input file\n"
               "  -d --debug          Debug output (copious!)\n"
@@ -312,16 +317,19 @@ void App::Main()
     return;
   }
 
+  cout << GetName() << " version " << GetVersion(TRUE)
+       << " for " << GetOSClass() << ' ' << GetOSName()
+       << " by " << GetManufacturer() << endl;
+
+  if (args.HasOption('V'))
+    return;
+
   PTextFile prcFile;
   if (!prcFile.Open(args[0], PFile::ReadOnly)) {
     PError << GetName() << ": cannot open \"" 
          << prcFile.GetFilePath() << "\" :" << prcFile.GetErrorText() << endl;
     return;
   }
-
-  cout << GetName() << " version " << GetVersion(TRUE)
-       << " for " << GetOSClass() << ' ' << GetOSName()
-       << " by " << GetManufacturer() << endl;
 
   if (args.HasOption('d'))
     yydebug = 1;
