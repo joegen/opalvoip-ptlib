@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.35  2002/06/25 02:25:29  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.34  2001/08/17 19:18:15  yurik
  * Fixed compile error in release mode
  *
@@ -257,23 +261,12 @@ PImageDLL::PImageDLL()
 #endif
 #endif
 
-void PAssertFunc(const char * file, int line, const char * msg)
+void PAssertFunc(const char * msg)
 {
 #ifndef _WIN32_WCE
 
-#if defined(_WIN32)
-  DWORD err = GetLastError();
-#else
-  int err = errno;
-#endif
-
   ostrstream str;
-  str << "Assertion fail: ";
-  if (msg != NULL)
-    str << msg << ", ";
-  str << "file " << file << ", line " << line;
-  if (err != 0)
-    str << ", Error=" << err;
+  str << msg;
 
 #if defined(_WIN32) && defined(_M_IX86)
   PImageDLL imagehlp;
