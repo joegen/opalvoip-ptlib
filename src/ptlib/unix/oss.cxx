@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.20  2000/07/02 05:49:43  craigs
+ * Really fixed race condition in OSS open
+ *
  * Revision 1.19  2000/07/02 04:55:18  craigs
  * Fixed stupid mistake with fix for OSS race condition
  *
@@ -299,6 +302,8 @@ BOOL PSoundChannel::Open(const PString & _device,
   // if this device in in the dictionary
   if (handleDict().Contains(_device)) {
 
+    PTRACE(6, "OSS\tOpen occured for existing entry");
+
     SoundHandleEntry & entry = handleDict()[_device];
 
     // see if the sound channel is already open in this direction
@@ -310,6 +315,8 @@ BOOL PSoundChannel::Open(const PString & _device,
     os_handle = entry.handle;
 
   } else {
+
+    PTRACE(6, "OSS\tOpen occured for new entry");
 
     // this is the first time this device has been used
     // open the device in read/write mode always
@@ -370,7 +377,7 @@ BOOL PSoundChannel::Setup()
     PTRACE(6, "OSS\tSkipping setup for " << device << " as already initialised");
 
   } else {
-    PTRACE(6, "OSS\tInitialising " << device);
+    PTRACE(6, "OSS\tInitialising " << device << "(" << (void *)(&entry) << ")");
 
     stat = FALSE;
 
@@ -514,10 +521,8 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   PAssert((bitsPerSample == 8) || (bitsPerSample == 16), PInvalidParameter);
   PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
 
-  Abort();
-
   // lock the dictionary
-  dictMutex.Wait();
+  PWaitAndSignal mutex(dictMutex);
 
   // the device must always be in the dictionary
   PAssertOS(handleDict().Contains(device));
@@ -525,13 +530,22 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
+  if (entry.isInitialised) {
+    if ((numChannels   != entry.numChannels) ||
+        (sampleRate    != entry.sampleRate) ||
+        (bitsPerSample != entry.bitsPerSample)) {
+      PTRACE(6, "OSS\tTried to change read/write format without stopping");
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  Abort();
+
   entry.numChannels   = numChannels;
   entry.sampleRate    = sampleRate;
   entry.bitsPerSample = bitsPerSample;
   entry.isInitialised  = FALSE;
-
-  // unlock dictionary
-  dictMutex.Signal();
 
   // mark this channel as uninitialised
   isInitialised = FALSE;
@@ -547,8 +561,6 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
     return FALSE;
   }
 
-  Abort();
-
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
   int arg = 1;
   while (size > (PINDEX)(1 << arg))
@@ -557,7 +569,7 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   arg |= count << 16;
 
   // lock the dictionary
-  dictMutex.Wait();
+  PWaitAndSignal mutex(dictMutex);
 
   // the device must always be in the dictionary
   PAssertOS(handleDict().Contains(device));
@@ -565,14 +577,22 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
   // get record for the device
   SoundHandleEntry & entry = handleDict()[device];
 
+  if (entry.isInitialised) {
+    if (entry.fragmentValue != (unsigned)arg) {
+      PTRACE(6, "OSS\tTried to change buffers without stopping");
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  Abort();
+
   // set information in the common record
   entry.fragmentValue = arg;
   entry.isInitialised = FALSE;
 
   // flag this channel as not initialised
   isInitialised       = FALSE;
-
-  dictMutex.Signal();
 
   return TRUE;
 }
@@ -586,7 +606,7 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
   }
 
   // lock the dictionary
-  dictMutex.Wait();
+  PWaitAndSignal mutex(dictMutex);
 
   // the device must always be in the dictionary
   PAssertOS(handleDict().Contains(device));
@@ -594,8 +614,6 @@ BOOL PSoundChannel::GetBuffers(PINDEX & size, PINDEX & count)
   SoundHandleEntry & entry = handleDict()[device];
 
   int arg = entry.fragmentValue;
-
-  dictMutex.Signal();
 
   count = arg >> 16;
   size = 1 << (arg&0xffff);
