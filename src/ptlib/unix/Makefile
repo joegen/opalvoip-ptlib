@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.126  2004/04/24 06:13:06  rjongbloed
+# Changed XMPP code to only be compiled if have EXPAT
+#
 # Revision 1.125  2004/04/24 01:37:43  csoutheren
 # Added PNotifier extensions and XMPP (Jabber) support,
 #   thanks to Federico Pinna and Reitek S.p.A.
@@ -600,7 +603,9 @@ PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
 		  $(COMPONENT_SRC_DIR)/psoap.cxx \
-		  $(COMPONENT_SRC_DIR)/vxml.cxx
+		  $(COMPONENT_SRC_DIR)/vxml.cxx \
+		  $(COMPONENT_SRC_DIR)/xmpp.cxx \
+		  $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
@@ -636,8 +641,6 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/pdns.cxx \
-	$(COMPONENT_SRC_DIR)/xmpp.cxx \
-	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
         $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
