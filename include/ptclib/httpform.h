@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.10  1998/11/30 02:50:48  robertj
+ * New directory structure
+ *
  * Revision 1.9  1998/09/23 06:19:31  robertj
  * Added open source copyright license.
  *
@@ -63,7 +66,7 @@
 #pragma interface
 #endif
 
-#include <http.h>
+#include <ptclib/http.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
