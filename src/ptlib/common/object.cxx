@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.38  1999/05/01 11:29:20  robertj
+ * Alpha linux port changes.
+ *
  * Revision 1.37  1999/03/09 10:30:17  robertj
  * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
  *
@@ -1013,7 +1016,7 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 ///////////////////////////////////////////////////////////////////////////////
 // Large integer support
 
-#ifndef P_HAS_INT64
+#ifdef P_NEEDS_INT64
 
 void PInt64__::Add(const PInt64__ & v)
 {
