@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.221  2004/05/18 21:49:25  csoutheren
+ * Added ability to display trace output from program startup via environment
+ * variable or by application creating a PProcessStartup descendant
+ *
  * Revision 1.220  2004/05/18 12:43:31  csoutheren
  * Fixed compile problem on MSVC 6
  *
@@ -794,7 +798,7 @@ static ostream * PTraceStream = 0L;
 static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
 static PTimeInterval ApplicationStartTick = PTimer::Tick();
-static unsigned PTraceCurrentLevel;
+unsigned PTraceCurrentLevel;
 
 void PTrace::SetStream(ostream * s)
 {
@@ -1841,12 +1845,23 @@ int PProcess::_main(void *)
   // PProcessStartup abstract factory
   std::map<PString, PProcessStartup *> startups;
   {
+    PProcessStartup * levelSet = PGenericFactory<PProcessStartup>::CreateInstance("SetTraceLevel");
+    if (levelSet != NULL) 
+      levelSet->OnStartup();
+    else {
+      char * env = ::getenv("PWLIB_TRACE_STARTUP");
+      if (env != NULL) 
+        PTrace::Initialise(atoi(env), NULL, PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
+    }
+
     PProcessStartupFactory::KeyList list = PProcessStartupFactory::GetKeyList();
     PProcessStartupFactory::KeyList::const_iterator r;
     for (r = list.begin(); r != list.end(); ++r) {
-      PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
-      instance->OnStartup();
-      startups.insert(std::pair<PString, PProcessStartup *>(*r, instance));
+      if (*r != "SetTraceLevel") {
+        PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
+        instance->OnStartup();
+        startups.insert(std::pair<PString, PProcessStartup *>(*r, instance));
+      }
     }
   }
 
