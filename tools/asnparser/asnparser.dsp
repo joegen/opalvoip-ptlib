@@ -192,9 +192,5 @@ SOURCE=.\main.h
 SOURCE=.\PreCompile.cpp
 # ADD CPP /Yc"ptlib.h"
 # End Source File
-# Begin Source File
-
-SOURCE=".\Rfc1155-smi.asn"
-# End Source File
 # End Target
 # End Project
