@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.10 1995/12/10 12:05:48 robertj Exp $
+ * $Id: win32.cxx,v 1.11 1996/01/02 12:58:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.11  1996/01/02 12:58:33  robertj
+ * Fixed copy of directories.
+ * Changed process construction mechanism.
+ * Made service process "common".
+ *
  * Revision 1.10  1995/12/10 12:05:48  robertj
  * Changes to main() startup mechanism to support Mac.
  * Moved error code for specific WIN32 and MS-DOS versions.
@@ -56,6 +61,7 @@
 #include <errno.h>
 #include <sys\stat.h>
 #include <process.h>
+#include <signal.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -144,6 +150,14 @@ void PDirectory::Construct()
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
   PString::operator=(CreateFullPath(*this, TRUE));
+}
+
+
+void PDirectory::CopyContents(const PDirectory & dir)
+{
+  scanMask  = dir.scanMask;
+  hFindFile = dir.hFindFile;
+  fileinfo  = dir.fileinfo;
 }
 
 
@@ -897,8 +911,8 @@ void PConfig::Construct(Source src)
         else
           location += "PWLib\\";
         location += proc->GetName() + '\\';
-        if (!proc->GetVersion().IsEmpty())
-          location += proc->GetVersion() + '\\';
+        if (!proc->GetVersion(FALSE).IsEmpty())
+          location += proc->GetVersion(FALSE) + '\\';
       }
       break;
   }
@@ -1447,10 +1461,17 @@ PString PProcess::GetUserName() const
 ///////////////////////////////////////////////////////////////////////////////
 // PServiceProcess
 
-PServiceProcess::PServiceProcess(const char * manuf,
-                                           const char * name, const char * ver)
-  : PProcess(manuf, name, ver)
+PServiceProcess::PServiceProcess(const char * manuf, const char * name,
+                           WORD major, WORD minor, CodeStatus stat, WORD build)
+  : PProcess(manuf, name, major, minor, stat, build)
 {
+}
+
+
+static void Control_C(int)
+{
+  PServiceProcess::Current()->OnStop();
+  exit(1);
 }
 
 
@@ -1470,13 +1491,11 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     debugMode = TRUE;
     currentLogLevel = LogInfo;
     PError << "Service simulation started for \"" << GetName() << "\".\n"
-              "Press ENTER to terminate.\n" << endl;
+              "Press Ctrl-C to terminate.\n" << endl;
 
-    // start the thread that performs the work of the service.
-    threadHandle=CreateThread(NULL, 4096, ThreadEntry, NULL, 0, &threadId);
-    if (threadHandle != NULL)
-      getchar();
-    TerminateThread(threadHandle, 1);
+    signal(SIGINT, Control_C);
+    if (OnStart())
+      Main();
     OnStop();
     return 0;
   }
@@ -1489,7 +1508,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   status.dwServiceSpecificExitCode = 0;
 
   static SERVICE_TABLE_ENTRY dispatchTable[] = {
-    { "", PServiceProcess::MainEntry },
+    { "", PServiceProcess::StaticMainEntry },
     { NULL, NULL }
   };
 
@@ -1505,10 +1524,16 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 }
 
 
-void PServiceProcess::BeginService()
+void PServiceProcess::StaticMainEntry(DWORD argc, LPTSTR * argv)
+{
+  Current()->MainEntry(argc, argv);
+}
+
+
+void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 {
   // register our service control handler:
-  statusHandle = RegisterServiceCtrlHandler(GetName(), ControlEntry);
+  statusHandle = RegisterServiceCtrlHandler(GetName(), StaticControlEntry);
   if (statusHandle == NULL)
     return;
 
@@ -1522,8 +1547,10 @@ void PServiceProcess::BeginService()
   if (terminationEvent == NULL)
     return;
 
+  GetArguments().SetArgs(argc, argv);
+
   // start the thread that performs the work of the service.
-  threadHandle = CreateThread(NULL, 4096, ThreadEntry, NULL, 0, &threadId);
+  threadHandle = CreateThread(NULL,4096,StaticThreadEntry,NULL,0,&threadId);
   if (threadHandle != NULL)
     WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
 
@@ -1533,49 +1560,92 @@ void PServiceProcess::BeginService()
 }
 
 
-void PServiceProcess::MainEntry(DWORD, LPTSTR *)
+DWORD EXPORTED PServiceProcess::StaticThreadEntry(LPVOID)
 {
-  Current()->BeginService();
+  Current()->ThreadEntry();
+  return 0;
 }
 
 
-DWORD EXPORTED PServiceProcess::ThreadEntry(LPVOID)
+void PServiceProcess::ThreadEntry()
 {
-  Current()->Main();
-  Current()->ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
-  SetEvent(Current()->terminationEvent);
-  return 0;
+  if (OnStart()) {
+    ReportStatus(SERVICE_RUNNING);
+    Main();
+    ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+  }
+  SetEvent(terminationEvent);
+}
+
+
+void PServiceProcess::StaticControlEntry(DWORD code)
+{
+  Current()->ControlEntry(code);
 }
 
 
 void PServiceProcess::ControlEntry(DWORD code)
 {
-  PServiceProcess * instance = Current();
-  if (instance == NULL)
-    return;
-
   switch (code) {
     case SERVICE_CONTROL_PAUSE : // Pause the service if it is running.
-      instance->OnPause();
+      if (status.dwCurrentState != SERVICE_RUNNING)
+        ReportStatus(status.dwCurrentState);
+      else {
+        if (OnPause())
+          ReportStatus(SERVICE_PAUSED);
+      }
       break;
 
     case SERVICE_CONTROL_CONTINUE : // Resume the paused service.
-      instance->OnContinue();
+      if (status.dwCurrentState == SERVICE_PAUSED)
+        OnContinue();
+      ReportStatus(status.dwCurrentState);
       break;
 
     case SERVICE_CONTROL_STOP : // Stop the service.
-      instance->OnStop();
+      // Report the status, specifying the checkpoint and waithint, before
+      // setting the termination event.
+      ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
+      OnStop();
+      SetEvent(terminationEvent);
       break;
 
     case SERVICE_CONTROL_INTERROGATE : // Update the service status.
-      instance->OnInterrogate();
-      break;
-
     default :
-      instance->ReportStatus(SERVICE_RUNNING);
+      ReportStatus(status.dwCurrentState);
   }
 }
 
+
+BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
+                                   DWORD dwWin32ExitCode,
+                                   DWORD dwCheckPoint,
+                                   DWORD dwWaitHint)
+{
+  // Disable control requests until the service is started.
+  if (dwCurrentState == SERVICE_START_PENDING)
+    status.dwControlsAccepted = 0;
+  else
+    status.dwControlsAccepted =
+                           SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
+
+  // These SERVICE_STATUS members are set from parameters.
+  status.dwCurrentState = dwCurrentState;
+  status.dwWin32ExitCode = dwWin32ExitCode;
+  status.dwCheckPoint = dwCheckPoint;
+  status.dwWaitHint = dwWaitHint;
+
+  if (debugMode)
+    return TRUE;
+
+  // Report the status of the service to the service control manager.
+  if (SetServiceStatus(statusHandle, &status))
+    return TRUE;
+
+  // If an error occurs, stop the service.
+  SystemLog(LogError, "SetServiceStatus failed");
+  return FALSE;
+}
 
 
 void PServiceProcess::SystemLog(SystemLogLevel level,const PString & msg)
@@ -1613,113 +1683,66 @@ void PServiceProcess::SystemLog(SystemLogLevel level, const char * fmt, ...)
       PError << " - error = " << err;
     PError << endl;
     ReleaseSemaphore(mutex, 1, NULL);
-    return;
   }
-
-  // Use event logging to log the error.
-  HANDLE hEventSource = RegisterEventSource(NULL, GetName());
-  if (hEventSource == NULL)
-    return;
-
-  if (level != LogInfo && err != 0)
-    sprintf(&msg[strlen(msg)], "error code = ", err);
-
-  LPCTSTR strings[2];
-  strings[0] = msg;
-  strings[1] = level != LogFatal ? "" : " Program aborted.";
-
-  static const DWORD levelName[NumLogLevels] = {
-    EVENTLOG_ERROR_TYPE,
-    EVENTLOG_ERROR_TYPE,
-    EVENTLOG_WARNING_TYPE,
-    EVENTLOG_INFORMATION_TYPE
-  };
-  ReportEvent(hEventSource, // handle of event source
-              EVENTLOG_ERROR_TYPE,  // event type
-              0,                    // event category
-              0,                    // event ID
-              NULL,                 // current user's SID
-              PARRAYSIZE(strings),  // number of strings
-              0,                    // no bytes of raw data
-              strings,              // array of error strings
-              NULL);                // no raw data
-  DeregisterEventSource(hEventSource);
-}
-
-
-BOOL PServiceProcess::ReportStatus(DWORD dwCurrentState,
-                                   DWORD dwWin32ExitCode,
-                                   DWORD dwCheckPoint,
-                                   DWORD dwWaitHint)
-{
-  // Disable control requests until the service is started.
-  if (dwCurrentState == SERVICE_START_PENDING)
-    status.dwControlsAccepted = 0;
-  else
-    status.dwControlsAccepted =
-                           SERVICE_ACCEPT_STOP | SERVICE_ACCEPT_PAUSE_CONTINUE;
-
-  // These SERVICE_STATUS members are set from parameters.
-  status.dwCurrentState = dwCurrentState;
-  status.dwWin32ExitCode = dwWin32ExitCode;
-  status.dwCheckPoint = dwCheckPoint;
-  status.dwWaitHint = dwWaitHint;
-
-  if (debugMode)
-    return TRUE;
-
-  // Report the status of the service to the service control manager.
-  if (SetServiceStatus(statusHandle, &status))
-    return TRUE;
-
-  // If an error occurs, stop the service.
-  SystemLog(LogError, "SetServiceStatus failed");
-  return FALSE;
-}
-
-
-void PServiceProcess::OnPause()
-{
-  if (status.dwCurrentState != SERVICE_RUNNING)
-    ReportStatus(status.dwCurrentState);
   else {
-    SuspendThread(threadHandle);
-    ReportStatus(SERVICE_PAUSED);
+    // Use event logging to log the error.
+    HANDLE hEventSource = RegisterEventSource(NULL, GetName());
+    if (hEventSource == NULL)
+      return;
+
+    if (level != LogInfo && err != 0)
+      sprintf(&msg[strlen(msg)], "\nError code = %d", err);
+
+    LPCTSTR strings[2];
+    strings[0] = msg;
+    strings[1] = level != LogFatal ? "" : " Program aborted.";
+
+    static const WORD levelType[NumLogLevels] = {
+      EVENTLOG_ERROR_TYPE,
+      EVENTLOG_ERROR_TYPE,
+      EVENTLOG_WARNING_TYPE,
+      EVENTLOG_INFORMATION_TYPE
+    };
+    ReportEvent(hEventSource, // handle of event source
+                levelType[level],     // event type
+                0,                    // event category
+                1,                    // event ID
+                NULL,                 // current user's SID
+                PARRAYSIZE(strings),  // number of strings
+                0,                    // no bytes of raw data
+                strings,              // array of error strings
+                NULL);                // no raw data
+    DeregisterEventSource(hEventSource);
   }
-}
-
-
-void PServiceProcess::OnContinue()
-{
-  if (status.dwCurrentState == SERVICE_PAUSED)
-    ResumeThread(threadHandle);
-  ReportStatus(SERVICE_RUNNING);
 }
 
 
 void PServiceProcess::OnStop()
 {
-  // Report the status, specifying the checkpoint and waithint, before
-  // setting the termination event.
-  ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
-  SetEvent(terminationEvent);
 }
 
 
-void PServiceProcess::OnInterrogate()
+BOOL PServiceProcess::OnPause()
 {
-  ReportStatus(status.dwCurrentState);
+  SuspendThread(threadHandle);
+  return TRUE;
 }
 
 
-class SC_HANDLE_class
+void PServiceProcess::OnContinue()
+{
+  ResumeThread(threadHandle);
+}
+
+
+class P_SC_HANDLE
 {
   public:
-    SC_HANDLE_class()
+    P_SC_HANDLE()
         { h = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS); }
-    SC_HANDLE_class(const SC_HANDLE_class & manager, PServiceProcess * svc)
+    P_SC_HANDLE(const P_SC_HANDLE & manager, PServiceProcess * svc)
         { h = OpenService(manager, svc->GetName(), SERVICE_ALL_ACCESS); }
-    ~SC_HANDLE_class()
+    ~P_SC_HANDLE()
         { if (h != NULL) CloseServiceHandle(h); }
     operator SC_HANDLE() const
         { return h; }
@@ -1754,13 +1777,13 @@ PServiceProcess::ProcessCommandResult
   if (cmdNum == 0) // Debug mode
     return DebugCommandMode;
 
-  SC_HANDLE_class schSCManager;
+  P_SC_HANDLE schSCManager;
   if (schSCManager.IsNULL()) {
     PError << "Could not open Service Manager." << endl;
     return ProcessCommandError;
   }
 
-  SC_HANDLE_class schService(schSCManager, this);
+  P_SC_HANDLE schService(schSCManager, this);
   if (cmdNum != 1 && schService.IsNULL()) {
     PError << "Service is not installed." << endl;
     return ProcessCommandError;
@@ -1768,9 +1791,10 @@ PServiceProcess::ProcessCommandResult
 
   SERVICE_STATUS status;
 
+  BOOL good = FALSE;
   switch (cmdNum) {
     case 1 : // install
-      if (schService.IsNULL()) {
+      if (!schService.IsNULL()) {
         PError << "Service is already installed." << endl;
         return ProcessCommandError;
       }
@@ -1789,40 +1813,59 @@ PServiceProcess::ProcessCommandResult
                           NULL,                       // no dependencies
                           NULL,                       // LocalSystem account
                           NULL);                      // no password
-        if (newService != NULL)
+        good = newService != NULL;
+        if (good) {
           CloseServiceHandle(newService);
+          HKEY key;
+          if (RegCreateKey(HKEY_LOCAL_MACHINE,
+              "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" +
+                                           GetName(), &key) == ERROR_SUCCESS) {
+            RegSetValueEx(key, "EventMessageFile", 0, REG_EXPAND_SZ,
+                   (LPBYTE)(const char *)GetFile(), GetFile().GetLength() + 1);
+            DWORD dwData = EVENTLOG_ERROR_TYPE |
+                             EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
+            RegSetValueEx(key, "TypesSupported",
+                                 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
+            RegCloseKey(key);
+          }
+        }
       }
       break;
 
     case 2 : // remove
-      DeleteService(schService);
+      good = DeleteService(schService);
+      if (good) {
+        PString name = "SYSTEM\\CurrentControlSet\\Services\\"
+                                         "EventLog\\Application\\" + GetName();
+        RegDeleteValue(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+      }
       break;
 
     case 3 : // start
-      StartService(schService, 0, NULL);
+      good = StartService(schService, 0, NULL);
       break;
 
     case 4 : // stop
-      ControlService(schService, SERVICE_CONTROL_STOP, &status);
+      good = ControlService(schService, SERVICE_CONTROL_STOP, &status);
       break;
 
     case 5 : // pause
-      ControlService(schService, SERVICE_CONTROL_PAUSE, &status);
+      good = ControlService(schService, SERVICE_CONTROL_PAUSE, &status);
       break;
 
     case 6 : // resume
-      ControlService(schService, SERVICE_CONTROL_CONTINUE, &status);
+      good = ControlService(schService, SERVICE_CONTROL_CONTINUE, &status);
   }
 
   DWORD err = GetLastError();
   PError << "Service command \"" << commandNames[cmdNum] << "\" ";
-  if (err != 0) {
-    PError << "failed - error code = " << err << endl;
-    return ProcessCommandError;
-  }
-  else {
+  if (good) {
     PError << "successful." << endl;
     return CommandProcessed;
+  }
+  else {
+    PError << "failed - error code = " << err << endl;
+    return ProcessCommandError;
   }
 }
 
