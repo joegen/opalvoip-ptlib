@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.42  2001/04/30 10:47:33  robertj
+ * Fixed stupid error in last patch.
+ *
  * Revision 1.41  2001/04/30 06:47:04  robertj
  * Fixed problem with en/decoding more than 16 extension fields in a sequence.
  *
@@ -1549,7 +1552,7 @@ void PASN_BitString::EncodeSequenceExtensionBitmap(PPER_Stream & strm) const
   PINDEX idx = 0;
   unsigned bitsLeft = totalBits;
   while (bitsLeft >= 8) {
-    strm.MultiBitEncode(8, bitData[idx++]);
+    strm.MultiBitEncode(bitData[idx++], 8);
     bitsLeft -= 8;
   }
 
