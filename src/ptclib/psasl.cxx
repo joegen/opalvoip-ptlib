@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.cxx,v $
+ * Revision 1.5  2004/05/09 07:23:50  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.4  2004/04/28 11:26:43  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -163,25 +166,29 @@ static int PSASL_ClientLog(void *, int priority, const char *message)
 
 static void psasl_Initialise()
 {
-    sasl_callback_t * cbs = new sasl_callback_t[4];
+  PINDEX max = PSASLClient::GetPath().IsEmpty() ? 3 : 4;
 
-    cbs[0].id = SASL_CB_GETREALM;
-    cbs[0].proc = (int (*)())&PSASL_ClientRealm;
-    cbs[0].context = 0;
+  sasl_callback_t * cbs = new sasl_callback_t[max];
 
-    cbs[1].id = SASL_CB_GETPATH;
-    cbs[1].proc = (int (*)())&PSASL_ClientGetPath;
-    cbs[1].context = 0;
+  cbs[0].id = SASL_CB_GETREALM;
+  cbs[0].proc = (int (*)())&PSASL_ClientRealm;
+  cbs[0].context = 0;
 
-    cbs[2].id = SASL_CB_LOG;
-    cbs[2].proc = (int (*)())&PSASL_ClientLog;
+  cbs[1].id = SASL_CB_LOG;
+  cbs[1].proc = (int (*)())&PSASL_ClientLog;
+  cbs[1].context = 0;
+
+  if (max == 4) {
+    cbs[2].id = SASL_CB_GETPATH;
+    cbs[2].proc = (int (*)())&PSASL_ClientGetPath;
     cbs[2].context = 0;
+  }
 
-    cbs[3].id = SASL_CB_LIST_END;
-    cbs[3].proc = 0;
-    cbs[3].context = 0;
+  cbs[max - 1].id = SASL_CB_LIST_END;
+  cbs[max - 1].proc = 0;
+  cbs[max - 1].context = 0;
 
-    sasl_client_init(cbs);
+  sasl_client_init(cbs);
 }
 
 static PAtomicInteger psasl_UsageCount(0);
@@ -352,3 +359,4 @@ BOOL PSASLClient::End()
 #endif // P_SASL2
 
 // End of File ///////////////////////////////////////////////////////////////
+

@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_roster.cxx,v $
+ * Revision 1.4  2004/05/09 07:23:50  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.3  2004/04/27 06:19:12  rjongbloed
  * Fixed GCC 3.4 warnings and improved crash avoidance with NULL pointers.
  *
@@ -92,6 +95,16 @@ void XMPP::Roster::Item::RemoveGroup(const PString& group, BOOL dirty)
 }
 
 
+void XMPP::Roster::Item::SetPresence(const Presence& p)
+{
+  JID from = p.GetFrom();
+  PString res = from.GetResource();
+
+  if (!res.IsEmpty())
+    m_Presence.SetAt(res, new Presence(p));
+}
+
+
 XMPP::Roster::Item& XMPP::Roster::Item::operator=(const PXMLElement& item)
 {
   SetJID(item.GetAttribute("jid"));
@@ -115,10 +128,8 @@ XMPP::Roster::Item& XMPP::Roster::Item::operator=(const PXMLElement& item)
   PINDEX i = 0;
   PXMLElement * group;
 
-  while ((group = item.GetElement("group", i)) != 0) {
-    i = item.FindObject(group) + 1;
+  while ((group = item.GetElement("group", i++)) != 0)
     AddGroup(group->GetData());
-  }
 
   return *this;
 }
@@ -200,7 +211,13 @@ BOOL XMPP::Roster::SetItem(Item * item, BOOL localOnly)
     if (existingItem != NULL)
       m_Items.Remove(existingItem);
 
-    return m_Items.Append(item);
+    if (m_Items.Append(item)) {
+      m_ItemChangedHandlers.Fire(*item);
+      m_RosterChangedHandlers.Fire(*this);
+      return TRUE;
+    }
+    else
+      return FALSE;
   }
 
   PXMLElement * query = new PXMLElement(0, XMPP::IQQuery);
@@ -221,6 +238,7 @@ BOOL XMPP::Roster::RemoveItem(const PString& jid, BOOL localOnly)
 
   if (localOnly) {
     m_Items.Remove(item);
+    m_RosterChangedHandlers.Fire(*this);
     return TRUE;
   }
 
@@ -254,7 +272,11 @@ void XMPP::Roster::Attach(XMPP::C2S::StreamHandler * handler)
   m_Handler = handler;
   m_Handler->SessionEstablishedHandlers().Add(new PCREATE_NOTIFIER(OnSessionEstablished));
   m_Handler->SessionReleasedHandlers().Add(new PCREATE_NOTIFIER(OnSessionReleased));
-  m_Handler->IQQueryHandlers("jabber:iq:roster").Add(new PCREATE_NOTIFIER(OnIQ));
+  m_Handler->PresenceHandlers().Add(new PCREATE_NOTIFIER(OnPresence));
+  m_Handler->IQNamespaceHandlers("jabber:iq:roster").Add(new PCREATE_NOTIFIER(OnIQ));
+
+  if (m_Handler->IsEstablished())
+    Refresh(TRUE);
 }
 
 
@@ -265,31 +287,53 @@ void XMPP::Roster::Detach()
   if (m_Handler != NULL) {
     m_Handler->SessionEstablishedHandlers().RemoveTarget(this);
     m_Handler->SessionReleasedHandlers().RemoveTarget(this);
-    m_Handler->IQQueryHandlers("jabber:iq:roster").RemoveTarget(this);
+    m_Handler->PresenceHandlers().RemoveTarget(this);
+    m_Handler->IQNamespaceHandlers("jabber:iq:roster").RemoveTarget(this);
     m_Handler = 0;
   }
+  m_RosterChangedHandlers.Fire(*this);
 }
 
 
-void XMPP::Roster::OnSessionEstablished(XMPP::C2S::StreamHandler&, INT)
+void XMPP::Roster::Refresh(BOOL sendPresence)
 {
   if (m_Handler == NULL)
     return;
-
-  XMPP::Presence pre;
-  m_Handler->Write(pre);
 
   PXMLElement * query = new PXMLElement(0, XMPP::IQQuery);
   query->SetAttribute(XMPP::Namespace, "jabber:iq:roster");
   XMPP::IQ iq(XMPP::IQ::Get, query);
 
   m_Handler->Write(iq);
+
+  if (sendPresence) {
+    XMPP::Presence pre;
+    m_Handler->Write(pre);
+  }
+}
+
+
+void XMPP::Roster::OnSessionEstablished(XMPP::C2S::StreamHandler&, INT)
+{
+  Refresh(TRUE);
 }
 
 
 void XMPP::Roster::OnSessionReleased(XMPP::C2S::StreamHandler&, INT)
 {
   Detach();
+}
+
+
+void XMPP::Roster::OnPresence(XMPP::Presence& msg, INT)
+{
+  Item * item = FindItem(msg.GetFrom());
+
+  if (item != NULL) {
+    item->SetPresence(msg);
+    m_ItemChangedHandlers.Fire(*item);
+    m_RosterChangedHandlers.Fire(*this);
+  }
 }
 
 
@@ -302,14 +346,14 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 
   PINDEX i = 0;
   PXMLElement * item;
+  BOOL doUpdate = FALSE;
 
-  while ((item = query->GetElement("item", i)) != 0) {
-    i = query->FindObject(item) + 1;
-
+  while ((item = query->GetElement("item", i++)) != 0) {
     if (item->GetAttribute("subscription") == "remove")
       RemoveItem(item->GetAttribute("jid"), TRUE);
     else
       SetItem(new XMPP::Roster::Item(item), TRUE);
+    doUpdate = TRUE;
   }
 
   if (iq.GetType() == XMPP::IQ::Set) {
@@ -318,6 +362,9 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
     if (!iq.GetID().IsEmpty())
       m_Handler->Send(iq.BuildResult());
   }
+
+  if (doUpdate)
+    m_RosterChangedHandlers.Fire(*this);
 }
 
 
@@ -325,5 +372,6 @@ void XMPP::Roster::OnIQ(XMPP::IQ& iq, INT)
 
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
 
