@@ -87,6 +87,7 @@ LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclib.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
+	"$(INTDIR)\delaychan.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -102,13 +103,12 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\delaychan.obj" \
-	"$(INTDIR)\qchannel.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -193,6 +193,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\Asner.sbr" \
 	"$(INTDIR)\Cypher.sbr" \
+	"$(INTDIR)\delaychan.sbr" \
 	"$(INTDIR)\Ftp.sbr" \
 	"$(INTDIR)\Ftpclnt.sbr" \
 	"$(INTDIR)\Ftpsrvr.sbr" \
@@ -208,13 +209,12 @@ BSC32_SBRS= \
 	"$(INTDIR)\modem.sbr" \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
+	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr" \
-	"$(INTDIR)\delaychan.sbr" \
-	"$(INTDIR)\qchannel.sbr"
+	"$(INTDIR)\Telnet.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -226,6 +226,7 @@ LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclibd.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
+	"$(INTDIR)\delaychan.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -241,13 +242,12 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
+	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\delaychan.obj" \
-	"$(INTDIR)\qchannel.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -336,6 +336,7 @@ BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc"
 BSC32_SBRS= \
 	"$(INTDIR)\Asner.sbr" \
 	"$(INTDIR)\Cypher.sbr" \
+	"$(INTDIR)\delaychan.sbr" \
 	"$(INTDIR)\Ftp.sbr" \
 	"$(INTDIR)\Ftpclnt.sbr" \
 	"$(INTDIR)\Ftpsrvr.sbr" \
@@ -352,14 +353,13 @@ BSC32_SBRS= \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
 	"$(INTDIR)\pssl.sbr" \
+	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
 	"$(INTDIR)\shttpsvc.sbr" \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr" \
-	"$(INTDIR)\delaychan.sbr" \
-	"$(INTDIR)\qchannel.sbr"
+	"$(INTDIR)\Telnet.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -371,6 +371,7 @@ LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclibd.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
+	"$(INTDIR)\delaychan.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -387,14 +388,13 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\delaychan.obj" \
-	"$(INTDIR)\qchannel.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -460,6 +460,7 @@ LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclib.lib"
 LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
+	"$(INTDIR)\delaychan.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -476,14 +477,13 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"..\..\..\Lib\Release\pssl.obj" \
+	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
 	"$(INTDIR)\shttpsvc.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj" \
-	"$(INTDIR)\delaychan.obj" \
-	"$(INTDIR)\qchannel.obj"
+	"$(INTDIR)\Telnet.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<

@@ -114,6 +114,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -131,8 +132,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj" \
-	"$(INTDIR)\pwavfile.obj"
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -256,6 +256,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
+	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -273,8 +274,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\regcomp.sbr" \
 	"$(INTDIR)\regerror.sbr" \
 	"$(INTDIR)\regexec.sbr" \
-	"$(INTDIR)\regfree.sbr" \
-	"$(INTDIR)\pwavfile.sbr"
+	"$(INTDIR)\regfree.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -301,6 +301,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -318,8 +319,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj" \
-	"$(INTDIR)\pwavfile.obj"
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -443,6 +443,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\ptime.sbr" \
 	"$(INTDIR)\ptlib.sbr" \
 	"$(INTDIR)\pvidchan.sbr" \
+	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\remconn.sbr" \
 	"$(INTDIR)\serial.sbr" \
 	"$(INTDIR)\sfile.sbr" \
@@ -460,8 +461,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\regcomp.sbr" \
 	"$(INTDIR)\regerror.sbr" \
 	"$(INTDIR)\regexec.sbr" \
-	"$(INTDIR)\regfree.sbr" \
-	"$(INTDIR)\pwavfile.sbr"
+	"$(INTDIR)\regfree.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -488,6 +488,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -505,8 +506,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj" \
-	"$(INTDIR)\pwavfile.obj"
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -597,6 +597,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\ptime.obj" \
 	"$(INTDIR)\ptlib.obj" \
 	"$(INTDIR)\pvidchan.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\remconn.obj" \
 	"$(INTDIR)\serial.obj" \
 	"$(INTDIR)\sfile.obj" \
@@ -614,8 +615,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj" \
-	"$(INTDIR)\pwavfile.obj"
+	"$(INTDIR)\regfree.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
