@@ -1,11 +1,14 @@
 /*
- * $Id: psnmp.h,v 1.2 1996/09/20 12:19:36 robertj Exp $
+ * $Id: psnmp.h,v 1.3 1996/11/04 03:56:16 robertj Exp $
  *
  * SNMP Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: psnmp.h,v $
+ * Revision 1.3  1996/11/04 03:56:16  robertj
+ * Added selectable read buffer size.
+ *
  * Revision 1.2  1996/09/20 12:19:36  robertj
  * Used read timeout instead of member variable.
  *
@@ -91,6 +94,8 @@ PDECLARE_CLASS(PSNMP, PIndirectChannel)
        NoResponse,
        MalformedResponse,
        SendFailed,
+       RxBufferTooSmall,
+       TxDataTooBig,
        NumErrors
     };
 
@@ -187,10 +192,14 @@ PDECLARE_CLASS(PSNMPClient, PSNMP)
   public:
     PSNMPClient(const PString & host,
                 PINDEX retryMax = 5,
-                PINDEX timeoutMax = 5);
+                PINDEX timeoutMax = 5,
+                PINDEX rxBufferSize = 1500,
+                PINDEX txSize = 484);
 
     PSNMPClient(PINDEX retryMax = 5,
-                PINDEX timeoutMax = 5);
+                PINDEX timeoutMax = 5,
+                PINDEX rxBufferSize = 1500,
+                PINDEX txSize = 484);
 
     void SetVersion(PASNInt version);
     PASNInt GetVersion() const;
@@ -219,6 +228,9 @@ PDECLARE_CLASS(PSNMPClient, PSNMP)
                        PSNMPVarBindingList & varsIn,
                        PSNMPVarBindingList & varsOut);
 
+
+    BOOL ReadRequest(PBYTEArray & readBuffer);
+
     PString   hostName;
     PString   community;
     PASNInt   requestId;
@@ -226,6 +238,9 @@ PDECLARE_CLASS(PSNMPClient, PSNMP)
     PINDEX    retryMax;
     PINDEX    lastErrorIndex;
     ErrorType lastErrorCode;
+    PBYTEArray readBuffer;
+    PINDEX     maxRxSize;
+    PINDEX     maxTxSize;
 };
 
 
