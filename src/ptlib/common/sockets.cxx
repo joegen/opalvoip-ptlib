@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.139  2002/11/12 11:47:53  rogerh
+ * Add a missing memset in the Psockaddr constructor
+ *
  * Revision 1.138  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -495,6 +498,8 @@ class Psockaddr
 
 Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
 {
+  memset(&storage, 0, sizeof(storage));
+
   if (ip.GetVersion() == 6) {
     sockaddr_in6 * addr6 = (sockaddr_in6 *)&storage;
     addr6->sin6_family = AF_INET6;
