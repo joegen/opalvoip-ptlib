@@ -49,11 +49,20 @@ extern ostream * PErrorStream;
 
 typedef int		   BOOL;
 typedef unsigned char	   BYTE;	// 1 byte
-typedef unsigned short	   WORD;	// 2 bytes
-typedef unsigned int 	   DWORD;	// 4 bytes
-typedef unsigned long long QWORD;	// 8 bytes
+
+typedef	short	   	   PInt16;	// 16 bit
+typedef unsigned short	   WORD;
+
+typedef	int    	           PInt32;	// 32 bit
+typedef unsigned int 	   DWORD;
+
+#define P_HAS_INT64
+typedef signed long long   PInt64;
+typedef unsigned long long PUInt64;	// 8 bytes
+
 typedef size_t 		   PINDEX;
 typedef int		   INT;
+typedef char *             PMemoryPointer;
 
 #define P_MAX_INDEX 		0x7fffffff
 #define PABSINDEX(idx) 		(idx)		// careful - size_t may be signed!
