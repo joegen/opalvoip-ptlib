@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.45  2003/10/03 00:13:04  rjongbloed
+ * Added ability to specify CHOICE field selection by function rather than operator as the operator technique does not work with some dumb compilers.
+ * Added ability to specify that the header file name be different from the module name and module prefix string.
+ *
  * Revision 1.44  2003/02/27 04:05:30  robertj
  * Added ability to have alternate directories for header file
  *   includes in generated C++ code.
@@ -155,9 +159,9 @@
 
 
 #define MAJOR_VERSION 1
-#define MINOR_VERSION 7
+#define MINOR_VERSION 8
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 1
+#define BUILD_NUMBER 0
 
 
 unsigned lineNumber;
@@ -348,19 +352,20 @@ void App::Main()
        << " by " << GetManufacturer() << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("V-version."
-             "v-verbose."
-             "e-echo."
+  args.Parse("c-c++."
              "d-debug."
-             "c-c++."
-             "n-namespace."
+             "e-echo."
              "h-hdr-prefix:"
              "i-inlines."
-             "s-split;"
-             "o-output:"
              "m-module:"
+             "n-namespace."
+             "o-output:"
              "r-rename:"
+             "s-split;"
+             "V-version."
+             "v-verbose."
              "x-xml."
+             "-no-operators."
              "-classheader:"
              "-classheaderfile:");
 
@@ -383,19 +388,22 @@ void App::Main()
               "  -e --echo           Echo input file\n"
               "  -d --debug          Debug output (copious!)\n"
               "  -c --c++            Generate C++ files\n"
-              "  -x --xml            X.693 support (XER)\n"
               "  -n --namespace      Use C++ namespace\n"
               "  -h --hdr-prefix str Prefix for C++ include of header (eg directory)\n"
               "  -i --inlines        Use C++ inlines\n"
               "  -s[n] --split[n]    Split output into n (default 2) files\n"
-              "  -o --output file    Output filename/directory\n"
               "  -m --module name    Module name prefix/namespace\n"
-              "  -r --rename arg     Rename import module where arg is:\n"
-              "                        from=name[,prefix]\n"
+              "  -r --rename args    Rename import module where arg is:\n"
+              "                        from=name[,prefix[,fname]]\n"
               "                          from is module name in ASN file\n"
               "                          name is target header file name\n"
               "                          prefix is optional prefix for include\n"
               "                              (eg header directory)\n"
+              "                          fname is optional base name for header files\n"
+              "  --no-operators      Generate functions instead of operators for choice\n"
+              "                        sub-object extraction.\n"
+              "  -x --xml            X.693 support (XER)\n"
+              "  -o --output file    Output filename/directory\n"
            << endl;
     return;
   }
@@ -445,6 +453,7 @@ void App::Main()
                                 numFiles,
                                 args.HasOption('n'),
                                 args.HasOption('i'),
+                                !args.HasOption("no-operators"),
                                 args.HasOption('v'));
   }
 }
@@ -2560,33 +2569,72 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // Generate code for type safe cast operators of selected choice object
   BOOL needExtraLine = FALSE;
 
-  PStringSet typesOutput(PARRAYSIZE(StandardClasses), StandardClasses);
-  typesOutput += GetIdentifier();
+  if (Module->UsingOperators()) {
+    PStringSet typesOutput(PARRAYSIZE(StandardClasses), StandardClasses);
+    typesOutput += GetIdentifier();
 
-  for (i = 0; i < fields.GetSize(); i++) {
-    PString type = fields[i].GetTypeName();
-    if (!typesOutput.Contains(type)) {
+    for (i = 0; i < fields.GetSize(); i++) {
+      PString type = fields[i].GetTypeName();
+      if (!typesOutput.Contains(type)) {
+        if (Module->UsingInlines()) {
+          hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+                 "    operator " << type << " &() const { return *(" << type << " *)choice; }\n"
+                 "#else\n"
+                 "    operator " << type << " &() { return *(" << type << " *)choice; }\n"
+                 "    operator const " << type << " &() const { return *(const " << type << " *)choice; }\n"
+                 "#endif\n";
+        }
+        else {
+          hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+                 "    operator " << type << " &() const;\n"
+                 "#else\n"
+                 "    operator " << type << " &();\n"
+                 "    operator const " << type << " &() const;\n"
+                 "#endif\n";
+          cxx << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
+              << GetTemplatePrefix()
+              << GetClassNameString() << "::operator " << type << " &() const\n"
+                 "#else\n"
+              << GetTemplatePrefix()
+              << GetClassNameString() << "::operator " << type << " &()\n"
+                 "{\n"
+                 "#ifndef PASN_LEANANDMEAN\n"
+                 "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+                 "#endif\n"
+                 "  return *(" << type << " *)choice;\n"
+                 "}\n"
+                 "\n"
+                 "\n"
+              << GetTemplatePrefix()
+              << GetClassNameString() << "::operator const " << type << " &() const\n"
+                 "#endif\n"
+                 "{\n"
+                 "#ifndef PASN_LEANANDMEAN\n"
+                 "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+                 "#endif\n"
+                 "  return *(" << type << " *)choice;\n"
+                 "}\n"
+                 "\n"
+                 "\n";
+        }
+        typesOutput += type;
+        needExtraLine = TRUE;
+      }
+    }
+  }
+  else {
+    for (i = 0; i < fields.GetSize(); i++) {
+      PString type = fields[i].GetTypeName();
+      PString fieldName = fields[i].GetIdentifier();
       if (Module->UsingInlines()) {
-        hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
-               "    operator " << type << " &() const { return *(" << type << " *)choice; }\n"
-               "#else\n"
-               "    operator " << type << " &() { return *(" << type << " *)choice; }\n"
-               "    operator const " << type << " &() const { return *(const " << type << " *)choice; }\n"
-               "#endif\n";
+        hdr << "    "       << type << " & m_" << fieldName << "() { return *(" << type << " *)choice; }\n"
+               "    const " << type << " & m_" << fieldName << "() const { return *(const " << type << " *)choice; }\n";
       }
       else {
-        hdr << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
-               "    operator " << type << " &() const;\n"
-               "#else\n"
-               "    operator " << type << " &();\n"
-               "    operator const " << type << " &() const;\n"
-               "#endif\n";
-        cxx << "#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9\n"
-            << GetTemplatePrefix()
-            << GetClassNameString() << "::operator " << type << " &() const\n"
-               "#else\n"
-            << GetTemplatePrefix()
-            << GetClassNameString() << "::operator " << type << " &()\n"
+        hdr << "    "       << type << " & m_" << fieldName << "();\n"
+               "    const " << type << " & m_" << fieldName << "() const;\n";
+        cxx << GetTemplatePrefix() << type << " & "
+            << GetClassNameString() << "::m_" << fieldName << "()\n"
                "{\n"
                "#ifndef PASN_LEANANDMEAN\n"
                "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
@@ -2595,9 +2643,8 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
                "}\n"
                "\n"
                "\n"
-            << GetTemplatePrefix()
-            << GetClassNameString() << "::operator const " << type << " &() const\n"
-               "#endif\n"
+            << GetTemplatePrefix() << type << " const & "
+            << GetClassNameString() << "::m_" << fieldName << "() const\n"
                "{\n"
                "#ifndef PASN_LEANANDMEAN\n"
                "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
@@ -2607,9 +2654,8 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
                "\n"
                "\n";
       }
-      typesOutput += type;
-      needExtraLine = TRUE;
     }
+    needExtraLine = TRUE;
   }
 
   if (needExtraLine)
@@ -3608,16 +3654,21 @@ void MibTrap::PrintOn(ostream & strm) const
 
 ImportModule::ImportModule(PString * name, TypesList * syms)
   : fullModuleName(*name),
-    shortModuleName(Module->GetImportModuleName(*name))
+    shortModuleName(Module->GetImportModuleName(*name)),
+    filename(shortModuleName.ToLower())
 {
   delete name;
   symbols = *syms;
   delete syms;
 
-  PINDEX pos = shortModuleName.Find(',');
-  if (pos != P_MAX_INDEX) {
-    directoryPrefix = shortModuleName.Mid(pos+1);
-    shortModuleName.Delete(pos, P_MAX_INDEX);
+  PStringArray renameArgs = shortModuleName.Tokenise(',');
+  switch (renameArgs.GetSize())
+  {
+    case 3 :
+      filename = renameArgs[2];
+    case 2 :
+      directoryPrefix = renameArgs[1];
+      shortModuleName = renameArgs[0];
   }
 
   for (PINDEX i = 0; i < symbols.GetSize(); i++) {
@@ -3638,8 +3689,6 @@ void ImportModule::PrintOn(ostream & strm) const
 
 void ImportModule::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
-  PString filename = shortModuleName.ToLower();
-
   hdr << "#include \"" << directoryPrefix << filename << ".h\"\n";
 
   for (PINDEX i = 0; i < symbols.GetSize(); i++) {
@@ -3742,6 +3791,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                                          unsigned numFiles,
                                          BOOL useNamespaces,
                                          BOOL useInlines,
+                                         BOOL useOperators,
                                          BOOL verbose)
 {
   PArgList & args = PProcess::Current().GetArguments();
@@ -3749,6 +3799,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
   PINDEX i;
 
   usingInlines = useInlines;
+  usingOperators = useOperators;
 
   // Adjust the module name to what is specified to a default
   if (!modName)
@@ -3871,7 +3922,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
 
   PString headerName = hdrFile.GetFilePath().GetFileName();
 
-  cxxFile << "#ifdef __GNUC__\n"
+  cxxFile << "#ifdef P_USE_PRAGMA\n"
              "#pragma implementation \"" << headerName << "\"\n"
              "#endif\n"
              "\n"
