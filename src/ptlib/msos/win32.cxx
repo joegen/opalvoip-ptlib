@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.46 1997/03/28 04:36:30 robertj Exp $
+ * $Id: win32.cxx,v 1.47 1997/06/08 04:42:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.47  1997/06/08 04:42:41  robertj
+ * Added DLL file extension string function.
+ *
  * Revision 1.46  1997/03/28 04:36:30  robertj
  * Added assert for error in thread cleanup wait.
  *
@@ -2219,6 +2222,12 @@ PDynaLink::PDynaLink(const PString & name)
 PDynaLink::~PDynaLink()
 {
   Close();
+}
+
+
+PString PDynaLink::GetExtension()
+{
+  return ".DLL";
 }
 
 
