@@ -1,13 +1,19 @@
 /*
- * $Id: inetprot.h,v 1.10 1996/05/15 10:07:00 robertj Exp $
+ * $Id: inetprot.h,v 1.11 1996/09/14 13:09:13 robertj Exp $
  *
  * Portable Windows Library
  *
- * Application Socket Class Declarations
+ * Internet Protocol Class Declarations
  *
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.11  1996/09/14 13:09:13  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.10  1996/05/15 10:07:00  robertj
  * Added access function to set intercharacter line read timeout.
  *
@@ -42,17 +48,19 @@
  *
  */
 
-#ifndef _PAPPLICATIONSOCKET
-#define _PAPPLICATIONSOCKET
+#ifndef _PINTERNETPROTOCOL
+#define _PINTERNETPROTOCOL
 
 #ifdef __GNUC__
 #pragma interface
 #endif
 
-#include <sockets.h>
+
+class PSocket;
+class PIPSocket;
 
 
-PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
+PDECLARE_CLASS(PInternetProtocol, PIndirectChannel)
 /* A TCP/IP socket for process/application layer high level protocols. All of
    these protocols execute commands and responses in a standard manner.
 
@@ -73,41 +81,16 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
    The default read timeout is to 10 minutes by the constructor.
  */
 
-  public:
-    PApplicationSocket(
-      PINDEX cmdCount,               // Number of command strings.
-      char const * const * cmdNames, // Strings for each command.
-      WORD port = 0                  // Port number to use for the connection.
-    );
-    PApplicationSocket(
-      PINDEX cmdCount,               // Number of command strings.
-      char const * const * cmdNames, // Strings for each command.
-      const PString & service   // Service name to use for the connection.
+  protected:
+    PInternetProtocol(
+      const char * defaultServiceName, // Service name for the protocol.
+      PINDEX cmdCount,                 // Number of command strings.
+      char const * const * cmdNames    // Strings for each command.
     );
     // Create an unopened TCP/IP protocol socket channel.
 
-    PApplicationSocket(
-      PINDEX cmdCount,               // Number of command strings.
-      char const * const * cmdNames, // Strings for each command.
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port                 // Port number to use for the connection.
-    );
-    PApplicationSocket(
-      PINDEX cmdCount,               // Number of command strings.
-      char const * const * cmdNames, // Strings for each command.
-      const PString & address,  // Address of remote machine to connect to.
-      const PString & service   // Service name to use for the connection.
-    );
-    PApplicationSocket(
-      PINDEX cmdCount,               // Number of command strings.
-      char const * const * cmdNames, // Strings for each command.
-      PSocket & socket          // Listening socket making the connection.
-    );
-    /* Create a TCP/IP protocol socket channel. If a remote machine address or
-       a "listening" socket is specified then the channel is also opened.
-     */
 
-
+  public:
   // Overrides from class PChannel.
     virtual BOOL Read(
       void * buf,   // Pointer to a block of memory to receive the read bytes.
@@ -153,6 +136,47 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
       */
 
   // New functions for class.
+    BOOL Connect(
+      const PString & address,    // Address of remote machine to connect to.
+      WORD port = 0               // Port number to use for the connection.
+    );
+    BOOL Connect(
+      const PString & address,    // Address of remote machine to connect to.
+      const PString & service     // Service name to use for the connection.
+    );
+    /* Connect a socket to a remote host for the internet protocol.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+    BOOL Accept(
+      PSocket & listener    // Address of remote machine to connect to.
+    );
+    /* Accept a server socket to a remote host for the internet protocol.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+    const PString & GetDefaultService() const;
+    /* Get the default service name or port number to use in socket
+       connections.
+
+       <H2>Returns:</H2>
+       string for the default service name.
+     */
+
+    PIPSocket * GetSocket() const;
+    /* Get the eventual socket for the series of indirect channels that may
+       be between the current protocol and the actual I/O channel.
+
+       This will assert if the I/O channel is not an IP socket.
+
+       <H2>Returns:</H2>
+       TRUE if the string and CR/LF were completely written.
+     */
+
     BOOL WriteLine(
       const PString & line // String to write as a command line.
     );
@@ -345,6 +369,9 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
      */
 
 
+    PString defaultServiceName;
+    // Default Service name to use for the internet protocol socket.
+
     PStringArray commandNames;
     // Names of each of the command codes.
 
@@ -369,9 +396,8 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
     PString lastResponseInfo;
     // Responses
 
-
   private:
-    void Construct();
+    BOOL AttachSocket(PIPSocket * socket);
 };
 
 
