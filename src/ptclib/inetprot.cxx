@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.27 1996/12/05 11:41:12 craigs Exp $
+ * $Id: inetprot.cxx,v 1.28 1997/02/05 11:53:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.28  1997/02/05 11:53:13  robertj
+ * Changed construction of MIME dictionary to be delayed untill it is used.
+ *
  * Revision 1.27  1996/12/05 11:41:12  craigs
  * Fix problem with STAT command response containing lines not starting
  * with response number
@@ -635,17 +638,22 @@ static const PStringToString::Initialiser DefaultContentTypes[] = {
   { ".mov", "video/quicktime" }
 };
 
-PStringToString PMIMEInfo::contentTypes(PARRAYSIZE(DefaultContentTypes),
-                                        DefaultContentTypes,
-                                        TRUE);
+PStringToString & PMIMEInfo::GetContentTypes()
+{
+  static PStringToString contentTypes(PARRAYSIZE(DefaultContentTypes),
+                                      DefaultContentTypes,
+                                      TRUE);
+  return contentTypes;
+}
 
 
 void PMIMEInfo::SetAssociation(const PStringToString & allTypes, BOOL merge)
 {
+  PStringToString & types = GetContentTypes();
   if (!merge)
-    contentTypes.RemoveAll();
+    types.RemoveAll();
   for (PINDEX i = 0; i < allTypes.GetSize(); i++)
-    contentTypes.SetAt(allTypes.GetKeyAt(i), allTypes.GetDataAt(i));
+    types.SetAt(allTypes.GetKeyAt(i), allTypes.GetDataAt(i));
 }
 
 
@@ -654,8 +662,9 @@ PString PMIMEInfo::GetContentType(const PString & fType)
   if (fType.IsEmpty())
     return "text/plain";
 
-  if (contentTypes.Contains(fType))
-    return contentTypes[fType];
+  PStringToString & types = GetContentTypes();
+  if (types.Contains(fType))
+    return types[fType];
 
   return "application/octet-stream";
 }
