@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.38  2002/07/04 23:35:47  robertj
+ * Fixed documentation error
+ *
  * Revision 1.37  2002/04/09 02:30:18  robertj
  * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
  *
@@ -320,7 +323,7 @@ class PChannel : public PObject, public iostream {
   /**@name Reading functions */
   //@{
     /** Set the timeout for read operations. This may be zero for immediate
-       return of data through to #PMaxMilliseconds# which will wait forever for
+       return of data through to #PMaxTimeInterval# which will wait forever for
        the read request to be filled.
        
        Note that this function may not be available, or meaningfull, for all
@@ -431,7 +434,7 @@ class PChannel : public PObject, public iostream {
   /**@name Writing functions */
   //@{
     /** Set the timeout for write operations to complete. This may be zero for
-       immediate return through to PMaxMilliseconds which will wait forever for
+       immediate return through to PMaxTimeInterval which will wait forever for
        the write request to be completed.
        
        Note that this function may not be available, or meaningfull,  for all
