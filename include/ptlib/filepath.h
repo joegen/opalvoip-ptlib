@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.6 1994/10/24 00:06:58 robertj Exp $
+ * $Id: filepath.h,v 1.7 1994/12/21 11:52:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
- * Revision 1.6  1994/10/24 00:06:58  robertj
+ * Revision 1.7  1994/12/21 11:52:57  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.6  1994/10/24  00:06:58  robertj
  * Changed PFilePath and PDirectory so descends from either PString or
  *     PCaselessString depending on the platform.
  *
@@ -41,51 +44,112 @@
 // File Specification
 
 PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
+/* This class describes a full description for a file on the particular
+   platform. This will always uniquely identify the file on currently mounted
+   volumes.
+
+   The ancestor class is dependent on the platform. For file systems that are
+   case sensitive, eg Unix, the ancestor is $H$PString. For other platforms,
+   the ancestor class is $H$PCaselessString.
+ */
 
   public:
     PFilePath();
-    PFilePath(const PString & str);
-    PFilePath(const char * cstr);
-    PFilePath & operator=(const PString & str);
-      // Create a file spec object with the specified name.
+    PFilePath(
+      const char * cstr   // Partial C string for file name.
+    );
+    PFilePath(
+      const PString & str // Partial PString for file name.
+    );
+    /* Create a file specification object with the specified file name.
+    
+       The string passed in may be a full or partial specifiaction for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
 
-    PFilePath(const char * prefix, const char * dir);
-      // Create a file spec object with a generated temporary name. The
-      // first parameter is a prefix for the filename to which a unique
-      // number is appended. The second parameter is the directory in which
-      // the file is to be placed. If this is NULL a system standard
-      // directory is used.
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
+     */
+
+    PFilePath(
+      const char * prefix,  // Prefix string for file title.
+      const char * dir      // Directory in which to place the file.
+    );
+    /* Create a file spec object with a generated temporary name. The first
+       parameter is a prefix for the filename to which a unique number is
+       appended. The second parameter is the directory in which the file is to
+       be placed. If this is NULL a system standard directory is used.
+     */
+
+    PFilePath & operator=(
+      const PString & str // Partial PString for file name.
+    );
+    /* Change the file specification object to the specified file name.
+
+       The string passed in may be a full or partial specifiaction for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
+
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
+     */
 
 
-    // New member functions
-    PString GetVolume() const;
-      // Get the drive/volume name component of the full file specification.
-      // Note this may not be relevent on some platforms and returns "" eg for
-      // unix filesystems.
+  // New member functions
+    PFILE_PATH_STRING GetVolume() const;
+    /* Get the drive/volume name component of the full file specification. This
+       is very platform specific. For example in DOS & NT it is the drive
+       letter followed by a colon ("C:"), for Macintosh it is the volume name
+       ("Untitled") and for Unix it is empty ("").
+       
+       Returns: string for the volume name part of the file specification..
+     */
       
-    PString GetPath() const;
-      // Get the directory path component of the full file specification. This
-      // will include leading and trailing directory separators.
+    PFILE_PATH_STRING GetPath() const;
+    /* Get the directory path component of the full file specification. This
+       will include leading and trailing directory separators. For example
+       on DOS this could be "\SRC\PWLIB\", for Macintosh ":Source:PwLib:" and
+       for Unix "/users/equivalence/src/pwlib/".
 
-    PString GetTitle() const;
-      // Get the title component of the full file specification, eg for the DOS
-      // file "c:\fred.dat" this would be "fred"
+       Returns: string for the path part of the file specification.
+     */
 
-    PString GetType() const;
-      // Get the file type of the file. Note that on some platforms this may
-      // actually be part of the full name string. eg for DOS file
-      // "c:\fred.txt" this would be ".txt" but on the Macintosh this might be
-      // "TEXT".
+    PFILE_PATH_STRING GetTitle() const;
+    /* Get the title component of the full file specification, eg for the DOS
+       file "C:\SRC\PWLIB\FRED.DAT" this would be "FRED".
 
-    PString GetFileName() const;
-      // Get the actual directory entry name component of the full file
-      // specification. This may be identical to GetName()+GetType() or
-      // simply GetName() depending on the platform. eg for DOS file
-      // "c:\fred.txt" this would be "fred.txt".
+       Returns: string for the title part of the file specification.
+     */
 
-    void SetType(const PString & type);
-      // Set the type component of the full file specification, eg for the DOS
-      // file "c:\fred.dat" would become "c:\fred.txt"
+    PFILE_PATH_STRING GetType() const;
+    /* Get the file type of the file. Note that on some platforms this may
+       actually be part of the full name string. eg for DOS file
+       "C:\SRC\PWLIB\FRED.TXT" this would be ".TXT" but on the Macintosh this
+       might be "TEXT".
+
+       Note there are standard translations from file extensions, eg ".TXT"
+       and some Macintosh file types, eg "TEXT".
+
+       Returns: string for the type part of the file specification.
+     */
+
+    PFILE_PATH_STRING GetFileName() const;
+    /* Get the actual directory entry name component of the full file
+       specification. This may be identical to $B$GetTitle()+GetType()$B$ or
+       simply $B$GetTitle()$B$ depending on the platform. eg for DOS file
+       "C:\SRC\PWLIB\FRED.TXT" this would be "FRED.TXT".
+
+       Returns: string for the file name part of the file specification.
+     */
+
+    void SetType(
+      const PFILE_PATH_STRING & type  // New type of the file.
+    );
+    /* Set the type component of the full file specification, eg for the DOS
+       file "C:\SRC\PWLIB\FRED.DAT" would become "C:\SRC\PWLIB\FRED.TXT".
+     */
 
 
 // Class declaration continued in platform specific header file ///////////////
