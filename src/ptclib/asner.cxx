@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.76  2002/12/13 03:57:17  robertj
+ * Fixed crash if enable extension fields beyond the "known" extensions.
+ *
  * Revision 1.75  2002/12/02 01:03:33  robertj
  * Fixed bug were if setting the size of a constrained bit string, it
  *   actually sets the size of the underlying byte array correctly.
@@ -3574,8 +3577,15 @@ void PASN_Sequence::UnknownExtensionsEncodePER(PPER_Stream & strm) const
 
   int i;
   for (i = knownExtensions; i < totalExtensions; i++) {
-    if (extensionMap[i])
-      fields[i-knownExtensions].Encode(strm);
+    if (extensionMap[i]) {
+      PINDEX f = i - knownExtensions;
+      if (f < fields.GetSize())
+        fields[f].Encode(strm);
+      else {
+        PASN_OctetString dummy;
+        dummy.Encode(strm);
+      }
+    }
   }
 }
 
