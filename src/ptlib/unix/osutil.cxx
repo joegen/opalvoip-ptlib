@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.67  2002/01/26 23:58:15  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.66  2001/10/11 02:20:54  robertj
  * Added IRIX support (no audio/video), thanks Andre Schulze.
  *
@@ -174,7 +177,7 @@
 
 #define P_HAS_READDIR_R
 
-#if (__GNUC_MINOR__ < 7)
+#if (__GNUC_MINOR__ < 7 && __GNUC__ < 3)
 #include <localeinfo.h>
 #else
 #define P_USE_LANGINFO
