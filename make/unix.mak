@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.73  2000/04/10 06:45:59  rogerh
+# NetBSD needs the ossaudio liobrary
+#
 # Revision 1.72  2000/04/09 18:29:02  rogerh
 # Add my NetBSD changes
 #
@@ -458,6 +461,7 @@ STDCCFLAGS	+= -m486
 endif
 
 STDCCFLAGS	+= -DP_NETBSD
+LDLIBS		+= -lossaudio
 
 ifdef P_PTHREADS
 CFLAGS	+= -pthread
