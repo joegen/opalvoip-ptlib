@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.60  2002/05/14 08:34:29  robertj
+ * Fixed problem encoding unsigned where value==lower bound, thanks Greg Adams.
+ *
  * Revision 1.59  2002/05/14 06:59:50  robertj
  * Added more bullet proofing so a malformed PDU cannot cause teh decoder
  *   to try and allocate huge arrays and consume all CPU and memory on a
@@ -4477,9 +4480,14 @@ void PPER_Stream::UnsignedEncode(int value, unsigned lower, unsigned upper)
   unsigned range = (upper - lower) + 1;
   PINDEX nBits = CountBits(range);
 
+  if ((unsigned)value < lower)
+    value = 0;
+  else
+    value -= lower;
+
   if (aligned && (range == 0 || range > 255)) { // not 10.5.6 and not 10.5.7.1
     if (nBits > 16) {                           // not 10.5.7.4
-      int numBytes = value == 0 ? 1 : (((CountBits(value - lower + 1))+7)/8);
+      int numBytes = value == 0 ? 1 : (((CountBits(value + 1))+7)/8);
       LengthEncode(numBytes, 1, (nBits+7)/8);    // 12.2.6
       nBits = numBytes*8;
     }
@@ -4488,7 +4496,7 @@ void PPER_Stream::UnsignedEncode(int value, unsigned lower, unsigned upper)
     ByteAlign();             // 10.7.5.2 - 10.7.5.4
   }
 
-  MultiBitEncode(value - lower, nBits);
+  MultiBitEncode(value, nBits);
 }
 
 
