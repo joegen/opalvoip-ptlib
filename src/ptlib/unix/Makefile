@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.47  1999/07/03 04:31:53  robertj
+# Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
+#
 # Revision 1.46  1999/06/28 09:28:02  robertj
 # Portability issues, especially n BeOS (thanks Yuri!)
 #
@@ -163,6 +166,8 @@
 #
 #
 
+include ../../../make/unix.mak
+
 COMPONENT_SRC_DIR	= ../../ptclib
 PROTOCOLS_SRC_DIR	= ../../ptclib/proto
 COMMON_SRC_DIR		= ../common
@@ -245,8 +250,6 @@ OBJS	= $(OBJDIR)/regex.o
 
 
 #######################################################
-
-include ../../../make/unix.mak
 
 OBJDIR := $(LIBDIR)/$(OBJDIR)
 

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.37  1999/07/03 04:31:53  robertj
+# Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
+#
 # Revision 1.36  1999/07/02 05:10:33  robertj
 # Fixed bug in changing from debug default to opt build
 #
@@ -99,6 +102,9 @@ STDCCFLAGS	+= -I$(PWLIBDIR)/include
 # add any trailing libraries
 #
 LDLIBS += $(ENDLDLIBS)
+
+#  clean whitespace out of source file list
+SOURCES         := $(strip $(SOURCES))
 
 #
 # define rule for .cxx and .c files
