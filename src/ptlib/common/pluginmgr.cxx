@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.4  2003/11/12 10:27:11  csoutheren
+ * Changes to allow operation of static plugins under Windows
+ *
  * Revision 1.3  2003/11/12 06:58:59  csoutheren
  * Added default plugin directory for Windows
  *
@@ -30,8 +33,6 @@
 #endif
 
 // static vars to help bootstrap the default plugin instance
-PPluginManager * PPluginManager::systemPluginMgr;
-PMutex           PPluginManager::systemPluginMgrInitMutex;
 
 //////////////////////////////////////////////////////
 //
@@ -59,7 +60,10 @@ class PPluginDynamic : public PObject
 
 PPluginManager & PPluginManager::GetPluginManager()
 {
-  PWaitAndSignal m(systemPluginMgrInitMutex);
+  static PMutex mutex;
+  static PPluginManager * systemPluginMgr = NULL;
+
+  PWaitAndSignal m(mutex);
 
   if (systemPluginMgr == NULL) {
     systemPluginMgr = new PPluginManager;
