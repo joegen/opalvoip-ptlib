@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.42 1998/05/21 04:29:44 robertj Exp $
+ * $Id: svcproc.cxx,v 1.43 1998/08/20 06:06:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.43  1998/08/20 06:06:03  robertj
+ * Fixed bug where web page can be asked for when service not running.
+ *
  * Revision 1.42  1998/05/21 04:29:44  robertj
  * Fixed "Proxies stopped" dialog appearing when shutting down windows.
  *
@@ -686,6 +689,9 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       EnableMenuItem((HMENU)wParam, CopyMenuID, enableItems);
       EnableMenuItem((HMENU)wParam, CutMenuID, enableItems);
       EnableMenuItem((HMENU)wParam, DeleteMenuID, enableItems);
+
+      enableItems = MF_BYCOMMAND|(IsServiceRunning(this) ? MF_ENABLED : MF_GRAYED);
+      EnableMenuItem((HMENU)wParam, ControlMenuID, enableItems);
       break;
     }
 
@@ -696,7 +702,8 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           break;
 
         case ControlMenuID :
-          OnControl();
+          if (IsServiceRunning(this))
+            OnControl();
           break;
 
         case HideMenuID :
