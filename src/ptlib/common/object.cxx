@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.31  1998/11/03 00:55:31  robertj
+ * Added allocation breakpoint variable.
+ *
  * Revision 1.30  1998/10/15 07:48:56  robertj
  * Added hex dump to memory leak.
  * Added ability to ignore G++lib memory leaks.
@@ -205,6 +208,8 @@ class PDebugStream : public ostream {
 #endif
 
 
+DWORD PMemoryHeap::allocationBreakpoint;
+
 const char PMemoryHeap::Header::GuardBytes[] =
   { '\x11', '\x55', '\xaa', '\xee', '\xaa', '\x55', '\x11' };
 
@@ -311,6 +316,8 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
   if (firstRealObject == 0 && file != NULL && line > 0)
     firstRealObject = allocationRequest;
 
+  PAssert(allocationRequest != allocationBreakpoint, "Break on memory allocation.");
+
   currentMemoryUsage += nSize;
   if (currentMemoryUsage > peakMemoryUsage)
     peakMemoryUsage = currentMemoryUsage;
@@ -366,6 +373,8 @@ void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int 
     PAssertAlways(POutOfMemory);
     return NULL;
   }
+
+  PAssert(mem->allocationRequest != allocationBreakpoint, "Break on memory allocation.");
 
   mem->currentMemoryUsage -= obj->size;
   mem->currentMemoryUsage += nSize;
@@ -528,6 +537,12 @@ DWORD PMemoryHeap::GetAllocationRequest()
 {
   Wrapper mem;
   return mem->allocationRequest;
+}
+
+
+void PMemoryHeap::SetAllocationBreakpoint(DWORD point)
+{
+  allocationBreakpoint = point;
 }
 
 
