@@ -857,6 +857,7 @@ Optional Features:
   --disable-sdl           disable SDL support in PWLIB
   --disable-video         disable non-plugin video device support in PWLIB
   --enable-alsa           disable non-plugin ALSA audio support
+  --enable-memcheck       enable leak testing code (off by default)
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -6419,6 +6420,24 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+
+
+# Check whether --enable-memcheck or --disable-memcheck was given.
+if test "${enable_memcheck+set}" = set; then
+  enableval="$enable_memcheck"
+  memcheck=$enableval
+fi;
+
+if test "$memcheck" = "yes" ; then
+  cat >>confdefs.h <<\_ACEOF
+#define PMEMORY_CHECK 1
+_ACEOF
+
+  { echo "$as_me:$LINENO: Memory checking enabled" >&5
+echo "$as_me: Memory checking enabled" >&6;}
+fi
+
 
 
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
