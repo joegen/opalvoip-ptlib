@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.29  2002/04/24 01:49:22  robertj
+ * Fixed error in PTRACE_BLOCk nesting level to now work when no tracing enabled.
+ *
  * Revision 1.28  2002/04/24 01:09:56  robertj
  * Fixed problem with PTRACE_BLOCK indent level being correct across threads.
  *
@@ -584,11 +587,9 @@ class PThread : public PObject
 #endif
 
 
-#if PTRACING
   private:
     unsigned traceBlockIndentLevel;
     friend class PTrace::Block;
-#endif
 
 
 // Include platform dependent part of class
