@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.19 1998/03/20 03:18:27 robertj Exp $
+ * $Id: pprocess.h,v 1.20 1998/04/01 01:53:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.20  1998/04/01 01:53:24  robertj
+ * Fixed problem with NoAutoDelete threads.
+ *
  * Revision 1.19  1998/03/20 03:18:27  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -91,7 +94,10 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
-    PMutex threadMutex;
+    PMutex activeThreadMutex;
+    PLIST(ThreadList, PThread);
+    ThreadList autoDeleteThreads;
+    PMutex deleteThreadMutex;
 
     PDECLARE_CLASS(HouseKeepingThread, PThread)
         public:
