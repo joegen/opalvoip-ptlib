@@ -9,7 +9,15 @@ SOURCES		:= $(strip $(SOURCES))
 #  defines for common Unix types
 ###############################################################################
 #
+ifeq ($(HOSTTYPE),sun4)
+P_SUN4  	= 1
+endif
+ifndef OSTYPE
+ifeq ($(HOSTTYPE),i486-linux)
 P_LINUX		= 1
+endif
+ifndef MACHTYPE
+#P_LINUX	= 1
 #P_SUN4  	= 1
 #P_SOLARIS	= 1
 #P_HPUX		= 1
