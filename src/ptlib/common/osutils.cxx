@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.118  1999/02/23 10:13:31  robertj
+ * Changed trace to only diplay filename and not whole path.
+ *
  * Revision 1.117  1999/02/23 07:11:27  robertj
  * Improved trace facility adding trace levels and #define to remove all trace code.
  *
@@ -458,7 +461,18 @@ ostream & PBeginTrace(const char * fileName, int lineNum)
 {
   TraceMutex.Wait();
 
-  return *PTraceStream << fileName << '(' << lineNum << ") ";
+  const char * file = strrchr(fileName, '/');
+  if (file != NULL)
+    file++;
+  else {
+    file = strrchr(fileName, '\\');
+    if (file != NULL)
+      file++;
+    else
+      file = fileName;
+  }
+
+  return *PTraceStream << file << '(' << lineNum << ")\t";
 }
 
 
@@ -473,8 +487,11 @@ ostream & PEndTrace(ostream & s)
 
 
 PTraceBlock::PTraceBlock(const char * fileName, int lineNum, const char * traceName)
-  : file(fileName), line(lineNum), name(traceName)
 {
+  file = fileName;
+  line = lineNum;
+  name = traceName;
+
   PIndentLevel += 2;
 
   if (PTraceBlockEnable) {
