@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.23 1995/11/09 12:17:23 robertj Exp $
+ * $Id: pdirect.h,v 1.24 1995/12/23 03:45:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.24  1995/12/23 03:45:31  robertj
+ * Added constructor for C string literals.
+ *
  * Revision 1.23  1995/11/09 12:17:23  robertj
  * Added platform independent base type access classes.
  *
@@ -193,6 +196,9 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
     PDirectory();
     // Create a directory object of the current working directory
       
+    PDirectory(
+      const char * cpathname      // Directory path name for new object.
+    );
     PDirectory(
       const PString & pathname    // Directory path name for new object.
     );
