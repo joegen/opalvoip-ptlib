@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.63  2004/04/18 05:45:55  ykiryanov
+ * Added TCP_NODELAY definition and removed BE_BONELESS. BeOS is boned now
+ *
  * Revision 1.62  2004/04/02 03:32:11  ykiryanov
  * Added prototypes for missing dl*() functions
  *
@@ -417,7 +420,10 @@ struct servent * getservbyname(const char *, const char *);
 
 #define SOCK_RAW 3 // raw-protocol interface, not suported in R4
 #define PF_INET AF_INET
+#define TCP_NODELAY 1
 typedef int socklen_t;
+#include <bone/arpa/inet.h>
+
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
 int seteuid(uid_t euid);
@@ -429,12 +435,6 @@ void *dlopen(const char *path, int mode);
 int dlclose(void *handle);
 void *dlsym(void *handle, const char *symbol);
 };
-
-#ifndef BE_BONELESS
-#include <bone/arpa/inet.h>
-#else
-#define INADDR_NONE INADDR_BROADCAST
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_MACOSX) || defined(P_MACOS)
