@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.51  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.50  2004/04/09 03:42:34  csoutheren
  * Removed all usages of "virtual inline" and "inline virtual"
  *
@@ -247,7 +251,7 @@ PINLINE BOOL PString::MakeMinimumSize()
 PINLINE PINDEX PString::GetLength() const
   { return strlen(theArray); }
 
-PINLINE BOOL PString::operator!() const
+PINLINE bool PString::operator!() const
   { return !IsEmpty(); }
 
 PINLINE PString PString::operator+(const PString & str) const
@@ -274,43 +278,43 @@ PINLINE PString operator&(char c, const PString & str)
 PINLINE PString & PString::operator&=(const PString & str)
   { return operator&=((const char *)str); }
 
-PINLINE BOOL PString::operator==(const PObject & obj) const
+PINLINE bool PString::operator==(const PObject & obj) const
   { return PObject::operator==(obj); }
 
-PINLINE BOOL PString::operator!=(const PObject & obj) const
+PINLINE bool PString::operator!=(const PObject & obj) const
   { return PObject::operator!=(obj); }
 
-PINLINE BOOL PString::operator<(const PObject & obj) const
+PINLINE bool PString::operator<(const PObject & obj) const
   { return PObject::operator<(obj); }
 
-PINLINE BOOL PString::operator>(const PObject & obj) const
+PINLINE bool PString::operator>(const PObject & obj) const
   { return PObject::operator>(obj); }
 
-PINLINE BOOL PString::operator<=(const PObject & obj) const
+PINLINE bool PString::operator<=(const PObject & obj) const
   { return PObject::operator<=(obj); }
 
-PINLINE BOOL PString::operator>=(const PObject & obj) const
+PINLINE bool PString::operator>=(const PObject & obj) const
   { return PObject::operator>=(obj); }
 
-PINLINE BOOL PString::operator*=(const PString & str) const
+PINLINE bool PString::operator*=(const PString & str) const
   { return operator*=((const char *)str); }
 
-PINLINE BOOL PString::operator==(const char * cstr) const
+PINLINE bool PString::operator==(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) == EqualTo; }
 
-PINLINE BOOL PString::operator!=(const char * cstr) const
+PINLINE bool PString::operator!=(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) != EqualTo; }
 
-PINLINE BOOL PString::operator<(const char * cstr) const
+PINLINE bool PString::operator<(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) == LessThan; }
 
-PINLINE BOOL PString::operator>(const char * cstr) const
+PINLINE bool PString::operator>(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) == GreaterThan; }
 
-PINLINE BOOL PString::operator<=(const char * cstr) const
+PINLINE bool PString::operator<=(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) != GreaterThan; }
 
-PINLINE BOOL PString::operator>=(const char * cstr) const
+PINLINE bool PString::operator>=(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) != LessThan; }
 
 PINLINE PINDEX PString::Find(const PString & str, PINDEX offset) const

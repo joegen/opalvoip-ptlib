@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.73  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.72  2004/04/11 13:26:25  csoutheren
  * Removed namespace problems and removed warnings for Windows <string>
  *
@@ -745,7 +749,7 @@ class PString : public PCharArray {
        @return
        TRUE if non-null characters in string.
      */
-    BOOL operator!() const;
+    bool operator!() const;
   //@}
 
   /**@name Concatenation operators **/
@@ -1005,7 +1009,7 @@ class PString : public PCharArray {
        @return
        TRUE if equal.
      */
-    BOOL operator*=(
+    bool operator*=(
       const PString & str  /// PString object to compare against.
     ) const;
 
@@ -1016,7 +1020,7 @@ class PString : public PCharArray {
        @return
        TRUE if equal.
      */
-    BOOL operator==(
+    bool operator==(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1027,7 +1031,7 @@ class PString : public PCharArray {
        @return
        TRUE if not equal.
      */
-    BOOL operator!=(
+    bool operator!=(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1038,7 +1042,7 @@ class PString : public PCharArray {
        @return
        TRUE if less than.
      */
-    BOOL operator<(
+    bool operator<(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1049,7 +1053,7 @@ class PString : public PCharArray {
        @return
        TRUE if greater than.
      */
-    BOOL operator>(
+    bool operator>(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1060,7 +1064,7 @@ class PString : public PCharArray {
        @return
        TRUE if less than or equal.
      */
-    BOOL operator<=(
+    bool operator<=(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1071,7 +1075,7 @@ class PString : public PCharArray {
        @return
        TRUE if greater than or equal.
      */
-    BOOL operator>=(
+    bool operator>=(
       const PObject & str  /// PString object to compare against.
     ) const;
 
@@ -1086,7 +1090,7 @@ class PString : public PCharArray {
        @return
        TRUE if equal.
      */
-    BOOL operator*=(
+    bool operator*=(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1100,7 +1104,7 @@ class PString : public PCharArray {
        @return
        TRUE if equal.
      */
-    BOOL operator==(
+    bool operator==(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1114,7 +1118,7 @@ class PString : public PCharArray {
        @return
        TRUE if not equal.
      */
-    BOOL operator!=(
+    bool operator!=(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1128,7 +1132,7 @@ class PString : public PCharArray {
        @return
        TRUE if less than.
      */
-    BOOL operator<(
+    bool operator<(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1142,7 +1146,7 @@ class PString : public PCharArray {
        @return
        TRUE if greater than.
      */
-    BOOL operator>(
+    bool operator>(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1156,7 +1160,7 @@ class PString : public PCharArray {
        @return
        TRUE if less than or equal.
      */
-    BOOL operator<=(
+    bool operator<=(
       const char * cstr  /// C string to compare against.
     ) const;
 
@@ -1170,7 +1174,7 @@ class PString : public PCharArray {
        @return
        TRUE if greater than or equal.
      */
-    BOOL operator>=(
+    bool operator>=(
       const char * cstr  /// C string to compare against.
     ) const;
 
