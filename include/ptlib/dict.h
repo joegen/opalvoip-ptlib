@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.4 1995/01/09 12:35:31 robertj Exp $
+ * $Id: dict.h,v 1.5 1995/02/05 00:48:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.4  1995/01/09 12:35:31  robertj
+ * Revision 1.5  1995/02/05 00:48:03  robertj
+ * Fixed template version.
+ *
+ * Revision 1.4  1995/01/09  12:35:31  robertj
  * Removed unnecesary return value from I/O functions.
  * Changes due to Mac port.
  *
@@ -365,8 +368,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
      */
 
     void Include(
-      const PObject * obj   // New object to include in the set.
-    ) { Append((PObject *)key); }
+      const T * obj   // New object to include in the set.
+    ) { Append((PObject *)obj); }
     /* Include the spcified object into the set. If the objects value is
        already in the set then the object is $U$not$U$ included. If the
        AllowDeleteObjects option is set then the $B$obj$B$ parameter is also
@@ -378,8 +381,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
      */
 
     void Exclude(
-      const PObject * obj   // New object to exclude in the set.
-    ) { Remove(key); }
+      const T * obj   // New object to exclude in the set.
+    ) { Remove(obj); }
     /* Remove the object from the set. If the AllowDeleteObjects option is set
        then the object is also deleted.
 
@@ -389,7 +392,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
      */
 
     BOOL operator[](
-      const K & key  // Key to look for in the set.
+      const T & key  // Key to look for in the set.
     ) { return Contains(key); }
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
@@ -399,8 +402,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
        Returns: TRUE if the object value is in the set.
      */
 
-    virtual const K & GetKeyAt(PINDEX index) const
-      { return (const K &)AbstractGetKeyAt(index); }
+    virtual const T & GetKeyAt(PINDEX index) const
+      { return (const T &)AbstractGetKeyAt(index); }
     /* Get the key in the set at the ordinal index position.
     
        The ordinal position in the set is determined by the hash values of the
@@ -413,7 +416,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
      */
 
   protected:
-    PSet(int dummy, const cls * c)
+    PSet(int dummy, const PSet * c)
       : PAbstractSet(dummy, c)
       { reference->deleteObjects = c->reference->deleteObjects; }
 };
@@ -431,7 +434,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
    See the $H$PSet and $H$PAbstractSet classes for more information.
  */
 #define PDECLARE_SET(cls, T, initDelObj) \
-  PDECLARE_CLASS(cls, PSet<T>)
+  PDECLARE_CLASS(cls, PSet<T>) \
   protected: \
     cls(int dummy, const cls * c) \
       : PSet<T>(dummy, c) { } \
@@ -731,7 +734,7 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
 
 
   protected:
-    PDictionary(int dummy, const cls * c)
+    PDictionary(int dummy, const PDictionary * c)
       : PAbstractDictionary(dummy, c) { }
 };
 
@@ -816,7 +819,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
     virtual POrdinalKey * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (D *)PAbstractDictionary::GetAt(key); }
+    ) const { return (POrdinalKey *)PAbstractDictionary::GetAt(key); }
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
@@ -838,7 +841,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
     virtual BOOL SetAt(
       const K & key,  // Key for position in dictionary to add object.
       PINDEX ordinal  // New ordinal value to put into the dictionary.
-    ) { return PAbstractDictionary::SetAt(index, PNEW POrdinalKey(ordinal)); }
+    ) { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); }
     /* Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
        AllowDeleteObjects option is set then the old object is also deleted.
@@ -878,7 +881,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 
   protected:
-    PDictionary(int dummy, const cls * c)
+    POrdinalDictionary(int dummy, const POrdinalDictionary * c)
       : PAbstractDictionary(dummy, c) { }
 };
 
@@ -897,7 +900,7 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
    information.
  */
 #define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
-  PDECLARE_CLASS(cls, POrdinalDictionary<K>)
+  PDECLARE_CLASS(cls, POrdinalDictionary<K>) \
   protected: \
     cls(int dummy, const cls * c) \
       : POrdinalDictionary<K>(dummy, c) { } \
