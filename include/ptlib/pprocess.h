@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.21 1996/03/12 11:30:21 robertj Exp $
+ * $Id: pprocess.h,v 1.22 1996/04/29 12:18:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.22  1996/04/29 12:18:48  robertj
+ * Added function to return process ID.
+ *
  * Revision 1.21  1996/03/12 11:30:21  robertj
  * Moved destructor to platform dependent code.
  *
@@ -272,6 +275,16 @@ PDECLARE_CLASS(PProcess, PThread)
        <H2>Returns:</H2>
        user name of processes owner.
      */
+
+    DWORD GetProcessID() const;
+    /* Get the platform dependent process identifier for the process. This is
+       an arbitrary (and unique) integer attached to a process by the operating
+       system.
+
+       <H2>Returns:</H2>
+       Process ID for process.
+     */
+
 
     PTimerList * GetTimerList();
     /* Get the list of timers handled by the application. This is an internal
