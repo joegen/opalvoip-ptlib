@@ -1,12 +1,9 @@
-/*******************************************************************************
-/
-/	File:			SoundConsumer.cpp
-/
-/   Description:	Record sound from some sound-producing Node.
-/
-/	Copyright 1998-1999, Be Incorporated, All Rights Reserved
-/
-*******************************************************************************/
+//
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
+//
+// Portions: 1998-1999, Be Incorporated
+//
 
 #include <stdio.h>
 
@@ -47,8 +44,8 @@ public:
 //	Comment out the FPRINTF part of these lines to reduce verbiage.
 //	Enabling MESSAGE will kill performance on slower machines, because it
 //	prints for each message received (including each buffer).
-#define NODE //FPRINTF
-#define MESSAGE //FPRINTF
+#define NODE  //FPRINTF
+#define MESSAGE  //FPRINTF
 
 
 SoundConsumer::SoundConsumer(

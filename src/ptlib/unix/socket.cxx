@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.51  2000/04/19 00:13:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.50  2000/04/07 05:43:48  rogerh
  * Fix a compilation error in a non-pthreaded function. Found by Kevin Packard
  *
@@ -171,15 +174,7 @@ int PSocket::os_socket(int af, int type, int protocol)
   int handle;
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
-#ifdef __BEOS__
-// The BEOS implementation assumes a non-threaded system. Oh well!
-    int cmd = -1;
-    if (!ConvertOSError(::setsockopt(handle, SOL_SOCKET, SO_NONBLOCK, &cmd, sizeof(int)))) {
-      ::closesocket(handle);
-      return -1;
-    }
-#else
-
+#ifndef __BEOS__
 #ifndef P_PTHREADS
 // non PThread unixes need non-blocking sockets
     DWORD cmd = 1;
@@ -189,14 +184,15 @@ int PSocket::os_socket(int af, int type, int protocol)
       return -1;
     }
 #endif
-#endif
 
     // close socket on exec
     if (!ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
       ::close(handle);
       return -1;
     }
+#endif // !__BEOS__
   }
+
   return handle;
 }
 
@@ -244,7 +240,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return -1;
   }
 
-//#ifndef __BEOS__
+#ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
@@ -253,7 +249,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return 0;
 
   errno = optval;
-//#endif //!__BEOS__
+#endif //!__BEOS__
 
   return -1;
 }

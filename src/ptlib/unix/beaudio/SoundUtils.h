@@ -1,12 +1,9 @@
-/*******************************************************************************
-/
-/	File:			SoundUtils.h
-/
-/   Description:	Utility functions for handling audio data.
-/
-/	Copyright 1998-1999, Be Incorporated, All Rights Reserved
-/
-*******************************************************************************/
+//
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
+//
+// Portions: 1998-1999, Be Incorporated
+//
 
 #if ! defined( _SoundUtils_h )
 #define _SoundUtils_h

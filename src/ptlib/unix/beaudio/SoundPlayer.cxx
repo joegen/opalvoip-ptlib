@@ -1,132 +1,94 @@
 //
-// (c) Yuri Kiryanov, home.att.net/~bevox
-// for www.Openh323.org
+// (c) Yuri Kiryanov, openh323@kiryanov.com
+// for www.Openh323.org by Equivalence
 //
 #include "SoundPlayer.h"
-#define MAX_SOUND_FILE_SIZE (3 * 1024 * 1024)
+#include <stdio.h>
+#include <string.h>
+
+//#define EXT_DEBUG
+
+// PRawBuffer
+const uint32 PSoundPlayer::g_byteOrder = (B_HOST_IS_BENDIAN) ? B_MEDIA_BIG_ENDIAN : B_MEDIA_LITTLE_ENDIAN;
+const gs_audio_format PSoundPlayer::g_defaultFmt =  { 44100, 2, gs_audio_format::B_GS_S16, g_byteOrder, 1024 };
 
 // PSoundPlayer
-PSoundPlayer::PSoundPlayer(gs_audio_format* format, bool fDisposeBuffers = false) :
+PSoundPlayer::PSoundPlayer(const char* name, const gs_audio_format* format, int32 bufSize) :
 	BStreamingGameSound( 
 		format->frame_rate * 0.2, // 20 ms
 		format ),
-	mpSound(NULL), 
-	bytesPlayed(0), 
-	stopDelay( 0 ), 
-	timeToStop(0),
-	mfDisposeBuffers(fDisposeBuffers)
-{ };
+	mFmt(*format),
+	mFIFO( mFmt.buffer_size, 1, 3, B_ANY_ADDRESS, 0, name ) // 3 buffers
+{ 
+	SetParameters(mFmt.frame_rate * 0.2, &mFmt, 2);
+}
 
-PSoundPlayer::PSoundPlayer(PSound* pSound, bool fStartNow = true) :
-	BStreamingGameSound( 
-		((gs_audio_format*) pSound->GetFormatInfoData())->frame_rate * 0.2, // 20 ms
-		((gs_audio_format*) pSound->GetFormatInfoData()) ),
-	mpSound(NULL), bytesPlayed(0), stopDelay( 0 ), timeToStop(0)
-	{ 
-		AddSound(pSound);
-		if( fStartNow ) StartPlaying(); 
-	};
+PSoundPlayer::~PSoundPlayer() 
+{ 
+	status_t status;
+	mFIFO.CopyNextBufferIn(&status, 0, B_INFINITE_TIMEOUT, true);
+}
 
-// Sounds
-void PSoundPlayer::AddSound(PSound* pSound)
+bool PSoundPlayer::StartPlayer()
 {
-	Lock();
-	mSounds.Enqueue(pSound);
-	
-	if ( (pSound->GetSize() * mSounds.GetSize()) > MAX_SOUND_FILE_SIZE )
-	{
-		delete mSounds.Dequeue();
-#if EXT_DEBUG
-		PError << "Output buffer overflow!" << endl;
-#endif
+	mFIFO.Reset();
+	return (BStreamingGameSound::StartPlaying() == B_OK);
+}
+
+bool PSoundPlayer::StopPlayer()
+{
+	status_t status = BStreamingGameSound::StopPlaying();
+	mFIFO.Reset();
+	return (status == B_OK);
+}
+
+bool PSoundPlayer::Play(const void * buf, size_t size)
+{
+	status_t err = mFIFO.CopyNextBufferIn(buf, size, B_INFINITE_TIMEOUT, false);
+	if (err < (int32)size) {
+		fprintf(stderr, "Error while PSoundPlayer::Play: %s; bailing\n", strerror(err));
+
+		fprintf(stderr, "\tCopyNextBufferIn(%p, %ld, B_INFINITE_TIMEOUT, false) failed with %ld.\n",
+			buf, size, err);
+		return false;
 	}
-	Unlock();
+
+	return true;
 }
 
-void PSoundPlayer::Abort()
-{
-	if ( IsPlaying() )
-		StopPlaying();	
-
-	Lock();
-	while ( mSounds.GetSize() )
-		mpSound = mSounds.Dequeue();
-
-	mpSound = NULL;
-	Unlock();
-		
-	bytesPlayed = 0;
-	timeToStop = stopDelay;
-}
-	
 void PSoundPlayer::FillBuffer(void * inBuffer, size_t inByteCount)
 {
-	size_t size = 0;
-	BYTE* data = NULL ;
+	status_t err = mFIFO.CopyNextBlockOut(inBuffer, inByteCount, B_INFINITE_TIMEOUT);
+
+	if (err < (int32) inByteCount ) {
+		fprintf(stderr, "Error while PSoundPlayer::FillBuffer: %s; bailing\n", strerror(err));
+
+		fprintf(stderr, "\tCopyNextBlockOut(%p, %ld, B_INFINITE_TIMEOUT) failed with %ld.\n",
+			inBuffer, inByteCount, err);
+	}
+}
+
+void PSoundPlayer::SetFormat(unsigned numChannels,
+                  unsigned sampleRate,
+                  unsigned bitsPerSample,
+				  unsigned bufSize )
+{
+	bool fWasPlaying = IsPlaying();
+	StopPlaying();
+
+	mFmt.frame_rate = 1.0 * sampleRate; 
+	mFmt.channel_count = numChannels; 
+	mFmt.format = FORMATFROMBITSPERSAMPLE(bitsPerSample), 
+	mFmt.byte_order = g_byteOrder;
 	
-	Lock();
-	if( mpSound ) 
-	{
-		size = mpSound->GetSize();
-		data = mpSound->GetPointer() ;
-	}
-	Unlock();
-	
-	if( bytesPlayed >= size )
-	{
-		bytesPlayed = 0;
-		if( mfDisposeBuffers )
-			delete mpSound;
-
-		mpSound = NULL;
-		
-		if( !mSounds.GetSize() )
-			mpSound = NULL; // Finita la comedia
-		else
-		{
-			Lock();
-			mpSound = mSounds.Dequeue();
-
-			// New sound to play
-			if( mpSound )
-			{
-				size = mpSound->GetSize();
-				data = mpSound->GetPointer();
-			}
-			Unlock();
-		}
-		
-		if( !mpSound )
-		{ 
-			if( !timeToStop || !stopDelay )
-			{
-				StopPlaying();
-				return ;
-			}
-			else
-			{
-				PError << "Time to stop: " << timeToStop << endl;
-				timeToStop--;
-			}
-		}
-		else
-		{
-			timeToStop = stopDelay;
-		}
-
+	mFmt.buffer_size = bufSize;
+	status_t err = SetParameters(mFmt.frame_rate * 0.2, &mFmt, 2);
+	if (err != B_OK ) {
+		fprintf(stderr, "Error while PSoundPlayer::SetFormat: %s. Channels: %d, rate: %d, bits: %d, bufsize: %d.\n", 
+			strerror(err), numChannels, sampleRate, bitsPerSample, bufSize );
 	}
 
-	if( (int) inByteCount <= 0 )
-		return;
-
-	if( size && data )
-	{
-		Lock();
-		memcpy( inBuffer, data + bytesPlayed, inByteCount);
-		bytesPlayed += inByteCount;
-		if( bytesPlayed > size )
-			;// TODO: fill rest of buffer
-		Unlock();
-	}
+	if( fWasPlaying )
+		StartPlaying();
 }
 
