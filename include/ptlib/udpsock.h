@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.4 1994/08/23 11:32:52 robertj Exp $
+ * $Id: udpsock.h,v 1.5 1995/01/03 09:36:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
- * Revision 1.4  1994/08/23 11:32:52  robertj
+ * Revision 1.5  1995/01/03 09:36:24  robertj
+ * Documentation.
+ *
+ * Revision 1.4  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.3  1994/08/22  00:46:48  robertj
@@ -27,5 +30,9 @@
 
 
 PDECLARE_CLASS(PUDPSocket, PIPSocket)
+/* Create a socket checnnel that uses the UDP transport on the Internal
+   Protocol.
+ */
+
 
 // Class declaration continued in platform specific header file ///////////////
