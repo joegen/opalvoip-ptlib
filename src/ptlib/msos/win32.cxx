@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.98  2001/01/30 06:37:52  yurik
+ * Modification submitted by Dave Cassel, dcassel@cyberfone.com
+ * DC: ARM, x86em were content without this change, but SH4 insisted
+ *
  * Revision 1.97  2001/01/29 01:19:32  robertj
  * Fixed Win32 compile broken by WinCE changes.
  *
@@ -393,7 +397,7 @@ PTime::PTime()
 }
 
 #ifdef UNICODE
-static PWIN32GetLocaleInfo(LCID Locale,LCTYPE LCType,LPSTR lpLCData,int cchData)
+static void PWIN32GetLocaleInfo(LCID Locale,LCTYPE LCType,LPSTR lpLCData,int cchData)
 {
 	TCHAR* pw = new TCHAR[cchData+1];
 	GetLocaleInfo(Locale,LCType,pw,cchData);	
