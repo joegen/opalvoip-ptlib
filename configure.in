@@ -813,6 +813,7 @@ if test "$HAS_PLUGINS" = "0" ; then
     AC_MSG_CHECKING(for ALSA sound support)
     if test "${HAS_ALSA}" = "1"; then
       AC_MSG_RESULT(yes)
+      ENDLDLIBS="$ENDLDLIBS -lasound"
     else
       AC_MSG_RESULT(no)
     fi

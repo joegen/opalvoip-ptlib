@@ -5641,6 +5641,7 @@ echo $ECHO_N "checking for ALSA sound support... $ECHO_C" >&6
     if test "${HAS_ALSA}" = "1"; then
       echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
+      ENDLDLIBS="$ENDLDLIBS -lasound"
     else
       echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
