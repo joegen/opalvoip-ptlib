@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.49 1997/07/14 11:47:22 robertj Exp $
+ * $Id: win32.cxx,v 1.50 1997/08/04 10:38:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.50  1997/08/04 10:38:43  robertj
+ * Fixed infamous error 87 assert failure in housekeeping thread.
+ *
  * Revision 1.49  1997/07/14 11:47:22  robertj
  * Added "const" to numerous variables.
  *
@@ -1908,8 +1911,7 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
-  return threadHandle == NULL ||
-                         WaitForSingleObject(threadHandle, 0) == WAIT_OBJECT_0;
+  return threadHandle == NULL || WaitForSingleObject(threadHandle, 0) != WAIT_TIMEOUT;
 }
 
 
@@ -2037,9 +2039,18 @@ void PProcess::HouseKeepingThread::Main()
     DWORD numHandles = 1;
     handles[0] = semaphore.GetHandle();
     for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
-      handles[numHandles] = process.activeThreads.GetDataAt(i).GetHandle();
-      if (handles[numHandles] != process.GetHandle())
-        numHandles++;
+      PThread & thread = process.activeThreads.GetDataAt(i);
+      DWORD id = thread.CleanUpOnTerminated();
+      if (id != 0) {
+        process.activeThreads.SetAt(id, NULL);
+        numHandles = 1;
+        i = -1;
+      }
+      else {
+        handles[numHandles] = thread.GetHandle();
+        if (handles[numHandles] != process.GetHandle())
+          numHandles++;
+      }
     }
     process.threadMutex.Signal();
 
@@ -2056,17 +2067,6 @@ void PProcess::HouseKeepingThread::Main()
     PAssertOS(status != WAIT_FAILED);
 
     delete [] handles;
-
-    if (status != WAIT_TIMEOUT && status != WAIT_FAILED
-                                                  && status != WAIT_OBJECT_0) {
-      process.threadMutex.Wait();
-      for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
-        DWORD id = process.activeThreads.GetDataAt(i).CleanUpOnTerminated();
-        if (id != 0)
-          process.activeThreads.SetAt(id, NULL);
-      }
-      process.threadMutex.Signal();
-    }
   }
 }
 
