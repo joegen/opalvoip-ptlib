@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.21  1999/06/06 05:07:17  robertj
+ * Fixed documentation error.
+ *
  * Revision 1.20  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -170,10 +173,10 @@ class PThread : public PObject
        execute the code for the thread.
        
        Note that the exact timing of the execution of code in threads can
-       never be predicted. Thus never assume that on return from this
-       constructor that the thread has executed any code at all. The only
-       guarentee is that it will {\bf not} be executed if the thread is
-       started suspended.
+       never be predicted. Thus you you can get a race condition on
+       intialising a descendent class. To avoid this problem a thread is
+       always started suspended. You must call the Resume() function after
+       your descendent class construction is complete.
 
        If synchronisation is required between threads then the use of
        semaphores is essential.
