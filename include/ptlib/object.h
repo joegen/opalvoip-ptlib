@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.58  2000/01/07 12:31:12  robertj
+ * Fixed 8 byte alignment on memory heap checking.
+ *
  * Revision 1.57  2000/01/05 00:29:12  robertj
  * Fixed alignment problems in memory checking debug functions.
  *
@@ -709,14 +712,15 @@ class PMemoryHeap {
 #pragma pack(1)
     struct Header {
       enum {
-        NumGuardBytes = (sizeof(Header *) +
-                         sizeof(Header *) +
-                         sizeof(const char *) +
-                         sizeof(const char *) +
-                         sizeof(size_t) +
-                         sizeof(DWORD) +
-                         sizeof(WORD) +
-                         sizeof(BYTE))%sizeof(void *) + sizeof(void *)
+        // Assure that the Header struct is aligned to 8 byte boundary
+        NumGuardBytes = 16 - (sizeof(Header *) +
+                              sizeof(Header *) +
+                              sizeof(const char *) +
+                              sizeof(const char *) +
+                              sizeof(size_t) +
+                              sizeof(DWORD) +
+                              sizeof(WORD) +
+                              sizeof(BYTE))%8
       };
 
       Header     * prev;
