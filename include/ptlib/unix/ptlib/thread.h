@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.23  2001/07/09 04:26:08  yurik
+ * Fixed lack of pthread_self function on BeOS
+ *
  * Revision 1.22  2001/05/23 00:18:55  robertj
  * Added support for real time threads, thanks Erland Lewin.
  *
@@ -111,6 +114,10 @@
 class PProcess;
 class PSemaphore;
 
+#ifdef BE_THREADS
+thread_id pthread_self(void) { return find_thread(NULL); }
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
@@ -176,7 +183,6 @@ class PSemaphore;
 	thread_id threadId;
 	int32 priority;
 	PINDEX originalStackSize;
-
 #else
 
   protected:
