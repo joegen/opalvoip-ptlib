@@ -2407,6 +2407,7 @@ EXPORTS
     ?GetReal@PConfig@@QBENABVPString@@N@Z @1587 NONAME ;public: double __thiscall PConfig::GetReal(class PString const &,double)const 
     ?GetRefAt@PAbstractDictionary@@UBEAAVPObject@@ABV2@@Z @1588 NONAME ;public: virtual class PObject & __thiscall PAbstractDictionary::GetRefAt(class PObject const &)const 
     ?GetReferenceAt@PAbstractList@@IBEAAVPObject@@H@Z @1589 NONAME ;protected: class PObject & __thiscall PAbstractList::GetReferenceAt(int)const 
+    ?GetResetTime@PTimer@@QBEABVPTimeInterval@@XZ @4228 NONAME ;public: class PTimeInterval const & __thiscall PTimer::GetResetTime(void)const 
     ?GetReturnCode@PPipeChannel@@QBEHXZ @1590 NONAME ;public: int __thiscall PPipeChannel::GetReturnCode(void)const 
     ?GetRing@PSerialChannel@@QAEHXZ @1591 NONAME ;public: int __thiscall PSerialChannel::GetRing(void)
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @2485 NONAME ;public: static int __cdecl PIPSocket::GetRouteTable(class PList<class PIPSocket::RouteEntry> &)
@@ -3091,6 +3092,7 @@ EXPORTS
     ?Rename@PFile@@SAHABVPFilePath@@ABVPString@@H@Z @2090 NONAME ;public: static int __cdecl PFile::Rename(class PFilePath const &,class PString const &,int)
     ?Replace@PString@@QAEXABV1@0HH@Z @2091 NONAME ;public: void __thiscall PString::Replace(class PString const &,class PString const &,int,int)
     ?ReportStatus@PServiceProcess@@AAEHKKKK@Z @2092 NONAME ;private: int __thiscall PServiceProcess::ReportStatus(unsigned long,unsigned long,unsigned long,unsigned long)
+    ?Reset@PTimer@@QAEXXZ @4229 NONAME ;public: void __thiscall PTimer::Reset(void)
     ?Reset@PWin32Overlapped@@QAEXXZ @2093 NONAME ;public: void __thiscall PWin32Overlapped::Reset(void)
     ?Resolution@PTimer@@SAIXZ @2094 NONAME ;public: static unsigned int __cdecl PTimer::Resolution(void)
     ?Restart@PDirectory@@QAEHH@Z @2095 NONAME ;public: int __thiscall PDirectory::Restart(int)

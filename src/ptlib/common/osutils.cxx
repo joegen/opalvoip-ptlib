@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.171  2001/11/14 06:06:26  robertj
+ * Added functions on PTimer to get reset value and restart timer to it.
+ *
  * Revision 1.170  2001/10/15 00:48:02  robertj
  * Fixed warning on later MSVC compilers.
  *
@@ -967,6 +970,13 @@ void PTimer::Resume()
   if (state == Paused)
     state = Starting;
   timerList->processingMutex.Signal();
+}
+
+
+void PTimer::Reset()
+{
+  timerList->processingMutex.Wait();
+  StartRunning(oneshot);
 }
 
 
