@@ -856,6 +856,7 @@ Optional Features:
   --disable-vxml          disable VXML support
   --disable-jabber        disable Jabber support
   --disable-xmlrpc        disable XMLRPC support
+  --disable-soap         disable SOAP support
   --disable-tts           disable Text-ToSpeech support (default disabled)
   --disable-ipv6          disable IPV6 support
   --disable-qos           disable QOS support
@@ -2756,6 +2757,7 @@ default_video=yes
 default_alsa=yes
 default_http=yes
 default_httpsvc=yes
+default_soap=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -2783,6 +2785,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_alsa=yes
   default_http=yes
   default_httpsvc=no
+  default_soap=no
 fi
 
 
@@ -4421,6 +4424,7 @@ fi
 fi
 
 
+
 plugins="no"
 echo "$as_me:$LINENO: checking if plugins support needs to be compiled" >&5
 echo $ECHO_N "checking if plugins support needs to be compiled... $ECHO_C" >&6
@@ -5852,9 +5856,13 @@ fi
 
 
 
+
+
+
 HAS_VXML=
 HAS_JABBER=
 HAS_XMLRPC=
+HAS_SOAP=
 if test "$enable_expat" = "no" ; then
   { echo "$as_me:$LINENO: VXML disabled as Expat is disabled" >&5
 echo "$as_me: VXML disabled as Expat is disabled" >&6;}
@@ -5923,6 +5931,26 @@ echo "$as_me: XMLRPC disabled" >&6;}
 _ACEOF
 
   fi
+
+
+  # Check whether --enable-soap or --disable-soap was given.
+if test "${enable_soap+set}" = set; then
+  enableval="$enable_soap"
+
+fi;
+
+  if test "${enable_soap}z" = "z" ; then
+    enable_soap=$default_soap
+  fi
+  if test "$enable_soap" = "no" ; then
+    { echo "$as_me:$LINENO: SOAP disabled" >&5
+echo "$as_me: SOAP disabled" >&6;}
+  else
+    cat >>confdefs.h <<\_ACEOF
+#define P_SOAP 1
+_ACEOF
+
+  fi
 fi
 
 
@@ -5951,6 +5979,7 @@ else
 #define P_TTS 1
 _ACEOF
 
+  HAS_TTS=1
 fi
 
 
@@ -6368,6 +6397,7 @@ fi
 
 
 
+
 # Check whether --enable-video or --disable-video was given.
 if test "${enable_video+set}" = set; then
   enableval="$enable_video"
@@ -6542,6 +6572,7 @@ _ACEOF
 #define P_VIDEO 1
 _ACEOF
 
+      HAS_VIDEO=1
     fi
   fi
 fi
