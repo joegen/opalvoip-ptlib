@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.5  1998/11/30 02:55:10  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/24 03:30:02  robertj
  * Added open software license.
  *
@@ -74,7 +77,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PFile
 
-#include "../../common/ptlib/file.h"
+#include "../../file.h"
   protected:
     virtual BOOL IsTextFile() const;
       // Return TRUE if text file translation is required
