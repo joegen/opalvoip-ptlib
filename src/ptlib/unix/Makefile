@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.14 1996/08/03 12:05:10 craigs Exp $
+# $Id: Makefile,v 1.15 1996/09/21 05:41:41 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.15  1996/09/21 05:41:41  craigs
+# Added new common files
+#
 # Revision 1.14  1996/08/03 12:05:10  craigs
 # *** empty log message ***
 #
@@ -65,6 +68,7 @@ SOURCES		= switch.cxx \
 		  remconn.cxx \
 		  serchan.cxx \
 		  pipechan.cxx \
+		  svcproc.cxx \
 		  utfile.cxx \
 		  usfile.cxx \
 		  uftp.cxx \
@@ -77,6 +81,8 @@ SOURCES		= switch.cxx \
 		  uicmp.cxx \
 		  uhttpsvc.cxx \
 		  uhttpform.cxx \
+		  uasn.cxx \
+		  usnmp.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
@@ -84,6 +90,12 @@ SOURCES		= switch.cxx \
 		  $(COMMONSRC)/pmain.cxx \
 		  $(COMMONSRC)/ptime.cxx \
 		  $(COMMONSRC)/collect.cxx \
+		  $(COMMONSRC)/snmpclnt.cxx \
+		  $(COMMONSRC)/snmpserv.cxx \
+		  $(COMMONSRC)/httpclnt.cxx \
+		  $(COMMONSRC)/httpsrvr.cxx \
+		  $(COMMONSRC)/ftpclnt.cxx \
+		  $(COMMONSRC)/ftpsrvr.cxx 
 
 #######################################################
 
@@ -102,7 +114,7 @@ endif
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
 thelot:
-	make both
+	make alllibs
 	( cd ../../apps/mibmastr; make clean ; make both; )
 	( cd ../../apps/firedoor; make clean ; make both; )
 
@@ -113,6 +125,10 @@ test:
             | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' \
 	)
 
+distunix:
+	(cd $(PWLIBDIR); tar -czvf unix-src.tgz \
+	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
+	unix/src/common.mak unix/include/* )
 distsrc:
 	(cd $(PWLIBDIR); tar -czvf ptlib-src.tgz \
 	unix/src/*.{cxx,h} unix/src/Makefile unix/src/unix.mak \
@@ -204,4 +220,3 @@ $(OBJDIR)/mailsock.o: $(COMMONSRC)/mailsock.cxx
 
 $(OBJDIR)/ftp.o: ../../common/src/ftp.cxx 
 # Do not delete this line - make depend depends upon it
-
