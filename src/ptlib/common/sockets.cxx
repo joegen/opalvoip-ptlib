@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.9 1995/01/27 11:16:16 robertj Exp $
+ * $Id: sockets.cxx,v 1.10 1995/02/21 11:25:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.9  1995/01/27 11:16:16  robertj
+ * Revision 1.10  1995/02/21 11:25:29  robertj
+ * Further implementation of telnet socket, feature complete now.
+ *
+ * Revision 1.9  1995/01/27  11:16:16  robertj
  * Fixed missing cast in function, required by some platforms.
  *
  * Revision 1.8  1995/01/15  04:55:47  robertj
@@ -259,119 +262,46 @@ PTelnetSocket::PTelnetSocket(WORD newPort)
 
 
 PTelnetSocket::PTelnetSocket(const PString & address, WORD port)
-  : PTCPSocket(address, port)
+  : PTCPSocket(port)
 {
   Construct();
+  Open(address);
 }
 
 
 void PTelnetSocket::Construct()
 {
+  synchronising = 0;
+  terminalType = "UNKNOWN";
   state = StateNormal;
-  memset(willOptions, 0, sizeof(willOptions));
-  memset(doOptions, 0, sizeof(doOptions));
+  memset(option, 0, sizeof(option));
+
+  if (port == 0)
+    port = GetPort("telnet");
+
+#ifdef _DEBUG
   debug = TRUE;
+#endif
 }
 
 
-BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
+#define PTelnetError if (debug) PError << "PTelnetSocket: "
+
+BOOL PTelnetSocket::Open(const PString & host, WORD newPort)
 {
-  PBYTEArray buffer(bytesToRead);
-  PINDEX charsLeft = bytesToRead;
-  BYTE * dst = (BYTE *)data;
+  if (!PTCPSocket::Open(host, newPort))
+    return FALSE;
 
-  while (charsLeft > 0) {
-    BYTE * src = buffer.GetPointer(charsLeft);
-    if (!PTCPSocket::Read(src, charsLeft)) {
-      lastReadCount = bytesToRead - charsLeft;
-      return lastReadCount > 0;
-    }
+  PTelnetError << "open" << endl;
 
-    while (lastReadCount > 0) {
-      switch (state) {
-        case StateIAC:
-          switch (*src) {
-            case IAC:
-              state = StateNormal;
-              return IAC;
-
-            case DO:
-              state = StateDo;
-              break;
-
-            case DONT:
-              state = StateDont;
-              break;
-
-            case WILL:
-              state = StateWill;
-              break;
-
-            case WONT:
-              state = StateWont;
-              break;
-
-            case SE :          // subnegotiation end
-            case NOP :         // no operation
-            case DataMark :    // data stream portion of a Synch
-            case Break :       // NVT character break
-            case Interrupt :   // The function IP
-            case Abort :       // The function AO
-            case AreYouThere : // The function AYT
-            case EraseChar :   // The function EC
-            case EraseLine :   // The function EL
-            case GoAhead :     // The function GA
-            case SB :          // subnegotiation start
-              state = StateNormal;
-              break;
-
-            default:
-              if (OnUnknownCommand(*src))
-                state = StateNormal;
-              break;
-          }
-          break;
-
-        case StateDo:
-          OnDo(*src);
-          state = StateNormal;
-          break;
-
-        case StateDont:
-          OnDont(*src);
-          state = StateNormal;
-          break;
-
-        case StateWill:
-          OnWill(*src);
-          state = StateNormal;
-          break;
-
-        case StateWont:
-          OnWont(*src);
-          state = StateNormal;
-          break;
-
-        case StateNormal:
-        default:
-          if (*src == IAC)
-            state = StateIAC;
-          else {
-            if (doOptions[TransmitBinary])
-              *dst++ = *src;
-            else
-              *dst++ = (BYTE)(0x7f&*src);
-            charsLeft--;
-          }
-          break;
-      }
-      lastReadCount--;
-      src++;
-    }
-  }
-  lastReadCount = bytesToRead;
+  SendDo(SuppressGoAhead, TRUE);
+  SendWill(TerminalType, TRUE);
+  SendWill(WindowSize, TRUE);
+  SendWill(TerminalSpeed, TRUE);
+  SendDo(StatusOption, TRUE);
   return TRUE;
 }
+
 
 BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
 {
@@ -407,106 +337,612 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
   return TRUE;
 }
 
-#define IMPLEMENT_SEND_CMD(n,c) \
-  void PTelnetSocket::Send ##n## (BYTE code) \
-  { BYTE cmd[3] = {IAC, c}; cmd[2] = code; PTCPSocket::Write(cmd, 3);  }
 
-IMPLEMENT_SEND_CMD(Will, WILL)
-IMPLEMENT_SEND_CMD(Wont, WONT)
-IMPLEMENT_SEND_CMD(Do,   DO)
-IMPLEMENT_SEND_CMD(Dont, DONT)
+void PTelnetSocket::SendCommand(Command cmd, int opt)
+{
+  BYTE buffer[3];
+  buffer[0] = IAC;
+  buffer[1] = (BYTE)cmd;
 
-static struct {
-  BOOL can;
-  char * name;
-} KnownTELNETOptions[PTelnetSocket::MaxOptions] = 
-  { 
-    { TRUE,  "TransmitBinary" },
-    { TRUE,  "Echo" },
-    { FALSE, NULL },
-    { TRUE,  "SuppressGoAhead" },
-    { FALSE, NULL },
-    { TRUE,  "Status" },
-    { TRUE,  "TimingMark" }
-  };
+  switch (cmd) {
+    case DO :
+    case DONT :
+    case WILL :
+    case WONT :
+      buffer[2] = (BYTE)opt;
+      PTCPSocket::Write(buffer, 3);
+      break;
+
+    case InterruptProcess :
+    case Break :
+    case AbortProcess :
+    case SuspendProcess :
+    case AbortOutput :
+      if (opt) {
+        // Send the command
+        PTCPSocket::Write(buffer, 2);
+        // Send a TimingMark for output flush.
+        buffer[1] = TimingMark;
+        PTCPSocket::Write(buffer, 2);
+        // Send a DataMark for synchronisation.
+        if (cmd != AbortOutput) {
+          buffer[1] = DataMark;
+          PTCPSocket::Write(buffer, 2);
+          // Send the datamark character as the only out of band data byte.
+          WriteOutOfBand(&buffer[1], 1);
+        }
+        // Then flush any waiting input data.
+        PTimeInterval oldTimeout = readTimeout;
+        readTimeout = 0;
+        while (PTCPSocket::Read(buffer, sizeof(buffer)))
+          ;
+        readTimeout = oldTimeout;
+      }
+      break;
+
+    default :
+      PTCPSocket::Write(buffer, 2);
+  }
+}
+
 
 static PString GetTELNETOptionName(int code)
 {
-  if (code < PTelnetSocket::MaxOptions && KnownTELNETOptions[code].name != NULL)
-    return KnownTELNETOptions[code].name;
+  static const char * name[] = {
+    "TransmitBinary",
+    "EchoOption",
+    "ReconnectOption",
+    "SuppressGoAhead",
+    "MessageSizeOption",
+    "StatusOption",
+    "TimingMark",
+    "RCTEOption",
+    "OutputLineWidth",
+    "OutputPageSize",
+    "CRDisposition",
+    "HorizontalTabsStops",
+    "HorizTabDisposition",
+    "FormFeedDisposition",
+    "VerticalTabStops",
+    "VertTabDisposition",
+    "LineFeedDisposition",
+    "ExtendedASCII",
+    "ForceLogout",
+    "ByteMacroOption",
+    "DataEntryTerminal",
+    "SupDupProtocol",
+    "SupDupOutput",
+    "SendLocation",
+    "TerminalType",
+    "EndOfRecordOption",
+    "TACACSUID",
+    "OutputMark",
+    "TerminalLocation",
+    "Use3270RegimeOption",
+    "UseX3PADOption",
+    "WindowSize",
+    "TerminalSpeed",
+    "FlowControl",
+    "LineMode",
+    "XDisplayLocation",
+    "EnvironmentOption",
+    "AuthenticateOption",
+    "EncriptionOption"
+  };
 
-  return PString(PString::Unsigned, code);
+  if (code < PARRAYSIZE(name))
+    return name[code];
+  if (code == PTelnetSocket::ExtendedOptionsList)
+    return "ExtendedOptionsList";
+  return PString(PString::Printf, "Option #%u", code);
 }
 
 
-void PTelnetSocket::OnDo(BYTE code)
+void PTelnetSocket::SendDo(BYTE code, BOOL initiating)
 {
-  if (debug)
-    PError << "DO " << GetTELNETOptionName(code) << endl;
-  if (code < MaxOptions && KnownTELNETOptions[code].can) {
-    willOptions[code] = TRUE;
-    SendWill(code);
+  OptionInfo & opt = option[code];
+
+  if (initiating) {
+    if (opt.wantDo || (opt.isDo && opt.respondDoDont == 0))
+      return;
+    opt.wantDo = TRUE;
+    opt.respondDoDont++;
   }
-  else
-    SendWont(code);
+
+  SendCommand(DO, code);
+
+  PTelnetError << "tx DO " << GetTELNETOptionName(code) << endl;
 }
 
 
-void PTelnetSocket::OnDont(BYTE code)
+void PTelnetSocket::SendDont(BYTE code, BOOL initiating)
 {
-  if (debug)
-    PError << "DONT " << GetTELNETOptionName(code) << endl;
-  if (code < MaxOptions && KnownTELNETOptions[code].can)
-    willOptions[code] = FALSE;
-}
+  OptionInfo & opt = option[code];
 
-
-void PTelnetSocket::OnWill(BYTE code)
-{
-  if (debug)
-    PError << "WILL " << GetTELNETOptionName(code) << endl;
-  if (code < MaxOptions && KnownTELNETOptions[code].can) {
-    doOptions[code] = TRUE;
-    SendDo(code);
+  if (initiating) {
+    if (!opt.wantDo || (!opt.isDo && opt.respondDoDont == 0))
+      return;
+    opt.wantDo = FALSE;
+    opt.respondDoDont++;
   }
-  else
-    SendDont(code);
+
+  SendCommand(DONT, code);
+
+  PTelnetError << "tx DONT " << GetTELNETOptionName(code) << endl;
+}
+
+
+void PTelnetSocket::SendWill(BYTE code, BOOL initiating)
+{
+  OptionInfo & opt = option[code];
+
+  if (initiating) {
+    if (opt.wantWill || (opt.isWill && opt.respondWillWont == 0))
+      return;
+    opt.wantWill = TRUE;
+    opt.respondWillWont++;
+  }
+
+  SendCommand(WILL, code);
+
+  PTelnetError << "tx WILL " << GetTELNETOptionName(code) << endl;
+}
+
+
+void PTelnetSocket::SendWont(BYTE code, BOOL initiating)
+{
+  OptionInfo & opt = option[code];
+
+  if (initiating) {
+    if (!opt.wantWill || (!opt.isWill && opt.respondWillWont == 0))
+      return;
+    opt.wantWill = FALSE;
+    opt.respondWillWont++;
+  }
+
+  SendCommand(WONT, code);
+
+  PTelnetError << "tx WONT " << GetTELNETOptionName(code) << endl;
+}
+
+
+void PTelnetSocket::SendSubOption(BYTE code, const BYTE * info, PINDEX len)
+{
+  PBYTEArray buffer(len + 6);
+  buffer[0] = IAC;
+  buffer[1] = SB;
+  buffer[2] = code;
+  buffer[3] = SubOptionIs;
+  PINDEX i = 4;
+  while (len-- > 0) {
+    if (*info == IAC)
+      buffer[i++] = IAC;
+    buffer[i++] = *info++;
+  }
+  buffer[i++] = IAC;
+  buffer[i] = SE;
+
+  PTCPSocket::Write(buffer, i);
+}
+
+
+void PTelnetSocket::SetTerminalType(const PString & newType)
+{
+  terminalType = newType;
+  if (option[TerminalType].isWill)
+    SendSubOption(TerminalType, terminalType, terminalType.GetLength());
+}
+
+
+void PTelnetSocket::SetWindowSize(WORD width, WORD height)
+{
+  windowWidth = width;
+  windowHeight = height;
+  if (option[TerminalType].isWill) {
+    BYTE buffer[4];
+    buffer[0] = (BYTE)(width >> 8);
+    buffer[1] = (BYTE)width;
+    buffer[2] = (BYTE)(height >> 8);
+    buffer[3] = (BYTE)height;
+    SendSubOption(TerminalType, buffer, 4);
+  }
+}
+
+
+void PTelnetSocket::GetWindowSize(WORD & width, WORD & height) const
+{
+  width = windowWidth;
+  height = windowHeight;
+}
+
+
+BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
+{
+  PBYTEArray buffer(bytesToRead);
+  PINDEX charsLeft = bytesToRead;
+  BYTE * dst = (BYTE *)data;
+
+  while (charsLeft > 0) {
+    BYTE * src = buffer.GetPointer(charsLeft);
+    if (!PTCPSocket::Read(src, charsLeft)) {
+      lastReadCount = bytesToRead - charsLeft;
+      return lastReadCount > 0;
+    }
+
+    while (lastReadCount > 0) {
+      BYTE currentByte = *src++;
+      lastReadCount--;
+      switch (state) {
+        case StateCarriageReturn :
+          state = StateNormal;
+          if (currentByte == '\0')
+            break;  // Ignore \0 after CR
+          if (currentByte == '\n' && !option[EchoOption].wantDo) {
+            *dst++ = currentByte;
+            charsLeft--;
+            break;
+          }
+          // Else, fall through
+
+        case StateNormal :
+          if (currentByte == IAC)
+            state = StateIAC;
+          else if (currentByte == '\r' && !option[TransmitBinary].wantDo) {
+            /* The 'crmod' hack (see following) is needed since we can't set
+               CRMOD on output only. Machines like MULTICS like to send \r
+               without \n; since we must turn off CRMOD to get proper input,
+               the mapping is done here (sigh).
+
+               PS: This is stolen directly from the standard source...
+             */
+            if (lastReadCount > 0) {
+              currentByte = *src;
+              if (currentByte == '\0') { // a "true" CR
+                src++;
+                lastReadCount--;
+                *dst++ = '\r';
+                charsLeft--;
+              }
+              else if (currentByte == '\n' && !option[EchoOption].wantDo) {
+                src++;
+                lastReadCount--;
+                *dst++ = '\n';
+                charsLeft--;
+              }
+              else {
+                *dst++ = '\r';
+                charsLeft--;
+              }
+            }
+            else {
+              state = StateCarriageReturn;
+              *dst++ = '\r';
+              charsLeft--;
+            }
+          } else {
+            *dst++ = currentByte;
+            charsLeft--;
+          }
+          break;
+
+        case StateIAC :
+          switch (currentByte) {
+            case IAC :
+              state = StateNormal;
+              *dst++ = IAC;
+              charsLeft--;
+              return IAC;
+
+            case DO :
+              state = StateDo;
+              break;
+
+            case DONT :
+              state = StateDont;
+              break;
+
+            case WILL :
+              state = StateWill;
+              break;
+
+            case WONT :
+              state = StateWont;
+              break;
+
+            case DataMark :    // data stream portion of a Synch
+              /* We may have missed an urgent notification, so make sure we
+                 flush whatever is in the buffer currently.
+               */
+              PTelnetError << "received DataMark" << endl;
+              if (synchronising > 0)
+                synchronising--;
+              break;
+
+            case SB :          // subnegotiation start
+              state = StateSubNegotiations;
+              subOption.SetSize(0);
+              break;
+
+            default:
+              if (OnCommand(currentByte))
+                state = StateNormal;
+              break;
+          }
+          break;
+
+        case StateDo :
+          ProcessDo(currentByte);
+          state = StateNormal;
+          break;
+
+        case StateDont :
+          ProcessDont(currentByte);
+          state = StateNormal;
+          break;
+
+        case StateWill :
+          ProcessWill(currentByte);
+          state = StateNormal;
+          break;
+
+        case StateWont :
+          ProcessWont(currentByte);
+          state = StateNormal;
+          break;
+
+        case StateSubNegotiations :
+          if (currentByte == IAC)
+            state = StateEndNegotiations;
+          else
+            subOption[subOption.GetSize()] = currentByte;
+          break;
+
+        case StateEndNegotiations :
+          if (currentByte == SE)
+            state = StateNormal;
+          else if (currentByte != IAC) {
+            /* This is an error.  We only expect to get "IAC IAC" or "IAC SE".
+               Several things may have happend.  An IAC was not doubled, the
+               IAC SE was left off, or another option got inserted into the
+               suboption are all possibilities. If we assume that the IAC was
+               not doubled, and really the IAC SE was left off, we could get
+               into an infinate loop here.  So, instead, we terminate the
+               suboption, and process the partial suboption if we can.
+             */
+            state = StateIAC;
+            src--;  // Go back to character for IAC ccommand
+          }
+          else {
+            subOption[subOption.GetSize()] = currentByte;
+            state = StateSubNegotiations;
+            break;  // Was IAC IAC, subnegotiation not over yet.
+          }
+          if (subOption.GetSize() > 1 && option[subOption[0]].wantWill)
+            OnSubOption(subOption[0],
+                            ((const BYTE*)subOption)+1, subOption.GetSize()-1);
+          break;
+
+        default :
+          PTelnetError << "illegal state: " << (int)state << endl;
+          state = StateNormal;
+      }
+      if (synchronising > 0) {
+        charsLeft = bytesToRead;    // Flush data being received.
+        dst = (BYTE *)data;
+      }
+    }
+  }
+  lastReadCount = bytesToRead;
+  return TRUE;
+}
+
+
+void PTelnetSocket::ProcessDo(BYTE code)
+{
+  PTelnetError << "rx DO " << GetTELNETOptionName(code) << endl;
+
+  OptionInfo & opt = option[code];
+  if (opt.respondWillWont != 0) {
+    opt.respondWillWont--;
+    if (opt.respondWillWont != 0 && opt.isWill)
+      opt.respondWillWont--;
+  }
+
+  if (opt.respondWillWont == 0 && !opt.wantWill) {
+    switch (OnDo(code)) {
+      case WillDo :
+        opt.wantWill = TRUE;
+        SendWill(code, FALSE);
+        break;
+
+      case WontDont :
+        opt.respondWillWont++;
+        SendWont(code, FALSE);
+        break;
+
+      case IgnoreOption :
+        opt.isWill = FALSE;
+        return;
+    }
+  }
+  opt.isWill = TRUE;
+}
+
+
+PTelnetSocket::OptionAction PTelnetSocket::OnDo(BYTE code)
+{
+  switch (code) {
+    case TimingMark :
+      // Special case for TM.  We send a WILL, but pretend we sent WONT.
+      SendWill(code, FALSE);
+      return IgnoreOption;
+
+    case WindowSize :
+      SetWindowSize(windowWidth, windowHeight);
+      // Do next case
+
+    case TransmitBinary :
+    case TerminalSpeed :
+    case TerminalType :
+    case SuppressGoAhead :
+      return WillDo;
+  }
+
+  return WontDont;
+}
+
+
+void PTelnetSocket::ProcessDont(BYTE code)
+{
+  PTelnetError << "rx DONT " << GetTELNETOptionName(code) << endl;
+
+  OptionInfo & opt = option[code];
+  if (opt.respondWillWont != 0) {
+    opt.respondWillWont--;
+    if (opt.respondWillWont != 0 && opt.isWill)
+      opt.respondWillWont--;
+  }
+
+  if (opt.respondWillWont == 0 && opt.wantWill) {
+    OnDont(code);
+
+    // we always accept a DONT
+    opt.wantWill = FALSE;
+    if (opt.isWill)
+      SendWont(code, FALSE);
+  }
+
+  option[code].isWill = FALSE;
+}
+
+
+void PTelnetSocket::OnDont(BYTE)
+{
+  // Do nothing
+}
+
+
+void PTelnetSocket::ProcessWill(BYTE code)
+{
+  PTelnetError << "rx WILL " << GetTELNETOptionName(code) << endl;
+
+  OptionInfo & opt = option[code];
+  if (opt.respondDoDont != 0) {
+    opt.respondDoDont--;
+    if (opt.respondDoDont != 0 && opt.isDo)
+      opt.respondDoDont--;
+  }
+
+  if (opt.respondDoDont == 0 && !opt.wantDo) {
+    switch (OnWill(code)) {
+      case WillDo :
+        opt.wantDo = TRUE;
+        SendDo(code, FALSE);
+        break;
+
+      case WontDont :
+        opt.respondDoDont++;
+        SendDont(code, FALSE);
+        break;
+
+      case IgnoreOption :
+        opt.isDo = FALSE;
+        return;
+    }
+  }
+
+  opt.isDo = TRUE;
+}
+
+
+PTelnetSocket::OptionAction PTelnetSocket::OnWill(BYTE code)
+{
+  switch (code) {
+    case TimingMark :
+      /* Special case for TM.  If we get back a WILL, pretend we got back a
+         WONT. Never reply to TM will's/wont's.
+       */
+      return IgnoreOption;
+
+    case EchoOption :
+    case TransmitBinary :
+    case SuppressGoAhead :
+      // settimer(modenegotiated);
+      // Do next case
+
+    case StatusOption :
+      return WillDo;
+  }
+
+  return WontDont;
+}
+
+
+void PTelnetSocket::ProcessWont(BYTE code)
+{
+  PTelnetError << "rx WONT " << GetTELNETOptionName(code) << endl;
+
+  OptionInfo & opt = option[code];
+  if (opt.respondDoDont != 0) {
+    opt.respondDoDont--;
+    if (opt.respondDoDont != 0 && !opt.isDo)
+      opt.respondDoDont--;
+  }
+
+  if (code == TimingMark) {
+    opt.wantDo = FALSE;
+    opt.isDo = FALSE; // Never reply to TM will's/wont's
+  }
+  else if (opt.respondDoDont == 0 && opt.wantDo) {
+    OnWont(code);
+
+    opt.wantDo = FALSE;
+    if (opt.isDo)
+      SendDont(code, FALSE);
+  }
+
+  opt.isDo = FALSE;
 }
 
 
 void PTelnetSocket::OnWont(BYTE code)
 {
-  if (debug)
-    PError << "WONT " << GetTELNETOptionName(code) << endl;
-  if (code < MaxOptions && KnownTELNETOptions[code].can)
-    doOptions[code] = FALSE;
+  switch (code) {
+    case EchoOption :
+      // settimer(modenegotiated);
+      break;
+  }
 }
 
 
-BOOL PTelnetSocket::OnUnknownCommand(BYTE code)
+void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX)
 {
-  if (debug)
-    PError << "unknown telnet command " << (int)code << endl;
+  switch (code) {
+    case TerminalType :
+      if (*info == SubOptionSend)
+        SendSubOption(TerminalType, terminalType, terminalType.GetLength());
+      break;
+
+    case TerminalSpeed :
+      if (*info == SubOptionSend) {
+        static BYTE defSpeed[] = "38400,38400";
+        SendSubOption(TerminalType, defSpeed, sizeof(defSpeed)-1);
+      }
+      break;
+  }
+}
+
+
+BOOL PTelnetSocket::OnCommand(BYTE code)
+{
+  PTelnetError << "unknown command " << (int)code << endl;
   return TRUE;
 }
 
 void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)
 {
-  PError << "Out of band data received of length " << length << endl;
-}
-
-
-void PTelnetSocket::SendDataMark(Command ch)
-{
-  BYTE dataMark[2] = { DataMark };
-
-  // send the datamark character as the only out of band data byte
-  WriteOutOfBand(dataMark, 1);
-
-  // insert a datamark into the outgoing data stream
-  dataMark[0] = IAC;
-  dataMark[1] = ch;
-  PTCPSocket::Write(dataMark, 2);
+  PTelnetError << "out of band data received of length " << length << endl;
+  synchronising++;
 }
 
 
