@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.78  2001/04/23 00:34:29  robertj
+ * Added ability for PWaitAndSignal to not wait on semaphore.
+ *
  * Revision 1.77  2001/02/13 06:55:21  robertj
  * Fixed problem with operator= in PDirectory class, part of larger change previously made.
  *
@@ -738,8 +741,12 @@ PINLINE PArgList & PArgList::operator>>(int sh)
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-PINLINE PWaitAndSignal::PWaitAndSignal(PSemaphore & sem)
-  : semaphore(sem) { semaphore.Wait(); }
+PINLINE PWaitAndSignal::PWaitAndSignal(PSemaphore & sem, BOOL wait)
+  : semaphore(sem)
+  {
+    if (wait)
+      semaphore.Wait();
+  }
 
 PINLINE PWaitAndSignal::~PWaitAndSignal()
   { semaphore.Signal(); }
