@@ -29,8 +29,8 @@
  * Jac Goudsmit <jac@be.com>.
  *
  * $Log: beaudio.cxx,v $
- * Revision 1.13  2004/05/20 03:18:11  ykiryanov
- * Some changes with buffer sets
+ * Revision 1.14  2004/05/30 04:48:45  ykiryanov
+ * Stable version
  *
  * Revision 1.12  2004/05/14 05:26:57  ykiryanov
  * Fixed dynamic cast bug
@@ -97,7 +97,7 @@
 
 #define PRINT(x) do { printf(__FILE__ ":%d %s ", __LINE__, __FUNCTION__); printf x; printf("\n"); } while(0)
 
-#define STATUS(x) //PRINT((x "=%ld", (long)dwLastError))
+#define STATUS(x) PRINT((x "=%ld", (long)dwLastError))
 
 #define PRINTCB(x) //PRINT(x)
 
@@ -1019,11 +1019,12 @@ static void RecordBuffer(void *cookie, const void *buffer, size_t size, const me
 
 // This defines the number of times we would like to be called per second
 // to play/record data
-#define PLAYRECFREQ 80 
+#define PLAYRECFREQ 20 
 
 // Macro to let the default buffer size correspond neatly with the
 // setting we put into the format.
-#define DEFAULT_BUFSIZE(channels, rate, bits) ((channels*rate*(bits/8))/PLAYRECFREQ)
+#define DEFAULT_BUFSIZE(channels, rate, bits) 480
+//((channels*rate*(bits/8))/PLAYRECFREQ)
 
 PSoundChannelBeOS::PSoundChannelBeOS() :
 	mRecorder(NULL),
@@ -1431,6 +1432,8 @@ BOOL PSoundChannelBeOS::Open(const PString & dev,
 		PRINT(("... can't open, cleaning up"));
                 Close();
 	}
+
+        ::snooze(1*1000*1000);
 	
         PRINT(("Returning %s", result?"success":"failure"));
    	return result;
@@ -1438,24 +1441,6 @@ BOOL PSoundChannelBeOS::Open(const PString & dev,
 
 BOOL PSoundChannelBeOS::Abort()
 {
-	if (IsOpen())
-	{
-		PRINT(("Flushing the buffer"));
-		
-		// Stop the recorder if it's running
-		// Note: the player doesn't need to be stopped; it just won't get
-		// any data anymore
-		if (mRecorder)
-		{
-			mRecorder->Stop();
-		}
-
-		// Flush the buffer
-		mBuffer->Reset();
-
-		return TRUE;
-	}
-		
 	return FALSE;
 }
 
@@ -1629,8 +1614,7 @@ BOOL PSoundChannelBeOS::Close()
 
 BOOL PSoundChannelBeOS::SetBuffers(PINDEX size, PINDEX count)
 {
-      ::snooze(1000*1000); // snooze 1s, to allow audio settle 
-      return TRUE; //YK- Not necessary InternalSetBuffers(size*(mNumBuffers=count),size);
+      return InternalSetBuffers(size*(mNumBuffers=count),size);
 }
 
 
