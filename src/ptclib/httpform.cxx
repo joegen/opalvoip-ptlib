@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.43  2002/07/17 08:44:58  robertj
+ * Added links back to page and home page on accepted data html.
+ * Fixed display of validation error text if page not accepted.
+ *
  * Revision 1.42  2001/10/10 08:07:48  robertj
  * Fixed large memory leak of strings when doing POST to a form.
  *
@@ -1989,8 +1993,13 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   if (field->ValidateAll(data, errors)) {
     ((PHTTPField *)field)->SetAllValues(data);
 
-    if (msg.IsEmpty())
-      msg = "Accepted New Configuration";
+    if (msg.IsEmpty()) {
+      msg << PHTML::Title() << "Accepted New Configuration" << PHTML::Body()
+          << PHTML::Heading(1) << "Accepted New Configuration" << PHTML::Heading(1)
+          << PHTML::HotLink(request.url.AsString()) << "Reload page" << PHTML::HotLink()
+          << "&nbsp;&nbsp;&nbsp;&nbsp;"
+          << PHTML::HotLink("/") << "Home page" << PHTML::HotLink();
+    }
     else {
       PString block;
       PINDEX pos = 0;
@@ -2003,11 +2012,14 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
     }
   }
   else {
-    request.code = PHTTP::BadRequest;
-
     if (msg.IsEmpty()) {
-      msg = "Validation Error in Request";
-      msg << errors;
+      msg << PHTML::Title() << "Validation Error in Request" << PHTML::Body()
+          << PHTML::Heading(1) << "Validation Error in Request" << PHTML::Heading(1)
+          << errors
+          << PHTML::Paragraph()
+          << PHTML::HotLink(request.url.AsString()) << "Reload page" << PHTML::HotLink()
+          << "&nbsp;&nbsp;&nbsp;&nbsp;"
+          << PHTML::HotLink("/") << "Home page" << PHTML::HotLink();
     }
     else {
       PINDEX pos = 0;
