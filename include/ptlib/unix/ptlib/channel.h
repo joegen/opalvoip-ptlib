@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.10 1998/01/03 22:58:25 craigs Exp $
+ * $Id: channel.h,v 1.11 1998/03/26 04:55:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.11  1998/03/26 04:55:53  robertj
+ * Added PMutex and PSyncPoint
+ *
  * Revision 1.10  1998/01/03 22:58:25  craigs
  * Added PThread support
  *
@@ -42,13 +45,13 @@
 #pragma interface
 
 #include <pmachdep.h>
-#include <semaphor.h>
+#include <mutex.h>
 
 #include "../../common/ptlib/channel.h"
 
 #ifdef P_PTHREADS
   protected:
-     PSemaphore mutex;
+     PMutex mutex;
 #endif
 
   public:

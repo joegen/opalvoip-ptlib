@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.9 1998/01/04 08:13:32 craigs Exp $
+ * $Id: pprocess.h,v 1.10 1998/03/26 04:55:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.10  1998/03/26 04:55:53  robertj
+ * Added PMutex and PSyncPoint
+ *
  * Revision 1.9  1998/01/04 08:13:32  craigs
  * Removed extern reference to PProcessInstance
  *
@@ -43,6 +46,8 @@
 #ifndef _PPROCESS
 
 #pragma interface
+
+#include <syncpoint.h>
 
 PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
@@ -95,8 +100,8 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
   protected:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
     ThreadDict activeThreads;
-    PSemaphore threadMutex;
-    PSemaphore timerChangeSemaphore;
+    PMutex     threadMutex;
+    PSyncPoint timerChangeSemaphore;
     PThread * housekeepingThread;
 #endif
 };
