@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.107  1998/10/30 12:24:15  robertj
+ * Added ability to get all key values as a dictionary.
+ * Fixed warnings in GNU C.
+ *
  * Revision 1.106  1998/10/30 11:22:15  robertj
  * Added constructors that take strings as well as const char *'s.
  *
@@ -1360,6 +1364,18 @@ BOOL PFile::Copy(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 
 #ifdef _PCONFIG
 
+PStringToString PConfig::GetAllKeyValues(const PString & section) const
+{
+  PStringToString dict;
+
+  PStringList keys = GetKeys(section);
+  for (PINDEX i = 0; i < keys.GetSize(); i++)
+    dict.SetAt(keys[i], GetString(section, keys[i], ""));
+
+  return dict;
+}
+
+
 #ifndef _WIN32
 
 BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt) const
@@ -1730,7 +1746,7 @@ PString PArgList::GetOptionStringByIndex(PINDEX idx, const char * dflt) const
 PString PArgList::GetParameter(PINDEX num) const
 {
   int idx = shift+(int)num;
-  if (idx >= 0 && idx < parameterIndex.GetSize())
+  if (idx >= 0 && idx < (int)parameterIndex.GetSize())
     return argumentArray[parameterIndex[idx]];
 
   IllegalArgumentIndex(idx);
@@ -1743,7 +1759,7 @@ void PArgList::Shift(int sh)
   shift += sh;
   if (shift < 0)
     shift = 0;
-  else if (shift >= parameterIndex.GetSize())
+  else if (shift >= (int)parameterIndex.GetSize())
     shift = parameterIndex.GetSize() - 1;
 }
 
