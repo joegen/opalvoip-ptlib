@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.28 1997/08/28 12:49:51 robertj Exp $
+ * $Id: ptlib.cxx,v 1.29 1997/12/11 10:40:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.29  1997/12/11 10:40:29  robertj
+ * Fixed bug in SetType() function of FilePath.
+ *
  * Revision 1.28  1997/08/28 12:49:51  robertj
  * Fixed bug where could not change directory to UNC.
  *
@@ -338,7 +341,7 @@ void PFilePath::SetType(const PCaselessString & type)
 {
   PINDEX dot = FindLast('.');
   if (dot != P_MAX_INDEX)
-    *this = Left(dot-1) + type;
+    Splice(type, dot, GetLength()-dot);
   else
     *this += type;
 }
