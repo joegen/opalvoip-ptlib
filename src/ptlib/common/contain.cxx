@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.44 1996/01/02 12:51:05 robertj Exp $
+ * $Id: contain.cxx,v 1.45 1996/01/23 13:17:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.45  1996/01/23 13:17:38  robertj
+ * Added Replace() function to strings.
+ * String searching algorithm rewrite.
+ *
  * Revision 1.44  1996/01/02 12:51:05  robertj
  * Mac OS compatibility changes.
  * Removed requirement that PArray elements have parameterless constructor..
@@ -629,7 +633,7 @@ void PString::ReadFrom(istream &strm)
 
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
-  return InternalCompare(((const PString &)obj).theArray);
+  return InternalCompare(0, P_MAX_INDEX, ((const PString &)obj).theArray);
 }
 
 
@@ -737,29 +741,15 @@ PString & PString::operator+=(const char * cstr)
 }
 
 
-void PString::Insert(const char * cstr, PINDEX pos)
-{
-  register PINDEX slen = GetLength();
-  if (pos >= slen)
-    operator+=(cstr);
-  else {
-    MakeUnique();
-    PINDEX clen = strlen(PAssertNULL(cstr));
-    SetSize(slen+clen);
-    PSTRING_MOVE(theArray, pos+clen, theArray, pos, slen-pos);
-    PSTRING_COPY(theArray+pos, cstr, clen);
-  }
-}
-
-
 void PString::Delete(PINDEX start, PINDEX len)
 {
+  MakeUnique();
+
   register PINDEX slen = GetLength();
   if (start > slen)
     return;
 
-  MakeUnique();
-  if (start + len > slen)
+  if (len > slen - start)
     SetAt(start, '\0');
   else
     PSTRING_MOVE(theArray, start, theArray, start+len, slen-start-len+1);
@@ -821,38 +811,77 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 }
 
 
+PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
+{
+  char ch = theArray[offset];
+  if (ch < c)
+    return LessThan;
+  if (ch > c)
+    return GreaterThan;
+  return EqualTo;
+}
+
+
+PObject::Comparison PString::InternalCompare(
+                         PINDEX offset, PINDEX length, const char * cstr) const
+{
+  return (Comparison)strncmp(theArray+offset, PAssertNULL(cstr), length);
+}
+
+
 PINDEX PString::Find(char ch, PINDEX offset) const
 {
   register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-  char *cpos = strchr(theArray+offset, ch);
-  return cpos != NULL ? (int)(cpos - theArray) : P_MAX_INDEX;
+  while (offset < len) {
+    if (InternalCompare(offset, ch) == EqualTo)
+      return offset;
+    offset++;
+  }
+  return P_MAX_INDEX;
 }
 
 
 PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
-  register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-  char *cpos = strstr(theArray+offset, PAssertNULL(cstr));
-  return cpos != NULL ? (int)(cpos - theArray) : P_MAX_INDEX;
+  PAssertNULL(cstr);
+
+  PINDEX len = GetLength();
+  PINDEX clen = strlen(cstr);
+  if (clen > len)
+    return P_MAX_INDEX;
+
+  if (offset > len - clen)
+    return P_MAX_INDEX;
+
+  int strSum = 0;
+  int cstrSum = 0;
+  for (PINDEX i = 0; i < clen; i++) {
+    strSum += theArray[offset+i];
+    cstrSum += cstr[i];
+  }
+
+  // search for a matching substring
+  while (offset+clen < len) {
+    if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
+      return offset;
+    strSum -= theArray[offset++];
+    strSum += theArray[offset+clen];
+  }
+
+  return P_MAX_INDEX;
 }
 
 
 PINDEX PString::FindLast(char ch, PINDEX offset) const
 {
   PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
+  if (offset >= len)
+    offset = len-1;
 
-  char *cpos = theArray + offset;
-  while (*cpos != ch) {
+  while (InternalCompare(offset, ch) != EqualTo) {
     if (offset == 0)
       return P_MAX_INDEX;
     offset--;
-    cpos--;
   }
 
   return offset;
@@ -861,33 +890,90 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
 
 PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
-  PINDEX p1 = Find(cstr);
-  if (p1 == P_MAX_INDEX)
-    return P_MAX_INDEX;
+  PAssertNULL(cstr);
 
   PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
+  PINDEX clen = strlen(cstr);
+  if (clen > len)
+    return P_MAX_INDEX;
 
-  PINDEX p2;
-  while ((p2 = Find(cstr, p1+1)) != P_MAX_INDEX && p2 < offset)
-    p1 = p2;
+  if (offset == 0)
+    return P_MAX_INDEX;
 
-  return p1;
+  if (offset > len - clen)
+    offset = len - clen;
+
+  int strSum = 0;
+  int cstrSum = 0;
+  for (PINDEX i = 0; i < clen; i++) {
+    strSum += theArray[offset+i];
+    cstrSum += cstr[i];
+  }
+
+  // search for a matching substring
+  while (offset > 0) {
+    if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
+      return offset;
+    strSum += theArray[offset--];
+    strSum -= theArray[offset+clen];
+  }
+
+  return P_MAX_INDEX;
 }
 
 
-PINDEX PString::FindOneOf(const char * cstr, PINDEX offset) const
+PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 {
-  PAssertNULL(cstr);
-  register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-  for (char * cpos = theArray+offset; *cpos != '\0'; cpos++) {
-    if (strchr(cstr, *cpos) != NULL)
-      return (int)(cpos - theArray);
+  PAssertNULL(cset);
+  while (*cset != '\0') {
+    PINDEX pos = Find(*cset++, offset);
+    if (pos != P_MAX_INDEX)
+      return pos;
   }
   return P_MAX_INDEX;
+}
+
+
+void PString::Replace(const PString & target,
+                      const PString & subs,
+                      BOOL all, PINDEX offset)
+{
+  MakeUnique();
+
+  PINDEX tlen = target.GetLength();
+  PINDEX slen = subs.GetLength();
+  do {
+    PINDEX pos = Find(target, offset);
+    if (pos == P_MAX_INDEX)
+      return;
+    Splice(subs, pos, tlen);
+    offset = pos + slen;
+  } while (all);
+}
+
+
+void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
+{
+  register PINDEX slen = GetLength();
+  if (pos >= slen)
+    operator+=(cstr);
+  else {
+    MakeUnique();
+    PINDEX clen = strlen(PAssertNULL(cstr));
+    SetSize(slen+clen-len);
+    if (clen < len)
+      PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len);
+    else if (clen > len) {
+#ifdef PHAS_UNICODE
+      for (PINDEX i = slen+clen-len-1; i >= clen; i--)
+        ((WORD *)theArray)[i] = ((WORD *)theArray)[i-(clen - len)];
+#else
+      for (PINDEX i = slen+clen-len-1; i >= clen; i--)
+        theArray[i] = theArray[i-(clen - len)];
+#endif
+    }
+    PSTRING_COPY(theArray+pos, cstr, clen);
+  }
 }
 
 
@@ -1055,7 +1141,8 @@ PString PString::ToLiteral() const
     else if (isprint(*p))
       str += *p;
     else {
-      for (PINDEX i = 0; i < PARRAYSIZE(PStringEscapeValue); i++) {
+      PINDEX i;
+      for (i = 0; i < PARRAYSIZE(PStringEscapeValue); i++) {
         if (*p == PStringEscapeValue[i]) {
           str += PString('\\') + PStringEscapeCode[i];
           break;
@@ -1123,98 +1210,28 @@ PINDEX PCaselessString::HashFunction() const
 }
 
 
-PObject::Comparison PCaselessString::InternalCompare(const char * cstr) const
+PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) const
+{
+  int c1 = toupper(theArray[offset]);
+  int c2 = toupper(c);
+  if (c1 < c2)
+    return LessThan;
+  if (c1 > c2)
+    return GreaterThan;
+  return EqualTo;
+}
+
+
+PObject::Comparison PCaselessString::InternalCompare(
+                         PINDEX offset, PINDEX length, const char * cstr) const
 {
   PAssertNULL(cstr);
-  const char * pstr = PAssertNULL(theArray);
-  for (;;) {
-    int c1 = toupper(*pstr);
-    int c2 = toupper(*cstr);
-    if (c1 < c2)
-      return LessThan;
-    if (c1 > c2)
-      return GreaterThan;
-    if (*pstr == '\0')
-      return EqualTo;
-    pstr++;
-    cstr++;
+  while (length-- > 0 && (theArray[offset] != '\0' || *cstr != '\0')) {
+    Comparison c = InternalCompare(offset++, *cstr++);
+    if (c != EqualTo)
+      return c;
   }
-}
-
-
-PINDEX PCaselessString::Find(char ch, PINDEX offset) const
-{
-  register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-
-  char *cpos = theArray+offset;
-  int chu = toupper(ch);
-  while (toupper(*cpos) != chu) {
-    if (*cpos++ == '\0')
-      return P_MAX_INDEX;
-  }
-  return (int)(cpos - theArray);
-}
-
-
-PINDEX PCaselessString::Find(const char * cstr, PINDEX offset) const
-{
-  PAssertNULL(cstr);
-  register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-
-  const char * chpos = theArray+offset;
-  while (*chpos != '\0') {
-    const char * cptr = cstr;
-    const char * sptr = chpos;
-    while (toupper(*cptr) == toupper(*sptr)) {
-      cptr++;
-      if (*cptr == '\0')
-        return (int)(chpos - theArray);
-      sptr++;
-    }
-    chpos++;
-  }
-  return P_MAX_INDEX;
-}
-
-
-PINDEX PCaselessString::FindLast(char ch, PINDEX offset) const
-{
-  PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-
-  int chu = toupper(ch);
-  char *cpos = theArray + offset;
-  while (toupper(*cpos) != chu) {
-    if (offset == 0)
-      return P_MAX_INDEX;
-    offset--;
-    cpos--;
-  }
-
-  return offset;
-}
-
-
-PINDEX PCaselessString::FindOneOf(const char * cset, PINDEX offset) const
-{
-  PAssertNULL(cset);
-  register PINDEX len = GetLength();
-  if (offset > len)
-    offset = len;
-  for (char * cpos = theArray+offset; *cpos != '\0'; cpos++) {
-    const char * setptr = cset;
-    while (*setptr != '\0') {
-      if (toupper(*setptr) == toupper(*cpos))
-        return (int)(cpos - theArray);
-      setptr++;
-    }
-  }
-  return P_MAX_INDEX;
+  return EqualTo;
 }
 
 
