@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.16 1996/01/23 13:15:52 robertj Exp $
+ * $Id: object.cxx,v 1.17 1996/01/28 02:50:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.17  1996/01/28 02:50:27  robertj
+ * Added missing bit shift operators to 64 bit integer class.
+ * Added assert into all Compare functions to assure comparison between compatible objects.
+ *
  * Revision 1.16  1996/01/23 13:15:52  robertj
  * Mac Metrowerks compiler support.
  *
@@ -70,6 +74,7 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
     NULL,
     "Out of memory",
     "Null pointer reference",
+    "Invalid cast to non-descendant class",
     "Invalid array index",
     "Invalid array element",
     "Stack empty",
@@ -747,6 +752,7 @@ PSmartPointer::~PSmartPointer()
 
 PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PSmartPointer::Class()), PInvalidCast);
   PSmartObject * other = ((const PSmartPointer &)obj).object;
   if (object == other)
     return EqualTo;
@@ -808,6 +814,34 @@ void PInt64__::Div(const PInt64__ & v)
 
 void PInt64__::Mod(const PInt64__ & v)
 {
+}
+
+
+void PInt64__::ShiftLeft(int bits)
+{
+  if (bits >= 32) {
+    high = low << (bits - 32);
+    low = 0;
+  }
+  else {
+    high <<= bits;
+    high |= low >> (32 - bits);
+    low <<= bits;
+  }
+}
+
+
+void PInt64__::ShiftRight(int bits)
+{
+  if (bits >= 32) {
+    low = high >> (bits - 32);
+    high = 0;
+  }
+  else {
+    low >>= bits;
+    low |= high << (32 - bits);
+    high >>= bits;
+  }
 }
 
 
@@ -949,7 +983,7 @@ istream & operator>>(istream & stream, PInt64 & v)
   switch (stream.peek()) {
     case '-' :
       stream.ignore();
-      v = -(PInt64)Inp64(stream)
+      v = -(PInt64)Inp64(stream);
       break;
     case '+' :
       stream.ignore();
