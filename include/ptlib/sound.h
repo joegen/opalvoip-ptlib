@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.15  1999/05/28 14:04:10  robertj
+ * Added function to get default audio device.
+ *
  * Revision 1.14  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -257,10 +260,7 @@ class PSoundChannel : public PChannel
 
   /**@name Open functions */
   //@{
-    static PStringArray GetDeviceNames(
-      Directions dir    // Sound I/O direction
-    );
-    /* Get all of the names for sound devices/drivers that are available on
+    /**Get all of the names for sound devices/drivers that are available on
        this platform. Note that a named device may not necessarily do both
        playing and recording so the arrays returned with the #dir#
        parameter in each value is not necessarily the same.
@@ -268,6 +268,21 @@ class PSoundChannel : public PChannel
        @return
        An array of platform dependent strings for each sound player/recorder.
      */
+    static PStringArray GetDeviceNames(
+      Directions dir    // Sound I/O direction
+    );
+
+    /**Get the name for the default sound devices/driver that is on this
+       platform. Note that a named device may not necessarily do both
+       playing and recording so the arrays returned with the #dir#
+       parameter in each value is not necessarily the same.
+
+       @return
+       A platform dependent string for the sound player/recorder.
+     */
+    static PString GetDefaultDevice(
+      Directions dir    // Sound I/O direction
+    );
 
 
     /**Open the specified device for playing or recording. The device name is
