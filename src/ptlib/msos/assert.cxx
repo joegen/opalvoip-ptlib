@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.23  1998/12/04 10:10:45  robertj
+ * Added virtual for determining if process is a service. Fixes linkage problem.
+ *
  * Revision 1.22  1998/11/30 05:33:08  robertj
  * Fixed duplicate debug stream class, ther can be only one.
  *
@@ -327,7 +330,7 @@ void PAssertFunc(const char * file, int line, const char * msg)
 
   str << ends;
 
-  if (PProcess::Current().IsDescendant(PServiceProcess::Class())) {
+  if (PProcess::Current().IsServiceProcess()) {
     PSystemLog::Output(PSystemLog::Fatal, str.str());
 #if defined(_MSC_VER) && defined(_DEBUG)
     if (PServiceProcess::Current().debugMode)
