@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.26  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.25  2004/07/12 09:17:21  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -245,6 +248,10 @@ BOOL PPluginManager::RegisterService(const PString & serviceName,
 
   PPluginService * service = new PPluginService(serviceName, serviceType, descriptor);
   serviceList.Append(service);
+
+  PDevicePluginAdapterBase * adapter = PFactory<PDevicePluginAdapterBase>::CreateInstance(serviceType);
+  if (adapter != NULL)
+    adapter->CreateFactory(serviceName);
 
   return TRUE;
 }
