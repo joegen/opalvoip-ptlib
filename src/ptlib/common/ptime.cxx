@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.25  1999/03/29 03:38:58  robertj
+ * Improved time & date parser.
+ *
  * Revision 1.24  1998/11/30 12:31:46  robertj
  * Removed redundent conditionals.
  *
@@ -393,7 +396,7 @@ PString PTime::AsString(const char * format, int zone) const
 
   // the localtime call automatically adjusts for daylight savings time
   // so take this into account when converting non-local times
-  if (zone == Local) 
+  if (zone == Local)
     zone = GetTimeZone();  // includes daylight savings time
   time_t realTime = theTime + zone*60;     // to correct timezone
   struct tm ts;
@@ -505,361 +508,58 @@ PString PTime::AsString(const char * format, int zone) const
 //  Time parser
 //
 
-class yytype {
-  public:
-    PString sval;
-    int     ival;
-};
+extern "C" {
 
-enum {
-  IDENTIFIER   = 257,
-  INTEGER,
-  MONTH,
-  DAY,
-  AM,
-  PM,
-  ZONE
-};
+#ifndef STDAPICALLTYPE
+#define STDAPICALLTYPE
+#endif
 
-typedef struct {
-  const char * string;
-  int          token;
-  int          value;
-} stringKey;
+time_t STDAPICALLTYPE PTimeParse(void *, struct tm *, int);
 
-#define NUM_LIST_ENTRIES  50
-
-static const stringKey idList[NUM_LIST_ENTRIES] = {
-  { "am",            AM },
-  { "apr",           MONTH, PTime::April   },
-  { "april",         MONTH, PTime::April   },
-  { "aug",           MONTH, PTime::August  },
-  { "august",        MONTH, PTime::August   },
-  { "cdt",           ZONE,  -5*60+0 },
-  { "cst",           ZONE,  -6*60+0 },
-  { "dec",           MONTH, PTime::December },
-  { "december",      MONTH, PTime::December   },
-  { "edt",           ZONE,  -4*60+0 },
-  { "est",           ZONE,  -5*60+0 },
-  { "feb",           MONTH, PTime::February },
-  { "february",      MONTH, PTime::February   },
-  { "fri",           DAY,   PTime::Friday },
-  { "friday",        DAY,   PTime::Friday },
-  { "gmt",           ZONE,  PTime::GMT },
-  { "jan",           MONTH, PTime::January  },
-  { "january",       MONTH, PTime::January  },
-  { "jul",           MONTH, PTime::July  },
-  { "july",          MONTH, PTime::July  },
-  { "jun",           MONTH, PTime::June  },
-  { "june",          MONTH, PTime::June  },
-  { "mar",           MONTH, PTime::March  },
-  { "march",         MONTH, PTime::March   },
-  { "may",           MONTH, PTime::May  },
-  { "may",           MONTH, PTime::May  },
-  { "mdt",           ZONE,  -6*60+0 },
-  { "mon",           DAY,   PTime::Monday },
-  { "monday",        DAY,   PTime::Monday },
-  { "mst",           ZONE,  -7*60+0 },
-  { "nov",           MONTH, PTime::November  },
-  { "november",      MONTH, PTime::November },
-  { "oct",           MONTH, PTime::October  },
-  { "october",       MONTH, PTime::October  },
-  { "pdt",           ZONE,  -7*60+0 },
-  { "pm",            PM },
-  { "pst",           ZONE,  -8*60+0 },
-  { "sat",           DAY,   PTime::Saturday },
-  { "saturday",      DAY,   PTime::Saturday },
-  { "sep",           MONTH, PTime::September  },
-  { "september",     MONTH, PTime::September   },
-  { "sun",           DAY,   PTime::Sunday },
-  { "sunday",        DAY,   PTime::Sunday },
-  { "thu",           DAY,   PTime::Thursday },
-  { "thursday",      DAY,   PTime::Thursday },
-  { "tue",           DAY,   PTime::Tuesday },
-  { "tuesday",       DAY,   PTime::Tuesday },
-  { "utc",           ZONE,  PTime::UTC },
-  { "wed",           DAY,   PTime::Wednesday },
-  { "wednesday",     DAY,   PTime::Wednesday }
-};
-
-static int compare(const void * key, const void * str)
+int STDAPICALLTYPE PTimeGetChar(void * stream)
 {
-  return strcmp((const char *)key, ((const stringKey *)str)->string);
+  return ((istream *)stream)->get();
 }
 
-static int get_token(istream & strm, PString & yytext, yytype & yyval)
+
+void STDAPICALLTYPE PTimeUngetChar(void * stream, int c)
 {
-  for (;;) {
-    int ch = strm.get();
-    yytext = (char)tolower(ch);
-
-    if (ch < 0)
-      return -1;
-    else if (isdigit(ch)) {
-      yyval.ival = ch - '0';
-      while (isdigit(ch = strm.get())) {
-        yyval.ival *= 10;
-        yyval.ival += ch - '0';
-        yytext += (char)ch;
-      }
-      strm.putback((char)ch);
-      return INTEGER;
-  
-    } else if (isalpha(ch)) {
-      while (isalpha(ch = strm.get())) 
-        yytext += (char)tolower(ch);
-      strm.putback((char)ch);
-  
-      yyval.sval = yytext;
-
-      if (yytext *= PTime::GetTimeZoneString(PTime::StandardTime)) {
-        yyval.ival = PTime::Local;
-        return ZONE;
-      }
-
-      if (yytext *= PTime::GetTimeZoneString(PTime::DaylightSavings)) {
-        yyval.ival = PTime::GetTimeZone(PTime::DaylightSavings);
-        return ZONE;
-      }
-
-      stringKey * found = (stringKey *)bsearch((const char *)yytext,
-                                               idList,
-                                               NUM_LIST_ENTRIES,
-                                               sizeof(stringKey),
-                                               compare);
-      if (found != NULL) {
-        yyval.ival = found->value;
-        return found->token;
-      }
-        
-      return IDENTIFIER;
-
-    } else if (isspace(ch)) {
-      while (isspace(ch = strm.get())) 
-        ;
-      strm.putback((char)ch);
-    } else if (ch == '+' || ch == '-' || ch == ':') 
-      return ch;
-  }
+  ((istream *)stream)->putback((char)c);
 }
 
-void PTime::ReadFrom(istream &strm)
+
+int STDAPICALLTYPE PTimeGetDateOrder()
 {
-  int token;
-  PString yytext;
-  yytype  yyval;
-
-  int month = -1;
-  int day = -1;
-  int year = -1;
-  int hours = -1;
-  int minutes = -1;
-  int seconds = -1;
-  int zone = 0;
-  BOOL zoneSet = FALSE;
-  int dow = -1;
-
-  token = get_token(strm, yytext, yyval);
-
-  int mul, tmp;
-  BOOL putback      = TRUE;
-  BOOL wantToFinish = FALSE;
-  BOOL haveMinimum  = FALSE;
-  BOOL finished     = FALSE;
-
-  for (;;) {
-    switch (token) {
-      case -1:
-        finished = TRUE;
-        putback = FALSE;
-        break;
-
-      case IDENTIFIER :
-        finished = TRUE;
-        break;
-
-      case DAY:
-        if (dow < 0)
-          dow = yyval.ival;
-        else
-          wantToFinish = TRUE;
-        token = get_token(strm, yytext, yyval);
-        break;
-
-      case MONTH:
-        if (month >= 0) {
-          wantToFinish = TRUE;
-          token = get_token(strm, yytext, yyval);
-        }
-        else {
-          month = yyval.ival;
-          token = get_token(strm, yytext, yyval);
-          if (token == '-') {
-            token = get_token(strm, yytext, yyval);
-            if (token == INTEGER) {
-              year = yyval.ival;
-              if (year < 70)
-                year += 2000;
-              else if (year < 100)
-                year += 1900;
-              token = get_token(strm, yytext, yyval);
-            }
-          }
-        }
-        break;
-
-      case INTEGER:
-        if ((day > 0) && (hours > 0) && (year > 0)) {
-          wantToFinish = TRUE;
-          token = get_token(strm, yytext, yyval);
-        }
-        else {
-          tmp = yyval.ival;
-          token = get_token(strm, yytext, yyval);
-          if (hours < 0 && token == ':') {
-            hours = tmp;
-            minutes = 0;
-            seconds = 0;
-            if ((token = get_token(strm, yytext, yyval)) == INTEGER) {
-              minutes = yyval.ival;
-              while ((token = get_token(strm, yytext, yyval)) == ':') 
-                ;
-              if (token == INTEGER) {
-                seconds = yyval.ival;
-                token = get_token(strm, yytext, yyval);
-              }
-            }
-            if (token == AM || token == PM) {
-              if (token == PM && hours <= 12)
-                hours += 12;
-              token = get_token(strm, yytext, yyval);
-            }
-          }
-          else if (day <= 0 && token == '-') {
-            day = tmp;
-            token = get_token(strm, yytext, yyval);
-          }
-          else if (day <= 0 && tmp <= 31) 
-            day = tmp;
-          else if (year < 0) {
-            year = tmp;
-            if (year < 70)
-              year += 2000;
-            else if (year < 100)
-              year += 1900;
-          }
-          else
-            wantToFinish = TRUE;
-        }
-        break;
-
-      case ZONE:
-        if (zoneSet) 
-          wantToFinish = TRUE;
-        else {
-          zone    = yyval.ival;
-          zoneSet = TRUE;
-        }
-        token = get_token(strm, yytext, yyval);
-        break;
-
-      case '+':
-      case '-':
-        if (zoneSet) {
-          wantToFinish = TRUE;
-          token = get_token(strm, yytext, yyval);
-        }
-        else {
-          mul = (token == '-') ? -1 : +1;
-          token = get_token(strm, yytext, yyval);
-          if (token == INTEGER) {
-            if (yytext.GetLength() > 2) {
-              zone = mul * ((yyval.ival / 100) * 60 + (yyval.ival % 100));
-              token = get_token(strm, yytext, yyval);
-            }
-            else {
-              zone = mul * 60 * yyval.ival;
-              token = get_token(strm, yytext, yyval);
-              if (token == ':') {
-                token = get_token(strm, yytext, yyval);
-                if (token == INTEGER) {
-                  zone += mul * yyval.ival;
-                  token = get_token(strm, yytext, yyval);
-                }
-              }
-            }
-            zoneSet = TRUE;
-          }
-        }
-        break;
-
-      default:
-        wantToFinish = TRUE;
-        break;
-    }
-
-    haveMinimum = (day > 0 && month > 0) || (hours >= 0 && minutes >= 0);
-
-    if (finished)
-      break;
-    if (haveMinimum && wantToFinish)
-      break;
-    if (haveMinimum && day >= 0 && year >= 0 && zoneSet)
-      break;
-  }
-
-  // put back the last lexeme
-  if (putback) {
-    PINDEX i = yytext.GetLength();
-    while (i-- > 0) 
-      strm.putback(yytext[i]);
-  }
-
-  // fill in the missing bits
-  PTime now;
-  if (seconds < 0)
-    seconds = 0;
-  if (minutes < 0)
-    minutes = 0;
-  if (hours < 0)
-    hours = 0;
-  if (day < 0)
-    day = now.GetDay();
-  if (month < 0)
-    month = now.GetMonth();
-  if (year < 0) {
-    year = now.GetYear();
-    if (month > now.GetMonth() ||
-          (month == now.GetMonth() &&
-            (day > now.GetDay() ||
-              (day == now.GetDay() &&
-                (hours > now.GetHour() ||
-                  (hours == now.GetHour() &&
-                   minutes > now.GetMinute()
-                  )
-                )
-              )
-            )
-          )
-       )
-      year--;
-  }
-
-  
-  // if no zone was set, then use the current local zone
-  if (!zoneSet) 
-    zone = Local;
-
-  struct tm t;
-  t.tm_sec   = seconds;
-  t.tm_min   = minutes;
-  t.tm_hour  = hours;
-  t.tm_mday  = day;
-  t.tm_mon   = month-1;
-  t.tm_year  = year-1900;
-
-  theTime = p_mktime(&t, zone);
+  return PTime::GetDateOrder();
 }
+
+
+int STDAPICALLTYPE PTimeIsMonthName(const char * str, int month, int abbrev)
+{
+  return PTime::GetMonthName((PTime::Months)month,
+                             abbrev ? PTime::Abbreviated : PTime::FullName) *= str;
+}
+
+
+int STDAPICALLTYPE PTimeIsDayName(const char * str, int day, int abbrev)
+{
+  return PTime::GetDayName((PTime::Weekdays)day,
+                             abbrev ? PTime::Abbreviated : PTime::FullName) *= str;
+}
+
+
+};
+
+
+
+void PTime::ReadFrom(istream & strm)
+{
+  time_t now;
+  struct tm timeBuf;
+  time(&now);
+  theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone());
+}
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -102,6 +102,19 @@ SOURCE=.\ethsock.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\getdate_tab.c
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\icmp.cxx
 # End Source File
 # Begin Source File
@@ -519,5 +532,32 @@ SOURCE=..\..\..\include\ptlib\osutil.inl
 SOURCE=..\..\..\include\ptlib\msos\ptlib\ptlib.inl
 # End Source File
 # End Group
+# Begin Source File
+
+SOURCE=..\common\getdate.y
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+# Begin Custom Build
+InputPath=..\common\getdate.y
+
+"../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bison ../common/getdate.y
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+# Begin Custom Build
+InputPath=..\common\getdate.y
+
+"../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bison ../common/getdate.y
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
 # End Target
 # End Project
