@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.24 1995/03/14 12:41:23 robertj Exp $
+ * $Id: file.h,v 1.25 1995/04/22 00:43:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
+ * Revision 1.25  1995/04/22 00:43:57  robertj
+ * Added Move() function and changed semantics of Rename().
+ * Changed all file name strings to PFilePath objects.
+ *
  * Revision 1.24  1995/03/14 12:41:23  robertj
  * Updated documentation to use HTML codes.
  *
@@ -244,7 +248,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
     BOOL Exists() const;
     static BOOL Exists(
-      const PString & name  // Name of file to see if exists.
+      const PFilePath & name  // Name of file to see if exists.
     );
     /* Determine if the file actually exists within the platforms file system.
 
@@ -260,7 +264,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
       OpenMode mode         // Mode in which the file open would be done.
     );
     static BOOL Access(
-      const PString & name, // Name of file to have its access checked.
+      const PFilePath & name, // Name of file to have its access checked.
       OpenMode mode         // Mode in which the file open would be done.
     );
     /* Determine if the file may be opened in the specified mode. This would
@@ -280,7 +284,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
       BOOL force = FALSE      // Force deletion even if file is protected.
     );
     static BOOL Remove(
-      const PString & name,   // Name of file to delete.
+      const PFilePath & name,   // Name of file to delete.
       BOOL force = FALSE      // Force deletion even if file is protected.
     );
     /* Delete the specified file. If <CODE>force</CODE> is FALSE and the file
@@ -306,15 +310,17 @@ PDECLARE_CONTAINER(PFile, PChannel)
         // Delete file if a destination exists with the same name.
     );
     static BOOL Rename(
-      const PString & oldname,  // Old name of the file.
-      const PString & newname,  // New name for the file.
+      const PFilePath & oldname,  // Old name of the file.
+      const PString & newname,    // New name for the file.
       BOOL force = FALSE
         // Delete file if a destination exists with the same name.
     );
-    /* Change the specified files name. Depending on the platform and the
-       relationship between the new name and the old, the function may fail to
-       rename the file, eg for DOS you cannot rename where the disk drives are
-       different.
+    /* Change the specified files name. This does not move the file in the
+       directory hierarchy, it only changes the name of the directory entry.
+
+       The <CODE>newname</CODE> parameter must consist only of the file name
+       part, as returned by the <A><CODE>PFilePath::GetFileName()</CODE></A>
+       function. Any other file path parts will cause an error.
 
        The first form uses the file path specification associated with the
        instance of the object. The name within the instance is changed to the
@@ -326,13 +332,13 @@ PDECLARE_CONTAINER(PFile, PChannel)
      */
 
     BOOL Copy(
-      const PString & newname,  // New name for the file.
+      const PFilePath & newname,  // New name for the file.
       BOOL force = FALSE
         // Delete file if a destination exists with the same name.
     );
     static BOOL Copy(
-      const PString & oldname,  // Old name of the file.
-      const PString & newname,  // New name for the file.
+      const PFilePath & oldname,  // Old name of the file.
+      const PFilePath & newname,  // New name for the file.
       BOOL force = FALSE
         // Delete file if a destination exists with the same name.
     );
@@ -345,6 +351,32 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
        <H2>Returns:</H2>
        TRUE if the file was renamed.
+     */
+
+    BOOL Move(
+      const PFilePath & newname,  // New path and name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    static BOOL Move(
+      const PFilePath & oldname,  // Old path and name of the file.
+      const PFilePath & newname,  // New path and name for the file.
+      BOOL force = FALSE
+        // Delete file if a destination exists with the same name.
+    );
+    /* Move the specified file. This will move the file from one position in
+       the directory hierarchy to another position. The actual operation is
+       platform dependent but  the reslt is the same. For instance, for Unix,
+       if the move is within a file system then a simple rename is done, if
+       it is across file systems then a copy and a delete is performed.
+
+       The first form uses the file path specification associated with the
+       instance of the object. The name within the instance is changed to the
+       new name if the function succeeds. The second static function uses an
+       arbitrary file specified by name.
+
+       <H2>Returns:</H2>
+       TRUE if the file was moved.
      */
 
 
