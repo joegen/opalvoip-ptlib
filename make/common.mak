@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.33  1999/06/09 15:41:18  robertj
+# Added better UI to make files.
+#
 # Revision 1.32  1999/04/18 09:36:31  robertj
 # Get date grammar build.
 #
@@ -139,54 +142,46 @@ CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS) $(DEPS) core
 
 ifdef	PROG
 
+ifndef TARGET
 ifndef	SHAREDLIB
-all ::	$(OBJDIR)/$(PROG)
+TARGET = $(OBJDIR)/$(PROG)
 else
-all ::	$(OBJDIR)/$(PROG)_dll
+TARGET = $(OBJDIR)/$(PROG)_dll
+endif
 endif
 
 ifdef BUILDFILES
 OBJS	:= $(OBJS) $(OBJDIR)/buildnum.o
 endif
 
-$(OBJDIR)/$(PROG):	$(OBJS) $(PTLIB_FILE)
-	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG) $(LDLIBS)
+ifndef STATIC
 
-$(OBJDIR)/$(PROG)_dll:	$(OBJS) $(PTLIB_FILE)
-	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG)_dll $(LDLIBS)
+$(TARGET):	$(OBJS) $(PTLIB_FILE)
+	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
 
-ifdef GUI
-$(OBJDIR)/$(PROG):	$(PWLIB_FILE)
+else
 
-$(OBJDIR)/$(PROG)_dll:	$(PWLIB_FILE)
+$(TARGET):	$(OBJS) $(PTLIB_FILE)
+	for f in $(STATIC_LIBS) ; do \
+	  rm -f $(LIBDIR)/$$f ; \
+          ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
+	done
+	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
+	for f in $(STATIC_LIBS) ; do \
+	  rm -f $(LIBDIR)/$$f ; \
+	done
+
 endif
 
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG) $(OBJDIR)/$(PROG)_dll
+
+ifdef GUI
+$(TARGET):	$(PWLIB_FILE)
+endif
+
+CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG) $(OBJDI)/$(PROG)_dll
 
 # ifdef PROG
 endif
-
-######################################################################
-#
-# common rules for creating dependencies
-#
-######################################################################
-
-.DELETE_ON_ERROR : depend
-
-depend: $(DEPS)
-	@echo Created dependencies.
-
-
-######################################################################
-#
-# common rules for cleaning up
-#
-######################################################################
-
-clean:
-	rm -rf $(CLEAN_FILES)
-
 
 ######################################################################
 #
@@ -233,8 +228,8 @@ else
 
 RELEASEPROGDIR=$(RELEASEDIR)/$(RELEASEBASEDIR)
 
-release: $(OBJDIR)/$(PROG) releasefiles
-	cp $(OBJDIR)/$(PROG) $(RELEASEPROGDIR)/$(PROG)
+release: $(TARGET) releasefiles
+	cp $(TARGET) $(RELEASEPROGDIR)/$(PROG)
 	cd $(RELEASEDIR) ; tar chf - $(RELEASEBASEDIR) | gzip > $(PROG)_$(VERSION)_$(PLATFORM_TYPE).tar.gz
 	rm -r $(RELEASEPROGDIR)
 
@@ -248,12 +243,64 @@ endif # else ifdef DEBUG
 
 ######################################################################
 #
-# common rule to make both debug and non-debug version
+# Main targets for build management
 #
 ######################################################################
 
-both:
-	$(MAKE) DEBUG=1; $(MAKE) DEBUG=
+ifdef DEBUG
+
+debug :: $(TARGET)
+
+opt ::
+	@$(MAKE) DEBUG= $(TARGET)
+
+debugclean ::
+	rm -rf $(CLEAN_FILES)
+
+optclean ::
+	@$(MAKE) DEBUG= optclean
+
+.DELETE_ON_ERROR : debugdepend
+
+debugdepend :: $(DEPS)
+	@echo Created dependencies.
+
+optdepend ::
+	@$(MAKE) DEBUG= optdepend
+
+libs:
+	$(MAKE) -C $(PWLIBDIR) debug
+
+else
+
+debug ::
+	@$(MAKE) DEBUG=1 debug
+
+opt :: $(TARGET)
+
+debugclean ::
+	@$(MAKE) DEBUG=1 debugclean
+
+optclean ::
+	rm -rf $(CLEAN_FILES)
+
+.DELETE_ON_ERROR : optdepend
+
+debugdepend ::
+	@$(MAKE) DEBUG=1 debugdepend
+
+optdepend :: $(DEPS)
+	@echo Created dependencies.
+
+libs:
+	$(MAKE) -C $(PWLIBDIR) opt
+
+endif
+
+both: opt debug
+clean: optclean debugclean
+bothdepend: optdepend debugdepend
+
 
 shared:
 	$(MAKE) SHAREDLIB=1 
@@ -261,27 +308,6 @@ shared:
 bothshared:
 	$(MAKE) DEBUG= shared; $(MAKE) DEBUG=1 shared
 
-bothdepend:
-	$(MAKE) DEBUG= depend; $(MAKE) DEBUG=1 depend
-
-bothclean:
-	$(MAKE) DEBUG= clean; $(MAKE) DEBUG=1 clean
-
-static:
-	for f in $(STATIC_LIBS) ; do \
-	  rm -f $(LIBDIR)/$$f ; \
-         ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
-	done
-	$(MAKE) DEBUG=
-	for f in $(STATIC_LIBS) ; do \
-	  rm -f $(LIBDIR)/$$f ; \
-	done
-
-libs:
-	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix
-ifdef GUI
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI)
-endif
 
 
 ######################################################################
