@@ -994,6 +994,12 @@
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp.cxx">
+			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp_c2s.cxx">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1117,6 +1123,12 @@
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\vxml.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\xmpp.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\xmpp_c2s.h">
 			</File>
 		</Filter>
 	</Files>
