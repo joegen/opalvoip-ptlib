@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.127  2004/04/11 07:58:08  csoutheren
+ * Added configure.in check for recursive mutexes, and changed implementation
+ * without recursive mutexes to use PCriticalSection or atomic word structs
+ *
  * Revision 1.126  2004/03/24 02:37:04  csoutheren
  * Fixed problem with incorrect usage of sem_timedwait
  *
@@ -1582,7 +1586,14 @@ void PMutex::Wait()
   if (pthread_equal(ownerThreadId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-    lockCount++;
+#if P_HAS_ATOMIC_INT
+    __atomic_add(&lockCount, 1);
+#else
+    {
+      PEnterAndLeave m(lock);
+      lockCount++;
+    }
+#endif
     return;
   }
 #endif
@@ -1590,7 +1601,7 @@ void PMutex::Wait()
   // acquire the lock for real
   PAssertPTHREAD(pthread_mutex_lock, (&mutex));
 
-#ifndef P_HAS_RECURSIVE_MUTEX
+#ifndef P_HAS_RECURSIVE_MUTEX 
   PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
           "PMutex acquired whilst locked by another thread");
   // Note this is protected by the mutex itself only the thread with
@@ -1608,7 +1619,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
-#ifndef P_HAS_RECURSIVE_MUTEX
+#ifndef P_HAS_RECURSIVE_MUTEX 
   // get the current thread ID
   pthread_t currentThreadId = pthread_self();
 
@@ -1616,7 +1627,14 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   if (pthread_equal(ownerThreadId, currentThreadId)) {
     // Note this does not need a lock as it can only be touched by the thread
     // which already has the mutex locked.
-    lockCount++;
+#if P_HAS_ATOMIC_INT
+    __atomic_add(&lockCount, 1);
+#else
+    {
+      PEnterAndLeave m(lock);
+      lockCount++;
+    }
+#endif
     return TRUE;
   }
 #endif
@@ -1627,7 +1645,7 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
-#ifndef P_HAS_RECURSIVE_MUTEX
+#ifndef P_HAS_RECURSIVE_MUTEX 
       PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
               "PMutex acquired whilst locked by another thread");
       // Note this is protected by the mutex itself only the thread with
@@ -1657,7 +1675,14 @@ void PMutex::Signal()
   // Note this does not need a separate lock as it can only be touched by the thread
   // which already has the mutex locked.
   if (lockCount > 0) {
-    lockCount--;
+#if P_HAS_ATOMIC_INT
+    __atomic_add(&lockCount, -1);
+#else
+    {
+      PEnterAndLeave m(lock);
+      lockCount--;
+    }
+#endif
     return;
   }
 
@@ -1671,7 +1696,7 @@ void PMutex::Signal()
 
 BOOL PMutex::WillBlock() const
 {
-#ifndef P_HAS_RECURSIVE_MUTEX
+#ifndef P_HAS_RECURSIVE_MUTEX 
   pthread_t currentThreadId = pthread_self();
   if (currentThreadId == ownerThreadId)
     return FALSE;
