@@ -476,9 +476,14 @@ dnl ########################################################################
 dnl check for XPG6 compliant pthreads (timed spinlocks)
 
 if test ${HAS_PTHREADS} = yes ; then
-  AC_CHECK_LIB(pthread, pthread_mutex_timedlock, HAS_PTHREADS_XPG6=yes, HAS_PTHREADS_XPG6=no)
+  AC_MSG_CHECKING(if pthread_mutex_timedlock is available)
+  AC_TRY_COMPILE([#include <pthread.h>],
+                  [pthread_mutex_timedlock(NULL, NULL);], HAS_PTHREADS_XPG6=yes, HAS_PTHREADS_XPG6=no)
   if test ${HAS_PTHREADS_XPG6} = yes ; then
+    AC_MSG_RESULT(yes)
     AC_DEFINE(P_PTHREADS_XPG6, 1, "XPG6 compliant pthreads found")
+  else
+    AC_MSG_RESULT(no)
   fi
 
   AC_CHECK_LIB(pthread, sem_timedwait, HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
