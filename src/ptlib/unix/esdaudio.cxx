@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.2  2001/09/24 08:56:43  rogerh
+ * Remove LastError, submitted by Andreas Wrede <awrede@mac.com>
+ *
  * Revision 1.1  2001/07/19 09:27:12  rogerh
  * Add support for EsounD and esd (the Enlightenment Sound Daemon).
  * This allows OhPhone to run on platforms where EsounD and esd have been
@@ -398,7 +401,6 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
 BOOL PSoundChannel::WaitForRecordBufferFull()
 {
   if (os_handle < 0) {
-    lastError = NotOpen;
     return FALSE;
   }
 
