@@ -530,7 +530,7 @@ void PXMLElement::PrintOn(ostream & strm, int indent, int options) const
       subObjects[i].PrintOn(strm, (indent < 0) ? -1 : (indent + 2), options);
 
     if (indent > 0)
-      strm << setw(indent) << ' ';
+      strm << setw(indent) << " ";
     strm << "</" << name << '>';
     if (indent >= 0 || newLine)
       strm << endl;
