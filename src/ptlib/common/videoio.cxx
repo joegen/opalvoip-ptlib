@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.8  2001/03/05 01:12:41  robertj
+ * Added more source formats for conversion, use list. Thanks Mark Cooke.
+ *
  * Revision 1.7  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -117,27 +120,57 @@ int PVideoDevice::GetChannel() const
 }
 
 
+  ///Colour format bit per pixel table.
+static struct {
+  const char * colourFormat;
+  unsigned     bitsPerPixel;
+} colourFormatBPPTab[] = {
+  { "RGB24",   24 },  // These are in rough order of colour gamut size
+  { "RGB32",   32 },
+  { "YUV422",  16 },
+  { "YUV422P", 16 },
+  { "YUV411",  12 },
+  { "YUV411P", 12 },
+  { "RGB565",  16 },
+  { "RGB555",  16 },
+  { "YUV420",  12 },
+  { "YUV420P", 12 },
+  { "YUV410",  10 },
+  { "YUV410P", 10 },
+  { "Grey",     8 }
+};
+
+
 BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
 {
+  delete converter;
+  converter = NULL;
+
   if (SetColourFormat(colourFmt))
     return TRUE; // Can do it native
 
   /************************
     Eventually, need something more sophisticated than this, but for the
-    moment pick the most common raw colour format that the device is very
-    likely to support and then look for a conversion routine from that to
-    the destaintion format.
+    moment pick the known colour formats that the device is very likely to
+    support and then look for a conversion routine from that to the
+    destination format.
 
     What we really want is some sort of better heuristic that looks at
     computational requirements of each converter and picks a pair of formats
     that the hardware supports and uses the least CPU.
   */
 
-  if (!SetColourFormat("RGB24"))
-    return FALSE;
-
-  converter = PColourConverter::Create("RGB24", colourFmt, frameWidth, frameHeight);
-  return converter != NULL;
+  PINDEX knownFormatIdx = 0;
+  while (knownFormatIdx < PARRAYSIZE(colourFormatBPPTab)) {
+    PString formatToTry = colourFormatBPPTab[knownFormatIdx].colourFormat;
+    if (SetColourFormat(formatToTry)) {
+      converter = PColourConverter::Create(formatToTry, colourFmt, frameWidth, frameHeight);
+      if (converter != NULL)
+        return TRUE;
+    }
+    knownFormatIdx++;
+  }
+  return FALSE;
 }
 
 
@@ -207,27 +240,6 @@ BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height)
   height = frameHeight;
   return IsOpen();
 }
-
-  ///Colour format bit per pixel table.
-static struct {
-  const char * colourFormat;
-  unsigned     bitsPerPixel;
-} colourFormatBPPTab[] = {
-  { "Grey",     8 },  
-  { "RGB32",   32 }, 
-  { "RGB24",   24 }, 
-  { "RGB565",  16 },
-  { "RGB555",  16 },
-  { "YUV422",  16 },
-  { "YUV422P", 16 },
-  { "YUV411",  12 },
-  { "YUV411P", 12 },
-  { "YUV420",  12 },
-  { "YUV420P", 12 },
-  { "YUV410",  0  },
-  { "YUV410P", 10 }
-};
-
 
 unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
                                            const PString & colourFormat)
