@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sunaudio.cxx,v $
+ * Revision 1.6  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.5  2001/10/18 01:15:18  robertj
  * Fixed compile error.
  *
@@ -281,6 +284,18 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannel::Abort()
 {
+}
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
+  return FALSE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
+  return FALSE;
 }
 
 

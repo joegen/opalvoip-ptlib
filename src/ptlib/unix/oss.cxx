@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.37  2002/02/07 20:57:21  dereks
+ * add SetVolume and GetVolume methods to PSoundChannel
+ *
  * Revision 1.36  2002/01/24 05:57:38  rogerh
  * Fix warning
  *
@@ -1079,6 +1082,49 @@ BOOL PSoundChannel::Abort()
 
   return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_RESET, NULL));
 }
+
+
+
+BOOL PSoundChannel::SetVolume(int newVal)
+{
+  if (os_handle <= 0)  //CAnnot set volume in loop back mode.
+    return FALSE;
+
+  int rc, deviceVol = (newVal << 8) | newVal;
+
+  if (direction  == Player) 
+    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_VOLUME), &deviceVol);
+   else 
+    rc = ::ioctl(os_handle, MIXER_WRITE(SOUND_MIXER_IGAIN), &deviceVol);
+
+  if (rc < 0) {
+    PTRACE(1, "PSoundChannel::SetVolume failed : " << ::strerror(errno));
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL  PSoundChannel::GetVolume(int &devVol)
+{
+  if (os_handle <= 0)  //CAnnot get volume in loop back mode.
+    return FALSE;
+  
+  int vol, rc;
+  if (direction == Player)
+    rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_VOLUME), &vol);
+  else
+    rc = ::ioctl(os_handle, MIXER_READ(SOUND_MIXER_IGAIN), &vol);
+  
+  if (rc < 0) {
+    PTRACE(1,  "PSoundChannel::GetVolume failed : " << ::strerror(errno)) ;
+    return FALSE;
+  }
+  
+  devVol = vol & 0xff;
+  return TRUE;
+}
+  
 
 
 // End of file
