@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.40  1999/06/12 06:43:36  craigs
+# Added PTLIB_ALT variable to allow differentiatio between libc5 and libc6 machines
+#
 # Revision 1.39  1999/06/09 15:41:18  robertj
 # Added better UI to make files.
 #
@@ -180,14 +183,6 @@ all ::
 endif
 
 
-PLATFORM_TYPE = $(OSTYPE)_$(MACHTYPE)
-
-ifdef	DEBUG
-OBJ_SUFFIX	:= d
-else
-OBJ_SUFFIX	:= r
-endif # DEBUG
-
 
 ####################################################
 
@@ -212,13 +207,13 @@ ifeq ($(MACHTYPE),ppc)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
-
 ifdef SHAREDLIB
 ifndef PROG
-PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
+OSTYPE		:= $(OSTYPE)_pic
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
 endif # PROG
 endif # SHAREDLIB
+
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
@@ -345,6 +340,18 @@ endif
 ifndef DEBUG_FLAG
 DEBUG_FLAG	:= -g
 endif
+
+ifndef PTLIB_ALT
+PLATFORM_TYPE = $(OSTYPE)_$(MACHTYPE)
+else
+PLATFORM_TYPE = $(OSTYPE)_$(PTLIB_ALT)_$(MACHTYPE)
+endif
+
+ifdef	DEBUG
+OBJ_SUFFIX	:= d
+else
+OBJ_SUFFIX	:= r
+endif # DEBUG
 
 
 ###############################################################################
