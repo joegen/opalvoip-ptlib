@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.123  1999/08/22 12:54:35  robertj
+ * Fixed warnings about inlines on older GNU compiler
+ *
  * Revision 1.122  1999/06/23 14:19:46  robertj
  * Fixed core dump problem with SIGINT/SIGTERM terminating process.
  *
@@ -555,6 +558,15 @@ PTrace::Block::~Block()
   }
 
   IndentLevel -= 2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDirectory
+
+void PDirectory::CloneContents(const PDirectory * d)
+{
+  CopyContents(*d);
 }
 
 
