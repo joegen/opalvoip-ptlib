@@ -6,12 +6,6 @@
 #include <syslog.h>
 #include <stdarg.h>
 
-#if defined(P_SUN4)
-extern "C" void openlog(char *, int, int);
-extern "C" void syslog(int, char *, ...);
-extern "C" void closelog();
-#endif
-
 #include "uerror.h"
 
 #define	MAX_LOG_LINE_LEN	1024

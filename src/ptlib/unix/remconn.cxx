@@ -24,10 +24,6 @@
 #if defined(P_SUN4)
 #include <net/if.h>
 #include <sys/sockio.h>
-
-extern "C" int ioctl(int, int, void *);
-extern "C" int socket(int, int, int);
-
 #define HAS_IFREQ
 #endif
 

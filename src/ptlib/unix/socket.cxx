@@ -11,21 +11,7 @@
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <netinet/in.h>
-
-#if defined(P_SUN4)
-#include <errno.h>
 #include <sys/socket.h>
-
-extern "C" int socket(int, int, int);
-extern "C" int connect(int, struct sockaddr *, int);
-extern "C" int accept(int, struct sockaddr *, int *);
-extern "C" int sendto(int, const void *, int, int, const struct sockaddr *, int);
-extern "C" int recvfrom(int, void *, int, int, struct sockaddr *, int *);
-extern "C" int recv(int, void *, int, int);
-extern "C" int shutdown(int, int);
-extern "C" int ioctl(int, int, void *);
-extern "C" void bzero(void *, int);
-#endif
 
 PSocket::~PSocket()
 {
