@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.91  2000/12/29 07:36:57  craigs
+ * Fixed problem with Tokenise function returning NULL entries in array
+ *
  * Revision 1.90  2000/10/12 05:14:41  robertj
  * Fixed crash caused by previous change, didn;t work if in constructor.
  *
@@ -1590,6 +1593,7 @@ PStringArray
   PINDEX p2 = FindOneOf(separators);
 
   if (p2 == 0 && onePerSeparator) { // first character is a token separator
+    tokens[token] = PString();
     token++;                        // make first string in array empty
     p1 = 1;
     p2 = FindOneOf(separators, 1);
@@ -1598,6 +1602,8 @@ PStringArray
   while (p2 != P_MAX_INDEX) {
     if (p2 > p1)
       tokens[token] = operator()(p1, p2-1);
+    else
+      tokens[token] = PString();
     token++;
 
     // Get next separator. If not one token per separator then continue
