@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.108.2.1  2004/07/28 05:58:03  csoutheren
+ * Merged in patch from CVS trunk
+ *
+ * Revision 1.109  2004/07/14 13:15:45  rjongbloed
+ * Fixed minor bug where a URL is "non-empty" if requires a host but has none.
+ *   eg could end up with "sip:" or "http://:80" which are illegal.
+ *
  * Revision 1.108  2004/07/12 09:17:20  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -986,6 +993,9 @@ PString PURL::LegacyAsString(PURL::UrlFormat fmt, const PURLLegacyScheme * schem
   PINDEX i;
 
   if (fmt == HostPortOnly) {
+    if (schemeInfo->hasHostPort && hostname.IsEmpty())
+      return str;
+
     str << scheme << ':';
 
     if (relativePath) {
