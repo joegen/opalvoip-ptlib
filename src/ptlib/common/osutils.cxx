@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.109  1998/10/31 14:02:20  robertj
+ * Removed StartImmediate capability as causes race condition in preemptive version.
+ *
  * Revision 1.108  1998/10/31 12:47:10  robertj
  * Added conditional mutex and read/write mutex thread synchronisation objects.
  *
@@ -1897,16 +1900,12 @@ void PThread::InitialiseProcessThread()
 }
 
 
-PThread::PThread(PINDEX stackSize,
-                 AutoDeleteFlag deletion,
-                 InitialSuspension start,
-                 Priority priorityLevel)
+PThread::PThread(PINDEX stackSize, AutoDeleteFlag deletion, Priority priorityLevel)
 {
   autoDelete = deletion == AutoDeleteThread;
   basePriority = priorityLevel;   // Threads user settable priority level
   dynamicPriority = 0;            // Run immediately
-
-  suspendCount = start == StartSuspended ? 1 : 0;
+  suspendCount = 1;
 
   AllocateStack(stackSize);
   PAssert(stackBase != NULL, "Insufficient near heap for thread");
