@@ -153,6 +153,7 @@ size_t strspn( const char *string, const char *strCharSet );
 #endif
 
 int stricmp( const unsigned short*string1, const char* string2 );
+int stricmp( const char*string1, const char* string2 );
 
 LONG RegOpenKeyEx( HKEY hKey, const char* lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult );
 
