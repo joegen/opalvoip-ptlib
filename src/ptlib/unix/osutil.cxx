@@ -32,6 +32,9 @@
 
 #if defined(P_LINUX)
 
+#include <mntent.h>
+#include <sys/vfs.h>
+
 #if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
 #else
@@ -253,6 +256,49 @@ BOOL PDirectory::Remove(const PString & p)
   PString str = p.Left(p.GetLength()-1);
   return rmdir(str) == 0;
 }
+
+PString PDirectory::GetVolume() const
+{
+  PString volume;
+
+#if defined(P_LINUX)
+  struct stat status;
+  if (stat(operator+("."), &status) != -1) {
+    dev_t my_dev = status.st_dev;
+
+    FILE * fp = setmntent(MOUNTED, "r");
+    struct mntent * mnt;
+    while ((mnt = getmntent(fp)) != NULL) {
+      if (stat(mnt->mnt_dir, &status) != -1 && status.st_dev == my_dev) {
+        volume = mnt->mnt_fsname;
+        break;
+      }
+    }
+    endmntent(fp);
+  }
+#else
+#error Platform requires implemetation of GetVolume()
+#endif
+
+  return volume;
+}
+
+BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
+{
+#if defined(P_LINUX)
+  struct statfs fs;
+
+  if (statfs(operator+("."), &fs) == -1)
+    return FALSE;
+
+  total = fs.f_blocks*(PInt64)fs.f_bsize;
+  free = fs.f_bavail*(PInt64)fs.f_bsize;
+#else
+#error Platform requires implemetation of GetVolume()
+#endif
+  return TRUE;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
