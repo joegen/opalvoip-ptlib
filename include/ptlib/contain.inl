@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.34 1996/01/23 13:10:45 robertj Exp $
+ * $Id: contain.inl,v 1.35 1996/02/08 11:47:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.35  1996/02/08 11:47:57  robertj
+ * Moved Contains function from PSet to PHashTable so available for dictionaries.
+ * Added caseless compare operator and spaced concatenation operator.
+ *
  * Revision 1.34  1996/01/23 13:10:45  robertj
  * String searching algorithm rewrite.
  * Added Replace() function to strings.
@@ -175,6 +179,18 @@ PINLINE PString operator+(char c, const PString & str)
 PINLINE PString & PString::operator+=(const PString & str)
   { return operator+=((const char *)str); }
 
+PINLINE PString PString::operator&(const PString & str) const
+  { return operator&((const char *)str); }
+
+PINLINE PString operator&(const char * cstr, const PString & str)
+  { return PString(cstr) & str; }
+  
+PINLINE PString operator&(char c, const PString & str)
+  { return PString(c) & str; }
+  
+PINLINE PString & PString::operator&=(const PString & str)
+  { return operator&=((const char *)str); }
+
 PINLINE BOOL PString::operator==(const PObject & obj) const
   { return PObject::operator==(obj); }
 
@@ -192,6 +208,9 @@ PINLINE BOOL PString::operator<=(const PObject & obj) const
 
 PINLINE BOOL PString::operator>=(const PObject & obj) const
   { return PObject::operator>=(obj); }
+
+PINLINE BOOL PString::operator*=(const PString & str) const
+  { return operator*=((const char *)str); }
 
 PINLINE BOOL PString::operator==(const char * cstr) const
   { return InternalCompare(0, P_MAX_INDEX, cstr) == EqualTo; }
@@ -374,12 +393,15 @@ PINLINE POrdinalKey::operator PINDEX() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINLINE BOOL PHashTable::Contains(const PObject & key) const
+  { return hashTable->GetElementAt(key) != NULL; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PINLINE PAbstractSet::PAbstractSet()
   { hashTable->deleteKeys = reference->deleteObjects; }
   
-PINLINE BOOL PAbstractSet::Contains(const PObject & key)
-  { return hashTable->GetElementAt(key) != NULL; }
-
 
 PINLINE void PStringSet::Include(const PString & str)
   { PAbstractSet::Append(str.Clone()); }
