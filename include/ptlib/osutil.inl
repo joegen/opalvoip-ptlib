@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.6 1993/08/27 18:17:47 robertj Exp $
+ * $Id: osutil.inl,v 1.7 1993/08/31 03:38:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.6  1993/08/27 18:17:47  robertj
+ * Revision 1.7  1993/08/31 03:38:02  robertj
+ * Changed PFile::Status to PFile::Info due to X-Windows compatibility.
+ * Added copy constructor and assignement operator due to G++ wierdness.
+ *
+ * Revision 1.6  1993/08/27  18:17:47  robertj
  * Moved a lot of code from MS-DOS platform specific to common files.
  *
  * Revision 1.5  1993/08/21  04:40:19  robertj
@@ -25,6 +29,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
+
+inline PTimeInterval::PTimeInterval(const PTimeInterval & ti)
+  : milliseconds(ti.milliseconds) { }
+
+inline PTimeInterval & PTimeInterval::operator=(const PTimeInterval & ti)
+  { milliseconds = ti.milliseconds; return *this; }
 
 inline PObject * PTimeInterval::Clone() const
   { return new PTimeInterval(milliseconds); }
@@ -185,8 +195,8 @@ inline BOOL PFile::Remove() const
 inline BOOL PFile::Copy(const PString & newname)
   { return Copy(fullname, newname); }
 
-inline BOOL PFile::GetStatus(Status & status) const
-  { return GetStatus(fullname, status); }
+inline BOOL PFile::GetInfo(Info & info) const
+  { return GetInfo(fullname, info); }
 
 
 inline PString PFile::GetFullName() const
