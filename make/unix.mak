@@ -60,6 +60,8 @@ OBJ_SUFFIX	= linux
 LIB_SUFFIX	= linux
 endif
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
+# P_SSL		= $(PWLIBDIR)
+
 endif
 
 endif # FreeBSD
@@ -115,6 +117,7 @@ endif
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 
 
+
 ###############################################################################
 SHELL		= /bin/sh
 CPLUS		:= g++
@@ -125,6 +128,20 @@ SHELL		:= /bin/sh
 ifndef PWLIBDIR
 #PWLIBDIR	= /usr/local/pwlib
 PWLIBDIR	= $(HOME)/pwlib
+endif
+
+#
+endif # DEBUG
+#
+
+
+# define SSL variables
+SSLDIR		= $(PWLIBDIR)/SSLeay-0.6.2
+SSLLIBDIR	= $(PWLIBDIR)/ssl
+CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLLIBDIR)/include -I$(SSLDIR)/crypto -I$(SSLDIR)/crypto/buffer
+LDFLAGS		:= $(LDFLAGS) -L$(SSLLIBDIR)/lib
+SSLDIR		:= /usr/local/ssl
+CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
 # define Posix threads stuff
 ifdef P_PTHREADS
 #
