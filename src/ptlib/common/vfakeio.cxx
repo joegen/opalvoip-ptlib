@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.16  2003/03/17 07:46:49  robertj
+ * Migrated vflip member variable and functions into PVideoDevice class.
+ *
  * Revision 1.15  2002/09/23 07:17:24  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -633,23 +636,5 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
 }
 
 
-BOOL PFakeVideoInputDevice::GetVFlipState() 
-{
-  return doVFlip;
-} 
-
-BOOL PFakeVideoInputDevice::SetVFlipState(BOOL newVFlip) 
-{
-  doVFlip = newVFlip;
-
-  return TRUE;
-} 
-
-BOOL PFakeVideoInputDevice::ToggleVFlipState() 
-{
-  doVFlip = !doVFlip;
-
-  return TRUE;
-} 
 
 // End Of File ///////////////////////////////////////////////////////////////
