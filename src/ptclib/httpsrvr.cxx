@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.41  2002/07/17 08:43:52  robertj
+ * Fixed closing of html msg on generated post output.
+ *
  * Revision 1.40  2002/05/08 05:38:54  robertj
  * Added PHTTPTailFile resource to do a unix 'tail -f' of a file.
  *
@@ -1350,6 +1353,10 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
 {
   PHTML msg;
   BOOL persist = Post(request, data, msg);
+
+  if (msg.Is(PHTML::InBody))
+    msg << PHTML::Body();
+
   if (request.code != PHTTP::OK)
     return persist;
 
@@ -1357,10 +1364,6 @@ BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
     msg << PHTML::Title()    << (unsigned)PHTTP::OK << " OK" << PHTML::Body()
         << PHTML::Heading(1) << (unsigned)PHTTP::OK << " OK" << PHTML::Heading(1)
         << PHTML::Body();
-  else {
-    if (msg.Is(PHTML::InBody))
-      msg << PHTML::Body();
-  }
 
   request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
 
