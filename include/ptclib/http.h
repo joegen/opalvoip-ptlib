@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.59  2005/01/03 12:48:41  csoutheren
+ * Added new configure options and ability to disable/enable modules
+ *
  * Revision 1.58  2004/10/23 11:34:59  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -233,9 +236,12 @@
 #include <ptclib/inetprot.h>
 #include <ptclib/mime.h>
 #include <ptclib/url.h>
-#include <ptclib/html.h>
 #include <ptlib/ipsock.h>
 
+
+#ifdef P_HTTPSVC
+
+#include <ptclib/html.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSpace
@@ -341,6 +347,8 @@ class PHTTPSpace : public PContainer
   private:
     BOOL SetSize(PINDEX) { return FALSE; }
 };
+
+#endif // P_HTTPSVC
 
 #ifdef _WIN32_WCE
 #undef TRACE
@@ -619,6 +627,7 @@ class PHTTPClient : public PHTTP
     PString userAgentName;
 };
 
+#ifdef P_HTTPSVC
 
 //////////////////////////////////////////////////////////////////////////////
 // PMultipartFormInfo
@@ -1888,6 +1897,7 @@ class PHTTPDirRequest : public PHTTPFileRequest
     PFilePath realPath;
 };
 
+#endif // P_HTTPSVC
 
 #endif
 
