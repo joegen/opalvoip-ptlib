@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.38  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.37  2004/03/23 04:48:42  csoutheren
  * Improved ability to start VXML scripts as needed
  *
@@ -1695,7 +1699,8 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         {
           PWaitAndSignal m(queueMutex);
           PVXMLQueueItem * qItem = (PVXMLQueueItem *)playQueue.GetAt(0);
-          PAssertNULL(qItem);
+          if (PAssertNULL(qItem) == NULL)
+            return FALSE;
 
           // get the delay time BEFORE deleting the info
           delay = qItem->delay;

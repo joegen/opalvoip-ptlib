@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.215  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.214  2004/04/12 07:33:46  csoutheren
  * Temporarily disabled removal of empty TRACE output on Linux
  *
@@ -1414,7 +1418,8 @@ void PArgList::SetArgs(const PStringArray & theArgs)
 
 BOOL PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
-  PAssertNULL(spec);
+  if (PAssertNULL(spec) == NULL)
+    return FALSE;
 
   // Find starting point, start at shift if first Parse() call.
   PINDEX arg = optionLetters.IsEmpty() ? shift : 0;

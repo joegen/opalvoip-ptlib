@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.52  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.51  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -429,7 +433,7 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractList::PAbstractList()
-  : info(new Info) { PAssertNULL(info); }
+  : info(new Info) { PAssert(info != NULL, POutOfMemory); }
 
 PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
   { PObject * obj = GetAt(index);

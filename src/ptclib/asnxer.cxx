@@ -372,23 +372,22 @@ void PXER_Stream::ArrayEncode(const PASN_Array & array)
 ///////////////////////////////////////////////////////////////////////
 
 PXER_Stream::PXER_Stream(PXMLElement * elem)
-  : position(elem)
+  : position(PAssertNULL(elem))
 {
-  PAssertNULL(position);
 }
 
 
 PXER_Stream::PXER_Stream(PXMLElement * elem, const PBYTEArray & bytes)
-  : PASN_Stream(bytes), position(elem)
+  : PASN_Stream(bytes),
+    position(PAssertNULL(elem))
 {
-  PAssertNULL(position);
 }
 
 
 PXER_Stream::PXER_Stream(PXMLElement * elem, const BYTE * buf, PINDEX size)
-  : PASN_Stream(buf, size), position(elem)
+  : PASN_Stream(buf, size),
+    position(PAssertNULL(elem))
 {
-  PAssertNULL(position);
 }
 
 
