@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.67  2001/01/04 18:13:32  rogerh
+# Tidy up the Makefile when building video4bsd.cxx
+#
 # Revision 1.66  2001/01/04 18:02:16  rogerh
 # remove some old parts refering to linux
 #
@@ -255,11 +258,6 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
 	        video4linux.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
-else
-VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
-                $(COMMON_SRC_DIR)/videoio.cxx \
-	        video4bsd.cxx \
-	        $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),linux)
@@ -272,10 +270,18 @@ endif
 
 ifeq ($(OSTYPE),FreeBSD)
 SOUND_SOURCE = oss.cxx
+VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
+               $(COMMON_SRC_DIR)/videoio.cxx \
+	       video4bsd.cxx \
+	       $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),OpenBSD)
 SOUND_SOURCE = oss.cxx
+VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
+               $(COMMON_SRC_DIR)/videoio.cxx \
+	       video4bsd.cxx \
+	       $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 ifeq ($(OSTYPE),NetBSD)
