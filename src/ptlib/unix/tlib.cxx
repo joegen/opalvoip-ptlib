@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.15  1996/06/29 01:43:11  craigs
+ * Moved AllocateStack to switch.cxx to keep platform dependent routines in one place
+ *
  * Revision 1.14  1996/06/10 12:46:53  craigs
  * Changed process.h include
  *
@@ -58,7 +61,6 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 #include <sys/mman.h>
-#define VIRTUAL_STACK_SIZE (stackSize*5)
 #endif
 
 #if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
@@ -211,18 +213,6 @@ void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 ///////////////////////////////////////////////////////////////////////////////
 //
 // PThread
-
-void PThread::AllocateStack(PINDEX stackSize)
-{
-#if defined(P_LINUX)
-  PAssert((stackBase = mmap(0, VIRTUAL_STACK_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0)) != (char *)-1,
-          "Thread stack allocation failed");
-  stackTop  = stackBase + VIRTUAL_STACK_SIZE-1;
-#else
-  stackBase = (char *)malloc(5*stackSize);
-  stackTop  = stackBase + 5*stackSize;
-#endif
-}
 
 PThread::PThread()
 {
