@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.72  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.71  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -238,6 +241,14 @@
 
 #elif defined(P_VXWORKS)
 #define P_USE_STRFTIME
+
+#elif defined(P_RTEMS)
+#define P_USE_STRFTIME
+#include <time.h>
+#include <stdio.h>
+#define random() rand()
+#define srandom(a) srand(a)
+
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -341,7 +352,7 @@ PInt64 PString::AsInt64(unsigned base) const
   char * dummy;
 #if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX)
   return strtoll(theArray, &dummy, base);
-#elif defined P_VXWORKS
+#elif defined(P_VXWORKS) || defined(P_RTEMS)
   return strtol(theArray, &dummy, base);
 #else
   return strtoq(theArray, &dummy, base);
@@ -353,7 +364,7 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
   char * dummy;
 #if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX)
   return strtoull(theArray, &dummy, base);
-#elif defined P_VXWORKS
+#elif defined(P_VXWORKS) || defined(P_RTEMS)
   return strtoul(theArray, &dummy, base);
 #else
   return strtouq(theArray, &dummy, base);
@@ -711,7 +722,12 @@ BOOL PFile::Open(OpenMode mode, int opt)
     char templateStr[3+6+1];
     strcpy(templateStr, "PWL");
 #ifndef P_VXWORKS
+#ifdef P_RTEMS
+    _reent _reent_data;
+    os_handle = _mkstemp_r(&_reent_data, templateStr);
+#else
     os_handle = mkstemp(templateStr);
+#endif // P_RTEMS
     if (!ConvertOSError(os_handle))
       return FALSE;
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.131  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.130  2002/10/17 08:17:28  robertj
  * Fixed incomplete changes for expandable fd_set
  *
@@ -722,6 +725,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     struct hostent_data ht_data;
     memset(&ht_data, 0, sizeof(ht_data)); 
     struct hostent host_info;
+#elif defined(P_RTEMS)
+    struct hostent host_info;
 #else
     struct hostent * host_info;
 #endif
@@ -734,7 +739,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       // of a pain!
 
 
-#ifndef P_AIX	// that I get no warnings
+#if !defined(P_AIX) && !defined(P_RTEMS)	// that I get no warnings
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
       struct hostent hostEnt;
@@ -755,6 +760,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #elif defined P_VXWORKS
       struct hostent hostEnt;
       host_info = Vx_gethostbyname((char *)name, &hostEnt);
+#elif defined P_RTEMS
+      host_info = *::gethostbyname(name);
 #else
       host_info = ::gethostbyname_r(name,
 			 &hostEnt, buffer, REENTRANT_BUFFER_LEN,
@@ -771,7 +778,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     if (retry == 0)
       return NULL;
 
-#ifdef P_AIX
+#if defined(P_AIX) || defined(P_RTEMS)
     host = new PIPCacheData (&host_info, (const char*) name);
 #else
     host = new PIPCacheData(host_info, name);
@@ -846,7 +853,9 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #ifdef P_AIX
     struct hostent_data ht_data;
     struct hostent host_info;
-#else    
+#elif P_RTEMS
+    struct hostent host_info;
+#else
     struct hostent * host_info;
 #endif
 
@@ -857,7 +866,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
       
-#ifndef P_AIX	// that I get no warnings
+#if !defined(P_AIX) && !defined(P_RTEMS)	// that I get no warnings
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
       struct hostent hostEnt;
@@ -878,6 +887,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #elif defined P_VXWORKS
       struct hostent hostEnt;
       host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
+#elif defined P_RTEMS
+      host_info = *::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #else
       host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
@@ -898,7 +909,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     if (retry == 0)
       return FALSE;
 
-#ifdef P_AIX
+#if defined(P_AIX) || defined(P_RTEMS)
     host = new PIPCacheData(&host_info, addr.AsString());
 #else
     host = new PIPCacheData(host_info, addr.AsString());
@@ -1651,7 +1662,7 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
 
   // attempt to connect
   sockaddr_in sin;
-  if (localPort != 0 || iface != INADDR_ANY) {
+  if (localPort != 0 || iface.IsValid()) {
     if (!SetOption(SO_REUSEADDR, 0)) {
       os_close();
       return FALSE;

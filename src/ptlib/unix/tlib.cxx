@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.62  2002/10/17 13:44:27  robertj
+ * Port to RTEMS, thanks Vladimir Nesic.
+ *
  * Revision 1.61  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -235,6 +238,11 @@
 #if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__) || defined(P_IRIX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
+#elif defined(P_RTEMS)
+extern "C" {
+#include <sys/utsname.h>
+}
+#define  HAS_UNAME
 #endif
 
 #include "uerror.h"
@@ -339,7 +347,7 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
+#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
   ::getpwuid_r(geteuid(), &pwd,
                buffer, 1024,
                &pw);
@@ -389,7 +397,7 @@ PString PProcess::GetUserName() const
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
@@ -425,7 +433,7 @@ BOOL PProcess::SetUserName(const PString & username)
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
   ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwnam_r(username, &pwd, buffer, 1024);
@@ -562,10 +570,10 @@ void PProcess::CommonConstruct()
 
   SetSignals(&PXSignalHandler);
 
-#ifndef P_VXWORKS
+#if !defined(P_VXWORKS) && !defined(P_RTEMS)
   // initialise the timezone information
   tzset();
-#endif // !P_VXWORKS
+#endif
 
   CreateConfigFilesDictionary();
 }
@@ -576,6 +584,102 @@ void PProcess::CommonDestruct()
   configFiles = NULL;
   SetSignals(NULL);
 }
+
+
+#ifdef P_RTEMS
+
+extern "C" {
+#include <netinet/in.h>
+#include <rtems/rtems_bsdnet.h>
+}
+
+int socketpair(int d, int type, int protocol, int sv[2])
+{
+    static int port_count = IPPORT_USERRESERVED;
+    int s;
+    int addrlen;
+    struct sockaddr_in addr1, addr2;
+    static int network_status = 1;
+    
+
+    if (network_status>0)
+    {
+        printf("\"Network\" initializing!\n");
+        network_status = rtems_bsdnet_initialize_network();
+	if (network_status == 0)
+	    printf("\"Network\" initialized!\n");
+	else
+	{
+	    printf("Error: %s\n", strerror(errno));
+	    return -1;
+	}
+    }
+
+    /* prepare sv */
+    sv[0]=sv[1]=-1;
+
+    /* make socket */
+    s = socket( d, type, protocol);
+    if (s<0) 
+        return -1;
+
+    memset(&addr1, 0, sizeof addr1);
+    addr1.sin_family = d;
+    addr1.sin_port = htons(++port_count);
+    addr1.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    if (bind(s, (struct sockaddr *)&addr1, sizeof addr1) < 0) 
+    {
+	close(s);
+        return -1;
+    }
+    if (listen(s, 2) < 0 ) 
+    {
+	close(s);
+        return -1;
+    }
+    
+    sv[0] = socket(d, type, protocol);
+    if (sv[0] < 0) 
+    {
+	close(s);
+        return -1;
+    }
+    
+    memset(&addr2, 0, sizeof addr2);
+    addr2.sin_family = d;
+    addr2.sin_port = htons(++port_count);
+    addr2.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    if (bind(sv[0], (struct sockaddr *)&addr2, sizeof addr2) < 0)
+    {
+	close(s);
+	close(sv[0]);
+	sv[0]=-1;
+        return -1;
+    }
+    if (connect(sv[0], (struct sockaddr *)&addr1, sizeof addr1) < 0)
+    {
+	close(s);
+	close(sv[0]);
+	sv[0]=-1;
+        return -1;
+    }
+    
+    sv[1] = accept(s, (struct sockaddr *)&addr2, &addrlen);
+    if (sv[1] < 0)
+    {
+	close(s);
+	close(sv[0]);
+	sv[0]=-1;
+        return -1;
+    }
+
+    close(s);
+    return 0;
+}
+#endif 
+
 
 //////////////////////////////////////////////////////////////////
 //
@@ -594,3 +698,4 @@ void PProcess::CommonDestruct()
 #else
 #include "tlibcoop.cxx"
 #endif
+
