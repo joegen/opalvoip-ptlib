@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.195  2005/02/23 21:29:52  dominance
+# have configure check for bison as we know we'll need it and stop implicit definition of PWLIBDIR. *geesh* that was about time, eh? ;)
+#
 # Revision 1.194  2005/01/14 11:49:17  csoutheren
 # Removed -s flag so executables are not stripped by default
 #
@@ -131,7 +134,11 @@
 #
 
 ifndef PWLIBDIR
-PWLIBDIR = $(HOME)/pwlib
+	echo "No PWLIBDIR environment variable defined!"
+	echo "You need to define PWLIBDIR!"
+	echo "Try something like:"
+	echo "PWLIBDIR = $(HOME)/pwlib"
+	exit 1
 endif
 
 ####################################################
