@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.25  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.24  1999/02/12 01:01:57  craigs
  * Fixed problem with linking static versions of libraries
  *
@@ -146,7 +149,9 @@ void PWaitOnExitConsoleWindow()
 }
 
 
-PDECLARE_CLASS(PImageDLL, PDynaLink)
+class PImageDLL : public PDynaLink
+{
+  PCLASSINFO(PImageDLL, PDynaLink)
   public:
     PImageDLL();
 

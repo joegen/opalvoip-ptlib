@@ -8,6 +8,9 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.cxx,v $
+ * Revision 1.3  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.2  1998/12/23 00:35:28  robertj
  * UDP support.
  *
@@ -628,6 +631,7 @@ BOOL PSocksUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & po
 
     case SOCKS_ADDR_IPV4 :
       memcpy(&addr, &newbuf[4], 4);
+      port_pos = 4;
       break;
 
     default :
