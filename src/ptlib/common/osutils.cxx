@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.190  2002/05/28 13:05:26  robertj
+ * Fixed PTimer::SetInterval so it restarts timer as per operator=()
+ *
  * Revision 1.189  2002/05/22 00:42:03  craigs
  * Added GMTTime flag to tracing options
  *
@@ -988,6 +991,18 @@ PTimer::~PTimer()
     timerList->inTimeoutMutex.Wait();
     timerList->inTimeoutMutex.Signal();
   }
+}
+
+
+void PTimer::SetInterval(PInt64 milliseconds,
+                         long seconds,
+                         long minutes,
+                         long hours,
+                         int days)
+{
+  timerList->processingMutex.Wait();
+  resetTime.SetInterval(milliseconds, seconds, minutes, hours, days);
+  StartRunning(oneshot);
 }
 
 
