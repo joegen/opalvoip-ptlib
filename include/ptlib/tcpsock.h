@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.17 1996/09/14 13:09:42 robertj Exp $
+ * $Id: tcpsock.h,v 1.18 1998/08/21 05:24:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.18  1998/08/21 05:24:46  robertj
+ * Fixed bug where write streams out to non-stream socket.
+ *
  * Revision 1.17  1996/09/14 13:09:42  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -101,6 +104,27 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        Note thate the "copy" constructor here is areally a "listening" socket
        the same as the PSocket & parameter version.
+     */
+
+
+  // Overrides from class PChannel.
+    virtual BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Low level write to the channel. This function will block until the
+       requested number of characters are written or the write timeout is
+       reached. The GetLastWriteCount() function returns the actual number
+       of bytes written.
+
+       The GetErrorCode() function should be consulted after Write() returns
+       FALSE to determine what caused the failure.
+
+       This override repeatedly writes if there is no error until all of the
+       requested bytes have been written.
+
+       <H2>Returns:</H2>
+       TRUE if at least len bytes were written to the channel.
      */
 
 
