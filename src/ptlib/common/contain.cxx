@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.56 1996/04/14 02:52:39 robertj Exp $
+ * $Id: contain.cxx,v 1.57 1996/05/09 12:17:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.57  1996/05/09 12:17:10  robertj
+ * Fixed incorrect use of memcmp/strcmp return value.
+ * Added assertion when finding empty string.
+ *
  * Revision 1.56  1996/04/14 02:52:39  robertj
  * Fixed bug in PString::FindLast(), never found sub-strings.
  *
@@ -382,7 +386,13 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 
   char * p2 = array.theArray;
   PINDEX len = elementSize*thisSize;
-  return (Comparison)memcmp(theArray, p2, len);
+
+  int retval = memcmp(theArray, p2, len);
+  if (retval < 0)
+    return LessThan;
+  if (retval > 0)
+    return GreaterThan;
+  return EqualTo;
 }
 
 
@@ -673,7 +683,7 @@ void PString::ReadFrom(istream &strm)
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PString::Class()), PInvalidCast);
-  return InternalCompare(0, P_MAX_INDEX, ((const PString &)obj).theArray);
+  return InternalCompare(0, 0, ((const PString &)obj).theArray);
 }
 
 
@@ -923,7 +933,22 @@ PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 PObject::Comparison PString::InternalCompare(
                          PINDEX offset, PINDEX length, const char * cstr) const
 {
-  return (Comparison)strncmp(theArray+offset, PAssertNULL(cstr), length);
+  if (offset == 0 && theArray == cstr)
+    return EqualTo;
+
+  int retval;
+  if (length == 0)
+    retval = strcmp(theArray+offset, PAssertNULL(cstr));
+  else
+    retval = strncmp(theArray+offset, PAssertNULL(cstr), length);
+
+  if (retval < 0)
+    return LessThan;
+
+  if (retval > 0)
+    return GreaterThan;
+
+  return EqualTo;
 }
 
 
@@ -942,6 +967,7 @@ PINDEX PString::Find(char ch, PINDEX offset) const
 PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
   PAssertNULL(cstr);
+  PAssert(*cstr != '\0', PInvalidParameter);
 
   PINDEX len = GetLength();
   PINDEX clen = strlen(cstr);
@@ -998,6 +1024,7 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
 PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
   PAssertNULL(cstr);
+  PAssert(*cstr != '\0', PInvalidParameter);
 
   PINDEX len = GetLength();
   PINDEX clen = strlen(cstr);
@@ -1111,8 +1138,7 @@ PStringArray
     } while ((p2 = FindOneOf(separators, p1)) == p1 && !onePerSeparator);
   }
 
-  if (p1 < GetLength() || onePerSeparator)         // Last token (if has one)
-    tokens[token] = operator()(p1, P_MAX_INDEX);
+  tokens[token] = operator()(p1, P_MAX_INDEX);
 
   return tokens;
 }
@@ -1321,7 +1347,7 @@ PObject::Comparison PCaselessString::InternalCompare(
 {
   PAssertNULL(cstr);
   while (length-- > 0 && (theArray[offset] != '\0' || *cstr != '\0')) {
-    Comparison c = InternalCompare(offset++, *cstr++);
+    Comparison c = PCaselessString::InternalCompare(offset++, *cstr++);
     if (c != EqualTo)
       return c;
   }
