@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.5  1998/12/02 03:51:40  robertj
+ * Unix compatibility changes
+ *
  * Revision 1.4  1998/09/24 03:30:06  robertj
  * Added open software license.
  *
@@ -38,7 +41,7 @@
 
 #ifndef _PICMPSOCKET
 
-#include "../../common/ptlib/icmpsock.h"
+#include "../../icmpsock.h"
 
   public:
     BOOL Close();
