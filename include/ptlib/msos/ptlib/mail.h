@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.6 1996/08/08 10:09:05 robertj Exp $
+ * $Id: mail.h,v 1.7 1997/02/05 11:48:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.7  1997/02/05 11:48:25  robertj
+ * Fixed compatibility with MSVC debug memory allocation macros.
+ *
  * Revision 1.6  1996/08/08 10:09:05  robertj
  * Directory structure changes for common files.
  *
@@ -80,7 +83,7 @@
             CMC_flags               logoff_flags,
             CMC_extension FAR       *logoff_extensions
         );
-        CMC_return_code (FAR PASCAL *free)(
+        CMC_return_code (FAR PASCAL *free_buf)(
             CMC_buffer              memory
         );
         CMC_return_code (FAR PASCAL *query_configuration)(
