@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.14 1996/08/17 10:00:34 robertj Exp $
+ * $Id: pprocess.h,v 1.15 1996/10/08 13:05:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.15  1996/10/08 13:05:18  robertj
+ * Rewrite to use standard window isntead of console window.
+ *
  * Revision 1.14  1996/08/17 10:00:34  robertj
  * Changes for Windows DLL support.
  *
@@ -86,6 +89,7 @@
   friend PThread * PThread::Current();
   friend void HouseKeepingThread::Main();
   friend UINT __stdcall PThread::MainFunction(void * thread);
+  friend class PServiceProcess;
 
 #endif
 
