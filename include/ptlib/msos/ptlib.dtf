@@ -708,6 +708,7 @@ EXPORTS
     ?CloneContents@PAbstractSet@@IAEXPBV1@@Z @656 NONAME ;protected: void __thiscall PAbstractSet::CloneContents(class PAbstractSet const *)
     ?CloneContents@PAbstractSortedList@@IAEXPBV1@@Z @657 NONAME ;protected: void __thiscall PAbstractSortedList::CloneContents(class PAbstractSortedList const *)
     ?CloneContents@PArrayObjects@@IAEXPBV1@@Z @658 NONAME ;protected: void __thiscall PArrayObjects::CloneContents(class PArrayObjects const *)
+    ?CloneContents@PDirectory@@IAEXPBV1@@Z @2217 NONAME ;protected: void __thiscall PDirectory::CloneContents(class PDirectory const *)
     ?CloneContents@PHashTable@@IAEXPBV1@@Z @661 NONAME ;protected: void __thiscall PHashTable::CloneContents(class PHashTable const *)
     ?Close@PChannel@@UAEHXZ @662 NONAME ;public: virtual int __thiscall PChannel::Close(void)
     ?Close@PConsoleChannel@@UAEHXZ @2159 NONAME ;public: virtual int __thiscall PConsoleChannel::Close(void)
@@ -876,6 +877,7 @@ EXPORTS
     ?CopyContents@PAbstractList@@IAEXABV1@@Z @801 NONAME ;protected: void __thiscall PAbstractList::CopyContents(class PAbstractList const &)
     ?CopyContents@PAbstractSet@@IAEXABV1@@Z @802 NONAME ;protected: void __thiscall PAbstractSet::CopyContents(class PAbstractSet const &)
     ?CopyContents@PAbstractSortedList@@IAEXABV1@@Z @803 NONAME ;protected: void __thiscall PAbstractSortedList::CopyContents(class PAbstractSortedList const &)
+    ?CopyContents@PArrayObjects@@IAEXABV1@@Z @2218 NONAME ;protected: void __thiscall PArrayObjects::CopyContents(class PArrayObjects const &)
     ?CopyContents@PDirectory@@IAEXABV1@@Z @806 NONAME ;protected: void __thiscall PDirectory::CopyContents(class PDirectory const &)
     ?CopyContents@PHashTable@@IAEXABV1@@Z @807 NONAME ;protected: void __thiscall PHashTable::CopyContents(class PHashTable const &)
     ?Create@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @808 NONAME ;public: virtual int __thiscall NT_ServiceManager::Create(class PServiceProcess *)
@@ -1218,6 +1220,7 @@ EXPORTS
     ?GetRing@PSerialChannel@@QAEHXZ @1134 NONAME ;public: int __thiscall PSerialChannel::GetRing(void)
     ?GetRouteTable@PIPSocket@@SAHAAV?$PList@VRouteEntry@PIPSocket@@@@@Z @1915 NONAME ;public: static int __cdecl PIPSocket::GetRouteTable(class PList<class PIPSocket::RouteEntry> &)
     ?GetSections@PConfig@@QBE?AVPStringList@@XZ @1137 NONAME ;public: class PStringList  __thiscall PConfig::GetSections(void)const 
+    ?GetSendAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2219 NONAME ;public: void __thiscall PUDPSocket::GetSendAddress(class PIPSocket::Address &,unsigned short &)
     ?GetService@PSocket@@QBE?AVPString@@XZ @1138 NONAME ;public: class PString  __thiscall PSocket::GetService(void)const 
     ?GetServiceByPort@PSocket@@SA?AVPString@@PBDG@Z @1139 NONAME ;public: static class PString  __cdecl PSocket::GetServiceByPort(char const *,unsigned short)
     ?GetServiceByPort@PSocket@@UBE?AVPString@@G@Z @1140 NONAME ;public: virtual class PString  __thiscall PSocket::GetServiceByPort(unsigned short)const 
@@ -1938,5 +1941,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?CloneContents@PDirectory@@IAEXPBV1@@Z @2217 NONAME ;protected: void __thiscall PDirectory::CloneContents(class PDirectory const *)
-    ?CopyContents@PArrayObjects@@IAEXABV1@@Z @2218 NONAME ;protected: void __thiscall PArrayObjects::CopyContents(class PArrayObjects const &)
+    ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2220 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
+    ?Read@PUDPSocket@@UAEHPAXH@Z @2221 NONAME ;public: virtual int __thiscall PUDPSocket::Read(void *,int)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.95  1999/08/27 08:18:52  robertj
+ * Added ability to get the host/port of the the last packet read/written to UDP socket.
+ *
  * Revision 1.94  1999/08/08 09:04:01  robertj
  * Added operator>> for PIPSocket::Address class.
  *
@@ -1588,17 +1591,19 @@ const char * PUDPSocket::GetProtocolName() const
   return "udp";
 }
 
+
 BOOL PUDPSocket::Connect(const PString & address)
 {
   sendPort = 0;
   return PIPDatagramSocket::Connect(address);
 }
 
-void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
+
+BOOL PUDPSocket::Read(void * buf, PINDEX len)
 {
-  sendAddress = newAddress;
-  sendPort    = newPort;
+  return PIPDatagramSocket::ReadFrom(buf, len, lastReceiveAddress, lastReceivePort);
 }
+
 
 BOOL PUDPSocket::Write(const void * buf, PINDEX len)
 {
@@ -1606,6 +1611,27 @@ BOOL PUDPSocket::Write(const void * buf, PINDEX len)
     return PIPDatagramSocket::Write(buf, len);
   else
     return PIPDatagramSocket::WriteTo(buf, len, sendAddress, sendPort);
+}
+
+
+void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
+{
+  sendAddress = newAddress;
+  sendPort    = newPort;
+}
+
+
+void PUDPSocket::GetSendAddress(Address & address, WORD & port)
+{
+  address = sendAddress;
+  port    = sendPort;
+}
+
+
+void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
+{
+  address = lastReceiveAddress;
+  port    = lastReceivePort;
 }
 
 
