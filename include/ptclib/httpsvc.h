@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.29  2000/11/02 21:57:00  craigs
+ * Added extra constructor
+ *
  * Revision 1.28  2000/08/04 12:48:13  robertj
  * Added mechanism by which a service can get at new HTTP connections, eg to add SSL.
  *
@@ -420,6 +423,8 @@ class PServiceHTTPFile : public PHTTPFile
       : PHTTPFile(filename, file) { needSignature = needSig; }
     PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, BOOL needSig = FALSE)
       : PHTTPFile(filename, auth) { needSignature = needSig; }
+    PServiceHTTPFile(const PString & filename, const PFilePath & file, const PHTTPAuthority & auth, BOOL needSig = FALSE)
+      : PHTTPFile(filename, file, auth) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
