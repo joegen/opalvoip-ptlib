@@ -319,6 +319,10 @@ SOURCE=..\..\Ptclib\Snmpserv.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\Ptclib\socks.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Telnet.cxx
 # ADD CPP /Yc"ptlib.h"
 # End Source File
@@ -326,6 +330,74 @@ SOURCE=..\..\Ptclib\Telnet.cxx
 # Begin Group "Header Files"
 
 # PROP Default_Filter "*.h"
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\asner.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\cypher.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\ftp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\html.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\http.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\httpform.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\httpsvc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\inetmail.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\inetprot.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\mime.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\modem.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\pasn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\psnmp.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\socks.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\telnet.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\Include\PtCLib\url.h
+# End Source File
 # End Group
 # End Target
 # End Project
