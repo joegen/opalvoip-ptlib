@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.17  2002/01/15 23:52:07  robertj
+ * Fixed some incorrect table entries for colout formats, thanks Martijn Roest
+ *
  * Revision 1.16  2002/01/10 03:52:41  robertj
  * Fixed 8bpp problem, thanks Walter Whitlock.
  *
@@ -156,11 +159,11 @@ static struct vfwComp {
   { mmioFOURCC('Y','V','1','2'), FALSE, }, //[3], same as IYUV/I420 except that  U and V planes are switched
   { mmioFOURCC('Y','U','Y','2'), FALSE, }, //[4]
   { mmioFOURCC('U','Y','V','Y'), FALSE, }, //[5], Like YUY2 except for ordering
-  { mmioFOURCC('Y','V','Y','U'), FALSE, }, //[7], Like YUY2 except for ordering
-  { mmioFOURCC('Y','V','U','9'), FALSE, }, //[8]
-  { mmioFOURCC('M','J','P','G'), FALSE, }, //[9]
+  { mmioFOURCC('Y','V','Y','U'), FALSE, }, //[6], Like YUY2 except for ordering
+  { mmioFOURCC('Y','V','U','9'), FALSE, }, //[7]
+  { mmioFOURCC('M','J','P','G'), FALSE, }, //[8]
 // the following compression formats are repeats of earlier formats
-  { mmioFOURCC('I','4','2','0'), FALSE, }, // [10] same as IYUV
+  { mmioFOURCC('I','4','2','0'), FALSE, }, // [9] same as IYUV
   { INVALID_COMP, }, 
 };
 
@@ -187,13 +190,13 @@ static struct {
   //{  NULL,      0, FALSE, NULL, }, // uncomment to prevent YUV420P from camera which can't be resized
   { "YUV420P", 12, FALSE, &vfwCompTable[2], },
   { "IYUV",    12, FALSE, &vfwCompTable[2], },
-  { "I420",    12, FALSE, &vfwCompTable[10], },
+  { "I420",    12, FALSE, &vfwCompTable[9], },
   { "YV12",    12, FALSE, &vfwCompTable[3], },
   { "YUV422",  16, FALSE, &vfwCompTable[4], },
   { "YUY2",    16, FALSE, &vfwCompTable[4], },
   { "UYVY",    16, FALSE, &vfwCompTable[5], },
   { "YVYU",    16, FALSE, &vfwCompTable[6], },
-  { "MJPEG",   12, FALSE, &vfwCompTable[9], },
+  { "MJPEG",   12, FALSE, &vfwCompTable[8], },
   { NULL,},
 };
 
