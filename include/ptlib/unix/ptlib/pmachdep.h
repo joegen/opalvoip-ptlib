@@ -3,13 +3,28 @@
 
 #include <netdb.h>
 
-#if ! defined (P_SUN4)
+#if defined(P_SOLARIS)
 
+#include <errno.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <sys/termios.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/filio.h>
+#include <sys/wait.h>
+#include <sys/uio.h>
+#include <fcntl.h>
 
 #define PSETPGRP()  setpgrp()
 
-#else
+#define	INADDR_NONE	-1
+
+int ftime (struct timeb *);
+pid_t wait3(int *status, int options, struct rusage *rusage);
+int gethostname(char *, int);
+
+#elif defined (P_SUN4)
 
 #include <errno.h>
 #include <sys/socket.h>
@@ -77,6 +92,11 @@ struct servent * getservbyname(const char *, const char *);
 #undef FLUSHO
 #undef PENDIN
 };
+
+#else
+
+#include <sys/termios.h>
+#define PSETPGRP()  setpgrp()
 
 #endif
 
