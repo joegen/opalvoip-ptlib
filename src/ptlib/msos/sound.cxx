@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.7  1999/09/23 04:28:44  robertj
+ * Allowed some Win32 only access to wave format in sound channel
+ *
  * Revision 1.6  1999/07/08 08:39:53  robertj
  * Fixed bug when breaking block by closing the PSoundChannel in other thread.
  *
@@ -281,6 +284,33 @@ PWaveFormat & PWaveFormat::operator=(const PWaveFormat & fmt)
 }
 
 
+void PWaveFormat::PrintOn(ostream & out) const
+{
+  if (waveFormat == NULL)
+    out << "<null>";
+  else {
+    out << waveFormat->wFormatTag << ','
+        << waveFormat->nChannels << ','
+        << waveFormat->nSamplesPerSec << ','
+        << waveFormat->nAvgBytesPerSec << ','
+        << waveFormat->nBlockAlign << ','
+        << waveFormat->wBitsPerSample;
+    if (waveFormat->cbSize > 0) {
+      out << hex << setfill('0');
+      const BYTE * ptr = (const BYTE *)&waveFormat[1];
+      for (PINDEX i = 0; i < waveFormat->cbSize; i++)
+        out << ',' << setw(2) << (unsigned)*ptr++;
+      out << dec << setfill(' ');
+    }
+  }
+}
+
+
+void PWaveFormat::ReadFrom(istream &)
+{
+}
+
+
 void PWaveFormat::SetFormat(unsigned numChannels,
                             unsigned sampleRate,
                             unsigned bitsPerSample)
@@ -320,8 +350,10 @@ BOOL PWaveFormat::SetSize(PINDEX sz)
   size = sz;
   if (sz == 0)
     waveFormat = NULL;
-  else
-    waveFormat = (WAVEFORMATEX *)malloc(sz);
+  else {
+    waveFormat = (WAVEFORMATEX *)calloc(sz, 1);
+    waveFormat->cbSize = (WORD)(sz - sizeof(WAVEFORMATEX));
+  }
 
   return waveFormat != NULL;
 }
@@ -724,6 +756,16 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   Abort();
 
   waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
+
+  return OpenDevice(os_handle);
+}
+
+
+BOOL PSoundChannel::SetFormat(const PWaveFormat & format)
+{
+  Abort();
+
+  waveFormat = format;
 
   return OpenDevice(os_handle);
 }
