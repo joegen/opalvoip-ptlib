@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.8  2001/03/03 23:29:00  robertj
+ * Oops, fixed BSD version of video.
+ *
  * Revision 1.7  2001/03/03 23:25:07  robertj
  * Fixed use of video conversion function, returning bytes in destination frame.
  *
@@ -322,7 +325,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   // in the image, but we will worry about that later
 
   if (converter != NULL)
-    return converter->Convert(videoBuffer, buffer, bytesReturned)
+    return converter->Convert(videoBuffer, buffer, bytesReturned);
 
   memcpy(buffer, videoBuffer, frameBytes);
 
