@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.16  2002/08/22 13:05:57  craigs
+ * Fixed problems with mutex implementation thanks to Martin Froehlich
+ *
  * Revision 1.15  2001/09/20 05:38:25  robertj
  * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
  * Also prevented semaphore from being created if subclass does not use it.
@@ -100,17 +103,19 @@
     virtual BOOL WillBlock() const;
 
   protected:
+
 #if defined(P_PTHREADS)
 #ifndef P_HAS_RECURSIVE_MUTEX
     pthread_t ownerThreadId;
     PINDEX lockCount;
+    pthread_mutex_t internal_mutex;
 #endif
+
 #elif defined(BE_THREADS)
     int32 benaphoreCount;
 #endif
 
 #endif
-
 
 #endif
 
