@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.4  2003/11/12 10:24:35  csoutheren
+ * Changes to allow operation of static plugins under Windows
+ *
  * Revision 1.3  2003/11/12 06:58:21  csoutheren
  * Changes to help in making static plugins autoregister under Windows
  *
@@ -99,16 +102,15 @@ unsigned PPlugin_##serviceType##_##serviceName##_GetVersion() \
   { return PWLIB_PLUGIN_API_VERSION; } 
 
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
-class PPlugin_##serviceType##_##serviceName##_Registration; \
-extern PPlugin_##serviceType##_##serviceName##_Registration \
-     PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
-static PPlugin_##serviceType##_##serviceName##_Registration * \
-   PPlugin_##serviceType##_##serviceName##_Registration_Loader = \
-       &PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
-\
 PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 PPlugin_##serviceType##_##serviceName##_Registration \
-     PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
+  PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
+
+#define PWLIB_STATIC_LOAD_PLUGIN(cls) \
+  class PPlugin_##cls##_Registration; \
+  extern PPlugin_##cls##_Registration PPlugin_##cls##_Registration_Instance; \
+  static PPlugin_##cls##_Registration * PPlugin_##cls##_Registration_Static_Library_Loader = &PPlugin_##cls##_Registration_Instance
+
 
 //////////////////////////////////////////////////////
 
