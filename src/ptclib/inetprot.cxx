@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.2 1995/11/09 12:19:29 robertj Exp $
+ * $Id: inetprot.cxx,v 1.3 1996/01/23 13:18:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.3  1996/01/23 13:18:43  robertj
+ * Major rewrite for HTTP support.
+ *
  * Revision 1.2  1995/11/09 12:19:29  robertj
  * Fixed missing state assertion in state machine.
  *
@@ -17,7 +20,11 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <mailsock.h>
+
+
+static const PString CRLF = "\r\n";
+static const PString CRLFdotCRLF = "\r\n.\r\n";
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -72,8 +79,34 @@ PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
 
 void PApplicationSocket::Construct()
 {
-  stuffingState = unstuffingState = DontStuff;
+  SetReadTimeout(PTimeInterval(0, 0, 10));  // 10 minutes
+  readLineTimeout = PTimeInterval(0, 10);   // 10 seconds
+  stuffingState = DontStuff;
   newLineToCRLF = TRUE;
+}
+
+
+BOOL PApplicationSocket::Read(void * buf, PINDEX len)
+{
+  PINDEX numUnRead = unReadBuffer.GetSize();
+  if (numUnRead >= len) {
+    memcpy(buf, unReadBuffer, len);
+    if (numUnRead > len)
+      memcpy(unReadBuffer.GetPointer(), &unReadBuffer[len], numUnRead - len);
+    unReadBuffer.SetSize(numUnRead - len);
+    lastReadCount = len;
+    return TRUE;
+  }
+
+  if (numUnRead > 0) {
+    memcpy(buf, unReadBuffer, numUnRead);
+    unReadBuffer.SetSize(0);
+  }
+
+  PTCPSocket::Read(((char *)buf) + numUnRead, len - numUnRead);
+
+  lastReadCount += numUnRead;
+  return lastReadCount > 0;
 }
 
 
@@ -144,39 +177,54 @@ BOOL PApplicationSocket::Write(const void * buf, PINDEX len)
 
 BOOL PApplicationSocket::WriteLine(const PString & line)
 {
-  if (line.FindOneOf("\r\n") == P_MAX_INDEX)
-    return WriteString(line + "\r\n");
+  if (line.FindOneOf(CRLF) == P_MAX_INDEX)
+    return WriteString(line + CRLF);
 
   PStringArray lines = line.Lines();
   for (PINDEX i = 0; i < lines.GetSize(); i++)
-    if (!WriteString(lines[i] + "\r\n"))
+    if (!WriteString(lines[i] + CRLF))
       return FALSE;
 
   return TRUE;
 }
 
 
-BOOL PApplicationSocket::ReadLine(PString & str, BOOL unstuffLine)
+BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
 {
+  str = PString();
+
   PCharArray line(100);
   PINDEX count = 0;
-  int c;
-  while ((c = ReadChar()) >= 0) {
+  BOOL gotEndOfLine = FALSE;
+
+  int c = ReadChar();
+  if (c < 0)
+    return FALSE;
+
+  PTimeInterval oldTimeout = GetReadTimeout();
+  SetReadTimeout(readLineTimeout);
+
+  while (c >= 0 && !gotEndOfLine) {
     switch (c) {
       case '\b' :
       case '\177' :
         if (count > 0)
           count--;
+        c = ReadChar();
         break;
 
       case '\r' :
+        c = ReadChar();
+        if (c >= 0 && c != '\n')
+          UnRead(c);
+        // Then do line feed case
+
       case '\n' :
-        if (count > 0) {
-          if (unstuffLine && count > 1 && line[0] == '.' && line[1] == '.')
-            str = PString(((const char *)line) + 1, count-1);
-          else
-            str = PString(line, count);
-          return !(unstuffLine && count == 1 && line[0] == '.');
+        if (count == 0 || !allowContinuation || (c = ReadChar()) < 0)
+          gotEndOfLine = TRUE;
+        else if (c != ' ' && c != '\t') {
+          UnRead(c);
+          gotEndOfLine = TRUE;
         }
         break;
 
@@ -184,15 +232,31 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL unstuffLine)
         if (count >= line.GetSize())
           line.SetSize(count + 100);
         line[count++] = (char)c;
+        c = ReadChar();
     }
   }
 
-  if (count == 0)
-    str = PString();
-  else
+  SetReadTimeout(oldTimeout);
+
+  if (count > 0)
     str = PString(line, count);
 
-  return FALSE;
+  return gotEndOfLine;
+}
+
+
+void PApplicationSocket::UnRead(int ch)
+{
+  PINDEX size = unReadBuffer.GetSize();
+  unReadBuffer.SetSize(size+1);
+  unReadBuffer[size] = (char)ch;
+}
+
+
+void PApplicationSocket::UnRead(void * buffer, PINDEX len)
+{
+  PINDEX size = unReadBuffer.GetSize();
+  memcpy(unReadBuffer.GetPointer(size+len)+size, buffer, len);
 }
 
 
@@ -231,15 +295,15 @@ BOOL PApplicationSocket::WriteResponse(unsigned code, const PString & info)
 BOOL PApplicationSocket::WriteResponse(const PString & code,
                                        const PString & info)
 {
-  if (info.FindOneOf("\r\n") == P_MAX_INDEX)
-    return WriteString(code + ' ' + info + "\r\n");
+  if (info.FindOneOf(CRLF) == P_MAX_INDEX)
+    return WriteString(code + ' ' + info + CRLF);
 
   PStringArray lines = info.Lines();
   for (PINDEX i = 0; i < lines.GetSize()-1; i++)
-    if (!WriteString(code + '-' + lines[i] + "\r\n"))
+    if (!WriteString(code + '-' + lines[i] + CRLF))
       return FALSE;
 
-  return WriteString(code + ' ' + lines[i] + "\r\n");
+  return WriteString(code + ' ' + lines[i] + CRLF);
 }
 
 
@@ -288,6 +352,328 @@ char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
   return lastResponseCode[0];
 }
 
+
+//////////////////////////////////////////////////////////////////////////////
+// PMIMEInfo
+
+
+void PMIMEInfo::PrintOn(ostream &strm) const
+{
+  for (PINDEX i = 0; i < GetSize(); i++)
+    strm << GetKeyAt(i) << ": " << GetDataAt(i) << CRLF;
+  strm << CRLF;
+}
+
+
+void PMIMEInfo::ReadFrom(istream &strm)
+{
+  PString line;
+  while (strm.good()) {
+    strm >> line;
+    if (line.IsEmpty())
+      break;
+
+    PINDEX colonPos = line.Find(':');
+    if (colonPos != P_MAX_INDEX) {
+      PCaselessString fieldName  = line.Left(colonPos).Trim();
+      PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+      SetAt(fieldName, fieldValue);
+    }
+  }
+}
+
+
+BOOL PMIMEInfo::Read(PApplicationSocket & socket)
+{
+  PString line;
+  while (socket.ReadLine(line, TRUE)) {
+    if (line.IsEmpty())
+      return TRUE;
+
+    PINDEX colonPos = line.Find(':');
+    if (colonPos != P_MAX_INDEX) {
+      PCaselessString fieldName  = line.Left(colonPos).Trim();
+      PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
+      SetAt(fieldName, fieldValue);
+    }
+  }
+
+  return FALSE;
+}
+
+
+BOOL PMIMEInfo::Write(PApplicationSocket & socket)
+{
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    if (!socket.WriteLine(GetKeyAt(i) + ": " + GetDataAt(i)))
+      return FALSE;
+  }
+
+  return socket.WriteString(CRLF);
+}
+
+
+PString PMIMEInfo::GetString(const PString & key, const PString & dflt) const
+{
+  if (GetAt(PCaselessString(key)) == NULL)
+    return dflt;
+  return operator[](key);
+}
+
+
+long PMIMEInfo::GetInteger(const PString & key, long dflt) const
+{
+  if (GetAt(PCaselessString(key)) == NULL)
+    return dflt;
+  return operator[](key).AsInteger();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PBase64
+
+PBase64::PBase64()
+{
+  StartEncoding();
+  StartDecoding();
+}
+
+
+void PBase64::StartEncoding(BOOL useCRLF)
+{
+  encodedString = "";
+  encodeLength = nextLine = saveCount = 0;
+  useCRLFs = useCRLF;
+}
+
+
+void PBase64::ProcessEncoding(const PString & str)
+{
+  ProcessEncoding((const char *)str);
+}
+
+
+void PBase64::ProcessEncoding(const char * cstr)
+{
+  ProcessEncoding((PConstMemoryPointer)cstr, strlen(cstr));
+}
+
+
+void PBase64::ProcessEncoding(const PBYTEArray & data)
+{
+  ProcessEncoding(data, data.GetSize());
+}
+
+
+static const char Binary2Base64[65] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+void PBase64::OutputBase64(const BYTE * data)
+{
+  char * out = encodedString.GetPointer((encodeLength&-256) + 256);
+
+  out[encodeLength++] = Binary2Base64[data[0] >> 2];
+  out[encodeLength++] = Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
+  out[encodeLength++] = Binary2Base64[((data[1]&15)<<2) | (data[2]>>6)];
+  out[encodeLength++] = Binary2Base64[data[2]&0x3f];
+
+  if (++nextLine > 76) {
+    if (useCRLFs)
+      out[encodeLength++] = '\r';
+    out[encodeLength++] = '\n';
+    nextLine = 0;
+  }
+}
+
+
+void PBase64::ProcessEncoding(PConstMemoryPointer data, PINDEX length)
+{
+  while (saveCount < 3) {
+    saveTriple[saveCount++] = *data++;
+    if (--length <= 0)
+      return;
+  }
+
+  OutputBase64(saveTriple);
+
+  for (PINDEX i = 0; i+2 < length; i += 3)
+    OutputBase64(data+i);
+
+  saveCount = length - i;
+  switch (saveCount) {
+    case 2 :
+      saveTriple[0] = data[i++];
+      saveTriple[1] = data[i];
+      break;
+    case 1 :
+      saveTriple[0] = data[i];
+  }
+}
+
+
+PString PBase64::GetEncodedString()
+{
+  PString retval = encodedString;
+  encodedString = "";
+  encodeLength = 0;
+  return retval;
+}
+
+
+PString PBase64::CompleteEncoding()
+{
+  char * out = encodedString.GetPointer(encodeLength + 5)+encodeLength;
+
+  switch (saveCount) {
+    case 1 :
+      *out++ = Binary2Base64[saveTriple[0] >> 2];
+      *out++ = Binary2Base64[(saveTriple[0]&3)<<4];
+      *out++ = '=';
+      *out   = '=';
+      break;
+
+    case 2 :
+      *out++ = Binary2Base64[saveTriple[0] >> 2];
+      *out++ = Binary2Base64[((saveTriple[0]&3)<<4) | (saveTriple[1]>>4)];
+      *out++ = Binary2Base64[((saveTriple[1]&15)<<2)];
+      *out   = '=';
+  }
+
+  return encodedString;
+}
+
+
+PString PBase64::Encode(const PString & str)
+{
+  return Encode((const char *)str);
+}
+
+
+PString PBase64::Encode(const char * cstr)
+{
+  return Encode((PConstMemoryPointer)cstr, strlen(cstr));
+}
+
+
+PString PBase64::Encode(const PBYTEArray & data)
+{
+  return Encode(data, data.GetSize());
+}
+
+
+PString PBase64::Encode(PConstMemoryPointer data, PINDEX length)
+{
+  PBase64 encoder;
+  encoder.ProcessEncoding(data, length);
+  return encoder.CompleteEncoding();
+}
+
+
+void PBase64::StartDecoding()
+{
+  perfectDecode = TRUE;
+  quadPosition = 0;
+  decodedData.SetSize(0);
+  decodeSize = 0;
+}
+
+
+BOOL PBase64::ProcessDecoding(const PString & str)
+{
+  return ProcessDecoding((const char *)str);
+}
+
+
+BOOL PBase64::ProcessDecoding(const char * cstr)
+{
+  static const BYTE Base642Binary[256] = {
+    96, 99, 99, 99, 99, 99, 99, 99, 99, 99, 98, 99, 99, 98, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 62, 99, 99, 99, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 99, 99, 99, 97, 99, 99,
+    99,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 99, 99, 99, 99, 99,
+    99, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99,
+    99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99, 99
+  };
+
+  for (;;) {
+    BYTE value = Base642Binary[(BYTE)*cstr++];
+    switch (value) {
+      case 96 : // end of string
+        return FALSE;
+
+      case 97 : // '=' sign
+        if (quadPosition == 3 || (quadPosition == 2 && *cstr == '='))
+          return TRUE; // Stop decoding now as must be at end of data
+        perfectDecode = FALSE;  // Ignore '=' sign but flag decode as suspect
+        break;
+
+      case 98 : // CRLFs
+        break;  // Ignore totally
+
+      case 99 :  // Illegal characters
+        perfectDecode = FALSE;  // Ignore rubbish but flag decode as suspect
+        break;
+
+      default : // legal value from 0 to 63
+        BYTE * out = decodedData.GetPointer(((decodeSize+1)&-256) + 256);
+        switch (quadPosition) {
+          case 0 :
+            out[decodeSize] = (BYTE)(value << 2);
+            break;
+          case 1 :
+            out[decodeSize++] |= (BYTE)(value >> 4);
+            out[decodeSize] = (BYTE)((value&15) << 4);
+            break;
+          case 2 :
+            out[decodeSize++] |= (BYTE)(value >> 2);
+            out[decodeSize] = (BYTE)((value&3) << 6);
+            break;
+          case 3 :
+            out[decodeSize++] |= (BYTE)value;
+            break;
+        }
+        quadPosition = (quadPosition+1)&3;
+    }
+  }
+}
+
+
+PBYTEArray PBase64::GetDecodedData()
+{
+  decodedData.SetSize(decodeSize);
+  PBYTEArray retval = decodedData;
+  retval.MakeUnique();
+  decodedData.SetSize(0);
+  decodeSize = 0;
+  return retval;
+}
+
+
+PString PBase64::Decode(const PString & str)
+{
+  PBYTEArray data;
+  Decode(str, data);
+  return PString((const char *)(const BYTE *)data, data.GetSize());
+}
+
+
+BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
+{
+  PBase64 decoder;
+  decoder.ProcessDecoding(str);
+  data = decoder.GetDecodedData();
+  return decoder.IsDecodeOK();
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -447,7 +833,7 @@ BOOL PSMTPSocket::EndMessage()
 {
   flush();
   stuffingState = DontStuff;
-  if (!Write("\r\n.\r\n", 5))
+  if (!WriteString(CRLFdotCRLF))
     return FALSE;
   return ReadResponse() && lastResponseCode[0] == '2';
 }
@@ -755,13 +1141,13 @@ void PSMTPSocket::OnDATA()
   }
 
   // Ok, everything is ready to start the message.
-  unstuffingState = StuffIdle;
   BOOL ok = TRUE;
   PCharArray buffer;
   if (eightBitMIME) {
     WriteResponse(354,
                 "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'.");
-    while (ok && OnMimeData(buffer))
+    endMIMEDetectState = StuffIdle;
+    while (ok && OnMIMEData(buffer))
       ok = HandleMessage(buffer, FALSE);
   }
   else {
@@ -799,28 +1185,28 @@ BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
 }
 
 
-BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
+BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer)
 {
   int count = 0;
   int c;
   while ((c = ReadChar()) >= 0) {
     if (count >= buffer.GetSize())
       buffer.SetSize(count + 100);
-    switch (unstuffingState) {
+    switch (endMIMEDetectState) {
       case StuffIdle :
         buffer[count++] = (char)c;
         break;
 
       case StuffCR :
-        unstuffingState = c != '\n' ? StuffIdle : StuffCRLF;
+        endMIMEDetectState = c != '\n' ? StuffIdle : StuffCRLF;
         buffer[count++] = (char)c;
         break;
 
       case StuffCRLF :
         if (c == '.')
-          unstuffingState = StuffCRLFdot;
+          endMIMEDetectState = StuffCRLFdot;
         else {
-          unstuffingState = StuffIdle;
+          endMIMEDetectState = StuffIdle;
           buffer[count++] = (char)c;
         }
         break;
@@ -828,16 +1214,16 @@ BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
       case StuffCRLFdot :
         switch (c) {
           case '\r' :
-            unstuffingState = StuffCRLFdotCR;
+            endMIMEDetectState = StuffCRLFdotCR;
             break;
 
           case '.' :
-            unstuffingState = StuffIdle;
+            endMIMEDetectState = StuffIdle;
             buffer[count++] = (char)c;
             break;
 
           default :
-            unstuffingState = StuffIdle;
+            endMIMEDetectState = StuffIdle;
             buffer[count++] = '.';
             buffer[count++] = (char)c;
         }
@@ -849,7 +1235,7 @@ BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
         buffer[count++] = '.';
         buffer[count++] = '\r';
         buffer[count++] = (char)c;
-        unstuffingState = StuffIdle;
+        endMIMEDetectState = StuffIdle;
 
       default :
         PAssertAlways("Illegal SMTP state");
@@ -1157,7 +1543,7 @@ void PPOP3Socket::OnRETR(PINDEX msg)
     stuffingState = StuffIdle;
     HandleSendMessage(msg, messageIDs[msg-1], P_MAX_INDEX);
     stuffingState = DontStuff;
-    Write("\r\n.\r\n", 5);
+    WriteString(CRLFdotCRLF);
   }
 }
 
@@ -1180,7 +1566,7 @@ void PPOP3Socket::OnTOP(PINDEX msg, PINDEX count)
     stuffingState = StuffIdle;
     HandleSendMessage(msg, messageIDs[msg-1], count);
     stuffingState = DontStuff;
-    Write("\r\n.\r\n", 5);
+    WriteString(CRLFdotCRLF);
   }
 }
 
