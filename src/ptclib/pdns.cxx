@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.16  2004/05/31 12:49:48  csoutheren
+ * Added handling of unknown DNS types
+ *
  * Revision 1.15  2004/05/31 12:14:13  rjongbloed
  * Fixed missing namespace selector on function definition.
  * Opyimised some string processing
@@ -109,7 +112,6 @@ static BOOL ProcessDNSRecords(
 	       PDNS_RECORD * results)
 {
   PDNS_RECORD lastRecord = NULL;
-  PDNS_RECORD newRecord  = NULL;
 
   PINDEX rrCount = anCount + nsCount + arCount;
   nsCount += anCount;
@@ -118,23 +120,18 @@ static BOOL ProcessDNSRecords(
   PINDEX i;
   for (i = 0; i < rrCount; i++) {
 
-    if (newRecord == NULL) 
-      newRecord = new DnsRecord;
-
-    memset(newRecord, 0, sizeof(DnsRecord));
-
+    int section;
     if (i < anCount)
-      newRecord->Flags.S.Section = DnsSectionAnswer;
+      section = DnsSectionAnswer;
     else if (i < nsCount)
-      newRecord->Flags.S.Section = DnsSectionAuthority;
+      section = DnsSectionAuthority;
     else if (i < arCount)
-      newRecord->Flags.S.Section = DnsSectionAddtional;
+      section = DnsSectionAddtional;
 
     // get the name
-    if (!GetDN(reply, replyEnd, cp, newRecord->pName)) {
-      delete newRecord;
+    char pName[MAXDNAME];
+    if (!GetDN(reply, replyEnd, cp, pName)) 
       return FALSE;
-    }
 
     // get other common parts of the record
     WORD  type;
@@ -147,52 +144,65 @@ static BOOL ProcessDNSRecords(
     GETLONG (ttl,      cp);
     GETSHORT(dlen,     cp);
 
-    newRecord->wType = type;
-
     BYTE * data = cp;
     cp += dlen;
-    BOOL ok = TRUE;
+
+    PDNS_RECORD newRecord  = NULL;
 
     switch (type) {
+      default:
+        newRecord = (PDNS_RECORD)malloc(sizeof(DnsRecord) + sizeof(DWORD) + dlen);
+        newRecord->Data.Null.dwByteCount = dlen;
+        memcpy(&newRecord->Data, data, dlen);
+        break;
+
       case T_SRV:
+        newRecord = (PDNS_RECORD)malloc(sizeof(DnsRecord)); 
+        memset(newRecord, 0, sizeof(DnsRecord));
         GETSHORT(newRecord->Data.SRV.wPriority, data);
         GETSHORT(newRecord->Data.SRV.wWeight, data);
         GETSHORT(newRecord->Data.SRV.wPort, data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.SRV.pNameTarget)) {
-          delete newRecord;
+          free(newRecord);
           return FALSE;
         }
         break;
 
       case T_MX:
+        newRecord = (PDNS_RECORD)malloc(sizeof(DnsRecord)); 
+        memset(newRecord, 0, sizeof(DnsRecord));
         GETSHORT(newRecord->Data.MX.wPreference,  data);
         if (!GetDN(reply, replyEnd, data, newRecord->Data.MX.pNameExchange)) {
-          delete newRecord;
+          free(newRecord);
           return FALSE;
         }
         break;
 
       case T_A:
+        newRecord = (PDNS_RECORD)malloc(sizeof(DnsRecord)); 
+        memset(newRecord, 0, sizeof(DnsRecord));
         GETLONG(newRecord->Data.A.IpAddress, data);
         break;
 
       case T_NS:
+        newRecord = (PDNS_RECORD)malloc(sizeof(DnsRecord)); 
+        memset(newRecord, 0, sizeof(DnsRecord));
         if (!GetDN(reply, replyEnd, data, newRecord->Data.NS.pNameHost)) {
           delete newRecord;
           return FALSE;
         }
         break;
-
-      default:
-        ok = FALSE;
-        break;
     }
 
-    if (ok) {
+    // initialise the new record
+    if (newRecord != NULL) {
+      newRecord->wType = type;
+      newRecord->Flags.S.Section = section;
+      newRecord->pNext = NULL;
+      strcpy(newRecord->pName, pName);
+
       if (*results == NULL)
         *results = newRecord;
-
-      newRecord->pNext = NULL;
 
       if (lastRecord != NULL)
         lastRecord->pNext = newRecord;
@@ -202,8 +212,6 @@ static BOOL ProcessDNSRecords(
     }
   }
 
-  delete newRecord;
-
   return TRUE;
 }
 
@@ -211,7 +219,7 @@ void DnsRecordListFree(PDNS_RECORD rec, int /* FreeType */)
 {
   while (rec != NULL) {
     PDNS_RECORD next = rec->pNext;
-    delete rec;
+    free(rec);
     rec = next;
   }
 }
@@ -436,10 +444,12 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
   return NULL;
 }
 
-BOOL PDNS::GetSRVRecords(const PString & _service,
-                         const PString & type,
-                         const PString & domain,
-                         PDNS::SRVRecordList & recordList)
+BOOL PDNS::GetSRVRecords(
+  const PString & _service,
+  const PString & type,
+  const PString & domain,
+  PDNS::SRVRecordList & recordList
+)
 {
   if (_service.IsEmpty())
     return FALSE;
