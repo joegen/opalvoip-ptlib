@@ -38,6 +38,7 @@ class SoundHandleEntry : public PObject {
     unsigned bitsPerSample;
     unsigned fragmentValue;
     BOOL isInitialised;
+    unsigned resampleRate;
 };
 
 class PSoundChannelOSS: public PSoundChannel
@@ -94,4 +95,5 @@ class PSoundChannelOSS: public PSoundChannel
     Directions direction;
     PString device;
     BOOL isInitialised;
+    unsigned resampleRate;
 };

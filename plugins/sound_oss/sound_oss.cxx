@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: sound_oss.cxx,v $
+ * Revision 1.6  2004/11/08 04:04:51  csoutheren
+ * Added resampling to allow operation on hardware that only supports 48khz
+ *
  * Revision 1.5  2004/11/07 20:01:31  dsandras
  * Make sure lastWriteCount is updated.
  *
@@ -548,6 +551,7 @@ BOOL PSoundChannelOSS::Open(const PString & _device,
     entry->bitsPerSample = mBitsPerSample   = _bitsPerSample;
     entry->isInitialised = FALSE;
     entry->fragmentValue = 0x7fff0008;
+    entry->resampleRate  = 0;
   }
    
   // save the direction and device
@@ -584,6 +588,7 @@ BOOL PSoundChannelOSS::Setup()
   // do not re-initialise initialised devices
   if (entry.isInitialised) {
     PTRACE(6, "OSS\tSkipping setup for " << device << " as already initialised");
+    resampleRate = entry.resampleRate;
 
   } else {
     PTRACE(6, "OSS\tInitialising " << device << "(" << (void *)(&entry) << ")");
@@ -596,11 +601,11 @@ BOOL PSoundChannelOSS::Setup()
 
     stat = FALSE;
 
-  // must always set paramaters in the following order:
-  //   buffer paramaters
-  //   sample format (number of bits)
-  //   number of channels (mon/stereo)
-  //   speed (sampling rate)
+    // must always set paramaters in the following order:
+    //   buffer paramaters
+    //   sample format (number of bits)
+    //   number of channels (mon/stereo)
+    //   speed (sampling rate)
 
     int arg, val;
 
@@ -627,7 +632,17 @@ BOOL PSoundChannelOSS::Setup()
           arg = val = entry.sampleRate;
           if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg))) {
             stat = TRUE;
-            actualSampleRate = arg;
+
+            // detect cases where the hardware can't do the actual rate we need, but can do a simple multiple
+            if (arg != (int)entry.sampleRate) {
+              if (((arg / entry.sampleRate) * entry.sampleRate) == (unsigned)arg) {
+                PTRACE(3, "Resampling data at " << entry.sampleRate << " to match hardware rate of " << arg);
+                resampleRate = entry.resampleRate = arg / entry.sampleRate;
+              } else {
+                PTRACE_IF(4, actualSampleRate != (unsigned)val, "Actual sample rate selected is " << actualSampleRate << ", not " << entry.sampleRate);
+                actualSampleRate = arg;
+              }
+            }
           }
         }
       }
@@ -695,12 +710,41 @@ BOOL PSoundChannelOSS::Write(const void * buf, PINDEX len)
   if (!Setup() || os_handle < 0)
     return FALSE;
 
-  while (!ConvertOSError(::write(os_handle, (void *)buf, len)))
-    if (GetErrorCode() != Interrupted)
-      return FALSE;
-  
-  lastWriteCount += len;
-  
+  if (resampleRate == 0) {
+    while (!ConvertOSError(::write(os_handle, (void *)buf, len))) 
+      if (GetErrorCode() != Interrupted)
+        return FALSE;
+  }
+
+  else {
+    // cut the data into 1K blocks and upsample it
+    lastWriteCount = 0;
+    BYTE resampleBuffer[1024];
+    const BYTE * src    = (const BYTE *)buf;
+    const BYTE * srcEnd = src + len;
+    while (src < srcEnd) {
+
+      // expand the data by the appropriate sample ratio
+      BYTE * dst = resampleBuffer;
+      const BYTE * srcStart = src;
+      unsigned j;
+       
+      while ((src < srcEnd) && (dst < (resampleBuffer + sizeof(resampleBuffer) - resampleRate*2))) {
+        for (j = 0; j < resampleRate; ++j) {
+          memcpy(dst, src, 2);
+          dst += 2 ;
+        }
+        src += 2;
+      }
+      lastWriteCount += src - srcStart;
+      while (!ConvertOSError(::write(os_handle, resampleBuffer, dst - resampleBuffer))) {
+        if (GetErrorCode() != Interrupted) 
+          return FALSE;
+      }
+    }
+
+  }
+
   return TRUE;
 }
 
@@ -713,34 +757,68 @@ BOOL PSoundChannelOSS::Read(void * buf, PINDEX len)
 
   PTRACE(6, "OSS\tRead start");
 
-#if defined(P_FREEBSD)
-  PINDEX total = 0;
-  while (total < len) {
-    PINDEX bytes = 0;
-    while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
-      if (GetErrorCode() != Interrupted) {
-        PTRACE(6, "OSS\tRead failed");
-        return FALSE;
+  if (resampleRate == 0) {
+
+    PINDEX total = 0;
+    while (total < len) {
+      PINDEX bytes = 0;
+      while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
+        if (GetErrorCode() != Interrupted) {
+          PTRACE(6, "OSS\tRead failed");
+          return FALSE;
+        }
+        PTRACE(6, "OSS\tRead interrupted");
       }
-      PTRACE(6, "OSS\tRead interrupted");
+      total += bytes;
+      if (total != len)
+        PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
     }
-    total += bytes;
-    if (total != len)
-      PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
+    lastReadCount = total;
   }
-  lastReadCount = total;
 
-#else
+  else {
 
-  while (!ConvertOSError(lastReadCount = ::read(os_handle, (void *)buf, len))) {
-    if (GetErrorCode() != Interrupted) {
-      PTRACE(6, "OSS\tRead failed");
-      return FALSE;
+    // downsample the data
+
+    BYTE * dst    = (BYTE *)buf;
+    BYTE * dstEnd = dst + len;
+    lastReadCount = 0;
+
+    PBYTEArray resampleBuffer((1024 / resampleRate) * resampleRate);
+
+    // downsample the data into 1K blocks 
+    while (dst < dstEnd) {
+
+
+      // calculate number of source bytes needed to fill the buffer
+      PINDEX srcBytes = resampleRate * (dstEnd - dst);
+      PINDEX bytes;
+
+      {
+        PINDEX bufLen = PMIN(resampleBuffer.GetSize(), srcBytes);
+PTRACE(1, "Reading " << bufLen << " bytes");
+        while (!ConvertOSError(bytes = ::read(os_handle, resampleBuffer.GetPointer(), bufLen))) {
+          if (GetErrorCode() != Interrupted) 
+            return FALSE;
+        }
+      }
+
+      // use an average, not just a single sample
+      const BYTE * src = resampleBuffer;
+      while ( ((src - resampleBuffer) < bytes) && (dst < dstEnd)) {
+        int sample = 0;
+        unsigned j;
+        for (j = 0; j < resampleRate; ++j) {
+          sample += *(PUInt16l *)src;
+          src += 2;
+        }
+        *(PUInt16l *)dst = sample / resampleRate;
+printf("%02x %02x ", dst[0], dst[1]);
+        dst +=2 ;
+        lastReadCount += 2;
+      }
     }
-    PTRACE(6, "OSS\tRead interrupted");
   }
-#endif
-
 
   if (lastReadCount != len)
     PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
