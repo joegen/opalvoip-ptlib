@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.7  2003/04/28 08:32:01  craigs
+ * Added Linux SDL detection
+ *
  * Revision 1.6  2003/04/28 07:27:38  craigs
  * Added SDL libs
  *
@@ -211,7 +214,7 @@
 #undef P_SDL
 
 #ifdef _MSC_VER
-#pragma include_alias(<SDL.h>, <@SDL_DIR@/include/SDL.h>)
+#pragma include_alias(<SDL/SDL.h>, <@SDL_DIR@/include/SDL.h>)
 #define P_SDL_LIBRARY1 "@SDL_DIR@/Lib/SDL.lib"
 #define P_SDL_LIBRARY2 "@SDL_DIR@/Lib/SDLmain.lib"
 #endif
