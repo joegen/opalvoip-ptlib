@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.6 1994/08/23 11:32:52 robertj Exp $
+ * $Id: ptlib.h,v 1.7 1994/09/25 10:43:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
- * Revision 1.6  1994/08/23 11:32:52  robertj
+ * Revision 1.7  1994/09/25 10:43:57  robertj
+ * Added pipe channel.
+ *
+ * Revision 1.6  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.5  1994/08/22  00:46:48  robertj
@@ -70,18 +73,6 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PSerialChannel
-
-#include <serchan.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PModem
-
-#include <modem.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PFilePath
 
 #include <filepath.h>
@@ -103,6 +94,24 @@
 // PStructuredFile
 
 #include <sfile.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+#include <pipechan.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSerialChannel
+
+#include <serchan.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PModem
+
+#include <modem.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
