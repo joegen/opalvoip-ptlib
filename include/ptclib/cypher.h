@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.16  2003/04/10 06:16:30  craigs
+ * Added SHA-1 digest
+ *
  * Revision 1.15  2002/11/06 22:47:23  robertj
  * Fixed header comment (copyright etc)
  *
@@ -82,47 +85,45 @@
 #pragma interface
 #endif
 
-
-/** MD5 Message Digest.
- A class to produce a Message Digest for a block of text/data using the
- MD5 algorithm as defined in RFC1321 by Ronald Rivest of MIT Laboratory
- for Computer Science and RSA Data Security, Inc.
- */
-class PMessageDigest5 : public PObject
+class PMessageDigest : public PObject
 {
-  PCLASSINFO(PMessageDigest5, PObject)
+  PCLASSINFO(PMessageDigest, PObject)
 
   public:
     /// Create a new message digestor
-    PMessageDigest5();
+    PMessageDigest();
+
+    class Result {
+      public:
+        PINDEX GetSize() const          { return value.GetSize(); }
+        const BYTE * GetPointer() const { return (const BYTE *)value; }
+
+      private:
+        PBYTEArray value;
+        friend class PMessageDigest5;
+        friend class PMessageDigestSHA1;
+    };
 
     /// Begin a Message Digest operation, initialising the object instance.
-    void Start();
+    virtual void Start() = 0;
 
-    /** Incorporate the specified data into the message digest. */
-    void Process(
-      const PString & str      /// String to be part of the MD5
-    );
-    /** Incorporate the specified data into the message digest. */
-    void Process(
-      const char * cstr        /// C String to be part of the MD5
-    );
-    /** Incorporate the specified data into the message digest. */
-    void Process(
-      const PBYTEArray & data  /// Data block to be part of the MD5
-    );
-    /** Incorporate the specified data into the message digest. */
-    void Process(
+    virtual void Process(
       const void * dataBlock,  /// Pointer to data to be part of the MD5
       PINDEX length            /// Length of the data block.
     );
 
-    /// Resultant 128 bit digest of input data.
-    class Code {
-      private:
-        PUInt32l value[4];
-      friend class PMessageDigest5;
-    };
+    /** Incorporate the specified data into the message digest. */
+    virtual void Process(
+      const PString & str      /// String to be part of the MD5
+    );
+    /** Incorporate the specified data into the message digest. */
+    virtual void Process(
+      const char * cstr        /// C String to be part of the MD5
+    );
+    /** Incorporate the specified data into the message digest. */
+    virtual void Process(
+      const PBYTEArray & data  /// Data block to be part of the MD5
+    );
 
     /**
     Complete the message digest and return the magic number result.
@@ -131,11 +132,38 @@ class PMessageDigest5 : public PObject
     @return
        Base64 encoded MD5 code for the processed data.
     */
-    PString Complete();
-    void Complete(
-      Code & result   /// The resultant 128 bit MD5 code
+    virtual PString CompleteDigest();
+    virtual void CompleteDigest(
+      Result & result   /// The resultant 128 bit MD5 code
     );
 
+  protected:
+    virtual void InternalProcess(
+       const void * dataBlock,  /// Pointer to data to be part of the MD5
+      PINDEX length            /// Length of the data block.
+    ) = 0;
+
+    virtual void InternalCompleteDigest(
+      Result & result   /// The resultant 128 bit MD5 code
+    ) = 0;
+};
+
+
+/** MD5 Message Digest.
+ A class to produce a Message Digest for a block of text/data using the
+ MD5 algorithm as defined in RFC1321 by Ronald Rivest of MIT Laboratory
+ for Computer Science and RSA Data Security, Inc.
+ */
+class PMessageDigest5 : public PMessageDigest
+{
+  PCLASSINFO(PMessageDigest5, PMessageDigest)
+
+  public:
+    /// Create a new message digestor
+    PMessageDigest5();
+
+    /// Begin a Message Digest operation, initialising the object instance.
+    void Start();
 
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
@@ -144,7 +172,7 @@ class PMessageDigest5 : public PObject
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
       const PString & str,     /// String to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      Result & result            /// The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
@@ -153,7 +181,7 @@ class PMessageDigest5 : public PObject
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
       const char * cstr,       /// C String to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      Result & result            /// The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
@@ -162,7 +190,7 @@ class PMessageDigest5 : public PObject
     /** Encode the data in memory to and MD5 hash value. */
     static void Encode(
       const PBYTEArray & data, /// Data block to be encoded to MD5
-      Code & result            /// The resultant 128 bit MD5 code
+      Result & result            /// The resultant 128 bit MD5 code
     );
     /** Encode the data in memory to and MD5 hash value. */
     static PString Encode(
@@ -177,7 +205,58 @@ class PMessageDigest5 : public PObject
     static void Encode(
       const void * dataBlock,  /// Pointer to data to be encoded to MD5
       PINDEX length,           /// Length of the data block.
+      Result & result            /// The resultant 128 bit MD5 code
+    );
+
+    virtual void Complete(
+      Result & result   /// The resultant 128 bit MD5 code
+    );
+
+    // backwards compatibility functions
+    class Code {
+      private:
+        PUInt32l value[4];
+        friend class PMessageDigest5;
+    };
+
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const PString & str,     /// String to be encoded to MD5
       Code & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const char * cstr,       /// C String to be encoded to MD5
+      Code & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const PBYTEArray & data, /// Data block to be encoded to MD5
+      Code & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value.
+   
+    @return
+       Base64 encoded MD5 code for the processed data.
+    */
+    static void Encode(
+      const void * dataBlock,  /// Pointer to data to be encoded to MD5
+      PINDEX length,           /// Length of the data block.
+      Code & result            /// The resultant 128 bit MD5 code
+    );
+    virtual void Complete(
+      Code & result   /// The resultant 128 bit MD5 code
+    );
+    virtual PString Complete();
+
+  protected:
+    virtual void InternalProcess(
+       const void * dataBlock,  /// Pointer to data to be part of the MD5
+      PINDEX length            /// Length of the data block.
+    );
+
+    virtual void InternalCompleteDigest(
+      Result & result   /// The resultant 128 bit MD5 code
     );
 
   private:
@@ -191,7 +270,81 @@ class PMessageDigest5 : public PObject
     PUInt64 count;
 };
 
+#ifdef P_SSL
 
+/** SHA1 Digest.
+ A class to produce a Message Digest for a block of text/data using the
+ SHA-1 algorithm 
+ */
+class PMessageDigestSHA1 : public PMessageDigest
+{
+  PCLASSINFO(PMessageDigestSHA1, PMessageDigest)
+
+  public:
+    /// Create a new message digestor
+    PMessageDigestSHA1();
+
+    /// Begin a Message Digest operation, initialising the object instance.
+    void Start();
+
+    /** Encode the data in memory to and MD5 hash value. */
+    static PString Encode(
+      const PString & str      /// String to be encoded to MD5
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const PString & str,     /// String to be encoded to MD5
+      Result & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static PString Encode(
+      const char * cstr        /// C String to be encoded to MD5
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const char * cstr,       /// C String to be encoded to MD5
+      Result & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static PString Encode(
+      const PBYTEArray & data  /// Data block to be encoded to MD5
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static void Encode(
+      const PBYTEArray & data, /// Data block to be encoded to MD5
+      Result & result            /// The resultant 128 bit MD5 code
+    );
+    /** Encode the data in memory to and MD5 hash value. */
+    static PString Encode(
+      const void * dataBlock,  /// Pointer to data to be encoded to MD5
+      PINDEX length            /// Length of the data block.
+    );
+    /** Encode the data in memory to and MD5 hash value.
+    
+    @return
+       Base64 encoded MD5 code for the processed data.
+    */
+    static void Encode(
+      const void * dataBlock,  /// Pointer to data to be encoded to MD5
+      PINDEX length,           /// Length of the data block.
+      Result & result            /// The resultant 128 bit MD5 code
+    );
+
+  protected:
+    virtual void InternalProcess(
+       const void * dataBlock,  /// Pointer to data to be part of the MD5
+      PINDEX length            /// Length of the data block.
+    );
+
+    void InternalCompleteDigest(
+      Result & result   /// The resultant 128 bit MD5 code
+    );
+
+  private:
+    void * shaContext;
+};
+
+#endif
 
 /**This abstract class defines an encryption/decryption algortihm.
 A specific algorithm is implemented in a descendent class.
