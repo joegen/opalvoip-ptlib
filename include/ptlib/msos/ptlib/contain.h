@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.24  1999/03/09 10:30:17  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
  * Revision 1.23  1998/11/30 02:55:06  robertj
  * New directory structure
  *
@@ -241,24 +244,6 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #define PABSINDEX(idx) (idx)
 #define PASSERTINDEX(idx)
 
-#endif
-
-
-#ifdef _DEBUG
-#ifdef PMEMCHECK32
-#ifdef PMEMORY_CHECK
-#undef PMEMORY_CHECK
-#endif
-#define MCX_GetObjectA
-#define MCX_GetCurrentDirectoryA
-#define MCX_GetUserNameA
-#define MCX_GetPath
-#include <memcheck.h>
-#else
-#ifndef PMEMORY_CHECK
-#define PMEMORY_CHECK
-#endif
-#endif
 #endif
 
 
