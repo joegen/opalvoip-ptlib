@@ -18,229 +18,78 @@
 
 #include <windows.h>
 #include <commdlg.h>
-#ifndef WIN32
-#include <print.h>
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Operating System dependent declarations
-
-
-typedef int PORDINATE;
-typedef int PDIMENSION;
-
-#define P_NULL_WINDOW ((HWND)NULL)
-
-
-#ifdef WIN32
-
-#ifdef _MSC_VER
-#pragma warning(disable:4705)
-#endif
-
-typedef UINT PRESOURCE_ID;
-typedef short PSCROLLBAR_VALUE;
-
-#else // WIN32
-
-typedef int PORDINATE;
-typedef int PDIMENSION;
-
-typedef int PRESOURCE_ID;
-typedef int PSCROLLBAR_VALUE;
-
-#define EXPORTED FAR PASCAL _export
-
-#endif // else WIN32
-
-
-#ifdef _MSC_VER // default copy ctor/assignment op not generated warning
-#pragma warning(disable:4511; disable:4512)
-#endif
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDim
 
-#include "../../common/dim.h"
-  public:
-    PDim(DWORD dw);
-      // This is used to convert MS-Windows DWORD forms of size structures to
-      // a PDim object.
-
-    DWORD ToDWORD() const;
-      // This will pack a PDim object into the MS-Windows DWORD format.
-};
+#include "dim.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPoint
 
-#include "../../common/point.h"
-  public:
-    PPoint(DWORD dw);
-      // This is used to convert MS-Windows DWORD forms of point structures to
-      // a PPoint object.
-
-    DWORD ToDWORD() const;
-      // This will pack a PPoint object into the MS-Windows DWORD format.
-
-    operator POINT();
-    operator POINT*();
-    operator const POINT*() const;
-      // Get base structure type pointers.
-
-
-  private:
-    POINT p;
-};
-
-
-PARRAY(PPointArray, PPoint);
+#include "point.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRect
 
-#include "../../common/rect.h"
-  public:
-    PRect(const RECT & r);
-      // Construct a rectangle from MS-Windows RECT structure
-
-    operator RECT*();
-    operator const RECT*() const;
-      // Get base structure type pointers.
-
-
-  private:
-    RECT r;
-};
+#include "rect.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRegion
 
-#include "../../common/region.h"
-  protected:
-    PRegion(HRGN hRgn);
-
-    HRGN hRegion;
-};
+#include "region.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PKeyCode
 
-#include "../../common/keycode.h"
-  public:
-    PKeyCode(BOOL mouseMessage, WPARAM wParam, int other);
-      // Convert a MS-Windows event data for mouse down and key down events
-      // to key codes.
-
-    WORD VKCode();
-      // Return the MS-Window Virtual Key number for the key code.
-
-    WORD MouseModifiers();
-      // Return the modifiers for a mouse click that are set in this key code.
-};
+#include "keycode.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PColour
 
-  #include "../../common/colour.h"
-  public:
-    COLORREF ToCOLORREF() const;
-      // Convert the colour to MS-Windows GDI colour reference
-
-    void FromCOLORREF(COLORREF col);
-      // Set the RGB compnents from the MS-Windows GDI colour reference
-};
+#include "colour.h"
 
 
 //////////////////////////////////////////////////////////////////////////////
 // PRealColour
 
-#include "../../common/rcolour.h"
-  public:
-    PRealColour(COLORREF col);
-      // Create a colour of the specified RGB values
-
-};
+#include "rcolour.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFont
 
-#include "../../common/font.h"
-};
+#include "font.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRealFont
 
-#include "../../common/rfont.h"
-  public:
-    PRealFont(PApplication * app, HFONT hFont);
-      // Create a real font object given the MS-Windows GDI font handle.
-
-    HFONT GetHFONT() const;
-      // Return a MS-Windows GDI font handle.
-
-
-  protected:
-    // New methods for class
-    void Construct(HDC dc);
-      // Construct the real font for the specified device - part 1
-
-
-    // member variables
-    int height, avgWidth, maxWidth, ascent, descent, leading;
-};
+#include "rfont.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPalette
 
-#include "../../common/palette.h"
-  public:
-    // New functions for class
-    HPALETTE GetHPALETTE() const;
-      // Select the palette for the specified MS-Windows device context.
-
-
-  protected:
-    // Member variables
-    HPALETTE hPalette;
-      // Palette GDI object
-};
+#include "palette.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPattern
 
-#include "../../common/pattern.h"
-  public:
-    HBITMAP GetHBITMAP() const;
-
-  protected:
-    void Construct(HBITMAP hBm);
-
-    HBITMAP hBitmap;
-    BITMAP bitmap;
-};
+#include "pattern.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PImage
 
-#include "../../common/image.h"
-  public:
-    virtual HDC CreateImageDC() = 0;
-    virtual void CloseImageDC(HDC hDC) = 0;
-};
+#include "image.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,1212 +97,397 @@ PARRAY(PPointArray, PPoint);
 
 class PCanvas;
 
-#ifdef WIN32
-typedef unsigned char * PPixelData;
-#else
-typedef unsigned char __huge * PPixelData;
-#endif
-
-#include "../../common/pixels.h"
-  public:
-    virtual HDC CreateImageDC();
-    virtual void CloseImageDC(HDC hDC);
-      // Support for PMemoryCanvas
-
-    HBITMAP GetHBITMAP() const;
-      // Get the bitmap as an MS-Windows Device Dependent Bitmap
-
-
-  protected:
-    PPixels(HBITMAP hBm);
-      // Create a pixels object from the MS-Windows Device Dependent Bitmap
-
-    void InitialiseDIB(PDIMENSION dx, PDIMENSION dy, BYTE planes, BYTE depth);
-      // Convert a MS-Windows Device Dependent Bitmap to MS-Windows Device
-      // Independent Bitmap 
-
-    void ConvertBitmapToDIB(HBITMAP hBm);
-      // Convert a MS-Windows Device Dependent Bitmap to MS-Windows Device
-      // Independent Bitmap 
-
-
-    // Member variables
-    BITMAPINFOHEADER bitmapHeader;
-      // MS-Windows Device Independent Bitmap header info
-
-    PPixelData pixels;
-      // Memory block for pixel data
-
-    HBITMAP hBitmap;
-      // MS-Windows Device Dependent Bitmap for interaction with PMemoryCanvas.
-
-
-  friend class PCanvas;
-};
+#include "pixels.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPict
 
-#include "../../common/pict.h"
-  public:
-#ifdef WIN32
-    PPict(HENHMETAFILE hM);
-    HENHMETAFILE GetMETAFILE() const;
-#else
-    PPict(HMETAFILE hM);
-    HMETAFILE GetMETAFILE() const;
-#endif
-
-    virtual HDC CreateImageDC();
-    virtual void CloseImageDC(HDC hDC);
-
-
-  protected:
-#ifdef WIN32
-    HENHMETAFILE hMetafile;
-#else
-    HMETAFILE hMetafile;
-#endif
-};
+#include "pict.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCursor
 
-#include "../../common/cursor.h"
-  public:
-    HCURSOR GetHCURSOR() const;
-      // Get the MS-Windows cursor
-
-  protected:
-    HCURSOR hCursor;
-    BOOL deleteCursor;
-};
+#include "cursor.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCaret
 
-#include "../../common/caret.h"
-  protected:
-    BOOL hasCaret;
-};
+#include "caret.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PImgIcon
 
-#include "../../common/imgicon.h"
-  public:
-    PImgIcon(HBITMAP hBm);
-    HBITMAP GetHBITMAP() const;
-
-  protected:
-    void Construct(HBITMAP hBm);
-    HBITMAP hBitmap;
-};
+#include "imgicon.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIcon
 
-#include "../../common/icon.h"
-  public:
-    PIcon(HICON hIcn);
-      // Make a PIcon object from the MS-WINDOWS icon handle
-
-    HICON GetHICON() const;
-      // Get the MS-WINDOWS icon handle for the loaded icon
-
-  protected:
-    HICON hIcon;
-    BOOL deleteIcon;
-};
+#include "icon.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCanvasState
 
-#include "../../common/canstate.h"
-};
+#include "canstate.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCanvas
 
-#include "../../common/canvas.h"
-  public:
-    // Overrides from class PCanvasState
-    virtual BOOL SetPenStyle(PenStyles style);
-      // Set the pen style to be used by future drawing operations.
-
-    virtual BOOL SetPenWidth(int width);
-      // Set the pen width to be used by future drawing operations.
-
-    virtual BOOL SetPenFgColour(const PColour & colour);
-      // Set the pen foreground colour to be used by future drawing operations.
-
-    virtual BOOL SetFillPattern(const PPattern & pattern);
-      // Set the fill pattern to be used by future drawing operations.
-
-    virtual BOOL SetFillFgColour(const PColour & colour);
-      // Set the fill foreground colour to be used by future drawing operations.
-
-    virtual BOOL SetFont(const PFont & newFont);
-      // Set the font drawing tool to be used by future drawing operations.
-
-    virtual BOOL SetPolyFillMode(PolyFillMode newMode);
-      // Set the polygon fill mode to be used by future drawing operations.
-
-    virtual BOOL SetPalette(const PPalette & newPal);
-      // Set the palette drawing tool to be used by future drawing operations.
-
-    virtual BOOL SetMappingRect(const PRect & rect);
-      // Set the source rectangle to be used in the coordinate transform in
-      // future drawing operations. This is a rectangle in the world
-      // coordinates of the application.
-
-    virtual BOOL SetViewportRect(const PRect & rect);
-      // Set the destination rectangle to be used in the coordinate transform
-      // in future drawing operations. This is a rectangle in the device
-      // coordinates (pixels) of the screen, printer etc
-
-
-    // New functions for class
-    virtual HDC GetHDC() const;
-      // Return the MS-Windows GDI Device Context.
-
-    virtual HDC GetHDC();
-      // Return the MS-Windows GDI Device Context, create if does not exist.
-
-    void SetHDC(HDC newDC);
-      // Function to associate the MS-Windows GDI Device Context to the canvas
-      // object.
-
-    BOOL NullHDC() const;
-      // Return TRUE if the hDC is NULL, ie not used by any OnRedraw().
-
-
-  protected:
-    void MakePen();
-      // Make a MS-Windows GDI pen for the canvas
-
-    void MakeBrush();
-      // Make a MS-Windows GDI brush for the canvas
-
-    void SetTransform();
-      // Set the coordinate transforms.
-
-    void SetUpDrawModes(DrawingModes mode, const PColour & colour);
-      // Set the MS-Windows GDI ROP mode, background colour and background mode.
-
-    LPPOINT MakePOINTArray(const PPointArray & ptArray);
-    LPPOINT MakePOINTArray(const PPoint * ptArray, PINDEX numPts);
-      // Make an array of POINTs from parameter. Array must be deleted.
-
-    void DrawPolyLine(LPPOINT ptArray, PINDEX numPts);
-      // Draw a series of lines represented by the array of points.
-
-    virtual void DrawPolygon(LPPOINT ptArray, PINDEX numPts);
-      // Draw a closed polygon represented by the array of points.
-
-    void DrawBitmap(PORDINATE x, PORDINATE y,
-                            PDIMENSION width, PDIMENSION height, HBITMAP hBm);
-      // Draw a bitmap in the canvas
-
-    // Member variables
-    HDC hDC;
-      // The MS-Windows GDI Device Context creates internal to the canvas.
-
-    HPEN hPen;
-      // The MS-Windows GDI pen object
-
-    HBRUSH hBrush;
-      // The MS-Windows GDI brush object
-
-    HFONT hFont;
-      // The MS-Windows GDI font object
-};
+#include "canvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PInteractorCanvas
 
-#include "../../common/icanvas.h"
-};
+#include "icanvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDrawCanvas
 
-#include "../../common/dcanvas.h"
-  public:
-    PDrawCanvas(PInteractor * theInteractor, HDC newDC);
-      // Make a PDrawCanvas object from the MS-WINDOWS device context handle
-
-  private:
-    // Member variables
-    BOOL deleteDC;
-};
+#include "dcanvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRedrawCanvas
 
-#include "../../common/rcanvas.h"
-  public:
-    virtual HDC GetHDC() const;
-      // Return the MS-Windows GDI Device Context.
-
-    virtual HDC GetHDC();
-      // Return the MS-Windows GDI Device Context, create if does not exist.
-
-
-  private:
-    PAINTSTRUCT paint;
-      // Internal structure for when responding to a WM_PAINT event.
-};
+#include "rcanvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMemoryCanvas
 
-#include "../../common/mcanvas.h"
-};
+#include "mcanvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPrintInfo
 
-#include "../../common/prinfo.h"
-  protected:
-    // New functions for class
-    void ProcessDEVMODE(LPDEVMODE devMode);
-      // Set internal fields from the MS-Windows DEVMODE structure
-    // Member variables
-    PString driver;
-};
+#include "prinfo.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPrintCanvas
 
-#include "../../common/pcanvas.h"
-};
+#include "pcanvas.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PInteractor
 
-#include "../../common/interact.h"
-  public:
-    // New functions for class
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle. If does not exist yet, create it.
-
-    HWND GetHWND() const;
-      // Return the MS-Windows handle.
-
-
-  protected:
-    PInteractor(PInteractor * parent, HWND hWnd);
-      // Constructor for making PInteractors when already have an MS-Windows
-      // window handle.
-
-    void SetWndText(const PString & str,
-                                  UINT setMsg = WM_SETTEXT, WPARAM wParam = 0);
-      // Set the MS-Windows text via SendMessage(). Uses the message codes as
-      // supplied in the parameters.
-
-    PString GetWndText(UINT lenMsg = WM_GETTEXTLENGTH, UINT getMsg = WM_GETTEXT,
-                             WPARAM wParamGet = -1, WPARAM wParamLen = 0) const;
-      // Get the MS-Windows text via SendMessage(). Uses the message codes as
-      // supplied in the parameters.
-
-    void SetWndFont();
-      // Set the windows font when it is created or changed.
-
-    void SetWndCursor();
-      // Set the windows cursor when it is changed in this interactor.
-
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-    virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Default MS-Windows message handler.
-
-
-    // Member variables
-    HWND wnd;
-      // MS-Windows handle
-
-    BOOL inPaint;
-      // Prevent recursive errors by remembering if we are in WM_PAINT
-
-
-    friend class PApplication;
-};
-
-#define DeadHWND ((HWND)-1)
+#include "interact.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PControl
 
-typedef void (PInteractor:: * PControlNotifyFunction)(PControl *, int);
-  // Callback type declaration. The code that handles the interaction of a
-  // control is placed in the Interactor that the control resides in.
-  // This is done instead of the true object oriented way of creating a
-  // descendent class because it would cause a class explosion of monumental
-  // proportion if every control in every dialog had to have its own class!
-  // So we fall back to a more C way of doing things to make life a lot easier.
-  //
-  // The PControl * parameter is a pointer to the control that is doing the
-  // notification of a change. The option parameter indicates the type of
-  // notification that is happening, e.g. for a list box it indicates whether
-  // the user selected an item or double clicked on an item.
-#define PMAKE_CONTROL_NOTIFY(f) ((PControlNotifyFunction)(void (PInteractor:: *)(PControl *, int))f)
-#define PCALL_CONTROL_NOTIFY(f, w, c, o) (((w)->*(f))((c), (o)))
-#define PNULL_CONTROL_NOTIFY (NULL)
-
-
-#include "../../common/control.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-
-  protected:
-    virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // All controls have MS-Windows messages intercepted and passed through
-      // this function.
-
-
-    // Member variables
-    WNDPROC wndProc;
-      // The default control WndProc, the control is subclassed to allow the
-      // PWLib system to intercept messages that it is interested in.
-};
+#include "control.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PNamedControl
 
-#include "../../common/ncontrol.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-
-  private:
-    PString initName;
-};
+#include "ncontrol.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PStaticText
 
-#include "../../common/stattext.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "stattext.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PStaticIcon
 
-#include "../../common/staticon.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "staticon.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PStaticBox
 
-#include "../../common/statbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "statbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPushButton
 
-#include "../../common/pbutton.h"
-  public:
-    // New functions for class
-    virtual BOOL IsOwnerDraw() const;
-      // Return TRUE if is to handle owner draw messages
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+#include "pbutton.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTextButton
 
-#include "../../common/tbutton.h"
-};
+#include "tbutton.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PImageButton
 
-#include "../../common/ibutton.h"
-};
+#include "ibutton.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCheck3WayBox
 
-#include "../../common/check3.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+#include "check3.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PCheckBox
 
-#include "../../common/checkbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "checkbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRadioButton
 
-#include "../../common/rbutton.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+#include "rbutton.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PChoiceBox
 
-#include "../../common/choicbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+#include "choicbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PListBox
 
-#include "../../common/listbox.h"
-  protected:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-
-    // New functions for class
-    virtual BOOL IsOwnerDraw() const;
-      // Return TRUE if is to handle owner draw messages
-
-      
-    friend class PInteractor;
-};
+#include "listbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PStringListBox
 
-#include "../../common/slistbox.h"
-};
+#include "slistbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PComboBox
 
-#include "../../common/combobox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+#include "combobox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PScrollBar
 
-#include "../../common/scrollb.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-
-    virtual int TrackScrollBar(WPARAM code, int trackVal);
-      // Track changes to a scroll bar. Returns the change in scroll bar value
-      // that was caused by the event.
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-
-    // Member variables
-    BOOL tracking;
-      // Indication that continuous scrolling is occurring.
-};
+#include "scrollb.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVerticalScrollBar
 
-#include "../../common/vscrollb.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "vscrollb.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PHorizontalScrollBar
 
-#include "../../common/hscrollb.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "hscrollb.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PEditBox
 
-#include "../../common/editbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
+#include "editbox.h"
 
-    virtual int TranslateOption(WORD msg) const;
-      // Translate the windows notification message code to the PWLib
-      // notify function code. This returns -1 if the windows message is to be
-      // ignored.
-};
+
+///////////////////////////////////////////////////////////////////////////////
+// PPasswordEditBox
+
+#include "pwedbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMultiLineEditBox
 
-#include "../../common/meditbox.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "meditbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PNumberEditBox
 
-#include "../../common/numedbox.h"
-};
+#include "numedbox.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIntegerEditBox
 
-#include "../../common/intedit.h"
-};
+#include "intedit.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFloatEditBox
 
-#include "../../common/realedit.h"
-};
+#include "realedit.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PInteractorLayout
 
-class PResourceData;
-
-#include "../../common/ilayout.h"
-  public:
-    // Overrides from class PInteractor
-    HWND GetHWND() const;
-      // Return the MS-Windows handle for the control.
-
-    virtual HWND GetHWND();
-      // Return the MS-Windows handle for the control, call CreateWindow() to
-      // create the window if it has not already been created.
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual LRESULT DefWndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // All controls have MS-Windows messages intercepted and passed through
-      // this function.
-
-  private:
-    PRESOURCE_ID resourceID;
-};
+#include "ilayout.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDialog
 
-#include "../../common/dialog.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-};
+#include "dialog.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PModalDialog
 
-#include "../../common/modaldlg.h"
-
-  protected:
-    enum { Initialising, Running, Ended } runState;
-    int returnValue;
-
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "modaldlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSimpleDialog
 
-#include "../../common/simpdlg.h"
-};
+#include "simpdlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PFileDialog
 
-#include "../../common/filedlg.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-    HWND GetHWND();
-      // Return the MS-Windows handle for the control.
-
-
-    // Overrides from class PModalDialog
-    virtual void OnOk();
-      // Function called when the dialog OK button has been pressed. The
-      // default behaviour is to end the modal dialog returning TRUE.
-
-    virtual void OnCancel();
-      // Function called when the dialog Cancel button has been pressed. The
-      // default behaviour is to end the modal dialog returning FALSE.
-
-
-    // New member functions for class
-    virtual void OnListSelection(UINT listBox, UINT item, UINT operation);
-      // Called whenever the standard file dialog changes the selected file in
-      // its list boxes
-
-
-    // Member variables
-    OPENFILENAME fileDlgInfo;
-    PString dlgTitle;
-    char fileBuffer[P_MAX_PATH];
-    UINT selChangeMessage;
-};
+#include "filedlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // POpenFileDialog
 
-#include "../../common/opendlg.h"
-  public:
-    // Overrides from class PModalDialog
-    virtual int RunModal();
-      // Execute the dialog in a mode.
-
-
-    // Overrides from class PFileDialog
-    virtual void OnListSelection(UINT listBox, UINT item, UINT operation);
-      // Called whenever the standard file dialog changes the selected file in
-      // its list boxes
-};
+#include "opendlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSaveFileDialog
 
-#include "../../common/savedlg.h"
-  public:
-    // Overrides from class PModalDialog
-    virtual int RunModal();
-      // Execute the dialog in a mode.
-};
+#include "savedlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // POpenDirDialog
 
-#include "../../common/dirdlg.h"
-  public:
-    // Overrides from class PModalDialog
-    virtual int RunModal();
-      // Execute the dialog in a mode.
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-
-    // Overrides from class PFileDialog
-    virtual void OnListSelection(UINT listBox, UINT item, UINT operation);
-      // Called whenever the standard file dialog changes the selected file in
-      // its list boxes
-};
+#include "dirdlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPrintDialog
 
-#include "../../common/printdlg.h"
-  public:
-    // Overrides from class PModalDialog
-    virtual int RunModal();
-      // Execute the dialog in a mode.
-
-    HWND GetHWND();
-      // Return the MS-Windows handle for the control.
-
-
-  protected:
-    // Overrides from class PInteractor
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-
-    // Overrides from class PModalDialog
-    virtual void OnOk();
-      // Function called when the dialog OK button has been pressed. The
-      // default behaviour is to end the modal dialog returning TRUE.
-
-    virtual void OnCancel();
-      // Function called when the dialog Cancel button has been pressed. The
-      // default behaviour is to end the modal dialog returning FALSE.
-
-
-    // Member variables
-    PRINTDLG printDlgInfo;
-    PString  dlgTitle;
-};
+#include "printdlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPrinterSetupDialog
 
-#include "../../common/prsetdlg.h"
-};
+#include "prsetdlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPrintJobDialog
 
-#include "../../common/prjobdlg.h"
-};
+#include "prjobdlg.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTitledWindow
 
-#include "../../common/titlewnd.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    virtual LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // Event handler for this interactor. Translates MS-Windows messages into
-      // virtual member function calls.
-
-
-  private:
-    // Member variables
-    int initFlags;
-};
+#include "titlewnd.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTopLevelWindow
 
-#include "../../common/toplwnd.h"
-  protected:
-    // Overrides from class PInteractor
-    void SetPosition(PORDINATE x, PORDINATE y,
-                     PositionOrigin xOrigin = TopLeftScreen,
-                     PositionOrigin yOrigin = TopLeftScreen);
-      // Set the window position based on the origin and coordinate system
-      // specified.
-
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-
-    LRESULT WndProc(UINT msg, WPARAM wParam, LPARAM lParam);
-      // This function is called for each MS-Windows message received by the
-      // window.
-};
+#include "toplwnd.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMDIFrameWindow
 
-#include "../../common/mdiframe.h"
-  protected:
-    HWND GetMDIClient() const;
-    HWND GetMDIClient();
-    HWND mdiClient;
-};
+#include "mdiframe.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMDIDocWindow
 
-#include "../../common/mdidoc.h"
-};
+#include "mdidoc.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PScrollable
 
-#include "../../common/scrollab.h"
-  protected:
-    // Overrides from class PInteractor
-    virtual DWORD GetCreateWinInfo(LPWNDCLASS wndClass = NULL) const;
-      // Return the info required by CreateWindow() and RegisterClass().
-};
+#include "scrollab.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMenuEntry
 
-#include "../../common/menuent.h"
-};
+#include "menuent.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMenuSeparator
 
-#include "../../common/menusep.h"
-  protected:
-    PMenuSeparator(int dummy, PSubMenu * menu);
-      // Helper constructor for when creating menu from a resource. Creates
-      // the object given the menu ID as used in the resource template.
-};
+#include "menusep.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PMenuItem
 
-typedef void (PTopLevelWindow:: * PMenuNotifyFunction)(PMenuItem *);
-  // Callback type declaration. The code that handles the interaction of a
-  // menu item is placed in the Top Level Window that the menu resides in.
-  // This is done instead of the true object oriented way of creating a
-  // descendent class because it would cause a class explosion of monumental
-  // proportion if every menu item in every menu had to have its own class!
-  // So we fall back to a more C way of doing things to make life a lot easier.
-  //
-  // The PMenuItem * parameter is a pointer to the menu item that was selected.
-#define PMAKE_MENU_NOTIFY(f) ((PMenuNotifyFunction)(void (PTopLevelWindow:: *)(PMenuItem *))f)
-#define PCALL_MENU_NOTIFY(f, w, m) (((w)->*(f))(m))
-#define PNULL_MENU_NOTIFY (NULL)
-
-
-#include "../../common/menuitem.h"
-};
+#include "menuitem.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSubMenu
 
-#include "../../common/submenu.h"
-  public:
-    HMENU GetHMENU() const;
-      // Return the menu handle for the menu as required by PTopLevelWindow.
-
-
-  protected:
-    PSubMenu(HMENU hSubMenu, PSubMenu * menu, const char * menuTitle,
-                                                  const PMenuBindings * funcs);
-      // Helper constructor for when creating menu from a resource. Creates
-      // the object given the menu ID as used in the resource template.
-
-
-    // New functions for class
-    void LoadSubMenu(const PMenuBindings * funcs);
-      // Function for recursively creating menu items and sub-menus from the
-      // menu loaded from a resource.
-
-
-    // Memeber variables
-    HMENU hMenu;
-      // MS-Windows menu handle
-};
+#include "submenu.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRootMenu
 
-#include "../../common/rootmenu.h"
-};
+#include "rootmenu.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PResourceData
 
-#include "../../common/resdata.h"
-  protected:
-    // Member variables
-    HGLOBAL hResource;
-    LPSTR lpResource;
-};
+#include "resdata.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PResourceString
 
-#include "../../common/rstring.h"
-};
+#include "rstring.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PClipboard
 
-#include "../../common/clipbrd.h"
-  private:
-    BOOL opened;
-};
+#include "clipbrd.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
 
-#include "../../common/sound.h"
-};
+#include "sound.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
 
-#include "../../common/config.h"
-};
-
+#include "config.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PApplication
 
-#include "../../common/applicat.h"
-  public:
-    HINSTANCE GetInstance() const;
-      // Return the MS-Windows instance handle.
-
-    WNDPROC GetWndProc() const;
-    DLGPROC GetDlgProc() const;
-      // Return the MS-Windows callback functions.
-
-    // Support for looking up C++ objects from HWNDs
-    void AddWindowHandle(HWND hWnd, PInteractor * pWnd);
-    void RemoveWindowHandle(HWND hWnd);
-    PInteractor * GetWindowObject(HWND hWnd);
-
-    // Support for non-modal dialogs
-    void AddDialog(PInteractorLayout * pWnd);
-    void RemoveDialog(PInteractorLayout * pWnd);
-
-
-  private:
-    friend LRESULT EXPORTED
-                    WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-      // Core function for receiving messages. This dispatches messages to the
-      // interactors found in the PApplication::CreatedWindows dictionary. Once
-      // attached to an object, its own window message handling takes over.
-
-    LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-      // Called by the static function above but is now bound to the
-      // application object data.
-
-    friend BOOL EXPORTED
-                    DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-      // Core function for receiving messages. This dispatches messages to the
-      // dialogs found in the PApplication::CreatedWindows dictionary. Once
-      // attached to an object, its own window message handling takes over.
-
-    BOOL DlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-      // Called by the static function above but is now bound to the
-      // application object data.
-
-    friend int PASCAL
-            WinMain(HINSTANCE hInstance, HINSTANCE hPrev, LPSTR cmd, int show);
-      // The MS-Windows entry point.
-
-    int Main(HINSTANCE hInstance,
-             int argc, char **_argv,
-             WNDPROC wndProc, DLGPROC dlgProc);
-      // Application specific version of WinMain
-
-
-    // Member Variables
-    HINSTANCE hInstance;
-      // The MS-Windows instance handle for the running image.
-
-    WNDPROC wndProc;
-    DLGPROC dlgProc;
-      // Pointers to the MS-Windows callback functions that bind MS-Windows
-      // messages to the C++ class objects.
-
-    PDECLARE_CLASS(HWNDKey, PObject)
-      // This class is used in the hash table lookup for getting a PInteractor
-      // pointer given a MS-Windows window handle.
-      public:
-        HWNDKey(HWND newKey)
-          { theKey = newKey; }
-        inline PObject * Clone() const
-          { return new HWNDKey(theKey); }
-        inline Comparison Compare(const PObject & obj) const
-          { return theKey != ((const HWNDKey &)obj).theKey
-                                                     ? GreaterThan : EqualTo; }
-        inline PINDEX HashFunction() const
-          { return ((UINT)theKey/8)%23; }
-
-      private:
-        HWND theKey;
-    };
-    PDICTIONARY(WindowDict, HWNDKey, PInteractor);
-    WindowDict CreatedWindows;
-
-    PLIST(NonModalDict, PInteractorLayout);
-    NonModalDict NonModalDialogs;
-
-    int timerID;
-    DWORD timerLastSet;
-};
-
-
-#ifndef _WINDLL
-
-extern PApplication * PSTATIC PApplicationInstance;
-
-inline PTextApplication::PTextApplication()
- { }
-
-inline PApplication::PApplication()
-  : systemFont("System", 12) { PApplicationInstance = this; }
-
-#endif
+#include "applicat.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
