@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="Console Components"
+	ProjectGUID="{2EDD243A-6133-4BDA-A642-3CEBDABB8F4A}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -268,6 +269,9 @@
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\ptclib\enum.cxx">
 			</File>
 			<File
 				RelativePath="..\..\Ptclib\Ftp.cxx">
