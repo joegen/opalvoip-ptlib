@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.22  1998/10/16 02:03:18  robertj
+ * Fixed error message output to include number on unknown errors.
+ *
  * Revision 1.21  1998/10/16 01:15:38  craigs
  * Added Yield to help with cooperative multithreading.
  *
@@ -241,7 +244,14 @@ BOOL PChannel::PXClose()
 
 PString PChannel::GetErrorText(Errors, int osError = 0)
 {
-  return strerror(osError);
+  if (osError == 0)
+    return PString();
+
+  const char * err = strerror(osError);
+  if (err != NULL)
+    return err;
+
+  return psprintf("Unknown error %d", osError);
 }
 
 PString PChannel::GetErrorText() const
