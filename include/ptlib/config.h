@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.14 1996/02/25 02:50:33 robertj Exp $
+ * $Id: config.h,v 1.15 1997/08/07 11:58:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
+ * Revision 1.15  1997/08/07 11:58:01  robertj
+ * Added ability to get registry data from other applications and anywhere in system registry.
+ *
  * Revision 1.14  1996/02/25 02:50:33  robertj
  * Added consts to all GetXxxx functions.
  *
@@ -110,8 +113,28 @@ PDECLARE_CLASS(PConfig, PObject)
       Source src = Application  // Standard source for the configuration.
     );
     PConfig(
+      Source src,               // Standard source for the configuration.
+      const PString & appname   // Name of application
+    );
+    PConfig(
+      Source src,               // Standard source for the configuration.
+      const PString & appname,  // Name of application
+      const PString & manuf     // Manufacturer
+    );
+    PConfig(
       const PString & section,  // Default section to search for variables.
       Source src = Application  // Standard source for the configuration.
+    );
+    PConfig(
+      const PString & section,  // Default section to search for variables.
+      Source src,               // Standard source for the configuration.
+      const PString & appname   // Name of application
+    );
+    PConfig(
+      const PString & section,  // Default section to search for variables.
+      Source src,               // Standard source for the configuration.
+      const PString & appname,  // Name of application
+      const PString & manuf     // Manufacturer
     );
     PConfig(
       const PFilePath & filename, // Explicit name of the configuration file.
@@ -404,7 +427,9 @@ PDECLARE_CLASS(PConfig, PObject)
 
   private:
     void Construct(
-      Source src                  // Standard source for the configuration.
+      Source src,               // Standard source for the configuration.
+      const PString & appname,  // Name of application
+      const PString & manuf     // Manufacturer
     );
     void Construct(
       const PFilePath & filename  // Explicit name of the configuration file.
