@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.14  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.13  1999/05/01 11:29:19  robertj
  * Alpha linux port changes.
  *
@@ -98,9 +101,12 @@ typedef long INT;
 typedef int  INT;
 #endif
 
-typedef size_t PINDEX;
+//typedef size_t PINDEX;
+//#define P_MAX_INDEX 		0x7fffffff
 
-#define P_MAX_INDEX 		0x7fffffff
+typedef int PINDEX;
+#define P_MAX_INDEX 		INT_MAX
+
 #define PABSINDEX(idx) 		(idx)		// careful - size_t may be signed!
 #define PASSERTINDEX(idx)
 
