@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.11 1995/03/14 12:41:12 robertj Exp $
+ * $Id: config.h,v 1.12 1995/12/10 11:54:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
+ * Revision 1.12  1995/12/10 11:54:30  robertj
+ * Added WIN32 registry support for PConfig objects.
+ *
  * Revision 1.11  1995/03/14 12:41:12  robertj
  * Updated documentation to use HTML codes.
  *
@@ -83,7 +86,7 @@ PDECLARE_CLASS(PConfig, PObject)
          configuration file similar to that for applications except there is
          only a single file that applies to all PWLib applications.
        */
-      Application
+      Application,
       /* The application specific configuration file. This is the most common
          source of configuration for an application. The location of this file
          is platform dependent, but its contents are always the same. For
@@ -92,6 +95,7 @@ PDECLARE_CLASS(PConfig, PObject)
          either in the System Folder or the Preferences folder within it. For
          Unix this would be the users home directory.
        */
+      NumSources
     };
     /* This enum describes the standard source for configuration information.
      */
