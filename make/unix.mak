@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.46  1999/07/31 03:53:16  robertj
+# Allowed for override of object directory suffix
+#
 # Revision 1.45  1999/07/11 14:53:38  robertj
 # Temporarily removed pthreads for linux as is not very portable on various linuxes
 #
@@ -367,11 +370,13 @@ else
 PLATFORM_TYPE = $(OSTYPE)_$(PTLIB_ALT)_$(MACHTYPE)
 endif
 
+ifndef OBJ_SUFFIX
 ifdef	DEBUG
 OBJ_SUFFIX	:= d
 else
 OBJ_SUFFIX	:= r
 endif # DEBUG
+endif # OBJ_SUFFIX
 
 
 ###############################################################################
