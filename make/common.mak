@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.54  2001/05/29 03:31:48  craigs
+# Removed BROKEN_GCC symbol, now that pwlib is totally gcc friendly
+#
 # Revision 1.53  2001/03/29 04:48:45  robertj
 # Added tagbuild target to do CVS tag and autoincrement BUILD_NUMBER
 # Changed order so version.h is used before custom.cxx
@@ -129,17 +132,6 @@
 # Added open software license.
 #
 
-#
-#  set BROKEN_GCC if the gcc version is 2.96
-#
-ifndef	BROKEN_GCC
-GCC_VER	= $(shell gcc --version)
-ifeq	($(GCC_VER),2.96)
-BROKEN_GCC	= $(GCC_VER)
-endif
-endif
-
-
 ######################################################################
 #
 # common rules
@@ -180,12 +172,7 @@ SOURCES         := $(strip $(SOURCES))
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-ifdef BROKEN_GCC
-	@echo $(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
-	@( export PWLIBDIR=$(PWLIBDIR) ; $(PWLIBDIR)/make/gcc_filter $(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@ )
-else
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
-endif
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
