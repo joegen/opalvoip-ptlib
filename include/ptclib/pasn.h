@@ -1,11 +1,20 @@
 /*
- * $Id: pasn.h,v 1.3 1996/11/04 09:45:08 robertj Exp $
+ * $Id: pasn.h,v 1.6 1997/08/20 08:48:56 craigs Exp $
  *
  * ASN Classes
  *
  * Copyright 1996 Equivalence
  *
  * $Log: pasn.h,v $
+ * Revision 1.6  1997/08/20 08:48:56  craigs
+ * Added GetString() to PASNNull
+ *
+ * Revision 1.5  1997/07/20 08:34:14  craigs
+ * Added ASN NULL type
+ *
+ * Revision 1.4  1997/07/16 05:51:08  craigs
+ * Added PASNString constructor with ptr and length
+ *
  * Revision 1.3  1996/11/04 09:45:08  robertj
  * Fixed bug in IP number ASN type, should be binary not dot format string.
  *
@@ -57,18 +66,19 @@ PDECLARE_CLASS(PASNObject, PObject)
   public:
     enum ASNType {
       Integer,		// ASN Integer object
-      String,           // ASN Octet String object
+      String,       // ASN Octet String object
       ObjectID,		// ASN Object ID object
       Sequence,		// ASN Sequence object
       Choice,		// ASN Sequence with discriminator
-      IPAddress,        // ASN IPAddress object
-      Counter,          // ASN Counter object
-      Gauge,            // ASN Gauge object
-      TimeTicks,        // ASN TimeTicks object
-      Opaque,           // ASN Opaque object
-      NsapAddress,      // ASN NsapAddress
-      Counter64,        // ASN Counter64
-      UInteger32,       // ASN Unsigned integer 32
+      IPAddress,    // ASN IPAddress object
+      Counter,      // ASN Counter object
+      Gauge,        // ASN Gauge object
+      TimeTicks,    // ASN TimeTicks object
+      Opaque,       // ASN Opaque object
+      NsapAddress,  // ASN NsapAddress
+      Counter64,    // ASN Counter64
+      UInteger32,   // ASN Unsigned integer 32
+	  Null,         // ASN Null
       Unknown,		// unknown ASN object type
       ASNTypeMax	// maximum of number of ASN object types
     };
@@ -272,6 +282,7 @@ PDECLARE_CLASS(PASNInteger, PASNObject)
 PDECLARE_CLASS(PASNString, PASNObject)
   public:
     PASNString(const PString & str);
+    PASNString(const BYTE * ptr, int len);
     PASNString(const PBYTEArray & buffer,               PASNObject::ASNType = String);
     PASNString(const PBYTEArray & buffer, PINDEX & ptr, PASNObject::ASNType = String);
 
@@ -292,6 +303,7 @@ PDECLARE_CLASS(PASNString, PASNObject)
     void Encode(PBYTEArray & buffer,             PASNObject::ASNType type);
 
     PString value;
+    WORD    valueLen;
 };
 
 PDECLARE_CLASS(PASNIPAddress, PASNString)
@@ -445,6 +457,33 @@ PDECLARE_CLASS(PASNObjectID, PASNObject)
   private:
     PDWORDArray value;
 };
+
+//////////////////////////////////////////////////////////////////////////
+//
+//  PASNull
+//     A descendant of PASNObject which is the NULL type
+//
+
+PDECLARE_CLASS(PASNNull, PASNObject)
+/* This class defines an ASN integer object.
+*/
+
+  public:
+    PASNNull();
+    PASNNull(const PBYTEArray & buffer, PINDEX & ptr);
+
+    void PrintOn(ostream & strm) const;
+
+    void Encode(PBYTEArray & buffer);
+    WORD GetEncodedLength();
+
+    PObject * Clone() const;
+
+    ASNType GetType() const;
+    PString GetString () const;
+    PString GetTypeAsString() const;
+};
+
 
 //////////////////////////////////////////////////////////////////////////
 //
