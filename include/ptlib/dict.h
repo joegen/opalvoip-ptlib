@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.5 1995/02/05 00:48:03 robertj Exp $
+ * $Id: dict.h,v 1.6 1995/02/11 04:10:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.5  1995/02/05 00:48:03  robertj
+ * Revision 1.6  1995/02/11 04:10:35  robertj
+ * Fixed dictionary MACRO for templates.
+ *
+ * Revision 1.5  1995/02/05  00:48:03  robertj
  * Fixed template version.
  *
  * Revision 1.4  1995/01/09  12:35:31  robertj
@@ -751,8 +754,9 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
    See the $H$PDictionary and $H$PAbstractDictionary classes for more
    information.
  */
+#define PDECLARE_DICTIONARY_TEMPLATE_CLASS_INSTANCE(K,D) PDictionary<K,D>
 #define PDECLARE_DICTIONARY(cls, K, D) \
-  PDECLARE_CLASS(cls, PDictionary<K, D>) \
+  PDECLARE_CLASS(cls, PDECLARE_DICTIONARY_TEMPLATE_CLASS_INSTANCE(K, D)) \
   protected: \
     cls(int dummy, const cls * c) \
       : PDictionary<K, D>(dummy, c) { } \
