@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.127  2003/02/26 01:12:52  robertj
+ * Fixed race condition where thread can terminatebefore an IsSuspeded() call
+ *   occurs and cause an assert, thanks Sebastian Meyer
+ *
  * Revision 1.126  2002/12/11 22:25:04  robertj
  * Added ability to set user identity temporarily and permanently.
  * Added get and set users group functions.
@@ -1238,7 +1242,6 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
   SuspendThread(threadHandle);
   return ResumeThread(threadHandle) > 1;
 }
