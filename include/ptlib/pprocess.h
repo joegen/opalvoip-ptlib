@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.50  2001/11/23 06:59:29  robertj
+ * Added PProcess::SetUserName() function for effective user changes.
+ *
  * Revision 1.49  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -481,6 +484,23 @@ class PProcess : public PThread
        user name of processes owner.
      */
     PString GetUserName() const;
+
+    /**Set the effective owner of the process.
+       This is a platform dependent string only provided by platforms that are
+       multi-user.
+
+       For unix systems the string #uid can be used to specify numeric uids.
+
+       If an empty string is provided then original user that executed the
+       process in the first place (the real user) is set as the effective user.
+
+       @return
+       TRUE if processes owner changed. The most common reason for failure is
+       that the process does not have the privilege to change the effective user.
+      */
+    BOOL SetUserName(
+      const PString & username  /// New effective user
+    );
 
     /**Get the default file to use in PConfig instances.
       */
