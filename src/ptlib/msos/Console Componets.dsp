@@ -98,9 +98,11 @@ SOURCE=..\..\Ptclib\Cypher.cxx
 
 !IF  "$(CFG)" == "Console Componets - Win32 Release"
 
+# ADD CPP /Yc"ptlib.h"
+
 !ELSEIF  "$(CFG)" == "Console Componets - Win32 Debug"
 
-# ADD CPP /Yu"ptlib.h"
+# ADD CPP /Yc"ptlib.h"
 
 !ENDIF 
 
