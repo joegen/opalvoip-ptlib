@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.29  2001/10/23 02:49:48  robertj
+ * Fixed problem with Abort() not always breaking I/O blocked threads.
+ *
  * Revision 1.28  2001/10/12 03:50:27  robertj
  * Fixed race condition on using Abort() which Reading from another thread.
  * Fixed failure to start recording if called WaitForXXXFull() functions.
@@ -1323,6 +1326,10 @@ BOOL PSoundChannel::WaitForRecordBufferFull()
   while (!IsRecordBufferFull()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
       return FALSE;
+
+    PWaitAndSignal mutex(bufferMutex);
+    if (bufferByteOffset == P_MAX_INDEX)
+      return FALSE;
   }
 
   return TRUE;
@@ -1336,6 +1343,10 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
   while (!AreAllRecordBuffersFull()) {
     if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+      return FALSE;
+
+    PWaitAndSignal mutex(bufferMutex);
+    if (bufferByteOffset == P_MAX_INDEX)
       return FALSE;
   }
 
@@ -1356,7 +1367,7 @@ BOOL PSoundChannel::Abort()
   PWaitAndSignal mutex(bufferMutex);
 
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
-    if (buffers[i].Release() == WAVERR_STILLPLAYING) {
+    while (buffers[i].Release() == WAVERR_STILLPLAYING) {
       if (hWaveOut != NULL)
         waveOutReset(hWaveOut);
       if (hWaveIn != NULL)
@@ -1366,6 +1377,10 @@ BOOL PSoundChannel::Abort()
 
   bufferByteOffset = P_MAX_INDEX;
   bufferIndex = 0;
+
+  // Signal any threads waiting on this event, they should then check
+  // the bufferByteOffset variable for an abort.
+  SetEvent(hEventDone);
 
   if (osError != MMSYSERR_NOERROR)
     return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
