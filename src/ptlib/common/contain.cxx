@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.132  2003/04/28 09:14:14  robertj
+ * Fixed bad sign extension problem in PBYTEArray output
+ *
  * Revision 1.131  2003/04/15 07:08:37  robertj
  * Changed read and write from streams for base array classes so operates in
  *   the same way for both PIntArray and PArray<int> etc
@@ -899,7 +902,7 @@ void PBYTEArray::PrintOn(ostream & strm) const
       if (j == line_width/2)
         strm << ' ';
       if (i+j < GetSize())
-        strm << setw(val_width) << (unsigned)theArray[i+j];
+        strm << setw(val_width) << (theArray[i+j]&0xff);
       else {
         PINDEX k;
         for (k = 0; k < val_width; k++)
@@ -911,8 +914,8 @@ void PBYTEArray::PrintOn(ostream & strm) const
       strm << "  ";
       for (j = 0; j < line_width; j++) {
         if (i+j < GetSize()) {
-          unsigned val = theArray[i+j];
-          if (val < 256 && isprint(val))
+          unsigned val = theArray[i+j]&0xff;
+          if (isprint(val))
             strm << (char)val;
           else
             strm << '.';
