@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.41  1998/10/15 01:53:35  robertj
+ * GNU compatibility.
+ *
  * Revision 1.40  1998/10/13 14:06:24  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -1011,6 +1014,10 @@ static BOOL ExtractVariables(const PString & args,
   return TRUE;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#undef new
 
 class PServiceMacro : public PCaselessString
 {
