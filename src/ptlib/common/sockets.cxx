@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.65 1998/01/06 12:43:23 craigs Exp $
+ * $Id: sockets.cxx,v 1.66 1998/01/26 00:49:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.66  1998/01/26 00:49:28  robertj
+ * Fixed bug in detecting local host on NT, 95 bug kludge was interfering with it.
+ *
  * Revision 1.65  1998/01/06 12:43:23  craigs
  * Added definition of REENTRANT_BUFFER_LEN
  *
@@ -749,7 +752,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 #else
     struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    if (host_info != NULL && host_info->h_addr_list[0] != NULL)
+    static BOOL isWin95 = PProcess::GetOSName() == "95";
+    if (isWin95 && host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
 #endif
 #endif
@@ -777,9 +781,9 @@ void PIPSocket::ClearNameCache()
   pHostByAddr.mutex.Wait();
   pHostByName.RemoveAll();
   pHostByAddr.RemoveAll();
-#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
-  ::gethostbyname("www.microsoft.com");
-#endif
+//#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
+//  ::gethostbyname("www.microsoft.com");
+//#endif
   pHostByName.mutex.Signal();
   pHostByAddr.mutex.Signal();
 }
