@@ -2369,6 +2369,7 @@ EXPORTS
     ?SetThreadName@PThread@@UAEXABVPString@@@Z @2257 NONAME ;public: virtual void __thiscall PThread::SetThreadName(class PString const &)
     ?SetTime@PConfig@@QAEXABVPString@@0ABVPTime@@@Z @1701 NONAME ;public: void __thiscall PConfig::SetTime(class PString const &,class PString const &,class PTime const &)
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @1703 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
+    ?SetUserName@PProcess@@QAEHABVPString@@@Z @3084 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @1704 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @1705 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVideoFormat@PFakeVideoInputDevice@@UAEHW4VideoFormat@PVideoDevice@@@Z @2572 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
