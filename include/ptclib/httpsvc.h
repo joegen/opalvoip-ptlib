@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.31  2000/12/14 08:09:41  robertj
+ * Fixed missing immediate expiry date on string and file service HTTP resourcer.
+ *
  * Revision 1.30  2000/12/11 13:15:17  robertj
  * Added macro to include signed or unsigned chunks of HTML.
  * Added flag to globally ignore HTML signatures (useful for develeopment).
@@ -413,10 +416,18 @@ class PServiceHTTPString : public PHTTPString
     PServiceHTTPString(const PURL & url, const PString & string)
       : PHTTPString(url, string) { }
 
+    PServiceHTTPString(const PURL & url, const PHTTPAuthority & auth)
+      : PHTTPString(url, auth) { }
+
     PServiceHTTPString(const PURL & url, const PString & string, const PHTTPAuthority & auth)
       : PHTTPString(url, string, auth) { }
 
     PString LoadText(PHTTPRequest &);
+
+  protected:
+    virtual BOOL GetExpirationDate(
+      PTime & when          // Time that the resource expires
+    );
 };
 
 
@@ -436,6 +447,10 @@ class PServiceHTTPFile : public PHTTPFile
     void OnLoadedText(PHTTPRequest &, PString & text);
 
   protected:
+    virtual BOOL GetExpirationDate(
+      PTime & when          // Time that the resource expires
+    );
+
     BOOL needSignature;
 };
 
@@ -452,6 +467,10 @@ class PServiceHTTPDirectory : public PHTTPDirectory
     void OnLoadedText(PHTTPRequest &, PString & text);
 
   protected:
+    virtual BOOL GetExpirationDate(
+      PTime & when          // Time that the resource expires
+    );
+
     BOOL needSignature;
 };
 
