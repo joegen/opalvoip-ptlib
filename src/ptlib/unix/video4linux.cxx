@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.40  2003/07/28 09:31:12  dsandras
+ * Fixed palette problem with recent versions of the bttv driver.
+ *
  * Revision 1.39  2003/03/20 23:38:06  dereks
  * Fixes in handling of flags, and test for device opening
  *
@@ -217,7 +220,7 @@ static struct {
     HINT_CSPICT_ALWAYS_WORKS |
     HINT_CGPICT_DOESNT_SET_PALETTE |
     HINT_HAS_PREF_PALETTE,
-    VIDEO_PALETTE_YUV420P },
+    VIDEO_PALETTE_YUV422 },
 
   /** Sony Vaio Motion Eye camera
       Linux kernel 2.4.7 has meye.c driver module.
