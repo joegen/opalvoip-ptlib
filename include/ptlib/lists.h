@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.10 1996/05/26 03:25:13 robertj Exp $
+ * $Id: lists.h,v 1.11 1996/07/15 10:32:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.11  1996/07/15 10:32:50  robertj
+ * Fixed bug in sorted list (crash on remove).
+ *
  * Revision 1.10  1996/05/26 03:25:13  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -848,6 +851,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
         void MakeBlack();
         void MakeRed();
         BOOL IsBlack();
+        BOOL IsRed();
         BOOL IsLeftBlack();
         BOOL IsRightBlack();
         void DeleteSubTrees(BOOL deleteObject);
