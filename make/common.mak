@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.22  1998/11/22 08:11:31  craigs
+# *** empty log message ***
+#
 # Revision 1.21  1998/09/24 04:20:49  robertj
 # Added open software license.
 #
@@ -204,19 +207,6 @@ static:
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
 	done
-
-######################################################################
-#
-# setup the lib directory
-#
-######################################################################
-libdir:
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	ln -s ../unix/src/unix.mak $(LIBDIR)/unix.mak
-	ln -s ../unix/src/common.mak $(LIBDIR)/common.mak
-	ln -s ../unix/src/ptlib.mak $(LIBDIR)/ptlib.mak
-	ln -s ../xlib/src/xlib.mak $(LIBDIR)/xlib.mak
-	ln -s ../xlib/src/pwlib.mak $(LIBDIR)/pwlib.mak
 
 ######################################################################
 #
