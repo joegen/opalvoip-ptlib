@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.64  2001/09/04 04:15:44  robertj
+ * Fixed PFileInfo (stat) of file name that is dangling symlink.
+ *
  * Revision 1.63  2001/08/11 15:38:43  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -761,17 +764,16 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
 
   if (S_ISLNK(s.st_mode)) {
     status.type = PFileInfo::SymbolicLink;
-    if (stat(name, &s) != 0) 
-      return FALSE;
+    if (stat(name, &s) != 0) {
+      status.created     = 0;
+      status.modified    = 0;
+      status.accessed    = 0;
+      status.size        = 0;
+      status.permissions = PFileInfo::AllPermissions;
+      return TRUE;
+    }
   } 
-
-  status.created     = s.st_ctime;
-  status.modified    = s.st_mtime;
-  status.accessed    = s.st_atime;
-  status.size        = s.st_size;
-  status.permissions = s.st_mode & PFileInfo::AllPermissions;
-
-  if (S_ISREG(s.st_mode))
+  else if (S_ISREG(s.st_mode))
     status.type = PFileInfo::RegularFile;
   else if (S_ISDIR(s.st_mode))
     status.type = PFileInfo::SubDirectory;
@@ -785,6 +787,12 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   else if (S_ISSOCK(s.st_mode))
     status.type = PFileInfo::SocketDevice;
 #endif // !__BEOS__
+
+  status.created     = s.st_ctime;
+  status.modified    = s.st_mtime;
+  status.accessed    = s.st_atime;
+  status.size        = s.st_size;
+  status.permissions = s.st_mode & PFileInfo::AllPermissions;
 
   return TRUE;
 }
