@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.14  1998/10/29 05:35:14  robertj
+ * Fixed porblem with GetCount() == 0 if do not call Parse() function.
+ *
  * Revision 1.13  1998/10/28 03:26:41  robertj
  * Added multi character arguments (-abc style) and options precede parameters mode.
  *
@@ -128,6 +131,9 @@ PDECLARE_CLASS(PArgList, PObject)
     void SetArgs(
       int theArgc,     // Count of argument strings in theArgv
       char ** theArgv  // An array of strings constituting the arguments
+    );
+    void SetArgs(
+      const PStringArray & theArgs // A string array constituting the arguments
     );
       // Set the internal copy of the program arguments.
 
