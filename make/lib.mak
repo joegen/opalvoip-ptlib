@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.25  2002/01/31 06:55:22  robertj
+# Removed redundant inclusion of ssl, is already in unix.mak
+#
 # Revision 1.24  2002/01/27 08:45:50  rogerh
 # FreeBSD and OpwnBSD use -pthread and not -lpthread
 #
@@ -126,9 +129,6 @@ EXTLIBS += -lpthread
 endif
 endif
 
-ifneq (,$(wildcard /usr/include/openssl))
-EXTLIBS += -lssl
-endif
 
 # Solaris loader doesn't grok -soname  (sees it as -s -oname)
 # We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist
