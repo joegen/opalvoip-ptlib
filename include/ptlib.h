@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.13 1998/03/20 03:16:10 robertj Exp $
+ * $Id: ptlib.h,v 1.14 1998/05/30 13:25:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
+ * Revision 1.14  1998/05/30 13:25:00  robertj
+ * Added PSyncPointAck class.
+ *
  * Revision 1.13  1998/03/20 03:16:10  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -181,6 +184,12 @@
 // PSyncPoint
 
 #include <syncpoint.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSyncPointAck
+
+#include <ptlib/syncptack.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
