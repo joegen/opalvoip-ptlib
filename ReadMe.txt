@@ -69,7 +69,7 @@ own. If you do all you will get is this file.
 
 The modules available are:
 	ptlib_unix
-	pwlilb_xwin
+	pwlib_xwin
 	ptlib_win32
 	pwlib_win32
 
@@ -82,6 +82,7 @@ For Windows.
 1.	Start MSVC (v5 or v6). If you have another compiler you are on your 
         own!  Go into the Tools menu, Options item, Directories tab and add 
 	to the Include files path:
+		C:\PWLib\Include\PwLib\MSWIN      (if have full version)
 		C:\PWLib\Include\PtLib\MSOS
 		C:\PWLib\Include
 	and add to the Lib Files path and the Executable Files path the
@@ -96,10 +97,8 @@ For Windows.
 	somewhere in your path.
 4.	Build the target MergeSym, in release mode.
 5.	Build the target ASNParser, in release mode.
-6.	Build the target PWRC, in release mode.
-7.	Build the pwtest target, if you have the full distribution. Otherwise
-	just build the targets PTLib and Console Components, in release & 
-	debug modes.
+6.	Build the target PWRC, in release mode (if have full version).
+7.	Build the pwtest target, (if have full version). 
 8.	That it, you are now on your own!
 
 
