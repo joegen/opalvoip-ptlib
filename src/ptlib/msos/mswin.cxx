@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ * $Id: mswin.cxx,v 1.2 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Multi-threading implementation.
+ *
+ * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
  *
 // Revision 1.1  1994/04/01  14:39:35  robertj
@@ -146,10 +149,11 @@ PString PSerialChannel::GetName() const
 
 BOOL PSerialChannel::IsReadBlocked(PObject * obj)
 {
+  PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
-  GetCommError(((PSerialChannel *)obj)->commsId, &stat);
+  GetCommError(chan.commsId, &stat);
   return stat.cbInQue <= 0 &&
-                   PTimer::Tick() < ((PSerialChannel *)obj)->readTimeoutTarget;
+         (chan.readTimeout == PMaxTimeInterval || chan.readTimer.IsRunning());
 }
 
 
@@ -163,7 +167,7 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  readTimeoutTarget = PTimer::Tick() + readTimeout;
+  readTimer = readTimeout;
   if (IsReadBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsReadBlocked, this);
 
@@ -181,10 +185,11 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 
 BOOL PSerialChannel::IsWriteBlocked(PObject * obj)
 {
+  PSerialChannel & chan = *(PSerialChannel *)PAssertNULL(obj);
   COMSTAT stat;
-  GetCommError(((PSerialChannel *)obj)->commsId, &stat);
+  GetCommError(chan.commsId, &stat);
   return stat.cbOutQue >= OutputQueueSize &&
-                 PTimer::Tick() < ((PSerialChannel *)obj)->writeTimeoutTarget;
+       (chan.writeTimeout == PMaxTimeInterval || chan.writeTimer.IsRunning());
 }
 
 
@@ -198,7 +203,7 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
     return FALSE;
   }
 
-  writeTimeoutTarget = PTimer::Tick() + writeTimeout;
+  writeTimer = writeTimeout;
   if (IsWriteBlocked(this))
     PThread::Current()->Block(&PSerialChannel::IsWriteBlocked, this);
 
@@ -546,7 +551,7 @@ void PSerialChannel::SetDTR(BOOL state)
     return;
   }
 
-  PAssert(EscapeCommFunction(commsId, state ? SETDTR : CLRDTR),
+  PAssert(EscapeCommFunction(commsId, state ? SETDTR : CLRDTR) == 0,
                                                       POperatingSystemError);
 }
 
@@ -559,7 +564,7 @@ void PSerialChannel::SetRTS(BOOL state)
     return;
   }
 
-  PAssert(EscapeCommFunction(commsId, state ? SETRTS : CLRRTS),
+  PAssert(EscapeCommFunction(commsId, state ? SETRTS : CLRRTS) == 0,
                                                       POperatingSystemError);
 }
 
@@ -741,6 +746,9 @@ static char NEAR * NEAR * const StackTop  = (char NEAR * NEAR *)0xe;
 
 void PThread::SwitchContext(PThread * from)
 {
+  if (from == this) // Switching to itself, ie is only thread
+    return;
+
   if (setjmp(from->context) != 0) // Are being reactivated from previous yield
     return;
 
@@ -750,14 +758,9 @@ void PThread::SwitchContext(PThread * from)
   from->stackUsed = *StackTop - *StackUsed;
 
   if (status == Starting) {
-    if (setjmp(context) != 0) {
-      status = Running;
-      Main();
-      status = Terminating;
-      Yield();
-      PAssertAlways("Thread not terminated"); // Should never get here
-    }
-    context[7] = (int)stackTop;  // Change the stack pointer in jmp_buf
+    if (setjmp(context) != 0)
+      BeginThread();
+    context[3] = (int)stackTop-16;  // Change the stack pointer in jmp_buf
   }
 
   // Restore those MS-Windows magic global for the next context

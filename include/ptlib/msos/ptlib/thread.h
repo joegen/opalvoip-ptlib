@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ * $Id: thread.h,v 1.2 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Multi-threading implementation.
+ *
+ * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
  *
  */
@@ -43,27 +46,32 @@ typedef BOOL (__far *PThreadBlockFunction)(PObject *);
       // unblocked.
 
   protected:
+    BOOL IsOnlyThread() const;
+      // Return TRUE if is only thread in process
+
     virtual void SwitchContext(PThread * from);
       // Do the machinations needed to jump to the current thread
 
 
   private:
+    void BeginThread();
+      // Function to start Main() and exit when completed.
+
+
     // Member fields
     Priority basePriority;
-      // Threads priority level, this is fixed unless changed by application.
+      // Threads priority level, realtive to other threads.
 
     int dynamicPriority;
-      // Threads current relative priority. If 0 then can run on next schedule,
-      // bit if >0 means must wait. It is decremented each time the thread has
-      // a turn at being scheduled.
+      // Threads priority during this scheduled slice.
 
     int suspendCount;
       // Threads count of calls to Suspend() or Resume(). If <=0 then can run,
       // if >0 means suspended and is not to be scheduled.
 
-    PTimeInterval wakeUpTime;
-      // Time to wake up after a Sleep() call. If <PTimer::Tick() then can run,
-      // otherwise is not scheduled.
+    PTimer sleepTimer;
+      // Time for thread to remain asleep. Thread is not scheduled while this
+      // is running after a Sleep() call.
 
     PThreadBlockFunction isBlocked;
       // Callback function to determine if the thread is blocked on I/O.
@@ -72,10 +80,22 @@ typedef BOOL (__far *PThreadBlockFunction)(PObject *);
       // When thread is blocked on I/O this is the object to pass to isBlocked.
 
     PThread * link;
-      // Next thread in schedule list
+      // Link to next thread in circular list
 
-    enum { Starting, Running, Terminating, Terminated } status;
+    enum {
+      Starting,
+      Running,
+      Waiting,
+      Sleeping,
+      Suspended,
+      Blocked,
+      Terminating,
+      Terminated
+    } status;
       // Thread status for scheduler handling
+
+    jmp_buf context;
+      // Buffer for context switching
 
     char NEAR * stackBase;
       // Base of stack allocated for the thread
@@ -85,11 +105,7 @@ typedef BOOL (__far *PThreadBlockFunction)(PObject *);
 
     unsigned stackUsed;
       // High water mark for stack allocated for the thread
-
-    jmp_buf context;
-      // Buffer for context switching
 };
-
 
 
 #ifndef _WINDLL
