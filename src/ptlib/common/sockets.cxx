@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.134  2002/10/29 08:04:44  robertj
+ * Changed in_addr6 to more universally used in6_addr.
+ * Changed size of ipv6 address to be 28 under win32, Why? I don't know!
+ *
  * Revision 1.133  2002/10/19 06:12:20  robertj
  * Moved P_fd_set::Zero() from platform independent to platform dependent
  *   code as Win32 implementation is completely different from Unix.
@@ -499,7 +503,11 @@ socklen_t Psockaddr::GetSize() const
     case AF_INET :
       return sizeof(sockaddr_in);
     case AF_INET6 :
+#ifdef _WIN32
+      return 28; // Why? I don't know!!
+#else
       return sizeof(sockaddr_in6);
+#endif
     default :
       return sizeof(storage);
   }
@@ -1795,7 +1803,7 @@ static PIPSocket::Address broadcast4(INADDR_BROADCAST);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static in_addr6 inaddr6_empty;
+static in6_addr inaddr6_empty;
 #endif
 
 
@@ -1859,7 +1867,7 @@ PIPSocket::Address::Address(const in_addr & addr)
 
 
 #if P_HAS_IPV6
-PIPSocket::Address::Address(const in_addr6 & addr)
+PIPSocket::Address::Address(const in6_addr & addr)
 {
   version = 6;
   v.six = addr;
@@ -1893,7 +1901,7 @@ PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
 }
 
 #if P_HAS_IPV6
-PIPSocket::Address & PIPSocket::Address::operator=(const in_addr6 & addr)
+PIPSocket::Address & PIPSocket::Address::operator=(const in6_addr & addr)
 {
   version = 6;
   v.six = addr;
@@ -1931,7 +1939,7 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
 
 
 #if P_HAS_IPV6
-BOOL PIPSocket::Address::operator==(in_addr6 & addr) const
+BOOL PIPSocket::Address::operator==(in6_addr & addr) const
 {
   PIPSocket::Address a(addr);
   return Compare(a) == EqualTo;
@@ -2039,7 +2047,7 @@ PIPSocket::Address::operator in_addr() const
 
 
 #if P_HAS_IPV6
-PIPSocket::Address::operator in_addr6() const
+PIPSocket::Address::operator in6_addr() const
 {
   if (version != 6)
     return inaddr6_empty;
