@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.75  2002/12/02 01:03:33  robertj
+ * Fixed bug were if setting the size of a constrained bit string, it
+ *   actually sets the size of the underlying byte array correctly.
+ *
  * Revision 1.74  2002/11/26 23:29:32  robertj
  * Added missing const to DecodeSubType() function.
  *
@@ -1520,7 +1524,7 @@ BOOL PASN_BitString::SetSize(unsigned nBits)
     totalBits = upperLimit;
   else
     totalBits = nBits;
-  return bitData.SetSize((nBits+7)/8);
+  return bitData.SetSize((totalBits+7)/8);
 }
 
 
