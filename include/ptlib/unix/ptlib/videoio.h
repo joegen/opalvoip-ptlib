@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.17  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.16  2002/01/16 03:36:51  dereks
  * Add variable to match each VIDIOCMCAPTURE with a VIDIOCSYNC
  *
@@ -141,6 +147,12 @@
      */
     virtual BOOL GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
+
+    /** Set VideoFormat and VideoChannel in one ioctl
+     */
+    virtual BOOL SetVideoChannelFormat (int channelNumber, 
+					   VideoFormat videoFormat);
+
 
   protected:
     void ClearMapping();

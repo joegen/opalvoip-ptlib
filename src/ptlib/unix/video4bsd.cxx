@@ -24,6 +24,12 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.18  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.17  2002/01/08 17:16:13  rogerh
  * Add code to grab Even fields (instead of interlaced frames) whenever
  * possible. This improves the image quality.
@@ -538,6 +544,16 @@ BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
   frameHue        = *hue;
 
   return TRUE;
+}
+
+BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
+{
+  BOOL err1, err2;
+
+  err1 = SetChannel (newNumber);
+  err2 = SetVideoFormat (newFormat);
+  
+  return (err1 && err2);
 }
 
 BOOL PVideoInputDevice::TestAllFormats()
