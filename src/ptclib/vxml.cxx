@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.19  2002/08/28 05:10:57  craigs
+ * Added ability to load resources via URI
+ * Added cache
+ *
  * Revision 1.18  2002/08/27 02:46:56  craigs
  * Removed need for application to call AllowClearCall
  *
@@ -98,9 +102,18 @@
 #define MEDIUM_BREAK_MSECS  2500
 #define LARGE_BREAK_MSECS   5000
 
+#define CACHE_BUFFER_SIZE   1024
+
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
 #include <ptclib/random.h>
+#include <ptclib/http.h>
+
+PMutex     PVXMLSession::cacheMutex;
+PDirectory PVXMLSession::cacheDir;
+PVXMLCache * PVXMLSession::resourceCache = NULL;
+PINDEX       PVXMLSession::cacheCount = 0;
+
 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
@@ -114,6 +127,33 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
   textToSpeech    = NULL;
 
   SetTextToSpeech(_tts, autoDelete);
+
+  PWaitAndSignal m(cacheMutex);
+  cacheCount++;
+  if (resourceCache == NULL) {
+    resourceCache = new PVXMLCache;
+    cacheDir = PDirectory() + "cache";
+
+    // load the cache information, if already present
+    PFilePath cacheInfo = cacheDir + "cache.txt";
+    if (PFile::Exists(cacheInfo)) {
+      PTextFile cacheFile;
+      if (cacheFile.Open(cacheInfo, PFile::ReadOnly)) {
+        PString line;
+        while (cacheFile.ReadLine(line)) {
+          PStringArray info = line.Tokenise("|", TRUE);
+          if (info.GetSize() > 3) {
+            PVXMLCacheItem * item = new PVXMLCacheItem(info[0]);
+            item->fn          = cacheDir + info[1];
+            item->contentType = info[2];
+            item->loadTime    = PTime();
+            item->ok          = info[3] *= "y";
+            resourceCache->Append(item);
+          }
+        }
+      }
+    }
+  }
 }
 
 PVXMLSession::~PVXMLSession()
@@ -122,6 +162,28 @@ PVXMLSession::~PVXMLSession()
 
   if ((textToSpeech != NULL) && autoDeleteTextToSpeech) {
     delete textToSpeech;
+  }
+
+  PWaitAndSignal m(cacheMutex);
+  cacheCount--;
+
+  // write out the cache information
+  if (cacheCount == 0) {
+    PFilePath cacheInfo = cacheDir + "cache.txt";
+    PTextFile cacheFile;
+    if (cacheFile.Open(cacheInfo, PFile::WriteOnly)) {
+      PINDEX i;
+      for (i = 0; i < resourceCache->GetSize(); i++) {
+        PVXMLCacheItem & item = (*resourceCache)[i];
+        cacheFile << item.AsString() << "|" 
+                  << item.fn.GetFileName() << "|"
+                  << item.contentType << "|"
+                  << (item.ok ? "Y" : "N") 
+                  << endl;
+      }
+    }
+    delete resourceCache;
+    resourceCache = NULL;
   }
 }
 
@@ -136,17 +198,61 @@ void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
   textToSpeech = _tts;
 }
 
-BOOL PVXMLSession::Load(const PFilePath & filename)
+BOOL PVXMLSession::Load(const PString & filename)
 {
-  PWaitAndSignal m(sessionMutex);
-
   loaded = TRUE;
 
-  if (!xmlFile.LoadFile(filename)) {
-    PString err = "Cannot open root document " + filename + " - " + GetXMLError();
-    PTRACE(1, "PVXML\t" << err);
+  // backwards compatbility for apps using ::Load
+  PINDEX pos = filename.Find(':');
+  if (pos != P_MAX_INDEX) {
+    PString scheme = filename.Left(pos);
+    if ((scheme *= "http") || (scheme *= "https") || (scheme *= "file"))
+      return LoadURL(filename);
+  }
+
+  // create a file URL from the filename
+  PFilePath fn = filename;
+  PString url;
+#ifdef WIN32
+  url = fn.GetDirectory() + fn.GetFileName();
+  pos = url.Find(":");
+  if (pos > 0) {
+    url = url.Left(pos) + url.Mid(pos+1);
+  }
+  url = "file://" + url;
+  url.Replace('\\', '/', TRUE);
+#else
+  url = "file://" + fn.GetDirectory() + fn.GetFileName();
+#endif
+
+  return LoadURL(url);
+}
+
+BOOL PVXMLSession::LoadURL(const PURL & url)
+{
+  // retreive the document (may be a HTTP get)
+  PBYTEArray data;
+  PString contentType;
+  if (!RetrieveResource(url, data, contentType)) {
+    PTRACE(1, "PVXML\tcannot load document " + url.AsString());
+    loaded = TRUE;
     return FALSE;
   }
+
+  PString xmlText((const char *)(const BYTE *)data, data.GetSize());
+
+  // parse the XML
+  if (!xmlFile.Load(xmlText)) {
+    PString err = "Cannot parse root document " + url.AsString() + " - " + GetXMLError();
+    PTRACE(1, "PVXML\t" << err);
+    loaded = TRUE;
+    return FALSE;
+  }  
+
+  // parse the VXML
+  PWaitAndSignal m(sessionMutex);
+  loaded = TRUE;
+  rootURL = url;
 
   PXMLElement * root = xmlFile.GetRootElement();
   if (root == NULL)
@@ -172,6 +278,201 @@ BOOL PVXMLSession::Load(const PFilePath & filename)
 
   return TRUE;
 }
+
+PURL PVXMLSession::NormaliseResourceName(const PString & src)
+{
+  // if resource name has a scheme, then use as is
+  PINDEX pos = src.Find(':');
+  if ((pos != P_MAX_INDEX) && (pos < 5))
+    return src;
+
+  // else use scheme and path from root document
+  PURL url = rootURL;
+  PStringArray path = url.GetPath();
+  PString pathStr;
+  if (path.GetSize() > 0) {
+    pathStr += path[0];
+    PINDEX i;
+    for (i = 1; i < path.GetSize()-1; i++)
+      pathStr += "/" + path[0];
+    pathStr += "/" + src;
+    url.SetPathStr(pathStr);
+  }
+
+  return url;
+}
+
+
+BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn)
+{
+  BOOL loadFile = FALSE;
+  text.SetSize(0);
+
+  // do a HTTP get when appropriate
+  if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
+
+    PWaitAndSignal m(cacheMutex);
+
+    // see if the URL is in the cache
+    PINDEX index = resourceCache->GetValuesIndex(url);
+    if (index != P_MAX_INDEX) {
+
+      // if too long since last examined, then expire the cache
+      PTimeInterval interval = PTime() - (*resourceCache)[index].loadTime;
+      if (interval.GetMilliSeconds() > 1000*60)
+        resourceCache->RemoveAt(index);
+      else {
+        PVXMLCacheItem & item = (*resourceCache)[index];
+
+        // if the cache indicates the resource was invalid
+        if (!item.ok)
+          return FALSE;
+
+        // check the content type, maybe
+        if (!contentType.IsEmpty() && (contentType != item.contentType))
+          return FALSE;
+
+        // set the file load information
+        fn          = item.fn;
+        contentType = item.contentType;
+        loadFile    = TRUE;
+      }
+    } 
+
+    // resource was not in the cache, so add it
+    if (!loadFile) {
+      PHTTPClient client;
+      PINDEX contentLength;
+      PMIMEInfo outMIME, replyMIME;
+
+      // create a cache item indicating a failed load
+      PVXMLCacheItem * item = new PVXMLCacheItem(url);
+      item->ok = FALSE;
+      resourceCache->Append(item);
+
+      // get the resource header information
+      if (!client.GetDocument(url, outMIME, replyMIME)) {
+        PTRACE(2, "PVXML\tCannot load resource " << url);
+        return FALSE;
+      }
+
+      // get the length of the data
+      if (!replyMIME.Contains(PHTTPClient::ContentLengthTag))
+        contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag].AsUnsigned();
+      else
+        contentLength = P_MAX_INDEX;
+
+      // create the cache directory, if not already in existence
+      if (!cacheDir.Exists())
+        cacheDir.Create();
+
+      // create a filename for the cache item
+      PRandom r;
+      for (;;) {
+        fn = cacheDir + psprintf("url_%i.wav", r.Generate() % 1000000);
+        if (!PFile::Exists(fn))
+          break;
+      }
+
+      // open the cache file
+      PFile cacheFile;
+      if (!cacheFile.Open(fn, PFile::WriteOnly)) {
+        PTRACE(2, "PVXML\tCannot create temporary cache file " << fn);
+        return FALSE;
+      }
+
+      // download the resource into the cache file
+      PINDEX offs = 0;
+      for (;;) {
+        PINDEX len;
+        if (contentLength == P_MAX_INDEX)
+          len = CACHE_BUFFER_SIZE;
+        else if (offs == contentLength)
+          break;
+        else
+          len = PMIN(contentLength = offs, CACHE_BUFFER_SIZE);
+
+        if (!client.Read(offs + text.GetPointer(offs + len), len))
+          break;
+
+        len = client.GetLastReadCount();
+        if (!cacheFile.Write(offs + (const BYTE *)text, len))
+          break;
+
+        offs += len;
+      }
+
+      // set the cache information
+      item->ok          = TRUE;
+      item->fn          = fn;
+      item->loadTime    = PTime();
+      item->contentType = replyMIME(PHTTPClient::ContentTypeTag);
+
+      // check the content type, maybe
+      if (!contentType.IsEmpty() && (contentType != item->contentType))
+        return FALSE;
+
+      // data is loaded
+      return TRUE;
+    }
+  }
+
+  // files on the local file system get loaded locally
+  else if (url.GetScheme() *= "file") {
+
+#ifdef WIN32
+    PString fnStr = url.GetPathStr();
+    if ((fnStr.GetSize() > 1) && (fnStr[1] == '/'))
+      fnStr = fnStr.Left(1) + ":" + fnStr.Mid(1);
+    fnStr.Replace('/', '\\', TRUE);
+    fn = fnStr;
+#else
+    fn = = url.GetPathStr();
+#endif
+    loadFile = TRUE;
+  }
+
+  // unknown schemes give an error
+  else 
+    return FALSE;
+
+  return loadFile;
+}
+
+BOOL PVXMLSession::RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType)
+{
+  PFilePath fn;
+
+  // get name of file
+  if (!RetrieveResource(url, text, contentType, fn))
+    return FALSE;
+
+  // if data was already loaded, do nothing
+  if (text.GetSize() != 0)
+    return TRUE;
+
+
+  // load the data
+  PFile file;
+  if (!file.Open(fn, PFile::ReadOnly)) 
+    return FALSE;
+
+  // read the data
+  off_t len = file.GetLength();
+  if (!file.Read(text.GetPointer(len), len))
+    return FALSE;
+
+  // set content type from extension, if required
+  if (!contentType.IsEmpty()) {
+    if (fn.GetType() *= ".vxml")
+      contentType = "text/vxml";
+    else if (fn.GetType() *= ".wav")
+      contentType = "audio/x-wav";
+  }
+
+  return TRUE;
+}
+
 
 BOOL PVXMLSession::Open(BOOL isPCM)
 {
@@ -405,6 +706,16 @@ BOOL PVXMLSession::PlaySilence(PINDEX msecs)
   return TRUE;
 }
 
+BOOL PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
+{
+  if (outgoingChannel != NULL) {
+    outgoingChannel->QueueResource(url, repeat, delay);
+    AllowClearCall();
+  }
+
+  return TRUE;
+}
+
 BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
 {
   if (textToSpeech != NULL) {
@@ -467,7 +778,6 @@ void PVXMLSession::AllowClearCall()
 {
   loaded = TRUE;
 }
-
 
 ///////////////////////////////////////////////////////////////
 
@@ -669,6 +979,55 @@ BOOL PVXMLFormItem::ProcessPrompt(PXMLElement & rootElement)
         else {
           vxml.PlaySilence(MEDIUM_BREAK_MSECS);
         }
+      }
+
+      else if (element->GetName() *= "audio") {
+
+        BOOL loaded = FALSE;
+
+        if (element->HasAttribute("src")) {
+
+          PFilePath fn; 
+          BOOL haveFn = FALSE;
+
+          // get a normalised name for the resource
+          PURL url = vxml.NormaliseResourceName(element->GetAttribute("src"));
+
+          if ((url.GetScheme() *= "http") || (url.GetScheme() *= "https")) {
+
+            PString contentType;
+            PBYTEArray data;
+            if (vxml.RetrieveResource(url, data, contentType, fn))
+              haveFn = TRUE;
+          }
+
+          // attempt to load the resource if a file
+          else if (url.GetScheme() *= "file") {
+            fn = url.GetPathStr();
+            haveFn = TRUE;
+          }
+
+          // check the file type
+          if (haveFn) {
+            PWAVFile * wavFile = vxml.CreateWAVFile(fn, 
+                                                    PFile::ReadOnly, 
+                                                    PFile::ModeDefault, 
+                                                    vxml.GetOutgoingChannel()->GetWavFileType());
+            if (wavFile == NULL)
+              PTRACE(3, "PVXML\tCannot create audio file " + fn);
+            else {
+              if (wavFile->IsOpen())
+                loaded = TRUE;
+              delete wavFile;
+              if (loaded)
+                vxml.PlayFile(fn);
+            }
+          }
+        }
+
+        // if not loaded, then see process body if it exists
+        if (!loaded)
+          ProcessPrompt(*element);
       }
     }
   }
@@ -957,6 +1316,12 @@ BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
   lastReadCount = amount;
 
   return frameOffs == frameLen;
+}
+
+void PVXMLOutgoingChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
+{
+  PTRACE(3, "PVXML\tEnqueueing resource " << url << " for playing");
+  QueueItem(new PVXMLQueueURLItem(url, repeat, delay));
 }
 
 void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
@@ -1299,6 +1664,22 @@ void PVXMLQueueFilenameItem::Play(PVXMLOutgoingChannel & outgoingChannel)
       PTRACE(3, "PVXML\tPlaying file \"" << chan->GetName() << "\"");
       outgoingChannel.SetReadChannel(chan, TRUE);
     }
+  }
+}
+
+///////////////////////////////////////////////////////////////
+
+void PVXMLQueueURLItem::Play(PVXMLOutgoingChannel & outgoingChannel)
+{
+  // open the resource
+  PHTTPClient * client = new PHTTPClient;
+  PMIMEInfo outMIME, replyMIME;
+  PINDEX contentLength;
+  int code = client->GetDocument(url, contentLength);
+  if ((code != 200) || (contentLength == 0)) 
+    delete client;
+  else {
+    outgoingChannel.SetReadChannel(client, TRUE);
   }
 }
 
