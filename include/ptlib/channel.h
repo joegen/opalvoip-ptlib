@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.25 1997/07/08 13:15:03 robertj Exp $
+ * $Id: channel.h,v 1.26 1998/02/03 06:29:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.26  1998/02/03 06:29:10  robertj
+ * Added new function to read a block with minimum number of bytes.
+ *
  * Revision 1.25  1997/07/08 13:15:03  robertj
  * DLL support.
  *
@@ -260,10 +263,26 @@ class PChannel : public PObject, public iostream {
        byte read or -1 if no character could be read.
      */
 
+    BOOL ReadBlock(
+      void * buf,   // Pointer to a block of memory to receive the read bytes.
+      PINDEX len    // Maximum number of bytes to read into the buffer.
+    );
+    /* Read len bytes into the buffer from the channel. This function uses
+       Read(), so most remarks pertaining to that function also apply to this
+       one. The only difference being that this function will not return until
+       all of the bytes have been read, or an error occurs.
+
+       <H2>Returns:</H2>
+       TRUE if the read of <CODE>len</CODE> bytes was sucessfull.
+     */
+
     PString ReadString(PINDEX len);
-    /* Read up to len bytes into a string from the channel. This function
-       simply uses Read(), so all remarks pertaining to that function also
-       apply to this one.
+    /* Read <CODE>len</CODE> character into a string from the channel. This
+       function simply uses ReadBlock(), so all remarks pertaining to that
+       function also apply to this one.
+
+       <H2>Returns:</H2>
+       String that was read.
      */
 
     virtual BOOL ReadAsync(
