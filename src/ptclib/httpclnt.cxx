@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.37  2004/10/26 18:25:54  ykiryanov
+ * Added (const char*) qualifier to url parameter, similar to one below
+ *
  * Revision 1.36  2004/10/21 09:20:33  csoutheren
  * Fixed compile problems on gcc 2.95.x
  *
@@ -385,7 +388,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
   else
     this_stream << cmdName;
 
-  this_stream << ' ' << (url.IsEmpty() ? PString("/") : url) << " HTTP/1.1\r\n"
+  this_stream << ' ' << (url.IsEmpty() ? "/" :  (const char*) url) << " HTTP/1.1\r\n"
               << setfill('\r') << outMIME;
 
   return Write((const char *)dataBody, len);
