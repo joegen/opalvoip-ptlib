@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.14  2002/08/14 15:18:07  craigs
+ * Improved random filename generation
+ *
  * Revision 1.13  2002/08/08 01:03:06  craigs
  * Added function to re-enable automatic call clearing on script end
  *
@@ -78,6 +81,7 @@
 
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
+#include <ptclib/random.h>
 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
@@ -372,8 +376,9 @@ BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay
 BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, PINDEX repeat, PINDEX delay)
 {
   if (textToSpeech != NULL) {
-    PFilePath fname("tts", NULL);
-    fname = fname + ".wav";
+    PFilePath tmpfname("tts", NULL);
+    PRandom r;
+    PFilePath fname(tmpfname.GetDirectory() + (psprintf("tts_%i.wav", r.Generate() % 1000000)));
     if (!textToSpeech->OpenFile(fname)) {
       PTRACE(2, "PVXML\tcannot open file " << fname);
     } else {
@@ -383,7 +388,7 @@ BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, 
       }
       if (!spoken) {
         PTRACE(2, "PVXML\tcannot speak text using TTS engine");
-      } else if (!PlayFile(fname, repeat, delay, TRUE)) {
+      } else if (!PlayFile(fname, repeat, delay, FALSE)) { // TRUE)) {
         PTRACE(2, "PVXML\tCannot play " << fname);
       } else {
         PTRACE(2, "PVXML\tText queued");
