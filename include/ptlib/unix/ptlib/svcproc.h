@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.5 1996/09/03 11:56:56 craigs Exp $
+ * $Id: svcproc.h,v 1.6 1996/09/21 05:42:12 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.6  1996/09/21 05:42:12  craigs
+ * Changes for new common files, PConfig changes and signal handling
+ *
  * Revision 1.5  1996/09/03 11:56:56  craigs
  * Changed PSYSTEMLOG to user cerr
  *
@@ -32,7 +35,8 @@
 #include "../../common/ptlib/svcproc.h"
   protected:
     void _PXShowSystemWarning(PINDEX num, const PString & str);
-    void PXOnSigInt();
+    void PXOnSignal(int);
+    void PXOnAsyncSignal(int);
     BOOL consoleMessages;
 };
 
