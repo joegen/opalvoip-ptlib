@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.37  2004/11/17 12:50:44  csoutheren
+ * Win32 DCOM support, thanks to Simon Horne
+ *
  * Revision 1.36  2004/11/16 00:24:38  csoutheren
  * Added Cygwin support
  *
@@ -454,6 +457,16 @@
 #undef P_HAS_SEMAPHORES
 #undef P_PTHREADS_XPG6      
 #undef P_HAS_SEMAPHORES_XPG6
+
+/////////////////////////////////////////////////
+//
+// DCOM Support (Windows only)
+//
+
+#if defined(_MSC_VER)
+  #define _WIN32_DCOM 1
+  #define _OLE_LIB "ole32.lib"
+#endif 
 
 /////////////////////////////////////////////////
 //
