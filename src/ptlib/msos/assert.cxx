@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.22  1998/11/30 05:33:08  robertj
+ * Fixed duplicate debug stream class, ther can be only one.
+ *
  * Revision 1.21  1998/11/30 04:48:38  robertj
  * New directory structure
  *
@@ -88,13 +91,13 @@
  * Revision 1.2  1994/06/25  12:13:01  robertj
  * Synchronisation.
  *
-// Revision 1.1  1994/04/01  14:39:35  robertj
-// Initial revision
-//
+ * Revision 1.1  1994/04/01  14:39:35  robertj
+ * Initial revision
  */
 
 #include <ptlib.h>
-#include <ptlib/msos/ptlib/svcproc.h>
+#include <ptlib/svcproc.h>
+#include <ptlib/debstrm.h>
 
 #include <errno.h>
 #include <strstrea.h>
@@ -137,6 +140,7 @@ void PWaitOnExitConsoleWindow()
   EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 }
 
+
 PDECLARE_CLASS(PImageDLL, PDynaLink)
   public:
     PImageDLL();
@@ -171,6 +175,7 @@ PDECLARE_CLASS(PImageDLL, PDynaLink)
   PGET_MODULE_BASE_ROUTINE       SymGetModuleBase;
 };
 
+
 PImageDLL::PImageDLL()
   : PDynaLink("IMAGEHLP.DLL")
 {
@@ -182,6 +187,56 @@ PImageDLL::PImageDLL()
       !GetFunction("SymGetModuleBase", (Function &)SymGetModuleBase))
     Close();
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDebugStream
+
+PDebugStream::PDebugStream()
+  : ostream(&buffer)
+{
+}
+
+
+PDebugStream::Buffer::Buffer()
+{
+  setb(buffer, &buffer[sizeof(buffer)-2]);
+  unbuffered(FALSE);
+  setp(base(), ebuf());
+}
+
+
+int PDebugStream::Buffer::overflow(int c)
+{
+  int bufSize = out_waiting();
+
+  if (c != EOF) {
+    *pptr() = (char)c;
+    bufSize++;
+  }
+
+  if (bufSize != 0) {
+    char * p = pbase();
+    setp(p, epptr());
+    p[bufSize] = '\0';
+    OutputDebugString(p);
+  }
+
+  return 0;
+}
+
+
+int PDebugStream::Buffer::underflow()
+{
+  return EOF;
+}
+
+
+int PDebugStream::Buffer::sync()
+{
+  return overflow(EOF);
+}
+
 
 #endif
 
