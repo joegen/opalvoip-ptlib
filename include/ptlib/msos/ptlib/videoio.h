@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.8  2001/04/09 10:44:36  yurik
+ * Removed ifdefs around wince version
+ *
  * Revision 1.7  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -60,7 +63,6 @@
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
 
-#ifndef _WIN32_WCE
   protected:
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
@@ -79,7 +81,6 @@
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
     BOOL          isCapturingNow;
-#endif // _WIN32_WCE
 
   friend class PVideoInputThread;
 };
