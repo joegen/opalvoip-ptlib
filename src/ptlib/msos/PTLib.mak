@@ -25,6 +25,10 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+MTL=midl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -49,7 +53,7 @@ CLEAN :"MergeSym - Win32 ReleaseCLEAN" "Console - Win32 ReleaseCLEAN"
 CLEAN :
 !ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
-	-@erase "$(INTDIR)\PTLibVer.res"
+	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\PTLib.dll"
@@ -64,43 +68,9 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\PTLib.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-MTL=midl.exe
 MTL_PROJ=/nologo /D "NDEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\Version.res" /d "NDEBUG" 
+RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\libver.res" /d "NDEBUG" 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -111,7 +81,7 @@ DEF_FILE= \
 	"$(INTDIR)\ptlib.def"
 LINK32_OBJS= \
 	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\PTLibVer.res" \
+	"$(INTDIR)\ptlib.res" \
 	"$(OUTDIR)\ptlibs.lib"
 
 "$(OUTDIR)\PTLib.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
@@ -155,7 +125,7 @@ CLEAN :"MergeSym - Win32 DebugCLEAN" "Console - Win32 DebugCLEAN"
 CLEAN :
 !ENDIF 
 	-@erase "$(INTDIR)\dllmain.obj"
-	-@erase "$(INTDIR)\PTLibVer.res"
+	-@erase "$(INTDIR)\ptlib.res"
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\PTLibd.dll"
@@ -170,8 +140,28 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
+RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\ptlib.res" /d "_DEBUG" 
+BSC32=bscmake.exe
+BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
+BSC32_SBRS= \
+	
+LINK32=link.exe
+LINK32_FLAGS=winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\PTLibd.pdb" /debug /machine:I386 /def:"..\..\..\Lib\Debug\PTLibd.def" /out:"$(OUTDIR)\PTLibd.dll" /implib:"$(OUTDIR)\PTLibd.lib" /libpath:"..\lib" 
+DEF_FILE= \
+	"$(INTDIR)\PTLibd.def"
+LINK32_OBJS= \
+	"$(INTDIR)\dllmain.obj" \
+	"$(INTDIR)\ptlib.res" \
+	"$(OUTDIR)\ptlibsd.lib"
+
+"$(OUTDIR)\PTLibd.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
+    $(LINK32) @<<
+  $(LINK32_FLAGS) $(LINK32_OBJS)
+<<
+
+!ENDIF 
 
 .c{$(INTDIR)}.obj::
    $(CPP) @<<
@@ -202,30 +192,6 @@ CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..
    $(CPP) @<<
    $(CPP_PROJ) $< 
 <<
-
-MTL=midl.exe
-MTL_PROJ=/nologo /D "_DEBUG" /mktyplib203 /win32 
-RSC=rc.exe
-RSC_PROJ=/l 0xc09 /fo"$(INTDIR)\Version.res" /d "_DEBUG" 
-BSC32=bscmake.exe
-BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
-BSC32_SBRS= \
-	
-LINK32=link.exe
-LINK32_FLAGS=winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /incremental:yes /pdb:"$(OUTDIR)\PTLibd.pdb" /debug /machine:I386 /def:"..\..\..\Lib\Debug\PTLibd.def" /out:"$(OUTDIR)\PTLibd.dll" /implib:"$(OUTDIR)\PTLibd.lib" /libpath:"..\lib" 
-DEF_FILE= \
-	"$(INTDIR)\PTLibd.def"
-LINK32_OBJS= \
-	"$(INTDIR)\dllmain.obj" \
-	"$(INTDIR)\PTLibVer.res" \
-	"$(OUTDIR)\ptlibsd.lib"
-
-"$(OUTDIR)\PTLibd.dll" : "$(OUTDIR)" $(DEF_FILE) $(LINK32_OBJS)
-    $(LINK32) @<<
-  $(LINK32_FLAGS) $(LINK32_OBJS)
-<<
-
-!ENDIF 
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -315,6 +281,24 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I ".
 
 !ENDIF 
 
+SOURCE=.\libver.rc
+
+!IF  "$(CFG)" == "PTLib - Win32 Release"
+
+
+"$(INTDIR)\ptlib.res" : $(SOURCE) "$(INTDIR)"
+	$(RSC) /l 0xc09 /fo"$(INTDIR)\ptlib.res" /d "NDEBUG" /d PRODUCT=PTLib $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
+
+
+"$(INTDIR)\ptlib.res" : $(SOURCE) "$(INTDIR)"
+	$(RSC) /l 0xc09 /fo"$(INTDIR)\ptlib.res" /d "_DEBUG" /d PRODUCT=PTLib $(SOURCE)
+
+
+!ENDIF 
+
 SOURCE=.\ptlib.dtf
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
@@ -356,24 +340,6 @@ USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 << 
 	
-
-!ENDIF 
-
-SOURCE=.\Version.rc
-
-!IF  "$(CFG)" == "PTLib - Win32 Release"
-
-
-"$(INTDIR)\PTLibVer.res" : $(SOURCE) "$(INTDIR)"
-	$(RSC) /l 0xc09 /fo"$(INTDIR)\PTLibVer.res" /d "NDEBUG" $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
-
-
-"$(INTDIR)\PTLibVer.res" : $(SOURCE) "$(INTDIR)"
-	$(RSC) /l 0xc09 /fo"$(INTDIR)\PTLibVer.res" /d "_DEBUG" $(SOURCE)
-
 
 !ENDIF 
 
