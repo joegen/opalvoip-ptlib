@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.98  2002/10/18 03:05:39  robertj
+ * Fixed thread leak caused by fixing the thread crash a few revisions back,
+ *   caused by strange pthreads behaviour, at least under Linux.
+ *
  * Revision 1.97  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -926,16 +930,19 @@ void * PThread::PX_ThreadStart(void * arg)
 void PThread::PX_ThreadEnd(void * arg)
 {
   PThread * thread = (PThread *)arg;
-  PProcess & process = PProcess::Current();
-  
   pthread_t id = thread->GetThreadId();
-  if (id != 0) {
-
-    // remove this thread from the active thread list
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt((unsigned)id, NULL);
-    process.threadMutex.Signal();
+  if (id == 0) {
+    // Don't know why, but pthreads under Linux at least can call this function
+    // multiple times! Probably a bug, but we have to allow for it.
+    PTRACE(2, "PWLib\tAttempted to multiply end thread " << thread << " ThreadID=" << (void *)id);
+    return;
   }
+
+  // remove this thread from the active thread list
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt((unsigned)id, NULL);
+  process.threadMutex.Signal();
 
   // delete the thread if required, note this is done this way to avoid
   // a race condition, the thread ID cannot be zeroed before the if!
