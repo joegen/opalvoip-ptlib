@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.5  2000/07/26 03:50:49  robertj
+ * Added last error variable to video device.
+ *
  * Revision 1.4  2000/07/26 02:13:46  robertj
  * Added some more "common" bounds checking to video device.
  *
@@ -231,9 +234,14 @@ class PVideoDevice : public PObject
       */
     virtual PINDEX GetMaxFrameBytes() = 0;
 
+    /**Get the last error code. This is a platform dependent number.
+      */
+    int GetLastError() const { return lastError; }
+
 
   protected:
     PString      deviceName;
+    int          lastError;
     VideoFormat  videoFormat;
     unsigned     channelNumber;
     ColourFormat colourFormat;
