@@ -23,6 +23,7 @@
 				AdditionalIncludeDirectories="..\..\..\include"
 				PreprocessorDefinitions="_DEBUG;PTRACING"
 				RuntimeLibrary="3"
+				RuntimeTypeInfo="TRUE"
 				PrecompiledHeaderFile=".\..\..\..\Lib\Debug/PTLib.pch"
 				AssemblerListingLocation=".\..\..\..\Lib\Debug/"
 				ObjectFile=".\..\..\..\Lib\Debug/"
