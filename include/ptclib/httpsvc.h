@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.12 1997/07/26 11:38:18 robertj Exp $
+ * $Id: httpsvc.h,v 1.13 1997/08/08 11:13:45 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.13  1997/08/08 11:13:45  robertj
+ * Added virtual for substituting random symbols in OEM files.
+ *
  * Revision 1.12  1997/07/26 11:38:18  robertj
  * Support for overridable pages in HTTP service applications.
  *
@@ -100,6 +103,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     static PHTTPServiceProcess & Current();
 
+    virtual void SubstituteEquivalSequence(const PString &, PString &)
+    { }
 
   protected:
     PSocket  * httpListeningSocket;
