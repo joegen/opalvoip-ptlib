@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.13  1999/01/12 11:22:19  robertj
+ * Removed redundent variable, is in common.
+ *
  * Revision 1.12  1999/01/09 03:35:52  robertj
  * Fixed problem with closing thread waiting on semaphore.
  *
@@ -110,7 +113,6 @@ class PSemaphore;
 
     PINDEX     PX_origStackSize;
     int        PX_suspendCount;
-    BOOL       PX_autoDelete;
 
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
