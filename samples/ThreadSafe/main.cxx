@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2002/05/02 00:30:26  robertj
+ * Added dump of thread times during start up.
+ *
  * Revision 1.1  2002/05/01 04:16:44  robertj
  * Added thread safe collection classes.
  *
@@ -39,8 +42,14 @@ void ThreadSafe::Main()
 
   cout << "Starting " << threadCount << " threads." << endl;
 
-  for (PINDEX i = 0; i < threadCount; i++)
-    PThread::Create(PCREATE_NOTIFIER(TestThread));
+  for (PINDEX i = 0; i < threadCount; i++) {
+    PTimeInterval duration = PRandom::Number()%540000 + 60000;
+    cout << setw(4) << (i+1) << '=' << duration;
+    if (i%5 == 4)
+      cout << '\n';
+    PThread::Create(PCREATE_NOTIFIER(TestThread), duration.GetMilliSeconds());
+  }
+  cout << endl;
 
   startTick = PTimer::Tick();
   while (threadCount > 0) {
@@ -77,12 +86,12 @@ void ThreadSafe::Test()
 }
 
 
-void ThreadSafe::TestThread(PThread &, INT)
+void ThreadSafe::TestThread(PThread &, INT duration)
 {
   PRandom random;
   PSafePtr<TestObject> ptr;
 
-  PTimer timeout = 60000 + random%540000; // 1 to 10 minutes
+  PTimer timeout = duration;
 
   while (timeout.IsRunning()) {
     switch (random%15) {
