@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.5  2003/04/17 01:21:33  craigs
+ * Added import of pybuildopts to correctly detect if P_SAPI is set
+ *
  * Revision 1.4  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -42,6 +45,7 @@
 #pragma implementation "ptts.h"
 #endif
 
+#include "ptbuildopts.h"
 
 ////////////////////////////////////////////////////////////
 
