@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.31 1995/03/25 02:12:16 robertj Exp $
+ * $Id: contain.inl,v 1.32 1995/08/24 12:34:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.32  1995/08/24 12:34:09  robertj
+ * Added assert for list index out of bounds.
+ *
  * Revision 1.31  1995/03/25 02:12:16  robertj
  * Fixed PStringXXX containers so can correctly contain PCaselessString etc.
  *
@@ -312,6 +315,10 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 
 PINLINE PAbstractList::PAbstractList()
   : info(new Info) { PAssertNULL(info); }
+
+PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
+  { PObject * obj = GetAt(index);
+                       PAssert(obj != NULL, PInvalidArrayIndex); return *obj; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
