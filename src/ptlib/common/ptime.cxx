@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.37  2001/03/19 05:37:29  robertj
+ * Fixed problem with reading a time if there is leading white space.
+ *
  * Revision 1.36  2001/01/02 06:06:07  robertj
  * Fixed inclusion of microseconds in arithmetic functions.
  *
@@ -654,6 +657,7 @@ void PTime::ReadFrom(istream & strm)
   struct tm timeBuf;
   time(&now);
   microseconds = 0;
+  strm >> ws;
   theTime = PTimeParse(&strm, os_localtime(&now, &timeBuf), GetTimeZone());
 }
 
