@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.43  2002/10/02 08:54:01  craigs
+ * Added support for XMLRPC server
+ *
  * Revision 1.42  2002/08/27 23:49:08  robertj
  * Fixed security hole where possible to get any file on disk when using
  *   PHTTPDirectory HTTP resource.
@@ -605,7 +608,7 @@ BOOL PHTTPServer::ProcessCommand()
       (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
     persist = OnProxy(connectInfo);
   else {
-    PString entityBody = ReadEntityBody();
+    connectInfo.entityBody = ReadEntityBody();
 
     // Handle the local request
     PStringToString postData;
@@ -623,9 +626,9 @@ BOOL PHTTPServer::ProcessCommand()
           // check for multi-part form POSTs
           PString postType = (connectInfo.GetMIME())(ContentTypeTag);
           if (postType.Find("multipart/form-data") == 0)
-            connectInfo.DecodeMultipartFormInfo(postType, entityBody);
+            connectInfo.DecodeMultipartFormInfo(postType, connectInfo.entityBody);
           else  // if (postType *= "x-www-form-urlencoded)
-            PURL::SplitQueryVars(entityBody, postData);
+            PURL::SplitQueryVars(connectInfo.entityBody, postData);
         }
         persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
         break;
@@ -1338,6 +1341,8 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
                                          info,
                                          connectInfo.GetMultipartFormInfo(),
                                          server);
+
+  request->entityBody = connectInfo.GetEntityBody();
 
   BOOL persist = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
