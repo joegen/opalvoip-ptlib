@@ -12,7 +12,10 @@
 #include <sys/socketio.h>
 #include <dlfcn.h>
 
+#ifdef SIOCGIFCOUNT
 #define SIOCGIFNUM  SIOCGIFCOUNT
+#else
+#define SIOCGIFNUM  0x8938
 #endif
 
 #if defined(P_PTHREADS)
