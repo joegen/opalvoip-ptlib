@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.2 1994/06/25 12:13:01 robertj Exp $
+ * $Id: config.h,v 1.3 1995/12/10 11:47:14 robertj Exp $
  */
 
 
@@ -11,7 +11,8 @@
 
 #include "../../common/config.h"
   protected:
-    PFilePath configFile;
+    Source  source;
+    PString location;
 };
 
 
