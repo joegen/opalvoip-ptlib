@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.10 1996/06/14 09:30:43 craigs Exp $
+# $Id: Makefile,v 1.11 1996/06/19 01:56:26 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.11  1996/06/19 01:56:26  craigs
+# Added uhttpsvc to the list
+#
 # Revision 1.10  1996/06/14 09:30:43  craigs
 # Included buildinc stuff
 #
@@ -63,6 +66,7 @@ SOURCES		= switch.cxx \
 		  switch.cxx \
 		  uhttp.cxx \
 		  uicmp.cxx \
+		  uhttpsvc.cxx \
 		  ../../common/src/object.cxx \
 		  ../../common/src/contain.cxx \
 		  ../../common/src/osutils.cxx \
@@ -151,6 +155,8 @@ $(OBJDIR)/remconn.o: remconn.cxx
 $(OBJDIR)/uappsock.o: uappsock.cxx 
 
 $(OBJDIR)/uhttp.o: uhttp.cxx 
+
+$(OBJDIR)/uhttpsvc.o: uhttpsvc.cxx 
 
 $(OBJDIR)/object.o: ../../common/src/object.cxx 
 
