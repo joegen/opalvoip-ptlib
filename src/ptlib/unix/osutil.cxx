@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.45  1999/06/14 08:39:57  robertj
+ * Added PConsoleChannel class for access to stdin/stdout/stderr
+ *
  * Revision 1.44  1999/06/09 04:08:46  robertj
  * Added support for opening stdin/stdout/stderr as PFile objects.
  *
@@ -71,6 +74,7 @@
 #pragma implementation "pdirect.h"
 #pragma implementation "file.h"
 #pragma implementation "textfile.h"
+#pragma implementation "conchan.h"
 #pragma implementation "ptime.h"
 #pragma implementation "timeint.h"
 #pragma implementation "filepath.h"
@@ -552,21 +556,6 @@ BOOL PFile::Open(OpenMode mode, int opt)
         opt = Create;
       break;
 
-    case StandardInput :
-      path = ttyname(0);
-      os_handle = 0;
-      return TRUE;
-
-    case StandardOutput :
-      path = ttyname(1);
-      os_handle = 1;
-      return TRUE;
-
-    case StandardError :
-      path = ttyname(2);
-      os_handle = 2;
-      return TRUE;
-
     default :
       PAssertAlways(PInvalidParameter);
   }
@@ -883,6 +872,53 @@ BOOL PFilePath::IsValid(char c)
 BOOL PFilePath::IsValid(const PString & str)
 {
   return str.Find('/') == P_MAX_INDEX;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConsoleChannel
+
+PConsoleChannel::PConsoleChannel()
+{
+}
+
+
+PConsoleChannel::PConsoleChannel(ConsoleType type)
+{
+  Open(type);
+}
+
+
+BOOL PConsoleChannel::Open(ConsoleType type)
+{
+  switch (type) {
+    case StandardInput :
+      os_handle = 0;
+      return TRUE;
+
+    case StandardOutput :
+      os_handle = 1;
+      return TRUE;
+
+    case StandardError :
+      os_handle = 2;
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
+
+PString PConsoleChannel::GetName() const
+{
+  return ttyname(os_handle);
+}
+
+
+BOOL PConsoleChannel::Close()
+{
+  os_handle = -1;
+  return TRUE;
 }
 
 
