@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.11 1996/08/03 12:04:28 craigs Exp $
+ * $Id: channel.cxx,v 1.12 1996/09/21 05:38:28 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.12  1996/09/21 05:38:28  craigs
+ * Added indchan pragma
+ *
  * Revision 1.11  1996/08/03 12:04:28  craigs
  * Fixed problem with PChannel::Write terminating early
  * Changed for new PChannel error reporting functions
@@ -42,6 +45,7 @@
  */
 
 #pragma implementation "channel.h"
+#pragma implementation "indchan.h"
 
 #include <ptlib.h>
 #include <sys/ioctl.h>
