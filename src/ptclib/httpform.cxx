@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.21 1998/03/20 03:16:43 robertj Exp $
+ * $Id: httpform.cxx,v 1.22 1998/07/24 06:56:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.22  1998/07/24 06:56:05  robertj
+ * Fixed case significance problem in HTTP forms.
+ * Improved detection of VALUE= fields with and without quotes.
+ *
  * Revision 1.21  1998/03/20 03:16:43  robertj
  * Fixed bug in beaing able to reset a check box field.
  *
@@ -183,7 +187,8 @@ static BOOL FindSpliceName(const PCaselessString & text,
                            PINDEX & end)
 {
   if (text[start+1] != '!') {
-    static PRegularExpression NameExpr = "name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"";
+    static PRegularExpression NameExpr("name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     if ((pos = text.FindRegEx(NameExpr, start)) == P_MAX_INDEX)
       return FALSE;
 
@@ -249,13 +254,23 @@ void PHTTPField::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) c
 
 static BOOL FindInputValue(const PString & text, PINDEX & before, PINDEX & after)
 {
-  static PRegularExpression Value("value[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"");
+  static PRegularExpression Value("value[ \t\r\n]*=[ \t\r\n]*(\"[^\"]*\"|[^> \t\r\n]+)",
+                                  PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   PINDEX pos = text.FindRegEx(Value);
   if (pos == P_MAX_INDEX)
     return FALSE;
 
   before = text.Find('"', pos);
-  after = text.Find('"', before+1);
+  if (before != P_MAX_INDEX)
+    after = text.Find('"', before+1);
+  else {
+    before = text.Find('=', pos);
+    while (isspace(text[before+1]))
+      before++;
+    after = before + 1;
+    while (text[after] != '\0' && text[after] != '>' && !isspace(text[after]))
+      after++;
+  }
   return TRUE;
 }
 
@@ -277,8 +292,10 @@ PString PHTTPField::GetHTMLSelect(const PString & selection) const
   PINDEX start, finish;
   PINDEX pos = 0;
   PINDEX len = 0;
-  static PRegularExpression StartOption("<[ \t\r\n]*option[^>]*>");
-  static PRegularExpression EndOption("<[ \t\r\n]*/option[^>]*>");
+  static PRegularExpression StartOption("<[ \t\r\n]*option[^>]*>",
+                                        PRegularExpression::IgnoreCase);
+  static PRegularExpression EndOption("<[ \t\r\n]*/option[^>]*>",
+                                      PRegularExpression::IgnoreCase);
   while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish)) {
     PCaselessString option = text(pos, start-1);
     PINDEX before, after;
@@ -479,10 +496,10 @@ static void SpliceAdjust(const PString & str,
 
 void PHTTPCompositeField::ExpandFieldNames(PString & text, PINDEX start, PINDEX finish) const
 {
-  static PRegularExpression FieldName =
-                    "!--#form[ \t\r\n]+[^-]*[ \t\r\n]+[^-]*[ \t\r\n]*)?--"
-                    "|"
-                    "<[a-z]*[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>";
+  static PRegularExpression FieldName( "!--#form[ \t\r\n]+[^-]*[ \t\r\n]+[^-]*[ \t\r\n]*)?--"
+                                       "|"
+                                       "<[a-z]*[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
+                                       PRegularExpression::IgnoreCase);
 
   PString name;
   PINDEX pos, len;
@@ -1143,12 +1160,6 @@ void PHTTPBooleanField::GetHTMLTag(PHTML & html) const
 }
 
 
-static BOOL IsInputType(const PString & input, const PString & type)
-{
-  return input.FindRegEx("type[ \t\r\n]*=[ \t\r\n]*\"" + type + "\"") != P_MAX_INDEX;
-}
-
-
 static void SpliceChecked(PString & text, BOOL value)
 {
   PINDEX pos = text.Find("checked");
@@ -1171,7 +1182,9 @@ static void SpliceChecked(PString & text, BOOL value)
 
 PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
 {
-  if (IsInputType(input, "checkbox")) {
+  static PRegularExpression checkboxRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?checkbox\"?",
+                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  if (input.FindRegEx(checkboxRegEx) != P_MAX_INDEX) {
     PCaselessString text;
     PINDEX before, after;
     if (FindInputValue(input, before, after)) 
@@ -1182,7 +1195,9 @@ PString PHTTPBooleanField::GetHTMLInput(const PString & input) const
     return "<input type=hidden name=\"" + fullName + "\">" + text;
   }
 
-  if (IsInputType(input, "radio")) {
+  static PRegularExpression radioRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?radio\"?",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  if (input.FindRegEx(radioRegEx) != P_MAX_INDEX) {
     PINDEX before, after;
     if (FindInputValue(input, before, after)) {
       PCaselessString text = input;
@@ -1636,7 +1651,8 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   }
 
   pos = len = 0;
-  static PRegularExpression InputRegEx("<input[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>");
+  static PRegularExpression InputRegEx("<input[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(InputRegEx, "", text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL) {
       static PRegularExpression HiddenRegEx("type[ \t\r\n]*=[ \t\r\n]*\"?hidden\"?",
@@ -1648,16 +1664,19 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   }
 
   pos = len = 0;
-  static PRegularExpression SelectRegEx("<select[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>");
-  static PRegularExpression SelEndRegEx("</select[^>]*>");
+  static PRegularExpression SelectRegEx("<select[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
+                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression SelEndRegEx("</select[^>]*>",
+                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(SelectRegEx, SelEndRegEx, text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
       text.Splice(field->GetHTMLSelect(text(start, finish)), start, finish-start+1);
   }
 
   pos = len = 0;
-  static PRegularExpression TextRegEx("<textarea[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>");
-  static PRegularExpression TextEndRegEx("</textarea[^>]*>");
+  static PRegularExpression TextRegEx("<textarea[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
+                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression TextEndRegEx("</textarea[^>]*>", PRegularExpression::IgnoreCase);
   while (FindSpliceField(TextRegEx, TextEndRegEx, text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
       text.Splice(field->GetValue(), start, finish-start+1);
