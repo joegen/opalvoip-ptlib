@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.40  2004/03/02 12:08:27  rjongbloed
+ * Added missing pragmas to automatically include libraries for OpenSSL
+ *
  * Revision 1.39  2004/02/23 23:52:19  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -515,6 +518,17 @@ void PMessageDigest5::Complete(Code & codeResult)
 #if P_SSL
 
 #include <openssl/sha.h>
+
+#ifdef _MSC_VER
+
+#pragma comment(lib, P_SSL_LIB1)
+#pragma comment(lib, P_SSL_LIB2)
+#pragma comment(linker, "/delayload:ssleay32.dll")
+#pragma comment(linker, "/delayload:libeay32.dll")
+#pragma comment(lib, "Delayimp.lib")
+
+#endif
+
 
 PMessageDigestSHA1::PMessageDigestSHA1()
 {
