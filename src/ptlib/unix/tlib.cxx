@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.12  1996/05/09 10:55:59  craigs
+ * More SunOS fixes
+ *
  * Revision 1.11  1996/05/03 13:15:27  craigs
  * More Sun4 & Solaris fixes
  *
@@ -237,31 +240,6 @@ PThread::~PThread()
   free(stackBase);
 #endif
 }
-
-#if 0
-
-void PThread::SwitchContext(PThread * from)
-{
-  if (setjmp(from->context) != 0) // Are being reactivated from previous yield
-    return;
-
-  if (status == Starting) {
-    if (setjmp(context) != 0) {
-      status = Running;
-      Main();
-      Terminate(); // Never returns from here
-    }
-#if defined(P_LINUX)
-    context[0].__sp = (__ptr_t)stackTop-16;  // Change the stack pointer in jmp_buf
-#else
-#warning No lightweight thread context switch mechanism defined
-#endif
-  }
-  longjmp(context, TRUE);
-  PAssertAlways("longjmp failed"); // Should never get here
-}
-
-#endif
 
 void PThread::ClearBlock()
 {
