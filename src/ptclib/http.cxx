@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.53  1998/11/30 05:38:15  robertj
+ * Moved PURL::Open() code to .cxx file to avoid linking unused code.
+ *
  * Revision 1.52  1998/11/30 04:51:53  robertj
  * New directory structure
  *
@@ -639,6 +642,18 @@ PString PURL::AsString(UrlFormat fmt) const
   }
 
   return str;
+}
+
+
+BOOL PURL::OpenBrowser(const PString & url)
+{
+#ifdef WIN32
+  if ((int)ShellExecute(NULL, "open", url, NULL, NULL, 0) > 32)
+    return TRUE;
+
+  MessageBox(NULL, "Unable to open page"&url, PProcess::Current().GetName(), MB_TASKMODAL);
+#endif
+  return FALSE;
 }
 
 
