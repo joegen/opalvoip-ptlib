@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.48  2004/04/03 08:22:23  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.47  2004/02/17 10:24:04  rjongbloed
  * Updated version number so will rebuild ASN files.
  *
@@ -167,9 +170,9 @@
 
 
 #define MAJOR_VERSION 1
-#define MINOR_VERSION 8
+#define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 1
+#define BUILD_NUMBER 0
 
 
 unsigned lineNumber;
@@ -2227,7 +2230,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         << "PObject::Comparison " << GetClassNameString() << "::Compare(const PObject & obj) const\n"
            "{\n"
            "#ifndef PASN_LEANANDMEAN\n"
-           "  PAssert(IsDescendant(" << GetClassNameString() << "::Class()), PInvalidCast);\n"
+           "  PAssert(PIsDescendant(this, " << GetClassNameString() << "), PInvalidCast);\n"
            "#endif\n"
            "  const " << GetClassNameString() << " & other = (const " << GetClassNameString() << " &)obj;\n"
            "\n"
@@ -2270,7 +2273,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    cxx << "  if (strm.IsDescendant(\"PXER_Stream\"))\n"
+    cxx << "  if (PIsDescendantStr(&strm, \"PXER_Stream\"))\n"
            "    return TRUE;\n\n";
   }
 
@@ -2300,7 +2303,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   if (xml_output)
   {
-    cxx << "  if (strm.IsDescendant(\"PXER_Stream\"))\n"
+    cxx << "  if (PIsDescendant(&strm, \"PXER_Stream\"))\n"
            "    return;\n\n";
   }
 
@@ -2607,7 +2610,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
               << GetClassNameString() << "::operator " << type << " &()\n"
                  "{\n"
                  "#ifndef PASN_LEANANDMEAN\n"
-                 "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+                 "  PAssert(PIsDescendant(PAssertNULL(choice), " << type << "), PInvalidCast);\n"
                  "#endif\n"
                  "  return *(" << type << " *)choice;\n"
                  "}\n"
@@ -2618,7 +2621,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
                  "#endif\n"
                  "{\n"
                  "#ifndef PASN_LEANANDMEAN\n"
-                 "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+                 "  PAssert(PIsDescendant(PAssertNULL(choice), " << type << "), PInvalidCast);\n"
                  "#endif\n"
                  "  return *(" << type << " *)choice;\n"
                  "}\n"
@@ -2645,7 +2648,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
             << GetClassNameString() << "::m_" << fieldName << "()\n"
                "{\n"
                "#ifndef PASN_LEANANDMEAN\n"
-               "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+               "  PAssert(PIsDescendant(PAssertNULL(choice), " << type << "), PInvalidCast);\n"
                "#endif\n"
                "  return *(" << type << " *)choice;\n"
                "}\n"
@@ -2655,7 +2658,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
             << GetClassNameString() << "::m_" << fieldName << "() const\n"
                "{\n"
                "#ifndef PASN_LEANANDMEAN\n"
-               "  PAssert(PAssertNULL(choice)->IsDescendant(" << type << "::Class()), PInvalidCast);\n"
+               "  PAssert(PIsDescendant(PAssertNULL(choice), " << type << "), PInvalidCast);\n"
                "#endif\n"
                "  return *(" << type << " *)choice;\n"
                "}\n"
