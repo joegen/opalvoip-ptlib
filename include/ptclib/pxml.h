@@ -84,6 +84,8 @@ class PXML : public PObject
     PXMLElement * GetElement(PINDEX idx) const;
     PINDEX        GetNumElements() const; 
     PXMLElement * GetRootElement() const { return rootElement; }
+    PXMLElement * SetRootElement(PXMLElement * p);
+    PXMLElement * SetRootElement(const PString & documentType);
 
     PCaselessString GetDocumentType() const;
 
