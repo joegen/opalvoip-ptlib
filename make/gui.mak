@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.7  1999/10/24 15:29:53  craigs
+# Changed default GUI for Unix to Motif
+#
 # Revision 1.6  1999/01/16 09:56:26  robertj
 # Changed some macros to more informative names.
 #
@@ -38,7 +41,7 @@
 
 
 ifndef GUI
-GUI = xlib
+GUI = motif
 endif
 
 
