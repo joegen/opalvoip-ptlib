@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.30 1996/06/13 13:32:13 robertj Exp $
+ * $Id: win32.cxx,v 1.31 1996/06/17 11:38:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.31  1996/06/17 11:38:58  robertj
+ * Fixed memory leak on termination of threads.
+ *
  * Revision 1.30  1996/06/13 13:32:13  robertj
  * Rewrite of auto-delete threads, fixes Windows95 total crash.
  *
@@ -1546,7 +1549,7 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (!IsTerminated())
+  if (originalStackSize > 0 && !IsTerminated())
     Terminate();
 }
 
@@ -1689,7 +1692,7 @@ DWORD PThread::CleanUpOnTerminated()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
+  : PThread(1000, AutoDeleteThread, StartSuspended, LowPriority)
 {
   Resume();
 }
@@ -1721,11 +1724,10 @@ void PProcess::HouseKeepingThread::Main()
 
     DWORD status = WaitForMultipleObjects(numHandles, handles, FALSE, delay);
 
-    PAssertOS(status != WAIT_FAILED);
-
     delete [] handles;
 
-    if (status != WAIT_OBJECT_0 && status != WAIT_TIMEOUT) {
+    if (status != WAIT_TIMEOUT && status != WAIT_FAILED
+                                                  && status != WAIT_OBJECT_0) {
       process.threadMutex.Wait();
       for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
         DWORD id = process.activeThreads.GetDataAt(i).CleanUpOnTerminated();
@@ -1740,8 +1742,6 @@ void PProcess::HouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
-  if (houseKeeper == (PThread *)-1)
-    return;
   if (houseKeeper == NULL)
     houseKeeper = PNEW HouseKeepingThread;
   else
@@ -1760,8 +1760,16 @@ void PProcess::Construct()
 
 PProcess::~PProcess()
 {
-  if (houseKeeper != (PThread *)-1)
-    delete houseKeeper;
+  threadMutex.Wait();
+  for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
+    PThread & thread = activeThreads.GetDataAt(i);
+    if (this != &thread && !thread.IsTerminated())
+      TerminateThread(thread.GetHandle(), 1);
+    thread.CleanUpOnTerminated();
+  }
+  threadMutex.Signal();
+
+  delete houseKeeper;
 
 #ifndef PMEMORY_CHECK
   extern void PWaitOnExitConsoleWindow();
