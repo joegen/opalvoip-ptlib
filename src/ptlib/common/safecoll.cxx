@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.13  2004/10/14 12:31:47  rjongbloed
+ * Added synchronous mode for safe collection RemoveAll() to wait until all objects
+ *   have actually been deleted before returning.
+ *
  * Revision 1.12  2004/10/04 12:54:33  rjongbloed
  * Added functions for locking an unlocking to "auto-unlock" classes.
  *
@@ -295,7 +299,7 @@ BOOL PSafeCollection::SafeRemoveAt(PINDEX idx)
 }
 
 
-void PSafeCollection::RemoveAll()
+void PSafeCollection::RemoveAll(BOOL synchronous)
 {
   collectionMutex.Wait();
 
@@ -303,6 +307,13 @@ void PSafeCollection::RemoveAll()
     SafeRemoveObject(PDownCast(PSafeObject, collection->RemoveAt(0)));
 
   collectionMutex.Signal();
+
+  if (synchronous) {
+    // Have unfortunate busy loop here, but it should be very
+    // rare that it will be here for long
+    while (!DeleteObjectsToBeRemoved())
+      Sleep(100);
+  }
 }
 
 
