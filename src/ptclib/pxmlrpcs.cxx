@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.4  2002/10/23 15:57:28  craigs
+ * Fixed problem where no params specified
+ *
  * Revision 1.3  2002/10/17 12:51:01  rogerh
  * Add a newline at the of the file to silence a gcc compiler warning.
  *
@@ -121,13 +124,6 @@ void PXMLRPCServerResource::OnXMLRPCRequest(const PString & body, PString & repl
   PXMLElement * methodName = request.GetElement("methodName");
   if (methodName == NULL) {
     reply = FormatFault(PXMLRPC::RequestHasNoMethodName, "methodCall has no methodName");
-    return;
-  }
-
-  // make sure params are specified
-  PXMLElement * params = request.GetElement("params");
-  if (params == NULL) {
-    reply = FormatFault(PXMLRPC::RequestHasNoParms, "methodCall has no parms");
     return;
   }
 
