@@ -35,11 +35,7 @@ extern "C" {
 }
 #endif
 
-#if defined(__GNUC__) && __GNUC__ > 2
-#include <iostream>
-#else
 #include <iostream.h>
-#endif
 
 
 // define some basic types
