@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.13 1995/07/02 01:18:19 robertj Exp $
+ * $Id: ipsock.h,v 1.14 1995/10/14 14:57:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.14  1995/10/14 14:57:26  robertj
+ * Added internet address to string conversion functionality.
+ *
  * Revision 1.13  1995/07/02 01:18:19  robertj
  * Added static functions to get the current host name/address.
  *
@@ -105,10 +108,32 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
   // New functions for class
 #ifdef P_HAS_BERKELEY_SOCKETS
-    typedef struct in_addr Address;
+    class Address : public in_addr {
+      public:
+        Address(const in_addr & addr);
+        Address & operator=(const in_addr & addr);
 #else
-    typedef struct { BYTE b1,b2,b3,b4; } Address;
+    class Address {
+      private:
+        union {
+          struct {
+            BYTE s_b1,s_b2,s_b3,s_b4;
+          } S_un_b;
+          struct {
+            WORD s_w1,s_w2;
+          } S_un_w;
+          DWORD S_addr;
+        } S_un;
 #endif
+      public:
+        Address();
+        Address(const Address & addr);
+        Address(const PString & dotNotation);
+        Address & operator=(const Address & addr);
+        operator PString() const;
+        operator DWORD() const;
+    };
+
     static BOOL GetAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
