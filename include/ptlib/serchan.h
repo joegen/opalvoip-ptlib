@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.7 1995/03/14 12:42:33 robertj Exp $
+ * $Id: serchan.h,v 1.8 1995/06/17 11:13:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.8  1995/06/17 11:13:18  robertj
+ * Documentation update.
+ *
  * Revision 1.7  1995/03/14 12:42:33  robertj
  * Updated documentation to use HTML codes.
  *
@@ -76,8 +79,7 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
       const PString & port,
       /* The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         <A><CODE>GetPortNames()</CODE></A> can be used to find the platforms
-         serial ports.
+         <A>GetPortNames()</A> can be used to find the platforms serial ports.
        */
       DWORD speed = 0,
       /* Serial port speed or baud rate. The actual values possible here are
@@ -117,8 +119,7 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
       const PString & port,
       /* The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
-         <A><CODE>GetPortNames()</CODE></A> can be used to find the platforms
-         serial ports.
+         <A>GetPortNames()</A> can be used to find the platforms serial ports.
        */
       DWORD speed = 0,
       /* Serial port speed or baud rate. The actual values possible here are
