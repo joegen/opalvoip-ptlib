@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.14  2001/09/11 02:36:52  robertj
+ * Fixed crash bug when ReadString() gets I/O error.
+ *
  * Revision 1.13  2001/09/10 21:58:31  craigs
  * Fixed cut and paste problem that broke PIndirectChannel::Write
  *
@@ -254,7 +257,9 @@ BOOL PChannel::ReadBlock(void * buf, PINDEX len)
 PString PChannel::ReadString(PINDEX len)
 {
   PString str;
-  ReadBlock(str.GetPointer(len+1), len);
+  if (!ReadBlock(str.GetPointer(len+1), len))
+    return PString();
+
   str.SetSize(lastReadCount+1);
   return str;
 }
