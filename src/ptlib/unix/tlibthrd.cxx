@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.26  1999/09/03 02:26:25  robertj
+ * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
+ *
  * Revision 1.25  1999/09/02 11:56:35  robertj
  * Fixed problem with destroying PMutex that is already locked.
  *
@@ -191,17 +194,6 @@ void HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
 
-#ifndef P_LINUX
-  // In this thread we really do want these signals
-  sigset_t blockedSignals;
-  sigemptyset(&blockedSignals);
-  sigaddset(&blockedSignals, SIGHUP);
-  sigaddset(&blockedSignals, SIGINT);
-  sigaddset(&blockedSignals, SIGQUIT);
-  sigaddset(&blockedSignals, SIGTERM);
-  PAssertOS(pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL) == 0);
-#endif
-
   for (;;) {
     PTimeInterval waitTime = process.timers.Process();
     if (waitTime == PMaxTimeInterval)
@@ -217,12 +209,6 @@ void PProcess::Construct()
   // make sure we don't get upset by resume signals
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
-#ifndef P_LINUX
-  sigaddset(&blockedSignals, SIGHUP);
-  sigaddset(&blockedSignals, SIGINT);
-  sigaddset(&blockedSignals, SIGQUIT);
-  sigaddset(&blockedSignals, SIGTERM);
-#endif
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
@@ -324,12 +310,6 @@ void * PThread::PX_ThreadStart(void * arg)
   // block RESUME_SIG
   sigset_t blockedSignals;
   sigemptyset(&blockedSignals);
-#ifndef P_LINUX
-  sigaddset(&blockedSignals, SIGHUP);
-  sigaddset(&blockedSignals, SIGINT);
-  sigaddset(&blockedSignals, SIGQUIT);
-  sigaddset(&blockedSignals, SIGTERM);
-#endif
   sigaddset(&blockedSignals, RESUME_SIG);
   PAssertOS(pthread_sigmask(SIG_BLOCK, &blockedSignals, NULL) == 0);
 
@@ -433,7 +413,11 @@ void PThread::Terminate()
     }
     PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
 
+#ifndef P_FREEBSD
+    pthread_cancel(PX_threadId);
+#else
     pthread_kill(PX_threadId, SIGKILL);
+#endif
   }
 }
 
@@ -448,7 +432,7 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 
 BOOL PThread::IsTerminated() const
 {
-  return PX_threadId == 0 || pthread_kill(PX_threadId, 0) != 0;
+  return PX_threadId == 0 || pthread_kill(PX_threadId, P_IO_BREAK_SIGNAL) != 0;
 }
 
 
@@ -558,7 +542,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
 void PThread::WaitForTermination() const
 {
   while (!IsTerminated())
-    ::sleep(1);
+    Current()->Sleep(10);
 }
 
 
@@ -568,7 +552,7 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
   while (!IsTerminated()) {
     if (timeout == 0)
       return FALSE;
-    ::sleep(1);
+    Current()->Sleep(10);
   }
   return TRUE;
 }
