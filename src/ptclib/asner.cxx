@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.16  1999/01/16 01:28:25  robertj
+ * Fixed problems with reading stream multiple times.
+ *
  * Revision 1.15  1998/11/30 04:50:44  robertj
  * New directory structure
  *
@@ -2504,11 +2507,10 @@ BOOL PASN_Sequence::HasOptionalField(PINDEX opt) const
 
 void PASN_Sequence::IncludeOptionalField(PINDEX opt)
 {
-  PAssert(extendable, "Must be extendable type");
-
   if (opt < (PINDEX)optionMap.GetSize())
     optionMap.Set(opt);
   else {
+    PAssert(extendable, "Must be extendable type");
     opt -= optionMap.GetSize();
     if (opt < (PINDEX)extensionMap.GetSize())
       extensionMap.Set(opt);
@@ -3303,6 +3305,7 @@ BOOL PBER_Stream::Read(PChannel & chan)
 
 BOOL PBER_Stream::Write(PChannel & chan)
 {
+  CompleteEncoding();
   return chan.Write(theArray, GetSize());
 }
 
@@ -3498,15 +3501,16 @@ unsigned PPER_Stream::GetBitsLeft() const
 
 BOOL PPER_Stream::Read(PChannel & chan)
 {
+  ResetDecoder();
+  SetSize(0);
+
   // Get RFC1006 TPKT length
   BYTE tpkt[4];
   if (!chan.ReadBlock(tpkt, sizeof(tpkt)))
     return FALSE;
 
-  if (tpkt[0] != 3) { // Only support version 3
-    SetSize(0);
+  if (tpkt[0] != 3) // Only support version 3
     return TRUE;
-  }
 
   PINDEX data_len = ((tpkt[2] << 8)|tpkt[3]) - 4;
 
@@ -3516,17 +3520,20 @@ BOOL PPER_Stream::Read(PChannel & chan)
 
 BOOL PPER_Stream::Write(PChannel & chan)
 {
-  BYTE buf[5];
+  CompleteEncoding();
+
   PINDEX size = GetSize();
-  PINDEX len_len = size > 0xfffffb ? 4 : 3;
-  PINDEX len = size + len_len + 1;
-  buf[0] = (BYTE)len_len;
-  while (len_len > 0) {
-    buf[len_len] = (BYTE)len;
-    len >>= 8;
-    len_len--;
-  }
-  return chan.Write(buf, buf[0]+1) && chan.Write(theArray, size);
+
+  // Put RFC1006 TPKT length
+  BYTE tpkt[4];
+  tpkt[0] = 3;  // Version 3
+  tpkt[1] = 0;
+
+  PINDEX len = size + sizeof(tpkt);
+  tpkt[2] = (BYTE)(len >> 8);
+  tpkt[3] = (BYTE)len;
+
+  return chan.Write(tpkt, sizeof(tpkt)) && chan.Write(theArray, size);
 }
 
 
