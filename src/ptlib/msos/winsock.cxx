@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.41  1998/11/30 04:50:19  robertj
+ * New directory structure
+ *
  * Revision 1.40  1998/11/14 06:31:15  robertj
  * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
  *
@@ -162,7 +165,7 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 #include <nspapi.h>
 #include <svcguid.h>
