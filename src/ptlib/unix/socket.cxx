@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.89  2002/10/08 14:31:43  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.88  2002/06/05 12:29:16  craigs
  * Changes for gcc 3.1
  *
@@ -443,45 +446,54 @@ int PSocket::os_select(int width,
 
 PIPSocket::Address::Address(DWORD dw)
 {
-  s_addr = dw;
+  operator=(dw);
 }
 
 
 PIPSocket::Address & PIPSocket::Address::operator=(DWORD dw)
 {
-  s_addr = dw;
+  if (dw == 0) {
+    version = 0;
+    memset(&v, 0, sizeof(v));
+  }
+  else {
+    version = 4;
+    v.four.s_addr = dw;
+  }
+
   return *this;
 }
 
 
 PIPSocket::Address::operator DWORD() const
 {
-  return (DWORD)s_addr;
+  return version != 4 ? 0 : (DWORD)v.four.s_addr;
 }
 
 BYTE PIPSocket::Address::Byte1() const
 {
-  return *(((BYTE *)&s_addr)+0);
+  return *(((BYTE *)&v.four.s_addr)+0);
 }
 
 BYTE PIPSocket::Address::Byte2() const
 {
-  return *(((BYTE *)&s_addr)+1);
+  return *(((BYTE *)&v.four.s_addr)+1);
 }
 
 BYTE PIPSocket::Address::Byte3() const
 {
-  return *(((BYTE *)&s_addr)+2);
+  return *(((BYTE *)&v.four.s_addr)+2);
 }
 
 BYTE PIPSocket::Address::Byte4() const
 {
-  return *(((BYTE *)&s_addr)+3);
+  return *(((BYTE *)&v.four.s_addr)+3);
 }
 
 PIPSocket::Address::Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4)
 {
-  BYTE * p = (BYTE *)&s_addr;
+  version = 4;
+  BYTE * p = (BYTE *)&v.four.s_addr;
   p[0] = b1;
   p[1] = b2;
   p[2] = b3;
@@ -498,9 +510,9 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   Address addr = hostname;
-  if (addr == 16777343)  // Is 127.0.0.1
+  if (addr.IsLoopback())  // Is 127.0.0.1
     return TRUE;
-  if (addr == (DWORD)-1)
+  if (!addr.IsValid())
     return FALSE;
 
   if (!GetHostAddress(hostname, addr))
