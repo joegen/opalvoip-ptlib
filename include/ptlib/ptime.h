@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.12 1995/01/11 09:45:12 robertj Exp $
+ * $Id: ptime.h,v 1.13 1995/03/14 12:42:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.12  1995/01/11 09:45:12  robertj
+ * Revision 1.13  1995/03/14 12:42:18  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.12  1995/01/11  09:45:12  robertj
  * Documentation and normalisation.
  *
  * Revision 1.11  1995/01/09  12:34:05  robertj
@@ -91,7 +94,8 @@ PDECLARE_CLASS(PTime, PObject)
     /* Create a copy of the time on the heap. It is the responsibility of the
        caller to delete the created object.
     
-       Returns: pointer to new time.
+       <H2>Returns:</H2>
+       pointer to new time.
      */
 
     virtual Comparison Compare(
@@ -100,14 +104,16 @@ PDECLARE_CLASS(PTime, PObject)
     /* Determine the relative rank of the specified times. This ranks the
        times as you would expect.
        
-       Returns: rank of the two times.
+       <H2>Returns:</H2>
+       rank of the two times.
      */
 
     virtual void PrintOn(
       ostream & strm    // Stream to output the time to.
     ) const;
-    /* Output the time to the stream. This uses the $B$AsString()$B$ function
-       with the $B$ShortDateTime$B$ parameter.
+    /* Output the time to the stream. This uses the
+       <A><CODE>AsString()</CODE></A> function with the
+       <CODE>ShortDateTime</CODE> parameter.
      */
 
     virtual void ReadFrom(
@@ -115,8 +121,8 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Input the time from the specified stream. If a parse error occurs the
        time is set to the current time. The input is expected in the same
-       format as produced by the $B$AsString()$B$ function with the
-       $B$ShortDateTime$B$ parameter.
+       format as produced by the <A><CODE>AsString()</CODE></A> function with
+       the <CODE>ShortDateTime</CODE> parameter.
      */
 
 
@@ -124,25 +130,29 @@ PDECLARE_CLASS(PTime, PObject)
     int GetSecond() const;
     /* Get the second of the time.
 
-       Returns: integer in range 0..59.
+       <H2>Returns:</H2>
+       integer in range 0..59.
      */
 
     int GetMinute() const;
     /* Get the minute of the time.
 
-       Returns: integer in range 0..59.
+       <H2>Returns:</H2>
+       integer in range 0..59.
      */
 
     int GetHour() const;
     /* Get the hour of the time.
 
-       Returns: integer in range 0..23.
+       <H2>Returns:</H2>
+       integer in range 0..23.
      */
 
     int GetDay() const;
     /* Get the day of the month of the date.
 
-       Returns: integer in range 1..31.
+       <H2>Returns:</H2>
+       integer in range 1..31.
      */
 
     enum Months {
@@ -164,13 +174,15 @@ PDECLARE_CLASS(PTime, PObject)
     Months GetMonth() const;
     /* Get the month of the date.
 
-       Returns: enum for month.
+       <H2>Returns:</H2>
+       enum for month.
      */
 
     int GetYear() const;
     /* Get the year of the date.
 
-       Returns: integer in range 1970..2038.
+       <H2>Returns:</H2>
+       integer in range 1970..2038.
      */
 
     enum Weekdays {
@@ -187,19 +199,22 @@ PDECLARE_CLASS(PTime, PObject)
     Weekdays GetDayOfWeek() const;
     /* Get the day of the week of the date.
     
-       Returns: enum for week days with 0=Sun, 1=Mon, ..., 6=Sat.
+       <H2>Returns:</H2>
+       enum for week days with 0=Sun, 1=Mon, ..., 6=Sat.
      */
 
     int GetDayOfYear() const;
     /* Get the day in the year of the date.
     
-       Returns: integer from 1..366.
+       <H2>Returns:</H2>
+       integer from 1..366.
      */
 
     BOOL IsDaylightSavings() const;
     /* Get flag indicating daylight savings is current.
     
-       Returns: TRUE if daylight savings time is active.
+       <H2>Returns:</H2>
+       TRUE if daylight savings time is active.
      */
 
 
@@ -208,7 +223,8 @@ PDECLARE_CLASS(PTime, PObject)
     ) const;
     /* Add the interval to the time to yield a new time.
     
-       Returns: Time altered by the interval.
+       <H2>Returns:</H2>
+       Time altered by the interval.
      */
 
     PTime & operator+=(
@@ -216,7 +232,8 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Add the interval to the time changing the instance.
     
-       Returns: reference to the current time instance.
+       <H2>Returns:</H2>
+       reference to the current time instance.
      */
 
     PTimeInterval operator-(
@@ -224,7 +241,8 @@ PDECLARE_CLASS(PTime, PObject)
     ) const;
     /* Calculate the difference between two times to get a time interval.
     
-       Returns: Time intervale difference between the times.
+       <H2>Returns:</H2>
+       Time intervale difference between the times.
      */
 
     PTime operator-(
@@ -232,7 +250,8 @@ PDECLARE_CLASS(PTime, PObject)
     ) const;
     /* Subtract the interval from the time to yield a new time.
     
-       Returns: Time altered by the interval.
+       <H2>Returns:</H2>
+       Time altered by the interval.
      */
 
     PTime & operator-=(
@@ -240,7 +259,8 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Subtract the interval from the time changing the instance.
 
-       Returns: reference to the current time instance.
+       <H2>Returns:</H2>
+       reference to the current time instance.
      */
 
     enum TimeFormat {
@@ -269,23 +289,25 @@ PDECLARE_CLASS(PTime, PObject)
        formatting template. The special characters in the formatting string
        are:
 
-          h         hour without leading zero
-          hh        hour with leading zero
-          m         minute without leading zero
-          mm        minute with leading zero
-          s         second without leading zero
-          ss        second with leading zero
-          a         the am/pm string
-          w/ww/www  abbreviated day of week name
-          wwww      full day of week name
-          d         day of month without leading zero
-          dd        day of month with leading zero
-          M         month of year without leading zero
-          MM        month of year with leading zero
-          MMM       month of year as abbreviated text
-          MMMM      month of year as full text
-          y/yy      year without century
-          yyy/yyyy  year with century
+       <DL>
+       <DT>h         <DD>hour without leading zero
+       <DT>hh        <DD>hour with leading zero
+       <DT>m         <DD>minute without leading zero
+       <DT>mm        <DD>minute with leading zero
+       <DT>s         <DD>second without leading zero
+       <DT>ss        <DD>second with leading zero
+       <DT>a         <DD>the am/pm string
+       <DT>w/ww/www  <DD>abbreviated day of week name
+       <DT>wwww      <DD>full day of week name
+       <DT>d         <DD>day of month without leading zero
+       <DT>dd        <DD>day of month with leading zero
+       <DT>M         <DD>month of year without leading zero
+       <DT>MM        <DD>month of year with leading zero
+       <DT>MMM       <DD>month of year as abbreviated text
+       <DT>MMMM      <DD>month of year as full text
+       <DT>y/yy      <DD>year without century
+       <DT>yyy/yyyy  <DD>year with century
+       </DL>
 
        All other characters are copied to the output string unchanged.
        
@@ -296,25 +318,29 @@ PDECLARE_CLASS(PTime, PObject)
     static PString GetTimeSeparator();
     /* Get the internationalised time separator.
     
-       Returns: string for time separator.
+       <H2>Returns:</H2>
+       string for time separator.
      */
 
     static BOOL GetTimeAMPM();
     /* Get the internationalised time format: AM/PM or 24 hour.
     
-       Returns: TRUE is 12 hour, FALSE if 24 hour.
+       <H2>Returns:</H2>
+       TRUE is 12 hour, FALSE if 24 hour.
      */
 
     static PString GetTimeAM();
     /* Get the internationalised time AM string.
     
-       Returns: string for AM.
+       <H2>Returns:</H2>
+       string for AM.
      */
 
     static PString GetTimePM();
     /* Get the internationalised time PM string.
     
-       Returns: string for PM.
+       <H2>Returns:</H2>
+       string for PM.
      */
 
     static PString GetDayName(
@@ -323,13 +349,15 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Get the internationalised day of week day name (0=Sun etc).
     
-       Returns: string for week day.
+       <H2>Returns:</H2>
+       string for week day.
      */
 
     static PString GetDateSeparator();
     /* Get the internationalised date separator.
     
-       Returns: string for date separator.
+       <H2>Returns:</H2>
+       string for date separator.
      */
 
     static PString GetMonthName(
@@ -338,7 +366,8 @@ PDECLARE_CLASS(PTime, PObject)
     );
     /* Get the internationalised month name string (1=Jan etc).
     
-       Returns: string for month.
+       <H2>Returns:</H2>
+       string for month.
      */
 
     enum DateOrder {
@@ -351,7 +380,8 @@ PDECLARE_CLASS(PTime, PObject)
     static DateOrder GetDateOrder();
     /* Return the internationalised date order.
     
-       Returns: code for date ordering.
+       <H2>Returns:</H2>
+       code for date ordering.
      */
 
 
