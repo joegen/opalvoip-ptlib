@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.h,v $
+ * Revision 1.4  2001/12/13 09:19:09  robertj
+ * Added ability to create HTTP server certificate if one does not exist.
+ *
  * Revision 1.3  2001/05/16 06:02:05  craigs
  * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
  *
@@ -55,7 +58,9 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
 
     BOOL SetServerCertificate(
-      const PFilePath & certFile
+      const PFilePath & certFile,
+      BOOL create = FALSE,
+      const char * dn = NULL
     );
 
     virtual BOOL OnDetectedNonSSLConnection(PChannel * chan, const PString & line);
