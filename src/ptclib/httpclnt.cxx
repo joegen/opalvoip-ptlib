@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.32  2003/01/28 06:48:35  robertj
+ * Added https support to PHTTPClient (if #define P_SSL availbel).
+ *
  * Revision 1.31  2002/12/03 22:38:35  robertj
  * Removed get document that just returns a content length as the chunked
  *   transfer encoding makes this very dangerous.
@@ -261,6 +264,10 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
+
+#if P_SSL
+#include <ptclib/pssl.h>
+#endif
 
 #include <ctype.h>
 
@@ -551,6 +558,34 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
       lastResponseInfo = "No host specified";
       return SetErrorValues(ProtocolFailure, 0, LastReadError);
     }
+
+#if P_SSL
+    if (url.GetScheme() == "https") {
+      PTCPSocket * tcp = new PTCPSocket(url.GetPort());
+      tcp->SetReadTimeout(readTimeout);
+      if (!tcp->Connect(host)) {
+        lastResponseCode = -2;
+        lastResponseInfo = tcp->GetErrorText();
+        delete tcp;
+        return FALSE;
+      }
+
+      PSSLChannel * ssl = new PSSLChannel;
+      if (!ssl->Connect(tcp)) {
+        lastResponseCode = -2;
+        lastResponseInfo = ssl->GetErrorText();
+        delete ssl;
+        return FALSE;
+      }
+
+      if (!Open(ssl)) {
+        lastResponseCode = -2;
+        lastResponseInfo = GetErrorText();
+        return FALSE;
+      }
+    }
+    else
+#endif
 
     if (!Connect(host, url.GetPort())) {
       lastResponseCode = -2;
