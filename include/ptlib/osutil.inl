@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.19 1994/08/21 23:43:02 robertj Exp $
+ * $Id: osutil.inl,v 1.20 1994/09/25 10:41:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.19  1994/08/21 23:43:02  robertj
+ * Revision 1.20  1994/09/25 10:41:19  robertj
+ * Moved PFile::DestroyContents() to cxx file.
+ * Added PTextFile constructors for DOS/NT platforms.
+ * Added Pipe channel.
+ *
+ * Revision 1.19  1994/08/21  23:43:02  robertj
  * Added "remove on close" feature for temporary files.
  * Added "force" option to Remove/Rename etc to override write protection.
  * Removed default argument when of PString type (MSC crashes).
@@ -321,9 +326,6 @@ PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
 PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
   { return path.Compare(((const PFile &)obj).path); }
 
-PINLINE void PFile::DestroyContents()
-  { Close(); }
-
 PINLINE void PFile::CloneContents(const PFile * f)
   { CopyContents(*f); }
 
@@ -368,6 +370,12 @@ PINLINE BOOL PFile::IsEndOfFile() const
 PINLINE PTextFile::PTextFile()
   { }
 
+PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
+  { Open(mode, opts); }
+
+PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
+  { Open(name, mode, opts); }
+
 PINLINE void PTextFile::DestroyContents()
   { PFile::DestroyContents(); }
 
@@ -397,6 +405,14 @@ PINLINE size_t PStructuredFile::GetStructureSize()
 
 PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
   { structureSize = newSize; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+PINLINE PPipeChannel::PPipeChannel(const PString & subProgram,
+                const char * const * arguments, OpenMode mode, BOOL searchPath)
+  { Construct(subProgram, arguments, mode, searchPath); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
