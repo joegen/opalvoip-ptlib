@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.59  2003/11/10 00:21:38  dereksmithies
+ * Stop compiler warnings (unused formal parameters) when P_HAS_QOS is on
+ *
  * Revision 1.58  2003/10/30 11:33:59  rjongbloed
  * Added automatic inclusion of Winsock2 library.
  *
@@ -868,11 +871,14 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 }
 
 
+#ifdef P_HAS_QOS
+BOOL PIPXSocket::GetHostAddress(const PString & /*hostname*/, Address & /*addr*/)
+{
+	return FALSE;
+}
+#else
 BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
-#ifdef P_HAS_QOS
-  return FALSE;
-#else
   addr = hostname;
   if (addr.IsValid())
     return TRUE;
@@ -896,8 +902,9 @@ BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 
   AssignAddress(addr, *(sockaddr_ipx *)addr_info[0].RemoteAddr.lpSockaddr);
   return TRUE;
-#endif
 }
+#endif
+
 
 
 BOOL PIPXSocket::GetLocalAddress(Address & addr)
