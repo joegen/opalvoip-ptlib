@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.16 1996/05/23 10:00:52 robertj Exp $
+ * $Id: http.h,v 1.17 1996/06/07 13:52:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.17  1996/06/07 13:52:20  robertj
+ * Added PUT to HTTP proxy FTP. Necessitating redisign of entity body processing.
+ *
  * Revision 1.16  1996/05/23 10:00:52  robertj
  * Added common function for GET and HEAD commands.
  * Fixed status codes to be the actual status code instead of sequential enum.
@@ -184,11 +187,15 @@ PDECLARE_CLASS(PHTTPConnectionInfo, PObject)
     int  GetMajorVersion() const      { return majorVersion; }
     int  GetMinorVersion() const      { return minorVersion; }
 
+    void SetEntityBodyLength(long v)  { entityBodyLength = v; }
+    long GetEntityBodyLength() const  { return entityBodyLength; }
+
   protected:
     BOOL isPersistant;
     BOOL isProxyConnection;
     int  majorVersion;
     int  minorVersion;
+    long entityBodyLength;
 };
 
 
@@ -420,7 +427,6 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
       Commands cmd,                 // Command to be proxied.
       const PURL & url,             // Universal Resource Locator for document.
       const PMIMEInfo & info,       // Extra MIME information in command.
-      const PString & body,         // Body of request.
       const PHTTPConnectionInfo & conInfo
     );
     /* Handle a proxy command request from a client. This will only get called
@@ -434,6 +440,17 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        TRUE if the connection may persist, FALSE if the connection must close
        If there is no ContentLength field in the response, this value must
        be FALSE for correct operation.
+     */
+
+
+    virtual PString ReadEntityBody(
+      const PHTTPConnectionInfo & connectInfo
+    );
+    /* Read the entity body associated with a HTTP request, and close the
+       socket if not a persistant connection.
+
+       <H2>Returns:</H2>
+       The entity body of the command
      */
 
     virtual BOOL OnUnknown(
