@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.19  1998/12/16 09:57:37  robertj
+ * Fixed bug in writing .ini file, not truncating file when shrinking.
+ *
  * Revision 1.18  1998/11/30 21:51:41  robertj
  * New directory structure.
  *
@@ -259,24 +262,27 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
                                    PFileInfo::UserRead)) {
     PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
     return FALSE;
-  } else {
-    PTextFile file;
-    if (!file.Open(filename, PFile::WriteOnly)) {
-      PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
-      return FALSE;
-    } else {
-      for (PINDEX i = 0; i < GetSize(); i++) {
-        PXConfigSectionList & section = (*this)[i].GetList();
-        file << "[" << (*this)[i] << "]" << endl;
-        for (PINDEX j = 0; j < section.GetSize(); j++) {
-          PXConfigValue & value = section[j];
-          file << value << "=" << value.GetValue() << endl;
-        }
-        file << endl;
-      }
-      file.Close();
-    }
   }
+
+  PTextFile file;
+  if (!file.Open(filename, PFile::WriteOnly)) {
+    PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
+    return FALSE;
+  }
+
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PXConfigSectionList & section = (*this)[i].GetList();
+    file << "[" << (*this)[i] << "]" << endl;
+    for (PINDEX j = 0; j < section.GetSize(); j++) {
+      PXConfigValue & value = section[j];
+      file << value << "=" << value.GetValue() << endl;
+    }
+    file << endl;
+  }
+
+  file.flush();
+  file.SetLength(file.GetPosition());
+
   return TRUE;
 }
 
