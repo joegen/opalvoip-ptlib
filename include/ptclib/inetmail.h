@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.5 1996/09/14 13:17:59 robertj Exp $
+ * $Id: inetmail.h,v 1.6 1996/09/16 12:57:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.6  1996/09/16 12:57:45  robertj
+ * Removed redundant functions.
+ *
  * Revision 1.5  1996/09/14 13:17:59  robertj
  * Renamed file and changed to be a protocol off new indirect channel to separate
  *   the protocol from the low level byte transport channel.
@@ -282,8 +285,6 @@ PDECLARE_CLASS(PSMTPServer, PSMTP)
 
 
   protected:
-    BOOL OnOpen();
-
     virtual void OnHELO(
       const PCaselessString & remoteHost  // Name of remote host.
     );
@@ -624,15 +625,6 @@ PDECLARE_CLASS(PPOP3Server, PPOP3)
        parameter makes a connection to a remote system, opening the socket. The
        form with the <CODE>socket</CODE> parameter opens the socket to an
        incoming call from a "listening" socket.
-     */
-
-
-  // Overrides from class PChannel.
-    virtual BOOL Close();
-    /* Close the socket, and if connected as a client, QUITs from server.
-
-       <H2>Returns:</H2>
-       TRUE if the channel was closed and the QUIT accepted by the server.
      */
 
 
