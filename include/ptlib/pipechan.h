@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.17  1999/02/16 08:11:09  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.16  1998/11/02 10:06:39  robertj
  * Added capability of pip output to go to stdout/stderr.
  *
@@ -86,7 +89,9 @@
 #endif
 
 
-PDECLARE_CLASS(PPipeChannel, PChannel)
+class PPipeChannel : public PChannel
+{
+  PCLASSINFO(PPipeChannel, PChannel)
 /* A channel that uses a operating system pipe between the current process and
    a sub-process. On platforms that support <I>multi-processing</I>, the
    sub-program is executed concurrently with the calling process.

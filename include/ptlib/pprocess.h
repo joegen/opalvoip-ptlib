@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.41  1999/02/16 08:11:09  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.40  1999/01/30 14:28:10  robertj
  * Added GetOSConfigDir() function.
  *
@@ -229,7 +232,9 @@ class PTimerList : PInternalTimerList // Want this to be private
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-PDECLARE_CLASS(PProcess, PThread)
+class PProcess : public PThread
+{
+  PCLASSINFO(PProcess, PThread)
 /* This class represents an operating system process. This is a running
    "programme" in the  context of the operating system. Note that there can
    only be one instance of a PProcess class in a given programme.
