@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.h,v 1.1 1995/12/10 13:04:08 robertj Exp $
+ * $Id: remconn.h,v 1.2 1996/08/08 10:09:10 robertj Exp $
  *
  * Portable Windows Library
  *
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.2  1996/08/08 10:09:10  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.1  1995/12/10 13:04:08  robertj
  * Initial revision
  *
@@ -17,7 +20,7 @@
 #include <raserror.h>
 
 
-#include "../../common/remconn.h"
+#include "../../common/ptlib/remconn.h"
   private:
     // Win32 specific stuff
     HRASCONN rasConnection;
