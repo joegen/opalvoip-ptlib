@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.9  2000/02/17 11:33:33  robertj
+ * Changed PSoundChannel::Write so blocks instead of error if no buffers available.
+ *
  * Revision 1.8  1999/10/09 01:22:07  robertj
  * Fixed error display for sound channels.
  *
@@ -848,9 +851,12 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
 
   while (size > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
-    if ((buffer.header.dwFlags&WHDR_DONE) == 0) {
-      osError = MMSYSERR_ERROR;
-      return FALSE; // No free buffers
+    while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
+      // No free buffers, so wait for one
+      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
+        osError = MMSYSERR_ERROR;
+        return FALSE; // No free buffers
+      }
     }
 
     // Can't write more than a buffer full
