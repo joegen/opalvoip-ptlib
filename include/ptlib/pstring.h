@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.14 1995/10/14 15:02:56 robertj Exp $
+ * $Id: pstring.h,v 1.15 1995/12/23 03:46:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.15  1995/12/23 03:46:23  robertj
+ * Added operators for include and exclude from string set.
+ *
  * Revision 1.14  1995/10/14 15:02:56  robertj
  * Changed arrays to not break references, but strings still need to.
  *
@@ -1382,7 +1385,9 @@ PDECLARE_SET(PStringSet, PString, TRUE)
 
   public:
     void Include(const PString & key);
+    PStringSet & operator+=(const PString & key);
     void Exclude(const PString & key);
+    PStringSet & operator-=(const PString & key);
 };
 
 
