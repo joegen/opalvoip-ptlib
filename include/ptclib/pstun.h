@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.3  2003/02/04 07:01:02  robertj
+ * Added ip/port version of constructor.
+ *
  * Revision 1.2  2003/02/04 05:05:55  craigs
  * Added new functions
  *
@@ -75,12 +78,19 @@ class PSTUNClient : public PObject
       WORD portBase = 0,
       WORD portEnd = 0
     );
+    PSTUNClient(
+      const PIPSocket::Address & serverAddress,
+      WORD serverPort = DefaultPort,
+      WORD portBase = 0,
+      WORD portEnd = 0
+    );
+
 
     BOOL SetServer(
       const PString & server
     );
     BOOL SetServer(
-      PIPSocket::Address serverAddress,
+      const PIPSocket::Address & serverAddress,
       WORD serverPort = 0
     );
 
