@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.19  2004/07/12 02:32:58  csoutheren
+ * Fixed problem when more than two elements in env var
+ *
  * Revision 1.18  2004/04/29 02:02:25  csoutheren
  * Removed debugging (oops)
  *
@@ -99,7 +102,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.3.1"
+#define VERSION "1.3.2"
 
 
 using namespace std;
@@ -497,8 +500,8 @@ int main(int argc, char* argv[])
         string::size_type n = str.find(';', offs);
         string dir;
         if (n != string::npos) {
-          dir = str.substr(offs, n);
-          offs += n + 1;
+          dir = str.substr(offs, n-offs);
+          offs = n+1;
         } else {
           dir = str.substr(offs);
           offs += str.length();
