@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.102  2003/01/11 05:30:13  robertj
+# Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
+#
 # Revision 1.101  2003/01/06 18:41:08  rogerh
 # Add NetBSD patches, taken from the NetBSD pkg patches.
 # Submitted by Andreas Wrede
@@ -389,6 +392,10 @@ endif
 
 ifdef TRY_1394DC
 VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
+endif
+
+ifdef TRY_1394AVC
+VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
 endif
 
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
