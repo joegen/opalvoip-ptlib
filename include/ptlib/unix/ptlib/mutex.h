@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.9  2000/12/15 12:50:14  rogerh
+ * Fix some BeOS problems with #if defines.
+ * Requested by Yuri Kiryanov <openh323@kiryanov.com>
+ *
  * Revision 1.8  2000/10/30 05:48:33  robertj
  * Added assert when get nested mutex.
  *
@@ -69,13 +73,19 @@
     virtual void Signal();
     virtual BOOL WillBlock() const;
   protected:
+
+#if defined(P_THREADS)
     pthread_t ownerThreadId;
-#ifdef P_HAS_SEMAPHORES
+#endif
+
+#if defined(P_PTHREADS) && defined(P_HAS_SEMAPHORES)
     pthread_mutex_t mutex;
 #endif
-#endif
-#ifdef BE_THREADS
+
+#if defined(BE_THREADS)
     int32 benaphoreCount;
+#endif
+
 #endif
 };
 
