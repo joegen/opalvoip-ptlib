@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.11 1995/03/14 12:41:03 robertj Exp $
+ * $Id: channel.h,v 1.12 1995/06/04 08:42:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.12  1995/06/04 08:42:00  robertj
+ * Fixed comment.
+ *
  * Revision 1.11  1995/03/14 12:41:03  robertj
  * Updated documentation to use HTML codes.
  *
@@ -266,7 +269,8 @@ PCLASS PChannel : public PContainer, public iostream {
        The GetErrorCode() function should be consulted after Write() returns
        FALSE to determine what caused the failure.
 
-       Returns TRUE if at least len bytes were written to the channel.
+       <H2>Returns:</H2>
+       TRUE if at least len bytes were written to the channel.
      */
 
     PINDEX GetLastWriteCount() const;
