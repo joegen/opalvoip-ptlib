@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.42  1998/12/12 01:06:24  robertj
+ * Fixed off by one error in month on FreeBSD platform
+ *
  * Revision 1.41  1998/11/30 21:51:43  robertj
  * New directory structure.
  *
@@ -1079,7 +1082,7 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
   char buf[30];
   struct tm t;
   memset(&t, 0, sizeof(t));
-  t.tm_mon = month;
+  t.tm_mon = month-1;
   strftime(buf, sizeof(buf), type == Abbreviated ? "%b" : "%B", &t);
   return buf;
 #else
