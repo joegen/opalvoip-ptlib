@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.38 1997/02/14 13:53:58 robertj Exp $
+ * $Id: contain.inl,v 1.39 1997/12/11 10:27:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.39  1997/12/11 10:27:15  robertj
+ * Added type correct Contains() function to dictionaries.
+ *
  * Revision 1.38  1997/02/14 13:53:58  robertj
  * Major rewrite of sorted list to use sentinel record instead of NULL pointers.
  *
@@ -378,7 +381,7 @@ PINLINE POrdinalKey::operator PINDEX() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE BOOL PHashTable::Contains(const PObject & key) const
+PINLINE BOOL PHashTable::AbstractContains(const PObject & key) const
   { return hashTable->GetElementAt(key) != NULL; }
 
 
