@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.5 1996/08/17 10:00:27 robertj Exp $
+ * $Id: svcproc.h,v 1.6 1996/08/19 13:39:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.6  1996/08/19 13:39:20  robertj
+ * Added "Debug" level to system log.
+ * Moved PSYSTEMLOG macro to common code.
+ * Changed PSYSTEMLOG macro so does not execute << expression if below debug level.
+ * Fixed memory leak in PSystemLog stream buffer.
+ *
  * Revision 1.5  1996/08/17 10:00:27  robertj
  * Changes for Windows DLL support.
  *
@@ -48,7 +54,8 @@ class PEXPORT PSystemLog : public PObject, public iostream {
       Fatal,   // Log a fatal error
       Error,   // Log a non-fatal error
       Warning, // Log a warning
-      Info,    // Log general debug trace information
+      Info,    // Log general information
+      Debug,   // Log debug trace information
       NumLogLevels
     };
     // Type of log message.
@@ -57,7 +64,7 @@ class PEXPORT PSystemLog : public PObject, public iostream {
       { logLevel = level; init(new PSystemLog::Buffer(this)); }
 
     ~PSystemLog()
-      { flush(); }
+      { flush(); delete rdbuf(); }
     // Destroy the string stream, deleting the stream buffer
 
     static void Output(
@@ -86,6 +93,13 @@ class PEXPORT PSystemLog : public PObject, public iostream {
 
     Level logLevel;
 };
+
+
+#define PSYSTEMLOG(l, v) \
+  if (PServiceProcess::Current()->GetLogLevel() >= PSystemLog::l) { \
+    PSystemLog s(PSystemLog::l); \
+    s << v; \
+  } else (void)0
 
 
 
