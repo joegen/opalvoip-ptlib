@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.3  2002/07/12 05:51:35  craigs
+ * Added structs to XMLRPC response types
+ *
  * Revision 1.2  2002/03/27 00:50:29  craigs
  * Fixed problems with parsing faults and creating structs
  *
@@ -336,6 +339,28 @@ BOOL PXMLRPCResponse::GetParam(PINDEX idx, PTime & val, int tz)
     return FALSE;
 
   return PXMLRPC::ISO8601ToPTime(result, val, tz);
+}
+
+BOOL PXMLRPCResponse::GetParam(PINDEX idx, PStringToString & result)
+{
+  if (idx >= params->GetSize()) {
+    PTRACE(2, "RPCXML\tParam " << idx << " not in response");
+    return FALSE;
+  }
+
+  PXMLObject * param = params->GetElement(idx);
+  if (!param->IsElement()) {
+    PTRACE(2, "RPCXML\tParam " << idx << " malformed");
+    return FALSE;
+  }
+
+  PXMLElement * value = ((PXMLElement *)param)->GetElement("value");
+  if (value == NULL) {
+    PTRACE(2, "RPCXML\tParam " << idx << " is malformed");
+    return FALSE;
+  }
+
+  return ParseStruct(*value, result);
 }
 
 BOOL PXMLRPCResponse::GetBinaryParam(PINDEX idx, PString & str)
