@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.121  2003/05/16 17:40:55  shawn
+ * On Mac OS X, thread with the highest priority should use fixed priority
+ * scheduling policy.  This avoids starvation caused by desktop activity.
+ *
  * Revision 1.120  2003/05/02 00:58:40  dereks
  * Add test for linux at the end of PMutex::Signal. Thanks Robert!
  *
@@ -441,6 +445,14 @@
 #define	SUSPEND_SIG SIGVTALRM
 #endif
 
+#ifdef P_MACOSX
+#include <mach/mach.h>
+#include <mach/thread_policy.h>
+#include <sys/param.h>
+#include <sys/sysctl.h>
+// going to need the main thread for adjusting relative priority
+static pthread_t baseThread;
+#endif
 
 int PX_NewHandle(const char *, int);
 
@@ -555,6 +567,11 @@ void PProcess::Construct()
 
   // initialise the housekeeping thread
   housekeepingThread = NULL;
+
+#ifdef P_MACOSX
+    // records the main thread for priority adjusting
+    baseThread = pthread_self();
+#endif
 
   CommonConstruct();
 }
@@ -728,6 +745,13 @@ void PThread::Restart()
 #endif
 
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
+
+#ifdef P_MACOSX
+  if (PX_priority == HighestPriority) {
+    PTRACE(1, "set thread to have the highest priority (MACOSX)");
+    SetPriority(HighestPriority);
+  }
+#endif
 }
 
 
@@ -831,6 +855,61 @@ void PThread::SetAutoDelete(AutoDeleteFlag deletion)
   autoDelete = deletion == AutoDeleteThread;
 }
 
+#ifdef P_MACOSX
+// obtain thread priority of the main thread
+static unsigned long
+GetThreadBasePriority ()
+{
+    thread_basic_info_data_t threadInfo;
+    policy_info_data_t       thePolicyInfo;
+    unsigned int             count;
+
+    if (baseThread == 0) {
+      return 0;
+    }
+
+    // get basic info
+    count = THREAD_BASIC_INFO_COUNT;
+    thread_info (pthread_mach_thread_np (baseThread), THREAD_BASIC_INFO,
+		 (integer_t*)&threadInfo, &count);
+
+    switch (threadInfo.policy) {
+    case POLICY_TIMESHARE:
+        count = POLICY_TIMESHARE_INFO_COUNT;
+	thread_info(pthread_mach_thread_np (baseThread),
+		    THREAD_SCHED_TIMESHARE_INFO,
+		    (integer_t*)&(thePolicyInfo.ts), &count);
+	return thePolicyInfo.ts.base_priority;
+	break;
+
+    case POLICY_FIFO:
+        count = POLICY_FIFO_INFO_COUNT;
+	thread_info(pthread_mach_thread_np (baseThread),
+		    THREAD_SCHED_FIFO_INFO,
+		    (integer_t*)&(thePolicyInfo.fifo), &count);
+	if (thePolicyInfo.fifo.depressed) {
+	    return thePolicyInfo.fifo.depress_priority;
+	} else {
+	    return thePolicyInfo.fifo.base_priority;
+	}
+	break;
+
+    case POLICY_RR:
+      count = POLICY_RR_INFO_COUNT;
+      thread_info(pthread_mach_thread_np (baseThread),
+		  THREAD_SCHED_RR_INFO,
+		  (integer_t*)&(thePolicyInfo.rr), &count);
+      if (thePolicyInfo.rr.depressed) {
+	  return thePolicyInfo.rr.depress_priority;
+      } else {
+	  return thePolicyInfo.rr.base_priority;
+      }
+      break;
+    }
+
+    return 0;
+}
+#endif
 
 void PThread::SetPriority(Priority priorityLevel)
 {
@@ -852,6 +931,49 @@ void PThread::SetPriority(Priority priorityLevel)
     sched_param.sched_priority = 0;
     
     PAssertPTHREAD(pthread_setschedparam, (PX_threadId, SCHED_OTHER, &sched_param));
+  }
+#endif
+
+#if defined(P_MACOSX)
+  if (IsTerminated())
+    return;
+
+  if (priorityLevel == HighestPriority) {
+    /* get fixed priority */
+    {
+      int result;
+
+      thread_extended_policy_data_t   theFixedPolicy;
+      thread_precedence_policy_data_t thePrecedencePolicy;
+      long                            relativePriority;
+
+      theFixedPolicy.timeshare = false; // set to true for a non-fixed thread
+      result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
+				  THREAD_EXTENDED_POLICY,
+				  (thread_policy_t)&theFixedPolicy,
+				  THREAD_EXTENDED_POLICY_COUNT);
+      if (result != KERN_SUCCESS) {
+	PTRACE(1, "thread_policy - Couldn't set thread as fixed priority.");
+      }
+
+      // set priority
+
+      // precedency policy's "importance" value is relative to
+      // spawning thread's priority
+      
+      relativePriority = 62 - GetThreadBasePriority();
+      PTRACE(1,  "relativePriority is " << relativePriority <<
+	     " base priority is " << GetThreadBasePriority());
+      
+      thePrecedencePolicy.importance = relativePriority;
+      result = thread_policy_set (pthread_mach_thread_np(PX_threadId),
+				  THREAD_PRECEDENCE_POLICY,
+				  (thread_policy_t)&thePrecedencePolicy, 
+				  THREAD_PRECEDENCE_POLICY_COUNT);
+      if (result != KERN_SUCCESS) {
+	PTRACE(1, "thread_policy - Couldn't set thread priority.");
+      }
+    }
   }
 #endif
 }
