@@ -8,16 +8,23 @@
 #endif
 
 #if defined(P_LINUX)
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/termios.h>
 #include <unistd.h>
 #include <net/if.h>
 #include <netinet/in.h>
-#include <sys/socketio.h>
 #include <dlfcn.h>
 
+
+#define HAS_IFREQ
 #define PSETPGRP()  setpgrp()
+
+#if __GNU_LIBRARY__ < 6
+#define	P_LINUX_LIB_OLD
+typedef int socklen_t;
+#endif
 
 #elif defined(P_SOLARIS)
 
@@ -38,10 +45,15 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <dlfcn.h>
+#include <net/if.h>
+#include <sys/sockio.h>
 
 #define PSETPGRP()  setpgrp()
 
 #define	INADDR_NONE	-1
+typedef int socklen_t;
+
+#define HAS_IFREQ
 
 extern "C" {
 
@@ -58,7 +70,10 @@ int gethostname(char *, int);
 #include <sys/time.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <net/if.h>
+#include <sys/sockio.h>
 
+#define HAS_IFREQ
 #define PSETPGRP()  setpgrp(0, 0)
 #define raise(s)    kill(getpid(),s)
 
