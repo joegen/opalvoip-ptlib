@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.40 1996/11/16 10:52:48 robertj Exp $
+ * $Id: win32.cxx,v 1.41 1996/12/17 11:00:28 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.41  1996/12/17 11:00:28  robertj
+ * Fixed register entry security access control lists.
+ *
  * Revision 1.40  1996/11/16 10:52:48  robertj
  * Fixed bug in PPipeChannel test for open channel, win95 support.
  * Put time back to C function as run time library bug fixed now.
@@ -1119,38 +1122,193 @@ class RegistryKey
 };
 
 
+class SecurityID
+{
+  public:
+    SecurityID(PSID_IDENTIFIER_AUTHORITY  pIdentifierAuthority,	// pointer to identifier authority
+               BYTE nSubAuthorityCount,	// count of subauthorities
+               DWORD dwSubAuthority0,	// subauthority 0
+               DWORD dwSubAuthority1,	// subauthority 1
+               DWORD dwSubAuthority2,	// subauthority 2
+               DWORD dwSubAuthority3,	// subauthority 3
+               DWORD dwSubAuthority4,	// subauthority 4
+               DWORD dwSubAuthority5,	// subauthority 5
+               DWORD dwSubAuthority6,	// subauthority 6
+               DWORD dwSubAuthority7	// subauthority 7
+              )
+    {
+      if (!AllocateAndInitializeSid(pIdentifierAuthority,	// pointer to identifier authority
+                                    nSubAuthorityCount,	// count of subauthorities
+                                    dwSubAuthority0,	// subauthority 0
+                                    dwSubAuthority1,	// subauthority 1
+                                    dwSubAuthority2,	// subauthority 2
+                                    dwSubAuthority3,	// subauthority 3
+                                    dwSubAuthority4,	// subauthority 4
+                                    dwSubAuthority5,	// subauthority 5
+                                    dwSubAuthority6,	// subauthority 6
+                                    dwSubAuthority7,	// subauthority 7
+                                    &sidptr))
+        sidptr = NULL;
+    }
+
+    SecurityID(LPCTSTR lpSystemName,	// address of string for system name
+               LPCTSTR lpAccountName,	// address of string for account name
+               LPTSTR ReferencedDomainName,	// address of string for referenced domain 
+               LPDWORD cbReferencedDomainName,	// address of size of domain string
+               PSID_NAME_USE peUse 	// address of SID-type indicator
+              )
+    {
+      DWORD len = 1024;
+      sidptr = (PSID)LocalAlloc(LPTR, len);
+      if (sidptr != NULL) {
+        if (!LookupAccountName(lpSystemName,	// address of string for system name
+                               lpAccountName,	// address of string for account name
+                               sidptr,	// address of security identifier
+                               &len,	// address of size of security identifier
+                               ReferencedDomainName,	// address of string for referenced domain 
+                               cbReferencedDomainName,	// address of size of domain string
+                               peUse 	// address of SID-type indicator
+                              )) {
+          LocalFree(sidptr);
+          sidptr = NULL;
+        }
+      }
+    }
+    ~SecurityID()
+    {
+      FreeSid(sidptr);
+    }
+
+    operator PSID() const
+    {
+      return sidptr;
+    }
+
+    DWORD GetLength() const
+    {
+      return GetLengthSid(sidptr);
+    }
+
+    BOOL IsValid() const
+    {
+      return sidptr != NULL && IsValidSid(sidptr);
+    }
+
+  private:
+    PSID sidptr;
+};
+
 RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
 {
   PProcess * proc = PProcess::Current();
   DWORD access = mode == ReadOnly ? KEY_READ : KEY_ALL_ACCESS;
+  DWORD error;
+
   if (!proc->GetVersion(FALSE).IsEmpty()) {
     PString keyname = subkey;
     keyname.Replace("CurrentVersion", proc->GetVersion(FALSE));
 
-    if (RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key) == ERROR_SUCCESS)
+    error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
+    if (error == ERROR_SUCCESS)
       return;
 
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key) == ERROR_SUCCESS)
+    PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+
+    error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key);
+    if (error == ERROR_SUCCESS)
       return;
+
+    PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
   }
 
-  if (RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key) == ERROR_SUCCESS)
+  error = RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key);
+  if (error == ERROR_SUCCESS)
     return;
 
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, access, &key) == ERROR_SUCCESS)
+  PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+
+  error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, subkey, 0, access, &key);
+  if (error == ERROR_SUCCESS)
     return;
 
-  if (mode == Create) {
-    HKEY rootKey = HKEY_CURRENT_USER;
-    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
-      rootKey = HKEY_LOCAL_MACHINE;
-    DWORD disposition;
-    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
-                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
-      return;
-  }
+  PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
 
   key = NULL;
+  if (mode != Create)
+    return;
+
+  HKEY rootKey = HKEY_CURRENT_USER;
+  if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
+    rootKey = HKEY_LOCAL_MACHINE;
+
+  SECURITY_DESCRIPTOR secdesc;
+  if (!InitializeSecurityDescriptor(&secdesc, SECURITY_DESCRIPTOR_REVISION))
+    return;
+
+  static SID_IDENTIFIER_AUTHORITY siaNTAuthority = SECURITY_NT_AUTHORITY;
+  SecurityID adminID(&siaNTAuthority, 2,
+                     SECURITY_BUILTIN_DOMAIN_RID,
+                     DOMAIN_ALIAS_RID_ADMINS, 
+                     0, 0, 0, 0, 0, 0);
+  if (!adminID.IsValid())
+    return;
+
+  static SID_IDENTIFIER_AUTHORITY siaSystemAuthority = SECURITY_NT_AUTHORITY;
+  SecurityID systemID(&siaSystemAuthority, 1,
+                      SECURITY_LOCAL_SYSTEM_RID,
+                      0, 0, 0, 0, 0, 0, 0);
+  if (!systemID.IsValid())
+    return;
+
+  static SID_IDENTIFIER_AUTHORITY siaCreatorAuthority = SECURITY_CREATOR_SID_AUTHORITY;
+  SecurityID creatorID(&siaCreatorAuthority, 1,
+                       SECURITY_CREATOR_OWNER_RID,
+                       0, 0, 0, 0, 0, 0, 0);
+  if (!creatorID.IsValid())
+    return;
+
+  SID_NAME_USE snuType;
+  char szDomain[100];
+  DWORD cchDomainName = sizeof(szDomain);
+  SecurityID userID(NULL, PProcess::Current()->GetUserName(),
+                    szDomain, &cchDomainName, &snuType);
+  if (!userID.IsValid())
+    return;
+
+  DWORD acl_len = sizeof(ACL) + 4*sizeof(ACCESS_ALLOWED_ACE) +
+                    adminID.GetLength() + creatorID.GetLength() +
+                    systemID.GetLength() + userID.GetLength();
+  PBYTEArray dacl_buf(acl_len);
+  PACL dacl = (PACL)dacl_buf.GetPointer(acl_len);
+  if (!InitializeAcl(dacl, acl_len, ACL_REVISION2))
+    return;
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, adminID))
+    return;
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, systemID))
+    return;
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, creatorID))
+    return;
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, userID))
+    return;
+
+  if (!SetSecurityDescriptorDacl(&secdesc, TRUE, dacl, FALSE))
+    return;
+
+  SECURITY_ATTRIBUTES secattr;
+  secattr.nLength = sizeof(secattr);
+  secattr.lpSecurityDescriptor = &secdesc;
+  secattr.bInheritHandle = FALSE;
+
+  DWORD disposition;
+
+  error = RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
+  if (error != ERROR_SUCCESS)
+    key = NULL;
 }
 
 
