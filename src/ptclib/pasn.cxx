@@ -1,11 +1,15 @@
 /*
  * ASN Library
  *
- * $Id: pasn.cxx,v 1.2 1996/11/04 03:58:34 robertj Exp $
+ * $Id: pasn.cxx,v 1.3 1997/07/16 05:52:48 craigs Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.3  1997/07/16 05:52:48  craigs
+ * Changed ASN constructors to store value length separately so
+ * ASNString consctructor will worki correctly
+ *
  * Revision 1.2  1996/11/04 03:58:34  robertj
  * Added ASN types to class.
  *
@@ -488,9 +492,15 @@ PObject * PASNInteger::Clone() const
 
 PASNString::PASNString(const PString & str)
 {
-  value = str;
+  value    = str;
+  valueLen = (WORD)str.GetLength();
 }
 
+PASNString::PASNString(const BYTE * ptr, int len)
+{
+  value = PString((const char *)ptr, len);
+  valueLen = (WORD)len;
+}
 
 PASNString::PASNString(const PBYTEArray & buffer, PASNObject::ASNType type)
 {
@@ -507,18 +517,18 @@ PASNString::PASNString(const PBYTEArray & buffer, PINDEX & ptr, PASNObject::ASNT
 
 BOOL PASNString::Decode(const PBYTEArray & buffer, PINDEX & ptr, PASNObject::ASNType type)
 {
+  valueLen = 0;
   if (buffer[ptr++] != ASNTypeToType[type])
     return FALSE;
 
-  WORD len;
-  if (!DecodeASNLength(buffer, ptr, len))
+  if (!DecodeASNLength(buffer, ptr, valueLen))
     return FALSE;
 
-  if (ptr + len > buffer.GetSize())
+  if (ptr + valueLen > buffer.GetSize())
     return FALSE;
 
-  value = PString(ptr + (const char *)(const BYTE *)buffer, len);
-  ptr += len;
+  value = PString(ptr + (const char *)(const BYTE *)buffer, valueLen);
+  ptr += valueLen;
 
   return TRUE;
 }
@@ -535,22 +545,19 @@ void PASNString::PrintOn(ostream & strm) const
 
 void PASNString::Encode(PBYTEArray & buffer, PASNObject::ASNType type)
 {
-  WORD len = (WORD)value.GetLength();
-
   // insert the header
-  EncodeASNHeader(buffer, type, len);
+  EncodeASNHeader(buffer, type, valueLen);
 
   // add the string
   PINDEX offs = buffer.GetSize();
-  for (PINDEX i = 0; i < len; i++)
+  for (PINDEX i = 0; i < valueLen; i++)
     buffer[offs+i] = value[i];
 }
 
 
 WORD PASNString::GetEncodedLength()
 {
-  WORD len = (WORD)value.GetLength();
-  return (WORD)(GetASNHeaderLength(len) + len);
+  return (WORD)(GetASNHeaderLength(valueLen) + (int)valueLen);
 }
 
 
