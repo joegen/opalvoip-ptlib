@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.34  2003/01/24 23:43:43  robertj
+ * Fixed subtle problems with the use of MAX keyword for unsigned numbers,
+ *   should beUINT_MAX not INT_MAX, thanks Stevie Gray for pointing it out.
+ *
  * Revision 1.33  2002/11/26 23:29:18  robertj
  * Added missing const to DecodeSubType() function.
  *
@@ -220,8 +224,8 @@ class PASN_Object : public PObject
     enum MaximumValueTag { MaximumValue = INT_MAX };
     void SetConstraints(ConstraintType type, int value)
       { SetConstraintBounds(type, value, value); }
-    void SetConstraints(ConstraintType, int lower, MaximumValueTag upper)
-      { SetConstraintBounds(PartiallyConstrained, (int)lower, (unsigned)upper); }
+    void SetConstraints(ConstraintType, int lower, MaximumValueTag /*upper*/)
+      { SetConstraintBounds(PartiallyConstrained, (int)lower, lower < 0 ? INT_MAX : UINT_MAX); }
     void SetConstraints(ConstraintType, MinimumValueTag lower, unsigned upper)
       { SetConstraintBounds(PartiallyConstrained, (int)lower, (unsigned)upper); }
     void SetConstraints(ConstraintType, MinimumValueTag lower, MaximumValueTag upper)
