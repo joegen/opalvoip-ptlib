@@ -61,7 +61,7 @@ BOOL PASN_ConstrainedObject::ConstraintEncode(PPER_Stream & strm, unsigned value
 
   strm.SingleBitEncode(needsExtending);
 
-  return needsExtending || constraint != FixedConstraint;
+  return needsExtending;
 }
 
 ///////////////////////////////////////////////////////////////////////
