@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="PTLib"
-	ProjectGUID="{B902E6D7-CFF8-4C6A-A29C-BA4DEA40D41C}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -21,14 +20,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include,$(OPENSSLDIR)/inc32"
-				PreprocessorDefinitions="_DEBUG;P_SSL=0$(OPENSSLFLAG)"
+				AdditionalIncludeDirectories="..\..\..\include"
+				PreprocessorDefinitions="_DEBUG;PTRACING"
 				RuntimeLibrary="3"
-				DefaultCharIsUnsigned="TRUE"
 				PrecompiledHeaderFile=".\..\..\..\Lib\Debug/PTLib.pch"
 				AssemblerListingLocation=".\..\..\..\Lib\Debug/"
 				ObjectFile=".\..\..\..\Lib\Debug/"
-				ProgramDataBaseFileName=".\..\..\..\Lib/PTLibd.pdb"
+				ProgramDataBaseFileName="..\..\..\Lib\PTLibd.pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -37,24 +35,25 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptlibsd.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib"
+				AdditionalDependencies="ptlibsd.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib netapi32.lib"
 				OutputFile="..\..\..\Lib\PTLibd.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
-				AdditionalLibraryDirectories="..\lib"
+				AdditionalLibraryDirectories="..\..\..\lib"
 				ModuleDefinitionFile="..\..\..\Lib\Debug\PTLibd.def"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLibd.pdb"
-				SubSystem="2"
-				ImportLibrary=".\..\..\..\Lib/PTLibd.lib"/>
+				SubSystem="0"
+				ImportLibrary=".\..\..\..\Lib/PTLibd.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\Lib/PTLib.tlb"/>
+				TypeLibraryName=".\..\..\..\Lib/PTLib.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -69,7 +68,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -80,19 +85,19 @@
 			ATLMinimizesCRunTimeLibraryUsage="FALSE">
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="2"
 				InlineFunctionExpansion="2"
-				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include,$(OPENSSLDIR)/inc32"
-				PreprocessorDefinitions="NDEBUG;P_SSL=0$(OPENSSLFLAG)"
+				AdditionalIncludeDirectories="..\..\..\include\ptlib\msos,..\..\..\include"
+				PreprocessorDefinitions="NDEBUG;PTRACING"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
-				DefaultCharIsUnsigned="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="ptlib.h"
 				PrecompiledHeaderFile=".\..\..\..\Lib\Release/PTLib.pch"
 				AssemblerListingLocation=".\..\..\..\Lib\Release/"
 				ObjectFile=".\..\..\..\Lib\Release/"
-				ProgramDataBaseFileName=".\..\..\..\Lib/PTLib.pdb"
+				ProgramDataBaseFileName="..\..\..\Lib\PTLib.pdb"
 				WarningLevel="4"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -101,8 +106,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="ptlibs.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib"
+				AdditionalDependencies="ptlibs.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib netapi32.lib"
 				OutputFile=".\..\..\..\Lib/PTLib.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -111,18 +115,20 @@
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLib.pdb"
 				SubSystem="2"
-				ImportLibrary=".\..\..\..\Lib/PTLib.lib"/>
+				ImportLibrary=".\..\..\..\Lib/PTLib.lib"
+				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\..\Lib/PTLib.tlb"/>
+				TypeLibraryName=".\..\..\..\Lib/PTLib.tlb"
+				HeaderFileName=""/>
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Extracting debug symbols"
-				CommandLine="rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll"/>
+				CommandLine="rebase -b 0x10000000 -x . &quot;$(OutDir)&quot;\&quot;$(TargetName)&quot;.dll"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -134,53 +140,90 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<File
-			RelativePath="..\..\..\Lib\Debug\PTLibd.def">
-		</File>
-		<File
-			RelativePath=".\dllmain.cxx">
+			RelativePath="dllmain.cxx">
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="_DEBUG;PTRACING;$(NoInherit)"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCLCompilerTool"
+					Optimization="2"
+					AdditionalIncludeDirectories=""
+					PreprocessorDefinitions="NDEBUG;PTRACING;$(NoInherit)"
 					UsePrecompiledHeader="0"/>
 			</FileConfiguration>
 		</File>
 		<File
-			RelativePath=".\libver.rc">
+			RelativePath="libver.rc">
 			<FileConfiguration
 				Name="Debug|Win32">
 				<Tool
 					Name="VCResourceCompilerTool"
-					PreprocessorDefinitions="_DEBUG;PRODUCT=PTLib;$(NoInherit)"/>
+					PreprocessorDefinitions="PRODUCT=PTLib"/>
 			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCResourceCompilerTool"
-					PreprocessorDefinitions="NDEBUG;PRODUCT=PTLib;$(NoInherit)"
+					PreprocessorDefinitions="PRODUCT=PTLib"
 					ResourceOutputFileName="..\..\..\Lib\Release/ptlib.res"/>
 			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\..\..\Lib\Release\ptlib.def">
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\..\..\include\ptlib\msos\ptlib.dtf">
+			<FileConfiguration
+				Name="Debug|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
+			</FileConfiguration>
 			<FileConfiguration
 				Name="Release|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Merging exported library symbols"
-					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath)
-copy $(InputPath)+nul $(IntDir)\$(TargetName).def &gt; nul
+					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)&quot;\ptlibs.lib &quot;$(InputPath)&quot;
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)&quot;\&quot;$(TargetName)&quot;.def &gt; nul
 "
-					AdditionalDependencies="$(OutDir)\ptlibs.lib;"
+					AdditionalDependencies="$(OutDir)\ptlibs.lib;$(InputDir)ptlib.ignore;"
 					Outputs="$(IntDir)\$(TargetName).def"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="..\..\..\Lib\Debug\PTLibd.def">
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
 		</File>
 		<File
@@ -190,11 +233,17 @@ copy $(InputPath)+nul $(IntDir)\$(TargetName).def &gt; nul
 				<Tool
 					Name="VCCustomBuildTool"
 					Description="Merging exported library symbols"
-					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath)
-copy $(InputPath)+nul $(IntDir)\$(TargetName).def  &gt; nul
+					CommandLine="MergeSym -I &quot;$(Include)$(INCLUDE)&quot; -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)&quot;\ptlibsd.lib &quot;$(InputPath)&quot;
+copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)&quot;\&quot;$(TargetName)&quot;.def  &gt; nul
 "
-					AdditionalDependencies="$(OutDir)\ptlibsd.lib;"
+					AdditionalDependencies="$(OutDir)\ptlibsd.lib;$(InputDir)ptlib.ignore;"
 					Outputs="$(IntDir)\$(TargetName).def"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				ExcludedFromBuild="TRUE">
+				<Tool
+					Name="VCCustomBuildTool"/>
 			</FileConfiguration>
 		</File>
 	</Files>
