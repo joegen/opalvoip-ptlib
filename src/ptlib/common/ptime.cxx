@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.15 1997/01/03 04:40:03 robertj Exp $
+ * $Id: ptime.cxx,v 1.16 1997/03/18 21:24:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.16  1997/03/18 21:24:19  robertj
+ * Fixed parsing of time putting back token after time zone.
+ *
  * Revision 1.15  1997/01/03 04:40:03  robertj
  * Changed default time so if no year goes to last 12 months rather than current year.
  *
@@ -178,6 +181,7 @@ static time_t p_mktime(struct tm * t, int zone)
   // local time, then we have have to add the local timezone (without daylight
   // savings) and subtract the specified zone offset to get GMT
   // and then subtract
+  t->tm_isdst = PTime::IsDaylightSavings() ? 1 : 0;
   time_t theTime = mktime(t);
   if (theTime == (time_t)-1)
     theTime = 0;
@@ -214,11 +218,6 @@ PTime::PTime(int second, int minute, int hour,
   t.tm_mon = month-1;
   PAssert(year >= 1970 && year <= 2038, PInvalidParameter);
   t.tm_year   = year-1900;
-
-  if (zone == Local)
-    t.tm_isdst = IsDaylightSavings() ? 1 : 0;
-  else
-    t.tm_isdst = 0;
 
   theTime = p_mktime(&t, zone);
 }
@@ -440,9 +439,13 @@ PString PTime::AsString(const char * format, int zone) const
       case 'z' :
         while (*++format == 'z')
           ;
-        str += (zone < 0 ? '-' : '+');
-        zone = PABS(zone);
-        str += psprintf("%02u%02u", zone/60, zone%60);
+        if (zone == 0)
+          str += "GMT";
+        else {
+          str += (zone < 0 ? '-' : '+');
+          zone = PABS(zone);
+          str += psprintf("%02u%02u", zone/60, zone%60);
+        }
         break;
 
       default :
@@ -646,7 +649,8 @@ void PTime::ReadFrom(istream &strm)
         if (month >= 0) {
           wantToFinish = TRUE;
           token = get_token(strm, yytext, yyval);
-        } else {
+        }
+        else {
           month = yyval.ival;
           token = get_token(strm, yytext, yyval);
           if (token == '-') {
@@ -665,7 +669,8 @@ void PTime::ReadFrom(istream &strm)
         if ((day > 0) && (hours > 0) && (year > 0)) {
           wantToFinish = TRUE;
           token = get_token(strm, yytext, yyval);
-        } else {
+        }
+        else {
           tmp = yyval.ival;
           token = get_token(strm, yytext, yyval);
           if (hours < 0 && token == ':') {
@@ -686,16 +691,19 @@ void PTime::ReadFrom(istream &strm)
                 hours += 12;
               token = get_token(strm, yytext, yyval);
             }
-          } else if (day <= 0 && token == '-') {
+          }
+          else if (day <= 0 && token == '-') {
             day = tmp;
             token = get_token(strm, yytext, yyval);
-          } else if (day <= 0 && tmp <= 31) 
+          }
+          else if (day <= 0 && tmp <= 31) 
             day = tmp;
           else if (year < 0) {
             year = tmp;
             if (year < 100)
               year += 1900;
-          } else
+          }
+          else
             wantToFinish = TRUE;
         }
         break;
@@ -715,19 +723,24 @@ void PTime::ReadFrom(istream &strm)
         if (zoneSet) {
           wantToFinish = TRUE;
           token = get_token(strm, yytext, yyval);
-        } else {
+        }
+        else {
           mul = (token == '-') ? -1 : +1;
           token = get_token(strm, yytext, yyval);
           if (token == INTEGER) {
-            if (yytext.GetLength() > 2) 
+            if (yytext.GetLength() > 2) {
               zone = mul * ((60 * yyval.ival / 100) + (yyval.ival % 100));
+              token = get_token(strm, yytext, yyval);
+            }
             else {
               zone = mul * 60 * yyval.ival;
               token = get_token(strm, yytext, yyval);
               if (token == ':') {
                 token = get_token(strm, yytext, yyval);
-                if (token == INTEGER) 
+                if (token == INTEGER) {
                   zone += mul * yyval.ival;
+                  token = get_token(strm, yytext, yyval);
+                }
               }
             }
             zoneSet = TRUE;
@@ -744,18 +757,17 @@ void PTime::ReadFrom(istream &strm)
 
     if (finished)
       break;
-    else if (haveMinimum && wantToFinish)
+    if (haveMinimum && wantToFinish)
       break;
-    else if (haveMinimum && day >= 0 && year >= 0 && zoneSet)
+    if (haveMinimum && day >= 0 && year >= 0 && zoneSet)
       break;
   }
 
   // put back the last lexeme
   if (putback) {
     PINDEX i = yytext.GetLength();
-    do 
-      strm.putback(yytext[--i]);
-    while (i != 0);
+    while (i-- > 0) 
+      strm.putback(yytext[i]);
   }
 
   // fill in the missing bits
@@ -800,10 +812,6 @@ void PTime::ReadFrom(istream &strm)
   t.tm_mday  = day;
   t.tm_mon   = month-1;
   t.tm_year  = year-1900;
-  if (zone == Local)
-    t.tm_isdst = IsDaylightSavings() ? 1 : 0;
-  else
-    t.tm_isdst = 0;
 
   theTime = p_mktime(&t, zone);
 }
