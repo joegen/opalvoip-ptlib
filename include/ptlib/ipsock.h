@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.17 1996/01/28 14:07:31 robertj Exp $
+ * $Id: ipsock.h,v 1.18 1996/02/08 12:11:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.18  1996/02/08 12:11:19  robertj
+ * Added GetPeerAddress that returns a port.
+ *
  * Revision 1.17  1996/01/28 14:07:31  robertj
  * Changed service parameter to PString for ease of use in GetPortByService function
  * Fixed up comments.
@@ -190,6 +193,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
     BOOL GetPeerAddress(
       Address & addr    // Variable to receive hosts IP address
+    );
+    BOOL GetPeerAddress(
+      Address & addr,    // Variable to receive peer hosts IP address
+      WORD & port        // Variable to receive peer hosts port number
     );
     /* Get the Internet Protocol address for the peer host the socket is
        connected to.
