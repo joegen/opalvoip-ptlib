@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.10 1997/06/08 04:49:10 robertj Exp $
+ * $Id: array.h,v 1.11 1998/08/21 05:23:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.11  1998/08/21 05:23:57  robertj
+ * Added hex dump capability to base array types.
+ * Added ability to have base arrays of static memory blocks.
+ *
  * Revision 1.10  1997/06/08 04:49:10  robertj
  * Fixed non-template class descendent order.
  *
@@ -98,8 +102,9 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
       /* Size of each element in the array. This must be > 0 or the
          constructor will assert.
        */
-      const void *buffer,         // Pointer to an array of elements.
-      PINDEX bufferSizeInElements // Number of elements pointed to by buffer.
+      const void *buffer,          // Pointer to an array of elements.
+      PINDEX bufferSizeInElements, // Number of elements pointed to by buffer.
+      BOOL dynamicAllocation       // Buffer is copied and dynamically allocated.
     );
     /* Create a new dynamic array of <CODE>bufferSizeInElements</CODE>
        elements of <CODE>elementSizeInBytes</CODE> bytes each. The contents of
@@ -110,6 +115,13 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        internal pointer is set to NULL, not to a pointer to zero bytes of
        memory. This can be an important distinction when the pointer is
        obtained via an operator created in the <A>PDECLARE_BASEARRAY</A> macro.
+
+       If the <CODE>dynamicAllocation</CODE> parameter is FALSE then the
+       pointer is used directly by the container. It will not be copied to a
+       dynamically allocated buffer. If the SetSize() function is used to
+       change the size of the buffer, the object will be converted to a
+       dynamic form with the contents of the static buffer copied to the
+       allocated buffer.
      */
 
   // Overrides from class PObject
@@ -152,6 +164,19 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
      */
 
   // New functions for class
+    void Attach(
+      const void *buffer, // Pointer to an array of elements.
+      PINDEX bufferSize   // Number of elements pointed to by buffer.
+    );
+    /* Attach a pointer to a static block to the base array type. The pointer
+       is used directly and will not be copied to a dynamically allocated
+       buffer. If the SetSize() function is used to change the size of the
+       buffer, the object will be converted to a dynamic form with the
+       contents of the static buffer copied to the allocated buffer.
+       
+       Any dynamically allocated buffer will be freed.
+     */
+
     void * GetPointer(
       PINDEX minSize = 1  // Minimum size the array must be.
     );
@@ -170,11 +195,16 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
      */
 
   protected:
+    void PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+
     PINDEX elementSize;
     // Size of an element in bytes
 
     char * theArray;
     // Pointer to the allocated block of memory.
+
+    BOOL allocatedDynamically;
 };
 
 
@@ -217,11 +247,10 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
      */
     
     PBaseArray(
-      T const * buffer,
-      // Pointer to an array of the elements of type <B>T</B>.
-      PINDEX length
-      // Number of elements pointed to by <CODE>buffer</CODE>.
-    ) : PAbstractArray(sizeof(T), buffer, length) { }
+      T const * buffer,   // Pointer to an array of the elements of type <B>T</B>.
+      PINDEX length,      // Number of elements pointed to by <CODE>buffer</CODE>.
+      BOOL dynamic = TRUE // Buffer is copied and dynamically allocated.
+    ) : PAbstractArray(sizeof(T), buffer, length, dynamic) { }
     /* Construct a new dynamic array of elements of the specified type.
      */
 
@@ -279,6 +308,18 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        reference to value at the array position.
      */
 
+    void Attach(
+      const T * buffer,   // Pointer to an array of elements.
+      PINDEX bufferSize   // Number of elements pointed to by buffer.
+    );
+    /* Attach a pointer to a static block to the base array type. The pointer
+       is used directly and will not be copied to a dynamically allocated
+       buffer. If the SetSize() function is used to change the size of the
+       buffer, the object will be converted to a dynamic form with the
+       contents of the static buffer copied to the allocated buffer.
+       
+       Any dynamically allocated buffer will be freed.
+     */
     T * GetPointer(
       PINDEX minSize = 0
     ) { return (T *)PAbstractArray::GetPointer(minSize); }
@@ -325,11 +366,12 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
    information.
  */
 #define PDECLARE_BASEARRAY(cls, T) \
-  PDECLARE_CLASS(cls, PBaseArray<T>) \
+  typedef PBaseArray<T> PBaseArray_##cls; \
+  PDECLARE_CLASS(cls, PBaseArray_##cls) \
     cls(PINDEX initialSize = 0) \
-      : PBaseArray<T>(initialSize) { } \
-    cls(T const * buffer, PINDEX length) \
-      : PBaseArray<T>(buffer, length) { } \
+      : PBaseArray_##cls(initialSize) { } \
+    cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+      : PBaseArray_##cls(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
@@ -353,8 +395,8 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
   public: \
     inline cls(PINDEX initialSize = 0) \
       : PAbstractArray(sizeof(P_##cls##_Base_Type), initialSize) { } \
-    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length) \
-      : PAbstractArray(sizeof(P_##cls##_Base_Type), buffer, length) { } \
+    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+      : PAbstractArray(sizeof(P_##cls##_Base_Type), buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
     inline BOOL SetAt(PINDEX index, P_##cls##_Base_Type val) \
@@ -368,6 +410,8 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     inline P_##cls##_Base_Type & operator[](PINDEX index) \
       { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory); \
         return ((P_##cls##_Base_Type *)theArray)[index]; } \
+    inline void Attach(const P_##cls##_Base_Type * buffer, PINDEX bufferSize) \
+      { PAbstractArray::Attach(buffer, bufferSize); } \
     inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
       { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
     inline operator P_##cls##_Base_Type const *() const \
@@ -379,23 +423,60 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
   PDECLARE_CLASS(cls, cls##_PTemplate) \
     cls(PINDEX initialSize = 0) \
       : cls##_PTemplate(initialSize) { } \
-    cls(T const * buffer, PINDEX length) \
-      : cls##_PTemplate(buffer, length) { } \
+    cls(T const * buffer, PINDEX length, BOOL dynamic = TRUE) \
+      : cls##_PTemplate(buffer, length, dynamic) { } \
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
 #endif // PHAS_TEMPLATES
 
 
-PBASEARRAY(PCharArray, char);
-PBASEARRAY(PShortArray, short);
-PBASEARRAY(PIntArray, int);
-PBASEARRAY(PLongArray, long);
-PBASEARRAY(PBYTEArray, BYTE);
-PBASEARRAY(PWORDArray, WORD);
-PBASEARRAY(PUnsignedArray, unsigned);
-PBASEARRAY(PDWORDArray, DWORD);
+PDECLARE_BASEARRAY(PCharArray, char)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+};
 
+PDECLARE_BASEARRAY(PShortArray, short)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PIntArray, int)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PLongArray, long)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PBYTEArray, BYTE)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PWORDArray, WORD)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PUnsignedArray, unsigned)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
+
+PDECLARE_BASEARRAY(PDWORDArray, DWORD)
+  public:
+    virtual void PrintOn(ostream & strm) const;
+    virtual long GetNumberValueAt(PINDEX idx) const;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
