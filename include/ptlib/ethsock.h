@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.7  1998/10/12 09:34:40  robertj
+ * New method for getting IP addresses of interfaces.
+ *
  * Revision 1.6  1998/09/23 06:20:31  robertj
  * Added open source copyright license.
  *
@@ -57,6 +60,7 @@
 #ifndef _PSOCKET
 #include <socket.h>
 #endif
+
 
 PDECLARE_CLASS(PEthSocket, PSocket)
 /* This class describes a type of socket that will communicate using
@@ -216,6 +220,21 @@ PDECLARE_CLASS(PEthSocket, PSocket)
 
        <H2>Returns:</H2>
        TRUE if an interface has the index supplied.
+     */
+
+    BOOL GetGatewayAddress(
+      PIPSocket::Address & addr     // Variable to receive the IP address.
+    ) const;
+    /* Return the IP address that is being used as the gateway, that is, the
+       computer that packets on the default route will be sent.
+
+       The string returned may be used in the Connect() function to open that
+       interface.
+
+       Note that the driver does not need to be open for this function to work.
+
+       <H2>Returns:</H2>
+       TRUE if there was a gateway.
      */
 
     PString GetGatewayInterface() const;
