@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.10  2004/05/13 22:22:14  dereksmithies
+ * Fix a problem with duplicate user friendly names.
+ *
  * Revision 1.9  2004/02/15 22:10:10  anoncvs_net-mud
  * Applied patch from Frédéric Crozat <fcrozat@mandrakesoft.com> for buggy
  * Quickcam driver.
@@ -437,22 +440,26 @@ void V4LNames::PopulateDictionary()
     tempList.SetAt(inputDeviceNames[i], ufname);
   }
 
+  //Now, we need to cope with the case where there are two video
+  //devices available, which both have the same user friendly name.
+  //Matching user friendly names have a (X) appended to the name.
   for (i = 0; i < tempList.GetSize(); i++) {
     PString userName = tempList.GetDataAt(i); 
-    AddUserDeviceName(userName, tempList.GetKeyAt(i));
 
     PINDEX matches = 1;    
     for (j = i + 1; j < tempList.GetSize(); j++) {
       if (tempList.GetDataAt(j) == userName) {
 	matches++;
-        PStringStream bod;
-        bod << userName << " (" << i << ")";
-        AddUserDeviceName(bod, tempList.GetKeyAt(j));
-	tempList.RemoveAt(j);
-        j--;
+        PStringStream revisedUserName;
+        revisedUserName << userName << " (" << matches << ")";
+        tempList.SetDataAt(j, revisedUserName);
       }
     }
   }
+
+  //At this stage, we have correctly modified the temp list of names.
+  for (j = 0; j < tempList.GetSize(); j++)
+    AddUserDeviceName(tempList.GetDataAt(j), tempList.GetKeyAt(j));  
 }
 
 PString V4LNames::GetUserFriendly(PString devName)
