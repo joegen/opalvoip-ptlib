@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.60  2002/10/17 07:17:43  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.59  2002/07/25 08:42:33  robertj
  * Fixed conversion of string to 64 bit integer(s), thanks Jose Luis Urien
  *
@@ -1020,6 +1023,13 @@ void PProcess::Construct()
 #endif
 
   houseKeeper = NULL;
+}
+
+
+BOOL PProcess::SetMaxHandles(int /*newLimit*/)
+{
+  // Not applicable
+  return TRUE;
 }
 
 

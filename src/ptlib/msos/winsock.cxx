@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.51  2002/10/17 07:17:43  robertj
+ * Added ability to increase maximum file handles on a process.
+ *
  * Revision 1.50  2002/10/08 12:41:52  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -233,6 +236,16 @@ const char * PWinSock::GetProtocolName() const
 
 
 //////////////////////////////////////////////////////////////////////////////
+// P_fd_set
+
+void P_fd_set::Construct()
+{
+  max_fd = UINT_MAX;
+  set = new fd_set;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PSocket
 
 PSocket::~PSocket()
@@ -284,50 +297,6 @@ int PSocket::os_socket(int af, int type, int proto)
 }
 
 
-class fd_set_class : public fd_set {
-  public:
-    fd_set_class(SOCKET fd)
-      {
-        operator=(fd);
-      }
-    fd_set_class & operator=(SOCKET fd)
-      {
-#ifdef _MSC_VER
-#pragma warning(disable:4127)
-#endif
-        FD_ZERO(this);
-        FD_SET(fd, this);
-#ifdef _MSC_VER
-#pragma warning(default:4127)
-#endif
-        return *this;
-      }
-    BOOL IsPresent(int h) const
-      {
-        return FD_ISSET(h, this);
-      }
-};
-
-class timeval_class : public timeval {
-  public:
-    timeval_class()
-      {
-        tv_usec = 0;
-        tv_sec = 0;
-      }
-    timeval_class(const PTimeInterval & time)
-      {
-        operator=(time);
-      }
-    timeval_class & operator=(const PTimeInterval & time)
-      {
-        tv_usec = (long)(time.GetMilliSeconds()%1000)*1000;
-        tv_sec = time.GetSeconds();
-        return *this;
-      }
-};
-
-
 BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   if (readTimeout == PMaxTimeInterval)
@@ -348,18 +317,18 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     return ConvertOSError(-1);
   }
 
-  fd_set_class writefds = os_handle;
-  fd_set_class exceptfds = os_handle;
-  timeval_class tv;
+  P_fd_set writefds = os_handle;
+  P_fd_set exceptfds = os_handle;
+  P_timeval tv;
 
   /* To avoid some strange behaviour on various windows platforms, do a zero
      timeout select first to pick up errors. Then do real timeout. */
-  int selerr = ::select(1, NULL, &writefds, &exceptfds, &tv);
+  int selerr = ::select(1, NULL, writefds, exceptfds, tv);
   if (selerr == 0) {
     writefds = os_handle;
     exceptfds = os_handle;
     tv = readTimeout;
-    selerr = ::select(1, NULL, &writefds, &exceptfds, &tv);
+    selerr = ::select(1, NULL, writefds, exceptfds, tv);
   }
 
   switch (selerr) {
@@ -416,9 +385,9 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, int * size)
 {
   if (listener.GetReadTimeout() != PMaxTimeInterval) {
-    fd_set_class readfds = listener.GetHandle();
-    timeval_class tv = listener.GetReadTimeout();
-    switch (select(0, &readfds, NULL, NULL, &tv)) {
+    P_fd_set readfds = listener.GetHandle();
+    P_timeval tv = listener.GetReadTimeout();
+    switch (select(0, readfds, NULL, NULL, tv)) {
       case 1 :
         break;
       case 0 :
@@ -446,9 +415,9 @@ BOOL PSocket::os_recvfrom(void * buf,
       return FALSE;
 
     if (available == 0) {
-      fd_set_class readfds = os_handle;
-      timeval_class tv = readTimeout;
-      int selval = ::select(0, &readfds, NULL, NULL, &tv);
+      P_fd_set readfds = os_handle;
+      P_timeval tv = readTimeout;
+      int selval = ::select(0, readfds, NULL, NULL, tv);
       if (!ConvertOSError(selval, LastReadError))
         return FALSE;
 
@@ -481,9 +450,9 @@ BOOL PSocket::os_sendto(const void * buf,
   lastWriteCount = 0;
 
   if (writeTimeout != PMaxTimeInterval) {
-    fd_set_class writefds = os_handle;
-    timeval_class tv = writeTimeout;
-    int selval = ::select(0, NULL, &writefds, NULL, &tv);
+    P_fd_set writefds = os_handle;
+    P_timeval tv = writeTimeout;
+    int selval = ::select(0, NULL, writefds, NULL, tv);
     if (selval < 0)
       return FALSE;
 
@@ -510,9 +479,9 @@ BOOL PSocket::os_sendto(const void * buf,
 
 
 int PSocket::os_select(int maxfds,
-                       fd_set & readfds,
-                       fd_set & writefds,
-                       fd_set & exceptfds,
+                       fd_set * readfds,
+                       fd_set * writefds,
+                       fd_set * exceptfds,
                        const PIntArray &,
                        const PTimeInterval & timeout)
 {
@@ -523,7 +492,7 @@ int PSocket::os_select(int maxfds,
     tv->tv_usec = (long)(timeout.GetMilliSeconds()%1000)*1000;
     tv->tv_sec = timeout.GetSeconds();
   }
-  return select(maxfds, &readfds, &writefds, &exceptfds, tv);
+  return select(maxfds, readfds, writefds, exceptfds, tv);
 }
 
 
