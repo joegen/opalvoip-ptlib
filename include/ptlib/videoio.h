@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.22  2002/01/14 02:59:54  robertj
+ * Added preferred colour format selection, thanks Walter Whitlock
+ *
  * Revision 1.21  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -423,6 +426,17 @@ class PVideoDevice : public PObject
     virtual BOOL GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
 
+    /**Set preferred native colour format from video capture device.
+       Note empty == no preference.
+     */
+    void SetPreferredColourFormat(const PString & colourFmt) { preferredColourFormat = colourFmt; }
+
+    /**Get preferred native colour format from video capture device.
+       Returns empty == no preference
+     */
+    const PString & GetPreferredColourFormat() { return preferredColourFormat; }
+
+
   protected:
     /**Set variable which states this device can capture
        video. Default value for this variable is False.
@@ -435,6 +449,8 @@ class PVideoDevice : public PObject
     VideoFormat  videoFormat;
     int          channelNumber;
     PString      colourFormat;
+    // Preferred native colour format from video input device, empty == no preference
+    PString      preferredColourFormat;
     unsigned     frameRate;
     unsigned     frameWidth;
     unsigned     frameHeight;
