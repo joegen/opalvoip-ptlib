@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.24 1996/05/23 09:58:47 robertj Exp $
+ * $Id: pprocess.h,v 1.25 1996/06/13 13:30:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.25  1996/06/13 13:30:49  robertj
+ * Rewrite of auto-delete threads, fixes Windows95 total crash.
+ *
  * Revision 1.24  1996/05/23 09:58:47  robertj
  * Changed process.h to pprocess.h to avoid name conflict.
  * Added mutex to timer list.
@@ -347,14 +350,6 @@ PDECLARE_CLASS(PProcess, PThread)
        list of timers.
      */
 
-#if defined(P_PLATFORM_HAS_THREADS)
-
-    void SignalTimerChange();
-    // Signal to the timer thread that a change was made.
-
-#endif
-
-
   protected:
     virtual int _main(
       int argc,     // Number of program arguments.
@@ -373,18 +368,7 @@ PDECLARE_CLASS(PProcess, PThread)
        <CODE>_main()</CODE>. The user should never call this function.
      */
 
-#if defined(P_PLATFORM_HAS_THREADS)
-
-    PDECLARE_CLASS(TimerThread, PThread)
-      public:
-        TimerThread();
-        void Main();
-        PSemaphore semaphore;
-    };
-    TimerThread * timerThread;
-    // Thread for doing timers.
-
-#else
+#if !defined(P_PLATFORM_HAS_THREADS)
 
     virtual void OperatingSystemYield();
     /* Yield to the platforms operating system. This is an internal function
