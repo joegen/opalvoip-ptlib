@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.23  1997/02/23 03:06:00  craigs
+ * Changed for PProcess::Current reference
+ *
  * Revision 1.22  1997/02/14 09:18:36  craigs
  * Changed for PProcess::Current being a reference rather that a ptr
  *
@@ -250,8 +253,8 @@ PThread::PThread()
 
 PThread::~PThread()
 {
-  // can never destruct ourselves!!!!
-  PAssert(this != PThread::Current(), "Thread attempted suicide!");
+  // can never destruct ourselves, unless we are the system process
+  PAssert(this == (PThread *)&PProcess::Current(), "Thread attempted suicide!");
 
   // call the terminate function so overloads work properly
   Terminate();
