@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.27  2002/06/14 13:22:12  robertj
+ * Fixed ability to remove elements from a PSet by value.
+ * Added by value add and remove functions to a PSet.
+ * Added a POrdinalSet class.
+ * Fixed some documentation.
+ *
  * Revision 1.26  2002/02/06 00:53:25  robertj
  * Fixed missing const on PSet::Contains and operator[], thanks Francisco Olarte Sanz
  *
@@ -407,6 +413,16 @@ class PAbstractSet : public PHashTable
       const PObject * obj   /// Existing object to remove from the collection.
     );
 
+    /**Remove an object at the specified index. If the #AllowDeleteObjects#
+       option is set then the object is also deleted.
+
+       @return
+       pointer to the object being removed, or NULL if it was deleted.
+     */
+    virtual PObject * RemoveAt(
+      PINDEX index   /// Index position in collection to place the object.
+    );
+
     /**This function is the same as PHashTable::AbstractGetKeyAt().
 
        @return
@@ -460,17 +476,6 @@ class PAbstractSet : public PHashTable
       const PObject & obj   /// Object to find equal value.
     ) const;
   //@}
-
-
-  private:
-    virtual PObject * RemoveAt(
-      PINDEX index   // Index position in collection to place the object.
-    );
-    /* This function is meaningless and will assert if executed.
-
-       @return
-       Always NULL.
-     */
 };
 
 
@@ -515,7 +520,7 @@ template <class T> class PSet : public PAbstractSet
 
   /**@name New functions for class */
   //@{
-    /**Include the spcified object into the set. If the objects value is
+    /**Include the specified object into the set. If the objects value is
        already in the set then the object is {\bf not} included. If the
        AllowDeleteObjects option is set then the #obj# parameter is
        also deleted.
@@ -528,6 +533,17 @@ template <class T> class PSet : public PAbstractSet
       const T * obj   // New object to include in the set.
     ) { Append((PObject *)obj); }
 
+    /**Include the specified objects value into the set. If the objects value
+       is already in the set then the object is {\bf not} included.
+
+       The object values are compared, not the pointers.  So the objects in
+       the collection must correctly implement the #PObject::Compare()#
+       function. The hash table is used to locate the entry.
+     */
+    PSet & operator+=(
+      const T & obj   // New object to include in the set.
+    ) { Append(obj.Clone()); return *this; }
+
     /**Remove the object from the set. If the AllowDeleteObjects option is set
        then the object is also deleted.
 
@@ -539,6 +555,17 @@ template <class T> class PSet : public PAbstractSet
       const T * obj   // New object to exclude in the set.
     ) { Remove(obj); }
 
+    /**Remove the objects value from the set. If the AllowDeleteObjects
+       option is set then the object is also deleted.
+
+       The object values are compared, not the pointers.  So the objects in
+       the collection must correctly implement the #PObject::Compare()#
+       function. The hash table is used to locate the entry.
+     */
+    PSet & operator-=(
+      const T & obj   // New object to exclude in the set.
+    ) { RemoveAt(GetValuesIndex(obj)); return *this; }
+
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
        collection must correctly implement the #PObject::Compare()#
@@ -547,7 +574,7 @@ template <class T> class PSet : public PAbstractSet
        @return
        TRUE if the object value is in the set.
      */
-    BOOL operator[](
+    BOOL Contains(
       const T & key  /// Key to look for in the set.
     ) const { return AbstractContains(key); }
 
@@ -559,7 +586,7 @@ template <class T> class PSet : public PAbstractSet
        @return
        TRUE if the object value is in the set.
      */
-    BOOL Contains(
+    BOOL operator[](
       const T & key  /// Key to look for in the set.
     ) const { return AbstractContains(key); }
 
@@ -669,6 +696,9 @@ template <class T> class PSet : public PAbstractSet
 #endif  // PHAS_TEMPLATES
 
 
+PSET(POrdinalSet, POrdinalKey);
+
+
 //////////////////////////////////////////////////////////////////////////////
 
 /**An abstract dictionary container.
@@ -715,9 +745,8 @@ class PAbstractDictionary : public PHashTable
       PObject * obj          /// New object to place into the collection.
     );
 
-    /**Insert a new object at the specified index. The index is converted to
-       a #POrdinalKey# type before being used in the #SetAt()#
-       function.
+    /**Insert a new object at the specified index. The index is as is used in
+       the #GetKeyAt()# function.
 
        @return
        #index# parameter.
@@ -727,10 +756,9 @@ class PAbstractDictionary : public PHashTable
       PObject * obj   /// New object to place into the collection.
     );
 
-    /**Remove an object at the specified index. The index is converted to
-       a #POrdinalKey# type before being used in the #GetAt()#
-       function. The returned pointer is then removed using the #SetAt()#
-       function to set that key value to NULL. If the
+    /**Remove an object at the specified index. The index is as is used in
+       the #GetKeyAt()# function. The returned pointer is then removed using
+       the #SetAt()# function to set that key value to NULL. If the
        #AllowDeleteObjects# option is set then the object is also
        deleted.
 
@@ -742,9 +770,9 @@ class PAbstractDictionary : public PHashTable
     );
 
     /**Set the object at the specified index to the new value. The index is
-       converted to a #POrdinalKey# type before being used.This will
-       overwrite the existing entry. If the AllowDeleteObjects option is set
-       then the old object is also deleted.
+       as is used in the #GetKeyAt()# function. This will overwrite the
+       existing entry. If the AllowDeleteObjects option is set then the old
+       object is also deleted.
 
        @return
        TRUE if the object was successfully added.
@@ -754,9 +782,9 @@ class PAbstractDictionary : public PHashTable
       PObject * val   /// New value to place into the collection.
     );
 
-    /**Get the object at the specified index position. The index is converted
-       to a #POrdinalKey# type before being used. If the index was not in
-       the collection then NULL is returned.
+    /**Get the object at the specified index position. The index is as is
+       used in the #GetKeyAt()# function. If the index was not in the
+       collection then NULL is returned.
 
        @return
        pointer to object at the specified index.
