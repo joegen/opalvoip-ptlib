@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.32 1998/01/26 00:36:10 robertj Exp $
+ * $Id: collect.cxx,v 1.33 1998/01/26 01:41:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.33  1998/01/26 01:41:19  robertj
+ * GNU compatibility.
+ *
  * Revision 1.32  1998/01/26 00:36:10  robertj
  * Fixed MakeUnique() function for dictionaries and sets.
  *
@@ -1292,8 +1295,9 @@ void PHashTable::CloneContents(const PHashTable * hash)
   for (PINDEX i = 0; i < sz; i++) {
     original->SetLastElementAt(i);
     PObject * data = original->lastElement->data;
-    hashTable->AppendElement(original->lastElement->key->Clone(),
-                             data != NULL ? data->Clone() : NULL);
+    if (data != NULL)
+      data = data->Clone();
+    hashTable->AppendElement(original->lastElement->key->Clone(), data);
   }
 }
 
