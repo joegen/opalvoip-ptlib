@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.53  2000/05/02 02:01:18  craigs
+ * Changed stricmp and added implementation of PServiceMacro::Translate
+ *
  * Revision 1.52  2000/05/02 01:50:37  robertj
  * Rewrite of PServiceMacro so does not use malloc (indirectly).
  *
@@ -1068,7 +1071,7 @@ class PServiceMacro : public PObject
     PServiceMacro(const char * name);
     PServiceMacro(const PCaselessString & name);
     Comparison Compare(const PObject & obj) const;
-    virtual PString Translate(PHTTPRequest & request, const PString & args) const = 0;
+    virtual PString Translate(PHTTPRequest & request, const PString & args) const { return PString(); };
   protected:
     const char * macroName;
     PServiceMacro * link;
@@ -1096,7 +1099,7 @@ PServiceMacro::PServiceMacro(const PCaselessString & name)
 PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
-  return (Comparison)stricmp(macroName, ((const PServiceMacro &)obj).macroName);
+  return (Comparison)strcasecmp(macroName, ((const PServiceMacro &)obj).macroName);
 }
 
 
