@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.16 1997/03/18 21:24:19 robertj Exp $
+ * $Id: ptime.cxx,v 1.17 1997/05/16 12:05:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.17  1997/05/16 12:05:57  robertj
+ * Changed PTimeInterval to guarentee no overflow in millisecond calculations.
+ *
  * Revision 1.16  1997/03/18 21:24:19  robertj
  * Fixed parsing of time putting back token after time zone.
  *
@@ -74,11 +77,7 @@ PTimeInterval::PTimeInterval(long millisecs,
                              long hours,
                              int days)
 {
-  milliseconds = millisecs;
-  milliseconds += seconds*1000;
-  milliseconds += minutes*60000L;
-  milliseconds += hours*3600000L;
-  milliseconds += PInt64(86400000L)*days;
+  SetInterval(millisecs, seconds, minutes, hours, days);
 }
 
 
@@ -158,11 +157,15 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
                                 long hours,
                                 int days)
 {
-  millisecs += seconds*1000;
-  millisecs += minutes*60000L;
-  millisecs += hours*3600000L;
-  millisecs += PInt64(86400000L)*days;
-  milliseconds = millisecs;
+  milliseconds = days;
+  milliseconds *= 24;
+  milliseconds += hours;
+  milliseconds *= 60;
+  milliseconds += minutes;
+  milliseconds *= 60;
+  milliseconds += seconds;
+  milliseconds *= 1000;
+  milliseconds += millisecs;
 }
 
 
