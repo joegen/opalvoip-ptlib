@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.72  2004/04/11 13:26:25  csoutheren
+ * Removed namespace problems and removed warnings for Windows <string>
+ *
  * Revision 1.71  2004/04/09 06:38:10  rjongbloed
  * Fixed compatibility with STL based streams, eg as used by VC++2003
  *
@@ -274,7 +277,6 @@
 #pragma interface
 #endif
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // PString class
 
@@ -314,10 +316,12 @@ class PRegularExpression;
    they are compatible enough for them to be treated the same for most real
    world usage.
  */
-#ifdef DOC_PLUS_PLUS
+
 class PString : public PCharArray {
-#endif
-PDECLARE_CLASS(PString, PCharArray);
+  PCLASSINFO(PString, PCharArray);
+
+//  using namespace std;
+
   public:
   /**@name Construction */
   //@{
@@ -1771,6 +1775,7 @@ PDECLARE_CLASS(PString, PCharArray);
        pointer to character buffer.
      */
     operator const unsigned char *() const;
+
   //@}
 
 
@@ -1899,7 +1904,6 @@ class PCaselessString : public PString
 
     PCaselessString(int dummy, const PCaselessString * str);
 };
-
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -2059,8 +2063,7 @@ class PSortedStringList;
 #ifdef DOC_PLUS_PLUS
 class PStringArray : public PArray {
 #endif
-PDECLARE_ARRAY(PStringArray, PString);
-
+  PDECLARE_ARRAY(PStringArray, PString);
   public:
   /**@name Construction */
   //@{

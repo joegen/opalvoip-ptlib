@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.102  2004/04/11 13:26:25  csoutheren
+ * Removed namespace problems and removed warnings for Windows <string>
+ *
  * Revision 1.101  2004/04/11 03:20:41  csoutheren
  * Added Unix implementation of PCriticalSection
  *
@@ -387,7 +390,7 @@
   #else
     #include <strstream>
   #endif
-  using namespace std;
+  //using namespace std;
 #else
   #if (__GNUC__ >= 3)
     #include <iostream>
