@@ -245,6 +245,8 @@ EXPORTS
     ??0PWinSock@@QAE@XZ @160 NONAME ;public: __thiscall PWinSock::PWinSock(void)
     ??0P_fd_set@@QAE@I@Z @3370 NONAME ;public: __thiscall P_fd_set::P_fd_set(unsigned int)
     ??0P_fd_set@@QAE@XZ @3371 NONAME ;public: __thiscall P_fd_set::P_fd_set(void)
+    ??0P_GreyF_YUV420P_Registration@@QAE@XZ @3580 NONAME ;public: __thiscall P_GreyF_YUV420P_Registration::P_GreyF_YUV420P_Registration(void)
+    ??0P_Grey_YUV420P_Registration@@QAE@XZ @3581 NONAME ;public: __thiscall P_Grey_YUV420P_Registration::P_Grey_YUV420P_Registration(void)
     ??0P_RGB24F_YUV420P_Registration@@QAE@XZ @3086 NONAME ;public: __thiscall P_RGB24F_YUV420P_Registration::P_RGB24F_YUV420P_Registration(void)
     ??0P_RGB24_RGB32_Registration@@QAE@XZ @2807 NONAME ;public: __thiscall P_RGB24_RGB32_Registration::P_RGB24_RGB32_Registration(void)
     ??0P_RGB24_YUV420P_Registration@@QAE@XZ @2968 NONAME ;public: __thiscall P_RGB24_YUV420P_Registration::P_RGB24_YUV420P_Registration(void)
@@ -431,6 +433,10 @@ EXPORTS
     ??1PWin32SnmpLibrary@@UAE@XZ @1833 NONAME ;public: virtual __thiscall PWin32SnmpLibrary::~PWin32SnmpLibrary(void)
     ??1PWinSock@@UAE@XZ @262 NONAME ;public: virtual __thiscall PWinSock::~PWinSock(void)
     ??1P_fd_set@@QAE@XZ @3372 NONAME ;public: __thiscall P_fd_set::~P_fd_set(void)
+    ??1P_GreyF_YUV420P@@UAE@XZ @3582 NONAME ;public: virtual __thiscall P_GreyF_YUV420P::~P_GreyF_YUV420P(void)
+    ??1P_GreyF_YUV420P_Registration@@UAE@XZ @3583 NONAME ;public: virtual __thiscall P_GreyF_YUV420P_Registration::~P_GreyF_YUV420P_Registration(void)
+    ??1P_Grey_YUV420P@@UAE@XZ @3584 NONAME ;public: virtual __thiscall P_Grey_YUV420P::~P_Grey_YUV420P(void)
+    ??1P_Grey_YUV420P_Registration@@UAE@XZ @3585 NONAME ;public: virtual __thiscall P_Grey_YUV420P_Registration::~P_Grey_YUV420P_Registration(void)
     ??1P_RGB24F_YUV420P@@UAE@XZ @3090 NONAME ;public: virtual __thiscall P_RGB24F_YUV420P::~P_RGB24F_YUV420P(void)
     ??1P_RGB24F_YUV420P_Registration@@UAE@XZ @3091 NONAME ;public: virtual __thiscall P_RGB24F_YUV420P_Registration::~P_RGB24F_YUV420P_Registration(void)
     ??1P_RGB24_RGB32@@UAE@XZ @2812 NONAME ;public: virtual __thiscall P_RGB24_RGB32::~P_RGB24_RGB32(void)
@@ -852,6 +858,10 @@ EXPORTS
     ??_7PWin32SnmpLibrary@@6B@ @1855 NONAME ;const  PWin32SnmpLibrary::`vftable'
     ??_7PWinSock@@6Biostream@@@ @542 NONAME ;const  PWinSock::`vftable'{for `iostream'}
     ??_7PWinSock@@6BPObject@@@ @543 NONAME ;const  PWinSock::`vftable'{for `PObject'}
+    ??_7P_GreyF_YUV420P@@6B@ @3586 NONAME ;const  P_GreyF_YUV420P::`vftable'
+    ??_7P_GreyF_YUV420P_Registration@@6B@ @3587 NONAME ;const  P_GreyF_YUV420P_Registration::`vftable'
+    ??_7P_Grey_YUV420P@@6B@ @3588 NONAME ;const  P_Grey_YUV420P::`vftable'
+    ??_7P_Grey_YUV420P_Registration@@6B@ @3589 NONAME ;const  P_Grey_YUV420P_Registration::`vftable'
     ??_7P_RGB24F_YUV420P@@6B@ @3096 NONAME ;const  P_RGB24F_YUV420P::`vftable'
     ??_7P_RGB24F_YUV420P_Registration@@6B@ @3097 NONAME ;const  P_RGB24F_YUV420P_Registration::`vftable'
     ??_7P_RGB24_RGB32@@6B@ @2822 NONAME ;const  P_RGB24_RGB32::`vftable'
@@ -1263,6 +1273,8 @@ EXPORTS
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @792 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @793 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
     ?Convert@PSynonymColour@@UAEHPBEPAEPAH@Z @3100 NONAME ;public: virtual int __thiscall PSynonymColour::Convert(unsigned char const *,unsigned char *,int *)
+    ?Convert@P_GreyF_YUV420P@@UAEHPBEPAEPAH@Z @3590 NONAME ;public: virtual int __thiscall P_GreyF_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
+    ?Convert@P_Grey_YUV420P@@UAEHPBEPAEPAH@Z @3591 NONAME ;public: virtual int __thiscall P_Grey_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_RGB24F_YUV420P@@UAEHPBEPAEPAH@Z @3101 NONAME ;public: virtual int __thiscall P_RGB24F_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_RGB24_RGB32@@UAEHPBEPAEPAH@Z @2832 NONAME ;public: virtual int __thiscall P_RGB24_RGB32::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_RGB24_YUV420P@@UAEHPBEPAEPAH@Z @3003 NONAME ;public: virtual int __thiscall P_RGB24_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
@@ -1299,6 +1311,8 @@ EXPORTS
     ?Create@PSynonymColourRegistration@@UBEPAVPColourConverter@@II@Z @3103 NONAME ;public: virtual class PColourConverter * __thiscall PSynonymColourRegistration::Create(unsigned int,unsigned int)const 
     ?Create@PThread@@SAPAV1@ABVPNotifier@@HW4AutoDeleteFlag@1@W4Priority@1@ABVPString@@H@Z @2497 NONAME ;public: static class PThread * __cdecl PThread::Create(class PNotifier const &,int,enum PThread::AutoDeleteFlag,enum PThread::Priority,class PString const &,int)
     ?Create@PWin32PacketDriver@@SAPAV1@XZ @1880 NONAME ;public: static class PWin32PacketDriver * __cdecl PWin32PacketDriver::Create(void)
+    ?Create@P_GreyF_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @3592 NONAME ;public: virtual class PColourConverter * __thiscall P_GreyF_YUV420P_Registration::Create(unsigned int,unsigned int)const 
+    ?Create@P_Grey_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @3593 NONAME ;public: virtual class PColourConverter * __thiscall P_Grey_YUV420P_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_RGB24F_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @3104 NONAME ;public: virtual class PColourConverter * __thiscall P_RGB24F_YUV420P_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_RGB24_RGB32_Registration@@UBEPAVPColourConverter@@II@Z @2837 NONAME ;public: virtual class PColourConverter * __thiscall P_RGB24_RGB32_Registration::Create(unsigned int,unsigned int)const 
     ?Create@P_RGB24_YUV420P_Registration@@UBEPAVPColourConverter@@II@Z @3010 NONAME ;public: virtual class PColourConverter * __thiscall P_RGB24_YUV420P_Registration::Create(unsigned int,unsigned int)const 
@@ -1385,6 +1399,7 @@ EXPORTS
     ?Find@PString@@QBEHPBDH@Z @862 NONAME ;public: int __thiscall PString::Find(char const *,int)const 
     ?FindLast@PString@@QBEHDH@Z @864 NONAME ;public: int __thiscall PString::FindLast(char,int)const 
     ?FindLast@PString@@QBEHPBDH@Z @865 NONAME ;public: int __thiscall PString::FindLast(char const *,int)const 
+    ?FindLetter@PFakeVideoInputDevice@@QAEPAUOneVFakeLetterData@@I@Z @3594 NONAME ;public: struct OneVFakeLetterData * __thiscall PFakeVideoInputDevice::FindLetter(unsigned int)
     ?FindOneOf@PString@@QBEHPBDH@Z @867 NONAME ;public: int __thiscall PString::FindOneOf(char const *,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@AAH1HH@Z @868 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int &,int &,int,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@H@Z @869 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int)const 
@@ -1813,6 +1828,10 @@ EXPORTS
     ?GrabMovingLineTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @2561 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabMovingLineTestFrame(unsigned char *)
     ?GrabNTSCTestFrame@PFakeVideoInputDevice@@QAEXPAE@Z @2562 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabNTSCTestFrame(unsigned char *)
     ?GrabOriginalMovingBlocksFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3171 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(unsigned char *)
+    ?GrabTextVideoFrame@PFakeVideoInputDevice@@QAEXPAE@Z @3595 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabTextVideoFrame(unsigned char *)
+    ?GreytoYUV420P@PStandardColourConverter@@IBEHPBEPAEPAHH@Z @3599 NONAME ;protected: int __thiscall PStandardColourConverter::GreytoYUV420P(unsigned char const *,unsigned char *,int *,int)const 
+    ?GreytoYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAEH@Z @3600 NONAME ;protected: void __thiscall PStandardColourConverter::GreytoYUV420PSameSize(unsigned char const *,unsigned char *,int)const 
+    ?GreytoYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAEH@Z @3601 NONAME ;protected: void __thiscall PStandardColourConverter::GreytoYUV420PWithResize(unsigned char const *,unsigned char *,int)const 
     ?HandleCapture@PVideoInputDevice@@IAEXXZ @2447 NONAME ;protected: void __thiscall PVideoInputDevice::HandleCapture(void)
     ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @2448 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
     ?HandleVideo@PVideoInputDevice@@IAEJPAUvideohdr_tag@@@Z @2449 NONAME ;protected: long __thiscall PVideoInputDevice::HandleVideo(struct videohdr_tag *)
