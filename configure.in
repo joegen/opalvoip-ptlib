@@ -586,7 +586,7 @@ dnl MSWIN_DIR_SYMBOL sasl,SASL_DIR
 dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
   
 AC_ARG_ENABLE(sasl,
-       [  --disable-sasl          disable OpenLDAP support in PWLIB],
+       [  --disable-sasl          disable SASL support in PWLIB],
        sasl=$enableval)
 
 if test "$sasl" = "no" ; then
