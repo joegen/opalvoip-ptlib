@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.6 1996/07/30 12:23:32 robertj Exp $
+ * $Id: svcproc.cxx,v 1.7 1996/08/19 13:36:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.7  1996/08/19 13:36:03  robertj
+ * Added "Debug" level to system log.
+ *
  * Revision 1.6  1996/07/30 12:23:32  robertj
  * Added better service running test.
  * Changed SIGINTR handler to just set termination event.
@@ -62,7 +65,8 @@ void PSystemLog::Output(Level level, const char * msg)
       "Fatal error",
       "Error",
       "Warning",
-      "Information"
+      "Info",
+      "Debug"
     };
     ostream * out = PErrorStream;
     if (!process.debugMode) {
@@ -103,6 +107,7 @@ void PSystemLog::Output(Level level, const char * msg)
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_WARNING_TYPE,
+      EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_INFORMATION_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
