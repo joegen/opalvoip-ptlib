@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.6  2000/11/09 00:28:38  robertj
+ * Changed video capture for step frame grab instead of streamed grabbing.
+ *
  * Revision 1.5  2000/07/30 03:41:31  robertj
  * Added more colour formats to video device enum.
  *
@@ -43,6 +46,9 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
+
+
+#define STEP_GRAB_CAPTURE 0
 
 
 class PVideoInputThread : public PThread
@@ -170,6 +176,8 @@ PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
 {
   captureThread = NULL;
   hCaptureWindow = NULL;
+  lastFramePtr = NULL;
+  lastFrameSize = 0;
 }
 
 
@@ -218,23 +226,31 @@ BOOL PVideoInputDevice::Close()
 
 BOOL PVideoInputDevice::Start()
 {
+#if STEP_GRAB_CAPTURE
+  return IsOpen();
+#else
   if (capCaptureSequenceNoFile(hCaptureWindow))
     return TRUE;
 
   lastError = ::GetLastError();
   PTRACE(1, "capCaptureSequenceNoFile: failed - " << lastError);
   return FALSE;
+#endif
 }
 
 
 BOOL PVideoInputDevice::Stop()
 {
+#if STEP_GRAB_CAPTURE
+  return IsOpen();
+#else
   if (capCaptureStop(hCaptureWindow))
     return TRUE;
 
   lastError = ::GetLastError();
   PTRACE(1, "capCaptureStop: failed - " << lastError);
   return FALSE;
+#endif
 }
 
 
@@ -286,9 +302,6 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  if (!PVideoDevice::SetFrameSize(width, height))
-    return FALSE;
-
   BOOL running = IsCapturing();
   if (running)
     Stop();
@@ -354,7 +367,10 @@ PStringList PVideoInputDevice::GetDeviceNames() const
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
-  return PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
+  if (IsOpen())
+    return PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
+
+  return 0;
 }
 
 
@@ -364,11 +380,18 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     return FALSE;
 
   lastFrameMutex.Wait();
-  memcpy(buffer, lastFramePtr, lastFrameSize);
-  if (bytesReturned != NULL)
-    *bytesReturned = lastFrameSize;
+
+  if (lastFramePtr != NULL) {
+    memcpy(buffer, lastFramePtr, lastFrameSize);
+    if (bytesReturned != NULL)
+      *bytesReturned = lastFrameSize;
+  }
+
   lastFrameMutex.Signal();
 
+#if STEP_GRAB_CAPTURE
+  capGrabFrameNoStop(hCaptureWindow);
+#endif
   return TRUE;
 }
 
@@ -408,6 +431,8 @@ LRESULT PVideoInputDevice::HandleVideo(LPVIDEOHDR vh)
     lastFrameMutex.Wait();
     lastFramePtr = vh->lpData;
     lastFrameSize = vh->dwBytesUsed;
+    if (lastFrameSize == 0)
+      lastFrameSize = vh->dwBufferLength;
     lastFrameMutex.Signal();
     frameAvailable.Signal();
   }
@@ -432,7 +457,11 @@ BOOL PVideoInputDevice::InitialiseCapture()
 
   capSetCallbackOnError(hCaptureWindow, ErrorHandler);
 
+#if STEP_GRAB_CAPTURE
+  if (!capSetCallbackOnFrame(hCaptureWindow, VideoHandler)) {
+#else
   if (!capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler)) {
+#endif
     lastError = ::GetLastError();
     PTRACE(1, "capSetCallbackOnVideoStream: failed - " << lastError);
     return FALSE;
@@ -468,20 +497,27 @@ BOOL PVideoInputDevice::InitialiseCapture()
     return FALSE;
   }
 
+/*
   if (driverCaps.fHasOverlay)
     capOverlay(hCaptureWindow, TRUE);
   else {
     capPreviewRate(hCaptureWindow, 66);
     capPreview(hCaptureWindow, TRUE);
   }
+*/
+  capPreview(hCaptureWindow, FALSE);
 
   if (!SetFrameRate(frameRate))
     return FALSE;
 
-  if (!SetFrameSize(frameWidth, frameHeight))
+#if STEP_GRAB_CAPTURE
+  if (!SetColourFormat(colourFormat))
     return FALSE;
 
+  return capGrabFrameNoStop(hCaptureWindow);
+#else
   return SetColourFormat(colourFormat);
+#endif
 }
 
 
@@ -489,7 +525,9 @@ void PVideoInputDevice::HandleCapture()
 {
   if (InitialiseCapture()) {
     threadStarted.Signal();
+
     MSG msg;
+
     while (::GetMessage(&msg, NULL, 0, 0))
       ::DispatchMessage(&msg);
   }
