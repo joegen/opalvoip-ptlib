@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.55  2001/02/21 22:48:42  robertj
+ * Fixed incorrect test in PSemaphore::WillBlock() just added, thank Artis Kugevics.
+ *
  * Revision 1.54  2001/02/20 00:21:14  robertj
  * Fixed major bug in PSemapahore::WillBlock(), thanks Tomas Heran.
  *
@@ -929,7 +932,7 @@ void PSemaphore::Signal()
 BOOL PSemaphore::WillBlock() const
 {
 #ifdef P_HAS_SEMAPHORES
-  if (sem_trywait((sem_t *)&semId) == 0) {
+  if (sem_trywait((sem_t *)&semId) != 0) {
     PAssertOS(errno == EAGAIN);
     return TRUE;
   }
