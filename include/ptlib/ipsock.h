@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.11 1995/03/18 06:26:44 robertj Exp $
+ * $Id: ipsock.h,v 1.12 1995/06/17 00:41:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.12  1995/06/17 00:41:40  robertj
+ * More logical design of port numbers and service names.
+ *
  * Revision 1.11  1995/03/18 06:26:44  robertj
  * Changed IP address variable for GNU compatibility.
  *
@@ -58,6 +61,13 @@ PDECLARE_CLASS(PIPSocket, PSocket)
  */
 
   public:
+    PIPSocket(
+      WORD port = 0           // Port number to use for the connection.
+    );
+    PIPSocket(
+      const char * protocol,  // Protocol name to use for port look up.
+      const char * service    // Service name to use for the connection.
+    );
 
   // Overrides from class PChannel
     virtual PString GetName() const;
@@ -67,6 +77,26 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
        <H2>Returns:</H2>
        the name of the channel.
+     */
+
+
+  // Overrides from class PSocket.
+    virtual BOOL Accept(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number. This is an
+       "accepting" socket. When a "listening" socket has a pending connection
+       to make, this will accept a connection made by the "connecting" socket
+       created to establish a link.
+
+       The port that the socket uses is the one used in the <A>Listen()</A>
+       command of the <CODE>socket</CODE> parameter.
+
+       Note that this function will block until a remote system connects to the
+       port number specified in the "listening" socket.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
      */
 
 
@@ -135,7 +165,37 @@ PDECLARE_CLASS(PIPSocket, PSocket)
      */
 
 
-    virtual WORD GetPort(
+    void SetPort(
+      WORD port   // New port number for the channel.
+    );
+    void SetPort(
+      const PString & service   // Service name to describe the port number.
+    );
+    /* Set the port number for the channel. This a 16 bit number representing
+       an agreed high level protocol type. The string version looks up a
+       database of names to find the number for the string name.
+
+       The port number may not be changed while the port is open and the
+       function will assert if an attempt is made to do so.
+     */
+
+    WORD GetPort() const;
+    /* Get the port the TCP socket channel object instance is using.
+
+       <H2>Returns:</H2>
+       Port number.
+     */
+
+    PString GetService() const;
+    /* Get a service name for the port number the TCP socket channel object
+       instance is using.
+
+       <H2>Returns:</H2>
+       string service name.
+     */
+
+
+    virtual WORD GetPortByService(
       const PString & service   // Name of service to get port number for.
     ) const = 0;
     /* Get the port number for the specified service.
@@ -143,9 +203,12 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
        classes will implement this function.
+
+       <H2>Returns:</H2>
+       Port number for service name.
      */
 
-    virtual PString GetService(
+    virtual PString GetServiceByPort(
       WORD port   // Number for service to find name of.
     ) const = 0;
     /* Get the service name from the port number.
@@ -153,7 +216,68 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        The exact behviour of this function is dependent on whether TCP or UDP
        transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
        classes will implement this function.
+
+       <H2>Returns:</H2>
+       Service name for port number.
      */
+
+
+  protected:
+    static WORD GetPortByService(
+      const char * protocol,  // Protocol type for port lookup
+      const char * service    // Name of service to get port number for.
+    );
+    /* Get the port number for the specified service.
+
+       <H2>Returns:</H2>
+       Port number for service name and protocol.
+     */
+
+    static PString GetServiceByPort(
+      const char * protocol,  // Protocol type for port lookup
+      WORD port   // Number for service to find name of.
+    );
+    /* Get the service name from the port number.
+
+       <H2>Returns:</H2>
+       Service name for port number and protocol.
+     */
+
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+    BOOL _Socket(
+      int type  // Type of socket to open.
+    );
+    /* Create a socket using the specified protocol.
+
+       <H2>Returns:</H2>
+       TRUE if successful.
+     */
+
+    BOOL _Connect(
+      const PString & host  // IP number of remote host to connect to.
+    );
+    /* Connect a socket to the specified host.
+
+       <H2>Returns:</H2>
+       TRUE if successful.
+     */
+
+    BOOL _Listen(
+      unsigned queueSize   // Number of pending accepts that may be queued.
+    );
+    /* Bind a socket to the protocol and listen for connections from remote
+       hosts.
+
+       <H2>Returns:</H2>
+       TRUE if successful.
+     */
+#endif
+
+
+  // Member variables
+    WORD port;
+    // Port to be used by the socket when opening the channel.
 
 
 // Class declaration continued in platform specific header file ///////////////
