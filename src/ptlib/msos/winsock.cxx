@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.31 1997/12/11 10:41:55 robertj Exp $
+ * $Id: winsock.cxx,v 1.32 1997/12/18 05:05:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.32  1997/12/18 05:05:27  robertj
+ * Moved IsLocalHost() to platform dependent code.
+ *
  * Revision 1.31  1997/12/11 10:41:55  robertj
  * Added DWORD operator for IP addresses.
  *
@@ -434,6 +437,40 @@ BYTE PIPSocket::Address::Byte3() const
 BYTE PIPSocket::Address::Byte4() const
 {
   return S_un.S_un_b.s_b4;
+}
+
+
+BOOL PIPSocket::IsLocalHost(const PString & hostname)
+{
+  if (hostname.IsEmpty())
+    return TRUE;
+
+  if (hostname *= "localhost")
+    return TRUE;
+
+  // lookup the host address using inet_addr, assuming it is a "." address
+  Address addr = hostname;
+  if (addr == 16777343)  // Is 127.0.0.1
+    return TRUE;
+  if (addr == (DWORD)-1)
+    return FALSE;
+
+  PStringArray itsAliases = GetHostAliases(hostname);
+  if (itsAliases.IsEmpty())
+    return FALSE;
+
+  PStringArray myAliases = GetHostAliases(GetHostName());
+  if (myAliases.IsEmpty())
+    return FALSE;
+
+  for (PINDEX mine = 0; mine < myAliases.GetSize(); mine++) {
+    for (PINDEX its = 0; its < itsAliases.GetSize(); its++) {
+      if (myAliases[mine] *= itsAliases[its])
+        return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 
