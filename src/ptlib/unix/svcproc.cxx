@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.49  2001/03/29 03:25:03  robertj
+ * Added dumping to log file of SEGV etc if running as daemon.
+ *
  * Revision 1.48  2001/03/28 23:47:26  robertj
  * Added start log message and version numbers to start and stop log messages
  *
@@ -428,6 +431,7 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('i'))
     SetConfigurationPath(args.GetOptionString('i'));
 
+  // Set the gid we are running under
   if (args.HasOption('g')) {
     PString gidstr = args.GetOptionString('g');
     if (gidstr.IsEmpty())
@@ -486,61 +490,66 @@ int PServiceProcess::InitialiseService()
     }
   }
 
-  // Set the gid we are running under
-  // Run as a daemon, ie fork
 #ifndef BE_THREADS
-  if (args.HasOption('d')) {
-    if (!pidfilename) {
-      ifstream pidfile(pidfilename);
-      if (pidfile.is_open()) {
-        pid_t pid;
-        pidfile >> pid;
-        if (pid != 0 && kill(pid, 0) == 0) {
-          PError << "Already have daemon running with pid " << pid << endl;
-          return 2;
-        }
+  if (!args.HasOption('d'))
+    return -1;
+
+  // Run as a daemon, ie fork
+
+  if (!pidfilename) {
+    ifstream pidfile(pidfilename);
+    if (pidfile.is_open()) {
+      pid_t pid;
+      pidfile >> pid;
+      if (pid != 0 && kill(pid, 0) == 0) {
+        PError << "Already have daemon running with pid " << pid << endl;
+        return 2;
       }
     }
-
-    // Need to get rid of the config write thread before fork, as on
-    // pthreads platforms the forked process does not have the thread
-    CommonDestruct();
-
-    pid_t pid = fork();
-    switch (pid) {
-      case 0 : // The forked process
-        break;
-
-      case -1 : // Failed
-        PError << "Fork failed creating daemon process." << endl;
-        return 1;
-
-      default : // Parent process
-        cout << "Daemon started with pid " << pid << endl;
-        if (!pidfilename) {
-          // Write out the child pid to magic file in /var/run (at least for linux)
-          ofstream pidfile(pidfilename);
-          if (pidfile.is_open())
-            pidfile << pid;
-          else
-            PError << "Could not write pid to file \"" << pidfilename << "\""
-                      " - " << strerror(errno) << endl;
-        }
-        return 0;
-    }
-
-    // Set ourselves as out own process group so we don't get signals
-    // from our parent's terminal (hopefully!)
-    PSETPGRP();
-
-    CommonConstruct();
-
-    pidFileToRemove = pidfilename;
   }
-#endif
 
-  // Make sure housekeeping thread is going so signals are handled.
-  SignalTimerChange();
+  // Need to get rid of the config write thread before fork, as on
+  // pthreads platforms the forked process does not have the thread
+  CommonDestruct();
+
+  pid_t pid = fork();
+  switch (pid) {
+    case 0 : // The forked process
+      break;
+
+    case -1 : // Failed
+      PError << "Fork failed creating daemon process." << endl;
+      return 1;
+
+    default : // Parent process
+      cout << "Daemon started with pid " << pid << endl;
+      if (!pidfilename) {
+        // Write out the child pid to magic file in /var/run (at least for linux)
+        ofstream pidfile(pidfilename);
+        if (pidfile.is_open())
+          pidfile << pid;
+        else
+          PError << "Could not write pid to file \"" << pidfilename << "\""
+                    " - " << strerror(errno) << endl;
+      }
+      return 0;
+  }
+
+  // Set ourselves as out own process group so we don't get signals
+  // from our parent's terminal (hopefully!)
+  PSETPGRP();
+
+  CommonConstruct();
+
+  pidFileToRemove = pidfilename;
+
+  // Only if we are running in the background as a daemon, we intercept
+  // the core dumping signals so get a message in the log file.
+  signal(SIGSEGV, PXSignalHandler);
+  signal(SIGFPE, PXSignalHandler);
+  signal(SIGBUS, PXSignalHandler);
+
+#endif // BE_THREADS
 
   return -1;
 }
@@ -549,6 +558,10 @@ int PServiceProcess::_main(void *)
 {
   if ((terminationValue = InitialiseService()) < 0) {
     PSYSTEMLOG(Warning, "Starting service process \"" << GetName() << "\" v" << GetVersion(TRUE));
+
+    // Make sure housekeeping thread is going so signals are handled.
+    SignalTimerChange();
+
     terminationValue = 1;
     if (OnStart()) {
       terminationValue = 0;
@@ -612,16 +625,47 @@ void PServiceProcess::Terminate()
 
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
+  const char * msg;
+
   // Override the default behavious for these signals as that just
   // summarily exits the program. Allow PXOnSignal() to do orderly exit.
+
   switch (sig) {
     case SIGINT :
     case SIGTERM :
     case SIGHUP :
       return;
+
+    case SIGSEGV :
+      msg = "\nCaught segmentation fault (SIGSEGV), aborting.\n";
+      break;
+
+    case SIGFPE :
+      msg = "\nCaught floating point exception (SIGFPE), aborting.\n";
+      break;
+
+    case SIGBUS :
+      msg = "\nCaught bus error (SIGBUS), aborting.\n";
+      break;
+
+    default :
+      PProcess::PXOnAsyncSignal(sig);
+      return;
   }
 
-  PProcess::PXOnAsyncSignal(sig);
+  if (systemLogFile.IsEmpty()) {
+    syslog(LOG_CRIT, msg);
+    closelog();
+  }
+  else {
+    int fd = open(systemLogFile, O_WRONLY|O_APPEND);
+    if (fd >= 0) {
+      write(fd, msg, strlen(msg));
+      close(fd);
+    }
+  }
+
+  raise(SIGQUIT); // Dump core
 }
 
 
