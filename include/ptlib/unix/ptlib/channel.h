@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.5 1996/04/15 10:50:48 craigs Exp $
+ * $Id: channel.h,v 1.6 1996/05/02 11:55:28 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.6  1996/05/02 11:55:28  craigs
+ * Added ioctl definition for Sun4
+ *
  * Revision 1.5  1996/04/15 10:50:48  craigs
  * Last revision prior to release of MibMaster
  *
@@ -26,9 +29,8 @@
 
 #pragma interface
 
-#if defined(P_SUN4)
-#include <errno.h>
-#include <sys/errno.h>
+#ifdef P_SUN4
+extern "C" int ioctl(int, int, void *);
 #endif
 
 #include "../../common/channel.h"
