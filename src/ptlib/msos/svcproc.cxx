@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.5 1996/07/27 04:07:57 robertj Exp $
+ * $Id: svcproc.cxx,v 1.6 1996/07/30 12:23:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.6  1996/07/30 12:23:32  robertj
+ * Added better service running test.
+ * Changed SIGINTR handler to just set termination event.
+ *
  * Revision 1.5  1996/07/27 04:07:57  robertj
  * Changed thread creation to use C library function instead of direct WIN32.
  * Changed SystemLog to be stream based rather than printf based.
@@ -159,10 +163,9 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
 }
 
 
-static void Control_C(int)
+void PServiceProcess::Control_C(int)
 {
-  PServiceProcess::Current()->OnStop();
-  exit(1);
+  SetEvent(PServiceProcess::Current()->terminationEvent);
 }
 
 
@@ -212,9 +215,13 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     if (pid != 0) {
       HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
       if (h != NULL) {
+        DWORD exitCode;
+        GetExitCodeProcess(h, &exitCode);
         CloseHandle(h);
-        PError << "Service already running" << endl;
-        return 1;
+        if (exitCode == STILL_ACTIVE) {
+          PError << "Service already running" << endl;
+          return 1;
+        }
       }
     }
     cfg.SetInteger("Pid", GetProcessID());
@@ -484,10 +491,14 @@ BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
   if (pid != 0) {
     HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
     if (h != NULL) {
+      DWORD exitCode;
+      GetExitCodeProcess(h, &exitCode);
       CloseHandle(h);
-      PError << "Service already running" << endl;
-      error = 1;
-      return FALSE;
+      if (exitCode == STILL_ACTIVE) {
+        PError << "Service already running" << endl;
+        error = 1;
+        return FALSE;
+      }
     }
   }
 
