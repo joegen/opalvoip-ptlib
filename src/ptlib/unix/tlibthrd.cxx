@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.52  2000/12/05 08:24:50  craigs
+ * Fixed problem with EINTR causing havoc
+ *
  * Revision 1.51  2000/11/16 11:06:38  rogerh
  * Add a better fix for the "user signal 2" aborts seen on FreeBSD 4.2 and above.
  * We need to sched_yeild() after the pthread_create() to make sure the new thread
@@ -220,27 +223,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   fd_set * write_fds     = &tmp_wfd;
   fd_set * exception_fds = &tmp_efd;
 
-  FD_ZERO (read_fds);
-  FD_ZERO (write_fds);
-  FD_ZERO (exception_fds);
-
-  switch (type) {
-    case PChannel::PXReadBlock:
-    case PChannel::PXAcceptBlock:
-      FD_SET (handle, read_fds);
-      break;
-    case PChannel::PXWriteBlock:
-      FD_SET (handle, write_fds);
-      break;
-    case PChannel::PXConnectBlock:
-      FD_SET (handle, write_fds);
-      FD_SET (handle, exception_fds);
-      break;
-    default:
-      PAssertAlways(PLogicError);
-      return 0;
-  }
-
   struct timeval * tptr = NULL;
   struct timeval   timeout_val;
   if (timeout != PMaxTimeInterval) {
@@ -252,13 +234,42 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
   }
 
-  // include the termination pipe into all blocking I/O functions
-  int width = handle+1;
-  FD_SET(termPipe[0], read_fds);
-  width = PMAX(width, termPipe[0]+1);
+  int retval;
 
-  int retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
-  PProcess::Current().PXCheckSignals();
+  for (;;) {
+
+    FD_ZERO (read_fds);
+    FD_ZERO (write_fds);
+    FD_ZERO (exception_fds);
+
+    switch (type) {
+      case PChannel::PXReadBlock:
+      case PChannel::PXAcceptBlock:
+        FD_SET (handle, read_fds);
+        break;
+      case PChannel::PXWriteBlock:
+        FD_SET (handle, write_fds);
+        break;
+      case PChannel::PXConnectBlock:
+        FD_SET (handle, write_fds);
+        FD_SET (handle, exception_fds);
+        break;
+      default:
+        PAssertAlways(PLogicError);
+        return 0;
+    }
+
+    // include the termination pipe into all blocking I/O functions
+    int width = handle+1;
+    FD_SET(termPipe[0], read_fds);
+    width = PMAX(width, termPipe[0]+1);
+  
+    retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
+    PProcess::Current().PXCheckSignals();
+
+    if ((retval >= 0) || (errno != EINTR))
+      break;
+  }
 
   if ((retval == 1) && FD_ISSET(termPipe[0], read_fds)) {
     BYTE ch;
