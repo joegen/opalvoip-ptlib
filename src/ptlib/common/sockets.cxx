@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.66 1998/01/26 00:49:28 robertj Exp $
+ * $Id: sockets.cxx,v 1.67 1998/01/26 02:49:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.67  1998/01/26 02:49:22  robertj
+ * GNU support.
+ *
  * Revision 1.66  1998/01/26 00:49:28  robertj
  * Fixed bug in detecting local host on NT, 95 bug kludge was interfering with it.
  *
@@ -208,6 +211,14 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "socket.h"
+#pragma implementation "ipsock.h"
+#pragma implementation "udpsock.h"
+#pragma implementation "tcpsock.h"
+#pragma implementation "ipdsock.h"
+#endif
 
 #include <ptlib.h>
 #include <sockets.h>
