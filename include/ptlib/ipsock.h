@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.12 1995/06/17 00:41:40 robertj Exp $
+ * $Id: ipsock.h,v 1.13 1995/07/02 01:18:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.13  1995/07/02 01:18:19  robertj
+ * Added static functions to get the current host name/address.
+ *
  * Revision 1.12  1995/06/17 00:41:40  robertj
  * More logical design of port numbers and service names.
  *
@@ -129,6 +132,23 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
        <H2>Returns:</H2>
        array of strings for each alias for the host.
+     */
+
+    static BOOL GetHostAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    /* Get the Internet Protocol address for the host this process is running
+       on.
+
+       <H2>Returns:</H2>
+       TRUE if the IP number was returned.
+     */
+
+    static PString GetHostName();
+    /* Get the host name for the host this process is running on.
+
+       <H2>Returns:</H2>
+       Name of the host, or an empty string if an error occurs.
      */
 
     BOOL GetLocalAddress(
