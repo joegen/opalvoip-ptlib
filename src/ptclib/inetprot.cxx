@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.14 1996/03/16 04:53:07 robertj Exp $
+ * $Id: inetprot.cxx,v 1.15 1996/03/18 13:33:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.15  1996/03/18 13:33:13  robertj
+ * Fixed incompatibilities to GNU compiler where PINDEX != int.
+ *
  * Revision 1.14  1996/03/16 04:53:07  robertj
  * Changed all the get host name and get host address functions to be more consistent.
  * Added ParseReponse() for splitting reponse line into code and info.
@@ -363,7 +366,7 @@ BOOL PApplicationSocket::ReadResponse()
     return FALSE;
 
   PINDEX continuePos = ParseResponse(line);
-  if (continuePos > 0)
+  if (continuePos == 0)
     return TRUE;
 
   char continueChar = line[continuePos];
@@ -389,7 +392,7 @@ BOOL PApplicationSocket::ReadResponse(int & code, PString & info)
 }
 
 
-BOOL PApplicationSocket::ParseResponse(const PString & line)
+PINDEX PApplicationSocket::ParseResponse(const PString & line)
 {
   PINDEX endCode = line.FindOneOf(" -");
   if (endCode == P_MAX_INDEX) {
