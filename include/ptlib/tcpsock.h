@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.8 1995/03/12 04:46:40 robertj Exp $
+ * $Id: tcpsock.h,v 1.9 1995/03/14 12:42:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
- * Revision 1.8  1995/03/12 04:46:40  robertj
+ * Revision 1.9  1995/03/14 12:42:46  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.8  1995/03/12  04:46:40  robertj
  * Added more functionality.
  *
  * Revision 1.7  1995/01/03  09:36:22  robertj
@@ -87,31 +90,33 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        has a pending connection to make, this will accept a connection made
        by the "connecting" socket created to establish a link.
 
-       If the $B$port$B$ parameter is zero then the port number as defined by
-       the object instance construction or the $B$SetPort()$B$ function is
-       used.
+       If the <CODE>port</CODE> parameter is zero then the port number as
+       defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function is used.
 
-       Returns: TRUE if the channel was successfully opened.
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
      */
 
 
     virtual BOOL WriteOutOfBand(
       const void * buf,   // Data to be written as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by $B$buf$B$.
+      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
     );
     /* Write out of band data from the TCP/IP stream. This data is sent as TCP
        URGENT data which does not follow the usual stream sequencing of the
        normal channel data.
 
        This is subject to the write timeout and sets the lastWriteCount
-       variable in the same way as usual $b$Write()$B$ function.
+       variable in the same way as usual <A><CODE>Write()</CODE></A> function.
        
-       Returns: TRUE if all the bytes were sucessfully written.
+       <H2>Returns:</H2>
+       TRUE if all the bytes were sucessfully written.
      */
 
     virtual void OnOutOfBand(
       const void * buf,   // Data to be received as URGENT TCP data.
-      PINDEX len          // Number of bytes pointed to by $B$buf$B$.
+      PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
     );
     /* This is callback function called by the system whenever out of band data
        from the TCP/IP stream is received. A descendent class may interpret
@@ -145,7 +150,8 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        The second form gets the port number for the specified service name.
 
-       Returns: port number.
+       <H2>Returns:</H2>
+       port number.
      */
 
     virtual PString GetService() const;
@@ -159,7 +165,8 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        The second form gets the service name for the specified port number.
 
-       Returns: string service name.
+       <H2>Returns:</H2>
+       string service name.
      */
 
 
