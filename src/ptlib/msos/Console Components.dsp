@@ -97,7 +97,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
-# ADD LIB32 /nologo /out:"..\..\..\Lib\ptsslclibd.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
