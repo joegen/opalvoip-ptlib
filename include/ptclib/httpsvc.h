@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.43  2003/02/19 07:23:17  robertj
+ * Changes to allow for single threaded HTTP service processes.
+ *
  * Revision 1.42  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -177,18 +180,16 @@ class PHTTPServiceThread : public PThread
   PCLASSINFO(PHTTPServiceThread, PThread)
   public:
     PHTTPServiceThread(PINDEX stackSize,
-                       PHTTPServiceProcess & app,
-                       PSocket & listeningSocket);
+                       PHTTPServiceProcess & app);
     ~PHTTPServiceThread();
 
     void Main();
-    void Close() { socket.Close(); }
+    void Close();
 
   protected:
-    PHTTPServiceProcess & process;
-    PSocket             & listener;
-    PTCPSocket            socket;
     PINDEX                myStackSize;
+    PHTTPServiceProcess & process;
+    PTCPSocket          * socket;
 };
 
 
@@ -280,6 +281,8 @@ class PHTTPServiceProcess : public PServiceProcess
     virtual BOOL SubstituteEquivalSequence(PHTTPRequest & request, const PString &, PString &);
     virtual PHTTPServer * CreateHTTPServer(PTCPSocket & socket);
     virtual PHTTPServer * OnCreateHTTPServer(const PHTTPSpace & urlSpace);
+    PTCPSocket * AcceptHTTP();
+    BOOL ProcessHTTP(PTCPSocket & socket);
 
   protected:
     PSocket  * httpListeningSocket;
