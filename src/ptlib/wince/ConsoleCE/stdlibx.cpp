@@ -18,6 +18,20 @@
 
 #define DELETE (0x00010000L) // defined in <winnt.h> and undef "msos/ptlib/contain.h"
 
+#ifndef __cplusplus
+#include <tchar.h>
+int isprint(int c) { return _istprint(c);}
+int isxdigit(int c) { return _istxdigit(c); }
+int isspace( int c ) { return _istspace(c); }
+int isupper( int c ) { return _istupper(c); }
+int islower( int c ) { return _istlower(c); }
+int isalnum( int c ) { return _istalnum(c); }
+int isalpha( int c ) { return _istalpha(c); }
+int iscntrl( int c ) { return _istcntrl(c); }
+int isdigit( int c ) { return _istdigit(c); }
+int ispunct( int c ) { return _istpunct(c); }
+#endif
+
 long _lseek(int nHandle, long off, int orig)
 {
 	DWORD dwMoveMethod=FILE_BEGIN;
