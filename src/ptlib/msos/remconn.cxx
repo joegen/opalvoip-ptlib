@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.17 1997/04/06 07:45:28 robertj Exp $
+ * $Id: remconn.cxx,v 1.18 1998/01/26 00:54:58 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.18  1998/01/26 00:54:58  robertj
+ * Added function to PRemoteConnection to get at OS error code.
+ *
  * Revision 1.17  1997/04/06 07:45:28  robertj
  * Fixed bug in dialling already connected remotes.
  *
@@ -128,7 +131,8 @@ PRemoteConnection::~PRemoteConnection()
 
 BOOL PRemoteConnection::Open(const PString & name,
                              const PString & user,
-                             const PString & pass)
+                             const PString & pass,
+                             BOOL existing)
 {
   if (name != remoteName) {
     Close();
@@ -136,17 +140,17 @@ BOOL PRemoteConnection::Open(const PString & name,
   }
   userName = user;
   password = pass;
-  return Open();
+  return Open(existing);
 }
 
 
-BOOL PRemoteConnection::Open(const PString & name)
+BOOL PRemoteConnection::Open(const PString & name, BOOL existing)
 {
   if (name != remoteName) {
     Close();
     remoteName = name;
   }
-  return Open();
+  return Open(existing);
 }
 
 
@@ -166,11 +170,11 @@ PINDEX PRemoteConnection::HashFunction() const
 void PRemoteConnection::Construct()
 {
   rasConnection = NULL;
-  rasError = SUCCESS;
+  osError = SUCCESS;
 }
 
 
-BOOL PRemoteConnection::Open()
+BOOL PRemoteConnection::Open(BOOL existing)
 {
   Close();
   if (!Ras.IsLoaded())
@@ -185,14 +189,14 @@ BOOL PRemoteConnection::Open()
   DWORD size = sizeof(connection);
   DWORD numConnections;
 
-  rasError = Ras.EnumConnections(connections, &size, &numConnections);
-  if (rasError == ERROR_BUFFER_TOO_SMALL) {
+  osError = Ras.EnumConnections(connections, &size, &numConnections);
+  if (osError == ERROR_BUFFER_TOO_SMALL) {
     connections = new RASCONN[size/connection.dwSize];
     connections[0].dwSize = connection.dwSize;
-    rasError = Ras.EnumConnections(connections, &size, &numConnections);
+    osError = Ras.EnumConnections(connections, &size, &numConnections);
   }
 
-  if (rasError == 0) {
+  if (osError == 0) {
     for (DWORD i = 0; i < numConnections; i++) {
       if (remoteName == connections[i].szEntryName) {
         rasConnection = connections[i].hrasconn;
@@ -205,10 +209,13 @@ BOOL PRemoteConnection::Open()
     delete [] connections;
 
   if (rasConnection != NULL && GetStatus() == Connected) {
-    rasError = 0;
+    osError = 0;
     return TRUE;
   }
   rasConnection = NULL;
+
+  if (existing)
+    return FALSE;
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
@@ -225,8 +232,8 @@ BOOL PRemoteConnection::Open()
   strcpy(params.szUserName, userName);
   strcpy(params.szPassword, password);
 
-  rasError = Ras.Dial(NULL, NULL, &params, 0, NULL, &rasConnection);
-  if (rasError == 0)
+  osError = Ras.Dial(NULL, NULL, &params, 0, NULL, &rasConnection);
+  if (osError == 0)
     return TRUE;
 
   if (rasConnection != NULL) {
@@ -234,7 +241,7 @@ BOOL PRemoteConnection::Open()
     rasConnection = NULL;
   }
 
-  SetLastError(rasError);
+  SetLastError(osError);
   return FALSE;
 }
 
@@ -279,7 +286,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
     return NotInstalled;
 
   if (rasConnection == NULL) {
-    switch (rasError) {
+    switch (osError) {
       case SUCCESS :
         return Idle;
       case ERROR_CANNOT_FIND_PHONEBOOK_ENTRY :
@@ -298,7 +305,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
     return GeneralFailure;
   }
 
-  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
+  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->osError)) {
     case RASCS_Connected :
       return Connected;
     case RASCS_Disconnected :
@@ -310,7 +317,7 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
   }
 
   PError << "RAS Connection Status disconnected, retrying.";
-  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
+  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->osError)) {
     case RASCS_Connected :
       return Connected;
     case RASCS_Disconnected :
