@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.64  2002/12/18 05:10:53  robertj
+ * Fixed problem with returning DWORD time interval when PTimeInterval is
+ *   out of range, especially when negative!
+ *
  * Revision 1.63  2002/11/19 12:07:02  robertj
  * Added function to get root directory.
  *
@@ -421,6 +425,22 @@ struct tm * PTime::os_gmtime(const time_t * clock, struct tm * tb)
   memset(tb, 0, sizeof(*tb));
   return tb;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+DWORD PTimeInterval::GetInterval() const
+{
+  if (milliseconds <= 0)
+    return 0;
+
+  if (milliseconds >= INFINITE)
+    return INFINITE;
+
+  return (DWORD)milliseconds;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
