@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.3 1994/07/02 03:18:09 robertj Exp $
+ * $Id: ptlib.cxx,v 1.4 1994/07/17 11:01:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.3  1994/07/02 03:18:09  robertj
+ * Revision 1.4  1994/07/17 11:01:04  robertj
+ * Ehancements, implementation, bug fixes etc.
+ *
+ * Revision 1.3  1994/07/02  03:18:09  robertj
  * Multi-threading implementation.
  *
  * Revision 1.2  1994/06/25  12:13:01  robertj
@@ -34,6 +37,39 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
+
+void PChannel::Construct()
+{
+}
+
+
+PString PChannel::GetName() const
+{
+  PAssertAlways(PUnimplementedFunction);
+  return PString();
+}
+
+
+BOOL PChannel::Read(void *, PINDEX)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+BOOL PChannel::Write(const void *, PINDEX)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+BOOL PChannel::Close()
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
 
 PString PChannel::GetErrorText() const
 {
