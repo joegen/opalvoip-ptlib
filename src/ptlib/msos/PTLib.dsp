@@ -185,6 +185,19 @@ InputPath=.\ptlibd.dtf
 # Begin Source File
 
 SOURCE=.\Version.rc
+
+!IF  "$(CFG)" == "PTLib - Win32 Release"
+
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Release/PTLibVer.res"
+
+!ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
+
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09 /fo"..\..\..\Lib\Debug/PTLibVer.res"
+
+!ENDIF 
+
 # End Source File
 # End Target
 # End Project
