@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.40  2001/02/07 04:44:47  robertj
+ * Added ability to use check box to add/delete fields from arrays.
+ *
  * Revision 1.39  2001/01/08 04:13:23  robertj
  * Fixed bug with skipping every second option in determining the selected
  *   option in a SELECT field. No longer requires a </option> to work.
@@ -811,7 +814,6 @@ static const char ArrayControlAddTop[] = "Add Top";
 static const char ArrayControlAddBottom[] = "Add Bottom";
 static const char ArrayControlAdd[] = "Add";
 
-
 static PStringList GetArrayControlOptions(PINDEX fld, PINDEX size, BOOL orderedArray)
 {
   PStringList options;
@@ -901,6 +903,32 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX & fi
       if (canAddElements)
         AddArrayControlBox(html, fld);
       SpliceAdjust(html, text, pos, len, finish);
+    }
+
+    static PRegularExpression RowCheck("<?!--#form[ \t\r\n]+row(add|delete)[ \t\r\n]*(-?[^-])*-->?",
+                                         PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+    while (text.FindRegEx(RowCheck, pos, len, start, finish)) {
+      PStringStream checkbox;
+      if (canAddElements) {
+        PINDEX titlepos = text.Find("row", start)+3;
+        BOOL adding = text[titlepos] == 'a';
+        if (( adding && fld >= fields.GetSize()-1) ||
+            (!adding && fld <  fields.GetSize()-1)) {
+          titlepos += adding ? 3 : 6;
+          PINDEX dashes = text.Find("--", titlepos);
+          PString title = text(titlepos, dashes-1).Trim();
+          if (title.IsEmpty() && adding)
+            title = "Add";
+          checkbox << title
+                   << "<INPUT TYPE=checkbox NAME=\""
+                   << fields[fld].GetName()
+                   << ArrayControlBox
+                   << "\" VALUE="
+                   << (adding ? ArrayControlAdd : ArrayControlRemove)
+                   << '>';
+        }
+      }
+      SpliceAdjust(checkbox, text, pos, len, finish);
     }
 
     static PRegularExpression SelectRow("<select[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"!--#form[ \t\r\n]+rowselect[ \t\r\n]*--\"[^>]*>",
@@ -1754,6 +1782,8 @@ static BOOL FindSpliceField(const PRegularExpression & startExpr,
 }
 
 
+static const char ListFieldDeleteBox[] = "List Row Delete ";
+
 void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   PINDEX pos, len, start, finish;
@@ -1805,11 +1835,21 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
       for (PINDEX f = 0; f < fields.GetSize(); f++) {
         if (fields[f].GetName().FindRegEx(fieldsRegEx) != P_MAX_INDEX) {
           PString iteration = repeat;
+          PINDEX npos, nlen;
+
           static PRegularExpression FieldNameRegEx("<?!--#form[ \t\r\n]+fieldname[ \t\r\n]*-->?",
                                                    PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-          PINDEX npos, nlen;
           while (iteration.FindRegEx(FieldNameRegEx, npos, nlen))
             iteration.Splice(fields[f].GetName(), npos, nlen);
+
+          static PRegularExpression RowDeleteRegEx("<?!--#form[ \t\r\n]+rowdelete[ \t\r\n]*-->?",
+                                                   PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+          while (iteration.FindRegEx(RowDeleteRegEx, npos, nlen)) {
+            PHTML html(PHTML::InForm);
+            html << PHTML::CheckBox(ListFieldDeleteBox + fields[f].GetName());
+            iteration.Splice(html, npos, nlen);
+          }
+
           insert += iteration;
         }
       }
