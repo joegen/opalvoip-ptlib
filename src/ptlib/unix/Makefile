@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.48  1999/09/27 01:04:42  robertj
+# BeOS support changes.
+#
 # Revision 1.47  1999/07/03 04:31:53  robertj
 # Fixed problems with not including oss.cxx in library if OSTYPE not "linux"
 #
@@ -212,7 +215,16 @@ SOUND_SOURCE = bsdaudio.cxx
 endif
 
 ifeq ($(OSTYPE),beos)
-SOUND_SOURCE = beaudio.cxx
+BEAUDIO_SRC_DIR	= ./beaudio
+VPATH_CXX := $(BEAUDIO_SRC_DIR)
+
+SOUND_SOURCE = beaudio.cxx \
+	$(BEAUDIO_SRC_DIR)/SoundPlayer.cxx \
+	$(BEAUDIO_SRC_DIR)/SoundInput.cxx \
+	$(BEAUDIO_SRC_DIR)/SoundConsumer.cxx \
+	$(BEAUDIO_SRC_DIR)/SoundUtils.cxx \
+	$(BEAUDIO_SRC_DIR)/Resampler.cxx \
+	$(BEAUDIO_SRC_DIR)/resample.c
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
@@ -280,6 +292,11 @@ $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(CC) $(STDCCFLAGS) -M $< >> $@
+
+ifeq ($(OSTYPE),beos)
+$(OBJDIR)/resample.o: $(BEAUDIO_SRC_DIR)/resample.c
+	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
+endif
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y
