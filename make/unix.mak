@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.80  2000/05/18 08:33:12  robertj
+# Added variables for standard programs ar and ranlib
+#
 # Revision 1.79  2000/05/05 10:42:04  robertj
 # Fixed support for older FreeBSD (location of sysctrl).
 #
@@ -613,16 +616,25 @@ endif # macos
 #
 
 ifndef	CC
-CC		:= gcc
+CC := gcc
 endif
 
 ifndef CPLUS
-CPLUS		:= g++
+CPLUS := g++
 endif
 
 ifndef INSTALL
-INSTALL		:= install
+INSTALL := install
 endif
+
+ifndef AR
+AR := ar
+endif
+
+ifndef RANLIB
+RANLIB := ranlib
+endif
+
 
 ifndef P_SHAREDLIB
 P_SHAREDLIB=0
