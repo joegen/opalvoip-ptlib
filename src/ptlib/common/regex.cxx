@@ -24,7 +24,13 @@
   #pragma alloca
 #endif
 
+/* Technically malloc.h is depricated in most unixes and the malloc
+   prototypes moved to stdlib.h. Continue to use malloc.h except for
+   Mac OS X*/
+#if !defined(P_MACOSX)
 #include <malloc.h>
+#endif
+
 #define alloca _alloca
 
 #define _GNU_SOURCE
@@ -3612,9 +3618,9 @@ re_match_2 (
 	case charset_not:
 	  {
 	    register unsigned char c;
-	    boolean not = (re_opcode_t) *(p - 1) == charset_not;
+	    boolean bnot = (re_opcode_t) *(p - 1) == charset_not;
 
-            DEBUG_PRINT2 ("EXECUTING charset%s.\n", not ? "_not" : "");
+            DEBUG_PRINT2 ("EXECUTING charset%s.\n", bnot ? "_not" : "");
 
 	    PREFETCH ();
 	    c = TRANSLATE (*d); /* The character to match.  */
@@ -3623,11 +3629,11 @@ re_match_2 (
                bit list is a full 32 bytes long.  */
 	    if (c < (unsigned) (*p * BYTEWIDTH)
 		&& p[1 + c / BYTEWIDTH] & (1 << (c % BYTEWIDTH)))
-	      not = !not;
+	      bnot = !bnot;
 
 	    p += 1 + *p;
 
-	    if (!not) goto fail;
+	    if (!bnot) goto fail;
             
 	    SET_REGS_MATCHED ();
             d++;
