@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.3  2002/02/25 11:05:02  rogerh
+ * New Delay code which solves the accumulated error problem. Based on ideas
+ * by Tomasz Motylewski <T.Motylewski@bfad.de>, Roger and Craig.
+ *
  * Revision 1.2  2002/01/15 03:56:03  craigs
  * Added PAdaptiveDelay class
  *
@@ -44,7 +48,6 @@
 PAdaptiveDelay::PAdaptiveDelay()
 {
   firstTime = TRUE;
-  error = 0;
 }
 
 void PAdaptiveDelay::Restart()
@@ -56,25 +59,25 @@ BOOL PAdaptiveDelay::Delay(int frameTime)
 {
   if (firstTime) {
     firstTime = FALSE;
-    previousTime = PTime();
+    targetTime = PTime();   // targetTime is the time we want to delay to
     return TRUE;
   }
 
-  error += frameTime;
+  // Set the new target
+  targetTime += frameTime;
 
-  PTime now;
-  PTimeInterval delay = now - previousTime;
-  error -= (int)delay.GetMilliSeconds();
-  previousTime = now;
+  // Calculate the sleep time so we delay until the target time
+  PTimeInterval delay = targetTime - PTime();
+  int sleep_time = delay.GetMilliSeconds();
 
-  if (error > 0)
+  if (sleep_time > 0)
 #ifdef P_LINUX
-    usleep(error * 1000);
+    usleep(sleep_time * 1000);
 #else
-    PThread::Current()->Sleep(error);
+    PThread::Current()->Sleep(sleep_time);
 #endif
 
-  return error <= -frameTime;
+  return sleep_time <= -frameTime;
 }
 
 /////////////////////////////////////////////////////////
