@@ -28,25 +28,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.2  2001/07/19 09:53:29  rogerh
+ * Add the PWAVFile class to read and write .wav files
+ *
  * Revision 1.1  2001/07/19 09:36:22  rogerh
  * The PWAVFile class can read and write .wav audio files. Used in OpenAM.
- *
- * Revision 1.4  2001/07/17 13:47:43  rogerh
- * Change parameters for Write()
- *
- * Revision 1.3  2001/07/17 11:57:32  rogerh
- * Add support for writing WAV files from Shawn <shawn@eecs.harvard.edu>
- *
- * Revision 1.2  2001/07/14 17:14:48  rogerh
- * Fix the click at the end of the sample - only byte swap actual data
- *
- * Revision 1.1  2001/07/14 06:50:48  rogerh
- * Add PWAVFile class written by Roger Hardiman <roger@freebsd.org> and
- * Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
- * This allows us to read Microsoft .wav audio files which can then be used
- * by OpenAM for the Outgoing Message (OGM)
- *
- * Eventually this will be merged into PWLib
+ * The PWAVFile class was written by Roger Hardiman <roger@freebsd.org>
+ * and Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
  *
  */
 
@@ -55,8 +43,6 @@
 #endif
 
 #include <ptlib.h>
-
-#include "wav.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.79  2001/07/19 09:53:29  rogerh
+# Add the PWAVFile class to read and write .wav files
+#
 # Revision 1.78  2001/07/19 09:27:12  rogerh
 # Add support for EsounD and esd (the Enlightenment Sound Daemon).
 # This allows OhPhone to run on platforms where EsounD and esd have been
@@ -413,6 +416,7 @@ SOURCES	= \
 	pipechan.cxx \
 	serchan.cxx \
 	$(COMMON_SRC_DIR)/sfile.cxx \
+	$(COMMON_SRC_DIR)/pwavfile.cxx \
 	channel.cxx \
 	osutil.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
