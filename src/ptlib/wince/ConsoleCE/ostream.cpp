@@ -1,19 +1,23 @@
 //
-// (c) Yuriy Gorvitovskiy
-// for Openh323, www.Openh323.org
+// (c) 2000 Yuri Kiryanov, openh323@kiryanov.com
+// and Yuriy Gorvitovskiy
 //
-// Windows CE Port
-//
-// ostream implementation
-//
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
+// PWLib extras
 
 #include <iostream.h>
+#include <ptlib.h>
 
+#ifdef WCE_NO_EXTERNAL_STREAMS
 ostream_withassign cerr;
 ostream_withassign cout;
 
 static Iostream_init  __InitCerr(cerr,1);
 static Iostream_init  __InitCout(cout,-1);
+
+PStringStream cerr;
+PStringStream cout;
+#endif // WCE_NO_EXTERNAL_STREAMS
 
 /*******************************************************************************/
 ostream::ostream()
@@ -82,7 +86,7 @@ void ostream::osfx()
 
 
 /*******************************************************************************/
-/*ostream& ostream::operator<<(const char * s)
+ostream& ostream::operator<<(const char * s)
 {
     if (opfx()) 
 	{
@@ -91,7 +95,7 @@ void ostream::osfx()
     }
     return *this;
 }
-*/
+
 /*******************************************************************************/
 ostream& ostream::flush()
 {
