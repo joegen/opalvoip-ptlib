@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.22 1996/08/08 10:08:46 robertj Exp $
+ * $Id: object.cxx,v 1.23 1997/02/09 02:28:42 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.23  1997/02/09 02:28:42  craigs
+ * .
+ *
+ * Revision 1.23  1997/02/05 11:54:12  robertj
+ * Fixed problems with memory check and leak detection.
+ *
  * Revision 1.22  1996/08/08 10:08:46  robertj
  * Directory structure changes for common files.
  *
@@ -82,6 +88,7 @@
 
 #include <ptlib.h>
 #include <ctype.h>
+#include <strstrea.h>
 
 
 void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
@@ -115,6 +122,31 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 
 #ifdef PMEMORY_CHECK
+
+#if defined(_WIN32)
+class PMemChkOutClass : public ostream {
+  public:
+    PMemChkOutClass()
+      { init(new Buffer()); }
+    ~PMemChkOutClass()
+      { flush(); delete rdbuf(); }
+
+  private:
+    class PEXPORT Buffer : public strstreambuf {
+      public:
+        Buffer() : strstreambuf(buffer, sizeof(buffer)-1, buffer) { }
+        virtual int sync() {
+          *pptr() = '\0';
+          setp(buffer, &buffer[sizeof(buffer) - 1]);
+          OutputDebugString(buffer);
+          return strstreambuf::sync();
+        }
+        char buffer[250];
+    } buffer;
+} PMemChkOut;
+#else
+#define PMemChkOut cerr
+#endif
 
 const size_t PointerTableSize = 12345;
 
@@ -165,6 +197,7 @@ struct PointerArenaStruct {
   const char * fileName;
   int          line;
   const char * className;
+  BYTE         allocationLevel;
   char         guard[sizeof(GuardBytes)];
 };
 
@@ -181,37 +214,43 @@ static ostream & operator<<(ostream & out, void * ptr)
 
 PMemoryCheck::~PMemoryCheck()
 {
+#if !defined(_WIN32)
   BOOL firstLeak = TRUE;
-  PError.setf(ios::uppercase);
+#endif
+  PMemChkOut.setf(ios::uppercase);
   void ** entry = pointerHashTable;
   for (size_t i = 0; i < PointerTableSize; i++, entry++) {
     if (*entry != NULL) {
+#if !defined(_WIN32)
       if (firstLeak) {
         firstLeak = FALSE;
-        PError << "\nMemory leaks detected, press Enter to display . . .";
-        PError.flush();
+        PMemChkOut << "\nMemory leaks detected, press Enter to display . . .";
+        PMemChkOut.flush();
         cin.get();
       }
+#endif
       PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
-      PError << "Pointer @" << (void *)(*entry)
+      PMemChkOut << "Pointer @" << (void *)(*entry)
              << " [" << arena->size << ']';
       if (arena->className != NULL)
-        PError << " \"" << arena->className << '"';
-      PError << " not deallocated.";
+        PMemChkOut << " \"" << arena->className << '"';
+      PMemChkOut << " not deallocated.";
       if (arena->fileName != NULL)
-        PError << " PNEW: " << arena->fileName << '(' << arena->line << ')';
-      PError << endl;
+        PMemChkOut << " PNEW: " << arena->fileName << '(' << arena->line << ')';
+      PMemChkOut << endl;
     }
   }
 
-  PError << "\nPeak memory usage: " << Memory.peakMemory << " bytes";
+  PMemChkOut << "\nPeak memory usage: " << Memory.peakMemory << " bytes";
   if (Memory.peakMemory > 2048)
-    PError << ", " << (Memory.peakMemory+1023)/1024 << "kb";
+    PMemChkOut << ", " << (Memory.peakMemory+1023)/1024 << "kb";
   if (Memory.peakMemory > 2097152)
-    PError << ", " << (Memory.peakMemory+1048575)/1048576 << "Mb";
-  PError << ".\n"
-            "Peak objects created: " << Memory.peakObjects << "\n"
-            "Total objects created: " << Memory.totalObjects << endl;
+    PMemChkOut << ", " << (Memory.peakMemory+1048575)/1048576 << "Mb";
+  PMemChkOut << ".\nPeak objects created: " << Memory.peakObjects
+             << "\nTotal objects created: " << Memory.totalObjects
+             << '\n' << endl;
+
+  free(pointerHashTable);
 
 #if defined(_WIN32)
   extern void PWaitOnExitConsoleWindow();
@@ -275,8 +314,8 @@ void * PObject::MemoryCheckAllocate(size_t nSize,
   if (Memory.pointerHashTable != NULL) {
     void ** entry = Memory.FindPointerInHashTable(data, NULL);
     if (entry == NULL)
-      PError << "Pointer @" << (void *)data
-             << " not added to hash table." << endl;
+      PMemChkOut << "Pointer @" << (void *)data
+                 << " not added to hash table." << endl;
     else {
       *entry = data;
       Memory.currentMemory += sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes);
@@ -308,7 +347,7 @@ void * PObject::MemoryCheckReallocate(void * ptr,
 
   void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
   if (entry == NULL) {
-    PError << "Pointer @" << ptr << " invalid for reallocate." << endl;
+    PMemChkOut << "Pointer @" << ptr << " invalid for reallocate." << endl;
     return realloc(ptr, nSize);
   }
 
@@ -352,7 +391,7 @@ void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
 
   void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
   if (entry == NULL) {
-    PError << "Pointer @" << ptr << " invalid for deallocation." << endl;
+    PMemChkOut << "Pointer @" << ptr << " invalid for deallocation." << endl;
     free(ptr);
     return;
   }
@@ -364,14 +403,14 @@ void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
   Memory.currentMemory -= sizeof(PointerArenaStruct) + arena->size + sizeof(GuardBytes);
 
   if (arena->className != NULL && strcmp(arena->className, className) != 0)
-    PError << "Pointer @" << ptr << " allocated as '" << arena->className
-           << "' and deallocated as '" << className << "'." << endl;
+    PMemChkOut << "Pointer @" << ptr << " allocated as '" << arena->className
+               << "' and deallocated as '" << className << "'." << endl;
 
   if (memcmp(arena->guard, GuardBytes, sizeof(GuardBytes)) != 0)
-    PError << "Pointer @" << ptr << " underrun." << endl;
+    PMemChkOut << "Pointer @" << ptr << " underrun." << endl;
 
   if (memcmp((char *)ptr+arena->size, GuardBytes, sizeof(GuardBytes)) != 0)
-    PError << "Pointer @" << ptr << " overrun." << endl;
+    PMemChkOut << "Pointer @" << ptr << " overrun." << endl;
 
   memset(ptr, 0x55, arena->size);  // Make use of freed data noticable
   free(arena);
