@@ -206,6 +206,9 @@
 				RelativePath=".\remconn.cxx">
 			</File>
 			<File
+				RelativePath="..\common\safecoll.cxx">
+			</File>
+			<File
 				RelativePath="..\Common\serial.cxx">
 			</File>
 			<File
@@ -279,6 +282,9 @@
 					RelativePath="..\..\..\Include\PtLib\File.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\filepath.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Icmpsock.h">
 				</File>
 				<File
@@ -288,16 +294,31 @@
 					RelativePath="..\..\..\Include\PtLib\Ipdsock.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\ipsock.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\ipxsock.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Lists.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Mail.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\mutex.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\object.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Pdirect.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Pipechan.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\pprocess.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Pstring.h">
@@ -309,22 +330,46 @@
 					RelativePath="..\..\..\Include\PtLib\Remconn.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\SafeColl.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\semaphor.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Serchan.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Sfile.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\socket.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\sockets.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Sound.h">
 				</File>
 				<File
+					RelativePath="..\..\..\Include\PtLib\spxsock.h">
+				</File>
+				<File
 					RelativePath="..\..\..\Include\PtLib\Svcproc.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\syncpoint.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\syncthrd.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Tcpsock.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Textfile.h">
+				</File>
+				<File
+					RelativePath="..\..\..\Include\PtLib\thread.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Timeint.h">
@@ -334,45 +379,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\Udpsock.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\filepath.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\ipsock.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\ipxsock.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\mutex.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\object.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\pprocess.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\semaphor.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\socket.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\sockets.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\spxsock.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\syncpoint.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\syncthrd.h">
-				</File>
-				<File
-					RelativePath="..\..\..\Include\PtLib\thread.h">
 				</File>
 				<File
 					RelativePath="..\..\..\include\ptlib\vconvert.h">
