@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.22 1996/08/17 10:00:19 robertj Exp $
+ * $Id: channel.h,v 1.23 1996/09/14 13:09:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.23  1996/09/14 13:09:17  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.22  1996/08/17 10:00:19  robertj
  * Changes for Windows DLL support.
  *
@@ -157,10 +163,25 @@ class PEXPORT PChannel : public PObject, public iostream {
       // Create the channel.
 
     ~PChannel();
-      // CLose down the channel.
+      // Close down the channel.
 
 
     // New functions for class
+    virtual PString GetName() const;
+    /* Get the platform and I/O channel type name of the channel. For example,
+       it would return the filename in <A>PFile</A> type channels.
+
+       <H2>Returns:</H2>
+       the name of the channel.
+     */
+
+    virtual BOOL Close();
+    /* Close the channel, shutting down the link to the data source.
+
+       <H2>Returns:</H2>
+       TRUE if the channel successfully closed.
+     */
+
     virtual BOOL IsOpen() const;
     /* Determine if the channel is currently open and read and write operations
        can be executed on it. For example, in the <A>PFile</A> class it returns
@@ -168,14 +189,6 @@ class PEXPORT PChannel : public PObject, public iostream {
 
        <H2>Returns:</H2>
        TRUE if the channel is open.
-     */
-
-    virtual PString GetName() const;
-    /* Get the platform and I/O channel type name of the channel. For example,
-       it would return the filename in <A>PFile</A> type channels.
-
-       <H2>Returns:</H2>
-       the name of the channel.
      */
 
 
@@ -424,8 +437,44 @@ class PEXPORT PChannel : public PObject, public iostream {
        standard OS descriptor integer.
      */
 
-    virtual BOOL Close();
-      // Close the channel.
+
+    enum ShutdownValue {
+      ShutdownRead         = 0,
+      ShutdownWrite        = 1,
+      ShutdownReadAndWrite = 2
+    };
+
+    virtual BOOL Shutdown(
+      ShutdownValue option
+    );
+    /* Close one or both of the data streams associated with a channel.
+
+       The default behavour is to do nothing and return FALSE.
+
+       <H2>Returns:</H2>
+       TRUE if the shutdown was successfully performed.
+     */
+
+
+    virtual PChannel * GetBaseReadChannel() const;
+    /* This function returns the eventual base channel for reading of a series
+       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
+
+       The behaviour for this function is to return "this".
+       
+       <H2>Returns:</H2>
+       Pointer to base I/O channel for the indirect channel.
+     */
+
+    virtual PChannel * GetBaseWriteChannel() const;
+    /* This function returns the eventual base channel for writing of a series
+       of indirect channels provided by descendents of <A>PIndirectChannel</A>.
+
+       The behaviour for this function is to return "this".
+       
+       <H2>Returns:</H2>
+       Pointer to base I/O channel for the indirect channel.
+     */
 
 
     enum Errors {
