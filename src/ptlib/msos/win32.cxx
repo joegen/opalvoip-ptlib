@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.67  1998/10/13 14:13:36  robertj
+ * Removed uneeded heap allocation.
+ *
  * Revision 1.66  1998/09/24 03:30:59  robertj
  * Added open software license.
  *
@@ -277,6 +280,7 @@
 #include <errno.h>
 #include <sys\stat.h>
 
+#define new PNEW
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2219,7 +2223,7 @@ void PProcess::HouseKeepingThread::Main()
   PProcess & process = PProcess::Current();
   for (;;) {
     process.deleteThreadMutex.Wait();
-    HANDLE * handles = new HANDLE[process.autoDeleteThreads.GetSize()+1];
+    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
     DWORD numHandles = 1;
     handles[0] = breakBlock.GetHandle();
     for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
@@ -2248,8 +2252,6 @@ void PProcess::HouseKeepingThread::Main()
 
     DWORD status = WaitForMultipleObjects(numHandles, handles, FALSE, delay);
     PAssertOS(status != WAIT_FAILED);
-
-    delete [] handles;
   }
 }
 
@@ -2257,7 +2259,7 @@ void PProcess::HouseKeepingThread::Main()
 void PProcess::SignalTimerChange()
 {
   if (houseKeeper == NULL)
-    houseKeeper = PNEW HouseKeepingThread;
+    houseKeeper = new HouseKeepingThread;
   else
     houseKeeper->breakBlock.Signal();
 }
