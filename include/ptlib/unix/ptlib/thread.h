@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.30  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.29  2002/10/05 05:22:43  robertj
  * Fixed adding GetThreadId() function.
  *
@@ -227,6 +230,15 @@ typedef pthread_t PThreadIdentifer;
 
     int unblockPipe[2];
     friend class PSocket;
+
+#elif defined(VX_TASKS)
+
+  private:
+    static int ThreadFunction(void * threadPtr);
+    long threadId;
+    int priority;
+    PINDEX originalStackSize;
+
 #else
 
   protected:

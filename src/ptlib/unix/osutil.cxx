@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.70  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.69  2002/06/06 09:28:42  robertj
  * Fixed problems with canonicalising directories now PINDEX is signed.
  *
@@ -173,8 +176,12 @@
 
 
 #include <fcntl.h>
+#ifdef P_VXWORKS
+#include <sys/times.h>
+#else
 #include <time.h>
 #include <sys/time.h>
+#endif
 #include <ctype.h>
 
 #if defined(P_LINUX)
@@ -226,6 +233,8 @@
 #include <stdio.h>
 #include <mntent.h>
 
+#elif defined(P_VXWORKS)
+#define P_USE_STRFTIME
 #endif
 
 #ifdef P_USE_LANGINFO
@@ -329,6 +338,8 @@ PInt64 PString::AsInt64(unsigned base) const
   char * dummy;
 #if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined(P_IRIX)
   return strtoll(theArray, &dummy, base);
+#elif defined P_VXWORKS
+  return strtol(theArray, &dummy, base);
 #else
   return strtoq(theArray, &dummy, base);
 #endif
@@ -339,6 +350,8 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
   char * dummy;
 #if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX) || defined (P_IRIX)
   return strtoull(theArray, &dummy, base);
+#elif defined P_VXWORKS
+  return strtoul(theArray, &dummy, base);
 #else
   return strtouq(theArray, &dummy, base);
 #endif
@@ -369,9 +382,15 @@ struct timeval * PTimeInterval::AsTimeVal(struct timeval & buffer) const
 PTimeInterval PTimer::Tick()
 
 {
+#ifdef P_VXWORKS
+  struct timespec ts;
+  clock_gettime(0,&ts);
+  return (int)(ts.tv_sec*10000) + ts.tv_nsec/100000L;
+#else
   struct timeval tv;
   ::gettimeofday (&tv, NULL);
   return (PInt64)(tv.tv_sec) * 1000 + tv.tv_usec/1000L;
+#endif // P_VXWORKS
 }
 
 
@@ -523,7 +542,11 @@ BOOL PDirectory::Create(const PString & p, int perm)
   PString str = p;
   if (p[last] == '/')
     str = p.Left(last);
+#ifdef P_VXWORKS
+  return mkdir(str) == 0;
+#else		
   return mkdir(str, perm) == 0;
+#endif
 }
 
 BOOL PDirectory::Remove(const PString & p)
@@ -592,12 +615,16 @@ PString PDirectory::GetVolume() const
     }
     endfsent();
 
+#elif defined (P_VXWORKS)
+
+  PAssertAlways("Get Volume - not implemented for VxWorks");
+  return PString::Empty();
+
 #else
 
 #warning Platform requires implemetation of GetVolume()
 
 #endif
-
   }
 
   return volume;
@@ -617,7 +644,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   free = fs.f_bavail*(PInt64)fs.f_bsize;
   return TRUE;
 
-#elif defined(P_AIX)
+#elif defined(P_AIX) || defined(P_VXWORKS)
 
   struct statfs fs;
   if (statfs((char *) ((const char *)operator+(".") ), &fs) == -1)
@@ -696,11 +723,19 @@ BOOL PFile::Open(OpenMode mode, int opt)
   if (path.IsEmpty()) {
     char templateStr[3+6+1];
     strcpy(templateStr, "PWL");
+#ifndef P_VXWORKS
     os_handle = mkstemp(templateStr);
     if (!ConvertOSError(os_handle))
       return FALSE;
 
   } else {
+#else
+    static int number = 0;
+    sprintf(templateStr+3, "%06d", number++);
+    path = templateStr;
+  }
+  {
+#endif // !P_VXWORKS
     int oflags = 0;
     switch (mode) {
       case ReadOnly :
@@ -734,7 +769,11 @@ BOOL PFile::Open(OpenMode mode, int opt)
       return FALSE;
   }
 
+#ifndef P_VXWORKS
   return ConvertOSError(::fcntl(os_handle, F_SETFD, 1));
+#else
+  return TRUE;
+#endif
 }
 
 
@@ -784,8 +823,35 @@ BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL forc
 }
 
 
+BOOL PFile::Exists(const PFilePath & name)
+{ 
+#ifdef P_VXWORKS
+  // access function not defined for VxWorks
+  // as workaround, open the file in read-only mode
+  // if it succeeds, the file exists
+  PFile file(name, ReadOnly, MustExist);
+  BOOL exists = file.IsOpen();
+  if(exists == TRUE)
+    file.Close();
+  return exists;
+#else
+  return access(name, 0) == 0; 
+#endif // P_VXWORKS
+}
+
+
 BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 {
+#ifdef P_VXWORKS
+  // access function not defined for VxWorks
+  // as workaround, open the file in specified mode
+  // if it succeeds, the access is allowed
+  PFile file(name, mode, ModeDefault);
+  BOOL access = file.IsOpen();
+  if(access == TRUE)
+    file.Close();
+  return access;
+#else	
   int accmode;
 
   switch (mode) {
@@ -802,6 +868,7 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
   }
 
   return access(name, accmode) == 0;
+#endif // P_VXWORKS
 }
 
 
@@ -810,9 +877,14 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
   status.type = PFileInfo::UnknownFileType;
 
   struct stat s;
+#ifdef P_VXWORKS
+  if (stat(name, &s) != OK)
+#else	
   if (lstat(name, &s) != 0)
+#endif // P_VXWORKS
     return FALSE;
 
+#ifndef P_VXWORKS
   if (S_ISLNK(s.st_mode)) {
     status.type = PFileInfo::SymbolicLink;
     if (stat(name, &s) != 0) {
@@ -824,7 +896,9 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
       return TRUE;
     }
   } 
-  else if (S_ISREG(s.st_mode))
+  else 
+#endif // !P_VXWORKS
+  if (S_ISREG(s.st_mode))
     status.type = PFileInfo::RegularFile;
   else if (S_ISDIR(s.st_mode))
     status.type = PFileInfo::SubDirectory;
@@ -834,10 +908,10 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & status)
     status.type = PFileInfo::CharDevice;
   else if (S_ISBLK(s.st_mode))
     status.type = PFileInfo::BlockDevice;
-#ifndef __BEOS__
+#if !defined(__BEOS__) && !defined(P_VXWORKS)
   else if (S_ISSOCK(s.st_mode))
     status.type = PFileInfo::SocketDevice;
-#endif // !__BEOS__
+#endif // !__BEOS__ || !P_VXWORKS
 
   status.created     = s.st_ctime;
   status.modified    = s.st_mtime;
@@ -878,7 +952,15 @@ BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
   if (permissions & PFileInfo::UserRead)
     mode |= S_IRUSR;
 
+#ifdef P_VXWORKS
+  PFile file(name, ReadOnly, MustExist);
+  if (file.IsOpen())
+    return (::ioctl(file.GetHandle(), FIOATTRIBSET, mode) >= 0);
+
+  return FALSE;
+#else	
   return chmod ((const char *)name, mode) == 0;
+#endif // P_VXWORKS
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -945,6 +1027,14 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
   if (dir == NULL) 
     s = PDirectory("/tmp");
 
+#ifdef P_VXWORKS
+  int number = 0;
+  for (;;) {
+    *this = s + prefix + psprintf("%06x", number++);
+    if (!PFile::Exists(*this))
+      break;
+  }
+#else
   PString p;
   srandom(getpid());
   for (;;) {
@@ -952,6 +1042,7 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
     if (!PFile::Exists(*this))
       break;
   }
+#endif // P_VXWORKS
 }
 
 
@@ -1074,7 +1165,12 @@ BOOL PConsoleChannel::Open(ConsoleType type)
 
 PString PConsoleChannel::GetName() const
 {
+#ifdef P_VXWORKS
+  PAssertAlways("PConsoleChannel::GetName - Not implemented for VxWorks");
+  return PString("Not Implemented");
+#else
   return ttyname(os_handle);
+#endif // P_VXWORKS
 }
 
 
@@ -1092,10 +1188,17 @@ BOOL PConsoleChannel::Close()
 
 PTime::PTime()
 {
+#ifdef P_VXWORKS
+  struct timespec ts;
+  clock_gettime(0,&ts);
+  theTime = ts.tv_sec;
+  microseconds = ts.tv_sec*10000 + ts.tv_nsec/100000L;
+#else
   struct timeval tv;
   gettimeofday(&tv, NULL);
   theTime = tv.tv_sec;
   microseconds = tv.tv_usec;
+#endif // P_VXWORKS
 }
 
 

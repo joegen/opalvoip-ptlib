@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.90  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.89  2002/10/08 14:31:43  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -263,7 +266,7 @@
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS)
 #define ifr_netmask ifr_addr
 
 #include <net/if_dl.h>
@@ -316,7 +319,7 @@ int PSocket::os_close()
 
 static int SetNonBlocking(int fd)
 {
-#ifdef __BEOS__
+#if defined __BEOS__ || defined(P_VXWORKS)
   return fd;
 #else
   if (fd < 0)
@@ -329,7 +332,7 @@ static int SetNonBlocking(int fd)
 
   ::close(fd);
   return -1;
-#endif // !__BEOS__
+#endif // !__BEOS__ && !P_VXWORKS
 }
 
 
@@ -768,7 +771,7 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
   PUDPSocket ifsock;
 
   ifreq ifreqs[20]; // Maximum of 20 interfaces
-  ifconf ifc;
+  struct ifconf ifc;
   ifc.ifc_len = sizeof(ifreqs);
   ifc.ifc_buf = (caddr_t)ifreqs;
   if (!ConvertOSError(ioctl(ifsock.GetHandle(), SIOCGIFCONF, &ifc)))
@@ -1441,7 +1444,26 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 }
 
 
-#else
+#elif defined(P_VXWORKS)
+
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
+  PAssertAlways("PIPSocket::GetRouteTable()");
+  for(;;){
+    char iface[20];
+    long net_addr, dest_addr, net_mask;
+    int  metric;
+    RouteEntry * entry = new RouteEntry(net_addr);
+    entry->net_mask = net_mask;
+    entry->destination = dest_addr;
+    entry->interfaceName = iface;
+    entry->metric = metric;
+    table.Append(entry);
+    return TRUE;
+  }
+}
+
+#else // unsupported platform
 
 #if 0 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
@@ -1554,7 +1576,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
         }
       }
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS)
 
 // Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
 #ifndef _SIZEOF_ADDR_IFREQ
@@ -1575,6 +1597,53 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 
   return TRUE;
 }
+
+#ifdef P_VXWORKS
+
+int h_errno;
+
+struct hostent * Vx_gethostbyname(char *name, struct hostent *hp)
+{
+  u_long addr;
+  static char staticgethostname[100];
+
+  hp->h_aliases = NULL;
+  hp->h_addr_list[1] = NULL;
+  if ((int)(addr = inet_addr(name)) != ERROR) {
+    memcpy(staticgethostname, &addr, sizeof(addr));
+    hp->h_addr_list[0] = staticgethostname;
+    h_errno = SUCCESS;
+    return hp;
+  }
+  memcpy(staticgethostname, &addr, sizeof (addr));
+  hp->h_addr_list[0] = staticgethostname;
+  h_errno = SUCCESS;
+  return hp;
+}
+
+struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp)
+{
+  u_long addr;
+  static char staticgethostaddr[100];
+
+  hp->h_aliases = NULL;
+  hp->h_addr_list = NULL;
+
+  if ((int)(addr = inet_addr(name)) != ERROR) {
+    sprintf(staticgethostaddr,"%s",inet_ntoa(addr));
+    hp->h_name = staticgethostaddr;
+    h_errno = SUCCESS;
+  }
+  else
+  {
+    printf ("_gethostbyaddr: not able to get %s\n",name);
+    h_errno = NOTFOUND;
+  }
+  return hp;
+}
+
+#endif // P_VXWORKS
+
 
 #include "../common/pethsock.cxx"
 

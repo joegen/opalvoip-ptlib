@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.80  2002/10/10 04:43:44  robertj
+# VxWorks port, thanks Martijn Roest
+#
 # Revision 1.79  2002/08/30 11:41:33  robertj
 # Added guarantee that version numbers exist.
 #
@@ -326,6 +329,9 @@ ifeq ($(OSTYPE),beos)
 	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PW_LIBDIR) lib; fi
 endif
 	$(CPLUS) -o $@ $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS) $(ENDLDLIBS) $(ENDLDFLAGS)
+ifeq ($(OSTYPE),VxWorks)
+	$(LD)   --split-by-reloc 65535 -r   $(OBJS) -o $@ 
+endif
 
 ifdef DEBUG
 

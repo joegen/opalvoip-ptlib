@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.121  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.120  2002/08/14 00:43:40  robertj
  * Added ability to have fixed maximum length PStringStream's so does not do
  *   unwanted malloc()'s while outputing data.
@@ -2046,12 +2049,9 @@ PString PString::RightTrim() const
     rpos--;
   }
 
-#if defined(P_MACOSX) || defined(P_MACOS)	// make Apple gnu compiler happy
+  // make Apple & Tornado gnu compiler happy
   PString retval(theArray, rpos - theArray);
   return retval;
-#else
-  return PString(theArray, rpos - theArray);
-#endif
 }
 
 
@@ -2179,12 +2179,20 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
+#ifdef P_TORNADO
+  // The library provided with tornado 2.0 does not have the implementation
+  // for vsnprintf
+  // as workaround, just use a array size of 2000
+  PAssert(SetSize(2000), POutOfMemory);
+  ::vsprintf(theArray, fmt, arg);
+#else
   PINDEX len = theArray != NULL ? GetLength() : 0;
   PINDEX size = 0;
   do {
     size += 1000;
     PAssert(SetSize(size), POutOfMemory);
   } while (_vsnprintf(theArray+len, size-len, fmt, arg) == -1);
+#endif // P_TORNADO
 
   PAssert(MakeMinimumSize(), POutOfMemory);
   return *this;

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.24  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.23  2002/06/27 06:45:00  robertj
  * Changed "" to PString::Empty() where assigning to PString.
  *
@@ -74,7 +77,11 @@
 
 PINLINE DWORD PProcess::GetProcessID() const
 {
+#ifdef P_VXWORKS
+  return threadId;
+#else
   return (DWORD)getpid();
+#endif // P_VXWORKS
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -103,9 +110,6 @@ PINLINE PString PFilePath::GetVolume() const
   { return PString::Empty(); }
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE BOOL PFile::Exists(const PFilePath & name)
-  { return access(name, 0) == 0; }
 
 PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
   { return unlink(name) == 0; }

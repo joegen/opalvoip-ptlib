@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.97  2002/10/10 04:43:44  robertj
+# VxWorks port, thanks Martijn Roest
+#
 # Revision 1.96  2002/10/02 08:59:13  craigs
 # Added pxmlrpcs.cxx
 #
@@ -437,6 +440,11 @@ SOUND_SOURCE = macosaudio.cxx \
 	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
 	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
 	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
+endif
+
+ifeq ($(OSTYPE),VxWorks)
+VPATH_CXX += ./vxworks 
+SOUND_SOURCE = ./vxworks/vxaudio.cxx
 endif
 
 ifdef HAS_ESD
