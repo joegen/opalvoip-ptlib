@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.51  1999/08/22 12:13:42  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.50  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -264,7 +267,7 @@ class PContainer : public PObject
        This will decrement the reference count on the contents and if unique,
        will destroy it using the #DestroyContents()# function.
      */
-    virtual ~PContainer();
+    PINLINE virtual ~PContainer();
   //@}
 
   /**@name Common functions for containers */
@@ -692,7 +695,7 @@ class PCollection : public PContainer
        would automatically delete the string containing "one" on the second
        call to SetAt().
      */
-    void AllowDeleteObjects(
+    PINLINE void AllowDeleteObjects(
       BOOL yes = TRUE   /// New value for flag for deleting objects
     );
 
@@ -713,7 +716,7 @@ class PCollection : public PContainer
        be silently cloned and the copy used instead of the container expected
        leading to unpredictable results.
      */
-    PCollection(
+    PINLINE PCollection(
       int dummy,        /// Dummy to prevent accidental use of the constructor.
       const PCollection * coll  /// Collection class to clone.
     );
