@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.16 1994/06/25 11:55:15 robertj Exp $
+ * $Id: file.h,v 1.17 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.16  1994/06/25 11:55:15  robertj
+ * Revision 1.17  1994/07/17 10:46:06  robertj
+ * Moved data to platform dependent files.
+ *
+ * Revision 1.16  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.15  1994/04/20  12:17:44  robertj
@@ -101,9 +104,6 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
 
     // Overrides from class PChannel
-    virtual BOOL IsOpen() const;
-      // Return TRUE if the channel is currently open.
-      
     virtual PString GetName() const;
       // Return the name of the channel.
 
@@ -202,8 +202,5 @@ PDECLARE_CONTAINER(PFile, PChannel)
     PFilePath path;
       // The fully qualified path name for the file.
       
-    int os_handle;
-      // The operating system file handle return by standard open() function.
-
 
 // Class declaration continued in platform specific header file ///////////////
