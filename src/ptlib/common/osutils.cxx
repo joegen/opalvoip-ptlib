@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.220  2004/05/18 12:43:31  csoutheren
+ * Fixed compile problem on MSVC 6
+ *
  * Revision 1.219  2004/05/18 06:01:06  csoutheren
  * Deferred plugin loading until after main has executed by using abstract factory classes
  *
@@ -1843,7 +1846,7 @@ int PProcess::_main(void *)
     for (r = list.begin(); r != list.end(); ++r) {
       PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
       instance->OnStartup();
-      startups.insert(pair<PString, PProcessStartup *>(*r, instance));
+      startups.insert(std::pair<PString, PProcessStartup *>(*r, instance));
     }
   }
 
