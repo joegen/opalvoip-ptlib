@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.8  1998/11/24 09:39:14  robertj
+ * FreeBSD port.
+ *
  * Revision 1.7  1998/09/24 04:12:17  robertj
  * Added open software license.
  *
@@ -39,15 +42,13 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#if 0
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <termio.h>
-#include <signal.h>
-#endif
 
-#if defined(P_SUN4)
+#if defined(P_FREEBSD)
+#include <sys/ttycom.h>
+#define TCGETA TIOCGETA
+#define TCSETAW TIOCSETAW
+
+#elif defined(P_SUN4)
 #include <sys/termio.h>
 extern "C" int ioctl(int, int, void *);
 #endif
