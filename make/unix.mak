@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.51  1999/10/22 10:21:46  craigs
+# Added define to only include semaphore libraries on Linux platform
+#
 # Revision 1.50  1999/09/27 01:04:42  robertj
 # BeOS support changes.
 #
@@ -253,7 +256,7 @@ endif
 
 ifdef P_PTHREADS
 ENDLDLIBS	+= -lpthread
-STDCCFLAGS	+= -D_REENTRANT
+STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
 ifdef SHAREDLIB
