@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.3  2003/12/29 02:00:40  csoutheren
+ * Moved some declarations to sound_win32.h to allow access
+ *
  * Revision 1.2  2003/11/18 10:50:44  csoutheren
  * Changed name of Windows sound device
  *
@@ -153,36 +156,9 @@
 #include <process.h>
 
 #include <ptlib/plugin.h>
+#include <ptlib/msos/ptlib/sound_win32.h>
 
 #pragma comment(lib, "winmm.lib")
-
-class PWaveFormat : public PObject
-{
-  PCLASSINFO(PWaveFormat, PObject)
-  public:
-    PWaveFormat();
-    ~PWaveFormat();
-    PWaveFormat(const PWaveFormat & fmt);
-    PWaveFormat & operator=(const PWaveFormat & fmt);
-
-    void PrintOn(ostream &) const;
-    void ReadFrom(istream &);
-
-    void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
-    void SetFormat(const void * data, PINDEX size);
-
-    BOOL           SetSize   (PINDEX sz);
-    PINDEX         GetSize   () const { return  size;       }
-    void         * GetPointer() const { return  waveFormat; }
-    WAVEFORMATEX * operator->() const { return  waveFormat; }
-    WAVEFORMATEX & operator *() const { return *waveFormat; }
-    operator   WAVEFORMATEX *() const { return  waveFormat; }
-
-  protected:
-    PINDEX         size;
-    WAVEFORMATEX * waveFormat;
-};
-
 
 class PSound;
 
