@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.10  2000/02/04 19:32:16  craigs
+# Added targets for unshared libraries etc
+#
 # Revision 1.9  1999/11/30 00:22:54  robertj
 # Updated documentation for doc++
 #
@@ -86,6 +89,24 @@ debug :
 
 both :
 	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) both ;)
+
+optshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 opt ;)
+
+debugshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 debug ;)
+
+bothshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=1 both ;)
+
+optnoshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 opt ;)
+
+debugnoshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 debug ;)
+
+bothnoshared :
+	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) P_SHAREDLIB=0 both ;)
 
 clean :
 	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) clean ;)
