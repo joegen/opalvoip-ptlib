@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.1 1993/08/27 18:17:47 robertj Exp $
+ * $Id: timer.h,v 1.2 1993/08/31 03:38:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.1  1993/08/27 18:17:47  robertj
+ * Revision 1.2  1993/08/31 03:38:02  robertj
+ * Added missing virtual on destructor.
+ *
+ * Revision 1.1  1993/08/27  18:17:47  robertj
  * Initial revision
  *
  */
@@ -44,7 +47,7 @@ DECLARE_CLASS(PTimer, PTimeInterval)
     PTimer & operator=(const PTimer & timer);
       // Make a duplicate of the specified timer
 
-    ~PTimer();
+    virtual ~PTimer();
       // Destroy the timer object
 
 
