@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.192  2002/06/04 00:25:31  robertj
+ * Fixed incorrectly initialised trace indent, thanks Artis Kugevics
+ *
  * Revision 1.191  2002/05/31 04:10:44  robertj
  * Fixed missing mutex in PTrace::SetStream, thanks Federico Pinna
  *
@@ -1852,9 +1855,7 @@ void PThread::InitialiseProcessThread()
   stackBase = NULL;
   link = this;
   ((PProcess*)this)->currentThread = this;
-#if PTRACING
   traceBlockIndentLevel = 0;
-#endif
 }
 
 
@@ -1868,9 +1869,7 @@ PThread::PThread(PINDEX stackSize,
   basePriority = priorityLevel;   // Threads user settable priority level
   dynamicPriority = 0;            // Run immediately
   suspendCount = 1;
-#if PTRACING
   traceBlockIndentLevel = 0;
-#endif
 
   AllocateStack(stackSize);
   PAssert(stackBase != NULL, "Insufficient near heap for thread");
