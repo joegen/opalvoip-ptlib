@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.123  2004/01/31 13:49:18  dominance
+ * Added 2.6 performance fix as proposed by Christian Meder <chris@onestepahead.de>.
+ *
  * Revision 1.122  2003/09/17 09:02:15  csoutheren
  * Removed memory leak detection code
  *
@@ -1057,7 +1060,11 @@ void PThread::Sleep(const PTimeInterval & timeout)
 
 void PThread::Yield()
 {
-  sched_yield();
+  //sched_yield();
+  // re-add this if 2.4 becomes unusable..
+  // The following patch is improving 2.6 performance and it hopefully doesn't screw 2.4 ;)
+  struct timespec timer = { 0, 1 };
+  nanosleep (&timer, NULL);
 }
 
 
