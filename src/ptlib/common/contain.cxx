@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.106  2001/10/18 00:35:08  robertj
+ * Fixed problem with Tokenise() includeing empty string at beginning when
+ *   not in onePerSeparator mode and a separator starts the string.
+ *
  * Revision 1.105  2001/10/17 05:09:22  robertj
  * Added contructors and assigmnent operators so integer types can be
  *   automatically converted to strings.
@@ -1775,11 +1779,18 @@ PStringArray
   PINDEX p1 = 0;
   PINDEX p2 = FindOneOf(separators);
 
-  if (p2 == 0 && onePerSeparator) { // first character is a token separator
-    tokens[token] = PString();
-    token++;                        // make first string in array empty
-    p1 = 1;
-    p2 = FindOneOf(separators, 1);
+  if (p2 == 0) {
+    if (onePerSeparator) { // first character is a token separator
+      tokens[token] = PString();
+      token++;                        // make first string in array empty
+      p1 = 1;
+      p2 = FindOneOf(separators, 1);
+    }
+    else {
+      do {
+        p1 = p2 + 1;
+      } while ((p2 = FindOneOf(separators, p1)) == p1);
+    }
   }
 
   while (p2 != P_MAX_INDEX) {
