@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.77  2002/10/30 03:14:15  robertj
+ * Added tab character between time and thread in system log (for db import).
+ *
  * Revision 1.76  2002/10/23 04:26:27  robertj
  * Fixed extra debug levels in system log dump.
  *
@@ -333,7 +336,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
       out = new ofstream(systemLogFileName, ios::app);
 
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu ");
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
 
     PThread * thread = PThread::Current();
     if (thread == NULL) {
