@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.42  1999/09/10 02:31:19  craigs
+ * Added interface table routines
+ *
  * Revision 1.41  1999/09/03 02:26:25  robertj
  * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
  *
@@ -889,6 +892,60 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 #endif
 }
 
+
+BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
+{
+  PUDPSocket sock;
+
+#ifndef __BEOS__
+  // get number of interfaces
+  int ifNum;
+#ifdef SIOCGIFNUM
+  PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
+#else
+  ifNum = 100;
+#endif
+
+  PBYTEArray buffer;
+  struct ifconf ifConf;
+  ifConf.ifc_len  = ifNum * sizeof(ifreq);
+  ifConf.ifc_req = (struct ifreq *)buffer.GetPointer(ifConf.ifc_len);
+  
+  if (ioctl(sock.GetHandle(), SIOCGIFCONF, &ifConf) >= 0) {
+#ifndef SIOCGIFNUM
+    ifNum = ifConf.ifc_len / sizeof(ifreq);
+#endif
+
+    int num = 0;
+    for (num = 0; num < ifNum; num++) {
+
+      ifreq * ifName = ifConf.ifc_req + num;
+      struct ifreq ifReq;
+      strcpy(ifReq.ifr_name, ifName->ifr_name);
+
+      if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
+        int flags = ifReq.ifr_flags;
+        if (flags & IFF_UP) {
+          PString name(ifReq.ifr_name);
+
+          PString            macAddr;
+          PIPSocket::Address addr;
+
+          if (ioctl(sock.GetHandle(), SIOCGIFHWADDR, &ifReq) >= 0) 
+            macAddr = (PString)PEthSocket::Address((BYTE *)((sockaddr *)(&ifReq.ifr_addr))->sa_data);
+
+          if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) 
+            addr = PIPSocket::Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr);
+
+          list.Append(PNEW InterfaceEntry(name, addr, macAddr));
+        }
+      }
+    }
+  }
+#endif //!__BEOS__
+
+  return TRUE;
+}
 
 #include "../common/pethsock.cxx"
 
