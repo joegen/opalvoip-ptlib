@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.59  2000/04/26 00:40:48  robertj
+# Redesigned version number system to have single file to change on releases.
+#
 # Revision 1.58  2000/04/19 00:13:52  robertj
 # BeOS port changes.
 #
@@ -208,6 +211,7 @@ include $(PWLIBDIR)/make/unix.mak
 OBJDIR	= $(PT_OBJDIR)
 LIBDIR  = $(PW_LIBDIR)
 TARGET  = $(LIBDIR)/$(PTLIB_FILE)
+VERSION_FILE = $(PWLIBDIR)/version.h
 
 ##########################################
 
@@ -346,9 +350,6 @@ $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 #######################################################
 
 LIB_BASENAME = $(PTLIB_FILE)
-LIBVER_MAJ	 = 1
-LIBVER_MIN	 = 13
-LIBVER_PAT	 = 0
 
 include $(PWLIBDIR)/make/lib.mak
 
