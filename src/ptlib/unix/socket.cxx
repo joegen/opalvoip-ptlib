@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.41  1999/09/03 02:26:25  robertj
+ * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
+ *
  * Revision 1.40  1999/05/01 03:52:20  robertj
  * Fixed various egcs warnings.
  *
@@ -218,21 +221,17 @@ int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
 #endif
 }
 
+#ifndef P_PTHREADS
+
 int PSocket::os_select(int maxHandle,
                    fd_set & readBits,
                    fd_set & writeBits,
                    fd_set & exceptionBits,
-#ifndef P_PTHREADS
           const PIntArray & osHandles,
-#else
-          const PIntArray & ,
-#endif
-
       const PTimeInterval & timeout)
 {
   struct timeval * tptr = NULL;
 
-#ifndef P_PTHREADS
   int stat = PThread::Current()->PXBlockOnIO(maxHandle,
                                          readBits,
                                          writeBits,
@@ -244,7 +243,20 @@ int PSocket::os_select(int maxHandle,
 
   struct timeval tout = {0, 0};
   tptr = &tout;
+
+  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
+}
+                     
 #else
+
+int PSocket::os_select(int maxHandle,
+                   fd_set & readBits,
+                   fd_set & writeBits,
+                   fd_set & exceptionBits,
+          const PIntArray & ,
+      const PTimeInterval & timeout)
+{
+  struct timeval * tptr = NULL;
   struct timeval   timeout_val;
   if (timeout != PMaxTimeInterval) {
     if (timeout.GetMilliSeconds() < 1000L*60L*60L*24L) {
@@ -253,11 +265,17 @@ int PSocket::os_select(int maxHandle,
       tptr                = &timeout_val;
     }
   }
+
+  do {
+    int result = ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
+    if (result >= 0)
+      return result;
+  } while (errno == EINTR);
+  return -1;
+}
+
 #endif
 
-  return ::select(maxHandle, &readBits, &writeBits, &exceptionBits, tptr);
-}
-                     
 
 PIPSocket::Address::Address(DWORD dw)
 {
