@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.208  2003/11/08 01:42:19  rjongbloed
+ * Added thread names to DevStudio display, thanks Ted Szoczei
+ *
  * Revision 1.207  2003/09/17 09:02:14  csoutheren
  * Removed memory leak detection code
  *
@@ -1882,6 +1885,22 @@ void PThread::SetThreadName(const PString & name)
     threadName = psprintf("%s:%08x", GetClass(), (INT)this);
   else
     threadName = psprintf(name, (INT)this);
+#if defined(_MSC_VER) && defined(_DEBUG)
+  if (threadId) {                             // make thread name known to debugger
+    struct tagTHREADNAME_INFO
+    {
+      DWORD dwType;          // must be 0x1000
+      LPCSTR szName;         // pointer to name (in user addr space)
+      DWORD dwThreadID;      // thread ID (-1=caller thread, but don't use it, it seems to name other threads too)
+      DWORD dwFlags;         // reserved for future use, must be zero
+    } info;
+    info.dwType = 0x1000;
+    info.szName = (const char *) threadName;
+    info.dwThreadID = threadId;
+    info.dwFlags = 0;
+    RaiseException(0x406D1388, 0, sizeof(info)/sizeof(DWORD), (DWORD *)&info);
+  }
+#endif
 }
 
 
