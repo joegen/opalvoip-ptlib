@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.87  2000/06/26 11:17:20  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.86  2000/04/07 06:29:46  rogerh
  * Add a short term workaround for an Internal Compiler Error on MAC OS X when
  * returning certain types of PString. Submitted by Kevin Packard.
@@ -334,6 +337,10 @@
 #include <ptlib.h>
 
 #include <ctype.h>
+
+#ifdef __NUCLEUS_PLUS__
+extern "C" int vsprintf(char *, const char *, va_list);
+#endif
 
 #ifndef __STDC__
 #define __STDC__ 1
@@ -1707,8 +1714,12 @@ DWORD PString::AsUnsigned(unsigned base) const
 
 double PString::AsReal() const
 {
+#ifndef __HAS_NO_FLOAT
   char * dummy;
   return strtod(theArray, &dummy);
+#else
+  return 0.0;
+#endif
 }
 
 
@@ -1858,7 +1869,6 @@ int PStringStream::Buffer::sync()
   setp(end, end);
   return 0;
 }
-
 
 streampos PStringStream::Buffer::seekoff(streamoff off,
 #ifdef __MWERKS__

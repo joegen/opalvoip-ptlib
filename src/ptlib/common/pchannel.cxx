@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.7  2000/06/26 11:17:20  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.6  1999/07/06 08:55:05  robertj
  * Fixed bug in PFile::Copy, does not write last chunk of data to new file.
  *
@@ -774,7 +777,11 @@ BOOL PFile::Close()
 
   flush();
 
+#ifdef WOT_NO_FILESYSTEM
+  BOOL ok = TRUE;
+#else
   BOOL ok = ConvertOSError(_close(os_handle));
+#endif
 
   os_handle = -1;
 
@@ -788,7 +795,11 @@ BOOL PFile::Close()
 BOOL PFile::Read(void * buffer, PINDEX amount)
 {
   flush();
+#ifdef WOT_NO_FILESYSTEM
+  lastReadCount = 0;
+#else
   lastReadCount = _read(GetHandle(), buffer, amount);
+#endif
   return ConvertOSError(lastReadCount) && lastReadCount > 0;
 }
 
@@ -796,7 +807,11 @@ BOOL PFile::Read(void * buffer, PINDEX amount)
 BOOL PFile::Write(const void * buffer, PINDEX amount)
 {
   flush();
+#ifdef WOT_NO_FILESYSTEM
+  lastWriteCount = amount;
+#else
   lastWriteCount = _write(GetHandle(), buffer, amount);
+#endif
   return ConvertOSError(lastWriteCount) && lastWriteCount >= amount;
 }
 
@@ -811,10 +826,14 @@ BOOL PFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 
 off_t PFile::GetLength() const
 {
+#ifdef WOT_NO_FILESYSTEM
+  return 0;
+#else
   off_t pos = _lseek(GetHandle(), 0, SEEK_CUR);
   off_t len = _lseek(GetHandle(), 0, SEEK_END);
   PAssertOS(_lseek(GetHandle(), pos, SEEK_SET) == pos);
   return len;
+#endif
 }
 
 
@@ -827,7 +846,11 @@ BOOL PFile::IsEndOfFile() const
 
 BOOL PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
+#ifdef WOT_NO_FILESYSTEM
+  return TRUE;
+#else
   return _lseek(GetHandle(), pos, origin) == pos;
+#endif
 }
 
 

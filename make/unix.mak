@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.83  2000/06/26 11:17:20  robertj
+# Nucleus++ port (incomplete).
+#
 # Revision 1.82  2000/06/21 01:01:21  robertj
 # AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
 #
@@ -230,7 +233,6 @@ ifndef PWLIBDIR
 PWLIBDIR = $(HOME)/pwlib
 endif
 
-
 ###############################################################################
 #
 #  Normalise environment variables so have OSTYPE and MACHTYPE correct
@@ -322,7 +324,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos AIX))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos AIX Nucleus))
 
 all ::
 	@echo
@@ -725,6 +727,43 @@ ifndef INSTALLLIB_DIR
 INSTALLLIB_DIR	= $(INSTALL_DIR)/lib
 endif
 
+####################################################
+
+ifeq ($(OSTYPE),Nucleus)
+
+# Nucleus using gcc
+STDCCFLAGS	+= -msoft-float -nostdinc -g
+STDCCFLAGS	+= -D__NUCLEUS_PLUS__ -D__ppc -DWOT_NO_FILESYSTEM -DPLUS \
+		   -D__HAS_NO_FLOAT -D__USE_STL__ \
+                   -D__USE_STD__ \
+		   -D__NUCLEUS_NET__ -D__NEWLIB__ \
+		   -DP_USE_INLINES=0 \
+		   -DPHAS_TEMPLATES
+ifndef WORK
+WORK		= ${HOME}/work
+endif
+ifndef NUCLEUSDIR
+NUCLEUSDIR	= ${WORK}/embedded/os/Nucleus
+endif
+ifndef STLDIR
+STLDIR		= ${WORK}/embedded/packages/stl-3.2-stream
+endif
+STDCCFLAGS	+= -I$(NUCLEUSDIR)/plus \
+		-I$(NUCLEUSDIR)/plusplus \
+		-I$(NUCLEUSDIR)/net \
+		-I$(NUCLEUSDIR) \
+		-I$(PWLIBDIR)/include/ptlib/Nucleus++ \
+		-I$(WORK)/embedded/libraries/socketshim/BerkleySockets \
+		-I${STLDIR} \
+		-I/usr/local/powerpc-motorola-eabi/include \
+		-I${WORK}/embedded/libraries/configuration
+
+UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/Nucleus++
+ENDIAN		= PBIG_ENDIAN
+MEMORY_CHECK	=	0
+endif # Nucleus
+
+
 ###############################################################################
 #
 # define some common stuff
@@ -734,10 +773,14 @@ SHELL		:= /bin/sh
 
 .SUFFIXES:	.cxx .prc 
 
+# Required macro symbols
+
 # Directories
 
 UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
+ifndef UNIX_SRC_DIR
 UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
+endif
 
 PW_LIBDIR	= $(PWLIBDIR)/lib
 
