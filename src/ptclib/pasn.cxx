@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.11  1999/03/02 01:53:38  craigs
+ * Fixed problem with creating IpAddress objects
+ *
  * Revision 1.10  1999/02/16 08:08:06  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -1238,22 +1241,15 @@ PASNIPAddress::PASNIPAddress(const PString & str)
 {
   value.SetSize(4);
 
-  PINDEX strLen = str.GetLength();
-  PINDEX i = 0;
-  PINDEX len = 0;
-  while (i < strLen && len < 4) {
+  PIPSocket::Address addr;
+  if (!PIPSocket::GetHostAddress(str, addr))
+    addr = 0;
 
-    // find the first non-dot character
-    while (str[i] == '.' && i < strLen)
-      i++;
+  int i;
+  for (i = 0; i < 4; i++)
+    value[i] = addr[i];
 
-    // find the next dot
-    PINDEX j = str.Find('.', i);
-
-    // convert to an integer
-    value[len++] = (char)str(i, j).AsInteger();
-    i = j;
-  }
+  valueLen = 4;
 }
 
 
