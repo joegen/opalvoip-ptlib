@@ -1000,6 +1000,9 @@
 			<File
 				RelativePath="..\..\ptclib\xmpp_c2s.cxx">
 			</File>
+			<File
+				RelativePath="..\..\ptclib\xmpp_roster.cxx">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1129,6 +1132,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\xmpp_c2s.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\xmpp_roster.h">
 			</File>
 		</Filter>
 	</Files>
