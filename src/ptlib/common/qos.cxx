@@ -18,6 +18,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qos.cxx,v $
+ * Revision 1.2  2003/10/27 04:06:13  csoutheren
+ * Added code to allow compilation of new QoS code on Unix
+ *
  * Revision 1.1  2003/10/27 03:20:10  csoutheren
  * Initial version of QoS implementation
  *   Thanks to Henry Harrison of AliceStreet
@@ -36,20 +39,20 @@ char PQoS::guaranteedDSCP = 46;
 
 PQoS::PQoS() 
 {
-    ServiceType = SERVICETYPE_PNOTDEFINED;
+    serviceType = SERVICETYPE_PNOTDEFINED;
     dscp = -1;
-    TokenRate = QOS_NOT_SPECIFIED;
-    TokenBucketSize = QOS_NOT_SPECIFIED;
-    PeakBandwidth = QOS_NOT_SPECIFIED;
+    tokenRate = QOS_NOT_SPECIFIED;
+    tokenBucketSize = QOS_NOT_SPECIFIED;
+    peakBandwidth = QOS_NOT_SPECIFIED;
 }
 
 PQoS::PQoS(int DSCPvalue) 
 {
-    ServiceType = SERVICETYPE_PNOTDEFINED;
+    serviceType = SERVICETYPE_PNOTDEFINED;
     dscp = DSCPvalue;
-    TokenRate = QOS_NOT_SPECIFIED;
-    TokenBucketSize = QOS_NOT_SPECIFIED;
-    PeakBandwidth = QOS_NOT_SPECIFIED;
+    tokenRate = QOS_NOT_SPECIFIED;
+    tokenBucketSize = QOS_NOT_SPECIFIED;
+    peakBandwidth = QOS_NOT_SPECIFIED;
 }
 
 PQoS::PQoS(DWORD avgBytesPerSec, 
@@ -58,21 +61,21 @@ PQoS::PQoS(DWORD avgBytesPerSec,
            DWORD maxFrameBytes, 
            DWORD peakBytesPerSec)
 {
-    TokenRate = avgBytesPerSec;
-    ServiceType = winServiceType;
+    tokenRate = avgBytesPerSec;
+    serviceType = winServiceType;
     dscp = DSCPalternative;
-    TokenBucketSize = maxFrameBytes;
-    PeakBandwidth = peakBytesPerSec;
+    tokenBucketSize = maxFrameBytes;
+    peakBandwidth = peakBytesPerSec;
 }
 
 void PQoS::SetWinServiceType(DWORD winServiceType)
 {
-    ServiceType = winServiceType;
+    serviceType = winServiceType;
 }
 
 void PQoS::SetAvgBytesPerSec(DWORD avgBytesPerSec)
 {
-    TokenRate = avgBytesPerSec;
+    tokenRate = avgBytesPerSec;
 }
 
 void PQoS::SetDSCP(int DSCPvalue)
@@ -83,31 +86,30 @@ void PQoS::SetDSCP(int DSCPvalue)
 
 void PQoS::SetMaxFrameBytes(DWORD maxFrameBytes)
 {
-    TokenBucketSize = maxFrameBytes;
+    tokenBucketSize = maxFrameBytes;
 }
 
 void PQoS::SetPeakBytesPerSec(DWORD peakBytesPerSec)
 {
-    PeakBandwidth = peakBytesPerSec;
+    peakBandwidth = peakBytesPerSec;
 }
 
 
 void PQoS::SetDSCPAlternative(DWORD winServiceType, UINT dscp)
 {
-    if (dscp > -1 &&
-        dscp < 63 &&
+    if (dscp < 63 &&
         winServiceType != SERVICETYPE_PNOTDEFINED)
     {
         switch (winServiceType)
         {
         case SERVICETYPE_BESTEFFORT:
-             BestEffortDSCP = (char)dscp;
+             bestEffortDSCP = (char)dscp;
             break;
         case SERVICETYPE_CONTROLLEDLOAD:
-            ControlledLoadDSCP = (char)dscp;
+            controlledLoadDSCP = (char)dscp;
             break;
         case SERVICETYPE_GUARANTEED:
-            GuaranteedDSCP = (char)dscp;
+            guaranteedDSCP = (char)dscp;
             break;
         }
     }
