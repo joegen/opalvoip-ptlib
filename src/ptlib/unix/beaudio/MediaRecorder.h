@@ -26,13 +26,16 @@ public:
 		virtual				~BMediaRecorder();
 		status_t			InitCheck();
 
-		status_t			SetHook(
-									void * cookie,
+		status_t			SetBufferHook(
 									void (*buffer_hook)(
 											void * cookie,
-											void * data,
+											const void * data,
 											size_t size,
-											const media_header & header));
+											const media_header & header),
+									void *cookie);
+
+		void				SetCookie(
+									void *cookie);
 
 		virtual void		BufferReceived(
 									void * data,

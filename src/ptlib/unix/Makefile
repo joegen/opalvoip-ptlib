@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.76  2001/07/09 06:16:15  yurik
+# Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
+#
 # Revision 1.75  2001/06/27 17:25:46  rogerh
 # Compile the dummyvideo.cxx file on platforms with no video capture hardware
 #
@@ -336,15 +339,22 @@ SOUND_SOURCE = ossaix.cxx
 endif
 
 ifeq ($(OSTYPE),beos)
+
+ifdef MEDIA_KIT_UPDATE
+SOUND_SOURCE = beaudio.cxx
+else
 BEAUDIO_SRC_DIR	= ./beaudio
 VPATH_CXX += $(BEAUDIO_SRC_DIR)
 
 SOUND_SOURCE = beaudio.cxx \
-	$(BEAUDIO_SRC_DIR)/SoundPlayer.cxx \
-	$(BEAUDIO_SRC_DIR)/SoundInput.cxx \
 	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
-	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx \
-	$(BEAUDIO_SRC_DIR)/BlockFIFO.cxx
+	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
+endif
+
+VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
+               $(COMMON_SRC_DIR)/videoio.cxx \
+	       	   video4beos.cxx \
+	       	   $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
@@ -433,17 +443,11 @@ $(OBJDIR)/switch.o: ./switch.cxx
 	$(CPLUS) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 endif
 
-
 $(OBJDIR)/getdate.tab.o: $(GETDATE_SOURCE)
 	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
 
 $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(CC) $(STDCCFLAGS) -M $< >> $@
-
-ifeq ($(OSTYPE),beos)
-$(OBJDIR)/resample.o: $(BEAUDIO_SRC_DIR)/resample.c
-	$(CC) $(CFLAGS) $(STDCCFLAGS) -c $< -o $@
-endif
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
 	bison $(COMMON_SRC_DIR)/getdate.y

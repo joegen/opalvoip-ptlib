@@ -1,6 +1,6 @@
 //	MediaRecorder.cpp
 //	-----------------
-//	Copyright 1999, Be Incorporated.   All Rights Reserved.
+//	Copyright 1999-2001, Be Incorporated.   All Rights Reserved.
 //	This file may be used under the terms of the Be Sample Code License.
 
 #include "MediaRecorder.h"
@@ -52,7 +52,7 @@ BMediaRecorder::InitCheck()
 }
 
 status_t
-BMediaRecorder::SetHook(void *cookie, void( *buffer_hook)( void * cookie, void *data, size_t size, const media_header &header))
+BMediaRecorder::SetBufferHook(void( *buffer_hook)( void * cookie, const void *data, size_t size, const media_header &header), void *cookie)
 {
 	if (_mInitErr < B_OK) {
 		return _mInitErr;
@@ -65,10 +65,16 @@ BMediaRecorder::SetHook(void *cookie, void( *buffer_hook)( void * cookie, void *
 	return B_OK;
 }
 
+void
+BMediaRecorder::SetCookie(void *cookie)
+{
+	_mBufferCookie = cookie;
+}
+
 void 
 BMediaRecorder::BufferReceived(void *data, size_t size, const media_header &header)
 {
-	if (_mBufferHook) {
+	if (_mBufferHook && _mRunning) {
 		(*_mBufferHook)(_mBufferCookie, data, size, header);
 	}
 }
@@ -238,7 +244,7 @@ BMediaRecorder::giga_connect( const media_format *in_format, uint32 in_flags, co
 	if (_mNode == 0) return B_ERROR;
 	if ((in_node == 0) && (in_output != 0)) return B_MISMATCHED_VALUES;
 	if ((in_dormant != 0) && ((in_node != 0) || (in_output != 0))) return B_MISMATCHED_VALUES;
-	if ((in_format == 0) && (in_output != 0)) fmt = in_output->format;
+	//if ((in_format == 0) && (in_output != 0)) fmt = in_output->format;
 
 	_mNode->SetOKFormat(fmt);
 
@@ -282,7 +288,7 @@ BMediaRecorder::giga_connect( const media_format *in_format, uint32 in_flags, co
 		int32 count = 10;
 		err = BMediaRoster::Roster()->GetFreeOutputsFor(node, outputs, count, &count, fmt.type);
 		if (err == B_OK) {
-			err = B_MEDIA_BAD_SOURCE;
+			err = B_MEDIA_BAD_FORMAT;
 			for (int ix=0; ix<count; ix++) {
 				if (format_is_compatible(outputs[ix].format, fmt)) {
 					out = outputs[ix];

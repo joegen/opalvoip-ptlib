@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.94  2001/07/09 06:16:15  yurik
+# Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
+#
 # Revision 1.93  2001/06/30 06:59:06  yurik
 # Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
 #
@@ -644,6 +647,27 @@ BE_THREADS := 1
 # be droppped.
 #BE_BONE := 1
 
+# Uncomment the next line if you have the
+# Media Kit Update installed (probably you don't, unless
+# you are a Be Inc. employee or a registered Beta tester).
+# The media kit update has an extended BMediaRecorder
+# implemented in the library. For the OpenH323 project,
+# it just means that it's possible to get a list of
+# recording devices, which is something that's hard to
+# implement with the MediaRecorder class that's included
+# in pwlib.
+#MEDIA_KIT_UPDATE := 1
+
+# Be Inc. is working on a version of OpenSSL that's integrated
+# in the operating system.
+#BE_OPENSSL := 1
+
+ifdef BE_OPENSSL
+STDCCFLAGS  += -DP_SSL
+SYSLIBS     += -lopenssl
+HAS_OPENSSL = 1
+endif
+
 SYSLIBS     += -lbe -lmedia -lgame -lroot
 
 ifdef BE_THREADS
@@ -657,6 +681,10 @@ SYSLIBS		+= -lsocket -lbind
 else
 SYSLIBS     += -lnet
 STDCCFLAGS  += -DBE_BONELESS
+endif
+
+ifdef MEDIA_KIT_UPDATE
+STDCCFLAGS  += -DMEDIA_KIT_UPDATE
 endif
 
 LDLIBS		+= $(SYSLIBS)
