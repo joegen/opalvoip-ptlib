@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.8  2004/04/24 01:06:32  rjongbloed
+ * Apploed  patch that impliments a number of checks to avoid segfaults when dealing with
+ *   various clients. Thanks Ben Lear
+ *
  * Revision 1.7  2004/01/17 17:45:59  csoutheren
  * Changed to use PString::MakeEmpty
  *
@@ -124,11 +128,11 @@ void PSOAPMessage::GetMethod( PString & name, PString & nameSpace )
 {
   PString fullMethod = pSOAPMethod->GetName();
   PINDEX sepLocation = fullMethod.Find(':');
-  PString methodID = fullMethod.Left( sepLocation  );
-  name = fullMethod.Right( fullMethod.GetSize() - 2 - sepLocation );
-
-  nameSpace = pSOAPMethod->GetAttribute( "xmlns:" + methodID );
-
+  if (sepLocation != P_MAX_INDEX) {
+    PString methodID = fullMethod.Left(sepLocation);
+    name = fullMethod.Right(fullMethod.GetSize() - 2 - sepLocation);
+    nameSpace = pSOAPMethod->GetAttribute( "xmlns:" + methodID );
+  }
 }
 
 
@@ -253,6 +257,9 @@ PINDEX stringToFaultCode( PString & faultStr )
 BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
 {
   PXMLElement* pElement = GetParameter( name );
+  if(pElement == NULL)
+    return FALSE;
+
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:string" )
   {
@@ -267,6 +274,8 @@ BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
 BOOL PSOAPMessage::GetParameter( const PString & name, int & value )
 {
   PXMLElement* pElement = GetParameter( name );
+  if(pElement == NULL)
+    return FALSE;
 
   if ( pElement->GetAttribute( "xsi:type") == "xsd:int" )
   {
@@ -431,7 +440,7 @@ BOOL PSOAPServerResource::OnPOSTData( PHTTPRequest & request,
   if ( pSOAPAction )
   {
     // If it's available check if we are expecting a special header value
-    if ( soapAction == " " )
+    if ( soapAction.IsEmpty() || soapAction == " " )
     {
       // A space means anything goes
       ok = OnSOAPRequest( request.entityBody, reply );
