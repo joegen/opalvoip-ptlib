@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.79  1999/05/28 14:01:53  robertj
+ * Added initialisers to string containers (list, sorted list and set).
+ *
  * Revision 1.78  1999/04/18 09:36:31  robertj
  * Get date grammar build.
  *
@@ -1898,8 +1901,7 @@ PStringStream::~PStringStream()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringArray::PStringArray(PINDEX count,
-                                    char const * const * strarr, BOOL caseless)
+PStringArray::PStringArray(PINDEX count, char const * const * strarr, BOOL caseless)
 {
   if (count == 0)
     return;
@@ -1924,6 +1926,63 @@ PString & PStringArray::operator[](PINDEX index)
   if ((*theArray)[index] == NULL)
     (*theArray)[index] = new PString;
   return *(PString *)(*theArray)[index];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseless)
+{
+  if (count == 0)
+    return;
+
+  PAssertNULL(strarr);
+  for (PINDEX i = 0; i < count; i++) {
+    PString * newString;
+    if (caseless)
+      newString = new PCaselessString(strarr[i]);
+    else
+      newString = new PString(strarr[i]);
+    Append(newString);
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PSortedStringList::PSortedStringList(PINDEX count,
+                                     char const * const * strarr,
+                                     BOOL caseless)
+{
+  if (count == 0)
+    return;
+
+  PAssertNULL(strarr);
+  for (PINDEX i = 0; i < count; i++) {
+    PString * newString;
+    if (caseless)
+      newString = new PCaselessString(strarr[i]);
+    else
+      newString = new PString(strarr[i]);
+    Append(newString);
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
+{
+  if (count == 0)
+    return;
+
+  PAssertNULL(strarr);
+  for (PINDEX i = 0; i < count; i++) {
+    if (caseless)
+      Include(PCaselessString(strarr[i]));
+    else
+      Include(PString(strarr[i]));
+  }
 }
 
 
