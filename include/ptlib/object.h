@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.96  2004/04/09 00:42:58  csoutheren
+ * Changed Unix build to use slightly different method for
+ * keep class names, as GCC does not use actual class names for typeinfo
+ *
  * Revision 1.95  2004/04/04 13:24:18  rjongbloed
  * Changes to support native C++ Run Time Type Information
  *
@@ -783,12 +787,16 @@ of compatibility with documentation systems.
 
 #include <typeinfo>
 
+#ifndef PCLASSNAME
+#error	"Must define PCLASSNAME"
+#endif
+
 #define PBASECLASSINFO(cls, par) \
   public: \
     static inline const char * Class() \
-      { return 6 + typeid(cls).name(); } \
+      { return PCLASSNAME(cls); } \
     virtual BOOL InternalIsDescendant(const char * clsName) const \
-      { return strcmp(clsName, 6 + typeid(cls).name()) == 0 || par::InternalIsDescendant(clsName); } \
+      { return strcmp(clsName, PCLASSNAME()) == 0 || par::InternalIsDescendant(clsName); } \
 
 #else // P_HAS_TYPEINFO
 
@@ -858,12 +866,7 @@ class PObject {
 
        @return pointer to C string literal.
      */      
-#if P_HAS_TYPEINFO
-    static inline const char * Class()    { return 6 + typeid(PObject).name(); }
-#else
-    static const char * Class()           { return "PObject"; }
-#endif
-
+    static inline const char * Class()    { return PCLASSNAME(); }
 
     /** Get the current dynamic type of the object instance.
 
