@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.37 1996/10/14 03:11:25 robertj Exp $
+ * $Id: win32.cxx,v 1.38 1996/10/26 01:42:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.38  1996/10/26 01:42:51  robertj
+ * Added more translations for winsock error codes to standard error codes.
+ *
  * Revision 1.37  1996/10/14 03:11:25  robertj
  * Changed registry key so when reading only opens in ReadOnly mode.
  *
@@ -448,12 +451,15 @@ BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
     osError = GetLastError();
     switch (osError) {
       case ERROR_INVALID_HANDLE :
+      case WSAEBADF :
         osError = EBADF;
         break;
       case ERROR_INVALID_PARAMETER :
+      case WSAEINVAL :
         osError = EINVAL;
         break;
       case ERROR_ACCESS_DENIED :
+      case WSAEACCES :
         osError = EACCES;
         break;
       case ERROR_NOT_ENOUGH_MEMORY :
