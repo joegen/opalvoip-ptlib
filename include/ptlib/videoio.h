@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.35  2003/11/19 04:29:02  csoutheren
+ * Changed to support video output plugins
+ *
  * Revision 1.34  2003/11/18 10:39:06  csoutheren
  * Fixed warnings regarding calling virtual Close in destructors
  *
@@ -161,6 +164,9 @@
 
 #if defined(_WIN32)
 PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_VideoForWindows);
+PWLIB_STATIC_LOAD_PLUGIN(PVideoInputDevice_FakeVideo);
+
+PWLIB_STATIC_LOAD_PLUGIN(PVideoOutputDevice_NULLOutput);
 #endif
 
 class PColourConverter;
@@ -300,8 +306,7 @@ class PVideoDevice : public PObject
 
     /**Get a list of all of the drivers available.
       */
-    virtual PStringList GetDeviceNames() const;
-
+    virtual PStringList GetDeviceNames() const = 0;
 
 #if PTRACING
     friend ostream & operator<<(ostream &, VideoFormat);
@@ -603,6 +608,37 @@ class PVideoOutputDevice : public PVideoDevice
       */
     virtual ~PVideoOutputDevice() { Close(); };      
 
+    /**
+       Return the list of available video input drivers
+    */
+    static PStringList GetDriverNames(PPluginManager * pluginMgr = NULL);
+
+    /**
+       Return video devices that correspond to the specified name
+    */
+    static PStringList GetDeviceNames(
+                                     const PString &driverName,
+                                     PPluginManager * pluginMgr = NULL
+                                     );
+
+    /**
+       Return the video output device that corresponds to the specified name
+    */
+    static PVideoOutputDevice *CreateDevice(
+                                          const PString &driverName,
+                                          PPluginManager * pluginMgr = NULL
+                                          );
+
+    /**
+       Return opened video output device that corresponds to the specified name
+    */
+    static PVideoOutputDevice *CreateOpenedDevice(
+                                          const PString & driverName,
+                                          const PString & deviceName,
+                                          BOOL startImmediate = TRUE,
+                                          PPluginManager * pluginMgr = NULL
+                                          );
+
     /**Close the device.
       */
     virtual BOOL Close() { return TRUE; }
@@ -624,65 +660,16 @@ class PVideoOutputDevice : public PVideoDevice
 
     /**Indicate frame may be displayed.
       */
-    virtual BOOL EndFrame() = 0;
+
+  protected:
+    // this ensures that this function cannot be called on any PVideoInputDevice unless it has
+    // been specifically implemented by that class. This will help ensure that video input plugins 
+    // get propagated
+    virtual PStringList GetDeviceNames() const
+    { return PVideoDevice::GetDeviceNames(); }
 };
 
-
-
-/**This class defines a NULL video output device.
-   This will do precisely nothing with the output.
- */
-class PVideoOutputDeviceNULL : public PVideoOutputDevice
-{
-  PCLASSINFO(PVideoOutputDeviceNULL, PVideoOutputDevice);
-
-  public:
-    /** Create a new video output device.
-     */
-    PVideoOutputDeviceNULL();
-
-    /**Open the device given the device name.
-      */
-    virtual BOOL Open(
-      const PString & deviceName,   /// Device name to open
-      BOOL startImmediate = TRUE    /// Immediately start device
-    );
-
-    /**Close the device.
-      */
-    virtual BOOL Close() = 0;
-
-    /**Determine if the device is currently open.
-      */
-    virtual BOOL IsOpen();
-
-    /**Get a list of all of the drivers available.
-      */
-    virtual PStringList GetDeviceNames() const;
-
-    /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
-    virtual PINDEX GetMaxFrameBytes();
-
-    /**Set a section of the output frame buffer.
-      */
-    virtual BOOL SetFrameData(
-      unsigned x,
-      unsigned y,
-      unsigned width,
-      unsigned height,
-      const BYTE * data,
-      BOOL endFrame = TRUE
-    ) = 0;
-
-    /**Indicate frame may be displayed.
-      */
-    virtual BOOL EndFrame();
-};
-
+#ifdef SHOULD_BE_MOVED_TO_PLUGIN
 
 /**This class defines a video output device for RGB in a frame store.
  */
@@ -745,6 +732,9 @@ class PVideoOutputDeviceRGB : public PVideoOutputDevice
     PINDEX     bytesPerPixel;
 };
 
+#endif // SHOULD_BE_MOVED_TO_PLUGIN
+
+#ifdef SHOULD_BE_MOVED_TO_PLUGIN
 
 /**This class defines a video output device which outputs to a series of PPM files.
  */
@@ -784,6 +774,7 @@ class PVideoOutputDevicePPM : public PVideoOutputDeviceRGB
     unsigned   frameNumber;
 };
 
+#endif // SHOULD_BE_MOVED_TO_PLUGIN
 
 /**This class defines a video input device.
  */
@@ -886,14 +877,16 @@ class PVideoInputDevice : public PVideoDevice
 
   protected:
     // this ensures that this function cannot be called on any PVideoInputDevice unless it has
-    // bee specifically implemented by that class. This will help ensure that video input plugins 
+    // been specifically implemented by that class. This will help ensure that video input plugins 
     // get propagated
     virtual PStringList GetDeviceNames() const
     { return PVideoDevice::GetDeviceNames(); }
-
 };
 
-// define the video input plugin service descriptor
+////////////////////////////////////////////////////////
+//
+// declare macros and structures needed for video input plugins
+//
 
 class PVideoInputDevicePluginServiceDescriptor : public PPluginServiceDescriptor
 {
@@ -934,6 +927,51 @@ PVideoInputDevicePluginServiceDescriptor className##_descriptor(\
 PCREATE_PLUGIN_VERSION_FN(name, PVideoInputDevice) \
 PCREATE_VIDINPUT_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PVideoInputDevice)) \
 PCREATE_PLUGIN(name, PVideoInputDevice, &className##_descriptor)
+
+////////////////////////////////////////////////////////
+//
+// declare macros and structures needed for video output plugins
+//
+
+class PVideoOutputDevicePluginServiceDescriptor : public PPluginServiceDescriptor
+{
+  public:
+    PVideoOutputDevicePluginServiceDescriptor(
+                     unsigned (*_GetVersion)(),
+               PVideoOutputDevice *(*_CreateInstance)(),
+                 PStringList (*_GetDeviceNames)()
+     )
+    : PPluginServiceDescriptor(_GetVersion),
+      CreateInstance(_CreateInstance),
+      GetDeviceNames(_GetDeviceNames)
+    { }
+
+    PVideoOutputDevice *(*CreateInstance)();
+    PStringList (*GetDeviceNames) ();
+};
+
+
+#define PCREATE_VIDOUTPUT_SERVICE_DESCRIPTOR(className, versionFn) \
+PVideoOutputDevice * className##_CreateInstance () \
+{ \
+  return new className; \
+} \
+\
+PStringList className##_GetDeviceNames () \
+{ \
+  return className::GetOutputDeviceNames(); \
+} \
+\
+PVideoOutputDevicePluginServiceDescriptor className##_descriptor(\
+   versionFn, \
+   className##_CreateInstance, \
+   className##_GetDeviceNames \
+); \
+
+#define PCREATE_VIDOUTPUT_PLUGIN(name, className) \
+PCREATE_PLUGIN_VERSION_FN(name, PVideoOutputDevice) \
+PCREATE_VIDOUTPUT_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PVideoOutputDevice)) \
+PCREATE_PLUGIN(name, PVideoOutputDevice, &className##_descriptor)
 
 #endif   // _PVIDEOIO
 
