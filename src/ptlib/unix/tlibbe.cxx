@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.24  2004/04/25 21:51:37  ykiryanov
+ * Cleaned up thread termination act. Very cool
+ *
  * Revision 1.23  2004/04/25 04:32:37  ykiryanov
  * Fixed very old bug - no get thread id code in InitialiseProcessThread
  *
@@ -82,8 +85,6 @@ class PSemaphore;
 #include <ptlib/socket.h>
 #include <posix/rlimit.h>
 
-//#define DEBUG_THREADS
-
 int PX_NewHandle(const char *, int);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,10 +137,6 @@ void PThread::InitialiseProcessThread()
   PAssertOS(mUnblockPipe[0]);
   PAssertOS(mUnblockPipe[1]);
   
-  #ifdef DEBUG_THREADS
-  PError << ">>> New pipe, 0 is " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl;
-  #endif
-
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
   ((PProcess *)this)->activeThreads.SetAt(mId, this);
 }
@@ -172,30 +169,33 @@ PThread::PThread(PINDEX stackSize,
 
   PAssert(::pipe(mUnblockPipe) == 0, "Pipe creation failed in PThread constructor");
   PX_NewHandle("Thread unblock pipe", PMAX(mUnblockPipe[0], mUnblockPipe[1]));
+}
 
-  #ifdef DEBUG_THREADS
-  PError << ">>> New pipe, 0 is " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl; 
-  PError << ">>> Spawned thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
-  #endif
+PThread * PThread::Current()
+{
+  PProcess & process = PProcess::Current();
+  process.activeThreadMutex.Wait();
+  PThread * thread = process.activeThreads.GetAt((unsigned)find_thread(NULL));
+  process.activeThreadMutex.Signal();
+  return thread;    
 }
 
 PThread::~PThread()
 {
+  // if we are not process, remove this thread from the active thread list
+  PProcess & process = PProcess::Current();
+  if(process.GetThreadId() != GetThreadId())
+  {
+    process.activeThreadMutex.Wait();
+    process.activeThreads.RemoveAt((unsigned) mId);
+    process.activeThreadMutex.Signal();
+  }
+
   if (!IsTerminated())
     Terminate();
 
-  #ifdef DEBUG_THREADS
-  PError << ">>> Closing pipe " << mUnblockPipe[0] << ", thread " << find_thread(NULL) << endl;
-  #endif
-
   ::close(mUnblockPipe[0]);
   ::close(mUnblockPipe[1]);
-
-  //  remove this thread from the active thread list
-  PProcess & process = PProcess::Current();
-  process.activeThreadMutex.Wait();
-  process.activeThreads.RemoveAt((unsigned) mId);
-  process.activeThreadMutex.Signal();
 }
 
 
@@ -213,62 +213,28 @@ void PThread::Restart()
 
   threadName.sprintf("PWLib Thread %d", mId);
   ::rename_thread(mId, (const char*) threadName); // real, unique name - with id
-
-  #ifdef DEBUG_THREADS
-  PError << ">>> Spawned (restarted) thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
-  #endif
 }
-
 
 void PThread::Terminate()
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-  PAssert(mStackSize > 0, PLogicError);
-	
-  if (Current() == this)
-  {
-    sem_id semId = ::create_sem( 1, "Current PThread terminate semaphore" );
-    if (::acquire_sem(semId) == B_NO_ERROR)
-    {
-      // Invalidate the thread
-      mId = B_BAD_THREAD_ID;
-      ::release_sem(semId);
-      ::delete_sem(semId);
-		
-      #ifdef DEBUG_THREADS
-      PError << ">>> Exiting thread, id:" << mId << endl;
-      #endif
-      ::exit_thread(0);
-    }
-  }
-  else 
-  {
-    sem_id semId = ::create_sem( 1, "Non-current PThread terminate semaphore" );
-    if (::acquire_sem(semId) == B_NO_ERROR)
-    {
-      thread_id idToKill;
-      idToKill = mId;
+  if(mStackSize <=0)
+    return;
 
-      // Invalidate the thread
-      mId = B_BAD_THREAD_ID;
-			
-      // Kill it
-      if (idToKill != B_BAD_THREAD_ID)
-      { 
-        ::release_sem(semId);
-	::delete_sem(semId);
-
-        #ifdef DEBUG_THREADS
-        PError << ">>> Killing thread, id: " << idToKill << endl;
-        #endif
-	
-        ::kill_thread(idToKill);
-      }
-    }
+  if(mId == find_thread(NULL))
+  {
+    ::exit_thread(0);
+    return;
   }
-  PAssert(mId == B_BAD_THREAD_ID, "Can't acquire semaphore to terminate thread");
+
+  if(IsTerminated())
+    return;
+
+  PXAbortBlock();
+  WaitForTermination(20);
+
+ if(mId > B_BAD_THREAD_ID)
+   ::kill_thread(0);
 }
-
 
 BOOL PThread::IsTerminated() const
 {
@@ -287,15 +253,8 @@ BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix
   status_t result = B_NO_ERROR;
   status_t exit_value = B_NO_ERROR;
 
-  #ifdef DEBUG_THREADS
-  PError << "::wait_for_thread(" << mId << "), result:";
-  #endif
-
   result = ::wait_for_thread(mId, &exit_value);
   if ( result == B_INTERRUPTED ) { // thread was killed.
-    #ifdef DEBUG_THREADS
-    PError << "B_INTERRUPTED" << endl;
-    #endif
     return TRUE;
   }
 
@@ -307,9 +266,6 @@ BOOL PThread::WaitForTermination(const PTimeInterval & /*maxWait*/) const // Fix
   }
 
   if ( result == B_BAD_THREAD_ID ) { // thread has invalid id
-    #ifdef DEBUG_THREADS
-    PError << "B_BAD_THREAD_ID" << endl;
-    #endif
     return TRUE;
   }
 
@@ -324,10 +280,6 @@ void PThread::Suspend(BOOL susp)
   PAssert(!IsTerminated(), "Operation on terminated thread");
   if (susp)
   {
-    #ifdef DEBUG_THREADS
-    PError << "Suspending thread " << (const char*) threadName << ", id: " << mId << ", priority: " << mPriority << endl;
-    #endif
-
     status_t result = ::suspend_thread(mId);
     if(B_OK == result)
 	::atomic_add(&mSuspendCount, 1);
@@ -352,10 +304,6 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  #ifdef DEBUG_THREADS
-  PError << "Checking if thread suspended " << (const char*) threadName << ", id: " << mId << ", suspend count: " << mSuspendCount << endl;
-  #endif
-
   return (mSuspendCount > 0);
 }
 
@@ -414,28 +362,10 @@ void PThread::Sleep( const PTimeInterval & delay ) // Time interval to sleep for
   PAssert(result == B_OK, "Thread has insomnia");
 }
 
-
-PThread * PThread::Current()
-{
-  PProcess & process = PProcess::Current();
-  thread_id currentId = GetCurrentThreadId();
-  PAssertOS(currentId >= B_NO_ERROR);
-
-  process.activeThreadMutex.Wait();
-  PThread * thread = process.activeThreads.GetAt((unsigned) currentId);
-  process.activeThreadMutex.Signal();
-
-  return thread;
-}
-
 int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/) // Fix timeout
 {
   status_t result = B_NO_ERROR;
   status_t exit_value = B_NO_ERROR;
-
-  #ifdef DEBUG_THREADS
-  PError << "::wait_for_thread(" << pid << "), result:";
-  #endif
 
   result = ::wait_for_thread(pid, &exit_value);
   if ( result == B_INTERRUPTED ) 
@@ -450,19 +380,12 @@ int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & /*timeout*/)
   if ( result == B_OK ) 
   { 
     // thread is dead
-    #ifdef DEBUG_THREADS
-    PError << "B_OK" << endl;
-    #endif
      return 1;
   }
 
   if ( result == B_BAD_THREAD_ID ) 
   { 
     // thread has invalid id
-    #ifdef DEBUG_THREADS
-    PError << "B_BAD_THREAD_ID" << endl;
-    #endif
-  
     return 1;
   }
 
@@ -525,10 +448,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
 
     // include the termination pipe into all blocking I/O functions
-    #ifdef DEBUG_THREADS 
-    PError << "Trying to get pipe[0[, thread " << find_thread(NULL) << endl;
-    #endif
-
     read_fds += mUnblockPipe[0];
 
     P_timeval tval = timeout;
@@ -550,10 +469,6 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 void PThread::PXAbortBlock(void) const
 {
   BYTE ch;
-  #ifdef DEBUG_THREADS
-  PError << ">>> About to write in unblock pipe, thread " << find_thread(NULL) << endl;
-  #endif
-
   ::write(mUnblockPipe[1], &ch, 1);
 }
 
@@ -610,10 +525,6 @@ void PHouseKeepingThread::Main()
 
 void PProcess::SignalTimerChange()
 {
-  #ifdef DEBUG_THREADS
-  PError << ">>> Creating housekeeper , thread " << find_thread(NULL) << endl;
-  #endif
-
   activeThreadMutex.Wait();
   if (housekeepingThread == NULL) {
     housekeepingThread = new PHouseKeepingThread;
