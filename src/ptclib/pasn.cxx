@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.10  1999/02/16 08:08:06  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.9  1998/11/30 04:52:04  robertj
  * New directory structure
  *
@@ -875,7 +878,7 @@ PString PASNObjectID::GetString() const
 BOOL PASNObjectID::Decode(const PBYTEArray & buffer, PINDEX & offs)
 {
   BYTE type = buffer[offs++];
-  PAssert(type == ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE, 
+  PAssert(type == (ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE),
           "Attempt to decode non-objectID");
   PASNOid subId;
   

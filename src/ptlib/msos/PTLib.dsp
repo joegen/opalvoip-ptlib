@@ -1,5 +1,5 @@
 # Microsoft Developer Studio Project File - Name="PTLib" - Package Owner=<4>
-# Microsoft Developer Studio Generated Build File, Format Version 5.00
+# Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
@@ -22,6 +22,7 @@ CFG=PTLib - Win32 Release
 !MESSAGE 
 
 # Begin Project
+# PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 CPP=cl.exe
@@ -52,12 +53,12 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /debugtype:both /machine:I386 /libpath:"..\..\..\lib"
+# ADD LINK32 winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /debugtype:both /machine:I386 /libpath:"..\..\..\lib"
 # Begin Custom Build - Extracting debug symbols
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
 InputPath=\Work\pwlib\Lib\PTLib.dll
-SOURCE=$(InputPath)
+SOURCE="$(InputPath)"
 
 "$(OutDir)\$(TargetName).dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	rebase -b 0x10000000 -x . $(OutDir)\$(TargetName).dll
@@ -78,7 +79,7 @@ SOURCE=$(InputPath)
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /Gf /Gy /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /FR /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /ZI /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /FR /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -89,7 +90,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /machine:I386
-# ADD LINK32 mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\..\Lib\PTLibd.dll" /libpath:"..\lib"
+# ADD LINK32 winmm.lib mpr.lib snmpapi.lib wsock32.lib netapi32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"..\..\..\Lib\PTLibd.dll" /libpath:"..\lib"
 
 !ENDIF 
 
@@ -118,10 +119,10 @@ SOURCE=..\..\..\Lib\Release\ptlib.def
 # Begin Source File
 
 SOURCE=.\ptlib.dtf
-USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
+USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 # Begin Custom Build - Merging exported library symbols
 IntDir=.\..\..\..\Lib\Release
 OutDir=.\..\..\..\Lib
@@ -157,7 +158,6 @@ SOURCE=..\..\..\Lib\Debug\PTLibd.def
 # Begin Source File
 
 SOURCE=.\ptlibd.dtf
-USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
@@ -166,6 +166,7 @@ USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"
 !ELSEIF  "$(CFG)" == "PTLib - Win32 Debug"
 
 # PROP Ignore_Default_Tool 1
+USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	
 # Begin Custom Build - Merging exported library symbols
 IntDir=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
