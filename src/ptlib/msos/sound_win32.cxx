@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.9  2004/10/23 11:16:17  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.8  2004/08/16 06:41:00  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -174,7 +177,9 @@
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
+#ifndef _WIN32_WCE
 #pragma comment(lib, "winmm.lib")
+#endif
 
 class PSound;
 
