@@ -1001,6 +1001,9 @@
 				RelativePath="..\..\ptclib\xmpp_c2s.cxx">
 			</File>
 			<File
+				RelativePath="..\..\ptclib\xmpp_muc.cxx">
+			</File>
+			<File
 				RelativePath="..\..\ptclib\xmpp_roster.cxx">
 			</File>
 		</Filter>
@@ -1132,6 +1135,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\xmpp_c2s.h">
+			</File>
+			<File
+				RelativePath="..\..\..\include\ptclib\xmpp_muc.h">
 			</File>
 			<File
 				RelativePath="..\..\..\include\ptclib\xmpp_roster.h">
