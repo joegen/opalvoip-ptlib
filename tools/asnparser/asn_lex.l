@@ -1,6 +1,6 @@
 %{
 /*
- * $Id: asn_lex.l,v 1.3 1998/05/21 08:21:50 robertj Exp $
+ * $Id: asn_lex.l,v 1.4 1999/01/29 12:18:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1997 by Equivalence
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.4  1999/01/29 12:18:51  robertj
+ * Fixed warning in standard header file, caused by macro defined in flex.skel.
+ *
  * Revision 1.3  1998/05/21 08:21:50  robertj
  * GNU C++ compatibility
  *
@@ -21,8 +24,12 @@
  *
  */
 
+#undef comment   // Get rid of warning in useoldio.h
+
 #include <ptlib.h>
 #include "main.h"
+
+#define comment 1
 
 #include "asn_grammar.h"
 
