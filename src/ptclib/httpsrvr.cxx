@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.5 1997/01/12 04:15:23 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.6 1997/02/09 04:09:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.6  1997/02/09 04:09:30  robertj
+ * Fixed GCC warning
+ *
  * Revision 1.5  1997/01/12 04:15:23  robertj
  * Globalised MIME tag strings.
  *
@@ -721,7 +724,7 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", ", FALSE);
-    for (int z = 0; !isPersistant && z < tokens.GetSize(); z++)
+    for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
 #endif
