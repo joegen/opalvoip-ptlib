@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.166  2004/10/21 13:04:21  rjongbloed
+ * Fixed possibility of const operator[] on PStringArray returning a NULL reference. This
+ *   function should return a non-lvalue PString anyway as it is const!
+ *
  * Revision 1.165  2004/08/04 00:56:16  csoutheren
  * Added protection against signed chars triggering asserts in VS.net in debug mode
  * Thanks to Michal Zygmuntowicz
@@ -2755,6 +2759,15 @@ void PStringArray::ReadFrom(istream & strm)
     strm >> str;
     AppendString(str);
   }
+}
+
+
+PString PStringArray::operator[](PINDEX index) const
+{
+  PASSERTINDEX(index);
+  if (index < GetSize() && (*theArray)[index] != NULL)
+    return *(PString *)(*theArray)[index];
+  return PString::Empty();
 }
 
 
