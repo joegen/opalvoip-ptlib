@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.53  2002/06/13 08:50:11  rogerh
+ * GCC 3.1 uses slightly different #includes
+ *
  * Revision 1.52  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -201,7 +204,11 @@
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
+#if (__GNUC__ >= 3)
+#include <sstream>
+#else
 #include <strstream.h>
+#endif
 #include <signal.h>
 #endif
 
