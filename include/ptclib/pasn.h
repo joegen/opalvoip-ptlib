@@ -1,11 +1,14 @@
 /*
- * $Id: pasn.h,v 1.2 1996/11/04 03:56:00 robertj Exp $
+ * $Id: pasn.h,v 1.3 1996/11/04 09:45:08 robertj Exp $
  *
  * ASN Classes
  *
  * Copyright 1996 Equivalence
  *
  * $Log: pasn.h,v $
+ * Revision 1.3  1996/11/04 09:45:08  robertj
+ * Fixed bug in IP number ASN type, should be binary not dot format string.
+ *
  * Revision 1.2  1996/11/04 03:56:00  robertj
  * Added ASN types to class.
  *
@@ -294,7 +297,7 @@ PDECLARE_CLASS(PASNString, PASNObject)
 PDECLARE_CLASS(PASNIPAddress, PASNString)
   public:
     PASNIPAddress(const PIPSocket::Address & addr)
-      : PASNString((PString)addr) { }
+      : PASNString(PString((const char *)&addr, 4)) { }
 
     PASNIPAddress(const PString & str);
 
