@@ -24,7 +24,6 @@
 #pragma implementation "array.h"
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
-#pragma implementation "channel.h"
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -160,9 +159,22 @@ PTimeInterval PTimer::Tick()
 
 void PDirectory::CopyContents(const PDirectory & d)
 {
-  entryInfo = d.entryInfo;
-  directory = NULL;
-  entry     = NULL;
+  if (d.entryInfo == NULL)
+    entryInfo = NULL;
+  else {
+    entryInfo  = PNEW PFileInfo;
+    *entryInfo = *d.entryInfo;
+  }
+  directory  = NULL;
+  entry      = NULL;
+}
+
+void PDirectory::Close()
+{
+  if (directory != NULL)
+    PAssert(closedir(directory) == 0, POperatingSystemError);
+  if (entryInfo != NULL)
+    delete entryInfo;
 }
 
 void PDirectory::Construct ()
@@ -178,14 +190,20 @@ void PDirectory::Construct ()
 BOOL PDirectory::Open(int ScanMask)
 
 {
+  if (directory != NULL)
+    Close();
+
   scanMask = ScanMask;
 
   if ((directory = opendir((const char *)*this)) == NULL)
     return FALSE;
 
-  entryInfo = new PFileInfo;
+  entryInfo = PNEW PFileInfo;
 
-  return Next();
+  if (Next())
+    return TRUE;
+  Close();
+  return FALSE;
 }
 
 
@@ -622,159 +640,37 @@ PString PTime::GetDateSeparator()
   return PString(buffer);
 }
 
-PString PTime::GetDayName(PTime::Weekdays day, BOOL abbreviated)
+PString PTime::GetDayName(PTime::Weekdays day, NameType type)
 
 {
 #ifdef P_HPUX9
   return PString(
-     abbreviated ? nl_langinfo(ABDAY_1+(int)day) :
+     (type == Abbreviated) ? nl_langinfo(ABDAY_1+(int)day) :
                    nl_langinfo(DAY_1+(int)day)
                 );
 #elif defined(P_SUN4)
 #warning No day name
   return PString();
 #else
-  return abbreviated ? PString(_time_info->abbrev_wkday[(int)day]) :
+  return (type == Abbreviated) ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
 #endif
 }
 
-PString PTime::GetMonthName(PTime::Months month, BOOL abbreviated) 
+PString PTime::GetMonthName(PTime::Months month, NameType type) 
 {
 #ifdef P_HPUX9
   return PString(
-     abbreviated ? nl_langinfo(ABMON_1+(int)month-1) :
+     (type == Abbreviated) ? nl_langinfo(ABMON_1+(int)month-1) :
                    nl_langinfo(MON_1+(int)month-1)
                 );
 #elif defined(P_SUN4)
 #warning No month name
   return PString();
 #else
-  return abbreviated ? PString(_time_info->abbrev_month[(int)month-1]) :
+  return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
 #endif
 }
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// PChannel
-//
-
-BOOL PChannel::SetIOBlock (BOOL isRead)
-{
-  PTimeInterval timeout = isRead ? readTimeout : writeTimeout;
-  if (timeout != PMaxTimeInterval) 
-    return PThread::Current()->PXBlockOnIO(os_handle, isRead, timeout);
-  else
-    return PThread::Current()->PXBlockOnIO(os_handle, isRead);
-}
-
-
-BOOL PChannel::Read(void * buf, PINDEX len)
-{
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
-
-  if (!SetIOBlock(TRUE)) 
-    lastError = Timeout;
-  else if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
-    return lastReadCount > 0;
-
-  lastReadCount = 0;
-  return FALSE;
-}
-
-
-BOOL PChannel::Write(const void * buf, PINDEX len)
-{
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  }
-
-  if (!SetIOBlock(FALSE))
-    lastError = Timeout;
-  else if (ConvertOSError(lastWriteCount = ::write(os_handle, buf, len)))
-    return lastWriteCount >= len;
-
-  lastWriteCount = 0;
-  return FALSE;
-}
-
-BOOL PChannel::Close()
-{
-  if (os_handle < 0) {
-    lastError = NotOpen;
-    return FALSE;
-  } else {
-    os_handle = -1;
-    return ConvertOSError(::close(os_handle));
-  }
-}
-
-PString PChannel::GetErrorText() const
-{
-  return strerror(osError);
-#if 0
-#ifdef P_HPUX9
-  if (osError > 0 && osError < sys_nerr)
-    return sys_errlist[osError];
-#else
-  if (osError > 0 && osError < _sys_nerr)
-    return _sys_errlist[osError];
-#endif
-  else
-    return PString();
-#endif
-}
-
-BOOL PChannel::ConvertOSError(int err)
-
-{
-  osError = (err >= 0) ? 0 : errno;
-
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      return TRUE;
-
-    case EEXIST:
-      lastError = FileExists;
-      break;
-    case EISDIR:
-    case EROFS:
-      lastError = AccessDenied;
-      break;
-    case ETXTBSY:
-      lastError = DeviceInUse;
-      break;
-    case EFAULT:
-    case ELOOP:
-      lastError = BadParameter;
-      break;
-    case ENOENT :
-    case ENAMETOOLONG:
-    case ENOTDIR:
-      lastError = NotFound;
-      break;
-    case EMFILE:
-    case ENFILE:
-    case ENOMEM :
-      lastError = NoMemory;
-      break;
-    case ENOSPC:
-      lastError = DiskFull;
-      break;
-    default :
-      lastError = Miscellaneous;
-      break;
-  }
-  return FALSE;
-}
-
 
 // End Of File ///////////////////////////////////////////////////////////////
