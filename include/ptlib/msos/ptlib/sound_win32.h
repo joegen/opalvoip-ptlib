@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.h,v $
+ * Revision 1.2.2.1  2004/06/24 13:11:30  csoutheren
+ * Fixed possible deadlock in Win32 audio routines
+ * Thanks to Vyacheslav E. Andrejev (bug 949236)
+ *
  * Revision 1.2  2003/12/29 03:28:56  csoutheren
  * Allowed access to Windows sound channel declaration, just in case it is required
  *
@@ -143,6 +147,9 @@ class PSoundChannelWin32: public PSoundChannel
     BOOL GetVolume(unsigned &devVol);
 
   public:
+    BOOL IsRecordBufferDone();
+    BOOL WaitForRecordBufferDone();
+
     // Overrides from class PChannel
     virtual PString GetName() const;
       // Return the name of the channel.
