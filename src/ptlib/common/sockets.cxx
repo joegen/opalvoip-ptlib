@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.119  2002/04/12 01:42:41  robertj
+ * Changed return value on os_connect() and os_accept() to make sure
+ *   get the correct error codes propagated up under unix.
+ *
  * Revision 1.118  2002/01/28 01:27:03  robertj
  * Removed previous change that actually has nothing to do with GCC 3 compatibility,
  *   setting default timeout for all sockets to 10 seconds is NOT a sensible thing to do!
@@ -1432,7 +1436,7 @@ BOOL PIPSocket::Connect(const Address & iface, WORD localPort, const Address & a
   sin.sin_family = AF_INET;
   sin.sin_port   = htons(port);  // set the port
   sin.sin_addr   = addr;
-  if (ConvertOSError(os_connect((struct sockaddr *)&sin, sizeof(sin))))
+  if (os_connect((struct sockaddr *)&sin, sizeof(sin)))
     return TRUE;
 
   os_close();
@@ -1785,7 +1789,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   sockaddr_in address;
   address.sin_family = AF_INET;
   PINDEX size = sizeof(address);
-  if (!ConvertOSError(os_handle = os_accept(socket, (struct sockaddr *)&address, &size)))
+  if (!os_accept(socket, (struct sockaddr *)&address, &size))
     return FALSE;
 
   port = ((PIPSocket &)socket).GetPort();
