@@ -21,12 +21,13 @@ CFG=pwlibce - Win32 (WCE ARM) Debug
 !MESSAGE "pwlibce - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) Static Library")
 !MESSAGE "pwlibce - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Static Library")
 !MESSAGE "pwlibce - Win32 (WCE x86em) Debug" (based on "Win32 (WCE x86em) Static Library")
+!MESSAGE "pwlibce - Win32 (WCE x86em) Release" (based on "Win32 (WCE x86em) Static Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 1
-# PROP Scc_ProjName ""
-# PROP Scc_LocalPath ""
+# PROP Scc_ProjName ""$/openh323_1.1beta2/openh323", DAAAAAAA"
+# PROP Scc_LocalPath "..\openh323"
 # PROP ATL_Project 2
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
@@ -38,7 +39,7 @@ CFG=pwlibce - Win32 (WCE ARM) Debug
 # PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 2
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "lib"
 # PROP Intermediate_Dir "lib\ARMRel"
@@ -47,7 +48,7 @@ CFG=pwlibce - Win32 (WCE ARM) Debug
 # PROP Target_Dir ""
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /Oxs /M$(CECrtMT) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
@@ -64,16 +65,16 @@ BSC32=bscmake.exe
 # PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 2
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "lib"
-# PROP Intermediate_Dir "lib\ARMDbg"
+# PROP Intermediate_Dir "lib\ARMx86"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"lib\pwlibced.lib"
@@ -83,29 +84,55 @@ BSC32=bscmake.exe
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
-# PROP BASE Use_MFC 0
+# PROP BASE Use_MFC 2
 # PROP BASE Use_Debug_Libraries 1
 # PROP BASE Output_Dir "X86EMDbg"
 # PROP BASE Intermediate_Dir "X86EMDbg"
 # PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP BASE Target_Dir ""
-# PROP Use_MFC 0
+# PROP Use_MFC 2
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "X86EMDbg"
-# PROP Intermediate_Dir "X86EMDbg"
+# PROP Output_Dir "lib"
+# PROP Intermediate_Dir "lib\X86EMDbg"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
 CPP=cl.exe
-# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /M$(CECrtMTDebug) /c
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"lib\pwlibced.lib"
-# ADD LIB32 /nologo /out:"lib\pwlibced.lib"
+# ADD LIB32 /nologo /out:"lib\pwlibcex86emd.lib"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# PROP BASE Use_MFC 2
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "X86EMRel"
+# PROP BASE Intermediate_Dir "X86EMRel"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 2
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "lib"
+# PROP Intermediate_Dir "lib\X86EMRel"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Target_Dir ""
+CPP=cl.exe
+# ADD BASE CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /GX- /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /D "_AFXDLL" /YX /Oxs /M$(CECrtMT) /c
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo /out:"lib\pwlibcex86em.lib"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo /o"lib\pwlibcex86em.bsc"
 
 !ENDIF 
 
@@ -114,6 +141,7 @@ BSC32=bscmake.exe
 # Name "pwlibce - Win32 (WCE ARM) Release"
 # Name "pwlibce - Win32 (WCE ARM) Debug"
 # Name "pwlibce - Win32 (WCE x86em) Debug"
+# Name "pwlibce - Win32 (WCE x86em) Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter ""
@@ -126,16 +154,152 @@ SOURCE=.\src\ptlib\msos\assert.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_ASSER=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\svcproc.h"\
+	{$(INCLUDE)}"ptlib\svcproc.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_ASSER=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_ASSER=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -146,16 +310,148 @@ SOURCE=.\src\ptlib\common\collect.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_COLLE=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_COLLE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_COLLE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -166,6 +462,62 @@ SOURCE=.\src\ptlib\common\contain.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_CONTA=\
+	".\include\ptlib\conchan.h"\
+	".\src\ptlib\common\regex.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
@@ -174,7 +526,40 @@ DEP_CPP_CONTA=\
 	".\src\ptlib\common\regex.h"\
 	
 NODEP_CPP_CONTA=\
-	".\src\ptlib\common\ptlib\contain.inl"\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 
@@ -184,10 +569,48 @@ DEP_CPP_CONTA=\
 	".\src\ptlib\common\regex.h"\
 	
 NODEP_CPP_CONTA=\
-	".\src\ptlib\common\ptlib\contain.inl"\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
 	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -198,16 +621,39 @@ SOURCE=.\src\ptlib\common\getdate_tab.cpp
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_GETDA=\
+	{$(INCLUDE)}"alloca.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_GETDA=\
+	".\ceatl.h"\
+	".\lloca.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_GETDA=\
+	".\ceatl.h"\
+	".\lloca.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -218,16 +664,154 @@ SOURCE=.\src\ptlib\common\object.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_OBJEC=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\debstrm.h"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"strstream.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_OBJEC=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\trstream.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_OBJEC=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\trstream.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -238,16 +822,152 @@ SOURCE=.\src\ptlib\common\osutils.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_OSUTI=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\svcproc.h"\
+	{$(INCLUDE)}"ptlib\svcproc.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_OSUTI=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_OSUTI=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -258,16 +978,148 @@ SOURCE=.\src\ptlib\common\pchannel.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_PCHAN=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_PCHAN=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_PCHAN=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -278,16 +1130,148 @@ SOURCE=.\src\ptlib\common\pconfig.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_PCONF=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_PCONF=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_PCONF=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -298,16 +1282,148 @@ SOURCE=.\src\ptlib\common\ptime.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_PTIME=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_PTIME=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_PTIME=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -318,16 +1434,148 @@ SOURCE=.\src\ptlib\msos\ptlib.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_PTLIB=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_PTLIB=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_PTLIB=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -338,6 +1586,18 @@ SOURCE=.\src\ptlib\common\regex.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_REGEX=\
+	".\src\ptlib\common\regex.h"\
+	{$(INCLUDE)}"alloca.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+NODEP_CPP_REGEX=\
+	".\src\ptlib\common\config.h"\
+	".\src\ptlib\common\lisp.h"\
+	".\src\ptlib\common\syntax.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
@@ -346,9 +1606,13 @@ DEP_CPP_REGEX=\
 	".\src\ptlib\common\regex.h"\
 	
 NODEP_CPP_REGEX=\
+	".\ceatl.h"\
+	".\lloca.h"\
+	".\msystemx.h"\
 	".\src\ptlib\common\config.h"\
 	".\src\ptlib\common\lisp.h"\
 	".\src\ptlib\common\syntax.h"\
+	".\tdlibx.h"\
 	
 # SUBTRACT CPP /YX /Yc /Yu
 
@@ -358,12 +1622,21 @@ DEP_CPP_REGEX=\
 	".\src\ptlib\common\regex.h"\
 	
 NODEP_CPP_REGEX=\
+	".\ceatl.h"\
+	".\lloca.h"\
+	".\msystemx.h"\
 	".\src\ptlib\common\config.h"\
 	".\src\ptlib\common\lisp.h"\
 	".\src\ptlib\common\syntax.h"\
+	".\tdlibx.h"\
 	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -374,16 +1647,188 @@ SOURCE=.\src\ptlib\common\sockets.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_SOCKE=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\sockets.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"socket.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_SOCKE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_SOCKE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -394,16 +1839,148 @@ SOURCE=.\src\ptlib\msos\sound.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_SOUND=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_SOUND=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_SOUND=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -414,16 +1991,151 @@ SOURCE=.\src\ptlib\msos\win32.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_WIN32=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\debstrm.h"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_WIN32=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_WIN32=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -434,16 +2146,148 @@ SOURCE=.\src\ptlib\msos\wincfg.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_WINCF=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_WINCF=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_WINCF=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -454,16 +2298,188 @@ SOURCE=.\src\ptlib\msos\winsock.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_WINSO=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\sockets.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"socket.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
 # SUBTRACT CPP /YX
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_WINSO=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
 # SUBTRACT CPP /YX /Yc /Yu
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+NODEP_CPP_WINSO=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
 # SUBTRACT BASE CPP /YX /Yc /Yu
 # SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+# SUBTRACT BASE CPP /YX
+# SUBTRACT CPP /YX
 
 !ENDIF 
 
@@ -478,9 +2494,141 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ios.cpp
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_IOS_C=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_IOS_C=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_IOS_C=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -495,6 +2643,8 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\iostream.cpp
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
 !ENDIF 
 
 # End Source File
@@ -504,9 +2654,29 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\istream.cpp
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_ISTRE=\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_ISTRE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_ISTRE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -517,9 +2687,141 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\mmsystemx.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_MMSYS=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_MMSYS=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_MMSYS=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -530,9 +2832,141 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ostream.cpp
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_OSTRE=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_OSTRE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_OSTRE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -543,9 +2977,181 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\stdlibx.cpp
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_STDLI=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\sockets.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"socket.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_STDLI=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_STDLI=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -560,6 +3166,8 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\streamb.cpp
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
 
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
 !ENDIF 
 
 # End Source File
@@ -572,6 +3180,153 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\time.cpp
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\YWinCEOStream.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+DEP_CPP_YWINC=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+NODEP_CPP_YWINC=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_YWINC=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -586,9 +3341,144 @@ SOURCE=.\src\ptclib\asner.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_ASNER=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptclib\asner.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_ASNER=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\asner.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_ASNER=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\asner.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -599,9 +3489,184 @@ SOURCE=.\src\ptclib\pasn.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_PASN_=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptclib\pasn.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\sockets.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"socket.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_PASN_=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\pasn.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_PASN_=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\pasn.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\TLIB\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\TLIB\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tlib\ipsock.h"\
+	".\TLIB\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\socket.h"\
+	".\tlib\sockets.h"\
+	".\TLIB\sound.h"\
+	".\TLIB\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\tcpsock.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\udpsock.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
@@ -612,9 +3677,144 @@ SOURCE=.\src\ptclib\random.cxx
 
 !IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+DEP_CPP_RANDO=\
+	".\include\ptlib\conchan.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"ptclib\random.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"PtLib\Contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\Pstring.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+NODEP_CPP_RANDO=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\random.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+NODEP_CPP_RANDO=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tclib\random.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\TLIB\channel.h"\
+	".\TLIB\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\TLIB\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\TLIB\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tLib\Pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\TLIB\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\TLIB\textfile.h"\
+	".\tlib\thread.h"\
+	".\TLIB\timeint.h"\
+	".\tlib\timer.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ENDIF 
 
