@@ -245,6 +245,25 @@ SOURCE=..\..\ptclib\random.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\shttpsvc.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Snmpclnt.cxx
 # End Source File
 # Begin Source File
@@ -326,6 +345,10 @@ SOURCE=..\..\..\Include\PtCLib\pssl.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\random.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\shttpsvc.h
 # End Source File
 # Begin Source File
 
