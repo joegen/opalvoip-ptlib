@@ -37,10 +37,6 @@ void FindIP::Main()
     cout << ip << endl;
   }
 
-  if (get_ip("http://www.ip-calculator.com/",ip)) {
-    cout << ip << endl;
-  }
-
   if (get_ip("http://www.lawrencegoetz.com/programs/ipinfo/",ip)) {
     cout << ip << endl;
   }
