@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.9  2004/05/24 12:02:49  csoutheren
+ * Add function to permit setting a limit on the number of results returned
+ * from an LDAP query. Change the default number of results to unlimited,
+ * rather than MAX_INT which apparently is clamped to some arbitrary low value.
+ * Thanks to Damien Sandras
+ *
  * Revision 1.8  2004/02/20 16:28:27  ykiryanov
  * if'd LDAP code to enable non-LDAP builds
  *
@@ -426,6 +432,12 @@ class PLDAPSession : public PObject
     void SetTimeout(
       const PTimeInterval & t
     ) { timeout = t; }
+
+    /**Set a limit on the number of results to return
+      */
+     void SetSearchLimit(
+      const unsigned s
+    ) { searchLimit = s; }
 
   protected:
     struct ldap * ldapContext;
