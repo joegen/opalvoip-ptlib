@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.2 1994/06/25 11:55:15 robertj Exp $
+ * $Id: serchan.h,v 1.3 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Revision 1.3  1994/07/17 10:46:06  robertj
+ * Moved data to PChannel class.
+ *
+ * Revision 1.2  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.1  1994/04/20  12:17:44  robertj
@@ -18,10 +21,6 @@
 
 
 #define _PSERIALCHANNEL
-
-#ifndef _PCHANNEL
-#include <channel.h>
-#endif
 
 class PConfig;
 
@@ -53,26 +52,6 @@ PDECLARE_CONTAINER(PSerialChannel, PChannel)
       // Open the serial channel obtaining the parameters from standard
       // variables in the configuration file. Note that it assumed that the
       // correct configuration file section is already set.
-
-
-    // Overrides from class PChannel
-    virtual BOOL IsOpen() const;
-      // Return TRUE if the channel is currently open.
-
-    virtual PString GetName() const;
-      // Return the name of the channel.
-
-      
-    virtual BOOL Read(void * buf, PINDEX len);
-      // Low level read from the channel. This function will block until the
-      // requested number of characters were read.
-
-    virtual BOOL Write(const void * buf, PINDEX len);
-      // Low level write to the channel. This function will block until the
-      // requested number of characters were written.
-
-    virtual BOOL Close();
-      // Close the channel.
 
 
     // New functions for class
