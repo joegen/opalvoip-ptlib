@@ -11,7 +11,7 @@
 #include <termio.h>
 #include <signal.h>
 
-#include "../../common/src/pipechan.cxx"
+#include "../../common/ptlib/src/pipechan.cxx"
 
 ////////////////////////////////////////////////////////////////
 //
