@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.7  2004/04/30 16:18:41  ykiryanov
+ * BeOS modifications derived from BLocker use
+ *
  * Revision 1.6  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -56,7 +59,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
-#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS) || defined(__BEOS__) || defined(P_MAC_MPTHREADS)
   public:
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
