@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.7 1997/03/20 13:01:32 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.8 1997/04/15 14:32:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.8  1997/04/15 14:32:19  robertj
+ * Fixed case problem for HTTP version string.
+ *
  * Revision 1.7  1997/03/20 13:01:32  robertj
  * Fixed bug in proxy POST having unexpexted reset of connection.
  *
@@ -236,8 +239,9 @@ BOOL PHTTPServer::ProcessCommand()
   else { // otherwise, attempt to extract a version number
     PString verStr = tokens[1];
     PINDEX dotPos = verStr.Find('.');
+    static PCaselessString httpId = "HTTP/";
     if (dotPos == P_MAX_INDEX
-                      || verStr.GetLength() < 8 || verStr.Left(5) != "HTTP/") {
+                      || verStr.GetLength() < 8 || httpId != verStr.Left(5)) {
       OnError(BadRequest, "Malformed version number " + verStr, PHTTPConnectionInfo());
       return FALSE;
     }
@@ -915,7 +919,7 @@ BOOL PHTTPResource::CheckAuthority(PHTTPServer & server,
     return TRUE;
 
   // if this is an authorisation request...
-  if (request.inMIME.Contains(PString("Authorization")) &&
+  if (request.inMIME.Contains(PCaselessString("Authorization")) &&
       authority->Validate(request, request.inMIME["Authorization"]))
     return TRUE;
 
