@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.7  1998/11/30 02:55:05  robertj
+ * New directory structure
+ *
  * Revision 1.6  1998/09/24 03:29:56  robertj
  * Added open software license.
  *
@@ -39,7 +42,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
 
-#include "../../common/ptlib/config.h"
+#include "../../config.h"
   protected:
     Source  source;
     PString location;
