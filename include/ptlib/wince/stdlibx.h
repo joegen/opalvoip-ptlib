@@ -21,7 +21,11 @@
 #include <mmsystemx.h>
 
 #define assert(e) 
-inline void abort() { exit(3); }
+
+extern "C"{
+void __cdecl abort(void);
+void __cdecl perror(const char *s);
+};
 
 #define _environ (NULL)
 inline char *getenv( const char *varname ) { return NULL; };
