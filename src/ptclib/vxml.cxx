@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.15  2002/08/15 02:13:10  craigs
+ * Fixed problem with handle leak (maybe) and change tts files back to autodelete
+ *
  * Revision 1.14  2002/08/14 15:18:07  craigs
  * Improved random filename generation
  *
@@ -186,6 +189,7 @@ void PVXMLSession::EndSession()
 
   if (vxmlThread != NULL) {
     vxmlThread->WaitForTermination();
+    delete vxmlThread;
   }
 
   if (outgoingChannel != NULL)
@@ -214,6 +218,7 @@ BOOL PVXMLSession::ExecuteWithoutLock()
 
   // check to see if a vxml thread has stopped since last we looked
   if ((vxmlThread != NULL) && (vxmlThread->IsTerminated())) {
+    vxmlThread->WaitForTermination();
     delete vxmlThread;
     vxmlThread = NULL;
     return vxmlStatus;
@@ -388,7 +393,7 @@ BOOL PVXMLSession::PlayText(const PString & text, PTextToSpeech::TextType type, 
       }
       if (!spoken) {
         PTRACE(2, "PVXML\tcannot speak text using TTS engine");
-      } else if (!PlayFile(fname, repeat, delay, FALSE)) { // TRUE)) {
+      } else if (!PlayFile(fname, repeat, delay, TRUE)) {
         PTRACE(2, "PVXML\tCannot play " << fname);
       } else {
         PTRACE(2, "PVXML\tText queued");
