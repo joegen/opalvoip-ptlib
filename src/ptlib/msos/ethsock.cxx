@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.18  1999/09/10 04:35:42  robertj
+ * Added Windows version of PIPSocket::GetInterfaceTable() function.
+ *
  * Revision 1.17  1999/04/18 12:58:39  robertj
  * MSVC 5 backward compatibility
  *
@@ -194,12 +197,13 @@ class PWin32SnmpLibrary : public PDynaLink
 
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
     BOOL GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & ip_address);
-    BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize);
+    BOOL GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len = NULL);
     BOOL GetOid(AsnObjectIdentifier & oid, AsnAny & value);
 
     BOOL GetNextOid(AsnObjectIdentifier & oid, AsnAny & value);
 
     PString GetInterfaceName(int ifNum);
+    PString GetInterfaceName(PIPSocket::Address ipAddr);
 
   private:
     BOOL (WINAPI *Init)(DWORD,HANDLE*,AsnObjectIdentifier*);
@@ -516,7 +520,7 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, PIPSocket::Address & v
 }
 
 
-BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize)
+BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT valSize, UINT * len)
 {
   if (!IsLoaded())
     return FALSE;
@@ -527,6 +531,9 @@ BOOL PWin32SnmpLibrary::GetOid(AsnObjectIdentifier & oid, void * value, UINT val
 
   if (any.asnType != ASN_OCTETSTRING)
     return FALSE;
+
+  if (len != NULL)
+    *len = any.asnValue.string.length;
 
   if (any.asnValue.string.length > valSize)
     return FALSE;
@@ -601,8 +608,8 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
       break;
 #ifdef ASN_IPADDRESS
     if (value.asnType != ASN_IPADDRESS)
-#endif
       break;
+#endif
 
     oid[9] = 2;
     AsnInteger ifIndex = -1;
@@ -620,16 +627,22 @@ PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
   if (gwAddr == 0)
     return PString();
 
-  PWin32PacketDriver * tempDriver = PWin32PacketDriver::Create();
+  return GetInterfaceName(gwAddr);
+}
 
+
+PString PWin32SnmpLibrary::GetInterfaceName(PIPSocket::Address ipAddr)
+{
   PString gatewayInterface, anInterface;
+
+  PWin32PacketDriver * tempDriver = PWin32PacketDriver::Create();
 
   PINDEX ifIdx = 0;
   while (gatewayInterface.IsEmpty() && tempDriver->EnumInterfaces(ifIdx++, anInterface)) {
     if (tempDriver->BindInterface(anInterface)) {
       PIPSocket::Address ifAddr, ifMask;
       PINDEX ipIdx = 0;
-      if (tempDriver->EnumIpAddress(ipIdx++, ifAddr, ifMask) && ifAddr == gwAddr) {
+      if (tempDriver->EnumIpAddress(ipIdx++, ifAddr, ifMask) && ifAddr == ipAddr) {
         gatewayInterface = anInterface;
         break;
       }
@@ -1671,6 +1684,57 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
   for (idx = 0; idx < table.GetSize(); idx++)
     table[idx].interfaceName = snmp.GetInterfaceName(ifNum[idx]);
+
+  return TRUE;
+}
+
+
+BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
+{
+  PWin32SnmpLibrary snmp;
+
+  table.RemoveAll();
+
+  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
+  PWin32AsnOid oid = baseOid;
+  PWin32AsnAny value;
+  while (snmp.GetNextOid(oid, value)) {
+    if (!(baseOid *= oid))
+      break;
+#ifdef ASN_IPADDRESS
+    if (value.asnType != ASN_IPADDRESS)
+      break;
+#endif
+
+    Address ipAddr;
+    memcpy(&ipAddr, value.asnValue.address.stream, sizeof(ipAddr));
+
+    oid[9] = 2;
+    AsnInteger ifIndex = -1;
+    if (!snmp.GetOid(oid, ifIndex))
+      break;
+
+    PString macAddr;
+    PEthSocket::Address ifPhysAddress("");
+    PWin32AsnOid ifOid = "1.3.6.1.2.1.2.2.1.6.0";
+    ifOid[10] = ifIndex;
+    UINT len;
+    if (snmp.GetOid(ifOid, &ifPhysAddress, sizeof(ifPhysAddress), &len) && len > 0)
+      macAddr = ifPhysAddress;
+  
+    PString name = snmp.GetInterfaceName(ipAddr);
+    if (name.IsEmpty()) {
+      PWin32AsnOid nameOid = "1.3.6.1.2.1.2.2.1.2.0";
+      nameOid[10] = ifIndex;
+      if (!snmp.GetOid(nameOid, name.GetPointer(100), 100))
+        break;
+      name.MakeMinimumSize();
+    }
+
+    table.Append(new InterfaceEntry(name, ipAddr, macAddr));
+
+    oid[9] = 1;
+  }
 
   return TRUE;
 }
