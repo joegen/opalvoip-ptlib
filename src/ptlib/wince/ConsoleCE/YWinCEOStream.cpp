@@ -103,6 +103,16 @@ void YWinCEOStream::Subscribe(HWND Reciever,UINT MessageID)
 	unlockbuf();
 }
 
+void YWinCEOStream::Subscribe(YWinCEOStreamCB pCB)
+{
+	lockbuf();
+	if (bp)
+	{
+		((YWinCEOStreamBuffer*)bp)->m_hWnd = NULL;
+		((YWinCEOStreamBuffer*)bp)->m_pCB = pCB;
+	}
+	unlockbuf();
+}
 
 void YWinCEOStream::UnSubscribe()
 {
