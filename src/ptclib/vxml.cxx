@@ -22,6 +22,14 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42  2004/06/19 07:21:08  csoutheren
+ * Change TTS engine registration to use abstract factory code
+ * Started disentanglement of PVXMLChannel from PVXMLSession
+ * Fixed problem with VXML session closing if played data file is not exact frame size multiple
+ * Allowed PVXMLSession to be used without a VXML script
+ * Changed PVXMLChannel to handle "file:" URLs
+ * Numerous other small improvements and optimisations
+ *
  * Revision 1.41  2004/06/02 08:29:28  csoutheren
  * Added new code from Andreas Sikkema to implement various VXML features
  *
@@ -169,11 +177,11 @@
 
 #if P_EXPAT
 
+#include <ptlib/pfactory.h>
 #include <ptclib/vxml.h>
 #include <ptclib/memfile.h>
 #include <ptclib/random.h>
 #include <ptclib/http.h>
-
 
 #define SMALL_BREAK_MSECS   1000
 #define MEDIUM_BREAK_MSECS  2500
@@ -195,19 +203,11 @@ PINDEX       PVXMLSession::cacheCount = 0;
 
 PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 {
-  //activeGrammar   = NULL;
-  recording        = FALSE;
   vxmlThread       = NULL;
   incomingChannel  = NULL;
   outgoingChannel  = NULL;
-  loaded           = FALSE;
+  finishWhenEmpty  = TRUE;
   textToSpeech     = NULL;
-  listening        = FALSE;
-  activeGrammar    = NULL;
-  listening        = FALSE;
-  currentNode      = NULL;
-  emptyAction      = TRUE;
-  forceEnd         = FALSE;
 
   SetTextToSpeech(_tts, autoDelete);
 
@@ -237,6 +237,20 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
       }
     }
   }
+
+  Initialise();
+}
+
+void PVXMLSession::Initialise()
+{
+  recording        = FALSE;
+  allowFinish      = FALSE;
+  listening        = FALSE;
+  activeGrammar    = NULL;
+  listening        = FALSE;
+  forceEnd         = FALSE;
+  currentForm      = NULL;
+  currentNode      = NULL;
 }
 
 PVXMLSession::~PVXMLSession()
@@ -280,6 +294,18 @@ void PVXMLSession::SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete)
   autoDeleteTextToSpeech = autoDelete;
   textToSpeech = _tts;
 }
+
+void PVXMLSession::SetTextToSpeech(const PString & ttsName)
+{
+  PWaitAndSignal m(sessionMutex);
+
+  if (autoDeleteTextToSpeech && (textToSpeech != NULL))
+    delete textToSpeech;
+
+  autoDeleteTextToSpeech = TRUE;
+  textToSpeech = PGenericFactory<PTextToSpeech>::CreateInstance(ttsName);;
+}
+
 
 BOOL PVXMLSession::Load(const PString & source)
 {
@@ -334,7 +360,7 @@ BOOL PVXMLSession::LoadVXML(const PString & xmlText)
 {
   PWaitAndSignal m(sessionMutex);
 
-  loaded = FALSE;
+  allowFinish = loaded = FALSE;
   rootURL = PString::Empty();
 
   // parse the XML
@@ -347,6 +373,9 @@ BOOL PVXMLSession::LoadVXML(const PString & xmlText)
   PXMLElement * root = xmlFile.GetRootElement();
   if (root == NULL)
     return FALSE;
+
+  // reset interpeter state
+  Initialise();
 
   // find the first form
   if ((currentForm = FindForm(PString::Empty())) == NULL)
@@ -569,10 +598,6 @@ BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
 {
   Close();
 
-  // cannot open if no data is loaded
-  if (!loaded)
-    return FALSE;
-
   // set the underlying channel
   if (!PIndirectChannel::Open(out, in))
     return FALSE;
@@ -583,8 +608,19 @@ BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
     outgoingChannel = out;
     incomingChannel = in;
   }
-  threadRunning = TRUE;
-  vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), 0, PThread::NoAutoDeleteThread);
+
+  return Execute();
+}
+
+BOOL PVXMLSession::Execute()
+{
+  PWaitAndSignal m(sessionMutex);
+
+  // cannot open if no data is loaded
+  if (loaded && vxmlThread == NULL) {
+    threadRunning = TRUE;
+    vxmlThread = PThread::Create(PCREATE_NOTIFIER(VXMLExecute), 0, PThread::NoAutoDeleteThread);
+  }
 
   return TRUE;
 }
@@ -716,11 +752,9 @@ void PVXMLSession::ExecuteDialog()
   }
 
   // Determine if we should quit
-  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
-    if (OnEmptyAction()) {
-      forceEnd = TRUE;
-      waitForEvent.Signal();
-    }
+  if ((currentNode == NULL) && (activeGrammar == NULL) && !IsPlaying() && !IsRecording() && allowFinish && finishWhenEmpty) {
+    threadRunning = FALSE;
+    waitForEvent.Signal();
   }
 }
 
@@ -1236,7 +1270,7 @@ PWAVFile * PVXMLSession::CreateWAVFile(const PFilePath & fn, PFile::OpenMode mod
 
 void PVXMLSession::AllowClearCall()
 {
-  loaded = TRUE;
+  allowFinish = TRUE;
 }
 
 BOOL PVXMLSession::TraverseAudio()
@@ -1636,11 +1670,10 @@ BOOL PVXMLSession::TraverseIf()
 
 BOOL PVXMLSession::TraverseExit()
 {
-  threadRunning = !DoExit();
   currentNode = NULL;
-  forceEnd = TRUE;
+  forceEnd    = TRUE;
   waitForEvent.Signal();
-  return threadRunning;
+  return TRUE;
 }
 
 
@@ -1854,16 +1887,92 @@ BOOL PVXMLSession::TraverseVar()
   return result;
 }
 
+void PVXMLSession::OnEndRecording(const PString & channelName)
+{
+  SetVar(channelName + ".size", PString(incomingChannel->GetWAVFile()->GetDataLength() ) );
+  SetVar(channelName + ".type", "audio/x-wav" );
+  SetVar(channelName + ".filename", incomingChannel->GetWAVFile()->GetName() );
+}
+
+void PVXMLSession::Trigger()
+{
+  waitForEvent.Signal();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+PVXMLGrammar::PVXMLGrammar(PXMLElement * _field)
+  : field(_field), state(PVXMLGrammar::NOINPUT)
+{
+}
+
+//////////////////////////////////////////////////////////////////
+
+PVXMLMenuGrammar::PVXMLMenuGrammar(PXMLElement * _field)
+  : PVXMLGrammar(_field)
+{
+}
+
+//////////////////////////////////////////////////////////////////
+
+PVXMLDigitsGrammar::PVXMLDigitsGrammar(PXMLElement * _field, PINDEX _minDigits, PINDEX _maxDigits, PString _terminators)
+  : PVXMLGrammar(_field),
+  minDigits(_minDigits),
+  maxDigits(_maxDigits),
+  terminators(_terminators)
+{
+  PAssert(_minDigits <= _maxDigits, "Error - invalid grammar parameter");
+}
+
+BOOL PVXMLDigitsGrammar::OnUserInput(const char ch)
+{
+  // Ignore any other keys if we've already filled the grammar
+  if (state == PVXMLGrammar::FILLED || state == PVXMLGrammar::NOMATCH)
+    return TRUE;
+
+  // is this char the terminator?
+  if (terminators.Find(ch) != P_MAX_INDEX) {
+    state = (value.GetLength() >= minDigits && value.GetLength() <= maxDigits) ? 
+      PVXMLGrammar::FILLED : 
+      PVXMLGrammar::NOMATCH;
+    return TRUE;
+  }
+
+  // Otherwise add to the grammar and check to see if we're done
+  value += ch;
+  if (value.GetLength() == maxDigits) {
+    state = PVXMLGrammar::FILLED;   // the grammar is filled!
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+
+void PVXMLDigitsGrammar::Stop()
+{
+  // Stopping recognition here may change the state if something was
+  // recognized but it didn't fill the number of digits requested
+  if (!value.IsEmpty())
+    state = PVXMLGrammar::NOMATCH;
+  // otherwise the state will stay as NOINPUT
+}
+
+//////////////////////////////////////////////////////////////////
+
+#endif   // P_EXPAT
+
 ///////////////////////////////////////////////////////////////
 
-PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
+PVXMLChannel::PVXMLChannel(PVXMLChannelInterface & _vxmlInterface,
                            BOOL incoming,
                            const PString & fmtName,
                            PINDEX frBytes,
                            unsigned frTime,
                            unsigned wavType,
                            const PString & prefix)
-  : vxml(_vxml),
+  : vxmlInterface(_vxmlInterface),
     isIncoming(incoming),
     frameBytes(frBytes),
     frameTime(frTime),
@@ -1932,7 +2041,7 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 
 PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn)
 { 
-  PWAVFile * wav = vxml.CreateWAVFile(AdjustWavFilename(fn),
+  PWAVFile * wav = vxmlInterface.CreateWAVFile(AdjustWavFilename(fn),
                                        isIncoming ? PFile::WriteOnly : PFile::ReadOnly,
                                        PFile::ModeDefault,
                                        wavFileType);
@@ -1994,7 +2103,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
       silenceRun += msecs;
       if (silenceRun > finalSilence) {
         PTRACE(3, "PVXML\tTriggering end of record due to silence timeout");
-        vxml.RecordEnd();
+        vxmlInterface.RecordEnd();
       }
     }
   }
@@ -2029,20 +2138,14 @@ BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence)
 BOOL PVXMLChannel::EndRecording()
 {
   PWaitAndSignal mutex(channelMutex);
-
   recording = FALSE;
-
   PTRACE(3, "PVXML\tRecording finished");
 
   if (wavFile == NULL)
     return TRUE;
 
-  vxml.SetVar( channelName + ".size", PString( wavFile->GetDataLength() ) );
-  vxml.SetVar( channelName + ".type", "audio/x-wav" );
-  vxml.SetVar( channelName + ".filename", wavFile->GetName() );
-
+  vxmlInterface.OnEndRecording(channelName);
   wavFile->Close();
-
   delete wavFile;
   wavFile = NULL;
   
@@ -2149,7 +2252,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
         }
         // if nothing in the queue, trigger the main loop to perhaps send more data
         if (qSize == 0)
-          vxml.waitForEvent.Signal();
+          vxmlInterface.Trigger();
       }
     }
   }
@@ -2173,6 +2276,8 @@ void PVXMLChannel::HandleDelay(PINDEX /*amount*/)
 void PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing resource " << url << " for playing");
+  if (url.GetScheme() *= "file")
+    QueueFile(url.AsFilePath(), repeat, delay);
   QueueItem(new PVXMLQueueURLItem(url, repeat, delay));
 }
 
@@ -2227,7 +2332,16 @@ BOOL PVXMLChannelPCM::WriteFrame(const void * buf, PINDEX len)
 
 BOOL PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
 {
-  return PIndirectChannel::Read(buffer, amount);
+  if (!PIndirectChannel::Read(buffer, amount))
+    return FALSE;
+
+  PINDEX actuallyRead = GetLastReadCount();
+  if (actuallyRead < amount) {
+    memset((char *)buffer + actuallyRead, 0, amount-actuallyRead);
+    lastReadCount = amount;
+  }
+
+  return TRUE;
 }
 
 void PVXMLChannelPCM::HandleDelay(PINDEX amount)
@@ -2433,66 +2547,3 @@ void PVXMLQueueDataItem::Play(PVXMLChannel & outgoingChannel)
   PTRACE(3, "PVXML\tPlaying " << data.GetSize() << " bytes");
   outgoingChannel.SetReadChannel(chan, TRUE);
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////
-
-PVXMLGrammar::PVXMLGrammar(PXMLElement * _field)
-  : field(_field), state(PVXMLGrammar::NOINPUT)
-{
-}
-
-//////////////////////////////////////////////////////////////////
-
-PVXMLMenuGrammar::PVXMLMenuGrammar(PXMLElement * _field)
-  : PVXMLGrammar(_field)
-{
-}
-
-//////////////////////////////////////////////////////////////////
-
-PVXMLDigitsGrammar::PVXMLDigitsGrammar(PXMLElement * _field, PINDEX _minDigits, PINDEX _maxDigits, PString _terminators)
-  : PVXMLGrammar(_field),
-  minDigits(_minDigits),
-  maxDigits(_maxDigits),
-  terminators(_terminators)
-{
-  PAssert(_minDigits <= _maxDigits, "Error - invalid grammar parameter");
-}
-
-BOOL PVXMLDigitsGrammar::OnUserInput(const char ch)
-{
-  // Ignore any other keys if we've already filled the grammar
-  if (state == PVXMLGrammar::FILLED || state == PVXMLGrammar::NOMATCH)
-    return TRUE;
-
-  // is this char the terminator?
-  if (terminators.Find(ch) != P_MAX_INDEX) {
-    state = (value.GetLength() >= minDigits && value.GetLength() <= maxDigits) ? 
-      PVXMLGrammar::FILLED : 
-      PVXMLGrammar::NOMATCH;
-    return TRUE;
-  }
-
-  // Otherwise add to the grammar and check to see if we're done
-  value += ch;
-  if (value.GetLength() == maxDigits) {
-    state = PVXMLGrammar::FILLED;   // the grammar is filled!
-    return TRUE;
-  }
-
-  return FALSE;
-}
-
-
-void PVXMLDigitsGrammar::Stop()
-{
-  // Stopping recognition here may change the state if something was
-  // recognized but it didn't fill the number of digits requested
-  if (!value.IsEmpty())
-    state = PVXMLGrammar::NOMATCH;
-  // otherwise the state will stay as NOINPUT
-}
-
-//////////////////////////////////////////////////////////////////
-
-#endif 
