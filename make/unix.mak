@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.162  2003/03/28 03:03:50  craigs
+# Added LDAP sources
+#
 # Revision 1.161  2003/03/06 08:58:48  rogerh
 # P_MACOSX now carries the OSRELEASE. Use this to enable better threads
 # support on Darwin 6.4. Submitted by Shawn.
@@ -1499,6 +1502,13 @@ endif
 endif
 
 endif # DEBUG
+
+# define OpenLDAP cariables if installed
+ifneq (,$(wildcard /usr/include/ldap.h))
+STDCCFLAGS	+= -DP_LDAP 
+ENDLDLIBS	+= -llber -lldap -illdap_r -lresolv
+HAS_OPENLDAP	= 1
+endif
 
 
 # define OpenSSL variables if installed
