@@ -204,7 +204,6 @@ EXPORTS
     ??0PWAVFile@@QAE@W4OpenMode@PFile@@H@Z @2898 NONAME ;public: __thiscall PWAVFile::PWAVFile(enum PFile::OpenMode,int)
     ??0PWAVFile@@QAE@XZ @2899 NONAME ;public: __thiscall PWAVFile::PWAVFile(void)
     ??0PWin32AsnAny@@QAE@XZ @1810 NONAME ;public: __thiscall PWin32AsnAny::PWin32AsnAny(void)
-    ??0PWin32AsnOid@@QAE@ABUAsnObjectIdentifier@@@Z @1811 NONAME ;public: __thiscall PWin32AsnOid::PWin32AsnOid(struct AsnObjectIdentifier const &)
     ??0PWin32AsnOid@@QAE@PBD@Z @1812 NONAME ;public: __thiscall PWin32AsnOid::PWin32AsnOid(char const *)
     ??0PWin32AsnOid@@QAE@XZ @1813 NONAME ;public: __thiscall PWin32AsnOid::PWin32AsnOid(void)
     ??0PWin32OidBuffer@@QAE@IIPBE@Z @1814 NONAME ;public: __thiscall PWin32OidBuffer::PWin32OidBuffer(unsigned int,unsigned int,unsigned char const *)
@@ -369,6 +368,7 @@ EXPORTS
     ??1PWaveFormat@@UAE@XZ @2234 NONAME ;public: virtual __thiscall PWaveFormat::~PWaveFormat(void)
     ??1PWAVFile@@UAE@XZ @2900 NONAME ;public: virtual __thiscall PWAVFile::~PWAVFile(void)
     ??1PWin32AsnAny@@QAE@XZ @1827 NONAME ;public: __thiscall PWin32AsnAny::~PWin32AsnAny(void)
+    ??1PWin32AsnOid@@QAE@XZ @3035 NONAME ;public: __thiscall PWin32AsnOid::~PWin32AsnOid(void)
     ??1PWin32OidBuffer@@QAE@XZ @1828 NONAME ;public: __thiscall PWin32OidBuffer::~PWin32OidBuffer(void)
     ??1PWin32Overlapped@@QAE@XZ @261 NONAME ;public: __thiscall PWin32Overlapped::~PWin32Overlapped(void)
     ??1PWin32PacketBuffer@@UAE@XZ @1829 NONAME ;public: virtual __thiscall PWin32PacketBuffer::~PWin32PacketBuffer(void)
@@ -567,7 +567,6 @@ EXPORTS
     ??9Address@PEthSocket@@QBEHPBE@Z @3034 NONAME ;public: int __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
     ??A?$PBaseArray@H@@QAEAAHH@Z @2203 NONAME ;public: int & __thiscall PBaseArray<int>::operator[](int)
     ??A?$PBaseArray@I@@QAEAAIH@Z @2382 NONAME ;public: unsigned int & __thiscall PBaseArray<unsigned int>::operator[](int)
-    ??A?$PBaseArray@J@@QAEAAJH@Z @1839 NONAME ;public: long & __thiscall PBaseArray<long>::operator[](int)
     ??A?$PBaseArray@K@@QAEAAKH@Z @2383 NONAME ;public: unsigned long & __thiscall PBaseArray<unsigned long>::operator[](int)
     ??A?$PBaseArray@PAVPObject@@@@QAEAAPAVPObject@@H@Z @2038 NONAME ;public: class PObject * & __thiscall PBaseArray<class PObject *>::operator[](int)
     ??AAddress@PIPSocket@@QBEEH@Z @2122 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
@@ -1524,7 +1523,6 @@ EXPORTS
     ?GetName@PSoundChannel@@UBE?AVPString@@XZ @2055 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetName(void)const 
     ?GetName@PVideoChannel@@UBE?AVPString@@XZ @2529 NONAME ;public: virtual class PString  __thiscall PVideoChannel::GetName(void)const 
     ?GetNameByProtocol@PSocket@@SA?AVPString@@G@Z @1073 NONAME ;public: static class PString  __cdecl PSocket::GetNameByProtocol(unsigned short)
-    ?GetNextOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAUAsnAny@@@Z @1907 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetNextOid(struct AsnObjectIdentifier &,struct AsnAny &)
     ?GetNumberValueAt@PAbstractArray@@MBEJH@Z @1075 NONAME ;protected: virtual long __thiscall PAbstractArray::GetNumberValueAt(int)const 
     ?GetNumberValueAt@PBYTEArray@@UBEJH@Z @1076 NONAME ;public: virtual long __thiscall PBYTEArray::GetNumberValueAt(int)const 
     ?GetNumberValueAt@PDWORDArray@@UBEJH@Z @1077 NONAME ;public: virtual long __thiscall PDWORDArray::GetNumberValueAt(int)const 
@@ -1541,7 +1539,6 @@ EXPORTS
     ?GetObjectsIndex@PAbstractSortedList@@UBEHPBVPObject@@@Z @1086 NONAME ;public: virtual int __thiscall PAbstractSortedList::GetObjectsIndex(class PObject const *)const 
     ?GetObjectsIndex@PArrayObjects@@UBEHPBVPObject@@@Z @1087 NONAME ;public: virtual int __thiscall PArrayObjects::GetObjectsIndex(class PObject const *)const 
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAJ@Z @1908 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,long &)
-    ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAUAsnAny@@@Z @1909 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,struct AsnAny &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@AAVAddress@PIPSocket@@@Z @1910 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,class PIPSocket::Address &)
     ?GetOid@PWin32SnmpLibrary@@QAEHAAUAsnObjectIdentifier@@PAXIPAI@Z @2230 NONAME ;public: int __thiscall PWin32SnmpLibrary::GetOid(struct AsnObjectIdentifier &,void *,unsigned int,unsigned int *)
     ?GetOption@PSocket@@QAEHHAAHH@Z @2250 NONAME ;public: int __thiscall PSocket::GetOption(int,int &,int)
@@ -1999,6 +1996,7 @@ EXPORTS
     ?MakeUnique@PHashTable@@UAEHXZ @1438 NONAME ;public: virtual int __thiscall PHashTable::MakeUnique(void)
     ?MakeUnique@PString@@UAEHXZ @1439 NONAME ;public: virtual int __thiscall PString::MakeUnique(void)
     ?MarkMessageRead@PMail@@QAEHABVPString@@@Z @1440 NONAME ;public: int __thiscall PMail::MarkMessageRead(class PString const &)
+    ?MemFree@PWin32AsnAny@@QAEXXZ @3036 NONAME ;public: void __thiscall PWin32AsnAny::MemFree(void)
     ?Mid@PString@@QBE?AV1@HH@Z @1441 NONAME ;public: class PString  __thiscall PString::Mid(int,int)const 
     ?MissingArgument@PArgList@@UBEXABVPString@@@Z @1442 NONAME ;public: virtual void __thiscall PArgList::MissingArgument(class PString const &)const 
     ?Move@PFile@@SAHABVPFilePath@@0H@Z @1443 NONAME ;public: static int __cdecl PFile::Move(class PFilePath const &,class PFilePath const &,int)
@@ -2136,6 +2134,7 @@ EXPORTS
     ?P_YUV422_YUV422_registration_instance@@3VP_YUV422_YUV422_Registration@@A @2944 NONAME ;class P_YUV422_YUV422_Registration  P_YUV422_YUV422_registration_instance
     ?QueryOid@PWin32PacketDriver@@QAEHIAAK@Z @1939 NONAME ;public: int __thiscall PWin32PacketDriver::QueryOid(unsigned int,unsigned long &)
     ?QueryOid@PWin32PacketDriver@@QAEHIIPAE@Z @1940 NONAME ;public: int __thiscall PWin32PacketDriver::QueryOid(unsigned int,unsigned int,unsigned char *)
+    ?QueryOid@PWin32SnmpLibrary@@AAEHEAAUAsnObjectIdentifier@@AAVPWin32AsnAny@@@Z @3037 NONAME ;private: int __thiscall PWin32SnmpLibrary::QueryOid(unsigned char,struct AsnObjectIdentifier &,class PWin32AsnAny &)
     ?QueryValue@RegistryKey@@QAEHABVPString@@AAKH@Z @1537 NONAME ;public: int __thiscall RegistryKey::QueryValue(class PString const &,unsigned long &,int)
     ?QueryValue@RegistryKey@@QAEHABVPString@@AAV2@@Z @1538 NONAME ;public: int __thiscall RegistryKey::QueryValue(class PString const &,class PString &)
     ?Ras@@3VPRASDLL@@A @1539 NONAME ;class PRASDLL  Ras
