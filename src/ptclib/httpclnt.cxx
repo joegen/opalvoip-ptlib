@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.7 1997/03/31 08:26:58 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.8 1997/06/12 12:33:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.8  1997/06/12 12:33:35  robertj
+ * Fixed bug where mising MIME fields is regarded as an eror.
+ *
  * Revision 1.7  1997/03/31 08:26:58  robertj
  * GNU compiler compatibilty.
  *
@@ -216,10 +219,13 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
   if (http[0] == '\r' &&  http[1] == '\n')
     ReadString(2);
 
-  if (PHTTP::ReadResponse())
-    return replyMIME.Read(*this);
+  if (!PHTTP::ReadResponse())
+    return FALSE;
 
-  return FALSE;
+  if (replyMIME.Read(*this))
+    return TRUE;
+
+  return lastError == NoError;
 }
 
 
