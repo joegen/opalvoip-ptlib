@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.42  2004/05/13 14:53:35  csoutheren
+ * Add "abstract factory" template classes
+ *
  * Revision 1.41  2004/04/15 03:58:40  csoutheren
  * Removed PCONTAINER_USES_CRITSEC
  *
@@ -441,6 +444,7 @@ extern "C" char ** __argv;
 #pragma warning(disable:4663)
 #pragma warning(disable:4146)
 #pragma warning(disable:4244)
+#pragma warning(disable:4786)
 #include <string>
 #pragma warning(pop)
 
@@ -449,7 +453,31 @@ extern "C" char ** __argv;
 #include <yvals.h>    
 #pragma warning(disable:4018)
 #pragma warning(disable:4663)
+#pragma warning(disable:4786)
 #include <vector>
+#pragma warning(pop)
+
+// preload <map> and kill warnings
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4018)
+#pragma warning(disable:4663)
+#pragma warning(disable:4786)
+#include <map>
+#pragma warning(pop)
+
+// preload <utility> and kill warnings
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4786)
+#include <utility>
+#pragma warning(pop)
+
+// preload <iterator> and kill warnings
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4786)
+#include <iterator>
 #pragma warning(pop)
 
 // VS.net won't work without this :(
