@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.22  2004/12/01 11:59:19  csoutheren
+ * Incremented version number
+ *
  * Revision 1.21  2004/12/01 11:57:03  csoutheren
  * Fixed problem with not finding MSWIN macros with leading spaces and added ability to enable/disable features using --name as as well as --enable-name
  * Thank to Guilhem Tardy
@@ -109,7 +112,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.3.3"
+#define VERSION "1.3.4"
 
 
 using namespace std;
