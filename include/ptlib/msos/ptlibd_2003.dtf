@@ -5044,7 +5044,7 @@ EXPORTS
     ?PlayFile@PSoundChannelWin32@@UAEHABVPFilePath@@H@Z @3721 NONAME
     ?PlaySoundA@PSoundChannel@@UAEHABVPSound@@H@Z @3722 NONAME
     ?PlaySoundA@PSoundChannelWin32@@UAEHABVPSound@@H@Z @3723 NONAME
-    ?pluginLoaderStartupFactory@@3V?$Worker@VPluginLoaderStartup@@@?$PFactory@VPProcessStartup@@VPString@@@@A @6958 NONAME
+    ?PluginLoaderStartup_PString@PWLibFactoryLoader@@3HA @7669 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_GetVersion@@YAIXZ @3724 NONAME
     ?PPlugin_PSoundChannel_WindowsMultimedia_Registration_Instance@@3VPPlugin_PSoundChannel_WindowsMultimedia_Registration@@A @3725 NONAME
     ?PPlugin_PVideoInputDevice_FakeVideo_GetVersion@@YAIXZ @3839 NONAME
@@ -5053,7 +5053,6 @@ EXPORTS
     ?PPlugin_PVideoInputDevice_VideoForWindows_Registration_Instance@@3VPPlugin_PVideoInputDevice_VideoForWindows_Registration@@A @3727 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_GetVersion@@YAIXZ @3841 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance@@3VPPlugin_PVideoOutputDevice_NULLOutput_Registration@@A @3842 NONAME
-    ?PProcessStartup_PString@PWLibFactoryLoader@@3HA @7664 NONAME
     ?Predecessor@Info@PAbstractSortedList@@QBEPAUElement@2@PBU32@@Z @7667 NONAME
     ?PreInitialise@PProcess@@SAXHPAPAD0@Z @3058 NONAME
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEIN__@@@Z @3059 NONAME
