@@ -58,6 +58,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
 	-@erase "$(INTDIR)\socks.obj"
@@ -100,7 +101,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\random.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -154,6 +156,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.sbr"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\Psnmp.sbr"
+	-@erase "$(INTDIR)\random.obj"
+	-@erase "$(INTDIR)\random.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpclnt.sbr"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -197,7 +201,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\random.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -227,7 +232,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\random.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -590,6 +596,24 @@ SOURCE=..\..\Ptclib\proto\Psnmp.cxx
 
 
 "$(INTDIR)\Psnmp.obj"	"$(INTDIR)\Psnmp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\random.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\random.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\random.obj"	"$(INTDIR)\random.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
