@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.7 1995/01/03 09:36:22 robertj Exp $
+ * $Id: tcpsock.h,v 1.8 1995/03/12 04:46:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
- * Revision 1.7  1995/01/03 09:36:22  robertj
+ * Revision 1.8  1995/03/12 04:46:40  robertj
+ * Added more functionality.
+ *
+ * Revision 1.7  1995/01/03  09:36:22  robertj
  * Documentation.
  *
  * Revision 1.6  1995/01/01  01:07:33  robertj
@@ -43,14 +46,17 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
   public:
     PTCPSocket(
-      WORD port                 // Port number to use for the connection.
+      WORD port = 0             // Port number to use for the connection.
     );
     PTCPSocket(
       const PString & address,  // Address of remote machine to connect to.
       WORD port                 // Port number to use for the connection.
     );
-    /* Create a TCP/IP protocol socket channel. If a remote machine address is
-       specified then the channel is also opened.
+    PTCPSocket(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Create a TCP/IP protocol socket channel. If a remote machine address or
+       a "listening" socket is specified then the channel is also opened.
      */
 
 
@@ -59,11 +65,33 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
       const PString & address,  // Address of remote machine to connect to.
       WORD port = 0             // Port number to use for the connection.
     );
-    /* Open a socket to a remote host on the specified port number. If the
-       $B$port$B$ parameter is zero then the port number as defined by the
-       object instance construction or the $B$SetPort()$B$ function is used.
-       
-       Returns: TRUE if the checnnel was successfully opened.
+    virtual BOOL Open(
+      WORD port = 0             // Port number to use for the connection.
+    );
+    virtual BOOL Open(
+      PSocket & socket          // Listening socket making the connection.
+    );
+    /* Open a socket to a remote host on the specified port number.
+    
+       The first form creates a "connecting" socket which is typically the
+       client or initiator of a communications channel. This connects to a
+       "listening" socket at the other end of the communications channel.
+
+       The second form creates a "listening" socket which may be used for
+       server based applications. A "connecting" socket begins a connection by
+       initiating a connection to this socket. An active socket of this type
+       is then used to generate other "accepting" sockets which establish a
+       two way communications channel with the "connecting" socket.
+
+       The third form opens an "accepting" socket. When a "listening" socket
+       has a pending connection to make, this will accept a connection made
+       by the "connecting" socket created to establish a link.
+
+       If the $B$port$B$ parameter is zero then the port number as defined by
+       the object instance construction or the $B$SetPort()$B$ function is
+       used.
+
+       Returns: TRUE if the channel was successfully opened.
      */
 
 
