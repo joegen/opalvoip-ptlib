@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.17  1999/08/22 12:13:42  robertj
+ * Fixed warning when using inlines on older GNU compiler
+ *
  * Revision 1.16  1999/08/20 03:07:44  robertj
  * Fixed addded Concatenate function for non-template version.
  *
@@ -846,7 +849,7 @@ class PArrayObjects : public PCollection
        Note that by default, objects placed into the list will be deleted when
        removed or when all references to the list are destroyed.
      */
-    PArrayObjects(
+    PINLINE PArrayObjects(
       PINDEX initialSize = 0  /// Initial number of objects in the array.
     );
   //@}
