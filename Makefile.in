@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.18  2004/02/26 12:04:10  csoutheren
+# Added changes to increase portability to 64bit platforms, thanks to Klaus Kaempf
+#
 # Revision 1.17  2004/02/01 12:12:37  dsandras
 # Fixed default target to optshared.
 #
@@ -233,14 +236,17 @@ install:
 	ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ###	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
+ifeq (1, $(HAS_PLUGINS))
 	cp -rf plugins/pwlib         $(DESTDIR)$(LIBDIR)
+endif
 	cp -rf include/ptclib        $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib.h       $(DESTDIR)$(PREFIX)/include/
 	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
 	cp -rf make/*.mak    $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	cp make/ptlib-config $(DESTDIR)$(PREFIX)/bin/
+	cp make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/CVS/
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/CVS/
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib/CVS/
