@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.25  2002/12/10 04:41:16  robertj
+ * Added test for URL being empty, don't try and run auto load in background.
+ *
  * Revision 1.24  2002/11/26 05:53:45  craigs
  * Added ability to auto-reload from URL
  *
@@ -220,6 +223,12 @@ BOOL PXML::LoadURL(const PURL & url)
 
 BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options)
 {
+  if (url.IsEmpty()) {
+    errorString = "Cannot load empty URL";
+    errorCol = errorLine = 0;
+    return FALSE;
+  }
+
   PString data;
   if (url.GetScheme() == "file") 
     return LoadFile(url.AsFilePath());
@@ -233,7 +242,6 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
 
   // get the resource header information
   if (!client.GetDocument(url, outMIME, replyMIME)) {
-    PTRACE(2, "PVXML\tCannot load resource " << url);
     errorString = PString("Cannot load URL") & url.AsString();
     errorCol = errorLine = 0;
     return FALSE;
@@ -272,6 +280,11 @@ BOOL PXML::StartAutoReloadURL(const PURL & url,
                               const PTimeInterval & refreshTime,
                               int _options)
 {
+  if (url.IsEmpty()) {
+    autoLoadError = "Cannot auto-load empty URL";
+    return FALSE;
+  }
+
   PWaitAndSignal m(autoLoadMutex);
   autoLoadTimer.Stop();
 
