@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.60  1998/09/24 07:24:00  robertj
+ * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
+ *
  * Revision 1.59  1998/09/23 06:21:04  robertj
  * Added open source copyright license.
  *
@@ -546,27 +549,6 @@ PINLINE PTextFile::PTextFile(OpenMode mode, int opts)
 
 PINLINE PTextFile::PTextFile(const PFilePath & name, OpenMode mode, int opts)
   { Open(name, mode, opts); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-
-PINLINE PStructuredFile::PStructuredFile()
-  { structureSize = 1; }
-
-PINLINE PStructuredFile::PStructuredFile(OpenMode mode, int opts)
-  : PFile(mode, opts) { structureSize = 1; }
-
-PINLINE PStructuredFile::PStructuredFile(const PFilePath & name,
-                                                      OpenMode mode, int opts)
-  : PFile(name, mode, opts) { structureSize = 1; }
-
-
-PINLINE size_t PStructuredFile::GetStructureSize()
-  { return structureSize; }
-
-PINLINE void PStructuredFile::SetStructure(Element * struc, PINDEX num)
-  { structure = struc; numElements = num; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
