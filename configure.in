@@ -51,8 +51,10 @@ case "$target_os" in
                    STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
 
   freebsd* )       OSTYPE=FreeBSD ;
-                   OSRELEASE=`sysctl -n kern.osreldate` ;
-                   STDCCFLAGS="-DP_FREEBSD=$OSRELEASE" ;;
+                   if test "x$OSRELEASE" = "x"; then
+                     OSRELEASE=`sysctl -n kern.osreldate` ;
+                   fi
+                   STDCCFLAGS="-DP_FREEBSD=${ROGER}" ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
                    OSRELEASE=`sysctl -n kern.osrevision` ;
