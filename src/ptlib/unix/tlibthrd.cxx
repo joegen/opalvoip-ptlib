@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.50  2000/11/12 23:30:02  craigs
+ * Added extra WaitForTermination to assist bug location
+ *
  * Revision 1.49  2000/11/12 08:16:07  rogerh
  * This change and the previous change, make pthreads work on FreeBSD 4.2.
  * FreeBSD has improved its thread signal handling and now correctly generates a
@@ -537,6 +540,8 @@ void PThread::Terminate()
     return;
 
   PTRACE(1, "tlibthrd\tForcing termination of thread " << (void *)this);
+
+  WaitForTermination();
 
   if (Current() == this)
     pthread_exit(NULL);
