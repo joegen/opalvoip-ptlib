@@ -1,13 +1,35 @@
 /*
- * $Id: httpform.h,v 1.8 1998/08/20 05:45:33 robertj Exp $
+ * httpform.h
+ *
+ * Forms management using HTTP User Interface.
  *
  * Portable Windows Library
  *
- * Application Socket Class Declarations
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1995 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.9  1998/09/23 06:19:31  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.8  1998/08/20 05:45:33  robertj
  * Fixed bug where substitutions did not always occur if near end of macro block.
  *
