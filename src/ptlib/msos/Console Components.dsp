@@ -160,6 +160,10 @@ SOURCE=..\..\Ptclib\Cypher.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\delaychan.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Ftp.cxx
 # End Source File
 # Begin Source File
@@ -241,6 +245,10 @@ SOURCE=..\..\ptclib\pssl.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\qchannel.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\random.cxx
 # End Source File
 # Begin Source File
@@ -289,6 +297,10 @@ SOURCE=..\..\..\Include\PtCLib\asner.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\cypher.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\delaychan.h
 # End Source File
 # Begin Source File
 
@@ -341,6 +353,10 @@ SOURCE=..\..\..\Include\PtCLib\psnmp.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\qchannel.h
 # End Source File
 # Begin Source File
 
