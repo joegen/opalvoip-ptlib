@@ -3066,7 +3066,6 @@ EXPORTS
     ?SetFrameSize@PFakeVideoInputDevice@@UAEHII@Z @3492 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoDevice@@UAEHII@Z @3340 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoInputDevice@@UAEHII@Z @3398 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
-    ?SetFrameSize@PVideoOutputDevice@@UAEXHH@Z @3653 NONAME ;public: virtual void __thiscall PVideoOutputDevice::SetFrameSize(int,int)
     ?SetFrameSizeConverter@PVideoDevice@@UAEHIIH@Z @3768 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSizeConverter(unsigned int,unsigned int,int)
     ?SetGrabberFrameSize@PVideoChannel@@UAEXHH@Z @3461 NONAME ;public: virtual void __thiscall PVideoChannel::SetGrabberFrameSize(int,int)
     ?SetIgnoreAllocations@PMemoryHeap@@SAHH@Z @3794 NONAME ;public: static int __cdecl PMemoryHeap::SetIgnoreAllocations(int)

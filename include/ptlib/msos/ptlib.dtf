@@ -2214,7 +2214,6 @@ EXPORTS
     ?SetFrameSize@PFakeVideoInputDevice@@UAEHII@Z @2571 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoDevice@@UAEHII@Z @2462 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoInputDevice@@UAEHII@Z @2482 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
-    ?SetFrameSize@PVideoOutputDevice@@UAEXHH@Z @2774 NONAME ;public: virtual void __thiscall PVideoOutputDevice::SetFrameSize(int,int)
     ?SetFrameSizeConverter@PVideoDevice@@UAEHIIH@Z @2873 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSizeConverter(unsigned int,unsigned int,int)
     ?SetGrabberFrameSize@PVideoChannel@@UAEXHH@Z @2541 NONAME ;public: virtual void __thiscall PVideoChannel::SetGrabberFrameSize(int,int)
     ?SetInputFlowControl@PSerialChannel@@QAEHW4FlowControl@1@@Z @1662 NONAME ;public: int __thiscall PSerialChannel::SetInputFlowControl(enum PSerialChannel::FlowControl)
