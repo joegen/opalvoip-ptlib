@@ -8,6 +8,10 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.1.2.7  2003/11/12 03:35:33  csoutheren
+ * Added sound device tests thanks to Derek
+ * Added listing of loading plugin types
+ *
  * Revision 1.1.2.6  2003/10/20 21:15:33  dereksmithies
  * Tidy up text output. Fix calls to Usage() function.
  *
@@ -44,6 +48,8 @@
 
 PCREATE_PROCESS(PluginTest);
 
+#define SAMPLES 64000  
+
 PluginTest::PluginTest()
   : PProcess("Equivalence", "PluginTest", 1, 0, AlphaCode, 1)
 {
@@ -53,7 +59,7 @@ void Usage()
 {
   PError << "usage: plugintest dir\n \n"
 	 << "-l List ALL plugins regardless of type\n"
-	 << "-s Show the list of loaded sound plugin drivers\n"
+	 << "-s Show the list of loaded PSoundChannel drivers\n"
 	 << "-d dir Set the directory from which plugins are loaded\n"
 	 << "-x Attempt to load the OSS sound plugin\n"
 	 << "-t (more t's for more detail) logging on\n"
@@ -69,14 +75,17 @@ void PluginTest::Main()
   PArgList & args = GetArguments();
 
   args.Parse(
-	     "t-trace."              "-no-trace."   
-	     "o-output:"             "-no-output."
-	     "l-list."               "-no-list."
-	     "x-xamineOSS."          "-no-xamineOSS."
-	     "s-soundPlugins."       "-no-soundPlugins."
-	     "d-directory:"          "-no-directory."
-	     "p-play."               "-no-play."
-	     "h-help."               "-no-help."
+	     "t-trace."              
+	     "o-output:"             
+	     "h-help."               
+	     "l-list."               
+	     "s-service:"               
+	     "a-audio:"
+	     "d-directory:"          
+
+	     //"x-xamineOSS."          
+	     //"s-soundPlugins."       
+	     //"p-play."               
 	     );
 
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -88,110 +97,110 @@ void PluginTest::Main()
     pluginMgr.LoadPluginDirectory(args.GetOptionString('d'));
   }
 
-  if (args.HasOption('h') || args.GetCount() == 0) {
+  if (args.HasOption('h')) {
     Usage();
-    goto end_program;
-  }
-
-  if (args.HasOption('s')) {
-    cout << "Examine PSoundChannel, get available sound plugins." <<endl;
-    cout << "Default device names = " << setfill(',') << PSoundChannel::GetDeviceNames(PSoundChannel::Player) << setfill(' ') << endl;
-    cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetPluginNames() << setfill(' ') << endl;
-    PSoundChannel * snd = new PSoundChannel();
-    cout << "PSoundChannel has a name of \"" << snd->GetClass() << "\"" << endl 
-	 << endl;
+    return;
   }
 
   if (args.HasOption('l')) {
-    cout << "List all available plugins" << endl;
+    cout << "List available plugin types" << endl;
     PPluginManager & pluginMgr = PPluginManager::GetPluginManager();
-    PStringArray plugins = pluginMgr.GetPluginNames();
-    cout << "Plugins loaded = " << setfill(',') << plugins << endl
-	 << endl;
+    PStringList plugins = pluginMgr.GetPluginTypes();
+    if (plugins.GetSize() == 0)
+      cout << "No plugins loaded" << endl;
+    else {
+      cout << plugins.GetSize() << " plugin types available:" << endl;
+      for (int i = 0; i < plugins.GetSize(); i++) {
+        cout << "   " << plugins[i] << " : ";
+        PStringList services = pluginMgr.GetPluginsProviding(plugins[i]);
+        if (services.GetSize() == 0)
+          cout << "None available" << endl;
+        else
+          cout << setfill(',') << services << setfill(' ') << endl;
+      }
+    }
+    return;
   }
 
-  if (args.HasOption('x')) {
-    cout << "Examine PSoundChannelOSS" << endl;
-    PPluginManager & pluginMgr = PPluginManager::GetPluginManager();
-    PPlugin * plugin = pluginMgr.GetPlugin("PSoundChannelOSS", "PSoundChannel");
-    if (plugin == NULL) {
-      cout << "No OSS plugin to examine, so exit immediately" << endl;
-      goto end_program;
+  if (args.HasOption('s')) {
+    cout << "Available " << args.GetOptionString('s') << " :" <<endl;
+    cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetDriverNames() << setfill(' ') << endl;
+
+    //cout << "Default device names = " << setfill(',') << PSoundChannel::GetDeviceNames(PSoundChannel::Player) << setfill(' ') << endl;
+    //PSoundChannel * snd = new PSoundChannel();
+    //cout << "PSoundChannel has a name of \"" << snd->GetClass() << "\"" << endl 
+    //	 << endl;
+  }
+
+
+  if (args.HasOption('a')) {
+    PString service = args.GetOptionString('a');
+    PString device;
+    if (args.GetCount() > 0)
+      device  = args[0];
+    else if (service != "default") {
+      PStringList deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
+      if (deviceList.GetSize() == 0) {
+        cout << "No devices for sound service " << service << endl;
+        return;
+      }
+      device = deviceList[0];
+    }
+    
+    cout << "Using sound service " << service << " with device " << device << endl;
+
+    PSoundChannel * snd;
+    if (service == "default") {
+      snd = new PSoundChannel();
+      device = PSoundChannel::GetDefaultDevice(PSoundChannel::Player);
+    }
+    else {
+      snd = PSoundChannel::CreateChannel(service);
+      if (snd == NULL) {
+        cout << "Failed to create sound service " << service << " with device " << device << endl;
+        return;
+      }
     }
 
-#define SAMPLES 64000  /*8 seconds of data */
+    cout << "Opening sound service " << service << " with device " << device << endl;
 
-#define GET_FUNCTION(x, y) \
-   y = NULL;                                                     \
-   if (!plugin->GetFunction(#x, (PDynaLink::Function &)y)) {     \
-      cout << " no " << #x << " function " << dlerror() << endl; \
-      goto end_program;                                          \
-   }                                                             \
-   if (y == NULL) {                                              \
-      cout << "GetFunction on \"" #x "\" returned NULL" << endl; \
-      goto end_program;                                          \
-   }
+    if (!snd->Open(device, PSoundChannel::Player)) {
+      cout << "Failed to open sound service " << service << " with device " << device << endl;
+      return;
+    }
 
-    PString      (*dnType)();
-    PStringArray (*dnFn)(int);
+    if (!snd->IsOpen()) {
+      cout << "Sound device " << device << " not open" << endl;
+      return;
+    }
 
-    GET_FUNCTION(GetDeviceNames, dnFn);    /*GetDeviceNames is a static method in the sound_oss lib*/
-    PStringArray names = (*dnFn)(0);
-    cout << "Device names = " << names << endl
-	 << endl;
+    if (!snd->SetBuffers(SAMPLES, 2)) {
+      cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
+      return;
+    }
 
-    GET_FUNCTION(GetType, dnType);         /*GetType is a static method in the sound_oss lib. */
-    cout << "Type is " << (*dnType)() << endl << endl;
+    snd->SetVolume(100);
 
-    if (args.HasOption('p')) {
-      cout << "Play a test beep beep beep sound out the PSoundChannel" << endl;
-      PSoundChannel * snd = new PSoundChannel();
-      PString deviceName = snd->GetDefaultDevice(PSoundChannel::Player);
+    PWORDArray audio(SAMPLES);
+    int i, pointsPerCycle = 8;
+    int volume = 80;
+    double angle;
 
-      if (!snd->Open(deviceName, PSoundChannel::Player)) {
-	cout << "Failed to open " << deviceName << " for sound. End program now." << endl;
-	goto end_program;
-      }
-
-      if (!snd->IsOpen()) {
-	cout << "Sound device is not open. Sorry. End program now." << endl;
-	goto end_program;
-      }
-
-      if (!snd->SetBuffers(SAMPLES, 2)) {
-	cout << "Failed to set samples to " << SAMPLES << " and 2 buffers. End program now." << endl;
-	goto end_program;
-      }
-
-      snd->SetVolume(100);
-
-      PWORDArray audio(SAMPLES);
-      int i, pointsPerCycle = 8;
-      int volume = 80;
-      double angle;
-
-      for (i = 0; i < SAMPLES; i++) {
-	angle = M_PI * 2 * (double)(i % pointsPerCycle)/pointsPerCycle;
-	if ((i % 4000) < 3000)
-	  audio[i] = (unsigned short) ((16384 * cos(angle) * volume)/100);
-	else
-	  audio[i] = 0;
-      }
+    for (i = 0; i < SAMPLES; i++) {
+      angle = M_PI * 2 * (double)(i % pointsPerCycle)/pointsPerCycle;
+      if ((i % 4000) < 3000)
+        audio[i] = (unsigned short) ((16384 * cos(angle) * volume)/100);
+      else
+        audio[i] = 0;
+    }
 	
-      if (!snd->Write((unsigned char *)audio.GetPointer(), SAMPLES * 2)) {
-	cout << "Failed to write  " << SAMPLES/8000  << " seconds of beep beep. End program now." << endl;
-	goto end_program;
-      }
+    if (!snd->Write((unsigned char *)audio.GetPointer(), SAMPLES * 2)) {
+      cout << "Failed to write  " << SAMPLES/8000  << " seconds of beep beep. End program now." << endl;
+      return;
+    }
 
-      snd->WaitForPlayCompletion();
-    } /* Play beep beep*/
+    snd->WaitForPlayCompletion();
   }
-
- end_program:
-  cout << endl
-       << "End of \"plugintest\"    Goodbye" << endl;
-  PTrace::ClearOptions(0);
-  PTrace::SetLevel(0);
 }
 
 // End of File ///////////////////////////////////////////////////////////////
