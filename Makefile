@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.8  1999/06/09 16:09:20  robertj
+# Fixed tarball construction not include windows directories
+#
 # Revision 1.7  1999/06/09 15:41:18  robertj
 # Added better UI to make files.
 #
@@ -111,8 +114,8 @@ ifdef HAS_GUI
 GUI_SOURCES = include/pwlib.h \
 	$(shell find include/pwclib -name CVS -prune -o -type f -print) \
 	$(shell find src/pwclib -name CVS -prune -o -type f -print) \
-	$(shell find include/pwlib -name CVS -prune -o -type f -print) \
-	$(shell find src/pwlib -name CVS -prune -o -type f -print) \
+	$(shell find include/pwlib -name CVS -prune -o -name mswin -prune -o -type f -print) \
+	$(shell find src/pwlib -name CVS -prune -o -name mswin -prune -o -type f -print) \
 	$(shell $(MAKE) --no-print-directory -C tools/pwrc tarfiles)
 endif
 
@@ -120,8 +123,8 @@ TAR_SOURCES = Readme.txt History.txt mpl-1.0.htm Makefile include/ptlib.h \
 	$(shell find make -name CVS -prune -o -type f -print) \
 	$(shell find include/ptclib -name CVS -prune -o -type f -print) \
 	$(shell find src/ptclib -name CVS -prune -o -name proto -prune -o -type f -print) \
-	$(shell find include/ptlib -name CVS -prune -o -type f -print) \
-	$(shell find src/ptlib -name CVS -prune -o -type f -print) \
+	$(shell find include/ptlib -name CVS -prune -o -name msos -prune -o -type f -print) \
+	$(shell find src/ptlib -name CVS -prune -o -name msos -prune -o -type f -print) \
 	$(shell $(MAKE) --no-print-directory -C tools/asnparser tarfiles)
 
 CWD = $(notdir $(shell pwd))
