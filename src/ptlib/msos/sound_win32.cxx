@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.8  2004/08/16 06:41:00  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.7  2004/04/09 06:52:18  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -1577,8 +1580,6 @@ BOOL PSoundChannelWin32::GetVolume(unsigned & oldVolume)
    oldVolume = rawVolume*100/65536;
    return TRUE;
 }
-
-
 
 // End of File ///////////////////////////////////////////////////////////////
 
