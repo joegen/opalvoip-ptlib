@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.4 1996/01/26 11:08:45 craigs Exp $
+ * $Id: thread.h,v 1.5 1996/04/15 10:50:48 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.5  1996/04/15 10:50:48  craigs
+ * Last revision prior to release of MibMaster
+ *
  * Revision 1.4  1996/01/26 11:08:45  craigs
  * Fixed problem with blocking Accept calls
  *
@@ -40,15 +43,34 @@ class PSemaphore;
 #include "../../common/thread.h"
 
   public:
-    BOOL PXBlockOnIO(int handle, int type);
-    BOOL PXBlockOnIO(int handle, int type, const PTimeInterval & timeout);
+    int PXBlockOnIO(int handle,
+                    int type,
+                   const PTimeInterval & timeout);
 
+    int PXBlockOnIO(int maxHandle,
+               fd_set & readBits,
+               fd_set & writeBits,
+               fd_set & execptionBits,
+               const PTimeInterval & timeout,
+               const PIntArray & osHandles);
+
+    int PXBlockOnChildTerminate(int pid);
+                     
   protected:
+    void PXSetOSHandleBlock  (int fd, int type);
+    void PXClearOSHandleBlock(int fd, int type);
+
     PTimer ioTimer;
     BOOL   hasIOTimer;
-    int    blockHandle;
-    int    blockType;
-    BOOL   dataAvailable;
+    int    waitPid;
+
+    fd_set * read_fds;
+    fd_set * write_fds;
+    fd_set * exception_fds;
+    int    handleWidth;
+
+    int    selectReturnVal;
+    int    selectErrno;
 };
 
 

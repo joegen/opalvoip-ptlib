@@ -61,9 +61,8 @@ typedef unsigned int 	   DWORD;
 typedef signed long long   PInt64;
 typedef unsigned long long PUInt64;	// 8 bytes
 
-typedef size_t 		   PINDEX;
-typedef int		   INT;
-typedef char *             PMemoryPointer;
+typedef size_t 		      PINDEX;
+typedef int		      INT;
 
 #define P_MAX_INDEX 		0x7fffffff
 #define PABSINDEX(idx) 		(idx)		// careful - size_t may be signed!

@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.4 1996/01/26 11:06:31 craigs Exp $
+ * $Id: channel.h,v 1.5 1996/04/15 10:50:48 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.5  1996/04/15 10:50:48  craigs
+ * Last revision prior to release of MibMaster
+ *
  * Revision 1.4  1996/01/26 11:06:31  craigs
  * Fixed problem with blocking Accept calls
  *
@@ -33,12 +36,12 @@
     enum {
       PXReadBlock,
       PXWriteBlock,
-      PXOtherBlock,
-      PXAcceptBlock
+      PXAcceptBlock,
+      PXConnectBlock
     };
   protected:
-    BOOL PXSetIOBlock(int type);
-    BOOL PXSetIOBlock(int type, int blockHandle);
+    BOOL PXSetIOBlock(int type, PTimeInterval timeout = PMaxTimeInterval);
+    BOOL PXSetIOBlock(int type, int blockHandle, PTimeInterval timeout = PMaxTimeInterval);
     PString channelName;
 };
 
