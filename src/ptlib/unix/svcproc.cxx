@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.50  2001/04/05 03:09:29  robertj
+ * Changed so output to PError goes to system log. Useful for asserts.
+ *
  * Revision 1.49  2001/03/29 03:25:03  robertj
  * Added dumping to log file of SEGV etc if running as daemon.
  *
@@ -185,7 +188,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
 
     ostream * out;
     if (systemLogFile == "-")
-      out = &PError;
+      out = &cerr;
     else
       out = new ofstream(systemLogFile, ios::app);
 
@@ -201,7 +204,7 @@ void PSystemLog::Output(Level level, const char * cmsg)
          << '\t'
          << cmsg << endl;
 
-    if (out != &PError)
+    if (out != &cerr)
       delete out;
 
 #ifdef P_PTHREADS
@@ -286,7 +289,7 @@ int PServiceProcess::InitialiseService()
 #if PMEMORY_CHECK
   PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
-//  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
@@ -314,12 +317,12 @@ int PServiceProcess::InitialiseService()
 
   // if only displaying version information, do it and finish
   if (args.HasOption('v')) {
-    PError << "Product Name: " << productName << endl
-           << "Manufacturer: " << manufacturer << endl
-           << "Version     : " << GetVersion(TRUE) << endl
-           << "System      : " << GetOSName() << '-'
-                               << GetOSHardware() << ' '
-                               << GetOSVersion() << endl;
+    cout << "Product Name: " << productName << endl
+         << "Manufacturer: " << manufacturer << endl
+         << "Version     : " << GetVersion(TRUE) << endl
+         << "System      : " << GetOSName() << '-'
+                             << GetOSHardware() << ' '
+                             << GetOSVersion() << endl;
     return 0;
   }
 
@@ -337,15 +340,15 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('k') || args.HasOption('t') || args.HasOption('s')) {
     ifstream pidfile(pidfilename);
     if (!pidfile.is_open()) {
-      PError << "Could not open pid file: \"" << pidfilename << "\""
-                " - " << strerror(errno) << endl;
+      cout << "Could not open pid file: \"" << pidfilename << "\""
+              " - " << strerror(errno) << endl;
       return 1;
     }
 
     pid_t pid;
     pidfile >> pid;
     if (pid == 0) {
-      PError << "Illegal format pid file \"" << pidfilename << '"' << endl;
+      cout << "Illegal format pid file \"" << pidfilename << '"' << endl;
       return 1;
     }
 
@@ -377,7 +380,8 @@ int PServiceProcess::InitialiseService()
       return 2;
     }
 
-    PError << "Could not stop process " << pid << " - " << strerror(errno) << endl;
+    cout << "Could not stop process " << pid <<
+            " - " << strerror(errno) << endl;
     return 1;
   }
 
@@ -387,9 +391,7 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('h')) 
     helpAndExit = TRUE;
   else if (!args.HasOption('d') && !args.HasOption('x')) {
-    PError << "error: must specify one of -v, -h, "
-              "-t, -k, "
-              "-d or -x" << endl;
+    cout << "error: must specify one of -v, -h, -t, -k, -d or -x" << endl;
     helpAndExit = TRUE;
   }
 
@@ -400,7 +402,7 @@ int PServiceProcess::InitialiseService()
   if (args.HasOption('l')) {
     systemLogFile = args.GetOptionString('l');
     if (systemLogFile.IsEmpty()) {
-      PError << "error: must specify file name for -l" << endl;
+      cout << "error: must specify file name for -l" << endl;
       helpAndExit = TRUE;
     }
     else if (PDirectory::Exists(systemLogFile))
@@ -408,23 +410,23 @@ int PServiceProcess::InitialiseService()
   }
 
   if (helpAndExit) {
-    PError << "usage: [-c] -v|-d|-h|-x\n"
-              "  -h --help           output this help message and exit\n"
-              "  -v --version        display version information and exit\n"
+    cout << "usage: [-c] -v|-d|-h|-x\n"
+            "  -h --help           output this help message and exit\n"
+            "  -v --version        display version information and exit\n"
 #ifndef BE_THREADS
-              "  -d --daemon         run as a daemon\n"
+            "  -d --daemon         run as a daemon\n"
 #endif
-              "  -u --uid uid        set user id to run as\n"
-              "  -g --gid gid        set group id to run as\n"
-              "  -p --pid-file       name or directory for pid file\n"
-              "  -t --terminate      orderly terminate process in pid file\n"
-              "  -k --kill           preemptively kill process in pid file\n"
-              "  -c --console        output messages to stdout rather than syslog\n"
-              "  -l --log-file file  output messages to file or directory instead of syslog\n"
-              "  -x --execute        execute as a normal program\n"
-              "  -i --ini-file       Set the ini file to use, may be explicit file or\n"
-              "                      a ':' separated set of directories to search.\n"
-           << endl;
+            "  -u --uid uid        set user id to run as\n"
+            "  -g --gid gid        set group id to run as\n"
+            "  -p --pid-file       name or directory for pid file\n"
+            "  -t --terminate      orderly terminate process in pid file\n"
+            "  -k --kill           preemptively kill process in pid file\n"
+            "  -c --console        output messages to stdout rather than syslog\n"
+            "  -l --log-file file  output messages to file or directory instead of syslog\n"
+            "  -x --execute        execute as a normal program\n"
+            "  -i --ini-file       Set the ini file to use, may be explicit file or\n"
+            "                      a ':' separated set of directories to search.\n"
+         << endl;
     return 0;
   }
 
@@ -442,14 +444,14 @@ int PServiceProcess::InitialiseService()
     else {
       struct group * gr = getgrnam(gidstr);
       if (gr == NULL) {
-        PError << "Could not find group \"" << gidstr << '"' << endl;
+        cout << "Could not find group \"" << gidstr << '"' << endl;
         return 1;
       }
       gid = gr->gr_gid;
     }
     if (setgid(gid) != 0) {
-      PError << "Could not set GID to \"" << gidstr << "\""
-                " (" << gid << ") : " << strerror(errno) << endl;
+      cout << "Could not set GID to \"" << gidstr << "\" (" << gid << ")"
+              " - " << strerror(errno) << endl;
       return 1;
     }
   }
@@ -465,14 +467,14 @@ int PServiceProcess::InitialiseService()
     else {
       struct passwd * pw = getpwnam(uidstr);
       if (pw == NULL) {
-        PError << "Could not find user \"" << uidstr << '"' << endl;
+        cout << "Could not find user \"" << uidstr << '"' << endl;
         return 1;
       }
       uid = pw->pw_uid;
     }
     if (setuid(uid) != 0) {
-      PError << "Could not set UID to \"" << uidstr << "\""
-                " (" << uid << ") : " << strerror(errno) << endl;
+      cout << "Could not set UID to \"" << uidstr << "\" (" << uid << ")"
+              " - " << strerror(errno) << endl;
       return 1;
     }
   }
@@ -481,11 +483,12 @@ int PServiceProcess::InitialiseService()
   if (systemLogFile.IsEmpty())
     openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
   else if (systemLogFile == "-")
-    PError << "All output for " << GetName() << " is to console." << endl;
+    cout << "All output for " << GetName() << " is to console." << endl;
   else {
     ofstream logfile(systemLogFile, ios::app);
     if (!logfile.is_open()) {
-      PError << "Could not open log file \"" << systemLogFile << "\" : " << strerror(errno) << endl;
+      cout << "Could not open log file \"" << systemLogFile << "\""
+              " - " << strerror(errno) << endl;
       return 1;
     }
   }
@@ -502,7 +505,7 @@ int PServiceProcess::InitialiseService()
       pid_t pid;
       pidfile >> pid;
       if (pid != 0 && kill(pid, 0) == 0) {
-        PError << "Already have daemon running with pid " << pid << endl;
+        cout << "Already have daemon running with pid " << pid << endl;
         return 2;
       }
     }
@@ -518,7 +521,7 @@ int PServiceProcess::InitialiseService()
       break;
 
     case -1 : // Failed
-      PError << "Fork failed creating daemon process." << endl;
+      cout << "Fork failed creating daemon process." << endl;
       return 1;
 
     default : // Parent process
@@ -529,8 +532,8 @@ int PServiceProcess::InitialiseService()
         if (pidfile.is_open())
           pidfile << pid;
         else
-          PError << "Could not write pid to file \"" << pidfilename << "\""
-                    " - " << strerror(errno) << endl;
+          cout << "Could not write pid to file \"" << pidfilename << "\""
+                  " - " << strerror(errno) << endl;
       }
       return 0;
   }
