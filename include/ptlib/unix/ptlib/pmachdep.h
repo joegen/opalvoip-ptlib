@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.45  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.44  2001/06/30 06:59:06  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -371,14 +374,29 @@ typedef int socklen_t;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-#elif defined (P_MACOSX)
+#elif defined (P_MACOSX) || defined(P_MACOS)
  
 #if defined(P_PTHREADS)
 #   define _THREAD_SAFE
 #   define P_THREAD_SAFE_CLIB
 #   include <pthread.h>
 #endif
- 
+#if defined(P_MAC_MPTHREADS)
+#include <CoreServices/CoreServices.h>
+// Blasted Mac <CoreServices.h> comes with 17 years of crufty history
+// crapping up the namespace, thankyouverymuch.  (What I really want is
+// just Multiprocessing.h, but that drags in nearly as much crap and isn't
+// readily available on Mac OS X.)
+// So:  undefine the troublespots as they occur.
+#undef nil // you morons.
+
+// Open Transport and UNIX networking headers don't get along.  Why did
+// Apple have to do this?  And what's worse, they are functionally equivalent
+// #defines, Apple could have easily made the headers compatible.  But no.
+#undef TCP_NODELAY
+#undef TCP_MAXSEG
+#endif // MPThreads
+
 #include <paths.h>
 #include <errno.h>
 //#include <dlfcn.h>
