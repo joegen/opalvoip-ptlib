@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.3 1996/06/28 13:16:32 robertj Exp $
+ * $Id: inetmail.h,v 1.4 1996/07/27 04:14:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.4  1996/07/27 04:14:49  robertj
+ * Redesign and reimplement of mail sockets.
+ *
  * Revision 1.3  1996/06/28 13:16:32  robertj
  * Changed SMTP incoming message handler so can tell when started, processing or ended message.
  *
@@ -168,6 +171,24 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
     void ServerReset();
     // Reset the state of the SMTP server socket.
 
+    enum ForwardResult {
+      LocalDomain,    // User may be on local machine, do LookUpName().
+      WillForward,    // User may be forwarded to another SMTP host.
+      CannotForward   // User cannot be forwarded.
+    };
+    // Result of forward check
+
+    virtual ForwardResult ForwardDomain(
+      PCaselessString & userDomain,       // Domain for user
+      PCaselessString & forwardDomainList // Domains forwarding to
+    );
+    /* Determine if a user for this domain may be on the local system, or
+       should be forwarded.
+
+       <H2>Returns:</H2>
+       Result of forward check operation.
+     */
+
     enum LookUpResult {
       ValidUser,      // User name was valid and unique.
       AmbiguousUser,  // User name was valid but ambiguous.
@@ -188,15 +209,10 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        Result of name look up operation.
      */
 
-    enum MessagePosition {
-      MessageStart,
-      MessagePart,
-      MessageEnd
-    };
-
     virtual BOOL HandleMessage(
       PCharArray & buffer,  // Buffer containing message data received.
-      MessagePosition position
+      BOOL starting,        // This is the first call for the message.
+      BOOL completed        // This is the last call for the message.
       // Indication that the entire message has been received.
     );
     /* Handle a received message. The <CODE>buffer</CODE> parameter contains
@@ -289,7 +305,7 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
     );
     // Common code for OnMAIL(), OnSEND(), OnSOML() and OnSAML() funtions.
 
-    virtual BOOL OnTextData(PCharArray & buffer);
+    virtual BOOL OnTextData(PCharArray & buffer, BOOL & completed);
     /* Read a standard text message that is being received by the socket. The
        text message is terminated by a line with a '.' character alone.
 
@@ -302,7 +318,7 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        received.
      */
 
-    virtual BOOL OnMIMEData(PCharArray & buffer);
+    virtual BOOL OnMIMEData(PCharArray & buffer, BOOL & completed);
     /* Read an eight bit MIME message that is being received by the socket. The
        MIME message is terminated by the CR/LF/./CR/LF sequence.
 
@@ -320,10 +336,10 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
     BOOL        haveHello;
     BOOL        extendedHello;
     BOOL        eightBitMIME;
-    PString     fromName;
-    PString     fromHost;
+    PString     fromAddress;
+    PString     fromPath;
     PStringList toNames;
-    PStringList toHosts;
+    PStringList toDomains;
     PINDEX      messageBufferSize;
     enum { WasMAIL, WasSEND, WasSAML, WasSOML } sendCommand;
     StuffState  endMIMEDetectState;
