@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.72 1998/09/15 08:26:42 robertj Exp $
+ * $Id: contain.cxx,v 1.73 1998/09/22 02:42:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.73  1998/09/22 02:42:39  robertj
+ * Fixed problem treating unsigned integer as signed in PString contructor.
+ *
  * Revision 1.72  1998/09/15 08:26:42  robertj
  * Fixed a number of warnings at maximum optimisation.
  *
@@ -865,9 +868,9 @@ PString::PString(ConversionType type, const char * str, ...)
 }
 
 
-static char * ltostr(long value, unsigned base, char * str)
+static char * ltostr(DWORD value, unsigned base, char * str)
 {
-  if (value >= (long)base)
+  if (value >= base)
     str = ltostr(value/base, base, str);
   value %= base;
   if (value < 10)
