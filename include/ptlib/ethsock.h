@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.h,v 1.2 1998/08/21 05:26:34 robertj Exp $
+ * $Id: ethsock.h,v 1.3 1998/08/22 04:07:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ethsock.h,v $
+ * Revision 1.3  1998/08/22 04:07:42  robertj
+ * Fixed GNU problem with structure packing
+ *
  * Revision 1.2  1998/08/21 05:26:34  robertj
  * Fine tuning of interface.
  *
@@ -46,10 +49,7 @@ PDECLARE_CLASS(PEthSocket, PSocket)
 
 
   public:
-#ifdef _MSC_VER
 #pragma pack(1)
-#pragma warning(disable:4201)
-#endif
     union Address {
       BYTE b[6];
       WORD w[3];
@@ -74,8 +74,8 @@ PDECLARE_CLASS(PEthSocket, PSocket)
     };
 
   struct Frame {
-    BYTE dst_addr[6];
-    BYTE src_addr[6];
+    Address dst_addr;
+    Address src_addr;
     union {
       struct {
         WORD type;
@@ -92,10 +92,7 @@ PDECLARE_CLASS(PEthSocket, PSocket)
       } snap;
     };
   };
-#ifdef _MSC_VER
-#pragma warning(default:4201)
 #pragma pack()
-#endif
 
   // Overrides from class PChannel
     virtual BOOL Close();
