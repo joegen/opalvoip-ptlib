@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.192  2004/10/28 20:07:10  csoutheren
+# Fixes for MacOSX platforms, thanks to Hannes Friederich
+#
 # Revision 1.191  2004/08/31 23:52:31  csoutheren
 # Changed check for Mac OS version, thanks to Hannes Friederich
 #
@@ -606,10 +609,9 @@ ifeq ($(OSTYPE),Darwin)
 
 CFLAGS		+= -fno-common -dynamic
 LDFLAGS		+= -multiply_defined suppress
-ifeq ($(OSRELEASE), 750)
-ENDLDLIBS	+= -lresolv
-endif
-ENDLDLIBS	+= -framework AudioToolbox -framework CoreAudio
+ENDLDLIBS	+= -lresolv -framework AudioToolbox -framework CoreAudio
+ENDLDLIBS   += -framework AudioUnit -framework CoreServices
+STDCCFLAGS  += -D__MACOSX__
 
 # Quicktime support is still a long way off. But for development purposes,
 # I am inluding the flags to allow QuickTime to be linked.
