@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.15 1997/02/05 11:47:25 robertj Exp $
+ * $Id: remconn.cxx,v 1.16 1997/04/01 06:00:06 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.16  1997/04/01 06:00:06  robertj
+ * Added Remove Configuration.
+ *
  * Revision 1.15  1997/02/05 11:47:25  robertj
  * Fixed NT 3.51 support, again! (PAP compatibility)
  *
@@ -60,6 +63,7 @@ PDECLARE_CLASS(PRASDLL, PDynaLink)
   DWORD (FAR PASCAL *EnumEntries)(LPTSTR,LPTSTR,LPRASENTRYNAME,LPDWORD,LPDWORD);
   DWORD (FAR PASCAL *GetEntryProperties)(LPTSTR, LPTSTR, LPRASENTRY, LPDWORD, LPBYTE, LPDWORD);
   DWORD (FAR PASCAL *SetEntryProperties)(LPTSTR, LPTSTR, LPRASENTRY, DWORD, LPBYTE, DWORD);
+  DWORD (FAR PASCAL *DeleteEntry)(LPTSTR, LPTSTR);
   DWORD (FAR PASCAL *ValidateEntryName)(LPTSTR, LPTSTR);
 } Ras;
 
@@ -79,6 +83,7 @@ PRASDLL::PRASDLL()
 
   GetFunction("RasGetEntryPropertiesA", (Function &)GetEntryProperties);
   GetFunction("RasSetEntryPropertiesA", (Function &)SetEntryProperties);
+  GetFunction("RasDeleteEntryA", (Function &)DeleteEntry);
   GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
 }
 
@@ -498,6 +503,23 @@ PRemoteConnection::Status
   return Connected;
 }
 
+
+PRemoteConnection::Status
+                  PRemoteConnection::RemoveConfiguration(const PString & name)
+{
+  if (!Ras.IsLoaded() || Ras.SetEntryProperties == NULL || Ras.ValidateEntryName == NULL)
+    return NotInstalled;
+
+  switch (Ras.DeleteEntry(NULL, (char *)(const char *)name)) {
+    case 0 :
+      return Connected;
+
+    case ERROR_INVALID_NAME :
+      return NoNameOrNumber;
+  }
+
+  return GeneralFailure;
+}
 
 
 // End of File ////////////////////////////////////////////////////////////////
