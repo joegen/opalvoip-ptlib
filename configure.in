@@ -545,9 +545,14 @@ dnl MSWIN_CHECK_DIR  libsdl,..\external\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
+dnl Linux SDL check
 AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
 if test "${HAS_SDL:-unset}" != "unset" ; then
   AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
+fi
+dnl freeBSD SDL check
+if test "${HAS_SDL:-unset}" = "unset" ; then
+  AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
 fi
 if test "${HAS_SDL:-unset}" != "unset" ; then
   AC_SUBST(HAS_SDL, 1)

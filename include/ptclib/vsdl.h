@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.5  2003/12/12 05:11:56  rogerhardiman
+ * Add SDL support on FreeBSD. Header files live in SDL11 directory
+ *
  * Revision 1.4  2003/05/17 03:20:48  rjongbloed
  * Removed need to do strange things with main() function.
  *
@@ -66,7 +69,11 @@
 #if P_SDL
 
 #include <ptlib.h>
+#if defined(P_FREEBSD)
+#include <SDL11/SDL.h>
+#else
 #include <SDL/SDL.h>
+#endif
 
 #undef main
 
