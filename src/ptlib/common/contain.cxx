@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.20 1994/07/25 03:38:38 robertj Exp $
+ * $Id: contain.cxx,v 1.21 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.20  1994/07/25 03:38:38  robertj
+ * Revision 1.21  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.20  1994/07/25  03:38:38  robertj
  * Added more memory tests.
  *
  * Revision 1.19  1994/07/17  10:46:06  robertj
@@ -135,50 +138,73 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 #ifdef PMEMORY_CHECK
 
-static const char GuardBytes[] = "\x55\x5a\xaa\xff\xaa\xa5\x55";
-static const int PointerHashTableSize = 6001;
-
-static struct {
-  void * ptr;
-  size_t size;
+struct PointerHashTableStruct {
+  void       * ptr;
+  size_t       size;
+  const char * fileName;
+  int          line;
   const char * className;
-} PointerHashTable[PointerHashTableSize];
+};
 
 
-static inline int PointerHashFunction(void * ptr)
-  { return (int)(((((long)ptr)&0x7fffffff)>>3)%PointerHashTableSize); }
+static const char GuardBytes[] = { '\x55', '\xaa', '\xff', '\xaa', '\x55' };
+static const unsigned PointerHashTableSize =
+                                        0xffff/sizeof(PointerHashTableStruct);
+static PointerHashTableStruct PointerHashTable[PointerHashTableSize];
 
 
-void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
+static PointerHashTableStruct *
+                          FindObjectMemoryPointer(void * object, void * search)
 {
-  void * obj = malloc(nSize+sizeof(GuardBytes));
+  int hash = (int)(((((long)object)&0x7fffffff)>>3)%PointerHashTableSize);
+  PointerHashTableStruct * forward = &PointerHashTable[hash];
+  PointerHashTableStruct * backward = forward;
+  static PointerHashTableStruct * const EndPointerHashTable =
+                                     &PointerHashTable[PointerHashTableSize-1];
+
+  do {
+    if (forward->ptr == search)
+      return forward;
+
+    if (forward == EndPointerHashTable)
+      forward = PointerHashTable;
+    else
+      forward++;
+
+    if (backward->ptr == search)
+      return backward;
+
+    if (backward == PointerHashTable)
+      backward = EndPointerHashTable;
+    else
+      backward--;
+  } while (forward != backward);
+
+  return NULL;
+}
+
+
+void * PObject::AllocateObjectMemory(size_t nSize,
+                           const char * file, int line, const char * className)
+{
+  void * obj = malloc(nSize + sizeof(GuardBytes));
   if (obj == NULL) {
     PAssertAlways(POutOfMemory);
     return NULL;
   }
 
-  int forward, backward, entry;
-  forward = backward = PointerHashFunction(obj);
-  for (;;) {
-    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr==NULL){
-      entry = forward;
-      break;
-    }
-    forward++;
-    if (backward >= 0 && PointerHashTable[backward].ptr == NULL) {
-      entry = backward;
-      break;
-    }
-    backward--;
-    PAssert(forward < PointerHashTableSize && backward >= 0,
-                                                    "Pointer hash table full");
-  }
-
-  PointerHashTable[entry].ptr = obj;
-  PointerHashTable[entry].size = nSize;
-  PointerHashTable[entry].className = className;
-
   memcpy((char *)obj+nSize, GuardBytes, sizeof(GuardBytes));
+
+  PointerHashTableStruct * entry = FindObjectMemoryPointer(obj, NULL);
+  if (entry == NULL)
+    PAssertAlways("Pointer hash table full.");
+  else {
+    entry->ptr       = obj;
+    entry->size      = nSize;
+    entry->fileName  = file;
+    entry->line      = line;
+    entry->className = className;
+  }
 
   return obj;
 }
@@ -186,53 +212,42 @@ void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
 
 void PObject::DeallocateObjectMemory(void * ptr, const char * className)
 {
-  int forward, backward, entry;
-  forward = backward = PointerHashFunction(ptr);
-  for (;;) {
-    if (forward < PointerHashTableSize && PointerHashTable[forward].ptr == ptr) {
-      entry = forward;
-      break;
+  PointerHashTableStruct * entry = FindObjectMemoryPointer(ptr, ptr);
+  if (entry == NULL)
+    PAssertAlways("Deallocating invalid pointer.");
+  else {
+    entry->ptr = NULL;
+
+    if (strcmp(entry->className, className) != 0) {
+      char buf[200];
+      sprintf(buf,
+              "Pointer allocated as \"%1.70s\", deallocated as \"%1.70s\".",
+              entry->className, className);
+      PAssertAlways(buf);
     }
-    forward++;
-    if (backward >= 0 && PointerHashTable[backward].ptr == ptr) {
-      entry = backward;
-      break;
-    }
-    backward--;
-    if (forward >= PointerHashTableSize || backward < 0) {
-      PAssertAlways("Deallocating invalid pointer");
-      free(ptr);
-      return;
-    }
+  
+    PAssert(memcmp((char *)ptr+entry->size,
+               GuardBytes, sizeof(GuardBytes)) == 0, "Heap pointer overrun.");
+  
+    memset(ptr, 0x55, entry->size);  // Make use of freed pointer noticable
   }
 
-  PAssert(PointerHashTable[entry].className == className,
-                                          "Deallocated pointer class changed");
-
-  size_t size = PointerHashTable[entry].size;
-
-  PAssert(memcmp((char *)ptr+size, GuardBytes, sizeof(GuardBytes)) == 0,
-                                                       "Heap pointer overrun");
-
-  memset(ptr, 0x55, size);  // Make use of freed pointer a bad idea
   free(ptr);
-
-  PointerHashTable[entry].ptr = NULL;
 }
 
 
 void PDumpMemoryLeaks()
 {
-  cerr.setf(ios::uppercase);
-  for (int i = 0; i < PointerHashTableSize; i++) {
-    if (PointerHashTable[i].ptr != NULL) {
-      cerr << "Memory leak: "
-           << resetiosflags(ios::basefield) << setiosflags(ios::hex)
-           << setw(8) << setfill('0')
-           << (long)(PointerHashTable[i].ptr)
-           << resetiosflags(ios::basefield) << setiosflags(ios::dec)
-           << setw(1) << " (" << PointerHashTable[i].size << ") \""
-           << PointerHashTable[i].className << "\"\n";
+  PError.setf(ios::uppercase);
+  PointerHashTableStruct * entry = PointerHashTable;
+  for (int i = 0; i < PointerHashTableSize; i++, entry++) {
+    if (entry->ptr != NULL) {
+      PError << entry->fileName << '(' << entry->line << ") : memory leak : '"
+             << entry->className << "' @"
+             << resetiosflags(ios::basefield) << setiosflags(ios::hex)
+             << setw(8) << setfill('0') << (long)(entry->ptr)
+             << resetiosflags(ios::basefield) << setiosflags(ios::dec)
+             << setw(1) << " (" << entry->size << ')' << endl;
     }
   }
 }
@@ -596,7 +611,7 @@ PString & PString::operator=(const char * cstr)
 
 PObject * PString::Clone() const
 {
-  return new PString(*this);
+  return PNEW PString(*this);
 }
 
 
@@ -608,7 +623,17 @@ ostream & PString::PrintOn(ostream &strm) const
 
 istream & PString::ReadFrom(istream &strm)
 {
-  strm.getline(GetPointer(10000), 10000);
+  SetMinSize(100);
+  char * ptr = theArray;
+  PINDEX len = 0;
+  int c;
+  while ((c = strm.get()) != EOF && c != '\n') {
+    *ptr++ = (char)c;
+    len++;
+    if (len >= GetSize())
+      SetSize(len + 100);
+  }
+  *ptr = '\0';
   PAssert(MakeMinimumSize(), POutOfMemory);
   return strm;
 }
@@ -978,6 +1003,14 @@ PString & PString::sprintf(const char * fmt, ...)
 }
 
 
+PString & PString::sprintf(const PString & fmt, ...)
+{
+  va_list args;
+  va_start(args, fmt);
+  return vsprintf((const char *)fmt, args);
+}
+
+
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
   ::vsprintf(GetPointer(1000), fmt, arg);
@@ -988,6 +1021,15 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
 
 
 PString psprintf(const char * fmt, ...)
+{
+  PString str;
+  va_list args;
+  va_start(args, fmt);
+  return str.vsprintf(fmt, args);
+}
+
+
+PString psprintf(const PString & fmt, ...)
 {
   PString str;
   va_list args;
@@ -1159,21 +1201,21 @@ streampos PStringStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int mod
 
 PStringStream::PStringStream()
 {
-  init(new PStringStreamBuffer(this));
+  init(PNEW PStringStreamBuffer(this));
 }
 
 
 PStringStream::PStringStream(const PString & str)
   : PString(str)
 {
-  init(new PStringStreamBuffer(this));
+  init(PNEW PStringStreamBuffer(this));
 }
 
 
 PStringStream::PStringStream(const char * cstr)
   : PString(cstr)
 {
-  init(new PStringStreamBuffer(this));
+  init(PNEW PStringStreamBuffer(this));
 }
 
 
@@ -1192,7 +1234,7 @@ PStringArray::PStringArray(PINDEX count, char **strarr)
   PAssertNULL(strarr);
   SetSize(count);
   for (PINDEX i = 0; i < count; i++)
-    SetAt(i, new PString(strarr[i]));
+    SetAt(i, PNEW PString(strarr[i]));
 }
 
 

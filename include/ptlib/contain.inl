@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.21 1994/07/25 03:31:00 robertj Exp $
+ * $Id: contain.inl,v 1.22 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.21  1994/07/25 03:31:00  robertj
+ * Revision 1.22  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.21  1994/07/25  03:31:00  robertj
  * Fixed missing PINLINEs.
  *
  * Revision 1.20  1994/07/17  10:46:06  robertj
@@ -201,7 +204,13 @@ PINLINE BOOL PString::operator>=(const char * cstr) const
 
 PINLINE PString::operator const unsigned char *() const
   { return (const unsigned char *)theArray; }
-  
+
+PINLINE PString & PString::vsprintf(const PString & fmt, va_list args)
+  { return vsprintf((const char *)fmt, args); }
+
+PINLINE PString pvsprintf(const PString & fmt, va_list args)
+  { return pvsprintf((const char *)fmt, args); }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -270,11 +279,11 @@ PINLINE PAbstractList::PAbstractList()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PStringList::AppendString(const PString & str)
-  { return Append(new PString(str)); }
+  { return Append(PNEW PString(str)); }
 
 PINLINE PINDEX PStringList::InsertString(
                                    const PString & before, const PString & str)
-  { return Insert(before, new PString(str)); }
+  { return Insert(before, PNEW PString(str)); }
 
 PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
@@ -310,11 +319,11 @@ PINLINE BOOL PSortedListElement::RightTreeSize()
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PINDEX PSortedStringList::AppendString(const PString & str)
-  { return Append(new PString(str)); }
+  { return Append(PNEW PString(str)); }
 
 PINLINE PINDEX PSortedStringList::InsertString(
                                    const PString & before, const PString & str)
-  { return Insert(before, new PString(str)); }
+  { return Insert(before, PNEW PString(str)); }
 
 PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
@@ -345,10 +354,10 @@ PINLINE PStringSet::PStringSet(const PStringSet * c)
   : PAbstractSet(c) { }
 
 PINLINE PObject * PStringSet::Clone() const
-  { return new PStringSet(this); }
+  { return PNEW PStringSet(this); }
 
 PINLINE void PStringSet::Include(const PString & key)
-  { Append(new PString(key)); }
+  { Append(PNEW PString(key)); }
 
 PINLINE void PStringSet::Exclude(const PString & key)
   { Remove(&key); }
@@ -376,10 +385,10 @@ PINLINE PStringDictionary::PStringDictionary(const PStringDictionary * c)
   : PAbstractDictionary(c) { }
 
 PINLINE PObject * PStringDictionary::Clone() const
-  { return new PStringDictionary(this); }
+  { return PNEW PStringDictionary(this); }
 
 PINLINE BOOL PStringDictionary::SetAt(const PObject & key, PString str)
-  { return PAbstractDictionary::SetAt(key, new PString(str)); }
+  { return PAbstractDictionary::SetAt(key, PNEW PString(str)); }
 
 PINLINE PString & PStringDictionary::operator[](const PString & key) const
   { return (PString &)GetRefAt(key); }

@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.4 1994/06/25 11:55:15 robertj Exp $
+ * $Id: config.h,v 1.5 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
- * Revision 1.4  1994/06/25 11:55:15  robertj
+ * Revision 1.5  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.4  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.3  1994/01/03  04:42:23  robertj
@@ -40,7 +43,7 @@ PDECLARE_CLASS(PConfig, PObject)
 
 
     // New functions for class
-    void SetDefaultSection(const char * section);
+    void SetDefaultSection(const PString & section);
       // Set the default section for variable operations.
 
     PString GetDefaultSection() const;
@@ -49,54 +52,58 @@ PDECLARE_CLASS(PConfig, PObject)
     PStringList GetSections();
       // Return a list of all the section names in the file.
 
-    PStringList GetKeys(const char * section = NULL) const;
+    PStringList GetKeys() const;
+    PStringList GetKeys(const PString & section) const;
       // Return a list of all the keys in the section. If the section name is
-      // NULL then use the default section.
+      // not specified then use the default section.
 
 
-    void DeleteSection(const char * section = NULL);
+    void DeleteSection();
+    void DeleteSection(const PString & section);
       // Delete all variables in the specified section. If the section name is
-      // NULL then use the default section.
+      // not specified then use the default section.
 
-    void DeleteKey(const char * key);
-    void DeleteKey(const char * section, const char * key);
+    void DeleteKey(const PString & key);
+    void DeleteKey(const PString & section, const PString & key);
       // Delete the particular variable in the specified section.
 
 
-    PString GetString(const char * key, const char * dflt = "");
-    PString GetString(const char * section,
-                                         const char * key, const char * dflt);
+    PString GetString(const PString & key, const PString & dflt = "");
+    PString GetString(const PString & section,
+                                    const PString & key, const PString & dflt);
       // Get a string variable determined by the key in the section.
 
-    void SetString(const char * key, const char * value);
-    void SetString(const char * section, const char * key, const char * value);
+    void SetString(const PString & key, const PString & value);
+    void SetString(const PString & section,
+                                   const PString & key, const PString & value);
       // Set a string variable determined by the key in the section.
 
 
-    BOOL GetBoolean(const char * key, BOOL dflt = FALSE);
-    BOOL GetBoolean(const char * section, const char * key, BOOL dflt = FALSE);
+    BOOL GetBoolean(const PString & key, BOOL dflt = FALSE);
+    BOOL GetBoolean(const PString & section,
+                                       const PString & key, BOOL dflt = FALSE);
       // Get a boolean variable determined by the key in the section.
 
-    void SetBoolean(const char * key, BOOL value);
-    void SetBoolean(const char * section, const char * key, BOOL value);
+    void SetBoolean(const PString & key, BOOL value);
+    void SetBoolean(const PString & section, const PString & key, BOOL value);
       // Set a boolean variable determined by the key in the section.
 
 
-    long GetInteger(const char * key, long dflt = 0);
-    long GetInteger(const char * section, const char * key, long dflt = 0);
+    long GetInteger(const PString & key, long dflt = 0);
+    long GetInteger(const PString & section, const PString & key, long dflt=0);
       // Get an integer variable determined by the key in the section.
 
-    void SetInteger(const char * key, long value);
-    void SetInteger(const char * section, const char * key, long value);
+    void SetInteger(const PString & key, long value);
+    void SetInteger(const PString & section, const PString & key, long value);
       // Set an integer variable determined by the key in the section.
 
 
-    double GetReal(const char * key, double dflt = 0);
-    double GetReal(const char * section, const char * key, double dflt = 0);
+    double GetReal(const PString & key, double dflt = 0);
+    double GetReal(const PString & section,const PString & key,double dflt=0);
       // Get a floating point variable determined by the key in the section.
 
-    void SetReal(const char * key, double value);
-    void SetReal(const char * section, const char * key, double value);
+    void SetReal(const PString & key, double value);
+    void SetReal(const PString & section, const PString & key, double value);
       // Set a floating point variable determined by the key in the section.
 
 
