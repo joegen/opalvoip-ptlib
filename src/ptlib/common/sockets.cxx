@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.126  2002/10/10 11:38:56  robertj
+ * Added close of socket if not open in correct ip version, thanks Sébastien Josset
+ *
  * Revision 1.125  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -1578,6 +1581,16 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
+
+#if P_HAS_IPV6
+  if (IsOpen()) {
+    int socketType;
+    if (!GetOption(SO_TYPE, socketType, SOL_SOCKET) ||
+        (bindAddr.GetVersion() == 6 && socketType != PF_INET6) ||
+        (bindAddr.GetVersion() == 4 && socketType != PF_INET))
+      Close();
+  }
+#endif
 
   if (!IsOpen()) {
     // attempt to create a socket
