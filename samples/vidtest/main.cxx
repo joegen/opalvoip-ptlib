@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2004/01/18 14:20:26  dereksmithies
+ * Opening of video devices for plugins works now.
+ *
  * Revision 1.6  2003/12/14 10:01:25  rjongbloed
  * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
  *
@@ -65,9 +68,12 @@ void VidTest::Main()
 {
   PArgList & args = GetArguments();
 
-  args.Parse("-videodevice:"
+  args.Parse(
+             "h-help."               "-no-help."
+	     "-videodevice:"         "-no-videodevice."
              "-videoformat:"         "-no-videoformat."
              "-videoinput:"          "-no-videoinput."
+             "-videosize:"           "-no-videosize."
 #if PTRACING
              "o-output:"             "-no-output."
              "t-trace."              "-no-trace."
@@ -80,29 +86,46 @@ void VidTest::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
-  PVideoInputDevice * grabber;
+  if (args.HasOption('h')) {
+    PError << "Available options are: " << endl
+	 << endl
+	 <<    "--help                : print this help message.\n"
+	 <<    "--videodevice  dev    : specify video device to use.\n"
+         <<    "--videoformat  fmt    : specify video format (pal/ntsc)\n"
+         <<    "--videoinput   numb   : input channel on video grabber\n"
+         <<    "--videosize    size   : video size (large/small)\n"          
+#if PTRACING
+         <<    "-o or --output file   : file name for output of log messages\n"       
+         <<    "-t or --trace         : degree of verbosity in error log (more times for more detail)\n"     
+#endif
+	 << endl
+         << " e.g. ./vidtest --videodevice Philips\\ 680\\ webcam --videosize small " << endl << endl;
+    return;
+  }
 
-  cout << "Available video input devices:" << endl
-       << "  video type              device name" << endl;
-  PStringList drivers = PVideoInputDevice::GetDriverNames();
-  for (int i = 0; i < drivers.GetSize(); i++) {
-    PStringList devices = PVideoInputDevice::GetDriversDeviceNames(drivers[i]);
+  PError << "Available video input devices:" << endl << endl;
+  PStringList types = PVideoInputDevice::GetDriverNames();
+  for (int i = 0; i < types.GetSize(); i++) {
+    PStringList devices = PVideoInputDevice::GetDriversDeviceNames(types[i]);
     for (int j = 0; j < devices.GetSize(); j++) {
-      cout << "   " << drivers[i] << "                    " << devices[j] << endl;
+      PError << "   type:" << setw(10) << types[i] << "          device:" << setw(13) << devices[j] << endl;
     }
   }
+  PError << endl;
+
   PString videoDevice = args.GetOptionString("videodevice");
   if (videoDevice.IsEmpty()) {
-    cout << " No video device specified" << endl;
+    PError << " No video device specified" << endl;
     return;
   }
 
-  grabber = PVideoInputDevice::CreateDevice(videoDevice);
+  PVideoInputDevice * grabber = PVideoInputDevice::CreateDeviceByName(videoDevice);
+    
   if (grabber == NULL) {
-    PError << "Cannot create video input device " << videoDevice << endl;
+    PError << "Cannot create device by name " << videoDevice << endl;
     return;
   }
-    
+
   if (!grabber->Open(videoDevice, FALSE)) {
     PError << "Cannot open device " << videoDevice << endl;
     return;
@@ -137,8 +160,16 @@ void VidTest::Main()
     return;
   }
 
-  if  (!grabber->SetFrameSizeConverter(352, 288, FALSE)) {
-    PError <<  "Failed to set framesize to " << 352  << "x" << 288 << endl;
+  PINDEX w,h;
+  if (args.GetOptionString("videosize") *= "large") {
+    w = 352;
+    h = 288;
+  } else {
+    w = 176;
+    h = 144;
+  }
+  if  (!grabber->SetFrameSizeConverter(w, h, FALSE)) {
+    PError <<  "Failed to set framesize to " << w << "x" << h << endl;
     return;
   }
 
@@ -183,7 +214,7 @@ void VidTest::Main()
   delete sdlThread;
 
 
-  cout << "Closing down" << endl;
+  PError << "Closing down" << endl;
 }
 
 void VidTest::HandleUserInterface()
@@ -201,12 +232,12 @@ void VidTest::HandleUserInterface()
   for (;;) {
 
     // display the prompt
-    cout << "(testing) Command ? " << flush;
+    PError << "(testing) Command ? " << flush;
 
     // terminate the menu loop if console finished
     char ch = (char)console.peek();
     if (console.eof()) {
-      cout << "\nConsole gone - menu disabled" << endl;
+      PError << "\nConsole gone - menu disabled" << endl;
       return;
     }
 
@@ -214,19 +245,19 @@ void VidTest::HandleUserInterface()
     switch (tolower(ch)) {
     case 'j' :
       if (!channel->ToggleVFlipInput())
-	cout << "\nCould not toggle Vflip state of video input device" << endl;
+	PError << "\nCould not toggle Vflip state of video input device" << endl;
       break;
 
     case 'x' :
     case 'q' :
-      cout << "Exiting." << endl;
+      PError << "Exiting." << endl;
       exitFlag.Signal();
       console.ignore(INT_MAX, '\n');
       return;
       break;
     case '?' :
     default:
-      cout << help << endl;
+      PError << help << endl;
       break;
 
     } // end switch
