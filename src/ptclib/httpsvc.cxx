@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.80  2002/07/30 03:16:57  craigs
+ * Added StartTime macro
+ *
  * Revision 1.79  2002/07/17 09:18:00  robertj
  * made detection of gif file more intelligent for debug version.
  *
@@ -1439,6 +1442,12 @@ PCREATE_SERVICE_MACRO(Time,P_EMPTY,args)
     return now.AsString();
 
   return now.AsString(args);
+}
+
+
+PCREATE_SERVICE_MACRO(StartTime,P_EMPTY,P_EMPTY)
+{
+  return PProcess::Current().GetStartTime().AsString(PTime::MediumDateTime);
 }
 
 
