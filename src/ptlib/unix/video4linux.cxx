@@ -25,6 +25,13 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.16  2001/08/03 04:21:51  dereks
+ * Add colour/size conversion for YUV422->YUV411P
+ * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
+ * Linux PVideoInputDevice.
+ * Add lots of PTRACE statement for debugging colour conversion.
+ * Add support for Sony Vaio laptop under linux. Requires 2.4.7 kernel.
+ *
  * Revision 1.15  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -93,10 +100,15 @@
 // issues.
 
 #define HINT_CSWIN_ZERO_FLAGS               0x0001
-#define HINT_CSPICT_ALWAYS_WORKS            0x0002
+#define HINT_CSPICT_ALWAYS_WORKS            0x0002  /// ioctl return value indicates pict was set ok.
 #define HINT_CGPICT_DOESNT_SET_PALETTE      0x0004
-#define HINT_HAS_PREF_PALETTE               0x0008
+#define HINT_HAS_PREF_PALETTE               0x0008  /// use this palette with this camera.
+#define HINT_ALWAYS_WORKS_320_240           0x0010  /// Camera always  opens OK at this size.
+#define HINT_ALWAYS_WORKS_640_480           0x0020  /// Camera always  opens OK at this size.
+#define HINT_ONLY_WORKS_PREF_PALETTE        0x0040  /// Camera always (and only) opens at pref palette.
+#define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
 
+  
 static struct {
   char     *name_regexp;        // String used to match the driver name
   char     *name;               // String used for ptrace output
@@ -127,6 +139,20 @@ static struct {
     HINT_CGPICT_DOESNT_SET_PALETTE |
     HINT_HAS_PREF_PALETTE,
     VIDEO_PALETTE_YUV411P },
+
+  /** Sony Vaio Motion Eye camera
+      Linux kernel 2.4.7 has meye.c driver module.
+   */
+  { "meye",
+    "Sony Vaio Motion Eye Camera",
+    HINT_CGPICT_DOESNT_SET_PALETTE |
+    HINT_CSPICT_ALWAYS_WORKS       |
+    HINT_ALWAYS_WORKS_320_240      |
+    HINT_ALWAYS_WORKS_640_480      |
+    HINT_CGWIN_FAILS               |
+    HINT_ONLY_WORKS_PREF_PALETTE   |
+    HINT_HAS_PREF_PALETTE,
+    VIDEO_PALETTE_YUV422 },
 
   /** Default device with no special settings
    */
@@ -188,8 +214,10 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     return FALSE;
   }
   
+  SetCanCaptureVideo(videoCapability.type & VID_TYPE_CAPTURE);
+
   hint_index = PARRAYSIZE(driver_hints) - 1;
-  PString driver_name = videoCapability.name;
+  PString driver_name = videoCapability.name;  
 
   // Scan the hint table, looking for regular expression matches with
   // drivers we hold hints for.
@@ -200,6 +228,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 
     if (driver_name.FindRegEx(regexp) != P_MAX_INDEX) {
       PTRACE(1,"PVideoInputDevice::Open: Found driver hints: " << driver_hints[tbl].name);
+      PTRACE(1,"PVideoInputDevice::Open: format: " << driver_hints[tbl].pref_palette);
       hint_index = tbl;
       break;
     }
@@ -210,18 +239,33 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   frameWidth  = videoCapability.maxwidth;
   
   // select the specified input and video format
-  if (!SetChannel(channelNumber)) {
-    ::close (videoFd);
-    videoFd = -1;
-    return FALSE;
-  } 
+  if (!SetChannel(channelNumber))  
+    goto errorOpenVideoInputDevice;
   
-  if (!SetVideoFormat(videoFormat)) {
+  if (!SetVideoFormat(videoFormat)) 
+    goto errorOpenVideoInputDevice;
+
+  if (GetBrightness() < 0) 
+    goto errorOpenVideoInputDevice;
+
+  if (GetWhiteness() < 0) 
+    goto errorOpenVideoInputDevice;
+
+  if (GetColour() < 0) 
+    goto errorOpenVideoInputDevice;
+
+  if (GetContrast() < 0)
+    goto errorOpenVideoInputDevice;
+
+  if (GetHue() < 0)
+    goto errorOpenVideoInputDevice;
+
+  return TRUE;
+
+ errorOpenVideoInputDevice:
     ::close (videoFd);
     videoFd = -1;
     return FALSE;
-  }
-  return TRUE;    
 }
 
 
@@ -301,8 +345,10 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
 
 BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
 {
-  if (!PVideoDevice::SetVideoFormat(newFormat))
+  if (!PVideoDevice::SetVideoFormat(newFormat)) {
+    PTRACE(1,"PVideoDevice::SetVideoFormat\t failed for format "<<newFormat);
     return FALSE;
+  }
 
   // get channel information (to check if channel is valid)
   struct video_channel channel;
@@ -394,12 +440,23 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
   colourFormatCode = colourFormatTab[colourFormatIndex].code;
   pictureInfo.palette = colourFormatCode;
 
+
   // set the information
   if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0) {
     PTRACE(1,"PVideoInputDevice::Set pict info failed : "<< ::strerror(errno));
+    PTRACE(1,"PVideoInputDevice:: used code of "<<colourFormatCode);
+    PTRACE(1,"PVideoInputDevice:: palette: "<<colourFormatTab[colourFormatIndex].colourFormat);
     return FALSE;
   }
   
+
+  // Driver only (and always) manages to set the colour format  with call to VIDIOCSPICT.
+  if( (HINT(HINT_ONLY_WORKS_PREF_PALETTE) ) &&                   
+      ( colourFormatCode == driver_hints[hint_index].pref_palette) ) {
+    PTRACE(3,"PVideoInputDevice:: SetColourFormat succeeded with "<<newFormat);
+    return TRUE;
+  }
+
   // Some drivers always return success for CSPICT, and can't
   // read the current palette back in CGPICT.  We can't do much
   // more than just check to see if there is a preferred palette,
@@ -450,20 +507,27 @@ BOOL PVideoInputDevice::GetFrameSizeLimits(unsigned & minWidth,
   minHeight = videoCapability.minheight;
   maxWidth  = videoCapability.maxwidth;
   maxHeight = videoCapability.maxheight;
-  return TRUE;
 
+  PTRACE(3,"PVideoInputDevice:\t GetFrameSizeLimits. "<<minWidth<<"x"<<minHeight<<" -- "<<maxWidth<<"x"<<maxHeight);
+  
+  return TRUE;
 }
 
 
 BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  if (!PVideoDevice::SetFrameSize(width, height))
+  if (!PVideoDevice::SetFrameSize(width, height)) {
+    PTRACE(3,"PVideoInputDevice\t SetFrameSize "<<width<<"x"<<height<<" FAILED");
     return FALSE;
-  
+  }
+
   ClearMapping();
   
-  if (!VerifyHardwareFrameSize(width, height))
+  if (!VerifyHardwareFrameSize(width, height)) {
+    PTRACE(3,"PVideoInputDevice\t SetFrameSize failed for "<<width<<"x"<<height);
+    PTRACE(3,"VerifyHardwareFrameSize failed.");
     return FALSE;
+  }
 
   frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
@@ -616,10 +680,27 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 {
     struct video_window vwin;
     
+    if (HINT(HINT_ALWAYS_WORKS_320_240) &&  (width==320) && (height==240) ) {
+	PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK  for  320x240 ");
+	return TRUE;
+      }
+
+    if (HINT(HINT_ALWAYS_WORKS_640_480) &&  (width==640) && (height==480) ) {
+	PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize OK for 640x480 ");
+	return TRUE;
+      }
+
+    if (HINT(HINT_CGWIN_FAILS)) {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize fails for size "<<width<<"x"<<height);
+      return FALSE;
+    }
+
     // Request current hardware frame size
-    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0)
-	return FALSE;
-    
+    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
+      return FALSE;
+    }
+
     // Request the width and height
     vwin.width  = width;
     vwin.height = height;
@@ -629,20 +710,185 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
     // when flags isn't zero.  Check the driver hints for clearing
     // the flags.
     if (HINT(HINT_CSWIN_ZERO_FLAGS)) {
-	PTRACE(1,"PVideoInputDevice::VerifyHardwareFrameSize: Clearing flags field");
+	PTRACE(1,"PVideoInputDevice\t VerifyHardwareFrameSize: Clearing flags field");
 	vwin.flags = 0;
     }
     
     ::ioctl(videoFd, VIDIOCSWIN, &vwin);
     
     // Read back settings to be careful about existing (broken) V4L drivers
-    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0)
+    if (::ioctl(videoFd, VIDIOCGWIN, &vwin) < 0) {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize VIDIOCGWIN error::" << ::strerror(errno));
 	return FALSE;
-    
-    if ((vwin.width != width) || (vwin.height != height))
+    }
+
+    if ((vwin.width != width) || (vwin.height != height)) {
+      PTRACE(3,"PVideoInputDevice\t VerifyHardwareFrameSize Size mismatch.");
       return FALSE;
+    }
 
     return TRUE;
+}
+
+int PVideoInputDevice::GetBrightness() 
+{ 
+  if (!IsOpen())
+    return -1;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return -1;
+  frameBrightness = vp.brightness;
+
+  return frameBrightness; 
+}
+
+
+int PVideoInputDevice::GetWhiteness() 
+{ 
+  if (!IsOpen())
+    return -1;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return -1;
+  frameWhiteness = vp.whiteness;
+
+  return frameWhiteness;
+}
+
+int PVideoInputDevice::GetColour() 
+{ 
+  if (!IsOpen())
+    return -1;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return -1;
+  frameColour = vp.colour;
+
+  return frameColour; 
+}
+
+
+
+int PVideoInputDevice::GetContrast() 
+{
+  if (!IsOpen())
+    return -1;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return -1;
+  frameContrast = vp.contrast;
+
+ return frameContrast; 
+}
+
+int PVideoInputDevice::GetHue() 
+{
+  if (!IsOpen())
+    return -1;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return -1;
+  frameHue = vp.hue;
+
+  return frameHue; 
+}
+
+BOOL PVideoInputDevice::SetBrightness(unsigned newBrightness) 
+{ 
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  vp.brightness = newBrightness;
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return FALSE;
+
+  frameBrightness=newBrightness;
+  return TRUE;
+}
+BOOL PVideoInputDevice::SetWhiteness(unsigned newWhiteness) 
+{ 
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  vp.whiteness = newWhiteness;
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return FALSE;
+
+  frameWhiteness = newWhiteness;
+  return TRUE;
+}
+
+BOOL PVideoInputDevice::SetColour(unsigned newColour) 
+{ 
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  vp.colour = newColour;
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return FALSE;
+
+  frameColour = newColour;
+  return TRUE;
+}
+BOOL PVideoInputDevice::SetContrast(unsigned newContrast) 
+{ 
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  vp.contrast = newContrast;
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return FALSE;
+
+  frameContrast = newContrast;
+  return TRUE;
+}
+
+BOOL PVideoInputDevice::SetHue(unsigned newHue) 
+{
+  if (!IsOpen())
+    return FALSE;
+
+  struct video_picture vp;
+
+  if (::ioctl(videoFd, VIDIOCGPICT, &vp) < 0)
+    return FALSE;
+
+  vp.hue = newHue;
+  if (::ioctl(videoFd, VIDIOCSPICT, &vp) < 0)
+    return FALSE;
+
+   frameHue=newHue; 
+  return TRUE;
 }
 
 
