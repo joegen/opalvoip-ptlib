@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.19 1996/02/03 11:54:09 robertj Exp $
+ * $Id: pprocess.h,v 1.20 1996/02/25 11:15:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.20  1996/02/25 11:15:26  robertj
+ * Added platform dependent Construct function to PProcess.
+ *
  * Revision 1.19  1996/02/03 11:54:09  robertj
  * Added operating system identification functions.
  *
@@ -326,6 +329,8 @@ PDECLARE_CLASS(PProcess, PThread)
 #endif
 
   private:
+    void Construct();
+
   // Member variables
     int terminationValue;
     // Application return value
