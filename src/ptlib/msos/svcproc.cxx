@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.22 1997/04/27 05:50:27 robertj Exp $
+ * $Id: svcproc.cxx,v 1.23 1997/07/08 13:00:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.23  1997/07/08 13:00:30  robertj
+ * DLL support.
+ * Fixed '95 support so service runs without logging in.
+ *
  * Revision 1.22  1997/04/27 05:50:27  robertj
  * DLL support.
  *
@@ -264,6 +268,25 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
+static BOOL IsServiceRunning(DWORD pid)
+{
+  if (pid == 0)
+    return FALSE;
+
+  HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+  if (h == NULL)
+    return FALSE;
+
+  DWORD exitCode;
+  GetExitCodeProcess(h, &exitCode);
+  CloseHandle(h);
+  if (exitCode != STILL_ACTIVE)
+    return FALSE;
+
+  return TRUE;
+}
+
+
 int PServiceProcess::_main(int argc, char ** argv, char **)
 {
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
@@ -311,18 +334,9 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
     return 1;
 
   PConfig cfg;
-  DWORD pid = cfg.GetInteger("Pid");
-  if (pid != 0) {
-    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-    if (h != NULL) {
-      DWORD exitCode;
-      GetExitCodeProcess(h, &exitCode);
-      CloseHandle(h);
-      if (exitCode == STILL_ACTIVE) {
-        MessageBox(NULL, "Service already running", GetName(), MB_OK);
-        return 3;
-      }
-    }
+  if (IsServiceRunning(cfg.GetInteger("Pid"))) {
+    MessageBox(NULL, "Service already running", GetName(), MB_OK);
+    return 3;
   }
   cfg.SetInteger("Pid", GetProcessID());
 
@@ -752,8 +766,15 @@ class Win95_ServiceManager : public ServiceManager
 BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 {
   HKEY key;
+  if (RegCreateKey(HKEY_LOCAL_MACHINE,
+                   "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                   &key) == ERROR_SUCCESS) {
+    RegDeleteValue(key, (char *)(const char *)svc->GetName());
+    RegCloseKey(key);
+  }
+
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
-                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunService",
                            &key)) != ERROR_SUCCESS)
     return FALSE;
 
@@ -769,8 +790,15 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
 BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 {
   HKEY key;
+  if (RegCreateKey(HKEY_LOCAL_MACHINE,
+                   "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                   &key) == ERROR_SUCCESS) {
+    RegDeleteValue(key, (char *)(const char *)svc->GetName());
+    RegCloseKey(key);
+  }
+
   if ((error = RegCreateKey(HKEY_LOCAL_MACHINE,
-                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                           "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunService",
                            &key)) != ERROR_SUCCESS)
     return FALSE;
 
@@ -785,19 +813,10 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
 {
   PConfig cfg;
-  DWORD pid = cfg.GetInteger("Pid");
-  if (pid != 0) {
-    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-    if (h != NULL) {
-      DWORD exitCode;
-      GetExitCodeProcess(h, &exitCode);
-      CloseHandle(h);
-      if (exitCode == STILL_ACTIVE) {
-        PError << "Service already running" << endl;
-        error = 1;
-        return FALSE;
-      }
-    }
+  if (IsServiceRunning(cfg.GetInteger("Pid"))) {
+    PError << "Service already running" << endl;
+    error = 1;
+    return FALSE;
   }
 
   BOOL ok = _spawnl(_P_DETACH, svc->GetFile(), svc->GetFile(), NULL) >= 0;
@@ -1098,17 +1117,6 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
     PError << "failed - error code = " << svcManager->GetError() << endl;
   return TRUE;
 }
-
-
-#ifndef PMAKEDLL
-
-extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int)
-{
-  hInstance = hInst;
-  return main(__argc, __argv, NULL);
-}
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
