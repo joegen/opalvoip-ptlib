@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.2 1996/08/08 13:34:10 robertj Exp $
+ * $Id: httpform.cxx,v 1.3 1996/09/14 13:09:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.3  1996/09/14 13:09:31  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.2  1996/08/08 13:34:10  robertj
  * Removed redundent call.
  *
@@ -538,7 +544,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   msg = "Error in Request";
   if (data.GetSize() == 0) {
     msg << "No parameters changed." << PHTML::Body();
-    request.code = PHTTPSocket::NoContent;
+    request.code = PHTTP::NoContent;
     return TRUE;
   }
 
@@ -553,7 +559,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
 
   if (!good) {
     msg << PHTML::Body();
-    request.code = PHTTPSocket::BadRequest;
+    request.code = PHTTP::BadRequest;
     return TRUE;
   }
 
@@ -625,7 +631,7 @@ void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
     return;
 
   PString sectionName = request.url.GetQueryVars()("section", section);
-  PAssert(!sectionName.IsEmpty(), PLogicError);
+  PAssert(!sectionName, PLogicError);
 
   PConfig cfg(sectionName);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
@@ -648,7 +654,7 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
                        PHTML & msg)
 {
   PHTTPForm::Post(request, data, msg);
-  if (request.code != PHTTPSocket::OK)
+  if (request.code != PHTTP::OK)
     return TRUE;
 
   if (sectionField != NULL)
@@ -661,7 +667,7 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
     if (data.Contains(name)) {
       if (&field == keyField) {
         PString key = field.GetValue();
-        if (!key.IsEmpty())
+        if (!key)
           cfg.SetString(key, valField->GetValue());
       }
       else if (&field != valField && &field != sectionField)
