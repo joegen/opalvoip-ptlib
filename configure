@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_IPV6 HAS_SDL HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS subdirs CXX CXXFLAGS LDFLAGS CPPFLAGS ac_ct_CXX EXEEXT OBJEXT PWLIBDIR PWINSTDIR INSTALLPREFIX LIBDIR MAJOR_VERSION MINOR_VERSION BUILD_NUMBER PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE TARGETDIR SHAREDLIBEXT CXXCPP EGREP HAS_REGEX HAS_PLUGINS HAS_RESOLVER HAS_SASL HAS_SASL2 HAS_OPENLDAP HAS_OPENSSL P_STATIC_ENDLDLIBS P_STATIC_LDFLAGS HAS_EXPAT HAS_VXML HAS_JABBER HAS_XMLRPC HAS_SOAP HAS_TTS HAS_IPV6 HAS_SDL HAS_VIDEO HAS_VIDEO_CAPTURE USE_SHM_VIDEO_DEVICES HAS_ASN HAS_STUN HAS_PIPECHAN HAS_DTMF HAS_WAVFILE HAS_SOCKS HAS_FTP HAS_SNMP HAS_TELNET HAS_REMCONN HAS_SERIAL HAS_POP3SMTP HAS_HTTP HAS_HTTPSVC HAS_AUDIO HAS_ALSA STDCCFLAGS STDCXXFLAGS OPTSTDCCFLAGS ENDLDLIBS INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -847,20 +847,45 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-minsize        minimise the size of the lib by disabling least used options
   --enable-internalregex  force internal regex library
-  --enable-plugins        enable plugin support in PWLIB
+  --enable-plugins        enable plugin support
+  --disable-resolver      disable DNS resolver support
+  --disable-sasl          disable SASL support
+  --disable-openldap      disable OpenLDAP support
+  --disable-openssl       disable OpenSSL support
+  --disable-expat         disable XML support
+  --disable-vxml          disable VXML support
+  --disable-jabber        disable Jabber support
+  --disable-xmlrpc        disable XMLRPC support
+  --disable-tts           disable Text-ToSpeech support (default disabled)
+  --disable-ipv6          disable IPV6 support
+  --disable-qos           disable QOS support
+  --disable-sdl           disable SDL support
+  --disable-video         disable video device support
+  --enable-v4l            enable V4L video support
   --enable-v4l2           enable V4L2 video support
-  --disable-resolver      disable DNS resolver support in PWLIB
-  --disable-sasl          disable SASL support in PWLIB
-  --disable-openldap      disable OpenLDAP support in PWLIB
-  --disable-openssl       disable OpenSSL support in PWLIB
-  --disable-expat         disable XML support in PWLIB
-  --disable-ipv6          disable IPV6 support in PWLIB
-  --disable-qos           disable QOS support in PWLIB
-  --disable-sdl           disable SDL support in PWLIB
-  --disable-video         disable non-plugin video device support in PWLIB
-  --enable-shm-video	  enable shared memory video devices (off by default)
+  --enable-bsdvideo       enable BSD video support
+  --enable-avc            enable IEEE1394/AVC video support
+  --enable-dc             enable IEEE1394/DC video support
+  --enable-shm-video      enable shared memory video devices
+  --disable-asn           disable ASN decoding/encoding support
+  --disable-stun          disable STUN protocol support
+  --disable-pipechan      disable pipechannel support
+  --disable-dtmf          disable DTMF protocol support
+  --disable-wavfile       disable WAVFILE support
+  --disable-socks         disable SOCKS protocol support
+  --disable-ftp           disable FTP support
+  --disable-snmp          disable SNMP protocol support
+  --disable-telnet        disable Telnet protocol support
+  --disable-remconn       disable remote connection support
+  --disable-serial        disable serial port support
+  --disable-pop3smtp      disable POP3/SMTP support
+  --disable-http          disable HTTP support
+  --disable-httpsvc       disable HTTP service support
+  --disable-audio         disable audio support
   --enable-alsa           disable non-plugin ALSA audio support
+  --enable-oss            enable OSS audio support
   --enable-memcheck       enable leak testing code (off by default)
+  --enable-exceptions     enable C++ exceptions
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2713,6 +2738,24 @@ default_expat=yes
 default_sdl=yes
 default_sasl=yes
 default_plugins=yes
+default_tts=yes
+default_asn=yes
+default_stun=yes
+default_pipechan=yes
+default_dtmf=yes
+default_wavfile=yes
+default_socks=yes
+default_ftp=yes
+default_snmp=yes
+default_telnet=yes
+default_remconn=no
+default_serial=yes
+default_pop3smtp=yes
+default_audio=yes
+default_video=yes
+default_alsa=yes
+default_http=yes
+default_httpsvc=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -2722,6 +2765,24 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_sdl=no
   default_sasl=no
   default_plugins=yes
+  default_tts=no
+  default_asn=yes
+  default_stun=yes
+  default_pipechan=no
+  default_dtmf=no
+  default_wavfile=no
+  default_socks=no
+  default_ftp=no
+  default_snmp=no
+  default_telnet=no
+  default_remconn=no
+  default_serial=no
+  default_pop3smtp=no
+  default_audio=yes
+  default_video=yes
+  default_alsa=yes
+  default_http=yes
+  default_httpsvc=no
 fi
 
 
@@ -4359,6 +4420,7 @@ fi
   fi
 fi
 
+
 plugins="no"
 echo "$as_me:$LINENO: checking if plugins support needs to be compiled" >&5
 echo $ECHO_N "checking if plugins support needs to be compiled... $ECHO_C" >&6
@@ -4370,15 +4432,6 @@ fi;
 if test "${enable_plugins}z" = "z" ; then
   enable_plugins=default_plugins
 fi
-
-v4l2="no"
-# Check whether --enable-v4l2 or --disable-v4l2 was given.
-if test "${enable_v4l2+set}" = set; then
-  enableval="$enable_v4l2"
-
-else
-  enable_v4l2=no
-fi;
 
 HAS_PLUGINS=
 if test "${enable_plugins}" = "no" ; then
@@ -5547,12 +5600,7 @@ HAS_EXPAT=
 if test "$enable_expat" = "no" ; then
   { echo "$as_me:$LINENO: Expat disabled" >&5
 echo "$as_me: Expat disabled" >&6;}
-  cat >>confdefs.h <<\_ACEOF
-#define P_EXPAT 0
-_ACEOF
-
 else
-
 
 for ac_header in expat.h
 do
@@ -5804,6 +5852,106 @@ fi
 
 
 
+HAS_VXML=
+HAS_JABBER=
+HAS_XMLRPC=
+if test "$enable_expat" = "no" ; then
+  { echo "$as_me:$LINENO: VXML disabled as Expat is disabled" >&5
+echo "$as_me: VXML disabled as Expat is disabled" >&6;}
+  { echo "$as_me:$LINENO: Jabber disabled as Expat is disabled" >&5
+echo "$as_me: Jabber disabled as Expat is disabled" >&6;}
+  { echo "$as_me:$LINENO: XMLRPC disabled as Expat is disabled" >&5
+echo "$as_me: XMLRPC disabled as Expat is disabled" >&6;}
+else
+
+
+  # Check whether --enable-vxml or --disable-vxml was given.
+if test "${enable_vxml+set}" = set; then
+  enableval="$enable_vxml"
+
+fi;
+
+  if test "${enable_vxml}z" = "z" ; then
+    enable_vxml=$default_vxml
+  fi
+  if test "$enable_vxml" = "no" ; then
+    { echo "$as_me:$LINENO: VXML disabled" >&5
+echo "$as_me: VXML disabled" >&6;}
+  else
+    cat >>confdefs.h <<\_ACEOF
+#define P_VXML 1
+_ACEOF
+
+  fi
+
+
+  # Check whether --enable-jabber or --disable-jabber was given.
+if test "${enable_jabber+set}" = set; then
+  enableval="$enable_jabber"
+
+fi;
+
+  if test "${enable_jabber}z" = "z" ; then
+    enable_jabber=$default_jabber
+  fi
+  if test "$enable_jabber" = "no" ; then
+    { echo "$as_me:$LINENO: Jabber disabled" >&5
+echo "$as_me: Jabber disabled" >&6;}
+  else
+    cat >>confdefs.h <<\_ACEOF
+#define P_JABBER 1
+_ACEOF
+
+  fi
+
+
+  # Check whether --enable-xmlrpc or --disable-xmlrpc was given.
+if test "${enable_xmlrpc+set}" = set; then
+  enableval="$enable_xmlrpc"
+
+fi;
+
+  if test "${enable_xmlrpc}z" = "z" ; then
+    enable_xmlrpc=$default_xmlrpc
+  fi
+  if test "$enable_xmlrpc" = "no" ; then
+    { echo "$as_me:$LINENO: XMLRPC disabled" >&5
+echo "$as_me: XMLRPC disabled" >&6;}
+  else
+    cat >>confdefs.h <<\_ACEOF
+#define P_XMLRPC 1
+_ACEOF
+
+  fi
+fi
+
+
+
+
+
+
+
+
+# Check whether --enable-expat or --disable-expat was given.
+if test "${enable_expat+set}" = set; then
+  enableval="$enable_expat"
+
+fi;
+
+if test "${enable_tts}z" = "z" ; then
+  enable_tts=$default_tts
+fi
+
+HAS_TTS=
+if test "$enable_tts" = "no" ; then
+  { echo "$as_me:$LINENO: Text-to-speech disabled" >&5
+echo "$as_me: Text-to-speech disabled" >&6;}
+else
+  cat >>confdefs.h <<\_ACEOF
+#define P_TTS 1
+_ACEOF
+
+fi
 
 
 
@@ -6223,12 +6371,30 @@ fi
 # Check whether --enable-video or --disable-video was given.
 if test "${enable_video+set}" = set; then
   enableval="$enable_video"
-  video=$enableval
+
 fi;
 
-HAS_VIDEO_CAPTURE=0
-if test "$HAS_PLUGINS" = "0" ; then
-  if test "$video" != "no" ; then
+if test "${enable_video}z" = "z" ; then
+  enable_video=$default_video
+fi
+
+HAS_VIDEO=
+HAS_VIDEO_CAPTURE=
+if test "$enable_video" = "no" ; then
+
+cat >>confdefs.h <<\_ACEOF
+#define NO_VIDEO_CAPTURE
+_ACEOF
+
+else
+  if test "$enable_plugins" = "yes" ; then
+    cat >>confdefs.h <<\_ACEOF
+#define P_VIDEO 1
+_ACEOF
+
+    HAS_VIDEO=1
+    HAS_VIDEO_CAPTURE=1
+  else
     if test "${ac_cv_header_linux_videodev_h+set}" = set; then
   echo "$as_me:$LINENO: checking for linux/videodev.h" >&5
 echo $ECHO_N "checking for linux/videodev.h... $ECHO_C" >&6
@@ -6363,7 +6529,7 @@ if test $ac_cv_header_linux_videodev_h = yes; then
 fi
 
 
-                if test "${HAS_VIDEO_CAPTURE}" = "0" ; then
+                if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
       { echo "$as_me:$LINENO: No Video Capture support" >&5
 echo "$as_me: No Video Capture support" >&6;}
 
@@ -6371,9 +6537,42 @@ cat >>confdefs.h <<\_ACEOF
 #define NO_VIDEO_CAPTURE
 _ACEOF
 
+    else
+      cat >>confdefs.h <<\_ACEOF
+#define P_VIDEO 1
+_ACEOF
+
     fi
   fi
 fi
+
+
+
+# Check whether --enable-v4l or --disable-v4l was given.
+if test "${enable_v4l+set}" = set; then
+  enableval="$enable_v4l"
+
+fi;
+# Check whether --enable-v4l2 or --disable-v4l2 was given.
+if test "${enable_v4l2+set}" = set; then
+  enableval="$enable_v4l2"
+
+fi;
+# Check whether --enable-bsdvideo or --disable-bsdvideo was given.
+if test "${enable_bsdvideo+set}" = set; then
+  enableval="$enable_bsdvideo"
+
+fi;
+# Check whether --enable-avc or --disable-avc was given.
+if test "${enable_avc+set}" = set; then
+  enableval="$enable_avc"
+
+fi;
+# Check whether --enable-dc or --disable-dc was given.
+if test "${enable_dc+set}" = set; then
+  enableval="$enable_dc"
+
+fi;
 
 
 
@@ -6383,7 +6582,7 @@ if test "${enable_shm_video+set}" = set; then
   shm_video=$enableval
 fi;
 
-USE_SHM_VIDEO_DEVICES=0
+USE_SHM_VIDEO_DEVICES=
 if test "$shm_video" = "yes" ; then
   USE_SHM_VIDEO_DEVICES=1
   { echo "$as_me:$LINENO: Shared memory video devices enabled" >&5
@@ -6391,16 +6590,396 @@ echo "$as_me: Shared memory video devices enabled" >&6;}
 fi
 
 
-# Check whether --enable-alsa or --disable-alsa was given.
+
+
+# Check whether --enable-asn or --disable-asn was given.
+if test "${enable_asn+set}" = set; then
+  enableval="$enable_asn"
+
+fi;
+
+if test "${enable_asn}z" = "z" ; then
+  enable_asn=$default_asn
+fi
+
+HAS_ASN=
+if test "$enable_asn" = "no" ; then
+  { echo "$as_me:$LINENO: ASN decoding/encoding support disabled" >&5
+echo "$as_me: ASN decoding/encoding support disabled" >&6;}
+else
+  HAS_ASN=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_ASN 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-stun or --disable-stun was given.
+if test "${enable_stun+set}" = set; then
+  enableval="$enable_stun"
+
+fi;
+
+if test "${enable_stun}z" = "z" ; then
+  enable_stun=$default_stun
+fi
+
+HAS_STUN=
+if test "$enable_stun" = "no" ; then
+  { echo "$as_me:$LINENO: STUN decoding/encoding support disabled" >&5
+echo "$as_me: STUN decoding/encoding support disabled" >&6;}
+else
+  HAS_STUN=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_STUN 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-pipechan or --disable-pipechan was given.
+if test "${enable_pipechan+set}" = set; then
+  enableval="$enable_pipechan"
+
+fi;
+
+if test "${enable_pipechan}z" = "z" ; then
+  enable_pipechan=$default_pipechan
+fi
+
+HAS_PIPECHAN=
+if test "$enable_pipechan" = "no" ; then
+  { echo "$as_me:$LINENO: pipechannel support disabled" >&5
+echo "$as_me: pipechannel support disabled" >&6;}
+else
+  HAS_PIPECHAN=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_PIPECHAN 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-dtmf or --disable-dtmf was given.
+if test "${enable_dtmf+set}" = set; then
+  enableval="$enable_dtmf"
+
+fi;
+
+if test "${enable_dtmf}z" = "z" ; then
+  enable_dtmf=$default_dtmf
+fi
+
+HAS_DTMF=
+if test "$enable_dtmf" = "no" ; then
+  { echo "$as_me:$LINENO: DTMF decoding/encoding support disabled" >&5
+echo "$as_me: DTMF decoding/encoding support disabled" >&6;}
+else
+  HAS_DTMF=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_DTMF 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-wavfile or --disable-wavfile was given.
+if test "${enable_wavfile+set}" = set; then
+  enableval="$enable_wavfile"
+
+fi;
+
+if test "${enable_wavfile}z" = "z" ; then
+  enable_wavfile=$default_wavfile
+fi
+
+HAS_WAVFILE=
+if test "$enable_wavfile" = "no" ; then
+  { echo "$as_me:$LINENO: WAV file support disabled" >&5
+echo "$as_me: WAV file support disabled" >&6;}
+else
+  HAS_WAVFILE=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_WAVFILE 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-socks or --disable-socks was given.
+if test "${enable_socks+set}" = set; then
+  enableval="$enable_socks"
+
+fi;
+
+if test "${enable_socks}z" = "z" ; then
+  enable_socks=$default_socks
+fi
+
+HAS_SOCKS=
+if test "$enable_socks" = "no" ; then
+  { echo "$as_me:$LINENO: SOCKS decoding/encoding support disabled" >&5
+echo "$as_me: SOCKS decoding/encoding support disabled" >&6;}
+else
+  HAS_SOCKS=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_SOCKS 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-rtp or --disable-rtp was given.
+if test "${enable_rtp+set}" = set; then
+  enableval="$enable_rtp"
+
+fi;
+
+if test "${enable_ftp}z" = "z" ; then
+  enable_ftp=$default_ftp
+fi
+
+HAS_FTP=
+if test "$enable_ftp" = "no" ; then
+  { echo "$as_me:$LINENO: FTP protocol support disabled" >&5
+echo "$as_me: FTP protocol support disabled" >&6;}
+else
+  HAS_FTP=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_FTP 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-snmp or --disable-snmp was given.
+if test "${enable_snmp+set}" = set; then
+  enableval="$enable_snmp"
+
+fi;
+
+if test "${enable_snmp}z" = "z" ; then
+  enable_snmp=$default_snmp
+fi
+
+HAS_SNMP=
+if test "$enable_snmp" = "no" ; then
+  { echo "$as_me:$LINENO: SNMP protocol support disabled" >&5
+echo "$as_me: SNMP protocol support disabled" >&6;}
+else
+  HAS_SNMP=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_SNMP 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-telnet or --disable-telnet was given.
+if test "${enable_telnet+set}" = set; then
+  enableval="$enable_telnet"
+
+fi;
+
+if test "${enable_telnet}z" = "z" ; then
+  enable_telnet=$default_telnet
+fi
+
+HAS_TELNET=
+if test "$enable_telnet" = "no" ; then
+  { echo "$as_me:$LINENO: Telnet protocol support disabled" >&5
+echo "$as_me: Telnet protocol support disabled" >&6;}
+else
+  HAS_TELNET=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_TELNET 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-remconn or --disable-remconn was given.
+if test "${enable_remconn+set}" = set; then
+  enableval="$enable_remconn"
+
+fi;
+
+if test "${enable_remconn}z" = "z" ; then
+  enable_remconn=$default_remconn
+fi
+
+HAS_REMCONN=
+if test "$enable_remconn" = "no" ; then
+  { echo "$as_me:$LINENO: Remote connection support disabled" >&5
+echo "$as_me: Remote connection support disabled" >&6;}
+else
+  HAS_REMCONN=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_REMCONN 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-serial or --disable-serial was given.
+if test "${enable_serial+set}" = set; then
+  enableval="$enable_serial"
+
+fi;
+
+if test "${enable_serial}z" = "z" ; then
+  enable_serial=$default_serial
+fi
+
+HAS_SERIAL=
+if test "$enable_serial" = "no" ; then
+  { echo "$as_me:$LINENO: Serial port support disabled" >&5
+echo "$as_me: Serial port support disabled" >&6;}
+else
+  HAS_SERIAL=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_SERIAL 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-pop3smtp or --disable-pop3smtp was given.
+if test "${enable_pop3smtp+set}" = set; then
+  enableval="$enable_pop3smtp"
+
+fi;
+
+if test "${enable_pop3smtp}z" = "z" ; then
+  enable_pop3smtp=$default_pop3smtp
+fi
+
+HAS_POP3SMTP=
+if test "$enable_pop3smtp" = "no" ; then
+  { echo "$as_me:$LINENO: POP3/SMTP protocol support disabled" >&5
+echo "$as_me: POP3/SMTP protocol support disabled" >&6;}
+else
+  HAS_POP3SMTP=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_POP3SMTP 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-http or --disable-http was given.
+if test "${enable_http+set}" = set; then
+  enableval="$enable_http"
+
+fi;
+
+if test "${enable_http}z" = "z" ; then
+  enable_http=$default_http
+fi
+
+HAS_HTTP=
+if test "$enable_http" = "no" ; then
+  { echo "$as_me:$LINENO: HTTP protocol support disabled" >&5
+echo "$as_me: HTTP protocol support disabled" >&6;}
+else
+  HAS_HTTP=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_HTTP 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-httpsvc or --disable-httpsvc was given.
+if test "${enable_httpsvc+set}" = set; then
+  enableval="$enable_httpsvc"
+
+fi;
+
+if test "${enable_httpsvc}z" = "z" ; then
+  enable_httpsvc=$default_httpsvc
+fi
+
+HAS_HTTPSVC=
+if test "$enable_httpsvc" = "no" ; then
+  { echo "$as_me:$LINENO: HTTP service support disabled" >&5
+echo "$as_me: HTTP service support disabled" >&6;}
+else
+  HAS_HTTPSVC=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_HTTPSVC 1
+_ACEOF
+
+fi
+
+
+
+
+# Check whether --enable-audio or --disable-audio was given.
+if test "${enable_audio+set}" = set; then
+  enableval="$enable_audio"
+
+fi;
+
+if test "${enable_audio}z" = "z" ; then
+  enable_audio=$default_audio
+fi
+
+HAS_AUDIO=
+if test "$enable_audio" = "no" ; then
+  { echo "$as_me:$LINENO: Audio support disabled" >&5
+echo "$as_me: Audio support disabled" >&6;}
+else
+  HAS_AUDIO=1
+  cat >>confdefs.h <<\_ACEOF
+#define P_AUDIO 1
+_ACEOF
+
+fi
+
+
+
+HAS_ALSA=
+if test "$enable_audio" = "yes" ; then
+  # Check whether --enable-alsa or --disable-alsa was given.
 if test "${enable_alsa+set}" = set; then
   enableval="$enable_alsa"
   enable_alsa=$enableval
 fi;
+  if test "${enable_alsa}z" = "z" ; then
+    enable_alsa=$default_alsa
+  fi
 
-HAS_ALSA=0
-if test "$HAS_PLUGINS" = "0" ; then
-  if test "$enable_alsa" != "no" ; then
-    if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
+  if test "$enable_plugins" = "no" ; then
+    if test "$enable_alsa" = "yes" ; then
+      if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
   echo "$as_me:$LINENO: checking for alsa/asoundlib.h" >&5
 echo $ECHO_N "checking for alsa/asoundlib.h... $ECHO_C" >&6
 if test "${ac_cv_header_alsa_asoundlib_h+set}" = set; then
@@ -6534,19 +7113,26 @@ if test $ac_cv_header_alsa_asoundlib_h = yes; then
 fi
 
 
-    echo "$as_me:$LINENO: checking for ALSA sound support" >&5
+      echo "$as_me:$LINENO: checking for ALSA sound support" >&5
 echo $ECHO_N "checking for ALSA sound support... $ECHO_C" >&6
-    if test "${HAS_ALSA}" = "1"; then
-      echo "$as_me:$LINENO: result: yes" >&5
+      if test "${HAS_ALSA}z" != "z"; then
+        echo "$as_me:$LINENO: result: yes" >&5
 echo "${ECHO_T}yes" >&6
-      ENDLDLIBS="$ENDLDLIBS -lasound"
-    else
-      echo "$as_me:$LINENO: result: no" >&5
+        ENDLDLIBS="$ENDLDLIBS -lasound"
+      else
+        echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
+      fi
     fi
   fi
 fi
 
+
+# Check whether --enable-oss or --disable-oss was given.
+if test "${enable_oss+set}" = set; then
+  enableval="$enable_oss"
+
+fi;
 
 if test "$OSTYPE" = "solaris" ; then
   USE_SYSTEM_SWAB=
@@ -6667,7 +7253,17 @@ if test "${OSTYPE}" != "Darwin" ; then
 fi
 
 
-STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+# Check whether --enable-exceptions or --disable-exceptions was given.
+if test "${enable_exceptions+set}" = set; then
+  enableval="$enable_exceptions"
+
+fi;
+
+if test "${enable_exceptions}z" = "yesz" ; then
+  { echo "$as_me:$LINENO: C++ exceptions enabled" >&5
+echo "$as_me: C++ exceptions enabled" >&6;}
+  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+fi
 
 
 
@@ -7421,10 +8017,31 @@ s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@P_STATIC_ENDLDLIBS@,$P_STATIC_ENDLDLIBS,;t t
 s,@P_STATIC_LDFLAGS@,$P_STATIC_LDFLAGS,;t t
 s,@HAS_EXPAT@,$HAS_EXPAT,;t t
+s,@HAS_VXML@,$HAS_VXML,;t t
+s,@HAS_JABBER@,$HAS_JABBER,;t t
+s,@HAS_XMLRPC@,$HAS_XMLRPC,;t t
+s,@HAS_SOAP@,$HAS_SOAP,;t t
+s,@HAS_TTS@,$HAS_TTS,;t t
 s,@HAS_IPV6@,$HAS_IPV6,;t t
 s,@HAS_SDL@,$HAS_SDL,;t t
+s,@HAS_VIDEO@,$HAS_VIDEO,;t t
 s,@HAS_VIDEO_CAPTURE@,$HAS_VIDEO_CAPTURE,;t t
 s,@USE_SHM_VIDEO_DEVICES@,$USE_SHM_VIDEO_DEVICES,;t t
+s,@HAS_ASN@,$HAS_ASN,;t t
+s,@HAS_STUN@,$HAS_STUN,;t t
+s,@HAS_PIPECHAN@,$HAS_PIPECHAN,;t t
+s,@HAS_DTMF@,$HAS_DTMF,;t t
+s,@HAS_WAVFILE@,$HAS_WAVFILE,;t t
+s,@HAS_SOCKS@,$HAS_SOCKS,;t t
+s,@HAS_FTP@,$HAS_FTP,;t t
+s,@HAS_SNMP@,$HAS_SNMP,;t t
+s,@HAS_TELNET@,$HAS_TELNET,;t t
+s,@HAS_REMCONN@,$HAS_REMCONN,;t t
+s,@HAS_SERIAL@,$HAS_SERIAL,;t t
+s,@HAS_POP3SMTP@,$HAS_POP3SMTP,;t t
+s,@HAS_HTTP@,$HAS_HTTP,;t t
+s,@HAS_HTTPSVC@,$HAS_HTTPSVC,;t t
+s,@HAS_AUDIO@,$HAS_AUDIO,;t t
 s,@HAS_ALSA@,$HAS_ALSA,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
 s,@STDCXXFLAGS@,$STDCXXFLAGS,;t t

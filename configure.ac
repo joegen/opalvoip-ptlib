@@ -411,6 +411,24 @@ default_expat=yes
 default_sdl=yes
 default_sasl=yes
 default_plugins=yes
+default_tts=yes
+default_asn=yes
+default_stun=yes
+default_pipechan=yes
+default_dtmf=yes
+default_wavfile=yes
+default_socks=yes
+default_ftp=yes
+default_snmp=yes
+default_telnet=yes
+default_remconn=no
+default_serial=yes
+default_pop3smtp=yes
+default_audio=yes
+default_video=yes
+default_alsa=yes
+default_http=yes
+default_httpsvc=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -420,6 +438,24 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_sdl=no
   default_sasl=no
   default_plugins=yes
+  default_tts=no
+  default_asn=yes
+  default_stun=yes
+  default_pipechan=no
+  default_dtmf=no
+  default_wavfile=no
+  default_socks=no
+  default_ftp=no
+  default_snmp=no
+  default_telnet=no
+  default_remconn=no
+  default_serial=no
+  default_pop3smtp=no
+  default_audio=yes
+  default_video=yes
+  default_alsa=yes
+  default_http=yes
+  default_httpsvc=no
 fi
 
 
@@ -645,16 +681,14 @@ fi
 dnl #########################################################################
 dnl check to see if plugins enabled
 dnl MSWIN Plugin Support,,P_HAS_PLUGINS
+
 plugins="no"
 AC_MSG_CHECKING(if plugins support needs to be compiled)
 AC_ARG_ENABLE(plugins,
-       [  --enable-plugins        enable plugin support in PWLIB])
+       [  --enable-plugins        enable plugin support])
 if test "${enable_plugins}z" = "z" ; then
   enable_plugins=default_plugins
 fi
-
-v4l2="no"
-AC_ARG_ENABLE(v4l2, [  --enable-v4l2           enable V4L2 video support],,enable_v4l2=no)
 
 HAS_PLUGINS=
 if test "${enable_plugins}" = "no" ; then
@@ -686,7 +720,7 @@ dnl MSWIN_DIR_SYMBOL resolver,DNS_DIR
 dnl MSWIN_CHECK_DIR  resolver,\Program Files\Microsoft SDK\
 
 AC_ARG_ENABLE(resolver,
-       [  --disable-resolver      disable DNS resolver support in PWLIB])
+       [  --disable-resolver      disable DNS resolver support])
 
 if test "${enable_resolver}z" = "z" ; then
   enable_resolver=$default_resolver
@@ -735,7 +769,7 @@ dnl MSWIN_CHECK_DIR  sasl,\cyrus-sasl\
 dnl MSWIN_CHECK_DIR  sasl,c:\cyrus-sasl\
   
 AC_ARG_ENABLE(sasl,
-       [  --disable-sasl          disable SASL support in PWLIB])
+       [  --disable-sasl          disable SASL support])
 
 if test "${enable_sasl}z" = "z" ; then
   enable_sasl=$default_sasl
@@ -805,7 +839,7 @@ dnl MSWIN_CHECK_DIR  openldap,\openldap\
 dnl MSWIN_CHECK_DIR  openldap,c:\openldap\
 
 AC_ARG_ENABLE(openldap,
-       [  --disable-openldap      disable OpenLDAP support in PWLIB])
+       [  --disable-openldap      disable OpenLDAP support])
 
 if test "${enable_openldap}z" = "z" ; then
   enable_openldap=$default_openldap
@@ -872,7 +906,7 @@ dnl MSWIN_CHECK_DIR  openssl,\openssl\
 dnl MSWIN_CHECK_DIR  openssl,c:\openssl\
 
 AC_ARG_ENABLE(openssl,
-       [  --disable-openssl       disable OpenSSL support in PWLIB])
+       [  --disable-openssl       disable OpenSSL support])
 
 if test "${enable_openssl}z" = "z" ; then
   enable_openssl=$default_openssl
@@ -998,7 +1032,7 @@ dnl MSWIN_CHECK_DIR  expat,\expat
 dnl MSWIN_CHECK_DIR  expat,c:\expat\
 
 AC_ARG_ENABLE(expat,
-       [  --disable-expat         disable XML support in PWLIB])
+       [  --disable-expat         disable XML support])
 
 if test "${enable_expat}z" = "z" ; then
   enable_expat=$default_expat
@@ -1007,9 +1041,7 @@ fi
 HAS_EXPAT=
 if test "$enable_expat" = "no" ; then
   AC_MSG_NOTICE(Expat disabled)
-  AC_DEFINE(P_EXPAT, 0)
 else
-
   AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
   if test "${HAS_EXPAT:-unset}" != "unset" ; then
     AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
@@ -1035,15 +1067,97 @@ else
 fi
 AC_SUBST(HAS_EXPAT)
 
+dnl ########################################################################
+dnl handle modules dependent on Expat
+
+dnl MSWIN VXML Support,,P_VXML
+dnl MSWIN Jabber Support,,P_JABBER
+dnl MSWIN XMLRPC Support,,P_XMLRPC
+dnl MSWIN SOAP Support,,P_SOAP
+
+HAS_VXML=
+HAS_JABBER=
+HAS_XMLRPC=
+if test "$enable_expat" = "no" ; then
+  AC_MSG_NOTICE(VXML disabled as Expat is disabled)
+  AC_MSG_NOTICE(Jabber disabled as Expat is disabled)
+  AC_MSG_NOTICE(XMLRPC disabled as Expat is disabled)
+else
+
+  dnl ########################################################################
+  dnl VXML 
+
+  AC_ARG_ENABLE(vxml,
+         [  --disable-vxml          disable VXML support])
+
+  if test "${enable_vxml}z" = "z" ; then
+    enable_vxml=$default_vxml
+  fi
+  if test "$enable_vxml" = "no" ; then
+    AC_MSG_NOTICE(VXML disabled)
+  else
+    AC_DEFINE(P_VXML, 1)
+  fi
+
+  dnl ########################################################################
+  dnl Jabber
+
+  AC_ARG_ENABLE(jabber,
+         [  --disable-jabber        disable Jabber support])
+
+  if test "${enable_jabber}z" = "z" ; then
+    enable_jabber=$default_jabber
+  fi
+  if test "$enable_jabber" = "no" ; then
+    AC_MSG_NOTICE(Jabber disabled)
+  else
+    AC_DEFINE(P_JABBER, 1)
+  fi
+
+  dnl ########################################################################
+  dnl XMLRPC
+
+  AC_ARG_ENABLE(xmlrpc,
+         [  --disable-xmlrpc        disable XMLRPC support])
+
+  if test "${enable_xmlrpc}z" = "z" ; then
+    enable_xmlrpc=$default_xmlrpc
+  fi
+  if test "$enable_xmlrpc" = "no" ; then
+    AC_MSG_NOTICE(XMLRPC disabled)
+  else
+    AC_DEFINE(P_XMLRPC, 1)
+  fi
+fi
+
+AC_SUBST(HAS_VXML)
+AC_SUBST(HAS_JABBER)
+AC_SUBST(HAS_XMLRPC)
+AC_SUBST(HAS_SOAP)
 
 dnl ########################################################################
 dnl Speech
 
-dnl MSWIN_DISPLAY    sapi,Speech API
-dnl MSWIN_CHECK_FILE sapi,include\sphelper.h,P_SAPI=1
-dnl MSWIN_DIR_SYMBOL sapi,SAPI_DIR
-dnl MSWIN_CHECK_DIR  sapi,\Program Files\Microsoft Speech SDK 5.1\
+dnl MSWIN_DISPLAY       sapi,Speech API
+dnl MSWIN_CHECK_FILE    sapi,include\sphelper.h,P_SAPI=1
+dnl MSWIN_DEFINE_SYMBOL sapi,P_TTS
+dnl MSWIN_DIR_SYMBOL    sapi,SAPI_DIR
+dnl MSWIN_CHECK_DIR     sapi,\Program Files\Microsoft Speech SDK 5.1\
 
+AC_ARG_ENABLE(expat,
+       [  --disable-tts           disable Text-ToSpeech support (default disabled)])
+
+if test "${enable_tts}z" = "z" ; then
+  enable_tts=$default_tts
+fi
+
+HAS_TTS=
+if test "$enable_tts" = "no" ; then
+  AC_MSG_NOTICE(Text-to-speech disabled)
+else
+  AC_DEFINE(P_TTS, 1)
+fi
+AC_SUBST(HAS_TTS)
 
 dnl ########################################################################
 dnl look for IPV6 functions
@@ -1055,7 +1169,7 @@ dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  ipv6,\Program Files\Microsoft SDK\include\
 
 AC_ARG_ENABLE(ipv6,
-       [  --disable-ipv6          disable IPV6 support in PWLIB],
+       [  --disable-ipv6          disable IPV6 support],
        ipv6=$enableval)
 
 if test "$ipv6" = "no" ; then
@@ -1091,7 +1205,7 @@ dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft Visual Studio\VC98\Include\
 dnl MSWIN_CHECK_DIR  qos,\Program Files\Microsoft SDK\include\
 
 AC_ARG_ENABLE(qos,
-       [  --disable-qos           disable QOS support in PWLIB],
+       [  --disable-qos           disable QOS support],
        qos=$enableval)
 
 if test "$qos" = "no" ; then
@@ -1114,7 +1228,7 @@ dnl MSWIN_CHECK_DIR  libsdl,\sdl\
 dnl MSWIN_CHECK_DIR  libsdl,c:\sdl\
 
 AC_ARG_ENABLE(sdl,
-       [  --disable-sdl           disable SDL support in PWLIB])
+       [  --disable-sdl           disable SDL support])
 
 if test "${enable_sdl}z" = "z" ; then
   enable_sdl=$default_sdl
@@ -1170,32 +1284,53 @@ dnl i386/ioctl_meteor on OpenBSD
 dnl dev/ic/bt8xx on NetBSD
 
 AC_ARG_ENABLE(video,
-       [  --disable-video         disable non-plugin video device support in PWLIB],
-       video=$enableval)
+       [  --disable-video         disable video device support])
 
-HAS_VIDEO_CAPTURE=0
-if test "$HAS_PLUGINS" = "0" ; then
-  if test "$video" != "no" ; then
+if test "${enable_video}z" = "z" ; then
+  enable_video=$default_video
+fi
+
+HAS_VIDEO=
+HAS_VIDEO_CAPTURE=
+if test "$enable_video" = "no" ; then
+  AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
+else
+  if test "$enable_plugins" = "yes" ; then
+    AC_DEFINE(P_VIDEO, 1)
+    HAS_VIDEO=1
+    HAS_VIDEO_CAPTURE=1
+  else
     AC_CHECK_HEADER(linux/videodev.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(machine/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(i386/ioctl_meteor.h, HAS_VIDEO_CAPTURE=1)
     dnl AC_CHECK_HEADER(dev/ic/bt8xx.h, HAS_VIDEO_CAPTURE=1)
-    if test "${HAS_VIDEO_CAPTURE}" = "0" ; then
+    if test "${HAS_VIDEO_CAPTURE}z" = "z" ; then
       AC_MSG_NOTICE(No Video Capture support)
       AC_DEFINE([NO_VIDEO_CAPTURE], [], [No video capture])
+    else
+      AC_DEFINE(P_VIDEO, 1)
     fi
   fi
 fi
+AC_SUBST(HAS_VIDEO)
 AC_SUBST(HAS_VIDEO_CAPTURE)
+
+dnl these are needed to pass through to plugin configure
+AC_ARG_ENABLE(v4l,      [  --enable-v4l            enable V4L video support])
+AC_ARG_ENABLE(v4l2,     [  --enable-v4l2           enable V4L2 video support])
+AC_ARG_ENABLE(bsdvideo, [  --enable-bsdvideo       enable BSD video support])
+AC_ARG_ENABLE(avc,      [  --enable-avc            enable IEEE1394/AVC video support])
+AC_ARG_ENABLE(dc,       [  --enable-dc             enable IEEE1394/DC video support])
+
 
 dnl ########################################################################
 dnl enable shared memory video devices (static video plugin)
 
 AC_ARG_ENABLE(shm_video,
-		[  --enable-shm-video	  enable shared memory video devices (off by default)],
+		[  --enable-shm-video      enable shared memory video devices],
 		shm_video=$enableval)
 
-USE_SHM_VIDEO_DEVICES=0	
+USE_SHM_VIDEO_DEVICES=
 if test "$shm_video" = "yes" ; then
   USE_SHM_VIDEO_DEVICES=1
   AC_MSG_NOTICE(Shared memory video devices enabled)
@@ -1203,23 +1338,346 @@ fi
 AC_SUBST(USE_SHM_VIDEO_DEVICES)
 
 dnl ########################################################################
-dnl check for various functions
-AC_ARG_ENABLE(alsa, [  --enable-alsa           disable non-plugin ALSA audio support],enable_alsa=$enableval)
+dnl check for enabling ASN support
 
-HAS_ALSA=0
-if test "$HAS_PLUGINS" = "0" ; then
-  if test "$enable_alsa" != "no" ; then
-    AC_CHECK_HEADER(alsa/asoundlib.h, HAS_ALSA=1)
-    AC_MSG_CHECKING(for ALSA sound support)
-    if test "${HAS_ALSA}" = "1"; then
-      AC_MSG_RESULT(yes)
-      ENDLDLIBS="$ENDLDLIBS -lasound"
-    else
-      AC_MSG_RESULT(no)
+dnl MSWIN ASN Support,,P_ASN
+
+AC_ARG_ENABLE(asn,
+       [  --disable-asn           disable ASN decoding/encoding support])
+
+if test "${enable_asn}z" = "z" ; then
+  enable_asn=$default_asn
+fi
+
+HAS_ASN=
+if test "$enable_asn" = "no" ; then
+  AC_MSG_NOTICE(ASN decoding/encoding support disabled)
+else
+  HAS_ASN=1
+  AC_DEFINE(P_ASN, 1)
+fi
+AC_SUBST(HAS_ASN)
+
+dnl ########################################################################
+dnl check for enabling STUN support
+
+dnl MSWIN ASN Support,,P_STUN
+
+AC_ARG_ENABLE(stun,
+       [  --disable-stun          disable STUN protocol support])
+
+if test "${enable_stun}z" = "z" ; then
+  enable_stun=$default_stun
+fi
+
+HAS_STUN=
+if test "$enable_stun" = "no" ; then
+  AC_MSG_NOTICE(STUN decoding/encoding support disabled)
+else
+  HAS_STUN=1
+  AC_DEFINE(P_STUN, 1)
+fi
+AC_SUBST(HAS_STUN)
+
+dnl ########################################################################
+dnl check for enabling PIPECHAN support
+
+dnl MSWIN ASN Support,,P_PIPECHAN
+
+AC_ARG_ENABLE(pipechan,
+       [  --disable-pipechan      disable pipechannel support])
+
+if test "${enable_pipechan}z" = "z" ; then
+  enable_pipechan=$default_pipechan
+fi
+
+HAS_PIPECHAN=
+if test "$enable_pipechan" = "no" ; then
+  AC_MSG_NOTICE(pipechannel support disabled)
+else
+  HAS_PIPECHAN=1
+  AC_DEFINE(P_PIPECHAN, 1)
+fi
+AC_SUBST(HAS_PIPECHAN)
+
+dnl ########################################################################
+dnl check for enabling DTMF support
+
+dnl MSWIN DTMF Support,,P_DTMF
+
+AC_ARG_ENABLE(dtmf,
+       [  --disable-dtmf          disable DTMF protocol support])
+
+if test "${enable_dtmf}z" = "z" ; then
+  enable_dtmf=$default_dtmf
+fi
+
+HAS_DTMF=
+if test "$enable_dtmf" = "no" ; then
+  AC_MSG_NOTICE(DTMF decoding/encoding support disabled)
+else
+  HAS_DTMF=1
+  AC_DEFINE(P_DTMF, 1)
+fi
+AC_SUBST(HAS_DTMF)
+
+dnl ########################################################################
+dnl check for enabling WAVFILE support
+
+dnl MSWIN WAVFILE Support,,P_WAVFILE
+
+AC_ARG_ENABLE(wavfile,
+       [  --disable-wavfile       disable WAVFILE support])
+
+if test "${enable_wavfile}z" = "z" ; then
+  enable_wavfile=$default_wavfile
+fi
+
+HAS_WAVFILE=
+if test "$enable_wavfile" = "no" ; then
+  AC_MSG_NOTICE(WAV file support disabled)
+else
+  HAS_WAVFILE=1
+  AC_DEFINE(P_WAVFILE, 1)
+fi
+AC_SUBST(HAS_WAVFILE)
+
+dnl ########################################################################
+dnl check for enabling SOCKS support
+
+dnl MSWIN SOCKS Support,,P_SOCKS
+
+AC_ARG_ENABLE(socks,
+       [  --disable-socks         disable SOCKS protocol support])
+
+if test "${enable_socks}z" = "z" ; then
+  enable_socks=$default_socks
+fi
+
+HAS_SOCKS=
+if test "$enable_socks" = "no" ; then
+  AC_MSG_NOTICE(SOCKS decoding/encoding support disabled)
+else
+  HAS_SOCKS=1
+  AC_DEFINE(P_SOCKS, 1)
+fi
+AC_SUBST(HAS_SOCKS)
+
+dnl ########################################################################
+dnl check for enabling FTP support
+
+dnl MSWIN FTP Support,,P_FTP
+
+AC_ARG_ENABLE(rtp,
+       [  --disable-ftp           disable FTP support])
+
+if test "${enable_ftp}z" = "z" ; then
+  enable_ftp=$default_ftp
+fi
+
+HAS_FTP=
+if test "$enable_ftp" = "no" ; then
+  AC_MSG_NOTICE(FTP protocol support disabled)
+else
+  HAS_FTP=1
+  AC_DEFINE(P_FTP, 1)
+fi
+AC_SUBST(HAS_FTP)
+
+dnl ########################################################################
+dnl check for enabling SNMP support
+
+dnl MSWIN ASNMP Support,,P_SNMP
+
+AC_ARG_ENABLE(snmp,
+       [  --disable-snmp          disable SNMP protocol support])
+
+if test "${enable_snmp}z" = "z" ; then
+  enable_snmp=$default_snmp
+fi
+
+HAS_SNMP=
+if test "$enable_snmp" = "no" ; then
+  AC_MSG_NOTICE(SNMP protocol support disabled)
+else
+  HAS_SNMP=1
+  AC_DEFINE(P_SNMP, 1)
+fi
+AC_SUBST(HAS_SNMP)
+
+dnl ########################################################################
+dnl check for enabling TELNET support
+
+dnl MSWIN TELNET Support,,P_TELNET
+
+AC_ARG_ENABLE(telnet,
+       [  --disable-telnet        disable Telnet protocol support])
+
+if test "${enable_telnet}z" = "z" ; then
+  enable_telnet=$default_telnet
+fi
+
+HAS_TELNET=
+if test "$enable_telnet" = "no" ; then
+  AC_MSG_NOTICE(Telnet protocol support disabled)
+else
+  HAS_TELNET=1
+  AC_DEFINE(P_TELNET, 1)
+fi
+AC_SUBST(HAS_TELNET)
+
+dnl ########################################################################
+dnl check for enabling REMCONN support
+
+dnl MSWIN REMCONN Support,,P_REMCONN
+
+AC_ARG_ENABLE(remconn,
+       [  --disable-remconn       disable remote connection support])
+
+if test "${enable_remconn}z" = "z" ; then
+  enable_remconn=$default_remconn
+fi
+
+HAS_REMCONN=
+if test "$enable_remconn" = "no" ; then
+  AC_MSG_NOTICE(Remote connection support disabled)
+else
+  HAS_REMCONN=1
+  AC_DEFINE(P_REMCONN, 1)
+fi
+AC_SUBST(HAS_REMCONN)
+
+dnl ########################################################################
+dnl check for enabling serial port handling
+
+dnl MSWIN Serial Support,,P_SERIAL
+
+AC_ARG_ENABLE(serial,
+       [  --disable-serial        disable serial port support])
+
+if test "${enable_serial}z" = "z" ; then
+  enable_serial=$default_serial
+fi
+
+HAS_SERIAL=
+if test "$enable_serial" = "no" ; then
+  AC_MSG_NOTICE(Serial port support disabled)
+else
+  HAS_SERIAL=1
+  AC_DEFINE(P_SERIAL, 1)
+fi
+AC_SUBST(HAS_SERIAL)
+
+dnl ########################################################################
+dnl check for POP3/SMTP support
+
+dnl MSWIN POP3SMTP Support,,P_POP3SMTP
+
+AC_ARG_ENABLE(pop3smtp,
+       [  --disable-pop3smtp      disable POP3/SMTP support])
+
+if test "${enable_pop3smtp}z" = "z" ; then
+  enable_pop3smtp=$default_pop3smtp
+fi
+
+HAS_POP3SMTP=
+if test "$enable_pop3smtp" = "no" ; then
+  AC_MSG_NOTICE(POP3/SMTP protocol support disabled)
+else
+  HAS_POP3SMTP=1
+  AC_DEFINE(P_POP3SMTP, 1)
+fi
+AC_SUBST(HAS_POP3SMTP)
+
+dnl ########################################################################
+dnl check for HTTP support
+
+dnl MSWIN HTTP Support,,P_HTTP
+
+AC_ARG_ENABLE(http,
+       [  --disable-http          disable HTTP support])
+
+if test "${enable_http}z" = "z" ; then
+  enable_http=$default_http
+fi
+
+HAS_HTTP=
+if test "$enable_http" = "no" ; then
+  AC_MSG_NOTICE(HTTP protocol support disabled)
+else
+  HAS_HTTP=1
+  AC_DEFINE(P_HTTP, 1)
+fi
+AC_SUBST(HAS_HTTP)
+
+dnl ########################################################################
+dnl check for HTTPSVC support
+
+dnl MSWIN HTTP service Support,,P_HTTPSVC
+
+AC_ARG_ENABLE(httpsvc,
+       [  --disable-httpsvc       disable HTTP service support])
+
+if test "${enable_httpsvc}z" = "z" ; then
+  enable_httpsvc=$default_httpsvc
+fi
+
+HAS_HTTPSVC=
+if test "$enable_httpsvc" = "no" ; then
+  AC_MSG_NOTICE(HTTP service support disabled)
+else
+  HAS_HTTPSVC=1
+  AC_DEFINE(P_HTTPSVC, 1)
+fi
+AC_SUBST(HAS_HTTPSVC)
+
+dnl ########################################################################
+dnl check for sound support
+
+dnl MSWIN Sound Support,,P_AUDIO
+
+AC_ARG_ENABLE(audio,
+       [  --disable-audio         disable audio support])
+
+if test "${enable_audio}z" = "z" ; then
+  enable_audio=$default_audio
+fi
+
+HAS_AUDIO=
+if test "$enable_audio" = "no" ; then
+  AC_MSG_NOTICE(Audio support disabled)
+else
+  HAS_AUDIO=1
+  AC_DEFINE(P_AUDIO)
+fi
+AC_SUBST(HAS_AUDIO)
+
+dnl ########################################################################
+dnl check for whether to use Alsa driver instead of OSS for non-plugin driver
+
+HAS_ALSA=
+if test "$enable_audio" = "yes" ; then
+  AC_ARG_ENABLE(alsa, [  --enable-alsa           disable non-plugin ALSA audio support],enable_alsa=$enableval)
+  if test "${enable_alsa}z" = "z" ; then
+    enable_alsa=$default_alsa
+  fi
+
+  if test "$enable_plugins" = "no" ; then
+    if test "$enable_alsa" = "yes" ; then
+      AC_CHECK_HEADER(alsa/asoundlib.h, HAS_ALSA=1)
+      AC_MSG_CHECKING(for ALSA sound support)
+      if test "${HAS_ALSA}z" != "z"; then
+        AC_MSG_RESULT(yes)
+        ENDLDLIBS="$ENDLDLIBS -lasound"
+      else
+        AC_MSG_RESULT(no)
+      fi
     fi
   fi
 fi
 AC_SUBST(HAS_ALSA)
+
+AC_ARG_ENABLE(oss, [  --enable-oss            enable OSS audio support])
 
 dnl ########################################################################
 dnl check for various functions
@@ -1267,7 +1725,13 @@ fi
 dnl ########################################################################
 dnl this reduces the size of all executables and libraries
 
-STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+AC_ARG_ENABLE(exceptions,
+       [  --enable-exceptions     enable C++ exceptions])
+
+if test "${enable_exceptions}z" = "yesz" ; then
+  AC_MSG_NOTICE(C++ exceptions enabled)
+  STDCCFLAGS="$STDCCFLAGS -fno-exceptions"
+fi
 
 dnl ########################################################################
 dnl final declarations
