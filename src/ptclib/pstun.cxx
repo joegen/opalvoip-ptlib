@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.16  2004/11/25 07:23:46  csoutheren
+ * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
+ *
  * Revision 1.15  2004/10/26 05:58:23  csoutheren
  * Increased timeout on STUN responses to avoid spurious STUN failures due
  * to network trsffic/congestion etc
@@ -566,6 +569,36 @@ PString PSTUNClient::GetNatTypeName(BOOL force)
   return Names[GetNatType(force)];
 }
 
+
+PSTUNClient::RTPSupportTypes PSTUNClient::IsSupportingRTP(BOOL force)
+{
+  switch (GetNatType(force)) {
+
+    // types that do support RTP 
+    case OpenNat:
+    case ConeNat:
+      return RTPOK;
+
+    // types that support RTP if media sent first
+    case SymmetricFirewall:
+    case RestrictedNat:
+    case PortRestrictedNat:
+      return RTPIfSendMedia;
+
+    // types that do not support RTP
+    case BlockedNat:
+    case SymmetricNat:
+      return RTPUnsupported;
+
+    // types that have unknown RTP support
+    case UnknownNat:
+    case PartialBlockedNat:
+    default:
+      break;
+  }
+
+  return RTPUnknown;
+}
 
 BOOL PSTUNClient::GetExternalAddress(PIPSocket::Address & externalAddress,
                                      const PTimeInterval & maxAge)
