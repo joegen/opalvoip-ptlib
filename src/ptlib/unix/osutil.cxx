@@ -31,13 +31,20 @@
 #include <ctype.h>
 
 #if defined(P_LINUX)
+#if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
-#elif defined(P_HPUX9)
-#include <langinfo.h>
+#else
+#define P_USE_LANGINFO
+#endif
+#elif defined(P_HPUX9) 
+#define P_USE_LANGINFO
 #elif defined(P_SUN4)
 #include <sys/timeb.h>
 #endif
 
+#ifdef P_USE_LANGINFO
+#include <langinfo.h>
+#endif
 
 #define	LINE_SIZE_STEP	100
 
@@ -74,8 +81,8 @@ static PString CanonicaliseDirectory (const PString & path)
   if (canonical_path[canonical_path.GetLength()-1] != '/')
     canonical_path += slash;
 
-  char * ptr = (char *)path;
-  char * end;
+  const char * ptr = path;
+  const char * end;
 
   for (;;) {
     // ignore slashes
@@ -136,10 +143,8 @@ PTimeInterval PTimer::Tick()
 
 {
   struct timeval tv;
-
-  gettimeofday (&tv, NULL);
-
-  return ((tv.tv_sec * 1000L)+(tv.tv_usec / 1000L)) & 0x7fffffff;
+  ::gettimeofday (&tv, NULL);
+  return (PInt64)(tv.tv_sec) * 1000 + tv.tv_usec/1000L;
 }
 
 
@@ -593,7 +598,7 @@ PDirectory PFilePath::GetDirectory() const
 PString PTime::GetTimeSeparator()
 {
 #if defined(P_LINUX) || defined(P_HPUX9)
-#  if defined(P_HPUX9)
+#  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(T_FMT);
 #  elif defined(P_LINUX)
      char * p = _time_info->time; 
@@ -604,6 +609,8 @@ PString PTime::GetTimeSeparator()
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
+#elif defined(P_SUN4)
+  return PString(":");
 #else
 
 #warning Using default time separator
@@ -614,10 +621,10 @@ PString PTime::GetTimeSeparator()
 PTime::DateOrder PTime::GetDateOrder()
 {
 #if defined(P_LINUX) || defined(P_HPUX9)
-#  if defined(P_LINUX)
-     char * p = _time_info->date; 
-#  elif defined(P_HPUX9)
+#  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
+#  elif defined(P_LINUX)
+     char * p = _time_info->date; 
 #  endif
 
   while (*p == '%')
@@ -633,6 +640,9 @@ PTime::DateOrder PTime::GetDateOrder()
   }
   return MonthDayYear;
 
+#elif defined(P_SUN4)
+  return DayMonthYear;
+
 #else
 #warning Using default date order
   return DayMonthYear;
@@ -644,10 +654,10 @@ PString PTime::GetDateSeparator()
 #if defined(P_SUN4)
   return PString("/");
 #elif defined(P_LINUX) || defined(P_HPUX9)
-#  if defined(P_LINUX)
-     char * p = _time_info->date; 
-#  elif defined(P_HPUX9)
+#  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
+#  elif defined(P_LINUX)
+     char * p = _time_info->date; 
 #  endif
 
   char buffer[2];
@@ -656,6 +666,8 @@ PString PTime::GetDateSeparator()
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
+#elif defined(P_SUN4)
+  return PString("/");
 #else
 #warning No date separator
   return PString("/");
@@ -665,10 +677,10 @@ PString PTime::GetDateSeparator()
 PString PTime::GetDayName(PTime::Weekdays day, NameType type)
 
 {
-#if defined(P_HPUX9)
+#if defined(P_USE_LANGINFO)
   return PString(
-     (type == Abbreviated) ? nl_langinfo(ABDAY_1+(int)day) :
-                   nl_langinfo(DAY_1+(int)day)
+     (type == Abbreviated) ? nl_langinfo((nl_item)(ABDAY_1+(int)day)) :
+                   nl_langinfo((nl_item)(DAY_1+(int)day))
                 );
 
 #elif defined(P_LINUX)
@@ -676,7 +688,9 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
                        PString(_time_info->full_wkday[(int)day]);
 
 #else
+#if ! defined(P_SUN4)
 #warning Using default day names
+#endif
   static char *defaultNames[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
     "Saturday"
@@ -692,16 +706,18 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
 
 PString PTime::GetMonthName(PTime::Months month, NameType type) 
 {
-#ifdef P_HPUX9
+#if defined(P_USE_LANGINFO)
   return PString(
-     (type == Abbreviated) ? nl_langinfo(ABMON_1+(int)month-1) :
-                   nl_langinfo(MON_1+(int)month-1)
+     (type == Abbreviated) ? nl_langinfo((nl_item)(ABMON_1+(int)month-1)) :
+                   nl_langinfo((nl_item)(MON_1+(int)month-1))
                 );
 #elif defined(P_LINUX)
   return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
 #else
+#if ! defined(P_SUN4)
 #warning Using default monthnames
+#endif
   static char *defaultNames[] = {
   "January", "February", "March", "April", "May", "June", "July", "August",
   "September", "October", "November", "December" };

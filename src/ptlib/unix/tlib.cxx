@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.13  1996/05/25 06:06:33  craigs
+ * Sun4 fixes and updated for gcc 2.7.2
+ *
  * Revision 1.12  1996/05/09 10:55:59  craigs
  * More SunOS fixes
  *
@@ -312,7 +315,7 @@ void PProcess::OperatingSystemYield()
 
         int orSize = (thread->handleWidth + (8*sizeof (unsigned long)) - 1) / (8*sizeof (unsigned long));
 
-        for (PINDEX i = 0; i < orSize; i++) {
+        for (int i = 0; i < orSize; i++) {
           *drp++ |= *srp++;
           *dwp++ |= *swp++;
           *dep++ |= *sep++;
@@ -331,7 +334,7 @@ void PProcess::OperatingSystemYield()
   struct timeval   timeout_val;
   PTimeInterval delay = GetTimerList()->Process();
   if (delay != PMaxTimeInterval) {
-    timeout_val.tv_usec = (delay.GetMilliseconds() % 1000) * 1000;
+    timeout_val.tv_usec = (delay.GetMilliSeconds() % 1000) * 1000;
     timeout_val.tv_sec  = delay.GetSeconds();
     timeout             = &timeout_val;
   }
@@ -484,7 +487,7 @@ int PThread::PXBlockOnIO(int maxHandles,
   status        = BlockedIO;
   Yield();
 
-  for (i = 0; i < osHandles.GetSize(); i+=2)
+  for (PINDEX i = 0; i < osHandles.GetSize(); i+=2)
     PXClearOSHandleBlock(osHandles[i], osHandles[i+1]);
 
   ioTimer.Stop();
@@ -522,7 +525,7 @@ PDynaLink::~PDynaLink()
 }
 
 
-BOOL PDynaLink::Open(const PString & name)
+BOOL PDynaLink::Open(const PString &)
 {
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
@@ -540,13 +543,13 @@ BOOL PDynaLink::IsLoaded() const
 }
 
 
-BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+BOOL PDynaLink::GetFunction(PINDEX, Function &)
 {
   return FALSE;
 }
 
 
-BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+BOOL PDynaLink::GetFunction(const PString &, Function &)
 {
   return FALSE;
 }
