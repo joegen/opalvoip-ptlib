@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.63 1997/12/18 05:06:13 robertj Exp $
+ * $Id: sockets.cxx,v 1.64 1998/01/04 07:25:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.64  1998/01/04 07:25:09  robertj
+ * Added pthreads compatible calls for gethostbyx functions.
+ *
  * Revision 1.63  1997/12/18 05:06:13  robertj
  * Moved IsLocalHost() to platform dependent code.
  *
@@ -633,7 +636,19 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   PIPCacheData * host = GetAt(key);
   if (host == NULL || host->HasAged()) {
     mutex.Signal();
-    host = new PIPCacheData(::gethostbyname(name), name);
+#ifdef P_PTHREADS
+    // this function should really be a static on PIPSocket, but this would
+    // require allocating thread-local storage for the data and that's too much
+    // of a pain!
+    struct hostent hostEnt;
+    int localErrNo;
+    char buffer[REENTRANT_BUFFER_LEN];
+    host = new PIPCacheData(
+                ::gethostbyname_r(name, &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo),
+                name);
+#else
+     host = new PIPCacheData(::gethostbyname(name), name);
+#endif
     mutex.Wait();
     SetAt(key, host);
   }
@@ -715,10 +730,21 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
   PIPCacheData * host = GetAt(key);
   if (host == NULL || host->HasAged()) {
     mutex.Signal();
+#if defined(P_PTHREADS)
+// this function should really be a static on PIPSocket, but this would
+// require allocating thread-local storage for the data and that's too much
+// of a pain!
+    struct hostent hostEnt;
+    int localErrNo;
+    char buffer[REENTRANT_BUFFER_LEN];
+    struct hostent * host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
+                                           &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
+#else
     struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
     if (host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
+#endif
 #endif
     host = new PIPCacheData(host_info, inet_ntoa(addr));
     mutex.Wait();
