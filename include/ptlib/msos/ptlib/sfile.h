@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.7  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -52,14 +55,9 @@
  */
 
 
-#ifndef _PSTRUCTUREDFILE
-
 ///////////////////////////////////////////////////////////////////////////////
 // PStructuredFile
 
-#include "../../sfile.h"
-
-#endif
-
+// nothing to do
 
 // End Of File ///////////////////////////////////////////////////////////////

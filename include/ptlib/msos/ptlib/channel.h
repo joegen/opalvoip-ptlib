@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.8  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.7  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -53,28 +56,10 @@
  */
 
 
-#ifndef _PCHANNEL
-
-class PWin32Overlapped : public OVERLAPPED
-{
-  // Support class for overlapped I/O in Win32.
-  public:
-    PWin32Overlapped();
-    ~PWin32Overlapped();
-    void Reset();
-};
-
-
-enum { PWIN32ErrorFlag = 0x40000000 };
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PChannel
 
-#include "../../channel.h"
-
-
-#endif
+// nothing to do
 
 
 // End Of File ///////////////////////////////////////////////////////////////

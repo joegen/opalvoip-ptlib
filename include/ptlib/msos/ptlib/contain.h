@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.29  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.28  2002/09/23 07:17:23  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -116,6 +119,11 @@
  *
  */
 
+#ifndef _CONTAIN_H
+#error "Please remove pwlib\include\ptlib\msos from the tool include path"
+#error "and from the pre-processor options for this project"
+#endif
+
 #ifndef _OBJECT_H
 #define _OBJECT_H
 
@@ -150,52 +158,53 @@
 
 #if defined(_WINDOWS) || defined(_WIN32)
 
-#ifndef WINVER
-#define WINVER 0x401
-#endif
+#  ifndef WINVER
+#  define WINVER 0x401
+#  endif
 
-#ifndef STRICT
-#define STRICT
-#endif
+#  ifndef STRICT
+#  define STRICT
+#  endif
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
+#  ifndef WIN32_LEAN_AND_MEAN
+#  define WIN32_LEAN_AND_MEAN
+#  endif
 
-#include <windows.h>
+#  include <windows.h>
 
-#undef DELETE   // Remove define from NT headers.
+#  undef DELETE   // Remove define from NT headers.
+
 
 #else
 
-typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
-typedef unsigned short WORD;  // 16 bit unsigned integer quantity
-typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
-typedef int            BOOL;  // type returned by expresion (i != j)
+  typedef unsigned char  BYTE;  //  8 bit unsigned integer quantity
+  typedef unsigned short WORD;  // 16 bit unsigned integer quantity
+  typedef unsigned long  DWORD; // 32 bit unsigned integer quantity
+  typedef int            BOOL;  // type returned by expresion (i != j)
 
-#define TRUE 1
-#define FALSE 0
+  #define TRUE 1
+  #define FALSE 0
 
-#define NEAR __near
+  #define NEAR __near
 
 #endif
 
 
 // Declaration for exported callback functions to OS
 #if defined(_WIN32)
-#define PEXPORTED __stdcall
+#  define PEXPORTED __stdcall
 #elif defined(_WINDOWS)
-#define PEXPORTED WINAPI __export
+#  define PEXPORTED WINAPI __export
 #else
-#define PEXPORTED __far __pascal
+#  define PEXPORTED __far __pascal
 #endif
 
 
 // Declaration for static global variables (WIN16 compatibility)
 #if defined(_WIN32)
-#define PSTATIC
+#  define PSTATIC
 #else
-#define PSTATIC __near
+#  define PSTATIC __near
 #endif
 
 
@@ -206,9 +215,9 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 
 // Declaration for integer that is the same size as a void *
 #if defined(_WIN32)
-typedef int INT;
+  typedef int INT;
 #else
-typedef long INT;   
+  typedef long INT;   
 #endif
 
 
@@ -243,36 +252,137 @@ istream & operator>>(istream & s, PUInt64 & v);
 // Type used in array indexes especially that required by operator[] functions.
 #ifdef _MSC_VER
 
-#define PINDEX int
-#if defined(_WIN32)
-const PINDEX P_MAX_INDEX = 0x7fffffff;
-#else
-const PINDEX P_MAX_INDEX = 0x7fff;
-#endif
-inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
-#define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
+# define PINDEX int
+# if defined(_WIN32)
+    const PINDEX P_MAX_INDEX = 0x7fffffff;
+# else
+    const PINDEX P_MAX_INDEX = 0x7fff;
+# endif
+  inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
+# define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
 #else
 
-#define PINDEX unsigned
-#if sizeof(int) == 4
-const PINDEX P_MAX_INDEX = 0xffffffff;
-#else
-const PINDEX P_MAX_INDEX = 0xffff;
-#endif
-#define PABSINDEX(idx) (idx)
-#define PASSERTINDEX(idx)
+# define PINDEX unsigned
+# if sizeof(int) == 4
+    const PINDEX P_MAX_INDEX = 0xffffffff;
+# else
+    const PINDEX P_MAX_INDEX = 0xffff;
+# endif
+# define PABSINDEX(idx) (idx)
+# define PASSERTINDEX(idx)
 
 #endif
 
 #define strcasecmp(s1,s2) stricmp(s1,s2)
 #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
 
+class PWin32Overlapped : public OVERLAPPED
+{
+  // Support class for overlapped I/O in Win32.
+  public:
+    PWin32Overlapped();
+    ~PWin32Overlapped();
+    void Reset();
+};
+
+
+enum { PWIN32ErrorFlag = 0x40000000 };
+
+class PString;
+
+class RegistryKey
+{
+  public:
+    enum OpenMode {
+      ReadOnly,
+      ReadWrite,
+      Create
+    };
+    RegistryKey(const PString & subkey, OpenMode mode);
+    ~RegistryKey();
+
+    BOOL EnumKey(PINDEX idx, PString & str);
+    BOOL EnumValue(PINDEX idx, PString & str);
+    BOOL DeleteKey(const PString & subkey);
+    BOOL DeleteValue(const PString & value);
+    BOOL QueryValue(const PString & value, PString & str);
+    BOOL QueryValue(const PString & value, DWORD & num, BOOL boolean);
+    BOOL SetValue(const PString & value, const PString & str);
+    BOOL SetValue(const PString & value, DWORD num);
+  private:
+    HKEY key;
+};
+
+#ifndef _WIN32_WCE
+  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
+#else
+  extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+  #include <ptlib/wince/time.h>
+#endif
+
+// used by various modules to disable the winsock2 include to avoid header file problems
+#ifndef P_KNOCKOUT_WINSOCK2
+
+#if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
+
+#  include <winsock.h>
+
+#else // P_WINSOCKv1
+
+  ///IPv6 support
+  // Needed for for IPv6 socket API. Must be included before "windows.h"
+#  include <winsock2.h> // Version 2 of windows socket
+#  include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
+
+#  if P_HAS_IPV6 && !defined IPPROTO_IPV6
+#pragma warning(push)
+#pragma warning(disable:4127 4706)
+#include "tpipv6.h"  // For IPv6 Tech Preview.
+#pragma warning(pop)
+#  endif
+
+#endif // P_WINSOCKv1
+
+
+#define PIPX
+
+typedef int socklen_t;
+
+#endif  // P_KNOCKOUT_WINSOCK2
+
+#if defined(_MSC_VER) && !defined(_WIN32)
+extern "C" int __argc;
+extern "C" char ** __argv;
+#endif
+
+#ifdef __BORLANDC__
+#define __argc _argc
+#define __argv _argv
+#endif
+
+#undef Yield
+
+#define P_THREADIDENTIFIER DWORD
+
+#include <sys\types.h>
+#include <errno.h>
+#include <io.h>
+
+#pragma warning(disable:4201)
+#include <mmsystem.h>
+
+
+#ifndef _WIN32_WCE
+#include <vfw.h>
+#else
+#include <cevfw.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
 
-#include "../../contain.h"
+//#include "../../contain.h"
 
 
 #endif // _OBJECT_H
