@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.17 1996/02/25 03:12:48 robertj Exp $
+ * $Id: win32.cxx,v 1.18 1996/02/25 11:15:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.18  1996/02/25 11:15:29  robertj
+ * Added platform dependent Construct function to PProcess.
+ *
  * Revision 1.17  1996/02/25 03:12:48  robertj
  * Added consts to all GetXxxx functions in PConfig.
  * Fixed bug in PTime::GetTimeZone(), incorrect sign!
@@ -542,6 +545,9 @@ BOOL PChannel::ConvertOSError(int error)
       case WSAEINTR :
         osError = EINTR;
         break;
+      case WSAEWOULDBLOCK :
+        osError = EAGAIN;
+        break;
       default :
         osError |= 0x40000000;
     }
@@ -571,6 +577,9 @@ BOOL PChannel::ConvertOSError(int error)
       break;
     case EBADF :
       lastError = NotOpen;
+      break;
+    case EAGAIN :
+      lastError = Timeout;
       break;
     case EINTR :
       lastError = Interrupted;
@@ -1265,7 +1274,7 @@ void PConfig::DeleteSection(const PString & section)
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
       RegistryKey registry = location;
-      PAssertOS(registry.DeleteKey(section));
+      registry.DeleteKey(section);
       break;
     }
 
@@ -1565,19 +1574,25 @@ void PThread::InitialiseProcessThread()
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-PString GetOSClass()
+void PProcess::Construct()
+{
+  timerThread = NULL;
+}
+
+
+PString PProcess::GetOSClass()
 {
   return "WIN32";
 }
 
 
-PString GetOSName()
+PString PProcess::GetOSName()
 {
   return "NT";
 }
 
 
-PString GetOSVersion()
+PString PProcess::GetOSVersion()
 {
   return "3.51";
 }
