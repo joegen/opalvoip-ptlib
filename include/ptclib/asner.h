@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.21  2001/04/30 06:47:04  robertj
+ * Fixed problem with en/decoding more than 16 extension fields in a sequence.
+ *
  * Revision 1.20  2001/04/26 08:15:58  robertj
  * Fixed problem with ASN compile of single constraints on enumerations.
  *
@@ -460,6 +463,9 @@ class PASN_BitString : public PASN_ConstrainedObject
     void EncodeBER(PBER_Stream & strm) const;
     BOOL DecodePER(PPER_Stream & strm);
     void EncodePER(PPER_Stream & strm) const;
+
+    BOOL DecodeSequenceExtensionBitmap(PPER_Stream & strm);
+    void EncodeSequenceExtensionBitmap(PPER_Stream & strm) const;
 
   protected:
     unsigned totalBits;
