@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.7 1996/09/14 13:18:03 robertj Exp $
+ * $Id: inetmail.cxx,v 1.8 1996/12/21 01:24:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.8  1996/12/21 01:24:39  robertj
+ * Added missing open message to smtp server.
+ *
  * Revision 1.7  1996/09/14 13:18:03  robertj
  * Renamed file and changed to be a protocol off new indirect channel to separate
  *   the protocol from the low level byte transport channel.
@@ -189,6 +192,12 @@ void PSMTPServer::ServerReset()
   sendCommand = WasMAIL;
   fromAddress = PString();
   toNames.RemoveAll();
+}
+
+
+BOOL PSMTPServer::OnOpen()
+{
+  return WriteResponse(220, PIPSocket::GetHostName() + "ESMTP server ready");
 }
 
 
