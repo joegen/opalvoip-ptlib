@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.63  2004/02/23 17:27:19  ykiryanov
+ * Added == and != operators for in_addr_t on BeOS as suggested by Craig Southeren to please compiler
+ *
  * Revision 1.62  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -329,6 +332,10 @@ class PIPSocket : public PSocket
 #ifdef P_RTEMS
         BOOL operator==(u_long u) const { return  operator==((DWORD)u); }
         BOOL operator!=(u_long u) const { return !operator==((DWORD)u); }
+#endif
+#ifdef __BEOS__
+        BOOL operator==(in_addr_t a) const { return  operator==((DWORD)a); }
+        BOOL operator!=(in_addr_t a) const { return !operator==((DWORD)a); }
 #endif
         BOOL operator==(int i) const      { return  operator==((DWORD)i); }
         BOOL operator!=(int i) const      { return !operator==((DWORD)i); }
