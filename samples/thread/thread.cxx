@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.3  2002/11/04 16:24:21  rogerh
+ * Delete the threads, fixing a memory leak.
+ *
  * Revision 1.2  2001/09/27 08:22:48  rogerh
  * Doing a flush on cout does not work on Mac OS X. So you do not see any
  * results until the program stops. So replace the printing of the numbers with
@@ -150,5 +153,11 @@ void ThreadTest::Main()
   // Display will show "1 2 1 2 1 2 1 2 1 2..."
   mythread1->Resume();
   sleep(3);
+
+
+  // Clean up
+  delete mythread1;
+  delete mythread2;
+
 }
 
