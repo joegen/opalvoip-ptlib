@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.106  1998/10/30 11:22:15  robertj
+ * Added constructors that take strings as well as const char *'s.
+ *
  * Revision 1.105  1998/10/30 05:25:09  robertj
  * Allow user to shift past some arguments before parsing for the first time.
  *
@@ -1455,6 +1458,31 @@ PArgList::PArgList(const char * theArgStr,
   // if we got an argument spec - so process them
   if (theArgumentSpec != NULL)
     Parse(theArgumentSpec, optionsBeforeParams);
+}
+
+
+PArgList::PArgList(const PString & theArgStr,
+                   const char * argumentSpecPtr,
+                   BOOL optionsBeforeParams)
+{
+  // get the program arguments
+  SetArgs(theArgStr);
+
+  // if we got an argument spec - so process them
+  if (argumentSpecPtr != NULL)
+    Parse(argumentSpecPtr, optionsBeforeParams);
+}
+
+
+PArgList::PArgList(const PString & theArgStr,
+                   const PString & argumentSpecStr,
+                   BOOL optionsBeforeParams)
+{
+  // get the program arguments
+  SetArgs(theArgStr);
+
+  // if we got an argument spec - so process them
+  Parse(argumentSpecStr, optionsBeforeParams);
 }
 
 
