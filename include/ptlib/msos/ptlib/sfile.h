@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sfile.h,v $
+ * Revision 1.5  1998/11/30 02:55:30  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/09/24 03:30:24  robertj
  * Added open software license.
  *
@@ -54,7 +57,7 @@
 #pragma warn -hid
 #endif
 
-#include "../../common/ptlib/sfile.h"
+#include "../../sfile.h"
 };
 
 #ifdef __BORLANDC__
