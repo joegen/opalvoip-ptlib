@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.60  2001/08/07 08:24:42  robertj
+# Fixed bug in tagbuild if have more than one BUILD_NUMBER in file.
+#
 # Revision 1.59  2001/07/30 07:45:54  robertj
 # Added "all" target with double colon.
 #
@@ -391,7 +394,7 @@ tagbuild ::
 ifdef VERSION_FILE
 	let BLD=$(BUILD_NUMBER)+1 ; \
 	echo "Incrementing to build number $$BLD"; \
-	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
+	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Incremented build number after tagging." $(VERSION_FILE)
 endif
