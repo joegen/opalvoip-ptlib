@@ -1,12 +1,39 @@
 /*
+ * pssl.cxx
+ *
  * SSL implementation for PTLib using the SSLeay package
- * Copyright (C) 1996 by Equivalence
+ *
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.6 1998/01/26 02:50:17 robertj Exp $
+ * $Id: pssl.cxx,v 1.7 1998/09/23 06:22:35 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.7  1998/09/23 06:22:35  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.6  1998/01/26 02:50:17  robertj
  * GNU Support
  *
