@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.49  2002/10/14 22:41:35  rogerh
+ * Wrap _THREAD_SAFE to remove a warning if is already defined.
+ *
  * Revision 1.48  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -163,7 +166,9 @@ typedef size_t socklen_t;
 #elif defined(P_FREEBSD)
 
 #if defined(P_PTHREADS)
+#ifndef _THREAD_SAFE
 #define _THREAD_SAFE
+#endif
 #define P_THREAD_SAFE_CLIB
 
 #include <pthread.h>
