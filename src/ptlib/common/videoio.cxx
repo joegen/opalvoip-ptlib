@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.42  2003/11/19 04:30:15  csoutheren
+ * Changed to support video output plugins
+ *
  * Revision 1.41  2003/11/18 10:40:51  csoutheren
  * Added pragma implementation to fix vtable link problems
  *
@@ -849,58 +852,9 @@ BOOL PVideoOutputDevice::CanCaptureVideo() const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PVideoOutputDeviceNULL
-
-PVideoOutputDeviceNULL::PVideoOutputDeviceNULL()
-{
-  deviceName = "NULL";
-}
-
-
-BOOL PVideoOutputDeviceNULL::Open(const PString & /*deviceName*/,
-                                  BOOL /*startImmediate*/)
-{
-  return TRUE;
-}
-
-
-BOOL PVideoOutputDeviceNULL::IsOpen()
-{
-  return TRUE;
-}
-
-
-PStringList PVideoOutputDeviceNULL::GetDeviceNames() const
-{
-  PStringList list;
-  list += "NULL";
-  return list;
-}
-
-
-PINDEX PVideoOutputDeviceNULL::GetMaxFrameBytes()
-{
-  return CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
-}
-
-
-BOOL PVideoOutputDeviceNULL::SetFrameData(unsigned /*x*/, unsigned /*y*/,
-                                          unsigned /*width*/, unsigned /*height*/,
-                                          const BYTE * /*data*/,
-                                          BOOL /*endFrame*/)
-{
-  return TRUE;
-}
-
-
-BOOL PVideoOutputDeviceNULL::EndFrame()
-{
-  return TRUE;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDeviceRGB
+
+#ifdef SHOULD_BE_MOVED_TO_PLUGIN
 
 PVideoOutputDeviceRGB::PVideoOutputDeviceRGB()
 {
@@ -976,8 +930,12 @@ BOOL PVideoOutputDeviceRGB::SetFrameData(unsigned x, unsigned y,
   return TRUE;
 }
 
+#endif // SHOULD_BE_MOVED_TO_PLUGIN
+
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevicePPM
+
+#ifdef SHOULD_BE_MOVED_TO_PLUGIN
 
 PVideoOutputDevicePPM::PVideoOutputDevicePPM()
 {
@@ -1045,6 +1003,8 @@ BOOL PVideoOutputDevicePPM::EndFrame()
   return file.Close();
 }
 
+#endif // SHOULD_BE_MOVED_TO_PLUGIN
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
@@ -1109,5 +1069,64 @@ PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString &driverN
 
   return dev;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+static const char videoOutputPluginBaseClass[] = "PVideoOutputDevice";
+
+
+PStringList PVideoOutputDevice::GetDriverNames(PPluginManager *_pluginMgr)
+{
+  PPluginManager *pluginMgr =
+      (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsProviding(videoOutputPluginBaseClass);
+}
+
+PStringList PVideoOutputDevice::GetDeviceNames(const PString &driverName,
+                                                             PPluginManager *_pluginMgr)
+{
+  PPluginManager *pluginMgr =
+      (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  PVideoOutputDevicePluginServiceDescriptor *descr =
+      (PVideoOutputDevicePluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, videoOutputPluginBaseClass);
+
+  if (descr != NULL)
+    return PStringList(descr->GetDeviceNames());
+  else
+    return PStringList::PStringList();
+}
+
+PVideoOutputDevice * PVideoOutputDevice::CreateDevice(const PString &driverName,
+                                                                  PPluginManager *_pluginMgr)
+{
+  PPluginManager *pluginMgr =
+             (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  PVideoOutputDevicePluginServiceDescriptor *descr =
+               (PVideoOutputDevicePluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, videoOutputPluginBaseClass);
+
+  if (descr != NULL)
+    return descr->CreateInstance();
+  else
+  return NULL;
+}
+
+PVideoOutputDevice * PVideoOutputDevice::CreateOpenedDevice(const PString &driverName,
+                                                         const PString &deviceName,
+                                                         BOOL startImmediate,
+                                                         PPluginManager *pluginMgr)
+{
+  PVideoOutputDevice *dev = CreateDevice(driverName, pluginMgr);
+
+  if (dev != NULL && !dev->Open(deviceName, startImmediate)) {
+    delete dev;
+    dev = NULL;
+  }
+
+  return dev;
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
