@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.16 1996/08/17 09:56:02 robertj Exp $
+ * $Id: cypher.cxx,v 1.17 1996/11/16 10:50:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.17  1996/11/16 10:50:26  robertj
+ * ??
+ *
  * Revision 1.16  1996/08/17 09:56:02  robertj
  * Fixed big endian processor platform conformance.
  *
@@ -750,17 +753,6 @@ void PSecureConfig::ResetPending()
   }
   DeleteKey(expiryDateKey);
   DeleteKey(optionBitsKey);
-}
-
-
-PString PSecureConfig::CalculatePendingDigest() const
-{
-  PMessageDigest5 digestor;
-  for (PINDEX i = 0; i < securedKeys.GetSize(); i++) {
-    PString key = pendingPrefix + securedKeys[i];
-    digestor.Process(GetString(key).Trim());
-  }
-  return digestor.Complete();
 }
 
 
