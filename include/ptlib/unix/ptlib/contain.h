@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.15  2002/06/06 09:27:26  robertj
+ * Fixed PINDEX macros for being signed no (gcc3 port).
+ * iAdded limits.h for Solaris compatibility.
+ *
  * Revision 1.14  2002/06/05 12:29:15  craigs
  * Changes for gcc 3.1
  *
@@ -53,6 +57,7 @@
 #include "pmachdep.h"
 #include <unistd.h>
 #include <ctype.h>
+#include <limits.h>
 
 
 ///////////////////////////////////////////
@@ -101,14 +106,11 @@ typedef long INT;
 typedef int  INT;
 #endif
 
-//typedef size_t PINDEX;
-//#define P_MAX_INDEX 		0x7fffffff
-
 typedef int PINDEX;
 #define P_MAX_INDEX 		INT_MAX
 
-#define PABSINDEX(idx) 		(idx)		// careful - size_t may be signed!
-#define PASSERTINDEX(idx)
+inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
+#define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
 ///////////////////////////////////////////
 //
