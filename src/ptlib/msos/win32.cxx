@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.7 1995/08/24 12:42:33 robertj Exp $
+ * $Id: win32.cxx,v 1.8 1995/10/14 15:13:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.8  1995/10/14 15:13:04  robertj
+ * Fixed bug in WIN32 service command line parameters.
+ *
  * Revision 1.7  1995/08/24 12:42:33  robertj
  * Changed PChannel so not a PContainer.
  * Rewrote PSerialChannel::Read yet again so can break out of I/O.
@@ -1115,6 +1118,7 @@ void PServiceProcess::BeginService()
   if (threadHandle != NULL)
     WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
 
+  TerminateThread(threadHandle, 1);
   CloseHandle(terminationEvent);
   ReportStatus(SERVICE_STOPPED, 0);
 }
@@ -1282,7 +1286,7 @@ void PServiceProcess::ProcessCommand(const char * cmd)
   };
   
   for (PINDEX cmdNum = 0; cmdNum < PARRAYSIZE(commandNames); cmdNum++)
-    if (stricmp(cmd, commandNames[cmdNum]) != 0)
+    if (stricmp(cmd, commandNames[cmdNum]) == 0)
       break;
 
   if (cmdNum >= PARRAYSIZE(commandNames)) {
