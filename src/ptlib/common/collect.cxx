@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.60  2003/08/31 22:11:30  dereksmithies
+ * Fix from Diego Tartara for the SetAt function. Many thanks.
+ *
  * Revision 1.59  2002/12/02 04:27:37  robertj
  * Added extra bullet proofing for some pathological conditions.
  *
@@ -608,6 +611,18 @@ BOOL PAbstractList::SetAt(PINDEX index, PObject * val)
   return TRUE;
 }
 
+BOOL PAbstractList::ReplaceAt(PINDEX index, PObject * val)
+{
+  if (!SetCurrent(index))
+    return FALSE;
+  
+  if (info->lastElement->data != NULL && reference->deleteObjects) {
+    delete info->lastElement->data;
+  }
+
+  info->lastElement->data = val;
+  return TRUE;
+}
 
 PINDEX PAbstractList::GetObjectsIndex(const PObject * obj) const
 {
