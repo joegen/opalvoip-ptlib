@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.58  2001/02/24 14:49:22  rogerh
+ * Add missing bracket
+ *
  * Revision 1.57  2001/02/24 13:29:34  rogerh
  * Mac OS X change to avoid Assertion
  *
@@ -326,7 +329,7 @@ static void sigSuspendHandler(int)
     if (sig == RESUME_SIG)
       return;
   }
-
+}
 #endif // P_MACOSX
 
 
