@@ -938,7 +938,7 @@ stunType( StunAddress& dest, bool verbose, int portBase)
       tv.tv_usec=500*1000; // 200 ms 
 
       int  err = select(fdSetSize, &fdSet, NULL, NULL, &tv);
-      int e = errno;
+      //int e = errno;
       if ( err == SOCKET_ERROR )
       {
          // error occured
