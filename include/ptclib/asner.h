@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.10  1999/08/09 13:02:45  robertj
+ * dded ASN compiler #defines for backward support of pre GCC 2.9 compilers.
+ * Added ASN compiler #defines to reduce its memory footprint.
+ *
  * Revision 1.9  1999/07/22 06:48:51  robertj
  * Added comparison operation to base ASN classes and compiled ASN code.
  * Added support for ANY type in ASN parser.
@@ -595,6 +599,26 @@ class PASN_Choice : public PASN_Object
     PASN_Object & GetObject() const;
     BOOL IsValid() const { return choice != NULL; }
 
+#if defined(__GNUC__) && __GNUC__ <= 2 && __GNUC_MINOR__ < 9
+
+    operator PASN_Null &() const;
+    operator PASN_Boolean &() const;
+    operator PASN_Integer &() const;
+    operator PASN_Enumeration &() const;
+    operator PASN_Real &() const;
+    operator PASN_ObjectId &() const;
+    operator PASN_BitString &() const;
+    operator PASN_OctetString &() const;
+    operator PASN_NumericString &() const;
+    operator PASN_PrintableString &() const;
+    operator PASN_VisibleString &() const;
+    operator PASN_IA5String &() const;
+    operator PASN_GeneralString &() const;
+    operator PASN_BMPString &() const;
+    operator PASN_Sequence &() const;
+
+#else
+
     operator PASN_Null &();
     operator PASN_Boolean &();
     operator PASN_Integer &();
@@ -626,6 +650,8 @@ class PASN_Choice : public PASN_Object
     operator const PASN_GeneralString &() const;
     operator const PASN_BMPString &() const;
     operator const PASN_Sequence &() const;
+
+#endif
 
     virtual BOOL CreateObject() = 0;
 
