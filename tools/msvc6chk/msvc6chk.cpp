@@ -42,6 +42,54 @@ static struct FileUpgradeInfo {
   { HKEY_LOCAL_MACHINE,
     "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
     "ProductDir",
+    "INCLUDE\\DEQUE",      0x4229bfd5,
+    "UPGRADES/DEQUE",      0x11539af7,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
+    "INCLUDE\\FSTREAM",      0x28f76291,
+    "UPGRADES/FSTREAM",      0xb9a507b4,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
+    "INCLUDE\\LIST",      0x64487361,
+    "UPGRADES/LIST",      0xa97cc61b,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
+    "INCLUDE\\VECTOR",      0x26ba0df5,
+    "UPGRADES/VECTOR",      0x35a94c52,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
+    "INCLUDE\\XMEMORY",      0xa6ac2fb8,
+    "UPGRADES/XMEMORY",      0x52936ff7,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
+    "INCLUDE\\XSTRING",      0x705ce397,
+    "UPGRADES/XSTRING",      0x6215f086,
+    dinkumwareCopyright
+  },
+
+  { HKEY_LOCAL_MACHINE,
+    "SOFTWARE\\Microsoft\\VisualStudio\\6.0\\Setup\\Microsoft Visual C++",
+    "ProductDir",
     "INCLUDE\\XTREE",      0xe64c6f6e,
     "UPGRADES/XTREE",      0x07972076,
     dinkumwareCopyright
