@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.36  2005/01/04 08:09:42  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.35  2004/11/08 04:07:40  csoutheren
  * Fixed crash opportunity under some conditions
  * Fixed incorrect WAV file type display
@@ -179,12 +182,8 @@ const char WAVLabelFMT_[4] = { 'f', 'm', 't', ' ' };
 const char WAVLabelFACT[4] = { 'F', 'A', 'C', 'T' };
 const char WAVLabelDATA[4] = { 'd', 'a', 't', 'a' };
 
-#ifdef _WIN32
-
 PINSTANTIATE_FACTORY(PWAVFileFormat, unsigned)
 PINSTANTIATE_FACTORY(PWAVFileConverter, unsigned)
-
-#endif
 
 inline BOOL ReadAndCheck(PWAVFile & file, void * buf, PINDEX len)
 {
