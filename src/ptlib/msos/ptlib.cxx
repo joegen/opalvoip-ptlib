@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.50  2000/02/19 23:46:09  robertj
+ * Fixed incorrect values for PFile::Access() function, thanks Stefan Ditscheid.
+ *
  * Revision 1.49  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -573,15 +576,21 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 
   switch (mode) {
     case ReadOnly :
-      accmode = 2;
+#ifndef R_OK
+#define R_OK 4
+#endif
+      accmode = R_OK;
       break;
 
     case WriteOnly :
-      accmode = 4;
+#ifndef W_OK
+#define W_OK 2
+#endif
+      accmode = W_OK;
       break;
 
     default :
-      accmode = 6;
+      accmode = R_OK|W_OK;
   }
 
   return access(name, accmode) == 0;
