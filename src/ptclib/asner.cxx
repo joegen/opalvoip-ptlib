@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.41  2001/04/30 06:47:04  robertj
+ * Fixed problem with en/decoding more than 16 extension fields in a sequence.
+ *
  * Revision 1.40  2001/04/26 08:15:58  robertj
  * Fixed problem with ASN compile of single constraints on enumerations.
  *
@@ -1501,6 +1504,57 @@ void PASN_BitString::EncodePER(PPER_Stream & strm) const
     strm.MultiBitEncode(bitData[0], 8);
     strm.MultiBitEncode(bitData[1] >> (16 - totalBits), totalBits-8);
   }
+}
+
+
+BOOL PASN_BitString::DecodeSequenceExtensionBitmap(PPER_Stream & strm)
+{
+  if (!strm.SmallUnsignedDecode(totalBits))
+    return FALSE;
+
+  totalBits++;
+
+  SetSize(totalBits);
+
+  if (totalBits > strm.GetBitsLeft())
+    return FALSE;
+
+  unsigned theBits;
+
+  PINDEX idx = 0;
+  unsigned bitsLeft = totalBits;
+  while (bitsLeft >= 8) {
+    if (!strm.MultiBitDecode(8, theBits))
+      return FALSE;
+    bitData[idx++] = (BYTE)theBits;
+    bitsLeft -= 8;
+  }
+
+  if (bitsLeft > 0) {
+    if (!strm.MultiBitDecode(bitsLeft, theBits))
+      return FALSE;
+    bitData[idx] = (BYTE)(theBits << (8-bitsLeft));
+  }
+
+  return TRUE;
+}
+
+
+void PASN_BitString::EncodeSequenceExtensionBitmap(PPER_Stream & strm) const
+{
+  PAssert(totalBits > 0, PLogicError);
+
+  strm.SmallUnsignedEncode(totalBits-1);
+
+  PINDEX idx = 0;
+  unsigned bitsLeft = totalBits;
+  while (bitsLeft >= 8) {
+    strm.MultiBitEncode(8, bitData[idx++]);
+    bitsLeft -= 8;
+  }
+
+  if (bitsLeft > 0)
+    strm.MultiBitEncode(bitData[idx] >> (8 - bitsLeft), bitsLeft);
 }
 
 
@@ -3454,11 +3508,9 @@ BOOL PASN_Sequence::NoExtensionsToDecode(PPER_Stream & strm)
     return TRUE;
 
   if (totalExtensions < 0) {
-    if (!strm.SmallUnsignedDecode((unsigned &)totalExtensions))
+    if (!extensionMap.DecodeSequenceExtensionBitmap(strm))
       return FALSE;
-    totalExtensions++;
-    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, totalExtensions);
-    extensionMap.Decode(strm);
+    totalExtensions = extensionMap.GetSize();
   }
 
   return FALSE;
@@ -3472,9 +3524,7 @@ BOOL PASN_Sequence::NoExtensionsToEncode(PPER_Stream & strm)
 
   if (totalExtensions < 0) {
     totalExtensions = extensionMap.GetSize();
-    strm.SmallUnsignedEncode(totalExtensions-1);
-    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint, totalExtensions);
-    extensionMap.Encode(strm);
+    extensionMap.EncodeSequenceExtensionBitmap(strm);
   }
 
   return FALSE;
