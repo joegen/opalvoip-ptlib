@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.64  2000/03/08 07:09:38  rogerh
+# Fix typo in previous commit
+#
 # Revision 1.63  2000/03/08 06:54:03  rogerh
 # Add support for bash shell on FreeBSD
 # 1) support bash OSTYPE which is of the form os+version eg freebsd3.4
@@ -186,7 +189,7 @@ MACHTYPE := $(shell uname -m)
 endif
 
 ifneq (,$(findstring linux,$(HOSTTYPE)))
-ifneq (,$(findstring $(HOSTTYPE),i386 i486))
+ifneq (,$(findstring $(HOSTTYPE),i386-linux i486-linux))
 OSTYPE   := linux
 MACHTYPE := x86
 endif
