@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.76  2001/09/27 23:50:03  craigs
+ * Fixed typo in PSemaphone destructor
+ *
  * Revision 1.75  2001/09/24 10:09:48  rogerh
  * Fix an uninitialised variable problem.
  *
@@ -905,7 +908,7 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 PSemaphore::~PSemaphore()
 {
   pthread_cond_destroy(&condVar);
-  pthread_mutex_lock(&mutex);
+  pthread_mutex_unlock(&mutex);
   pthread_mutex_destroy(&mutex);
 
   if (pxClass == PXSemaphore) {
