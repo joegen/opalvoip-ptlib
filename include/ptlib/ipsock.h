@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.67  2004/08/24 07:08:13  csoutheren
+ * Added use of recvmsg to determine which interface UDP packets arrive on
+ *
  * Revision 1.66  2004/07/11 07:56:35  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -785,6 +788,45 @@ class PIPSocket : public PSocket
       InterfaceTable & table      /// interface table
     );
 
+#if P_HAS_RECVMSG
+
+    /**
+      * Set flag to capture destination address for incoming packets
+      *
+      * @return TRUE if host is able to capture incoming address, else FALSE
+      */
+    BOOL SetCaptureReceiveToAddress()
+    { if (!SetOption(IP_PKTINFO, 1, SOL_IP)) return FALSE; catchReceiveToAddr = TRUE; return TRUE; }
+
+    /**
+      * return the interface address of the last incoming packet
+      */
+    PIPSocket::Address GetLastReceiveToAddress() const
+    { return lastReceiveToAddr; }
+
+  protected:
+    void SetLastReceiveAddr(void * addr, int addrLen)
+    { if (addrLen == sizeof(in_addr)) lastReceiveToAddr = *(in_addr *)addr; }
+
+    PIPSocket::Address lastReceiveToAddr;
+
+#else
+
+    /**
+      * Set flag to capture interface address for incoming packets
+      *
+      * @return TRUE if host is able to capture incoming address, else FALSE
+      */
+    BOOL SetCaptureReceiveToAddress()
+    { return FALSE; }
+
+    /**
+      * return the interface address of the last incoming packet
+      */
+    PIPSocket::Address GetLastReceiveToAddress() const
+    { return PIPSocket::Address(); }
+
+#endif
 
 // Include platform dependent part of class
 #ifdef _WIN32
