@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.97  1999/10/27 01:21:44  robertj
+ * Improved portability of copy from host_info struct to IP address.
+ *
  * Revision 1.96  1999/08/30 02:21:03  robertj
  * Added ability to listen to specific interfaces for IP sockets.
  *
@@ -413,7 +416,7 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
   }
 
   hostname = host_info->h_name;
-  memcpy(&address, host_info->h_addr, sizeof(address));
+  address = *(DWORD *)host_info->h_addr;
 
   aliases.AppendString(host_info->h_name);
 
