@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.4 1996/06/10 11:03:23 craigs Exp $
+ * $Id: pprocess.h,v 1.5 1996/08/03 12:08:19 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.5  1996/08/03 12:08:19  craigs
+ * Changed for new common directories
+ *
  * Revision 1.4  1996/06/10 11:03:23  craigs
  * Changed include name
  *
@@ -34,7 +37,7 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include "../../common/pprocess.h"
+#include "../../common/ptlib/pprocess.h"
   public:
     friend class PApplication;
     friend class PServiceProcess;

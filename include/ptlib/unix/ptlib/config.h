@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.3 1995/07/09 00:34:59 craigs Exp $
+ * $Id: config.h,v 1.4 1996/08/03 12:08:19 craigs Exp $
  */
 
 #ifndef _PCONFIG
@@ -12,7 +12,7 @@ PLIST(PXConfig, PXConfigSection);
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
 
-#include "../../common/config.h"
+#include "../../common/ptlib/config.h"
   public:
     ~PConfig();
 

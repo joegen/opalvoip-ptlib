@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.5 1996/05/03 13:12:07 craigs Exp $
+ * $Id: serchan.h,v 1.6 1996/08/03 12:08:19 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.6  1996/08/03 12:08:19  craigs
+ * Changed for new common directories
+ *
  * Revision 1.5  1996/05/03 13:12:07  craigs
  * More Sun4 fixes
  *
@@ -29,7 +32,7 @@
 
 #pragma interface
 
-#include "../../common/serchan.h"
+#include "../../common/ptlib/serchan.h"
   public:
     BOOL Close();
 
