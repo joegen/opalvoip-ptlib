@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.11  2002/10/08 11:48:37  craigs
+ * Added logging of incoming and outgoing XML at highest log level
+ *
  * Revision 1.10  2002/10/08 11:36:56  craigs
  * Fixed fault parsing
  *
@@ -505,6 +508,8 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   // make sure the request ends with a newline
   requestXML += "\n";
 
+  PTRACE(5, "XMLRPC\tOutgoing XML is " << requestXML);
+
   // do the request
   PHTTPClient client;
   PMIMEInfo sendMIME, replyMIME;
@@ -528,6 +533,8 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 
   // read the response
   PString replyBody = client.ReadString(contentLength);
+
+  PTRACE(5, "XMLRPC\tIncomign XML is " << replyBody);
 
   // make sure the request worked
   if (!ok || replyBody.IsEmpty()) {
