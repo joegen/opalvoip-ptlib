@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.41  2004/03/14 10:03:47  rjongbloed
+ * Fixed "security patch" that cleared entire object (including the vtable!) isntead of
+ *   clearing the "sensitive" information it was supposed to clear.
+ *
  * Revision 1.40  2004/03/02 12:08:27  rjongbloed
  * Added missing pragmas to automatically include libraries for OpenSSL
  *
@@ -419,7 +423,8 @@ void PMessageDigest5::InternalCompleteDigest(Result & result)
     valuep[i] = state[i];
 
   // Zeroize sensitive information.
-  memset(this, 0, sizeof(*this));
+  memset(buffer, 0, sizeof(buffer));
+  memset(state, 0, sizeof(state));
 }
 
 
