@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.3  2002/07/02 06:24:53  craigs
+ * Added recording functions
+ *
  * Revision 1.2  2002/06/28 01:30:29  robertj
  * Fixed ability to compile if do not have expat library.
  *
@@ -44,7 +47,8 @@
 
 PVXMLSession::PVXMLSession()
 {
-  activeGrammar   = NULL;
+  activeGrammar = NULL;
+  recording     = FALSE;
 }
 
 BOOL PVXMLSession::Load(const PFilePath & filename)
@@ -92,8 +96,8 @@ BOOL PVXMLSession::Execute()
 
 BOOL PVXMLSession::ExecuteWithoutLock()
 {
-  // if there is a grammar defined, then no need to look for fields
-  if (activeGrammar != NULL)
+  // if there is a grammar defined or we are recording, then no need to look for fields
+  if ((activeGrammar != NULL) || recording)
     return TRUE;
 
   // find the first dialog that has an undefined form variable
@@ -110,8 +114,8 @@ BOOL PVXMLSession::ExecuteWithoutLock()
     }
   }
 
-  // if all forms defined, end of call
-  if ((activeGrammar == NULL) && !IsPlaying())
+  // if all forms defined, nothing playing, and nothing recording, then end of call
+  if ((activeGrammar == NULL) && !IsPlaying() && !IsRecording())
     ClearCall();
 
   return FALSE;
@@ -140,6 +144,16 @@ BOOL PVXMLSession::OnUserInput(char ch)
 
   return TRUE;
 }
+
+void PVXMLSession::StartRecord(const PFilePath & _recordfn, BOOL dtmfTerm, int maxTime, int finalSilence)
+{
+  recording          = TRUE;
+  recordFn           = _recordfn;
+  recordDTMFTerm     = dtmfTerm;
+  recordMaxTime      = maxTime;
+  recordFinalSilence = finalSilence;
+}
+
 
 PString PVXMLSession::GetXMLError() const
 {
@@ -257,25 +271,22 @@ BOOL PVXMLDialog::Load()
       PXMLElement * element = (PXMLElement *)object;
       PVXMLFormItem * formItem = NULL;
 
-      if (element->GetName() == "block") {
-        PVXMLBlockItem * blockItem = new PVXMLBlockItem(vxml, *element, *this);
-        blockItem->Load();
-        formItem = blockItem;
-      }
+      if (element->GetName() == "block")
+        formItem = new PVXMLBlockItem(vxml, *element, *this);
 
-      else if (element->GetName() == "var") {
-        PVXMLVarItem * varItem = new PVXMLVarItem(vxml, *element, *this);
-        varItem->Load();
-        formItem = varItem;
-      }
+      else if (element->GetName() == "var") 
+        formItem = new PVXMLVarItem(vxml, *element, *this);
 
-      else if (element->GetName() == "field") {
-        PVXMLFieldItem * fieldItem = new PVXMLFieldItem(vxml, *element, *this);
-        fieldItem->Load();
-        formItem = fieldItem;
-      }
+      else if (element->GetName() == "field") 
+        formItem = new PVXMLFieldItem(vxml, *element, *this);
 
-      itemArray.SetAt(itemArray.GetSize(), formItem);
+      else if (element->GetName() == "record") 
+        formItem = new PVXMLRecordItem(vxml, *element, *this);
+
+      if (formItem != NULL) {
+        formItem->Load();
+        itemArray.SetAt(itemArray.GetSize(), formItem);
+      }
     }
   }
 
@@ -506,6 +517,41 @@ BOOL PVXMLVarItem::Execute()
 
   return TRUE;
 }
+
+///////////////////////////////////////////////////////////////
+
+PVXMLRecordItem::PVXMLRecordItem(PVXMLSession & _vxml, PXMLElement & _xmlItem, PVXMLDialog & _parentDialog)
+  : PVXMLFormItem(_vxml, _xmlItem, _parentDialog)
+{
+  // get DTMF termination flag
+  PString str = _xmlItem.GetAttribute("dtmfterm");
+  if (str.IsEmpty())
+    dtmfTerm = TRUE;
+  else
+    dtmfTerm = str *= "true";
+
+  // get maximum record duration
+  str = _xmlItem.GetAttribute("maxtime");
+  if (str.IsEmpty())
+    maxTime = -1;
+  else
+    maxTime = str.AsInteger();
+
+  // get final silence duration
+  str = _xmlItem.GetAttribute("finalsilence");
+  if (str.IsEmpty())
+    finalSilence = -1;
+  else
+    finalSilence = str.AsInteger();
+}
+
+BOOL PVXMLRecordItem::Execute()
+{
+  PFilePath recordFn("vxml"); 
+  vxml.StartRecord(recordFn, dtmfTerm, maxTime, finalSilence);
+  return TRUE;
+}
+
 
 ///////////////////////////////////////////////////////////////
 
