@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.51  2001/06/07 04:49:26  robertj
+ * Allowed for other separators than \n when printing elements of a collection.
+ *
  * Revision 1.50  2001/01/24 06:19:14  yurik
  * Windows CE port-related changes
  *
@@ -197,18 +200,20 @@
 
 void PCollection::PrintOn(ostream &strm) const
 {
-  BOOL newlines = strm.fill() == '\n';
+  char separator = strm.fill();
   int width = strm.width();
   for (PINDEX  i = 0; i < GetSize(); i++) {
+    if (i > 0 && separator != ' ')
+      strm << separator;
     PObject * obj = GetAt(i);
     if (obj != NULL) {
-      if (newlines)
+      if (separator != ' ')
         strm.width(width);
       strm << *obj;
     }
-    if (newlines)
-      strm << '\n';
   }
+  if (separator == '\n')
+    strm << '\n';
 }
 
 
