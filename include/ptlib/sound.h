@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.30  2003/12/28 02:03:18  csoutheren
+ * Fixed problem with GetLastReadCount/GetLastWriteCount  on Windows sound devices
+ *
  * Revision 1.29  2003/11/18 10:50:26  csoutheren
  * Changed name of Windows sound device
  *
@@ -539,6 +542,8 @@ class PSoundChannel : public PChannel
      virtual BOOL Write(const void * buf, PINDEX len)
       { return (baseChannel == NULL) ? FALSE : baseChannel->Write(buf, len); }
 
+    PINDEX GetLastWriteCount() const
+    { return (baseChannel == NULL) ? lastWriteCount : baseChannel->GetLastWriteCount(); }
 
     /**Play a sound to the open device. If the #wait# parameter is
        TRUE then the function does not return until the file has been played.
@@ -621,6 +626,9 @@ class PSoundChannel : public PChannel
       PINDEX len    /// Maximum number of bytes to read into the buffer.
     )
     { return (baseChannel == NULL) ? FALSE : baseChannel->Read(buf, len); }
+
+    PINDEX GetLastReadCount() const
+    { return (baseChannel == NULL) ? lastReadCount : baseChannel->GetLastReadCount(); }
 
     /**Record into the sound object all of the buffer's of sound data. Use the
        SetBuffers() function to determine how long the recording will be made.
