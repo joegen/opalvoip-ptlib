@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.36  1998/11/05 12:03:13  robertj
+ * Fixed solaris compatibility and Linux warning on readdir_r function.
+ *
  * Revision 1.35  1998/11/05 09:05:55  craigs
  * Changed directory routines to use reenttrant functions, and added PDirectory::GetParent
  *
@@ -53,6 +56,12 @@
 #pragma implementation "array.h"
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
+
+#if defined(P_LINUX)
+#define _REENTRANT
+#elif defined(P_SOLARIS) 
+#define _POSIX_PTHREAD_SEMANTICS
+#endif
 
 #include <ptlib.h>
 #include <url.h>
@@ -986,4 +995,5 @@ BOOL PURL::OpenBrowser(const PString & url)
 
 
 // End Of File ///////////////////////////////////////////////////////////////
+
 
