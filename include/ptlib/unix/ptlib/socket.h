@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.8 1996/08/03 12:09:51 craigs Exp $
+ * $Id: socket.h,v 1.9 1996/08/09 12:16:09 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.9  1996/08/09 12:16:09  craigs
+ * *** empty log message ***
+ *
  * Revision 1.8  1996/08/03 12:09:51  craigs
  * Changed for new common directories
  *
@@ -43,6 +46,7 @@
 #include <netinet/in.h>
 #include <errno.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
