@@ -3254,7 +3254,6 @@ EXPORTS
     ?SetInterval@PTimer@@UAEX_JJJJH@Z @3336 NONAME ;public: virtual void __thiscall PTimer::SetInterval(__int64,long,long,long,int)
     ?SetLastElementAt@Table@PHashTable@@QAEHH@Z @3337 NONAME ;public: int __thiscall PHashTable::Table::SetLastElementAt(int)
     ?SetLength@PFile@@UAEHJ@Z @3338 NONAME ;public: virtual int __thiscall PFile::SetLength(long)
-    ?SetLevel@PSystemLog@@QAEXW4Level@1@@Z @3339 NONAME ;public: void __thiscall PSystemLog::SetLevel(enum PSystemLog::Level)
     ?SetLevel@PTrace@@SAXI@Z @3340 NONAME ;public: static void __cdecl PTrace::SetLevel(unsigned int)
     ?SetLogLevel@PServiceProcess@@QAEXW4Level@PSystemLog@@@Z @3341 NONAME ;public: void __thiscall PServiceProcess::SetLogLevel(enum PSystemLog::Level)
     ?SetMaxFrameBytes@PQoS@@QAEXK@Z @3583 NONAME ;public: void __thiscall PQoS::SetMaxFrameBytes(unsigned long)
