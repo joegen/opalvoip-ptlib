@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.216  2004/05/13 14:54:57  csoutheren
+ * Implement PProcess startup and shutdown handling using abstract factory classes
+ *
  * Revision 1.215  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -1819,7 +1822,36 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 int PProcess::_main(void *)
 {
+  // create one instance of each class registered in the 
+  // PProcessStartup abstract factory
+  std::vector<PProcessStartup *> startups;
+  {
+    PProcessStartupFactory & startupFactory = PProcessStartupFactory::GetFactory();
+    PWaitAndSignal m(startupFactory.GetMutex());
+    PProcessStartupFactory::KeyMap & keyMap = startupFactory.GetKeyMap();
+    PProcessStartupFactory::KeyMap::const_iterator r;
+    for (r = keyMap.begin(); r != keyMap.end(); ++r) {
+      PProcessStartup * instance = PProcessStartupFactory::CreateInstance(r->first);
+      instance->OnStartup();
+      startups.push_back(instance);
+    }
+  }
+
+  // now call the main process
   Main();
+
+  // delete the PProcessInstance previously created
+  {
+    PProcessStartupFactory & startupFactory = PProcessStartupFactory::GetFactory();
+    PWaitAndSignal m(startupFactory.GetMutex());
+    std::vector<PProcessStartup *>::iterator r;
+    for (r = startups.begin(); r != startups.end(); ++r) {
+      (*r)->OnShutdown();
+      delete *r;
+      *r = NULL;
+    }
+  }
+
   return terminationValue;
 }
 
