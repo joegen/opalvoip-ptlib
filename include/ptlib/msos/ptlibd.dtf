@@ -427,7 +427,6 @@ EXPORTS
     ??1PUnSerialiser@@UAE@XZ @357 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PWaitAndSignal@@QAE@XZ @2497 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
     ??1PWaveBuffer@@EAE@XZ @2607 NONAME ;private: virtual __thiscall PWaveBuffer::~PWaveBuffer(void)
-    ??1PWaveFormat@@QAE@XZ @2608 NONAME ;public: __thiscall PWaveFormat::~PWaveFormat(void)
     ??1PWin32AsnAny@@QAE@XZ @2325 NONAME ;public: __thiscall PWin32AsnAny::~PWin32AsnAny(void)
     ??1PWin32OidBuffer@@QAE@XZ @2326 NONAME ;public: __thiscall PWin32OidBuffer::~PWin32OidBuffer(void)
     ??1PWin32Overlapped@@QAE@XZ @358 NONAME ;public: __thiscall PWin32Overlapped::~PWin32Overlapped(void)
@@ -2581,6 +2580,7 @@ EXPORTS
     ?setfill@@YA?AV__SMANIP_int@@H@Z @2161 NONAME ;class __SMANIP_int  __cdecl setfill(int)
     ?SetFilter@PEthSocket@@QAEHIG@Z @2405 NONAME ;public: int __thiscall PEthSocket::SetFilter(unsigned int,unsigned short)
     ?SetFormat@PSound@@QAEXIII@Z @2929 NONAME ;public: void __thiscall PSound::SetFormat(unsigned int,unsigned int,unsigned int)
+    ?SetFormat@PSoundChannel@@QAEHABVPWaveFormat@@@Z @3072 NONAME ;public: int __thiscall PSoundChannel::SetFormat(class PWaveFormat const &)
     ?SetFormat@PSoundChannel@@QAEHIII@Z @2710 NONAME ;public: int __thiscall PSoundChannel::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXIII@Z @2711 NONAME ;public: void __thiscall PWaveFormat::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXPBXH@Z @2916 NONAME ;public: void __thiscall PWaveFormat::SetFormat(void const *,int)
@@ -2593,6 +2593,7 @@ EXPORTS
     ?SetInterval@PTimeInterval@@QAEX_JJJJH@Z @2169 NONAME ;public: void __thiscall PTimeInterval::SetInterval(__int64,long,long,long,int)
     ?SetLastElementAt@Table@PHashTable@@QAEHH@Z @2170 NONAME ;public: int __thiscall PHashTable::Table::SetLastElementAt(int)
     ?SetLength@PFile@@QAEHJ@Z @2171 NONAME ;public: int __thiscall PFile::SetLength(long)
+    ?SetLevel@PSystemLog@@QAEXW4Level@1@@Z @3071 NONAME ;public: void __thiscall PSystemLog::SetLevel(enum PSystemLog::Level)
     ?SetLevel@PTrace@@SAXI@Z @3034 NONAME ;public: static void __cdecl PTrace::SetLevel(unsigned int)
     ?SetLogLevel@PServiceProcess@@QAEXW4Level@PSystemLog@@@Z @2172 NONAME ;public: void __thiscall PServiceProcess::SetLogLevel(enum PSystemLog::Level)
     ?SetMinSize@PContainer@@QAEHH@Z @2173 NONAME ;public: int __thiscall PContainer::SetMinSize(int)
@@ -2742,4 +2743,13 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?SetLevel@PSystemLog@@QAEXW4Level@1@@Z @3071 NONAME ;public: void __thiscall PSystemLog::SetLevel(enum PSystemLog::Level)
+    ??1PWaveFormat@@UAE@XZ @3073 NONAME ;public: virtual __thiscall PWaveFormat::~PWaveFormat(void)
+    ??3PWaveFormat@@SAXPAX@Z @3074 NONAME ;public: static void __cdecl PWaveFormat::operator delete(void *)
+    ??_7PWaveFormat@@6B@ @3075 NONAME ;const  PWaveFormat::`vftable'
+    ?Class@PWaveFormat@@SAPBDXZ @3076 NONAME ;public: static char const * __cdecl PWaveFormat::Class(void)
+    ?CompareObjectMemoryDirect@PWaveFormat@@UBE?AW4Comparison@PObject@@ABV3@@Z @3077 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveFormat::CompareObjectMemoryDirect(class PObject const &)const 
+    ?GetClass@PWaveFormat@@UBEPBDI@Z @3078 NONAME ;public: virtual char const * __thiscall PWaveFormat::GetClass(unsigned int)const 
+    ?IsClass@PWaveFormat@@UBEHPBD@Z @3079 NONAME ;public: virtual int __thiscall PWaveFormat::IsClass(char const *)const 
+    ?IsDescendant@PWaveFormat@@UBEHPBD@Z @3080 NONAME ;public: virtual int __thiscall PWaveFormat::IsDescendant(char const *)const 
+    ?PrintOn@PWaveFormat@@UBEXAAVostream@@@Z @3081 NONAME ;public: virtual void __thiscall PWaveFormat::PrintOn(class ostream &)const 
+    ?ReadFrom@PWaveFormat@@UAEXAAVistream@@@Z @3082 NONAME ;public: virtual void __thiscall PWaveFormat::ReadFrom(class istream &)
