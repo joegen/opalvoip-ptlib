@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.97  2001/08/02 03:02:27  robertj
+# Allowed the actual CPU type to be passed to the code generator instead of
+#   always using -m486. Use the CPUTYPE variable to override.
+#
 # Revision 1.96  2001/07/30 07:45:54  robertj
 # Added "all" target with double colon.
 #
@@ -338,11 +342,11 @@ ifneq (,$(findstring netbsd,$(OSTYPE)))
 OSTYPE := NetBSD
 endif
 
-ifneq (,$(findstring $(MACHTYPE),sun4))
+ifneq (,$(findstring sun4, $(MACHTYPE)))
 MACHTYPE := sparc
 endif
 
-ifneq (,$(findstring $(MACHTYPE),i386 i486 i586 i686 i86pc i686-pc-linux-gnu))
+ifneq (,$(findstring i86, $(MACHTYPE)))
 MACHTYPE := x86
 endif
 
@@ -352,14 +356,23 @@ endif
 
 ifneq (,$(findstring i486, $(MACHTYPE)))
 MACHTYPE := x86
+ifndef CPUTYPE
+CPUTYPE := i486
+endif
 endif
 
 ifneq (,$(findstring i586, $(MACHTYPE)))
 MACHTYPE := x86
+ifndef CPUTYPE
+CPUTYPE := i586
+endif
 endif
 
 ifneq (,$(findstring i686, $(MACHTYPE)))
 MACHTYPE := x86
+ifndef CPUTYPE
+CPUTYPE := i686
+endif
 endif
 
 ifneq (,$(findstring x86, $(MACHTYPE)))
@@ -452,7 +465,9 @@ STDCCFLAGS	+= -DP_LINUX
 
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	+= -m486
+ifdef CPUTYPE
+STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+endif
 endif
 
 ifeq ($(MACHTYPE),alpha)
@@ -502,7 +517,9 @@ ifeq ($(OSTYPE),FreeBSD)
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
-STDCCFLAGS	+= -m486
+ifdef CPUTYPE
+STDCCFLAGS	+= -mcpu=$(CPUTYPE)
+endif
 endif
 
 ifndef OSRELEASE
