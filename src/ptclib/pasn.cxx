@@ -1,11 +1,14 @@
 /*
  * ASN Library
  *
- * $Id: pasn.cxx,v 1.3 1997/07/16 05:52:48 craigs Exp $
+ * $Id: pasn.cxx,v 1.4 1997/07/20 08:34:37 craigs Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.4  1997/07/20 08:34:37  craigs
+ * Added ASN NULL type
+ *
  * Revision 1.3  1997/07/16 05:52:48  craigs
  * Changed ASN constructors to store value length separately so
  * ASNString consctructor will worki correctly
@@ -54,8 +57,8 @@ BYTE PASNObject::ASNTypeToType[] = {
   ASN_INTEGER   | ASN_UNIVERSAL | ASN_PRIMITIVE,    // Integer
   ASN_OCTET_STR | ASN_UNIVERSAL | ASN_PRIMITIVE,    // String
   ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE,    // ObjectID
-  ASN_CONSTRUCTOR | ASN_SEQUENCE,		    // Sequence
-  ASN_CONSTRUCTOR | ASN_CONTEXT,		    // Choice
+  ASN_CONSTRUCTOR | ASN_SEQUENCE,		                // Sequence
+  ASN_CONSTRUCTOR | ASN_CONTEXT,		                // Choice
   ASN_APPLICATION | 0,                              // IPAddress
   ASN_APPLICATION | 1,                              // Counter32
   ASN_APPLICATION | 2,                              // Gauge32
@@ -67,6 +70,9 @@ BYTE PASNObject::ASNTypeToType[] = {
   ASN_APPLICATION | 6,                              // Counter64
   ASN_APPLICATION | 7,                              // UInteger32
   
+// Oops - missed the Null type  
+  ASN_NULL | ASN_UNIVERSAL | ASN_PRIMITIVE,         // Null
+
   0,						    // Unknown
 };
 
@@ -1071,6 +1077,11 @@ BOOL PASNSequence::Decode(const PBYTEArray & buffer, PINDEX & ptr)
         sequence.Append(PNEW PASNString(buffer, ptr));
         break;
 
+      // NULL
+      case ASN_NULL | ASN_UNIVERSAL | ASN_PRIMITIVE:
+        sequence.Append(PNEW PASNNull(buffer, ptr));
+        break;
+
       // Object ID
       case ASN_OBJECT_ID | ASN_UNIVERSAL | ASN_PRIMITIVE:
         sequence.Append(PNEW PASNObjectID(buffer, ptr));
@@ -1199,6 +1210,50 @@ PIPSocket::Address PASNIPAddress::GetIPAddress () const
 {
   return PIPSocket::Address((BYTE)value[0], (BYTE)value[1],
                             (BYTE)value[2], (BYTE)value[3]);
+}
+
+PASNNull::PASNNull()
+{
+}
+
+PASNNull::PASNNull(const PBYTEArray & buffer, PINDEX & ptr)
+{
+  PAssert((buffer.GetSize() - ptr ) >= 2 &&
+          (buffer[0] == 0x05) &&
+          (buffer[1] != 0x00),
+    "Attempt to decode non-null");
+  ptr += 2 ;
+}
+
+void PASNNull::PrintOn(ostream & strm) const
+{
+  strm << "Null"
+       << endl;
+}
+
+void PASNNull::Encode(PBYTEArray & buffer)
+{
+  EncodeASNHeader(buffer, Null, 0);
+}
+
+WORD PASNNull::GetEncodedLength()
+{
+  return 2;
+}
+
+PObject * PASNNull::Clone() const
+{
+  return PNEW PASNNull();
+}
+
+PASNObject::ASNType PASNNull::GetType() const
+{
+  return Null;
+}
+
+PString PASNNull::GetTypeAsString() const
+{
+  return PString("Null");
 }
 
 
