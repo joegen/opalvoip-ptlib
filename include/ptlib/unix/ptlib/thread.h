@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.34  2004/04/03 15:50:30  ykiryanov
+ * Changed names to easily distinguish class members. Added PThread name
+ *
  * Revision 1.33  2004/04/02 03:42:07  ykiryanov
  * Added unblockPipe to improve code
  *
@@ -189,10 +192,11 @@
 
   private:
     static int32 ThreadFunction(void * threadPtr);
-    thread_id threadId;
-    int32 priority;
-    PINDEX originalStackSize;
-    int unblockPipe[2];
+    thread_id mId;
+    int32 mPriority;
+    PINDEX mStackSize;
+    int mUnblockPipe[2];
+    char mName[B_OS_NAME_LENGTH];
 
 #elif defined(P_MAC_MPTHREADS)
   public:
