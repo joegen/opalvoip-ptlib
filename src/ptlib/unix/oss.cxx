@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.24  2001/02/07 03:34:29  craigs
+ * Added ability get sound channel parameters
+ *
  * Revision 1.23  2000/10/05 00:04:20  robertj
  * Fixed some warnings.
  *
@@ -343,9 +346,9 @@ BOOL PSoundChannel::Open(const PString & _device,
     // save the information into the dictionary entry
     entry->handle        = os_handle;
     entry->direction     = dir;
-    entry->numChannels   = _numChannels;
-    entry->sampleRate    = _sampleRate;
-    entry->bitsPerSample = _bitsPerSample;
+    entry->numChannels   = mNumChannels     = _numChannels;
+    entry->sampleRate    = actualSampleRate = mSampleRate    = _sampleRate;
+    entry->bitsPerSample = mBitsPerSample   = _bitsPerSample;
     entry->isInitialised = FALSE;
     entry->fragmentValue = 0x7fff0008;
   }
@@ -424,15 +427,20 @@ BOOL PSoundChannel::Setup()
                      << ", frag size   = " << info.fragsize
                      << ", bytes       = " << info.bytes);
 
+      mBitsPerSample = entry.bitsPerSample;
       arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
       if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SETFMT, &arg)) || (arg != val)) {
 
+        mNumChannels = entry.numChannels;
         arg = val = (entry.numChannels == 2) ? 1 : 0;
         if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_STEREO, &arg)) || (arg != val)) {
 
+          mSampleRate = entry.sampleRate;
           arg = val = entry.sampleRate;
-          if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg)) || (arg != val)) 
+          if (ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SPEED, &arg))) {
             stat = TRUE;
+            actualSampleRate = arg;
+          }
         }
       }
     }
@@ -584,6 +592,24 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
   isInitialised = FALSE;
 
   return TRUE;
+}
+
+// Get  the number of channels (mono/stereo) in the sound.
+unsigned PSoundChannel::GetChannels()   const
+{
+  return mNumChannels;
+}
+
+// Get the sample rate in samples per second.
+unsigned PSoundChannel::GetSampleRate() const
+{
+  return actualSampleRate;
+}
+
+// Get the sample size in bits per sample.
+unsigned PSoundChannel::GetSampleSize() const
+{
+  return mBitsPerSample;
 }
 
 
