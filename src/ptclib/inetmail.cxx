@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.4 1996/05/26 03:46:51 robertj Exp $
+ * $Id: inetmail.cxx,v 1.5 1996/06/28 13:22:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.5  1996/06/28 13:22:09  robertj
+ * Changed SMTP incoming message handler so can tell when started, processing or ended message.
+ *
  * Revision 1.4  1996/05/26 03:46:51  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -502,20 +505,25 @@ void PSMTPSocket::OnDATA()
   // Ok, everything is ready to start the message.
   BOOL ok = TRUE;
   PCharArray buffer;
+  MessagePosition position = MessageStart;
   if (eightBitMIME) {
     WriteResponse(354,
                 "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'.");
     endMIMEDetectState = StuffIdle;
-    while (ok && OnMIMEData(buffer))
-      ok = HandleMessage(buffer, FALSE);
+    while (ok && OnMIMEData(buffer)) {
+      ok = HandleMessage(buffer, position);
+      position = MessagePart;
+    }
   }
   else {
     WriteResponse(354, "Enter mail, terminate with '.' alone on a line.");
-    while (ok && OnTextData(buffer))
-      ok = HandleMessage(buffer, FALSE);
+    while (ok && OnTextData(buffer)) {
+      ok = HandleMessage(buffer, position);
+      position = MessagePart;
+    }
   }
 
-  if (ok && HandleMessage(buffer, TRUE))
+  if (ok && HandleMessage(buffer, MessageEnd))
     WriteResponse(250, "Message received Ok.");
   else
     WriteResponse(554, "Message storage failed.");
@@ -532,7 +540,7 @@ BOOL PSMTPSocket::OnUnknown(const PCaselessString & command)
 BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
 {
   PString line;
-  while (ReadLine(line, TRUE)) {
+  while (ReadLine(line)) {
     line += '\n';
     PINDEX size = buffer.GetSize();
     PINDEX len = line.GetLength();
@@ -617,7 +625,7 @@ PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(
 }
 
 
-BOOL PSMTPSocket::HandleMessage(PCharArray &, BOOL)
+BOOL PSMTPSocket::HandleMessage(PCharArray &, MessagePosition)
 {
   return FALSE;
 }
@@ -733,7 +741,7 @@ PUnsignedArray PPOP3Socket::GetMessageSizes()
 
   if (ExecuteCommand(LIST, "") > 0) {
     PString msgInfo;
-    while (ReadLine(msgInfo, TRUE))
+    while (ReadLine(msgInfo))
       sizes.SetAt((PINDEX)msgInfo.AsInteger()-1,
                   (unsigned)msgInfo.Mid(msgInfo.Find(' ')).AsInteger());
   }
