@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.102  2002/10/24 00:25:13  robertj
+ * Changed high load thread problem fix from the termination function to start
+ *   function to finally, once and for all (I hope!) fix the race condition.
+ *
  * Revision 1.101  2002/10/23 14:56:22  craigs
  * Fixed problem with pipe leak under some circumstances
  *
@@ -925,8 +929,15 @@ void * PThread::PX_ThreadStart(void * arg)
   pthread_detach(threadId);
 
   PThread * thread = (PThread *)arg;
-  thread->PX_threadId = threadId;
+
+  // Added this to guarantee that the thread creation (PThread::Restart)
+  // has completed before we start the thread. Then the PX_threadId has
+  // been set.
+  pthread_mutex_lock(&thread->PX_suspendMutex);
+
   thread->SetThreadName(thread->GetThreadName());
+
+  pthread_mutex_unlock(&thread->PX_suspendMutex);
 
   PProcess & process = PProcess::Current();
 
@@ -980,11 +991,6 @@ void PThread::PX_ThreadEnd(void * arg)
   // a race condition, the thread ID cannot be zeroed before the if!
   if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
-
-    // Added this to guarantee that the thread creation (PThread::Restart)
-    // has completed before we delete the thread. This can occur on very
-    // high load situations and a very short run on the thread.
-    pthread_mutex_lock(&thread->PX_suspendMutex);
 
     // Now should be safe to delete the thread!
     delete thread;
