@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.31  2004/12/08 00:51:11  csoutheren
+ * Move PURLLegacyScheme to header file to allow external usage
+ *
  * Revision 1.30  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -127,6 +130,7 @@
 #endif
 
 #include <ptlib.h>
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL
@@ -397,6 +401,9 @@ class PURL : public PObject
 };
 
 
+//////////////////////////////////////////////////////////////////////////////
+// PURLScheme
+
 class PURLScheme : public PObject
 {
   PCLASSINFO(PURLScheme, PObject);
@@ -405,6 +412,40 @@ class PURLScheme : public PObject
     virtual BOOL Parse(const PString & url, PURL & purl) const = 0;
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
 };
+
+//////////////////////////////////////////////////////////////////////////////
+// PURLLegacyScheme
+
+class PURLLegacyScheme : public PURLScheme
+{
+  public:
+    PURLLegacyScheme(const char * _scheme)
+      : scheme(_scheme) { }
+
+    BOOL Parse(const PString & url, PURL & purl) const
+    { return purl.LegacyParse(url, this); }
+
+    PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
+    { return purl.LegacyAsString(fmt, this); }
+
+    PString GetName() const     
+    { return scheme; }
+
+    PString scheme;
+    BOOL hasUsername;
+    BOOL hasPassword;
+    BOOL hasHostPort;
+    BOOL defaultToUserIfNoAt;
+    BOOL defaultHostToLocal;
+    BOOL hasQuery;
+    BOOL hasParameters;
+    BOOL hasFragments;
+    BOOL hasPath;
+    BOOL relativeImpliesScheme;
+    WORD defaultPort;
+};
+
+
 
 #ifdef _WIN32
 #  ifndef P_DISABLE_FACTORY_INSTANCES
