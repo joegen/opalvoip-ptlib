@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.4 1996/08/08 10:09:07 robertj Exp $
+ * $Id: pipechan.h,v 1.5 1996/11/16 10:53:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
+ * Revision 1.5  1996/11/16 10:53:30  robertj
+ * Fixed bug in PPipeChannel test for open channel, win95 support.
+ *
  * Revision 1.4  1996/08/08 10:09:07  robertj
  * Directory structure changes for common files.
  *
@@ -27,6 +30,8 @@
 #ifndef _PPIPECHANNEL
 
 #include "..\..\common\ptlib/pipechan.h"
+  public:
+    virtual BOOL IsOpen() const;
   protected:
 #if defined(_WIN32)
     PROCESS_INFORMATION info;
