@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.193  2004/11/16 00:32:34  csoutheren
+# Added Cygwin support
+#
 # Revision 1.192  2004/10/28 20:07:10  csoutheren
 # Fixes for MacOSX platforms, thanks to Hannes Friederich
 #
@@ -306,7 +309,7 @@ release tagbuild
 .PHONY: all $(STANDARD_TARGETS)
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos Darwin Carbon AIX Nucleus VxWorks rtems QNX cygwin))
 
 default_target :
 	@echo
