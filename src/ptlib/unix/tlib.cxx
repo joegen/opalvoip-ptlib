@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.8  1996/04/18 11:43:38  craigs
+ * Changed GetHomeDir to use effective UID for uid, and changed to
+ * look at passwd file info *before* $HOME variable
+ *
  * Revision 1.7  1996/04/15 10:49:11  craigs
  * Last build prior to release of MibMaster v1.0
  *
@@ -131,16 +135,13 @@ PString PProcess::GetHomeDir ()
   char *ptr;
   struct passwd *pw = NULL;
 
-  if ((ptr = getenv ("HOME")) != NULL) {
+  pw = getpwuid (geteuid ());
+  if (pw != NULL) 
+    dest = pw->pw_dir;
+  else if ((ptr = getenv ("HOME")) != NULL) 
     dest = ptr;
-  } else {
-    pw = getpwuid (getuid ());
-    if (pw != NULL) {
-      dest = pw->pw_dir;
-    } else {
-      dest = ".";
-    }
-  }
+  else 
+    dest = ".";
 
   if (dest.GetLength() > 0 && dest[dest.GetLength()-1] != '/')
     dest += "/";
@@ -347,7 +348,7 @@ void PProcess::OperatingSystemYield()
   } else if (waitCount > 0)
     childPid = wait3(NULL, WUNTRACED, NULL);
   else {
-    PError << "OperatingSystemYield with no blocks! Sleeping....\n";
+    //PError << "OperatingSystemYield with no blocks! Sleeping....\n";
     ::sleep(1);
     childPid = 0;
   }
