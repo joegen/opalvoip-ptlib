@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.18  1999/05/04 15:26:01  robertj
+ * Improved HTTP/1.1 compatibility (pass through user commands).
+ * Fixed problems with quicktime installer.
+ *
  * Revision 1.17  1998/11/30 04:51:55  robertj
  * New directory structure
  *
@@ -229,7 +233,18 @@ int PHTTPClient::ExecuteCommand(Commands cmd,
                                 PMIMEInfo & replyMime,
                                 BOOL persist)
 {
-  if (WriteCommand(cmd, url, outMIME, dataBody)) {
+  return ExecuteCommand(commandNames[cmd], url, outMIME, dataBody, replyMime, persist);
+}
+
+
+int PHTTPClient::ExecuteCommand(const PString & cmdName,
+                                const PString & url,
+                                const PMIMEInfo & outMIME,
+                                const PString & dataBody,
+                                PMIMEInfo & replyMime,
+                                BOOL persist)
+{
+  if (WriteCommand(cmdName, url, outMIME, dataBody)) {
     if (!persist)
       Shutdown(ShutdownWrite);
     ReadResponse(replyMime);
@@ -248,7 +263,16 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
                                const PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
-  if (!PHTTP::WriteCommand(cmd, url & "HTTP/1.0"))
+  return WriteCommand(commandNames[cmd], url, outMIME, dataBody);
+}
+
+
+BOOL PHTTPClient::WriteCommand(const PString & cmdName,
+                               const PString & url,
+                               const PMIMEInfo & outMIME,
+                               const PString & dataBody)
+{
+  if (!WriteString(cmdName & url & "HTTP/1.0"))
     return FALSE;
 
   if (!outMIME.Write(*this))
