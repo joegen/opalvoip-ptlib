@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.4 1996/12/12 09:24:16 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.5 1997/01/12 04:15:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.5  1997/01/12 04:15:23  robertj
+ * Globalised MIME tag strings.
+ *
  * Revision 1.4  1996/12/12 09:24:16  robertj
  * Persistent proxy connection support (work in progress).
  *
@@ -44,20 +47,6 @@
 
 // maximum delay between characters whilst reading a line of text
 #define	READLINE_TIMEOUT	30
-
-
-static const PCaselessString ContentLengthStr   = "Content-Length";
-static const PCaselessString ContentTypeStr     = "Content-Type";
-static const PCaselessString DateStr            = "Date";
-static const PCaselessString MIMEVersionStr     = "MIME-Version";
-static const PCaselessString ServerStr          = "Server";
-static const PCaselessString ExpiresStr         = "Expires";
-static const PCaselessString WWWAuthenticateStr = "WWW-Authenticate";
-static const PCaselessString IfModifiedSinceStr = "If-Modified-Since";
-static const PCaselessString ConnectionStr      = "Connection";
-static const PCaselessString KeepAliveStr       = "Keep-Alive";
-static const PCaselessString ProxyConnectionStr = "Proxy-Connection";
-static const PCaselessString UserAgentStr       = "User-Agent";
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -290,13 +279,13 @@ BOOL PHTTPServer::ProcessCommand()
     // If the client didn't specify a persistant connection, then use the
     // ContentLength if there is one or read until end of file if there isn't
     if (!connectInfo.IsPersistant())
-      contentLength = mimeInfo.GetInteger(ContentLengthStr, 0);
+      contentLength = mimeInfo.GetInteger(ContentLengthTag, 0);
     else {
-      contentLength = mimeInfo.GetInteger(ContentLengthStr, -1);
+      contentLength = mimeInfo.GetInteger(ContentLengthTag, -1);
       if (contentLength < 0) {
 //        PError << "Server: persistant connection has no content length" << endl;
         contentLength = 0;
-        mimeInfo.SetAt(ContentLengthStr, "0");
+        mimeInfo.SetAt(ContentLengthTag, "0");
       }
     }
   }
@@ -304,7 +293,7 @@ BOOL PHTTPServer::ProcessCommand()
   connectInfo.SetEntityBodyLength(contentLength);
 
   // get the user agent for various foul purposes...
-  userAgent = mimeInfo(UserAgentStr);
+  userAgent = mimeInfo(UserAgentTag);
 
   PIPSocket * socket = GetSocket();
   WORD myPort = (WORD)(socket != NULL ? socket->GetPort() : 80);
@@ -530,8 +519,8 @@ void PHTTPServer::StartResponse(StatusCode code,
               crlf, majorVersion, minorVersion, statusInfo->code, statusInfo->text));
 
   // output the headers
-  if (bodySize >= 0 && !headers.Contains(ContentLengthStr))
-    headers.SetAt(ContentLengthStr, PString(PString::Unsigned, (PINDEX)bodySize));
+  if (bodySize >= 0 && !headers.Contains(ContentLengthTag))
+    headers.SetAt(ContentLengthTag, PString(PString::Unsigned, (PINDEX)bodySize));
   headers.Write(*this);
 
 #ifdef STRANGE_NETSCAPE_BUG
@@ -548,18 +537,18 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
                      const PHTTPConnectionInfo & connectInfo)
 {
   PTime now;
-  info.SetAt(DateStr, now.AsString(PTime::RFC1123, PTime::GMT));
-  info.SetAt(MIMEVersionStr, "1.0");
-  info.SetAt(ServerStr, GetServerName());
+  info.SetAt(DateTag, now.AsString(PTime::RFC1123, PTime::GMT));
+  info.SetAt(MIMEVersionTag, "1.0");
+  info.SetAt(ServerTag, GetServerName());
 
   if (connectInfo.IsPersistant()) {
     if (connectInfo.IsProxyConnection())
 //{      PError << "Server: setting proxy persistant response" << endl;
-      info.SetAt(ProxyConnectionStr, KeepAliveStr);
+      info.SetAt(ProxyConnectionTag, KeepAliveTag);
 //    }
     else
 //{      PError << "Server: setting direct persistant response" << endl;
-      info.SetAt(ConnectionStr, KeepAliveStr);
+      info.SetAt(ConnectionTag, KeepAliveTag);
 //    }
   }
 }
@@ -609,7 +598,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
          << PHTML::Body();
   }
 
-  headers.SetAt(ContentTypeStr, "text/html");
+  headers.SetAt(ContentTypeTag, "text/html");
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
   return statusInfo->code == OK;
@@ -723,17 +712,17 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
 #else
   PString str;
   // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
+  isProxyConnection = mimeInfo.HasKey(PHTTP::ProxyConnectionTag);
   if (isProxyConnection)
-    str = mimeInfo[ProxyConnectionStr];
-  else if (mimeInfo.HasKey(ConnectionStr))
-    str = mimeInfo[ConnectionStr];
+    str = mimeInfo[PHTTP::ProxyConnectionTag];
+  else if (mimeInfo.HasKey(PHTTP::ConnectionTag))
+    str = mimeInfo[PHTTP::ConnectionTag];
 
   // get any connection options
   if (!str) {
     PStringArray tokens = str.Tokenise(", ", FALSE);
     for (int z = 0; !isPersistant && z < tokens.GetSize(); z++)
-      isPersistant = isPersistant || (tokens[z] *= KeepAliveStr);
+      isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
 #endif
 }
@@ -824,8 +813,8 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
             const PHTTPConnectionInfo & connectInfo,
                                    BOOL isGET)
 {
-  if (isGET && info.Contains(IfModifiedSinceStr) &&
-                           !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) 
+  if (isGET && info.Contains(PHTTP::IfModifiedSinceTag) &&
+                           !IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag]))) 
     return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
   PHTTPRequest * request = CreateRequest(url, info);
@@ -837,13 +826,13 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
 
     PTime expiryDate;
     if (GetExpirationDate(expiryDate))
-      request->outMIME.SetAt(ExpiresStr,
+      request->outMIME.SetAt(PHTTP::ExpiresTag,
                               expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
     if (!LoadHeaders(*request)) 
       retVal = server.OnError(request->code, url.AsString(), connectInfo);
     else if (!isGET)
-      retVal = request->outMIME.Contains(ContentLengthStr);
+      retVal = request->outMIME.Contains(PHTTP::ContentLengthTag);
     else {
       hitCount++;
       retVal = OnGETData(server, url, connectInfo, *request);
@@ -859,8 +848,8 @@ BOOL PHTTPResource::OnGETData(PHTTPServer & server,
                 const PHTTPConnectionInfo & /*connectInfo*/,
                              PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(ContentTypeStr) && !contentType)
-    request.outMIME.SetAt(ContentTypeStr, contentType);
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
+    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
 
   PCharArray data;
   if (LoadData(request, data)) {
@@ -875,7 +864,7 @@ BOOL PHTTPResource::OnGETData(PHTTPServer & server,
 
   server.Write(data, data.GetSize());
 
-  return request.outMIME.Contains(ContentLengthStr);
+  return request.outMIME.Contains(PHTTP::ContentLengthTag);
 }
 
 BOOL PHTTPResource::OnPOST(PHTTPServer & server,
@@ -897,7 +886,7 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
       if (msg.Is(PHTML::InBody))
         msg << PHTML::Body();
 
-      request->outMIME.SetAt(ContentTypeStr, "text/html");
+      request->outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
 
       PINDEX len = msg.GetLength();
       server.StartResponse(request->code, request->outMIME, len);
@@ -925,9 +914,9 @@ BOOL PHTTPResource::CheckAuthority(PHTTPServer & server,
   // it must be a request for authorisation
   PMIMEInfo headers;
   server.SetDefaultMIMEInfo(headers, connectInfo);
-  headers.SetAt(WWWAuthenticateStr,
+  headers.SetAt(PHTTP::WWWAuthenticateTag,
                        "Basic realm=\"" + authority->GetRealm(request) + "\"");
-  headers.SetAt(ContentTypeStr, "text/html");
+  headers.SetAt(PHTTP::ContentTypeTag, "text/html");
 
   const httpStatusCodeStruct * statusInfo =
                                GetStatusCodeStruct(PHTTP::UnAuthorised);
