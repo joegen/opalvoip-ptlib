@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.51  2001/08/08 04:19:28  robertj
+ * Fixed PString<->BMPString conversion so can have embedded nulls.
+ *
  * Revision 1.50  2001/08/07 04:37:03  robertj
  * Simplified &#num; parsing.
  *
@@ -2348,7 +2351,7 @@ PString PASN_BMPString::GetValue() const
 {
   PString str;
   for (PINDEX i = 0; i < value.GetSize(); i++) {
-    if (value[i] < 256)
+    if (value[i] > 0 && value[i] < 256)
       str += (char)value[i];
     else
       str.sprintf("&#%u;", value[i]);
