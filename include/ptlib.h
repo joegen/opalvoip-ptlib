@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.27  2003/04/16 07:16:55  craigs
+ * Modified for new autoconf based configuration
+ *
  * Revision 1.26  2002/04/09 02:30:18  robertj
  * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
  *
@@ -132,8 +135,7 @@
 using namespace std;
 #endif
 
-
-
+#include "ptbuildopts.h"
 #include <ptlib/contain.h>
 
 ///////////////////////////////////////////////////////////////////////////////

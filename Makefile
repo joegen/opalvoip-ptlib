@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.26  2003/04/16 07:16:55  craigs
+# Modified for new autoconf based configuration
+#
 # Revision 1.25  2002/12/04 19:35:47  rogerh
 # Remove un-needed / at the end of PREFIX
 #
@@ -124,11 +127,6 @@ SUBDIRS += tools/asnparser
 
 include make/defaultgui.mak
 endif
-
-ifdef GUI_TYPE
-SUBDIRS += src/pwlib/$(GUI_TYPE)
-endif
-
 
 ifndef PREFIX
 PREFIX=/usr/local
