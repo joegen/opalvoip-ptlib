@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.151  2003/01/06 23:22:51  rogerh
+# Fix typo
+#
 # Revision 1.150  2003/01/06 22:38:33  rogerh
 # Get NetBSD to use pth by default
 #
@@ -867,7 +870,7 @@ ifdef P_PTHREADS
 ifdef USE_PTH 
 STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include -I/usr/pkg/include
 LDFLAGS += -L/usr/pkg/lib -lpthread
-#else
+else
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
