@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.15  1999/03/09 08:01:47  robertj
+ * Changed comments for doc++ support (more to come).
+ *
  * Revision 1.14  1999/02/16 08:07:10  robertj
  * MSVC 6.0 compatibility changes.
  *
@@ -82,135 +85,162 @@
 //////////////////////////////////////////////////////////////////////////////
 // PURL
 
+/**
+ This class describes a Universal Resource Locator.
+ This is the desciption of a resource location as used by the World Wide
+ Web and the #PHTTPSocket# class.
+ */
 class PURL : public PObject
 {
   PCLASSINFO(PURL, PObject)
-/* This class describes a Universal Resource Locator as used by the World Wide
-   Web and the <A>PHTTPSocket</A> class.
- */
   public:
+    /**Construct a new URL object from the URL string. */
     PURL();
+    /**Construct a new URL object from the URL string. */
     PURL(
-      const char * cstr     // C string representation of the URL.
+      const char * cstr     /// C string representation of the URL.
     );
+    /**Construct a new URL object from the URL string. */
     PURL(
-      const PString & str   // String representation of the URL.
+      const PString & str   /// String representation of the URL.
     );
-    /* Construct a new URL object from the URL string.
-     */
 
-  // Overrides from class PObject
-    virtual Comparison Compare(
-      const PObject & obj   // Object to compare against.
-    ) const;
-    /* Compare the two URLs and return their relative rank.
+  /**@name Overrides from class PObject */
+  //@{
+    /**Compare the two URLs and return their relative rank.
 
-       <H2>Returns:</H2>
-       <CODE>LessThan</CODE>, <CODE>EqualTo</CODE> or <CODE>GreaterThan</CODE>
+     @return
+       #LessThan#, #EqualTo# or #GreaterThan#
        according to the relative rank of the objects.
      */
+    virtual Comparison Compare(
+      const PObject & obj   /// Object to compare against.
+    ) const;
 
-    virtual PINDEX HashFunction() const;
-    /* This function yields a hash value required by the <A>PDictionary</A>
+    /**This function yields a hash value required by the #PDictionary#
        class. A descendent class that is required to be the key of a dictionary
        should override this function. The precise values returned is dependent
-       on the semantics of the class. For example, the <A>PString</A> class
+       on the semantics of the class. For example, the #PString# class
        overrides it to provide a hash function for distinguishing text strings.
 
        The default behaviour is to return the value zero.
 
-       <H2>Returns:</H2>
+       @return
        hash function value for class instance.
      */
+    virtual PINDEX HashFunction() const;
 
-    virtual void PrintOn(
-      ostream &strm   // Stream to print the object into.
-    ) const;
-    /* Output the contents of the URL to the stream as a string.
+    /**Output the contents of the URL to the stream as a string.
      */
+    virtual void PrintOn(
+      ostream &strm   /// Stream to print the object into.
+    ) const;
 
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-    /* Input the contents of the URL from the stream. The input is a URL in
+    /**Input the contents of the URL from the stream. The input is a URL in
        string form.
      */
-
- 
-  // New functions for class.
-    void Parse(
-      const char * cstr
+    virtual void ReadFrom(
+      istream &strm   /// Stream to read the objects contents from.
     );
+  //@}
+ 
+  /**@name New functions for class. */
+  //@{
+    /**Parse the URL string into the fields in the object instance. */
     void Parse(
-      const PString & str
+      const char * cstr   /// URL as a string to parse.
+    );
+    /**Parse the URL string into the fields in the object instance. */
+    void Parse(
+      const PString & str /// URL as a string to parse.
     ) { Parse((const char *)str); }
-    /* Parse the URL string into the fields in the object instance.
-     */
 
+    /**Print/String output representation formats. */
     enum UrlFormat {
-      FullURL,      // Translate to a string as a full URL
-      PathOnly,     // Translate to a string as only path
-      URIOnly,      // Translate to a string with no scheme or host
-      HostPortOnly  // Translate to a string with scheme and host/port
+      /// Translate to a string as a full URL
+      FullURL,      
+      /// Translate to a string as only path
+      PathOnly,     
+      /// Translate to a string with no scheme or host
+      URIOnly,      
+      /// Translate to a string with scheme and host/port
+      HostPortOnly  
     };
 
-    PString AsString(
-      UrlFormat fmt = FullURL   // The type of string to be returned.
-    ) const;
-    /* Convert the URL object into its string representation. The parameter
+    /**Convert the URL object into its string representation. The parameter
        indicates whether a full or partial representation os to be produced.
 
-       <H2>Returns:</H2>
+       @return
        String representation of the URL.
      */
+    PString AsString(
+      UrlFormat fmt = FullURL   /// The type of string to be returned.
+    ) const;
 
+    /// Type for translation of strings to URL format,
     enum TranslationType {
-       LoginTranslation,
-       PathTranslation,
-       QueryTranslation
+      /// Translate a username/password field for a URL.
+      LoginTranslation,
+      /// Translate the path field for a URL.
+      PathTranslation,
+      /// Translate the query parameters field for a URL.
+      QueryTranslation
     };
-    static PString TranslateString(
-      const PString & str,    // String to be translated
-      TranslationType type
-    );
-    /* Translate a string from general form to one that can be included into
-       a URL. All reserved characters are escaped.
+    /**Translate a string from general form to one that can be included into
+       a URL. All reserved characters for the particular field type are
+       escaped.
 
-       <H2>Returns:</H2>
+       @return
        String for the URL ready translation.
      */
-
-    static void SplitQueryVars(
-      const PString & queryStr,   // String to split into variables.
-      PStringToString & queryVars // Dictionary of variable names and values.
+    static PString TranslateString(
+      const PString & str,    /// String to be translated.
+      TranslationType type    /// Type of translation.
     );
-    // Split a string in &= form to a dictionary of names and values.
+
+    /** Split a string in &= form to a dictionary of names and values. */
+    static void SplitQueryVars(
+      const PString & queryStr,   /// String to split into variables.
+      PStringToString & queryVars /// Dictionary of variable names and values.
+    );
 
 
+    /// Get the scheme field of the URL.
     const PCaselessString & GetScheme() const   { return scheme; }
+    /// Get the username field of the URL.
     const PString & GetUserName() const         { return username; }
+    /// Get the password field of the URL.
     const PString & GetPassword() const         { return password; }
+    /// Get the hostname field of the URL.
     const PCaselessString & GetHostName() const { return hostname; }
+    /// Get the port field of the URL.
     WORD GetPort() const                        { return port; }
+    /// Get the path field of the URL as a string.
     const PString & GetPathStr() const          { return pathStr; }
+    /// Get the path field of the URL as a string array.
     const PStringArray & GetPath() const        { return path; }
+    /// Get the parameter (;) field of the URL.
     const PString & GetParameters() const       { return parameters; }
+    /// Get the fragment (##) field of the URL.
     const PString & GetFragment() const         { return fragment; }
+    /// Get the Query (?) field of the URL as a string.
     const PString & GetQuery() const            { return queryStr; }
+    /// Get the Query (?) field of the URL as a string dictionary.
     PStringToString GetQueryVars() const        { return queryVars; }
 
+    /// Set the port field in the URL.
     void SetPort(WORD newPort)                  { port = newPort; }
 
-    static BOOL OpenBrowser(
-      const PString & url   // URL to open
-    );
-    /* Open the URL in a browser.
+    /**Open the URL in a browser.
 
-       <H2>Returns:</H2>
+       @return
        The browser was successfully opened. This does not mean the URL exists and was
        displayed.
      */
-
+    static BOOL OpenBrowser(
+      const PString & url   /// URL to open
+    );
+  //@}
 
   protected:
     PCaselessString scheme;
