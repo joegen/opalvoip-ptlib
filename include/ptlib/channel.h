@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.29  1999/10/09 01:22:06  robertj
+ * Fixed error display for sound channels.
+ *
  * Revision 1.28  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -582,7 +585,7 @@ class PChannel : public PObject, public iostream {
        the user. The error for the last I/O operation in this object is used.
       @return Operating System error description string.
        */
-    PString GetErrorText() const;
+    virtual PString GetErrorText() const;
 
       /** Get error message description.
         Return a string indicating the error message that may be displayed to
@@ -609,7 +612,7 @@ class PChannel : public PObject, public iostream {
        
        @return TRUE if there was no error.
      */
-    BOOL ConvertOSError(int error);
+    virtual BOOL ConvertOSError(int error);
 
     /** Convert an operating system error into platform independent error.
        This will set the lastError and osError member variables for access by
