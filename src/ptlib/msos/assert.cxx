@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.32  2001/04/26 06:07:34  yurik
+ * UI improvements
+ *
  * Revision 1.31  2001/03/29 23:33:00  robertj
  * Added missing structure initialisation, thanks Victor H.
  *
@@ -168,6 +171,7 @@ void PWaitOnExitConsoleWindow()
 {
 #ifndef _WIN32_WCE
   EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+#else
 #endif // _WIN32_WCE
 }
 
