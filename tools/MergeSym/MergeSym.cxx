@@ -1,4 +1,36 @@
-// MergeSym.cxx
+/*
+ * MergeSym.cxx
+ *
+ * Symbol merging utility for Windows DLL's.
+ *
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
+ *
+ * $Log: MergeSym.cxx,v $
+ * Revision 1.6  2000/04/29 05:01:49  robertj
+ * Added multiple external DEF file capability (-x flag).
+ * Added directory search path argument for external DEF files.
+ * Fixed bug for symbols in external DEF file actively removed from merged DEF file.
+ * Added copyright notice.
+ *
+ */
 
 #include <ptlib.h>
 #include <ptlib/pipechan.h>
@@ -34,7 +66,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 0, ReleaseCode, 2)
+  : PProcess("Equivalence", "MergeSym", 1, 1, ReleaseCode, 1)
 {
 }
 
@@ -46,7 +78,7 @@ void MergeSym::Main()
        << " by " << GetManufacturer() << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("vx:");
+  args.Parse("vx:I:");
 
   PFilePath lib_filename, def_filename;
 
@@ -62,7 +94,7 @@ void MergeSym::Main()
       break;
 
     default :
-      PError << "usage: MergeSym [ -v ] [ -x deffile[.def] ] libfile[.lib] [ deffile[.def] ]";
+      PError << "usage: MergeSym [ -v ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
       SetTerminationValue(1);
       return;
   }
@@ -82,34 +114,47 @@ void MergeSym::Main()
   SortedSymbolList def_symbols;
 
   if (args.HasOption('x')) {
-    PFilePath ext_filename = args.GetOptionString('x');
-    if (ext_filename.GetType().IsEmpty())
-      ext_filename.SetType(".def");
+    PStringArray include_path;
+    if (args.HasOption('I'))
+      include_path = args.GetOptionString('I').Tokenise(';', FALSE);
+    include_path.InsertAt(0, new PString());
+    PStringArray file_list = args.GetOptionString('x').Lines();
+    for (PINDEX ext_index = 0; ext_index < file_list.GetSize(); ext_index++) {
+      PFilePath ext_filename = file_list[ext_index];
+      if (ext_filename.GetType().IsEmpty())
+        ext_filename.SetType(".def");
 
-    if (args.HasOption('v'))
-      cout << "Reading external symbols..." << flush;
-    PTextFile ext;
-    if (ext.Open(ext_filename, PFile::ReadOnly)) {
-      BOOL prefix = TRUE;
-      while (!ext.eof()) {
-        PCaselessString line;
-        ext >> line;
-        if (prefix)
-          prefix = line.Find("EXPORTS") == P_MAX_INDEX;
-        else {
-          PINDEX start = 0;
-          while (isspace(line[start]))
-            start++;
-          PINDEX end = start;
-          while (line[end] != '\0' && !isspace(line[end]))
-            end++;
-          def_symbols.Append(new Symbol(line(start, end-1), "", 0, TRUE));
-          if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
-            cout << '.' << flush;
+      if (args.HasOption('v'))
+        cout << "Reading external symbols from " << ext_filename << " ..." << flush;
+      PINDEX previous_def_symbols_size = def_symbols.GetSize();
+
+      for (PINDEX inc_index = 0; inc_index < include_path.GetSize(); inc_index++) {
+        PTextFile ext;
+        if (ext.Open(PDirectory(include_path[inc_index]) + ext_filename.GetFileName(), PFile::ReadOnly)) {
+          BOOL prefix = TRUE;
+          while (!ext.eof()) {
+            PCaselessString line;
+            ext >> line;
+            if (prefix)
+              prefix = line.Find("EXPORTS") == P_MAX_INDEX;
+            else {
+              PINDEX start = 0;
+              while (isspace(line[start]))
+                start++;
+              PINDEX end = start;
+              while (line[end] != '\0' && !isspace(line[end]))
+                end++;
+              def_symbols.Append(new Symbol(line(start, end-1), "", 0, TRUE));
+              if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
+                cout << '.' << flush;
+            }
+          }
+          break;
         }
       }
       if (args.HasOption('v'))
-        cout << '\n' << def_symbols.GetSize() << " symbols read." << endl;
+        cout << '\n' << (def_symbols.GetSize() - previous_def_symbols_size)
+             << " symbols read." << endl;
     }
   }
 
@@ -145,7 +190,9 @@ void MergeSym::Main()
           PINDEX unmanglepos = line.Find(';', ordpos);
           if (unmanglepos != P_MAX_INDEX)
             unmanglepos++;
-          def_symbols.Append(new Symbol(line(start, end-1), line.Mid(unmanglepos), ordinal));
+          Symbol sym(line(start, end-1), line.Mid(unmanglepos), ordinal);
+          if (def_symbols.GetValuesIndex(sym) == P_MAX_INDEX)
+            def_symbols.Append(new Symbol(sym));
           removed++;
           if (args.HasOption('v') && def_symbols.GetSize()%100 == 0)
             cout << '.' << flush;
