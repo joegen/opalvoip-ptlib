@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.26  2002/07/02 06:25:25  craigs
+ * Added ability to create files in MS G.723.1 format
+ *
  * Revision 1.25  2002/06/20 00:54:41  craigs
  * Added explicit class names to some functions to alloew overriding
  *
@@ -602,6 +605,7 @@ BOOL PWAVFile::GenerateHeader()
       break;
 
     case fmt_VivoG7231 :
+    case fmt_MSG7231:
       lenHeader   = 60;
       len_format  = 20;    // size of the FORMAT chunk;
       numChannels = 1;
@@ -657,7 +661,7 @@ BOOL PWAVFile::GenerateHeader()
     return FALSE;
 
   // The format chunk then has extra data for G.723.1 files
-  if (format == fmt_VivoG7231) {
+  if ((format == fmt_VivoG7231) || (format == fmt_MSG7231)) {
     PInt16l hdr_format_data1 = 1;
     PInt16l hdr_format_data2 = 480;
     if (!PFile::Write(&hdr_format_data1,2) ||
