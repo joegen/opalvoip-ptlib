@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.5 1993/08/21 01:50:33 robertj Exp $
+ * $Id: file.h,v 1.6 1993/08/21 04:40:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.5  1993/08/21 01:50:33  robertj
+ * Revision 1.6  1993/08/21 04:40:19  robertj
+ * Added Copy() function.
+ *
+ * Revision 1.5  1993/08/21  01:50:33  robertj
  * Made Clone() function optional, default will assert if called.
  *
  * Revision 1.4  1993/08/01  14:05:27  robertj
@@ -104,6 +107,11 @@ DECLARE_CLASS(PFile, PContainer)
       // Change the specified files name. Note that this object then refers to
       // the new filename.
 
+    BOOL Copy(const PString & newname);
+    static BOOL Copy(const PString & oldname, const PString & newname);
+      // Make a copy of the specified file. Note that this object still refers to
+      // the original file.
+
 
     struct Status {
       PFileTypes type;
@@ -126,7 +134,7 @@ DECLARE_CLASS(PFile, PContainer)
       // Read a sequence of bytes into the specified buffer. Return TRUE if
       // the required number of bytes was successfully read.
       
-    BOOL Write(void * buffer, size_t amount);
+    BOOL Write(const void * buffer, size_t amount);
       // Write a sequence of bytes into the specified buffer. Return TRUE if
       // the required number of bytes was successfully written.
       

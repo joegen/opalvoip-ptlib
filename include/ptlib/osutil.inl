@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.4 1993/08/21 01:50:33 robertj Exp $
+ * $Id: osutil.inl,v 1.5 1993/08/21 04:40:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.4  1993/08/21 01:50:33  robertj
+ * Revision 1.5  1993/08/21 04:40:19  robertj
+ * Added Copy() function.
+ *
+ * Revision 1.4  1993/08/21  01:50:33  robertj
  * Made Clone() function optional, default will assert if called.
  *
  * Revision 1.3  1993/07/14  12:49:16  robertj
@@ -93,6 +96,9 @@ inline BOOL PFile::Remove() const
 inline BOOL PFile::Rename(const PString & newname)
   { if (!Rename(fullname, newname)) return FALSE;
     fullname = newname; return TRUE; }
+
+inline BOOL PFile::Copy(const PString & newname)
+  { return Copy(fullname, newname); }
 
 inline BOOL PFile::GetStatus(Status & status) const
   { return GetStatus(fullname, status); }
