@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.8 1996/05/03 13:48:58 craigs Exp $
+# $Id: Makefile,v 1.9 1996/05/10 11:03:22 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.9  1996/05/10 11:03:22  craigs
+# Fixed distsrc rule to only include ptlib stuff
+#
 # Revision 1.8  1996/05/03 13:48:58  craigs
 # Sun4 fixes
 #
@@ -84,10 +87,19 @@ thelot:
 	( cd ../../apps/mibmastr; make clean ; make both; )
 	( cd ../../apps/firedoor; make clean ; make both; )
 
+test:
+	(cd $(PWLIBDIR); \
+          grep -h '^#include' common/contain.h common/ptlib.h common/sockets.h \
+            | grep -v ptlib.inl \
+            | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' \
+	)
+
 distsrc:
 	(cd $(PWLIBDIR); \
           find unix \( -name RCS -o -name obj_d -o -name obj_r \) -prune -o -type f -print > .list ; \
-          find common \( -name RCS -o -name obj_d -o -name obj_r \) -prune -o -type f -print >> .list ; \
+          grep -h '^#include' common/contain.h common/ptlib.h common/sockets.h | grep -v ptlib.inl | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' | sort -u >> .list ; \
+          grep -l '^#include <ptlib.h>' common/src/*.cxx | sort -u >> .list ; \
+          echo common/ptlib.h common/src/contain.cxx common/src/collect.cxx common/src/object.cxx >> .list ; \
 	  tar -czvf ptlib-src.tgz `cat .list` ; rm .list )
 
 #######################################################
