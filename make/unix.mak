@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.132  2002/06/20 05:49:04  robertj
+# Fixed typo to include templates by default.
+#
 # Revision 1.131  2002/06/14 11:14:30  rogerh
 # Detect more cpu types. Submitted by Klaus Kaempf <kkaempf@suse.de>
 #
@@ -1124,8 +1127,7 @@ STDCCFLAGS	+= -D__NUCLEUS_PLUS__ -D__ppc -DWOT_NO_FILESYSTEM -DPLUS \
 		   -D__HAS_NO_FLOAT -D__USE_STL__ \
                    -D__USE_STD__ \
 		   -D__NUCLEUS_NET__ -D__NEWLIB__ \
-		   -DP_USE_INLINES=0 \
-		   -DPHAS_TEMPLATES
+		   -DP_USE_INLINES=0
 ifndef WORK
 WORK		= ${HOME}/work
 endif
@@ -1266,7 +1268,7 @@ endif
 
 #define templates if available
 ifndef NO_PWLIB_TEMPLATES
-STDCCFLAGS	+= -DP_HAS_TEMPLATES
+STDCCFLAGS	+= -DPHAS_TEMPLATES
 endif
 
 # compiler flags for all modes
