@@ -27,6 +27,12 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.55  2002/12/12 09:03:56  rogerh
+ * On two FreeBSD machines, Read() calls from the sound card were not blocking
+ * correctly and returned with less bytes than asked for. This made OpenH323
+ * close the sound channel.  Add a FreeBSD workaround so Read() loops until it
+ * has all the bytes requested.
+ *
  * Revision 1.54  2002/12/03 23:03:54  rogerh
  * oops - remove some test code which should not have been committed
  *
@@ -866,6 +872,26 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
 
   if (os_handle > 0) {
     PTRACE(6, "OSS\tRead start");
+
+#if defined(P_FREEBSD)
+    PINDEX total = 0;
+    while (total < len) {
+      PINDEX bytes = 0;
+      while (!ConvertOSError(bytes = ::read(os_handle, (void *)(((unsigned int)buf) + total), len-total))) {
+        if (GetErrorCode() != Interrupted) {
+          PTRACE(6, "OSS\tRead failed");
+          return FALSE;
+        }
+        PTRACE(6, "OSS\tRead interrupted");
+      }
+      total += bytes;
+      if (total != len)
+        PTRACE(6, "OSS\tRead completed short - " << total << " vs " << len << ". Reading more data");
+    }
+    lastReadCount = total;
+
+#else
+
     while (!ConvertOSError(lastReadCount = ::read(os_handle, (void *)buf, len))) {
       if (GetErrorCode() != Interrupted) {
         PTRACE(6, "OSS\tRead failed");
@@ -873,6 +899,8 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
       }
       PTRACE(6, "OSS\tRead interrupted");
     }
+#endif
+
 
     if (lastReadCount != len)
       PTRACE(6, "OSS\tRead completed short - " << lastReadCount << " vs " << len);
