@@ -37,16 +37,17 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptlibsd.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib netapi32.lib"
+				AdditionalDependencies="ptlibsd.lib"
 				OutputFile="..\..\..\Lib\PTLibd.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\lib"
 				ModuleDefinitionFile="..\..\..\Lib\Debug\PTLibd.def"
+				DelayLoadDLLs=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLibd.pdb"
 				SubSystem="0"
-				ImportLibrary=".\..\..\..\Lib\PTLibd.lib"
+				ImportLibrary=".\..\..\..\Lib/PTLibd.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -109,16 +110,17 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="ptlibs.lib vfw32.lib winmm.lib mpr.lib snmpapi.lib netapi32.lib"
+				AdditionalDependencies="ptlibs.lib"
 				OutputFile=".\..\..\..\Lib/PTLib.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\..\lib"
 				ModuleDefinitionFile="..\..\..\Lib\Release\ptlib.def"
+				DelayLoadDLLs=""
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\..\Lib/PTLib.pdb"
 				SubSystem="2"
-				ImportLibrary=".\..\..\..\Lib\PTLib.lib"
+				ImportLibrary=".\..\..\..\Lib/PTLib.lib"
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -228,7 +230,7 @@ copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; n
 				Name="Debug|Win32">
 				<Tool
 					Name="VCCustomBuildTool"
-					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibs.lib&quot; &quot;$(InputPath)&quot;
+					CommandLine="MergeSym -x ../../../include/ptlib/msos/ptlib.ignore &quot;$(OutDir)\ptlibsd.lib&quot; &quot;$(InputPath)&quot;
 copy &quot;$(InputPath)&quot;+nul &quot;$(IntDir)\$(TargetName).def&quot; &gt; nul
 "
 					AdditionalDependencies="../../../include/ptlib/msos/ptlib.ignore;$(OutDir)\ptlibsd.lib"
