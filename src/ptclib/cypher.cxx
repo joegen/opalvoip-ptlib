@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.30  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.29  2001/03/01 03:55:59  robertj
  * Fixed MSVC warnings.
  *
@@ -626,7 +629,7 @@ void PTEACypher::GetKey(Key & newKey) const
 void PTEACypher::GenerateKey(Key & newKey)
 {
   static PRandom rand; //=1 // Explicitly set seed if need known random sequence
-  for (PINDEX i = 0; i < sizeof(Key); i++)
+  for (size_t i = 0; i < sizeof(Key); i++)
     newKey.value[i] = (BYTE)rand;
 }
 

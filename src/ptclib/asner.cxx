@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.63  2002/06/05 12:29:15  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.62  2002/05/29 01:22:35  robertj
  * Added ability to set object id from unsigned integer arrays.
  *
@@ -249,7 +252,7 @@ static PINDEX CountBits(unsigned range)
       return 1;
   }
 
-  PINDEX nBits = 0;
+  size_t nBits = 0;
   while (nBits < (sizeof(unsigned)*8) && range > (unsigned)(1 << nBits))
     nBits++;
   return nBits;
