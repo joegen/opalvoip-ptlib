@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.40  2000/04/13 07:21:10  rogerh
+ * Fix typo in #defined
+ *
  * Revision 1.39  2000/04/11 11:38:49  rogerh
  * More NetBSD Pthread changes
  *
@@ -700,7 +703,7 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#if defined (P_LINUX) || (P_FREEBSD) || defined(P_OPENBSD)
+#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else
