@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.53  2002/02/03 16:16:07  rogerh
+ * make nil static. Submitted by Peter Johnson <paj@chartermi.net>
+ *
  * Revision 1.52  2002/01/31 05:02:50  robertj
  * Fixed PSortedList::Remove function for removing objects with equal keys.
  *
@@ -643,7 +646,7 @@ PAbstractList::Element::Element(PObject * theData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractSortedList::Element nil = NULL;
+static PAbstractSortedList::Element nil = NULL;
 
 PAbstractSortedList::PAbstractSortedList()
 {
