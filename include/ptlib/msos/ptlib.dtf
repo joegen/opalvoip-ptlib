@@ -143,6 +143,7 @@ EXPORTS
     ??0PServiceProcess@@QAE@PBD0GGW4CodeStatus@PProcess@@G@Z @108 NONAME ;public: __thiscall PServiceProcess::PServiceProcess(char const *,char const *,unsigned short,unsigned short,enum PProcess::CodeStatus,unsigned short)
     ??0PSimpleThread@@QAE@ABVPNotifier@@HW4AutoDeleteFlag@PThread@@W4Priority@3@ABVPString@@H@Z @2493 NONAME ;public: __thiscall PSimpleThread::PSimpleThread(class PNotifier const &,int,enum PThread::AutoDeleteFlag,enum AutoDeleteFlag::Priority,class PString const &,int)
     ??0PSmartPointer@@QAE@ABV0@@Z @109 NONAME ;public: __thiscall PSmartPointer::PSmartPointer(class PSmartPointer const &)
+    ??0Psockaddr@@QAE@ABVAddress@PIPSocket@@G@Z @3366 NONAME ;public: __thiscall Psockaddr::Psockaddr(class PIPSocket::Address const &,unsigned short)
     ??0PSocket@@IAE@XZ @110 NONAME ;protected: __thiscall PSocket::PSocket(void)
     ??0PSortedStringList@@QAE@ABVPStringArray@@@Z @2664 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PStringArray const &)
     ??0PSortedStringList@@QAE@ABVPStringList@@@Z @2665 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PStringList const &)
@@ -1609,6 +1610,7 @@ EXPORTS
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@H@Z @1900 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(int)
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @2228 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(class PIPSocket::Address)
     ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@@Z @2229 NONAME ;public: static int __cdecl PIPSocket::GetInterfaceTable(class PList<class PIPSocket::InterfaceEntry> &)
+    ?GetIP@Psockaddr@@QBE?AVAddress@PIPSocket@@XZ @3367 NONAME ;public: class PIPSocket::Address  __thiscall Psockaddr::GetIP(void)const 
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@0@Z @1901 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &,class PIPSocket::Address &)
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@@Z @1902 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &)
     ?GetIpAddress@PWin32AsnAny@@QAEHAAVAddress@PIPSocket@@@Z @1903 NONAME ;public: int __thiscall PWin32AsnAny::GetIpAddress(class PIPSocket::Address &)
@@ -1703,6 +1705,7 @@ EXPORTS
     ?GetPeerHostName@PIPSocket@@QAE?AVPString@@XZ @1111 NONAME ;public: class PString  __thiscall PIPSocket::GetPeerHostName(void)
     ?GetPointer@PAbstractArray@@QAEPAXH@Z @1112 NONAME ;public: void * __thiscall PAbstractArray::GetPointer(int)
     ?GetPointer@PBitArray@@QAEPAEH@Z @3279 NONAME ;public: unsigned char * __thiscall PBitArray::GetPointer(int)
+    ?GetPort@Psockaddr@@QBEGXZ @3368 NONAME ;public: unsigned short __thiscall Psockaddr::GetPort(void)const 
     ?GetPort@PSocket@@QBEGXZ @1113 NONAME ;public: unsigned short __thiscall PSocket::GetPort(void)const 
     ?GetPortByService@PSocket@@SAGPBDABVPString@@@Z @1114 NONAME ;public: static unsigned short __cdecl PSocket::GetPortByService(char const *,class PString const &)
     ?GetPortByService@PSocket@@UBEGABVPString@@@Z @1115 NONAME ;public: virtual unsigned short __thiscall PSocket::GetPortByService(class PString const &)const 
