@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=Console Components - Win32 Debug
+CFG=Console Components - Win32 SSL Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=Console Components - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Console Components.mak" CFG="Console Components - Win32 Debug"
+!MESSAGE NMAKE /f "Console Components.mak" CFG="Console Components - Win32 SSL Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "Console Components - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "Console Components - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "Console Components - Win32 SSL Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "Console Components - Win32 SSL Release" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -74,12 +76,60 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
 
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "Console_Components___Win32_SSL_Debug"
+# PROP BASE Intermediate_Dir "Console_Components___Win32_SSL_Debug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "..\..\..\Lib"
+# PROP Intermediate_Dir "..\..\..\Lib\Debug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR /Yu"ptlib.h" /FD /c
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\ptclibd.lib"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "Console_Components___Win32_SSL_Release"
+# PROP BASE Intermediate_Dir "Console_Components___Win32_SSL_Release"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "..\..\..\Lib"
+# PROP Intermediate_Dir "..\..\..\Lib\Release"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Yu"ptlib.h" /FD /c
+# ADD BASE RSC /l 0xc09
+# ADD RSC /l 0xc09
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"..\..\..\Lib\ptclib.lib"
+# ADD LIB32 /nologo /out:"..\..\..\Lib\ptclib.lib"
+
 !ENDIF 
 
 # Begin Target
 
 # Name "Console Components - Win32 Release"
 # Name "Console Components - Win32 Debug"
+# Name "Console Components - Win32 SSL Debug"
+# Name "Console Components - Win32 SSL Release"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "*.cxx"
@@ -92,6 +142,13 @@ SOURCE=..\..\Ptclib\Asner.cxx
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
 # ADD CPP /Yu"ptlib.h"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+# ADD BASE CPP /Yu"ptlib.h"
+# ADD CPP /Yu"ptlib.h"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
 
 !ENDIF 
 
@@ -164,7 +221,23 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\pssl.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
 # PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+# PROP Intermediate_Dir "..\..\..\Lib\Release"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
