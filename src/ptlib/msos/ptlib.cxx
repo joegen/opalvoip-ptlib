@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.42  1998/11/14 23:37:08  robertj
+ * Fixed file path directory extraction, not able to return root directory
+ *
  * Revision 1.41  1998/10/19 00:20:38  robertj
  * Moved error and trace stream functions to common code.
  *
@@ -438,9 +441,27 @@ PFilePath & PFilePath::operator=(const PString & str)
 PCaselessString PFilePath::GetVolume() const
 {
   PINDEX colon = Find(':');
-  if (colon == P_MAX_INDEX)
+  if (colon != P_MAX_INDEX)
+    return Left(colon+1);
+
+  if (theArray[0] != '\\' || theArray[1] != '\\')
     return PCaselessString();
-  return Left(colon+1);
+
+  PINDEX backslash = Find('\\', 2);
+  if (backslash != P_MAX_INDEX)
+    return Left(backslash);
+
+  return PCaselessString();
+}
+
+
+PDirectory PFilePath::GetDirectory() const
+{
+  PINDEX backslash = FindLast('\\');
+  if (backslash != P_MAX_INDEX)
+    return Left(backslash+1);
+
+  return PCaselessString();
 }
 
 
