@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.5  2001/03/08 22:56:25  robertj
+ * Fixed compatibility with new meaning of channelNumber variable, cannot be negative.
+ *
  * Revision 1.4  2001/03/03 05:06:31  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -198,15 +201,15 @@ void PFakeVideoInputDevice::FillFrameWithData(BYTE *destFrame)
      
      grabCount++;
      switch(channelNumber){       
-         case -1: 
+         case 0: 
              GrabMovingBlocksTestFrame(destFrame);
              break;
-         case -2: 
+         case 1: 
              GrabMovingLineTestFrame(destFrame);
              break;
-	       case -3:
-	           GrabBouncingBoxes(destFrame);
-		         break;
+	 case 2:
+	     GrabBouncingBoxes(destFrame);
+	     break;
          default:
              GrabNTSCTestFrame(destFrame);
      }
