@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.32  2000/05/02 07:55:22  craigs
+ * Changed static PString to static const char * to avoid "memory leak"
+ *
  * Revision 1.31  1999/05/13 04:04:04  robertj
  * Fixed problem of initialised commandName in ConnectionInfo.
  *
@@ -152,7 +155,7 @@
 #define	READLINE_TIMEOUT	30
 
 //  filename to use for directory access directives
-static const PString accessFilename = "_access";
+static const char * accessFilename = "_access";
 
 
 //////////////////////////////////////////////////////////////////////////////
