@@ -178,7 +178,7 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
     handle = NULL;
     return FALSE;
   }
-  SetCanCaptureVideo(TRUE);
+
   SetFrameSize(CIFHeight, CIFWidth);
   /*
   frameWidth = CIFHeight;
