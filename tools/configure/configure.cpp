@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.11  2004/01/30 01:43:41  csoutheren
+ * Added excludedir options and environment variable
+ *
  * Revision 1.10  2003/11/25 08:21:37  rjongbloed
  * Fixed display of configured items
  *
@@ -63,6 +66,7 @@
 #include <fstream>
 #include <string>
 #include <list>
+#include <algorithm>
 #include <stdlib.h>
 #include <windows.h>
 
@@ -105,7 +109,7 @@ class Feature
 
 
 list<Feature> features;
-
+list<string> excludeDirList;
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -269,6 +273,10 @@ bool TreeWalk(const string & directory)
       string subdir = directory;
       subdir += fileinfo.cFileName;
 
+      list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), subdir);
+      if (r != excludeDirList.end())
+        continue;
+
       if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
                                        fileinfo.cFileName[0] != '.' &&
                                        stricmp(fileinfo.cFileName, "RECYCLER") != 0) {
@@ -378,7 +386,27 @@ int main(int argc, char* argv[])
     }
   }
 
-  const char EXTERN_DIR[] = "--extern-dir=";
+  const char EXTERN_DIR[]  = "--extern-dir=";
+  const char EXCLUDE_DIR[] = "--exclude-dir=";
+
+  char * env = getenv("PWLIB_CONFIGURE_EXCLUDE_DIRS");
+  if (env != NULL) {
+    string str(env);
+    string::const_iterator r = str.begin();
+    while (r != str.end()) {
+      int n = str.find(';');
+      string dir;
+      if (n != string::npos) {
+        dir = string(r, n);
+        r = str.begin() + n;
+      } else {
+        dir = string(r);
+        r = str.end();
+      }
+      excludeDirList.push_back(dir);
+      cout << "excluding " << dir << " from feature search" << endl;
+    }
+  }
   
   bool searchDisk = true;
   char *externDir = 0;
@@ -388,10 +416,16 @@ int main(int argc, char* argv[])
     else if (strnicmp(argv[i], EXTERN_DIR, sizeof(EXTERN_DIR) - 1) == 0){
 	    externDir = argv[i] + sizeof(EXTERN_DIR) - 1; 	
     }
+    else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
+      string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1); 	
+      excludeDirList.push_back(dir);
+      cout << "excluding " << dir << " from feature search" << endl;
+    }
     else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
       cout << "usage: configure args\n"
               "  --no-search\t\tDo not search disk for libraries.\n"
-	"  --extern-dir\t\t specify where to search disk for libraries.\n";
+	            "  --extern-dir=dir\t\t specify where to search disk for libraries.\n"
+              "  --exclude-dir=dir dir\t\tExclude dir from search path.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
         if (feature->featureName[0] != '\0') {
           cout << "  --no-" << feature->featureName
@@ -426,10 +460,10 @@ int main(int argc, char* argv[])
       // Do search of entire system
       char drives[100];
       if (!externDir){
-	if (!GetLogicalDriveStrings(sizeof(drives), drives))
-	  strcpy(drives, "C:\\");
+	      if (!GetLogicalDriveStrings(sizeof(drives), drives))
+	        strcpy(drives, "C:\\");
       } else {
-	strcpy(drives, externDir);	
+	      strcpy(drives, externDir);	
       }
 
       const char * drive = drives;
