@@ -1,11 +1,20 @@
 /*
  * ASN Library
  *
- * $Id: pasn.cxx,v 1.5 1997/08/20 09:00:37 craigs Exp $
+ * $Id: pasn.cxx,v 1.6 1998/02/16 06:57:05 robertj Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.6  1998/02/16 06:57:05  robertj
+ * Moved pragma implemenetation in here so do not need upasn.cxx file.
+ *
+ * Revision 1.7  1998/01/26 02:49:21  robertj
+ * GNU support.
+ *
+ * Revision 1.6  1998/01/26 01:45:36  robertj
+ * Removed unused variable.
+ *
  * Revision 1.5  1997/08/20 09:00:37  craigs
  * Fixed problems with decoding of PASNNull
  *
@@ -23,6 +32,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "pasn.h"
+#endif
 
 #include <ptlib.h>
 #include <pasn.h>
@@ -1221,8 +1234,7 @@ PASNNull::PASNNull()
 
 PASNNull::PASNNull(const PBYTEArray & buffer, PINDEX & ptr)
 {
-  PINDEX s = buffer.GetSize() - ptr;
-  PAssert(((buffer.GetSize() - ptr ) >= 2) &&
+  PAssert(((buffer.GetSize() - ptr) >= 2) &&
           (buffer[ptr+0] == 0x05) &&
           (buffer[ptr+1] == 0x00),
     "Attempt to decode non-null");
