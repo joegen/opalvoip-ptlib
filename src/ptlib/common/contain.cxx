@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.125  2002/11/12 09:18:03  robertj
+ * Added PString::NumCompare() as functional equivalent of strncmp().
+ * Added PSortedStringList::GetNextStringsIndex() to do searches of binary
+ *   tree on partal strings.
+ *
  * Revision 1.124  2002/11/01 05:10:01  robertj
  * Fixed bug in UTF-8 to UCS-2 conversion, not compiler portable!
  *
@@ -1692,6 +1697,24 @@ BOOL PString::operator*=(const char * cstr) const
 }
 
 
+PObject::Comparison PString::NumCompare(const PString & str, PINDEX count, PINDEX offset) const
+{
+  PINDEX len = str.GetLength();
+  if (count > len)
+    count = len;
+  return InternalCompare(offset, count, str);
+}
+
+
+PObject::Comparison PString::NumCompare(const char * cstr, PINDEX count, PINDEX offset) const
+{
+  PINDEX len = ::strlen(cstr);
+  if (count > len)
+    count = len;
+  return InternalCompare(offset, count, cstr);
+}
+
+
 PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 {
   char ch = theArray[offset];
@@ -2599,6 +2622,51 @@ PSortedStringList::PSortedStringList(const PStringList & list)
 {
   for (PINDEX i = 0; i < list.GetSize(); i++)
     AppendString(list[i]);
+}
+
+
+
+PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
+{
+  PINDEX len = str.GetLength();
+
+  info->lastIndex = InternalStringSelect(str, len, info->root, info->lastElement);
+
+  if (info->lastIndex != 0) {
+    Element * prev;
+    while ((prev = info->lastElement->Predecessor()) != &Element::nil &&
+                    ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
+      info->lastElement = prev;
+      info->lastIndex--;
+    }
+  }
+
+  return info->lastIndex;
+}
+
+
+PINDEX PSortedStringList::InternalStringSelect(const char * str,
+                                               PINDEX len,
+                                               Element * thisElement,
+                                               Element * & lastElement)
+{
+  if (thisElement == &Element::nil)
+    return 0;
+
+  switch (((PString *)thisElement->data)->NumCompare(str, len)) {
+    case PObject::LessThan :
+    {
+      PINDEX index = InternalStringSelect(str, len, thisElement->right, lastElement);
+      return thisElement->left->subTreeSize + index + 1;
+    }
+
+    case PObject::GreaterThan :
+      return InternalStringSelect(str, len, thisElement->left, lastElement);
+
+    default :
+      lastElement = thisElement;
+      return thisElement->left->subTreeSize;
+  }
 }
 
 
