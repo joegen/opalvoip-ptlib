@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.1 1996/03/04 12:14:18 robertj Exp $
+ * $Id: ftp.h,v 1.2 1996/03/18 13:33:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.2  1996/03/18 13:33:10  robertj
+ * FireDoorV10
+ *
  * Revision 1.1  1996/03/04 12:14:18  robertj
  * Initial revision
  *
@@ -221,7 +224,7 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
     BOOL SendPORT(
       const PIPSocket::Address & addr,  // Address for PORT connection.
       WORD port,                        // Port number for PORT connection.
-      PINDEX & code,                    // Return code for PORT command.
+      int & code,                       // Return code for PORT command.
       PString & info                    // Return info for PORT command.
     );
     // Send the PORT command for a transfer.
