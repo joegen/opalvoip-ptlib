@@ -1380,7 +1380,7 @@ EXPORTS
     ?GetCTS@PSerialChannel@@QAEHXZ @984 NONAME ;public: int __thiscall PSerialChannel::GetCTS(void)
     ?GetData@PWin32PacketBuffer@@QAEHPAXH@Z @1895 NONAME ;public: int __thiscall PWin32PacketBuffer::GetData(void *,int)
     ?GetDataBits@PSerialChannel@@QBEEXZ @985 NONAME ;public: unsigned char __thiscall PSerialChannel::GetDataBits(void)const 
-    ?GetDataLength@PWAVFile@@QBEJXZ @2910 NONAME ;public: long __thiscall PWAVFile::GetDataLength(void)const 
+    ?GetDataLength@PWAVFile@@QAEJXZ @2930 NONAME ;public: long __thiscall PWAVFile::GetDataLength(void)
     ?GetDateOrder@PTime@@SA?AW4DateOrder@1@XZ @986 NONAME ;public: static enum PTime::DateOrder  __cdecl PTime::GetDateOrder(void)
     ?GetDateSeparator@PTime@@SA?AVPString@@XZ @987 NONAME ;public: static class PString  __cdecl PTime::GetDateSeparator(void)
     ?GetDayName@PTime@@SA?AVPString@@W4Weekdays@1@W4NameType@1@@Z @989 NONAME ;public: static class PString  __cdecl PTime::GetDayName(enum PTime::Weekdays,enum PTime::NameType)
