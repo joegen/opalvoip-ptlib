@@ -54,6 +54,7 @@ EXPORTS
     ??0PBinarySerialiser@@QAE@AAVostream@@AAVPObject@@@Z @39 NONAME ;public: __thiscall PBinarySerialiser::PBinarySerialiser(class ostream &,class PObject &)
     ??0PBinaryUnSerialiser@@QAE@AAVistream@@@Z @40 NONAME ;public: __thiscall PBinaryUnSerialiser::PBinaryUnSerialiser(class istream &)
     ??0PBYTEArray@@QAE@H@Z @1972 NONAME ;public: __thiscall PBYTEArray::PBYTEArray(int)
+    ??0PCapStatus@@QAE@PAUHWND__@@@Z @2467 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
     ??0PCaselessString@@QAE@ABV0@@Z @2198 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PCaselessString const &)
     ??0PCaselessString@@QAE@ABVPString@@@Z @42 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PString const &)
     ??0PCaselessString@@QAE@PBD@Z @43 NONAME ;public: __thiscall PCaselessString::PCaselessString(char const *)
@@ -179,6 +180,8 @@ EXPORTS
     ??0PUnSerialiser@@QAE@AAVistream@@@Z @158 NONAME ;public: __thiscall PUnSerialiser::PUnSerialiser(class istream &)
     ??0PUnsignedArray@@QAE@H@Z @2377 NONAME ;public: __thiscall PUnsignedArray::PUnsignedArray(int)
     ??0PVideoDevice@@QAE@W4VideoFormat@0@IW4ColourFormat@0@@Z @2420 NONAME ;public: __thiscall PVideoDevice::PVideoDevice(enum PVideoDevice::VideoFormat,unsigned int,enum PVideoDevice::ColourFormat)
+    ??0PVideoDeviceBitmap@@QAE@IIW4ColourFormat@PVideoDevice@@@Z @2468 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned int,unsigned int,enum PVideoDevice::ColourFormat)
+    ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@@Z @2469 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *)
     ??0PVideoInputDevice@@QAE@W4VideoFormat@PVideoDevice@@IW4ColourFormat@2@@Z @2421 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(enum PVideoDevice::VideoFormat,unsigned int,enum VideoFormat::ColourFormat)
     ??0PWaveBuffer@@AAE@H@Z @2030 NONAME ;private: __thiscall PWaveBuffer::PWaveBuffer(int)
     ??0PWaveFormat@@QAE@ABV0@@Z @2031 NONAME ;public: __thiscall PWaveFormat::PWaveFormat(class PWaveFormat const &)
@@ -318,6 +321,7 @@ EXPORTS
     ??1PUnSerialiser@@UAE@XZ @260 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PUnsignedArray@@UAE@XZ @2281 NONAME ;public: virtual __thiscall PUnsignedArray::~PUnsignedArray(void)
     ??1PVideoDevice@@UAE@XZ @2422 NONAME ;public: virtual __thiscall PVideoDevice::~PVideoDevice(void)
+    ??1PVideoDeviceBitmap@@UAE@XZ @2470 NONAME ;public: virtual __thiscall PVideoDeviceBitmap::~PVideoDeviceBitmap(void)
     ??1PVideoInputDevice@@UAE@XZ @2423 NONAME ;public: virtual __thiscall PVideoInputDevice::~PVideoInputDevice(void)
     ??1PVideoInputThread@@UAE@XZ @2424 NONAME ;public: virtual __thiscall PVideoInputThread::~PVideoInputThread(void)
     ??1PWaitAndSignal@@QAE@XZ @2388 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
@@ -617,6 +621,7 @@ EXPORTS
     ??_7PUnSerialiser@@6B@ @541 NONAME ;const  PUnSerialiser::`vftable'
     ??_7PUnsignedArray@@6B@ @2289 NONAME ;const  PUnsignedArray::`vftable'
     ??_7PVideoDevice@@6B@ @2425 NONAME ;const  PVideoDevice::`vftable'
+    ??_7PVideoDeviceBitmap@@6B@ @2471 NONAME ;const  PVideoDeviceBitmap::`vftable'
     ??_7PVideoInputDevice@@6B@ @2426 NONAME ;const  PVideoInputDevice::`vftable'
     ??_7PVideoInputThread@@6B@ @2427 NONAME ;const  PVideoInputThread::`vftable'
     ??_7PWaveBuffer@@6B@ @2041 NONAME ;const  PWaveBuffer::`vftable'
@@ -695,6 +700,7 @@ EXPORTS
     ?Append@PArrayObjects@@UAEHPAVPObject@@@Z @605 NONAME ;public: virtual int __thiscall PArrayObjects::Append(class PObject *)
     ?AppendElement@Table@PHashTable@@QAEHPAVPObject@@0@Z @606 NONAME ;public: int __thiscall PHashTable::Table::AppendElement(class PObject *,class PObject *)
     ?AppendTimer@PTimerList@@QAEXPAVPTimer@@@Z @609 NONAME ;public: void __thiscall PTimerList::AppendTimer(class PTimer *)
+    ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@@Z @2472 NONAME ;public: int __thiscall PVideoDeviceBitmap::ApplyFormat(struct HWND__ *)
     ?AreAllRecordBuffersFull@PSoundChannel@@QAEHXZ @2104 NONAME ;public: int __thiscall PSoundChannel::AreAllRecordBuffersFull(void)
     ?Ascend@PMultiMediaFile@@QAEHAAU_MMCKINFO@@I@Z @1996 NONAME ;public: int __thiscall PMultiMediaFile::Ascend(struct _MMCKINFO &,unsigned int)
     ?AsInt64@PString@@QBE_JI@Z @610 NONAME ;public: __int64 __thiscall PString::AsInt64(unsigned int)const 
@@ -1405,6 +1411,7 @@ EXPORTS
     ?InternalCompare@PString@@MBE?AW4Comparison@PObject@@HD@Z @1209 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PString::InternalCompare(int,char)const 
     ?InternalCompare@PString@@MBE?AW4Comparison@PObject@@HHPBD@Z @1210 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PString::InternalCompare(int,int,char const *)const 
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @1916 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
+    ?IsCapturing@PVideoInputDevice@@UAEHXZ @2473 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsCapturing(void)
     ?IsClass@?$PArray@VPString@@@@UBEHPBD@Z @1211 NONAME ;public: virtual int __thiscall PArray<class PString>::IsClass(char const *)const 
     ?IsClass@?$PArray@VPWaveBuffer@@@@UBEHPBD@Z @2087 NONAME ;public: virtual int __thiscall PArray<class PWaveBuffer>::IsClass(char const *)const 
     ?IsClass@?$PArray@VPWin32PacketBuffer@@@@UBEHPBD@Z @1917 NONAME ;public: virtual int __thiscall PArray<class PWin32PacketBuffer>::IsClass(char const *)const 
@@ -1950,6 +1957,7 @@ EXPORTS
     ?SetBuffers@PSoundChannel@@QAEHHH@Z @2089 NONAME ;public: int __thiscall PSoundChannel::SetBuffers(int,int)
     ?SetChannel@PVideoDevice@@UAEHI@Z @2460 NONAME ;public: virtual int __thiscall PVideoDevice::SetChannel(unsigned int)
     ?SetColourFormat@PVideoDevice@@UAEHW4ColourFormat@1@@Z @2461 NONAME ;public: virtual int __thiscall PVideoDevice::SetColourFormat(enum PVideoDevice::ColourFormat)
+    ?SetColourFormat@PVideoInputDevice@@MAEHW4ColourFormat@PVideoDevice@@@Z @2474 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetColourFormat(enum PVideoDevice::ColourFormat)
     ?SetCommsParam@PSerialChannel@@AAEHKEW4Parity@1@EW4FlowControl@1@1@Z @1650 NONAME ;private: int __thiscall PSerialChannel::SetCommsParam(unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?SetConfiguration@PRemoteConnection@@QAE?AW4Status@1@ABUConfiguration@1@H@Z @1651 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::SetConfiguration(struct PRemoteConnection::Configuration const &,int)
     ?SetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@ABUConfiguration@1@H@Z @1652 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::SetConfiguration(class PString const &,struct PRemoteConnection::Configuration const &,int)
@@ -1968,6 +1976,7 @@ EXPORTS
     ?SetFormat@PWaveFormat@@QAEXIII@Z @2073 NONAME ;public: void __thiscall PWaveFormat::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXPBXH@Z @2096 NONAME ;public: void __thiscall PWaveFormat::SetFormat(void const *,int)
     ?SetFrameSize@PVideoDevice@@UAEHII@Z @2462 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
+    ?SetFrameSize@PVideoInputDevice@@MAEHII@Z @2475 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetInputFlowControl@PSerialChannel@@QAEHW4FlowControl@1@@Z @1662 NONAME ;public: int __thiscall PSerialChannel::SetInputFlowControl(enum PSerialChannel::FlowControl)
     ?SetInt64@PConfig@@QAEXABVPString@@0_J@Z @1663 NONAME ;public: void __thiscall PConfig::SetInt64(class PString const &,class PString const &,__int64)
     ?SetInteger@PConfig@@QAEXABVPString@@0J@Z @1665 NONAME ;public: void __thiscall PConfig::SetInteger(class PString const &,class PString const &,long)
@@ -2116,12 +2125,6 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??0PCapStatus@@QAE@PAUHWND__@@@Z @2467 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
-    ??0PVideoDeviceBitmap@@QAE@IIW4ColourFormat@PVideoDevice@@@Z @2468 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned int,unsigned int,enum PVideoDevice::ColourFormat)
-    ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@@Z @2469 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *)
-    ??1PVideoDeviceBitmap@@UAE@XZ @2470 NONAME ;public: virtual __thiscall PVideoDeviceBitmap::~PVideoDeviceBitmap(void)
-    ??_7PVideoDeviceBitmap@@6B@ @2471 NONAME ;const  PVideoDeviceBitmap::`vftable'
-    ?ApplyFormat@PVideoDeviceBitmap@@QAEHPAUHWND__@@@Z @2472 NONAME ;public: int __thiscall PVideoDeviceBitmap::ApplyFormat(struct HWND__ *)
-    ?IsCapturing@PVideoInputDevice@@UAEHXZ @2473 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsCapturing(void)
-    ?SetColourFormat@PVideoInputDevice@@MAEHW4ColourFormat@PVideoDevice@@@Z @2474 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetColourFormat(enum PVideoDevice::ColourFormat)
-    ?SetFrameSize@PVideoInputDevice@@MAEHII@Z @2475 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
+    ?GetFrameRate@PVideoDevice@@UBEIXZ @2476 NONAME ;public: virtual unsigned int __thiscall PVideoDevice::GetFrameRate(void)const 
+    ?SetFrameRate@PVideoDevice@@UAEHI@Z @2477 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameRate(unsigned int)
+    ?SetFrameRate@PVideoInputDevice@@MAEHI@Z @2478 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameRate(unsigned int)
