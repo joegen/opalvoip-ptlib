@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.4  2002/08/29 06:53:28  robertj
+ * Added optimisiation, separate mutex for toBeRemoved list.
+ * Added assert for reference count going below zero.
+ * Fixed incorrect usage of lockCount if target of an assignment from another
+ *   safe pointer. Would not unlock the safe object which could cause deadlock.
+ *
  * Revision 1.3  2002/05/06 00:44:45  robertj
  * Made the lock/unlock read only const so can be used in const functions.
  *
@@ -70,7 +76,10 @@ BOOL PSafeObject::SafeReference()
 void PSafeObject::SafeDereference()
 {
   safetyMutex.Wait();
-  safeReferenceCount--;
+  if (safeReferenceCount > 0)
+    safeReferenceCount--;
+  else
+    PAssertAlways(PLogicError);
   safetyMutex.Signal();
 }
 
@@ -211,14 +220,17 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
   obj->SafeRemove();
   if (obj->SafelyCanBeDeleted())
     delete obj;
-  else
+  else {
+    removalMutex.Wait();
     toBeRemoved.Append(obj);
+    removalMutex.Signal();
+  }
 }
 
 
 void PSafeCollection::DeleteObjectsToBeRemoved()
 {
-  collectionMutex.Wait();
+  removalMutex.Wait();
 
   PAbstractList toBeDeleted;
   PINDEX i = 0;
@@ -229,7 +241,7 @@ void PSafeCollection::DeleteObjectsToBeRemoved()
       i++;
   }
 
-  collectionMutex.Signal();
+  removalMutex.Signal();
 
   // toBeDeleted goes out of scope so deletes the objects
 }
@@ -299,7 +311,7 @@ PSafePtrBase::PSafePtrBase(const PSafePtrBase & enumerator)
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
   lockThread = enumerator.lockThread;
-  lockCount = enumerator.lockCount;
+  lockCount = 0;
 
   EnterSafetyMode(WithReference);
 }
@@ -328,13 +340,16 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
   if (this == &enumerator)
     return;
 
+  while (lockCount > 1)
+    ExitSafetyMode(NoDereference);
+
+  // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
   collection = enumerator.collection;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
   lockThread = enumerator.lockThread;
-  lockCount = enumerator.lockCount;
 
   EnterSafetyMode(WithReference);
 }
@@ -342,12 +357,14 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
 
 void PSafePtrBase::Assign(PSafeCollection & safeCollection)
 {
+  while (lockCount > 1)
+    ExitSafetyMode(NoDereference);
+
+  // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
   collection = &safeCollection;
   lockMode = PSafeReadWrite;
-  lockThread = NULL;
-  lockCount = 0;
 
   Assign((PINDEX)0);
 }
