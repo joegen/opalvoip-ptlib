@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.69  2004/12/14 14:24:19  csoutheren
+ * Added PIPSocket::Address::operator*= to compare IPV4 addresses
+ * to IPV4-compatible IPV6 addresses. More documentation needed
+ * once this is tested as working
+ *
  * Revision 1.68  2004/12/14 06:20:29  csoutheren
  * Added function to get address of network interface
  *
@@ -332,6 +337,9 @@ class PIPSocket : public PSocket
 #if P_HAS_IPV6
         bool operator==(in6_addr & addr) const;
         bool operator!=(in6_addr & addr) const { return !operator==(addr); }
+        bool operator*=(const Address & addr) const;
+#else
+        bool operator*=(const Address & addr) const { return operator=(addr); }
 #endif
         bool operator==(in_addr & addr) const;
         bool operator!=(in_addr & addr) const { return !operator==(addr); }
