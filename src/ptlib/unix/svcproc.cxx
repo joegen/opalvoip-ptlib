@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.60  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.59  2001/08/07 03:05:54  robertj
  * Expanded thread name field width in system log.
  *
@@ -200,6 +203,26 @@ static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
   "Debug3"
 };
 
+#ifdef P_MAC_MPTHREADS
+// alas, this can't be statically initialized
+// XXX This ought to be an MPCriticalRegionID, but they're broken in
+// XXX Mac OS X 10.0.x!
+static MPSemaphoreID logMutex;
+
+// yuck.
+static void SetUpLogMutex()
+{
+    if (logMutex == 0) {
+        MPSemaphoreID tempCrit;
+        long err = MPCreateSemaphore(1, 1, &tempCrit);
+        PAssertOS(err == 0);
+        if (!OTCompareAndSwap32(0, (UInt32)tempCrit, (UInt32*)&logMutex)) {
+            // lost the race
+            MPDeleteSemaphore(tempCrit);
+        }
+    }
+}
+#endif
 #ifdef P_PTHREADS
 
 static pthread_mutex_t logMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -214,6 +237,10 @@ void PSystemLog::Output(Level level, const char * cmsg)
   else {
 #ifdef P_PTHREADS
     pthread_mutex_lock(&logMutex);
+#endif
+#ifdef P_MAC_MPTHREADS
+    SetUpLogMutex();
+    (void)MPWaitOnSemaphore(logMutex, kDurationForever);
 #endif
 
     ostream * out;
@@ -239,6 +266,9 @@ void PSystemLog::Output(Level level, const char * cmsg)
 
 #ifdef P_PTHREADS
     pthread_mutex_unlock(&logMutex);
+#endif
+#ifdef P_MAC_MPTHREADS
+    MPSignalSemaphore(logMutex);
 #endif
   }
 }
@@ -718,7 +748,11 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
 
   inHandler = TRUE;
 
+#if P_MAC_MPTHREADS
+  unsigned tid = (unsigned)MPCurrentTaskID();
+#else
   unsigned tid = (unsigned) pthread_self();
+#endif
   PThread * thread_ptr = activeThreads.GetAt(tid);
 
   char msg[200];
