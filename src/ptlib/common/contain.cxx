@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.98  2001/04/18 01:20:59  robertj
+ * Fixed problem with hash function for short strings, thanks Patrick Koorevaar.
+ * Also fixed hash function for caseless strings.
+ *
  * Revision 1.97  2001/03/14 01:51:01  craigs
  * Changed to handle CRLF at end of PString::ReadFrom as well as LF
  *
@@ -1099,13 +1103,11 @@ PObject::Comparison PString::Compare(const PObject & obj) const
 
 PINDEX PString::HashFunction() const
 {
-#ifdef PHAS_UNICODE
-  return (((WORD*)theArray)[0]+((WORD*)theArray)[1]+((WORD*)theArray)[2])%23;
-#else
-  return ((BYTE)toupper(theArray[0]) +
-          (BYTE)toupper(theArray[1]) +
-          (BYTE)toupper(theArray[2]))%23;
-#endif
+  PINDEX i = 0;
+  PINDEX sum = 0;
+  while (i < 8 && theArray[i] != 0)
+    sum += theArray[i++];
+  return sum%23;
 }
 
 
@@ -1832,6 +1834,16 @@ PString pvsprintf(const char * fmt, va_list arg)
 PObject * PCaselessString::Clone() const
 {
   return new PCaselessString(*this);
+}
+
+
+PINDEX PCaselessString::HashFunction() const
+{
+  PINDEX i = 0;
+  PINDEX sum = 0;
+  while (i < 8 && theArray[i] != 0)
+    sum += toupper(theArray[i++]);
+  return sum%23;
 }
 
 
