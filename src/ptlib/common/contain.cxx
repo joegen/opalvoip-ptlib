@@ -1,13 +1,35 @@
 /*
- * $Id: contain.cxx,v 1.73 1998/09/22 02:42:39 robertj Exp $
+ * contain.cxx
+ *
+ * Container Classes
  *
  * Portable Windows Library
  *
- * PContainer Class Implementation
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.74  1998/09/23 06:21:54  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.73  1998/09/22 02:42:39  robertj
  * Fixed problem treating unsigned integer as signed in PString contructor.
  *
