@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.4  2004/07/07 07:07:41  csoutheren
+ * Changed PWAVFile to use abstract factories (extensively)
+ * Removed redundant blocking/unblocking when using G.723.1
+ * More support for call transfer
+ *
  * Revision 1.30.2.3  2004/07/06 01:38:57  csoutheren
  * Changed PVXMLChannel to use PDelayChannel
  * Fixed bug where played files were deleted after playing
@@ -414,6 +419,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     BOOL threadRunning;
     BOOL forceEnd;
 
+    PString mediaFormat;
     PVXMLChannel * incomingChannel;
     PVXMLChannel * outgoingChannel;
 
