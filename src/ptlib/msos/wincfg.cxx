@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.8  2001/03/09 05:50:48  robertj
+ * Added ability to set default PConfig file or path to find it.
+ *
  * Revision 1.7  2001/01/24 06:45:41  yurik
  * Windows CE port-related changes
  *
@@ -64,8 +67,12 @@
 #define new PNEW
 
 
+const char LocalMachineStr[] = "HKEY_LOCAL_MACHINE\\";
+const char CurrentUserStr[] = "HKEY_CURRENT_USER\\";
+
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
+
 #ifndef _WIN32_WCE
 class SecurityID
 {
@@ -225,11 +232,11 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 
   PString subkey;
   HKEY basekey;
-  if (subkeyname.Find("HKEY_LOCAL_MACHINE\\") == 0) {
+  if (subkeyname.Find(LocalMachineStr) == 0) {
     subkey = subkeyname.Mid(19);
     basekey = HKEY_LOCAL_MACHINE;
   }
-  else if (subkeyname.Find("HKEY_CURRENT_USER\\") == 0) {
+  else if (subkeyname.Find(CurrentUserStr) == 0) {
     subkey = subkeyname.Mid(18);
     basekey = HKEY_CURRENT_USER;
   }
@@ -281,7 +288,7 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
 #if PTRACING
     if (error == ERROR_ACCESS_DENIED)
       PTRACE(1, "PTLib\tAccess denied accessing registry entry "
-             << (basekey != NULL ? "" : "HKEY_LOCAL_MACHINE\\") << subkey);
+             << (basekey != NULL ? "" : LocalMachineStr) << subkey);
 #endif
 
   key = NULL;
@@ -305,7 +312,7 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
     if (error != ERROR_SUCCESS) {
       PTRACE(1, "PTLib\tCould not create registry entry "
-             << (basekey != NULL ? "" : "HKEY_LOCAL_MACHINE\\") << subkey);
+             << (basekey != NULL ? "" : LocalMachineStr) << subkey);
       key = NULL;
     }
 #ifndef _WIN32_WCE
@@ -465,14 +472,51 @@ BOOL RegistryKey::SetValue(const PString & value, DWORD num)
 }
 
 
+static BOOL IsRegistryPath(const PString & path)
+{
+  return (path.Find(LocalMachineStr) == 0 && path != LocalMachineStr) ||
+         (path.Find(CurrentUserStr) == 0 && path != CurrentUserStr);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PString PProcess::GetConfigurationFile()
+{
+  // No paths set, use defaults
+  if (configurationPaths.IsEmpty()) {
+    configurationPaths.AppendString(executableFile.GetVolume() + executableFile.GetPath());
+    configurationPaths.AppendString(CurrentUserStr);
+  }
+
+  // See if explicit filename
+  if (configurationPaths.GetSize() == 1 && !PDirectory::Exists(configurationPaths[0]))
+    return configurationPaths[0];
+
+  PString iniFilename = executableFile.GetTitle() + ".INI";
+
+  for (PINDEX i = 0; i < configurationPaths.GetSize(); i++) {
+    PString path = configurationPaths[i];
+    if (IsRegistryPath(path))
+      return path;
+    PFilePath cfgFile = PDirectory(path) + iniFilename;
+    if (PFile::Exists(cfgFile))
+      return cfgFile;
+  }
+
+  return PString();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 void PConfig::Construct(Source src, const PString & appname, const PString & manuf)
 {
+  source = Application;
+
   switch (src) {
     case System :
-      source = Application;
-      if (appname.Find("HKEY_LOCAL_MACHINE\\") == 0)
-        location = appname;
-      else if (appname.Find("HKEY_CURRENT_USER\\") == 0)
+      if (IsRegistryPath(appname))
         location = appname;
       else {
         PString dir;
@@ -482,15 +526,21 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
       break;
 
     case Application :
-      if (defaultSection.Find("HKEY_LOCAL_MACHINE\\") == 0 || 
-          defaultSection.Find("HKEY_CURRENT_USER\\") == 0)
-        source = Application;
+      if (IsRegistryPath(defaultSection)) {
+        defaultSection = PString();
+        location = defaultSection;
+      }
       else {
         PProcess & proc = PProcess::Current();
-        PFilePath appFile = proc.GetFile();
-        PFilePath cfgFile = appFile.GetVolume() + appFile.GetPath() + appFile.GetTitle() + ".INI";
-        if (PFile::Exists(cfgFile))
-          Construct(cfgFile); // Make a file based config
+        PString cfgPath = proc.GetConfigurationFile();
+        if (IsRegistryPath(cfgPath)) {
+          defaultSection = PString();
+          location = cfgPath;
+        }
+        else if (!cfgPath) {
+          source = NumSources; // Make a file based config
+          location = cfgPath;
+        }
         else {
           location = "SOFTWARE\\";
           if (!manuf)
@@ -505,7 +555,6 @@ void PConfig::Construct(Source src, const PString & appname, const PString & man
           else
             location += appname;
           location += "\\CurrentVersion\\";
-          source = Application;
         }
       }
       break;
