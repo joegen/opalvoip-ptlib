@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.29 1995/01/27 11:15:17 robertj Exp $
+ * $Id: osutils.cxx,v 1.30 1995/04/01 08:30:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.30  1995/04/01 08:30:58  robertj
+ * Fixed bug in timeout code of timers.
+ *
  * Revision 1.29  1995/01/27 11:15:17  robertj
  * Removed enum to int warning from GCC.
  *
@@ -562,11 +565,14 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
   if (inTimeout)
     return FALSE;
 
+  inTimeout = TRUE;
+
   operator-=(delta);
 
   if (*this > 0) {
     if (*this < minTimeLeft)
       minTimeLeft = *this;
+    inTimeout = FALSE;
     return FALSE;
   }
 
@@ -580,8 +586,8 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
       minTimeLeft = resetTime;
   }
 
-  inTimeout = TRUE;
   OnTimeout();
+
   inTimeout = FALSE;
 
   return state != Running;
