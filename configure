@@ -3692,7 +3692,7 @@ fi
 
 done
 
-  if test "${HAVE_OPENLDAP:-unset}" = "unset" ; then
+  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
     echo "$as_me:$LINENO: checking for ldap_open in -lldap" >&5
 echo $ECHO_N "checking for ldap_open in -lldap... $ECHO_C" >&6
 if test "${ac_cv_lib_ldap_ldap_open+set}" = set; then
@@ -3748,9 +3748,9 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_ldap_ldap_open" >&5
 echo "${ECHO_T}$ac_cv_lib_ldap_ldap_open" >&6
 if test $ac_cv_lib_ldap_ldap_open = yes; then
-  HAVE_LIBOPENLDAP=1
+  HAS_OPENLDAP=1
 else
-  HAVE_LIBOPENLDAP=
+  HAS_OPENLDAP=
 fi
 
   else
@@ -3775,14 +3775,14 @@ if test $ac_cv_file__usr_local_include_ldap_h = yes; then
   HAS_OPENLDAP=1
 fi
 
-    if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
+    if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
       OPENLDAPINCLUDEDIR=/usr/local/include
       OPENLDAPLIBDIR=/usr/local/lib
     fi
   fi
 fi
 
-if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
+if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
   HAS_OPENLDAP=1
 
 
@@ -3944,7 +3944,7 @@ fi
 
 done
 
-if test "${HAVE_EXPAT:-unset}" = "unset" ; then
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
   echo "$as_me:$LINENO: checking for XML_ParserCreate in -lexpat" >&5
 echo $ECHO_N "checking for XML_ParserCreate in -lexpat... $ECHO_C" >&6
 if test "${ac_cv_lib_expat_XML_ParserCreate+set}" = set; then
@@ -4000,9 +4000,9 @@ fi
 echo "$as_me:$LINENO: result: $ac_cv_lib_expat_XML_ParserCreate" >&5
 echo "${ECHO_T}$ac_cv_lib_expat_XML_ParserCreate" >&6
 if test $ac_cv_lib_expat_XML_ParserCreate = yes; then
-  HAVE_LIBEXPAT=1
+  HAS_EXPAT=1
 else
-  HAVE_LIBEXPAT=
+  HAS_EXPAT=
 fi
 
 else
@@ -4027,13 +4027,13 @@ if test $ac_cv_file__usr_local_include_expat_h = yes; then
   HAS_EXPAT=1
 fi
 
-  if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
+  if test "${HAS_EXPAT:-unset}" != "unset" ; then
     EXPATINCLUDEDIR=/usr/local/include
     EXPATLIBDIR=/usr/local/lib
   fi
 fi
 
-if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
   HAS_EXPAT=1
 
 

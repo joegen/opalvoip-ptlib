@@ -239,18 +239,18 @@ dnl MSWIN Open LDAP,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\
 
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
-  if test "${HAVE_OPENLDAP:-unset}" = "unset" ; then
-    AC_CHECK_LIB(ldap, ldap_open, HAVE_LIBOPENLDAP=1, HAVE_LIBOPENLDAP=,-llber $RESOLVER_LIBS)
+  if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
+    AC_CHECK_LIB(ldap, ldap_open, HAS_OPENLDAP=1, HAS_OPENLDAP=,-llber $RESOLVER_LIBS)
   else
     AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
-    if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
+    if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
       OPENLDAPINCLUDEDIR=/usr/local/include
       OPENLDAPLIBDIR=/usr/local/lib
     fi
   fi
 fi
 
-if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
+if test "${HAS_OPENLDAP:-unset}" != "unset" ; then
   AC_SUBST(HAS_OPENLDAP, 1)
   AC_DEFINE(P_LDAP, 1, "OpenLDAP found")
   if test ${OPENLDAPINCLUDEDIR:-unset} != "unset" ; then
@@ -269,17 +269,17 @@ dnl look for expat XML parser
 dnl MSWIN Expat XML,P_EXPAT,1,@EXPAT_DIR@,lib\expat.h,,..\expat\
 
 AC_CHECK_HEADERS(expat.h, HAS_EXPAT=1)
-if test "${HAVE_EXPAT:-unset}" = "unset" ; then
-  AC_CHECK_LIB(expat, XML_ParserCreate, HAVE_LIBEXPAT=1, HAVE_LIBEXPAT=)
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
+  AC_CHECK_LIB(expat, XML_ParserCreate, HAS_EXPAT=1, HAS_EXPAT=)
 else
   AC_CHECK_FILE(/usr/local/include/expat.h, HAS_EXPAT=1)
-  if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
+  if test "${HAS_EXPAT:-unset}" != "unset" ; then
     EXPATINCLUDEDIR=/usr/local/include
     EXPATLIBDIR=/usr/local/lib
   fi
 fi
 
-if test "${HAVE_LIBEXPAT:-unset}" != "unset" ; then
+if test "${HAS_EXPAT:-unset}" != "unset" ; then
   AC_SUBST(HAS_EXPAT, 1)
   AC_DEFINE(P_EXPAT, 1, "expat found")
   if test ${EXPATINCLUDEDIR:-unset} != "unset" ; then
