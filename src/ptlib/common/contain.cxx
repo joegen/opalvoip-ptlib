@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.12 1994/01/15 03:14:22 robertj Exp $
+ * $Id: contain.cxx,v 1.13 1994/03/07 07:47:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.12  1994/01/15 03:14:22  robertj
+ * Revision 1.13  1994/03/07 07:47:00  robertj
+ * Major upgrade
+ *
+ * Revision 1.12  1994/01/15  03:14:22  robertj
  * Mac portability problems.
  *
  * Revision 1.11  1994/01/03  04:42:23  robertj
@@ -92,6 +95,12 @@ void * PObject::operator new(size_t nSize)
 void PObject::operator delete(void * ptr)
 {
   free(ptr);
+}
+
+
+PObject::Comparison PObject::Compare(const PObject & obj) const
+{
+  return (Comparison)CompareObjectMemoryDirect(obj);
 }
 
 
@@ -427,7 +436,7 @@ BOOL PString::IsEmpty() const
 
 PString PString::operator+(const char * cstr) const
 {
-  PINDEX olen = Length();
+  PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   PString str;
   str.SetSize(olen+alen);
@@ -439,7 +448,7 @@ PString PString::operator+(const char * cstr) const
 
 PString PString::operator+(char c) const
 {
-  PINDEX olen = Length();
+  PINDEX olen = GetLength();
   PString str;
   str.SetSize(olen+2);
   memcpy(str.theArray, theArray, olen);
@@ -450,11 +459,26 @@ PString PString::operator+(char c) const
 
 PString & PString::operator+=(const char * cstr)
 {
-  PINDEX olen = Length();
+  PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   SetSize(olen+alen);
   memcpy(theArray+olen, cstr, alen);
   return *this;
+}
+
+
+void PString::Delete(PINDEX start, PINDEX len)
+{
+  register PINDEX slen = GetLength();
+  if (start > slen)
+    return;
+
+  MakeUnique();
+  if (start + len > slen)
+    theArray[start] = '\0';
+  else
+    strcpy(theArray+start, theArray+start+len);
+  MakeMinimumSize();
 }
 
 
@@ -463,7 +487,7 @@ PString PString::operator()(PINDEX start, PINDEX end) const
   if (end < start)
     return PString();
 
-  register PINDEX len = Length();
+  register PINDEX len = GetLength();
   if (start > len)
     return PString();
 
@@ -480,7 +504,7 @@ PString PString::Left(PINDEX len) const
   if (len == 0)
     return PString();
 
-  if (len >= Length())
+  if (len >= GetLength())
     return *this;
 
   return PString(theArray, len);
@@ -492,7 +516,7 @@ PString PString::Right(PINDEX len) const
   if (len == 0)
     return PString();
 
-  PINDEX srclen = Length();
+  PINDEX srclen = GetLength();
   if (len >= srclen)
     return *this;
 
@@ -502,36 +526,39 @@ PString PString::Right(PINDEX len) const
 
 PString PString::Mid(PINDEX start, PINDEX len) const
 {
-  if (start+len <= start) // Beware of wraparound
+  if (len == 0)
+    return PString();
+
+  if (start+len < start) // Beware of wraparound
     return operator()(start, P_MAX_INDEX);
   else
     return operator()(start, start+len-1);
 }
 
 
-int PString::Find(char ch, PINDEX offset) const
+PINDEX PString::Find(char ch, PINDEX offset) const
 {
-  register PINDEX len = Length();
+  register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   char *cpos = strchr(theArray+offset, ch);
-  return cpos != NULL ? (int)(cpos - theArray) : -1;
+  return cpos != NULL ? (int)(cpos - theArray) : P_MAX_INDEX;
 }
 
 
-int PString::Find(const PString & str, PINDEX offset) const
+PINDEX PString::Find(const PString & str, PINDEX offset) const
 {
-  register PINDEX len = Length();
+  register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   char *cpos = strstr(theArray+offset, str.theArray);
-  return cpos != NULL ? (int)(cpos - theArray) : -1;
+  return cpos != NULL ? (int)(cpos - theArray) : P_MAX_INDEX;
 }
 
 
-int PString::FindLast(char ch, PINDEX offset) const
+PINDEX PString::FindLast(char ch, PINDEX offset) const
 {
-  PINDEX len = Length();
+  PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   do {
@@ -539,17 +566,17 @@ int PString::FindLast(char ch, PINDEX offset) const
       return offset;
     offset--;
   } while(offset > 0);
-  return -1;
+  return P_MAX_INDEX;
 }
 
 
-int PString::FindLast(const PString & str, PINDEX offset) const
+PINDEX PString::FindLast(const PString & str, PINDEX offset) const
 {
   char *p1 = strstr(theArray, str.theArray);
   if (p1 == NULL)
-    return -1;
+    return P_MAX_INDEX;
 
-  PINDEX len = Length();
+  PINDEX len = GetLength();
   if (offset > len)
     offset = len;
 
@@ -561,16 +588,16 @@ int PString::FindLast(const PString & str, PINDEX offset) const
 }
 
 
-int PString::FindOneOf(const PString & str, PINDEX offset) const
+PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
 {
-  register PINDEX len = Length();
+  register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   for (char * cpos = theArray+offset; *cpos != '\0'; cpos++) {
     if (strchr(str.theArray, *cpos) != NULL)
       return (int)(cpos - theArray);
   }
-  return -1;
+  return P_MAX_INDEX;
 }
 
 
@@ -579,18 +606,30 @@ PStringArray
 {
   PStringArray tokens;
   
-  if (IsEmpty())
+  if (IsEmpty())  // No tokens
     return tokens;
     
-  int token = 0;
-  int p1 = 0;
-  int p2;
-  while ((p2 = FindOneOf(separators, p1)) >= 0) {
-    if (onePerSeparator)
+  PINDEX token = 0;
+  PINDEX p1 = 0;
+  PINDEX p2 = FindOneOf(separators, p1);
+
+  if (p2 == 0 && onePerSeparator) // first character is a token separator
+    token++;                      // make first string in array empty
+
+  while (p2 != P_MAX_INDEX) {
+    // Get next separator. If not one token per separator then continue
+    // around loop to skip over all the consecutive separators.
+    do {
+      p1 = p2 + 1;
+    } while ((p2 = FindOneOf(separators, p1)) == p1 && !onePerSeparator);
+
+    if (p2 > 0)
       tokens[token++] = operator()(p1, p2-1);
-    p1 = p2 + 1;
   }
-  tokens[token] = operator()(p1, P_MAX_INDEX);
+
+  if (p1 < GetLength() || onePerSeparator)         // Last token (if has one)
+    tokens[token] = operator()(p1, P_MAX_INDEX);
+
   return tokens;
 }
 
@@ -602,10 +641,10 @@ PStringArray PString::Lines() const
   if (IsEmpty())
     return lines;
     
-  int line = 0;
-  int p1 = 0;
-  int p2;
-  while ((p2 = FindOneOf("\r\n", p1)) >= 0) {
+  PINDEX line = 0;
+  PINDEX p1 = 0;
+  PINDEX p2;
+  while ((p2 = FindOneOf("\r\n", p1)) != P_MAX_INDEX) {
     lines[line++] = operator()(p1, p2-1);
     p1 = p2 + 1;
     if (theArray[p2] == '\r' && theArray[p1] == '\n') // CR LF pair
@@ -627,7 +666,7 @@ PString PString::LeftTrim() const
 
 PString PString::RightTrim() const
 {
-  char * rpos = theArray+Length()-1;
+  char * rpos = theArray+GetLength()-1;
   if (*rpos != ' ')
     return *this;
 
@@ -648,7 +687,7 @@ PString PString::Trim() const
   if (*lpos == '\0')
     return PString();
 
-  const char * rpos = theArray+Length()-1;
+  const char * rpos = theArray+GetLength()-1;
   if (*rpos != ' ')
     return PString(lpos);
 
@@ -680,7 +719,7 @@ PString PString::ToUpper() const
 }
 
 
-long PString::AsInteger(int base) const
+long PString::AsInteger(unsigned base) const
 {
   PAssert(base >= 2 && base <= 36);
   char * dummy;
@@ -697,7 +736,7 @@ double PString::AsReal() const
 
 PString PString::ToPascal() const
 {
-  PINDEX len = Length();
+  PINDEX len = GetLength();
   PAssert(len < 256);
   char buf[256];
   buf[0] = (char)len;
@@ -783,9 +822,9 @@ PObject::Comparison PCaselessString::CompareString(const char * cstr) const
 }
 
 
-int PCaselessString::Find(char ch, PINDEX offset) const
+PINDEX PCaselessString::Find(char ch, PINDEX offset) const
 {
-  register PINDEX len = Length();
+  register PINDEX len = GetLength();
   if (offset > len)
     offset = len;
   char *cpos = theArray+offset;
@@ -793,42 +832,36 @@ int PCaselessString::Find(char ch, PINDEX offset) const
   int chu = toupper(ch);
   while (isupper(*cpos) ? *cpos == chu : *cpos == chl) {
     if (*cpos++ == '\0')
-      return -1;
+      return P_MAX_INDEX;
   }
   return (int)(cpos - theArray);
 }
 
 
-int PCaselessString::Find(const char *cstr, PINDEX offset) const
+PINDEX PCaselessString::Find(const char *cstr, PINDEX offset) const
 {
-  PString str1(*this);
-  PString str2(cstr);
-  str1.ToUpper();
-  str2.ToUpper();
-  return str1.Find(str2, offset);
+  PString str(cstr);
+  return ToUpper().Find(str.ToUpper(), offset);
 }
 
 
-int PCaselessString::FindLast(char ch) const
+PINDEX PCaselessString::FindLast(char ch) const
 {
-  char *cpos = theArray+Length()-1;
+  char *cpos = theArray+GetLength()-1;
   int chl = tolower(ch);
   int chu = toupper(ch);
   while (isupper(*cpos) ? *cpos == chu : *cpos == chl) {
     if (--cpos == theArray)
-      return -1;
+      return P_MAX_INDEX;
   }
   return (int)(cpos - theArray);
 }
 
 
-int PCaselessString::FindLast(const char *cstr) const
+PINDEX PCaselessString::FindLast(const char *cstr) const
 {
-  PString str1(*this);
-  PString str2(cstr);
-  str1.ToUpper();
-  str2.ToUpper();
-  return str1.FindLast(str2);
+  PString str(cstr);
+  return ToUpper().FindLast(str.ToUpper());
 }
 
 
@@ -867,13 +900,14 @@ void PArrayObjects::CloneContents(const PArrayObjects * array)
 
 PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
+  const PArrayObjects & other = (const PArrayObjects &)obj;
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (*theArray[i] < *((const PArrayObjects &)obj).theArray[i])
+    if (i >= other.GetSize() || *theArray[i] < *other.theArray[i])
       return LessThan;
-    if (*theArray[i] > *((const PArrayObjects &)obj).theArray[i])
+    if (*theArray[i] > *other.theArray[i])
       return GreaterThan;
   }
-  return EqualTo;
+  return i < other.GetSize() ? GreaterThan : EqualTo;
 }
 
 
@@ -905,9 +939,13 @@ PINDEX PArrayObjects::Insert(const PObject & before, PObject * obj)
 }
 
 
-void PArrayObjects::Remove(const PObject * obj)
+BOOL PArrayObjects::Remove(const PObject * obj)
 {
-  RemoveAt(GetIndex(obj));
+  PINDEX i = GetIndex(obj);
+  if (i == P_MAX_INDEX)
+    return FALSE;
+  RemoveAt(i);
+  return TRUE;
 }
 
 
@@ -945,8 +983,10 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
   for (PINDEX i = index; i < GetSize(); i++)
     theArray[i] = theArray[i+1];
   SetSize(GetSize()-1);
-  if (obj != NULL && reference->deleteObjects)
+  if (obj != NULL && reference->deleteObjects) {
     delete obj;
+    obj = NULL;
+  }
   return obj;
 }
 
@@ -1084,9 +1124,13 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 }
 
 
-void PAbstractList::Remove(const PObject * obj)
+BOOL PAbstractList::Remove(const PObject * obj)
 {
-  RemoveAt(GetIndex(obj));
+  PINDEX i = GetIndex(obj);
+  if (i == P_MAX_INDEX)
+    return FALSE;
+  RemoveAt(i);
+  return TRUE;
 }
 
 
@@ -1348,12 +1392,15 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
 }
 
 
-void PAbstractSortedList::Remove(const PObject * obj)
+BOOL PAbstractSortedList::Remove(const PObject * obj)
 {
   PSortedListElement * element = info->root;
   while (element != NULL && element->data != obj)
     element = *obj < *element->data ? element->left : element->right;
+  if (element == NULL)
+    return FALSE;
   RemoveElement(element);
+  return TRUE;
 }
 
 
@@ -1888,10 +1935,12 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 }
 
 
-void PAbstractSet::Remove(const PObject * obj)
+BOOL PAbstractSet::Remove(const PObject * obj)
 {
-  hashTable->RemoveElement(*obj);
+  if (!hashTable->RemoveElement(*obj))
+    return FALSE;
   reference->size--;
+  return TRUE;
 }
 
 
@@ -1953,9 +2002,10 @@ PINDEX PAbstractDictionary::InsertAt(PINDEX index,PObject * obj)
 }
  
  
-void PAbstractDictionary::Remove(const PObject *)
+BOOL PAbstractDictionary::Remove(const PObject *)
 {
   PAssertAlways();
+  return FALSE;
 }
 
 
@@ -2022,10 +2072,31 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 }
 
 
+PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
+{
+  PAssert(hashTable->SetLastElementAt(index));
+  return *hashTable->lastElement->data;
+}
+
+
+const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
+{
+  PAssert(hashTable->SetLastElementAt(index));
+  return *hashTable->lastElement->key;
+}
+
+
 PObject * PAbstractDictionary::GetAt(const PObject & key) const
 {
   PHashTableElement * element = hashTable->GetElementAt(key);
   return element != NULL ? element->data : NULL;
+}
+
+
+PObject & PAbstractDictionary::GetRefAt(const PObject & key) const
+{
+  PHashTableElement * element = hashTable->GetElementAt(key);
+  return *PAssertNULL(element)->data;
 }
 
 
