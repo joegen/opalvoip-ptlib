@@ -1944,7 +1944,7 @@ case "$target_os" in
                    if test "x$OSRELEASE" = "x"; then
                      OSRELEASE=`sysctl -n kern.osreldate` ;
                    fi
-                   STDCCFLAGS="-DP_FREEBSD=${ROGER}" ;;
+                   STDCCFLAGS="-DP_FREEBSD=${OSRELEASE}" ;;
 
   openbsd* )       OSTYPE=OpenBSD ;
                    OSRELEASE=`sysctl -n kern.osrevision` ;
@@ -4564,7 +4564,22 @@ fi
 
 
 
-if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
+if test ${OPENSSLDIR:-unset} != "unset" ; then
+
+  echo -n "Checking ${OPENSSLDIR}/include/openssl for SSL... "
+  if test -e ${OPENSSLDIR}/include/openssl/ssl.h ; then
+    echo "yes"
+    SSLHDR=1
+    SSLINCLUDEDIR="${OPENSSLDIR}/include"
+    SSLLIBDIR="${OPENSSLDIR}/lib"
+  else
+    echo "no"
+  fi
+fi
+
+
+if test "${SSLHDR:-unset}" = "unset" ; then
+    if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
   echo "$as_me:$LINENO: checking for openssl/ssl.h" >&5
 echo $ECHO_N "checking for openssl/ssl.h... $ECHO_C" >&6
 if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
@@ -4698,12 +4713,6 @@ if test $ac_cv_header_openssl_ssl_h = yes; then
 fi
 
 
-
-if test ${OPENSSLDIR:-unset} != "unset" ; then
-  echo "Using ${OPENSSLDIR} for SSL"
-  HAVE_LIBSSL=1
-  SSLINCLUDEDIR="${OPENSSLDIR}/include"
-  SSLLIBDIR="${OPENSSLDIR}/lib"
 
 else
 
@@ -5591,6 +5600,12 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+
+cat >>confdefs.h <<\_ACEOF
+#define P_HAS_QOS 1
+_ACEOF
+
 
 
 HAS_VIDEO_CAPTURE=no
@@ -6542,7 +6557,7 @@ fi
           ac_config_files="$ac_config_files Makefile"
 
 
-
+#AC_CONFIG_FILES(include/ptbuildopts.h.in)
           ac_config_headers="$ac_config_headers include/ptbuildopts.h"
 
 
