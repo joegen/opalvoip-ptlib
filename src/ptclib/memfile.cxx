@@ -27,27 +27,43 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.cxx,v $
+ * Revision 1.2  2002/06/27 03:53:35  robertj
+ * Cleaned up documentation and added Compare() function.
+ *
  * Revision 1.1  2002/06/26 09:03:16  craigs
  * Initial version
  *
  */
 
 #include <ptlib.h>
-#include <ptclib/memfile.h>
 
 #ifdef __GNUC__
 #pragma implementation "memfile.h"
 #endif
+
+#include <ptclib/memfile.h>
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 
 PMemoryFile::PMemoryFile()
 {
   position = 0;
 }
 
+
 PMemoryFile::PMemoryFile(const PBYTEArray & ndata)
 {
   data = ndata;
   position = 0;
+}
+
+
+PObject::Comparison PMemoryFile::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(Class()), PInvalidCast);
+  return data.Compare(((const PMemoryFile &)obj).data);
 }
 
 
@@ -67,6 +83,7 @@ BOOL PMemoryFile::Read(void * buf, PINDEX len)
   return lastReadCount != 0;
 }
 
+
 BOOL PMemoryFile::Write(const void * buf, PINDEX len)
 {
   memcpy(data.GetPointer(position+len) + position, buf, len);
@@ -74,15 +91,18 @@ BOOL PMemoryFile::Write(const void * buf, PINDEX len)
   return TRUE;
 }
 
+
 off_t PMemoryFile::GetLength() const
 {
   return data.GetSize();
 }
       
+
 BOOL PMemoryFile::SetLength(off_t len)
 {
   return data.SetSize(len);
 }
+
 
 BOOL PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
@@ -108,9 +128,12 @@ BOOL PMemoryFile::SetPosition(off_t pos, FilePositionOrigin origin)
   return TRUE;
 }
 
+
 off_t PMemoryFile::GetPosition() const
 {
   return position;
 }
 
+
+// End of File ///////////////////////////////////////////////////////////////
 
