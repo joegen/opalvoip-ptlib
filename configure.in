@@ -272,7 +272,9 @@ dnl MSWIN DLL Support,,P_DYNALINK
 
 LIBS=""
 HAS_LIBDL=no
+P_DYNALINK=0
 if test ${OSTYPE} = Darwin ; then
+  P_DYNALINK=1
   AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
 else
   AC_CHECK_HEADERS(dlfcn.h, HAS_DLFCN=yes, HAS_DLFCN=no)
@@ -284,6 +286,7 @@ else
       AC_MSG_RESULT(no)
     else
       AC_MSG_RESULT(yes)
+      P_DYNALINK=1
       AC_DEFINE(P_DYNALINK, 1, "dlopen found")
       AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
     fi
