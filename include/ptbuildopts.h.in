@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.36  2004/11/16 00:24:38  csoutheren
+ * Added Cygwin support
+ *
  * Revision 1.35  2004/08/24 07:08:13  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -159,6 +162,7 @@
 #undef	P_NETBSD
 #undef	P_SOLARIS
 #undef	P_MACOSX
+#undef	P_CYGWIN
 #undef	P_UNKNOWN_OS 
 
 /////////////////////////////////////////////////
