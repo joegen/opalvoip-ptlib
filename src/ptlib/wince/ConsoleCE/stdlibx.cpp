@@ -546,34 +546,6 @@ UINT GetWindowsDirectory( char* lpBuffer, UINT uSize )
 { strncpy(lpBuffer, "\\Windows", uSize ); return uSize; }
 
 
-#if 0
-#include <afxwin.h>
-
-DWORD GetPrivateProfileString(
-  const char* lpAppName,        // points to section name
-  const char*  lpKeyName,        // points to key name
-  const char* lpDefault,        // points to default string
-  char* lpReturnedString,  // points to destination buffer
-  DWORD nSize,              // size of destination buffer
-  const char*  )        // points to initialization filename
-{ USES_CONVERSION; 
-	TCHAR szT[4096];
-	CString str = AfxGetApp()->GetProfileString(A2T(lpAppName), A2T(lpKeyName), A2T(lpDefault));
-	_tcsncpy(szT, str.GetBuffer(4096), 4096 ); 
-	strncpy(lpReturnedString, T2A(szT), nSize);
-	return nSize;
-}
-
-BOOL WritePrivateProfileString(
-  const char* lpAppName,  // pointer to section name
-  const char* lpKeyName,  // pointer to key name
-  const char* lpString,   // pointer to string to add
-  const char* )  // pointer to initialization filename
-{ USES_CONVERSION; return AfxGetApp()->WriteProfileString(
-	A2T(lpAppName), A2T(lpKeyName), A2T(lpString));
-}
-
-#else
 DWORD GetPrivateProfileString(
   const char* lpAppName,        // points to section name
   const char*  lpKeyName,        // points to key name
@@ -594,4 +566,3 @@ BOOL WritePrivateProfileString(
 	return FALSE;
 }
 
-#endif
