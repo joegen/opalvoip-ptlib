@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.18  2004/06/01 23:30:38  csoutheren
+ * Removed warning under Linux
+ *
  * Revision 1.17  2004/05/31 23:14:17  csoutheren
  * Fixed warnings under VS.net and fixed problem with SRV records when returning multiple records
  *
@@ -128,7 +131,7 @@ static BOOL ProcessDNSRecords(
       section = DnsSectionAnswer;
     else if (i < nsCount)
       section = DnsSectionAuthority;
-    else if (i < arCount)
+    else // if (i < arCount)
       section = DnsSectionAddtional;
 
     // get the name
