@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.12  1999/05/01 03:52:20  robertj
+ * Fixed various egcs warnings.
+ *
  * Revision 1.11  1999/03/02 01:53:38  craigs
  * Fixed problem with creating IpAddress objects
  *
@@ -306,9 +309,9 @@ void PASNObject::EncodeASNInteger (PBYTEArray & buffer, PASNInt data, PASNObject
 
 void PASNObject::EncodeASNUnsigned (PBYTEArray & buffer, PASNUnsigned data, PASNObject::ASNType type)
 {
-  DWORD mask;
-  WORD  intsize = sizeof(data);
-  int   add_null_byte = 0;
+  long mask;
+  WORD intsize = sizeof(data);
+  int  add_null_byte = 0;
 
   mask = 0xFFL << (8 * (sizeof(long) - 1));
   /* mask is 0xFF000000 on a big-endian machine */
@@ -413,9 +416,9 @@ WORD PASNObject::GetASNIntegerLength(PASNInt data)
 
 WORD PASNObject::GetASNUnsignedLength (PASNUnsigned data)
 {
-  DWORD mask;
-  WORD  intsize = sizeof(data);
-  int   add_null_byte = 0;
+  long mask;
+  WORD intsize = sizeof(data);
+  int  add_null_byte = 0;
 
   mask = 0xFFL << (8 * (sizeof(long) - 1));
   /* mask is 0xFF000000 on a big-endian machine */

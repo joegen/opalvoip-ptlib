@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.11  1999/05/01 03:52:20  robertj
+ * Fixed various egcs warnings.
+ *
  * Revision 1.10  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -394,7 +397,8 @@ class PASNUnsignedInteger : public PASNObject
     PASNUnsigned GetUnsigned() const;
 
   protected:
-    inline PASNUnsignedInteger() { }
+    PASNUnsignedInteger()
+      { value = 0; }
 
     BOOL Decode(const PBYTEArray & buffer, PINDEX & i, PASNObject::ASNType theType);
     void Encode(PBYTEArray & buffer, PASNObject::ASNType theType);
