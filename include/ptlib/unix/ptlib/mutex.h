@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.11  2000/12/16 13:11:09  rogerh
+ * Remote the 'public:' line. It is redundant as 'public:' is already
+ * specified in the ../../mutex.h header file. Problem spotted following a
+ * BeOS patch from Yuri Kiryanov <openh323@kiryanov.com>
+ *
  * Revision 1.10  2000/12/15 13:20:17  rogerh
  * Fix typo
  *
@@ -69,7 +74,6 @@
 
 #include "../../mutex.h"
 #if defined(P_PTHREADS) || defined(BE_THREADS)
-  public:
     ~PMutex();
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
