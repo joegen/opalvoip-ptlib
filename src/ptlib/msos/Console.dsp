@@ -611,7 +611,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	cd ..\..\.. 
-	.\configure --exclude-env MSVC_PWLIB_CONFIGURE_EXCLUDE_DIRS 
+	.\configure --exclude-env=MSVC_PWLIB_CONFIGURE_EXCLUDE_DIRS 
 	
 # End Custom Build
 
