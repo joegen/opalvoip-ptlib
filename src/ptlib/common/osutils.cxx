@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.122  1999/06/23 14:19:46  robertj
+ * Fixed core dump problem with SIGINT/SIGTERM terminating process.
+ *
  * Revision 1.121  1999/06/14 07:59:38  robertj
  * Enhanced tracing again to add options to trace output (timestamps etc).
  *
@@ -418,6 +421,7 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/svcproc.h>
 
 #include <ctype.h>
 
@@ -1084,6 +1088,11 @@ int PProcess::p_argc;
 char ** PProcess::p_argv;
 char ** PProcess::p_envp;
 
+#ifndef P_PLATFORM_HAS_THREADS
+static BOOL PProcessTerminating = FALSE;
+#endif
+
+
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : manufacturer(manuf), productName(name)
@@ -1147,7 +1156,15 @@ void PProcess::Terminate()
 #ifdef _WINDLL
   FatalExit(terminationValue);
 #else
+#ifndef P_PLATFORM_HAS_THREADS
+  // Can only terminate process from the processes thread
+  if (currentThread == this)
+    exit(terminationValue);
+  else
+    PProcessTerminating = TRUE;
+#else
   exit(terminationValue);
+#endif
 #endif
 }
 
@@ -1340,38 +1357,39 @@ void PThread::BeginThread()
 
 void PThread::Yield()
 {
-  do {
-    PThread * current = PProcessInstance->currentThread;
-    if (current == PProcessInstance)
-      PProcessInstance->GetTimerList()->Process();
-    else {
-      char stackUsed;
-      if (&stackUsed < current->stackBase) {
-        char * buf = (char *)malloc(1000);
-        sprintf(buf, "Stack overflow!\n"
-                     "\n"
-                     "Thread: 0x%08x - %s\n"
-                     "Stack top  : 0x%08x\n"
-                     "Stack base : 0x%08x\n"
-                     "Stack frame: 0x%08x\n"
-                     "\n",
-                (int)current, current->GetClass(),
-                (int)current->stackTop,
-                (int)current->stackBase,
-                (int)&stackUsed);
-        PAssertAlways(buf);
-        PError << "Aborting." << endl;
-        _exit(1);
-      }
+  PThread * current = PProcessInstance->currentThread;
+  if (current == PProcessInstance) {
+    PProcessInstance->GetTimerList()->Process();
+    if (current->link == current)
+      return;
+  }
+  else {
+    char stackUsed;
+    if (&stackUsed < current->stackBase) {
+      char * buf = (char *)malloc(1000);
+      sprintf(buf, "Stack overflow!\n"
+                   "\n"
+                   "Thread: 0x%08x - %s\n"
+                   "Stack top  : 0x%08x\n"
+                   "Stack base : 0x%08x\n"
+                   "Stack frame: 0x%08x\n"
+                   "\n",
+              (int)current, current->GetClass(),
+              (int)current->stackTop,
+              (int)current->stackBase,
+              (int)&stackUsed);
+      PAssertAlways(buf);
+      PError << "Aborting." << endl;
+      _exit(1);
     }
+  }
 
-    if (current->status == Running) {
-      if (current->link == current)
-        return;
-      if (current->basePriority == HighestPriority)
-        return;
+  if (current->status == Running && current->basePriority == HighestPriority)
+    return;
+
+  do {
+    if (current->status == Running)
       current->status = Waiting;
-    }
 
     static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
     current->dynamicPriority = dynamicLevel[current->basePriority];
@@ -1382,7 +1400,14 @@ void PThread::Yield()
     PThread * thread = current->link;
     BOOL pass = 0;
     BOOL canUseLowest = TRUE;
+
     for (;;) {
+      if (PProcessTerminating) {
+        next = PProcessInstance;
+        next->status = Running;
+        break;
+      }
+
       switch (thread->status) {
         case Waiting :
           if (thread->dynamicPriority == 0) {
@@ -1410,8 +1435,12 @@ void PThread::Yield()
 
         case BlockedIO :
           if (thread->IsNoLongerBlocked()) {
-            thread->ClearBlock();
-            next = thread;
+            if (PProcessTerminating)
+              next = PProcessInstance;
+            else {
+              thread->ClearBlock();
+              next = thread;
+            }
             next->status = Running;
           }
           break;
@@ -1451,7 +1480,7 @@ void PThread::Yield()
           break;
       }
 
-      if (next != NULL) // Have a thread to run
+      if (next != NULL)  // Have a thread to run
         break;
 
       // Need to have previous thread so can unlink a terminating thread
@@ -1471,6 +1500,13 @@ void PThread::Yield()
     // Could get here with a self terminating thread, so go around again if all
     // we did was switch stacks, and do not actually have a running thread.
   } while (PProcessInstance->currentThread->status != Running);
+
+  if (PProcessTerminating) {
+    PProcessTerminating = FALSE;
+    if (PProcessInstance->IsDescendant(PServiceProcess::Class()))
+      ((PServiceProcess *)PProcessInstance)->OnStop();
+    exit(PProcessInstance->terminationValue);
+  }
 }
 
 
