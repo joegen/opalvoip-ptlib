@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.11 1996/03/10 13:15:23 robertj Exp $
+ * $Id: http.h,v 1.12 1996/03/16 04:39:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.12  1996/03/16 04:39:55  robertj
+ * Added ParseReponse() for splitting reponse line into code and info.
+ * Added client side support for HTTP socket.
+ * Added hooks for proxy support in HTTP socket.
+ *
  * Revision 1.11  1996/03/10 13:15:23  robertj
  * Redesign to make resources thread safe.
  *
@@ -211,8 +216,33 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
 
 
   // New functions for class.
+    enum Commands {
+      GET,
+      HEAD,
+      POST,
+      NumCommands
+    };
+
+
+    BOOL WriteCommand(
+      Commands cmd,                 // Command to write.
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & outMIME,    // MIME info in request
+      const PString & dataBody,     // Information posted to the HTTP server.
+      PMIMEInfo & replyMIME         // MIME info in response
+    );
+    /* Send a command and wait for the response header (including MIME fields).
+       Note that a body may still be on its way even if lasResponseCode is not
+       200!
+
+       <H2>Returns:</H2>
+       TRUE if all of header returned and ready to receive body.
+     */
+
     BOOL GetDocument(
-      const PString & url    // Universal Resource Locator for document.
+      const PURL & url,          // Universal Resource Locator for document.
+      const PMIMEInfo & outMIME, // MIME info in request
+      PMIMEInfo & replyMIME      // MIME info in response
     );
     /* Get the document specified by the URL.
 
@@ -221,7 +251,9 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
      */
 
     BOOL GetHeader(
-      const PString & url    // Universal Resource Locator for document.
+      const PURL & url,          // Universal Resource Locator for document.
+      const PMIMEInfo & outMIME, // MIME info in request
+      PMIMEInfo & replyMIME      // MIME info in response
     );
     /* Get the header for the document specified by the URL.
 
@@ -231,8 +263,10 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
 
 
     BOOL PostData(
-      const PString & url,          // Universal Resource Locator for document.
-      const PStringToString & data  // Information posted to the HTTP server.
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & outMIME,    // MIME info in request
+      const PStringToString & data, // Information posted to the HTTP server.
+      PMIMEInfo & replyMIME         // MIME info in response
     );
     /* Post the data specified to the URL.
 
@@ -260,13 +294,6 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
     ) { urlSpace = space; }
     // Use a new URL name space for this HTTP socket.
 
-
-    enum Commands {
-      GET,
-      HEAD,
-      POST,
-      NumCommands
-    };
 
     BOOL ProcessCommand();
     /* Process commands, dispatching to the appropriate virtual function. This
@@ -317,6 +344,24 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        The default implemetation looks up the URL in the name space declared by
        the <A>PHTTPSpace</A> class tree and despatches to the
        <A>PHTTPResource</A> object contained therein.
+
+       <H2>Returns:</H2>
+       TRUE if more processing may be done, FALSE if the
+       <A>ProcessCommand()</A> function is to return FALSE.
+     */
+
+    virtual BOOL OnProxy(
+      Commands cmd,                 // Command to be proxied.
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & info,       // Extra MIME information in command.
+      const PString & body          // Body of request.
+    );
+    /* Handle a proxy command request from a client. This will only get called
+       if the request was not for this particular server. If it was a proxy
+       request for this server (host and port number) then the appropriate
+       <A>OnGET()</A>, <A>OnHEAD()</A> or <A>OnPOST()</A> command is called.
+
+       The default implementation returns OnError(BadGateway).
 
        <H2>Returns:</H2>
        TRUE if more processing may be done, FALSE if the
@@ -391,6 +436,22 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
 
 
   protected:
+    virtual PINDEX ParseResponse(
+      const PString & line // Input response line to be parsed
+    );
+    /* Parse a response line string into a response code and any extra info
+       on the line. Results are placed into the member variables
+       <CODE>lastResponseCode</CODE> and <CODE>lastResponseInfo</CODE>.
+
+       The default bahaviour looks for a space or a '-' and splits the code
+       and info either side of that character, then returns FALSE.
+
+       <H2>Returns:</H2>
+       Position of continuation character in response, 0 if no continuation
+       lines are possible.
+     */
+
+
     int majorVersion;
     int minorVersion;
 
