@@ -111,6 +111,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.4  2002/02/21 20:00:21  dereks
+ * Fix memory leak. Thanks Ryutaroh Matsumoto.
+ *
  * Revision 1.3  2002/02/21 19:49:57  dereks
  * Fix spelling mistake. Thanks Ryutaroh
  *
@@ -623,6 +626,9 @@ BOOL PVideoInput1394DcDevice::SetFrameSizeConverter(unsigned width, unsigned hei
     return FALSE;
   }
 
+  if (converter != NULL) 
+    delete converter;
+  
   desiredFrameWidth = width;
   desiredFrameHeight = height;
 
