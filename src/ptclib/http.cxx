@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.49 1998/02/03 06:27:26 robertj Exp $
+ * $Id: http.cxx,v 1.50 1998/02/03 10:02:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.50  1998/02/03 10:02:34  robertj
+ * Added ability to get scheme, host and port from URL as a string.
+ *
  * Revision 1.49  1998/02/03 06:27:26  robertj
  * Fixed URL encoding to be closer to RFC
  *
@@ -550,7 +553,7 @@ PString PURL::AsString(UrlFormat fmt) const
 {
   PStringStream str;
 
-  if (fmt == FullURL) {
+  if (fmt == FullURL || fmt == HostPortOnly) {
 
     // if the scheme is empty, assume http
     if (!scheme) {
@@ -585,6 +588,8 @@ PString PURL::AsString(UrlFormat fmt) const
         }
       }
     }
+    if (fmt == HostPortOnly)
+      return str;
   }
 
   PINDEX count = path.GetSize();
