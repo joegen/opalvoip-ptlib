@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.8  1999/01/08 01:31:03  robertj
+ * Support for pthreads under FreeBSD
+ *
  * Revision 1.7  1998/12/15 12:41:07  robertj
  * Fixed signal handling so can now ^C a pthread version.
  *
@@ -322,7 +325,7 @@ void PThread::Suspend(BOOL susp)
     if (susp) {
       PX_suspendCount++;
       if (PX_suspendCount == 1) {
-        if (PX_threadId != (unsigned)pthread_self()) 
+        if (PX_threadId != pthread_self()) 
           pthread_kill(PX_threadId, SUSPEND_SIG);
         else {
           unlock = FALSE;
@@ -454,9 +457,18 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
+  struct timeval valTime;
+  ::gettimeofday(&valTime, NULL);
+  valTime.tv_sec += waitTime.GetSeconds();
+  valTime.tv_usec += waitTime.GetMilliSeconds() % 1000L;
+  if (valTime.tv_usec > 1000000) {
+    valTime.tv_usec -= 1000000;
+    valTime.tv_sec++;
+  }
+
   struct timespec absTime;
-  ::clock_gettime(CLOCK_REALTIME, &absTime);
-  absTime.tv_sec += waitTime.GetMilliSeconds() / 1000L;
+  absTime.tv_sec = valTime.tv_sec;
+  absTime.tv_nsec = valTime.tv_usec * 1000;
 
   PAssert(pthread_mutex_lock(&mutex) == 0, "pthread_mutex_lock failed");
 
@@ -464,7 +476,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   while (currentCount == 0) {
     int err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
     PProcess::Current().PXCheckSignals();
-    if (err == ETIME || err == ETIMEDOUT) {
+    if (err == ETIMEDOUT) {
       queuedLocks--;
       pthread_mutex_unlock(&mutex);
       return FALSE;
