@@ -295,10 +295,40 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PDrawing
+
+#include "../../common/drawing.h"
+  public:
+    PDrawing(HMETAFILE hM);
+    HMETAFILE GetHMETAFILE() const;
+
+  protected:
+    DECLARE_CLASS(Metafile, PContainer)
+      public:
+        Metafile(HMETAFILE hMeta);
+        Metafile(const Metafile & m);
+        Metafile & operator=(const Metafile & m);
+        virtual ~Metafile();
+
+      protected:
+        virtual Comparison Compare(const PObject & obj) const;
+        virtual void DestroyContents();
+        virtual BOOL SetSize(PINDEX size);
+
+        HMETAFILE hMetafile;
+
+        friend class PDrawing;
+    };
+    Metafile metafile;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PImage
 
 #include "../../common/image.h"
   public:
+    PImage(HBITMAP hBm);
     HBITMAP GetHBITMAP() const;
 
   protected:
@@ -535,6 +565,10 @@ typedef int PDIMENSION;
 
     BOOL inPaint;
       // Prevent recursive errors by remembering if we are in WM_PAINT
+
+    HWND dialogResourceChild;
+      // Special wonder variable to help dialog resource loading create
+      // interactor objects from already existing MS-Windows window handles.
 
 
     friend class PApplication;
@@ -1281,6 +1315,15 @@ typedef int PDIMENSION;
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PClipboard
+
+#include "../../common/clipbrd.h"
+  private:
+    BOOL opened;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PApplication
 
 #include "../../common/applicat.h"
@@ -1305,10 +1348,10 @@ typedef int PDIMENSION;
       private:
         HWND theKey;
     };
-    PDictionary(WindowDict, HWNDKey, PInteractor);
+    PDICTIONARY(WindowDict, HWNDKey, PInteractor);
     WindowDict CreatedWindows;
 
-    PList(NonModalDict, PDialog);
+    PLIST(NonModalDict, PDialog);
     NonModalDict NonModalDialogs;
 
     friend LRESULT FAR PASCAL _export
