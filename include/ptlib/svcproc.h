@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.17  1999/09/13 13:15:06  robertj
+ * Changed PTRACE so will output to system log in PServiceProcess applications.
+ *
  * Revision 1.16  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -146,6 +149,22 @@ class PSystemLog : public PObject, public iostream {
     );
   //@}
 
+  /**@name Miscellaneous functions */
+  //@{
+    /** Set the level at which errors are logged. Only messages higher than or
+       equal to the specified level will be logged.
+      */
+    void SetLevel(
+      Level level  /// New log level
+    ) { logLevel = level; }
+
+    /** Get the current level for logging.
+
+       @return
+       Log level.
+     */
+    Level GetLevel() const { return logLevel; }
+  //@}
 
   private:
     PSystemLog(const PSystemLog &) { }
