@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.86  2002/04/12 07:57:41  robertj
+ * Fixed bug introduced into Accept() by previous change.
+ *
  * Revision 1.85  2002/04/12 01:42:41  robertj
  * Changed return value on os_connect() and os_accept() to make sure
  *   get the correct error codes propagated up under unix.
@@ -360,7 +363,7 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * siz
   for (;;) {
     int new_fd = ::accept(listener.GetHandle(), addr, (socklen_t *)size);
     if (new_fd >= 0)
-      return ConvertOSError(SetNonBlocking(new_fd));
+      return ConvertOSError(os_handle = SetNonBlocking(new_fd));
 
     if (errno != EPROTO)
       return ConvertOSError(-1);
@@ -368,7 +371,7 @@ BOOL PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * siz
     PTRACE(3, "PWLib\tAccept on " << sock << " failed with EPROTO - retrying");
   }
 #else
-  return ConvertOSError(SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
+  return ConvertOSError(os_handle = SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
 #endif
 }
 
