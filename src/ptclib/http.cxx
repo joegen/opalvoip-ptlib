@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.57  1999/05/11 12:24:18  robertj
+ * Fixed URL parser so leading blanks are ignored.
+ *
  * Revision 1.56  1999/05/04 15:26:01  robertj
  * Improved HTTP/1.1 compatibility (pass through user commands).
  * Fixed problems with quicktime installer.
@@ -455,6 +458,8 @@ void PURL::Parse(const char * cstr)
   port = 0;
 
   // copy the string so we can take bits off it
+  while (isspace(*cstr))
+    cstr++;
   PString url = cstr;
 
   PINDEX pos;
