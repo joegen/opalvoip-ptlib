@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.12  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.11  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -77,21 +80,20 @@
 #ifdef _PSERIALCHANNEL_PLATFORM_INCLUDE
 #undef _PSERIALCHANNEL_PLATFORM_INCLUDE
 
-#ifndef P_VXWORKS
 
   public:
     BOOL Close();
 
   private:
+#ifndef P_VXWORKS
     struct termios oldTermio;
     struct termios Termio;
+#endif // !P_VXWORKS
 
     DWORD  baudRate;
     BYTE   dataBits;
     Parity parityBits;
     BYTE   stopBits;
-
-#endif // !P_VXWORKS
 
 #endif
 
