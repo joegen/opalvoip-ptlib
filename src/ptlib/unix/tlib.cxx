@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.29  1998/03/29 10:42:16  craigs
+ * Changed for new initialisation scheme
+ *
  * Revision 1.28  1998/03/26 05:01:12  robertj
  * Added PMutex and PSyncPoint classes.
  *
@@ -137,7 +140,6 @@ void PSetErrorStream(ostream * s)
   PErrorStream = s;
 }
 
-
 PString PProcess::GetOSClass()
 {
   return PString("Unix");
@@ -170,7 +172,7 @@ PString PProcess::GetOSVersion()
 #endif
 }
 
-PString PProcess::GetHomeDir ()
+PDirectory PProcess::PXGetHomeDir ()
 
 {
   PString dest;
@@ -289,19 +291,7 @@ void SetSignals(void (*handler)(int))
 //#endif
 }
 
-void PProcess::PXSetupProcess()
-{
-  // Setup signal handlers
-  pxSignals = 0;
-
-  SetSignals(&PXSignalHandler);
-
-  // initialise the timezone information
-  tzset();
-}
-
-
-
+#if 0
 int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
 {
   // save the environment
@@ -322,6 +312,7 @@ int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
 
   return terminationValue;
 }
+#endif
 
 void PProcess::PXOnSignal(int sig)
 {
@@ -341,6 +332,21 @@ void PProcess::PXOnAsyncSignal(int /*sig*/)
 {
 }
 
+void PProcess::CommonConstruct()
+{
+  // Setup signal handlers
+  pxSignals = 0;
+
+  SetSignals(&PXSignalHandler);
+
+  // initialise the timezone information
+  tzset();
+}
+
+void PProcess::CommonDestruct()
+{
+  SetSignals(NULL);
+}
 
 //////////////////////////////////////////////////////////////////
 //
