@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.19  2001/02/25 19:40:35  rogerh
+ * Add a suspend Semaphore for MAC OS threads started as 'suspended'
+ *
  * Revision 1.18  2000/10/31 08:07:28  rogerh
  * Use proper return type for PX_GetThreadID
  *
@@ -128,6 +131,9 @@ class PSemaphore;
 
     PINDEX     PX_origStackSize;
     int        PX_suspendCount;
+#ifdef P_MACOSX
+    PSemaphore *suspend_semaphore;
+#endif
 
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
