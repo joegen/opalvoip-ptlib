@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.13 1997/01/12 04:14:39 robertj Exp $
+ * $Id: remconn.cxx,v 1.14 1997/01/25 02:22:47 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.14  1997/01/25 02:22:47  robertj
+ * Fixed backward compatibilty with NT3.51 and Win'95
+ *
  * Revision 1.13  1997/01/12 04:14:39  robertj
  * Added ability to add/change new connections.
  *
@@ -31,6 +34,26 @@
 
 #include <ptlib.h>
 #include <remconn.h>
+
+namespace winver351 {
+#undef WINVER
+#define WINVER 0x351
+#undef _RAS_H_
+#undef RAS_MaxEntryName
+#undef RAS_MaxDeviceName
+#undef RAS_MaxCallbackNumber
+#include <ras.h>
+}
+
+namespace winver400 {
+#undef WINVER
+#define WINVER 0x400
+#undef _RAS_H_
+#undef RAS_MaxEntryName
+#undef RAS_MaxDeviceName
+#undef RAS_MaxCallbackNumber
+#include <ras.h>
+}
 
 
 PDECLARE_CLASS(PRASDLL, PDynaLink)
@@ -64,6 +87,20 @@ PRASDLL::PRASDLL()
   GetFunction("RasGetEntryPropertiesA", (Function &)GetEntryProperties);
   GetFunction("RasSetEntryPropertiesA", (Function &)SetEntryProperties);
   GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
+}
+
+
+static int GetRasVersion()
+{
+  OSVERSIONINFO verinf;
+  verinf.dwOSVersionInfoSize = sizeof(verinf);
+  GetVersionEx(&verinf);
+
+  if (verinf.dwPlatformId != VER_PLATFORM_WIN32_NT)
+    return 1;
+  if (verinf.dwMajorVersion < 4)
+    return 0;
+  return 2;
 }
 
 
@@ -136,27 +173,38 @@ BOOL PRemoteConnection::Open()
   if (!Ras.IsLoaded())
     return FALSE;
 
+  int rasVersion = GetRasVersion();
+
   RASCONN connection;
-  connection.dwSize = sizeof(RASCONN);
+  switch (rasVersion) {
+    case 0 :
+      connection.dwSize = sizeof(winver351::tagRASCONNA);
+      break;
+    case 1 :
+      connection.dwSize = sizeof(winver400::tagRASCONNA);
+      break;
+    case 2 :
+      connection.dwSize = sizeof(RASCONN);
+  }
 
   LPRASCONN connections = &connection;
   DWORD size = sizeof(connection);
   DWORD numConnections;
 
   rasError = Ras.EnumConnections(connections, &size, &numConnections);
-
   if (rasError == ERROR_BUFFER_TOO_SMALL) {
-    connections = new RASCONN[size/sizeof(RASCONN)];
-    connections[0].dwSize = sizeof(RASCONN);
+    connections = new RASCONN[size/connection.dwSize];
+    connections[0].dwSize = connection.dwSize;
     rasError = Ras.EnumConnections(connections, &size, &numConnections);
   }
 
   if (rasError == 0) {
     for (DWORD i = 0; i < numConnections; i++) {
-      if (remoteName == connections[i].szEntryName) {
-        rasConnection = connections[i].hrasconn;
+      if (remoteName == connections->szEntryName) {
+        rasConnection = connections->hrasconn;
         break;
       }
+      connections = (LPRASCONN)(((char *)connections)+connection.dwSize);
     }
   }
 
@@ -171,15 +219,22 @@ BOOL PRemoteConnection::Open()
 
   RASDIALPARAMS params;
   memset(&params, 0, sizeof(params));
-  params.dwSize = sizeof(params);
+  switch (rasVersion) {
+    case 0 :
+      params.dwSize = sizeof(winver351::tagRASDIALPARAMSA);
+      break;
+    case 1 :
+      params.dwSize = sizeof(winver400::tagRASDIALPARAMSA);
+      break;
+    case 2 :
+      params.dwSize = sizeof(params);
+  }
   if (remoteName[0] != '.') {
-    PAssert(remoteName.GetLength() < sizeof(params.szEntryName)-1,
-            PInvalidParameter);
+    PAssert(remoteName.GetLength() < sizeof(params.szEntryName)-1, PInvalidParameter);
     strcpy(params.szEntryName, remoteName);
   }
   else {
-    PAssert(remoteName.GetLength() < sizeof(params.szPhoneNumber),
-            PInvalidParameter);
+    PAssert(remoteName.GetLength() < sizeof(params.szPhoneNumber), PInvalidParameter);
     strcpy(params.szPhoneNumber, remoteName(1, P_MAX_INDEX));
   }
   strcpy(params.szUserName, userName);
@@ -211,10 +266,20 @@ void PRemoteConnection::Close()
 static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
 {
   RASCONNSTATUS status;
-  status.dwSize = sizeof(status);
+  switch (GetRasVersion()) {
+    case 0 :
+      status.dwSize = sizeof(winver351::tagRASCONNSTATUSA);
+      break;
+    case 1 :
+      status.dwSize = sizeof(winver400::tagRASCONNSTATUSA);
+      break;
+    case 2 :
+      status.dwSize = sizeof(status);
+  }
 
   rasError = Ras.GetConnectStatus(rasConnection, &status);
   SetLastError(rasError);
+
   if (rasError == ERROR_INVALID_HANDLE) {
     PError << "RAS Connection Status invalid handle, retrying.";
     rasError = Ras.GetConnectStatus(rasConnection, &status);
