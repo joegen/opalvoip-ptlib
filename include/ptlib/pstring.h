@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.71  2004/04/09 06:38:10  rjongbloed
+ * Fixed compatibility with STL based streams, eg as used by VC++2003
+ *
  * Revision 1.70  2004/04/09 03:42:34  csoutheren
  * Removed all usages of "virtual inline" and "inline virtual"
  *
@@ -2026,8 +2029,9 @@ class PStringStream : public PString, public iostream
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-#ifdef __USE_STL__
-        virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
+#if __USE_STL__
+        virtual pos_type seekoff(off_type, ios_base::seekdir, ios_base::openmode = ios_base::in | ios_base::out);
+        virtual pos_type seekpos(pos_type, ios_base::openmode = ios_base::in | ios_base::out);
 #else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);
 #endif
