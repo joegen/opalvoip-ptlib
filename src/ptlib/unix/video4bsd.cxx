@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.12  2001/03/26 16:02:01  rogerh
+ * Add dummy function for VerifyHardwareFrameSize
+ *
  * Revision 1.11  2001/03/08 03:59:13  robertj
  * Fixed previous change, needed to allow for -1 as chammelNumber in Open().
  *
@@ -372,6 +375,11 @@ void PVideoInputDevice::ClearMapping()
   }
 }
 
-
+BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
+                                                unsigned height)
+{
+	// Assume the size is valid
+	return TRUE;
+}
     
 // End Of File ///////////////////////////////////////////////////////////////
