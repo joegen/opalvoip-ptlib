@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.2  2001/03/23 20:24:23  yurik
+ * Got rid of "unknown pragma" for WinCE port
+ *
  * Revision 1.1  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -35,7 +38,9 @@
  *
  */
 
+#ifndef _WIN32_WCE
 #pragma implementation "video.h"
+#endif
 
 #include <ptlib.h>
 
