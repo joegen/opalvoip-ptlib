@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.101  2004/04/04 00:21:47  csoutheren
+ * FIxed problem with some URL parsing
+ *
  * Revision 1.100  2004/04/03 08:22:20  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -847,6 +850,7 @@ BOOL PURL::InternalParse(const char * cstr, const char * defaultScheme)
       port = DEFAULT_H323RAS_PORT;
     else
       port = schemeInfo->defaultPort;
+    Recalculate();
   }
 
   return !IsEmpty();
