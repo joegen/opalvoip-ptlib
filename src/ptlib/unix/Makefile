@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.54  2000/02/24 11:03:27  craigs
+# Fixed problem with making PW programs
+#
 # Revision 1.53  2000/02/17 12:09:19  robertj
 # Added better random number generator after finding major flaws in MSVCRT version.
 #
@@ -190,7 +193,7 @@ endif
 
 include $(PWLIBDIR)/make/unix.mak
 
-OBJDIR	= $(PW_OBJDIR)
+OBJDIR	= $(PT_OBJDIR)
 LIBDIR  = $(PW_LIBDIR)
 TARGET  = $(LIBDIR)/$(PTLIB_FILE)
 
@@ -335,15 +338,5 @@ LIBVER_PAT	 = 0
 include $(PWLIBDIR)/make/lib.mak
 
 #######################################################
-
-# make links to common directories and files to ease development work
-
-links:
-	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_d obj_$(PLATFORM_TYPE)_d
-	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_r obj_$(PLATFORM_TYPE)_r
-	ln -snf $(PWLIBDIR)/make make
-	ln -snf $(UNIX_INC_DIR)/ptlib unix_include
-	ln -snf $(PWLIBDIR)/include/ptlib common_include
-
 
 # End of Makefile
