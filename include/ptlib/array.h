@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.26  2003/04/15 07:08:36  robertj
+ * Changed read and write from streams for base array classes so operates in
+ *   the same way for both PIntArray and PArray<int> etc
+ *
  * Revision 1.25  2003/03/31 01:23:56  robertj
  * Added ReadFrom functions for standard container classes such as
  *   PIntArray and PStringList etc
@@ -189,6 +193,26 @@ class PAbstractArray : public PContainer
 
   /**@name Overrides from class PObject */
   //@{
+    /** Output the contents of the object to the stream. The exact output is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard #operator<<# function.
+
+       The default behaviour is to print the class name.
+     */
+    virtual void PrintOn(
+      ostream &strm   // Stream to print the object into.
+    ) const;
+
+    /** Input the contents of the object from the stream. The exact input is
+       dependent on the exact semantics of the descendent class. This is
+       primarily used by the standard #operator>># function.
+
+       The default behaviour is to do nothing.
+     */
+    virtual void ReadFrom(
+      istream &strm   // Stream to read the objects contents from.
+    );
+
     /**Get the relative rank of the two arrays. The following algorithm is
        employed for the comparison:
 \begin{description}
@@ -279,10 +303,14 @@ class PAbstractArray : public PContainer
   //@}
 
   protected:
-    void PrintNumbersOn(ostream & strm, PINDEX size, BOOL is_signed) const;
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    void ReadNumbersFrom(istream & strm, BOOL is_signed);
-    virtual void SetNumberValueAt(PINDEX idx, long num);
+    virtual void PrintElementOn(
+      ostream & stream,
+      PINDEX index
+    ) const;
+    virtual void ReadElementFrom(
+      istream & stream,
+      PINDEX index
+    );
 
     /// Size of an element in bytes
     PINDEX elementSize;
@@ -295,7 +323,6 @@ class PAbstractArray : public PContainer
 
   friend class PArrayObjects;
 };
-
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -352,7 +379,9 @@ template <class T> class PBaseArray : public PAbstractArray
     /** Clone the object.
      */
     virtual PObject * Clone() const
-      { return PNEW PBaseArray<T>(*this, GetSize()); }
+    { 
+      return PNEW PBaseArray<T>(*this, GetSize());
+    }
   //@}
 
   /**@name Overrides from class PContainer */
@@ -366,7 +395,9 @@ template <class T> class PBaseArray : public PAbstractArray
     BOOL SetAt(
       PINDEX index,   /// Position in the array to set the new value.
       T val           /// Value to set in the array.
-    ) { return SetMinSize(index+1) && val==(((T *)theArray)[index] = val); }
+    ) {
+      return SetMinSize(index+1) && val==(((T *)theArray)[index] = val);
+    }
 
     /**Get a value from the array. If the #index# is beyond the end
        of the allocated array then a zero value is returned.
@@ -376,8 +407,10 @@ template <class T> class PBaseArray : public PAbstractArray
      */
     T GetAt(
       PINDEX index  /// Position on the array to get value from.
-    ) const { PASSERTINDEX(index);
-                    return index < GetSize() ? ((T *)theArray)[index] : (T)0; }
+    ) const {
+      PASSERTINDEX(index);
+      return index < GetSize() ? ((T *)theArray)[index] : (T)0;
+    }
 
     /**Attach a pointer to a static block to the base array type. The pointer
        is used directly and will not be copied to a dynamically allocated
@@ -390,7 +423,9 @@ template <class T> class PBaseArray : public PAbstractArray
     void Attach(
       const T * buffer,   /// Pointer to an array of elements.
       PINDEX bufferSize   /// Number of elements pointed to by buffer.
-    ) { PAbstractArray::Attach(buffer, bufferSize); }
+    ) {
+      PAbstractArray::Attach(buffer, bufferSize);
+    }
 
     /**Get a pointer to the internal array and assure that it is of at least
        the specified size. This is useful when the array contents are being
@@ -407,7 +442,9 @@ template <class T> class PBaseArray : public PAbstractArray
      */
     T * GetPointer(
       PINDEX minSize = 0    /// Minimum size for returned buffer pointer.
-    ) { return (T *)PAbstractArray::GetPointer(minSize); }
+    ) {
+      return (T *)PAbstractArray::GetPointer(minSize);
+    }
   //@}
 
   /**@name New functions for class */
@@ -423,7 +460,9 @@ template <class T> class PBaseArray : public PAbstractArray
      */
     T operator[](
       PINDEX index  /// Position on the array to get value from.
-    ) const { return GetAt(index); }
+    ) const {
+      return GetAt(index);
+    }
 
     /**Get a reference to value from the array. If the #index# is
        beyond the end of the allocated array then the array is expanded. If a
@@ -437,8 +476,11 @@ template <class T> class PBaseArray : public PAbstractArray
      */
     T & operator[](
       PINDEX index  /// Position on the array to get value from.
-    ) { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory);
-        return ((T *)theArray)[index]; }
+    ) {
+      PASSERTINDEX(index);
+      PAssert(SetMinSize(index+1), POutOfMemory);
+      return ((T *)theArray)[index];
+    }
 
     /**Get a pointer to the internal array. The user may not modify the
        contents of this pointer/ This is useful when the array contents are
@@ -453,7 +495,9 @@ template <class T> class PBaseArray : public PAbstractArray
        @return
        constant pointer to the array memory.
      */
-    operator T const *() const { return (T const *)theArray; }
+    operator T const *() const {
+      return (T const *)theArray;
+    }
 
     /**Concatenate one array to the end of this array.
        This function will allocate a new array large enough for the existing 
@@ -468,8 +512,18 @@ template <class T> class PBaseArray : public PAbstractArray
      */
     BOOL Concatenate(
       const PBaseArray & array  /// Other array to concatenate
-    ) { return PAbstractArray::Concatenate(array); }
+    ) {
+      return PAbstractArray::Concatenate(array);
+    }
   //@}
+
+  protected:
+    virtual void PrintElementOn(
+      ostream & stream,
+      PINDEX index
+    ) const {
+      stream << GetAt(index);
+    }
 };
 
 /*Declare a dynamic array base type.
@@ -504,6 +558,72 @@ template <class T> class PBaseArray : public PAbstractArray
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
+
+/**This template class maps the #PAbstractArray# to a specific element type. The
+   functions in this class primarily do all the appropriate casting of types.
+
+   Note that if templates are not used the #PSCALAR_ARRAY# macro will
+   simulate the template instantiation.
+
+   The following classes are instantiated automatically for the basic scalar
+   types:
+\begin{itemize}
+        \item #PBYTEArray#
+        \item #PShortArray#
+        \item #PWORDArray#
+        \item #PIntArray#
+        \item #PUnsignedArray#
+        \item #PLongArray#
+        \item #PDWORDArray#
+\end{itemize}
+ */
+template <class T> class PScalarArray : public PBaseArray<T>
+{
+  PCLASSINFO(PScalarArray, PBaseArray<T>);
+
+  public:
+  /**@name Construction */
+  //@{
+    /**Construct a new dynamic array of elements of the specified type. The
+       array is initialised to all zero bytes. Note that this may not be
+       logically equivalent to the zero value for the type, though this would
+       be very rare.
+     */
+    PScalarArray(
+      PINDEX initialSize = 0  /// Initial number of elements in the array.
+    ) : PBaseArray<T>(initialSize) { }
+    
+    /**Construct a new dynamic array of elements of the specified type.
+     */
+    PScalarArray(
+      T const * buffer,   /// Pointer to an array of the elements of type {\bf T}.
+      PINDEX length,      /// Number of elements pointed to by #buffer#.
+      BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
+    ) : PBaseArray<T>(buffer, length, dynamic) { }
+  //@}
+
+  protected:
+    virtual void ReadElementFrom(
+      istream & stream,
+      PINDEX index
+    ) {
+      T t;
+      stream >> t;
+      if (!stream.fail())
+        SetAt(index, t);
+    }
+};
+
+
+/*Declare a dynamic array base type.
+   This macro is used to declare a descendent of PAbstractArray class,
+   customised for a particular element type {\bf T}. This macro closes the
+   class declaration off so no additional members can be added.
+
+   If the compilation is using templates then this macro produces a typedef
+   of the #PBaseArray# template class.
+ */
+#define PSCALAR_ARRAY(cls, T) typedef PScalarArray<T> cls
 
 #else // PHAS_TEMPLATES
 
@@ -549,6 +669,7 @@ template <class T> class PBaseArray : public PAbstractArray
     virtual PObject * Clone() const \
       { return PNEW cls(*this, GetSize()); } \
 
+#define PSCALAR_ARRAY(cls, T) PBASEARRAY(cls, T)
 
 #endif // PHAS_TEMPLATES
 
@@ -562,13 +683,13 @@ class PCharArray : public PBaseArray {
     /**Construct a new dynamic array of char.
        The array is initialised to all zero bytes.
      */
-    PBaseArray(
+    PCharArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of char.
      */
-    PBaseArray(
+    PCharArray(
       char const * buffer,   /// Pointer to an array of chars.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
@@ -590,7 +711,6 @@ PDECLARE_BASEARRAY(PCharArray, char);
   //@}
 };
 
-
 /// Array of short integers.
 #ifdef DOC_PLUS_PLUS
 class PShortArray : public PBaseArray {
@@ -600,36 +720,20 @@ class PShortArray : public PBaseArray {
     /**Construct a new dynamic array of shorts.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PShortArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of shorts.
      */
-    PBaseArray(
+    PShortArray(
       short const * buffer,   /// Pointer to an array of shorts.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PShortArray, short);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PShortArray, short);
 
 
 /// Array of integers.
@@ -641,36 +745,20 @@ class PIntArray : public PBaseArray {
     /**Construct a new dynamic array of ints.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PIntArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of ints.
      */
-    PBaseArray(
+    PIntArray(
       int const * buffer,   /// Pointer to an array of ints.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PIntArray, int);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PIntArray, int);
 
 
 /// Array of long integers.
@@ -682,36 +770,20 @@ class PLongArray : public PBaseArray {
     /**Construct a new dynamic array of longs.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PLongArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of longs.
      */
-    PBaseArray(
+    PLongArray(
       long const * buffer,   /// Pointer to an array of longs.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PLongArray, long);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PLongArray, long);
 
 
 /// Array of unsigned characters.
@@ -723,13 +795,13 @@ class PBYTEArray : public PBaseArray {
     /**Construct a new dynamic array of unsigned chars.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PBYTEArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned chars.
      */
-    PBaseArray(
+    PBYTEArray(
       BYTE const * buffer,   /// Pointer to an array of BYTEs.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
@@ -749,9 +821,6 @@ PDECLARE_BASEARRAY(PBYTEArray, BYTE);
       istream &strm   // Stream to read the objects contents from.
     );
   //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
 };
 
 
@@ -764,36 +833,20 @@ class PWORDArray : public PBaseArray {
     /**Construct a new dynamic array of unsigned shorts.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PWORDArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned shorts.
      */
-    PBaseArray(
+    PWORDArray(
       WORD const * buffer,   /// Pointer to an array of WORDs.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PWORDArray, WORD);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PWORDArray, WORD);
 
 
 /// Array of unsigned integers.
@@ -805,36 +858,20 @@ class PUnsignedArray : public PBaseArray {
     /**Construct a new dynamic array of unsigned ints.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PUnsignedArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of unsigned ints.
      */
-    PBaseArray(
+    PUnsignedArray(
       unsigned const * buffer,   /// Pointer to an array of unsigned ints.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PUnsignedArray, unsigned);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PUnsignedArray, unsigned);
 
 
 /// Array of unsigned long integers.
@@ -846,36 +883,20 @@ class PDWORDArray : public PBaseArray {
     /**Construct a new dynamic array of unsigned longs.
        The array is initialised to all zeros.
      */
-    PBaseArray(
+    PDWORDArray(
       PINDEX initialSize = 0  /// Initial number of elements in the array.
     );
 
     /**Construct a new dynamic array of DWORDs.
      */
-    PBaseArray(
+    PDWORDArray(
       DWORD const * buffer,   /// Pointer to an array of DWORDs.
       PINDEX length,      /// Number of elements pointed to by #buffer#.
       BOOL dynamic = TRUE /// Buffer is copied and dynamically allocated.
     );
   //@}
 #endif
-PDECLARE_BASEARRAY(PDWORDArray, DWORD);
-  public:
-  /**@name Overrides from class PObject */
-  //@{
-    /// Print the array
-    virtual void PrintOn(
-      ostream & strm /// Stream to output to.
-    ) const;
-    /// Read the array
-    virtual void ReadFrom(
-      istream &strm   // Stream to read the objects contents from.
-    );
-  //@}
-
-    virtual long GetNumberValueAt(PINDEX idx) const;
-    virtual void SetNumberValueAt(PINDEX idx, long num);
-};
+PSCALAR_ARRAY(PDWORDArray, DWORD);
 
 
 ///////////////////////////////////////////////////////////////////////////////
