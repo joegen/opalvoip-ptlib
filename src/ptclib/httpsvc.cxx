@@ -1,11 +1,15 @@
 /*
- * $Id: httpsvc.cxx,v 1.1 1996/06/13 13:33:34 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.2 1996/06/28 13:21:30 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.2  1996/06/28 13:21:30  robertj
+ * Fixed nesting problem in tables.
+ * Fixed PConfig page always restarting.
+ *
  * Revision 1.1  1996/06/13 13:33:34  robertj
  * Initial revision
  *
@@ -129,12 +133,12 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & reply)
 {
-  BOOL restart = PHTTPConfig::Post(request, data, reply);
-  if (restart) {
+  BOOL retval = PHTTPConfig::Post(request, data, reply);
+  if (request.code == PHTTPSocket::OK) {
     process.SetRestartSystem(TRUE);
     process.OnConfigChanged();
   }
-  return restart;
+  return retval;
 }
 
 
@@ -176,8 +180,6 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
   AddFields(prefix);
   if (state != PSecureConfig::Defaults)
     Add(new PHTTPStringField("Validation", 34));
-
-  SetConfigValues();
 
   if (state == PSecureConfig::Defaults) {
     regPage << PHTML::HRule()
@@ -314,7 +316,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
     html << PHTML::HiddenField(securedKeys[i],
                               sconf.GetString(prefix + securedKeys[i]).Trim());
 
-  html << PHTML::Table()
+  html << PHTML::TableStart()
        << PHTML::TableRow("valign=baseline")
          << PHTML::TableHeader("align=right")
            << "Card Type:"
@@ -342,7 +344,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
            << "Expiry Date:"
          << PHTML::TableData("align=left")
            << PHTML::InputText("ExpiryDate", 8)
-      << PHTML::Table()
+      << PHTML::TableEnd()
       << PHTML::Paragraph()
       << "If you are paying by some other method, please enter the details "
          "below. We recommend paying by credit card - you can fax or mail the "
