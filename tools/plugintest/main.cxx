@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.1.2.6  2003/10/20 21:15:33  dereksmithies
+ * Tidy up text output. Fix calls to Usage() function.
+ *
  * Revision 1.1.2.5  2003/10/20 03:22:46  dereksmithies
  * Add checks on validity of function returned.
  *
@@ -55,7 +58,8 @@ void Usage()
 	 << "-x Attempt to load the OSS sound plugin\n"
 	 << "-t (more t's for more detail) logging on\n"
 	 << "-o output file for logging \n"
-	 << "-p play a beep beep beep sound, and testtest created PSoundChannel\n"
+	 << "-p play a beep beep beep sound, and test created PSoundChannel\n"
+	 << "     Requires that you have specified -x also\n"
 	 << "-h print this help\n";
 
 }
@@ -84,8 +88,13 @@ void PluginTest::Main()
     pluginMgr.LoadPluginDirectory(args.GetOptionString('d'));
   }
 
+  if (args.HasOption('h') || args.GetCount() == 0) {
+    Usage();
+    goto end_program;
+  }
+
   if (args.HasOption('s')) {
-    cout << "Examine PSoundChannel" <<endl;
+    cout << "Examine PSoundChannel, get available sound plugins." <<endl;
     cout << "Default device names = " << setfill(',') << PSoundChannel::GetDeviceNames(PSoundChannel::Player) << setfill(' ') << endl;
     cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetPluginNames() << setfill(' ') << endl;
     PSoundChannel * snd = new PSoundChannel();
@@ -109,8 +118,6 @@ void PluginTest::Main()
       cout << "No OSS plugin to examine, so exit immediately" << endl;
       goto end_program;
     }
-
-    //cout << "Device names = " << PSoundChannelOSS_Static::GetDeviceNames(0) << endl;
 
 #define SAMPLES 64000  /*8 seconds of data */
 
