@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.59  2002/09/04 05:23:53  robertj
+ * Fixed crashable way of checking pointer is in PWLib heap check.
+ *
  * Revision 1.58  2002/08/13 01:28:42  robertj
  * Added allocation number to memory statistics dump to aid in leak finding.
  *
@@ -620,6 +623,16 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
 
   Header * obj = ((Header *)ptr)-1;
 
+  Header * link = listHead;
+  while (link != NULL && link != obj)
+    link = link->next;
+
+  if (link == NULL) {
+    if (error != NULL)
+      *error << "Block " << ptr << " not in heap!" << endl;
+    return Trashed;
+  }
+
   if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
     if (error != NULL)
       *error << "Underrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
@@ -641,20 +654,6 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
              << "\" and should be \"" << (className != NULL ? className : "<NULL>")
              << "\"." << endl;
     return Bad;
-  }
-
-  Header * forward = obj;
-  Header * backward = obj;
-  while (forward->next != NULL && backward->prev != NULL) {
-    forward = forward->next;
-    backward = backward->prev;
-  }
-
-  if (forward != listTail && backward != listHead) {
-    if (error != NULL)
-      *error << "Block " << ptr << '[' << obj->size << "] #" << obj->request
-             << " not in heap!" << endl;
-    return Trashed;
   }
 
   return Ok;
