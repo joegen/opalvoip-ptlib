@@ -27,6 +27,15 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.18.2.1  2004/08/07 12:04:44  csoutheren
+# Updated to compiler gcc 3.4/3.5
+#
+# Revision 1.20  2004/04/20 10:02:46  csoutheren
+# Remove usage of asnparser from the Makefile
+#
+# Revision 1.19  2004/04/13 11:48:36  csoutheren
+# asnparser no longer built by default
+#
 # Revision 1.18  2004/02/26 12:04:10  csoutheren
 # Added changes to increase portability to 64bit platforms, thanks to Klaus Kaempf
 #
@@ -184,7 +193,7 @@ TARGETDIR=@TARGETDIR@
 include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
-SUBDIRS += tools/asnparser
+#SUBDIRS += tools/asnparser
 ifeq (1, $(HAS_PLUGINS))
 SUBDIRS += plugins
 endif
@@ -243,7 +252,6 @@ endif
 	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib.h       $(DESTDIR)$(PREFIX)/include/
-	cp tools/asnparser/obj*/asnparser $(DESTDIR)$(PREFIX)/bin/
 	cp -rf make/*.mak    $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	cp make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
@@ -256,7 +264,7 @@ endif
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ $(DESTDIR)$(LIBDIR)/pwlib/
-	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
+	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so 
 
 
 # End of Makefile.in
