@@ -1650,6 +1650,7 @@ EXPORTS
     ?Construct@PRemoteConnection@@AAEXXZ @1206 NONAME ;private: void __thiscall PRemoteConnection::Construct(void)
     ?Construct@PSerialChannel@@AAEXXZ @1207 NONAME ;private: void __thiscall PSerialChannel::Construct(void)
     ?Construct@PSoundChannel@@AAEXXZ @2680 NONAME ;private: void __thiscall PSoundChannel::Construct(void)
+    ?Construct@PTimer@@AAEXXZ @3400 NONAME ;private: void __thiscall PTimer::Construct(void)
     ?Control@NT_ServiceManager@@AAEHPAVPServiceProcess@@K@Z @1208 NONAME ;private: int __thiscall NT_ServiceManager::Control(class PServiceProcess *,unsigned long)
     ?ControlEntry@PServiceProcess@@AAEXK@Z @1209 NONAME ;private: void __thiscall PServiceProcess::ControlEntry(unsigned long)
     ?ConvertOSError@PChannel@@MAEHH@Z @3083 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
@@ -2587,7 +2588,6 @@ EXPORTS
     ?Open@PDirectory@@QAEHH@Z @1944 NONAME ;public: int __thiscall PDirectory::Open(int)
     ?Open@PDynaLink@@QAEHABVPString@@@Z @1945 NONAME ;public: int __thiscall PDynaLink::Open(class PString const &)
     ?Open@PFile@@QAEHABVPFilePath@@W4OpenMode@1@H@Z @1946 NONAME ;public: int __thiscall PFile::Open(class PFilePath const &,enum PFile::OpenMode,int)
-    ?Open@PFile@@QAEHW4OpenMode@1@H@Z @1947 NONAME ;public: int __thiscall PFile::Open(enum PFile::OpenMode,int)
     ?Open@PIndirectChannel@@QAEHAAVPChannel@@@Z @1948 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel &)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@0HH@Z @1949 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,class PChannel *,int,int)
     ?Open@PIndirectChannel@@QAEHPAVPChannel@@H@Z @1950 NONAME ;public: int __thiscall PIndirectChannel::Open(class PChannel *,int)
@@ -3020,4 +3020,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?Construct@PTimer@@AAEXXZ @3400 NONAME ;private: void __thiscall PTimer::Construct(void)
+    ?Open@PFile@@UAEHW4OpenMode@1@H@Z @3401 NONAME ;public: virtual int __thiscall PFile::Open(enum PFile::OpenMode,int)
