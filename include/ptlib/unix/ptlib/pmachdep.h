@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.56  2003/05/06 06:59:12  robertj
+ * Dynamic library support for MacOSX, thanks Hugo Santos
+ *
  * Revision 1.55  2003/04/23 00:35:47  craigs
  * Fixed problem with pmachdep.h and MacOSX thanks to Hugo Santos
  *
@@ -432,9 +435,6 @@ typedef int socklen_t;
 
 #include <paths.h>
 #include <errno.h>
-#if P_DYNALINK
-#include <dlfcn.h>
-#endif
 #include <termios.h>
 #include <sys/fcntl.h>
 #include <sys/filio.h>

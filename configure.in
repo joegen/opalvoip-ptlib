@@ -384,9 +384,13 @@ dnl check for dynamic library code (dlopen end friends)
 dnl MSWIN DLL Support,,P_DYNALINK
 
 LIBS=""
-AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
-if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
+if test ${OSTYPE} != Darwin ; then
+  AC_CHECK_HEADERS(dlfcn.h, HAVE_DYNALINK=1)
+  if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
+    AC_DEFINE(P_DYNALINK, 1, "dlopen libraries found")
+  fi
+else
+  AC_DEFINE(P_DYNALINK, 1, "dlopen implemented inside pwlib in darwin")
 fi
 
 dnl ########################################################################
@@ -432,9 +436,11 @@ fi
 
 dnl dl needs to be at the end
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
-  if test ${HAS_LIBDL} = yes ; then
-    ENDLDLIBS="$ENDLDLIBS -ldl"
+  if test ${OSTYPE} != Darwin ; then
+    AC_CHECK_LIB(dl,dlopen,HAS_LIBDL=yes, HAS_LIBDL=no)
+    if test ${HAS_LIBDL} = yes ; then
+      ENDLDLIBS="$ENDLDLIBS -ldl"
+    fi
   fi
 fi
 

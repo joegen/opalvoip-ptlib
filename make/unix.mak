@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.170  2003/05/06 06:59:12  robertj
+# Dynamic library support for MacOSX, thanks Hugo Santos
+#
 # Revision 1.169  2003/05/05 13:10:59  robertj
 # Solaris compatibility
 #
@@ -632,8 +635,9 @@ ifeq ($(OSTYPE),Darwin)
 # I am inluding the flags to allow QuickTime to be linked.
 # Uncomment them if you wish, but it will do nothing for the time being.
 
-LDFLAGS		+= "-multiply_defined suppress"
-ENDLDLIBS	+= "-framework AudioToolbox -framework CoreAudio"
+CFLAGS		+= -fno-common -dynamic
+LDFLAGS		+= -multiply_defined suppress
+ENDLDLIBS	+= -framework AudioToolbox -framework CoreAudio
 
 #HAS_QUICKTIMEX := 1
 #STDCCFLAGS     += -DHAS_QUICKTIMEX
@@ -643,8 +647,8 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-P_SHAREDLIB	:= 0 
-P_USE_RANLIB	:= 1
+ARCHIVE			:= libtool -static -o
+P_USE_RANLIB	:= 0
 
 CC              := cc
 CPLUS           := c++
@@ -810,6 +814,14 @@ ifndef AR
 AR := ar
 endif
 
+ifndef ARCHIVE
+  ifdef P_USE_RANLIB
+    ARCHIVE := $(AR) rc
+  else
+    ARCHIVE := $(AR) rcs
+  endif
+endif
+
 ifndef RANLIB
 RANLIB := ranlib
 endif
@@ -839,10 +851,11 @@ ifndef OBJDIR_SUFFIX
 OBJDIR_SUFFIX = $(OBJ_SUFFIX)
 endif
 
+ifndef STATICLIBEXT
+STATICLIBEXT = a
+endif
+
 ifeq ($(P_SHAREDLIB),1)
-LIB_SUFFIX	= so
-else
-LIB_SUFFIX	= a
 ifndef DEBUG
 LIB_TYPE	= _s
 endif
@@ -892,13 +905,13 @@ PW_LIBDIR	= $(PWLIBDIR)/lib
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
+PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE)
 PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
 
 # set name of the PW library (may not be used)
 PWLIB_BASE	= pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
+PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE)
 PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
@@ -918,7 +931,11 @@ LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
-OPTCCFLAGS	+= -O3 -DNDEBUG
+ifneq ($(OSTYPE),Darwin)
+  OPTCCFLAGS	+= -O3 -DNDEBUG
+else
+  OPTCCFLAGS	+= -O2 -DNDEBUG
+endif
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
 ifneq ($(OSTYPE),Carbon)
