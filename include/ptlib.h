@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.19  1999/06/13 13:54:07  robertj
+ * Added PConsoleChannel class for access to stdin/stdout/stderr.
+ *
  * Revision 1.18  1998/11/30 22:08:56  robertj
  * Fixed backslash in #include
  *
@@ -154,6 +157,12 @@
 // PStructuredFile
 
 #include <ptlib/sfile.h>
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConsoleChannel
+
+#include <ptlib/conchan.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////

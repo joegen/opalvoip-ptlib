@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.32  1999/06/13 13:54:07  robertj
+ * Added PConsoleChannel class for access to stdin/stdout/stderr.
+ *
  * Revision 1.31  1999/06/09 02:05:20  robertj
  * Added ability to open file as standard input, output and error streams.
  *
@@ -168,13 +171,7 @@ class PFile : public PChannel
       /// File can be written but not read.
       WriteOnly,
       /// File can be both read and written.
-      ReadWrite,
-      /// Standard input (implies read only).
-      StandardInput,
-      /// Standard output (implies write only).
-      StandardOutput,
-      /// Standard error (implies write only).
-      StandardError
+      ReadWrite
     };
 
     /**When a file is opened, a number of options may be associated with the
