@@ -24,6 +24,12 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.26  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.25  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -439,6 +445,14 @@ class PVideoDevice : public PObject
       int *colour,
       int *contrast,
       int *hue
+    );
+
+    
+    /** Set VideoFormat and VideoChannel in one ioctl
+     */
+    virtual BOOL SetVideoChannelFormat (
+      int channelNumber, 
+      VideoFormat videoFormat
     );
 
 

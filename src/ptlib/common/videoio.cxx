@@ -24,6 +24,12 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.29  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.28  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -601,6 +607,15 @@ BOOL PVideoDevice::GetParameters (int *whiteness, int *brightness,
   return TRUE;
 }
 
+BOOL PVideoDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
+{
+  BOOL err1, err2;
+
+  err1 = SetChannel (newNumber);
+  err2 = SetVideoFormat (newFormat);
+  
+  return (err1 && err2);
+}
 
 BOOL PVideoDevice::GetVFlipState()
 {
