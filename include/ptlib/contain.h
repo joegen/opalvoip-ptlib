@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.42 1995/03/14 12:41:13 robertj Exp $
+ * $Id: contain.h,v 1.43 1995/06/17 11:12:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.43  1995/06/17 11:12:26  robertj
+ * Documentation update.
+ *
  * Revision 1.42  1995/03/14 12:41:13  robertj
  * Updated documentation to use HTML codes.
  *
@@ -254,7 +257,7 @@ PDECLARE_CLASS(PContainer, PObject)
        contents.
 
        <H2>Returns:</H2>
-       TRUE if <A><CODE>GetSize()</CODE></A> returns zero.
+       TRUE if <A>GetSize()</A> returns zero.
      */
 
     BOOL IsUnique() const;
@@ -460,9 +463,8 @@ PDECLARE_CLASS(PCollection, PContainer)
    last location or an end of the list, incurring an overhead.
 
    All collection classes implement a base set of functions, though they may
-   be meaningless or degenerative in some collection types eg
-   <A><CODE>Insert()</CODE></A> for <A>PSortedList</A> will degenerate to be
-   the same as <A><CODE>Append()</CODE></A>.
+   be meaningless or degenerative in some collection types eg <A>Insert()</A>
+   for <A>PSortedList</A> will degenerate to be the same as <A>Append()</A>.
  */
 
   public:
@@ -477,7 +479,7 @@ PDECLARE_CLASS(PCollection, PContainer)
       ostream &strm   // Output stream to print the collection.
     ) const;
     /* Print the collection on the stream. This simply executes the
-       <A><CODE>PrintOn()</CODE></A> function on each element in the
+       <A>PObject::PrintOn()</A> function on each element in the
        collection.
 
        <H2>Returns:</H2>
@@ -505,7 +507,7 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) = 0;
     /* Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the <A><CODE>Append()</CODE></A> function is performed.
+       the <A>Append()</A> function is performed.
        
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object before the specified object at
@@ -514,7 +516,7 @@ PDECLARE_CLASS(PCollection, PContainer)
 
        Note that the object values are compared for the search of the
        <CODE>before</CODE> parameter, not the pointers. So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function.
 
        <H2>Returns:</H2>
@@ -527,7 +529,7 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) = 0;
     /* Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the <A><CODE>Append()</CODE></A> function is performed.
+       equivalent of the <A>Append()</A> function is performed.
 
        The exact semantics depends on the specific type of the collection. So
        the function may not place the object at the specified index at all.
@@ -567,8 +569,7 @@ PDECLARE_CLASS(PCollection, PContainer)
 
     virtual void RemoveAll();
     /* Remove all of the elements in the collection. This operates by
-       continually calling <A><CODE>RemoveAt()</CODE></A> until there are no
-       objects left.
+       continually calling <A>RemoveAt()</A> until there are no objects left.
 
        The objects are removed from the last, at index
        <CODE>(GetSize()-1)</CODE> toward the first at index zero.
@@ -619,7 +620,7 @@ PDECLARE_CLASS(PCollection, PContainer)
     ) const = 0;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. The fastest search algorithm is employed depending on the
        collection type.
 
