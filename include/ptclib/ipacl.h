@@ -6,6 +6,11 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.6  2002/06/19 04:02:58  robertj
+ * Added default allowance boolean if ACL empty.
+ * Added ability to override the creation of ACL entry objects with descendents
+ *   so an application can add information/functionality to each entry.
+ *
  * Revision 1.5  2002/02/13 02:07:14  robertj
  * Added const to IsAllowed() function
  *
@@ -171,7 +176,9 @@ class PIpAccessControlList : public PIpAccessControlList_base
   public:
     /** Create a new, empty, access control list.
      */
-    PIpAccessControlList();
+    PIpAccessControlList(
+      BOOL defaultAllowance = TRUE
+    );
 
     /** Load the system wide files commonly use under Linux (hosts.allow and
        hosts.deny file) for IP access. See the Linux man entries on these
@@ -241,6 +248,9 @@ class PIpAccessControlList : public PIpAccessControlList_base
        TRUE if the entries was successfully added.
      */
     BOOL Add(
+      PIpAccessControlEntry * entry // Entry for IP match parameters
+    );
+    BOOL Add(
       const PString & description   // Description of the IP match parameters
     );
     BOOL Add(
@@ -265,6 +275,22 @@ class PIpAccessControlList : public PIpAccessControlList_base
     );
 
 
+    /**Create a new PIpAccessControl specification entry object.
+       This may be used by an application to create descendents of
+       PIpAccessControlEntry when extra information/functionality is required.
+
+       The default behaviour creates a PIpAccessControlEntry.
+      */
+    virtual PIpAccessControlEntry * CreateControlEntry(
+      const PString & description
+    );
+
+    /**Find the PIpAccessControl specification for the address.
+      */
+    PIpAccessControlEntry * Find(
+      PIPSocket::Address address    // IP Address to find
+    ) const;
+
     /** Test the address/connection for if it is allowed within this access
        control list. If the <CODE>socket</CODE> form is used the peer address
        of the connection is tested.
@@ -284,10 +310,21 @@ class PIpAccessControlList : public PIpAccessControlList_base
       PIPSocket::Address address    // IP Address to test
     ) const;
 
+
+    /**Get the default state for allowed access if the list is empty.
+      */
+    BOOL GetDefaultAllowance() const { defaultAllowance; }
+
+    /**Set the default state for allowed access if the list is empty.
+      */
+    void SetDefaultAllowance(BOOL defAllow) { defaultAllowance = defAllow; }
+
   private:
     BOOL InternalLoadHostsAccess(const PString & daemon, const char * file, BOOL allow);
-    BOOL InternalAddEntry(PIpAccessControlEntry & entry);
     BOOL InternalRemoveEntry(PIpAccessControlEntry & entry);
+
+  protected:
+    BOOL defaultAllowance;
 };
 
 
