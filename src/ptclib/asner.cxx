@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.49  2001/08/07 02:49:05  robertj
+ * Fixed incorrect alignment if constrained string upper bound is exactly
+ *     16 bits long. thanks Guntram Diehl & Thomas Arimont.
+ *
  * Revision 1.48  2001/08/06 09:35:25  robertj
  * Fixed GNU compatibility.
  *
@@ -2035,8 +2039,10 @@ BOOL PASN_ConstrainedString::DecodePER(PPER_Stream & strm)
     return FALSE;
 
   unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+  unsigned totalBits = upperLimit*nBits;
 
-  if (constraint == Unconstrained || upperLimit*nBits > 16) {
+  if (constraint == Unconstrained ||
+            (lowerLimit == (int)upperLimit ? (totalBits > 16) : (totalBits >= 16))) {
     if (nBits == 8)
       return strm.BlockDecode((BYTE *)value.GetPointer(len+1), len) == len;
     if (strm.IsAligned())
@@ -2069,8 +2075,10 @@ void PASN_ConstrainedString::EncodePER(PPER_Stream & strm) const
   ConstrainedLengthEncode(strm, len);
 
   unsigned nBits = strm.IsAligned() ? charSetAlignedBits : charSetUnalignedBits;
+  unsigned totalBits = upperLimit*nBits;
 
-  if (constraint == Unconstrained || upperLimit*nBits > 16) {
+  if (constraint == Unconstrained ||
+            (lowerLimit == (int)upperLimit ? (totalBits > 16) : (totalBits >= 16))) {
     if (nBits == 8) {
       strm.BlockEncode((const BYTE *)(const char *)value, len);
       return;
