@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.h,v $
+ * Revision 1.19  1998/11/30 02:50:56  robertj
+ * New directory structure
+ *
  * Revision 1.18  1998/09/23 06:20:04  robertj
  * Added open source copyright license.
  *
@@ -88,7 +91,7 @@
 #pragma interface
 #endif
 
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 
 PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
