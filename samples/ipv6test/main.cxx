@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2005/01/15 19:27:07  csoutheren
+ * Added test for GetInterfaceTable
+ * Thanks to Jan Willamowius
+ *
  * Revision 1.3  2004/12/14 14:24:20  csoutheren
  * Added PIPSocket::Address::operator*= to compare IPV4 addresses
  * to IPV4-compatible IPV6 addresses. More documentation needed
@@ -180,6 +184,28 @@ void IPV6Test::Main()
         cout << "OK";
     else
         cout << "failed";
+    cout << endl;
+  }
+  {
+    // test #8 - check if interface table contains IPV6 addresses
+    cout << "test #8: check if interface table contains IPV6 addresses";
+
+  	PIPSocket::InterfaceTable if_table;
+	PIPSocket::GetInterfaceTable( if_table );
+    // Display the interface table
+    cout << endl;
+    cout << "The interface table has " << if_table.GetSize()
+         <<" entries" << endl;
+
+    for (PINDEX i=0; i < if_table.GetSize(); i++) {
+      PIPSocket::InterfaceEntry if_entry = if_table[i];
+      cout << i << " " << if_entry.GetName() << " "
+                       << if_entry.GetAddress() << " "
+                       << if_entry.GetNetMask() << " "
+                       << if_entry.GetMACAddress() << "."
+                       << endl;
+    }
+	cout << "manual check";
     cout << endl;
   }
 #endif
