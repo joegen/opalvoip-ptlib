@@ -1,3 +1,12 @@
+//
+// (c) 2002 Yuri Kiryanov, openh323@kiryanov.com
+// 
+// Windows CE port of OpenH323 Open Source Project, www.openh323.org
+// Video For Windows Definitions
+
+#include <mmsystemx.h>
+#include <cevfw.h>
+
 // Vfw
 DWORD capGetVideoFormat(HWND hwnd, LPCAPSTATUS s, UINT wSize)
 {
