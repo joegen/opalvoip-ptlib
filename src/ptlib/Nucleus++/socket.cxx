@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.2  2002/04/12 01:42:41  robertj
+ * Changed return value on os_connect() and os_accept() to make sure
+ *   get the correct error codes propagated up under unix.
+ *
  * Revision 1.1  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -170,63 +174,37 @@ int PSocket::os_socket(int af, int type, int protocol)
   return handle;
 }
 
-int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
+BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 {
   int val = ::connect(os_handle, addr, size);
+  if (val == 0 || errno != EINPROGRESS)
+    return ConvertOSError(val);
 
-  if (val == 0)
-    return 0;
+  if (!PXSetIOBlock(PXConnectBlock, readTimeout))
+    return FALSE;
 
-  printf("os_connect said %d\n", val);
-
-  if (errno != EINPROGRESS)
-    return -1;
-
-  // wait for the connect to occur, or not
-  val = PThread::Current()->PXBlockOnIO(os_handle, PXConnectBlock, readTimeout);
-
-  // check the response
-  if (val < 0)
-    return -1;
-
-  if (val == 0) {
-    errno = ECONNREFUSED;
-    return -1;
-  }
-
-#ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
   getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen);
-  if (optval == 0)
-    return 0;
+  if (optval != 0) {
+    errno = optval;
+    return ConvertOSError(-1);
+  }
 
-  errno = optval;
-#endif //!__BEOS__
-  return -1;
+  return TRUE;
 }
 
 
-int PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
+BOOL PSocket::os_accept(int sock, struct sockaddr * addr, PINDEX * size,
                        const PTimeInterval & timeout)
 {
-  if (!PXSetIOBlock(PXAcceptBlock, sock, timeout)) {
-    errno = EINTR;
-    return -1;
-  }
+  if (!listener.PXSetIOBlock(PXAcceptBlock, listener.GetReadTimeout()))
+    return SetErrorValues(listener.GetErrorCode(), listener.GetErrorNumber());
 
-#if defined(E_PROTO)
-  while (1) {
-    int new_fd = ::accept(sock, addr, (socklen_t *)size);
-    if ((new_fd >= 0) || (errno != EPROTO))
-      return new_fd;
-    //PError << "accept on " << sock << " failed with EPROTO - retrying" << endl;
-  }
-#else
-  return ::accept(sock, addr, (socklen_t *)size);
-#endif
+  return ConvertOSError(SetNonBlocking(::accept(listener.GetHandle(), addr, (socklen_t *)size)));
 }
+
 
 #ifdef __NUCLEUS_PLUS__
 #define P_PTHREADS
