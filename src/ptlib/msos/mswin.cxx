@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.5 1994/07/27 06:00:10 robertj Exp $
+ * $Id: mswin.cxx,v 1.6 1994/08/04 13:24:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.5  1994/07/27 06:00:10  robertj
+ * Revision 1.6  1994/08/04 13:24:27  robertj
+ * Added DCB so can set paraemters on closed channel.
+ *
+ * Revision 1.5  1994/07/27  06:00:10  robertj
  * Backup
  *
  * Revision 1.4  1994/07/21  12:35:18  robertj
@@ -131,6 +134,14 @@ PTime::DateOrder PTime::GetDateOrder()
 
 void PSerialChannel::Construct()
 {
+  char str[50];
+  strcpy(str, "com1");
+  GetProfileString("ports", str, "9600,n,8,1,x", &str[5], sizeof(str)-6);
+  str[4] = ':';
+  if (!BuildCommDCB(str, &deviceControlBlock)) {
+    osError = EINVAL;
+    lastError = BadParameter;
+  }
 }
 
 
@@ -238,110 +249,115 @@ BOOL PSerialChannel::Close()
 BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
+  if (IsOpen())
+    PAssert(GetCommState(os_handle, &deviceControlBlock) == 0,
+                                                        POperatingSystemError);
 
   switch (speed) {
     case 0 :
       break;
     case 14400 :
-      dcb.BaudRate = CBR_14400;
+      deviceControlBlock.BaudRate = CBR_14400;
       break;
     case 19200 :
-      dcb.BaudRate = CBR_19200;
+      deviceControlBlock.BaudRate = CBR_19200;
       break;
     case 38400 :
-      dcb.BaudRate = CBR_38400;
+      deviceControlBlock.BaudRate = CBR_38400;
       break;
     case 56000 :
-      dcb.BaudRate = CBR_56000;
+      deviceControlBlock.BaudRate = CBR_56000;
       break;
     case 128000 :
-      dcb.BaudRate = CBR_128000;
+      deviceControlBlock.BaudRate = CBR_128000;
       break;
     case 256000 :
-      dcb.BaudRate = CBR_256000;
+      deviceControlBlock.BaudRate = CBR_256000;
       break;
     default :
       if (speed > 9600) {
         osError = EINVAL;
         return FALSE;
       }
-      dcb.BaudRate = (UINT)speed;
+      deviceControlBlock.BaudRate = (UINT)speed;
   }
 
   if (data > 0)
-    dcb.ByteSize = data;
+    deviceControlBlock.ByteSize = data;
 
   switch (parity) {
     case NoParity :
-      dcb.Parity = NOPARITY;
+      deviceControlBlock.Parity = NOPARITY;
       break;
     case OddParity :
-      dcb.Parity = ODDPARITY;
+      deviceControlBlock.Parity = ODDPARITY;
       break;
     case EvenParity :
-      dcb.Parity = EVENPARITY;
+      deviceControlBlock.Parity = EVENPARITY;
       break;
     case MarkParity :
-      dcb.Parity = MARKPARITY;
+      deviceControlBlock.Parity = MARKPARITY;
       break;
     case SpaceParity :
-      dcb.Parity = SPACEPARITY;
+      deviceControlBlock.Parity = SPACEPARITY;
       break;
   }
   switch (stop) {
     case 1 :
-      dcb.StopBits = ONESTOPBIT;
+      deviceControlBlock.StopBits = ONESTOPBIT;
       break;
     case 2 :
-      dcb.StopBits = TWOSTOPBITS;
+      deviceControlBlock.StopBits = TWOSTOPBITS;
       break;
   }
   switch (inputFlow) {
     case NoFlowControl :
-      dcb.fRtsflow = FALSE;
-      dcb.fInX = FALSE;
+      deviceControlBlock.fRtsflow = FALSE;
+      deviceControlBlock.fInX = FALSE;
       break;
     case XonXoff :
-      dcb.fRtsflow = FALSE;
-      dcb.fInX = TRUE;
+      deviceControlBlock.fRtsflow = FALSE;
+      deviceControlBlock.fInX = TRUE;
       break;
     case RtsCts :
-      dcb.fRtsflow = TRUE;
-      dcb.fInX = FALSE;
+      deviceControlBlock.fRtsflow = TRUE;
+      deviceControlBlock.fInX = FALSE;
       break;
   }
 
   switch (outputFlow) {
     case NoFlowControl :
-      dcb.fOutxCtsFlow = FALSE;
-      dcb.fOutxDsrFlow = FALSE;
-      dcb.fOutX = FALSE;
+      deviceControlBlock.fOutxCtsFlow = FALSE;
+      deviceControlBlock.fOutxDsrFlow = FALSE;
+      deviceControlBlock.fOutX = FALSE;
       break;
     case XonXoff :
-      dcb.fOutxCtsFlow = FALSE;
-      dcb.fOutxDsrFlow = FALSE;
-      dcb.fOutX = TRUE;
+      deviceControlBlock.fOutxCtsFlow = FALSE;
+      deviceControlBlock.fOutxDsrFlow = FALSE;
+      deviceControlBlock.fOutX = TRUE;
       break;
     case RtsCts :
-      dcb.fOutxCtsFlow = TRUE;
-      dcb.fOutxDsrFlow = FALSE;
-      dcb.fOutX = FALSE;
+      deviceControlBlock.fOutxCtsFlow = TRUE;
+      deviceControlBlock.fOutxDsrFlow = FALSE;
+      deviceControlBlock.fOutX = FALSE;
       break;
   }
 
-  if (SetCommState(&dcb) >= 0)
-    return TRUE;
+  if (!IsOpen()) {
+    osError = EBADF;
+    lastError = NotOpen;
+    lastError = BadParameter;
+    return FALSE;
+  }
 
-  osError = EINVAL;
-  return FALSE;
+  if (SetCommState(&deviceControlBlock) < 0) {
+    osError = EINVAL;
+    return FALSE;
+  }
+
+  PAssert(GetCommState(os_handle, &deviceControlBlock) == 0,
+                                                        POperatingSystemError);
+  return TRUE;
 }
 
 
@@ -379,11 +395,8 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
     return FALSE;
   }
 
-  char str[30];
-  GetProfileString("ports", port, "9600,n,8,1,x", str, sizeof(str));
-  DCB dcb;
-  if (BuildCommDCB(port + ":" + str, &dcb))
-    SetCommState(&dcb);
+  deviceControlBlock.Id = (BYTE)os_handle;
+  SetCommState(&deviceControlBlock);
 
   if (!SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow)) {
     CloseComm(os_handle);
@@ -404,12 +417,7 @@ BOOL PSerialChannel::SetSpeed(DWORD speed)
 
 DWORD PSerialChannel::GetSpeed() const
 {
-  if (!IsOpen())
-    return 9600;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  switch (dcb.BaudRate) {
+  switch (deviceControlBlock.BaudRate) {
     case CBR_110 :
       return 110;
     case CBR_300 :
@@ -437,7 +445,7 @@ DWORD PSerialChannel::GetSpeed() const
     case CBR_256000 :
       return 256000;
   }
-  return dcb.BaudRate;
+  return deviceControlBlock.BaudRate;
 }
 
 
@@ -450,12 +458,7 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
 
 BYTE PSerialChannel::GetDataBits() const
 {
-  if (!IsOpen())
-    return 8;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  return dcb.ByteSize;
+  return deviceControlBlock.ByteSize;
 }
 
 
@@ -467,12 +470,7 @@ BOOL PSerialChannel::SetParity(Parity parity)
 
 PSerialChannel::Parity PSerialChannel::GetParity() const
 {
-  if (!IsOpen())
-    return NoParity;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  switch (dcb.Parity) {
+  switch (deviceControlBlock.Parity) {
     case ODDPARITY :
       return OddParity;
     case EVENPARITY :
@@ -495,12 +493,7 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
 
 BYTE PSerialChannel::GetStopBits() const
 {
-  if (!IsOpen())
-    return 1;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  return (BYTE)(dcb.StopBits == ONESTOPBIT ? 1 : 2);
+  return (BYTE)(deviceControlBlock.StopBits == ONESTOPBIT ? 1 : 2);
 }
 
 
@@ -512,14 +505,9 @@ BOOL PSerialChannel::SetInputFlowControl(FlowControl flowControl)
 
 PSerialChannel::FlowControl PSerialChannel::GetInputFlowControl() const
 {
-  if (!IsOpen())
-    return NoFlowControl;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  if (dcb.fRtsflow)
+  if (deviceControlBlock.fRtsflow)
     return RtsCts;
-  if (dcb.fInX != 0)
+  if (deviceControlBlock.fInX != 0)
     return XonXoff;
   return NoFlowControl;
 }
@@ -533,14 +521,9 @@ BOOL PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
 
 PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 {
-  if (!IsOpen())
-    return NoFlowControl;
-
-  DCB dcb;
-  PAssert(GetCommState(os_handle, &dcb) == 0, POperatingSystemError);
-  if (dcb.fOutxCtsFlow != 0)
+  if (deviceControlBlock.fOutxCtsFlow != 0)
     return RtsCts;
-  if (dcb.fOutX != 0)
+  if (deviceControlBlock.fOutX != 0)
     return XonXoff;
   return NoFlowControl;
 }
