@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.15  1998/10/18 14:29:42  robertj
+ * Renamed argv/argc to eliminate accidental usage.
+ *
  * Revision 1.14  1998/10/16 11:27:58  robertj
  * Added access to argc/argv.
  *
@@ -96,9 +99,9 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     ~PProcess();
 
     PDirectory PXGetHomeDir ();
-    char ** PXGetArgv() const { return argv; }
-    int     PXGetArgc() const { return argc; }
-    char ** PXGetEnvp() const { return envp; }
+    char ** PXGetArgv() const { return p_argv; }
+    int     PXGetArgc() const { return p_argc; }
+    char ** PXGetEnvp() const { return p_envp; }
 
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
