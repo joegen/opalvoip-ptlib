@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.19 1997/07/26 11:38:22 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.20 1997/08/08 11:13:46 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.20  1997/08/08 11:13:46  robertj
+ * Added virtual for substituting random symbols in OEM files.
+ *
  * Revision 1.19  1997/07/26 11:38:22  robertj
  * Support for overridable pages in HTTP service applications.
  *
@@ -199,8 +202,6 @@ PString PHTTPServiceProcess::GetCopyrightText()
 
 PString PHTTPServiceProcess::GetPageGraphic()
 {
-  PTime compilationDate = PString(__DATE__);
-
   PHTML html = PHTML::InBody;
   html << PHTML::TableStart()
        << PHTML::TableRow()
@@ -209,7 +210,6 @@ PString PHTTPServiceProcess::GetPageGraphic()
        << PHTML::TableData()
        << GetOSClass() << ' ' << GetOSName()
        << " Version " << GetVersion(TRUE)
-       << ", " << compilationDate.AsString("d MMMM yy")
        << PHTML::BreakLine()
        << "By "
        << PHTML::HotLink(homePage) << GetManufacturer() << PHTML::HotLink()
@@ -828,28 +828,9 @@ BOOL PServiceHTML::CheckSignature(const PString & html)
   return checkSignature == signature;
 }
 
-
-BOOL PServiceHTML::ProcessMacros(PString & text,
-                                 const PString & filename,
-                                 BOOL needSignature)
+static void ReplaceIncludes(PString & text)
 {
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
-
-  if (needSignature) {
-    if (!CheckSignature(text)) {
-      PHTML html = "Invalid OEM Signature";
-      html << "The HTML file \""
-           << filename
-           << "\" contains an invalid signature for \""
-           << process.GetName()
-           << "\" by \""
-           << process.GetManufacturer()
-           << '"'
-           << PHTML::Body();
-      text = html;
-      return FALSE;
-    }
-  }
 
   for (;;) {
     PINDEX pos = text.Find("<!--#equival");
@@ -859,8 +840,11 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
 
     PString subs;
     PCaselessString cmd = text(pos+12, end-1).Trim();
-    if (cmd == "header")
+    if (cmd == "header") {
       subs = process.GetPageGraphic();
+      ReplaceIncludes(subs);
+    }
+
     else if (cmd == "copyright")
       subs = process.GetCopyrightText();
     else if (cmd == "os")
@@ -887,10 +871,38 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
                                    ? "Register Now!" : "View Registration")
           << PHTML::HotLink();
       subs = out;
-    }
+    } else 
+      process.SubstituteEquivalSequence(cmd, subs);
 
     text.Splice(subs, pos, end-pos+3);
   }
+}
+
+
+
+BOOL PServiceHTML::ProcessMacros(PString & text,
+                                 const PString & filename,
+                                 BOOL needSignature)
+{
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+
+  if (needSignature) {
+    if (!CheckSignature(text)) {
+      PHTML html = "Invalid OEM Signature";
+      html << "The HTML file \""
+           << filename
+           << "\" contains an invalid signature for \""
+           << process.GetName()
+           << "\" by \""
+           << process.GetManufacturer()
+           << '"'
+           << PHTML::Body();
+      text = html;
+      return FALSE;
+    }
+  }
+
+  ReplaceIncludes(text);
 
   return TRUE;
 }
