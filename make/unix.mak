@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.60  2000/02/04 19:33:25  craigs
+# Added ability to create non-shared versions of programs
+#
 # Revision 1.59  2000/02/03 23:46:26  robertj
 # Added power PC linux variation, thanks Brad Midgley
 #
@@ -313,9 +316,13 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
-SHAREDLIB=1
+ifndef P_SHAREDLIB
+P_SHAREDLIB=1
+endif
 
-ifdef SHAREDLIB
+ifeq ($(P_SHAREDLIB),0)
+LIB_TYPE	= _s
+else
 LDLIBS		+= -ldl
 ifndef PROG
 STDCCFLAGS	+= -fPIC
@@ -443,6 +450,10 @@ endif # hpux
 # Make sure some things are defined
 #
 
+ifndef P_SHAREDLIB
+P_SHAREDLIB=0
+endif
+
 ifndef ENDIAN
 ENDIAN		:= PLITTLE_ENDIAN
 endif
@@ -465,10 +476,14 @@ OBJ_SUFFIX	:= r
 endif # DEBUG
 endif # OBJ_SUFFIX
 
-ifndef SHAREDLIB
+ifeq ($(P_SHAREDLIB),0)
 LIB_SUFFIX	= a
 else
 LIB_SUFFIX	= so
+endif
+
+ifndef LIB_TYPE
+LIB_TYPE	=
 endif
 
 
@@ -494,7 +509,7 @@ PW_OBJDIR	= $(PW_LIBDIR)/$(OBJBASE)
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-PTLIB_FILE	= lib$(PTLIB_BASE).$(LIB_SUFFIX)
+PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 
 
 ###############################################################################
@@ -544,6 +559,6 @@ STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 
 # add library directory to library path and include the library
 LDFLAGS		+= -L$(PW_LIBDIR)
-LDLIBS		+= -l$(PTLIB_BASE) 
+LDLIBS		+= -l$(PTLIB_BASE)$(LIB_TYPE)
 
 # End of unix.mak

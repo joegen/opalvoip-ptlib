@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.40  2000/02/04 19:33:25  craigs
+# Added ability to create non-shared versions of programs
+#
 # Revision 1.39  2000/01/22 00:51:18  craigs
 # Added ability to compile in any directory, and to create shared libs
 #
@@ -168,7 +171,7 @@ CLEAN_FILES += $(OBJS) $(DEPS) core
 ifdef	PROG
 
 ifndef TARGET
-ifndef	SHAREDLIB
+ifeq	($(P_SHAREDLIB),0)
 TARGET = $(OBJDIR)/$(PROG)
 else
 #TARGET = $(OBJDIR)/$(PROG)_dll
@@ -341,12 +344,21 @@ bothdepend :: optdepend debugdepend
 
 
 optshared ::
-	$(MAKE) SHAREDLIB=1 opt
+	$(MAKE) P_SHAREDLIB=1 opt
 
 debugshared ::
-	$(MAKE) SHAREDLIB=1 debug
+	$(MAKE) P_SHAREDLIB=1 debug
 
 bothshared ::
+	$(MAKE) optshared debugshared
+
+optnoshared ::
+	$(MAKE) P_SHAREDLIB=0 opt
+
+debugnoshared ::
+	$(MAKE) P_SHAREDLIB=0 debug
+
+bothnoshared ::
 	$(MAKE) optshared debugshared
 
 
