@@ -20,23 +20,15 @@
  
 #pragma implementation "maccoreaudio.h" 
 
-//#include <ptlib.h>
-//#include <ptlib/sound.h>
 #include <ptlib/unix/ptlib/maccoreaudio.h>
  
-//#include <CoreAudio/CoreAudio.h>
-//#include <AudioToolbox/AudioConverter.h>
-
-#ifdef __MACOSX__
-
-namespace PWLibStupidOSXHacks {
+namespace PWLibStupidOSXHacks
+{
 	int loadCoreAudioStuff;
-};
+}
 
-#endif
 
 PCREATE_SOUND_PLUGIN(CoreAudio, PSoundChannelCoreAudio);
-
 
 
 
@@ -45,19 +37,27 @@ PCREATE_SOUND_PLUGIN(CoreAudio, PSoundChannelCoreAudio);
 
 #ifdef PTRACING
 
+// should also produce output when ptracing is disabled
+#define checkStatus( err ) \
+    if(err) {\
+      OSStatus error = static_cast<OSStatus>(err);\
+      PTRACE(1, "CoreAudio Error " << __func__ << " "  \
+           <<  error   << "("  << (char*)&err <<  ")" ); \
+    }         
+   
 ostream& operator<<(ostream &os, AudioStreamBasicDescription &inDesc)
 {
-  os << "- - - - - - - - - - - - - - - - - - - -\n";
-  os << "  Sample Rate: " << inDesc.mSampleRate << endl;
-  os << "  Format ID: " << (char*)&inDesc.mFormatID << endl;
-  os << "  Format Flags: " << hex << inDesc.mFormatFlags << dec << endl;
-  os << "  Bytes per Packet: " << inDesc.mBytesPerPacket << endl;
-  os << "  Frames per Packet: " << inDesc.mFramesPerPacket << endl;
-  os << "  Bytes per Frame: " << inDesc.mBytesPerFrame << endl;
-  os << "  Channels per Frame: " << inDesc.mChannelsPerFrame << endl; 
-  os << "  Bits per Channel: " << inDesc.mBitsPerChannel << endl;
-  os << "- - - - - - - - - - - - - - - - - - - -\n";
-  return os;
+   os << "- - - - - - - - - - - - - - - - - - - -\n";
+   os << "  Sample Rate: " << inDesc.mSampleRate << endl;
+   os << "  Format ID: " << (char*)&inDesc.mFormatID << endl;
+   os << "  Format Flags: " << hex << inDesc.mFormatFlags << dec << endl;
+   os << "  Bytes per Packet: " << inDesc.mBytesPerPacket << endl;
+   os << "  Frames per Packet: " << inDesc.mFramesPerPacket << endl;
+   os << "  Bytes per Frame: " << inDesc.mBytesPerFrame << endl;
+   os << "  Channels per Frame: " << inDesc.mChannelsPerFrame << endl; 
+   os << "  Bits per Channel: " << inDesc.mBitsPerChannel << endl;
+   os << "- - - - - - - - - - - - - - - - - - - -\n";
+   return os;
 }
 
 
@@ -68,15 +68,42 @@ ostream& operator<<(ostream &os, PSoundChannel::Directions &dir)
    else if(dir == PSoundChannel::Recorder)
       os << " Recorder ";
    else
-      os << " Unknown directon ";
+      os << " Unknown direction ";
    return os;
 }
 
 ostream& operator<<(ostream &os, AudioValueRange range)
 {
-	os << range.mMinimum << " " << range.mMaximum ;
-	return os;
+   os << range.mMinimum << " " << range.mMaximum ;
+   return os;
 
+}
+
+ostream& operator<<(ostream &os, PSoundChannelCoreAudio::State &state)
+{
+   switch(state){
+      case PSoundChannelCoreAudio::init_:
+         os << "init";
+         break;
+      case PSoundChannelCoreAudio::open_:
+         os << "open";
+         break;
+      case PSoundChannelCoreAudio::setformat_:
+         os << "setformat";
+         break;
+      case PSoundChannelCoreAudio::setbuffer_:
+         os << "setbuffer";
+         break;
+      case PSoundChannelCoreAudio::running_:
+         os << "running";
+         break;
+      case PSoundChannelCoreAudio::destroy_:
+         os << "destroy";
+         break;
+      default:
+      os << " Unknown state ";
+   }
+   return os;
 }
 
 #endif
@@ -85,10 +112,10 @@ ostream& operator<<(ostream &os, AudioValueRange range)
 /***** PSound implementation *****/
 
 PSound::PSound(unsigned   channels,
-			   unsigned   sampleRate,
-			   unsigned   bitsPerSample,
-			   PINDEX     bufferSize,
-			   const BYTE *data)
+            unsigned   sampleRate,
+            unsigned   bitsPerSample,
+            PINDEX     bufferSize,
+            const BYTE *data)
 {
   PAssert(0, PUnimplementedFunction); 
 }
@@ -105,47 +132,47 @@ PSound & PSound::operator=(const PBYTEArray & data)
 }
 
 BOOL PSound::Load(const PFilePath & filename)
-{	
+{  
   PAssert(0, PUnimplementedFunction); 
   return false;
 }
 
 BOOL PSound::Save(const PFilePath & filename)
-{	
-  PAssert(0, PUnimplementedFunction); 
-	return false;
+{  
+   PAssert(0, PUnimplementedFunction); 
+   return false;
 }
 
 BOOL PSound::Play()
 {
-  PAssert(0, PUnimplementedFunction); 
-	return false;
+   PAssert(0, PUnimplementedFunction); 
+   return false;
 }
 
 void PSound::SetFormat(unsigned numChannels,
-					   unsigned sampleRate,
-					   unsigned bitsPerSample)
+                  unsigned sampleRate,
+                  unsigned bitsPerSample)
 {
-  this->numChannels = numChannels;
-  this->sampleRate = sampleRate;
-  this->sampleSize = bitsPerSample;
-  formatInfo.SetSize(0);
+   this->numChannels = numChannels;
+   this->sampleRate = sampleRate;
+   this->sampleSize = bitsPerSample;
+   formatInfo.SetSize(0);
 }
 
 BOOL PSound::PlayFile(const PFilePath & file,
-			  BOOL wait)
+           BOOL wait)
 {
-  PAssert(0, PUnimplementedFunction); 
-	return false;
+   PAssert(0, PUnimplementedFunction); 
+   return false;
 }
 
 void PSound::Beep()
 {
-  PAssert(0, PUnimplementedFunction); 
+   PAssert(0, PUnimplementedFunction); 
 }
 
 
-#include "maccoreaudio/CircularBuffer.inc"
+#include "maccoreaudio/circular_buffer.inl"
 
 /***** PSoundChannel implementation *****/
 
@@ -154,56 +181,61 @@ void PSoundChannelCoreAudio::Init(){
 }
 
 PSoundChannelCoreAudio::PSoundChannelCoreAudio() 
-   : isRunning(FALSE), mCircularBuffer(NULL), converter_buffer(NULL),
-	  mInputCircularBuffer(NULL), mInputBufferList(NULL), mOutputBufferList(NULL)
+   : state(init_), mCircularBuffer(NULL), converter_buffer(NULL),
+     mInputCircularBuffer(NULL), mInputBufferList(NULL), mOutputBufferList(NULL)
 {
-   PTRACE(1, "no arg constructor");
    CommonConstruct();
 }
 
 PSoundChannelCoreAudio::PSoundChannelCoreAudio(const PString & device,
-					 Directions dir,
-					 unsigned numChannels,
-					 unsigned sampleRate,
-					 unsigned bitsPerSample)
+                Directions dir,
+                unsigned numChannels,
+                unsigned sampleRate,
+                unsigned bitsPerSample)
    : mCircularBuffer(NULL), converter_buffer(NULL),
-	  mInputCircularBuffer(NULL), mInputBufferList(NULL), mOutputBufferList(NULL)
+     mInputCircularBuffer(NULL), mInputBufferList(NULL), mOutputBufferList(NULL)
 {
-	CommonConstruct();
-	Open(device, dir, numChannels, sampleRate, bitsPerSample);
+   CommonConstruct();
+   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
 
 
 PSoundChannelCoreAudio::~PSoundChannelCoreAudio()
 {
-   PTRACE(1, "Destructor " << direction );
-   Close();
-}
-
-BOOL PSoundChannelCoreAudio::Close()
-{
    OSStatus err = noErr;
-   PTRACE(1, "Close" << direction );
+   PTRACE(2, __func__ << " destructor " << direction << " " << state );
+
+   State curr(state);
+   state = destroy_;
+   usleep(1000*20); // about the intervall between two callbacks
+                    // ensures that current callback has terminated 
 
    /* OutputUnit also for input device,
     * Stop everything before deallocating buffers */
-   //if(mDeviceID != kAudioDeviceDummy){
-   if(isRunning){
-	   isRunning = FALSE;
-
-   	err = AudioOutputUnitStop(mAudioUnit);
-      checkStatus(err);
-   	//usleep(6000000);
-   	PTRACE(1, direction  << " Output unit stopped"  );
-   	// better -> isOpen
-      err = AudioUnitUninitialize(mAudioUnit);
-   	checkStatus(err);
-      // exc_bad_access when closing channel
-      err = CloseComponent(mAudioUnit);
-	   checkStatus(err);
-      err = AudioConverterDispose(converter);
-      checkStatus(err);
+   switch(curr) {
+      case running_:
+         err = AudioOutputUnitStop(mAudioUnit);
+         checkStatus(err);
+         PTRACE(1, direction << " AudioUnit stopped" );
+         usleep(1000*20); // ensure that all callbacks terminated
+         /* fall through */
+      case setbuffer_:
+         /* check for all buffers unconditionally */
+         err = AudioUnitUninitialize(mAudioUnit);
+         checkStatus(err);
+         /* fall through */
+      case setformat_:
+         err = AudioConverterDispose(converter);
+         checkStatus(err);
+         /* fall through */
+      case open_:
+         err = CloseComponent(mAudioUnit);
+         checkStatus(err);
+         /* fall through */
+      case init_:
+      case destroy_:
+         /* nop */;
    }
 
    /* now free all buffers */
@@ -228,35 +260,40 @@ BOOL PSoundChannelCoreAudio::Close()
       this->mOutputBufferList = NULL;
    }
 
-   // tell PChannel (and IsOpen()) that the channel is closed.
+   // tell PChannel::IsOpen() that the channel is closed.
    os_handle = -1;  
-   return true;
 }
 
 
 unsigned PSoundChannelCoreAudio::GetChannels() const
 {
-  PAssert(0, PUnimplementedFunction); 
-	return 0;
+   if(state >= setformat_)
+      return pwlibASBD.mChannelsPerFrame;
+   else 
+      return 0;
 }
 
 unsigned PSoundChannelCoreAudio::GetSampleRate() const
 {
-  PAssert(0, PUnimplementedFunction); 
-	return 0;
+   if(state >= setformat_)
+      return (unsigned)(pwlibASBD.mSampleRate);
+   else 
+      return 0;
 }
 
 unsigned PSoundChannelCoreAudio::GetSampleSize() const
 {
-  PAssert(0, PUnimplementedFunction); 
-	return 0;
+   if(state >= setformat_)
+      return (pwlibASBD.mBitsPerChannel);
+   else 
+      return 0;
 }
 
 
 /*
  * Functions for retrieving AudioDevice list
  */
-#include "maccoreaudio/maccoreaudio_devices.cxx"
+#include "maccoreaudio/maccoreaudio_devices.inl"
 
 
 PString PSoundChannelCoreAudio::GetDefaultDevice(Directions dir)
@@ -269,12 +306,12 @@ PString PSoundChannelCoreAudio::GetDefaultDevice(Directions dir)
 
   if (dir == Player) {
     err = AudioHardwareGetProperty(
-	       kAudioHardwarePropertyDefaultOutputDevice,
+          kAudioHardwarePropertyDefaultOutputDevice,
                &theSize, &theID);
   }
   else {
     err =  AudioHardwareGetProperty(
-	        kAudioHardwarePropertyDefaultInputDevice,
+           kAudioHardwarePropertyDefaultInputDevice,
                 &theSize, &theID);
   }
 
@@ -291,13 +328,13 @@ PStringList PSoundChannelCoreAudio::GetDeviceNames(Directions dir)
 
   int numDevices;
   AudioDeviceID *deviceList;
+  bool isInput = (dir == Recorder);
 
   numDevices = CADeviceList(&deviceList);
 
   for (int i = 0; i < numDevices; i++) {
     PString s = CADeviceName(deviceList[i]);
-    PTRACE(1, "device name " << s );
-    if (CADeviceSupportDirection(deviceList[i], dir) > 0) {
+    if (CADeviceSupportDirection(deviceList[i], isInput) > 0) {
       devices.AppendString(s);
     }
   }
@@ -312,24 +349,33 @@ PStringList PSoundChannelCoreAudio::GetDeviceNames(Directions dir)
 }
 
 /*
- * Here start of functions responsible for converting 8kHz to 44k1Hz
- * It goes like this. The conversion is done by the AudioToolbox framework
- * of Mac CoreAudio. To start conversion this we need to install two callback 
- * functions that are called once the AudioUnit needs more data. The callback 
- * functions which are installed in SetBuffers, are: PlaybackIOProc, 
- * RecordIOProc
+ * Functions responsible for converting 8kHz to 44k1Hz. It works like this. 
+ * The AudioHardware is abstracted by an AudioUnit(AUHAL). Each time the device
+ * has more data available or needs new data a callback function is called.
+ * These are PlayRenderProc and RecordProc. 
  *
- * Inside these callback functions an AudioConverter, which is part of the Mac 
- * AudioToolbox, is used to convert the data from 8khz to 44kHz1 or back
- * on-the-fly (same thread). The converter object needs another callback 
- * function for reading and writing the user data. The name of these
- * callback functions are: ACwriteInputProc, ACreadInputProc
+ * The user data is stored in a format a set by ::SetFormat. Usually 8kHz, mono,
+ * 16bit unsigned. The AudioUnit usually provides 44,1kHz, stereo, 32bit float.
+ * So conversion is needed. The conversion is done by the AUConverter from 
+ * the AudioToolbox framework.
  *
- * To summarize, in SetBuffer callback functions are installed that are called
- * when the AudioUnit device is ready to handle more data. Within these 
- * functions a converter object is used, that in turn calls a callback function
- * to access the data buffer filled by SoundChannel::Read 
- * or SoundChannel::Write function calls.
+ * Currently inside the callback functions from the AUHAL, we pass the request
+ * to the Converter, that in turn uses another callback function to grab some
+ * of data in the input format. All this is done on-the-fly, which means inside
+ * the thread managing the AudioHardware. The callback functions of the 
+ * converter are ComplexBufferFillPlayback, ComplexbufferFillRecord.
+ *
+ * The problem we have that 44,1kHz is not a multiple of 8kHz, so we can never 
+ * be sure about how many data the converter is going to ask exactly, 
+ * sometimes it might be 102, 106.. This is especially true in case of the 
+ * first request, where it might ask some additional data depending on 
+ * PrimeMethod that garantues smoth resampling at the border.
+ *
+ * To summarize, when the AudioUnit device is ready to handle more data. It 
+ * calls its callback function, within these functions the data is processed or 
+ * prepared by pulling through AUConverter. The converter in turn calls its 
+ * callback function to request more input data. Depending on whether we talk 
+ * about Read or Write, this includes more or less complex buffering. 
  */
 
 
@@ -343,56 +389,51 @@ PStringList PSoundChannelCoreAudio::GetDeviceNames(Directions dir)
  */
 OSStatus PSoundChannelCoreAudio::ComplexBufferFillPlayback( 
          AudioConverterRef            inAudioConverter,
-			UInt32		             *ioNumberDataPackets,
-			AudioBufferList		     *ioData,
-			AudioStreamPacketDescription **outDataPacketDesc,
-			void			     *inUserData)
+         UInt32                   *ioNumberDataPackets,
+         AudioBufferList           *ioData,
+         AudioStreamPacketDescription **outDataPacketDesc,
+         void             *inUserData)
 {
    OSStatus err = noErr;
    PSoundChannelCoreAudio *This = 
              static_cast<PSoundChannelCoreAudio*>(inUserData);
    AudioStreamBasicDescription pwlibASBD = This->pwlibASBD;
+   CircularBuffer* circBuf = This->mCircularBuffer;
 
-	if(This->mCircularBuffer->Empty()){
-		PTRACE(1, This->direction << " Ringbuffer is empty. " 
-				<< "Stopping output");
-		*ioNumberDataPackets = 0;
-		return noErr;
-	}
+   // output might stop in case there is a complete buffer underrun!!!
+   UInt32 minPackets = MIN(*ioNumberDataPackets,
+             circBuf->size() / pwlibASBD.mBytesPerPacket );
+   UInt32 outBytes = minPackets* pwlibASBD.mBytesPerPacket;
 
-	PTRACE(1, "Buffer empty? " << This->mCircularBuffer->Empty());
-	PTRACE(1, "Buffer fill " << This->mCircularBuffer->size());
+   PTRACE(2, __func__ << " requested " << *ioNumberDataPackets << 
+         " packets, " <<  " fetching " << minPackets << " packets");
 
-   UInt32 requestSizeBytes = *ioNumberDataPackets * pwlibASBD.mBytesPerPacket;
-	PTRACE_IF(1, requestSizeBytes > This->converter_buffer_size, 
-			This->direction << " Converter buffer too small");
+   if(outBytes > This->converter_buffer_size){
+      PTRACE(1, This->direction << " Converter buffer too small");
 
-	// doesn't matter if not everything fits into the buffer
-	// the converter will ask right again
-   UInt32 reqBytes = MIN( requestSizeBytes, This->converter_buffer_size );
-	UInt32 reqPackets = reqBytes / pwlibASBD.mBytesPerPacket;
-	reqBytes = reqPackets * pwlibASBD.mBytesPerPacket;
-   
-   PTRACE(1, __func__ << " requested " << *ioNumberDataPackets << 
-			" packets, " <<  " fetching " << reqPackets << " packets");
+      // doesn't matter converter will ask right again for remaining data
+      // converter buffer multiple of packet size
+      outBytes = This->converter_buffer_size;
+   }
 
    // dequeue data from circular buffer, without locking(false)
-	// converter_buffer_size might not be multiple of packet
-   UInt32 ioBytes = reqBytes;
-   ioBytes = This->mCircularBuffer->Drain(This->converter_buffer, ioBytes,\
-	                                                             false);
+   outBytes = circBuf->Drain(This->converter_buffer, outBytes, false);
 
-   if(ioBytes < reqBytes) {
-      PTRACE(1, "Too few data frames, filling up with silence " 
-				<< (reqBytes - ioBytes) << " bytes ");
-		bzero(This->converter_buffer+ioBytes, reqBytes - ioBytes );
+   UInt32 reqBytes = *ioNumberDataPackets * pwlibASBD.mBytesPerPacket;
+   if(outBytes < reqBytes && outBytes < This->converter_buffer_size) {
+      reqBytes = MIN(reqBytes, This->converter_buffer_size);
+      PTRACE(1, "Buffer underrun, filling up with silence " 
+            << (reqBytes - outBytes) << " bytes ");
+
+      bzero(This->converter_buffer + outBytes, reqBytes - outBytes );
+      outBytes = reqBytes;
    }
 
    // fill structure that gets returned to converter
    ioData->mBuffers[0].mData = (char*)This->converter_buffer;
-   ioData->mBuffers[0].mDataByteSize = reqBytes;
+   ioData->mBuffers[0].mDataByteSize = outBytes;
 
-   *ioNumberDataPackets = reqPackets;
+   *ioNumberDataPackets = outBytes / pwlibASBD.mBytesPerPacket;
 
    return err;
 }
@@ -404,139 +445,128 @@ OSStatus PSoundChannelCoreAudio::ComplexBufferFillPlayback(
  */
 OSStatus PSoundChannelCoreAudio::PlayRenderProc(
          void*                         inRefCon,
-			AudioUnitRenderActionFlags*   ioActionFlags,
-			const struct AudioTimeStamp*  TimeStamp,
-			UInt32                        inBusNumber,
-			UInt32                        inNumberFrames,
-			struct AudioBufferList*       ioData)
+         AudioUnitRenderActionFlags*   ioActionFlags,
+         const struct AudioTimeStamp*  TimeStamp,
+         UInt32                        inBusNumber,
+         UInt32                        inNumberFrames,
+         struct AudioBufferList*       ioData)
 {  
-  OSStatus err = noErr;
-  PSoundChannelCoreAudio *This = 
-		  static_cast<PSoundChannelCoreAudio *>(inRefCon);
+   OSStatus err = noErr;
+   PSoundChannelCoreAudio *This = 
+         static_cast<PSoundChannelCoreAudio *>(inRefCon);
 
-  PTRACE(1, __func__ << ", frames " << inNumberFrames);
+   if( This->state != running_  || This->mCircularBuffer->Empty() ) {
+   //   PTRACE(1, __func__ << " terminating");
+      return noErr;
+   }
 
-  if( !This->isRunning || This->mCircularBuffer->Empty() ) {
-	  return noErr;
-  /*   AURenderCallbackStruct callback;
-	  bzero(&callback, sizeof(AURenderCallbackStruct));
-     err = AudioUnitSetProperty(This->mAudioUnit, 
-			 		kAudioUnitProperty_SetRenderCallback,
-			 		kAudioUnitScope_Input,
-			 		0,
-			 		&callback,
-			 		sizeof(callback));
-	  return noErr;*/
-  }
+   PTRACE(1, __func__ << ", frames " << inNumberFrames);
 
-  err = AudioConverterFillComplexBuffer(This->converter,
-	        PSoundChannelCoreAudio::ComplexBufferFillPlayback, 
-		     This, 
-			  &inNumberFrames, // should be packets
-			  ioData,
-			  NULL /*outPacketDescription*/);
-  checkStatus(err);
+   err = AudioConverterFillComplexBuffer(This->converter,
+           PSoundChannelCoreAudio::ComplexBufferFillPlayback, 
+           This, 
+           &inNumberFrames, // should be packets
+           ioData,
+           NULL /*outPacketDescription*/);
+   checkStatus(err);
 
 
-  // make fake stereo from mono 
-  //ioData->mBuffers[1] = ioData->mBuffers[0];
+   // make fake stereo from mono 
+   //ioData->mBuffers[1] = ioData->mBuffers[0];
 
    /* now that cpu intensive work is done, make stereo from mono
-    * assume non-interleaved ==> 1 channel/buffer */
-   if(ioData->mBuffers[0].mDataByteSize > 0 && This->isRunning){
-      UInt32 len = ioData->mBuffers[0].mDataByteSize;
+    * assume non-interleaved ==> 1 buffer per channel */
+   UInt32 len = ioData->mBuffers[0].mDataByteSize;
+   if(len > 0 && This->state == running_){
       unsigned i = 1;
       while(i < ioData->mNumberBuffers) {
-    	  PTRACE(1, __func__ << " copy channel 0 to channel " << i);
          memcpy(ioData->mBuffers[i].mData, ioData->mBuffers[0].mData, len);  
          ioData->mBuffers[i].mDataByteSize = len;
-    	  i++;
+         i++;
       }
    }
 
-  return err;
+   return err;
 }
 
 
 
 
 OSStatus PSoundChannelCoreAudio::RecordProc(
-                     void*                        inRefCon,
-		     AudioUnitRenderActionFlags*  ioActionFlags,
-		     const AudioTimeStamp*        inTimeStamp,
-		     UInt32                       inBusNumber,
-		     UInt32                       inNumberFrames,
-		     AudioBufferList *            ioData)
+           void*                        inRefCon,
+           AudioUnitRenderActionFlags*  ioActionFlags,
+           const AudioTimeStamp*        inTimeStamp,
+           UInt32                       inBusNumber,
+           UInt32                       inNumberFrames,
+           AudioBufferList *            ioData)
 {
-   PTRACE(1,  __func__ << ", frames  " << inNumberFrames );
+   PTRACE(2,  __func__ << ", frames  " << inNumberFrames );
 
    OSStatus err = noErr;
    PSoundChannelCoreAudio *This =
-		static_cast<PSoundChannelCoreAudio *>(inRefCon);
+                static_cast<PSoundChannelCoreAudio *>(inRefCon);
    CircularBuffer* inCircBuf   = This->mInputCircularBuffer;
-   AudioBufferList*	inputData =  This->mInputBufferList;
-   AudioBuffer *audio_buf;
+	AudioStreamBasicDescription asbd = This->hwASBD;
    
-	if(!This->isRunning){
-		return noErr;
+   if(This->state != running_){
+      return noErr;
+   }
+
+	if( This->mRecordInputBufferSize < inNumberFrames * asbd.mFramesPerPacket){
+		PTRACE(1, "Allocated ABL RecordBuffer is too small ");
+		inNumberFrames = This->mRecordInputBufferSize / asbd.mFramesPerPacket;
 	}
 
    /* fetch the data from the microphone or other input device */
-	err= AudioUnitRender(This->mAudioUnit,
-				ioActionFlags,
-				inTimeStamp, 
-				inBusNumber,
-				inNumberFrames, //# of frames  requested
-				inputData);// Audio Buffer List to hold data    
-	checkStatus(err);
+   AudioBufferList*  inputData =  This->mInputBufferList;
+   err= AudioUnitRender(This->mAudioUnit,
+            ioActionFlags,
+            inTimeStamp, 
+            inBusNumber,
+            inNumberFrames, //# of frames  requested
+            inputData);// Audio Buffer List to hold data    
+   checkStatus(err);
 
    /* in any case reduce to mono by taking only the first buffer */
-	audio_buf = &inputData->mBuffers[0];
-	inCircBuf->Fill((char *)audio_buf->mData,	audio_buf->mDataByteSize, 
-			false, true); // do not wait, overwrite oldest frames 
+   AudioBuffer *audio_buf = &inputData->mBuffers[0];
+   inCircBuf->Fill((char *)audio_buf->mData, audio_buf->mDataByteSize, 
+         false, true); // do not wait, overwrite oldest frames 
 
-	/*
-	 * Sample Rate Conversion(SRC)
-	 */
-	unsigned int frames = inCircBuf->size() / This->hwASBD.mBytesPerFrame;
+   /*
+    * Sample Rate Conversion(SRC)
+    */
+   unsigned int frames = inCircBuf->size() / This->hwASBD.mBytesPerFrame;
 
 
-	/* given the number of Microphone frames how many 8kHz frames are
-	 * to expect, keeping a minimum buffer fill of 20 frames to have some 
-	 * data handy in case the converter requests more than expected */
-	if(frames > MIN_INPUT_FILL){
-		UInt32 pullFrames = int(float(frames-MIN_INPUT_FILL)/This->rateTimes8kHz);
-		UInt32 pullBytes = 
-				// it is not effective to convert frames that get overriden,
-				// better to override them in the mInputCircularBuffer
-				MIN(UInt32(This->mCircularBuffer->capacity - 
-					             This->mCircularBuffer->size()),
-				   MIN( This->converter_buffer_size,
-						pullFrames * This->pwlibASBD.mBytesPerFrame));
+   /* given the number of Microphone frames how many 8kHz frames are
+    * to expect, keeping a minimum buffer fill of MIN_INPUT_FILL frames to 
+    * have some data handy in case the converter requests more Data */
+   if(frames > MIN_INPUT_FILL){
+      UInt32 pullFrames = int(float(frames-MIN_INPUT_FILL)/This->rateTimes8kHz);
+      UInt32 pullBytes = MIN( This->converter_buffer_size,
+                              pullFrames * This->pwlibASBD.mBytesPerFrame);
 
-		UInt32 pullPackets = pullBytes / This->pwlibASBD.mBytesPerPacket;
+      UInt32 pullPackets = pullBytes / This->pwlibASBD.mBytesPerPacket;
 
-		PTRACE(1, __func__ << " going to pull " << pullPackets << " packets");
+      PTRACE(1, __func__ << " going to pull " << pullPackets << " packets");
 
-		if(pullPackets > 0) {
-			/* now pull the frames through the converter */
-			AudioBufferList* outputData = This->mOutputBufferList;
-         err = AudioConverterFillComplexBuffer(This->converter,
-			        PSoundChannelCoreAudio::ComplexBufferFillRecord, 
-				     This, 
-					  &pullPackets, 
-					  outputData, 
-					  NULL /*outPacketDescription*/);
-			checkStatus(err);
+      /* now pull the frames through the converter */
+      AudioBufferList* outputData = This->mOutputBufferList;
+      err = AudioConverterFillComplexBuffer(This->converter,
+              PSoundChannelCoreAudio::ComplexBufferFillRecord, 
+              This, 
+              &pullPackets, 
+              outputData, 
+              NULL /*outPacketDescription*/);
+      checkStatus(err);
 
-			/* put the converted data into the main CircularBuffer for later 
-			 * fetching by the public Read function */
-			audio_buf = &outputData->mBuffers[0];
-			This->mCircularBuffer->Fill((char*)audio_buf->mData, 
-					audio_buf->mDataByteSize, 
-					false, true); // do not wait, overwrite oldest frames
-		}
-	}
+      /* put the converted data into the main CircularBuffer for later 
+       * fetching by the public Read function */
+      audio_buf = &outputData->mBuffers[0];
+      This->mCircularBuffer->Fill((char*)audio_buf->mData, 
+            audio_buf->mDataByteSize, 
+            false, true); // do not wait, overwrite oldest frames
+   }
 
    return err;
 }
@@ -546,49 +576,49 @@ OSStatus PSoundChannelCoreAudio::RecordProc(
  */
 OSStatus PSoundChannelCoreAudio::ComplexBufferFillRecord( 
          AudioConverterRef            inAudioConverter,
-			UInt32		             *ioNumberDataPackets,
-			AudioBufferList		     *ioData,
-			AudioStreamPacketDescription **outDataPacketDesc,
-			void			     *inUserData)
+         UInt32                   *ioNumberDataPackets,
+         AudioBufferList           *ioData,
+         AudioStreamPacketDescription **outDataPacketDesc,
+         void             *inUserData)
 {
 
    OSStatus err = noErr;
    PSoundChannelCoreAudio *This = 
-		  static_cast<PSoundChannelCoreAudio *>(inUserData);
+        static_cast<PSoundChannelCoreAudio *>(inUserData);
    CircularBuffer* inCircBuf   = This->mInputCircularBuffer;
    AudioStreamBasicDescription& hwASBD = This->hwASBD;
-	
-
-   UInt32 minPackets = MIN(*ioNumberDataPackets,
-   		    inCircBuf->size() / hwASBD.mBytesPerPacket );
    
-   PTRACE(1, __func__ << " " << *ioNumberDataPackets << " requested " 
-   		<< " fetching " << minPackets << " packets");
 
-	// assuming non-interleaved or mono
+   // make sure it's always a multiple of packets
+   UInt32 minPackets = MIN(*ioNumberDataPackets,
+             inCircBuf->size() / hwASBD.mBytesPerPacket );
    UInt32 ioBytes = minPackets * hwASBD.mBytesPerPacket;
+   
+
+   PTRACE(1, __func__ << " " << *ioNumberDataPackets << " requested " 
+         << " fetching " << minPackets << " packets");
 
    if(ioBytes > This->converter_buffer_size){
       PTRACE(1, "converter_buffer too small " << ioBytes << " requested "
              << " but only " << This->converter_buffer_size << " fit in");
-		ioBytes = This->converter_buffer_size;
+      ioBytes = This->converter_buffer_size;
    }
    
    ioBytes = inCircBuf->Drain((char*)This->converter_buffer, ioBytes, false);
    
    if(ioBytes  != minPackets * hwASBD.mBytesPerPacket) {
+      // no more a multiple of packet problably !!!
       PTRACE(1, "Failed to fetch the computed number of packets");
-		//minPackets = ioBytes / hwASBD.mBytesPerFrame;
    }
 
-	ioData->mBuffers[0].mData = This->converter_buffer;
-	ioData->mBuffers[0].mDataByteSize = ioBytes;
+   ioData->mBuffers[0].mData = This->converter_buffer;
+   ioData->mBuffers[0].mDataByteSize = ioBytes;
 
-	// assuming mono or non-interleaved
-   *ioNumberDataPackets = ioBytes / hwASBD.mBytesPerFrame;
+   // assuming non-interleaved or mono 
+   *ioNumberDataPackets = ioBytes / hwASBD.mBytesPerPacket;
 
-	return err;
-	
+   return err;
+   
 }
 
 
@@ -597,485 +627,37 @@ OSStatus PSoundChannelCoreAudio::CallbackSetup(){
    AURenderCallbackStruct callback;
 
    callback.inputProcRefCon = this;
-
    if (direction == Recorder) {
-		callback.inputProc = RecordProc;
+      callback.inputProc = RecordProc;
       /* kAudioOutputUnit stands for both Microphone/Speaker */
-		err = AudioUnitSetProperty(mAudioUnit,
-					kAudioOutputUnitProperty_SetInputCallback,
-					kAudioUnitScope_Global,
-					0,
-					&callback,
-					sizeof(callback));
-				
+      err = AudioUnitSetProperty(mAudioUnit,
+               kAudioOutputUnitProperty_SetInputCallback,
+               kAudioUnitScope_Global,
+               0,
+               &callback,
+               sizeof(callback));
+            
    }
    else {
-		callback.inputProc = PlayRenderProc;
-   	err = AudioUnitSetProperty(mAudioUnit, 
-			 		kAudioUnitProperty_SetRenderCallback,
-			 		kAudioUnitScope_Input,
-			 		0,
-			 		&callback,
-			 		sizeof(callback));
+      callback.inputProc = PlayRenderProc;
+      err = AudioUnitSetProperty(mAudioUnit, 
+               kAudioUnitProperty_SetRenderCallback,
+               kAudioUnitScope_Input,
+               0,
+               &callback,
+               sizeof(callback));
    }
    checkStatus(err);
    return err;
 }
 
 
-/* 
- * Configures the builtin converter of the HAL AudioUnit, which in contrast
- * to the InputUnit contains buffer and could do SRC already.
- * Unfortunately it is of little use because currently we do not know how 
- * to make a channel mapping so that a mono input channel gets copied to all 
- * output channels.
- * So we turn the converter off by setting the same formats on both ends.
- */ 
-OSStatus PSoundChannelCoreAudio::MatchHALOutputFormat()
-{
-   OSStatus err = noErr;
-	UInt32 size = sizeof (AudioStreamBasicDescription);
-
-   memset(&hwASBD, 0, size);
-        
-   err = AudioDeviceGetProperty(mDeviceID, 
-			0,     // channel
-			//true,  // isInput
-		   false,  // isInput
-			kAudioDevicePropertyStreamFormat,
-			&size, &hwASBD);
-	checkStatus(err);
-
-	/*
-   //Gets the size of the Stream Format Property and if it is writable
-   Boolean             outWritable;                            
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Output,
-                           0,  // output bus 
-                           &size, 
-                           &outWritable);
-
-   PTRACE_IF(1, outWritable, "AUHAL output unit, output format is writable");
-
-   //Get the current stream format of the output
-   err = AudioUnitGetProperty (mAudioUnit,
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Output,
-                           0,  // output bus 
-                           &hwASBD,
-                           &size);
-  checkStatus(err);  
-  */
-
-	PTRACE(1, direction << "before " << endl << hwASBD);
-
-   // make sure it is non-interleaved
-
-	BOOL isInterleaved = 
-	         !(hwASBD.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
-
-	PTRACE_IF(1, isInterleaved, "channels are interleaved ");
-
-   hwASBD.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;	
-	if(isInterleaved){
-	   // so its only one buffer containing all data, according to 
-		//list.apple.com: You only multiple out by mChannelsPerFrame 
-		//if you are doing interleaved.
-	   hwASBD.mBytesPerPacket /= hwASBD.mChannelsPerFrame;
-	   hwASBD.mBytesPerFrame  /= hwASBD.mChannelsPerFrame;
-	}
-  
-   //Set the stream format of the output to match the input
-   err = AudioUnitSetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Input,
-              0,
-              &hwASBD,
-              size);
-                                                        
-
-	PTRACE(1, direction << "after" << endl << hwASBD);
-  
-	// make sure we really know the current format
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitGetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Input,
-              0,  // input bus
-              &hwASBD,
-              &size);
-              
-  return err;
-}
-
-/** hack for usb devices, we are not getting the format of the output
- * but of the input side */
-OSStatus PSoundChannelCoreAudio::MatchHALOutputFormat1()
-{
-   OSStatus err = noErr;
-	UInt32 size = sizeof (AudioStreamBasicDescription);
-   memset(&hwASBD, 0, size);
-   Boolean             outWritable;                            
-        
-   //Gets the size of the Stream Format Property and if it is writable
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Input,
-                           0,  /* output bus */
-                           &size, 
-                           &outWritable);
-
-
-   //Get the current stream format of the output
-   err = AudioUnitGetProperty (mAudioUnit,
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Input,
-                           0,  /* output bus */
-                           &hwASBD,
-                           &size);
-  checkStatus(err);  
-
-
-	PTRACE(1, direction << "before " << endl << hwASBD);
-	
-   // make sure it is non-interleaved
-	Boolean isInterleaved = 
-	         !(hwASBD.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
-	         //((hwASBD.mFormatID & kAudioFormatFlagIsNonInterleaved) 
-				//   ^ kAudioFormatFlagIsNonInterleaved);
-
-	PTRACE_IF(1, isInterleaved, "channels are interleaved ");
-
-   hwASBD.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;	
-	if(isInterleaved){
-	   // so its only one buffer containing all data, according to 
-		//list.apple.com: You only multiple out by mChannelsPerFrame 
-		//if you are doing interleaved.
-	   hwASBD.mBytesPerPacket /= hwASBD.mChannelsPerFrame;
-	   hwASBD.mBytesPerFrame  /= hwASBD.mChannelsPerFrame;
-	}
-  
-   //Set the stream format of the output to match the input
-   err = AudioUnitSetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Input,
-              0,
-              &hwASBD,
-              size);
-                                                        
-  
-	// make sure we really know the current format
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitGetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Input,
-              0,  // input bus
-              &hwASBD,
-              &size);
-
-	PTRACE(1, direction << "before " << endl << hwASBD);
-              
-  return err;
-}
-
-/*
-OSStatus PSoundChannelCoreAudio::FetchAUHAL_ASBD(){
-   UInt32 size = sizeof (AudioStreamBasicDescription);
-   OSStatus result;
-        
-   //Gets the size of the Stream Format Property and if it is writable
-   Boolean             outWritable;                            
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Output,
-                           0,  // output bus 
-                           &size, 
-                           &outWritable);
-
-	if(direction == Player){
-      //Get the current stream input format of the output channel
-      result = AudioUnitGetProperty (mAudioUnit,
-                              kAudioUnitProperty_StreamFormat,
-                              kAudioUnitScope_Input,
-                              0,  // output bus 
-                              &hwASBD,
-                              &size);
-	} else {
-      //Get the current stream output format of the input channel
-      result = AudioUnitGetProperty (mAudioUnit,
-                              kAudioUnitProperty_StreamFormat,
-                              kAudioUnitScope_Output,
-                              1,  // output bus 
-                              &hwASBD,
-                              &size);
-	}
-   checkStatus(result);  
-   return result;
-}
-*/
-
-
-/**  hack for usb audio we are getting the format of the output port 
- * not input port */
-OSStatus PSoundChannelCoreAudio::MatchHALInputFormat()
-{
-	OSStatus err = noErr;
-	AudioStreamBasicDescription& asbd = hwASBD;
-   UInt32 size = sizeof (AudioStreamBasicDescription);
-
-	memset(&asbd, 0, size);
-
-	PTRACE(1, "mDeviceID == " << mDeviceID);
-   err = AudioDeviceGetProperty(mDeviceID, 
-			0,     // channel
-			true,  // isInput
-			kAudioDevicePropertyStreamFormat,
-			&size, 
-			&asbd);
-	checkStatus(err);
-
-	
-	/*
-   //Gets the size of the Stream Format Property and if it is writable
-	Boolean outWritable;
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Output,
-                           1,  // input bus 
-                           &size, 
-                           &outWritable);
-
-	if(outWritable)
-		PTRACE(1, "ASBD of input port of input device is writable");
-	
-   //Get the current stream format of the output
-   err = AudioUnitGetProperty (mAudioUnit,
-                        kAudioUnitProperty_StreamFormat,
-                        kAudioUnitScope_Output,
-                        1,  // input bus/
-                        &asbd,
-                        &size);
-								*/
-
-	/*
-	 * make it one-channel, non-interleaved, keeping same sample rate 
-	 */
-
-	PTRACE(1, "before " << endl << asbd);
-
-	BOOL isInterleaved = 
-	         !(hwASBD.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
-	         //!(asbd.mFormatID & kAudioFormatFlagIsNonInterleaved); 
-
-	PTRACE_IF(1, isInterleaved, "channels are interleaved ");
-
-	// mFormatID -> assume lpcm !!!
-	// set non-interleave flag 
-   asbd.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;	
-	if(isInterleaved){
-	   // so its only one buffer containing all channels, according to 
-		//list.apple.com: You only multiple out by mChannelsPerFrame 
-		//if you are doing interleaved.
-	   asbd.mBytesPerPacket /= asbd.mChannelsPerFrame;
-	   asbd.mBytesPerFrame  /= asbd.mChannelsPerFrame;
-	}
-	asbd.mChannelsPerFrame = 1;
-	
-   // Set it to output side of input bus
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitSetProperty (mAudioUnit,
-           kAudioUnitProperty_StreamFormat,
-           kAudioUnitScope_Output,
-           1,  // input bus
-           &asbd,
-           size);
-	checkStatus(err);
-
-	// make sure we really know the current format
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitGetProperty (mAudioUnit,
-           kAudioUnitProperty_StreamFormat,
-           kAudioUnitScope_Output,
-           1,  // input bus
-           &hwASBD,
-           &size);
-
-
-  PTRACE(1, "after" << endl <<  hwASBD);
-
-	return err;
-}
-
+/********* Function for configuring & initialization of audio units *********/
 
 /**
- * Configure internal AudioConverter of AUHAL to make conversion
- * of interleaved to non-interleaved buffers and reduce bitsPerSample 
- */
-OSStatus PSoundChannelCoreAudio::MatchHALInputFormat1()
-{
-	OSStatus err = noErr;
-	AudioStreamBasicDescription& asbd = hwASBD;
-
-   UInt32 size = sizeof (AudioStreamBasicDescription);
-	Boolean outWritable;
-
-	memset(&asbd, 0, size);
-
-   //Gets the size of the Stream Format Property and if it is writable
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Input,
-                           1,  /* input bus */
-                           &size, 
-                           &outWritable);
-
-	if(outWritable)
-		PTRACE(1, "ASBD of input port of input device is writable");
-	
-   //Get the current stream format of the output
-   err = AudioUnitGetProperty (mAudioUnit,
-                        kAudioUnitProperty_StreamFormat,
-                        kAudioUnitScope_Input,
-                        1,  /* input bus */
-                        &asbd,
-                        &size);
-
-	/*
-	 * make it one-channel, non-interleaved, keeping same sample rate 
-	 */
-
-	PTRACE(1, direction << " before " << endl << asbd);
-
-	BOOL isInterleaved = 
-	         !(hwASBD.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
-	         //((hwASBD.mFormatID & kAudioFormatFlagIsNonInterleaved)
-	         //			^ kAudioFormatFlagIsNonInterleaved);
-
-
-	PTRACE_IF(1, isInterleaved, "channels are interleaved ");
-
-	// mFormatID -> assume lpcm !!!
-	// set non-interleave flag 
-   asbd.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;	
-	if(isInterleaved){
-	   // so its only one buffer containing all channels, according to 
-		//list.apple.com: You only multiple out by mChannelsPerFrame 
-		//if you are doing interleaved.
-	   asbd.mBytesPerPacket /= asbd.mChannelsPerFrame;
-	   asbd.mBytesPerFrame  /= asbd.mChannelsPerFrame;
-	}
-	asbd.mChannelsPerFrame = 1;
-	
-   // Set it to output side of input bus
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitSetProperty (mAudioUnit,
-           kAudioUnitProperty_StreamFormat,
-           kAudioUnitScope_Output,
-           1,  // input bus
-           &asbd,
-           size);
-	checkStatus(err);
-
-	// make sure we really know the current format
-   size = sizeof (AudioStreamBasicDescription);
-   err = AudioUnitGetProperty (mAudioUnit,
-           kAudioUnitProperty_StreamFormat,
-           kAudioUnitScope_Output,
-           1,  // input bus
-           &hwASBD,
-           &size);
-
-
-  PTRACE(1, direction << " after" << endl <<  hwASBD);
-
-	return err;
-}
-
-
-OSStatus PSoundChannelCoreAudio::SetAudioUnitFormat2()
-{
-	OSStatus err = noErr;
-   UInt32 size;
-   Boolean             outWritable;                            
-        
-   //Gets the size of the Stream Format Property and if it is writable
-	size = sizeof (AudioStreamBasicDescription);
-   AudioUnitGetPropertyInfo(mAudioUnit,  
-                           kAudioUnitProperty_StreamFormat,
-                           kAudioUnitScope_Output,
-                           0,  /* output bus */
-                           &size, 
-                           &outWritable);
-
-	if(direction == Player){
-	  size = sizeof (AudioStreamBasicDescription);
-    /* err = AudioUnitSetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Input,
-              0, // output bus
-              &pwlibASBD,
-              size);*/
-	} else {
-		// get the supported nominal sampling rates
-		UInt32 count, numRanges;
-	   err = AudioDeviceGetPropertyInfo ( mDeviceID, 
-			         0, true,
-			       kAudioDevicePropertyAvailableNominalSampleRates, 
-					 &count, NULL );
-
-		numRanges = count / sizeof(AudioValueRange);
- 		AudioValueRange* rangeArray = (AudioValueRange*)malloc ( count );
-
-      err = AudioDeviceGetProperty ( mDeviceID, 
-				0, true, 
-				kAudioDevicePropertyAvailableNominalSampleRates, 
-				&count, (void*)rangeArray );
-		checkStatus(err);
-
-
-		PTRACE(1, "Available sample rates of input device " );
-		for(UInt32 i = 0; i < numRanges; i++)
-			cout << rangeArray[i] << endl;
-
-		free(rangeArray);
-				
-		// set sample rate specified by SetFormat
-		Float64 rate = 8000;
-	   size = sizeof (Float64);
-	   err =  AudioDeviceSetProperty(mDeviceID, 
-				 0,  /* timestamp */
-				 0,  /* channel, probably all */ 
-				 true,  /* isInput */
-		       kAudioDevicePropertyNominalSampleRate, size, &rate);
-		checkStatus(err);
-		
-		AudioStreamBasicDescription inASBD;
-	   size = sizeof (AudioStreamBasicDescription);
-		err = AudioUnitGetProperty(mAudioUnit, 
-				kAudioUnitProperty_StreamFormat, 
-				kAudioUnitScope_Input, 
-				1,  // input bus
-				&inASBD, &size);
-		checkStatus(err);
-		PTRACE(1, "input side of input bus" << endl << inASBD);
-
-      // Set output side of input bus
-	   size = sizeof (AudioStreamBasicDescription);
-      err = AudioUnitSetProperty (mAudioUnit,
-              kAudioUnitProperty_StreamFormat,
-              kAudioUnitScope_Output,
-              1,  // input bus
-              &pwlibASBD,
-              size);
-	}
-                                                        
-  
-  return err;
-}
-
-/*
- * Functions to access input/output units/devices
+ * Functions to open an AUHAL component and assign it the device indicated 
+ * by deviceID. Conigures the unit for match user desired format  as close as
+ * possible while not assuming special hardware. (able to change sampling rate)
  */
 OSStatus PSoundChannelCoreAudio::SetupInputUnit(AudioDeviceID in)
 {  
@@ -1113,18 +695,15 @@ OSStatus PSoundChannelCoreAudio::SetupInputUnit(AudioDeviceID in)
    err= SetDeviceAsCurrent(in);
    checkStatus(err);
 
-   /*
-   err = CallbackSetup();
-   checkErr(err);
-
-   err = SetupBuffers();
-   checkErr(err);
-
-   err = AudioUnitInitialize(mInputUnit);
-   */
    return err;
 }
-	       
+          
+/**
+ * By default all units are configured for output. If we want to use a 
+ * unit for input we must configure it, before assigning the corresponding
+ * device to it. This to make sure that it asks the device driver for the ASBD
+ * of the input direction.
+ */
 OSStatus PSoundChannelCoreAudio::EnableIO()
 {
    OSStatus err = noErr;
@@ -1138,28 +717,29 @@ OSStatus PSoundChannelCoreAudio::EnableIO()
    //Enable input on the AUHAL
    enableIO = 1;
    err =  AudioUnitSetProperty(mAudioUnit,
-	       kAudioOutputUnitProperty_EnableIO,
-	       kAudioUnitScope_Input,
-	       1, // input element
-	       &enableIO,
-	       sizeof(enableIO));
+          kAudioOutputUnitProperty_EnableIO,
+          kAudioUnitScope_Input,
+          1, // input element
+          &enableIO,
+          sizeof(enableIO));
    checkStatus(err);
 
    //disable Output on the AUHAL
    enableIO = 0;
    err = AudioUnitSetProperty(mAudioUnit,
-	      kAudioOutputUnitProperty_EnableIO,
-	      kAudioUnitScope_Output,
-	      0,   //output element
-	      &enableIO,
-	      sizeof(enableIO));
+         kAudioOutputUnitProperty_EnableIO,
+         kAudioUnitScope_Output,
+         0,   //output element
+         &enableIO,
+         sizeof(enableIO));
    return err;
 }
-	       
+          
 
 /*
- * Function to initialize OutputUnit and assign it to the default
- * AudioDevice. 
+ * Functions to open an AUHAL component and assign it the device indicated 
+ * by deviceID. The builtin converter is configured to accept non-interleaved
+ * data.
  */
 OSStatus PSoundChannelCoreAudio::SetupOutputUnit(AudioDeviceID out){
    OSStatus err;
@@ -1184,6 +764,8 @@ OSStatus PSoundChannelCoreAudio::SetupOutputUnit(AudioDeviceID out){
   err = OpenAComponent(comp, &mAudioUnit);  
   checkStatus(err);
 
+  //enableIO not needed, because output is default
+
   err = SetDeviceAsCurrent(out);
   return err;
 }
@@ -1193,29 +775,30 @@ OSStatus PSoundChannelCoreAudio::SetDeviceAsCurrent(AudioDeviceID id)
    UInt32 size = sizeof(AudioDeviceID);
    OSStatus err = noErr;
 
-   //get the default input device if device is    unknown
+   //get the default input device if device is unknown
    if(in == kAudioDeviceUnknown) 
    {  
-		if(direction == Recorder) {
+      if(direction == Recorder) {
          err = AudioHardwareGetProperty(
-					   kAudioHardwarePropertyDefaultOutputDevice, &size, &id);
-		} else {
+                  kAudioHardwarePropertyDefaultOutputDevice, &size, &id);
+      } else {
          err = AudioHardwareGetProperty(
-					kAudioHardwarePropertyDefaultInputDevice, &size, &id);
-		}
+               kAudioHardwarePropertyDefaultInputDevice, &size, &id);
+      }
       checkStatus(err);   
    }                   
 
    mDeviceID = id;
 
-   //Set the Current Device to the AUHAL.
-   //this should be done only after IO has been enabled on the AUHAL.
+   // Set the Current Device to the AUHAL.
+   // this should be done only after IO has been enabled on the AUHAL.
+   // to make sure the ASBD for the proper direction is requested
    err = AudioUnitSetProperty(mAudioUnit,
-	    kAudioOutputUnitProperty_CurrentDevice,
-	    kAudioUnitScope_Global,
-	    0,  
-	    &mDeviceID,
-	    sizeof(mDeviceID));
+       kAudioOutputUnitProperty_CurrentDevice,
+       kAudioUnitScope_Global,
+       0,  
+       &mDeviceID,
+       sizeof(mDeviceID));
    checkStatus(err);
 
    return err;
@@ -1228,14 +811,12 @@ OSStatus PSoundChannelCoreAudio::SetDeviceAsCurrent(AudioDeviceID id)
  *
  */
 BOOL PSoundChannelCoreAudio::Open(const PString & deviceName,
-				  Directions dir,
-				  unsigned numChannels,
-				  unsigned sampleRate,
-				  unsigned bitsPerSample)
+              Directions dir,
+              unsigned numChannels,
+              unsigned sampleRate,
+              unsigned bitsPerSample)
 {
   OSStatus err;
-
-  PTRACE(1, "Open " << deviceName );
 
   /* Save whether this is a Player or Recorder */
   this->direction = dir;
@@ -1245,9 +826,9 @@ BOOL PSoundChannelCoreAudio::Open(const PString & deviceName,
    */
 
   if (strcmp(deviceName, CA_DUMMY_DEVICE_NAME) == 0) {
-	  /* Dummy device */
-     PTRACE(1, "dummy device " << direction);
-	  mDeviceID = kAudioDeviceUnknown;
+     /* Dummy device */
+     PTRACE(6, "Dummy device " << direction);
+     mDeviceID = kAudioDeviceUnknown;
   } else {
 
     AudioDeviceID deviceID = GetDeviceID(deviceName, direction == Recorder);
@@ -1258,91 +839,305 @@ BOOL PSoundChannelCoreAudio::Open(const PString & deviceName,
     checkStatus(err);
   }
 
-  os_handle = 8;  // tell PChannel (and IsOpen()) that the channel is open.
+  //os_handle = mDeviceID;  // tell PChanne::IsOpen() that the channel is open.
+  os_handle = 8;  // tell PChanne::IsOpen() that the channel is open.
+  state = open_;
   return SetFormat(numChannels, sampleRate, bitsPerSample);
 }
 
+/* Audio Unit for Hardware Abstraction Layer(AUHAL) have builtin converters. 
+ * It would be nice if we could configure it to spit out/consume the data in 
+ * the format the data are passed by Read/Write function calls.
+ *
+ * Unfortunately this is not possible for the microphone, because this 
+ * converter does not have a buffer inside, so it cannot do any Sample
+ * Rate Conversion(SRC). We would have to set the device nominal sample
+ * rate itself to 8kHz. Unfortunately not all microphones can do that,
+ * so this is not an option. Maybe there will be some change in the future
+ * by Apple, so we leave it here. 
+ *
+ * For the output we have the problem that we do not know currently how
+ * to configure the channel map so that a mono input channel gets copied 
+ * to all output channels, so we still have to do the conversion ourselves
+ * to copy the result onto all output channels.
+ *
+ * Still the builtin converters can be used for something useful, such as 
+ * converting from interleaved -> non-interleaved and to reduce the number of 
+ * bits per sample to save space and time while copying 
+ */
+
+/* 
+ * Configure the builtin AudioConverter to accept non-interleaved data.
+ * Turn off SRC by setting the same sample rate at both ends.
+ * See also general notes above
+ */ 
+OSStatus PSoundChannelCoreAudio::MatchHALOutputFormat()
+{
+   OSStatus err = noErr;
+   //AudioStreamBasicDescription& asbd = hwASBD;
+   UInt32 size = sizeof (AudioStreamBasicDescription);
+
+   memset(&hwASBD, 0, size);
+        
+   /*
+   err = AudioDeviceGetProperty(mDeviceID, 
+         0,     // channel
+         //true,  // isInput
+         false,  // isInput
+         kAudioDevicePropertyStreamFormat,
+         &size, &hwASBD);
+   checkStatus(err);
+   */
+
+   //Get the current stream format of the output
+   err = AudioUnitGetProperty (mAudioUnit,
+                           kAudioUnitProperty_StreamFormat,
+                           kAudioUnitScope_Output,
+                           0,  // output bus 
+                           &hwASBD,
+                           &size);
+   checkStatus(err);  
+
+   //PTRACE(1, direction << "before " << endl << hwASBD);
+
+   // make sure it is non-interleaved
+   BOOL isInterleaved = 
+            !(hwASBD.mFormatFlags & kAudioFormatFlagIsNonInterleaved);
+
+   hwASBD.mFormatFlags |= kAudioFormatFlagIsNonInterleaved; 
+   if(isInterleaved){
+      // so its only one buffer containing all data, according to 
+      // list.apple.com: You only multiply out by mChannelsPerFrame 
+      // if you are doing interleaved.
+      hwASBD.mBytesPerPacket /= hwASBD.mChannelsPerFrame;
+      hwASBD.mBytesPerFrame  /= hwASBD.mChannelsPerFrame;
+   }
+  
+   //Set the stream format of the output to match the input
+   err = AudioUnitSetProperty (mAudioUnit,
+              kAudioUnitProperty_StreamFormat,
+              kAudioUnitScope_Input,
+              0,
+              &hwASBD,
+              size);
+                                                        
+
+   //PTRACE(1, direction << "after" << endl << hwASBD);
+  
+   // make sure we really know the current format
+   size = sizeof (AudioStreamBasicDescription);
+   err = AudioUnitGetProperty (mAudioUnit,
+              kAudioUnitProperty_StreamFormat,
+              kAudioUnitScope_Input,
+              0,  // input bus
+              &hwASBD,
+              &size);
+              
+  return err;
+}
+
+
+/* 
+ * Configure the builtin AudioConverter to provide data in non-interleaved 
+ * format. Turn off SRC by setting the same sample rate at both ends.
+ * See also general notes above
+ */ 
+OSStatus PSoundChannelCoreAudio::MatchHALInputFormat()
+{
+   OSStatus err = noErr;
+   AudioStreamBasicDescription& asbd = hwASBD;
+   UInt32 size = sizeof (AudioStreamBasicDescription);
+
+   memset(&asbd, 0, size);
+
+   /*
+   err = AudioDeviceGetProperty(mDeviceID, 
+         0,     // channel
+         true,  // isInput
+         kAudioDevicePropertyStreamFormat,
+         &size, 
+         &asbd);
+   checkStatus(err);
+   */
+
+   /* This code asks for the supported sample rates of the microphone
+   UInt32 count, numRanges;
+   err = AudioDeviceGetPropertyInfo ( mDeviceID, 
+               0, true,
+             kAudioDevicePropertyAvailableNominalSampleRates, 
+             &count, NULL );
+
+   numRanges = count / sizeof(AudioValueRange);
+   AudioValueRange* rangeArray = (AudioValueRange*)malloc ( count );
+
+   err = AudioDeviceGetProperty ( mDeviceID, 
+         0, true, 
+         kAudioDevicePropertyAvailableNominalSampleRates, 
+         &count, (void*)rangeArray );
+   checkStatus(err);
+   */
+
+   //Get the current stream format of the output
+   err = AudioUnitGetProperty (mAudioUnit,
+                        kAudioUnitProperty_StreamFormat,
+                        kAudioUnitScope_Input,
+                        1,  // input bus/
+                        &asbd,
+                        &size);
+
+   /*
+    * make it one-channel, non-interleaved, keeping same sample rate 
+    */
+
+
+   BOOL isInterleaved = 
+            !(asbd.mFormatFlags & kAudioFormatFlagIsNonInterleaved); 
+
+   PTRACE_IF(1, isInterleaved, "channels are interleaved ");
+
+   // mFormatID -> assume lpcm !!!
+   asbd.mFormatFlags |= kAudioFormatFlagIsNonInterleaved;   
+   if(isInterleaved){
+      // so it's only one buffer containing all channels, according to 
+      //list.apple.com: You only multiple out by mChannelsPerFrame 
+      //if you are doing interleaved.
+      asbd.mBytesPerPacket /= asbd.mChannelsPerFrame;
+      asbd.mBytesPerFrame  /= asbd.mChannelsPerFrame;
+   }
+   asbd.mChannelsPerFrame = 1;
+   
+   // Set it to output side of input bus
+   size = sizeof (AudioStreamBasicDescription);
+   err = AudioUnitSetProperty (mAudioUnit,
+           kAudioUnitProperty_StreamFormat,
+           kAudioUnitScope_Output,
+           1,  // input bus
+           &asbd,
+           size);
+   checkStatus(err);
+
+   // make sure we really know the current format
+   size = sizeof (AudioStreamBasicDescription);
+   err = AudioUnitGetProperty (mAudioUnit,
+           kAudioUnitProperty_StreamFormat,
+           kAudioUnitScope_Output,
+           1,  // input bus
+           &hwASBD,
+           &size);
+
+   return err;
+}
+
+
 
 BOOL PSoundChannelCoreAudio::SetFormat(unsigned numChannels,
-					   unsigned sampleRate,
-					   unsigned bitsPerSample)
+                  unsigned sampleRate,
+                  unsigned bitsPerSample)
 {
-   PTRACE(1, "SetFormat " <<  direction );
+   // making some assumptions about input format for now
+   PAssert(sampleRate == 8000 && numChannels == 1 && bitsPerSample == 16,
+      PUnsupportedFeature);
 
-	
-  // making some assumptions about input format for now
-  PAssert(sampleRate == 8000 && numChannels == 1 && bitsPerSample == 16,
-	  PUnsupportedFeature);
-
-
-  /*
-   * Initialize the pwlibASBD
-   */
-  memset((void *)&pwlibASBD, 0, sizeof(AudioStreamBasicDescription)); 
-
-  /* pwlibASBD->mReserved */
-  pwlibASBD.mFormatID		     = kAudioFormatLinearPCM;
-  pwlibASBD.mFormatFlags       = kLinearPCMFormatFlagIsSignedInteger;
+   if(state != open_){
+      PTRACE(1, "Please select a device first");
+      return FALSE;
+   }
+  
+   /*
+    * Setup the pwlibASBD
+    */
+   memset((void *)&pwlibASBD, 0, sizeof(AudioStreamBasicDescription)); 
+  
+   /* pwlibASBD->mReserved */
+   pwlibASBD.mFormatID          = kAudioFormatLinearPCM;
+   pwlibASBD.mFormatFlags       = kLinearPCMFormatFlagIsSignedInteger;
+   pwlibASBD.mFormatFlags      |= kLinearPCMFormatFlagIsNonInterleaved; 
 #if PBYTE_ORDER == PBIG_ENDIAN
-  pwlibASBD.mFormatFlags      |= kLinearPCMFormatFlagIsBigEndian;
+   pwlibASBD.mFormatFlags      |= kLinearPCMFormatFlagIsBigEndian;
 #endif
-  pwlibASBD.mSampleRate        = sampleRate;
-  pwlibASBD.mChannelsPerFrame = numChannels;
-  pwlibASBD.mBitsPerChannel   = bitsPerSample;
-  pwlibASBD.mBytesPerFrame	   = numChannels * bitsPerSample / 8;
-  pwlibASBD.mBytesPerPacket   =  pwlibASBD.mBytesPerFrame;
-  pwlibASBD.mFramesPerPacket  =  1;
+   pwlibASBD.mSampleRate        = sampleRate;
+   pwlibASBD.mChannelsPerFrame  = numChannels;
+   pwlibASBD.mBitsPerChannel    = bitsPerSample;
+   pwlibASBD.mBytesPerFrame     = bitsPerSample / 8;
+   pwlibASBD.mFramesPerPacket   = 1;
+   pwlibASBD.mBytesPerPacket    = pwlibASBD.mBytesPerFrame;
+  
+  
+   if(mDeviceID == kAudioDeviceDummy){
+      PTRACE(1, "Dummy device");
+      return TRUE;
+   }
 
+   OSStatus err;
+   if(direction == Player)
+      err = MatchHALOutputFormat();  
+   else 
+      err = MatchHALInputFormat();
+   checkStatus(err);
+  
+   /*
+    * Sample Rate Conversion (SRC)
+    * Create AudioConverters, input/output buffers, compute conversion rate 
+    */
+  
+   PTRACE(2, "ASBD of PwLib Audio format:" << endl << pwlibASBD );
+   PTRACE(2, "ASBD of Hardware Audio format:" << endl << hwASBD);
+  
+  
+   // how many samples has the output device compared to pwlib sample rate?
+   rateTimes8kHz  = hwASBD.mSampleRate / pwlibASBD.mSampleRate;
+  
+  
+   /*
+    * Create Converter for Sample Rate conversion
+    */
+   if (direction == Player) 
+     err = AudioConverterNew(&pwlibASBD, &hwASBD, &converter);
+   else 
+     err = AudioConverterNew(&hwASBD, &pwlibASBD, &converter);
+   checkStatus(err);
+  
+   UInt32 quality = kAudioConverterQuality_Max;
+   err = AudioConverterSetProperty(converter,
+                kAudioConverterSampleRateConverterQuality,
+                sizeof(UInt32),
+                &quality);
+   checkStatus(err);
+  
+   //if(direction == Recorder){
+     // trying compute number of requested data more predictably also 
+     // for the first request
+     UInt32 primeMethod = kConverterPrimeMethod_None;
+     err = AudioConverterSetProperty(converter,
+                  kAudioConverterPrimeMethod,
+                  sizeof(UInt32),
+                  &primeMethod);
+      checkStatus(err);
+   //}
 
-	if(mDeviceID == kAudioDeviceDummy){
-	   PTRACE(1, "Dummy device");
-	   return TRUE;
-	}
-
-  /* AudioOutputUnits have a builtin converter. It would be nice if we 
-   * could configure it to spit out/consume the data in the format the
-   * data are passed by Read/Write function calls.
-	* Unfortunately this is not possible for the microphone, because this 
-	* converter does not have a buffer inside, so it cannot do any Sample
-	* Rate Conversion(SRC), so we would have to set the device nominal sample
-	* rate itself to 8kHz. Unfortunately not all microphones can do that,
-	* so this doesn't work until there are some changes by Apple. But we can
-	* still use it to reduce from interleaved stereo -> non-interleaved mono */
-
-
-  /*
-   * Set AudioUnit input/output ports to match the ADSB of the 
-	* underlying hardware device
-   */
-  OSStatus err;
-  if(direction == Player)
-     err = MatchHALOutputFormat();  
-  else 
-     err = MatchHALInputFormat();
-  checkStatus(err);
-
-
-  //err = FetchAUHAL_ASBD();
-  //checkStatus(err);
-
-
-  return TRUE;
+   state = setformat_;
+   return TRUE;
 }
 
 
+/* gets never called, see sound.h:
+ * baseChannel->PChannel::GetHandle(); 
+ */
 BOOL PSoundChannelCoreAudio::IsOpen() const
 {
-   PTRACE(1, "IsOpen");
-   /*PAssert(0, PUnimplementedFunction); */
-   return (os_handle != -1);
+   //return (os_handle != -1);
+   return (state != init_ || state != destroy_);
 }
 
 
+/* gets never called, see sound.h:
+ * baseChannel->PChannel::GetHandle(); 
+ */
 int PSoundChannelCoreAudio::GetHandle() const
 {
    PTRACE(1, "GetHandle");
-   PAssert(0, PUnimplementedFunction);
-   return os_handle; 
+   //return os_handle; 
+   return -1;
 }
 
 BOOL PSoundChannelCoreAudio::Abort()
@@ -1355,299 +1150,238 @@ BOOL PSoundChannelCoreAudio::Abort()
 
 
 
-/*
- * SetBuffers does most of the work before it starts playback or
- * recording.
+/**
+ * SetBuffers is used to create the circular buffer as requested by the caller 
+ * plus all the hidden buffers used for Sample-Rate-Conversion(SRC)
  *
  * A device can not be used after calling Open(), SetBuffers() must
- * also be called before it can start functioning.
+ * also be called before it can start working.
  *
- * size: 	Size of each buffer
- * count:	Number of buffers
+ * size:    Size of each buffer
+ * count:   Number of buffers
  *
  */
 BOOL PSoundChannelCoreAudio::SetBuffers(PINDEX bufferSize,
-						PINDEX bufferCount)
+                  PINDEX bufferCount)
 {
-  OSStatus err = noErr;
+   OSStatus err = noErr;
 
-  PTRACE(1, __func__ << direction << " : "
-		  << bufferSize << " BufferSize "<< bufferCount << " BufferCount");
-
-	if(mDeviceID == kAudioDeviceDummy){
-	   PTRACE(1, "Dummy device");
-	   return TRUE;
-	}
-
-  if (mDeviceID < 0) {
-    PTRACE(1, "No hardware device selected mDeviceID " << mDeviceID );
-    return TRUE;  /* Works with Null device */
-  }
-
-  PAssert(bufferSize > 0 && bufferCount > 0 && bufferCount < 65536, \
-	                                                    PInvalidParameter);
-
-  /*
-	* Sample Rate Conversion (SRC)
-	* Create AudioConverters, input/output buffers, compute conversion rate 
-	*/
-
-  PTRACE(1, "ASBD of PwLib Audio format:" << endl << pwlibASBD );
-  PTRACE(1, "ASBD of Hardware Audio format:" << endl << hwASBD);
-
-
-  // how many samples has the output device compared to pwlib sample rate?
-  rateTimes8kHz  = hwASBD.mSampleRate / pwlibASBD.mSampleRate;
-
-
-  /*
-   * Create Converter for Sample Rate conversion
-   */
-  if (direction == Player) 
-    err = AudioConverterNew(&pwlibASBD, &hwASBD, &converter);
-  else 
-    err = AudioConverterNew(&hwASBD, &pwlibASBD, &converter);
-  checkStatus(err);
-
-  UInt32 quality = kAudioConverterQuality_Max;
-  //kAudioConverterQuality_Low);
-  //&kAudioConverterQuality_High);
-  err = AudioConverterSetProperty(converter,
-			      kAudioConverterSampleRateConverterQuality,
-					sizeof(UInt32),
-  					&quality);
-  checkStatus(err);
-
-  if(direction == Recorder){
-     UInt32 primeMethod = kConverterPrimeMethod_None;
-     err = AudioConverterSetProperty(converter,
-                  kAudioConverterPrimeMethod,
-                  sizeof(UInt32),
-                  &primeMethod);
-      checkStatus(err);
+   if(state != setformat_){
+      // use GetError
+      PTRACE(1, "Please specify a format first");
+      return FALSE;
    }
-  /** 
-   * Allocate the RingBuffer for public Read/Write methods
-   */
-  mCircularBuffer = new CircularBuffer(bufferSize, bufferCount );
+
+   PTRACE(1, __func__ << direction << " : "
+        << bufferSize << " BufferSize "<< bufferCount << " BufferCount");
+
+   PAssert(bufferSize > 0 && bufferCount > 0 && bufferCount < 65536, \
+                                                       PInvalidParameter);
+
+   this->bufferSizeBytes = bufferSize;
+   this->bufferCount = bufferCount;
+
+   if(mDeviceID == kAudioDeviceDummy){
+      // abort here
+      PTRACE(1, "Dummy device");
+      return TRUE;
+   }
+
+   mCircularBuffer = new CircularBuffer(bufferSize * bufferCount );
+  
+  
+   /** Register callback function */
+   err = CallbackSetup();
 
 
-   /**
-	 * In case of Recording we need a couple of buffers more 
-	 */
-  if(direction == Recorder){
-	  SetupAdditionalRecordBuffers();
-  }
+   /** 
+    * Tune the buffer size of the underlying audio device.
+    * The aim is to make the device request half of the buffer size on
+    * each callback.
+	 *
+	 * Not possible, because  buffer size for device input/output is not
+	 * independant of each other. Creates havoc in case SetBuffer is called with 
+	 * different buffer size for Player/Recorder Channel
+    */
+	/*
+   UInt32 targetSizeBytes = bufferSizeBytes / 2;
+   UInt32 size = sizeof(UInt32);
+   if (direction == Player) {
+     err = AudioConverterGetProperty(converter,
+             kAudioConverterPropertyCalculateOutputBufferSize,
+             &size, &targetSizeBytes);
+   } else {
+     err = AudioConverterGetProperty(converter,
+             kAudioConverterPropertyCalculateInputBufferSize,
+             &size, &targetSizeBytes);
+   }
+   checkStatus(err);
+   if (err) {
+     return FALSE;
+   }
 
-  /**
-   * Register callback function
-   */
-  err = CallbackSetup();
+   PTRACE(2, __func__ <<  " AudioDevice buffer size set to " 
+            << targetSizeBytes);
 
-
-  /**
-   * Tune the buffer size of the underlying audio device 
-   */
-  /*
-  if (mDeviceID != NULL ) {
-		if(direction == Player){
-			// not implemented
-			err = noErr;
-		} else {
-			err = AudioDeviceSetProperty( mDeviceID,
-				NULL, //&ts, // I think NULL may work here too
-				0,
-				0,
-				kAudioDevicePropertyBufferSize,
-				/ *kAudioDevicePropertyBufferFrameSize,* /
-				sizeof(UInt32),
-				&bufferSize);
-		}
-		check(err);
-	}
+   UInt32 targetSizeFrames = targetSizeBytes / hwASBD.mBytesPerFrame;
+   if (direction == Player) {
+      err = AudioDeviceSetProperty( mDeviceID,
+         0, //&ts, timestruct 
+         0, // output channel 
+         true, // isInput 
+         // kAudioDevicePropertyBufferSize, 
+         kAudioDevicePropertyBufferFrameSize,
+         sizeof(UInt32),
+         &targetSizeFrames);
+   } else {
+      err = AudioDeviceSetProperty( mDeviceID,
+         0, //&ts, timestruct 
+         1, // input channel
+         false, // isInput 
+         kAudioDevicePropertyBufferFrameSize,
+         sizeof(UInt32),
+         &targetSizeFrames);
+   }
+   checkStatus(err);
 	*/
 
 
-	/** 
-	 * Allocate byte array passed as input to the converter 
-	 */
+   /** 
+    * Allocate byte array passed as input to the converter 
+    */
    UInt32 bufferSizeFrames, bufferSizeBytes;
-	UInt32 propertySize = sizeof(UInt32);
+   UInt32 propertySize = sizeof(UInt32);
    err = AudioDeviceGetProperty( mDeviceID,
-  	  	  	  	0,  /* output channel,  */ 
-  	  	  	  	true,  /* isInput */
-  	  	  	  	kAudioDevicePropertyBufferFrameSize,
-				&propertySize,
-  	  	  	  	&bufferSizeFrames);
+            0,  // output channel,  
+            true,  // isInput 
+            kAudioDevicePropertyBufferFrameSize,
+            &propertySize,
+            &bufferSizeFrames);
    checkStatus(err);
    bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
+   //UInt32 bufferSizeBytes = targetSizeBytes;
 
    if (direction == Player) {
-	   propertySize = sizeof(UInt32);
+      UInt32 propertySize = sizeof(UInt32);
       err = AudioConverterGetProperty(converter,
-				kAudioConverterPropertyCalculateInputBufferSize,
-				&propertySize,
-				&bufferSizeBytes);
-		checkStatus(err);
-		converter_buffer_size = bufferSizeBytes;
-	} else {
-		// on each turn the device spits out bufferSizeBytes bytes
-		// the input ringbuffer has at most MIN_INPUT_FILL frames in it 
-		// all other frames were converter during the last callback
-		converter_buffer_size = bufferSizeBytes + 
-			         2 * MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
-	}
-	converter_buffer = (char*)malloc(converter_buffer_size);
-	if(converter_buffer == NULL)
-		PTRACE(1, "Failed to allocate converter_buffer");
-	else
-	   PTRACE(1, "Allocated converter_buffer of size " 
-				<< converter_buffer_size );
+            kAudioConverterPropertyCalculateInputBufferSize,
+            &propertySize,
+            &bufferSizeBytes);
+      checkStatus(err);
+      converter_buffer_size = bufferSizeBytes;
+   } else {
+      // on each turn the device spits out bufferSizeBytes bytes
+      // the input ringbuffer has at most MIN_INPUT_FILL frames in it 
+      // all other frames were converter during the last callback
+      converter_buffer_size = bufferSizeBytes + 
+                  2 * MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
+   }
+   converter_buffer = (char*)malloc(converter_buffer_size);
+   if(converter_buffer == NULL)
+      PTRACE(1, "Failed to allocate converter_buffer");
+   else
+      PTRACE(2, "Allocated converter_buffer of size " 
+            << converter_buffer_size );
 
 
-  /**
-   * Computes the actual buffer size used for the callback function
-   *
-   * The computation is based on the format of streams and the
-   * requested buffer size.
-   */
-  /*
-  UInt32 bufferByteCount;
-  propertySize = sizeof(bufferByteCount);
-  if (direction == Player) {
-    err =
-      AudioConverterGetProperty(cRef,
-				kAudioConverterPropertyCalculateOutputBufferSize,
-				&propertySize,
-				&bufferByteCount);
-  } else {
-    err =
-      AudioConverterGetProperty(cRef,
-				kAudioConverterPropertyCalculateInputBufferSize,
-				&propertySize,
-				&bufferByteCount);
-  }
-  if (err != 0) {
-    PTRACE(1, "can not compute converter buffer size " << theStatus);
-    return FALSE;
-  }
+   /** In case of Recording we need a couple of buffers more */
+   if(direction == Recorder){
+      SetupAdditionalRecordBuffers();
+   }
 
-  PTRACE(1, "CoreAudio buffer size set to " << bufferByteCount);
+   /*
+    * AU Setup, allocates necessary buffers... 
+    */
+   err = AudioUnitInitialize(mAudioUnit);
+   checkStatus(err);
+  
+   state = setbuffer_;
 
-  err = AudioDeviceSetProperty(caDevID,
-				     0,
-				     0,
-				     isInput,
-				     kAudioDevicePropertyBufferSize,
-				     propertySize,
-				     &bufferByteCount);
-  if (err) {
-    PTRACE(1, "set device property failed, status = (" << theStatus << ")");
-    return (FALSE);
-  }
-  */
-
-
-  /*
-	* AU Setup, allocates necessary buffers... 
-	*/
-  err = AudioUnitInitialize(mAudioUnit);
-  checkStatus(err);
-
-  /*
-   * Now the device can start working
-   */
-  /*err = AudioOutputUnitStart(mAudioUnit);
-  checkStatus(err);
-  isRunning = TRUE;*/
-  isRunning = FALSE;
-
-  return TRUE;
+   return TRUE;
 
 }
 
 OSStatus PSoundChannelCoreAudio::SetupAdditionalRecordBuffers()
 {
 
-	OSStatus err = noErr;
-	UInt32 bufferSizeFrames, bufferSizeBytes;
-	
-	/** 
-	 * build buffer list to take over the data from the microphone 
-	 */
-	UInt32 propertySize = sizeof(UInt32);
-	err = AudioDeviceGetProperty( mDeviceID,
-		0,  /* channel, probably all */ 
-		true,  /* isInput */
-		kAudioDevicePropertyBufferFrameSize,
-		&propertySize,
-		&bufferSizeFrames);
-	checkStatus(err);
-	bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
+   OSStatus err = noErr;
+   UInt32 bufferSizeFrames, bufferSizeBytes;
+   
+   /** 
+    * build buffer list to take over the data from the microphone 
+    */
+   UInt32 propertySize = sizeof(UInt32);
+   err = AudioDeviceGetProperty( mDeviceID,
+      0,  // channel, probably all  
+      true,  // isInput 
+      //false,  // isInput ()
+      kAudioDevicePropertyBufferFrameSize,
+      &propertySize,
+      &bufferSizeFrames);
+   checkStatus(err);
+   bufferSizeBytes = bufferSizeFrames * hwASBD.mBytesPerFrame;
+	bufferSizeBytes += bufferSizeBytes / 10; // +10%
 
-	//calculate number of buffers from channels
-	UInt32 propsize = 
-		offsetof(AudioBufferList, mBuffers[hwASBD.mChannelsPerFrame]);
+   //calculate size of ABL given the last field, assum non-interleaved 
+   UInt32 propsize = 
+      offsetof(AudioBufferList, mBuffers[hwASBD.mChannelsPerFrame]);
 
-	//malloc buffer lists
-	mInputBufferList = (AudioBufferList *)malloc(propsize);
-	mInputBufferList->mNumberBuffers = hwASBD.mChannelsPerFrame;
+   //malloc buffer lists
+   mInputBufferList = (AudioBufferList *)malloc(propsize);
+   mInputBufferList->mNumberBuffers = hwASBD.mChannelsPerFrame;
 
-	//pre-malloc buffers for AudioBufferLists
-	for(UInt32 i =0; i< mInputBufferList->mNumberBuffers ; i++) {
-		mInputBufferList->mBuffers[i].mNumberChannels = 1;
-		mInputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
-		mInputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
-	}
-	mRecordInputBufferSize = bufferSizeBytes;
+   //pre-malloc buffers for AudioBufferLists
+   for(UInt32 i =0; i< mInputBufferList->mNumberBuffers ; i++) {
+      mInputBufferList->mBuffers[i].mNumberChannels = 1;
+      mInputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
+      mInputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
+   }
+   mRecordInputBufferSize = bufferSizeBytes;
 
-	/** allocate ringbuffer to cache data before passing the to the converter */
-	// take only one buffer -> mono, use double buffering
-	mInputCircularBuffer = new CircularBuffer(bufferSizeBytes, 2);
+   /** allocate ringbuffer to cache data before passing them to the converter */
+   // take only one buffer -> mono, use double buffering
+   mInputCircularBuffer = new CircularBuffer(bufferSizeBytes * 2);
 
 
-	/** 
-	 * Build buffer list passed to Converter to return the number of requested
-	 * frames 
-	 */
-	// given the number of input bytes how many bytes to expect at the output?
-	bufferSizeBytes += MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
-	propertySize = sizeof(UInt32);
+   /** 
+    * Build buffer list that is passed to the Converter to be filled with 
+    * the converted frames.
+    */
+   // given the number of input bytes how many bytes to expect at the output?
+   bufferSizeBytes += MIN_INPUT_FILL * hwASBD.mBytesPerFrame;
+   propertySize = sizeof(UInt32);
    err = AudioConverterGetProperty(converter,
-			kAudioConverterPropertyCalculateOutputBufferSize,
-			&propertySize,
-			&bufferSizeBytes);
-	checkStatus(err);
+         kAudioConverterPropertyCalculateOutputBufferSize,
+         &propertySize,
+         &bufferSizeBytes);
+   checkStatus(err);
 
 
-	//calculate number of buffers from channels
-	propsize = offsetof(AudioBufferList, mBuffers[pwlibASBD.mChannelsPerFrame]);
+   //calculate number of buffers from channels
+   propsize = offsetof(AudioBufferList, mBuffers[pwlibASBD.mChannelsPerFrame]);
 
-	//malloc buffer lists
-	mOutputBufferList = (AudioBufferList *)malloc(propsize);
-	mOutputBufferList->mNumberBuffers = pwlibASBD.mChannelsPerFrame;
+   //malloc buffer lists
+   mOutputBufferList = (AudioBufferList *)malloc(propsize);
+   mOutputBufferList->mNumberBuffers = pwlibASBD.mChannelsPerFrame;
 
-	//pre-malloc buffers for AudioBufferLists
-	for(UInt32 i =0; i< mOutputBufferList->mNumberBuffers ; i++) {
-		mOutputBufferList->mBuffers[i].mNumberChannels = 1;
-		mOutputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
-		mOutputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
-	}
-	mRecordOutputBufferSize = bufferSizeBytes;
+   //pre-malloc buffers for AudioBufferLists
+   for(UInt32 i =0; i< mOutputBufferList->mNumberBuffers ; i++) {
+      mOutputBufferList->mBuffers[i].mNumberChannels = 1;
+      mOutputBufferList->mBuffers[i].mDataByteSize = bufferSizeBytes;
+      mOutputBufferList->mBuffers[i].mData = malloc(bufferSizeBytes);
+   }
+   mRecordOutputBufferSize = bufferSizeBytes;
 
-
-	return err;
-
+   return err;
 }
  
 
 BOOL PSoundChannelCoreAudio::GetBuffers(PINDEX & size,
-						PINDEX & count)
+                  PINDEX & count)
 {
-   PTRACE(1, __func__ );
-  PAssert(0, PUnimplementedFunction);
-
-  return TRUE;
+   size = bufferSizeBytes;
+   count = bufferCount;
+   return TRUE;
 }
 
 BOOL PSoundChannelCoreAudio::SetVolume(unsigned volume)
@@ -1656,23 +1390,23 @@ BOOL PSoundChannelCoreAudio::SetVolume(unsigned volume)
    Boolean isWritable;
    bool isInput = (direction == Player ? false : true);
 
-	if(mDeviceID == kAudioDeviceDummy){
-	   PTRACE(1, "Dummy device");
+   if(mDeviceID == kAudioDeviceDummy){
+      PTRACE(1, "Dummy device");
       return FALSE;
-	}
+   }
 
    // changing volume can not go through the master channel (0) 
    err = AudioDeviceGetPropertyInfo(mDeviceID, 1, isInput,
-					 kAudioDevicePropertyVolumeScalar,
-					 NULL, &isWritable);
+                kAudioDevicePropertyVolumeScalar,
+                NULL, &isWritable);
    checkStatus(err);
 
    if ((err == kAudioHardwareNoError) && isWritable) {
       // volume is between 0 and 100 ? 
       float theValue = ((float)volume)/100.0;
       err = AudioDeviceSetProperty(mDeviceID, NULL, 1, isInput,
-				       kAudioDevicePropertyVolumeScalar,
-				       sizeof(float), &theValue);
+                   kAudioDevicePropertyVolumeScalar,
+                   sizeof(float), &theValue);
    }
 
    if (!err)
@@ -1688,16 +1422,16 @@ BOOL PSoundChannelCoreAudio::GetVolume(unsigned & volume)
    Float32 theValue;
    bool isInput = (direction == Player ? false : true);
 
-	if(mDeviceID == kAudioDeviceDummy){
-	   PTRACE(1, "Dummy device");
+   if(mDeviceID == kAudioDeviceDummy){
+      PTRACE(1, "Dummy device");
       return FALSE;
-	}
+   }
 
    theSize = sizeof(theValue);
    // changing volume can not go through the master channel (0) 
    err = AudioDeviceGetProperty(mDeviceID, 1, isInput,
-  				     kAudioDevicePropertyVolumeScalar,
- 				     &theSize, &theValue);
+                 kAudioDevicePropertyVolumeScalar,
+                 &theSize, &theValue);
    if (!err) {
      // volume is between 0 and 100? 
      volume = (unsigned) (theValue * 100);
@@ -1709,31 +1443,36 @@ BOOL PSoundChannelCoreAudio::GetVolume(unsigned & volume)
  
 
 BOOL PSoundChannelCoreAudio::Write(const void *buf,
-				   PINDEX len)
+               PINDEX len)
 {
    PTRACE(1, "Write called with len " << len);
 
-  if (mDeviceID == kAudioDeviceDummy) {
-     lastWriteCount =  len; 
+   if(state < setbuffer_){
+      PTRACE(1, __func__ << " Please initialize device first");
+      return FALSE;
+   }
 
-	  // ugly, assuming interleaved or mono
-	  UInt32 nr_samples = len / pwlibASBD.mBytesPerFrame; 
-     usleep(UInt32(nr_samples/pwlibASBD.mSampleRate * 1000000)); // 10E-6 [s]
-     return TRUE;  /* Null device */
-  }
+   if (mDeviceID == kAudioDeviceDummy) {
+      lastWriteCount =  len; 
+  
+      // safe to assume non-interleaved or mono
+      UInt32 nr_samples = len / pwlibASBD.mBytesPerFrame; 
+      usleep(UInt32(nr_samples/pwlibASBD.mSampleRate * 1000000)); // 10E-6 [s]
+      return TRUE;  /* Null device */
+   }
 
 
    // Write to circular buffer with locking 
    lastWriteCount = mCircularBuffer->Fill((const char*)buf, len, true);
 
-	// Start it after putting the first data into the buffer
-	// this might cause troubles in case more data are written
-	// than space is available
-   if(!isRunning){
+   // Start it after putting the first data into the buffer
+   // this might cause troubles in case more data are written
+   // than space is available
+   if(state == setbuffer_){
       PTRACE(1, "Starting " << direction << " device.");
       OSStatus err = AudioOutputUnitStart(mAudioUnit);
       checkStatus(err);
-      isRunning = TRUE;
+      state = running_;
    }
 
    return (TRUE);
@@ -1741,22 +1480,19 @@ BOOL PSoundChannelCoreAudio::Write(const void *buf,
 
 
 BOOL PSoundChannelCoreAudio::PlaySound(const PSound & sound,
-					   BOOL wait)
+                  BOOL wait)
 {
-   PTRACE(1, __func__ );
-  PAssert(0, PUnimplementedFunction);
+   if (!Write((const BYTE *)sound, sound.GetSize()))
+     return FALSE;
+  
+   if (wait)
+     return WaitForPlayCompletion();
 
-  if (!Write((const BYTE *)sound, sound.GetSize()))
-    return FALSE;
-
-  if (wait)
-    return WaitForPlayCompletion();
-
-	return TRUE;
+   return TRUE;
 }
 
 BOOL PSoundChannelCoreAudio::PlayFile(const PFilePath & file,
-					  BOOL wait)
+                 BOOL wait)
 {
    PTRACE(1, __func__ );
   PAssert(0, PUnimplementedFunction);
@@ -1768,36 +1504,41 @@ BOOL PSoundChannelCoreAudio::HasPlayCompleted()
 {
    PTRACE(1, __func__ );
   PAssert(0, PUnimplementedFunction);
-	return false;
+   return false;
 }
 
 BOOL PSoundChannelCoreAudio::WaitForPlayCompletion()
 {
    PTRACE(1, __func__ );
   PAssert(0, PUnimplementedFunction);
-	return false;
+   return false;
 }
 
 BOOL PSoundChannelCoreAudio::Read(void *buf,
-				  PINDEX len)
+              PINDEX len)
 {
-   PTRACE(1, "Read called with len " << len);
+   PTRACE(6, "Read called with len " << len);
+
+   if(state < setbuffer_){
+      PTRACE(1, __func__ << " Please initialize device first");
+      return FALSE;
+   }
 
    if (mDeviceID == kAudioDeviceDummy) {
       lastReadCount =  len; 
       bzero(buf, len);
   
-      // ugly,  assuming interleaved or mono
+      // we are working with non-interleaved or mono
       UInt32 nr_samples = len / pwlibASBD.mBytesPerFrame; 
       usleep(UInt32(nr_samples/pwlibASBD.mSampleRate * 1000000)); // 10E-6 [s]
       return TRUE;  /* Null device */
    }
 
-   if(!isRunning){
+   if(state == setbuffer_){
       PTRACE(1, "Starting " << direction << " device.");
       OSStatus err = AudioOutputUnitStart(mAudioUnit);
       checkStatus(err);
-      isRunning = TRUE;
+      state = running_;
    }
 
    lastReadCount = mCircularBuffer->Drain((char*)buf, len, true);
@@ -1809,44 +1550,54 @@ BOOL PSoundChannelCoreAudio::RecordSound(PSound & sound)
 {
    PTRACE(1, __func__ );
   PAssert(0, PUnimplementedFunction);
-	return false;
+   return false;
 }
 
 BOOL PSoundChannelCoreAudio::RecordFile(const PFilePath & file)
 {
    PTRACE(1, __func__ );
   PAssert(0, PUnimplementedFunction);
-	return false;
+   return false;
 }
 
 BOOL PSoundChannelCoreAudio::StartRecording()
 {
    PTRACE(1, __func__ );
 
-	// if(!isOpen)
-	//    PTRACE(1, "Open the device first");
+   if(state != setbuffer_){
+      PTRACE(1, __func__ << " Initialize the device first");
+      return FALSE;
+   }
 
-   if(!isRunning){
+   if(state == setbuffer_){
       PTRACE(1, "Starting " << direction << " device.");
       OSStatus err = AudioOutputUnitStart(mAudioUnit);
       checkStatus(err);
-      isRunning = TRUE;
+      state = running_;
    }
-	return false;
+   return false;
 }
 
 BOOL PSoundChannelCoreAudio::isRecordBufferFull()
 {
-   PTRACE(1, __func__ );
-  PAssert(0, PUnimplementedFunction);
-	return false;
+   PAssert(direction == Recorder, PInvalidParameter);
+   if(state != setbuffer_){
+      PTRACE(1, __func__ << " Initialize the device first");
+      return FALSE;
+   }
+   
+   return (mCircularBuffer->size() > bufferSizeBytes);
 }
 
 BOOL PSoundChannelCoreAudio::AreAllRecordBuffersFull()
 {
-   PTRACE(1, __func__ );
-  PAssert(0, PUnimplementedFunction);
-	return false;
+   PAssert(direction == Recorder, PInvalidParameter);
+   if(state != setbuffer_){
+      PTRACE(1, __func__ << " Initialize the device first");
+      return FALSE;
+   }
+
+   return (mCircularBuffer->Full());
 }
 
 BOOL PSoundChannelCoreAudio::WaitForRecordBufferFull()
@@ -1863,8 +1614,8 @@ BOOL PSoundChannelCoreAudio::WaitForRecordBufferFull()
 BOOL PSoundChannelCoreAudio::WaitForAllRecordBuffersFull()
 {
    PTRACE(1, __func__ );
-  PAssert(0, PUnimplementedFunction);
-	return false;
+   PAssert(0, PUnimplementedFunction);
+   return false;
 }
 
 
