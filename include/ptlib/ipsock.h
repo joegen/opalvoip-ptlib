@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.36  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.35  1998/12/21 07:22:50  robertj
  * Virtualised functions for SOCKS support.
  *
@@ -148,7 +151,9 @@
 #include <ptlib/socket.h>
 #endif
 
-PDECLARE_CLASS(PIPSocket, PSocket)
+class PIPSocket : public PSocket
+{
+  PCLASSINFO(PIPSocket, PSocket)
 /* This class describes a type of socket that will communicate using the
    Internet Protocol.
  */
@@ -381,7 +386,9 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        String name of the gateway device, or empty string if there is none.
      */
 
-    PDECLARE_CLASS(RouteEntry, PObject)
+    class RouteEntry : public PObject
+    {
+      PCLASSINFO(RouteEntry, PObject)
       public:
         RouteEntry(const Address & addr) : network(addr) { }
         Address GetNetwork() const { return network; }
@@ -397,6 +404,7 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         long    metric;
       friend class PIPSocket;
     };
+
     PLIST(RouteTable, RouteEntry);
     static BOOL GetRouteTable(
       RouteTable & table      // Route table

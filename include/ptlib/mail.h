@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.8  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.7  1999/02/10 13:20:53  robertj
  * Added ability to have attachments in mail messages.
  *
@@ -59,7 +62,9 @@
 #endif
 
 
-PDECLARE_CLASS(PMail, PObject)
+class PMail : public PObject
+{
+  PCLASSINFO(PMail, PObject)
 /* This class establishes a mail session with the platforms mail system.
 */
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.5  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.4  1998/11/14 06:28:09  robertj
  * Fixed error in documentation
  *
@@ -50,7 +53,9 @@
 #pragma interface
 #endif
 
-PDECLARE_CLASS(PIPDatagramSocket, PIPSocket)
+class PIPDatagramSocket : public PIPSocket
+{
+  PCLASSINFO(PIPDatagramSocket, PIPSocket)
   protected:
     PIPDatagramSocket();
     /* Create a TCP/IP protocol socket channel. If a remote machine address or

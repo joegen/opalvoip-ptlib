@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.16  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.15  1998/09/23 06:20:49  robertj
  * Added open source copyright license.
  *
@@ -324,8 +327,9 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T>
-PDECLARE_CLASS(PList, PAbstractList)
+template <class T> class PList : public PAbstractList
+{
+  PCLASSINFO(PList, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -404,8 +408,9 @@ PDECLARE_CLASS(PList, PAbstractList)
 #define PLIST(cls, T) typedef PList<T> cls
 
 
-template <class T>
-PDECLARE_CLASS(PQueue, PAbstractList)
+template <class T> class PQueue : public PAbstractList
+{
+  PCLASSINFO(PQueue, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a first in first out
    queue. The functions in this class primarily do all the appropriate casting
@@ -496,8 +501,9 @@ PDECLARE_CLASS(PQueue, PAbstractList)
 #define PQUEUE(cls, T) typedef PQueue<T> cls
 
 
-template <class T>
-PDECLARE_CLASS(PStack, PAbstractList)
+template <class T> class PStack : public PAbstractList
+{
+  PCLASSINFO(PStack, PAbstractList)
 /* This template class maps the PAbstractList to a specific object type, and
    adds functionality that allows the list to be used as a last in first out
    stack. The functions in this class primarily do all the appropriate casting
@@ -946,8 +952,9 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T>
-PDECLARE_CLASS(PSortedList, PAbstractSortedList)
+template <class T> class PSortedList : public PAbstractSortedList
+{
+  PCLASSINFO(PSortedList, PAbstractSortedList)
 /* This template class maps the PAbstractSortedList to a specific object type.
    The functions in this class primarily do all the appropriate casting of
    types.
