@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.4  1998/10/13 14:06:21  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.3  1998/09/23 06:22:02  robertj
  * Added open source copyright license.
  *
@@ -41,6 +44,8 @@
 #include <ptlib.h>
 #include <sockets.h>
 #include <ftp.h>
+
+#define new PNEW
 
 
 #define	READY_STRING  "PWLib FTP Server v1.0 ready"
@@ -384,7 +389,7 @@ BOOL PFTPServer::OnPASV(const PCaselessString &)
   if (passiveSocket != NULL)
     delete passiveSocket;
 
-  passiveSocket = PNEW PTCPSocket;
+  passiveSocket = new PTCPSocket;
   passiveSocket->Listen();
 
   WORD portNo = passiveSocket->GetPort();
@@ -661,11 +666,11 @@ void PFTPServer::SendToClient(const PFilePath & filename)
   else {
     PTCPSocket * dataSocket;
     if (passiveSocket != NULL) {
-      dataSocket = PNEW PTCPSocket(*passiveSocket);
+      dataSocket = new PTCPSocket(*passiveSocket);
       delete passiveSocket;
       passiveSocket = NULL;
     } else
-      dataSocket = PNEW PTCPSocket(remoteHost, remotePort);
+      dataSocket = new PTCPSocket(remoteHost, remotePort);
     if (!dataSocket->IsOpen())
       WriteResponse(425, "Cannot open data connection");
     else {
