@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.49 1996/02/03 11:08:51 robertj Exp $
+ * $Id: contain.cxx,v 1.50 1996/02/08 12:20:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.50  1996/02/08 12:20:44  robertj
+ * Added new operators to PString for case insensitive compare and spaced concatenate.
+ * Fixed bug in Find() not finding case insensitive substrings.
+ *
  * Revision 1.49  1996/02/03 11:08:51  robertj
  * Changed memcpy to memove to guarentee string operations will work correctly
  *    when moving overlapping strings around eg in PString::Splice().
@@ -742,7 +746,7 @@ PString PString::operator+(char c) const
   PString str;
   str.SetSize(olen+2);
   PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
-  str.SetAt(olen, c);
+  str.theArray[olen] = c;
   return str;
 }
 
@@ -753,6 +757,48 @@ PString & PString::operator+=(const char * cstr)
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   SetSize(olen+alen);
   PSTRING_COPY(theArray+olen, cstr, alen);
+  return *this;
+}
+
+
+PString PString::operator&(const char * cstr) const
+{
+  PINDEX olen = GetLength();
+  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  PString str;
+  PINDEX space = theArray[olen-1] != ' ' && *cstr != ' ' ? 1 : 0;
+  str.SetSize(olen+alen+space);
+  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  if (space != 0)
+    str.theArray[olen] = ' ';
+  PSTRING_COPY(str.theArray+olen+space, cstr, alen);
+  return str;
+}
+
+
+PString PString::operator&(char c) const
+{
+  PINDEX olen = GetLength();
+  PString str;
+  PINDEX space = theArray[olen-1] != ' ' && c != ' ' ? 1 : 0;
+  str.SetSize(olen+2+space);
+  PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
+  if (space != 0)
+    str.theArray[olen] = ' ';
+  str.theArray[olen+space] = c;
+  return str;
+}
+
+
+PString & PString::operator&=(const char * cstr)
+{
+  PINDEX olen = GetLength();
+  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  PINDEX space = theArray[olen-1] != ' ' && *cstr != ' ' ? 1 : 0;
+  SetSize(olen+alen+space);
+  if (space != 0)
+    theArray[olen] = ' ';
+  PSTRING_COPY(theArray+olen+space, cstr, alen);
   return *this;
 }
 
@@ -827,6 +873,19 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 }
 
 
+PINLINE BOOL PString::operator*=(const char * cstr) const
+{
+  PAssertNULL(cstr);
+  PINDEX offset = 0;
+  PINDEX length = GetLength();
+  while (length-- > 0 && (theArray[offset] != '\0' || *cstr != '\0')) {
+    if (InternalCompare(offset++, *cstr++) != EqualTo)
+      return FALSE;
+  }
+  return TRUE;
+}
+
+
 PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 {
   char ch = theArray[offset];
@@ -869,19 +928,28 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
   if (offset > len - clen)
     return P_MAX_INDEX;
 
+  if (clen < 10) {
+    while (offset+clen < len) {
+      if (InternalCompare(offset, clen, cstr) == EqualTo)
+        return offset;
+      offset++;
+    }
+    return P_MAX_INDEX;
+  }
+
   int strSum = 0;
   int cstrSum = 0;
   for (PINDEX i = 0; i < clen; i++) {
-    strSum += theArray[offset+i];
-    cstrSum += cstr[i];
+    strSum += toupper(theArray[offset+i]);
+    cstrSum += toupper(cstr[i]);
   }
 
   // search for a matching substring
   while (offset+clen < len) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
-    strSum += theArray[offset+clen];
-    strSum -= theArray[offset++];
+    strSum += toupper(theArray[offset+clen]);
+    strSum -= toupper(theArray[offset++]);
   }
 
   return P_MAX_INDEX;
@@ -1369,10 +1437,18 @@ PStringStream::PStringStream(const char * cstr)
 }
 
 
+PStringStream & PStringStream::operator=(const char * cstr)
+{
+  flush();
+  PString::operator=(cstr);
+  return *this;
+}
+
+
 PStringStream & PStringStream::operator=(const PString & str)
 {
-  PString::operator=(str);
   flush();
+  PString::operator=(str);
   return *this;
 }
 
