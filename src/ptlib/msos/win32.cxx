@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.117  2001/12/08 00:22:37  robertj
+ * Prevented assert if doing SetUserName() with empty string.
+ *
  * Revision 1.116  2001/11/23 06:59:00  robertj
  * Added PProcess::SetUserName() function for effective user changes.
  *
@@ -1523,8 +1526,11 @@ PString PProcess::GetUserName() const
 }
 
 
-BOOL PProcess::SetUserName(const PString & /*username*/)
+BOOL PProcess::SetUserName(const PString & username)
 {
+  if (username.IsEmpty())
+    return FALSE;
+
   PAssertAlways(PUnimplementedFunction);
   return FALSE;
 }
