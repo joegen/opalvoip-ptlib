@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.14  2001/09/03 08:13:54  robertj
+ * Changed "stack dump" option to "run debugger" when get assert.
+ *
  * Revision 1.13  2001/08/30 08:58:09  robertj
  * Added explicit output to trace file if get assert.
  *
@@ -123,7 +126,7 @@ void PAssertFunc (const char * file, int line, const char * msg)
   for(;;) {
     PError << "\n<A>bort, <C>ore dump, <I>gnore"
 #ifdef _DEBUG
-           << ", <S>tack"
+           << ", <D>ebug"
 #endif
            << "? " << flush;
     int c = getchar();
@@ -135,14 +138,11 @@ void PAssertFunc (const char * file, int line, const char * msg)
         _exit(1);
 
 #ifdef _DEBUG
-      case 's' :
-      case 'S' :
+      case 'd' :
+      case 'D' :
         {
-          PString fn  = PProcess::Current().GetFile();
-          PString cmd = psprintf("/bin/echo 'where\ninfo threads%s'|gdb %s %d",
-                                 ((c == 's') ? "\ndetach" : ""),
-                                 (const char *)fn,
-                                 getpid());
+          PString cmd = "gdb " + PProcess::Current().GetFile();
+          cmd.sprintf(" %d", getpid());
           system((const char *)cmd);
         }
         break;
