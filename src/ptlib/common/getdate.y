@@ -22,7 +22,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <malloc.h>
+
 
 #ifdef _MSC_VER
 #pragma warning(disable:4131 4701)
