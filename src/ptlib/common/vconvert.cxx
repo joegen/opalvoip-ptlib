@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.34  2003/06/14 02:57:36  rjongbloed
+ * REmoved redundent parameter, grey scale does not have rgb increment!
+ *
  * Revision 1.33  2003/06/09 22:37:24  dereksmithies
  * Fix from Clive Nicolson to make b/w colour conversions work (i.e. grey palette).
  * many thanks!
@@ -181,20 +184,17 @@ class PStandardColourConverter : public PColourConverter
     void GreytoYUV420PSameSize(
       const BYTE * rgb,
       BYTE * yuv,
-      unsigned rgbIncrement,
       BOOL flipVertical
     ) const;
     void GreytoYUV420PWithResize(
       const BYTE * rgb,
       BYTE * yuv,
-      unsigned rgbIncrement,
       BOOL flipVertical
     ) const;
     BOOL GreytoYUV420P(
       const BYTE * rgb,
       BYTE * yuv,
       PINDEX * bytesReturned,
-      unsigned rgbIncrement,
       BOOL flipVertical
     ) const;
     void RGBtoYUV420PSameSize(
@@ -403,7 +403,6 @@ BOOL PSynonymColour::Convert(const BYTE *srcFrameBuffer,
 
 void PStandardColourConverter::GreytoYUV420PSameSize(const BYTE * grey,
 						     BYTE * yuv,
-						     unsigned rgbIncrement,
 						     BOOL flip) const
 {
   const unsigned planeSize = srcFrameWidth*srcFrameHeight;
@@ -441,7 +440,6 @@ void PStandardColourConverter::GreytoYUV420PSameSize(const BYTE * grey,
 // and cropped / padded with black borders as required.
 void PStandardColourConverter::GreytoYUV420PWithResize(const BYTE * grey,
 						       BYTE * yuv,
-						       unsigned rgbIncrement,
 						       BOOL   flip) const
 {
   int planeSize = dstFrameWidth*dstFrameHeight;
@@ -507,16 +505,15 @@ void PStandardColourConverter::GreytoYUV420PWithResize(const BYTE * grey,
 BOOL PStandardColourConverter::GreytoYUV420P(const BYTE * grey,
 					     BYTE * yuv,
 					     PINDEX * bytesReturned,
-					     unsigned rgbIncrement,
 					     BOOL flip) const
 {
   if (grey == yuv)
     return FALSE; // Cannot do in place conversion
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
-    GreytoYUV420PSameSize(grey, yuv, 1, flip);
+    GreytoYUV420PSameSize(grey, yuv, flip);
   else
-    GreytoYUV420PWithResize(grey, yuv, 1, flip);
+    GreytoYUV420PWithResize(grey, yuv, flip);
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
@@ -658,7 +655,7 @@ BOOL PStandardColourConverter::RGBtoYUV420P(const BYTE * rgb,
 
 PSTANDARD_COLOUR_CONVERTER(Grey,YUV420P)
 {
-  return GreytoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 1,  doVFlip);
+  return GreytoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, doVFlip);
 }
 
 
@@ -682,7 +679,7 @@ PSTANDARD_COLOUR_CONVERTER(RGB24F,YUV420P)
 
 PSTANDARD_COLOUR_CONVERTER(GreyF,YUV420P)
 {
-  return GreytoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 1, doVFlip);
+  return GreytoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, doVFlip);
 }
 
 
