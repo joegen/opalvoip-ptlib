@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.3 1994/11/28 12:38:49 robertj Exp $
+ * $Id: sockets.cxx,v 1.4 1995/01/01 01:06:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.3  1994/11/28 12:38:49  robertj
+ * Revision 1.4  1995/01/01 01:06:58  robertj
+ * More implementation.
+ *
+ * Revision 1.3  1994/11/28  12:38:49  robertj
  * Added DONT and WONT states.
  *
  * Revision 1.2  1994/08/21  23:43:02  robertj
@@ -76,9 +79,23 @@ BOOL PIPSocket::LookupHost(const PString & host_address, sockaddr_in * address)
 
 #ifdef P_HAS_BERKELEY_SOCKETS
 
-BOOL PTCPSocket::Open (const PString & host_address, u_short port)
+PTCPSocket::PTCPSocket(WORD newPort)
+{
+  port = newPort;
+}
+
+BOOL PTCPSocket::Open (const PString & host_address, u_short newPort)
 {
   sockaddr_in address;
+
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+  PAssert(port != 0, "Cannot open socket without setting port");
 
   // attempt to lookup the host name
   if (!LookupHost(host_address, &address))
@@ -97,17 +114,85 @@ BOOL PTCPSocket::Open (const PString & host_address, u_short port)
     return FALSE;
   }
 
+  // make the socket non-blocking
+  long cmd = 1;
+#ifdef _WINDOWS
+# ifndef WIN32
+  ::ioctlsocket (os_handle, FIONBIO, &cmd);
+# endif
+#else
+  ::ioctl (os_handle, FIONBIO, &cmd);
+#endif
+
   return TRUE;
 }
 
 
 #endif
 
+void PTCPSocket::OnOutOfBand(const void * buf, PINDEX len)
+{
+}
+
+
+BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
+{
+  int count = ::send(os_handle, buf, len, MSG_OOB);
+  if (count < 0) {
+    lastWriteCount = 0;
+    return ConvertOSError(count);
+  } else {
+    lastWriteCount = count;
+    return TRUE;
+  }
+}
+
+void PTCPSocket::SetPort(WORD newPort)
+{
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  port = newPort;
+}
+
+void PTCPSocket::SetPort(const PString & service)
+{
+  PAssert(!IsOpen(), "Cannot change port number of opened socket");
+  port = GetPort(service);
+}
+
+
+WORD PTCPSocket::GetPort() const
+{
+  return port;
+}
+
+PString PTCPSocket::GetService() const
+{
+  return GetService(port);
+}
+
+WORD    PTCPSocket::GetPort(const PString & serviceName) const
+{
+  struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
+  if (service != NULL)
+    return service->s_port;
+  else
+    return 0;
+}
+
+PString PTCPSocket::GetService(WORD port) const
+{
+  struct servent * service = ::getservbyport(port, "tcp");
+  if (service != NULL)
+    return PString(service->s_name);
+  else
+    return PString();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // PTelnetSocket
 
-PTelnetSocket::PTelnetSocket()
+PTelnetSocket::PTelnetSocket(WORD newPort)
+  : PTCPSocket(newPort)
 {
   Construct();
 }
@@ -122,14 +207,10 @@ PTelnetSocket::PTelnetSocket(const PString & address, WORD port)
 
 void PTelnetSocket::Construct()
 {
- state = StateNormal;
- debug = TRUE;
-}
-
-
-BOOL PTelnetSocket::Open(const PString & address, WORD port)
-{
-  return PTCPSocket::Open(address, port);
+  state = StateNormal;
+  memset(willOptions, 0, sizeof(willOptions));
+  memset(doOptions, 0, sizeof(doOptions));
+  debug = TRUE;
 }
 
 
@@ -170,11 +251,23 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
               state = StateWont;
               break;
 
+            case SE :          // subnegotiation end
+            case NOP :         // no operation
+            case DataMark :    // data stream portion of a Synch
+            case Break :       // NVT character break
+            case Interrupt :   // The function IP
+            case Abort :       // The function AO
+            case AreYouThere : // The function AYT
+            case EraseChar :   // The function EC
+            case EraseLine :   // The function EL
+            case GoAhead :     // The function GA
+            case SB :          // subnegotiation start
+              state = StateNormal;
+              break;
+
             default:
               if (OnUnknownCommand(*src))
                 state = StateNormal;
-              else
-                state = StateUnknownCommand;
               break;
           }
           break;
@@ -199,19 +292,15 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
           state = StateNormal;
           break;
 
-        case StateUnknownCommand:
-          if (OnUnknownCommand(*src))
-            state = StateNormal;
-          else
-            state = StateUnknownCommand;
-          break;
-
         case StateNormal:
         default:
           if (*src == IAC)
             state = StateIAC;
           else {
-            *dst++ = *src;
+            if (doOptions[TransmitBinary])
+              *dst++ = *src;
+            else
+              *dst++ = 0x7f&*src;
             charsLeft--;
           }
           break;
@@ -224,6 +313,44 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
   return TRUE;
 }
 
+BOOL PTelnetSocket::Write(void const * buf, PINDEX len)
+{
+  void * ptr;
+  int l;
+  int count = 0;
+
+  while (len > 0) {
+
+    // get ptr to first IAC character
+    ptr = memchr(buf, IAC, len);
+
+    // calculate number of bytes to send with or without
+    // the trailing IAC
+    if (ptr != NULL)
+      l = ptr-buf;
+    else
+      l = len;
+
+    // send the characters
+    if (!PTCPSocket::Write(buf, l))
+      return FALSE;
+    count += lastWriteCount;
+
+    // send the IAC (if required)
+    if (ptr != NULL) {
+      BYTE iac = IAC;
+      if (!PTCPSocket::Write(&iac, 1))
+        return FALSE;
+      count += lastWriteCount;
+    }
+
+    len -= l;
+    buf += l;
+  }
+
+  lastWriteCount = lastWriteCount;
+  return TRUE;
+}
 
 #define IMPLEMENT_SEND_CMD(n,c) \
   void PTelnetSocket::Send ##n## (BYTE code) \
@@ -234,34 +361,70 @@ IMPLEMENT_SEND_CMD(Wont, WONT)
 IMPLEMENT_SEND_CMD(Do,   DO)
 IMPLEMENT_SEND_CMD(Dont, DONT)
 
+static struct {
+  BOOL can;
+  char * name;
+} KnownTELNETOptions[PTelnetSocket::MaxOptions] = 
+  { 
+    { TRUE,  "TransmitBinary" },
+    { TRUE,  "Echo" },
+    { FALSE, NULL },
+    { TRUE,  "SuppressGoAhead" },
+    { FALSE, NULL },
+    { TRUE,  "Status" },
+    { TRUE,  "TimingMark" }
+  };
+
+static PString GetTELNETOptionName(int code)
+{
+  if (code < PTelnetSocket::MaxOptions && KnownTELNETOptions[code].name != NULL)
+    return KnownTELNETOptions[code].name;
+
+  return PString(PString::Unsigned, code);
+}
+
 
 void PTelnetSocket::OnDo(BYTE code)
 {
   if (debug)
-    PError << "DO " << (int)code << endl;
-  SendWont(code);
+    PError << "DO " << GetTELNETOptionName(code) << endl;
+  if (code < MaxOptions && KnownTELNETOptions[code].can) {
+    willOptions[code] = TRUE;
+    SendWill(code);
+  }
+  else
+    SendWont(code);
 }
 
 
 void PTelnetSocket::OnDont(BYTE code)
 {
   if (debug)
-    PError << "DONT " << (int)code << endl;
+    PError << "DONT " << GetTELNETOptionName(code) << endl;
+  if (code < MaxOptions && KnownTELNETOptions[code].can)
+    willOptions[code] = FALSE;
 }
 
 
 void PTelnetSocket::OnWill(BYTE code)
 {
   if (debug)
-    PError << "WILL " << (int)code << endl;
-  SendDont(code);
+    PError << "WILL " << GetTELNETOptionName(code) << endl;
+  if (code < MaxOptions && KnownTELNETOptions[code].can) {
+    doOptions[code] = TRUE;
+    SendDo(code);
+  }
+  else
+    SendDont(code);
 }
 
 
 void PTelnetSocket::OnWont(BYTE code)
 {
   if (debug)
-    PError << "WONT " << (int)code << endl;
+    PError << "WONT " << GetTELNETOptionName(code) << endl;
+  if (code < MaxOptions && KnownTELNETOptions[code].can)
+    doOptions[code] = FALSE;
 }
 
 
@@ -272,5 +435,23 @@ BOOL PTelnetSocket::OnUnknownCommand(BYTE code)
   return TRUE;
 }
 
+void PTelnetSocket::OnOutOfBand(const void * buf, PINDEX len)
+{
+  PError << "Out of band data received of len " << len << endl;
+}
+
+
+void PTelnetSocket::SendDataMark(Command ch)
+{
+  BYTE dataMark[2] = { DataMark };
+
+  // send the datamark character as the only out of band data byte
+  WriteOutOfBand(dataMark, 1);
+
+  // insert a datamark into the outgoing data stream
+  dataMark[0] = IAC;
+  dataMark[1] = ch;
+  PTCPSocket::Write(dataMark, 2);
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
