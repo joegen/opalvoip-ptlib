@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipe.cxx,v $
+ * Revision 1.2  1998/11/30 07:37:56  robertj
+ * Fixed (previous bug) of incorrect handle values.
+ *
  * Revision 1.1  1998/11/30 04:57:42  robertj
  * Initial revision
  *
@@ -112,9 +115,9 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
   }
 
   if (mode == WriteOnly)
-    hFromChild = NULL;
+    hFromChild = INVALID_HANDLE_VALUE;
   else if (mode == ReadWriteStd) {
-    hFromChild = NULL;
+    hFromChild = INVALID_HANDLE_VALUE;
     startup.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     startup.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   }
@@ -163,7 +166,7 @@ PPipeChannel::~PPipeChannel()
 
 BOOL PPipeChannel::IsOpen() const
 {
-  return os_handle != (int)INVALID_HANDLE_VALUE;
+  return os_handle != -1;
 }
 
 
