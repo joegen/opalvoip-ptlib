@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.63  2004/01/17 18:15:24  csoutheren
+ * Fixed multi-threading problem with PString::Empty
+ * Created PString::MakeEmpty for efficient emptying of existing strings
+ *
  * Revision 1.62  2004/01/16 13:24:37  csoutheren
  * Changed PString::Empty to be thread-safe
  * Fixed PContainer::SetMinSize and PAbstractArray::SetSize, thanks to 123@call2ua.com
@@ -291,7 +295,13 @@ PDECLARE_CLASS(PString, PCharArray);
   //@{
     /**Return an empty string.
       */
-    static PString Empty();
+    static inline PString Empty()
+    { return PString((const char *)NULL); }
+
+    /**Make the current string empty
+      */
+    PString & MakeEmpty()
+    { SetSize(0); return *this; }
 
     /**Construct an empty string. This will have one character in it which is
        the '\0' character.
