@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.17 1996/02/19 13:12:48 robertj Exp $
+ * $Id: channel.h,v 1.18 1996/04/14 02:53:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.18  1996/04/14 02:53:30  robertj
+ * Split serial and pipe channel into separate compilation units for Linux executable size reduction.
+ *
  * Revision 1.17  1996/02/19 13:12:48  robertj
  * Added new error code for interrupted I/O.
  *
@@ -453,6 +456,13 @@ PCLASS PChannel : public PObject, public iostream {
        <H2>Returns:</H2>
        TRUE if there was no error.
      */
+
+    int ReadCharWithTimeout(PTimeInterval & timeout);
+      // Read a character with specified timeout, adjust for amount of time it took.
+
+    BOOL ReceiveCommandString(int nextChar,
+                            const PString & reply, PINDEX & pos, PINDEX start);
+      // Receive a (partial) command string, determine if completed yet.
 
 
     // Member variables
