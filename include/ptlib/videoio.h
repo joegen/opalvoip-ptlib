@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.4  2000/07/26 02:13:46  robertj
+ * Added some more "common" bounds checking to video device.
+ *
  * Revision 1.3  2000/07/25 13:38:25  robertj
  * Added frame rate parameter to video frame grabber.
  *
@@ -189,23 +192,16 @@ class PVideoDevice : public PObject
     */
     virtual unsigned GetFrameRate() const;
 
-    /**Get the maximum size of a frame on the device.
+    /**Get the minimum & maximum size of a frame on the device.
 
-       Default behaviour returns the value UINT_MAX for both and returns
+       Default behaviour returns the value 1 to UINT_MAX for both and returns
        FALSE.
     */
-    virtual BOOL GetMaxFrameSize(
-      unsigned & width,   /// Variable to receive width
-      unsigned & height   /// Variable to receive height
-    ) const;
-
-    /**Get the minimum size of a frame on the device.
-
-       Default behaviour returns the value 1 for both and returns FALSE.
-    */
-    virtual BOOL GetMinFrameSize(
-      unsigned & width,   /// Variable to receive width
-      unsigned & height   /// Variable to receive height
+    virtual BOOL GetFrameSizeLimits(
+      unsigned & minWidth,   /// Variable to receive minimum width
+      unsigned & minHeight,  /// Variable to receive minimum height
+      unsigned & maxWidth,   /// Variable to receive maximum width
+      unsigned & maxHeight   /// Variable to receive maximum height
     ) const;
 
     /**Set the frame size to be used.
