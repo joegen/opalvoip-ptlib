@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.34 1998/05/07 05:21:04 robertj Exp $
+ * $Id: winsock.cxx,v 1.35 1998/05/08 11:52:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.35  1998/05/08 11:52:03  robertj
+ * Added workaround for winsock bug where getpeername() doesn't work immediately after connect().
+ *
  * Revision 1.34  1998/05/07 05:21:04  robertj
  * Fixed DNS lookup so only works around bug in old Win95 and not OSR2
  *
@@ -286,9 +289,20 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
       err = GetLastError();
   }
 
-  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR)
+  if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR) {
     if (err == 0)
       err = GetLastError();
+  }
+
+  // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
+  // work for some period of time after a connect, saying it is not connected yet!
+  for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+    sockaddr_in address;
+    int sz = sizeof(address);
+    if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0)
+      break;
+    ::Sleep(0);
+  }
 
   SetLastError(err);
   return err == 0 ? 0 : SOCKET_ERROR;
