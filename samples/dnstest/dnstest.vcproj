@@ -104,7 +104,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="ptclibd.lib ptlibsd.lib wsock32.lib mpr.lib"
 				OutputFile=".\Debug/dnstest.exe"
-				LinkIncremental="1"
+				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\Debug/dnstest.pdb"
