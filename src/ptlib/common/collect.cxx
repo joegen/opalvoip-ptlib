@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.21 1996/02/19 13:32:31 robertj Exp $
+ * $Id: collect.cxx,v 1.22 1996/03/26 00:52:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.22  1996/03/26 00:52:38  robertj
+ * Fixed bug in dictionary decrementing size when removing element even if already removed.
+ *
  * Revision 1.21  1996/02/19 13:32:31  robertj
  * Fixed yet another bug in PSortedList, not setting cache index value correctly.
  *
@@ -1370,9 +1373,11 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 {
   if (obj == NULL) {
     obj = hashTable->RemoveElement(key);
-    if (obj != NULL && reference->deleteObjects)
-      delete obj;
-    reference->size--;
+    if (obj != NULL) {
+      if (reference->deleteObjects)
+        delete obj;
+      reference->size--;
+    }
   }
   else {
     Element * element = hashTable->GetElementAt(key);
