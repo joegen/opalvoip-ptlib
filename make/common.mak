@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.83  2003/06/17 12:05:01  csoutheren
+# Changed compiler flags for optimised build
+#
 # Revision 1.82  2003/02/03 06:08:52  robertj
 # Changed tagbuild so leaves a cvs sticky version of sources to that tag.
 #
@@ -252,12 +255,9 @@ ifdef PWLIB_GUI_FLAG
 STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
 endif
 
-ifndef DEBUG
 ifneq ($(P_SHAREDLIB),1)
-#ENDLDFLAGS += -static
+LDFLAGS += -static
 endif
-endif
-
 
 #  clean whitespace out of source file list
 SOURCES         := $(strip $(SOURCES))
@@ -267,11 +267,11 @@ SOURCES         := $(strip $(SOURCES))
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -x c++ -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
-	$(CC) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -x c -c $< -o $@
 
 #
 # create list of object files 
