@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.29  2004/06/08 01:29:00  csoutheren
+ * Removed memory leak on VS.net caused by unobvious iostream allocation
+ *
  * Revision 1.28  2004/04/09 06:38:11  rjongbloed
  * Fixed compatibility with STL based streams, eg as used by VC++2003
  *
@@ -257,9 +260,10 @@ PChannel::~PChannel()
   flush();
   Close();
   delete (PChannelStreamBuffer *)rdbuf();
+#ifdef _WIN32
   init(NULL);
+#endif
 }
-
 
 PObject::Comparison PChannel::Compare(const PObject & obj) const
 {
