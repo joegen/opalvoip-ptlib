@@ -3618,9 +3618,9 @@ re_match_2 (
 	case charset_not:
 	  {
 	    register unsigned char c;
-	    boolean bnot = (re_opcode_t) *(p - 1) == charset_not;
+	    boolean bNot = (re_opcode_t) *(p - 1) == charset_not;
 
-            DEBUG_PRINT2 ("EXECUTING charset%s.\n", bnot ? "_not" : "");
+            DEBUG_PRINT2 ("EXECUTING charset%s.\n", bNot ? "_not" : "");
 
 	    PREFETCH ();
 	    c = TRANSLATE (*d); /* The character to match.  */
@@ -3629,11 +3629,11 @@ re_match_2 (
                bit list is a full 32 bytes long.  */
 	    if (c < (unsigned) (*p * BYTEWIDTH)
 		&& p[1 + c / BYTEWIDTH] & (1 << (c % BYTEWIDTH)))
-	      bnot = !bnot;
+	      bNot = !bNot;
 
 	    p += 1 + *p;
 
-	    if (!bnot) goto fail;
+	    if (!bNot) goto fail;
             
 	    SET_REGS_MATCHED ();
             d++;
@@ -4070,15 +4070,15 @@ re_match_2 (
 		else if ((re_opcode_t) p1[3] == charset
 			 || (re_opcode_t) p1[3] == charset_not)
 		  {
-		    int not = (re_opcode_t) p1[3] == charset_not;
+		    int bNot = (re_opcode_t) p1[3] == charset_not;
                     
 		    if (c < (unsigned char) (p1[4] * BYTEWIDTH)
 			&& p1[5 + c / BYTEWIDTH] & (1 << (c % BYTEWIDTH)))
-		      not = !not;
+		      bNot = !bNot;
 
-                    /* `not' is equal to 1 if c would match, which means
+                    /* `bNot' is equal to 1 if c would match, which means
                         that we can't change to pop_failure_jump.  */
-		    if (!not)
+		    if (!bNot)
                       {
   		        p[-3] = (unsigned char) pop_failure_jump;
                         DEBUG_PRINT1 ("  No match => pop_failure_jump.\n");
