@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.111  2001/12/06 06:27:35  craigs
+# Added P_EXPAT flag
+#
 # Revision 1.110  2001/12/06 05:38:25  craigs
 # Added detection of expat XML parser library
 #
@@ -1085,6 +1088,7 @@ endif
 ifneq (,$(wildcard /usr/include/expat.h))
 HAS_EXPAT	= 1
 ENDLDLIBS	+= -lexpat
+STDCCFLAGS	+= -DP_EXPAT
 endif
 
 # define ESDDIR variables if installed
