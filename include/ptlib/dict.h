@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.30  2003/03/31 01:23:56  robertj
+ * Added ReadFrom functions for standard container classes such as
+ *   PIntArray and PStringList etc
+ *
  * Revision 1.29  2002/10/04 01:47:29  robertj
  * Added various increment and decrement operators to POrdinalKey.
  *
@@ -144,7 +148,7 @@ class POrdinalKey : public PObject
     /** Create a new key for ordinal index values.
      */
     PINLINE POrdinalKey(
-      PINDEX newKey   /// Ordinal index value to use as a key.
+      PINDEX newKey = 0   /// Ordinal index value to use as a key.
     );
 
     /**Operator to assign the ordinal.
