@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.3 1996/06/03 10:03:10 robertj Exp $
+ * $Id: icmp.cxx,v 1.4 1996/08/07 13:40:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.4  1996/08/07 13:40:57  robertj
+ * Fixed sparc memory alignment problem from int 64
+ *
  * Revision 1.3  1996/06/03 10:03:10  robertj
  * Changed ping to return more parameters.
  *
@@ -159,7 +162,9 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
   // can cause problems on some platforms
 #ifdef P_SUN4
   PInt64 then;
-  memcpy(&then, &icmpPacket->sendtime, sizeof(PInt64));
+  BYTE * pthen = (BYTE *)&then;
+  BYTE * psendtime = (BYTE *)&icmpPacket->sendtime;
+  memcpy(src, psendtime, sizeof(PInt64));
   info.delay.SetInterval(now - then);
 #else
   info.delay.SetInterval(now - icmpPacket->sendtime);
