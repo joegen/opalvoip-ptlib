@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.86  2002/01/23 12:09:46  rogerh
+# Add dtmf decoder to the compilation
+#
 # Revision 1.85  2002/01/22 03:55:32  craigs
 # Moved PWavFile to PTCLib
 #
@@ -431,6 +434,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
 	$(COMPONENT_SRC_DIR)/telnet.cxx \
 	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
+	$(COMPONENT_SRC_DIR)/dtmf.cxx \
 	$(SSL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
