@@ -129,15 +129,15 @@ case "$target_cpu" in
    powerpc )       MACHTYPE=ppc ;
 		   ;;
 
-   powerpc64 )     MACHTYPE=ppc ;
-		   P_64BIT=1 ;
-		   ;;
-
-   ppc64 )         MACHTYPE=ppc ;
-		   P_64BIT=1 ;
-		   ;;
-
    ppc )           MACHTYPE=ppc ;
+		   ;;
+
+   powerpc64 )     MACHTYPE=ppc64 ;
+		   P_64BIT=1 ;
+		   ;;
+
+   ppc64 )         MACHTYPE=ppc64 ;
+		   P_64BIT=1 ;
 		   ;;
 
    ia64)	   MACHTYPE=ia64 ;
