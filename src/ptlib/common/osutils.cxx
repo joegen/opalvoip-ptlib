@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.30 1995/04/01 08:30:58 robertj Exp $
+ * $Id: osutils.cxx,v 1.31 1995/04/02 09:27:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.31  1995/04/02 09:27:31  robertj
+ * Added "balloon" help.
+ *
  * Revision 1.30  1995/04/01 08:30:58  robertj
  * Fixed bug in timeout code of timers.
  *
@@ -484,6 +487,14 @@ PTimer::PTimer(const PTimeInterval & time)
   state = Stopped;
   inTimeout = FALSE;
   StartRunning(TRUE);
+}
+
+
+PTimer & PTimer::operator=(DWORD milliseconds)
+{
+  resetTime = milliseconds;
+  StartRunning(oneshot);
+  return *this;
 }
 
 
