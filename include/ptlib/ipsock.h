@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.58  2003/04/03 08:43:23  robertj
+ * Added IPv4 mapping into IPv6, thanks Sebastien Josset
+ *
  * Revision 1.57  2003/03/26 05:36:37  robertj
  * More IPv6 support (INADDR_ANY handling), thanks Sébastien Josset
  *
@@ -373,6 +376,11 @@ class PIPSocket : public PSocket
         /// Check for Broadcast address 255.255.255.255
         BOOL IsBroadcast() const;
 
+#if P_HAS_IPV6
+        /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
+        BOOL IsV4Mapped() const;
+#endif
+        
         static const Address & GetLoopback();
 #if P_HAS_IPV6
         static const Address & GetLoopback6();
