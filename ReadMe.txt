@@ -281,20 +281,20 @@ the port.
 6.1 FreeBSD Issues
 ------------------
 Port Maintained by Roger Hardiman <roger@freebsd.org>
-There is no support for GetRouteTable() in socket.cxx
-due to lack of time by the port maintainer.
+GetRouteTable() in socket.cxx has been added. It is used by
+OenH323Proxy, but is not fully tested.
 
 6.2 OpenBSD Issues
 ------------------
 Port Maintained by Roger Hardiman <roger@freebsd.org>
-There is no support for GetRouteTable() in socket.cxx
-due to lack of time by the port maintainer.
+GetRouteTable() in socket.cxx has been added. It is used by
+OenH323Proxy, but is not fully tested.
 
 6.3 NetBSD Issues
 -----------------
 Port Maintained by Roger Hardiman <roger@freebsd.org>
-The is no support for GetRouteTable() in socket.cxx
-due to lack of time by the port maintainer.
+GetRouteTable() in socket.cxx has been added. It is used by
+OenH323Proxy, but is not fully tested.
 
 Video Capture using the bktr driver has not been added, just due to a lack
 of time. It is easy to add, being 99.99% identical to the FreeBSD and
@@ -311,8 +311,8 @@ Theads can be created in 'suspended' mode and then started with Resume
 This is due to a lack of pthread_kill() in Dawrin 1.2
 See http://www.publicsource.apple.com/bugs/X/Libraries/2686231.html
 
-There is no support for GetRouteTable() in socket.cxx
-due to lack of time by the port maintainer.
+GetRouteTable() in socket.cxx has been added. It is used by
+OenH323Proxy, but is not fully tested.
 
 localtime_r() and gm_time() are missing.
 So in osutil.cxx I have implemented os_localtime() and os_gmtime()
@@ -323,10 +323,6 @@ You must have this installed this, and set the ESDDIR environment
 variable to point to it prior to compiling PWLib.
 
 There is no video support due to a lack of documentation and hardware.
-
-
-
-
 
 6.5 BeOS Issues
 ---------------
@@ -358,6 +354,14 @@ Biggest issue is poor multithreading capabilities of current implementation of W
 Therefore I doubt CE 2.11 build could be useful at all. PocketPC builds look better.
 
 Look for more port-related info on http://www.dogsbone.com/ce
+
+6.7 Solaris Issues
+------------------
+On Solaris 8, you need to install GNU Ld (the loader) to get
+shared libraries to compile. (otherwise there is an error with -soname)
+You can get around this by using the static libraries and
+compiling with make optnoshared and make debugnoshared
+
 
 7. Conclusion
 -------------
