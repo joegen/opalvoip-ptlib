@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.46  2003/03/19 01:55:26  robertj
+ * Fixed bugs in deleteing HTTP resources from server, thanks Diego Tártara
+ *
  * Revision 1.45  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -288,18 +291,22 @@ BOOL PHTTPSpace::DelResource(const PURL & url)
 
     node = &node->children[pos];
 
-    if (node->resource != NULL)
+    // If have resource and not last node, then trying to remove something
+    // further down the tree than a leaf node.
+    if (node->resource != NULL && i < (path.GetSize()-1))
       return FALSE;
   }
 
   if (!node->children.IsEmpty())
     return FALSE;   // Still a resource in tree further down path.
 
-  do {
-    Node * par = node->parent;
-    par->children.Remove(node);
-    node = par;
-  } while (node != NULL && node->children.IsEmpty());
+  if (node->parent != NULL) {
+    do {
+      Node * par = node->parent;
+      par->children.Remove(node);
+      node = par;
+    } while (node != NULL && node->children.IsEmpty());
+  }
 
   return TRUE;
 }
