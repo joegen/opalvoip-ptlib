@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.13 1997/04/27 05:50:10 robertj Exp $
+ * $Id: lists.h,v 1.14 1997/06/08 04:49:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.14  1997/06/08 04:49:12  robertj
+ * Fixed non-template class descendent order.
+ *
  * Revision 1.13  1997/04/27 05:50:10  robertj
  * DLL support.
  *
@@ -576,7 +579,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_LIST(cls, T) \
+#define PLIST(cls, T) \
   PDECLARE_CLASS(cls, PAbstractList) \
   protected: \
     inline cls(int dummy, const cls * c) \
@@ -588,10 +591,23 @@ PDECLARE_CLASS(PStack, PAbstractList)
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const \
       { return (T &)GetReferenceAt(index); } \
+  }
 
-#define PLIST(cls, T) PDECLARE_LIST(cls, T) }
+#define PDECLARE_LIST(cls, T) \
+  PLIST(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
-#define PDECLARE_QUEUE(cls, T) \
+
+
+#define PQUEUE(cls, T) \
   PDECLARE_CLASS(cls, PAbstractList) \
   protected: \
     inline cls(int dummy, const cls * c) \
@@ -606,11 +622,22 @@ PDECLARE_CLASS(PStack, PAbstractList)
       { PAbstractList::Append(t); } \
     virtual inline T * Dequeue() \
       { return (T *)PAbstractList::RemoveAt(0);} \
+  }
 
-#define PQUEUE(cls, T) PDECLARE_QUEUE(cls, T) }
+#define PDECLARE_QUEUE(cls, T) \
+  PQUEUE(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
-#define PDECLARE_STACK(cls, T) \
+#define PSTACK(cls, T) \
   PDECLARE_CLASS(cls, PAbstractList) \
   protected: \
     inline cls(int dummy, const cls * c) \
@@ -627,8 +654,19 @@ PDECLARE_CLASS(PStack, PAbstractList)
       { PAssert(GetSize() > 0, PStackEmpty); return (T *)PAbstractList::RemoveAt(0); } \
     virtual inline T & Top() \
       { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(0); } \
+  }
 
-#define PSTACK(cls, T) PDECLARE_STACK(cls, T) }
+#define PDECLARE_STACK(cls, T) \
+  PSTACK(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 
 #endif // PHAS_TEMPLATES
@@ -853,7 +891,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
         Element * Successor() const;
         Element * Predecessor() const;
         Element * OrderSelect(PINDEX index);
-        PINDEX ValueSelect(const PObject & obj, BOOL byPointer);
+        PINDEX ValueSelect(const PObject & obj, Element * & lastElement);
 
         Element * parent;
         Element * left;
@@ -930,7 +968,7 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
 };
 
 
-/*$MACRO PDECLARE_LIST(cls, T)
+/*$MACRO PDECLARE_SORTED_LIST(cls, T)
    This macro is used to declare a descendent of PAbstractSortedList class,
    customised for a particular object type <B>T</B>.
 
@@ -970,7 +1008,7 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
 #else // PHAS_TEMPLATES
 
 
-#define PDECLARE_SORTED_LIST(cls, T) \
+#define PSORTED_LIST(cls, T) \
   PDECLARE_CLASS(cls, PAbstractSortedList) \
   protected: \
     inline cls(int dummy, const cls * c) \
@@ -982,9 +1020,19 @@ PDECLARE_CLASS(PSortedList, PAbstractSortedList)
       { return PNEW cls(0, this); } \
     inline T & operator[](PINDEX index) const \
       { return *(T *)GetAt(index); } \
+  }
 
-#define PSORTED_LIST(cls, T) PDECLARE_SORTED_LIST(cls, T) }
-
+#define PDECLARE_SORTED_LIST(cls, T) \
+  PSORTED_LIST(cls##_PTemplate, T); \
+  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  protected: \
+    cls(int dummy, const cls * c) \
+      : cls##_PTemplate(dummy, c) { } \
+  public: \
+    cls() \
+      : cls##_PTemplate() { } \
+    virtual PObject * Clone() const \
+      { return PNEW cls(0, this); } \
 
 #endif  // PHAS_TEMPLATES
 
