@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.5  2003/11/19 09:29:19  csoutheren
+ * Added super hack to avoid problems with multiple plugins in a single file
+ *
  * Revision 1.4  2003/11/12 10:24:35  csoutheren
  * Changes to allow operation of static plugins under Windows
  *
@@ -129,7 +132,7 @@ PPlugin_##serviceType##_##serviceName##_Registration \
 
 //////////////////////////////////////////////////////
 
-#ifdef P_HAS_PLUGINS
+#if defined(P_HAS_PLUGINS) && ! defined(P_FORCE_STATIC_PLUGIN)
 #  define PCREATE_PLUGIN(serviceName, serviceType, descriptor) \
     PCREATE_PLUGIN_DYNAMIC(serviceName, serviceType, descriptor)
 
