@@ -13,9 +13,3 @@ HWND VFWAPI capDefCreateCaptureWindow(LPCSTR, DWORD, int, int, int, int, HWND, i
 // Functions
 CAPGETDRIVERDESCRIPTIONPROC capGetDriverDescription; // = capDefGetDriverDescription;
 CAPCREATECAPTUREWINDOWPROC capCreateCaptureWindow; // = capDefCreateCaptureWindow;
-
-
-void test()
-{
-	capGetDriverDescription = capDefGetDriverDescription;
-}
