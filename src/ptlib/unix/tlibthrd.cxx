@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.105  2002/11/22 10:14:07  robertj
+ * QNX port, thanks Xiaodan Tang
+ *
  * Revision 1.104  2002/11/04 16:01:27  rogerh
  * Using pthread_cancel and not pthread_kill with SIGKILL to terminate a thread
  * On FreeBSD the thread does not have a handler for SIGKILL, it passes it up
@@ -1266,6 +1269,9 @@ BOOL PSemaphore::WillBlock() const
 #endif
 }
 
+#if defined(P_QNX) && defined(P_HAS_RECURSIVE_MUTEX)
+#define PTHREAD_MUTEX_RECURSIVE_NP PTHREAD_MUTEX_RECURSIVE
+#endif
 
 PMutex::PMutex()
   : PSemaphore(PXMutex)

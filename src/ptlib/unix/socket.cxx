@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.98  2002/11/22 10:14:07  robertj
+ * QNX port, thanks Xiaodan Tang
+ *
  * Revision 1.97  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -288,7 +291,7 @@
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_IRIX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 #define ifr_netmask ifr_addr
 
 #include <net/if_dl.h>
@@ -296,14 +299,16 @@
 #include <net/route.h>
 
 #include <netinet/in.h>
+#if !defined(P_QNX)
 #include <netinet/if_ether.h>
+#endif
 
 #define ROUNDUP(a) \
         ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
 
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(P_QNX)
 #include <sys/sysctl.h>
 #endif
 
@@ -1087,7 +1092,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   }
 }
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)
 
 BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
                      unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric);
@@ -1182,7 +1187,7 @@ BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr
   }
 
   if ((~rtm->rtm_flags&RTF_LLINFO)
-#if defined(P_NETBSD)
+#if defined(P_NETBSD) || defined(P_QNX)
         && (~rtm->rtm_flags&RTF_CLONED)     // Net BSD has flag one way
 #elif !defined(P_OPENBSD)
         && (~rtm->rtm_flags&RTF_WASCLONED)  // Free BSD/MAC has it another
@@ -1621,7 +1626,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
         }
       }
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS) || defined(P_QNX)
 // Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
 #ifndef _SIZEOF_ADDR_IFREQ
 #define _SIZEOF_ADDR_IFREQ(ifr) \

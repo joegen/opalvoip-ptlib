@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.30  2002/11/22 10:14:07  robertj
+# QNX port, thanks Xiaodan Tang
+#
 # Revision 1.29  2002/10/17 13:44:27  robertj
 # Port to RTEMS, thanks Vladimir Nesic.
 #
@@ -123,6 +126,7 @@ else
     EXTLIBS = -lstdc++
   endif
 
+  ifneq ($(OSTYPE), QNX)
   ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
     ifdef P_PTHREADS
       EXTLIBS += -pthread
@@ -132,7 +136,7 @@ else
       EXTLIBS += -lpthread
     endif
   endif
-
+  endif
 
   # Solaris loader doesn't grok -soname  (sees it as -s -oname)
   # We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist

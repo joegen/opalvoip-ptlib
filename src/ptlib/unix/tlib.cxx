@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.64  2002/11/22 10:14:07  robertj
+ * QNX port, thanks Xiaodan Tang
+ *
  * Revision 1.63  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -238,7 +241,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__) || defined(P_IRIX)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__) || defined(P_IRIX) || defined(P_QNX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #elif defined(P_RTEMS)
