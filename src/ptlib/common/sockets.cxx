@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.64 1998/01/04 07:25:09 robertj Exp $
+ * $Id: sockets.cxx,v 1.65 1998/01/06 12:43:23 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.65  1998/01/06 12:43:23  craigs
+ * Added definition of REENTRANT_BUFFER_LEN
+ *
  * Revision 1.64  1998/01/04 07:25:09  robertj
  * Added pthreads compatible calls for gethostbyx functions.
  *
@@ -210,6 +213,10 @@
 
 #if defined(_WIN32) || defined(WINDOWS)
 static PWinSock dummyForWinSock; // Assure winsock is initialised
+#endif
+
+#if defined(P_PTHREADS)
+#define REENTRANT_BUFFER_LEN 1024
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
