@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.44  1998/11/30 07:30:31  robertj
+ * Fixed problems with PFilePath parsing functions.
+ *
  * Revision 1.43  1998/11/26 10:34:19  robertj
  * Fixed problem with PFileInfo::GetVolume() on UNC paths.
  *
@@ -178,7 +181,7 @@
 
 #ifndef P_USE_INLINES
 #include <ptlib/osutil.inl>
-#include <ptlib.inl>
+#include <ptlib/ptlib.inl>
 #endif
 
 
@@ -441,25 +444,31 @@ PFilePath & PFilePath::operator=(const PString & str)
 }
 
 
-PCaselessString PFilePath::GetVolume() const
+static PINDEX GetVolumeSubStringLength(const PString & path)
 {
-  if ((*this)[1] == ':')
-    return Left(2);
+  if (path[1] == ':')
+    return 2;
 
-  if (theArray[0] == '\\' && theArray[1] == '\\') {
-    PINDEX backslash = Find('\\', 2);
+  if (path[0] == '\\' && path[1] == '\\') {
+    PINDEX backslash = path.Find('\\', 2);
     if (backslash != P_MAX_INDEX) {
-      backslash = Find('\\', backslash+1);
+      backslash = path.Find('\\', backslash+1);
       if (backslash != P_MAX_INDEX)
-        return Left(backslash);
+        return backslash;
     }
   }
 
-  PINDEX backslash = Find('\\');
+  PINDEX backslash = path.Find('\\');
   if (backslash != P_MAX_INDEX)
-    return Left(backslash);
+    return backslash;
 
-  return PCaselessString();
+  return 0;
+}
+
+
+PCaselessString PFilePath::GetVolume() const
+{
+  return Left(GetVolumeSubStringLength(*this));
 }
 
 
@@ -475,7 +484,7 @@ PDirectory PFilePath::GetDirectory() const
 
 PCaselessString PFilePath::GetPath() const
 {
-  return operator()(Find('\\'), FindLast('\\', GetLength()-2));
+  return operator()(GetVolumeSubStringLength(*this), FindLast('\\', GetLength()-2));
 }
 
 
@@ -505,7 +514,7 @@ PCaselessString PFilePath::GetTitle() const
 
 PCaselessString PFilePath::GetType() const
 {
-  PINDEX dot = FindLast('.');
+  PINDEX dot = Find('.', FindLast('\\'));
   if (dot == P_MAX_INDEX)
     return PCaselessString();
   return operator()(dot, P_MAX_INDEX);
@@ -514,7 +523,7 @@ PCaselessString PFilePath::GetType() const
 
 void PFilePath::SetType(const PCaselessString & type)
 {
-  PINDEX dot = FindLast('.');
+  PINDEX dot = Find('.', FindLast('\\'));
   if (dot != P_MAX_INDEX)
     Splice(type, dot, GetLength()-dot);
   else
