@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.16  1998/11/02 11:11:19  robertj
+ * Added pipe output to stdout/stderr.
+ *
  * Revision 1.15  1998/11/02 10:30:40  robertj
  * GNU v6 compatibility.
  *
@@ -143,7 +146,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
       ::dup(fromChildPipe[1]);
     ::close(fromChildPipe[1]);
     ::close(fromChildPipe[0]); 
-  } else {
+  } else if (mode != ReadWriteStd) {
     int fd = ::open("/dev/null", O_WRONLY);
     PAssertOS(fd >= 0);
     ::close(STDOUT_FILENO);
