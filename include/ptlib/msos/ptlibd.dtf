@@ -186,6 +186,7 @@ EXPORTS
     ??0PPipeChannel@@QAE@XZ @160 NONAME ;public: __thiscall PPipeChannel::PPipeChannel(void)
     ??0PProcess@@QAE@PBD0GGW4CodeStatus@0@G@Z @161 NONAME ;public: __thiscall PProcess::PProcess(char const *,char const *,unsigned short,unsigned short,enum PProcess::CodeStatus,unsigned short)
     ??0PRASDLL@@QAE@XZ @162 NONAME ;public: __thiscall PRASDLL::PRASDLL(void)
+    ??0PReadWriteMutex@@QAE@XZ @3038 NONAME ;public: __thiscall PReadWriteMutex::PReadWriteMutex(void)
     ??0PRegularExpression@@QAE@ABVPString@@H@Z @163 NONAME ;public: __thiscall PRegularExpression::PRegularExpression(class PString const &,int)
     ??0PRegularExpression@@QAE@PBDH@Z @164 NONAME ;public: __thiscall PRegularExpression::PRegularExpression(char const *,int)
     ??0PRegularExpression@@QAE@XZ @165 NONAME ;public: __thiscall PRegularExpression::PRegularExpression(void)
@@ -387,6 +388,7 @@ EXPORTS
     ??1PPipeChannel@@UAE@XZ @326 NONAME ;public: virtual __thiscall PPipeChannel::~PPipeChannel(void)
     ??1PProcess@@UAE@XZ @327 NONAME ;public: virtual __thiscall PProcess::~PProcess(void)
     ??1PRASDLL@@UAE@XZ @328 NONAME ;public: virtual __thiscall PRASDLL::~PRASDLL(void)
+    ??1PReadWriteMutex@@UAE@XZ @3039 NONAME ;public: virtual __thiscall PReadWriteMutex::~PReadWriteMutex(void)
     ??1PRegularExpression@@UAE@XZ @329 NONAME ;public: virtual __thiscall PRegularExpression::~PRegularExpression(void)
     ??1PRemoteConnection@@UAE@XZ @330 NONAME ;public: virtual __thiscall PRemoteConnection::~PRemoteConnection(void)
     ??1PSemaphore@@UAE@XZ @331 NONAME ;public: virtual __thiscall PSemaphore::~PSemaphore(void)
@@ -591,6 +593,7 @@ EXPORTS
     ??3PPipeChannel@@SAXPAX@Z @467 NONAME ;public: static void __cdecl PPipeChannel::operator delete(void *)
     ??3PProcess@@SAXPAX@Z @468 NONAME ;public: static void __cdecl PProcess::operator delete(void *)
     ??3PRASDLL@@SAXPAX@Z @469 NONAME ;public: static void __cdecl PRASDLL::operator delete(void *)
+    ??3PReadWriteMutex@@SAXPAX@Z @3040 NONAME ;public: static void __cdecl PReadWriteMutex::operator delete(void *)
     ??3PRegularExpression@@SAXPAX@Z @470 NONAME ;public: static void __cdecl PRegularExpression::operator delete(void *)
     ??3PRemoteConnection@@SAXPAX@Z @471 NONAME ;public: static void __cdecl PRemoteConnection::operator delete(void *)
     ??3PSemaphore@@SAXPAX@Z @472 NONAME ;public: static void __cdecl PSemaphore::operator delete(void *)
@@ -965,6 +968,7 @@ EXPORTS
     ??_7PPipeChannel@@6BPObject@@@ @786 NONAME ;const  PPipeChannel::`vftable'{for `PObject'}
     ??_7PProcess@@6B@ @787 NONAME ;const  PProcess::`vftable'
     ??_7PRASDLL@@6B@ @788 NONAME ;const  PRASDLL::`vftable'
+    ??_7PReadWriteMutex@@6B@ @3041 NONAME ;const  PReadWriteMutex::`vftable'
     ??_7PRegularExpression@@6B@ @789 NONAME ;const  PRegularExpression::`vftable'
     ??_7PRemoteConnection@@6B@ @790 NONAME ;const  PRemoteConnection::`vftable'
     ??_7PSemaphore@@6B@ @791 NONAME ;const  PSemaphore::`vftable'
@@ -1213,6 +1217,7 @@ EXPORTS
     ?Class@PPipeChannel@@SAPBDXZ @991 NONAME ;public: static char const * __cdecl PPipeChannel::Class(void)
     ?Class@PProcess@@SAPBDXZ @992 NONAME ;public: static char const * __cdecl PProcess::Class(void)
     ?Class@PRASDLL@@SAPBDXZ @993 NONAME ;public: static char const * __cdecl PRASDLL::Class(void)
+    ?Class@PReadWriteMutex@@SAPBDXZ @3042 NONAME ;public: static char const * __cdecl PReadWriteMutex::Class(void)
     ?Class@PRegularExpression@@SAPBDXZ @994 NONAME ;public: static char const * __cdecl PRegularExpression::Class(void)
     ?Class@PRemoteConnection@@SAPBDXZ @995 NONAME ;public: static char const * __cdecl PRemoteConnection::Class(void)
     ?Class@PSemaphore@@SAPBDXZ @996 NONAME ;public: static char const * __cdecl PSemaphore::Class(void)
@@ -1408,6 +1413,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PPipeChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @1155 NONAME ;public: virtual enum PObject::Comparison  __thiscall PPipeChannel::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PProcess@@UBE?AW4Comparison@PObject@@ABV3@@Z @1156 NONAME ;public: virtual enum PObject::Comparison  __thiscall PProcess::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PRASDLL@@UBE?AW4Comparison@PObject@@ABV3@@Z @1157 NONAME ;public: virtual enum PObject::Comparison  __thiscall PRASDLL::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PReadWriteMutex@@UBE?AW4Comparison@PObject@@ABV3@@Z @3043 NONAME ;public: virtual enum PObject::Comparison  __thiscall PReadWriteMutex::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PRegularExpression@@UBE?AW4Comparison@PObject@@ABV3@@Z @1158 NONAME ;public: virtual enum PObject::Comparison  __thiscall PRegularExpression::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PRemoteConnection@@UBE?AW4Comparison@PObject@@ABV3@@Z @1159 NONAME ;public: virtual enum PObject::Comparison  __thiscall PRemoteConnection::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSemaphore@@UBE?AW4Comparison@PObject@@ABV3@@Z @1160 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSemaphore::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1665,6 +1671,7 @@ EXPORTS
     ?GetClass@PPipeChannel@@UBEPBDI@Z @1389 NONAME ;public: virtual char const * __thiscall PPipeChannel::GetClass(unsigned int)const 
     ?GetClass@PProcess@@UBEPBDI@Z @1390 NONAME ;public: virtual char const * __thiscall PProcess::GetClass(unsigned int)const 
     ?GetClass@PRASDLL@@UBEPBDI@Z @1391 NONAME ;public: virtual char const * __thiscall PRASDLL::GetClass(unsigned int)const 
+    ?GetClass@PReadWriteMutex@@UBEPBDI@Z @3044 NONAME ;public: virtual char const * __thiscall PReadWriteMutex::GetClass(unsigned int)const 
     ?GetClass@PRegularExpression@@UBEPBDI@Z @1392 NONAME ;public: virtual char const * __thiscall PRegularExpression::GetClass(unsigned int)const 
     ?GetClass@PRemoteConnection@@UBEPBDI@Z @1393 NONAME ;public: virtual char const * __thiscall PRemoteConnection::GetClass(unsigned int)const 
     ?GetClass@PSemaphore@@UBEPBDI@Z @1394 NONAME ;public: virtual char const * __thiscall PSemaphore::GetClass(unsigned int)const 
@@ -2067,6 +2074,7 @@ EXPORTS
     ?IsClass@PPipeChannel@@UBEHPBD@Z @1736 NONAME ;public: virtual int __thiscall PPipeChannel::IsClass(char const *)const 
     ?IsClass@PProcess@@UBEHPBD@Z @1737 NONAME ;public: virtual int __thiscall PProcess::IsClass(char const *)const 
     ?IsClass@PRASDLL@@UBEHPBD@Z @1738 NONAME ;public: virtual int __thiscall PRASDLL::IsClass(char const *)const 
+    ?IsClass@PReadWriteMutex@@UBEHPBD@Z @3045 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsClass(char const *)const 
     ?IsClass@PRegularExpression@@UBEHPBD@Z @1739 NONAME ;public: virtual int __thiscall PRegularExpression::IsClass(char const *)const 
     ?IsClass@PRemoteConnection@@UBEHPBD@Z @1740 NONAME ;public: virtual int __thiscall PRemoteConnection::IsClass(char const *)const 
     ?IsClass@PSemaphore@@UBEHPBD@Z @1741 NONAME ;public: virtual int __thiscall PSemaphore::IsClass(char const *)const 
@@ -2179,6 +2187,7 @@ EXPORTS
     ?IsDescendant@PPipeChannel@@UBEHPBD@Z @1832 NONAME ;public: virtual int __thiscall PPipeChannel::IsDescendant(char const *)const 
     ?IsDescendant@PProcess@@UBEHPBD@Z @1833 NONAME ;public: virtual int __thiscall PProcess::IsDescendant(char const *)const 
     ?IsDescendant@PRASDLL@@UBEHPBD@Z @1834 NONAME ;public: virtual int __thiscall PRASDLL::IsDescendant(char const *)const 
+    ?IsDescendant@PReadWriteMutex@@UBEHPBD@Z @3046 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsDescendant(char const *)const 
     ?IsDescendant@PRegularExpression@@UBEHPBD@Z @1835 NONAME ;public: virtual int __thiscall PRegularExpression::IsDescendant(char const *)const 
     ?IsDescendant@PRemoteConnection@@UBEHPBD@Z @1836 NONAME ;public: virtual int __thiscall PRemoteConnection::IsDescendant(char const *)const 
     ?IsDescendant@PSemaphore@@UBEHPBD@Z @1837 NONAME ;public: virtual int __thiscall PSemaphore::IsDescendant(char const *)const 
@@ -2710,12 +2719,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ??0PReadWriteMutex@@QAE@XZ @3038 NONAME ;public: __thiscall PReadWriteMutex::PReadWriteMutex(void)
-    ??1PReadWriteMutex@@UAE@XZ @3039 NONAME ;public: virtual __thiscall PReadWriteMutex::~PReadWriteMutex(void)
-    ??3PReadWriteMutex@@SAXPAX@Z @3040 NONAME ;public: static void __cdecl PReadWriteMutex::operator delete(void *)
-    ??_7PReadWriteMutex@@6B@ @3041 NONAME ;const  PReadWriteMutex::`vftable'
-    ?Class@PReadWriteMutex@@SAPBDXZ @3042 NONAME ;public: static char const * __cdecl PReadWriteMutex::Class(void)
-    ?CompareObjectMemoryDirect@PReadWriteMutex@@UBE?AW4Comparison@PObject@@ABV3@@Z @3043 NONAME ;public: virtual enum PObject::Comparison  __thiscall PReadWriteMutex::CompareObjectMemoryDirect(class PObject const &)const 
-    ?GetClass@PReadWriteMutex@@UBEPBDI@Z @3044 NONAME ;public: virtual char const * __thiscall PReadWriteMutex::GetClass(unsigned int)const 
-    ?IsClass@PReadWriteMutex@@UBEHPBD@Z @3045 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsClass(char const *)const 
-    ?IsDescendant@PReadWriteMutex@@UBEHPBD@Z @3046 NONAME ;public: virtual int __thiscall PReadWriteMutex::IsDescendant(char const *)const 
+    ??0PTimeInterval@@QAE@I@Z @3047 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(unsigned int)
