@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.2 1995/03/12 05:00:01 robertj Exp $
+ * $Id: textfile.h,v 1.3 1996/08/08 10:09:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
+ * Revision 1.3  1996/08/08 10:09:18  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.2  1995/03/12 05:00:01  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -25,7 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTextFile
 
-#include "../../common/textfile.h"
+#include "../../common/ptlib/textfile.h"
   protected:
     virtual BOOL IsTextFile() const;
       // Return TRUE if text file translation is required
