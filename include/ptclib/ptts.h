@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.2  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.1  2002/08/06 04:45:38  craigs
  * Initial version
  *
@@ -35,7 +39,7 @@
 #ifndef _PTEXTTOSPEECH
 #define _PTEXTTOSPEECH
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

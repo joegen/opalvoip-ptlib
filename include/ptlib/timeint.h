@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.27  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.26  2002/05/28 13:05:26  robertj
  * Fixed PTimer::SetInterval so it restarts timer as per operator=()
  *
@@ -110,7 +114,7 @@
 
 #define _PTIMEINTERVAL
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

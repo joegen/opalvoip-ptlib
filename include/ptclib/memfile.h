@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: memfile.h,v $
+ * Revision 1.4  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.3  2002/08/05 05:40:45  robertj
  * Fixed missing pragma interface/implementation
  *
@@ -41,7 +45,7 @@
 #ifndef _PMEMFILE
 #define _PMEMFILE
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

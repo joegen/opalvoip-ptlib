@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.28  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.27  2002/04/12 08:25:12  robertj
  * Added text string output for tracing video format.
  *
@@ -125,7 +129,7 @@
 
 #define _PVIDEOIO
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

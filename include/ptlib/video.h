@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.10  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.9  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -66,7 +70,7 @@
 
 #define _PVIDEO
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: random.h,v $
+ * Revision 1.4  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.3  2001/03/03 05:12:47  robertj
  * Fixed yet another transcription error of random number generator code.
  *
@@ -39,7 +43,7 @@
 #define _PRANDOM
 
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

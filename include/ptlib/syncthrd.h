@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.10  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.9  2002/05/01 03:45:31  robertj
  * Added initialisation of PreadWriteMutex and changed slightly to agree
  *   with the text book definition of a semaphore for one of the mutexes.
@@ -62,7 +66,7 @@
 
 #define _PSYNCPOINTACK
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

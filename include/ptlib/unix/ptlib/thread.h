@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.27  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.26  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -119,8 +123,9 @@
 #ifndef _PTHREAD
 #define _PTHREAD
 
-
+#ifdef P_USE_PRAGMA
 #pragma interface
+#endif
 
 #include <setjmp.h>
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.22  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.21  2001/12/15 04:49:06  robertj
  * Added stream I/O functions for argument list.
  *
@@ -98,7 +102,7 @@
 #ifndef _PARGLIST
 #define _PARGLIST
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

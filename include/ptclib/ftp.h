@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.14  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.13  2001/09/10 00:28:21  robertj
  * Fixed extra CR in comments.
  *
@@ -75,7 +79,7 @@
 #ifndef _PFTPSOCKET
 #define _PFTPSOCKET
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
