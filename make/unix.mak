@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.135  2002/09/09 06:49:19  robertj
+# Removed explicit run path, should use environment, thanks Nils Bokermann
+#
 # Revision 1.134  2002/08/21 00:00:31  dereks
 # Patches from Ryutaroh, to improve firewire (linux only) support. Many thanks.
 #
@@ -853,7 +856,6 @@ OSRELEASE	:= $(subst 5.,,$(shell uname -r))
 CC		:= gcc
 STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		+= -lsocket -lnsl -ldl -lposix4
-LDFLAGS		+= -R/opt/openh323/lib
 
 #P_USE_RANLIB		:= 1
 
