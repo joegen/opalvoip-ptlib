@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.154  2004/04/14 23:34:52  csoutheren
+ * Added plugin for data access
+ *
  * Revision 1.153  2004/04/12 00:36:05  csoutheren
  * Added new class PAtomicInteger and added Windows implementation
  *
@@ -598,7 +601,6 @@ PContainer::PContainer(PINDEX initialSize)
   PAssert(reference != NULL, POutOfMemory);
 }
 
-
 PContainer::PContainer(int, const PContainer * cont)
 {
   PAssertNULL(cont);
@@ -608,12 +610,9 @@ PContainer::PContainer(int, const PContainer * cont)
   PEnterAndLeave m(cont->reference->critSec);
 #endif
 
-  reference = new Reference(0);
+  reference = new Reference(*cont->reference);   // create a new reference
   PAssert(reference != NULL, POutOfMemory);
-
-  *reference = *cont->reference;
 }
-
 
 PContainer::PContainer(const PContainer & cont)
 {
@@ -624,8 +623,7 @@ PContainer::PContainer(const PContainer & cont)
 #endif
 
   ++cont.reference->count;
-
-  reference = cont.reference;
+  reference = cont.reference;  // copy the reference pointer
 }
 
 
@@ -721,9 +719,9 @@ BOOL PContainer::MakeUnique()
   if (IsUnique())
     return TRUE;
 
+  reference = new Reference(*reference);
   --reference->count;
 
-  reference = new Reference(*reference);
   return FALSE;
 }
 

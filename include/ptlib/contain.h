@@ -27,9 +27,8 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
- * Revision 1.62  2004/04/12 03:35:14  csoutheren
- * Fixed problems with non-recursuve mutexes and critical sections on
- * older compilers and libc
+ * Revision 1.63  2004/04/14 23:34:52  csoutheren
+ * Added plugin for data access
  *
  * Revision 1.61  2004/04/12 00:36:04  csoutheren
  * Added new class PAtomicInteger and added Windows implementation
@@ -455,16 +454,26 @@ class PContainer : public PObject
       public:
         inline Reference(PINDEX initialSize)
           : size(initialSize), count(1), deleteObjects(TRUE) { }
+
+        Reference(const Reference & ref)
+        {  
+          count = 1;
+#if PCONTAINER_USES_CRITSEC
+          PEnterAndLeave m(((Reference &)ref).critSec);
+#endif
+          size          = ref.size; 
+          deleteObjects = ref.deleteObjects; 
+        }
+
         PINDEX   size;         // Size of what the container contains
         PAtomicInteger count;  // reference count to the container content - guaranteed to be atomic
         BOOL deleteObjects;    // Used by PCollection but put here for efficiency
 #if PCONTAINER_USES_CRITSEC
         PCriticalSection critSec;
-        Reference & operator=(const Reference & ref)
-        { count.SetValue(1); size = ref.size; deleteObjects = ref.deleteObjects; return *this; }
-        Reference(const Reference & ref)
-        { count.SetValue(1); size = ref.size; deleteObjects = ref.deleteObjects; }
 #endif
+      private:
+        Reference & operator=(const Reference &) 
+        { return *this; }
     } * reference;
 };
 
