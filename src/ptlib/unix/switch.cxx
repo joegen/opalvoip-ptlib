@@ -78,7 +78,7 @@ void PThread::SwitchContext(PThread * from)
 
 void PThread::AllocateStack(PINDEX stackProtoSize)
 {
-  int stackSize = PMIN(STACK_MIN, STACK_MULT*stackProtoSize);
+  int stackSize = PMAX(STACK_MIN, STACK_MULT*stackProtoSize);
 
 #if defined(P_LINUX)
   stackBase = mmap(0,
