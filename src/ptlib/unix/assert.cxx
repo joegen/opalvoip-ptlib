@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.11  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.10  2001/05/03 01:14:09  robertj
  * Put in check to ignore assert if stdin not TTY or not open.
  * Changed default action on assert to ignore if get EOF.
@@ -68,6 +71,24 @@
 void PAssertFunc (const char * file, int line, const char * msg)
 
 {
+#ifdef __BEOS__
+	// Print location in Eddie-compatible format
+    PError << "Assertion fail: File " << file << ", Line " << line << endl;
+	if ( msg != NULL )
+	{
+		PError << msg << endl;
+	}
+	else
+	{
+		msg = "Assertion failed";
+	}
+	// Pop up the debugger dialog that gives the user the necessary choices
+	// "Ignore" is not supported on BeOS but you can instruct the
+	// debugger to continue executing.
+	// Note: if you choose "debug" you get a debug prompt. Type bdb to
+	// start the Be Debugger.
+	debugger(msg);
+#else
   static BOOL inAssert;
   if (inAssert)
     return;
@@ -133,6 +154,7 @@ void PAssertFunc (const char * file, int line, const char * msg)
   kill(taskIdSelf(), SIGABRT);
 
 #endif // P_VXWORKS
+#endif // __BEOS__
 }
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.28  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.27  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -386,7 +389,7 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
   os_handle = stderrChildPipe[0];
   
   BOOL status = FALSE;
-#ifndef __BEOS__
+#ifndef BE_BONELESS
   int available;
   if (ConvertOSError(ioctl(stderrChildPipe[0], FIONREAD, &available))) {
     if (available != 0)

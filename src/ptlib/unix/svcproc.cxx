@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.55  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.54  2001/05/03 01:13:10  robertj
  * Closed stdin if in background, should never block in tty I/O if daemon!
  *
@@ -688,17 +691,18 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
       msg = "\nCaught floating point exception (SIGFPE), aborting.\n";
       break;
 
+#ifndef __BEOS__ // In BeOS, SIGBUS is the same value as SIGSEGV
     case SIGBUS :
       msg = "\nCaught bus error (SIGBUS), aborting.\n";
       break;
-
+#endif
     default :
       PProcess::PXOnAsyncSignal(sig);
       return;
   }
 
   if (systemLogFile.IsEmpty()) {
-    syslog(LOG_CRIT, msg);
+    syslog(LOG_CRIT, (char*) msg);
     closelog();
   }
   else {

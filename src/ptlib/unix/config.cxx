@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.30  2001/06/30 06:59:07  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.29  2001/05/24 00:56:38  robertj
  * Fixed problem with config file being written every time on exit. Now is
  *   only written if it the config was modified by the application.
@@ -197,7 +200,7 @@ void PProcess::CreateConfigFilesDictionary()
 
 
 PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
-  : PThread(10000, NoAutoDeleteThread),
+  : PThread(10000, NoAutoDeleteThread, NormalPriority, "PXConfigWriteThread"),
     stop(s)
 {
   Resume();
