@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.19 1994/07/02 03:03:49 robertj Exp $
+ * $Id: contain.inl,v 1.20 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.19  1994/07/02 03:03:49  robertj
+ * Revision 1.20  1994/07/17 10:46:06  robertj
+ * Added string container functions for searching.
+ *
+ * Revision 1.19  1994/07/02  03:03:49  robertj
  * Addition of container searching facilities.
  *
  * Revision 1.18  1994/06/25  11:55:15  robertj
@@ -251,6 +254,12 @@ PINLINE void PArrayObjects::CopyContents(const PArrayObjects & array)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PINDEX PStringArray::GetStringsIndex(const PString & str) const
+  { return GetValuesIndex(str); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 PINLINE PAbstractList::PAbstractList()
   : info(new ListInfo) { PAssertNULL(info); }
 
@@ -263,6 +272,9 @@ PINLINE PINDEX PStringList::AppendString(const PString & str)
 PINLINE PINDEX PStringList::InsertString(
                                    const PString & before, const PString & str)
   { return Insert(before, new PString(str)); }
+
+PINDEX PStringList::GetStringsIndex(const PString & str) const
+  { return GetValuesIndex(str); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -300,6 +312,9 @@ PINLINE PINDEX PSortedStringList::AppendString(const PString & str)
 PINLINE PINDEX PSortedStringList::InsertString(
                                    const PString & before, const PString & str)
   { return Insert(before, new PString(str)); }
+
+PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
+  { return GetValuesIndex(str); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
