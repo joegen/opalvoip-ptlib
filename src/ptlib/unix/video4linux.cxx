@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.10  2001/03/08 02:23:17  robertj
+ * Added improved defaulting of video formats so Open() does not fail.
+ *
  * Revision 1.9  2001/03/07 23:46:18  robertj
  * Double check the v4l device did actually change colour format, thanks Mark Cooke.
  *
@@ -233,12 +236,22 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
   channel.norm = fmt[newFormat];
 
   // set the information
-  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
-    PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
+  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) >= 0)
+    return TRUE;
+
+  PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
+
+  if (newFormat != Auto)
     return FALSE;
-  }
-  
-  return TRUE;  
+
+  if (SetVideoFormat(PAL))
+    return TRUE;
+  if (SetVideoFormat(NTSC))
+    return TRUE;
+  if (SetVideoFormat(SECAM))
+    return TRUE;
+
+  return FALSE;
 }
 
 
