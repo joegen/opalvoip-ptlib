@@ -239,7 +239,7 @@ fi
 
 dnl dl needs to be at the end
 if test "u${HAVE_DYNALINK:-nset}" != "unset" ; then
-  ENDLDLIBS="$ENDLDLIBS $HAVE_DYNALINK"
+  ENDLDLIBS="$ENDLDLIBS -ldl"
 fi
 
 AC_SUBST(STDCCFLAGS)
