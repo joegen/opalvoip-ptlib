@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.31  2002/02/08 09:59:45  robertj
+ * Slight adjustment to API and documentation for volume functions.
+ * Added implementation for volume function on play, still needs recording.
+ *
  * Revision 1.30  2002/02/07 20:57:21  dereks
  * add SetVolume and GetVolume methods to PSoundChannel
  *
@@ -1412,16 +1416,45 @@ PString PSoundChannel::GetErrorText(ErrorGroup group) const
   return str;
 }
 
-BOOL PSoundChannel::SetVolume(int newVal)
+
+BOOL PSoundChannel::SetVolume(unsigned newVolume)
 {
-  cerr << __FILE__ << "PSoundChannel :: SetVolume called in error. Please fix"<<endl;
-  return FALSE;
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+  DWORD rawVolume = newVolume*65536/100;
+
+  if (direction == Recorder) {
+    // Does not appear to be an input volume!!
+  }
+  else {
+    DWORD osError = waveOutSetVolume(hWaveOut, rawVolume);
+    if (osError != MMSYSERR_NOERROR)
+      SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
+  }
+
+  return TRUE;
 }
 
-BOOL  PSoundChannel::GetVolume(int &devVol)
+
+BOOL PSoundChannel::GetVolume(unsigned & oldVolume)
 {
-  cerr << __FILE__ << "PSoundChannel :: GetVolume called in error. Please fix"<<endl;
-  return FALSE;
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
+
+  DWORD rawVolume = 0;
+
+  if (direction == Recorder) {
+    // Does not appear to be an input volume!!
+  }
+  else {
+    DWORD osError = waveOutGetVolume(hWaveOut, &rawVolume);
+    if (osError != MMSYSERR_NOERROR)
+      SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
+  }
+
+  oldVolume = rawVolume*100/65536;
+  return TRUE;
 }
 
 
