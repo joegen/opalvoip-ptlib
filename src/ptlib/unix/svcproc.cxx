@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.32  1999/09/14 13:02:53  robertj
+ * Fixed PTRACE to PSYSTEMLOG conversion problem under Unix.
+ *
  * Revision 1.31  1999/08/17 09:29:22  robertj
  * Added long name versions of parameters.
  *
@@ -145,6 +148,40 @@ void PSystemLog::Output(Level level, const char * cmsg)
   }
 }
 
+
+int PSystemLog::Buffer::overflow(int c)
+{
+  if (pptr() >= epptr()) {
+    int ppos = pptr() - pbase();
+    char * newptr = string.GetPointer(string.GetSize() + 10);
+    setp(newptr, newptr + string.GetSize() - 1);
+    pbump(ppos);
+  }
+  if (c != EOF) {
+    *pptr() = (char)c;
+    pbump(1);
+  }
+  return 0;
+}
+
+
+int PSystemLog::Buffer::underflow()
+{
+  return EOF;
+}
+
+
+int PSystemLog::Buffer::sync()
+{
+  PSystemLog::Output(log->logLevel, string);
+
+  string = PString();
+  char * base = string.GetPointer(10);
+  setp(base, base + string.GetSize() - 1);
+  return 0;
+}
+
+
 PServiceProcess::PServiceProcess(const char * manuf,
                                  const char * name,
                                          WORD majorVersion,
@@ -204,6 +241,18 @@ static pid_t get_daemon_pid(BOOL showError)
 
 int PServiceProcess::_main(void *)
 {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+//  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+  PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
+  PTrace::ClearOptions(PTrace::FileAndLine);
+  PTrace::SetOptions(PTrace::SystemLogStream);
+  PTrace::SetLevel(4);
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
+
   // parse arguments so we can grab what we want
   PArgList & args = GetArguments();
 
@@ -469,38 +518,5 @@ void PServiceProcess::PXOnSignal(int sig)
       }
       break;
   }
-}
-
-int PSystemLog::Buffer::overflow(int c)
-{
-  if (pptr() >= epptr()) {
-    int ppos = pptr() - pbase();
-    char * newptr = string.GetPointer(string.GetSize() + 10);
-    setp(newptr, newptr + string.GetSize() - 1);
-    pbump(ppos);
-  }
-  if (c != EOF) {
-    *pptr() = (char)c;
-    pbump(1);
-  }
-  return 0;
-}
-
-
-int PSystemLog::Buffer::underflow()
-{
-  return EOF;
-}
-
-
-int PSystemLog::Buffer::sync()
-{
-  PSystemLog::Output(log->logLevel, string);
-
-  string.SetSize(10);
-  char * base = string.GetPointer();
-  *base = '\0';
-  setp(base, base + string.GetSize() - 1);
-  return 0;
 }
 
