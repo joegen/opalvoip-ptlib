@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.5 1996/08/11 06:52:14 robertj Exp $
+ * $Id: icmp.cxx,v 1.6 1996/09/14 13:09:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.6  1996/09/14 13:09:34  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.5  1996/08/11 06:52:14  robertj
  * Oops
  *
@@ -85,9 +91,8 @@ static WORD CalcChecksum(void * p, PINDEX len)
 
 
 PICMPSocket::PICMPSocket()
-  : PIPDatagramSocket(SOCK_RAW, "icmp")
 {
-  _Socket();
+  OpenSocket();
 }
 
 
@@ -178,15 +183,19 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 }
 
 
-WORD PICMPSocket::GetPortByService(const PString &) const
+BOOL PICMPSocket::OpenSocket()
 {
-  PAssertAlways(PUnsupportedFeature);
-  return 0;
+  struct protoent * p = ::getprotobyname(GetProtocolName());
+  if (p == NULL)
+    return ConvertOSError(-1);
+  return ConvertOSError(os_handle = os_socket(AF_INET, SOCK_RAW, p->p_proto));
 }
 
 
-PString PICMPSocket::GetServiceByPort(WORD) const
+const char * PICMPSocket::GetProtocolName() const
 {
-  PAssertAlways(PUnsupportedFeature);
-  return PString();
+  return "icmp";
 }
+
+
+// End Of File ///////////////////////////////////////////////////////////////
