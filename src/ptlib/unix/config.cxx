@@ -113,6 +113,24 @@ static void GetEnvironment (char **envp, PXConfig & config)
   }
 }
 
+static BOOL LocateFile(const PString & baseName,
+                       PFilePath & readFilename,
+                       PFilePath & filename)
+{
+  PFilePath userFile;
+
+  // check the user's home directory first
+  filename = readFilename = PProcess::Current()->GetHomeDir() +
+             APP_CONFIG_DIR + baseName + EXTENSION;
+  if (PFile::Exists(filename))
+    return TRUE;
+
+  // use the system file
+  readFilename = SYS_CONFIG_DIR + baseName + EXTENSION;
+  return PFile::Exists(filename);
+}
+     
+
 ////////////////////////////////////////////////////////////
 //
 // PConfig::
@@ -123,12 +141,13 @@ static void GetEnvironment (char **envp, PXConfig & config)
 
 void PConfig::Construct(Source src)
 {
-  PString fname;
-
   config = new PXConfig;
   config->AllowDeleteObjects();
   dirty = FALSE;
   saveOnExit = TRUE;
+
+  PString name;
+  PFilePath readFilename;
   
   switch (src) {
     case PConfig::Environment:
@@ -137,26 +156,19 @@ void PConfig::Construct(Source src)
       return;
 
     case PConfig::System:
-      filename = PProcess::Current()->GetHomeDir() +
-                 APP_CONFIG_DIR + SYS_CONFIG_NAME + EXTENSION;
-      if (!PFile::Exists(filename))
-        return;
+      LocateFile(SYS_CONFIG_NAME, readFilename, filename);
       break;
 
     case PConfig::Application:
     default:
-      // search the current directory
-      filename = PProcess::Current()->GetName() + EXTENSION;
-      if (!PFile::Exists(filename)) {
-        filename = PProcess::Current()->GetHomeDir() +
-                   APP_CONFIG_DIR + 
-                   PProcess::Current()->GetFile().GetTitle() + EXTENSION;
-        if (!PFile::Exists(filename))
-          return;
-      }
+      name = PProcess::Current()->GetName() + EXTENSION;
+      if (LocateFile(name, readFilename, filename))
+        break;
+      name = PProcess::Current()->GetFile().GetTitle();
+      LocateFile(name, readFilename, filename);
       break;
   }
-  ReadConfigFile(filename, *config);
+  ReadConfigFile(readFilename, *config);
 }
 
 void PConfig::Construct(const PFilePath & theFilename)
@@ -199,7 +211,7 @@ PConfig::~PConfig()
 //
 ////////////////////////////////////////////////////////////
 
-PStringList PConfig::GetSections()
+PStringList PConfig::GetSections() const
 {
   PStringList list;
 
@@ -250,8 +262,10 @@ void PConfig::DeleteSection(const PString & theSection)
   PStringList list;
 
   PINDEX index;
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) 
+  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
     config->RemoveAt(index);
+    dirty = TRUE;
+  }
 }
 
 
@@ -269,8 +283,10 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
   if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();
     PINDEX index_2;
-    if ((index_2 = section.GetValuesIndex(theKey)) != P_MAX_INDEX) 
+    if ((index_2 = section.GetValuesIndex(theKey)) != P_MAX_INDEX) {
       section.RemoveAt(index_2);
+      dirty = TRUE;
+    }
   }
 }
 
@@ -285,7 +301,7 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
 ////////////////////////////////////////////////////////////
 
 PString PConfig::GetString(const PString & theSection,
-                                    const PString & theKey, const PString & dflt)
+                                    const PString & theKey, const PString & dflt) const
 {
   PINDEX index;
   if ((index = config->GetValuesIndex(theSection)) == P_MAX_INDEX) 

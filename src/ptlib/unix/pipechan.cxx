@@ -15,32 +15,7 @@ extern "C" int vfork();
 #include <termio.h>
 #include <signal.h>
 
-////////////////////////////////////////////////////////////////
-//
-//  SIGPIPE signal handler
-//
-
-static void PipeSignalHandler(int parm)
-{
-#if 1
-  PError << "SIGPIPE" << endl;
-#endif
-  signal(SIGPIPE, PipeSignalHandler);
-}
-
-static void (*oldPipeSignalHandler)(int) = NULL;
-
-////////////////////////////////////////////////////////////////
-//
-//  SIGCLD signal handler
-//
-
-static void ChildSignalHandler(int parm)
-{
-#if 0
-    PError << "SIGCLD" << endl;
-#endif
-}
+#include "../../common/src/pipechan.cxx"
 
 ////////////////////////////////////////////////////////////////
 //
@@ -56,11 +31,8 @@ void PPipeChannel::Construct(const PString & subProgram,
   // setup the pipe to the child
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
-  else {
-    if (oldPipeSignalHandler == NULL) 
-      oldPipeSignalHandler = signal(SIGPIPE, PipeSignalHandler);
+  else 
     PAssert(pipe(toChildPipe) == 0, POperatingSystemError);
-  }
  
   // setup the pipe from the child
   if (mode == WriteOnly)
@@ -70,26 +42,33 @@ void PPipeChannel::Construct(const PString & subProgram,
 
   // setup the arguments
   const char * cmd;
-  char * const * args;
-  char ** newArgs = NULL;
-  PStringArray array;
+  char ** args;
+  PINDEX i, l;
+  PStringArray array = subProgram.Tokenise(" ", FALSE);
 
   if (arguments != NULL) {
-    cmd  = subProgram;
-    args = (char * const *)arguments;
+    for (i = 0; arguments[i] != NULL; i++)
+      ;
+    l = i;
+    args = new char *[l+2];
+    for (i = 0; i < l; i++) 
+      args[i+1] = (char *)arguments[i];
+    cmd = subProgram;
   } else {
     array = subProgram.Tokenise(" ", FALSE);
-    int l = array.GetSize();
-    newArgs = new char *[l+1];
+    l = array.GetSize();
+    args = new char *[l+2];
     for (PINDEX i = 0; i < l; i++) 
-      newArgs[i] = array[i];
-    newArgs[i] = NULL;
-    args = (char * const *)newArgs;
-    cmd = args[0];
+      args[i+1] = array[i];
+    cmd     = array[0];
   }
+  PString arg0Str = PFilePath(cmd).GetTitle();
+  args[0]   = arg0Str;
+  args[l+1] = NULL;
+
+  
 
   // fork to allow us to execute the child
-  signal(SIGCLD, ChildSignalHandler);
   if ((childPid = vfork()) == 0) {
 
     // the following code is in the child process
@@ -128,6 +107,15 @@ void PPipeChannel::Construct(const PString & subProgram,
       ::close(fd);
     }
 
+    // set the SIGINT and SIGQUIT to ignore so the child process doesn't
+    // inherit them from the parent
+    signal(SIGINT,  SIG_IGN);
+    signal(SIGQUIT, SIG_IGN);
+
+    // and set ourselves as out own process group so we don't get signals
+    // from our parent's terminal (hopefully!)
+    setpgrp();
+
     // execute the child as required
     if (searchPath)
       execvp(cmd, args);
@@ -137,6 +125,8 @@ void PPipeChannel::Construct(const PString & subProgram,
     PError << "fatal error: child process failed to exec" << endl;
   }
 
+  PAssert(childPid >= 0, POperatingSystemError);
+
   // setup the pipe to the child
   if (toChildPipe[0] != -1) 
     ::close(toChildPipe[0]);
@@ -144,10 +134,8 @@ void PPipeChannel::Construct(const PString & subProgram,
   if (fromChildPipe[1] != -1)
     ::close(fromChildPipe[1]);
  
-  if (newArgs != NULL)
-    delete newArgs;
-
-  PAssert(childPid >= 0, POperatingSystemError);
+  if (args != NULL)
+    delete args;
 
   os_handle = 0;
 }
@@ -171,16 +159,15 @@ BOOL PPipeChannel::Close()
     toChildPipe[1] = -1;
   }
 
-  // if the child is still alive, then kill it
-  if (kill(childPid, 0) == 0)
+  // kill the child process
+  if (IsRunning()) {
     kill (childPid, SIGKILL);
-
-  // wait for the return status so we don't get a zombie
-  int retVal;
-  waitpid(childPid, &retVal, WNOHANG);
+    PXWaitForTerminate();
+  }
 
   // ensure this channel looks like it is closed
   os_handle = -1;
+  childPid  = 0;
 
   return TRUE;
 }
@@ -224,4 +211,29 @@ PPipeChannel::~PPipeChannel()
   Close();
 }
 
+int PPipeChannel::GetReturnCode() const
+{
+  return retVal;
+}
 
+BOOL PPipeChannel::IsRunning() const
+{
+  PAssert(childPid > 0, "IsRunning called for closed PPipeChannel");
+  return kill(childPid, 0) == 0;
+}
+
+void PPipeChannel::PXWaitForTerminate()
+{
+  PAssert(childPid > 0, "waiting on closed PPipeChannel");
+  if (kill (childPid, 0) == 0)
+    retVal = PThread::Current()->PXBlockOnChildTerminate(childPid);
+}
+
+void PPipeChannel::PXKill(int killType)
+{
+  if (childPid > 0)
+    kill (childPid, killType);
+}
+
+BOOL PPipeChannel::CanReadAndWrite()
+  { return TRUE; }
