@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.25  2000/11/28 12:55:36  robertj
+ * Added static function to create a new thread class and automatically
+ *   run a function on another class in the context of that thread.
+ *
  * Revision 1.24  2000/10/20 05:31:09  robertj
  * Added function to change auto delete flag on a thread.
  *
@@ -211,7 +215,7 @@ class PThread : public PObject
       AutoDeleteFlag deletion = AutoDeleteThread,
         /// Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
-      const PString & ThreadName = "" /// The name of the thread (for Debug/Trace)
+      const PString & threadName = "" /// The name of the thread (for Debug/Trace)
     );
 
     /** Destroy the thread, this simply calls the #Terminate()# function
@@ -385,6 +389,20 @@ class PThread : public PObject
        will do nothing.
      */
     static void Yield();
+
+    /**Create a simple thread executing the specified notifier.
+       This creates a simple PThread class that automatically executes the
+       function defined by the PNotifier in the context of a new thread.
+      */
+    static PThread * Create(
+      const PNotifier & notifier,     /// Function to execute in thread.
+      INT parameter = 0,              /// Parameter value to pass to notifier.
+      AutoDeleteFlag deletion = AutoDeleteThread,
+        /// Automatically delete PThread instance on termination of thread.
+      Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
+      const PString & threadName = "", /// The name of the thread (for Debug/Trace)
+      PINDEX stackSize = 10000         /// Stack size on some platforms
+    );
   //@}
 
   protected:
