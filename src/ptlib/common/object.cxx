@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.20 1996/06/17 11:35:47 robertj Exp $
+ * $Id: object.cxx,v 1.21 1996/07/15 10:35:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.21  1996/07/15 10:35:11  robertj
+ * Changed memory leak dump to use static class rather than atexit for better portability.
+ *
  * Revision 1.20  1996/06/17 11:35:47  robertj
  * Fixed display of memory leak info, needed flush and use of cin as getchar() does not work with services.
  *
@@ -110,27 +113,45 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 #ifdef PMEMORY_CHECK
 
-static const size_t PointerTableSize = 12345;
-static void **      PointerHashTable;
-static long CurrentMemory;
-static long PeakMemory;
-static long CurrentObjects;
-static long PeakObjects;
-static long TotalObjects;
+const size_t PointerTableSize = 12345;
+
+class PMemoryCheck {
+  public:
+    PMemoryCheck();
+    ~PMemoryCheck();
+
+    void ** FindPointerInHashTable(void * object, void * search);
+
+    void ** pointerHashTable;
+    long currentMemory;
+    long peakMemory;
+    long currentObjects;
+    long peakObjects;
+    long totalObjects;
+};
+
+static PMemoryCheck Memory;
+
+
+PMemoryCheck::PMemoryCheck()
+{
+  pointerHashTable = (void **)calloc(PointerTableSize, sizeof(void *));
+}
+
 
 void PObject::MemoryCheckStatistics(long * currentMemory, long * peakMemory,
                 long * currentObjects, long * peakObjects, long * totalObjects)
 {
   if (currentMemory != NULL)
-    *currentMemory = CurrentMemory;
+    *currentMemory = Memory.currentMemory;
   if (peakMemory != NULL)
-    *peakMemory = PeakMemory;
+    *peakMemory = Memory.peakMemory;
   if (currentObjects != NULL)
-    *currentObjects = CurrentObjects;
+    *currentObjects = Memory.currentObjects;
   if (peakObjects != NULL)
-    *peakObjects = PeakObjects;
+    *peakObjects = Memory.peakObjects;
   if (totalObjects != NULL)
-    *totalObjects = TotalObjects;
+    *totalObjects = Memory.totalObjects;
 }
 
 
@@ -155,11 +176,11 @@ static ostream & operator<<(ostream & out, void * ptr)
 #endif
 
 
-static void DumpMemoryLeaks()
+PMemoryCheck::~PMemoryCheck()
 {
   BOOL firstLeak = TRUE;
   PError.setf(ios::uppercase);
-  void ** entry = PointerHashTable;
+  void ** entry = pointerHashTable;
   for (size_t i = 0; i < PointerTableSize; i++, entry++) {
     if (*entry != NULL) {
       if (firstLeak) {
@@ -180,14 +201,14 @@ static void DumpMemoryLeaks()
     }
   }
 
-  PError << "\nPeak memory usage: " << PeakMemory << " bytes";
-  if (PeakMemory > 2048)
-    PError << ", " << (PeakMemory+1023)/1024 << "kb";
-  if (PeakMemory > 2097152)
-    PError << ", " << (PeakMemory+1048575)/1048576 << "Mb";
+  PError << "\nPeak memory usage: " << Memory.peakMemory << " bytes";
+  if (Memory.peakMemory > 2048)
+    PError << ", " << (Memory.peakMemory+1023)/1024 << "kb";
+  if (Memory.peakMemory > 2097152)
+    PError << ", " << (Memory.peakMemory+1048575)/1048576 << "Mb";
   PError << ".\n"
-            "Peak objects created: " << PeakObjects << "\n"
-            "Total objects created: " << TotalObjects << endl;
+            "Peak objects created: " << Memory.peakObjects << "\n"
+            "Total objects created: " << Memory.totalObjects << endl;
 
 #if defined(_WIN32)
   extern void PWaitOnExitConsoleWindow();
@@ -196,26 +217,26 @@ static void DumpMemoryLeaks()
 }
 
 
-static void ** FindPointerInHashTable(void * object, void * search)
+void ** PMemoryCheck::FindPointerInHashTable(void * object, void * search)
 {
   int hash = (int)(((((long)object)&0x7fffffff)>>3)%PointerTableSize);
-  void ** forward = &PointerHashTable[hash];
+  void ** forward = &pointerHashTable[hash];
   void ** backward = forward;
-  static void ** endHashTable = &PointerHashTable[PointerTableSize-1];
+  static void ** endHashTable = &pointerHashTable[PointerTableSize-1];
 
   do {
     if (*forward == search)
       return forward;
 
     if (forward == endHashTable)
-      forward = PointerHashTable;
+      forward = pointerHashTable;
     else
       forward++;
 
     if (*backward == search)
       return backward;
 
-    if (backward == PointerHashTable)
+    if (backward == pointerHashTable)
       backward = endHashTable;
     else
       backward--;
@@ -228,11 +249,6 @@ static void ** FindPointerInHashTable(void * object, void * search)
 void * PObject::MemoryCheckAllocate(size_t nSize,
                            const char * file, int line, const char * className)
 {
-  if (PointerHashTable == NULL) {
-    PointerHashTable = (void **)calloc(PointerTableSize, sizeof(void *));
-    atexit(DumpMemoryLeaks);
-  }
-
   PointerArenaStruct * arena = (PointerArenaStruct *)malloc(
                       sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes));
   if (arena == NULL) {
@@ -240,9 +256,9 @@ void * PObject::MemoryCheckAllocate(size_t nSize,
     return NULL;
   }
 
-  TotalObjects++;
-  if (++CurrentObjects > PeakObjects)
-    PeakObjects = CurrentObjects;
+  Memory.totalObjects++;
+  if (++Memory.currentObjects > Memory.peakObjects)
+    Memory.peakObjects = Memory.currentObjects;
 
   char * data = (char *)&arena[1];
 
@@ -253,16 +269,16 @@ void * PObject::MemoryCheckAllocate(size_t nSize,
   memcpy(arena->guard, GuardBytes, sizeof(GuardBytes));
   memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
 
-  if (PointerHashTable != NULL) {
-    void ** entry = FindPointerInHashTable(data, NULL);
+  if (Memory.pointerHashTable != NULL) {
+    void ** entry = Memory.FindPointerInHashTable(data, NULL);
     if (entry == NULL)
       PError << "Pointer @" << (void *)data
              << " not added to hash table." << endl;
     else {
       *entry = data;
-      CurrentMemory += sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes);
-      if (CurrentMemory > PeakMemory)
-        PeakMemory = CurrentMemory;
+      Memory.currentMemory += sizeof(PointerArenaStruct) + nSize + sizeof(GuardBytes);
+      if (Memory.currentMemory > Memory.peakMemory)
+        Memory.peakMemory = Memory.currentMemory;
     }
   }
 
@@ -284,10 +300,10 @@ void * PObject::MemoryCheckAllocate(size_t count,
 void * PObject::MemoryCheckReallocate(void * ptr,
                                      size_t nSize, const char * file, int line)
 {
-  if (PointerHashTable == NULL)
+  if (Memory.pointerHashTable == NULL)
     return realloc(ptr, nSize);
 
-  void ** entry = FindPointerInHashTable(ptr, ptr);
+  void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
   if (entry == NULL) {
     PError << "Pointer @" << ptr << " invalid for reallocate." << endl;
     return realloc(ptr, nSize);
@@ -301,10 +317,10 @@ void * PObject::MemoryCheckReallocate(void * ptr,
     return NULL;
   }
 
-  CurrentMemory -= arena->size;
-  CurrentMemory += nSize;
-  if (CurrentMemory > PeakMemory)
-    PeakMemory = CurrentMemory;
+  Memory.currentMemory -= arena->size;
+  Memory.currentMemory += nSize;
+  if (Memory.currentMemory > Memory.peakMemory)
+    Memory.peakMemory = Memory.currentMemory;
 
   char * data = (char *)&arena[1];
   memcpy(&data[nSize], GuardBytes, sizeof(GuardBytes));
@@ -321,7 +337,7 @@ void * PObject::MemoryCheckReallocate(void * ptr,
 
 void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
 {
-  if (PointerHashTable == NULL) {
+  if (Memory.pointerHashTable == NULL) {
     free(ptr);
     return;
   }
@@ -329,9 +345,9 @@ void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
   if (ptr == NULL)
     return;
 
-  CurrentObjects--;
+  Memory.currentObjects--;
 
-  void ** entry = FindPointerInHashTable(ptr, ptr);
+  void ** entry = Memory.FindPointerInHashTable(ptr, ptr);
   if (entry == NULL) {
     PError << "Pointer @" << ptr << " invalid for deallocation." << endl;
     free(ptr);
@@ -342,7 +358,7 @@ void PObject::MemoryCheckDeallocate(void * ptr, const char * className)
 
   PointerArenaStruct * arena = ((PointerArenaStruct *)ptr)-1;
 
-  CurrentMemory -= sizeof(PointerArenaStruct) + arena->size + sizeof(GuardBytes);
+  Memory.currentMemory -= sizeof(PointerArenaStruct) + arena->size + sizeof(GuardBytes);
 
   if (arena->className != NULL && strcmp(arena->className, className) != 0)
     PError << "Pointer @" << ptr << " allocated as '" << arena->className
