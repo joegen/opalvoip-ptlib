@@ -24,6 +24,10 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.15  2004/05/31 12:14:13  rjongbloed
+ * Fixed missing namespace selector on function definition.
+ * Opyimised some string processing
+ *
  * Revision 1.14  2004/05/28 06:50:45  csoutheren
  * Reorganised DNS functions to use templates, and exposed more internals to allow new DNS lookup types to be added
  *
@@ -432,21 +436,19 @@ PDNS::SRVRecord * PDNS::SRVRecordList::GetNext()
   return NULL;
 }
 
-BOOL GetSRVRecords(const PString & _service,
-                   const PString & type,
-                   const PString & domain,
-                   PDNS::SRVRecordList & recordList)
+BOOL PDNS::GetSRVRecords(const PString & _service,
+                         const PString & type,
+                         const PString & domain,
+                         PDNS::SRVRecordList & recordList)
 {
   if (_service.IsEmpty())
     return FALSE;
 
-  PString service;
+  PStringStream service;
   if (_service[0] != '_')
-    service = PString("_") + _service;
-  else
-    service = _service;
+    service << '_';
 
-  service += PString("._") + type + "." + domain;
+  service << _service << "._" << type << '.' << domain;
 
   return GetSRVRecords(service, recordList);
 }
