@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.13 1997/08/08 11:13:45 robertj Exp $
+ * $Id: httpsvc.h,v 1.14 1997/08/21 12:44:26 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.14  1997/08/21 12:44:26  robertj
+ * Fixed bug where HTTP directory was not processed for macros.
+ *
  * Revision 1.13  1997/08/08 11:13:45  robertj
  * Added virtual for substituting random symbols in OEM files.
  *
@@ -301,6 +304,20 @@ PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
   public:
     PServiceHTTPFile(const PString & filename, BOOL needSig = FALSE)
       : PHTTPFile(filename) { needSignature = needSig; }
+
+    void OnLoadedText(PHTTPRequest &, PString & text);
+
+  protected:
+    BOOL needSignature;
+};
+
+
+///////////////////////////////////////////////////////////////
+
+PDECLARE_CLASS(PServiceHTTPDirectory, PHTTPDirectory)
+  public:
+    PServiceHTTPDirectory(const PURL & url, const PDirectory & dir, BOOL needSig = FALSE)
+      : PHTTPDirectory(url, dir) { needSignature = needSig; }
 
     void OnLoadedText(PHTTPRequest &, PString & text);
 
