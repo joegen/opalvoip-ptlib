@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.31  1998/05/30 14:58:56  robertj
+ * Fixed shutdown deadlock (and other failure modes) in cooperative threads.
+ *
  * Revision 1.30  1998/04/17 15:13:08  craigs
  * Added lazy writes to Config cache
  *
@@ -94,6 +97,7 @@
 #pragma implementation "semaphor.h"
 #pragma implementation "mutex.h"
 #pragma implementation "syncpoint.h"
+#pragma implementation "syncptack.h"
 
 #include "ptlib.h"
 
@@ -130,8 +134,6 @@ extern "C" int select(int width,
 			fd_set *exceptfds,
 			struct timeval *timeout);
 #endif
-
-extern void PXStopConfigWriteThread();
 
 ostream  * PErrorStream = &cerr;
 
@@ -253,8 +255,8 @@ void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 void PXSignalHandler(int sig)
 {
   PProcess & process = PProcess::Current();
-  process.pxSignals |= sig;
-  process.PXOnSignal(sig);
+  process.pxSignals |= 1 << sig;
+  process.PXOnAsyncSignal(sig);
   signal(sig, PXSignalHandler);
 }
 
@@ -262,8 +264,14 @@ void PProcess::PXCheckSignals()
 {
   if (pxSignals == 0)
     return;
-  PXOnAsyncSignal(pxSignals);
-  pxSignals = 0;
+
+  for (int sig = 0; sig < 32; sig++) {
+    int bit = 1 << sig;
+    if ((pxSignals&bit) != 0) {
+      pxSignals &= ~bit;
+      PXOnSignal(sig);
+    }
+  }
 }
 
 #define HANDLER(h)  (h!=NULL?h:SIG_IGN)
@@ -319,7 +327,7 @@ int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
 }
 #endif
 
-void PProcess::PXOnSignal(int sig)
+void PProcess::PXOnAsyncSignal(int sig)
 {
   switch (sig) {
     case SIGINT:
@@ -333,7 +341,7 @@ void PProcess::PXOnSignal(int sig)
   }
 }
 
-void PProcess::PXOnAsyncSignal(int /*sig*/)
+void PProcess::PXOnSignal(int /*sig*/)
 {
 }
 
@@ -346,11 +354,13 @@ void PProcess::CommonConstruct()
 
   // initialise the timezone information
   tzset();
+
+  CreateConfigFilesDictionary();
 }
 
 void PProcess::CommonDestruct()
 {
-  PXStopConfigWriteThread();
+  delete configFiles;
   SetSignals(NULL);
 }
 
