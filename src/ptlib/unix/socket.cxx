@@ -17,7 +17,7 @@ int PSocket::os_close()
 {
   int status;
   if (os_handle >= 0) {
-    PProcess::Current()->PXAbortIOBlock(os_handle);
+    PProcess::Current().PXAbortIOBlock(os_handle);
     ::shutdown(os_handle, 2);
     DWORD cmd = 0;
     ::ioctl(os_handle, FIONBIO, &cmd);

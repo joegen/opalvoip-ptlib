@@ -120,7 +120,7 @@ static BOOL LocateFile(const PString & baseName,
   PFilePath userFile;
 
   // check the user's home directory first
-  filename = readFilename = PProcess::Current()->GetHomeDir() +
+  filename = readFilename = PProcess::Current().GetHomeDir() +
              APP_CONFIG_DIR + baseName + EXTENSION;
   if (PFile::Exists(filename))
     return TRUE;
@@ -165,7 +165,7 @@ void PConfig::Construct(Source src)
   
   switch (src) {
     case PConfig::Environment:
-      GetEnvironment(PProcess::Current()->GetEnvp(), *config);
+      GetEnvironment(PProcess::Current().GetEnvp(), *config);
       saveOnExit = FALSE;
       return;
 
@@ -175,10 +175,10 @@ void PConfig::Construct(Source src)
 
     case PConfig::Application:
     default:
-      name = PProcess::Current()->GetName();
+      name = PProcess::Current().GetName();
       if (LocateFile(name, readFilename, filename))
         break;
-      name = PProcess::Current()->GetFile().GetTitle();
+      name = PProcess::Current().GetFile().GetTitle();
       LocateFile(name, readFilename, filename);
       break;
   }

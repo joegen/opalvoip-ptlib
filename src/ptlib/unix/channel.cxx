@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.13 1996/11/03 04:35:32 craigs Exp $
+ * $Id: channel.cxx,v 1.14 1997/02/14 09:18:36 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.14  1997/02/14 09:18:36  craigs
+ * Changed for PProcess::Current being a reference rather that a ptr
+ *
  * Revision 1.13  1996/11/03 04:35:32  craigs
  * Added PSocket::Read to fix recv/read problem
  *
@@ -151,7 +154,7 @@ BOOL PChannel::Close()
   flush();
 
   // abort any I/O block using this os_handle
-  PProcess::Current()->PXAbortIOBlock(os_handle);
+  PProcess::Current().PXAbortIOBlock(os_handle);
 
   int handle = os_handle;
   os_handle = -1;
