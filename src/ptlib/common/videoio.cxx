@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.40  2003/11/18 06:46:38  csoutheren
+ * Changed to support video input plugins
+ *
  * Revision 1.39  2003/05/14 07:51:23  rjongbloed
  * Changed SetColourFormatConverter so if converter already in place no
  *   change is made.
@@ -820,6 +823,11 @@ BOOL PVideoDevice::SetVFlipState(BOOL newVFlip)
 }
 
 
+PStringList PVideoDevice::GetDeviceNames() const
+{
+  return PStringList();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoOutputDevice
@@ -1041,22 +1049,60 @@ BOOL PVideoInputDevice::CanCaptureVideo() const
   return TRUE;
 }
 
+static const char videoInputPluginBaseClass[] = "PVideoInputDevice";
 
-PStringList PVideoInputDevice::GetDeviceNames() const
+
+PStringList PVideoInputDevice::GetDriverNames(PPluginManager *_pluginMgr)
 {
-  return GetInputDeviceNames();
+  PPluginManager *pluginMgr =
+      (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  return pluginMgr->GetPluginsProviding(videoInputPluginBaseClass);
 }
 
-
-BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
+PStringList PVideoInputDevice::GetDeviceNames(const PString &driverName,
+                                                             PPluginManager *_pluginMgr)
 {
-  PINDEX returned;
-  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
-    return FALSE;
+  PPluginManager *pluginMgr =
+      (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
 
-  frame.SetSize(returned);
-  return TRUE;
+  PVideoInputDevicePluginServiceDescriptor *descr =
+      (PVideoInputDevicePluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, videoInputPluginBaseClass);
+
+  if (descr != NULL)
+    return PStringList(descr->GetDeviceNames());
+  else
+    return PStringList::PStringList();
 }
 
+PVideoInputDevice * PVideoInputDevice::CreateDevice(const PString &driverName,
+                                                                  PPluginManager *_pluginMgr)
+{
+  PPluginManager *pluginMgr =
+             (_pluginMgr != NULL)?_pluginMgr:&PPluginManager::GetPluginManager();
+
+  PVideoInputDevicePluginServiceDescriptor *descr =
+               (PVideoInputDevicePluginServiceDescriptor *)pluginMgr->GetServiceDescriptor(driverName, videoInputPluginBaseClass);
+
+  if (descr != NULL)
+    return descr->CreateInstance();
+  else
+  return NULL;
+}
+
+PVideoInputDevice * PVideoInputDevice::CreateOpenedDevice(const PString &driverName,
+                                                         const PString &deviceName,
+                                                         BOOL startImmediate,
+                                                         PPluginManager *pluginMgr)
+{
+  PVideoInputDevice *dev = CreateDevice(driverName, pluginMgr);
+
+  if (dev != NULL && !dev->Open(deviceName, startImmediate)) {
+    delete dev;
+    dev = NULL;
+  }
+
+  return dev;
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
