@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.1.2.2  2003/10/20 03:25:12  dereksmithies
+ * Fix GetFunction method so it is guaranteed to generate good results.
+ *
  * Revision 1.1.2.1  2003/10/07 01:33:19  csoutheren
  * Initial checkin of pwlib code to do plugins.
  * Modified from original code and concept provided by Snark of Gnomemeeting
@@ -45,6 +48,8 @@ class PPlugin
 {
   friend class PPluginManager;
   public:
+    virtual ~PPlugin() { }
+
     virtual BOOL    IsValid()   { return TRUE; }
     virtual BOOL    IsDynamic() { return FALSE; }
     virtual PString GetName()   { return PString(); }
@@ -56,10 +61,13 @@ class PPlugin
     virtual BOOL GetFunction(
       const PString & name,  
       PDynaLink::Function & func
-    ) = 0;
+      ) { cerr << "Call of PPlugin::GetFunction for " << name << endl; return FALSE; } // = 0;
+
+    virtual PString GetFileName() { return fileName; }
 
   protected:
     PPlugin * next;
+    PString   fileName;
 };
 
 /**
