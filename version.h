@@ -27,7 +27,7 @@
 
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 1
-#define BUILD_TYPE    AlphaCode
+#define BUILD_TYPE    ReleaseCode
 #define BUILD_NUMBER  16
 
 
