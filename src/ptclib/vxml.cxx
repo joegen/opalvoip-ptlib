@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.51  2004/07/27 05:26:46  csoutheren
+ * Fixed recording
+ *
  * Revision 1.50  2004/07/27 00:00:41  csoutheren
  * Allowed Close to set closed flag before attepting lock of channels
  *
@@ -2325,6 +2328,7 @@ BOOL PVXMLChannel::IsOpen() const
 BOOL PVXMLChannel::Close()
 { 
   closed = TRUE; 
+
   PWaitAndSignal m1(channelReadMutex);
   PWaitAndSignal m2(channelWriteMutex);
 
@@ -2373,6 +2377,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
     wav->SetChannels(1);
     wav->SetSampleRate(8000);
     wav->SetSampleSize(16);
+    return wav;
   } 
   
   else if (!wav->IsValid())
@@ -2397,12 +2402,10 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
 
 BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
 {
-  channelWriteMutex.Wait();
-
-  if (closed) {
-    channelWriteMutex.Signal();
+  if (closed)
     return FALSE;
-  }
+
+  channelWriteMutex.Wait();
 
   // let the recordable do silence detection
   if (recordable != NULL && recordable->OnFrame(IsSilenceFrame(buf, len))) {
@@ -2411,7 +2414,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   }
 
   // if nothing is capturing incoming data, then fake the timing and return
-  if (recordable == NULL && GetBaseWriteChannel() == NULL) {
+  if ((recordable == NULL) && (GetBaseWriteChannel() == NULL)) {
     lastWriteCount = len;
     channelWriteMutex.Signal();
     PDelayChannel::Wait(len, nextWriteTick);
@@ -2485,10 +2488,10 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
   BOOL delayDone = FALSE;
 
   {
-    PWaitAndSignal m(channelReadMutex);
-
     if (closed)
       return FALSE;
+
+    PWaitAndSignal m(channelReadMutex);
 
     // if we are paused or in a delay, then do return silence
     if (paused || delayTimer.IsRunning())
@@ -2720,13 +2723,12 @@ BOOL PVXMLChannelPCM::WriteFrame(const void * buf, PINDEX len)
 
 BOOL PVXMLChannelPCM::ReadFrame(void * buffer, PINDEX amount)
 {
-  if (!PDelayChannel::Read(buffer, amount))
-    return FALSE;
+  PINDEX len = 0;
+  while (len < amount)  {
+    if (!PDelayChannel::Read(len + (char *)buffer, amount-len))
+      return FALSE;
 
-  PINDEX actuallyRead = GetLastReadCount();
-  if (actuallyRead < amount) {
-    memset((char *)buffer + actuallyRead, 0, amount-actuallyRead);
-    lastReadCount = amount;
+    len += GetLastReadCount();
   }
 
   return TRUE;
