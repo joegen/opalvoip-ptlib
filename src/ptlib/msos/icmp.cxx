@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.2 1996/05/30 10:08:51 robertj Exp $
+ * $Id: icmp.cxx,v 1.3 1996/06/03 10:03:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.3  1996/06/03 10:03:10  robertj
+ * Changed ping to return more parameters.
+ *
  * Revision 1.2  1996/05/30 10:08:51  robertj
  * Fixed bug in ping (checksum incorrect).
  *
@@ -82,18 +85,23 @@ PICMPSocket::PICMPSocket()
 }
 
 
-BOOL PICMPSocket::Ping(const PString & host, PTimeInterval & delay)
+BOOL PICMPSocket::Ping(const PString & host)
 {
-  if (!WritePing(host))
-    return FALSE;
-
-  Address addr;
-  WORD seq;
-  return ReadPing(addr, seq, delay);
+  PingInfo info;
+  return Ping(host, info);
 }
 
 
-BOOL PICMPSocket::WritePing(const PString & host, WORD sequenceNum)
+BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
+{
+  if (!WritePing(host, info))
+    return FALSE;
+
+  return ReadPing(info);
+}
+
+
+BOOL PICMPSocket::WritePing(const PString & host, PingInfo & info)
 {
   // find address of the host
   PIPSocket::Address addr;
@@ -109,8 +117,8 @@ BOOL PICMPSocket::WritePing(const PString & host, WORD sequenceNum)
   memset(&packet, 0, sizeof(packet));
 
   packet.type     = ICMP_ECHO;
-  packet.sequence = sequenceNum;
-  packet.id       = (WORD)PProcess::Current()->GetProcessID();
+  packet.sequence = info.sequenceNum;
+  packet.id       = info.identifier;
 
   // set the send time
   packet.sendtime = PTimer::Tick().GetMilliSeconds();
@@ -123,9 +131,7 @@ BOOL PICMPSocket::WritePing(const PString & host, WORD sequenceNum)
 }
 
 
-BOOL PICMPSocket::ReadPing(Address & addr,
-                           WORD & sequenceNum,
-                           PTimeInterval & delay)
+BOOL PICMPSocket::ReadPing(PingInfo & info)
 {
   // receive a packet
   BYTE packet[RX_BUFFER_SIZE];
@@ -133,29 +139,33 @@ BOOL PICMPSocket::ReadPing(Address & addr,
   ICMPPacket * icmpPacket;
   WORD port;
   PInt64 now;
-  WORD id = (WORD)PProcess::Current()->GetProcessID();
 
   for (;;) {
-    if (!ReadFrom(packet, sizeof(packet), addr, port))
+    if (!ReadFrom(packet, sizeof(packet), info.remoteAddr, port))
       return FALSE;
     now  = PTimer::Tick().GetMilliSeconds();
     ipHdr      = (IPHdr *)packet;
     icmpPacket = (ICMPPacket *)(packet + ((ipHdr->verIhl & 0xf) << 2));
-    if (id == (WORD)icmpPacket->id)
+    if (info.identifier == (WORD)icmpPacket->id)
       break;
   }
+
+  info.remoteAddr = Address(ipHdr->sourceAddr[0], ipHdr->sourceAddr[1],
+                            ipHdr->sourceAddr[2], ipHdr->sourceAddr[3]);
+  info.localAddr  = Address(ipHdr->destAddr[0], ipHdr->destAddr[1],
+                            ipHdr->destAddr[2], ipHdr->destAddr[3]);
 
   // calc round trip time. Be careful, as unaligned "long long" ints
   // can cause problems on some platforms
 #ifdef P_SUN4
   PInt64 then;
   memcpy(&then, &icmpPacket->sendtime, sizeof(PInt64));
-  delay.SetInterval(now - then);
+  info.delay.SetInterval(now - then);
 #else
-  delay.SetInterval(now - icmpPacket->sendtime);
+  info.delay.SetInterval(now - icmpPacket->sendtime);
 #endif
 
-  sequenceNum = icmpPacket->sequence;
+  info.sequenceNum = icmpPacket->sequence;
   return TRUE;
 }
 
