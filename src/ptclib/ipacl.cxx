@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.7  1999/02/25 13:01:11  robertj
+ * Fixed subtle bug in GNU compiler not automatically casting IP address.
+ *
  * Revision 1.6  1999/02/25 11:10:52  robertj
  * Fixed count of non-hidden entries in config file.
  *
@@ -224,7 +227,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
   if (mask == 0)
     domain = "\xff";
 
-  address = address & mask;
+  address = (DWORD)address & (DWORD)mask;
 
   return TRUE;
 }
