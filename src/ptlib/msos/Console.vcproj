@@ -286,6 +286,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\common\notifier_ext.cxx">
+			</File>
+			<File
 				RelativePath="..\common\object.cxx">
 				<FileConfiguration
 					Name="Debug|Win32">
@@ -872,7 +875,8 @@
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+"
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -881,7 +885,8 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
 						Name="VCCustomBuildTool"
 						Description="Configuring Build Options"
 						CommandLine="cd ..\..\..
-configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
+configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
+"
 						Outputs="$(InputDir)ptbuildopts.h"/>
 				</FileConfiguration>
 			</File>
@@ -941,6 +946,9 @@ configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS"
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\mutex.h">
+				</File>
+				<File
+					RelativePath="..\..\..\include\ptlib\notifier_ext.h">
 				</File>
 				<File
 					RelativePath="..\..\..\Include\PtLib\object.h">
