@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.71  2002/11/01 05:16:41  robertj
+ * Fixed additional debug levels in PSystemLog to text file.
+ *
  * Revision 1.70  2002/09/23 07:17:24  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -397,16 +400,6 @@ void PSystemLog::Output(Level level, const char * msg)
     else
       out = new PStringStream;
 
-    static const char * const levelName[NumLogLevels+1] = {
-      "Message",
-      "Fatal error",
-      "Error",
-      "Warning",
-      "Info",
-      "Debug1",
-      "Debug2",
-      "Debug3"
-    };
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
     PThread * thread = PThread::Current();
@@ -422,8 +415,24 @@ void PSystemLog::Output(Level level, const char * msg)
       else
         *out << threadName.Left(10) << "..." << threadName.Right(10);
     }
-    *out << '\t'
-         << levelName[level+1] << '\t' << msg;
+
+    *out << '\t';
+    if (level < 0)
+      *out << "Message";
+    else {
+      static const char * const levelName[4] = {
+        "Fatal error",
+        "Error",
+        "Warning",
+        "Info"
+      };
+      if (level < PARRAYSIZE(levelName))
+        *out << levelName[level];
+      else
+        *out << "Debug" << (level-Info);
+    }
+
+    *out << '\t' << msg;
     if (level < Info && err != 0)
       *out << " - error = " << err << endl;
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
@@ -469,18 +478,15 @@ void PSystemLog::Output(Level level, const char * msg)
     strings[2] = errbuf;
     strings[3] = level != Fatal ? "" : " Program aborted.";
 
-    static const WORD levelType[NumLogLevels+1] = {
+    static const WORD levelType[Info+1] = {
       EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_ERROR_TYPE,
-      EVENTLOG_WARNING_TYPE,
-      EVENTLOG_INFORMATION_TYPE,
-      EVENTLOG_INFORMATION_TYPE,
-      EVENTLOG_INFORMATION_TYPE,
-      EVENTLOG_INFORMATION_TYPE
+      EVENTLOG_WARNING_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
-                levelType[level+1],   // event type
+                (WORD)(level < Info ? levelType[level+1]
+                                    : EVENTLOG_INFORMATION_TYPE), // event type
                 (WORD)(level+1),      // event category
                 0x1000,               // event ID
                 NULL,                 // current user's SID
