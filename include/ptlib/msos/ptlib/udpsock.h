@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.4  1998/11/30 02:55:45  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:30:38  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@
 #ifndef _PUDPSOCKET
 
 
-#include "../../common/ptlib/udpsock.h"
+#include "../../udpsock.h"
 };
 
 
