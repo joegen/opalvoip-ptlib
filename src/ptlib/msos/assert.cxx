@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.5 1995/04/25 11:32:34 robertj Exp $
+ * $Id: assert.cxx,v 1.6 1995/12/10 11:55:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.6  1995/12/10 11:55:09  robertj
+ * Numerous fixes for WIN32 service processes.
+ *
  * Revision 1.5  1995/04/25 11:32:34  robertj
  * Fixed Borland compiler warnings.
  *
@@ -27,6 +30,8 @@
  */
 
 #include <ptlib.h>
+#include <svcproc.h>
+
 #include <errno.h>
 
 #if defined(_WIN32)
@@ -76,9 +81,25 @@ void PAssertFunc(const char * file, int line, const char * msg)
 {
 #if defined(_WIN32)
   DWORD err = GetLastError();
+  static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
+  WaitForSingleObject(mutex, INFINITE);
+
+  if (PProcess::Current()->IsDescendant(PServiceProcess::Class())) {
+    ((PServiceProcess*)PProcess::Current())->SystemLog(
+              PServiceProcess::LogFatal,
+              "Assertion fail in file %s, line %u %s - code = %lu",
+              file, line, msg != NULL ? msg : "", err);
+    if (((PServiceProcess*)PProcess::Current())->debugMode) {
+      ReleaseSemaphore(mutex, 1, NULL);
+      __asm int 3;
+    }
+    else
+      _exit(100);
+  }
 #else
   int err = errno;
 #endif
+
   for (;;) {
     fprintf(stderr, "Assertion fail: File %s, Line %u\n", file, line);
     if (msg != NULL)
@@ -94,6 +115,9 @@ void PAssertFunc(const char * file, int line, const char * msg)
       case 'B' :
       case 'b' :
         fputs("Break\n", stderr);
+#if defined(_WIN32)
+        ReleaseSemaphore(mutex, 1, NULL);
+#endif
 #ifdef _MSC_VER
         __asm int 3;
 #endif
@@ -101,6 +125,9 @@ void PAssertFunc(const char * file, int line, const char * msg)
       case 'I' :
       case 'i' :
         fputs("Ignored\n", stderr);
+#if defined(_WIN32)
+        ReleaseSemaphore(mutex, 1, NULL);
+#endif
         return;
     }
   }
