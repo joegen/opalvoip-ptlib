@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.79  2002/08/30 11:41:33  robertj
+# Added guarantee that version numbers exist.
+#
 # Revision 1.78  2002/08/30 02:23:13  craigs
 # Added changes for correct creation of debug libraries
 #    thanks to Martin Froehlich
@@ -531,6 +534,21 @@ ifdef VERSION_FILE
   ifndef BUILD_NUMBER
     BUILD_NUMBER:=$(strip $(subst \#define,,$(subst $(BUILD_NUMBER_DEFINE),,\
                   $(shell grep "define *$(BUILD_NUMBER_DEFINE)" $(VERSION_FILE)))))
+  endif
+
+# Finally check that version numbers are not empty
+
+  ifeq (,$(MAJOR_VERSION))
+    override MAJOR_VERSION:=1
+  endif
+  ifeq (,$(MINOR_VERSION))
+    override MINOR_VERSION:=0
+  endif
+  ifeq (,$(BUILD_TYPE))
+    override BUILD_TYPE:=alpha
+  endif
+  ifeq (,$(BUILD_NUMBER))
+    override BUILD_NUMBER:=0
   endif
 
 # Check for VERSION either predefined or defined by previous section from VERSION_FILE
