@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.39  1998/11/24 09:39:09  robertj
+ * FreeBSD port.
+ *
  * Revision 1.38  1998/11/10 13:00:52  robertj
  * Fixed strange problems with readdir_r usage.
  *
@@ -83,16 +86,25 @@
 #include <mntent.h>
 #include <sys/vfs.h>
 
+#define P_HAS_READDIR_R
+
 #if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
 #else
 #define P_USE_LANGINFO
 #endif
 
+#elif defined(P_FREEBSD) 
+#define P_USE_STRFTIME
+
+#include <sys/param.h>
+#include <sys/mount.h>
+
 #elif defined(P_HPUX9) 
 #define P_USE_LANGINFO
 
 #elif defined(P_SOLARIS) 
+#define P_HAS_READDIR_R
 #define P_USE_LANGINFO
 #include <sys/timeb.h>
 #include <sys/statvfs.h>
@@ -251,7 +263,6 @@ void PDirectory::CopyContents(const PDirectory & d)
   }
   directory   = NULL;
   entryBuffer = NULL;
-  entry       = NULL;
 }
 
 void PDirectory::Close()
@@ -311,13 +322,22 @@ BOOL PDirectory::Next()
 
   do {
     do {
-      if (::readdir_r(directory, entryBuffer, &entry) != 0)
+      struct dirent * entryPtr;
+      entryBuffer->d_name[0] = '\0';
+#ifdef P_HAS_READDIR_R
+      if (::readdir_r(directory, entryBuffer, &entryPtr) != 0)
         return FALSE;
-      if (entry != entryBuffer)
+      if (entryPtr != entryBuffer)
         return FALSE;
-    } while (strcmp(entry->d_name, "." ) == 0 || strcmp(entry->d_name, "..") == 0);
+#else
+      if ((entryPtr = readdir(directory)) == NULL)
+        return FALSE;
+      *entryBuffer = *entryPtr;
+      strcpy(entryBuffer->d_name, entryPtr->d_name);
+#endif
+    } while (strcmp(entryBuffer->d_name, "." ) == 0 || strcmp(entryBuffer->d_name, "..") == 0);
 
-    PAssert(PFile::GetInfo(*this+entry->d_name, *entryInfo), POperatingSystemError);
+    PAssert(PFile::GetInfo(*this+entryBuffer->d_name, *entryInfo), POperatingSystemError);
     if (scanMask == PFileInfo::AllPermissions)
       return TRUE;
   } while ((entryInfo->type & scanMask) == 0);
@@ -344,10 +364,10 @@ BOOL PDirectory::Restart(int newScanMask)
 
 PString PDirectory::GetEntryName() const
 {
-  if (entry == NULL)
+  if (entryBuffer == NULL)
     return PString();
 
-  return entry->d_name;
+  return entryBuffer->d_name;
 }
 
 
@@ -375,48 +395,64 @@ PString PDirectory::GetVolume() const
 {
   PString volume;
 
-#if defined(P_LINUX) 
   struct stat status;
   if (stat(operator+("."), &status) != -1) {
     dev_t my_dev = status.st_dev;
 
+#if defined(P_LINUX) 
+
     FILE * fp = setmntent(MOUNTED, "r");
-    PAssert(fp != NULL, "Cannot open " MOUNTED);
-    struct mntent * mnt;
-    while ((mnt = getmntent(fp)) != NULL) {
-      if (stat(mnt->mnt_dir, &status) != -1 && status.st_dev == my_dev) {
-        volume = mnt->mnt_fsname;
-        break;
+    if (fp != NULL) {
+      struct mntent * mnt;
+      while ((mnt = getmntent(fp)) != NULL) {
+        if (stat(mnt->mnt_dir, &status) != -1 && status.st_dev == my_dev) {
+          volume = mnt->mnt_fsname;
+          break;
+        }
       }
     }
     endmntent(fp);
-  }
+
 #elif defined(P_SOLARIS)
-  struct stat status;
-  if (stat(operator+("."), &status) != -1) {
-    dev_t my_dev = status.st_dev;
 
     FILE * fp = fopen("/etc/mnttab", "r");
-    PAssert(fp != NULL, "Cannot open /etc/mnttab");
-    struct mnttab mnt;
-    while (getmntent(fp, &mnt) == 0) {
-      if (stat(mnt.mnt_mountp, &status) != -1 && status.st_dev == my_dev) {
-        volume = mnt.mnt_special;
-        break;
+    if (fp != NULL) {
+      struct mnttab mnt;
+      while (getmntent(fp, &mnt) == 0) {
+        if (stat(mnt.mnt_mountp, &status) != -1 && status.st_dev == my_dev) {
+          volume = mnt.mnt_special;
+          break;
+        }
       }
     }
     fclose(fp);
-  }
+
+#elif defined(P_FREEBSD)
+
+    struct statfs * mnt;
+    int count = getmntinfo(&mnt, MNT_NOWAIT);
+    for (int i = 0; i < count; i++) {
+      if (stat(mnt[i].f_mntonname, &status) != -1 && status.st_dev == my_dev) {
+        volume = mnt[i].f_mntfromname;
+        break;
+      }
+    }
+
 #else
-#error Platform requires implemetation of GetVolume()
+
+#warning Platform requires implemetation of GetVolume()
+
 #endif
+
+  }
 
   return volume;
 }
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined(P_FREEBSD)
+
   struct statfs fs;
 
   if (statfs(operator+("."), &fs) == -1)
@@ -425,8 +461,10 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   clusterSize = fs.f_bsize;
   total = fs.f_blocks*(PInt64)fs.f_bsize;
   free = fs.f_bavail*(PInt64)fs.f_bsize;
+  return TRUE;
 
 #elif defined(P_SOLARIS)
+
   struct statvfs buf;
   if (statvfs(operator+("."), &buf) != 0)
     return FALSE;
@@ -436,10 +474,13 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   free  = buf.f_bfree  * buf.f_frsize;
 
   return TRUE;
+
 #else
-#error Platform requires implemetation of GetVolumeSpace()
+
+#warning Platform requires implemetation of GetVolumeSpace()
+  return FALSE;
+
 #endif
-  return TRUE;
 }
 
 PDirectory PDirectory::GetParent() const
@@ -827,6 +868,66 @@ BOOL PFilePath::IsValid(const PString & str)
 //  PTime
 //
 
+BOOL PTime::GetTimeAMPM()
+{
+#if defined(P_USE_LANGINFO)
+  return strstr(nl_langinfo(T_FMT), "%p") != NULL;
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_hour = 20;
+  t.tm_min = 12;
+  t.tm_sec = 11;
+  strftime(buf, sizeof(buf), "%X", &t);
+  return strstr(buf, "20") != NULL;
+#else
+#warning No AMPM implementation
+  return FALSE;
+#endif
+}
+
+
+PString PTime::GetTimeAM()
+{
+#if defined(P_USE_LANGINFO)
+  return PString(nl_langinfo(AM_STR));
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_hour = 10;
+  t.tm_min = 12;
+  t.tm_sec = 11;
+  strftime(buf, sizeof(buf), "%p", &t);
+  return buf;
+#else
+#warning Using default AM string
+  return "AM";
+#endif
+}
+
+
+PString PTime::GetTimePM()
+{
+#if defined(P_USE_LANGINFO)
+  return PString(nl_langinfo(PM_STR));
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_hour = 20;
+  t.tm_min = 12;
+  t.tm_sec = 11;
+  strftime(buf, sizeof(buf), "%p", &t);
+  return buf;
+#else
+#warning Using default PM string
+  return "PM";
+#endif
+}
+
+
 PString PTime::GetTimeSeparator()
 {
 #if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
@@ -841,21 +942,31 @@ PString PTime::GetTimeSeparator()
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
-#elif defined(P_SUN4)
-  return PString(":");
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_hour = 10;
+  t.tm_min = 11;
+  t.tm_sec = 12;
+  strftime(buf, sizeof(buf), "%X", &t);
+  char * sp = strstr(buf, "11") + 2;
+  char * ep = sp;
+  while (*ep != '\0' && !isdigit(*ep))
+    ep++;
+  return PString(sp, ep-sp);
 #else
-
 #warning Using default time separator
-  return PString(":");
+  return ":";
 #endif
 }
 
 PTime::DateOrder PTime::GetDateOrder()
 {
-#if defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
-#  elif defined(P_LINUX)
+#  else
      char * p = _time_info->date; 
 #  endif
 
@@ -872,9 +983,22 @@ PTime::DateOrder PTime::GetDateOrder()
   }
   return MonthDayYear;
 
-#elif defined(P_SUN4)
-  return DayMonthYear;
-
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_mday = 22;
+  t.tm_mon = 10;
+  t.tm_year = 99;
+  strftime(buf, sizeof(buf), "%x", &t);
+  char * day_pos = strstr(buf, "22");
+  char * mon_pos = strstr(buf, "11");
+  char * yr_pos = strstr(buf, "99");
+  if (yr_pos < day_pos)
+    return YearMonthDay;
+  if (day_pos < mon_pos)
+    return DayMonthYear;
+  return MonthDayYear;
 #else
 #warning Using default date order
   return DayMonthYear;
@@ -883,31 +1007,38 @@ PTime::DateOrder PTime::GetDateOrder()
 
 PString PTime::GetDateSeparator()
 {
-#if defined(P_SUN4)
-  return PString("/");
-#elif defined(P_LINUX) || defined(P_HPUX9) || defined(P_SOLARIS)
+#if defined(P_USE_LANGINFO) || defined(P_LINUX)
 #  if defined(P_USE_LANGINFO)
      char * p = nl_langinfo(D_FMT);
-#  elif defined(P_LINUX)
+#  else
      char * p = _time_info->date; 
 #  endif
-
   char buffer[2];
   while (*p == '%' || isalpha(*p))
     p++;
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
-#elif defined(P_SUN4)
-  return PString("/");
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_mday = 22;
+  t.tm_mon = 10;
+  t.tm_year = 99;
+  strftime(buf, sizeof(buf), "%x", &t);
+  char * sp = strstr(buf, "22") + 2;
+  char * ep = sp;
+  while (*ep != '\0' && !isdigit(*ep))
+    ep++;
+  return PString(sp, ep-sp);
 #else
-#warning No date separator
-  return PString("/");
+#warning Using default date separator
+  return "/";
 #endif
 }
 
 PString PTime::GetDayName(PTime::Weekdays day, NameType type)
-
 {
 #if defined(P_USE_LANGINFO)
   return PString(
@@ -919,10 +1050,15 @@ PString PTime::GetDayName(PTime::Weekdays day, NameType type)
   return (type == Abbreviated) ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
 
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_wday = day;
+  strftime(buf, sizeof(buf), type == Abbreviated ? "%a" : "%A", &t);
+  return buf;
 #else
-#if ! defined(P_SUN4)
 #warning Using default day names
-#endif
   static char *defaultNames[] = {
     "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
     "Saturday"
@@ -946,10 +1082,15 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
 #elif defined(P_LINUX)
   return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_mon = month;
+  strftime(buf, sizeof(buf), type == Abbreviated ? "%b" : "%B", &t);
+  return buf;
 #else
-#if ! defined(P_SUN4)
 #warning Using default monthnames
-#endif
   static char *defaultNames[] = {
   "January", "February", "March", "April", "May", "June", "July", "August",
   "September", "October", "November", "December" };
@@ -978,6 +1119,16 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
+#elif defined(P_FREEBSD)
+  time_t t;
+  time(&t);
+  struct tm  * tm = localtime(&t);
+  int tz = tm->tm_gmtoff/60;
+  if (type == StandardTime && tm->tm_isdst)
+    return tz-60;
+  if (type != StandardTime && !tm->tm_isdst)
+    return tz + 60;
+  return tz;
 #elif defined(P_SUN4) 
   struct timeb tb;
   ftime(&tb);
@@ -987,7 +1138,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return -tb.timezone + 60;
 #else
 #warning No timezone information
-  return 0; 
+  return 0;
 #endif
 }
 
@@ -996,9 +1147,15 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 #if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
-    return PString();
-  else
-    return PString(str);
+    return str;
+  return PString(); 
+#elif defined(P_USE_STRFTIME)
+  char buf[30];
+  struct tm t;
+  memset(&t, 0, sizeof(t));
+  t.tm_isdst = type != StandardTime;
+  strftime(buf, sizeof(buf), "%Z", &t);
+  return buf;
 #else
 #warning No timezone name information
   return PString(); 
