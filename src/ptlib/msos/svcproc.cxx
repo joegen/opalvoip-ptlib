@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.30 1997/12/18 05:05:45 robertj Exp $
+ * $Id: svcproc.cxx,v 1.31 1998/01/26 00:56:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.31  1998/01/26 00:56:11  robertj
+ * Changed ServiceProcess to exclusively use named event to detect running process.
+ *
  * Revision 1.30  1997/12/18 05:05:45  robertj
  * Added Edit menu.
  *
@@ -289,30 +292,6 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
-static BOOL IsServiceRunning(DWORD pid)
-{
-  if (pid == 0)
-    return FALSE;
-
-  HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-  if (hProcess == NULL)
-    return FALSE;
-
-  DWORD exitCode;
-  GetExitCodeProcess(hProcess, &exitCode);
-  CloseHandle(hProcess);
-  if (exitCode != STILL_ACTIVE)
-    return FALSE;
-
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, PProcess::Current().GetName());
-  if (hEvent == NULL)
-    return FALSE;
-
-  CloseHandle(hEvent);
-  return TRUE;
-}
-
-
 int PServiceProcess::_main(int argc, char ** argv, char **)
 {
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
@@ -359,12 +338,13 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   if (!CreateControlWindow(debugMode))
     return 1;
 
-  PConfig cfg;
-  if (IsServiceRunning(cfg.GetInteger("Pid"))) {
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, GetName());
+  if (hEvent != NULL || ::GetLastError() == ERROR_ACCESS_DENIED) {
+    if (hEvent != NULL)
+      CloseHandle(hEvent);
     MessageBox(NULL, "Service already running", GetName(), MB_OK);
     return 3;
   }
-  cfg.SetInteger("Pid", GetProcessID());
 
   if (debugMode) {
     ::SetLastError(0);
@@ -372,13 +352,13 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
               "Close window to terminate.\n" << endl;
   }
 
-  SetTerminationValue(0);
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, GetName());
+  PAssertOS(terminationEvent != NULL);
 
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
   PAssertOS(threadHandle != (HANDLE)-1);
 
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
-  PAssertOS(terminationEvent != NULL);
+  SetTerminationValue(0);
 
   MSG msg;
   do {
@@ -415,7 +395,6 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   threadMutex.Signal();
   OnStop();
 
-  cfg.SetInteger("Pid", 0);
   return GetTerminationValue();
 }
 
@@ -679,8 +658,6 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
     return;
 
   GetArguments().SetArgs(argc, argv);
-  PConfig cfg;
-  cfg.SetInteger("Pid", GetProcessID());
 
   // start the thread that performs the work of the service.
   threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
@@ -689,12 +666,12 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
       if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 20000))
         return;
     }
-    WaitForSingleObject(terminationEvent, INFINITE);  // Wait here for the end
+    // Wait here for the end
+    WaitForSingleObject(terminationEvent, INFINITE);
   }
 
   CloseHandle(startedEvent);
   CloseHandle(terminationEvent);
-  cfg.SetInteger("Pid", 0);
   ReportStatus(SERVICE_STOPPED, 0);
 }
 
@@ -898,8 +875,9 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 
 BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
 {
-  PConfig cfg;
-  if (IsServiceRunning(cfg.GetInteger("Pid"))) {
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, svc->GetName());
+  if (hEvent != NULL) {
+    CloseHandle(hEvent);
     PError << "Service already running" << endl;
     error = 1;
     return FALSE;
@@ -913,41 +891,15 @@ BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
 
 BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
 {
-  PConfig cfg;
-  DWORD pid = cfg.GetInteger("Pid");
-  if (pid == 0) {
-    error = 1;
-    PError << "Service not started" << endl;
-    return FALSE;
-  }
-
-  HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, pid);
-  if (hProcess == NULL) {
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
+  if (hEvent == NULL) {
     error = GetLastError();
     PError << "Service is not running" << endl;
     return FALSE;
   }
 
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
-  if (hEvent == NULL) {
-    error = GetLastError();
-    CloseHandle(hProcess);
-    PError << "Service no longer running" << endl;
-    return FALSE;
-  }
-
   SetEvent(hEvent);
   CloseHandle(hEvent);
-
-  DWORD processStatus = WaitForSingleObject(hProcess, 30000);
-  error = GetLastError();
-  CloseHandle(hProcess);
-  
-  if (processStatus != WAIT_OBJECT_0) {
-    PError << "Error or timeout during service stop" << endl;
-    return FALSE;
-  }
-
   return TRUE;
 }
 
