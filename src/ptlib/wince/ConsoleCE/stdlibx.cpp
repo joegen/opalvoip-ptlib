@@ -295,6 +295,7 @@ double strtod( const char *nptr, char **endptr )
 }
 
 
+#if _WIN32_WCE < 300
 const char * __cdecl strrchr (const char * string,int ch )
 {
         char *start = (char *)string;
@@ -310,6 +311,7 @@ const char * __cdecl strrchr (const char * string,int ch )
 
         return(NULL);
 }
+#endif
 
 size_t strspn( const char *string, const char *strCharSet )
 {
@@ -400,6 +402,8 @@ char * _ui64toa (unsigned __int64 val,char *buf,int radix)
         x64toa(val, buf, radix, 0);
         return buf;
 }
+
+#if _WIN32_WCE < 300
 __int64 _atoi64(const char *nptr)
 {
         int c;              /* current char */
@@ -427,6 +431,7 @@ __int64 _atoi64(const char *nptr)
         else
             return total;   /* return result, negated if necessary */
 }
+#endif
 
 char * _mktemp (char *temp)
 {
