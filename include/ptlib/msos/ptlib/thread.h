@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.7 1995/07/02 01:23:51 robertj Exp $
+ * $Id: thread.h,v 1.8 1995/08/24 12:38:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.8  1995/08/24 12:38:36  robertj
+ * Added extra conditional compile for WIN32 code.
+ *
  * Revision 1.7  1995/07/02 01:23:51  robertj
  * Allowed access to thread info to descendents.
  *
@@ -62,9 +65,11 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 
 #include "../../common/thread.h"
 #if defined(P_PLATFORM_HAS_THREADS)
+#if defined(_WIN32)
   protected:
     HANDLE threadHandle;
     DWORD  threadId;
+#endif
 
   private:
     PINDEX originalStackSize;
