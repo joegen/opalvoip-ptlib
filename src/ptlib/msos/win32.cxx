@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.137  2004/06/09 13:35:11  csoutheren
+ * Disabled "wait for key" at end of program unless in debug mode or PMEMORY_CHECK
+ * is enabled
+ *
  * Revision 1.136  2004/05/21 00:28:40  csoutheren
  * Moved PProcessStartup creation to PProcess::Initialise
  * Added PreShutdown function and called it from ~PProcess to handle PProcessStartup removal
@@ -1469,7 +1473,7 @@ PProcess::~PProcess()
   autoDeleteThreads.RemoveAll();
   deleteThreadMutex.Signal();
 
-#if !PMEMORY_CHECK
+#if PMEMORY_CHECK || _DEBUG
   extern void PWaitOnExitConsoleWindow();
   PWaitOnExitConsoleWindow();
 #endif
