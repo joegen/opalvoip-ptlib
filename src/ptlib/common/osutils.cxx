@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.204  2003/03/27 07:27:44  robertj
+ * Added function to get a bunch of arguments as a string array.
+ *
  * Revision 1.203  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -1542,6 +1545,34 @@ PString PArgList::GetOptionStringByIndex(PINDEX idx, const char * dflt) const
     return dflt;
 
   return PString();
+}
+
+
+PStringArray PArgList::GetParameters(PINDEX first, PINDEX last) const
+{
+  PStringArray array;
+
+  last += shift;
+  if (last < 0)
+    return array;
+
+  if (last >= parameterIndex.GetSize())
+    last = parameterIndex.GetSize()-1;
+
+  first += shift;
+  if (first < 0)
+    first = 0;
+
+  if (first > last)
+    return array;
+
+  array.SetSize(last-first+1);
+
+  PINDEX idx = 0;
+  while (first <= last)
+    array[idx++] = argumentArray[parameterIndex[first++]];
+
+  return array;
 }
 
 
