@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: notifier_ext.h,v $
+ * Revision 1.4  2004/05/17 11:02:39  csoutheren
+ * Added extra documentation
+ *
  * Revision 1.3  2004/05/09 07:23:48  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -44,6 +47,13 @@
 #pragma interface
 #endif
 
+/** Implements a function similar to the PNotifier, but uses an "id" to link the caller
+  * and callee rather than using a pointer. This has the advantage that if the pointer
+  * becomes invalid, the caller can gracefully fail the notification rather than
+  * simply crashing due to an invalid pointer access.
+  *
+  * These classes were created to support of the XMPP classes
+  */
 
 class PSmartNotifieeRegistrar
 {
