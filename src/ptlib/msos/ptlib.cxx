@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.20 1995/12/10 11:59:33 robertj Exp $
+ * $Id: ptlib.cxx,v 1.21 1996/01/02 12:56:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.21  1996/01/02 12:56:49  robertj
+ * Fixed copy of directories.
+ *
  * Revision 1.20  1995/12/10 11:59:33  robertj
  * Changes to main() startup mechanism to support Mac.
  * Fixed bug in time interfval constant variable initialisation. Not guarenteed to work.
@@ -152,13 +155,6 @@ PDirectory PDirectory::GetParent() const
     return *this;
   
   return *this + "..";
-}
-
-
-void PDirectory::CopyContents(const PDirectory & dir)
-{
-  scanMask = dir.scanMask;
-  fileinfo = dir.fileinfo;
 }
 
 
