@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.101  2002/10/23 14:56:22  craigs
+ * Fixed problem with pipe leak under some circumstances
+ *
  * Revision 1.100  2002/10/23 04:29:32  robertj
  * Improved debugging for thread create/start/stop/destroy.
  * Fixed race condition bug if auto-delete thread starts and completes before
@@ -837,34 +840,35 @@ void PThread::Terminate()
   if (PX_origStackSize <= 0)
     return;
 
+  // don't use PThread::Current, as the thread may already not be in the
+  // active threads list
+  if (PX_threadId == pthread_self())
+    return;
+
   if (IsTerminated())
     return;
 
   PTRACE(2, "PWLib\tForcing termination of thread " << (void *)this);
 
-  if (Current() == this)
-    pthread_exit(NULL);
-  else {
-    PXAbortBlock();
-    WaitForTermination(20);
+  PXAbortBlock();
+  WaitForTermination(20);
 
 #ifndef P_HAS_SEMAPHORES
-    PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
-    if (PX_waitingSemaphore != NULL) {
-      PAssertPTHREAD(pthread_mutex_lock, (&PX_waitingSemaphore->mutex));
-      PX_waitingSemaphore->queuedLocks--;
-      PAssertPTHREAD(pthread_mutex_unlock, (&PX_waitingSemaphore->mutex));
-      PX_waitingSemaphore = NULL;
-    }
-    PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
+  PAssertPTHREAD(pthread_mutex_lock, (&PX_WaitSemMutex));
+  if (PX_waitingSemaphore != NULL) {
+    PAssertPTHREAD(pthread_mutex_lock, (&PX_waitingSemaphore->mutex));
+    PX_waitingSemaphore->queuedLocks--;
+    PAssertPTHREAD(pthread_mutex_unlock, (&PX_waitingSemaphore->mutex));
+    PX_waitingSemaphore = NULL;
+  }
+  PAssertPTHREAD(pthread_mutex_unlock, (&PX_WaitSemMutex));
 #endif
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
-    pthread_kill(PX_threadId, SIGKILL);
+  pthread_kill(PX_threadId, SIGKILL);
 #else
-    pthread_cancel(PX_threadId);
+  pthread_cancel(PX_threadId);
 #endif
-  }
 }
 
 
