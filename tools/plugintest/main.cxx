@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.1.2.5  2003/10/20 03:22:46  dereksmithies
+ * Add checks on validity of function returned.
+ *
  * Revision 1.1.2.4  2003/10/13 02:46:02  dereksmithies
  * Now generates sound through dynamically loaded OSS sound channel.
  *
@@ -112,11 +115,16 @@ void PluginTest::Main()
 #define SAMPLES 64000  /*8 seconds of data */
 
 #define GET_FUNCTION(x, y) \
+   y = NULL;                                                     \
    if (!plugin->GetFunction(#x, (PDynaLink::Function &)y)) {     \
       cout << " no " << #x << " function " << dlerror() << endl; \
       goto end_program;                                          \
+   }                                                             \
+   if (y == NULL) {                                              \
+      cout << "GetFunction on \"" #x "\" returned NULL" << endl; \
+      goto end_program;                                          \
    }
- 
+
     PString      (*dnType)();
     PStringArray (*dnFn)(int);
 
@@ -173,6 +181,8 @@ void PluginTest::Main()
   }
 
  end_program:
+  cout << endl
+       << "End of \"plugintest\"    Goodbye" << endl;
   PTrace::ClearOptions(0);
   PTrace::SetLevel(0);
 }
