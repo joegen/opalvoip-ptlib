@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.30  2004/01/06 21:17:38  csoutheren
+ * Fixed formatting of warning message regarding old include system
+ * Thanks to Louis R. Marascio
+ *
  * Revision 1.29  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -120,8 +124,8 @@
  */
 
 #ifndef _CONTAIN_H
-#error "Please remove pwlib\include\ptlib\msos from the tool include path"
-#error "and from the pre-processor options for this project"
+#error "Please remove pwlib\include\ptlib\msos from the tool include path \"
+and from the pre-processor options for this project"
 #endif
 
 #ifndef _OBJECT_H
