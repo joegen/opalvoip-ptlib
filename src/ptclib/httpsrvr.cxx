@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.38  2001/10/31 01:37:13  robertj
+ * Fixed deleting of object added to http name space if add fails.
+ * Changes to support HTTP v1.1 chunked transfer encoding.
+ *
  * Revision 1.37  2001/09/28 00:45:27  robertj
  * Removed HasKey() as is confusing due to ancestor Contains().
  *
@@ -222,8 +226,10 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
     if (path[i].IsEmpty())
       break;
 
-    if (node->resource != NULL)
+    if (node->resource != NULL) {
+      delete res;
       return FALSE;   // Already a resource in tree in partial path
+    }
 
     PINDEX pos = node->children.GetValuesIndex(path[i]);
     if (pos == P_MAX_INDEX)
@@ -232,11 +238,15 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
     node = &node->children[pos];
   }
 
-  if (!node->children.IsEmpty())
+  if (!node->children.IsEmpty()) {
+    delete res;
     return FALSE;   // Already a resource in tree further down path.
+  }
 
-  if (overwrite == ErrorOnExist && node->resource != NULL)
+  if (overwrite == ErrorOnExist && node->resource != NULL) {
+    delete res;
     return FALSE;   // Already a resource in tree at leaf
+  }
 
   delete node->resource;
   node->resource = res;
@@ -793,12 +803,12 @@ static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
 }
 
 
-void PHTTPServer::StartResponse(StatusCode code,
+BOOL PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
   if (connectInfo.majorVersion < 1) 
-    return;
+    return FALSE;
 
   httpStatusCodeStruct dummyInfo;
   const httpStatusCodeStruct * statusInfo;
@@ -817,10 +827,26 @@ void PHTTPServer::StartResponse(StatusCode code,
   *this << "HTTP/" << connectInfo.majorVersion << '.' << connectInfo.minorVersion
         << ' ' << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
-  // output the headers. But don't put in ContentLength if the bodysize is zero
-  // because that can be confused by some browsers as meaning there is no body length.
-  if (bodySize > 0 && !headers.Contains(ContentLengthTag))
-    headers.SetAt(ContentLengthTag, PString(PString::Unsigned, (PINDEX)bodySize));
+  BOOL chunked = FALSE;
+
+  // If do not have user set content length, decide if we should add one
+  if (!headers.Contains(ContentLengthTag)) {
+    if (connectInfo.minorVersion < 1) {
+      // v1.0 client, don't put in ContentLength if the bodySize is zero because
+      // that can be confused by some browsers as meaning there is no body length.
+      if (bodySize > 0)
+        headers.SetAt(ContentLengthTag, bodySize);
+    }
+    else {
+      // v1.1 or later, see if will use chunked output
+      chunked = bodySize == P_MAX_INDEX;
+      if (chunked)
+        headers.SetAt(TransferEncodingTag, ChunkedTag);
+      else if (bodySize >= 0 && bodySize < P_MAX_INDEX)
+        headers.SetAt(ContentLengthTag, bodySize);
+    }
+  }
+
   *this << setfill('\r') << headers;
 
 #ifdef STRANGE_NETSCAPE_BUG
@@ -830,6 +856,8 @@ void PHTTPServer::StartResponse(StatusCode code,
   if (bodySize < 1024 && connectInfo.GetMIME()(UserAgentTag).Find("Mozilla/2.0") != P_MAX_INDEX)
     nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
 #endif
+
+  return chunked;
 }
 
 
@@ -1036,12 +1064,18 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 PHTTPRequest::PHTTPRequest(const PURL & _url,
                       const PMIMEInfo & _mime,
         const PMultipartFormInfoArray & _multipartFormInfo,
-                          PHTTPServer & server)
-  : url(_url), inMIME(_mime), multipartFormInfo(_multipartFormInfo),
-     origin(0), localAddr(0), localPort(0)
+                          PHTTPServer & _server)
+  : server(_server),
+    url(_url),
+    inMIME(_mime),
+    multipartFormInfo(_multipartFormInfo),
+    origin(0),
+    localAddr(0),
+    localPort(0)
 {
   code        = PHTTP::OK;
-  contentSize = 0;
+  contentSize = P_MAX_INDEX;
+
   PIPSocket * socket = server.GetSocket();
   if (socket != NULL) {
     socket->GetPeerAddress(origin);
@@ -1240,7 +1274,10 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                            !IsModifiedSince(PTime(info[PHTTP::IfModifiedSinceTag]))) 
     return server.OnError(PHTTP::NotModified, url.AsString(), connectInfo);
 
-  PHTTPRequest * request = CreateRequest(url, info, connectInfo.GetMultipartFormInfo(), server);
+  PHTTPRequest * request = CreateRequest(url,
+                                         info,
+                                         connectInfo.GetMultipartFormInfo(),
+                                         server);
 
   BOOL retVal = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
@@ -1267,28 +1304,14 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
 }
 
 
-BOOL PHTTPResource::OnGETData(PHTTPServer & server,
+BOOL PHTTPResource::OnGETData(PHTTPServer & /*server*/,
                                const PURL & /*url*/,
                 const PHTTPConnectionInfo & /*connectInfo*/,
                              PHTTPRequest & request)
 {
-  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
-    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
-
-  PCharArray data;
-  if (LoadData(request, data)) {
-    server.StartResponse(request.code, request.outMIME, request.contentSize);
-    do {
-      server.Write(data, data.GetSize());
-      data.SetSize(0);
-    } while (LoadData(request, data));
-  }
-  else
-    server.StartResponse(request.code, request.outMIME, data.GetSize());
-
-  server.Write(data, data.GetSize());
-
-  return request.outMIME.Contains(PHTTP::ContentLengthTag);
+  SendData(request);
+  return request.outMIME.Contains(PHTTP::ContentLengthTag) ||
+         request.outMIME.Contains(PHTTP::TransferEncodingTag);
 }
 
 
@@ -1298,29 +1321,46 @@ BOOL PHTTPResource::OnPOST(PHTTPServer & server,
                  const PStringToString & data,
              const PHTTPConnectionInfo & connectInfo)
 {
-  PHTTPRequest * request = CreateRequest(url, info, connectInfo.GetMultipartFormInfo(), server);
+  PHTTPRequest * request = CreateRequest(url,
+                                         info,
+                                         connectInfo.GetMultipartFormInfo(),
+                                         server);
 
   BOOL persist = TRUE;
   if (CheckAuthority(server, *request, connectInfo)) {
-    PHTML msg;
-    persist = Post(*request, data, msg);
-
-    if (msg.IsEmpty())
+    server.SetDefaultMIMEInfo(request->outMIME, connectInfo);
+    persist = OnPOSTData(*request, data);
+    if (request->code != PHTTP::OK)
       persist = server.OnError(request->code, "", connectInfo) && persist;
-    else {
-      if (msg.Is(PHTML::InBody))
-        msg << PHTML::Body();
-
-      request->outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
-
-      PINDEX len = msg.GetLength();
-      server.StartResponse(request->code, request->outMIME, len);
-      persist = server.Write((const char *)msg, len) && persist;
-    }
   }
 
   delete request;
   return persist;
+}
+
+
+BOOL PHTTPResource::OnPOSTData(PHTTPRequest & request,
+                               const PStringToString & data)
+{
+  PHTML msg;
+  BOOL persist = Post(request, data, msg);
+  if (request.code != PHTTP::OK)
+    return persist;
+
+  if (msg.IsEmpty())
+    msg << PHTML::Title()    << PHTTP::OK << " OK" << PHTML::Body()
+        << PHTML::Heading(1) << PHTTP::OK << " OK" << PHTML::Heading(1)
+        << PHTML::Body();
+  else {
+    if (msg.Is(PHTML::InBody))
+      msg << PHTML::Body();
+  }
+
+  request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/html");
+
+  PINDEX len = msg.GetLength();
+  request.server.StartResponse(request.code, request.outMIME, len);
+  return request.server.Write((const char *)msg, len) && persist;
 }
 
 
@@ -1415,6 +1455,49 @@ PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
 				            PHTTPServer & socket)
 {
   return new PHTTPRequest(url, inMIME, multipartFormInfo, socket);
+}
+
+
+static void WriteChunkedDataToServer(PHTTPServer & server, PCharArray & data)
+{
+  if (data.GetSize() == 0)
+    return;
+
+  server << data.GetSize() << "\r\n";
+  server.Write(data, data.GetSize());
+  server << "\r\n";
+  data.SetSize(0);
+}
+
+
+void PHTTPResource::SendData(PHTTPRequest & request)
+{
+  if (!request.outMIME.Contains(PHTTP::ContentTypeTag) && !contentType)
+    request.outMIME.SetAt(PHTTP::ContentTypeTag, contentType);
+
+  PCharArray data;
+  if (LoadData(request, data)) {
+    if (request.server.StartResponse(request.code, request.outMIME, request.contentSize)) {
+      // Chunked transfer encoding
+      request.outMIME.RemoveAll();
+      do {
+        WriteChunkedDataToServer(request.server, data);
+      } while (LoadData(request, data));
+      WriteChunkedDataToServer(request.server, data);
+      request.server << "0\r\n" << request.outMIME;
+    }
+    else {
+      do {
+        request.server.Write(data, data.GetSize());
+        data.SetSize(0);
+      } while (LoadData(request, data));
+      request.server.Write(data, data.GetSize());
+    }
+  }
+  else {
+    request.server.StartResponse(request.code, request.outMIME, data.GetSize());
+    request.server.Write(data, data.GetSize());
+  }
 }
 
 
