@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.21  2004/11/15 23:47:18  csoutheren
+ * Fixed problem with empty SRV names
+ *
  * Revision 1.20  2004/11/15 11:33:52  csoutheren
  * Fixed problem in SRV record handling
  *
@@ -323,6 +326,7 @@ PDNS::SRVRecord * PDNS::SRVRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PD
   if (
       (dnsRecord->Flags.S.Section == DnsSectionAnswer) && 
       (dnsRecord->wType == DNS_TYPE_SRV) &&
+      (strlen(dnsRecord->Data.SRV.pNameTarget) > 0) &&
       (strcmp(dnsRecord->Data.SRV.pNameTarget, ".") != 0)
       ) {
     record = new SRVRecord();
@@ -501,7 +505,11 @@ PDNS::MXRecord * PDNS::MXRecordList::HandleDNSRecord(PDNS_RECORD dnsRecord, PDNS
 {
   MXRecord * record = NULL;
 
-  if ((dnsRecord->Flags.S.Section == DnsSectionAnswer) && (dnsRecord->wType == DNS_TYPE_MX)) {
+  if (
+      (dnsRecord->Flags.S.Section == DnsSectionAnswer) &&
+      (dnsRecord->wType == DNS_TYPE_MX) &&
+      (strlen(dnsRecord->Data.MX.pNameExchange) > 0)
+     ) {
     record = new MXRecord();
     record->hostName   = PString(dnsRecord->Data.MX.pNameExchange);
     record->preference = dnsRecord->Data.MX.wPreference;
