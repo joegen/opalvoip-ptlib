@@ -24,6 +24,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.2  2000/12/19 23:58:14  robertj
+ * Fixed MSVC compatibility issues.
+ *
  * Revision 1.1  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -51,10 +54,11 @@ class PVideoConvert
         Allocates internal buffer memory. Open fails if cannot alloc memory.
      */
     PVideoConvert(
-      int       srcColourFormat,
-      int       destColourFormat,
-      PINDEX    width,
-      PINDEX    height );
+      PVideoDevice::ColourFormat srcColourFormat,
+      PVideoDevice::ColourFormat destColourFormat,
+      unsigned width,
+      unsigned height
+    );
 
     /** Destructor. Frees up internal buffer memory.
      */
@@ -97,14 +101,14 @@ class PVideoConvert
   private:
       BYTE * internalBuffer;
     
-      PINDEX  frameWidth;
-      PINDEX  frameHeight;
+      PVideoDevice::ColourFormat srcColourFormat;
+      PVideoDevice::ColourFormat destColourFormat;
+      unsigned frameWidth;
+      unsigned frameHeight;
       PINDEX  srcFrameSize;
       PINDEX  destFrameSize;
+};
 
-      int srcColourFormat;
-      int destColourFormat;
- };
  
 ////////////////////////////////////////////////////////////////////////
 // End of file
