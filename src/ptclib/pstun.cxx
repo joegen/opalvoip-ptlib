@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.11  2004/02/17 11:11:05  rjongbloed
+ * Added missing #pragma pack() to turn off byte alignment for the last class, thanks Ted Szoczei
+ *
  * Revision 1.10  2004/01/17 17:54:02  rjongbloed
  * Added function to get server name from STUN client.
  *
@@ -287,6 +290,10 @@ struct PSTUNMessageHeader
   PUInt16b       msgLength;
   BYTE           transactionId[16];
 };
+
+
+#pragma pack()
+
 
 class PSTUNMessage : public PBYTEArray
 {
