@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.12  2003/02/18 03:55:59  dereks
+ * Add 1394AVC pathces from  Georgi Georgiev. Thanks!
+ *
  * Revision 1.11  2003/01/11 05:30:13  robertj
  * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
  *
@@ -81,6 +84,9 @@
 #include <ptlib/vfakeio.h>
 #ifdef TRY_1394DC
 #include <ptlib/videoio1394dc.h>
+#endif
+#ifdef TRY_1394AVC
+#include <ptlib/videoio1394avc.h>
 #endif
 #ifdef TRY_1394AVC
 #include <ptlib/videoio1394avc.h>
