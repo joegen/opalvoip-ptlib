@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.18  2004/04/29 02:02:25  csoutheren
+ * Removed debugging (oops)
+ *
  * Revision 1.17  2004/04/29 02:00:49  csoutheren
  * Fixed problem with checking for NULL error return from FindFirstFile rather than INVALID_HANDLE_VALUE
  *
@@ -325,10 +328,6 @@ bool TreeWalk(const string & directory)
 
           if (foundAll)
             break;
-          if (subdir == "C:\\nasty folder\\") {
-            cout << subdir << endl;
-          }
-
           TreeWalk(subdir);
         }
       }
