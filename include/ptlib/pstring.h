@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.51  2002/08/14 00:43:39  robertj
+ * Added ability to have fixed maximum length PStringStream's so does not do
+ *   unwanted malloc()'s while outputing data.
+ *
  * Revision 1.50  2002/04/09 02:30:18  robertj
  * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
  *
@@ -1787,8 +1791,18 @@ class PStringStream : public PString, public iostream
   public:
     /**Create a new, empty, string stream. Data may be output to this stream,
        but attempts to input from it will return end of file.
+
+       The internal string is continually grown as required during output.
      */
     PStringStream();
+
+    /**Create a new, empty, string stream of a fixed size. Data may be output
+       to this stream, but attempts to input from it will return end of file.
+       When the fixed size is reached then no more data may be output to it.
+     */
+    PStringStream(
+      PINDEX fixedBufferSize
+    );
 
     /**Create a new string stream and initialise it to the provided value. The
        string stream references the same string buffer as the #str#
@@ -1882,7 +1896,7 @@ class PStringStream : public PString, public iostream
 
     class Buffer : public streambuf {
       public:
-        Buffer(PStringStream * str);
+        Buffer(PStringStream & str, PINDEX size);
         Buffer(const Buffer & sbuf);
         Buffer & operator=(const Buffer & sbuf);
         virtual int overflow(int=EOF);
@@ -1893,7 +1907,8 @@ class PStringStream : public PString, public iostream
 #else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);
 #endif
-        PStringStream * string;
+        PStringStream & string;
+        BOOL            fixedBufferSize;
     };
 };
 

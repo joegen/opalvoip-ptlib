@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.46  2002/08/14 00:43:39  robertj
+ * Added ability to have fixed maximum length PStringStream's so does not do
+ *   unwanted malloc()'s while outputing data.
+ *
  * Revision 1.45  2002/02/15 04:29:49  robertj
  * Added PString::Empty() to return the primordial empty string. Saves on a
  *   couple of memory allocations for every empty string ever used.
@@ -346,9 +350,6 @@ PINLINE PCaselessString & PCaselessString::operator=(char ch)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE PStringStream::Buffer::Buffer(PStringStream * str)
-  : string(PAssertNULL(str)) { sync(); }
 
 PINLINE PStringStream::Buffer::Buffer(const Buffer & b)
   : string(b.string) { }
