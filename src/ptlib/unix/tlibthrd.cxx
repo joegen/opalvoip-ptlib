@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.135  2004/12/21 06:30:55  csoutheren
+ * Added explicit stack size for pthreads to minimise VM usage, thanks to Diana Cionoiu
+ *
  * Revision 1.134  2004/09/02 07:55:44  csoutheren
  * Added extra PXAbortBlock to WaitForTermination to assist in terminaing
  * threads under certain conditions
@@ -778,6 +781,10 @@ void PThread::Restart()
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
 #if defined(P_LINUX)
+
+  // Set a decent (256K) stack size that won't eat all virtual memory
+  pthread_attr_setstacksize(&threadAttr, 16*PTHREAD_STACK_MIN);
+
   /*
     Set realtime scheduling if our effective user id is root (only then is this
     allowed) AND our priority is Highest.
