@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.108  2001/03/20 06:44:25  robertj
+ * Lots of changes to fix the problems with terminating threads that are I/O
+ *   blocked, especially when doing orderly shutdown of service via SIGTERM.
+ *
  * Revision 1.107  2001/03/05 04:18:27  robertj
  * Added net mask to interface info returned by GetInterfaceTable()
  *
@@ -1676,9 +1680,7 @@ BOOL PTCPSocket::Accept(PSocket & socket)
   sockaddr_in address;
   address.sin_family = AF_INET;
   PINDEX size = sizeof(address);
-  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size,
-                                           socket.GetReadTimeout())))
+  if (!ConvertOSError(os_handle = os_accept(socket, (struct sockaddr *)&address, &size)))
     return FALSE;
 
   port = ((PIPSocket &)socket).GetPort();
