@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.8 1995/01/15 04:55:47 robertj Exp $
+ * $Id: sockets.cxx,v 1.9 1995/01/27 11:16:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.8  1995/01/15 04:55:47  robertj
+ * Revision 1.9  1995/01/27 11:16:16  robertj
+ * Fixed missing cast in function, required by some platforms.
+ *
+ * Revision 1.8  1995/01/15  04:55:47  robertj
  * Moved all Berkley socket functions inside #ifdef.
  *
  * Revision 1.7  1995/01/04  10:57:08  robertj
@@ -71,7 +74,7 @@ BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
 {
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
-  if ((temp = inet_addr(hostname)) != -1)
+  if ((temp = inet_addr((const char *)hostname)) != -1)
     memcpy(addr, &temp, sizeof(addr));
   else {
     // otherwise lookup the name as a host name
@@ -98,7 +101,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
-  if ((temp = inet_addr(hostname)) != -1)
+  if ((temp = inet_addr((const char *)hostname)) != -1)
     host_info = gethostbyaddr((const char *)&temp, 4, PF_INET);
   else
     host_info = gethostbyname(hostname);
