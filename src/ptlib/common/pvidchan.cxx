@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.14  2003/04/14 21:18:41  dereks
+ * Formatting change.
+ *
  * Revision 1.13  2003/03/20 23:40:51  dereks
  * Fix minor problems with using null pointers.
  *
@@ -298,7 +301,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 {
   PWaitAndSignal m(accessMutex);
 
-  if( (mpOutput == NULL) ||  (mpInput == NULL))
+  if ((mpOutput == NULL) || (mpInput == NULL))
     return FALSE;
   
   PINDEX length=0;
