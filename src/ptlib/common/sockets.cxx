@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.58 1997/01/04 07:42:18 robertj Exp $
+ * $Id: sockets.cxx,v 1.59 1997/06/06 10:56:36 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.59  1997/06/06 10:56:36  craigs
+ * Added new functions for connectionless UDP writes
+ *
  * Revision 1.58  1997/01/04 07:42:18  robertj
  * Fixed GCC Warnings.
  *
@@ -1218,6 +1221,7 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
 
 PUDPSocket::PUDPSocket(WORD newPort)
 {
+  sendPort = 0;
   SetPort(newPort);
   OpenSocket();
 }
@@ -1225,6 +1229,7 @@ PUDPSocket::PUDPSocket(WORD newPort)
 
 PUDPSocket::PUDPSocket(const PString & service)
 {
+  sendPort = 0;
   SetPort(service);
   OpenSocket();
 }
@@ -1232,6 +1237,7 @@ PUDPSocket::PUDPSocket(const PString & service)
 
 PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
 {
+  sendPort = 0;
   SetPort(newPort);
   Connect(address);
 }
@@ -1239,6 +1245,7 @@ PUDPSocket::PUDPSocket(const PString & address, WORD newPort)
 
 PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 {
+  sendPort = 0;
   SetPort(service);
   Connect(address);
 }
@@ -1255,5 +1262,24 @@ const char * PUDPSocket::GetProtocolName() const
   return "udp";
 }
 
+BOOL PUDPSocket::Connect(const PString & address)
+{
+  sendPort = 0;
+  return PIPDatagramSocket::Connect(address);
+}
+
+void PUDPSocket::SetSendAddress(const Address & newAddress, WORD newPort)
+{
+  sendAddress = newAddress;
+  sendPort    = newPort;
+}
+
+BOOL PUDPSocket::Write(const void * buf, PINDEX len)
+{
+  if (sendPort == 0)
+    return PIPDatagramSocket::Write(buf, len);
+  else
+    return PIPDatagramSocket::WriteTo(buf, len, sendAddress, sendPort);
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
