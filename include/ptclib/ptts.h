@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.7  2005/01/04 07:44:02  csoutheren
+ * More changes to implement the new configuration methodology, and also to
+ * attack the global static problem
+ *
  * Revision 1.6  2004/07/07 07:18:43  csoutheren
  * Removed warnings on Linux from Windows static global hacks
  *
@@ -88,15 +92,5 @@ class PTextToSpeech : public PObject
     virtual BOOL Close      () = 0;
     virtual BOOL Speak      (const PString & text, TextType hint = Default) = 0;
 };
-
-#ifdef _WIN32
-#  ifndef P_DISABLE_FACTORY_INSTANCES
-#    ifndef  P_FACTORY_INSTANCE_PTextToSpeech
-#      define P_FACTORY_INSTANCE_PTextToSpeech 1
-#      pragma message("Including PTextToSpeech factory loader")
-       PLOAD_FACTORY(PTextToSpeech, PString)
-#    endif
-#  endif
-#endif
 
 #endif
