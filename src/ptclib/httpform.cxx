@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.9 1997/07/14 11:49:51 robertj Exp $
+ * $Id: httpform.cxx,v 1.10 1997/07/26 11:38:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.10  1997/07/26 11:38:20  robertj
+ * Support for overridable pages in HTTP service applications.
+ *
  * Revision 1.9  1997/07/14 11:49:51  robertj
  * Put "Add" and "Keep" on check boxes in array fields.
  *
@@ -42,6 +45,7 @@
 
 #include <ptlib.h>
 #include <httpform.h>
+#include <cypher.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -97,6 +101,12 @@ PINDEX PHTTPField::GetSize() const
 }
 
 
+PString PHTTPField::GetHTMLKeyword() const
+{
+  return "value";
+}
+
+
 void PHTTPField::GetHTMLHeading(PHTML &)
 {
 }
@@ -129,6 +139,52 @@ void PHTTPField::SetAllValues(const PStringToString & data)
 BOOL PHTTPField::ValidateAll(const PStringToString & data, PStringStream & msg) const
 {
   return Validated(data(name), msg);
+}
+
+
+static BOOL FindSplice(const PString & keyword,
+                       const PString & name,
+                       const PString & text,
+                       PINDEX offset,
+                       PINDEX & pos,
+                       PINDEX & len)
+{
+  PRegularExpression regex = "<!--#form[ \t\n]*" + keyword + "[ \t\n]*" + name + "[ \t\n]*-->";
+  PIntArray starts;
+  PIntArray ends;
+  if (!regex.Execute(offset+(const char *)text, starts, ends)) {
+    len = 0;
+    return FALSE;
+  }
+  pos = starts[0] + offset;
+  len = ends[0] - starts[0];
+  return TRUE;
+//  PString arg = "<!--#form " + keyword + " " + name + "-->";
+//  len = arg.GetLength();
+//  pos = text.Find(arg, offset);
+//  return pos != P_MAX_INDEX;
+}
+
+
+static void SpliceFields(PINDEX prefix, const PHTTPFieldList & fields, PString & text)
+{
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    PHTTPField & field = fields[fld];
+    PString name = field.GetName().Mid(prefix);
+    PINDEX pos, len;
+    if (FindSplice("html", name, text, 0, pos, len)) {
+      PHTML html = PHTML::InForm;
+      field.GetHTMLTag(html);
+      text.Splice(html, pos, len);
+    }
+    if (FindSplice(field.GetHTMLKeyword(), name, text, 0, pos, len)) {
+      PINDEX endpos, endlen;
+      if (!FindSplice("end", name, text, pos, endpos, endlen))
+        endpos = pos + len;
+      text.Splice(field.GetHTMLValue(text(pos + len, endpos-1)),
+                  pos, endpos - pos + endlen);
+    }
+  }
 }
 
 
@@ -189,13 +245,27 @@ PHTTPField * PHTTPCompositeField::NewField() const
 }
 
 
-void PHTTPCompositeField::GetHTML(PHTML & html)
+void PHTTPCompositeField::GetHTMLTag(PHTML & html)
 {
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     if (i != 0)
       html << PHTML::TableData();
-    fields[i].GetHTML(html);
+    fields[i].GetHTMLTag(html);
   }
+}
+
+
+PString PHTTPCompositeField::GetHTMLValue(const PString & original)
+{
+  PString text = original;
+  SpliceFields(name.GetLength()+1, fields, text);
+  return text;
+}
+
+
+PString PHTTPCompositeField::GetHTMLKeyword() const
+{
+  return "";
 }
 
 
@@ -314,13 +384,13 @@ PHTTPField * PHTTPFieldArray::NewField() const
 
 static const char IncludeCheckBox[] = "Include";
 
-void PHTTPFieldArray::GetHTML(PHTML & html)
+void PHTTPFieldArray::GetHTMLTag(PHTML & html)
 {
   html << PHTML::TableStart();
   baseField->GetHTMLHeading(html);
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     html << PHTML::TableRow() << PHTML::TableData();
-    fields[i].GetHTML(html);
+    fields[i].GetHTMLTag(html);
     html << PHTML::TableData();
     PString chkboxName = IncludeCheckBox & fields[i].GetName();
     if (i < fields.GetSize()-1)
@@ -329,6 +399,35 @@ void PHTTPFieldArray::GetHTML(PHTML & html)
       html << PHTML::CheckBox(chkboxName, PHTML::UnChecked) << " Add";
   }
   html << PHTML::TableEnd();
+}
+
+
+PString PHTTPFieldArray::GetHTMLValue(const PString & original)
+{
+  PString text;
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    PString row = fields[fld].GetHTMLValue(original);
+    PINDEX pos,len;
+    if (FindSplice("rowcheck", "", row, 0, pos, len)) {
+      PHTML html = PHTML::InForm;
+      PString chkboxName = IncludeCheckBox & fields[fld].GetName();
+      if (fld < fields.GetSize()-1)
+        html << PHTML::CheckBox(chkboxName, PHTML::Checked) << " Keep";
+      else
+        html << PHTML::CheckBox(chkboxName, PHTML::UnChecked) << " Add";
+      row.Splice(html, pos, len);
+    }
+    if (FindSplice("rownum", "", row, 0, pos, len))
+      row.Splice(psprintf("%u", fld+1), pos, len);
+    text += row;
+  }
+  return text;
+}
+
+
+PString PHTTPFieldArray::GetHTMLKeyword() const
+{
+  return "array";
 }
 
 
@@ -420,9 +519,15 @@ PHTTPField * PHTTPStringField::NewField() const
 }
 
 
-void PHTTPStringField::GetHTML(PHTML & html)
+void PHTTPStringField::GetHTMLTag(PHTML & html)
 {
   html << PHTML::InputText(name, size, value);
+}
+
+
+PString PHTTPStringField::GetHTMLValue(const PString &)
+{
+  return value;
 }
 
 
@@ -466,9 +571,35 @@ PHTTPField * PHTTPPasswordField::NewField() const
 }
 
 
-void PHTTPPasswordField::GetHTML(PHTML & html)
+void PHTTPPasswordField::GetHTMLTag(PHTML & html)
 {
   html << PHTML::InputPassword(name, size, value);
+}
+
+
+static const PTEACypher::Key PasswordKey = {
+  103,  60, 222,  17, 128, 157,  31, 137,
+  133,  64,  82, 148,  94, 136,   4, 209
+};
+
+void PHTTPPasswordField::SetValue(const PString & newVal)
+{
+  value = Decrypt(newVal);
+}
+
+
+PString PHTTPPasswordField::GetValue() const
+{
+  PTEACypher crypt(PasswordKey);
+  return crypt.Encode(value);;
+}
+
+
+PString PHTTPPasswordField::Decrypt(const PString & pword)
+{
+  PTEACypher crypt(PasswordKey);
+  PString clear = crypt.Decode(pword);
+  return clear.IsEmpty() ? pword : clear;
 }
 
 
@@ -507,9 +638,15 @@ PHTTPField * PHTTPIntegerField::NewField() const
 }
 
 
-void PHTTPIntegerField::GetHTML(PHTML & html)
+void PHTTPIntegerField::GetHTMLTag(PHTML & html)
 {
   html << PHTML::InputRange(name, low, high, value) << "  " << units;
+}
+
+
+PString PHTTPIntegerField::GetHTMLValue(const PString &)
+{
+  return PString(PString::Signed, value);
 }
 
 
@@ -565,9 +702,15 @@ PHTTPField * PHTTPBooleanField::NewField() const
 }
 
 
-void PHTTPBooleanField::GetHTML(PHTML & html)
+void PHTTPBooleanField::GetHTMLTag(PHTML & html)
 {
   html << PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
+}
+
+
+PString PHTTPBooleanField::GetHTMLValue(const PString &)
+{
+  return value ? "CHECKED" : "";
 }
 
 
@@ -700,13 +843,30 @@ PHTTPField * PHTTPRadioField::NewField() const
 }
 
 
-void PHTTPRadioField::GetHTML(PHTML & html)
+void PHTTPRadioField::GetHTMLTag(PHTML & html)
 {
   for (PINDEX i = 0; i < values.GetSize(); i++)
     html << PHTML::RadioButton(name, values[i],
                         values[i] == value ? PHTML::Checked : PHTML::UnChecked)
          << titles[i]
          << PHTML::BreakLine();
+}
+
+
+PString PHTTPRadioField::GetHTMLValue(const PString & original)
+{
+  PString text = original;
+  for (PINDEX i = 0; i < values.GetSize(); i++) {
+    PString arg = "<!--#form radio " + values[i] + "-->";
+    PINDEX pos = text.Find(arg);
+    if (pos == P_MAX_INDEX) {
+      if (values[i] == value)
+        text.Splice("CHECKED", pos, arg.GetLength());
+      else
+        text.Delete(pos, arg.GetLength());
+    }
+  }
+  return text;
 }
 
 
@@ -782,13 +942,30 @@ PHTTPField * PHTTPSelectField::NewField() const
 }
 
 
-void PHTTPSelectField::GetHTML(PHTML & html)
+void PHTTPSelectField::GetHTMLTag(PHTML & html)
 {
   html << PHTML::Select(name);
   for (PINDEX i = 0; i < values.GetSize(); i++)
     html << PHTML::Option(values[i] == value ? PHTML::Selected : PHTML::NotSelected)
          << values[i];
   html << PHTML::Select();
+}
+
+
+PString PHTTPSelectField::GetHTMLValue(const PString & original)
+{
+  PString text = original;
+  for (PINDEX i = 0; i < values.GetSize(); i++) {
+    PString arg = "<!--#form select " + values[i] + "-->";
+    PINDEX pos = text.Find(arg);
+    if (pos == P_MAX_INDEX) {
+      if (values[i] == value)
+        text.Splice("SELECTED", pos, arg.GetLength());
+      else
+        text.Delete(pos, arg.GetLength());
+    }
+  }
+  return text;
 }
 
 
@@ -833,16 +1010,7 @@ PHTTPForm::PHTTPForm(const PURL & url,
 
 void PHTTPForm::OnLoadedText(PHTTPRequest &, PString & text)
 {
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    PString arg = "<!--PHTTPForm NAME=" + field.GetName() + "-->";
-    PINDEX pos = text.Find(arg);
-    if (pos != P_MAX_INDEX) {
-      PHTML html = PHTML::InForm;
-      field.GetHTML(html);
-      text.Splice(html, pos, arg.GetLength());
-    }
-  }
+  SpliceFields(0, fields, text);
 }
 
 
@@ -883,7 +1051,7 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
            << PHTML::TableData("align=right")
            << field.GetTitle()
            << PHTML::TableData("align=left")
-           << "<!--PHTTPForm NAME=" << field.GetName() << "-->"
+           << "<!--#form html " << field.GetName() << "-->"
            << PHTML::TableData()
            << field.GetHelp();
       field.SetInHTML();
@@ -1096,6 +1264,8 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConfigSectionList
 
+static const char FormListInclude[] = "<!--#form pagelist-->";
+
 PHTTPConfigSectionList::PHTTPConfigSectionList(const PURL & url,
                                                const PHTTPAuthority & auth,
                                                const PString & prefix,
@@ -1113,7 +1283,7 @@ PHTTPConfigSectionList::PHTTPConfigSectionList(const PURL & url,
                       "?section=" + PURL::TranslateString(prefix, PURL::QueryTranslation))
 {
   if (heading.Is(PHTML::InBody))
-    heading << "<!--PHTTPConfigSectionList-->" << PHTML::Body();
+    heading << FormListInclude << PHTML::Body();
   SetString(heading);
 }
 
@@ -1122,34 +1292,62 @@ void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
 {
   PConfig cfg;
   PStringList nameList = cfg.GetSections();
-  PHTML html = PHTML::InBody;
 
-  html << PHTML::Form() << PHTML::TableStart();
+  PINDEX pos = text.Find(FormListInclude);
+  if (pos != P_MAX_INDEX) {
+    PINDEX endpos = text.Find(FormListInclude, pos + sizeof(FormListInclude)-1);
+    if (endpos == P_MAX_INDEX) {
+      PHTML html = PHTML::InBody;
+      html << PHTML::Form() << PHTML::TableStart();
 
-  PINDEX i; 
-  for (i = 0; i < nameList.GetSize(); i++) {
-    if (nameList[i].Find(sectionPrefix) == 0) {
-      PString name = nameList[i].Mid(sectionPrefix.GetLength());
+      PINDEX i;
+      for (i = 0; i < nameList.GetSize(); i++) {
+        if (nameList[i].Find(sectionPrefix) == 0) {
+          PString name = nameList[i].Mid(sectionPrefix.GetLength());
+          html << PHTML::TableRow()
+               << PHTML::TableData()
+               << PHTML::HotLink(editSectionLink + name)
+               << name
+               << PHTML::HotLink();
+          if (!additionalValueName)
+            html << PHTML::TableData() << cfg.GetString(nameList[i], additionalValueName, "");
+          html << PHTML::TableData() << PHTML::SubmitButton("Remove", name);
+        }
+      }
+
       html << PHTML::TableRow()
            << PHTML::TableData()
-           << PHTML::HotLink(editSectionLink + name)
-           << name
-           << PHTML::HotLink();
-      if (!additionalValueName)
-        html << PHTML::TableData() << cfg.GetString(nameList[i], additionalValueName, "");
-      html << PHTML::TableData() << PHTML::SubmitButton("Remove", name);
+           << PHTML::HotLink(newSectionLink)
+           << newSectionTitle
+           << PHTML::HotLink()
+           << PHTML::TableEnd()
+           << PHTML::Form();
+
+      text.Splice(html, pos, sizeof(FormListInclude)-1);
+    }
+    else {
+      PString repeat = text(pos + sizeof(FormListInclude)-1, endpos-1);
+      text.Delete(pos, endpos - pos);
+
+      PINDEX i;
+      for (i = 0; i < nameList.GetSize(); i++) {
+        if (nameList[i].Find(sectionPrefix) == 0) {
+          PString name = nameList[i].Mid(sectionPrefix.GetLength());
+          text.Splice(repeat, pos, 0);
+          text.Replace("<!--#form hotlink-->",
+                       editSectionLink + name,
+                       FALSE, pos);
+          if (!additionalValueName)
+            text.Replace("<!--#form additional-->",
+                         cfg.GetString(nameList[i], additionalValueName, ""),
+                         FALSE, pos);
+          text.Replace("<!--#form section-->", name, FALSE, pos);
+          pos = text.Find(FormListInclude, pos);
+        }
+      }
+      text.Delete(text.Find(FormListInclude, pos), sizeof(FormListInclude)-1);
     }
   }
-
-  html << PHTML::TableRow()
-       << PHTML::TableData()
-       << PHTML::HotLink(newSectionLink)
-       << newSectionTitle
-       << PHTML::HotLink()
-       << PHTML::TableEnd()
-       << PHTML::Form();
-
-  text.Replace("<!--PHTTPConfigSectionList-->", html);
 }
 
 
