@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.19  2004/06/24 07:36:24  csoutheren
+ * Added definitions of T_SRV and T_NAPTR for hosts that do not have these
+ *
  * Revision 1.18  2004/06/01 23:30:38  csoutheren
  * Removed warning under Linux
  *
@@ -91,9 +94,6 @@
 
 #if P_DNS
 
-#ifndef	T_SRV
-#define	T_SRV	33
-#endif
 
 /////////////////////////////////////////////////
 
