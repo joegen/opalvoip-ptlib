@@ -200,17 +200,7 @@ SOURCE=..\..\ptclib\pstun.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\ptts.cxx
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
 # SUBTRACT CPP /YX /Yc /Yu
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-# SUBTRACT CPP /YX /Yc /Yu
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -267,6 +257,10 @@ SOURCE=..\..\Ptclib\Telnet.cxx
 SOURCE=..\..\ptclib\udp.cxx
 # ADD CPP /D "WIN32"
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\vsdl.cxx
 # End Source File
 # Begin Source File
 
@@ -411,6 +405,10 @@ SOURCE=..\..\..\Include\PtCLib\telnet.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\url.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\vsdl.h
 # End Source File
 # Begin Source File
 
