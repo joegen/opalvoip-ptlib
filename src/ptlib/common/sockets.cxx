@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.102  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.101  2000/05/02 08:14:40  craigs
  * Fixed problem with "memory leak" reporting under Unix
  *
@@ -531,16 +534,27 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   if (host == NULL) {
     mutex.Signal();
 
+#ifdef P_AIX
+    struct hostent_data ht_data;
+    memset(&ht_data, 0, sizeof(ht_data)); 
+    struct hostent host_info;
+#else
     struct hostent * host_info;
+#endif
+
     int retry = 3;
     do {
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
       // this function should really be a static on PIPSocket, but this would
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
-      struct hostent hostEnt;
+
+
+#ifndef P_AIX	// that I get no warnings
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
+      struct hostent hostEnt;
+#endif
 
 #ifdef P_LINUX
       ::gethostbyname_r(name,
@@ -548,6 +562,12 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
                         buffer, REENTRANT_BUFFER_LEN,
                         &host_info,
       		        &localErrNo);
+      		      		        
+      		        
+#elif defined P_AIX
+      ::gethostbyname_r(name,
+                        &host_info,
+                        &ht_data);		    
 #else
       host_info = ::gethostbyname_r(name,
 			 &hostEnt, buffer, REENTRANT_BUFFER_LEN,
@@ -564,7 +584,12 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     if (retry == 0)
       return NULL;
 
+#ifdef P_AIX
+    host = new PIPCacheData (&host_info, (const char*) name);
+#else
     host = new PIPCacheData(host_info, name);
+#endif
+
     SetAt(key, host);
   }
 
@@ -631,16 +656,25 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
   if (host == NULL) {
     mutex.Signal();
 
+#ifdef P_AIX
+    struct hostent_data ht_data;
+    struct hostent host_info;
+#else    
     struct hostent * host_info;
+#endif
+
     int retry = 3;
     do {
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
       // this function should really be a static on PIPSocket, but this would
       // require allocating thread-local storage for the data and that's too much
       // of a pain!
-      struct hostent hostEnt;
+      
+#ifndef P_AIX	// that I get no warnings
       int localErrNo;
       char buffer[REENTRANT_BUFFER_LEN];
+      struct hostent hostEnt;
+#endif
 
 #ifdef P_LINUX
       ::gethostbyaddr_r((const char *)&addr, sizeof(addr),
@@ -649,6 +683,11 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                         buffer, REENTRANT_BUFFER_LEN,
                         &host_info,
                         &localErrNo);
+#elif P_AIX
+      ::gethostbyaddr_r((char *)&addr, sizeof(addr),
+                        PF_INET, 
+                        &host_info,
+                        &ht_data );
 #else
       host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
@@ -669,7 +708,12 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     if (retry == 0)
       return FALSE;
 
+#ifdef P_AIX
+    host = new PIPCacheData(&host_info, inet_ntoa(addr));
+#else
     host = new PIPCacheData(host_info, inet_ntoa(addr));
+#endif
+
     SetAt(key, host);
   }
 

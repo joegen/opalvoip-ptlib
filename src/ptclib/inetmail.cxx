@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.13  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.12  1998/11/30 04:52:01  robertj
  * New directory structure
  *
@@ -802,7 +805,7 @@ BOOL PPOP3Client::LogIn(const PString & username, const PString & password)
 
 int PPOP3Client::GetMessageCount()
 {
-  if (ExecuteCommand(STAT, "") <= 0)
+  if (ExecuteCommand(STATcmd, "") <= 0)
     return -1;
 
   return (int)lastResponseInfo.AsInteger();
@@ -891,7 +894,7 @@ BOOL PPOP3Server::ProcessCommand()
     case NOOP :
       OnNOOP();
       break;
-    case STAT :
+    case STATcmd :
       OnSTAT();
       break;
     case LIST :

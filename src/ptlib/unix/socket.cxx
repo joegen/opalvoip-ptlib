@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.52  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.51  2000/04/19 00:13:53  robertj
  * BeOS port changes.
  *
@@ -920,7 +923,7 @@ PString PIPSocket::GetGatewayInterface()
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
-#if defined(P_LINUX)
+#if defined(P_LINUX) || defined (P_AIX)
 
   PTextFile procfile;
   if (!procfile.Open("/proc/net/route", PFile::ReadOnly))

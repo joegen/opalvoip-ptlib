@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.41  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.40  2000/04/13 07:21:10  rogerh
  * Fix typo in #defined
  *
@@ -243,7 +246,7 @@ static void sigSuspendHandler(int)
 
   for (;;) {
     int sig;
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined (P_AIX)
     sigwait(&waitSignals, &sig);
 #else
     sig = sigwait(&waitSignals);
@@ -422,7 +425,7 @@ void * PThread::PX_ThreadStart(void * arg)
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
   int sig;
   sigwait(&waitSignals, &sig);
 #else
@@ -510,7 +513,7 @@ void PThread::Terminate()
     PAssertOS(pthread_mutex_unlock(&PX_WaitSemMutex) == 0);
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
     pthread_kill(PX_threadId, SIGKILL);
 #else
     pthread_cancel(PX_threadId);
@@ -560,7 +563,7 @@ void PThread::Suspend(BOOL susp)
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
           int sig;
           sigwait(&waitSignals, &sig);
 #else
@@ -703,7 +706,7 @@ PSemaphore::~PSemaphore()
 #else
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
-#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#if defined (P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined (P_AIX)
   pthread_cond_destroy(&condVar);
   pthread_mutex_destroy(&mutex);
 #else

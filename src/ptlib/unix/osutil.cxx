@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.55  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.54  2000/04/19 00:13:53  robertj
  * BeOS port changes.
  *
@@ -150,6 +153,13 @@
 #elif defined(P_HPUX9) 
 #define P_USE_LANGINFO
 
+#elif defined(P_AIX)
+#define P_USE_STRFTIME
+
+#include <fstab.h>
+#include <sys/stat.h>
+#include <sys/statfs.h>
+
 #elif defined(P_SOLARIS) 
 #define P_HAS_READDIR_R
 #define P_USE_LANGINFO
@@ -262,7 +272,7 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX)
   return strtoll(theArray, &dummy, base);
 #else
   return strtoq(theArray, &dummy, base);
@@ -272,7 +282,7 @@ PInt64 PString::AsInt64(unsigned base) const
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
-#if defined(P_SOLARIS) || defined(__BEOS__)
+#if defined(P_SOLARIS) || defined(__BEOS__) || defined (P_AIX)
   return strtoull(theArray, &dummy, base);
 #else
   return strtouq(theArray, &dummy, base);
@@ -485,6 +495,18 @@ PString PDirectory::GetVolume() const
       }
     }
 
+#elif defined (P_AIX)
+
+    struct fstab * fs;
+    setfsent();
+    while ((fs = getfsent()) != NULL) {
+      if (stat(fs->fs_file, &status) != -1 && status.st_dev == my_dev) {
+        volume = fs->fs_spec;
+        break;
+      }
+    }
+    endfsent();
+
 #else
 
 #warning Platform requires implemetation of GetVolume()
@@ -503,6 +525,17 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   struct statfs fs;
 
   if (statfs(operator+("."), &fs) == -1)
+    return FALSE;
+
+  clusterSize = fs.f_bsize;
+  total = fs.f_blocks*(PInt64)fs.f_bsize;
+  free = fs.f_bavail*(PInt64)fs.f_bsize;
+  return TRUE;
+
+#elif defined(P_AIX)
+
+  struct statfs fs;
+  if (statfs((char *) ((const char *)operator+(".") ), &fs) == -1)
     return FALSE;
 
   clusterSize = fs.f_bsize;
@@ -1210,7 +1243,7 @@ BOOL PTime::IsDaylightSavings()
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_SOLARIS) || defined (P_AIX)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
@@ -1241,7 +1274,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
 {
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined (P_AIX)
   const char * str = (type == StandardTime) ? ::tzname[0] : ::tzname[1]; 
   if (str != NULL)
     return str;
