@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.31 1995/08/12 22:30:05 robertj Exp $
+ * $Id: osutil.inl,v 1.32 1995/12/10 11:32:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.32  1995/12/10 11:32:44  robertj
+ * Added extra user information to processes and applications.
+ *
  * Revision 1.31  1995/08/12 22:30:05  robertj
  * Work around for  GNU bug: can't have private copy constructor with multiple inheritance.
  *
@@ -639,14 +642,27 @@ PINLINE PThread::Priority PThread::GetPriority() const
 PINLINE PArgList & PProcess::GetArguments()
   { return arguments; }
 
-PINLINE PString PProcess::GetName() const
-  { return executableName; }
+PINLINE const PString & PProcess::GetManufacturer() const
+  { return manufacturer; }
+
+PINLINE const PString & PProcess::GetName() const
+  { return productName; }
+
+PINLINE const PString & PProcess::GetVersion() const
+  { return version; }
 
 PINLINE const PFilePath & PProcess::GetFile() const
   { return executableFile; }
 
 PINLINE PTimerList * PProcess::GetTimerList()
   { return &timers; }
+
+PINLINE void PProcess::SetTerminationValue(int value)
+  { terminationValue = value; }
+
+PINLINE int PProcess::GetTerminationValue() const
+  { return terminationValue; }
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
