@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.4  1998/11/30 02:55:08  robertj
+ * New directory structure
+ *
  * Revision 1.3  1998/09/24 03:29:59  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@
 #ifndef _PDYNALINK
 
 
-#include "../../common/ptlib/dynalink.h"
+#include "../../dynalink.h"
   protected:
 #if defined(_WINDOWS) || defined(_WIN32)
     HINSTANCE _hDLL;
