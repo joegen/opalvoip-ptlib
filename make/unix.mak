@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.101  2001/08/06 19:27:24  rogerh
+# Determine the OS Version for OpenBSD.
+# Submitted by Marius Aamodt Eriksen <marius@umich.edu>
+#
 # Revision 1.100  2001/08/06 03:18:44  robertj
 # Added better checking for openssl usage.
 #
@@ -562,8 +566,13 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-STDCCFLAGS	+= -DP_OPENBSD
 LDLIBS		+= -lossaudio
+
+ifndef OSRELASE
+OSRELEASE	:= $(shell sysctl -n kern.osrevision)
+endif
+ 
+STDCCFLAGS	+= -DP_OPENBSD=$(OSRELEASE)
 
 ifdef P_PTHREADS
 CFLAGS	+= -pthread
