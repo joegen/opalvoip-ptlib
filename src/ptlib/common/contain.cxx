@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.86  2000/04/07 06:29:46  rogerh
+ * Add a short term workaround for an Internal Compiler Error on MAC OS X when
+ * returning certain types of PString. Submitted by Kevin Packard.
+ *
  * Revision 1.85  2000/02/05 22:36:09  craigs
  * Fixed problem caused by last modification
  *
@@ -1635,7 +1639,13 @@ PString PString::RightTrim() const
       return PString();
     rpos--;
   }
+
+#if defined(P_MACOSX)	// make Apple gnu compiler happy
+  PString retval(theArray, rpos - theArray);
+  return retval;
+#else
   return PString(theArray, rpos - theArray);
+#endif
 }
 
 
