@@ -301,86 +301,63 @@ NODEP_CPP_ASSER=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_ASSER=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\svcproc.h"\
-	{$(INCLUDE)}"ptlib\svcproc.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_ASSER=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_ASSER=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -623,84 +600,62 @@ NODEP_CPP_COLLE=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_COLLE=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_COLLE=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_COLLE=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -943,84 +898,64 @@ NODEP_CPP_CONTA=\
 
 DEP_CPP_CONTA=\
 	".\src\ptlib\common\regex\regex.h"\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+	
+NODEP_CPP_CONTA=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_CONTA=\
+	".\Include\PtLib\conchan.h"\
 	".\src\ptlib\common\regex\regex.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -1028,48 +963,48 @@ DEP_CPP_CONTA=\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
 	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
+	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"wceatl.h"\
@@ -1179,133 +1114,100 @@ SOURCE=.\src\ptlib\msos\ethsock.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_ETHSO=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\epacket.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_ETHSO=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\epacket.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_ETHSO=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\epacket.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"PtLib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
+	{$(INCLUDE)}"PtLib\ipsock.h"\
 	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"PtLib\ipxsock.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
@@ -1316,40 +1218,40 @@ DEP_CPP_ETHSO=\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
 	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
 	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"PtLib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
 	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
 	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"PtLib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
 	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"PtLib\udpsock.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
 	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
+	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"sys\socket.h"\
@@ -1378,14 +1280,14 @@ NODEP_CPP_ETHSO=\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
 	".\tlib\epacket.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -1400,7 +1302,7 @@ NODEP_CPP_ETHSO=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -1408,73 +1310,12 @@ NODEP_CPP_ETHSO=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
 	".\ucpp.h"\
 	".\ys\socket.h"\
-	
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\ptlib\common\getdate_tab.cpp
-
-!IF  "$(CFG)" == "pwlibce - Win32 (WCE SH4) Release"
-
-NODEP_CPP_GETDA=\
-	".\ceatl.h"\
-	".\lloca.h"\
-	".\msystemx.h"\
-	".\tdlibx.h"\
-	
-
-!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE SH4) Debug"
-
-NODEP_CPP_GETDA=\
-	".\ceatl.h"\
-	".\lloca.h"\
-	".\msystemx.h"\
-	".\tdlibx.h"\
-	
-
-!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
-
-DEP_CPP_GETDA=\
-	{$(INCLUDE)}"alloca.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
-
-!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
-
-DEP_CPP_GETDA=\
-	{$(INCLUDE)}"alloca.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
-
-!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
-
-NODEP_CPP_GETDA=\
-	".\ceatl.h"\
-	".\lloca.h"\
-	".\msystemx.h"\
-	".\tdlibx.h"\
-	
-
-!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
-
-NODEP_CPP_GETDA=\
-	".\ceatl.h"\
-	".\lloca.h"\
-	".\msystemx.h"\
-	".\tdlibx.h"\
 	
 
 !ENDIF 
@@ -1578,86 +1419,64 @@ NODEP_CPP_OBJEC=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_OBJEC=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\debstrm.h"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"strstream.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_OBJEC=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\trstream.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_OBJEC=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -1666,16 +1485,16 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\debstrm.h"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
@@ -1683,8 +1502,8 @@ DEP_CPP_OBJEC=\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -1904,86 +1723,63 @@ NODEP_CPP_OSUTI=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_OSUTI=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\svcproc.h"\
-	{$(INCLUDE)}"ptlib\svcproc.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_OSUTI=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\svcproc.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_OSUTI=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -2226,84 +2022,62 @@ NODEP_CPP_PCHAN=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PCHAN=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PCHAN=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PCHAN=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -2542,84 +2316,62 @@ NODEP_CPP_PCONF=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PCONF=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PCONF=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PCONF=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -2774,124 +2526,91 @@ SOURCE=.\src\ptlib\common\pethsock.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PETHS=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_PETHS=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PETHS=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
@@ -2904,32 +2623,32 @@ DEP_CPP_PETHS=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
+	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -2970,14 +2689,14 @@ NODEP_CPP_PETHS=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -2992,7 +2711,7 @@ NODEP_CPP_PETHS=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -3000,7 +2719,7 @@ NODEP_CPP_PETHS=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -3105,84 +2824,62 @@ NODEP_CPP_PTIME=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PTIME=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PTIME=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PTIME=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3421,74 +3118,54 @@ NODEP_CPP_PTLIB=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PTLIB=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PTLIB=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PTLIB=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
@@ -3498,7 +3175,6 @@ DEP_CPP_PTLIB=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -3737,84 +3413,62 @@ NODEP_CPP_PVIDC=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PVIDC=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PVIDC=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PVIDC=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -3980,14 +3634,14 @@ NODEP_CPP_SOCKE=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -4002,7 +3656,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -4010,7 +3664,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -4034,14 +3688,14 @@ NODEP_CPP_SOCKE=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -4056,7 +3710,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -4064,7 +3718,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -4073,124 +3727,91 @@ NODEP_CPP_SOCKE=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_SOCKE=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_SOCKE=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SOCKE=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
@@ -4203,32 +3824,32 @@ DEP_CPP_SOCKE=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
+	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -4268,14 +3889,14 @@ NODEP_CPP_SOCKE=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -4290,7 +3911,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -4298,7 +3919,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -4321,14 +3942,14 @@ NODEP_CPP_SOCKE=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -4343,7 +3964,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -4351,7 +3972,7 @@ NODEP_CPP_SOCKE=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -4456,84 +4077,62 @@ NODEP_CPP_SOUND=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_SOUND=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_SOUND=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SOUND=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -4774,135 +4373,113 @@ NODEP_CPP_VCONV=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_VCONV=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vconvert.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_VCONV=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vconvert.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VCONV=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
+	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"PtLib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
+	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
 	{$(INCLUDE)}"ptlib\vconvert.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
 	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
+	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"wceatl.h"\
@@ -5096,97 +4673,75 @@ NODEP_CPP_VFAKE=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_VFAKE=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_VFAKE=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VFAKE=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
@@ -5198,31 +4753,31 @@ DEP_CPP_VFAKE=\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
 	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
+	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"PtLib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
 	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
+	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"wceatl.h"\
@@ -5329,88 +4884,66 @@ SOURCE=.\src\ptlib\msos\vfw.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_VFW_C=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vconvert.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_VFW_C=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vconvert.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VFW_C=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -5427,8 +4960,8 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
@@ -5444,8 +4977,8 @@ DEP_CPP_VFW_C=\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -5608,88 +5141,66 @@ NODEP_CPP_VIDEO=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_VIDEO=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vconvert.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_VIDEO=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vconvert.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VIDEO=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -5706,8 +5217,8 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
@@ -5723,8 +5234,8 @@ DEP_CPP_VIDEO=\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -5930,88 +5441,66 @@ NODEP_CPP_WIN32=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_WIN32=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\debstrm.h"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_WIN32=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\debstrm.h"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_WIN32=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -6019,8 +5508,8 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -6029,13 +5518,13 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -6050,13 +5539,13 @@ DEP_CPP_WIN32=\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
@@ -6250,84 +5739,62 @@ NODEP_CPP_WINCF=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_WINCF=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_WINCF=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_WINCF=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -6493,14 +5960,14 @@ NODEP_CPP_WINSO=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -6515,7 +5982,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -6523,7 +5990,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -6547,14 +6014,14 @@ NODEP_CPP_WINSO=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -6569,7 +6036,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -6577,7 +6044,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -6586,124 +6053,91 @@ NODEP_CPP_WINSO=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_WINSO=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_WINSO=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_WINSO=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
@@ -6716,32 +6150,32 @@ DEP_CPP_WINSO=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
+	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -6781,14 +6215,14 @@ NODEP_CPP_WINSO=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -6803,7 +6237,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -6811,7 +6245,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -6834,14 +6268,14 @@ NODEP_CPP_WINSO=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -6856,7 +6290,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -6864,7 +6298,7 @@ NODEP_CPP_WINSO=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -6889,87 +6323,65 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\ceostream.cpp
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_CEOST=\
-	{$(INCLUDE)}".\include\ptlib\wince\ceostream.h"\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_CEOST=\
+	"..\include\ptlib\wince\ceostream.h"\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_CEOST=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}".\include\ptlib\wince\ceostream.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -6980,21 +6392,21 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -7009,13 +6421,13 @@ DEP_CPP_CEOST=\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
@@ -7082,17 +6494,62 @@ SOURCE=.\src\ptlib\wince\ConsoleCE\cevfw.cpp
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
+NODEP_CPP_CEVFW=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
 DEP_CPP_CEVFW=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -7147,69 +6604,28 @@ DEP_CPP_CEVFW=\
 	{$(INCLUDE)}"wceatl.h"\
 	
 
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\getdate_tab.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE SH4) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE SH4) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
-DEP_CPP_CEVFW=\
-	{$(INCLUDE)}"cevfw.h"\
+DEP_CPP_GETDA=\
+	{$(INCLUDE)}"alloca.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"wceatl.h"\
 	
@@ -7315,84 +6731,62 @@ NODEP_CPP_IOS_C=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_IOS_C=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_IOS_C=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_IOS_C=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -7578,10 +6972,10 @@ NODEP_CPP_ISTRE=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_ISTRE=\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_ISTRE=\
+	".\ceatl.h"\
+	".\msystemx.h"\
+	".\tdlibx.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
@@ -7705,84 +7099,62 @@ NODEP_CPP_MMSYS=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_MMSYS=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_MMSYS=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_MMSYS=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
@@ -8021,84 +7393,62 @@ NODEP_CPP_OSTRE=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_OSTRE=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_OSTRE=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_OSTRE=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -8264,14 +7614,14 @@ NODEP_CPP_STDLI=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -8286,7 +7636,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -8294,7 +7644,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -8318,14 +7668,14 @@ NODEP_CPP_STDLI=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -8340,7 +7690,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -8348,7 +7698,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -8357,124 +7707,91 @@ NODEP_CPP_STDLI=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_STDLI=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_STDLI=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_STDLI=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
@@ -8487,32 +7804,32 @@ DEP_CPP_STDLI=\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\spxsock.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
 	{$(INCLUDE)}"PtLib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncpoint.h"\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
+	{$(INCLUDE)}"PtLib\tcpsock.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
@@ -8552,14 +7869,14 @@ NODEP_CPP_STDLI=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -8574,7 +7891,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -8582,7 +7899,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -8605,14 +7922,14 @@ NODEP_CPP_STDLI=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -8627,7 +7944,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -8635,7 +7952,7 @@ NODEP_CPP_STDLI=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -8784,93 +8101,68 @@ NODEP_CPP_ASNER=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_ASNER=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\asner.h"\
-	{$(INCLUDE)}"ptclib\html.h"\
-	{$(INCLUDE)}"ptclib\http.h"\
-	{$(INCLUDE)}"ptclib\inetprot.h"\
-	{$(INCLUDE)}"ptclib\mime.h"\
-	{$(INCLUDE)}"ptclib\pxml.h"\
-	{$(INCLUDE)}"ptclib\url.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_ASNER=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\asner.h"\
+	".\tclib\html.h"\
+	".\tclib\http.h"\
+	".\tclib\inetprot.h"\
+	".\tclib\mime.h"\
+	".\tclib\pxml.h"\
+	".\tclib\url.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tLib\ipsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_ASNER=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\asner.h"\
 	{$(INCLUDE)}"ptclib\html.h"\
 	{$(INCLUDE)}"ptclib\http.h"\
@@ -8884,7 +8176,6 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -8893,8 +8184,8 @@ DEP_CPP_ASNER=\
 	{$(INCLUDE)}"ptlib\dict.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
@@ -9048,82 +8339,61 @@ SOURCE=.\src\ptclib\cypher.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_CYPHE=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\cypher.h"\
-	{$(INCLUDE)}"ptclib\inetprot.h"\
-	{$(INCLUDE)}"ptclib\mime.h"\
-	{$(INCLUDE)}"ptclib\random.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_CYPHE=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\cypher.h"\
+	".\tclib\inetprot.h"\
+	".\tclib\mime.h"\
+	".\tclib\random.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_CYPHE=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\cypher.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
 	{$(INCLUDE)}"ptclib\mime.h"\
@@ -9133,7 +8403,6 @@ DEP_CPP_CYPHE=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
@@ -9250,79 +8519,58 @@ SOURCE=.\src\ptclib\dtmf.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_DTMF_=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\dtmf.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_DTMF_=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\dtmf.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_DTMF_=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\dtmf.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
@@ -9330,7 +8578,6 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -9341,21 +8588,21 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -9370,13 +8617,13 @@ DEP_CPP_DTMF_=\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
@@ -9443,102 +8690,71 @@ SOURCE=.\src\ptclib\http.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_HTTP_=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\html.h"\
-	{$(INCLUDE)}"ptclib\http.h"\
-	{$(INCLUDE)}"ptclib\inetprot.h"\
-	{$(INCLUDE)}"ptclib\mime.h"\
-	{$(INCLUDE)}"ptclib\url.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_HTTP_=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\html.h"\
+	".\tclib\http.h"\
+	".\tclib\inetprot.h"\
+	".\tclib\mime.h"\
+	".\tclib\url.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_HTTP_=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
@@ -9553,50 +8769,49 @@ DEP_CPP_HTTP_=\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
 	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
 	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
 	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"PtLib\ipxsock.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
 	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
@@ -9607,14 +8822,14 @@ DEP_CPP_HTTP_=\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
 	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\udpsock.h"\
 	{$(INCLUDE)}"PtLib\udpsock.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
@@ -9648,103 +8863,71 @@ SOURCE=.\src\ptclib\inetprot.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_INETP=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\inetprot.h"\
-	{$(INCLUDE)}"ptclib\mime.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_INETP=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\inetprot.h"\
+	".\tclib\mime.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_INETP=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\inetprot.h"\
 	{$(INCLUDE)}"ptclib\mime.h"\
 	{$(INCLUDE)}"ptlib.h"\
@@ -9753,9 +8936,8 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
@@ -9768,24 +8950,24 @@ DEP_CPP_INETP=\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
 	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
 	{$(INCLUDE)}"PtLib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
@@ -9850,14 +9032,14 @@ NODEP_CPP_INETP=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -9872,7 +9054,7 @@ NODEP_CPP_INETP=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -9880,7 +9062,7 @@ NODEP_CPP_INETP=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -9913,14 +9095,14 @@ NODEP_CPP_PASN_=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -9935,7 +9117,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -9943,7 +9125,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -9968,14 +9150,14 @@ NODEP_CPP_PASN_=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -9990,7 +9172,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -9998,7 +9180,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -10007,152 +9189,119 @@ NODEP_CPP_PASN_=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PASN_=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\pasn.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\ethsock.h"\
-	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\icmpsock.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
-	{$(INCLUDE)}"ptlib\ipsock.h"\
-	{$(INCLUDE)}"PtLib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\ipxsock.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
-	{$(INCLUDE)}"ptlib\socket.h"\
-	{$(INCLUDE)}"ptlib\sockets.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\spxsock.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\tcpsock.h"\
-	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\udpsock.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"sys\socket.h"\
-	{$(INCLUDE)}"wceatl.h"\
-	
 NODEP_CPP_PASN_=\
+	".\ceatl.h"\
+	".\evfw.h"\
 	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\pasn.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tLib\ethsock.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\icmpsock.h"\
+	".\tlib\indchan.h"\
+	".\tlib\ipdsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\socket.h"\
+	".\tlib\sockets.h"\
+	".\tlib\sound.h"\
+	".\tLib\spxsock.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\tcpsock.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tLib\udpsock.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
+	".\ys\socket.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PASN_=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\pasn.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
 	{$(INCLUDE)}"ptlib\array.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
 	{$(INCLUDE)}"ptlib\contain.inl"\
 	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\ethsock.h"\
 	{$(INCLUDE)}"PtLib\ethsock.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
 	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"PtLib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"PtLib\icmpsock.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\ipdsock.h"\
 	{$(INCLUDE)}"PtLib\ipdsock.h"\
-	{$(INCLUDE)}"PtLib\ipsock.h"\
 	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"PtLib\ipsock.h"\
 	{$(INCLUDE)}"PtLib\ipxsock.h"\
 	{$(INCLUDE)}"ptlib\ipxsock.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
 	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
+	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
 	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
 	{$(INCLUDE)}"ptlib\sockets.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
 	{$(INCLUDE)}"ptlib\sound.h"\
@@ -10163,21 +9312,21 @@ DEP_CPP_PASN_=\
 	{$(INCLUDE)}"ptlib\syncthrd.h"\
 	{$(INCLUDE)}"ptlib\tcpsock.h"\
 	{$(INCLUDE)}"PtLib\tcpsock.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
 	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
 	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"PtLib\udpsock.h"\
 	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"PtLib\udpsock.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
 	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
+	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
 	{$(INCLUDE)}"stdlibx.h"\
 	{$(INCLUDE)}"sys\socket.h"\
@@ -10205,14 +9354,14 @@ NODEP_CPP_PASN_=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -10227,7 +9376,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -10235,7 +9384,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -10259,14 +9408,14 @@ NODEP_CPP_PASN_=\
 	".\tlib\contain.inl"\
 	".\tlib\dict.h"\
 	".\tlib\dynalink.h"\
-	".\TLIB\ethsock.h"\
+	".\tLib\ethsock.h"\
 	".\tlib\file.h"\
 	".\tlib\filepath.h"\
 	".\tlib\icmpsock.h"\
 	".\tlib\indchan.h"\
 	".\tlib\ipdsock.h"\
-	".\tlib\ipsock.h"\
-	".\TLIB\ipxsock.h"\
+	".\tLib\ipsock.h"\
+	".\tLib\ipxsock.h"\
 	".\tlib\lists.h"\
 	".\tlib\mutex.h"\
 	".\tlib\object.h"\
@@ -10281,7 +9430,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\socket.h"\
 	".\tlib\sockets.h"\
 	".\tlib\sound.h"\
-	".\TLIB\spxsock.h"\
+	".\tLib\spxsock.h"\
 	".\tlib\syncpoint.h"\
 	".\tlib\syncthrd.h"\
 	".\tlib\tcpsock.h"\
@@ -10289,7 +9438,7 @@ NODEP_CPP_PASN_=\
 	".\tlib\thread.h"\
 	".\tlib\timeint.h"\
 	".\tlib\timer.h"\
-	".\tlib\udpsock.h"\
+	".\tLib\udpsock.h"\
 	".\tlib\vfakeio.h"\
 	".\tlib\video.h"\
 	".\tlib\videoio.h"\
@@ -10312,6 +9461,95 @@ SOURCE=.\src\ptclib\pstun.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
+DEP_CPP_PSTUN=\
+	".\Include\PtLib\conchan.h"\
+	".\src\ptclib\stun.h"\
+	{$(INCLUDE)}"cevfw.h"\
+	{$(INCLUDE)}"mmsystemx.h"\
+	{$(INCLUDE)}"nucpp.h"\
+	{$(INCLUDE)}"ptclib\pstun.h"\
+	{$(INCLUDE)}"ptlib.h"\
+	{$(INCLUDE)}"ptlib\args.h"\
+	{$(INCLUDE)}"ptlib\array.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\channel.h"\
+	{$(INCLUDE)}"ptlib\conchan.h"\
+	{$(INCLUDE)}"ptlib\config.h"\
+	{$(INCLUDE)}"PtLib\config.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.h"\
+	{$(INCLUDE)}"ptlib\contain.inl"\
+	{$(INCLUDE)}"ptlib\dict.h"\
+	{$(INCLUDE)}"ptlib\dynalink.h"\
+	{$(INCLUDE)}"PtLib\dynalink.h"\
+	{$(INCLUDE)}"PtLib\ethsock.h"\
+	{$(INCLUDE)}"ptlib\ethsock.h"\
+	{$(INCLUDE)}"PtLib\file.h"\
+	{$(INCLUDE)}"ptlib\file.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
+	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"ptlib\icmpsock.h"\
+	{$(INCLUDE)}"PtLib\icmpsock.h"\
+	{$(INCLUDE)}"ptlib\indchan.h"\
+	{$(INCLUDE)}"ptlib\ipdsock.h"\
+	{$(INCLUDE)}"PtLib\ipdsock.h"\
+	{$(INCLUDE)}"PtLib\ipsock.h"\
+	{$(INCLUDE)}"ptlib\ipsock.h"\
+	{$(INCLUDE)}"PtLib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\ipxsock.h"\
+	{$(INCLUDE)}"ptlib\lists.h"\
+	{$(INCLUDE)}"PtLib\mutex.h"\
+	{$(INCLUDE)}"ptlib\mutex.h"\
+	{$(INCLUDE)}"ptlib\object.h"\
+	{$(INCLUDE)}"ptlib\osutil.inl"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
+	{$(INCLUDE)}"PtLib\pdirect.h"\
+	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pstring.h"\
+	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptlib.inl"\
+	{$(INCLUDE)}"PtLib\semaphor.h"\
+	{$(INCLUDE)}"ptlib\semaphor.h"\
+	{$(INCLUDE)}"PtLib\sfile.h"\
+	{$(INCLUDE)}"ptlib\sfile.h"\
+	{$(INCLUDE)}"PtLib\socket.h"\
+	{$(INCLUDE)}"ptlib\socket.h"\
+	{$(INCLUDE)}"ptlib\sockets.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\sound.h"\
+	{$(INCLUDE)}"ptlib\spxsock.h"\
+	{$(INCLUDE)}"PtLib\spxsock.h"\
+	{$(INCLUDE)}"PtLib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncpoint.h"\
+	{$(INCLUDE)}"ptlib\syncthrd.h"\
+	{$(INCLUDE)}"ptlib\tcpsock.h"\
+	{$(INCLUDE)}"PtLib\tcpsock.h"\
+	{$(INCLUDE)}"ptlib\textfile.h"\
+	{$(INCLUDE)}"PtLib\textfile.h"\
+	{$(INCLUDE)}"ptlib\thread.h"\
+	{$(INCLUDE)}"PtLib\thread.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
+	{$(INCLUDE)}"PtLib\timeint.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\udpsock.h"\
+	{$(INCLUDE)}"ptlib\vfakeio.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
+	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\videoio.h"\
+	{$(INCLUDE)}"ptlib\videoio.h"\
+	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
+	{$(INCLUDE)}"stdlibx.h"\
+	{$(INCLUDE)}"sys\socket.h"\
+	{$(INCLUDE)}"wceatl.h"\
+	
+NODEP_CPP_PSTUN=\
+	".\Include\PtLib\MSOS\ptlib\tpipv6.h"\
+	
+
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Release"
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
@@ -10329,79 +9567,58 @@ SOURCE=.\src\ptclib\pwavfile.cxx
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_PWAVF=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\pwavfile.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_PWAVF=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\pwavfile.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PWAVF=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\pwavfile.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
@@ -10409,7 +9626,6 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -10420,21 +9636,21 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -10449,13 +9665,13 @@ DEP_CPP_PWAVF=\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
@@ -10608,79 +9824,58 @@ NODEP_CPP_RANDO=\
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
 
-DEP_CPP_RANDO=\
-	{$(INCLUDE)}"cevfw.h"\
-	{$(INCLUDE)}"mmsystemx.h"\
-	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
-	{$(INCLUDE)}"ptclib\random.h"\
-	{$(INCLUDE)}"ptlib.h"\
-	{$(INCLUDE)}"ptlib\args.h"\
-	{$(INCLUDE)}"ptlib\array.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\channel.h"\
-	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
-	{$(INCLUDE)}"PtLib\config.h"\
-	{$(INCLUDE)}"ptlib\config.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.h"\
-	{$(INCLUDE)}"ptlib\contain.inl"\
-	{$(INCLUDE)}"ptlib\dict.h"\
-	{$(INCLUDE)}"ptlib\dynalink.h"\
-	{$(INCLUDE)}"PtLib\dynalink.h"\
-	{$(INCLUDE)}"ptlib\file.h"\
-	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
-	{$(INCLUDE)}"ptlib\filepath.h"\
-	{$(INCLUDE)}"ptlib\indchan.h"\
-	{$(INCLUDE)}"ptlib\lists.h"\
-	{$(INCLUDE)}"ptlib\mutex.h"\
-	{$(INCLUDE)}"PtLib\mutex.h"\
-	{$(INCLUDE)}"ptlib\object.h"\
-	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pprocess.h"\
-	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
-	{$(INCLUDE)}"PtLib\ptime.h"\
-	{$(INCLUDE)}"ptlib\ptlib.inl"\
-	{$(INCLUDE)}"PtLib\semaphor.h"\
-	{$(INCLUDE)}"ptlib\semaphor.h"\
-	{$(INCLUDE)}"PtLib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sfile.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"ptlib\sound.h"\
-	{$(INCLUDE)}"PtLib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncpoint.h"\
-	{$(INCLUDE)}"ptlib\syncthrd.h"\
-	{$(INCLUDE)}"ptlib\textfile.h"\
-	{$(INCLUDE)}"PtLib\textfile.h"\
-	{$(INCLUDE)}"PtLib\thread.h"\
-	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
-	{$(INCLUDE)}"ptlib\timer.h"\
-	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
-	{$(INCLUDE)}"ptlib\video.h"\
-	{$(INCLUDE)}"PtLib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio.h"\
-	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
-	{$(INCLUDE)}"stdlibx.h"\
-	{$(INCLUDE)}"wceatl.h"\
+NODEP_CPP_RANDO=\
+	".\ceatl.h"\
+	".\evfw.h"\
+	".\msystemx.h"\
+	".\tbuildopts.h"\
+	".\tclib\random.h"\
+	".\tdlibx.h"\
+	".\tlib.h"\
+	".\tlib\args.h"\
+	".\tlib\array.h"\
+	".\tlib\channel.h"\
+	".\tlib\conchan.h"\
+	".\tlib\config.h"\
+	".\tlib\contain.h"\
+	".\tlib\contain.inl"\
+	".\tlib\dict.h"\
+	".\tlib\dynalink.h"\
+	".\tlib\file.h"\
+	".\tlib\filepath.h"\
+	".\tlib\indchan.h"\
+	".\tlib\lists.h"\
+	".\tlib\mutex.h"\
+	".\tlib\object.h"\
+	".\tlib\osutil.inl"\
+	".\tlib\pdirect.h"\
+	".\tlib\pprocess.h"\
+	".\tlib\pstring.h"\
+	".\tlib\ptime.h"\
+	".\tlib\ptlib.inl"\
+	".\tlib\semaphor.h"\
+	".\tlib\sfile.h"\
+	".\tlib\sound.h"\
+	".\tlib\syncpoint.h"\
+	".\tlib\syncthrd.h"\
+	".\tlib\textfile.h"\
+	".\tlib\thread.h"\
+	".\tlib\timeint.h"\
+	".\tlib\timer.h"\
+	".\tlib\vfakeio.h"\
+	".\tlib\video.h"\
+	".\tlib\videoio.h"\
+	".\tlib\videoio1394dc.h"\
+	".\ucpp.h"\
 	
 
 !ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
 
 DEP_CPP_RANDO=\
+	".\Include\PtLib\conchan.h"\
 	{$(INCLUDE)}"cevfw.h"\
 	{$(INCLUDE)}"mmsystemx.h"\
 	{$(INCLUDE)}"nucpp.h"\
-	{$(INCLUDE)}"ptbuildopts.h"\
 	{$(INCLUDE)}"ptclib\random.h"\
 	{$(INCLUDE)}"ptlib.h"\
 	{$(INCLUDE)}"ptlib\args.h"\
@@ -10688,7 +9883,6 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\channel.h"\
 	{$(INCLUDE)}"ptlib\conchan.h"\
-	{$(INCLUDE)}"PtLib\conchan.h"\
 	{$(INCLUDE)}"PtLib\config.h"\
 	{$(INCLUDE)}"ptlib\config.h"\
 	{$(INCLUDE)}"ptlib\contain.h"\
@@ -10699,21 +9893,21 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"PtLib\dynalink.h"\
 	{$(INCLUDE)}"ptlib\file.h"\
 	{$(INCLUDE)}"PtLib\file.h"\
-	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\filepath.h"\
+	{$(INCLUDE)}"PtLib\filepath.h"\
 	{$(INCLUDE)}"ptlib\indchan.h"\
 	{$(INCLUDE)}"ptlib\lists.h"\
 	{$(INCLUDE)}"ptlib\mutex.h"\
 	{$(INCLUDE)}"PtLib\mutex.h"\
 	{$(INCLUDE)}"ptlib\object.h"\
 	{$(INCLUDE)}"ptlib\osutil.inl"\
-	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"PtLib\pdirect.h"\
-	{$(INCLUDE)}"PtLib\pprocess.h"\
+	{$(INCLUDE)}"ptlib\pdirect.h"\
 	{$(INCLUDE)}"ptlib\pprocess.h"\
+	{$(INCLUDE)}"PtLib\pprocess.h"\
 	{$(INCLUDE)}"ptlib\pstring.h"\
-	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"PtLib\ptime.h"\
+	{$(INCLUDE)}"ptlib\ptime.h"\
 	{$(INCLUDE)}"ptlib\ptlib.inl"\
 	{$(INCLUDE)}"PtLib\semaphor.h"\
 	{$(INCLUDE)}"ptlib\semaphor.h"\
@@ -10728,13 +9922,13 @@ DEP_CPP_RANDO=\
 	{$(INCLUDE)}"PtLib\textfile.h"\
 	{$(INCLUDE)}"PtLib\thread.h"\
 	{$(INCLUDE)}"ptlib\thread.h"\
-	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"PtLib\timeint.h"\
-	{$(INCLUDE)}"PtLib\timer.h"\
+	{$(INCLUDE)}"ptlib\timeint.h"\
 	{$(INCLUDE)}"ptlib\timer.h"\
+	{$(INCLUDE)}"PtLib\timer.h"\
 	{$(INCLUDE)}"ptlib\vfakeio.h"\
-	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"ptlib\video.h"\
+	{$(INCLUDE)}"PtLib\video.h"\
 	{$(INCLUDE)}"PtLib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio.h"\
 	{$(INCLUDE)}"ptlib\videoio1394dc.h"\
