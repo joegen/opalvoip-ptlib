@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.133  2002/10/19 06:12:20  robertj
+ * Moved P_fd_set::Zero() from platform independent to platform dependent
+ *   code as Win32 implementation is completely different from Unix.
+ *
  * Revision 1.132  2002/10/18 08:07:41  robertj
  * Fixed use of FD_ZERO as (strangely) crashes on some paltforms and would
  *   not have cleared enough of an enlarges fd_set anyway.
@@ -974,13 +978,6 @@ P_fd_set & P_fd_set::operator-=(SOCKET fd)
   PAssert(fd < max_fd, PInvalidParameter);
   FD_CLR(fd, set);
   return *this;
-}
-
-
-void P_fd_set::Zero()
-{
-  PAssertNULL(set);
-  memset(set, 0, (max_fd+7)>>3);
 }
 
 #ifdef _MSC_VER
