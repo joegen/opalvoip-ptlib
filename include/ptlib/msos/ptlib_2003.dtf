@@ -3907,6 +3907,7 @@ EXPORTS
     ?IsValid@PFilePath@@SAHD@Z @2059 NONAME ;public: static int __cdecl PFilePath::IsValid(char)
     ?IsValid@PTime@@QBEHXZ @5524 NONAME ;public: int __thiscall PTime::IsValid(void)const 
     ?IsValid@SecurityID@@QBEHXZ @5309 NONAME ;public: int __thiscall SecurityID::IsValid(void)const 
+    ?IsZero@PAtomicInteger@@QBEHXZ @5556 NONAME ;public: int __thiscall PAtomicInteger::IsZero(void)const 
     ?Kill@PPipeChannel@@QAEHH@Z @2060 NONAME ;public: int __thiscall PPipeChannel::Kill(int)
     ?Leave@PCriticalSection@@QAEXXZ @5554 NONAME ;public: void __thiscall PCriticalSection::Leave(void)
     ?left@?$_Iosb@H@std@@2W4_Fmtflags@12@B @5310 NONAME ;public: static enum std::_Iosb<int>::_Fmtflags const std::_Iosb<int>::left
