@@ -57,6 +57,11 @@ endif
 $(OBJDIR)/$(PROG):	$(OBJS) $(PTLIB_FILE)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $(OBJDIR)/$(PROG) $(LDLIBS)
 
+ifdef GUI
+$(OBJDIR)/$(PROG):	$(PWLIB_FILE)
+endif
+
+
 CLEAN_FILES	:= $(CLEAN_FILES) $(OBJDIR)/$(PROG)
 
 # ifdef PROG
