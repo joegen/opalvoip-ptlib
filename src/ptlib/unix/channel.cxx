@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.3 1995/02/15 20:28:14 craigs Exp $
+ * $Id: channel.cxx,v 1.4 1995/07/09 00:35:43 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.4  1995/07/09 00:35:43  craigs
+ * Latest and greatest omnibus change
+ *
  * Revision 1.3  1995/02/15 20:28:14  craigs
  * Removed sleep after pipe channel open
  *
@@ -25,6 +28,7 @@
 #pragma implementation "udpsock.h"
 #pragma implementation "tcpsock.h"
 #pragma implementation "telnet.h"
+#pragma implementation "appsock.h"
 
 #include "ptlib.h"
 #include "sockets.h"
@@ -61,18 +65,17 @@ BOOL PChannel::SetIOBlock (BOOL isRead)
 {
   PTimeInterval timeout = isRead ? readTimeout : writeTimeout;
   if (timeout != PMaxTimeInterval) 
-    PThread::Current()->PXBlockOnIO(os_handle, isRead, timeout);
+    return PThread::Current()->PXBlockOnIO(os_handle, isRead, timeout);
   else
-    PThread::Current()->PXBlockOnIO(os_handle, isRead);
-
-  return FALSE;
+    return PThread::Current()->PXBlockOnIO(os_handle, isRead);
 }
 
 
 BOOL PChannel::Read(void * buf, PINDEX len)
 {
-  SetIOBlock(TRUE);
-  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
+  if (!SetIOBlock(TRUE)) 
+    lastError = Timeout;
+  else if (ConvertOSError(lastReadCount = ::read(os_handle, buf, len)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -82,9 +85,10 @@ BOOL PChannel::Read(void * buf, PINDEX len)
 
 BOOL PChannel::Write(const void * buf, PINDEX len)
 {
-  SetIOBlock(FALSE);
-  if (ConvertOSError(lastWriteCount = ::write(os_handle, buf, len)))
-    return lastWriteCount >= len;
+  if (!SetIOBlock(FALSE))
+    lastError = Timeout;
+  else if (ConvertOSError(lastWriteCount = ::write(os_handle, buf, len)))
+      return lastWriteCount >= len;
 
   lastWriteCount = 0;
   return FALSE;
@@ -92,10 +96,12 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
 
 BOOL PChannel::Close()
 {
-  if (os_handle >= 0) 
-    return ConvertOSError(::close(os_handle));
-  else
+  if (os_handle < 0) 
     return FALSE;
+  else {
+    os_handle = -1;
+    return ConvertOSError(::close(os_handle));
+  }
 }
 
 PString PChannel::GetErrorText() const
@@ -861,7 +867,11 @@ BOOL PPipeChannel::Execute()
 BOOL PTCPSocket::Read(void * buf, PINDEX len)
 
 {
-  SetIOBlock(TRUE);
+  if (!SetIOBlock(TRUE)) {
+    lastError      = Timeout;
+    lastWriteCount = 0;
+    return FALSE;
+  }
 
   // attempt to read out of band data
   BYTE buffer[32];
