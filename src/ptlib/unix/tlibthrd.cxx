@@ -8,8 +8,6 @@
 #define	SUSPEND_SIG	SIGUSR1
 #define	RESUME_SIG	SIGUSR2
 
-static PThread * houseKeepingThread = NULL;
-
 PDECLARE_CLASS(HouseKeepingThread, PThread)
   public:
     HouseKeepingThread()
@@ -95,6 +93,15 @@ void PProcess::Construct()
   PAssert(getrlimit(RLIMIT_NOFILE, &rl) == 0, "getrlimit failed");
   rl.rlim_cur = rl.rlim_max;
   PAssert(setrlimit(RLIMIT_NOFILE, &rl) == 0, "setrlimit failed");
+
+  // initialise the housekeeping thread
+  housekeepingThread = NULL;
+}
+
+PProcess::~PProcess()
+{
+  if (housekeepingThread != NULL)
+    delete housekeepingThread;
 }
 
 PThread::PThread()
@@ -194,8 +201,8 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PProcess::SignalTimerChange()
 {
-  if (houseKeepingThread == NULL)
-    houseKeepingThread = PNEW HouseKeepingThread;
+  if (housekeepingThread == NULL)
+    housekeepingThread = PNEW HouseKeepingThread;
 
   timerChangeSemaphore.Signal();
 }
