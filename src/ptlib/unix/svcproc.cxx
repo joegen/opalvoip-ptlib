@@ -6,7 +6,6 @@
 #include <syslog.h>
 #include <stdarg.h>
 #include <fstream.h>
-#include <pthread.h>
 
 #include "uerror.h"
 
