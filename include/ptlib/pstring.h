@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.12 1995/06/17 00:43:40 robertj Exp $
+ * $Id: pstring.h,v 1.13 1995/06/17 11:13:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.13  1995/06/17 11:13:08  robertj
+ * Documentation update.
+ *
  * Revision 1.12  1995/06/17 00:43:40  robertj
  * Added flag for PStringArray constructor to create caseless strings.
  *
@@ -124,8 +127,8 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        Note that this function will allow a string with embedded '\0'
        characters to be created, but most of the functions here will be unable
        to access characters beyond the first '\0'. Furthermore, if the
-       <A><CODE>MakeMinimumSize()</CODE></A> function is called, all data
-       beyond that first '\0' character will be lost.
+       <A>MakeMinimumSize()</A> function is called, all data beyond that first
+       <CODE>'\0'</CODE> character will be lost.
      */
 
     PString(char c);
@@ -232,9 +235,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
   // Overrides from class PContainer
     virtual BOOL IsEmpty() const;
     /* Determine if the string is empty. This is semantically slightly
-       different from the usual container <A><CODE>IsEmpty()</CODE></A>
-       function. It does not test for <A><CODE>GetSize()</CODE></A> equal to
-       zero, it tests for <A><CODE>GetLength()</CODE></A> equal to zero.
+       different from the usual <A>PContainer::IsEmpty()</A> function. It does
+       not test for <A>PContainer::GetSize()</A> equal to zero, it tests for
+       <A>GetLength()</A> equal to zero.
 
        <H2>Returns:</H2>
        TRUE if no non-null characters in string.
@@ -256,7 +259,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
     PINDEX GetLength() const;
     /* Determine the length of the null terminated string. This is different
-       from <A><CODE>GetSize()</CODE></A> which returns the amount of memory
+       from <A>PContainer::GetSize()</A> which returns the amount of memory
        allocated to the string. This is often, though no necessarily, one
        larger than the length of the string.
        
@@ -381,9 +384,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator==(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if equal.
@@ -392,9 +395,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator!=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if not equal.
@@ -403,9 +406,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator<(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if less than.
@@ -414,9 +417,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator>(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if greater than.
@@ -425,9 +428,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator<=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if less than or equal.
@@ -436,9 +439,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator>=(
       const PObject & str  // PString object to compare against.
     ) const;
-    /* Compare two strings using the <A><CODE>Compare()</CODE></A> function.
-       This is identical to the <A>PObject</A> class function but is necessary
-       due to other overloaded versions.
+    /* Compare two strings using the <A>PObject::Compare()</A> function. This
+       is identical to the <A>PObject</A> class function but is necessary due
+       to other overloaded versions.
 
        <H2>Returns:</H2>
        TRUE if greater than or equal.
@@ -461,7 +464,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator!=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+    /* Compare a PString to a C string using the <A>PObject::Compare()</A>
        function. The <CODE>cstr</CODE> parameter is typically a literal
        string, eg:
 
@@ -474,7 +477,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator<(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+    /* Compare a PString to a C string using the <A>PObject::Compare()</A>
        function. The <CODE>cstr</CODE> parameter is typically a literal
        string, eg:
 
@@ -487,7 +490,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator>(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+    /* Compare a PString to a C string using the <A>PObject::Compare()</A>
        function. The <CODE>cstr</CODE> parameter is typically a literal
        string, eg:
 
@@ -500,7 +503,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator<=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+    /* Compare a PString to a C string using the <A>PObject::Compare()</A>
        function. The <CODE>cstr</CODE> parameter is typically a literal
        string, eg:
 
@@ -513,7 +516,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
     BOOL operator>=(
       const char * cstr  // C string to compare against.
     ) const;
-    /* Compare a PString to a C string using the <A><CODE>Compare()</CODE></A>
+    /* Compare a PString to a C string using the <A>PObject::Compare()</A>
        function. The <CODE>cstr</CODE> parameter is typically a literal
        string, eg:
 
@@ -916,10 +919,10 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        line feed pair ("\r\n"). A line feed and carriage return pair ("\n\r")
        would yield a blank line. between the characters.
 
-       The <A><CODE>Tokenise()</CODE></A> function should not be used to split
-       a string into lines as a "\r\n" pair consitutes a single line ending.
-       The <A><CODE>Tokenise()</CODE></A> function would produce a blank line
-       in between them.
+       The <A>Tokenise()</A> function should not be used to split a string
+       into lines as a <CODE>"\r\n"</CODE> pair consitutes a single line
+       ending. The <A>Tokenise()</A> function would produce a blank line in
+       between them.
 
        <H2>Returns:</H2>
        string array with a substring for each line in the string.
@@ -980,11 +983,12 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
 PDECLARE_CLASS(PCaselessString, PString)
 /* This class is a variation of a string that ignores case. Thus in all
-   standard comparison ("==", "<" etc) and search (<A><CODE>Find()</CODE></A>
-   etc) functions the case of the characters and strings is ignored.
+   standard comparison (<CODE>==</CODE>, <CODE><</CODE> etc) and search
+   (<A>Find()</A> etc) functions the case of the characters and strings is
+   ignored.
    
    The characters in the string still maintain their case. Only the comparison
-   oeprations are affected. So printing etc will still display the string as
+   operations are affected. So printing etc will still display the string as
    entered.
  */
 
@@ -1018,8 +1022,7 @@ PDECLARE_CLASS(PCaselessString, PString)
     /* Set the current instance to reference the same string as the
        <CODE>str</CODE> parameter. The previous reference is decremented and
        if no more references to the string are present, the string buffer is
-       released. A <A>PCaselessString</A> may also be provided to this
-       operator.
+       released. A PCaselessString may also be provided to this operator.
      */
 
 
