@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.72  2001/09/18 06:53:35  robertj
+ * Made sure suspend can't exit early if get spurious signal
+ *
  * Revision 1.71  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -461,9 +464,13 @@ void PThread::Restart()
 void PX_SuspendSignalHandler(int)
 {
   PThread * thread = PThread::Current();
-  if (thread != NULL) {
+  if (thread == NULL)
+    return;
+
+  BOOL notResumed = TRUE;
+  while (notResumed) {
     BYTE ch;
-    ::read(thread->unblockPipe[0], &ch, 1);
+    notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
     pthread_testcancel();
   }
 }
