@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.86  1999/11/18 02:22:53  robertj
+ * Fixed bug in GetErrorText() occasionally returning incorrect empty string, thanks Ulrich Findeisen
+ *
  * Revision 1.85  1999/07/06 13:37:07  robertj
  * Fixed bug in PThread::IsSuspended(), returned exactly the opposite state!
  *
@@ -709,11 +712,12 @@ PString PChannel::GetErrorText() const
 PString PChannel::GetErrorText(Errors lastError, int osError)
 {
   if (osError == 0) {
+    if (lastError == NoError)
+      return PString();
+
     static int const errors[Miscellaneous+1] = {
       0, ENOENT, EEXIST, ENOSPC, EACCES, 1000, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR, 1001
     };
-    if (osError == 0)
-      return PString();
     osError = errors[lastError];
   }
 
