@@ -317,11 +317,6 @@ fi
 
 
 dnl ########################################################################
-dnl look for SDL
-dnl MSWIN SDL,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\
-
-
-dnl ########################################################################
 dnl Speech
 
 dnl MSWIN Speech API,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
@@ -356,6 +351,29 @@ if test ${HAS_PTHREADS} = yes ; then
   dnl 
   if test ${OSTYPE} != Darwin ; then
     AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
+  fi
+fi
+
+dnl ########################################################################
+dnl look for SDL, but only if we have pthreads
+dnl MSWIN SDL,P_SDL,1,@SDL_DIR@,include\SDL_video.h,,..\sdl\
+
+
+if test "${HAS_PTHREADS:-unset}" != "unset" ; then
+  AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
+  if test "${HAS_SDL:-unset}" != "unset" ; then
+    AC_CHECK_LIB(SDL, SDL_Init, HAS_SDL=1, HAS_SDL=, -lpthread)
+  fi
+  if test "${HAS_SDL:-unset}" != "unset" ; then
+    AC_SUBST(HAS_SDL, 1)
+    AC_DEFINE(P_SDL, 1, "SDL found")
+    if test ${SDLINCLUDEDIR:-unset} != "unset" ; then
+      STDCCFLAGS="$STDCCFLAGS -I${SDLINCLUDEDIR}"
+    fi
+    if test ${SDLLIBDIR:-unset} != "unset" ; then
+      LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
+    fi
+    ENDLDLIBS="$ENDLDLIBS -lSDL"
   fi
 fi
 
