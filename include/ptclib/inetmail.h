@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.h,v 1.2 1996/03/16 04:38:24 robertj Exp $
+ * $Id: inetmail.h,v 1.3 1996/06/28 13:16:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetmail.h,v $
+ * Revision 1.3  1996/06/28 13:16:32  robertj
+ * Changed SMTP incoming message handler so can tell when started, processing or ended message.
+ *
  * Revision 1.2  1996/03/16 04:38:24  robertj
  * Added ParseReponse() for splitting reponse line into code and info.
  *
@@ -185,9 +188,15 @@ PDECLARE_CLASS(PSMTPSocket, PApplicationSocket)
        Result of name look up operation.
      */
 
+    enum MessagePosition {
+      MessageStart,
+      MessagePart,
+      MessageEnd
+    };
+
     virtual BOOL HandleMessage(
       PCharArray & buffer,  // Buffer containing message data received.
-      BOOL completed
+      MessagePosition position
       // Indication that the entire message has been received.
     );
     /* Handle a received message. The <CODE>buffer</CODE> parameter contains
