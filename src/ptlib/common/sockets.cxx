@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.77  1998/10/01 09:05:35  robertj
+ * Added check that port number is between 1 and 65535.
+ *
  * Revision 1.76  1998/09/23 06:22:44  robertj
  * Added open source copyright license.
  *
@@ -371,13 +374,18 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
   if (serv != NULL)
     return ntohs(serv->s_port);
 
+  long portNum;
   if (space != P_MAX_INDEX)
-    return (WORD)atoi(service(space+1, P_MAX_INDEX));
+    portNum = atol(service(space+1, P_MAX_INDEX));
+  else if (isdigit(service[0]))
+    portNum = atoi(service);
+  else
+    portNum = -1;
 
-  if (isdigit(service[0]))
-    return (WORD)atoi(service);
+  if (portNum < 0 || portNum > 65535)
+    return 0;
 
-  return 0;
+  return (WORD)portNum;
 }
 
 
