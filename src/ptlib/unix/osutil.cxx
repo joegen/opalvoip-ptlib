@@ -261,7 +261,47 @@ BOOL PFile::Open(OpenMode mode, int opt)
 }
 
 
-BOOL PFile::Access(const PString & name, OpenMode mode)
+BOOL PFile::Rename(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+{
+  PFilePath from = oldname.GetDirectory() + oldname.GetFileName();
+  PFilePath to = newname.GetDirectory() + newname.GetFileName();
+
+  if (from.GetPath() != to.GetPath())
+    return FALSE;
+
+  if (rename(from, to) == 0)
+    return TRUE;
+
+  if (force && errno == EEXIST)
+    if (Remove(to, TRUE))
+      if (rename(from, to) == 0)
+	return TRUE;
+
+  return FALSE;
+}
+
+
+BOOL PFile::Move(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+{
+  PFilePath from = oldname.GetDirectory() + oldname.GetFileName();
+  PFilePath to = newname.GetDirectory() + newname.GetFileName();
+
+  if (rename(from, to) == 0)
+    return TRUE;
+
+  if (errno == EXDEV)
+    return Copy(from, to, force) && Remove(from);
+
+  if (force && errno == EEXIST)
+    if (Remove(to, TRUE))
+      if (rename(from, to) == 0)
+	return TRUE;
+
+  return FALSE;
+}
+
+
+BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 {
   int accmode;
 
@@ -484,6 +524,16 @@ PString PFilePath::GetFileName() const
     return *this;
   else
     return Right(GetLength()-i-1);
+}
+
+
+PDirectory PFilePath::GetDirectory() const
+{
+  PDirectory curdir;
+  PDirectory::Change(GetPath());
+  PDirectory dir;
+  curdir.Change();
+  return dir;
 }
 
 
