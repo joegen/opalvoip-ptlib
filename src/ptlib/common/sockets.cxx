@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.13 1995/04/01 08:31:54 robertj Exp $
+ * $Id: sockets.cxx,v 1.14 1995/04/25 11:12:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.14  1995/04/25 11:12:44  robertj
+ * Fixed functions hiding ancestor virtuals.
+ *
  * Revision 1.13  1995/04/01 08:31:54  robertj
  * Finally got a working TELNET.
  *
@@ -403,6 +406,33 @@ BOOL PTelnetSocket::Open(const PString & host, WORD newPort)
   if (!PTCPSocket::Open(host, newPort))
     return FALSE;
 
+  _Open();
+  return TRUE;
+}
+
+
+BOOL PTelnetSocket::Open(WORD newPort)
+{
+  if (!PTCPSocket::Open(newPort))
+    return FALSE;
+
+  _Open();
+  return TRUE;
+}
+
+
+BOOL PTelnetSocket::Open(PSocket & sock)
+{
+  if (!PTCPSocket::Open(sock))
+    return FALSE;
+
+  _Open();
+  return TRUE;
+}
+
+
+void PTelnetSocket::_Open()
+{
   PTelnetError << "open" << endl;
 
   SendDo(SuppressGoAhead);
@@ -411,7 +441,6 @@ BOOL PTelnetSocket::Open(const PString & host, WORD newPort)
 //  SendWill(TerminalType);
 //  if (option[WindowSize].weCan)
 //    SendWill(WindowSize);
-  return TRUE;
 }
 
 
@@ -881,7 +910,7 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
               state = StateNormal;
               *dst++ = IAC;
               charsLeft--;
-              return IAC;
+              break;
 
             case DO :
               state = StateDo;
