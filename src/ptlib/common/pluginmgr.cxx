@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.9  2004/02/23 23:56:01  csoutheren
+ * Removed unneeded class
+ *
  * Revision 1.8  2004/01/18 21:00:15  dsandras
  * Fixed previous commit thanks to Craig Southeren!
  *
@@ -45,29 +48,6 @@
 #  endif
 #endif
 
-// static vars to help bootstrap the default plugin instance
-
-//////////////////////////////////////////////////////
-//
-// helper class to ensure DLLs are cleaned up correctly
-// when in a list
-//
-
-class PPluginDynamic : public PObject
-{
-  public:
-    PPluginDynamic (PDynaLink * _dll)
-    { dll = _dll; }
-
-    ~PPluginDynamic()
-    {
-      dll->Close ();
-      delete dll;
-      dll = NULL;
-    }
-
-    PDynaLink *dll;
-};
 
 //////////////////////////////////////////////////////
 
@@ -128,8 +108,8 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
           PTRACE(3, "Failed to find the registration-triggering function in " << fileName);
         }
 
-        pluginList.Append(new PPluginDynamic(dll));
-	return TRUE;
+        pluginList.Append(dll);
+      	return TRUE;
       }
     }
   }
