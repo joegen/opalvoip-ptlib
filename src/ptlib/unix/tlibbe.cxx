@@ -27,6 +27,10 @@
  * Contributor(s): Yuri Kiryanov, openh323@kiryanov.com
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.13  2003/02/26 01:13:18  robertj
+ * Fixed race condition where thread can terminatebefore an IsSuspeded() call
+ *   occurs and cause an assert, thanks Sebastian Meyer
+ *
  * Revision 1.12  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -279,8 +283,6 @@ void PThread::Resume()
 
 BOOL PThread::IsSuspended() const
 {
-  PAssert(!IsTerminated(), "Operation on terminated thread");
-
   thread_info info;
   status_t result = ::get_thread_info(threadId, &info);
 
