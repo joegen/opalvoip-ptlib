@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.9 1995/01/18 09:01:06 robertj Exp $
+ * $Id: timer.h,v 1.10 1995/03/14 12:42:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.9  1995/01/18 09:01:06  robertj
+ * Revision 1.10  1995/03/14 12:42:51  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.9  1995/01/18  09:01:06  robertj
  * Added notifiers to timers.
  * Documentation.
  *
@@ -50,10 +53,10 @@ class PTimer;
 
 
 PDECLARE_CLASS(PTimerList, PAbstractList)
-/* This class defines a list of $H$PTimer objects. It is primarily used
+/* This class defines a list of <A>PTimer</A> objects. It is primarily used
    internally by the library and the user should never create an instance of
-   it. The $H$PProcess instance for the application maintains an instance of
-   all of the timers created so that it may decrements them at regular
+   it. The <A>PProcess</A> instance for the application maintains an instance
+   of all of the timers created so that it may decrements them at regular
    intervals.
  */
 
@@ -63,14 +66,16 @@ PDECLARE_CLASS(PTimerList, PAbstractList)
 
     PTimeInterval Process();
     /* Decrement all the created timers and dispatch to their callback
-       functions if they have expired. The $H$PTimer::Tick() function value is
-       used to determine the time elapsed since the last call to Process().
+       functions if they have expired. The <A>PTimer::Tick()</A> function
+       value is used to determine the time elapsed since the last call to
+       Process().
 
        The return value is the number of milliseconds until the next timer
        needs to be despatched. The function need not be called again for this
        amount of time, though it can (and usually is).
        
-       Returns: maximum time interval before function should be called again.
+       <H2>Returns:</H2>
+       maximum time interval before function should be called again.
      */
 
   private:
@@ -83,15 +88,16 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
 /* A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
 
-   A timer on completion calls the virtual function $B$OnTimeout()$B$. This
-   will in turn call the callback function provided by the instance. The user
-   may either override the virtual function or set a callback as desired.
+   A timer on completion calls the virtual function
+   <A><CODE>OnTimeout()</CODE></A>. This will in turn call the callback
+   function provided by the instance. The user may either override the virtual
+   function or set a callback as desired.
    
    Note that only one timeout function can be executed at a time. The timeout
-   function is also executed in the context of the $H$PProcess instances
+   function is also executed in the context of the <A>PProcess</A> instances
    thread of execution.
    
-   A list of active timers is maintinaed by the applications $H$PProcess
+   A list of active timers is maintinaed by the applications <A>PProcess</A> 
    instance. This is used for sstealing the processor time to decrement the
    timers and call the timeout functions. A consequence of this is that no
    static timer instances can be running when the program terminates.
@@ -110,7 +116,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     );
     /* Create a new timer object and start it in one shot mode for the
        specified amount of time. If the time was zero milliseconds then the
-       timer is $U$not$U$ started, ie the callback function is not executed
+       timer is <EM>not</EM> started, ie the callback function is not executed
        immediately.
      */
 
@@ -120,7 +126,8 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     /* Restart the timer in one shot mode using the specified time value. If
        the timer was already running, the "time left" is simply reset.
 
-       Returns: reference to the timer.
+       <H2>Returns:</H2>
+       reference to the timer.
      */
 
     virtual ~PTimer();
@@ -148,13 +155,14 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     /* Determine if the timer is currently running. This really is only useful
        for one shot timers as repeating timers are always running.
        
-       Returns: TRUE if timer is still counting.
+       <H2>Returns:</H2>
+       TRUE if timer is still counting.
      */
 
     void Pause();
-    /* Pause a running timer. This differs from the $B$Stop()$B$ function in
-       that the timer may be resumed at the point that it left off. That is
-       time is "frozen" while the timer is paused.
+    /* Pause a running timer. This differs from the <A><CODE>Stop()</CODE></A>
+       function in that the timer may be resumed at the point that it left off.
+       That is time is "frozen" while the timer is paused.
      */
 
     void Resume();
@@ -166,21 +174,23 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     BOOL IsPaused() const;
     /* Determine if the timer is currently paused.
 
-       Returns: TRUE if timer paused.
+       <H2>Returns:</H2>
+       TRUE if timer paused.
      */
 
     const PNotifier & GetNotifier() const;
     /* Get the current call back function that is called whenever the timer
-       expires. This is called by the $B$ObTimeout()$B$ function.
+       expires. This is called by the <A><CODE>OnTimeout()</CODE></A> function.
 
-       Returns: current notifier for the timer.
+       <H2>Returns:</H2>
+       current notifier for the timer.
      */
 
     void SetNotifier(
       const PNotifier & func  // New notifier function for the timer.
     );
     /* Set the call back function that is called whenever the timer expires.
-       This is called by the $B$ObTimeout()$B$ function.
+       This is called by the <A><CODE>OnTimeout()</CODE></A> function.
      */
 
     static PTimeInterval Tick();
@@ -190,19 +200,21 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
        Note that even though this function returns milliseconds, the value may
        jump in minimum quanta according the platforms timer system, eg under
        MS-DOS and MS-Windows the values jump by 55 every 55 milliseconds. The
-       $B$Resolution()$B$ function may be used to determine what the minimum
-       time interval is.
+       <A><CODE>Resolution()</CODE></A> function may be used to determine what
+       the minimum time interval is.
     
-       Returns: millisecond counter.
+       <H2>Returns:</H2>
+       millisecond counter.
      */
 
     static unsigned Resolution();
     /* Get the smallest number of milliseconds that the timer can be set to.
        All actual timing events will be rounded up to the next value. This is
-       typically the platforms internal timing units used in the $B$Tick()$B$
-       function.
+       typically the platforms internal timing units used in the
+       <A><CODE>Tick()</CODE></A> function.
        
-       Returns: minimum number of milliseconds per timer "tick".
+       <H2>Returns:</H2>
+       minimum number of milliseconds per timer "tick".
      */
 
 
@@ -214,7 +226,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
        equal to zero. The interval is then reset to zero and the function
        called.
        
-       The default behaviour of this function is to call the $H$PNotifier
+       The default behaviour of this function is to call the <A>PNotifier</A> 
        callback function.
      */
 
@@ -223,8 +235,8 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     void StartRunning(
       BOOL once   // Flag for one shot or continuous.
     );
-    /* Start or restart the timer from the $B$resetTime$B$ variable. This is
-       an internal function.
+    /* Start or restart the timer from the <CODE>resetTime</CODE> variable.
+       This is an internal function.
      */
 
     BOOL Process(
@@ -232,10 +244,11 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
       PTimeInterval & minTimeLeft     // Minimum time left till next timeout.
     );
     /* Process the timer decrementing it by the delta amount and calling the
-       $B$OnTimeout()$B$ when zero. This is used by internally by the
-       $H$PTimerList calless $B$Process()$B$ function.
+       <A><CODE>OnTimeout()</CODE></A> when zero. This is used by internally
+       by the <A>PTimerList</A> calless <A><CODE>Process()</CODE></A> function.
 
-       Returns: TRUE if is no longer running.
+       <H2>Returns:</H2>
+       TRUE if is no longer running.
      */
 
   // Member variables
