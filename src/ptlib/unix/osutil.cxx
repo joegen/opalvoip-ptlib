@@ -147,6 +147,19 @@ static PString CanonicaliseFilename(const PString & filename)
 }
 
 
+PInt64 PString::AsInt64(unsigned base) const
+{
+  char * dummy;
+  return strtoq(theArray, &dummy, base);
+}
+
+PUInt64 PString::AsUnsigned64(unsigned base) const
+{
+  char * dummy;
+  return strtouq(theArray, &dummy, base);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // timer
