@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.49  2000/11/28 12:47:13  robertj
+ * Added ability to separate collection entries with newline in PrintOn by using fillchar.
+ *
  * Revision 1.48  1999/08/22 12:54:35  robertj
  * Fixed warnings about inlines on older GNU compiler
  *
@@ -189,10 +192,17 @@
 
 void PCollection::PrintOn(ostream &strm) const
 {
+  BOOL newlines = strm.fill() == '\n';
+  int width = strm.width();
   for (PINDEX  i = 0; i < GetSize(); i++) {
     PObject * obj = GetAt(i);
-    if (obj != NULL)
+    if (obj != NULL) {
+      if (newlines)
+        strm.width(width);
       strm << *obj;
+    }
+    if (newlines)
+      strm << '\n';
   }
 }
 
