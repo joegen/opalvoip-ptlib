@@ -22,6 +22,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.31  2003/03/17 08:03:07  robertj
+ * Combined to the separate incoming and outgoing substream classes into
+ *   a single class to make it easier to produce codec aware descendents.
+ * Added G.729 substream class.
+ *
  * Revision 1.30  2002/12/03 22:39:14  robertj
  * Removed get document that just returns a content length as the chunked
  *   transfer encoding makes this very dangerous.
@@ -132,7 +137,11 @@
 
 #if P_EXPAT
 
-#define G7231_FRAME_SIZE  30
+#include <ptclib/vxml.h>
+#include <ptclib/memfile.h>
+#include <ptclib/random.h>
+#include <ptclib/http.h>
+
 
 #define SMALL_BREAK_MSECS   1000
 #define MEDIUM_BREAK_MSECS  2500
@@ -143,10 +152,6 @@
 
 #define CACHE_BUFFER_SIZE   1024
 
-#include <ptclib/vxml.h>
-#include <ptclib/memfile.h>
-#include <ptclib/random.h>
-#include <ptclib/http.h>
 
 PMutex     PVXMLSession::cacheMutex;
 PDirectory PVXMLSession::cacheDir;
@@ -326,6 +331,9 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
   PINDEX pos = src.Find(':');
   if ((pos != P_MAX_INDEX) && (pos < 5))
     return src;
+
+  if (rootURL.IsEmpty())
+    return "file:" + src;
 
   // else use scheme and path from root document
   PURL url = rootURL;
@@ -530,31 +538,26 @@ PXMLElement * PVXMLSession::FindForm(const PString & id)
 }
 
 
-
 BOOL PVXMLSession::Open(BOOL isPCM)
 {
-  PWaitAndSignal m(sessionMutex);
-
-  PVXMLOutgoingChannel * out; 
-  PVXMLIncomingChannel * in; 
-
-  if (isPCM) {
-    out = new PVXMLOutgoingChannelPCM(*this);
-    in  = new PVXMLIncomingChannelPCM(*this);
-  } else {
-    out = new PVXMLOutgoingChannelG7231(*this);
-    in  = new PVXMLIncomingChannelG7231(*this);
-  }
-
-  BOOL stat = PIndirectChannel::Open(out, in);
-
-  if (stat) {
-    outgoingChannel = out;
-    incomingChannel = in;
-  }
-
-  return stat;
+  if (isPCM)
+    return Open(new PVXMLChannelPCM(*this, TRUE), new PVXMLChannelPCM(*this, FALSE));
+  else
+    return Open(new PVXMLChannelG7231(*this, TRUE), new PVXMLChannelG7231(*this, FALSE));
 }
+
+
+BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
+{
+  if (!PIndirectChannel::Open(out, in))
+    return FALSE;
+
+  PWaitAndSignal m(sessionMutex);
+  outgoingChannel = out;
+  incomingChannel = in;
+  return TRUE;
+}
+
 
 BOOL PVXMLSession::Close()
 {
@@ -1113,47 +1116,47 @@ BOOL PVXMLSession::TraverseAudio()
 
 BOOL PVXMLSession::TraverseGoto()		// <goto>
 {
-	PAssert(currentNode != NULL, "ProcessGotoElement(): Expected valid node");
-	if (currentNode == NULL)
-		return FALSE;
-
-	// LATER: handle expr, expritem, fetchaudio, fetchhint, fetchtimeout, maxage, maxstale
-
-	PAssert(currentNode->IsElement(), "ProcessGotoElement(): Expected element");
-
-	// nextitem
-	PString nextitem = ((PXMLElement*)currentNode)->GetAttribute("nextitem");
-	if (!nextitem.IsEmpty()) {
-		// LATER: Take out the optional #
-		currentForm = FindForm(nextitem);
+  PAssert(currentNode != NULL, "ProcessGotoElement(): Expected valid node");
+  if (currentNode == NULL)
+    return FALSE;
+  
+  // LATER: handle expr, expritem, fetchaudio, fetchhint, fetchtimeout, maxage, maxstale
+  
+  PAssert(currentNode->IsElement(), "ProcessGotoElement(): Expected element");
+  
+  // nextitem
+  PString nextitem = ((PXMLElement*)currentNode)->GetAttribute("nextitem");
+  if (!nextitem.IsEmpty()) {
+    // LATER: Take out the optional #
+    currentForm = FindForm(nextitem);
     currentNode = currentForm;
-		if (currentForm == NULL) {
-			// LATER: throw "error.semantic" or "error.badfetch" -- lookup which
-			return FALSE;
-		}
-		return TRUE;
-	}
-
-	// next
-	PString next = ((PXMLElement*)currentNode)->GetAttribute("next");
-	// LATER: fixup filename to prepend path
-	if (!next.IsEmpty())
-	{
+    if (currentForm == NULL) {
+      // LATER: throw "error.semantic" or "error.badfetch" -- lookup which
+      return FALSE;
+    }
+    return TRUE;
+  }
+  
+  // next
+  PString next = ((PXMLElement*)currentNode)->GetAttribute("next");
+  // LATER: fixup filename to prepend path
+  if (!next.IsEmpty())
+  {
     PURL url = NormaliseResourceName(next);
     if (!LoadURL(url)) {
-			// LATER: throw 'error.badfetch'
-			return FALSE;
+      // LATER: throw 'error.badfetch'
+      return FALSE;
     }
-
-		// LATER: handle '#' for picking the correct form (inside of the document)
-		if (currentForm == NULL) {
-			// LATER: throw 'error.badfetch'
-			return FALSE;
-		}
-		return TRUE;
-	}
-	
-	return FALSE;
+    
+    // LATER: handle '#' for picking the correct form (inside of the document)
+    if (currentForm == NULL) {
+      // LATER: throw 'error.badfetch'
+      return FALSE;
+    }
+    return TRUE;
+  }
+  
+  return FALSE;
 }
 
 BOOL PVXMLSession::TraverseGrammar()		// <grammar>
@@ -1285,6 +1288,34 @@ void PVXMLSession::SayAs(const PString & className, const PString & text)
 
 ///////////////////////////////////////////////////////////////
 
+PVXMLChannel::PVXMLChannel(PVXMLSession & _vxml,
+                           BOOL incoming,
+                           const PString & fmtName,
+                           PINDEX frBytes,
+                           unsigned frTime,
+                           unsigned wavType,
+                           const PString & prefix)
+  : vxml(_vxml),
+    isIncoming(incoming),
+    formatName(fmtName),
+    frameBytes(frBytes),
+    frameTime(frTime),
+    wavFileType(wavType),
+    wavFilePrefix(prefix)
+{
+  closed = FALSE;
+  wavFile = NULL;
+  playing = FALSE;
+  frameLen = frameOffs = 0;
+  silentCount = 20;         // wait 20 frames before playing the OGM
+}
+
+
+PVXMLChannel::~PVXMLChannel()
+{
+  EndRecording();
+}
+
 BOOL PVXMLChannel::IsOpen() const
 {
   return !closed;
@@ -1299,70 +1330,120 @@ BOOL PVXMLChannel::Close()
   return TRUE; 
 }
 
-//////////////////////////////////////////////////////////////////
-
-PVXMLOutgoingChannel::PVXMLOutgoingChannel(PVXMLSession & _vxml)
-  : PVXMLChannel(_vxml, FALSE)
+PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 {
-  playing = FALSE;
-  frameLen = frameOffs = 0;
-  silentCount = 20;         // wait 20 frames before playing the OGM
-}
+  if (wavFilePrefix.IsEmpty())
+    return ofn;
 
-BOOL PVXMLOutgoingChannel::AdjustFrame(void * buffer, PINDEX amount)
-{
-  if ((frameOffs + amount) > frameLen) {
-    cerr << "Reading past end of frame:offs=" << frameOffs << ",amt=" << amount << ",len=" << frameLen << endl;
-    return TRUE;
+  PString fn = ofn;
+
+  // add in _g7231 prefix, if not there already
+  PINDEX pos = ofn.FindLast('.');
+  if (pos == P_MAX_INDEX) {
+    if (fn.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
+      fn += "_g7231";
   }
-  //PAssert((frameOffs + amount) <= frameLen, "Reading past end of frame");
-
-  memcpy(buffer, frameBuffer.GetPointer()+frameOffs, amount);
-  frameOffs += amount;
-
-  lastReadCount = amount;
-
-  return frameOffs == frameLen;
+  else {
+    PString basename = ofn.Left(pos);
+    PString ext      = ofn.Mid(pos+1);
+    if (basename.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
+      basename += wavFilePrefix;
+    fn = basename + "." + ext;
+  }
+  return fn;
 }
 
-void PVXMLOutgoingChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
-{
-  PTRACE(3, "PVXML\tEnqueueing resource " << url << " for playing");
-  QueueItem(new PVXMLQueueURLItem(url, repeat, delay));
+PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn)
+{ 
+  PWAVFile * wav = vxml.CreateWAVFile(AdjustWavFilename(fn),
+                                       isIncoming ? PFile::WriteOnly : PFile::ReadOnly,
+                                       PFile::ModeDefault,
+                                       wavFileType);
+
+  if (!wav->IsOpen())
+    PTRACE(1, "VXML\tCould not open WAV file " << wav->GetName());
+  else {
+    // Check the wave file header
+    if (!isIncoming && !wav->IsValid())
+      PTRACE(1, "VXML\tWAV file header invalid for " << wav->GetName());
+    else {
+      if (wav->GetFormat() != wavFileType)
+        PTRACE(1, "VXML\tIncorrect codec (is " << wav->GetFormat()
+               << " should be " << GetWavFileType()
+               << ") in WAV file " << wav->GetName());
+      else {
+        if (wav->GetFormat() == PWAVFile::fmt_PCM &&
+            (wav->GetSampleRate() != 8000 ||
+             wav->GetChannels() != 1 ||
+             wav->GetSampleSize() != 16))
+          PTRACE(1, "VXML\tIncorrect format for PCM WAV file" << wav->GetName() << "\n"
+                    "Is " <<  wav->GetSampleSize() << " bits, "
+                          << (wav->GetChannels()==1 ? "mono " : "stereo ")
+                          <<  wav->GetSampleRate() << " Hz"
+                    " and should be a 16 Bit, Mono, 8000 Hz (8Khz)");
+        else {
+          PTRACE(4, "VXML\tOpened WAV file " << wav->GetName());
+          return wav;
+        }
+      }
+    }
+  }
+
+  delete wav;
+  return NULL;
 }
 
-void PVXMLOutgoingChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
-{
-  PTRACE(3, "PVXML\tEnqueueing file " << fn << " for playing");
-  QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay, autoDelete));
-}
 
-void PVXMLOutgoingChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
-{
-  PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
-  QueueItem(new PVXMLQueueDataItem(data, repeat, delay));
-}
-
-void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem)
-{
-  PWaitAndSignal mutex(queueMutex);
-  playQueue.Enqueue(newItem);
-}
-
-void PVXMLOutgoingChannel::FlushQueue()
+BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
 {
   PWaitAndSignal mutex(channelMutex);
 
-  if (GetBaseReadChannel() != NULL)
-    PIndirectChannel::Close();
+  if (closed)
+    return FALSE;
 
-  PWaitAndSignal m(queueMutex);
-  PVXMLQueueItem * qItem;
-  while ((qItem = playQueue.Dequeue()) != NULL)
-    delete qItem;
+  delay.Delay(len / frameBytes * frameTime);
+
+  lastWriteCount = len;
+  if (wavFile == NULL || !wavFile->IsOpen())
+    return TRUE;
+
+  return WriteFrame(buf, len);
 }
 
-BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
+BOOL PVXMLChannel::StartRecording(const PFilePath & fn)
+{
+  // if there is already a file open, close it
+  EndRecording();
+
+  // open the output file
+  PWaitAndSignal mutex(channelMutex);
+  wavFile = CreateWAVFile(fn);
+  PTRACE(3, "PVXML\tStarting recording to " << fn);
+  if (!wavFile->IsOpen()) {
+    PTRACE(2, "PVXML\tCannot create record file " << fn);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL PVXMLChannel::EndRecording()
+{
+  PWaitAndSignal mutex(channelMutex);
+
+  if (wavFile == NULL)
+    return TRUE;
+
+  wavFile->Close();
+
+  delete wavFile;
+  wavFile = NULL;
+  
+  return TRUE;
+}
+
+
+BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 {
   PWaitAndSignal m(channelMutex);
 
@@ -1487,86 +1568,77 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
 
   // delay to synchronise to frame boundary
   if (frameBoundary)
-    DelayFrame(amount);
+    delay.Delay(amount / frameBytes * frameTime);
 
   return TRUE;
 }
 
-PWAVFile * PVXMLOutgoingChannel::CreateWAVFile(const PFilePath & fn)
-{ 
-  PString nfn = AdjustFn(fn);
-  PWAVFile * file = vxml.CreateWAVFile(nfn, PFile::ReadOnly, PFile::ModeDefault, GetWavFileType()); 
-  if (!IsWAVFileValid(*file)) {
-    delete file;
-    file = NULL;
+
+BOOL PVXMLChannel::AdjustFrame(void * buffer, PINDEX amount)
+{
+  if ((frameOffs + amount) > frameLen) {
+    PTRACE(5, "Reading past end of frame:offs=" << frameOffs << ",amt=" << amount << ",len=" << frameLen);
+    amount = frameLen - frameOffs;
   }
 
-  return file;
+  memcpy(buffer, frameBuffer.GetPointer()+frameOffs, amount);
+  frameOffs += amount;
+
+  lastReadCount = amount;
+
+  return frameOffs == frameLen;
+}
+
+void PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
+{
+  PTRACE(3, "PVXML\tEnqueueing resource " << url << " for playing");
+  QueueItem(new PVXMLQueueURLItem(url, repeat, delay));
+}
+
+void PVXMLChannel::QueueFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
+{
+  PTRACE(3, "PVXML\tEnqueueing file " << fn << " for playing");
+  QueueItem(new PVXMLQueueFilenameItem(fn, repeat, delay, autoDelete));
+}
+
+void PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
+{
+  PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
+  QueueItem(new PVXMLQueueDataItem(data, repeat, delay));
+}
+
+void PVXMLChannel::QueueItem(PVXMLQueueItem * newItem)
+{
+  PWaitAndSignal mutex(queueMutex);
+  playQueue.Enqueue(newItem);
+}
+
+void PVXMLChannel::FlushQueue()
+{
+  PWaitAndSignal mutex(channelMutex);
+
+  if (GetBaseReadChannel() != NULL)
+    PIndirectChannel::Close();
+
+  PWaitAndSignal m(queueMutex);
+  PVXMLQueueItem * qItem;
+  while ((qItem = playQueue.Dequeue()) != NULL)
+    delete qItem;
 }
 
 ///////////////////////////////////////////////////////////////
 
-static BOOL CheckWAVFileValid(PWAVFile & chan, BOOL mustBePCM)
-{
-  // Check the wave file header
-  if (!chan.IsValid()) {
-    PTRACE(1, chan.GetName() << " wav file header invalid");
-    return FALSE;
-  }
-
-  // Check the wave file format
-  if (mustBePCM) {
-    if (chan.GetFormat() != PWAVFile::fmt_PCM) {
-      PTRACE(1, chan.GetName() << " is not a PCM format wav file");
-      PTRACE(1, "It is format " << chan.GetFormat() );
-      return FALSE;
-    }
-
-    if ((chan.GetSampleRate() != 8000) &&
-        (chan.GetChannels() != 1) &&
-        (chan.GetSampleSize() != 16)) {
-      PTRACE(1, chan.GetName() << " is not a 16 Bit, Mono, 8000 Hz (8Khz) PCM wav file");
-      PTRACE(1, "It is " << chan.GetSampleSize() << " bits, "
-                         << (chan.GetChannels()==1 ? "mono " : "stereo ")
-                         << chan.GetSampleRate() << " Hz");
-      return FALSE;
-    }
-  }
-
-  else if ((chan.GetFormat() != PWAVFile::fmt_MSG7231) && 
-      (chan.GetFormat() != PWAVFile::fmt_VivoG7231)) {
-    PTRACE(1, chan.GetName() << " is not a G.723.1 format wav file");
-    PTRACE(1, "It is format " << chan.GetFormat() );
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
-static int GetG7231FrameLen(BYTE firstByte)
-{
-  static int g7231Lens[] = { 24, 20, 4, 1 };
-  return g7231Lens[firstByte & 3];
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLOutgoingChannelPCM::PVXMLOutgoingChannelPCM(PVXMLSession & vxml)
-  : PVXMLOutgoingChannel(vxml)
+PVXMLChannelPCM::PVXMLChannelPCM(PVXMLSession & vxml, BOOL incoming)
+  : PVXMLChannel(vxml, incoming, "PCM-16", 16, 1, PWAVFile::PCM_WavFile, PString::Empty())
 {
 }
 
-BOOL PVXMLOutgoingChannelPCM::IsWAVFileValid(PWAVFile & chan) 
+BOOL PVXMLChannelPCM::WriteFrame(const void * buf, PINDEX len)
 {
-  return CheckWAVFileValid(chan, TRUE);
+  return wavFile->Write(buf, len);
 }
 
-void PVXMLOutgoingChannelPCM::DelayFrame(PINDEX amount)
-{
-  delay.Delay(amount / 16);
-}
-
-BOOL PVXMLOutgoingChannelPCM::ReadFrame(PINDEX amount)
+BOOL PVXMLChannelPCM::ReadFrame(PINDEX amount)
 {
   frameOffs = 0;
   frameLen  = amount;
@@ -1582,7 +1654,7 @@ BOOL PVXMLOutgoingChannelPCM::ReadFrame(PINDEX amount)
   return result;
 }
 
-void PVXMLOutgoingChannelPCM::CreateSilenceFrame(PINDEX amount)
+void PVXMLChannelPCM::CreateSilenceFrame(PINDEX amount)
 {
   frameOffs = 0;
   frameLen  = amount;
@@ -1591,57 +1663,29 @@ void PVXMLOutgoingChannelPCM::CreateSilenceFrame(PINDEX amount)
 
 ///////////////////////////////////////////////////////////////
 
-static PString AdjustFnForG7231(const PString & ofn)
-{
-  PString fn = ofn;;
-
-  // add in _g7231 prefix, if not there already
-  PINDEX pos = ofn.FindLast('.');
-  if (pos == P_MAX_INDEX) {
-    if (fn.Right(6) != "_g7231")
-      fn += "_g7231";
-  } else {
-    PString basename = ofn.Left(pos);
-    PString ext      = ofn.Mid(pos+1);
-    if (basename.Right(6) != "_g7231")
-      basename += "_g7231";
-    fn = basename + "." + ext;
-  }
-  return fn;
-}
-
-PVXMLOutgoingChannelG7231::PVXMLOutgoingChannelG7231(PVXMLSession & vxml)
-  : PVXMLOutgoingChannel(vxml)
+PVXMLChannelG7231::PVXMLChannelG7231(PVXMLSession & vxml, BOOL incoming)
+  : PVXMLChannel(vxml, incoming, "G.723.1", 24, 30, PWAVFile::fmt_VivoG7231, "_g7231")
 {
 }
 
-PString PVXMLOutgoingChannelG7231::AdjustFn(const PString & fn)
+BOOL PVXMLChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
 {
-  return AdjustFnForG7231(fn);
+  return wavFile->Write(buf, 24);
 }
 
-BOOL PVXMLOutgoingChannelG7231::IsWAVFileValid(PWAVFile & chan) 
-{
-  return CheckWAVFileValid(chan, FALSE);
-}
-
-void PVXMLOutgoingChannelG7231::DelayFrame(PINDEX /*amount*/)
-{
-  delay.Delay(30);
-}
-
-BOOL PVXMLOutgoingChannelG7231::ReadFrame(PINDEX /*amount*/)
+BOOL PVXMLChannelG7231::ReadFrame(PINDEX /*amount*/)
 {
   if (!PIndirectChannel::Read(frameBuffer.GetPointer(), 1))
     return FALSE;
 
   frameOffs = 0;
-  frameLen = GetG7231FrameLen(frameBuffer[0]);
+  static const PINDEX g7231Lens[] = { 24, 20, 4, 1 };
+  frameLen = g7231Lens[frameBuffer[0]&3];
 
   return PIndirectChannel::Read(frameBuffer.GetPointer()+1, frameLen-1);
 }
 
-void PVXMLOutgoingChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
+void PVXMLChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
 {
   frameOffs = 0;
   frameLen  = 4;
@@ -1652,7 +1696,32 @@ void PVXMLOutgoingChannelG7231::CreateSilenceFrame(PINDEX /*amount*/)
 
 ///////////////////////////////////////////////////////////////
 
-void PVXMLQueueFilenameItem::Play(PVXMLOutgoingChannel & outgoingChannel)
+PVXMLChannelG729::PVXMLChannelG729(PVXMLSession & vxml, BOOL incoming)
+  : PVXMLChannel(vxml, incoming, "G.729", 10, 10, PWAVFile::fmt_G729, "_g729")
+{
+}
+
+BOOL PVXMLChannelG729::WriteFrame(const void * buf, PINDEX /*len*/)
+{
+  return wavFile->Write(buf, 10);
+}
+
+BOOL PVXMLChannelG729::ReadFrame(PINDEX /*amount*/)
+{
+  return PIndirectChannel::Read(frameBuffer.GetPointer(), 10);
+}
+
+void PVXMLChannelG729::CreateSilenceFrame(PINDEX /*amount*/)
+{
+  frameOffs = 0;
+  frameLen  = 10;
+
+  memset(frameBuffer.GetPointer(), 0, 10);
+}
+
+///////////////////////////////////////////////////////////////
+
+void PVXMLQueueFilenameItem::Play(PVXMLChannel & outgoingChannel)
 {
   // check the file extension and open a .wav or a raw (.sw or .g723) file
   if ((fn.Right(4)).ToLower() == ".wav") {
@@ -1682,7 +1751,7 @@ void PVXMLQueueFilenameItem::Play(PVXMLOutgoingChannel & outgoingChannel)
 
 ///////////////////////////////////////////////////////////////
 
-void PVXMLQueueURLItem::Play(PVXMLOutgoingChannel & outgoingChannel)
+void PVXMLQueueURLItem::Play(PVXMLChannel & outgoingChannel)
 {
   // open the resource
   PHTTPClient * client = new PHTTPClient;
@@ -1697,124 +1766,12 @@ void PVXMLQueueURLItem::Play(PVXMLOutgoingChannel & outgoingChannel)
 
 ///////////////////////////////////////////////////////////////
 
-void PVXMLQueueDataItem::Play(PVXMLOutgoingChannel & outgoingChannel)
+void PVXMLQueueDataItem::Play(PVXMLChannel & outgoingChannel)
 {
   PMemoryFile * chan = new PMemoryFile(data);
   PTRACE(3, "PVXML\tPlaying " << data.GetSize() << " bytes");
   outgoingChannel.SetReadChannel(chan, TRUE);
 }
-
-///////////////////////////////////////////////////////////////
-
-PVXMLIncomingChannel::PVXMLIncomingChannel(PVXMLSession & _vxml)
-  : PVXMLChannel(_vxml, TRUE)
-{
-  wavFile = NULL;
-}
-
-PVXMLIncomingChannel::~PVXMLIncomingChannel()
-{
-  EndRecording();
-}
-
-BOOL PVXMLIncomingChannel::Write(const void * buf, PINDEX len)
-{
-  PWaitAndSignal mutex(channelMutex);
-
-  if (closed)
-    return FALSE;
-
-  DelayFrame(len);
-
-  if (wavFile == NULL || !wavFile->IsOpen())
-    return TRUE;
-
-  return WriteFrame(buf, len);
-}
-
-BOOL PVXMLIncomingChannel::StartRecording(const PFilePath & fn)
-{
-  // if there is already a file open, close it
-  EndRecording();
-
-  // open the output file
-  PWaitAndSignal mutex(channelMutex);
-  wavFile = CreateWAVFile(fn);
-  PTRACE(3, "PVXML\tStarting recording to " << fn);
-  if (!wavFile->IsOpen()) {
-    PTRACE(2, "PVXML\tCannot create record file " << fn);
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
-BOOL PVXMLIncomingChannel::EndRecording()
-{
-  PWaitAndSignal mutex(channelMutex);
-
-  if (wavFile == NULL)
-    return TRUE;
-
-  wavFile->Close();
-
-  delete wavFile;
-  wavFile = NULL;
-  
-  return TRUE;
-}
-
-PWAVFile * PVXMLIncomingChannel::CreateWAVFile(const PFilePath & fn)
-{ 
-  PString nfn = AdjustFn(fn);
-  return vxml.CreateWAVFile(nfn, PFile::WriteOnly, PFile::ModeDefault, GetWavFileType()); 
-}
-
-///////////////////////////////////////////////////////////////
-
-PVXMLIncomingChannelPCM::PVXMLIncomingChannelPCM(PVXMLSession & vxml)
-  : PVXMLIncomingChannel(vxml)
-{
-}
-
-BOOL PVXMLIncomingChannelPCM::WriteFrame(const void * buf, PINDEX len)
-{
-  //cerr << "Writing PCM " << len << endl;
-  return wavFile->Write(buf, len);
-}
-
-void PVXMLIncomingChannelPCM::DelayFrame(PINDEX len)
-{
-  delay.Delay(len/16);
-}
-
-///////////////////////////////////////////////////////////////
-// Override some of the IncomingChannelPCM functions to write
-// G723.1 data instead of PCM data.
-
-PVXMLIncomingChannelG7231::PVXMLIncomingChannelG7231(PVXMLSession & vxml)
-  : PVXMLIncomingChannel(vxml)
-{
-}
-
-BOOL PVXMLIncomingChannelG7231::WriteFrame(const void * buf, PINDEX /*len*/)
-{
-  int frameLen = GetG7231FrameLen(*(BYTE *)buf);
-  return wavFile->Write(buf, frameLen);
-}
-
-void PVXMLIncomingChannelG7231::DelayFrame(PINDEX /*len*/)
-{
-  // Ignore the len parameter as that is the compressed size.
-  // We must delay by the actual sample time.
-  delay.Delay(G7231_FRAME_SIZE);
-}
-
-PString PVXMLIncomingChannelG7231::AdjustFn(const PString & fn)
-{
-  return AdjustFnForG7231(fn);
-}
-
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
