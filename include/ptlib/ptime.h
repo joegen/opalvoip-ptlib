@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.3 1993/08/27 18:17:47 robertj Exp $
+ * $Id: ptime.h,v 1.4 1993/12/31 06:45:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Revision 1.4  1993/12/31 06:45:38  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.3  1993/08/27  18:17:47  robertj
  * Made time functions common to all platforms.
  * Moved timer resolution function to PTimeInterval wher it belongs.
  *
@@ -31,7 +34,7 @@ class PTimeInterval;
 DECLARE_CLASS(PTime,PObject)
 
   public:
-    inline PTime(time_t t = time(NULL));
+    PINLINE PTime(time_t t = time(NULL));
     PTime(int second,int minute,int hour,int day,int month,int year);
 
     // Overrides from class PObject
