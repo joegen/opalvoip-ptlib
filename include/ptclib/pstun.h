@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.4  2003/02/05 06:26:49  robertj
+ * More work in making the STUN usable for Symmetric NAT systems.
+ *
  * Revision 1.3  2003/02/04 07:01:02  robertj
  * Added ip/port version of constructor.
  *
@@ -45,11 +48,18 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+
+/**UDP socket that has been created by the STUN client.
+  */
 class PSTUNUDPSocket : public PUDPSocket
 {
   PCLASSINFO(PSTUNUDPSocket, PUDPSocket);
   public:
-    PSTUNUDPSocket(int fd, const PIPSocket::Address & externalIP, WORD externalPort);
+    PSTUNUDPSocket(
+      int fd,
+      const PIPSocket::Address & externalIP,
+      WORD externalPort
+    );
 
     virtual BOOL GetLocalAddress(
       Address & addr    /// Variable to receive hosts IP address
@@ -62,9 +72,11 @@ class PSTUNUDPSocket : public PUDPSocket
   protected:
     BOOL OpenSocket();
     PIPSocket::Address externalIP;
-    WORD externalPort;
 };
 
+
+/**STUN client.
+  */
 class PSTUNClient : public PObject
 {
   PCLASSINFO(PSTUNClient, PObject);
@@ -76,13 +88,17 @@ class PSTUNClient : public PObject
     PSTUNClient(
       const PString & server,
       WORD portBase = 0,
-      WORD portEnd = 0
+      WORD portMax = 0,
+      WORD portPairBase = 0,
+      WORD portPairMax = 0
     );
     PSTUNClient(
       const PIPSocket::Address & serverAddress,
       WORD serverPort = DefaultPort,
       WORD portBase = 0,
-      WORD portEnd = 0
+      WORD portMax = 0,
+      WORD portPairBase = 0,
+      WORD portPairMax = 0
     );
 
 
@@ -93,6 +109,14 @@ class PSTUNClient : public PObject
       const PIPSocket::Address & serverAddress,
       WORD serverPort = 0
     );
+
+    void SetPortRanges(
+      WORD portBase,
+      WORD portMax = 0,
+      WORD portPairBase = 0,
+      WORD portPairMax = 0
+    );
+
 
     enum NatTypes {
       UnknownNat,
@@ -106,8 +130,12 @@ class PSTUNClient : public PObject
       NumNatTypes
     };
 
-    NatTypes GetNatType();
-    PString GetNatTypeName();
+    NatTypes GetNatType(
+      BOOL force = FALSE
+    );
+    PString GetNatTypeName(
+      BOOL force = FALSE
+    );
 
     BOOL CreateSocket(
       PUDPSocket * & socket
@@ -119,12 +147,18 @@ class PSTUNClient : public PObject
     );
 
   protected:
-    NatTypes natType;
-    BOOL     stunPossible;
     PIPSocket::Address serverAddress;
     WORD               serverPort;
-    WORD portBase;
-    WORD portEnd;
+
+    WORD basePort;
+    WORD maxPort;
+    WORD basePortPair;
+    WORD maxPortPair;
+
+    NatTypes natType;
+    WORD     currentPort;
+    WORD     currentPortPair;
+    PMutex   mutex;
 };
 
 
