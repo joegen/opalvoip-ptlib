@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.53  1999/09/13 13:15:06  robertj
+ * Changed PTRACE so will output to system log in PServiceProcess applications.
+ *
  * Revision 1.52  1999/08/24 08:15:23  robertj
  * Added missing operator on smart pointer to return the pointer!
  *
@@ -362,7 +365,11 @@ public:
     /// Include trace level in all output
     TraceLevel = 16,
     /// Include the file and line for the trace call in all output
-    FileAndLine = 32
+    FileAndLine = 32,
+    /** SystemLog flag for tracing within a PServiceProcess application. Must
+        be set in conjection with SetStream(new PSystemLog).
+      */
+    SystemLogStream = 32768
   };
 
   /** Set the trace options.
