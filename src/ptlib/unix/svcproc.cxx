@@ -1,5 +1,3 @@
-#pragma implementation "svcproc.h"
-
 #include <ptlib.h>
 #include <svcproc.h>
 
@@ -10,12 +8,20 @@
 
 #define	MAX_LOG_LINE_LEN	1024
 
-static int PwlibLogToUnixLog[PServiceProcess::NumLogLevels] = {
+static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_CRIT,    // LogFatal,   
   LOG_ERR,     // LogError,   
   LOG_WARNING, // LogWarning, 
   LOG_INFO,    // LogInfo,    
 };
+
+void PSystemLog::Output(Level level, const char * cmsg)
+{
+  if (PServiceProcess::Current()->consoleMessages)
+    PError << cmsg << endl;
+  else
+    syslog(PwlibLogToUnixLog[level], "%s", cmsg);
+}
 
 PServiceProcess::PServiceProcess(const char * manuf,
                                  const char * name,
@@ -32,38 +38,13 @@ PServiceProcess * PServiceProcess::Current()
   return (PServiceProcess *)PProcess::Current();
 }
 
-void PServiceProcess::SystemLog(SystemLogLevel level,
-                                  const char * cmsg,
-				  ...)
-{
-  va_list list;
-  va_start(list, cmsg);
-  char buffer[MAX_LOG_LINE_LEN];
-  
-  vsprintf(buffer, cmsg, list);
-  if (consoleMessages)
-    PError << buffer << endl;
-  else
-    syslog(PwlibLogToUnixLog[level], buffer);
-}
-
-void PServiceProcess::SystemLog(SystemLogLevel level,
-                                const PString & msg)
-{
-  SystemLog(level, "%s", (const char *)msg);
-}
-
-
 void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 {
-  PStringStream msg;
-  msg << "PWLib/Unix error #"
-      << code
-      << "-"
-      << str
-      << endl;
-
-  SystemLog(LogWarning, msg);
+  PSYSTEMLOG(Warning, "PWLib/Unix error #"
+                      << code
+                      << "-"
+                      << str
+                      << endl);
 }
 
 int PServiceProcess::_main(int parmArgc,
@@ -157,5 +138,38 @@ void PServiceProcess::PXOnSigInt()
 {
   OnStop();
   exit(1);
+}
+
+int PSystemLog::Buffer::overflow(int c)
+{
+  if (pptr() >= epptr()) {
+    int ppos = pptr() - pbase();
+    char * newptr = string.GetPointer(string.GetSize() + 10);
+    setp(newptr, newptr + string.GetSize() - 1);
+    pbump(ppos);
+  }
+  if (c != EOF) {
+    *pptr() = (char)c;
+    pbump(1);
+  }
+  return 0;
+}
+
+
+int PSystemLog::Buffer::underflow()
+{
+  return EOF;
+}
+
+
+int PSystemLog::Buffer::sync()
+{
+  PSystemLog::Output(log->logLevel, string);
+
+  string.SetSize(10);
+  char * base = string.GetPointer();
+  *base = '\0';
+  setp(base, base + string.GetSize() - 1);
+  return 0;
 }
 

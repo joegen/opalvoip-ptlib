@@ -51,7 +51,7 @@
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #ifndef P_USE_INLINES
-#include "../../common/osutil.inl"
+#include "../../common/ptlib/osutil.inl"
 #include "ptlib.inl"
 #endif
 
