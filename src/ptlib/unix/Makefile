@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.84  2001/12/06 05:39:05  craigs
+# Added support for PXML component library
+#
 # Revision 1.83  2001/11/27 22:42:13  robertj
 # Changed to make system to better support non-shared library building.
 #
@@ -393,6 +396,10 @@ ifdef HAS_ESD
 SOUND_SOURCE = esdaudio.cxx
 endif
 
+ifdef HAS_EXPAT
+PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx
+endif
+
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	= \
@@ -424,6 +431,7 @@ SOURCES	= \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
 	$(GETDATE_SOURCE) \
+	$(PXML_SOURCE) \
 	uicmp.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
 	$(COMMON_SRC_DIR)/pvidchan.cxx \
