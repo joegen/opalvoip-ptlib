@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.42  2003/02/19 14:18:55  craigs
+ * Fixed ifdef problem with multipart cxx files
+ *
  * Revision 1.41  2003/02/18 10:50:41  craigs
  * Added minor optimisation of outputted ASN code
  * Added automatic insertion of defines to allow disabling of generated code
@@ -3729,7 +3732,12 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
   PINDEX classesPerFile = (types.GetSize()+numFiles-1)/numFiles;
   for (i = 0; i < types.GetSize(); i++) {
     if (i > 0 && i%classesPerFile == 0) {
+
+      cxxFile << "#endif // if ! H323_DISABLE_" << moduleName.ToUpper() << "\n"
+                 "\n";
+
       cxxFile.Close();
+
       if (verbose)
         cout << "Completed " << cxxFile.GetFilePath() << endl;
 
@@ -3739,12 +3747,16 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
       cxxFile << "#include <ptlib.h>\n"
                  "#include \"" << headerName << "\"\n"
                  "\n";
+
       if (useNamespaces)
         cxxFile << "using namespace " << moduleName << ";\n"
                    "\n";
       cxxFile << "#define new PNEW\n"
                  "\n"
                  "\n";
+
+      cxxFile << "#if ! H323_DISABLE_" << moduleName.ToUpper() << "\n\n";
+
     }
 
     if (types[i].HasParameters()) {
