@@ -150,13 +150,21 @@ static PString CanonicaliseFilename(const PString & filename)
 PInt64 PString::AsInt64(unsigned base) const
 {
   char * dummy;
+#ifdef P_SOLARIS
+  return strtoll(theArray, &dummy, base);
+#else
   return strtoq(theArray, &dummy, base);
+#endif
 }
 
 PUInt64 PString::AsUnsigned64(unsigned base) const
 {
   char * dummy;
+#ifdef P_SOLARIS
+  return strtoull(theArray, &dummy, base);
+#else
   return strtouq(theArray, &dummy, base);
+#endif
 }
 
 
