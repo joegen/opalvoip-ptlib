@@ -181,6 +181,10 @@ SOURCE=..\common\pipechan.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\pluginmgr.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\common\ptime.cxx
 # End Source File
 # Begin Source File
@@ -217,7 +221,11 @@ SOURCE=..\common\sockets.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound.cxx
+SOURCE=..\common\sound.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound_win32.cxx
 # End Source File
 # Begin Source File
 
@@ -345,6 +353,14 @@ SOURCE=..\..\..\Include\PtLib\Pdirect.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\Pipechan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\plugin.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\pluginmgr.h
 # End Source File
 # Begin Source File
 
@@ -541,10 +557,6 @@ SOURCE=..\..\..\include\ptlib\msos\ptlib\sfile.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptlib\msos\ptlib\socket.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\include\ptlib\msos\ptlib\sound.h
 # End Source File
 # Begin Source File
 
