@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.3  1999/01/22 00:30:45  robertj
+# Yet more build environment changes.
+#
 # Revision 1.2  1999/01/16 23:15:11  robertj
 # Added ability to NOT have th gui stuff.
 #
@@ -96,16 +99,30 @@ bothclean :
 
 
 ifdef HAS_GUI
-GUI_SOURCES = include/pwclib include/pwlib src/pwclib src/pwlib
+GUI_SOURCES = include/pwlib.h \
+	$(shell find include/pwclib -name CVS -prune -o -type f -print) \
+	$(shell find src/pwclib -name CVS -prune -o -type f -print) \
+	$(shell find include/pwlib -name CVS -prune -o -type f -print) \
+	$(shell find src/pwlib -name CVS -prune -o -type f -print) \
+	$(shell $(MAKE) --no-print-directory -C tools/pwrc tarfiles)
 endif
 
-TAR_SOURCES = mpl-1.0.htm Makefile make \
-	include/ptclib include/ptlib src/ptclib src/ptlib $(GUI_SOURCES) \
-	$(shell $(MAKE) --no-print-directory -C tools/asnparser tarfiles) \
-	$(shell $(MAKE) --no-print-directory -C tools/pwrc tarfiles)
+TAR_SOURCES = Readme.txt mpl-1.0.htm Makefile include/ptlib.h \
+	$(shell find make -name CVS -prune -o -type f -print) \
+	$(shell find include/ptclib -name CVS -prune -o -type f -print) \
+	$(shell find src/ptclib -name CVS -prune -o -name proto -prune -o -type f -print) \
+	$(shell find include/ptlib -name CVS -prune -o -type f -print) \
+	$(shell find src/ptlib -name CVS -prune -o -type f -print) \
+	$(shell $(MAKE) --no-print-directory -C tools/asnparser tarfiles)
+
+CWD = $(notdir $(shell pwd))
 
 tarball:
-	( cd .. ; tar zcf pwlib.tar.gz $(patsubst %, $(notdir $(shell pwd))/%, $(TAR_SOURCES)) )
+	( cd .. ; tar zcf pwlib_min.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES)) )
+
+tarballs:
+	( cd .. ; tar zcf pwlib_min.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES)) ; \
+	  tar zcf pwlib_full.tar.gz $(patsubst %, $(CWD)/%, $(TAR_SOURCES) $(GUI_SOURCES)) )
 
 
 # End of Makefile
