@@ -684,6 +684,7 @@ EXPORTS
     ?AsInt64@PString@@QBE_JI@Z @610 NONAME ;public: __int64 __thiscall PString::AsInt64(unsigned int)const 
     ?AsInteger@PString@@QBEJI@Z @611 NONAME ;public: long __thiscall PString::AsInteger(unsigned int)const 
     ?AsReal@PString@@QBENXZ @612 NONAME ;public: double __thiscall PString::AsReal(void)const 
+    ?AsString@Address@PIPSocket@@QBE?AVPString@@XZ @1979 NONAME ;public: class PString  __thiscall PIPSocket::Address::AsString(void)const 
     ?AsString@PTime@@QBE?AVPString@@ABV2@H@Z @613 NONAME ;public: class PString  __thiscall PTime::AsString(class PString const &,int)const 
     ?AsString@PTime@@QBE?AVPString@@PBDH@Z @614 NONAME ;public: class PString  __thiscall PTime::AsString(char const *,int)const 
     ?AsString@PTime@@QBE?AVPString@@W4TimeFormat@1@H@Z @615 NONAME ;public: class PString  __thiscall PTime::AsString(enum PTime::TimeFormat,int)const 
@@ -733,6 +734,7 @@ EXPORTS
     ?Clone@PStringList@@UBEPAVPObject@@XZ @648 NONAME ;public: virtual class PObject * __thiscall PStringList::Clone(void)const 
     ?Clone@PStringToOrdinal@@UBEPAVPObject@@XZ @649 NONAME ;public: virtual class PObject * __thiscall PStringToOrdinal::Clone(void)const 
     ?Clone@PStringToString@@UBEPAVPObject@@XZ @650 NONAME ;public: virtual class PObject * __thiscall PStringToString::Clone(void)const 
+    ?Clone@PTCPSocket@@UBEPAVPObject@@XZ @1980 NONAME ;public: virtual class PObject * __thiscall PTCPSocket::Clone(void)const 
     ?Clone@PTime@@UBEPAVPObject@@XZ @651 NONAME ;public: virtual class PObject * __thiscall PTime::Clone(void)const 
     ?Clone@PTimeInterval@@UBEPAVPObject@@XZ @652 NONAME ;public: virtual class PObject * __thiscall PTimeInterval::Clone(void)const 
     ?Clone@Table@PHashTable@@UBEPAVPObject@@XZ @653 NONAME ;public: virtual class PObject * __thiscall PHashTable::Table::Clone(void)const 
@@ -1966,5 +1968,4 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @1785 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    ?AsString@Address@PIPSocket@@QBE?AVPString@@XZ @1979 NONAME ;public: class PString  __thiscall PIPSocket::Address::AsString(void)const 
-    ?Clone@PTCPSocket@@UBEPAVPObject@@XZ @1980 NONAME ;public: virtual class PObject * __thiscall PTCPSocket::Clone(void)const 
+    ?GetOSHardware@PProcess@@SA?AVPString@@XZ @1981 NONAME ;public: static class PString  __cdecl PProcess::GetOSHardware(void)
