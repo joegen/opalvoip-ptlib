@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.5 1996/02/08 12:04:19 robertj Exp $
+ * $Id: http.h,v 1.6 1996/02/13 13:09:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.6  1996/02/13 13:09:16  robertj
+ * Added extra parameters to callback function in PHTTPResources, required
+ *   by descendants to make informed decisions on data being loaded.
+ *
  * Revision 1.5  1996/02/08 12:04:19  robertj
  * Redesign of resource object callback virtuals.
  * Added HTML form resource type.
@@ -606,7 +610,10 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual BOOL LoadData(
-      PCharArray & data            // Data used in reply.
+           PCharArray & data,           // Data used in reply.
+            PMIMEInfo & outMIME,
+           const PURL & url,
+      const PMIMEInfo & inMIME
     );
     /* Get a block of data that the resource contains.
 
@@ -628,7 +635,10 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual void OnLoadedText(
-      PString & text             // Data used in reply.
+              PString & text,       // Data used in reply.
+            PMIMEInfo & outMIME,
+           const PURL & url,
+      const PMIMEInfo & inMIME
     );
     /* This is called after the text has been loaded and may be used to
        customise or otherwise mangle a loaded piece of text. Typically this is
@@ -800,7 +810,10 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
      */
 
     virtual BOOL LoadData(
-      PCharArray & data        // Data used in reply.
+           PCharArray & data,       // Data used in reply.
+            PMIMEInfo & outMIME,
+           const PURL & url,
+      const PMIMEInfo & inMIME
     );
     /* Get a block of data that the resource contains.
 
