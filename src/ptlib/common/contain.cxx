@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.141  2004/02/08 11:13:20  rjongbloed
+ * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
+ *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
+ *
  * Revision 1.140  2004/01/17 17:28:25  csoutheren
  * Changed PString::Empty to be inline in header file
  *
@@ -2722,11 +2726,11 @@ PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 {
   PINDEX len = str.GetLength();
 
-  info->lastIndex = InternalStringSelect(str, len, info->root, info->lastElement);
+  info->lastIndex = InternalStringSelect(str, len, info->root);
 
   if (info->lastIndex != 0) {
     Element * prev;
-    while ((prev = info->lastElement->Predecessor()) != &Element::nil &&
+    while ((prev = Predecessor(info->lastElement)) != &nil &&
                     ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
       info->lastElement = prev;
       info->lastIndex--;
@@ -2739,24 +2743,23 @@ PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 
 PINDEX PSortedStringList::InternalStringSelect(const char * str,
                                                PINDEX len,
-                                               Element * thisElement,
-                                               Element * & lastElement)
+                                               Element * thisElement) const
 {
-  if (thisElement == &Element::nil)
+  if (thisElement == &nil)
     return 0;
 
   switch (((PString *)thisElement->data)->NumCompare(str, len)) {
     case PObject::LessThan :
     {
-      PINDEX index = InternalStringSelect(str, len, thisElement->right, lastElement);
+      PINDEX index = InternalStringSelect(str, len, thisElement->right);
       return thisElement->left->subTreeSize + index + 1;
     }
 
     case PObject::GreaterThan :
-      return InternalStringSelect(str, len, thisElement->left, lastElement);
+      return InternalStringSelect(str, len, thisElement->left);
 
     default :
-      lastElement = thisElement;
+      info->lastElement = thisElement;
       return thisElement->left->subTreeSize;
   }
 }
