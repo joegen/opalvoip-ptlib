@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.23  1999/02/06 05:49:44  robertj
+ * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ *
  * Revision 1.22  1999/01/08 01:28:16  robertj
  * Added pthreads support for FreeBSD
  *
@@ -218,6 +221,25 @@ struct servent * getservbyname(const char *, const char *);
 #undef FLUSHO
 #undef PENDIN
 };
+
+
+#elif __BEOS__
+
+#include <errno.h>
+#include <termios.h>
+#include <sys/fcntl.h>
+#include <sys/socket.h>
+#include <signal.h>
+#include <netdb.h>
+#define PSETPGRP()  setpgrp()
+
+typedef int socklen_t; 
+// Dunno about PPC. We should have both x86 and PPC same
+
+#define	INADDR_NONE	-1
+
+#include "bdefs.h"
+
 
 #else
 
