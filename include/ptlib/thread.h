@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.23  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.22  2000/02/29 12:26:14  robertj
  * Added named threads to tracing, thanks to Dave Harvey
  *
@@ -99,6 +102,9 @@
 #pragma interface
 #endif
 
+#ifdef Priority
+#undef Priority
+#endif
 
 class PSemaphore;
 

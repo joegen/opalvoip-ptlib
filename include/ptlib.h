@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.22  2000/06/26 11:17:19  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.21  1999/08/17 03:46:40  robertj
  * Fixed usage of inlines in optimised version.
  *
@@ -101,6 +104,15 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
+
+#ifdef __NUCLEUS_PLUS__
+#include "nucpp.h"
+#endif
+
+#ifdef __USE_STD__
+using namespace std;
+#endif
+
 
 
 #include <ptlib/contain.h>
@@ -237,8 +249,8 @@
 #if P_USE_INLINES
 #include <ptlib/ptlib.inl>
 #include <ptlib/osutil.inl>
-#endif
 
+#endif
 
 #endif // _PTLIB_H
 
