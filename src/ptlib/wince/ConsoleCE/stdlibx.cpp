@@ -244,7 +244,7 @@ int	rename( const char *oldname, const char *newname )
 }
 
 //used by regex.cxx
-void printchar (int n)
+void printchar (char n)
 {
 	printf(" %d ",n);	
 }
