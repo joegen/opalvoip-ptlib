@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.2  2004/07/02 07:22:37  csoutheren
+ * Updated for latest factory changes
+ *
  * Revision 1.30.2.1  2004/06/20 11:18:03  csoutheren
  * Rewrite of resource cacheing to cache text-to-speech output
  *
@@ -149,13 +152,19 @@
 #include <ptclib/ptts.h>
 #include <ptclib/url.h>
 
-
 class PVXMLSession;
 class PVXMLDialog;
 class PVXMLSession;
 
 class PVXMLTransferOptions;
 class PVXMLTransferResult;
+
+// these are the same strings as the Opal equivalents, but as this is PWLib, we can't use Opal contants
+#define VXML_PCM16         "PCM-16"
+#define VXML_G7231         "G.723.1"
+#define VXML_G729          "G.729"
+
+#define PVXML_HAS_FACTORY   1
 
 class PVXMLGrammar : public PObject
 {
@@ -278,6 +287,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual BOOL IsLoaded() const { return loaded; }
 
     virtual BOOL Open(BOOL isPCM); // For backward compatibility FALSE=G.723.1
+    virtual BOOL Open(const PString & mediaFormat);
     virtual BOOL Open(
       PVXMLChannel * in,
       PVXMLChannel * out
@@ -296,8 +306,11 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
+
+    //virtual BOOL PlayMedia(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
     virtual BOOL PlaySilence(const PTimeInterval & timeout);
+
     virtual void SetPause(BOOL pause);
     virtual void GetBeepData(PBYTEArray & data, unsigned ms);
 
@@ -421,102 +434,53 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLQueueItem : public PObject
+class PVXMLPlayable : public PObject
 {
-  PCLASSINFO(PVXMLQueueItem, PObject);
+  PCLASSINFO(PVXMLPlayable, PObject);
   public:
-    PVXMLQueueItem(PINDEX _repeat = 1, PINDEX _delay = 0)
-      : repeat(_repeat), delay(_delay)
-      { }
+    PVXMLPlayable()
+    { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; }
+
+    virtual BOOL Open(PINDEX _delay, PINDEX _repeat, BOOL v)
+    { delay = _delay; repeat = _repeat; autoDelete = v; return TRUE; }
+
+    virtual BOOL Open(const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
+    { arg = _arg; return Open(_delay, _repeat, v); }
 
     virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
     virtual void OnStart() { }
+
     virtual void OnStop() { }
 
+    virtual void SetRepeat(PINDEX v) 
+    { repeat = v; }
+
+    virtual PINDEX GetRepeat() const
+    { return repeat; }
+
+    virtual PINDEX GetDelay() const
+    { return delay; }
+
+    void SetFormat(const PString & _fmt)
+    { format = _fmt; }
+
+    void SetSampleFrequency(unsigned _rate)
+    { sampleFrequency = _rate; }
+
+  protected:
+    PString arg;
     PINDEX repeat;
     PINDEX delay;
+    PString format;
+    unsigned sampleFrequency;
+    BOOL autoDelete;
 };
 
 
 //////////////////////////////////////////////////////////////////
 
-class PVXMLQueueDataItem : public PVXMLQueueItem
-{
-  PCLASSINFO(PVXMLQueueDataItem, PVXMLQueueItem);
-  public:
-    PVXMLQueueDataItem(const PBYTEArray & _data, PINDEX repeat = 1, PINDEX delay = 0)
-      : PVXMLQueueItem(repeat, delay), data(_data)
-    { }
-
-    void Play(PVXMLChannel & outgoingChannel);
-
-  protected:
-    PBYTEArray data;
-};
-
-class PVXMLQueueChannelItem : public PVXMLQueueItem
-{
-  PCLASSINFO(PVXMLQueueChannelItem, PVXMLQueueItem);
-  public:
-    PVXMLQueueChannelItem(PINDEX repeat = 1, PINDEX delay = 0, BOOL _autoDelete = FALSE)
-      : PVXMLQueueItem(repeat, delay), autoDelete(_autoDelete)
-    { }
-
-  protected:
-    BOOL autoDelete;
-};
-
-
-class PVXMLQueueFilenameItem : public PVXMLQueueChannelItem
-{
-  PCLASSINFO(PVXMLQueueFilenameItem, PVXMLQueueChannelItem);
-  public:
-    PVXMLQueueFilenameItem(const PFilePath & _fn, PINDEX _repeat = 1, PINDEX _delay = 0, BOOL _autoDelete = FALSE)
-      : PVXMLQueueChannelItem(_repeat, _delay, _autoDelete), fn(_fn)
-    { }
-
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
-
-  protected:
-    PFilePath fn;
-};
-
-class PVXMLQueueCommandItem : public PVXMLQueueChannelItem
-{
-  PCLASSINFO(PVXMLQueueCommandItem, PVXMLQueueChannelItem);
-  public:
-    PVXMLQueueCommandItem(const PString & _cmd, const PString & _fmt, unsigned _freq, PINDEX _repeat = 1, PINDEX _delay = 0, BOOL _autoDelete = FALSE)
-      : PVXMLQueueChannelItem(_repeat, _delay, _autoDelete), cmd(_cmd), format(_fmt), sampleFrequency(_freq)
-    { pipeCmd = NULL; }
-
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
-
-  protected:
-    PPipeChannel * pipeCmd;
-    PString cmd;
-    PString format;
-    unsigned sampleFrequency;
-};
-
-class PVXMLQueueURLItem : public PVXMLQueueItem
-{
-  PCLASSINFO(PVXMLQueueURLItem, PObject);
-  public:
-    PVXMLQueueURLItem(const PURL & _url, PINDEX repeat = 1, PINDEX delay = 0)
-      : PVXMLQueueItem(repeat, delay), url(_url)
-    { }
-
-    void Play(PVXMLChannel & outgoingChannel);
-
-  protected:
-    PURL url;
-};
-
-
-PQUEUE(PVXMLQueue, PVXMLQueueItem);
+PQUEUE(PVXMLQueue, PVXMLPlayable);
 
 //////////////////////////////////////////////////////////////////
 
@@ -524,16 +488,10 @@ class PVXMLChannel : public PIndirectChannel
 {
   PCLASSINFO(PVXMLChannel, PIndirectChannel);
   public:
-    PVXMLChannel(
-      PVXMLChannelInterface & _vxml,
-      BOOL incoming,
-      const PString & fmtName,
-      PINDEX frameBytes,
-      unsigned frameTime,
-      unsigned wavFileType,
-      const PString & wavFilePrefix
-    );
+    PVXMLChannel();
     ~PVXMLChannel();
+
+    virtual BOOL Open(PVXMLChannelInterface * _vxml, BOOL incoming);
 
     // overrides from PIndirectChannel
     virtual BOOL IsOpen() const;
@@ -564,12 +522,18 @@ class PVXMLChannel : public PIndirectChannel
     virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount) = 0;
     virtual void GetBeepData(PBYTEArray &, unsigned) { }
 
-    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
-    virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
-    virtual void QueueCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
 
-    virtual void QueueItem(PVXMLQueueItem * newItem);
+    virtual void QueuePlayable(const PString & type, const PString & str, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = TRUE);
+    virtual void QueuePlayable(PVXMLPlayable * newItem);
+    virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+
+    virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE)
+    { return QueuePlayable("File", fn, repeat, delay, autoDelete); }
+
+    virtual void QueueCommand(const PString & cmd, PINDEX repeat = 1, PINDEX delay = 0)
+    { return QueuePlayable("Command", cmd, repeat, delay, TRUE); }
+
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
 
@@ -580,10 +544,11 @@ class PVXMLChannel : public PIndirectChannel
     void SetName(const PString & name) { channelName = name; }
 
   protected:
-    PVXMLChannelInterface & vxmlInterface;
+    PVXMLChannelInterface * vxmlInterface;
     BOOL isIncoming;
-    PString formatName;
+
     unsigned sampleFrequency;
+    PString formatName;
     PINDEX frameBytes;
     unsigned frameTime;
     unsigned wavFileType;
@@ -617,53 +582,6 @@ class PVXMLChannel : public PIndirectChannel
 
 
 //////////////////////////////////////////////////////////////////
-
-class PVXMLChannelPCM : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelPCM, PVXMLChannel);
-
-  public:
-    PVXMLChannelPCM(PVXMLSession & vxml, BOOL incoming);
-
-  protected:
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-    virtual void GetBeepData(PBYTEArray & data, unsigned ms);
-    virtual void HandleDelay(PINDEX amount);
-};
-
-
-class PVXMLChannelG7231 : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelG7231, PVXMLChannel);
-  public:
-    PVXMLChannelG7231(PVXMLSession & vxml, BOOL incoming);
-
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-};
-
-
-class PVXMLChannelG729 : public PVXMLChannel
-{
-  PCLASSINFO(PVXMLChannelG729, PVXMLChannel);
-  public:
-    PVXMLChannelG729(PVXMLSession & vxml, BOOL incoming);
-
-    // overrides from PVXMLChannel
-    virtual BOOL WriteFrame(const void * buf, PINDEX len);
-    virtual BOOL ReadFrame(void * buffer, PINDEX amount);
-    virtual PINDEX CreateSilenceFrame(void * buffer, PINDEX amount);
-    virtual BOOL IsSilenceFrame(const void * buf, PINDEX len) const;
-};
-
-////////////////////////////////////////////////////////////////////
 
 class PVXMLTransferOptions : public PObject
 {
