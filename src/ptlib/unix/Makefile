@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.66  2001/01/04 18:02:16  rogerh
+# remove some old parts refering to linux
+#
 # Revision 1.65  2001/01/03 23:10:09  craigs
 # Fixed Makefile problem when video not available
 #
@@ -255,6 +258,7 @@ VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
 else
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
                 $(COMMON_SRC_DIR)/videoio.cxx \
+	        video4bsd.cxx \
 	        $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 

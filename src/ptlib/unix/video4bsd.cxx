@@ -1,5 +1,5 @@
 /*
- * video4linux.cxx
+ * video4bsd.cxx
  *
  * Classes to support streaming video input (grabbing) and output.
  *
@@ -24,24 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.2  2001/01/04 18:02:16  rogerh
+ * remove some old parts refering to linux
+ *
  * Revision 1.1  2001/01/04 18:00:43  rogerh
  * Start to add support for video capture using on FreeBSD/NetBSD and OpenBSD
  * using the Meteor API (used by the Matrox Meteor and the bktr driver for
  * Bt848/Bt878 TV Tuner Cards). This is incomplete but it does compile.
- *
- * Revision 1.4  2000/12/19 22:20:26  dereks
- * Add video channel classes to connect to the PwLib PVideoInputDevice class.
- * Add PFakeVideoInput class to generate test images for video.
- *
- * Revision 1.3  2000/07/30 03:54:28  robertj
- * Added more colour formats to video device enum.
- *
- * Revision 1.2  2000/07/26 06:13:25  robertj
- * Added missing pragma implementation for GNU headers.
- *
- * Revision 1.1  2000/07/26 02:40:30  robertj
- * Added video I/O devices.
- *
  */
 
 #pragma implementation "videoio.h"
