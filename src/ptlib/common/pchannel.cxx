@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.21  2003/02/11 07:22:43  robertj
+ * Fixed strange behaviour in ReadString(P_MAX_INDEX) with DOS text files where
+ *   it would get extra garbage at the end of the string, thanks Joerg Schoemer.
+ *
  * Revision 1.20  2003/02/10 01:01:03  robertj
  * Fixed portability issue for lseek() calls, should just look for -1 return
  *   value to indicate error, thanks Joerg Schoemer
@@ -284,10 +288,16 @@ PString PChannel::ReadString(PINDEX len)
       l += lastReadCount;
     }
     str.SetSize(l+1);
-  } else {
+
+    /*Need to put in a null at the end to allow for MSDOS/Win32 text files
+      which returns fewer bytes than actually read as it shrinks the data into
+      the removed carriage returns, so it actually changes the buffer beyond
+      what it indicated. */
+    str[l] = '\0';
+  }
+  else {
     if (!ReadBlock(str.GetPointer(len+1), len))
-      return PString();
-    str.SetSize(lastReadCount+1);
+      return PString::Empty();
   }
 
   return str;
