@@ -29,7 +29,7 @@
  * $log$
  */
 
-#if !defined(__BEOS__) && !defined(P_VXWORKS) && !defined(P_RTEMS)
+#if !defined(P_VXWORKS) && !defined(P_RTEMS)
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
