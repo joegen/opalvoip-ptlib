@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.31  2004/04/03 15:47:58  ykiryanov
+ * Changed thread id member name for BeOS
+ *
  * Revision 1.30  2004/02/21 21:59:10  ykiryanov
  * Fixed more Be thread related functions
  *
@@ -150,7 +153,7 @@ PINLINE PString PChannel::GetName() const
 #ifdef BE_THREADS
 
 PINLINE PThreadIdentifier PThread::GetThreadId() const
-  { return threadId; }
+  { return mId; }
 
 #else // !BE_THREADS
 
