@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.14  2004/02/12 09:07:57  csoutheren
+ * Fixed typo in ALSA driver, thanks to Julien Puydt
+ *
  * Revision 1.13  2004/01/04 20:59:30  dsandras
  * Use set_rate_near instead of set_rate.
  *
@@ -280,7 +283,7 @@ BOOL PSoundChannelALSA::Setup()
 #if PBYTE_ORDER == PLITTLE_ENDIAN
   val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_LE : SND_PCM_FORMAT_U8;
 #else
-  val = (mbitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
+  val = (mBitsPerSample == 16) ? SND_PCM_FORMAT_S16_BE : SND_PCM_FORMAT_U8;
 #endif
 
   frame_bytes = (mNumChannels * (snd_pcm_format_width (val) / 8));
