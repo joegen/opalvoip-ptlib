@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.28  1999/05/13 04:44:18  robertj
+ * Added SIGHUP and SIGWINCH handlers to increase and decrease the log levels.
+ *
  * Revision 1.27  1999/03/02 05:41:59  robertj
  * More BeOS changes
  *
@@ -83,6 +86,17 @@ static int PwlibLogToUnixLog[PSystemLog::NumLogLevels] = {
   LOG_DEBUG
 };
 
+static const char * const PLevelName[PSystemLog::NumLogLevels+1] = {
+  "Message",
+  "Fatal error",
+  "Error",
+  "Warning",
+  "Info",
+  "Debug",
+  "Debug2",
+  "Debug3"
+};
+
 #ifdef P_PTHREADS
 
 static pthread_mutex_t logMutex = {{ PTHREAD_MUTEX_INITIALIZER }};
@@ -105,22 +119,11 @@ void PSystemLog::Output(Level level, const char * cmsg)
     else
       out = new ofstream(systemLogFile, ios::app);
 
-    static const char * const levelName[NumLogLevels+1] = {
-      "Message",
-      "Fatal error",
-      "Error",
-      "Warning",
-      "Info",
-      "Debug",
-      "Debug2",
-      "Debug3"
-    };
-
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss ")
          << (void *)PThread::Current()
          << ' '
-         << levelName[level+1]
+         << PLevelName[level+1]
          << '\t'
          << cmsg << endl;
 
@@ -399,12 +402,19 @@ void PServiceProcess::OnStop()
 }
 
 
-static BOOL stoppingService = FALSE;
-
 void PServiceProcess::PXOnAsyncSignal(int sig)
 {
-  if (stoppingService || (sig != SIGINT && sig != SIGTERM))
-    PProcess::PXOnAsyncSignal(sig);
+  static BOOL stoppingService = FALSE;
+  if (!stoppingService)
+    switch (sig) {
+      case SIGINT :
+      case SIGTERM :
+        stoppingService = TRUE;
+      case SIGHUP :
+        return;
+    }
+
+  PProcess::PXOnAsyncSignal(sig);
 }
 
 
@@ -413,7 +423,6 @@ void PServiceProcess::PXOnSignal(int sig)
   switch (sig) {
     case SIGINT :
     case SIGTERM :
-      stoppingService = TRUE;
       OnStop();
       exit(1);
 
@@ -423,6 +432,22 @@ void PServiceProcess::PXOnSignal(int sig)
 
     case SIGUSR2 :
       OnContinue();
+      break;
+
+    case SIGHUP :
+      if (currentLogLevel < PSystemLog::NumLogLevels-1) {
+        currentLogLevel = (PSystemLog::Level)(currentLogLevel+1);
+        PSystemLog s(PSystemLog::StdError);
+        s << "Log level increased to " << PLevelName[currentLogLevel+1];
+      }
+      break;
+
+    case SIGWINCH :
+      if (currentLogLevel > PSystemLog::Fatal) {
+        currentLogLevel = (PSystemLog::Level)(currentLogLevel-1);
+        PSystemLog s(PSystemLog::StdError);
+        s << "Log level decreased to " << PLevelName[currentLogLevel+1];
+      }
       break;
   }
 }
