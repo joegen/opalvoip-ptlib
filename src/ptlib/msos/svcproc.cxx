@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.13 1996/10/31 12:54:01 robertj Exp $
+ * $Id: svcproc.cxx,v 1.14 1996/11/04 03:39:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.14  1996/11/04 03:39:13  robertj
+ * Improved detection of running service so debug mode cannot run.
+ *
  * Revision 1.13  1996/10/31 12:54:01  robertj
  * Fixed bug in window not being displayed when command line used.
  *
@@ -276,12 +279,13 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   PConfig cfg;
   DWORD pid = cfg.GetInteger("Pid");
   if (pid != 0) {
-    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (h != NULL) {
       DWORD exitCode;
       GetExitCodeProcess(h, &exitCode);
       CloseHandle(h);
       if (exitCode == STILL_ACTIVE) {
+        debugMode = FALSE;
         PError << "Service already running" << endl;
         RunMessageLoop();
         return 3;
@@ -735,7 +739,7 @@ BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
   PConfig cfg;
   DWORD pid = cfg.GetInteger("Pid");
   if (pid != 0) {
-    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (h != NULL) {
       DWORD exitCode;
       GetExitCodeProcess(h, &exitCode);
@@ -764,7 +768,7 @@ BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
     return FALSE;
   }
 
-  HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+  HANDLE hProcess = OpenProcess(SYNCHRONIZE, FALSE, pid);
   if (hProcess == NULL) {
     error = GetLastError();
     PError << "Service is not running" << endl;
