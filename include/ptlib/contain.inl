@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.36 1996/07/15 10:32:49 robertj Exp $
+ * $Id: contain.inl,v 1.37 1996/09/14 12:54:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.37  1996/09/14 12:54:18  robertj
+ * Added operator! for !IsEmpty().
+ *
  * Revision 1.36  1996/07/15 10:32:49  robertj
  * Fixed bug in sorted list (crash on remove).
  *
@@ -166,6 +169,9 @@ PINLINE BOOL PString::MakeMinimumSize()
 PINLINE PINDEX PString::GetLength() const
   { return strlen(theArray); }
 #endif
+
+PINLINE BOOL PString::operator!() const
+  { return !IsEmpty(); }
 
 PINLINE PString & PString::operator=(const PString & str)
   { PCharArray::operator=(str); return *this; }
