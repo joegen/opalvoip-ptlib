@@ -222,20 +222,20 @@ AC_LANG_PUSH(C++)
 
 AC_MSG_CHECKING(if linker accepts -felide-constructors)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
+$CXX $CXXFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  CXXFLAGS="$CXXFLAGS -felide-constructors"
+  STDCXXFLAGS="$STDCXXFLAGS -felide-constructors"
 else
   AC_MSG_RESULT(no)
 fi
 
 AC_MSG_CHECKING(if linker accepts -Wreorder)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CXX $CFLAGS -Wreorder conftest.cc > /dev/null 2>&1
+$STDCXX $CXXFLAGS -Wreorder conftest.cc > /dev/null 2>&1
 if test $? = 0 ; then
   AC_MSG_RESULT(yes)
-  CXXFLAGS="$CXXFLAGS -Wreorder"
+  STDCXXFLAGS="$STDCXXFLAGS -Wreorder"
 else
   AC_MSG_RESULT(no)
 fi
@@ -974,7 +974,7 @@ if test "${OSTYPE}" != "Darwin" ; then
 fi
 
 AC_SUBST(STDCCFLAGS)
-AC_SUBST(CXXFLAGS)
+AC_SUBST(STDCXXFLAGS)
 AC_SUBST(OPTSTDCCFLAGS)
 AC_SUBST(LDFLAGS)
 AC_SUBST(ENDLDLIBS)
