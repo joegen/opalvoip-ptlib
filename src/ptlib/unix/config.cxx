@@ -130,11 +130,12 @@ void PConfig::Construct(Source src)
   config = new PXConfig;
   config->AllowDeleteObjects();
   dirty = FALSE;
-  saveOnExit = FALSE;
+  saveOnExit = TRUE;
   
   switch (src) {
     case PConfig::Environment:
       GetEnvironment(PProcess::Current()->GetEnvironment(), *config);
+      saveOnExit = FALSE;
       return;
 
     case PConfig::System:
@@ -158,7 +159,6 @@ void PConfig::Construct(Source src)
       break;
   }
   ReadConfigFile(filename, *config);
-  saveOnExit = TRUE;
 }
 
 void PConfig::Construct(const PFilePath & theFilename)
