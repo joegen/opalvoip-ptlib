@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.10  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.9  2001/02/28 01:47:14  robertj
  * Removed function from ancestor and is not very useful, thanks Thorsten Westheider.
  *
@@ -61,64 +64,43 @@
 #pragma interface
 #endif
 
-class PVideoConvert; 
+
+class PColourConverter;
 
 
 /**This class defines a video device.
    This class is used to abstract the few parameters that are common to both\
    input and output devices.
+
+   Example colour formats are:
+
+     "Grey"     Simple 8 bit linear grey scale
+     "Gray"     Synonym for Grey
+     "RGB32"    32 bit RGB
+     "RGB24"    24 bit RGB
+     "RGB565"   16 bit RGB (6 bit green)
+     "RGB555"   15 bit RGB
+     "YUV422"   YUV 4:2:2 packed
+     "YUV422P"  YUV 4:2:2 planar
+     "YUV411"   YUV 4:1:1 packed
+     "YUV411P"  YUV 4:1:1 planar
+     "YUV420"   YUV 4:2:0 packed
+     "YUV420P"  YUV 4:2:0 planar
+     "YUV410"   YUV 4:1:0 packed
+     "YUV410P"  YUV 4:1:0 planar
+     "MJPEG"    Motion JPEG
  */
 class PVideoDevice : public PObject
 {
   PCLASSINFO(PVideoDevice, PObject);
 
-  public:
-    enum VideoFormat {
-      PAL,
-      NTSC,
-      SECAM,
-      Auto,
-      NumVideoFormats
-    };
-
-    /// Colour frame formats for video.
-    enum ColourFormat {
-      Grey,     /// Simple 8 bit linear grey scale
-      Gray = Grey,
-      RGB32,    /// 32 bit RGB
-      RGB24,    /// 24 bit RGB
-      RGB565,   /// 16 bit RGB (6 bit green)
-      RGB555,   /// 15 bit RGB
-      YUV422,   /// YUV 4:2:2 packed
-      YUV422P,  /// YUV 4:2:2 planar
-      YUV411,   /// YUV 4:1:1 packed
-      YUV411P,  /// YUV 4:1:1 planar
-      YUV420,   /// YUV 4:2:0 packed
-      YUV420P,  /// YUV 4:2:0 planar
-      YUV410,   /// YUV 4:1:0 packed
-      YUV410P,  /// YUV 4:1:0 planar
-      MJPEG,
-      NumColourFormats
-    };
-
-
-
-    enum StandardSizes {
-      CIFWidth = 352,
-      CIFHeight = 288,
-      QCIFWidth = 176,
-      QCIFHeight = 144
-    };
-
+  protected:
     /** Create a new video output device.
      */
-    PVideoDevice(
-      VideoFormat videoformat = Auto,
-      int channelNumber = 0,
-      ColourFormat colourFormat = RGB24
-    );
+    PVideoDevice();
 
 
+  public:
     /**Open the device given the device name.
       */
     virtual BOOL Open(
@@ -151,6 +133,15 @@ class PVideoDevice : public PObject
     /**Get a list of all of the drivers available.
       */
     virtual PStringList GetDeviceNames() const ;
+
+
+    enum VideoFormat {
+      PAL,
+      NTSC,
+      SECAM,
+      Auto,
+      NumVideoFormats
+    };
 
     /**Set the video format to be used.
 
@@ -186,22 +177,37 @@ class PVideoDevice : public PObject
 
        Default behaviour returns the value of the channelNumber variable.
     */
-    virtual int  GetChannel() const;
+    virtual int GetChannel() const;
+
+    /**Set the colour format to be used, trying converters if available.
+
+       This function will set the colour format on the device to one that
+       is compatible with a registered converter, and install that converter
+       so that the correct format is used.
+    */
+    virtual BOOL SetColourFormatConverter(
+      const PString & colourFormat // New colour format for device.
+    );
 
     /**Set the colour format to be used.
+       Note that this function does not do any conversion. If it returns TRUE
+       then the video device does the colour format in native mode.
+
+       To utilise an internal converter use the SetColourFormatConverter()
+       function.
 
        Default behaviour sets the value of the colourFormat variable and then
        returns the IsOpen() status.
     */
     virtual BOOL SetColourFormat(
-      ColourFormat colourFormat   // New colour format for device.
+      const PString & colourFormat // New colour format for device.
     );
 
     /**Get the colour format to be used.
 
        Default behaviour returns the value of the colourFormat variable.
     */
-    ColourFormat GetColourFormat() const;
+    const PString & GetColourFormat() const;
 
     /**Set the video frame rate to be used on the device.
 
@@ -230,6 +236,14 @@ class PVideoDevice : public PObject
       unsigned & maxHeight   /// Variable to receive maximum height
     ) ;
 
+
+    enum StandardSizes {
+      CIFWidth = 352,
+      CIFHeight = 288,
+      QCIFWidth = 176,
+      QCIFHeight = 144
+    };
+
     /**Set the frame size to be used.
 
        Default behaviour sets the frameWidth and frameHeight variables and
@@ -251,14 +265,6 @@ class PVideoDevice : public PObject
       unsigned & height
     );
 
-     /** Get the size of an image, given a particular width, height and colour format.
-       */
-    static unsigned CalcFrameSize( 
-      unsigned width,
-      unsigned height,
-      int colourFormat
-      );
-   
     /** Get the width of the frame being used.
 
         Default  behaviour returns the value of the frameWidth variable
@@ -279,6 +285,15 @@ class PVideoDevice : public PObject
       */
     virtual PINDEX GetMaxFrameBytes() = 0;
 
+    /** Get the number of bytes of an image, given a particular width, height and colour format.
+      */
+    static unsigned CalculateFrameBytes( 
+      unsigned width,
+      unsigned height,
+      const PString & colourFormat
+    );
+
+    
     /**Get the last error code. This is a platform dependent number.
       */
     int GetLastError() const { return lastError; }
@@ -289,10 +304,12 @@ class PVideoDevice : public PObject
     int          lastError;
     VideoFormat  videoFormat;
     int          channelNumber;
-    ColourFormat colourFormat;
+    PString      colourFormat;
     unsigned     frameRate;
     unsigned     frameWidth;
     unsigned     frameHeight;
+
+    PColourConverter * converter;
 };
 
 
@@ -305,11 +322,7 @@ class PVideoOutputDevice : public PVideoDevice
   public:
     /** Create a new video output device.
      */
-    PVideoOutputDevice(
-      VideoFormat  /*videoformat */   = PAL,
-      int          /*channelNumber */ = 0 ,
-      ColourFormat /*colourFormat */  = RGB24 
-      ) {  };
+    PVideoOutputDevice();
     
     /**Close the video output device on destruction.
       */
@@ -329,13 +342,10 @@ class PVideoOutputDevice : public PVideoDevice
      */
     virtual void SetNow(int _now)  { now = _now; }
 
-  protected:
 
-    PINDEX  frameWidth;
-    PINDEX  frameHeight;
+  protected:
     int now;
     BOOL suppress;
-
 };
 
 
@@ -350,11 +360,7 @@ class PVideoInputDevice : public PVideoDevice
   public:
     /** Create a new video input device.
      */
-    PVideoInputDevice(
-      VideoFormat videoFormat   = PAL,
-      int channelNumber         = 0,
-      ColourFormat colourFormat = RGB24
-    );
+    PVideoInputDevice();
 
     /**Close the video input device on destruction.
       */
@@ -412,12 +418,6 @@ class PVideoInputDevice : public PVideoDevice
     );
 
     
- protected:
-    
-    PVideoConvert * conversion; /// image grab format change. If NULL ptr, no change needed.
-   
- public:
-
 #ifdef DOC_PLUS_PLUS
 };
 #endif

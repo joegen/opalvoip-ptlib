@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.7  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.6  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -47,24 +50,25 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
-#include <ptlib/vfakeio.h>
 #include <ptlib/vconvert.h>
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
 
-PVideoDevice::PVideoDevice(VideoFormat videofmt,
-                           int channel,
-                           ColourFormat colourFmt)
+PVideoDevice::PVideoDevice()
+  : colourFormat("RGB24")
 {
   lastError = 0;
-  videoFormat = videofmt;
-  channelNumber = channel;
-  colourFormat = colourFmt;
+
+  videoFormat = Auto;
+  channelNumber = 0;
   frameRate = 15;
   frameWidth = CIFWidth;
   frameHeight = CIFHeight;
+
+  converter = NULL;
 }
 
 
@@ -79,6 +83,7 @@ PVideoDevice::VideoFormat PVideoDevice::GetVideoFormat() const
 {
   return videoFormat;
 }
+
 
 PStringList PVideoDevice::GetDeviceNames() const
 {
@@ -112,14 +117,38 @@ int PVideoDevice::GetChannel() const
 }
 
 
-BOOL PVideoDevice::SetColourFormat(ColourFormat colourFmt)
+BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
+{
+  if (SetColourFormat(colourFmt))
+    return TRUE; // Can do it native
+
+  /************************
+    Eventually, need something more sophisticated than this, but for the
+    moment pick the most common raw colour format that the device is very
+    likely to support and then look for a conversion routine from that to
+    the destaintion format.
+
+    What we really want is some sort of better heuristic that looks at
+    computational requirements of each converter and picks a pair of formats
+    that the hardware supports and uses the least CPU.
+  */
+
+  if (!SetColourFormat("RGB24"))
+    return FALSE;
+
+  converter = PColourConverter::Create("RGB24", colourFmt, frameWidth, frameHeight);
+  return converter != NULL;
+}
+
+
+BOOL PVideoDevice::SetColourFormat(const PString & colourFmt)
 {
   colourFormat = colourFmt;
   return IsOpen();
 }
 
 
-PVideoDevice::ColourFormat PVideoDevice::GetColourFormat() const
+const PString & PVideoDevice::GetColourFormat() const
 {
   return colourFormat;
 }
@@ -181,28 +210,33 @@ BOOL PVideoDevice::GetFrameSize(unsigned & width, unsigned & height)
 
   ///Colour format bit per pixel table.
 static struct {
-    int intColourFormat;
-    int bitsPerPixel;
-   } colourFormatBPPTab[PVideoDevice::NumColourFormats] = {
-       {  /*Grey   */  0,   8 },  
-       {  /*RGB32  */  1,  32 }, 
-       {  /*RGB24  */  2,  24 }, 
-       {  /*RGB565 */  3,  16 },
-       {  /*RGB555 */  4,  16 },
-       {  /*YUV422 */  5,  16 },
-       {  /*YUV422P*/  6,  16 },
-       {  /*YUV411 */  7,  12 },
-       {  /*YUV411P*/  8,  12 },
-       {  /*YUV420 */  9,  12 },
-       {  /*YUV420P*/ 10,  12 },
-       {  /*YUV410 */ 11,   0 },
-       {  /*YUV410P*/ 12,  10 }
-    };
+  const char * colourFormat;
+  unsigned     bitsPerPixel;
+} colourFormatBPPTab[] = {
+  { "Grey",     8 },  
+  { "RGB32",   32 }, 
+  { "RGB24",   24 }, 
+  { "RGB565",  16 },
+  { "RGB555",  16 },
+  { "YUV422",  16 },
+  { "YUV422P", 16 },
+  { "YUV411",  12 },
+  { "YUV411P", 12 },
+  { "YUV420",  12 },
+  { "YUV420P", 12 },
+  { "YUV410",  0  },
+  { "YUV410P", 10 }
+};
 
 
-unsigned PVideoDevice::CalcFrameSize(unsigned width, unsigned height, int colourFormat)
+unsigned PVideoDevice::CalculateFrameBytes(unsigned width, unsigned height,
+                                           const PString & colourFormat)
 {
-   return width * height * colourFormatBPPTab[colourFormat].bitsPerPixel/8;
+  for (PINDEX i = 0; i < PARRAYSIZE(colourFormatBPPTab); i++) {
+    if (colourFormat == colourFormatBPPTab[i].colourFormat)
+      return width * height * colourFormatBPPTab[i].bitsPerPixel/8;
+  }
+  return 0;
 }
  
 
@@ -210,6 +244,17 @@ BOOL PVideoDevice::Close()
 {
   return TRUE;  
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PVideoOutputDevice
+
+PVideoOutputDevice::PVideoOutputDevice()
+{
+  now = 0;
+  suppress = FALSE;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
@@ -223,5 +268,6 @@ BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
   frame.SetSize(returned);
   return TRUE;
 }
+
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.8  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.7  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -50,9 +53,10 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
-#include <ptlib/vfakeio.h>
+#include <ptlib/vconvert.h>
 
-#define STEP_GRAB_CAPTURE 0
+
+#define STEP_GRAB_CAPTURE 1
 
 
 class PVideoInputThread : public PThread
@@ -82,7 +86,7 @@ class PCapStatus : public CAPSTATUS
 class PVideoDeviceBitmap : PBYTEArray
 {
   public:
-    PVideoDeviceBitmap(unsigned width, unsigned height, PVideoDevice::ColourFormat fmt);
+    PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
     PVideoDeviceBitmap(HWND hWnd);
     BOOL ApplyFormat(HWND hWnd) { return capSetVideoFormat(hWnd, theArray, GetSize()); }
 
@@ -94,7 +98,7 @@ class PVideoDeviceBitmap : PBYTEArray
 ///////////////////////////////////////////////////////////////////////////////
 
 PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned width, unsigned height,
-                                       PVideoDevice::ColourFormat fmt)
+                                       const PString & fmt)
   : PBYTEArray(sizeof(BITMAPINFO))
 {
   PINDEX i;
@@ -105,41 +109,40 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned width, unsigned height,
   bi->bmiHeader.biHeight = height;
   bi->bmiHeader.biPlanes = 1;
 
-  switch (fmt) {
-    case PVideoDevice::Grey :
-      bi->bmiHeader.biCompression = BI_RGB;
-      bi->bmiHeader.biBitCount = 8;
-      SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
-      for (i = 0; i < 256; i++)
-        bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
-      break;
-    case PVideoDevice::RGB32 :
-      bi->bmiHeader.biCompression = BI_RGB;
-      bi->bmiHeader.biBitCount = 32;
-      break;
-    case PVideoDevice::RGB24 :
-      bi->bmiHeader.biCompression = BI_RGB;
-      bi->bmiHeader.biBitCount = 24;
-      break;
-    case PVideoDevice::RGB565 :
-      bi->bmiHeader.biCompression = BI_BITFIELDS;
-      bi->bmiHeader.biBitCount = 16;
-      break;
-    case PVideoDevice::RGB555 :
-      bi->bmiHeader.biCompression = BI_BITFIELDS;
-      bi->bmiHeader.biBitCount = 15;
-      break;
-    case PVideoDevice::YUV422 :
-      bi->bmiHeader.biCompression = mmioFOURCC('Y', 'U', 'Y', '2');
-      bi->bmiHeader.biBitCount = 16;
-      break;
-    case PVideoDevice::MJPEG :
-      bi->bmiHeader.biCompression = mmioFOURCC('M','J','P','G');
-      bi->bmiHeader.biBitCount = 0;
-      break;
-    default :
-      bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
-      return;
+  if ((fmt *= "Grey") || (fmt *= "Gray")) {
+    bi->bmiHeader.biCompression = BI_RGB;
+    bi->bmiHeader.biBitCount = 8;
+    SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
+    for (i = 0; i < 256; i++)
+      bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
+  }
+  else if (fmt *= "RGB32") {
+    bi->bmiHeader.biCompression = BI_RGB;
+    bi->bmiHeader.biBitCount = 32;
+  }
+  else if (fmt *= "RGB24") {
+    bi->bmiHeader.biCompression = BI_RGB;
+    bi->bmiHeader.biBitCount = 24;
+  }
+  else if (fmt *= "RGB565") {
+    bi->bmiHeader.biCompression = BI_BITFIELDS;
+    bi->bmiHeader.biBitCount = 16;
+  }
+  else if (fmt *= "RGB555") {
+    bi->bmiHeader.biCompression = BI_BITFIELDS;
+    bi->bmiHeader.biBitCount = 15;
+  }
+  else if (fmt *= "YUV422") {
+    bi->bmiHeader.biCompression = mmioFOURCC('Y', 'U', 'Y', '2');
+    bi->bmiHeader.biBitCount = 16;
+  }
+  else if (fmt *= "MJPEG") {
+    bi->bmiHeader.biCompression = mmioFOURCC('M','J','P','G');
+    bi->bmiHeader.biBitCount = 0;
+  }
+  else {
+    bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
+    return;
   }
 
   bi->bmiHeader.biSizeImage = height*((bi->bmiHeader.biBitCount*width + 31)/32)*4;
@@ -173,17 +176,13 @@ PCapStatus::PCapStatus(HWND hWnd)
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
 
-PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
-                                     int channel,
-                                     ColourFormat colourFmt)
-  : PVideoDevice(videoFmt, channel, colourFmt)
+PVideoInputDevice::PVideoInputDevice()
 {
   captureThread = NULL;
   hCaptureWindow = NULL;
   lastFramePtr = NULL;
   lastFrameSize = 0;
-
-  conversion = NULL;
+  isCapturingNow = FALSE;
 }
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
@@ -212,7 +211,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 
 BOOL PVideoInputDevice::IsOpen() 
 {
-	 return hCaptureWindow != NULL;
+  return hCaptureWindow != NULL;
 }
 
 
@@ -234,11 +233,17 @@ BOOL PVideoInputDevice::Close()
 
 BOOL PVideoInputDevice::Start()
 {
+  if (IsCapturing())
+    return FALSE;
 #if STEP_GRAB_CAPTURE
-  return IsOpen();
+  isCapturingNow = TRUE;
+  return capGrabFrameNoStop(hCaptureWindow);
 #else
-  if (capCaptureSequenceNoFile(hCaptureWindow))
-    return TRUE;
+  if (capCaptureSequenceNoFile(hCaptureWindow)) {
+    PCapStatus status(hCaptureWindow);
+    isCapturingNow = status.fCapturingNow;
+    return isCapturingNow;
+  }
 
   lastError = ::GetLastError();
   PTRACE(1, "capCaptureSequenceNoFile: failed - " << lastError);
@@ -249,8 +254,11 @@ BOOL PVideoInputDevice::Start()
 
 BOOL PVideoInputDevice::Stop()
 {
+  if (!IsCapturing())
+    return FALSE;
+  isCapturingNow = FALSE;
 #if STEP_GRAB_CAPTURE
-  return IsOpen();
+  return IsOpen() && frameAvailable.Wait(1000);
 #else
   if (capCaptureStop(hCaptureWindow))
     return TRUE;
@@ -264,8 +272,7 @@ BOOL PVideoInputDevice::Stop()
 
 BOOL PVideoInputDevice::IsCapturing()
 {
-  PCapStatus status(hCaptureWindow);
-  return status.fCapturingNow;
+  return isCapturingNow;
 }
 
 
@@ -332,13 +339,13 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PVideoInputDevice::SetColourFormat(ColourFormat colourFmt)
+BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
 {
   BOOL running = IsCapturing();
   if (running)
     Stop();
 
-  ColourFormat oldFormat = colourFormat;
+  PString oldFormat = colourFormat;
 
   if (!PVideoDevice::SetColourFormat(colourFmt))
     return FALSE;
@@ -375,10 +382,14 @@ PStringList PVideoInputDevice::GetDeviceNames() const
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
-   if (IsOpen())
-     return PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
+  if (!IsOpen())
+    return 0;
 
-  return 0;
+  PINDEX size = PVideoDeviceBitmap(hCaptureWindow)->bmiHeader.biSizeImage;
+  if (converter != NULL && size < converter->GetMaxDstFrameBytes())
+    return converter->GetMaxDstFrameBytes();
+
+  return size;
 }
 
 
@@ -390,15 +401,20 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   lastFrameMutex.Wait();
 
   if (lastFramePtr != NULL) {
-    memcpy(buffer, lastFramePtr, lastFrameSize);
-    if (bytesReturned != NULL)
-      *bytesReturned = lastFrameSize;
+    if (converter != NULL)
+      converter->Convert(lastFramePtr, buffer, bytesReturned);
+    else {
+      memcpy(buffer, lastFramePtr, lastFrameSize);
+      if (bytesReturned != NULL)
+        *bytesReturned = lastFrameSize;
+    }
   }
 
   lastFrameMutex.Signal();
 
 #if STEP_GRAB_CAPTURE
-  capGrabFrameNoStop(hCaptureWindow);
+  if (isCapturingNow)
+    capGrabFrameNoStop(hCaptureWindow);
 #endif
   return TRUE;
 }
@@ -518,24 +534,16 @@ BOOL PVideoInputDevice::InitialiseCapture()
   if (!SetFrameRate(frameRate))
     return FALSE;
 
-#if STEP_GRAB_CAPTURE
-  if (!SetColourFormat(colourFormat))
-    return FALSE;
-
-  return capGrabFrameNoStop(hCaptureWindow);
-#else
   return SetColourFormat(colourFormat);
-#endif
 }
 
 
 void PVideoInputDevice::HandleCapture()
 {
-   if (InitialiseCapture()) {
+  if (InitialiseCapture()) {
     threadStarted.Signal();
 
     MSG msg;
-
     while (::GetMessage(&msg, NULL, 0, 0))
       ::DispatchMessage(&msg);
   }
@@ -548,5 +556,6 @@ void PVideoInputDevice::HandleCapture()
 
   threadStarted.Signal();
 }
+
 
 // End Of File ///////////////////////////////////////////////////////////////
