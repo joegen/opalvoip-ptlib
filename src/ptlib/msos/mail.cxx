@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.6 1996/07/15 10:26:31 robertj Exp $
+ * $Id: mail.cxx,v 1.7 1996/11/18 11:30:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.7  1996/11/18 11:30:15  robertj
+ * Fixed support for new libraries.
+ *
  * Revision 1.6  1996/07/15 10:26:31  robertj
  * MSVC 4.1 Support
  *
@@ -130,8 +133,7 @@ BOOL PMail::LogOnCommonInterface(const char * username,
   if (mapi.IsLoaded()) {
     PAssert(service == NULL, "Cannot have variable services");
 
-    lastError = mapi.Logon((HWND)hUserInterface,
-                         username, password, MAPI_ALLOW_OTHERS, 0, &sessionId);
+    lastError = mapi.Logon((HWND)hUserInterface, username, password, 0, 0, &sessionId);
     loggedOn = lastError == SUCCESS_SUCCESS;
     return loggedOn;
   }
