@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.6 1996/09/21 05:42:12 craigs Exp $
+ * $Id: pprocess.h,v 1.7 1996/10/31 10:28:38 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.7  1996/10/31 10:28:38  craigs
+ * Removed PXOnSigxxx routines
+ *
  * Revision 1.6  1996/09/21 05:42:12  craigs
  * Changes for new common files, PConfig changes and signal handling
  *
@@ -55,15 +58,6 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
     virtual void PXOnAsyncSignal(int);
-
-    virtual void PXOnSigHup();
-    virtual void PXOnSigInt();
-    virtual void PXOnSigQuit();
-    virtual void PXOnSigUsr1();
-    virtual void PXOnSigUsr2();
-    virtual void PXOnSigPipe();
-    virtual void PXOnSigTerm();
-    virtual void PXOnSigChld();
 
     void PXAbortIOBlock(int fd);
 
