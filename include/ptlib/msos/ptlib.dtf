@@ -153,6 +153,7 @@ EXPORTS
     ??0PSPXSocket@@QAE@G@Z @111 NONAME ;public: __thiscall PSPXSocket::PSPXSocket(unsigned short)
     ??0PString@@QAA@W4ConversionType@0@PBDZZ @113 NONAME ;public: __cdecl PString::PString(enum PString::ConversionType,char const *,...)
     ??0PString@@QAE@ABV0@@Z @114 NONAME ;public: __thiscall PString::PString(class PString const &)
+    ??0PString@@QAE@ABVPWORDArray@@@Z @3383 NONAME ;public: __thiscall PString::PString(class PWORDArray const &)
     ??0PString@@QAE@F@Z @3042 NONAME ;public: __thiscall PString::PString(short)
     ??0PString@@QAE@G@Z @3043 NONAME ;public: __thiscall PString::PString(unsigned short)
     ??0PString@@QAE@H@Z @3044 NONAME ;public: __thiscall PString::PString(int)
@@ -963,6 +964,7 @@ EXPORTS
     ?AsString@PTime@@QBE?AVPString@@PBDH@Z @614 NONAME ;public: class PString  __thiscall PTime::AsString(char const *,int)const 
     ?AsString@PTime@@QBE?AVPString@@W4TimeFormat@1@H@Z @615 NONAME ;public: class PString  __thiscall PTime::AsString(enum PTime::TimeFormat,int)const 
     ?AsString@PTimeInterval@@QBE?AVPString@@HW4Formats@1@H@Z @3041 NONAME ;public: class PString  __thiscall PTimeInterval::AsString(int,enum PTimeInterval::Formats,int)const 
+    ?AsUCS2@PString@@QBE?AVPWORDArray@@XZ @3384 NONAME ;public: class PWORDArray  __thiscall PString::AsUCS2(void)const 
     ?AsUnsigned64@PString@@QBE_KI@Z @616 NONAME ;public: unsigned __int64 __thiscall PString::AsUnsigned64(unsigned int)const 
     ?AsUnsigned@PString@@QBEKI@Z @617 NONAME ;public: unsigned long __thiscall PString::AsUnsigned(unsigned int)const 
     ?Attach@PAbstractArray@@QAEXPBXH@Z @618 NONAME ;public: void __thiscall PAbstractArray::Attach(void const *,int)
@@ -1822,6 +1824,7 @@ EXPORTS
     ?InternalCompare@PString@@MBE?AW4Comparison@PObject@@HD@Z @1209 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PString::InternalCompare(int,char)const 
     ?InternalCompare@PString@@MBE?AW4Comparison@PObject@@HHPBD@Z @1210 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PString::InternalCompare(int,int,char const *)const 
     ?InternalEndRead@PReadWriteMutex@@IAEXXZ @3325 NONAME ;protected: void __thiscall PReadWriteMutex::InternalEndRead(void)
+    ?InternalFromUCS2@PString@@IAEXPBGH@Z @3385 NONAME ;protected: void __thiscall PString::InternalFromUCS2(unsigned short const *,int)
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @3326 NONAME ;protected: void __thiscall PReadWriteMutex::InternalStartRead(void)
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @1916 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
     ?IsBroadcast@Address@PIPSocket@@QBEHXZ @3344 NONAME ;public: int __thiscall PIPSocket::Address::IsBroadcast(void)const 
