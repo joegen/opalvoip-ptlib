@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.7  2003/04/17 08:34:48  robertj
+ * Changed LDAP structure output so if field is empty it leaves it out
+ *   altogether rather then encoding an empty string, some servers barf.
+ *
  * Revision 1.6  2003/04/16 08:00:19  robertj
  * Windoes psuedo autoconf support
  *
@@ -334,8 +338,11 @@ static PList<PLDAPSession::ModAttrib> AttribsFromStruct(const PLDAPStructBase & 
     PLDAPAttributeBase & attr = attributes.GetAttribute(i);
     if (attr.IsBinary())
       attrs.Append(new PLDAPSession::BinaryModAttrib(attr.GetName(), attr.ToBinary()));
-    else
-      attrs.Append(new PLDAPSession::StringModAttrib(attr.GetName(), attr.ToString()));
+    else {
+      PString str = attr.ToString();
+      if (!str)
+        attrs.Append(new PLDAPSession::StringModAttrib(attr.GetName(), str));
+    }
   }
 
   return attrs;
