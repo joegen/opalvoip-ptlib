@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.3 1996/02/15 14:47:35 robertj Exp $
+ * $Id: ptime.cxx,v 1.4 1996/02/25 03:07:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.4  1996/02/25 03:07:47  robertj
+ * Changed PrintOn and ReadFrom on PTimeInterval to use dd:hh:mm:ss.mmm format.
+ *
  * Revision 1.3  1996/02/15 14:47:35  robertj
  * Fixed bugs in time zone compensation (some in the C library).
  *
@@ -46,13 +49,49 @@ PObject::Comparison PTimeInterval::Compare(const PObject & obj) const
 
 void PTimeInterval::PrintOn(ostream & strm) const
 {
-  strm << milliseconds;
+  long tmp = milliseconds/86400000;
+  if (tmp > 0)
+    strm << tmp << ':';
+
+  tmp = (milliseconds%86400000)/3600000;
+  if (tmp > 0)
+    strm << tmp << ':';
+
+  tmp = (milliseconds%3600000)/60000;
+  if (tmp > 0)
+    strm << tmp << ':';
+
+  strm << (milliseconds%60000)/1000 << '.';
+
+  char oldfill = strm.fill();
+  strm.fill('0');
+  strm.width(3);
+  strm << (milliseconds%1000);
+  strm.fill(oldfill);
 }
 
 
 void PTimeInterval::ReadFrom(istream &strm)
 {
-  strm >> milliseconds;
+  long day = 0;
+  long hour = 0;
+  long min = 0;
+  long msec = 0;
+  long sec;
+  strm >> sec;
+  while (strm.peek() == ':') {
+    day = hour;
+    hour = min;
+    min = sec;
+    strm.get();
+    strm >> sec;
+  }
+  if (strm.peek() == '.') {
+    strm.get();
+    strm >> msec;
+  }
+
+  SetInterval(msec, sec, min, hour, day);
 }
 
 
@@ -239,7 +278,7 @@ PString PTime::AsString(const char * format, int zone) const
   // so take this into account when converting non-local times
   if (zone == Local) 
     zone = GetTimeZone();  // includes daylight savings time
-  time_t realTime = theTime - zone*60;     // to correct timezone
+  time_t realTime = theTime + zone*60;     // to correct timezone
   struct tm * t = gmtime(&realTime);
 
   PINDEX repeatCount;
