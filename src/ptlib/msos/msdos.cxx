@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.7 1994/12/13 11:53:44 robertj Exp $
+ * $Id: msdos.cxx,v 1.8 1995/03/12 05:00:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.7  1994/12/13 11:53:44  robertj
+ * Revision 1.8  1995/03/12 05:00:05  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.7  1994/12/13  11:53:44  robertj
  * Added missing PConfig Construct() function for pure DOS.
  *
  * Revision 1.6  1994/10/30  11:25:36  robertj
@@ -530,6 +534,7 @@ void PConfig::SetString(const PString &, const PString & key, const PString & va
 }
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
 
@@ -550,6 +555,67 @@ void PThread::SwitchContext(PThread * from)
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
 }
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+void PProcess::OperatingSystemYield()
+{
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDynaLink
+
+PDynaLink::PDynaLink()
+{
+  PAssertAlways(PUnimplementedFunction);
+}
+
+
+PDynaLink::PDynaLink(const PString &)
+{
+  PAssertAlways(PUnimplementedFunction);
+}
+
+
+PDynaLink::~PDynaLink()
+{
+}
+
+
+BOOL PDynaLink::Open(const PString & name)
+{
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+}
+
+
+void PDynaLink::Close()
+{
+}
+
+
+BOOL PDynaLink::IsLoaded() const
+{
+  return FALSE;
+}
+
+
+BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+{
+  return FALSE;
+}
+
+
+BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+{
+  return FALSE;
+}
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
