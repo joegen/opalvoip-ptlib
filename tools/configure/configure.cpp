@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.9  2003/11/06 09:13:20  rjongbloed
+ * Improved the Windows configure system to allow multiple defines based on file existence. Needed for SDL support of two different distros.
+ *
  * Revision 1.8  2003/10/30 01:17:15  dereksmithies
  * Add fix from Jose Luis Urien. Many thanks.
  *
@@ -51,6 +54,8 @@
  *
  */
 
+#pragma warning(disable:4786)
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -65,164 +70,186 @@ using namespace std;
 class Feature
 {
   public:
-    Feature() { found = false; }
-    Feature(const string & line)
-       : defineValue("1"),
-         found(false)
-    {
-      int pos = 10;
-      int comma;
-      if ((comma = line.find(',', pos)) == string::npos)
-        return;
+    Feature() : enabled(true) { }
+    Feature(const string & featureName, const string & optionName, const string & optionValue);
 
-      displayName = line.substr(pos, comma-pos);
-      pos = comma+1;
+    void Parse(const string & optionName, const string & optionValue);
+    void Adjust(string & line);
+    bool Locate(const char * testDir);
 
-      if ((comma = line.find(',', pos)) == string::npos)
-        return;
-
-      cmdLineArgument = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        defineName = line.substr(pos);
-        found = true;
-        return;
-      }
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        defineName = line.substr(pos);
-        found = true;
-        return;
-      }
-
-      defineName = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        defineValue = line.substr(pos);
-        found = true;
-        return;
-      }
-
-      defineValue = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        directoryName = line.substr(pos);
-        return;
-      }
-
-      directoryName = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        includeName = line.substr(pos);
-        return;
-      }
-
-      includeName = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      if ((comma = line.find(',', pos)) == string::npos) {
-        includeText = line.substr(pos);
-        return;
-      }
-
-      includeText = line.substr(pos, comma-pos);
-      pos = comma+1;
-
-      while ((comma = line.find(',', pos)) != string::npos) {
-        if (Locate(line.substr(pos, comma-pos).c_str()))
-          return;
-        pos = comma+1;
-      }
-
-      Locate(line.substr(pos).c_str());
-    }
-
-    virtual void Adjust(string & line)
-    {
-      if (found && line.find("#undef") != string::npos && line.find(defineName) != string::npos)
-        line = "#define " + defineName + ' ' + defineValue;
-
-      if (directoryName[0] != '\0') {
-        int pos = line.find(directoryName);
-        if (pos != string::npos)
-          line.replace(pos, directoryName.length(), directory);
-      }
-    }
-
-    virtual bool Locate(const char * testDir)
-    {
-      if (found)
-        return true;
-
-      if (defineName[0] == '\0') {
-        found = false;
-        return true;
-      }
-
-      if (includeName[0] == '\0') {
-        found = true;
-        return true;
-      }
-
-      string testDirectory = testDir;
-      if (testDirectory[testDirectory.length()-1] != '\\')
-        testDirectory += '\\';
-
-      string filename = testDirectory + includeName;
-      ifstream file(filename.c_str(), ios::in);
-      if (!file.is_open())
-        return false;
-
-      if (includeText[0] == '\0')
-        found = true;
-      else {
-        while (file.good()) {
-          string line;
-          getline(file, line);
-          if (line.find(includeText) != string::npos) {
-            found = true;
-            break;
-          }
-        }
-      }
-
-      if (!found)
-        return false;
-
-      char buf[_MAX_PATH];
-      _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
-      directory = buf;
-
-      cout << "Located " << displayName << " at " << directory << endl;
-
-      int pos;
-      while ((pos = directory.find('\\')) != string::npos)
-        directory[pos] = '/';
-      pos = directory.length()-1;
-      if (directory[pos] == '/')
-        directory.erase(pos);
-
-      return true;
-    }
-
+    string featureName;
     string displayName;
-    string cmdLineArgument;
-    string defineName;
-    string defineValue;
-    string directoryName;
-    string includeName;
-    string includeText;
+    string directorySymbol;
+    string simpleDefineName;
+    string simpleDefineValue;
 
-    bool found;
+    struct CheckFileInfo {
+      CheckFileInfo() : found(false), defineName("1") { }
+
+      bool Locate(const string & testDir);
+
+      bool   found;
+      string fileName;
+      string fileText;
+      string defineName;
+      string defineValue;
+    };
+    list<CheckFileInfo> checkFiles;
+
     string directory;
+    bool   enabled;
 };
 
 
 list<Feature> features;
+
+
+///////////////////////////////////////////////////////////////////////
+
+Feature::Feature(const string & featureNameParam,
+                 const string & optionName,
+                 const string & optionValue)
+  : featureName(featureNameParam),
+    enabled(true)
+{
+  Parse(optionName, optionValue);
+}
+
+
+void Feature::Parse(const string & optionName, const string & optionValue)
+{
+  if (optionName == "DISPLAY")
+    displayName = optionValue;
+  else if (optionName == "DEFINE") {
+    int equal = optionValue.find('=');
+    if (equal == string::npos)
+      simpleDefineName = optionValue;
+    else {
+      simpleDefineName.assign(optionValue, 0, equal);
+      simpleDefineValue.assign(optionValue, equal+1, INT_MAX);
+    }
+  }
+  else if (optionName == "CHECK_FILE") {
+    int comma = optionValue.find(',');
+    if (comma == string::npos)
+      return;
+
+    CheckFileInfo check;
+    int pipe = optionValue.find('|');
+    if (pipe < 0 || pipe > comma)
+      check.fileName.assign(optionValue, 0, comma);
+    else {
+      check.fileName.assign(optionValue, 0, pipe);
+      check.fileText.assign(optionValue, pipe+1, comma-pipe-1);
+    }
+
+    int equal = optionValue.find('=', comma);
+    if (equal == string::npos)
+      check.defineName.assign(optionValue, comma+1, INT_MAX);
+    else {
+      check.defineName.assign(optionValue, comma+1, equal-comma-1);
+      check.defineValue.assign(optionValue, equal+1, INT_MAX);
+    }
+
+    checkFiles.push_back(check);
+  }
+  else if (optionName == "DIR_SYMBOL")
+    directorySymbol = '@' + optionValue + '@';
+  else if (optionName == "CHECK_DIR")
+    Locate(optionValue.c_str());
+}
+
+
+static bool CompareName(const string & line, const string & name)
+{
+  int pos = line.find(name);
+  if (pos == string::npos)
+    return false;
+
+  pos += name.length();
+  return !isalnum(line[pos]) && line[pos] != '_';
+}
+
+void Feature::Adjust(string & line)
+{
+  if (enabled && line.find("#undef") != string::npos) {
+    if (!simpleDefineName.empty() && CompareName(line, simpleDefineName))
+      line = "#define " + simpleDefineName + ' ' + simpleDefineValue;
+
+    for (list<CheckFileInfo>::iterator file = checkFiles.begin(); file != checkFiles.end(); file++) {
+      if (file->found && CompareName(line, file->defineName)) {
+        line = "#define " + file->defineName + ' ' + file->defineValue;
+        break;
+      }
+    }
+  }
+
+  if (directorySymbol[0] != '\0') {
+    int pos = line.find(directorySymbol);
+    if (pos != string::npos)
+      line.replace(pos, directorySymbol.length(), directory);
+  }
+}
+
+
+bool Feature::Locate(const char * testDir)
+{
+  if (!directory.empty())
+    return true;
+
+  if (checkFiles.empty())
+    return true;
+
+  string testDirectory = testDir;
+  if (testDirectory[testDirectory.length()-1] != '\\')
+    testDirectory += '\\';
+
+  list<CheckFileInfo>::iterator file = checkFiles.begin();
+  if (!file->Locate(testDirectory))
+    return false;
+
+  while (++file != checkFiles.end())
+    file->Locate(testDirectory);
+
+  char buf[_MAX_PATH];
+  _fullpath(buf, testDirectory.c_str(), _MAX_PATH);
+  directory = buf;
+
+  cout << "Located " << displayName << " at " << directory << endl;
+
+  int pos;
+  while ((pos = directory.find('\\')) != string::npos)
+    directory[pos] = '/';
+  pos = directory.length()-1;
+  if (directory[pos] == '/')
+    directory.erase(pos);
+
+  return true;
+}
+
+
+bool Feature::CheckFileInfo::Locate(const string & testDirectory)
+{
+  string filename = testDirectory + fileName;
+  ifstream file(filename.c_str(), ios::in);
+  if (!file.is_open())
+    return false;
+
+  if (fileText.empty())
+    found = true;
+  else {
+    while (file.good()) {
+      string line;
+      getline(file, line);
+      if (line.find(fileText) != string::npos) {
+        found = true;
+        break;
+      }
+    }
+  }
+
+  return found;
+}
 
 
 bool TreeWalk(const string & directory)
@@ -240,7 +267,8 @@ bool TreeWalk(const string & directory)
       subdir += fileinfo.cFileName;
 
       if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
-                                            fileinfo.cFileName[0] != '.') {
+                                       fileinfo.cFileName[0] != '.' &&
+                                       stricmp(fileinfo.cFileName, "RECYCLER") != 0) {
         subdir += '\\';
 
         foundAll = true;
@@ -305,6 +333,8 @@ int main(int argc, char* argv[])
   }
 
   list<string> headers;
+  list<Feature>::iterator feature;
+
   while (conf.good()) {
     string line;
     getline(conf, line);
@@ -317,11 +347,33 @@ int main(int argc, char* argv[])
           headers.push_back(line.substr(pos+1, end-pos-1));
       }
     }
-    else if (line.find("dnl MSWIN ") == 0)
-      features.push_back(Feature(line));
+    else if (line.find("dnl MSWIN_") == 0) {
+      int space = line.find(' ', 10);
+      if (space != string::npos) {
+        string optionName(line, 10, space-10);
+        while (line[space] == ' ')
+          space++;
+        int comma = line.find(',', space);
+        if (comma != string::npos) {
+          string optionValue(line, comma+1, INT_MAX);
+          if (!optionValue.empty()) {
+            string featureName(line, space, comma-space);
+            bool found = false;
+            for (feature = features.begin(); feature != features.end(); feature++) {
+              if (feature->featureName == featureName) {
+                found = true;
+                break;
+              }
+            }
+            if (found)
+              feature->Parse(optionName, optionValue);
+            else
+              features.push_back(Feature(featureName, optionName, optionValue));
+          }
+        }
+      }
+    }
   }
-
-  list<Feature>::iterator feature;
 
   const char EXTERN_DIR[] = "--extern-dir=";
   
@@ -338,11 +390,11 @@ int main(int argc, char* argv[])
               "  --no-search\t\tDo not search disk for libraries.\n"
 	"  --extern-dir\t\t specify where to search disk for libraries.\n";
       for (feature = features.begin(); feature != features.end(); feature++) {
-        if (feature->cmdLineArgument[0] != '\0') {
-          cout << "  --no-" << feature->cmdLineArgument
+        if (feature->featureName[0] != '\0') {
+          cout << "  --no-" << feature->featureName
                << "\t\tDisable " << feature->displayName << '\n';
-          if (feature->includeName[0] != '\0')
-            cout << "  --" << feature->cmdLineArgument << "-dir=dir"
+          if (!feature->checkFiles.empty())
+            cout << "  --" << feature->featureName << "-dir=dir"
                     "\tSet directory for " << feature->displayName << '\n';
         }
       }
@@ -350,13 +402,12 @@ int main(int argc, char* argv[])
     }
     else {
       for (feature = features.begin(); feature != features.end(); feature++) {
-        if (stricmp(argv[i], ("--no-"+feature->cmdLineArgument).c_str()) == 0) {
-	  feature->defineName = "";
-          feature->found = false;
-	} else if (strstr(argv[i], ("--" + feature->cmdLineArgument+"-dir=").c_str()) == argv[i])
-	  if (!feature->Locate(argv[i] + strlen(("--" + feature->cmdLineArgument + "-dir=").c_str())))
+        if (stricmp(argv[i], ("--no-"+feature->featureName).c_str()) == 0)
+          feature->enabled = false;
+	else if (strstr(argv[i], ("--" + feature->featureName+"-dir=").c_str()) == argv[i])
+	  if (!feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
 	    cerr << feature->displayName << " not found in "
-		 << argv[i] + strlen(("--" + feature->cmdLineArgument+"-dir=").c_str()) << endl;
+		 << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
       }
     }
   }
@@ -364,7 +415,7 @@ int main(int argc, char* argv[])
   if (searchDisk) {
     bool foundAll = true;
     for (feature = features.begin(); feature != features.end(); feature++) {
-      if (!feature->found)
+      if (feature->enabled && !feature->checkFiles.empty() && !feature->checkFiles.begin()->found)
         foundAll = false;
     }
 
@@ -392,9 +443,13 @@ int main(int argc, char* argv[])
 
   for (feature = features.begin(); feature != features.end(); feature++) {
     cout << "  " << feature->displayName << ' ';
-    if (feature->includeName[0] == '\0')
-      cout << "set to " << feature->defineValue;
-    else if (feature->found)
+    if (feature->checkFiles.empty()) {
+      if (feature->simpleDefineValue.empty())
+        cout << "defined";
+      else
+        cout << "set to " << feature->simpleDefineValue;
+    }
+    else if (feature->checkFiles.begin()->found)
       cout << "enabled";
     else
       cout << "disabled";
