@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.124  2002/11/01 05:10:01  robertj
+ * Fixed bug in UTF-8 to UCS-2 conversion, not compiler portable!
+ *
  * Revision 1.123  2002/10/31 07:33:59  robertj
  * Changed UTF-8 to UCS-2 conversion function to not include trailing null.
  *
@@ -2112,17 +2115,21 @@ PWORDArray PString::AsUCS2() const
     if ((theArray[i]&0x80) == 0)
       ucs2[count++] = (BYTE)theArray[i++];
     else if ((theArray[i]&0xe0) == 0xc0) {
-      if (i < GetSize()-1)
-        ucs2[count++] = (WORD)(((theArray[i++]&0x1f)<<6)|
-                                (theArray[i++]&0x3f));
+      if (i < GetSize()-2) {
+        ucs2[count++] = (WORD)(((theArray[i  ]&0x1f)<<6)|
+                                (theArray[i+1]&0x3f));
+        i += 2;
+      }
       else
         ucs2[count++] = 0xffff;
     }
     else if ((theArray[i]&0xf0) == 0xe0) {
-      if (i < GetSize()-2)
-        ucs2[count++] = (WORD)(((theArray[i++]&0xf)<<12)|
-                               ((theArray[i++]&0x3f)<<6)|
-                                (theArray[i++]&0x3f));
+      if (i < GetSize()-3) {
+        ucs2[count++] = (WORD)(((theArray[i  ]&0x0f)<<12)|
+                               ((theArray[i+1]&0x3f)<< 6)|
+                                (theArray[i+2]&0x3f));
+        i += 3;
+      }
       else
         ucs2[count++] = 0xffff;
     }
