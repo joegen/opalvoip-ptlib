@@ -274,7 +274,7 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
   }
 
   // attempt to read out of band data
-  BYTE buffer[32];
+  char buffer[32];
   int ooblen;
   while ((ooblen = ::recv(os_handle, buffer, sizeof(buffer), MSG_OOB)) > 0) 
     OnOutOfBand(buffer, ooblen);
