@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.30  1998/04/17 15:13:08  craigs
+ * Added lazy writes to Config cache
+ *
  * Revision 1.29  1998/03/29 10:42:16  craigs
  * Changed for new initialisation scheme
  *
@@ -127,6 +130,8 @@ extern "C" int select(int width,
 			fd_set *exceptfds,
 			struct timeval *timeout);
 #endif
+
+extern void PXStopConfigWriteThread();
 
 ostream  * PErrorStream = &cerr;
 
@@ -345,6 +350,7 @@ void PProcess::CommonConstruct()
 
 void PProcess::CommonDestruct()
 {
+  PXStopConfigWriteThread();
   SetSignals(NULL);
 }
 
