@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.39 1997/01/12 04:15:21 robertj Exp $
+ * $Id: http.cxx,v 1.40 1997/02/14 13:55:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.40  1997/02/14 13:55:44  robertj
+ * Fixed bug in URL for reproducing fields with special characters, must be escaped and weren't.
+ *
  * Revision 1.39  1997/01/12 04:15:21  robertj
  * Globalised MIME tag strings.
  *
@@ -522,9 +525,9 @@ PString PURL::AsString(UrlFormat fmt) const
 
         if (schemeInfo->type == UserPasswordHostPort) {
           if (!username || !password)
-            str << username
+            str << TranslateString(username)
                 << ':'
-                << password
+                << TranslateString(password)
                 << '@';
         }
 
@@ -543,7 +546,7 @@ PString PURL::AsString(UrlFormat fmt) const
   if (count > 0) {
     str << '/';
     for (PINDEX i = 0; i < count; i++) {
-      str << path[i];
+      str << TranslateString(path[i]);
       if (i < count-1)
         str << '/';
     }
@@ -551,13 +554,13 @@ PString PURL::AsString(UrlFormat fmt) const
 
   if (fmt == FullURL || fmt == URIOnly) {
     if (!parameters)
-      str << ";" << parameters;
+      str << ";" << TranslateString(parameters);
 
     if (!queryStr)
       str << "?" << queryStr;
 
     if (!fragment)
-      str << "#" << fragment;
+      str << "#" << TranslateString(fragment);
   }
 
   return str;
