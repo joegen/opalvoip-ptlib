@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.41 1996/12/17 11:00:28 robertj Exp $
+ * $Id: win32.cxx,v 1.42 1996/12/17 13:13:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.42  1996/12/17 13:13:05  robertj
+ * Fixed win95 support for registry security code,
+ *
  * Revision 1.41  1996/12/17 11:00:28  robertj
  * Fixed register entry security access control lists.
  *
@@ -1198,6 +1201,78 @@ class SecurityID
     PSID sidptr;
 };
 
+
+static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
+{
+  SECURITY_DESCRIPTOR secdesc;
+  if (!InitializeSecurityDescriptor(&secdesc, SECURITY_DESCRIPTOR_REVISION))
+    return GetLastError();
+
+  static SID_IDENTIFIER_AUTHORITY siaNTAuthority = SECURITY_NT_AUTHORITY;
+  SecurityID adminID(&siaNTAuthority, 2,
+                     SECURITY_BUILTIN_DOMAIN_RID,
+                     DOMAIN_ALIAS_RID_ADMINS, 
+                     0, 0, 0, 0, 0, 0);
+  if (!adminID.IsValid())
+    return GetLastError();
+
+  static SID_IDENTIFIER_AUTHORITY siaSystemAuthority = SECURITY_NT_AUTHORITY;
+  SecurityID systemID(&siaSystemAuthority, 1,
+                      SECURITY_LOCAL_SYSTEM_RID,
+                      0, 0, 0, 0, 0, 0, 0);
+  if (!systemID.IsValid())
+    return GetLastError();
+
+  static SID_IDENTIFIER_AUTHORITY siaCreatorAuthority = SECURITY_CREATOR_SID_AUTHORITY;
+  SecurityID creatorID(&siaCreatorAuthority, 1,
+                       SECURITY_CREATOR_OWNER_RID,
+                       0, 0, 0, 0, 0, 0, 0);
+  if (!creatorID.IsValid())
+    return GetLastError();
+
+  SID_NAME_USE snuType;
+  char szDomain[100];
+  DWORD cchDomainName = sizeof(szDomain);
+  SecurityID userID(NULL, PProcess::Current()->GetUserName(),
+                    szDomain, &cchDomainName, &snuType);
+  if (!userID.IsValid())
+    return GetLastError();
+
+  DWORD acl_len = sizeof(ACL) + 4*sizeof(ACCESS_ALLOWED_ACE) +
+                    adminID.GetLength() + creatorID.GetLength() +
+                    systemID.GetLength() + userID.GetLength();
+  PBYTEArray dacl_buf(acl_len);
+  PACL dacl = (PACL)dacl_buf.GetPointer(acl_len);
+  if (!InitializeAcl(dacl, acl_len, ACL_REVISION2))
+    return GetLastError();
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, adminID))
+    return GetLastError();
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, systemID))
+    return GetLastError();
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, creatorID))
+    return GetLastError();
+
+  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, userID))
+    return GetLastError();
+
+  if (!SetSecurityDescriptorDacl(&secdesc, TRUE, dacl, FALSE))
+    return GetLastError();
+
+  SECURITY_ATTRIBUTES secattr;
+  secattr.nLength = sizeof(secattr);
+  secattr.lpSecurityDescriptor = &secdesc;
+  secattr.bInheritHandle = FALSE;
+
+  DWORD disposition;
+
+  return RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                        KEY_ALL_ACCESS, &secattr, &key, &disposition);
+}
+
+
 RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
 {
   PProcess * proc = PProcess::Current();
@@ -1241,74 +1316,14 @@ RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
   if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
     rootKey = HKEY_LOCAL_MACHINE;
 
-  SECURITY_DESCRIPTOR secdesc;
-  if (!InitializeSecurityDescriptor(&secdesc, SECURITY_DESCRIPTOR_REVISION))
-    return;
-
-  static SID_IDENTIFIER_AUTHORITY siaNTAuthority = SECURITY_NT_AUTHORITY;
-  SecurityID adminID(&siaNTAuthority, 2,
-                     SECURITY_BUILTIN_DOMAIN_RID,
-                     DOMAIN_ALIAS_RID_ADMINS, 
-                     0, 0, 0, 0, 0, 0);
-  if (!adminID.IsValid())
-    return;
-
-  static SID_IDENTIFIER_AUTHORITY siaSystemAuthority = SECURITY_NT_AUTHORITY;
-  SecurityID systemID(&siaSystemAuthority, 1,
-                      SECURITY_LOCAL_SYSTEM_RID,
-                      0, 0, 0, 0, 0, 0, 0);
-  if (!systemID.IsValid())
-    return;
-
-  static SID_IDENTIFIER_AUTHORITY siaCreatorAuthority = SECURITY_CREATOR_SID_AUTHORITY;
-  SecurityID creatorID(&siaCreatorAuthority, 1,
-                       SECURITY_CREATOR_OWNER_RID,
-                       0, 0, 0, 0, 0, 0, 0);
-  if (!creatorID.IsValid())
-    return;
-
-  SID_NAME_USE snuType;
-  char szDomain[100];
-  DWORD cchDomainName = sizeof(szDomain);
-  SecurityID userID(NULL, PProcess::Current()->GetUserName(),
-                    szDomain, &cchDomainName, &snuType);
-  if (!userID.IsValid())
-    return;
-
-  DWORD acl_len = sizeof(ACL) + 4*sizeof(ACCESS_ALLOWED_ACE) +
-                    adminID.GetLength() + creatorID.GetLength() +
-                    systemID.GetLength() + userID.GetLength();
-  PBYTEArray dacl_buf(acl_len);
-  PACL dacl = (PACL)dacl_buf.GetPointer(acl_len);
-  if (!InitializeAcl(dacl, acl_len, ACL_REVISION2))
-    return;
-
-  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, adminID))
-    return;
-
-  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, systemID))
-    return;
-
-  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, creatorID))
-    return;
-
-  if (!AddAccessAllowedAce(dacl, ACL_REVISION2, KEY_ALL_ACCESS, userID))
-    return;
-
-  if (!SetSecurityDescriptorDacl(&secdesc, TRUE, dacl, FALSE))
-    return;
-
-  SECURITY_ATTRIBUTES secattr;
-  secattr.nLength = sizeof(secattr);
-  secattr.lpSecurityDescriptor = &secdesc;
-  secattr.bInheritHandle = FALSE;
-
-  DWORD disposition;
-
-  error = RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
-                         KEY_ALL_ACCESS, &secattr, &key, &disposition);
-  if (error != ERROR_SUCCESS)
-    key = NULL;
+  error = SecureCreateKey(rootKey, subkey, key);
+  if (error != ERROR_SUCCESS) {
+    DWORD disposition;
+    error = RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                           KEY_ALL_ACCESS, NULL, &key, &disposition);
+    if (error != ERROR_SUCCESS)
+      key = NULL;
+  }
 }
 
 
