@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.54  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.53  2001/01/24 06:38:29  yurik
  * Windows CE port-related changes
  *
@@ -481,10 +486,10 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
 }
 
 
-PFilePath & PFilePath::operator=(const PString & str)
+void PFilePath::AssignContents(const PContainer & cont)
 {
-  PCaselessString::operator=(PDirectory::CreateFullPath(str, FALSE));
-  return *this;
+  PCaselessString::AssignContents(cont);
+  PCaselessString::AssignContents(PDirectory::CreateFullPath(*this, FALSE));
 }
 
 

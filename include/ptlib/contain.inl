@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.43  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.42  1999/08/22 12:13:42  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -166,6 +171,9 @@
 PINLINE PContainer::~PContainer()
   { Destruct(); }
 
+PINLINE PContainer & PContainer::operator=(const PContainer & cont)
+  { AssignContents(cont); return *this; }
+
 PINLINE void PContainer::CloneContents(const PContainer *)
   { }
 
@@ -196,6 +204,15 @@ PINLINE PString::PString(int, const PString * str)
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
 
+PINLINE PString & PString::operator=(const PString & str)
+  { AssignContents(str); return *this; }
+
+PINLINE PString & PString::operator=(const char * cstr)
+  { AssignContents(PString(cstr)); return *this; }
+
+PINLINE PString & PString::operator=(char ch)
+  { AssignContents(PString(ch)); return *this; }
+
 PINLINE BOOL PString::MakeMinimumSize()
   { return SetSize(GetLength()+1); }
 
@@ -206,9 +223,6 @@ PINLINE PINDEX PString::GetLength() const
 
 PINLINE BOOL PString::operator!() const
   { return !IsEmpty(); }
-
-PINLINE PString & PString::operator=(const PString & str)
-  { PCharArray::operator=(str); return *this; }
 
 PINLINE PString PString::operator+(const PString & str) const
   { return operator+((const char *)str); }
@@ -313,11 +327,14 @@ PINLINE PCaselessString::PCaselessString(const PString & str)
 PINLINE PCaselessString::PCaselessString(int dummy,const PCaselessString * str)
   : PString(dummy, str) { }
 
-PINLINE PCaselessString & PCaselessString::operator=(const char * cstr)
-  { PString::operator=(cstr); return *this; }
-
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
-  { PString::operator=(str); return *this; }
+  { AssignContents(str); return *this; }
+
+PINLINE PCaselessString & PCaselessString::operator=(const char * cstr)
+  { AssignContents(PString(cstr)); return *this; }
+
+PINLINE PCaselessString & PCaselessString::operator=(char ch)
+  { AssignContents(PString(ch)); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -330,6 +347,18 @@ PINLINE PStringStream::Buffer::Buffer(const Buffer & b)
 
 PINLINE PStringStream::Buffer& PStringStream::Buffer::operator=(const Buffer&b)
   { string = b.string; return *this; }
+
+PINLINE PStringStream & PStringStream::operator=(const PStringStream & strm)
+  { AssignContents(strm); return *this; }
+
+PINLINE PStringStream & PStringStream::operator=(const PString & str)
+  { AssignContents(str); return *this; }
+
+PINLINE PStringStream & PStringStream::operator=(const char * cstr)
+  { AssignContents(PString(cstr)); return *this; }
+
+PINLINE PStringStream & PStringStream::operator=(char ch)
+  { AssignContents(PString(ch)); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////

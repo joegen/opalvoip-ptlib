@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.41  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.40  1999/08/22 12:13:43  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -1535,18 +1540,40 @@ class PCaselessString : public PString
     );
 
 
-    /**Set the current instance to reference the same string as the
-       #str# parameter. */
-    PCaselessString & operator=(
-      const PString & str  /// String to initialise the caseless string from.
-    );
-    /**Set the current instance to reference the same string as the
-       #str# parameter. The previous reference is decremented and
-       if no more references to the string are present, the string buffer is
-       released. A PCaselessString may also be provided to this operator.
+    /**Assign the string to the current object. The current instance then
+       becomes another reference to the same string in the #str#
+       parameter.
+       
+       @return
+       reference to the current PString object.
      */
     PCaselessString & operator=(
-      const char * cstr   /// C string to initialise the caseless string from.
+      const PString & str  /// New string to assign.
+    );
+
+    /**Assign the C string to the current object. The current instance then
+       becomes a unique reference to a copy of the #cstr# parameter.
+       The #cstr# parameter is typically a literal string, eg:
+\begin{verbatim}
+          myStr = "fred";
+\end{verbatim}
+       @return
+       reference to the current PString object.
+     */
+    PCaselessString & operator=(
+      const char * cstr  /// C string to assign.
+    );
+
+    /**Assign the character to the current object. The current instance then
+       becomes a unique reference to a copy of the character parameter. eg:
+\begin{verbatim}
+          myStr = 'A';
+\end{verbatim}
+       @return
+       reference to the current PString object.
+     */
+    PCaselessString & operator=(
+      char ch            /// Character to assign.
     );
 
 
@@ -1617,6 +1644,21 @@ class PStringStream : public PString, public iostream
       const char * cstr   /// Initial value for the string stream.
     );
 
+    /**Assign the string part of the stream to the current object. The current
+       instance then becomes another reference to the same string in the #strm#
+       parameter.
+       
+       This will reset the read pointer for input to the beginning of the
+       string. Also, any data output to the string up until the asasignement
+       will be lost.
+
+       @return
+       reference to the current PStringStream object.
+     */
+    PStringStream & operator=(
+      const PStringStream & strm
+    );
+
     /**Assign the string to the current object. The current instance then
        becomes another reference to the same string in the #str#
        parameter.
@@ -1651,14 +1693,28 @@ class PStringStream : public PString, public iostream
       const char * cstr  /// C string to assign.
     );
 
+    /**Assign the character to the current object. The current instance then
+       becomes a unique reference to a copy of the character parameter. eg:
+\begin{verbatim}
+          myStr = 'A';
+\end{verbatim}
+       @return
+       reference to the current PString object.
+     */
+    PStringStream & operator=(
+      char ch            /// Character to assign.
+    );
+
 
     /// Destroy the string stream, deleting the stream buffer
     virtual ~PStringStream();
 
 
+  protected:
+    virtual void AssignContents(const PContainer & cont);
+
   private:
     PStringStream(int, const PStringStream &) { }
-    PStringStream & operator=(const PStringStream &) { return *this; }
 
     class Buffer : public streambuf {
       public:

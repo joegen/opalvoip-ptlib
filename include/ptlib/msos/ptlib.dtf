@@ -414,12 +414,7 @@ EXPORTS
     ??4Address@PIPSocket@@QAEAAV01@ABVPString@@@Z @271 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(class PString const &)
     ??4Address@PIPSocket@@QAEAAV01@K@Z @272 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(unsigned long)
     ??4Address@PIPXSocket@@QAEAAV01@ABV01@@Z @273 NONAME ;public: class PIPXSocket::Address & __thiscall PIPXSocket::Address::operator=(class PIPXSocket::Address const &)
-    ??4PAbstractArray@@QAEAAV0@ABV0@@Z @2101 NONAME ;public: class PAbstractArray & __thiscall PAbstractArray::operator=(class PAbstractArray const &)
-    ??4PArrayObjects@@QAEAAV0@ABV0@@Z @2201 NONAME ;public: class PArrayObjects & __thiscall PArrayObjects::operator=(class PArrayObjects const &)
-    ??4PCharArray@@QAEAAV0@ABV0@@Z @2036 NONAME ;public: class PCharArray & __thiscall PCharArray::operator=(class PCharArray const &)
-    ??4PContainer@@QAEAAV0@ABV0@@Z @281 NONAME ;public: class PContainer & __thiscall PContainer::operator=(class PContainer const &)
     ??4PDWORDArray@@QAEAAV0@ABV0@@Z @2378 NONAME ;public: class PDWORDArray & __thiscall PDWORDArray::operator=(class PDWORDArray const &)
-    ??4PFilePath@@QAEAAV0@ABVPString@@@Z @283 NONAME ;public: class PFilePath & __thiscall PFilePath::operator=(class PString const &)
     ??4PIntCondMutex@@QAEAAV0@H@Z @285 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator=(int)
     ??4POrdinalToString@@QAEAAV0@ABV0@@Z @2379 NONAME ;public: class POrdinalToString & __thiscall POrdinalToString::operator=(class POrdinalToString const &)
     ??4PSmartPointer@@QAEAAV0@ABV0@@Z @286 NONAME ;public: class PSmartPointer & __thiscall PSmartPointer::operator=(class PSmartPointer const &)
@@ -428,8 +423,6 @@ EXPORTS
     ??4PString@@QAEAAV0@PBD@Z @289 NONAME ;public: class PString & __thiscall PString::operator=(char const *)
     ??4PStringArray@@QAEAAV0@ABV0@@Z @2202 NONAME ;public: class PStringArray & __thiscall PStringArray::operator=(class PStringArray const &)
     ??4PStringSet@@QAEAAV0@ABV0@@Z @2380 NONAME ;public: class PStringSet & __thiscall PStringSet::operator=(class PStringSet const &)
-    ??4PStringStream@@QAEAAV0@ABVPString@@@Z @290 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(class PString const &)
-    ??4PStringStream@@QAEAAV0@PBD@Z @291 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(char const *)
     ??4PStringToOrdinal@@QAEAAV0@ABV0@@Z @2372 NONAME ;public: class PStringToOrdinal & __thiscall PStringToOrdinal::operator=(class PStringToOrdinal const &)
     ??4PStringToString@@QAEAAV0@ABV0@@Z @2373 NONAME ;public: class PStringToString & __thiscall PStringToString::operator=(class PStringToString const &)
     ??4PTimeInterval@@QAEAAV0@ABV0@@Z @292 NONAME ;public: class PTimeInterval & __thiscall PTimeInterval::operator=(class PTimeInterval const &)
@@ -540,7 +533,6 @@ EXPORTS
     ??RPString@@QBE?AV0@HH@Z @417 NONAME ;public: class PString  __thiscall PString::operator()(int,int)const 
     ??XPString@@QBEHPBD@Z @419 NONAME ;public: int __thiscall PString::operator*=(char const *)const 
     ??YPFilePath@@QAEAAV0@ABVPString@@@Z @1841 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(class PString const &)
-    ??YPFilePath@@QAEAAV0@PBD@Z @1843 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(char const *)
     ??YPIntCondMutex@@QAEAAV0@H@Z @421 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator+=(int)
     ??YPString@@QAEAAV0@D@Z @423 NONAME ;public: class PString & __thiscall PString::operator+=(char)
     ??YPString@@QAEAAV0@PBD@Z @424 NONAME ;public: class PString & __thiscall PString::operator+=(char const *)
@@ -772,6 +764,16 @@ EXPORTS
     ?AsInt64@PString@@QBE_JI@Z @610 NONAME ;public: __int64 __thiscall PString::AsInt64(unsigned int)const 
     ?AsInteger@PString@@QBEJI@Z @611 NONAME ;public: long __thiscall PString::AsInteger(unsigned int)const 
     ?AsReal@PString@@QBENXZ @612 NONAME ;public: double __thiscall PString::AsReal(void)const 
+    ?AssignContents@PAbstractArray@@MAEXABVPContainer@@@Z @2654 NONAME ;protected: virtual void __thiscall PAbstractArray::AssignContents(class PContainer const &)
+    ?AssignContents@PAbstractList@@MAEXABVPContainer@@@Z @2655 NONAME ;protected: virtual void __thiscall PAbstractList::AssignContents(class PContainer const &)
+    ?AssignContents@PAbstractSet@@MAEXABVPContainer@@@Z @2656 NONAME ;protected: virtual void __thiscall PAbstractSet::AssignContents(class PContainer const &)
+    ?AssignContents@PAbstractSortedList@@MAEXABVPContainer@@@Z @2657 NONAME ;protected: virtual void __thiscall PAbstractSortedList::AssignContents(class PContainer const &)
+    ?AssignContents@PArrayObjects@@MAEXABVPContainer@@@Z @2658 NONAME ;protected: virtual void __thiscall PArrayObjects::AssignContents(class PContainer const &)
+    ?AssignContents@PContainer@@MAEXABV1@@Z @2659 NONAME ;protected: virtual void __thiscall PContainer::AssignContents(class PContainer const &)
+    ?AssignContents@PDirectory@@MAEXABVPContainer@@@Z @2660 NONAME ;protected: virtual void __thiscall PDirectory::AssignContents(class PContainer const &)
+    ?AssignContents@PFilePath@@MAEXABVPContainer@@@Z @2661 NONAME ;protected: virtual void __thiscall PFilePath::AssignContents(class PContainer const &)
+    ?AssignContents@PHashTable@@MAEXABVPContainer@@@Z @2662 NONAME ;protected: virtual void __thiscall PHashTable::AssignContents(class PContainer const &)
+    ?AssignContents@PStringStream@@MAEXABVPContainer@@@Z @2663 NONAME ;protected: virtual void __thiscall PStringStream::AssignContents(class PContainer const &)
     ?AsString@Address@PIPSocket@@QBE?AVPString@@XZ @1979 NONAME ;public: class PString  __thiscall PIPSocket::Address::AsString(void)const 
     ?AsString@PTime@@QBE?AVPString@@ABV2@H@Z @613 NONAME ;public: class PString  __thiscall PTime::AsString(class PString const &,int)const 
     ?AsString@PTime@@QBE?AVPString@@PBDH@Z @614 NONAME ;public: class PString  __thiscall PTime::AsString(char const *,int)const 
@@ -1789,7 +1791,6 @@ EXPORTS
     ?IsTextFile@PFile@@MBEHXZ @1406 NONAME ;protected: virtual int __thiscall PFile::IsTextFile(void)const 
     ?IsTextFile@PTextFile@@MBEHXZ @1407 NONAME ;protected: virtual int __thiscall PTextFile::IsTextFile(void)const 
     ?IsType@PWin32PacketBuffer@@QBEHG@Z @1932 NONAME ;public: int __thiscall PWin32PacketBuffer::IsType(unsigned short)const 
-    ?IsUnique@PContainer@@QBEHXZ @1408 NONAME ;public: int __thiscall PContainer::IsUnique(void)const 
     ?IsValid@Address@PIPXSocket@@QBEHXZ @1409 NONAME ;public: int __thiscall PIPXSocket::Address::IsValid(void)const 
     ?IsValid@PFilePath@@SAHABVPString@@@Z @1410 NONAME ;public: static int __cdecl PFilePath::IsValid(class PString const &)
     ?IsValid@PFilePath@@SAHD@Z @1411 NONAME ;public: static int __cdecl PFilePath::IsValid(char)
