@@ -77,18 +77,27 @@ with the words "Why did you..." as the answer is quite likely to be "Because!"
 3. CVS Access
 -------------
 
-There is a public CVS archive available at cvs.openh323.org. Note that there are
+There is a public CVS archive available at cvs.sourceforge.net Note that there are
 still some parts of PWLib that are not available, so make sure you use the
 modules provided for check out and do not just try and check out "pwlib" on it's
 own. If you do all you will get is this file.
 
-The modules available are:
+
+cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 login 
+
+cvs -z9 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/openh323 co <modulename>
+
+
+Some of the modules available are:
+
 	ptlib_unix
 	pwlib_xlib (does not work, anyone is welcome to fix!)
 	ptlib_win32
 	pwlib_win32
+        openh323
+	contrib
 
-
+See the CVS web access for a complete list.
 
 
 ================================================================================
