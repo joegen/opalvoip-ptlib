@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.61  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.60  2002/06/27 08:09:06  robertj
  * GNU GCC 3.1 compatibility under Solaris
  *
@@ -210,10 +213,17 @@
 
 #include "ptlib.h"
 
+#ifdef P_VXWORKS
+#include <sys/times.h>
+#include <time.h>
+#include <hostLib.h>
+#include <remLib.h>
+#else
 #include <sys/time.h>
 #include <pwd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#endif // P_VXWORKS
 #include <errno.h>
 
 #if defined(P_LINUX)
@@ -253,6 +263,8 @@ PString PProcess::GetOSClass()
 {
 #ifndef __BEOS__
   return PString("Unix");
+#elif defined P_VXWORKS
+  return PString("VxWorks");
 #else
   return PString("Be Inc.");
 #endif
@@ -268,6 +280,8 @@ PString PProcess::GetOSName()
 #else
   return PString(info.sysname);
 #endif
+#elif defined(P_VXWORKS)
+  return PString::Empty();
 #else
 #warning No GetOSName specified
   return PString("Unknown");
@@ -280,6 +294,8 @@ PString PProcess::GetOSHardware()
   struct utsname info;
   uname(&info);
   return PString(info.machine);
+#elif defined(P_VXWORKS)
+  return PString(sysModel());
 #else
 #warning No GetOSHardware specified
   return PString("unknown");
@@ -296,6 +312,8 @@ PString PProcess::GetOSVersion()
 #else
   return PString(info.release);
 #endif
+#elif defined(P_VXWORKS)
+  return PString(sysBspRev());
 #else
 #warning No GetOSVersion specified
   return PString("?.?");
@@ -304,7 +322,11 @@ PString PProcess::GetOSVersion()
 
 PDirectory PProcess::GetOSConfigDir()
 {
+#ifdef P_VXWORKS
+  return "./";
+#else
   return "/etc";
+#endif // P_VXWORKS
 }
 
 PDirectory PProcess::PXGetHomeDir ()
@@ -350,6 +372,19 @@ PDirectory PProcess::PXGetHomeDir ()
 PString PProcess::GetUserName() const
 
 {
+#ifdef P_VXWORKS
+
+  char pnamebuf[1024];
+  int len = 1024;
+  STATUS gethostresult;
+  gethostresult =::gethostname(pnamebuf,len);	
+  if (gethostresult == OK)
+    return PString(pnamebuf,len);
+  else
+    return PString("VxWorks");
+
+#else
+
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
@@ -370,11 +405,16 @@ PString PProcess::GetUserName() const
     return PString(ptr);
   else
     return PString("user");
+#endif // P_VXWORKS
 }
 
 
 BOOL PProcess::SetUserName(const PString & username)
 {
+#ifdef P_VXWORKS
+  PAssertAlways("PProcess::SetUserName - not implemented for VxWorks");
+  return FALSE;
+#else
   if (username.IsEmpty())
     return seteuid(getuid()) != -1;
 
@@ -398,6 +438,7 @@ BOOL PProcess::SetUserName(const PString & username)
     return FALSE;
 
   return seteuid(pw->pw_uid) != -1;
+#endif // P_VXWORKS
 }
 
 
@@ -413,11 +454,7 @@ void PProcess::PXShowSystemWarning(PINDEX num, const PString & str)
 
 void PProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 {
-  PError << "PWLib/Unix error #"
-         << code
-         << "-"
-         << str
-         << endl;
+  PError << "PWLib " << GetOSClass() << " error #" << code << '-' << str << endl;
 }
 
 void PXSignalHandler(int sig)
@@ -525,8 +562,10 @@ void PProcess::CommonConstruct()
 
   SetSignals(&PXSignalHandler);
 
+#ifndef P_VXWORKS
   // initialise the timezone information
   tzset();
+#endif // !P_VXWORKS
 
   CreateConfigFilesDictionary();
 }
@@ -549,6 +588,9 @@ void PProcess::CommonDestruct()
 #include "tlibthrd.cxx"
 #elif defined(BE_THREADS)
 #include "tlibbe.cxx"
+#elif defined(VX_TASKS)
+// The task based thread created by julian
+#include "tlibvx.cxx"
 #else
 #include "tlibcoop.cxx"
 #endif

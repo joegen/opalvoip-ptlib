@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.44  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.43  2002/07/17 08:44:58  robertj
  * Added links back to page and home page on accepted data html.
  * Fixed display of validation error text if page not accepted.
@@ -2142,7 +2145,7 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   }
 
   PHTTPForm::Post(request, data, msg);
-  if (request.code != PHTTP::OK)
+  if (request.code != PHTTP::RequestOK)
     return TRUE;
 
   if (sectionField != NULL)

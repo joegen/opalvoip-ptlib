@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.10  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.9  2000/06/21 01:14:23  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -152,12 +155,9 @@ PString PFTPClient::GetCurrentDirectory()
 
   } while (lastResponseInfo[quote2] != '"');
 
-#if defined(P_MACOSX)	// make Apple's gnu compiler happy
+  // make Apple's and Tornado's gnu compiler happy
   PString retval = lastResponseInfo(quote1+1, quote2-1);
   return retval;
-#else
-  return lastResponseInfo(quote1+1, quote2-1);
-#endif
 }
 
 

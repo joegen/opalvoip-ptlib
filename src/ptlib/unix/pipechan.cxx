@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.33  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.32  2002/07/31 07:30:11  craigs
  * WaitForTermination now returns exit code of program, as required
  *
@@ -136,6 +139,10 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
                                 BOOL stderrSeparate,
                                 const PStringToString * environment)
 {
+#ifdef P_VXWORKS
+  PAssertAlways("PPipeChannel::PlatformOpen");
+  return FALSE;
+#else
   subProgName = subProgram;
 
   // setup the pipe to the child
@@ -260,6 +267,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   exit(2);
   return FALSE;
+#endif // P_VXWORKS
 }
 
 

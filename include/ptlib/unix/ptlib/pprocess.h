@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.25  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.24  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -201,6 +204,33 @@ PDICTIONARY(PXFdDict, POrdinalKey, PThread);
 
   friend PThread * PThread::Current();
   friend int32 PThread::ThreadFunction(void * thread);
+
+#elif defined(VX_TASKS)
+
+  public:
+    void SignalTimerChange();
+
+  private:
+    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
+    ThreadDict activeThreads;
+    PMutex activeThreadMutex;
+    PLIST(ThreadList, PThread);
+    ThreadList autoDeleteThreads;
+    PMutex deleteThreadMutex;
+
+    PDECLARE_CLASS(HouseKeepingThread, PThread)
+        public:
+        HouseKeepingThread();
+        void Main();
+        PSyncPoint breakBlock;
+    };
+    friend class HouseKeepingThread;
+    HouseKeepingThread * houseKeeper;
+    // Thread for doing timers, thread clean up etc.
+
+  friend PThread * PThread::Current();
+  friend int PThread::ThreadFunction(void * thread);
+
 
 #else
 

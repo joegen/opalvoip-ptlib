@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpcs.cxx,v $
+ * Revision 1.2  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.1  2002/10/02 08:54:01  craigs
  * Added support for XMLRPC server
  *
@@ -84,7 +87,7 @@ BOOL PXMLRPCServerResource::OnPOSTData(PHTTPRequest & request,
 
   OnXMLRPCRequest(request.entityBody, reply);
 
-  request.code = PHTTP::OK;
+  request.code = PHTTP::RequestOK;
   request.outMIME.SetAt(PHTTP::ContentTypeTag, "text/xml");
 
   PINDEX len = reply.GetLength();

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.18  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.17  2002/09/04 03:14:18  robertj
  * Backed out changes submitted by Martin Froehlich as they do not appear to
  *   actually do anything other than add a sychronisation point. The variables
@@ -104,7 +107,8 @@
 #ifdef _PMUTEX_PLATFORM_INCLUDE
 #undef _PMUTEX_PLATFORM_INCLUDE
 
-#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
+#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS) || defined(VX_TASKS)
+    virtual ~PMutex();
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);
     virtual void Signal();
@@ -112,7 +116,7 @@
 
   protected:
 
-#if defined(P_PTHREADS)
+#if defined(P_PTHREADS) && !defined(VX_TASKS)
 #ifndef P_HAS_RECURSIVE_MUTEX
     pthread_t ownerThreadId;
     PINDEX lockCount;

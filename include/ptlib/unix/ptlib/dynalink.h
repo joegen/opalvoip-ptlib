@@ -29,7 +29,7 @@
  * $log$
  */
 
-#ifndef __BEOS__
+#if !defined(__BEOS__) && !defined(P_VXWORKS)
 
 #ifndef _PDYNALINK
 
@@ -52,5 +52,7 @@
 
 #endif
 
-#endif // !__BEOS__
+#endif // !__BEOS__ && !P_VXWORKS
+
+
 // End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.87  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.86  2002/08/14 00:43:40  robertj
  * Added ability to have fixed maximum length PStringStream's so does not do
  *   unwanted malloc()'s while outputing data.
@@ -736,7 +739,7 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
   PSYSTEMLOG(Debug3, "Post to " << request.url << '\n' << data);
   BOOL retval = PHTTPConfig::Post(request, data, reply);
 
-  if (request.code == PHTTP::OK)
+  if (request.code == PHTTP::RequestOK)
     process.BeginRestartSystem();
 
   PServiceHTML::ProcessMacros(request, reply,
@@ -799,7 +802,7 @@ BOOL PConfigSectionsPage::Post(PHTTPRequest & request,
                                PHTML & reply)
 {
   BOOL retval = PHTTPConfigSectionList::Post(request, data, reply);
-  if (request.code == PHTTP::OK)
+  if (request.code == PHTTP::RequestOK)
     process.BeginRestartSystem();
   return retval;
 }
@@ -1080,7 +1083,7 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
     LoadText(request);
 
   BOOL retval = PHTTPConfig::Post(request, data, reply);
-  if (request.code != PHTTP::OK)
+  if (request.code != PHTTP::RequestOK)
     return FALSE;
 
   PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());

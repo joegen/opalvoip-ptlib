@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.25  2002/10/10 04:43:44  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.24  2002/03/27 06:42:16  robertj
  * Implemented the DTR etc functions and ttya/ttyb strings for sunos,
  *    thanks tommi.korhonen@insta.fi & Raimo Ruokonen <rruokonen@koti.soon.fi>
@@ -141,6 +144,10 @@ void PSerialChannel::Construct()
   parityBits = NoParity;
   stopBits   = 1;
 
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+#else
+
   // set input mode: ignore breaks, ignore parity errors, do not strip chars,
   // no CR/NL conversion, no case conversion, no XON/XOFF control,
   // no start/stop
@@ -158,17 +165,24 @@ void PSerialChannel::Construct()
 
   // set line discipline
   Termio.c_lflag = 0;
+
+#endif // P_VXWORKS
 }
 
 BOOL PSerialChannel::Close()
 {
   if (os_handle >= 0) {
 
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+#else
+
     // delete the lockfile
     PFile::Remove(PString(LOCK_PREFIX) + channelName);
 
     // restore the original terminal settings
     TCSETATTR(os_handle, &oldTermio);
+#endif // P_VXWORKS
   }
 
   return PChannel::Close();
@@ -202,6 +216,11 @@ BOOL PSerialChannel::Open(const PString & port,
 
   // save the port name
   channelName = port;
+
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
 
   // construct lock filename 
   PString lockfilename = PString(LOCK_PREFIX) + port;
@@ -268,6 +287,8 @@ BOOL PSerialChannel::Open(const PString & port,
 
   ::fcntl(os_handle, F_SETFD, 1);
 
+#endif // P_VXWORKS
+
   return TRUE;
 }
 
@@ -278,6 +299,11 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 
   if (os_handle < 0)
     return TRUE;
+
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
 
   int baud;
 
@@ -400,6 +426,8 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 
   // initialise the port
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
+
+#endif // P_VXWORKS
 }
 
 
@@ -407,6 +435,11 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
 {
   if (data == dataBits)
     return TRUE;
+
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
 
   int flags;
 
@@ -452,12 +485,19 @@ BOOL PSerialChannel::SetDataBits(BYTE data)
     return TRUE;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
+
+#endif // P_VXWORKS
 }
 
 BOOL PSerialChannel::SetParity(Parity parity)
 {
   if (parity == parityBits)
     return TRUE;
+
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
 
   int flags;
 
@@ -493,12 +533,19 @@ BOOL PSerialChannel::SetParity(Parity parity)
   Termio.c_cflag |= flags;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
+
+#endif // P_VXWORKS
 }
 
 BOOL PSerialChannel::SetStopBits(BYTE stop)
 {
   if (stop == stopBits)
     return TRUE;
+
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
 
   int flags;
 
@@ -527,6 +574,8 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
   Termio.c_cflag |= flags;
 
   return ConvertOSError(TCSETATTR(os_handle, &Termio));
+
+#endif // P_VXWORKS
 }
 
 DWORD PSerialChannel::GetSpeed() const
@@ -575,6 +624,10 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 
 void PSerialChannel::SetDTR(BOOL mode)
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+#else
+
   int flags = 0;
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   flags &= ~TIOCM_DTR;
@@ -590,62 +643,103 @@ void PSerialChannel::SetDTR(BOOL mode)
   else 
     ioctl(os_handle, TIOCCDTR, 0);
   */
+
+#endif // P_VXWORKS
 }
 
 
 void PSerialChannel::SetRTS(BOOL mode)
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+#else
+
   int flags = 0;
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   flags &= ~TIOCM_RTS;
   if ( mode == TRUE )
   	flags |= TIOCM_RTS;
   ioctl(os_handle,TIOCMSET,&flags);	// set back
+
+#endif // P_VXWORKS
 }
 
 
 void PSerialChannel::SetBreak(BOOL mode)
 {
-  if ( mode == TRUE )
-  	ioctl(os_handle, TIOCSBRK, 0);
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+#else
+
+  if (mode)
+    ioctl(os_handle, TIOCSBRK, 0);
   else 
     ioctl(os_handle, TIOCCBRK, 0);
 
+#endif // P_VXWORKS
 }
 
 
 BOOL PSerialChannel::GetCTS()
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
+
   int flags = 0;
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   return (flags&TIOCM_CTS)?TRUE:FALSE;
+
+#endif // P_VXWORKS
 }
 
 
 BOOL PSerialChannel::GetDSR()
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
+
   int flags = 0;
 
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   return (flags&TIOCM_DSR)?TRUE:FALSE;
+
+#endif // P_VXWORKS
 }
 
 
 BOOL PSerialChannel::GetDCD()
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
+
   int flags = 0;
 
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   return (flags&TIOCM_CD)?TRUE:FALSE;
+
+#endif // P_VXWORKS
 }
 
 
 BOOL PSerialChannel::GetRing()
 {
+#ifdef P_VXWORKS
+  PAssertAlways(PUnimplementedFunction);
+  return FALSE;
+#else
+
   int flags = 0;
   
   ioctl(os_handle,TIOCMGET,&flags);	// get the bits
   return (flags&TIOCM_RNG)?TRUE:FALSE;
+
+#endif // P_VXWORKS
 }
 
 
@@ -674,3 +768,6 @@ PStringList PSerialChannel::GetPortNames()
 
   return ports;
 }
+
+
+// End of File ///////////////////////////////////////////////////////////////
