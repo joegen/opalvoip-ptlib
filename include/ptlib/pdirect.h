@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.42  2004/09/17 03:51:15  csoutheren
+ * More fixes for PDirectory problem
+ *
+ * Revision 1.42  2004/09/15 05:11:39  csoutheren
+ * Fixed problem with PDirectory destructor not calling Close()
+ * Thanks to Paul Long
+ *
  * Revision 1.41  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -497,7 +504,7 @@ class PDirectory : public PFilePathString
        TRUE if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    BOOL Open(
+    virtual BOOL Open(
       int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
     );
       
@@ -515,7 +522,7 @@ class PDirectory : public PFilePathString
        TRUE if directory was successfully opened, and there was at least one
        file in it of the specified types.
      */
-    BOOL Restart(
+    virtual BOOL Restart(
       int scanMask = PFileInfo::AllFiles    /// Mask of files to provide.
     );
       
@@ -533,7 +540,7 @@ class PDirectory : public PFilePathString
     BOOL Next();
       
     /// Close the directory during or after a file list scan.
-    void Close();
+    virtual void Close();
 
     /**Get the name (without the volume or directory path) of the current
        entry in the directory scan. This may be the name of a file or a
@@ -549,7 +556,7 @@ class PDirectory : public PFilePathString
        @return
        string for directory entry.
      */
-    PFilePathString GetEntryName() const;
+    virtual PFilePathString GetEntryName() const;
 
     /**Determine if the directory entry currently being scanned is itself
        another directory entry.
@@ -560,14 +567,14 @@ class PDirectory : public PFilePathString
        @return
        TRUE if entry is a subdirectory.
      */
-    BOOL IsSubDir() const;
+    virtual BOOL IsSubDir() const;
 
     /**Get file information on the current directory entry.
     
        @return
        TRUE if file information was successfully retrieved.
      */
-    BOOL GetInfo(
+    virtual BOOL GetInfo(
       PFileInfo & info    /// Object to receive the file information.
     ) const;
   //@}
@@ -576,8 +583,8 @@ class PDirectory : public PFilePathString
   protected:
     // New functions for class
     void Construct();
-      // Common constructor code
-
+    void Destruct()
+    { Close(); PFilePathString::Destruct(); }
 
     // Member variables
     /// Mask of file types that the directory scan will return.
