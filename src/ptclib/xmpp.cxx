@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.cxx,v $
+ * Revision 1.2  2004/04/26 01:51:58  rjongbloed
+ * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
+ *
  * Revision 1.1  2004/04/22 12:31:00  rjongbloed
  * Added PNotifier extensions and XMPP (Jabber) support,
  *   thanks to Federico Pinna and Reitek S.p.A.
@@ -40,7 +43,121 @@
 
 #if P_EXPAT
 
-XMPPStream::XMPPStream(XMPPTransport * transport)
+///////////////////////////////////////////////////////
+
+const PString XMPP::Language("xml:lang");
+const PString XMPP::Namespace("xmlns");
+const PString XMPP::MessageStanza("message");
+const PString XMPP::PresenceStanza("presence");
+const PString XMPP::IQStanza("iq");
+const PString XMPP::IQQuery("query");
+
+///////////////////////////////////////////////////////
+
+XMPP::JID::JID(const char * jid)
+{
+  ParseJID(jid);
+}
+
+
+XMPP::JID::JID(const PString& jid)
+{
+  ParseJID(jid);
+}
+
+
+XMPP::JID::JID(const PString& user, const PString& server, const PString& resource)
+  : m_User(user), m_Server(server), m_Resource(resource), m_IsDirty(TRUE)
+{
+  BuildJID();
+}
+
+
+PObject::Comparison XMPP::JID::Compare(const PObject & obj) const
+{
+  if (PIsDescendant(&obj, XMPP::JID))
+    return m_JID.Compare((const PString&)((const XMPP::JID&)obj));
+  else if (PIsDescendant(&obj, PString))
+    return m_JID.Compare((const PString&)obj);
+
+  PAssertAlways(PInvalidCast);
+  return PObject::LessThan;
+}
+
+
+PString& XMPP::JID::operator=(const PString & jid)
+{
+  ParseJID(jid);
+  return m_JID;
+}
+
+
+XMPP::JID::operator const PString&() const
+{
+  if (m_IsDirty)
+    BuildJID();
+
+  return m_JID;
+}
+
+
+void XMPP::JID::SetUser(const PString& user)
+{
+  m_IsDirty = TRUE;
+  m_User = user;
+}
+
+
+void XMPP::JID::SetServer(const PString& server)
+{
+  m_IsDirty = TRUE;
+  m_Server = server;
+}
+
+
+void XMPP::JID::SetResource(const PString& resource)
+{
+  m_IsDirty = TRUE;
+  m_Resource = resource;
+}
+
+
+void XMPP::JID::ParseJID(const PString& jid)
+{
+  m_User[0] = m_Server[0] = m_Resource[0] = 0;
+
+  PINDEX i = jid.Find('@');
+
+  if (i == P_MAX_INDEX || i == 0 || i == (jid.GetLength() - 1))
+    return;
+
+  m_User = jid.Left(i);
+  m_Server = jid.Mid(i + 1);
+
+  i = m_Server.Find('/');
+
+  if (i == P_MAX_INDEX || i == 0)
+    return;
+
+  m_Resource = m_Server.Mid(i + 1);
+  m_Server = m_Server.Left(i);
+  BuildJID();
+}
+
+
+void XMPP::JID::BuildJID() const
+{
+  m_JID = m_User + "@" + m_Server;
+
+  if (!m_Resource.IsEmpty())
+    m_JID += "/" + m_Resource;
+
+  m_IsDirty = FALSE;
+}
+
+///////////////////////////////////////////////////////
+
+XMPP::Stream::Stream(XMPP::Transport * transport)
   : m_Parser(new PXMLStreamParser)
 {
   if (transport)
@@ -48,34 +165,57 @@ XMPPStream::XMPPStream(XMPPTransport * transport)
 }
 
 
-XMPPStream::~XMPPStream()
+XMPP::Stream::~Stream()
 {
   delete m_Parser;
   Close();
 }
 
 
-BOOL XMPPStream::Close()
+BOOL XMPP::Stream::Close()
 {
-  OnClose();
-  return PIndirectChannel::Close();
+  if (IsOpen()) {
+    OnClose();
+    return PIndirectChannel::Close();
+  }
+
+  return FALSE;
 }
 
 
-BOOL XMPPStream::Write(const void * buf, PINDEX len)
+BOOL XMPP::Stream::Write(const void * buf, PINDEX len)
 {
   PTRACE(5, "XMPP\tSND: " << (const char *)buf);
   return PIndirectChannel::Write(buf, len);
 }
 
 
-PXML * XMPPStream::Read()
+BOOL XMPP::Stream::Write(const PString& data)
+{
+  return Write((const char *)data, data.GetLength());
+}
+
+
+BOOL XMPP::Stream::Write(const PXML& pdu)
+{
+  PXMLElement * root = pdu.GetRootElement();
+
+  if (root == NULL)
+    return FALSE;
+
+  PStringStream os;
+  root->Output(os, pdu, 0);
+  return Write(os.GetPointer(), os.GetLength());
+}
+
+
+PXML * XMPP::Stream::Read()
 {
   return m_Parser->Read(this);
 }
 
 
-void XMPPStream::Reset()
+void XMPP::Stream::Reset()
 {
   delete m_Parser;
   m_Parser = new PXMLStreamParser;
@@ -83,24 +223,27 @@ void XMPPStream::Reset()
 
 ///////////////////////////////////////////////////////
 
-XMPPStreamHandler::XMPPStreamHandler() :
-PThread(0x1000), m_Stream(0), m_AutoReconnect(TRUE), m_ReconnectTimeout(1000)
+XMPP::BaseStreamHandler::BaseStreamHandler()
+  : PThread(0x1000),
+    m_Stream(NULL),
+    m_AutoReconnect(TRUE),
+    m_ReconnectTimeout(1000)
 {
 }
 
 
-XMPPStreamHandler::~XMPPStreamHandler()
+XMPP::BaseStreamHandler::~BaseStreamHandler()
 {
   Stop();
 }
 
 
-BOOL XMPPStreamHandler::Start(XMPPTransport * transport)
+BOOL XMPP::BaseStreamHandler::Start(XMPP::Transport * transport)
 {
-  if (m_Stream)
+  if (m_Stream != NULL)
     Stop();
 
-  m_Stream = new XMPPStream();
+  m_Stream = new XMPP::Stream();
   m_Stream->OpenHandlers().Add(new PCREATE_NOTIFIER(OnOpen));
   m_Stream->CloseHandlers().Add(new PCREATE_NOTIFIER(OnClose));
 
@@ -115,13 +258,16 @@ BOOL XMPPStreamHandler::Start(XMPPTransport * transport)
       Restart();
     return TRUE;
   }
-  else
-    return FALSE;
+
+  return FALSE;
 }
 
 
-BOOL XMPPStreamHandler::Stop(const PString& _error)
+BOOL XMPP::BaseStreamHandler::Stop(const PString& _error)
 {
+  if (m_Stream == NULL)
+    return FALSE;
+
   if (!_error.IsEmpty())
   {
     PString error = "<stream:error><";
@@ -139,30 +285,57 @@ BOOL XMPPStreamHandler::Stop(const PString& _error)
 }
 
 
-void XMPPStreamHandler::OnOpen(XMPPStream&, INT)
+void XMPP::BaseStreamHandler::OnOpen(XMPP::Stream&, INT)
 {
 }
 
 
-void XMPPStreamHandler::OnClose(XMPPStream&, INT)
+void XMPP::BaseStreamHandler::OnClose(XMPP::Stream&, INT)
 {
 }
 
 
-void XMPPStreamHandler::SetAutoReconnect(BOOL b, long t)
+void XMPP::BaseStreamHandler::SetAutoReconnect(BOOL b, long t)
 {
   m_AutoReconnect = b;
   m_ReconnectTimeout = t;
 }
 
 
-void XMPPStreamHandler::OnElement(PXML& pdu)
+BOOL XMPP::BaseStreamHandler::Write(const void * buf, PINDEX len)
+{
+  if (m_Stream == NULL)
+    return FALSE;
+
+  return m_Stream->Write(buf, len);
+}
+
+
+BOOL XMPP::BaseStreamHandler::Write(const PString& data)
+{
+  if (m_Stream == NULL)
+    return FALSE;
+
+  return m_Stream->Write(data);
+}
+
+
+BOOL XMPP::BaseStreamHandler::Write(const PXML& pdu)
+{
+  if (m_Stream == NULL)
+    return FALSE;
+
+  return m_Stream->Write(pdu);
+}
+
+
+void XMPP::BaseStreamHandler::OnElement(PXML& pdu)
 {
   m_ElementHandlers.Fire(pdu);
 }
 
 
-void XMPPStreamHandler::Main()
+void XMPP::BaseStreamHandler::Main()
 {
   PXML * pdu;
 
@@ -173,9 +346,14 @@ void XMPPStreamHandler::Main()
 
     pdu = m_Stream->Read();
 
-    if (pdu)
+    if (pdu != NULL)
     {
-      PTRACE(5, "XMPP\tRCV: " << *pdu);
+      if (PTrace::CanTrace(5)) {
+        ostream& os = PTrace::Begin(5, __FILE__, __LINE__);
+        pdu->GetRootElement()->Output(os, *pdu, 0);
+        os << PTrace::End;
+      }
+
       OnElement(*pdu);
     }
 
@@ -183,10 +361,695 @@ void XMPPStreamHandler::Main()
   }
 
   delete m_Stream;
-  m_Stream = 0;
+  m_Stream = NULL;
 }
+
+///////////////////////////////////////////////////////
+
+const PString XMPP::Stanza::ID("id");
+const PString XMPP::Stanza::From("from");
+const PString XMPP::Stanza::To("to");
+
+void XMPP::Stanza::SetID(const PString& id)
+{ 
+  if (!id.IsEmpty())
+    PAssertNULL(rootElement)->SetAttribute(XMPP::Stanza::ID, id);
+}
+
+void XMPP::Stanza::SetFrom(const PString& from)
+{
+  if (!from.IsEmpty())
+    PAssertNULL(rootElement)->SetAttribute(XMPP::Stanza::From, from);
+}
+
+void XMPP::Stanza::SetTo(const PString& to)
+{ 
+  if (!to.IsEmpty())
+    PAssertNULL(rootElement)->SetAttribute(XMPP::Stanza::To, to);
+}
+
+PString XMPP::Stanza::GetID() const
+{ return PAssertNULL(rootElement)->GetAttribute(XMPP::Stanza::ID); }
+
+PString XMPP::Stanza::GetFrom() const
+{ return PAssertNULL(rootElement)->GetAttribute(XMPP::Stanza::From); }
+
+PString XMPP::Stanza::GetTo() const
+{ return PAssertNULL(rootElement)->GetAttribute(XMPP::Stanza::To); }
+
+///////////////////////////////////////////////////////
+
+const PString XMPP::Message::Type("type");
+const PString XMPP::Message::Subject("subject");
+const PString XMPP::Message::Body("body");
+const PString XMPP::Message::Thread("thread");
+
+XMPP::Message::Message()
+{
+  SetRootElement(new PXMLElement(NULL, XMPP::MessageStanza));
+  PWaitAndSignal m(rootMutex);
+  rootElement->SetAttribute(XMPP::Message::Type, "normal");
+}
+
+
+XMPP::Message::Message(PXML& pdu)
+{
+  if (XMPP::Message::IsValid(&pdu)) {
+    PWaitAndSignal m(pdu.GetMutex());
+    PXMLElement * elem = pdu.GetRootElement();
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+XMPP::Message::Message(PXML * pdu)
+{
+  if (XMPP::Message::IsValid(pdu)) {
+    PWaitAndSignal m(PAssertNULL(pdu)->GetMutex());
+    PXMLElement * elem = pdu->GetRootElement();
+
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+BOOL XMPP::Message::IsValid() const
+{
+  return XMPP::Message::IsValid(this);
+}
+
+
+BOOL XMPP::Message::IsValid(const PXML * pdu)
+{
+  PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
+  return elem != NULL && elem->GetName() == XMPP::MessageStanza;
+}
+
+
+XMPP::Message::MessageType XMPP::Message::GetType(PString * typeName) const
+{
+  PString t = PAssertNULL(rootElement)->GetAttribute(XMPP::Message::Type);
+
+  if (typeName != NULL)
+    *typeName = t;
+
+  if (t *= "normal")
+    return XMPP::Message::Normal;
+  else if (t *= "chat")
+    return XMPP::Message::Chat;
+  else if (t *= "error")
+    return XMPP::Message::Error;
+  else if (t *= "groupchat")
+    return XMPP::Message::GroupChat;
+  else if (t *= "headline")
+    return XMPP::Message::HeadLine;
+  else
+    return XMPP::Message::Unknown;
+}
+
+
+PString XMPP::Message::GetLanguage() const
+{
+  return PAssertNULL(rootElement)->GetAttribute(XMPP::Language);
+}
+
+
+PXMLElement * XMPP::Message::GetSubjectElement(const PString& lang)
+{
+  PAssertNULL(rootElement);
+
+  PXMLElement * dfltSubj = NULL;
+  PINDEX i = 0;
+  PXMLElement * subj;
+  PString l;
+
+  while ((subj = rootElement->GetElement(XMPP::Message::Subject, i)) != NULL) {
+    i = rootElement->FindObject(subj) + 1;
+    l = subj->GetAttribute(XMPP::Language);
+
+    if (l == lang)
+      return subj;
+    else if (l.IsEmpty() && dfltSubj == NULL)
+      dfltSubj = subj;
+  }
+
+  return dfltSubj;
+}
+
+
+PString XMPP::Message::GetSubject(const PString& lang)
+{
+  PXMLElement * elem = GetSubjectElement(lang);
+  return elem != NULL ? elem->GetData() : PString::Empty();
+}
+
+
+PXMLElement * XMPP::Message::GetBodyElement(const PString& lang)
+{
+  PAssertNULL(rootElement);
+
+  PXMLElement * dfltBody = NULL;
+  PINDEX i = 0;
+  PXMLElement * body;
+  PString l;
+
+  while ((body = rootElement->GetElement(XMPP::Message::Body, i)) != NULL) {
+    i = rootElement->FindObject(body) + 1;
+    l = body->GetAttribute(XMPP::Language);
+
+    if (l == lang)
+      return body;
+    else if (l.IsEmpty() && dfltBody == NULL)
+      dfltBody = body;
+  }
+
+  return dfltBody;
+}
+
+
+PString XMPP::Message::GetBody(const PString& lang)
+{
+  PXMLElement * elem = GetBodyElement(lang);
+  return elem != NULL ? elem->GetData() : PString::Empty();
+}
+
+
+PString XMPP::Message::GetThread()
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Message::Thread);
+  return elem != NULL ? elem->GetData() : PString::Empty();
+}
+
+
+void XMPP::Message::SetType(MessageType type)
+{
+  switch (type) {
+  case XMPP::Message::Normal:
+    SetType("normal");
+    break;
+  case XMPP::Message::Chat:
+    SetType("chat");
+    break;
+  case XMPP::Message::Error:
+    SetType("error");
+    break;
+  case XMPP::Message::GroupChat:
+    SetType("groupchat");
+    break;
+  case XMPP::Message::HeadLine:
+    SetType("headline");
+    break;
+  }
+}
+
+
+void XMPP::Message::SetType(const PString& type)
+{
+  PAssertNULL(rootElement)->SetAttribute(XMPP::Message::Type, type);
+}
+
+
+void XMPP::Message::SetLanguage(const PString& lang)
+{
+  PAssertNULL(rootElement)->SetAttribute(XMPP::Language, lang);
+}
+
+
+void XMPP::Message::SetSubject(const PString& subj, const PString& lang)
+{
+  PXMLElement * elem = GetSubjectElement(lang);
+
+  if (elem == NULL) {
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Message::Subject));
+
+    if (!lang.IsEmpty())
+      elem->SetAttribute(XMPP::Language, lang);
+  }
+  elem->AddChild(new PXMLData(elem, subj));
+}
+
+
+void XMPP::Message::SetBody(const PString& body, const PString& lang)
+{
+  PXMLElement * elem = GetBodyElement(lang);
+
+  if (elem == NULL) {
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Message::Body));
+
+    if (!lang.IsEmpty())
+      elem->SetAttribute(XMPP::Language, lang);
+  }
+
+  elem->AddChild(new PXMLData(elem, body));
+}
+
+
+void XMPP::Message::SetThread(const PString& thrd)
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Message::Thread);
+
+  if (elem == NULL)
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Message::Thread));
+
+  elem->AddChild(new PXMLData(elem, thrd));
+}
+
+///////////////////////////////////////////////////////
+
+const PString XMPP::Presence::Type("type");
+const PString XMPP::Presence::Show("show");
+const PString XMPP::Presence::Status("status");
+const PString XMPP::Presence::Priority("priority");
+
+XMPP::Presence::Presence()
+{
+  SetRootElement(new PXMLElement(0, XMPP::PresenceStanza));
+}
+
+
+XMPP::Presence::Presence(PXML& pdu)
+{
+  if (XMPP::Presence::IsValid(&pdu)) {
+    PWaitAndSignal m(pdu.GetMutex());
+    PXMLElement * elem = pdu.GetRootElement();
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+XMPP::Presence::Presence(PXML * pdu)
+{
+  if (XMPP::Presence::IsValid(pdu)) {
+    PWaitAndSignal m(PAssertNULL(pdu)->GetMutex());
+    PXMLElement * elem = pdu->GetRootElement();
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+BOOL XMPP::Presence::IsValid() const
+{
+  return XMPP::Presence::IsValid(this);
+}
+
+
+BOOL XMPP::Presence::IsValid(const PXML * pdu)
+{
+  PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
+  return elem != NULL && elem->GetName() == XMPP::PresenceStanza;
+}
+
+
+XMPP::Presence::PresenceType XMPP::Presence::GetType(PString * typeName) const
+{
+  PString t = PAssertNULL(rootElement)->GetAttribute(XMPP::Presence::Type);
+
+  if (typeName != NULL)
+    *typeName = t;
+
+  if (t.IsEmpty())
+    return XMPP::Presence::Available;
+  else if (t *= "unavailable")
+    return XMPP::Presence::Unavailable;
+  else if (t *= "subscribe")
+    return XMPP::Presence::Subscribe;
+  else if (t *= "subscribed")
+    return XMPP::Presence::Subscribed;
+  else if (t *= "unsubscribe")
+    return XMPP::Presence::Unsubscribe;
+  else if (t *= "unsubscribed")
+    return XMPP::Presence::Unsubscribed;
+  else if (t *= "probe")
+    return XMPP::Presence::Probe;
+  else if (t *= "error")
+    return XMPP::Presence::Error;
+  else
+    return XMPP::Presence::Unknown;
+}
+
+
+XMPP::Presence::ShowType XMPP::Presence::GetShow(PString * showName) const
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Presence::Show);
+
+  if (elem == NULL)
+    return XMPP::Presence::Online;
+  
+  PString s = elem->GetData();
+
+  if (showName != NULL)
+    *showName = s;
+
+  if (s.IsEmpty())
+    return XMPP::Presence::Online;
+  else if (s *= "away")
+    return XMPP::Presence::Away;
+  else if (s *= "chat")
+    return XMPP::Presence::Chat;
+  else if (s *= "dnd")
+    return XMPP::Presence::DND;
+  else if (s *= "xa")
+    return XMPP::Presence::XA;
+  else
+    return XMPP::Presence::Other;
+}
+
+
+BYTE XMPP::Presence::GetPriority() const
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Presence::Priority);
+  return elem == NULL ? (BYTE)0 : (BYTE)elem->GetData().AsInteger();
+}
+
+
+PXMLElement * XMPP::Presence::GetStatusElement(const PString& lang)
+{
+  PAssertNULL(rootElement);
+
+  PXMLElement * dfltStatus = NULL;
+  PINDEX i = 0;
+  PXMLElement * status;
+  PString l;
+
+  while ((status = rootElement->GetElement(XMPP::Presence::Status, i)) != NULL) {
+    i = rootElement->FindObject(status) + 1;
+    l = status->GetAttribute(XMPP::Language);
+
+    if (l == lang)
+      return status;
+    else if (l.IsEmpty() && dfltStatus == NULL)
+      dfltStatus = status;
+  }
+
+  return dfltStatus;
+}
+
+
+PString XMPP::Presence::GetStatus(const PString& lang)
+{
+  PXMLElement * elem = GetStatusElement(lang);
+  return elem != NULL ? elem->GetData() : PString::Empty();
+}
+
+
+void XMPP::Presence::SetType(PresenceType type)
+{
+  switch (type) {
+  case XMPP::Presence::Available:
+    PAssertNULL(rootElement)->SetAttribute(XMPP::Presence::Type, PString::Empty());
+    break;
+  case XMPP::Presence::Unavailable:
+    SetType("unavailable");
+    break;
+  case XMPP::Presence::Subscribe:
+    SetType("subscribe");
+    break;
+  case XMPP::Presence::Subscribed:
+    SetType("subscribed");
+    break;
+  case XMPP::Presence::Unsubscribe:
+    SetType("unsubscribe");
+    break;
+  case XMPP::Presence::Unsubscribed:
+    SetType("unsubscribed");
+    break;
+  case XMPP::Presence::Probe:
+    SetType("probe");
+    break;
+  case XMPP::Presence::Error:
+    SetType("error");
+    break;
+  }
+}
+
+
+void XMPP::Presence::SetType(const PString& type)
+{
+  PAssertNULL(rootElement)->SetAttribute(XMPP::Presence::Type, type);
+}
+
+
+void XMPP::Presence::SetShow(ShowType show)
+{
+  switch (show) {
+  case XMPP::Presence::Online:
+    {
+      PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Presence::Show);
+      if (elem)
+        rootElement->RemoveElement(rootElement->FindObject(elem));
+    }
+    break;
+  case XMPP::Presence::Away:
+    SetType("away");
+    break;
+  case XMPP::Presence::Chat:
+    SetType("chat");
+    break;
+  case XMPP::Presence::DND:
+    SetType("dnd");
+    break;
+  case XMPP::Presence::XA:
+    SetType("xa");
+    break;
+  }
+}
+
+
+void XMPP::Presence::SetShow(const PString& show)
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Presence::Show);
+
+  if (elem == NULL)
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Presence::Show));
+
+  elem->AddChild(new PXMLData(elem, show));
+}
+
+
+void XMPP::Presence::SetPriority(BYTE priority)
+{
+  PXMLElement * elem = PAssertNULL(rootElement)->GetElement(XMPP::Presence::Priority);
+
+  if (elem == NULL)
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Presence::Priority));
+
+  elem->AddChild(new PXMLData(elem, PString((PINDEX)priority)));
+}
+
+
+void XMPP::Presence::SetStatus(const PString& status, const PString& lang)
+{
+  PXMLElement * elem = GetStatusElement(lang);
+
+  if (elem == NULL) {
+    elem = PAssertNULL(rootElement)->AddChild(new PXMLElement(rootElement, XMPP::Presence::Status));
+
+    if (!lang.IsEmpty())
+      elem->SetAttribute(XMPP::Language, lang);
+  }
+  elem->AddChild(new PXMLData(elem, status));
+}
+
+///////////////////////////////////////////////////////
+
+const PString XMPP::IQ::Type("type");
+
+
+XMPP::IQ::IQ(XMPP::IQ::IQType type, PXMLElement * body)
+  : m_Processed(FALSE),
+    m_OriginalIQ(NULL)
+{
+  SetRootElement(new PXMLElement(NULL, XMPP::IQStanza));
+  SetType(type);
+  SetID(GenerateID());
+  SetBody(body);
+  rootElement->SetAttribute(XMPP::Namespace, "jabber:client");
+}
+
+
+XMPP::IQ::IQ(PXML& pdu)
+  : m_Processed(FALSE),
+    m_OriginalIQ(NULL)
+{
+  if (XMPP::IQ::IsValid(&pdu)) {
+    PWaitAndSignal m(pdu.GetMutex());
+    PXMLElement * elem = pdu.GetRootElement();
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+XMPP::IQ::IQ(PXML * pdu)
+  : m_Processed(FALSE),
+    m_OriginalIQ(NULL)
+{
+  if (XMPP::IQ::IsValid(pdu)) {
+    PWaitAndSignal m(PAssertNULL(pdu)->GetMutex());
+    PXMLElement * elem = pdu->GetRootElement();
+    if (elem != NULL)
+      SetRootElement((PXMLElement *)elem->Clone(0));
+  }
+}
+
+
+XMPP::IQ::~IQ()
+{
+  delete m_OriginalIQ;
+}
+
+
+BOOL XMPP::IQ::IsValid() const
+{
+  return XMPP::IQ::IsValid(this);
+}
+
+
+BOOL XMPP::IQ::IsValid(const PXML * pdu)
+{
+  PXMLElement * elem = PAssertNULL(pdu)->GetRootElement();
+
+  if (elem == NULL || elem->GetName() != XMPP::IQStanza)
+    return FALSE;
+
+  PString s = elem->GetAttribute(XMPP::IQ::Type);
+
+  if (s.IsEmpty() || (s != "get" && s != "set" && s != "result" && s != "error"))
+    return FALSE;
+
+  /* Appartently when a server sends a set to us there's no id...
+  s = elem->GetAttribute(XMPP::IQ::ID);
+  return !s.IsEmpty();
+  */
+  return TRUE;
+}
+
+
+XMPP::IQ::IQType XMPP::IQ::GetType(PString * typeName) const
+{
+  PString t = PAssertNULL(rootElement)->GetAttribute(XMPP::IQ::Type);
+
+  if (typeName != NULL)
+    *typeName = t;
+
+  if (t *= "get")
+    return XMPP::IQ::Get;
+  else if (t *= "set")
+    return XMPP::IQ::Set;
+  else if (t *= "result")
+    return XMPP::IQ::Result;
+  else if (t *= "error")
+    return XMPP::IQ::Error;
+  else
+    return XMPP::IQ::Unknown;
+}
+
+
+PXMLElement * XMPP::IQ::GetBody()
+{
+  PXMLObject * elem = PAssertNULL(rootElement)->GetElement(0);
+  return PIsDescendant(elem, PXMLElement) ? (PXMLElement *)elem : NULL;
+}
+
+
+void XMPP::IQ::SetType(XMPP::IQ::IQType type)
+{
+  switch (type) {
+  case XMPP::IQ::Get:
+    SetType("get");
+    break;
+  case XMPP::IQ::Set:
+    SetType("set");
+    break;
+  case XMPP::IQ::Result:
+    SetType("result");
+    break;
+  case XMPP::IQ::Error:
+    SetType("error");
+    break;
+  }
+}
+
+
+void XMPP::IQ::SetType(const PString& type)
+{
+  PAssertNULL(rootElement)->SetAttribute(XMPP::IQ::Type, type);
+}
+
+
+void XMPP::IQ::SetBody(PXMLElement * body)
+{
+  PAssertNULL(rootElement);
+
+  while(rootElement->HasSubObjects())
+    rootElement->RemoveElement(0);
+
+  if (body != NULL) {
+    body->SetParent(rootElement);
+    rootElement->AddChild(body);
+  }
+}
+
+
+void XMPP::IQ::SetOriginalMessage(IQ * iq)
+{
+  delete m_OriginalIQ;
+  m_OriginalIQ = iq;
+}
+
+
+XMPP::IQ * XMPP::IQ::BuildResult() const
+{
+  IQType iq_type = GetType();
+
+  if (iq_type != XMPP::IQ::Get && iq_type != XMPP::IQ::Set)
+    return NULL;
+
+  IQ * result = new IQ(XMPP::IQ::Result);
+  result->SetID(GetID());
+  result->SetTo(GetFrom());
+  return result;
+}
+
+
+XMPP::IQ * XMPP::IQ::BuildError(const PString& type, const PString& code) const
+{
+  IQType iq_type = GetType();
+
+  if (iq_type != XMPP::IQ::Get && iq_type != XMPP::IQ::Set)
+    return NULL;
+
+  IQ * error = new IQ(XMPP::IQ::Error);
+  error->SetID(GetID());
+  error->SetTo(GetFrom());
+
+  PXMLElement * body = error->GetRootElement()->AddChild(new PXMLElement(error->GetRootElement(), "error"));
+  body->SetAttribute("type", type);
+  PXMLElement * codeElem = body->AddChild(new PXMLElement(body, code));
+  codeElem->SetAttribute(XMPP::Namespace, "urn:ietf:params:xml:ns:xmpp-stanzas");
+
+  const PXMLElement * originalBody = (PXMLElement *)rootElement->GetElement(0);
+  if (originalBody != NULL)
+    error->GetRootElement()->AddChild((PXMLElement *)originalBody->Clone(error->GetRootElement()));
+
+  return error;
+}
+
+
+PString XMPP::IQ::GenerateID()
+{
+  static PAtomicInteger s_id;
+
+  return PString(PString::Printf, "iq%d", (int)++s_id);
+}
+
 
 #endif // P_EXPAT
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
