@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.153  2003/01/11 05:30:13  robertj
+# Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
+#
 # Revision 1.152  2003/01/07 10:33:56  rogerh
 # New Sleep() code for use with GNU PTH threads (taken from NetBSD pkg)
 #
@@ -776,6 +779,21 @@ $(error "TRY_1394DC is defined but $(SYSINCDIR)/libdc1394/dc1394_control.h does 
 endif
 endif
 
+ifdef TRY_1394AVC
+ifneq (,$(wildcard $(SYSINCDIR)/libavc1394/avc1394.h))
+ifneq (,$(wildcard $(SYSINCDIR)/libdv/dv.h))
+ENDLDLIBS      += -lraw1394 -lavc1394 -lrom1394 -ldv
+STDCCFLAGS     += -DTRY_1394AVC
+TRY_1394AVC    = 1
+else
+$(error "You need the libdv headers. Ignoring TRY_1394AVC")
+TRY_1394AVC     =
+endif
+else
+$(error "You need the libavc1394 headers. Ignoring TRY_1394AVC")
+TRY_1394AVC     =
+endif
+endif
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
