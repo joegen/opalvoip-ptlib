@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.9  2003/06/05 23:17:52  rjongbloed
+ * Changed default operation timeout to 30 seconds.
+ *
  * Revision 1.8  2003/06/05 05:29:30  rjongbloed
  * Fixed LDAP bind authentication methods, thanks Ravelli Rossano
  *
@@ -72,7 +75,7 @@ PLDAPSession::PLDAPSession(const PString & baseDN)
     protocolVersion(LDAP_VERSION3),
     defaultBaseDN(baseDN),
     searchLimit(UINT_MAX),
-    timeout(PMaxTimeInterval),
+    timeout(0, 30),
     multipleValueSeparator('\n')
 {
 }
