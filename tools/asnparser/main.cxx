@@ -30,6 +30,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.40  2002/11/27 11:42:52  robertj
+ * Rearranged code to avoid GNU compiler problem.
+ * Changed new classheader parameters to be full C literal like string for
+ *   improved backslash conversion.
+ * Incremented version number.
+ *
  * Revision 1.39  2002/11/26 11:39:10  craigs
  * Added option to allow adding functions to generated header files
  *
@@ -130,6 +136,13 @@
 
 #include "main.h"
 #include "asn_grammar.h"
+
+
+#define MAJOR_VERSION 1
+#define MINOR_VERSION 6
+#define BUILD_TYPE    ReleaseCode
+#define BUILD_NUMBER 0
+
 
 unsigned lineNumber;
 PString  fileName;
@@ -298,6 +311,8 @@ class App : public PProcess
   public:
     App();
     void Main();
+    BOOL SetClassHeaderFile(PArgList & args);
+    BOOL SetClassHeader(PArgList & args);
     void OutputAdditionalHeaders(ostream & hdr, const PString & className);
   protected:
     PStringToString classToHeader;
@@ -306,7 +321,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 4)
+  : PProcess("Equivalence", "ASNParse", MAJOR_VERSION, MINOR_VERSION, BUILD_TYPE, BUILD_NUMBER)
 {
 }
 
@@ -378,49 +393,13 @@ void App::Main()
   warnings   = 0;
 
   if (args.HasOption("classheaderfile")) {
-    PStringArray lines = args.GetOptionString("classheaderfile").Lines();
-    PINDEX i;
-    for (i = 0; i < lines.GetSize(); i++) {
-      PString str = lines[i];
-      PINDEX pos = str.Find("=");
-      if (pos == P_MAX_INDEX) {
-        PError << GetName() << ": malformed --classheaderfile option" << endl;
-        return;
-      } else {
-        PString className = str.Left(pos);
-        PFilePath fn      = str.Right(pos+1);
-        PTextFile file(fn, PFile::ReadOnly);
-        if (!file.IsOpen()) {
-          PError << GetName() << ": cannot open file required for --classheaderfile option \"" << fn 
-                              << "\" :" << prcFile.GetErrorText() << endl;
-          return;
-        }
-        PString text;
-        PString line;
-        while (file.ReadLine(line))
-          text += line + "\n";
-        text.Replace("\\\\n", "\n", TRUE);
-        classToHeader.SetAt(className, text);
-      }
-    }
+    if (!SetClassHeaderFile(args))
+      return;
   }
 
   if (args.HasOption("classheader")) {
-    PStringArray lines = args.GetOptionString("classheader").Lines();
-    PINDEX i;
-    for (i = 0; i < lines.GetSize(); i++) {
-      PString str = lines[i];
-      PINDEX pos = str.Find("=");
-      if (pos == P_MAX_INDEX) {
-        PError << GetName() << ": malformed --classheader option" << endl;
-        return;
-      } else {
-        PString className = str.Left(pos);
-        PString text      = str.Mid(pos+1);
-        text.Replace("\\\\n", "\n", TRUE);
-        classToHeader.SetAt(className, text);
-      }
-    }
+    if (!SetClassHeader(args))
+      return;
   }
 
   if (args.HasOption('v'))
@@ -444,12 +423,75 @@ void App::Main()
   }
 }
 
+
+BOOL App::SetClassHeaderFile(PArgList & args)
+{
+  PStringArray lines = args.GetOptionString("classheaderfile").Lines();
+  if (lines.IsEmpty()) {
+    PError << GetName() << ": malformed --classheaderfile option\n";
+    return FALSE;
+  }
+
+  for (PINDEX i = 0; i < lines.GetSize(); i++) {
+    PString str = lines[i];
+    PINDEX pos = str.Find("=");
+    if (pos == P_MAX_INDEX) {
+      PError << GetName() << ": malformed --classheaderfile option\n";
+      return FALSE;
+    }
+
+    PFilePath fn = str.Right(pos+1);
+    PTextFile file(fn, PFile::ReadOnly);
+    if (!file.IsOpen()) {
+      PError << GetName() << ": cannot open file required for --classheaderfile option \"" << fn
+                          << "\" :" << file.GetErrorText() << '\n';
+      return FALSE;
+    }
+
+    PString text;
+    PString line;
+    while (file.ReadLine(line))
+      text += PString(PString::Literal, (const char *)line) + '\n';
+    classToHeader.SetAt(str.Left(pos), text);
+  }
+
+  return TRUE;
+}
+
+
+BOOL App::SetClassHeader(PArgList & args)
+{
+  PStringArray lines = args.GetOptionString("classheader").Lines();
+  if (lines.IsEmpty()) {
+    PError << GetName() << ": malformed --classheader option\n";
+    return FALSE;
+  }
+
+  for (PINDEX i = 0; i < lines.GetSize(); i++) {
+    PString str = lines[i];
+    PINDEX pos = str.Find("=");
+    if (pos == P_MAX_INDEX) {
+      PError << GetName() << ": malformed --classheader option\n";
+      return FALSE;
+    }
+
+    PString text(PString::Literal, (const char *)str.Mid(pos+1));
+    classToHeader.SetAt(str.Left(pos), text);
+  }
+
+  return TRUE;
+}
+
+
 void App::OutputAdditionalHeaders(ostream & hdr, const PString & className)
 {
   if (classToHeader.Contains(className)) {
-    hdr << "// following code added by command line option" << endl << endl
-        << classToHeader[className] << endl
-        << endl << "// end of added code" << endl << endl;
+    hdr << "// following code added by command line option\n"
+           "\n"
+        << classToHeader[className] << "\n"
+           "\n"
+           "// end of added code\n"
+           "\n";
   }
 }
 
