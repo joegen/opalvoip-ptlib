@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.8 1996/02/25 11:14:19 robertj Exp $
+ * $Id: html.h,v 1.9 1996/03/03 07:36:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.9  1996/03/03 07:36:44  robertj
+ * Added missing public's to standard character attribute classes.
+ *
  * Revision 1.8  1996/02/25 11:14:19  robertj
  * Radio button support for forms.
  *
@@ -398,76 +401,76 @@ PDECLARE_CLASS(PHTML, PStringStream)
     };
 
 
-    class Bold : Element {
+    class Bold : public Element {
       public: Bold() : Element("B", InBold, InBody, NoCRLF) { }
     };
-    class Italic : Element {
+    class Italic : public Element {
       public: Italic() : Element("I", InItalic, InBody, NoCRLF) { }
     };
-    class TeleType : Element {
+    class TeleType : public Element {
       public: TeleType() : Element("TT", InTeleType, InBody, NoCRLF) { }
     };
-    class Underline : Element {
+    class Underline : public Element {
       public: Underline() : Element("U", InUnderline, InBody, NoCRLF) { }
     };
-    class StrikeThrough : Element {
+    class StrikeThrough : public Element {
       public: StrikeThrough() : Element("S",InStrikeThrough,InBody,NoCRLF) { }
     };
-    class Big : Element {
+    class Big : public Element {
       public: Big() : Element("BIG", InBig, InBody, NoCRLF) { }
     };
-    class Small : Element {
+    class Small : public Element {
       public: Small() : Element("SMALL", InSmall, InBody, NoCRLF) { }
     };
-    class Subscript : Element {
+    class Subscript : public Element {
       public: Subscript() : Element("SUB", InSubscript, InBody, NoCRLF) { }
     };
-    class Superscript : Element {
+    class Superscript : public Element {
       public: Superscript() : Element("SUP", InSuperscript, InBody, NoCRLF) { }
     };
-    class Emphasis : Element {
+    class Emphasis : public Element {
       public: Emphasis() : Element("EM", InEmphasis, InBody, NoCRLF) { }
     };
-    class Cite : Element {
+    class Cite : public Element {
       public: Cite() : Element("CITE", InCite, InBody, NoCRLF) { }
     };
-    class Strong : Element {
+    class Strong : public Element {
       public: Strong() : Element("STRONG", InStrong, InBody, NoCRLF) { }
     };
-    class Code : Element {
+    class Code : public Element {
       public: Code() : Element("CODE", InCode, InBody, NoCRLF) { }
     };
-    class Sample : Element {
+    class Sample : public Element {
       public: Sample() : Element("SAMP", InSample, InBody, NoCRLF) { }
     };
-    class Keyboard : Element {
+    class Keyboard : public Element {
       public: Keyboard() : Element("KBD", InKeyboard, InBody, NoCRLF) { }
     };
-    class Variable : Element {
+    class Variable : public Element {
       public: Variable() : Element("VAR", InVariable, InBody, NoCRLF) { }
     };
-    class Definition : Element {
+    class Definition : public Element {
       public: Definition() : Element("DFN", InDefinition, InBody, NoCRLF) { }
     };
-    class Quote : Element {
+    class Quote : public Element {
       public: Quote() : Element("Q", InQuote, InBody, NoCRLF) { }
     };
-    class Author : Element {
+    class Author : public Element {
       public: Author() : Element("AU", InAuthor, InBody, NoCRLF) { }
     };
-    class Person : Element {
+    class Person : public Element {
       public: Person() : Element("PERSON", InPerson, InBody, NoCRLF) { }
     };
-    class Acronym : Element {
+    class Acronym : public Element {
       public: Acronym() : Element("ACRONYM", InAcronym, InBody, NoCRLF) { }
     };
-    class Abbrev : Element {
+    class Abbrev : public Element {
       public: Abbrev() : Element("ABBREV", InAbbrev, InBody, NoCRLF) { }
     };
-    class InsertedText : Element {
+    class InsertedText : public Element {
       public: InsertedText() : Element("INS",InInsertedText,InBody,NoCRLF) { }
     };
-    class DeletedText : Element {
+    class DeletedText : public Element {
       public: DeletedText() : Element("DEL", InDeletedText, InBody, NoCRLF) { }
     };
 
