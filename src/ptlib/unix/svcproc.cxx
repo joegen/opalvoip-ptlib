@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.86  2004/06/01 07:42:19  csoutheren
+ * Restored memory allocation checking
+ * Added configure flag to enable, thanks to Derek Smithies
+ *
  * Revision 1.85  2004/04/03 08:57:41  csoutheren
  * Replaced pseudo-RTTI with real RTTI
  *
@@ -509,11 +513,17 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 int PServiceProcess::InitialiseService()
 {
 #ifndef P_VXWORKS
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(4);
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
   debugMode = FALSE;
 
   // parse arguments so we can grab what we want
