@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.85  2002/10/10 04:43:43  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.84  2002/10/08 12:41:51  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -296,6 +299,10 @@
 
 #ifdef P_USE_PRAGMA
 #pragma interface
+#endif
+
+#if defined(P_VXWORKS)
+#include <private/stdiop.h>
 #endif
 
 #include <stdio.h>
