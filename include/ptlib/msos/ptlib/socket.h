@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.4 1994/12/12 10:10:17 robertj Exp $
+ * $Id: socket.h,v 1.5 1995/01/02 12:16:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.4  1994/12/12 10:10:17  robertj
+ * Revision 1.5  1995/01/02 12:16:22  robertj
+ * Moved constructor to platform dependent code.
+ *
+ * Revision 1.4  1994/12/12  10:10:17  robertj
  * Changed so can compile if no winsock available.
  *
  * Revision 1.3  1994/10/30  11:24:22  robertj
@@ -36,6 +39,9 @@
 
 #include "../../common/socket.h"
   public:
+    PSocket();
+      // create an unattached socket
+
     virtual BOOL Read(void * buf, PINDEX len);
       // Low level read from the channel. This function may block until the
       // requested number of characters were read or the read timeout was
