@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.42  1999/09/10 04:35:42  robertj
+ * Added Windows version of PIPSocket::GetInterfaceTable() function.
+ *
  * Revision 1.41  1999/09/10 02:31:42  craigs
  * Added interface table routines
  *
@@ -477,12 +480,14 @@ class PIPSocket : public PSocket
 
         /// Get the network metric associated with the route table entry
         long GetMetric() const { return metric; }
+
       protected:
         Address network;
         Address net_mask;
         Address destination;
         PString interfaceName;
         long    metric;
+
       friend class PIPSocket;
     };
 
@@ -507,21 +512,21 @@ class PIPSocket : public PSocket
 
       public:
         /// create an interface entry from a name, IP addr and MAC addr
-        InterfaceEntry(const PString & _name, const PIPSocket::Address & _addr, const PString & _macAddr)
-          : name(_name), addr(_addr), macAddr(_macAddr) { }
+        InterfaceEntry(const PString & _name, const Address & _addr, const PString & _macAddr)
+          : name(_name), ipAddr(_addr), macAddr(_macAddr) { }
 
         /// Get the name of the interface
         PString GetName() const { return name; }
 
         /// Get the address associated with the interface
-        PIPSocket::Address  GetAddr() const { return addr; }
+        Address GetAddress() const { return ipAddr; }
 
         /// Get the MAC address associate with the interface
-        PString GetMACAddr() const { return macAddr; }
+        PString GetMACAddress() const { return macAddr; }
 
       protected:
         PString name;
-        PIPSocket::Address  addr;
+        Address ipAddr;
         PString macAddr;
     };
 
