@@ -26,6 +26,10 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.24  2001/12/08 00:33:11  robertj
+ * Changed some (unsigned int *) to (DWORD *) as the latter is assured to be a
+ *   pointer to a 32 bit integer and the former is not.
+ *
  * Revision 1.23  2001/12/06 22:14:45  dereks
  * Improve YUV 422 resize routine so it now subsamples as required.
  *
@@ -506,8 +510,8 @@ PSTANDARD_COLOUR_CONVERTER(RGB32F,YUV420P)
 
 void PStandardColourConverter::ResizeYUV422(const BYTE * src, BYTE * dest) const
 {
-  unsigned int *result = (unsigned int *)dest;
-  unsigned int black   = (BLACK_U<<24) + (BLACK_Y<<16) + (BLACK_U<<8) + BLACK_Y;
+  DWORD *result = (DWORD *)dest;
+  DWORD black   = (DWORD)(BLACK_U<<24) + (BLACK_Y<<16) + (BLACK_U<<8) + BLACK_Y;
   unsigned maxIndex    = dstFrameWidth*dstFrameHeight/2;
 
   for (unsigned i = 0; i < maxIndex; i++) 
@@ -535,9 +539,9 @@ void PStandardColourConverter::ResizeYUV422(const BYTE * src, BYTE * dest) const
     unsigned xOffset    = dstFrameWidth - (srcFrameWidth/subSample);
     unsigned subSample2 = subSample*2;
 
-    unsigned int *s_ptr = (unsigned int * )src;
-    unsigned int *d_ptr = (unsigned int *) dest + ((yOffset * dstFrameWidth) + xOffset)/4 ;
-    unsigned int *sl_ptr, *dl_ptr;
+    DWORD *s_ptr = (DWORD * )src;
+    DWORD *d_ptr = (DWORD *) dest + ((yOffset * dstFrameWidth) + xOffset)/4 ;
+    DWORD *sl_ptr, *dl_ptr;
 
     for (unsigned y = 0; y < srcFrameHeight; y+= subSample) {
       sl_ptr = s_ptr;
