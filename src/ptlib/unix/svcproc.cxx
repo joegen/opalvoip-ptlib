@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.38  2001/03/14 01:30:35  robertj
+ * Do setgid before so setuid, ie when still root.
+ *
  * Revision 1.37  2001/03/14 01:16:11  robertj
  * Fixed signals processing, now uses housekeeping thread to handle signals
  *   synchronously. This also fixes issues with stopping PServiceProcess.
@@ -369,29 +372,6 @@ int PServiceProcess::_main(void *)
   else if (systemLogFile == "-")
     PError << "All output for " << GetName() << " is to console." << endl;
 
-  // Set the uid we are running under
-  if (args.HasOption('u')) {
-    PString uidstr = args.GetOptionString('u');
-    if (uidstr.IsEmpty())
-      uidstr = "nobody";
-    int uid;
-    if (strspn(uidstr, "0123456789") == uidstr.GetLength())
-      uid = uidstr.AsInteger();
-    else {
-      struct passwd * pw = getpwnam(uidstr);
-      if (pw == NULL) {
-        PError << "Could not find user \"" << uidstr << '"' << endl;
-        return 1;
-      }
-      uid = pw->pw_uid;
-    }
-    if (setuid(uid) != 0) {
-      PError << "Could not set UID to \"" << uidstr << "\""
-                " (" << uid << ") : " << strerror(errno) << endl;
-      return 1;
-    }
-  }
-
   // Set the gid we are running under
   if (args.HasOption('g')) {
     PString gidstr = args.GetOptionString('g');
@@ -411,6 +391,29 @@ int PServiceProcess::_main(void *)
     if (setgid(gid) != 0) {
       PError << "Could not set GID to \"" << gidstr << "\""
                 " (" << gid << ") : " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
+  // Set the uid we are running under
+  if (args.HasOption('u')) {
+    PString uidstr = args.GetOptionString('u');
+    if (uidstr.IsEmpty())
+      uidstr = "nobody";
+    int uid;
+    if (strspn(uidstr, "0123456789") == uidstr.GetLength())
+      uid = uidstr.AsInteger();
+    else {
+      struct passwd * pw = getpwnam(uidstr);
+      if (pw == NULL) {
+        PError << "Could not find user \"" << uidstr << '"' << endl;
+        return 1;
+      }
+      uid = pw->pw_uid;
+    }
+    if (setuid(uid) != 0) {
+      PError << "Could not set UID to \"" << uidstr << "\""
+                " (" << uid << ") : " << strerror(errno) << endl;
       return 1;
     }
   }
