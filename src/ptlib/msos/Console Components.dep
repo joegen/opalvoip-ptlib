@@ -256,6 +256,10 @@
 
 !ENDIF 
 
+..\..\ptclib\delaychan.cxx : \
+	"..\..\..\include\ptclib\delaychan.h"\
+	
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 ..\..\Ptclib\Ftp.cxx : \
@@ -1953,6 +1957,10 @@
 	
 
 !ENDIF 
+
+..\..\ptclib\qchannel.cxx : \
+	"..\..\..\include\ptclib\qchannel.h"\
+	
 
 ..\..\ptclib\random.cxx : \
 	"..\..\..\include\ptclib\random.h"\
