@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.14 1996/03/10 13:16:25 robertj Exp $
+ * $Id: winsock.cxx,v 1.15 1996/03/31 09:11:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.15  1996/03/31 09:11:06  robertj
+ * Fixed major performance problem in timeout read/write to sockets.
+ *
  * Revision 1.14  1996/03/10 13:16:25  robertj
  * Fixed ioctl of closed socket.
  *
@@ -58,6 +61,7 @@
 #include <ptlib.h>
 #include <sockets.h>
 
+
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
 
@@ -88,57 +92,22 @@ PSocket::~PSocket()
 }
 
 
-BOOL PSocket::_WaitForData(BOOL reading)
-{
-  flush();
-
-  PTimeInterval & timeout = reading ? readTimeout : writeTimeout;
-
-  u_long state = timeout == PMaxTimeInterval ? 0 : 1;
-  if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &state)))
-    return FALSE;
-
-  if (timeout == PMaxTimeInterval)
-    return TRUE;
-
-  fd_set fds;
-  FD_ZERO(&fds);
-#pragma warning(disable:4127)
-  FD_SET(os_handle, &fds);
-#pragma warning(default:4127)
-  struct timeval tval;
-  tval.tv_sec = timeout.GetSeconds();
-  tval.tv_usec = (timeout.GetMilliseconds()%1000)*1000;
-  int selectResult = ::select(os_handle+1,
-                              reading ? &fds : NULL,
-                              reading ? NULL : &fds,
-                              NULL,
-                              &tval);
-  if (selectResult != 0)
-    return ConvertOSError(selectResult);
-
-  lastError = Timeout;
-  osError = EAGAIN;
-  return FALSE;
-}
-
-
 BOOL PSocket::Read(void * buf, PINDEX len)
 {
   flush();
   lastReadCount = 0;
 
-  if (!_WaitForData(TRUE))
+  int timeout = readTimeout.GetMilliseconds();
+  if (timeout == 0)
+    timeout = 1;
+  else if (timeout == -1)
+    timeout = 0;
+  if (!SetOption(SO_RCVTIMEO, timeout))
     return FALSE;
 
   int recvResult = ::recv(os_handle, (char *)buf, len, 0);
   if (ConvertOSError(recvResult))
     lastReadCount = recvResult;
-
-  if (os_handle >= 0) {
-    u_long state = 0;
-    ::ioctlsocket(os_handle, FIONBIO, &state);
-  }
 
   return lastReadCount > 0;
 }
@@ -149,17 +118,17 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   flush();
   lastWriteCount = 0;
 
-  if (!_WaitForData(FALSE))
+  int timeout = writeTimeout.GetMilliseconds();
+  if (timeout == 0)
+    timeout = 1;
+  else if (timeout == -1)
+    timeout = 0;
+  if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
   int sendResult = ::send(os_handle, (const char *)buf, len, 0);
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
-
-  if (os_handle >= 0) {
-    u_long state = 0;
-    ::ioctlsocket(os_handle, FIONBIO, &state);
-  }
 
   return lastWriteCount >= len;
 }
@@ -294,7 +263,12 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
   lastReadCount = 0;
 
-  if (!_WaitForData(TRUE))
+  int timeout = readTimeout.GetMilliseconds();
+  if (timeout == 0)
+    timeout = 1;
+  else if (timeout == -1)
+    timeout = 0;
+  if (!SetOption(SO_RCVTIMEO, timeout))
     return FALSE;
 
   sockaddr_in sockAddr;
@@ -308,11 +282,6 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
     lastReadCount = recvResult;
   }
 
-  if (os_handle >= 0) {
-    u_long state = 0;
-    ::ioctlsocket(os_handle, FIONBIO, &state);
-  }
-
   return lastReadCount > 0;
 }
 
@@ -322,7 +291,12 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
 {
   lastWriteCount = 0;
 
-  if (!_WaitForData(FALSE))
+  int timeout = writeTimeout.GetMilliseconds();
+  if (timeout == 0)
+    timeout = 1;
+  else if (timeout == -1)
+    timeout = 0;
+  if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
   sockaddr_in sockAddr;
@@ -333,11 +307,6 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
                                (struct sockaddr *)&sockAddr, sizeof(sockAddr));
   if (ConvertOSError(sendResult))
     lastWriteCount = sendResult;
-
-  if (os_handle >= 0) {
-    u_long state = 0;
-    ::ioctlsocket(os_handle, FIONBIO, &state);
-  }
 
   return lastWriteCount >= len;
 }
