@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.37  2004/05/02 18:00:02  ykiryanov
+ * Made unblock pipe public for BeOS
+ *
  * Revision 1.36  2004/05/02 17:49:15  ykiryanov
  * Changed name of unblock pipe for BeOS to make compatible with socket code
  *
@@ -196,12 +199,13 @@
 
 #elif defined(__BEOS__)
 
-  private:
+  protected:
     static int32 ThreadFunction(void * threadPtr);
     thread_id mId;
     int32 mPriority;
     PINDEX mStackSize;
     int32 mSuspendCount;
+  public:
     int unblockPipe[2];
 
 #elif defined(P_MAC_MPTHREADS)
