@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.10 1996/02/19 13:31:26 robertj Exp $
+ * $Id: inetprot.cxx,v 1.11 1996/02/25 03:05:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.11  1996/02/25 03:05:12  robertj
+ * Added decoding of Base64 to a block of memory instead of PBYTEArray.
+ *
  * Revision 1.10  1996/02/19 13:31:26  robertj
  * Changed stuff to use new & operator..
  *
@@ -753,6 +756,19 @@ PBYTEArray PBase64::GetDecodedData()
 }
 
 
+BOOL PBase64::GetDecodedData(BYTE * dataBlock, PINDEX length)
+{
+  if (decodeSize > length) {
+    decodeSize = length;
+    perfectDecode = FALSE;
+  }
+  memcpy(dataBlock, decodedData, decodeSize);
+  decodedData.SetSize(0);
+  decodeSize = 0;
+  return perfectDecode;
+}
+
+
 PString PBase64::Decode(const PString & str)
 {
   PBYTEArray data;
@@ -767,6 +783,14 @@ BOOL PBase64::Decode(const PString & str, PBYTEArray & data)
   decoder.ProcessDecoding(str);
   data = decoder.GetDecodedData();
   return decoder.IsDecodeOK();
+}
+
+
+BOOL PBase64::Decode(const PString & str, BYTE * dataBlock, PINDEX length)
+{
+  PBase64 decoder;
+  decoder.ProcessDecoding(str);
+  return decoder.GetDecodedData(dataBlock, length);
 }
 
 
