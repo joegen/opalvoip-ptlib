@@ -27,6 +27,12 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.78  2001/07/19 09:27:12  rogerh
+# Add support for EsounD and esd (the Enlightenment Sound Daemon).
+# This allows OhPhone to run on platforms where EsounD and esd have been
+# ported which includes Mac OS X.
+# Code written by Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>.
+#
 # Revision 1.77  2001/07/10 03:45:14  robertj
 # Added queue channel and delay channel classes to ptclib.
 #
@@ -352,6 +358,10 @@ VPATH_CXX += $(BEAUDIO_SRC_DIR)
 SOUND_SOURCE = beaudio.cxx \
 	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
 	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
+endif
+
+ifdef HAS_ESD
+SOUND_SOURCE = esdaudio.cxx
 endif
 
 VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
