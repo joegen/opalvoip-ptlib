@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.12 1994/12/13 11:50:52 robertj Exp $
+ * $Id: collect.cxx,v 1.13 1995/01/09 12:31:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.12  1994/12/13 11:50:52  robertj
+ * Revision 1.13  1995/01/09 12:31:49  robertj
+ * Removed unnecesary return value from I/O functions.
+ *
+ * Revision 1.12  1994/12/13  11:50:52  robertj
  * Added MakeUnique() function to all container classes.
  *
  * Revision 1.11  1994/12/12  10:16:25  robertj
@@ -56,14 +59,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-ostream & PCollection::PrintOn(ostream &strm) const
+void PCollection::PrintOn(ostream &strm) const
 {
   for (PINDEX  i = 0; i < GetSize(); i++) {
     PObject * obj = GetAt(i);
     if (obj != NULL)
       strm << *obj;
   }
-  return strm;
 }
 
 
@@ -947,9 +949,9 @@ PINDEX POrdinalKey::HashFunction() const
 }
 
 
-ostream & POrdinalKey::PrintOn(ostream & strm) const
+void POrdinalKey::PrintOn(ostream & strm) const
 {
-  return strm << theKey;
+  strm << theKey;
 }
 
 
