@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.68  2004/12/14 06:20:29  csoutheren
+ * Added function to get address of network interface
+ *
  * Revision 1.67  2004/08/24 07:08:13  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -780,13 +783,18 @@ class PIPSocket : public PSocket
     PLIST(InterfaceTable, InterfaceEntry);
 
     /** Get a list of all interfaces
-
        @return
        TRUE if the interface table is returned, FALSE if an error occurs.
      */
     static BOOL GetInterfaceTable(
       InterfaceTable & table      /// interface table
     );
+
+    /** Get the address of an interface that corresponds to a real network
+       @return
+       FALSE if only loopback interfaces could be found, else TRUE
+     */
+    static BOOL GetNetworkInterface(PIPSocket::Address & addr);
 
 #if P_HAS_RECVMSG
 

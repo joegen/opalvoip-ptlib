@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.178  2004/12/14 06:20:29  csoutheren
+ * Added function to get address of network interface
+ *
  * Revision 1.177  2004/11/16 00:31:44  csoutheren
  * Added Cygwin support (needs to have gethostbyname_r fixed)
  *
@@ -2509,6 +2512,19 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
 }
 #endif
 
+BOOL PIPSocket::GetNetworkInterface(PIPSocket::Address & addr)
+{
+  PIPSocket::InterfaceTable interfaceTable;
+  if (PIPSocket::GetInterfaceTable(interfaceTable)) {
+    PINDEX i;
+    for (i = 0; i < interfaceTable.GetSize(); ++i) {
+      PIPSocket::Address localAddr = interfaceTable[i].GetAddress();
+      if (!localAddr.IsLoopback() && (!localAddr.IsRFC1918() || !addr.IsRFC1918()))
+        addr = localAddr;
+    }
+  }
+  return addr.IsValid();
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
