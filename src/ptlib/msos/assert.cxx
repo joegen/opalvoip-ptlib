@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.38  2004/04/03 06:54:30  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.37  2002/09/25 00:54:50  robertj
  * Fixed memory leak on assertion.
  *
@@ -145,9 +148,6 @@
 #include <ptlib/svcproc.h>
 
 #include <errno.h>
-#ifndef _WIN32_WCE
-#include <strstrea.h>
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
