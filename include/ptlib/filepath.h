@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.16  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.15  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -161,17 +166,9 @@ class PFilePath : public PFilePathString
     );
 
     /**Change the file specification object to the specified file name.
-
-       The string passed in may be a full or partial specifiaction for a file
-       as determined by the platform. It is unusual for this to be a literal
-       string, unless only the file title is specified, as that would be
-       platform specific.
-
-       The partial file specification is translated into a canonical form
-       which always absolutely references the file.
      */
     PFilePath & operator=(
-      const char * cstr /// Partial "C" string for file name.
+      const PFilePath & path /// Previous path for file name.
     );
     /**Change the file specification object to the specified file name.
 
@@ -187,9 +184,17 @@ class PFilePath : public PFilePathString
       const PString & str /// Partial PString for file name.
     );
     /**Change the file specification object to the specified file name.
+
+       The string passed in may be a full or partial specifiaction for a file
+       as determined by the platform. It is unusual for this to be a literal
+       string, unless only the file title is specified, as that would be
+       platform specific.
+
+       The partial file specification is translated into a canonical form
+       which always absolutely references the file.
      */
     PFilePath & operator=(
-      const PFilePath & path /// Previous path for file name.
+      const char * cstr /// Partial "C" string for file name.
     );
   //@}
 
@@ -327,6 +332,11 @@ class PFilePath : public PFilePathString
       const PString & str   /// String to test for validity.
     );
   //@}
+
+
+  protected:
+    virtual void AssignContents(const PContainer & cont);
+
 
 #ifdef DOC_PLUS_PLUS
 };
