@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.33  1998/10/25 01:00:46  craigs
+ * Added ability to specify per-directory authorisation for PHTTPDirectory
+ *
  * Revision 1.32  1998/09/23 06:19:29  robertj
  * Added open source copyright license.
  *
@@ -1225,13 +1228,20 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 
 
   protected:
-    BOOL CheckAuthority(
+    virtual BOOL CheckAuthority(
       PHTTPServer & server,               // Server to send response to.
       const PHTTPRequest & request,       // Information on this request.
       const PHTTPConnectionInfo & conInfo // Information on the connection
     );
+    static BOOL CheckAuthority(
+                   PHTTPAuthority & authority,
+                      PHTTPServer & server,
+               const PHTTPRequest & request,
+        const PHTTPConnectionInfo & connectInfo
+    );
     /* See if the resource is authorised given the mime info
      */
+
 
     virtual BOOL OnGETOrHEAD(
       PHTTPServer & server,       // HTTP server that received the request
@@ -1515,9 +1525,31 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
        String for loaded text.
      */
 
+    void EnableAuthorisation(const PString & realm);
+    /* Enable or disable access control using .access files. A directory tree containing
+       a _access file will require authorisation to allow access. This file has 
+       contains one or more lines, each containing a username and password seperated 
+       by a ":" character.
 
+       The parameter sets the realm used for authorisation requests. An empty realm disables
+       auhtorisation.
+     */
+
+    void AllowDirectories(BOOL enable = TRUE);
+    /* Enable or disable directory listings when a default directory file does not exist
+     */
   protected:
+    BOOL CheckAuthority(
+      PHTTPServer & server,               // Server to send response to.
+      const PHTTPRequest & request,       // Information on this request.
+      const PHTTPConnectionInfo & conInfo // Information on the connection
+    );
+
+    BOOL FindAuthorisations(const PDirectory & dir, PString & realm, PStringToString & authorisations);
+
     PDirectory basePath;
+    PString authorisationRealm;
+    BOOL allowDirectoryListing;
 };
 
 
@@ -1529,6 +1561,7 @@ PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
   );
 
   PString fakeIndex;
+  PFilePath realPath;
 };
 
 
