@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.2  2003/11/18 10:42:09  csoutheren
+ * Changed to work with new plugins
+ *
  * Revision 1.1  2003/11/14 06:15:37  csoutheren
  * Initial version thanks to Snark and Damien
  *
@@ -848,7 +851,15 @@ PINDEX PVideoInputV4lDevice::GetMaxFrameBytes()
   return frameBytes;
 }
 
+BOOL PVideoInputV4lDevice::GetFrame(PBYTEArray & frame)
+{
+  PINDEX returned;
+  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
+    return FALSE;
 
+  frame.SetSize(returned);
+  return TRUE;
+}
 
 BOOL PVideoInputV4lDevice::GetFrameData(BYTE *buffer, PINDEX *bytesReturned)
 {
