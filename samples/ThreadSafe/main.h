@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.h,v $
+ * Revision 1.5  2003/10/13 23:38:31  dereksmithies
+ * Add debugging statements, usage(), Fixed Compare method. Thanks Gene Small.
+ *
  * Revision 1.4  2002/12/11 03:38:35  robertj
  * Added more tests
  *
@@ -36,7 +39,7 @@ class TestObject : public PSafeObject
     TestObject(ThreadSafe & process, unsigned val);
     ~TestObject();
 
-    Comparison Compare(const PObject & obj);
+    Comparison Compare(const PObject & obj) const;
     void PrintOn(ostream & strm) const;
 
     ThreadSafe & process;
@@ -58,6 +61,8 @@ class ThreadSafe : public PProcess
     void Main();
 
   private:
+    void Usage();
+
     void Test1(PArgList & args);
     void Test1Output();
     PDECLARE_NOTIFIER(PThread, ThreadSafe, Test1Thread);
