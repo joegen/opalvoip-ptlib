@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.76  2004/06/29 08:20:46  rogerhardiman
+ * The throws are needed on new and delete in GCC 2.95.x too.
+ * This is now important as other code changes (factory and #include <string>)
+ * now cause /usr/include/g++/new to be included too. Tested on FreeBSD 4.10
+ *
  * Revision 1.75  2004/06/17 22:02:51  csoutheren
  * Added check to prevent allocationBreakpoint from causing unintentional break every 2^32 memory allocations
  *
@@ -451,7 +456,7 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
 #undef realloc
 #undef free
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new(size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new(size_t nSize)
@@ -461,7 +466,7 @@ void * operator new(size_t nSize)
 }
 
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new[](size_t nSize)
@@ -471,7 +476,7 @@ void * operator new[](size_t nSize)
 }
 
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete(void * ptr) throw()
 #else
 void operator delete(void * ptr)
@@ -481,7 +486,7 @@ void operator delete(void * ptr)
 }
 
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete[](void * ptr) throw()
 #else
 void operator delete[](void * ptr)
@@ -977,7 +982,7 @@ void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 #ifndef P_VXWORKS
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void * operator new[](size_t nSize) throw (std::bad_alloc)
 #else
 void * operator new[](size_t nSize)
@@ -986,7 +991,7 @@ void * operator new[](size_t nSize)
   return malloc(nSize);
 }
 
-#if __GNUC__ >= 3
+#if (__GNUC__ >= 3) || ((__GNUC__ == 2)&&(__GNUC_MINOR__ >= 95)) //2.95.X & 3.X
 void operator delete[](void * ptr) throw ()
 #else
 void operator delete[](void * ptr)
