@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.cxx,v $
+ * Revision 1.5  2000/01/21 17:42:53  craigs
+ * Added pragma to avoid problems when linking as Linux shared library
+ *
  * Revision 1.4  1998/11/30 12:33:06  robertj
  * Split serial channel and modem, modem to components library.
  *
@@ -40,6 +43,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "modem.h"
+#endif
 
 #include <ptlib.h>
 #include <ptclib/modem.h>
