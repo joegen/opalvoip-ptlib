@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.22 1994/10/24 00:07:01 robertj Exp $
+ * $Id: osutil.inl,v 1.23 1995/01/09 12:34:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.22  1994/10/24 00:07:01  robertj
+ * Revision 1.23  1995/01/09 12:34:25  robertj
+ * Removed unnecesary return value from I/O functions.
+ *
+ * Revision 1.22  1994/10/24  00:07:01  robertj
  * Changed PFilePath and PDirectory so descends from either PString or
  *     PCaselessString depending on the platform.
  *
@@ -167,8 +170,8 @@ PINLINE PTime & PTime::operator=(const PTime & t)
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(theTime); }
 
-PINLINE ostream & PTime::PrintOn(ostream & strm) const
-  { return strm << AsString(); }
+PINLINE void PTime::PrintOn(ostream & strm) const
+  { strm << AsString(); }
 
 PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
