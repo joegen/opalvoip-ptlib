@@ -2,3 +2,4 @@ lib html
 Lib Debug Release
 *.ncb *.opt *.plg *.Tags.WW
 config.log config.status
+Makefile
