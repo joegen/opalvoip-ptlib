@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.6  2003/10/03 00:06:58  dereksmithies
+ * Fix typo on IPV6 test. A big thanks to Andrey S Pankov
+ *
  * Revision 1.5  2003/02/05 06:26:49  robertj
  * More work in making the STUN usable for Symmetric NAT systems.
  *
@@ -155,7 +158,7 @@ static void SetStunAddress(const PIPSocket::Address & ip, WORD port, StunAddress
       addr.addrHdr.family = AF_INET;
       addr.addr.v4addr    = ntohl((DWORD)ip);
       break;
-#if P_HASIPV6
+#if P_HAS_IPV6
     case 6 :
       addr.addrHdr.family = AF_INET6;
       addr.addr.v6addr    = ip;
