@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.47  2001/09/14 08:00:38  robertj
+ * Added new versions of Conenct() to allow binding to a specific local interface.
+ *
  * Revision 1.46  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -301,6 +304,15 @@ class PIPSocket : public PSocket
       const Address & addr      /// Address of remote machine to connect to.
     );
     virtual BOOL Connect(
+      WORD localPort,           /// Local port number for connection
+      const Address & addr      /// Address of remote machine to connect to.
+    );
+    virtual BOOL Connect(
+      const Address & iface,    /// Address of local interface to us.
+      const Address & addr      /// Address of remote machine to connect to.
+    );
+    virtual BOOL Connect(
+      const Address & iface,    /// Address of local interface to us.
       WORD localPort,           /// Local port number for connection
       const Address & addr      /// Address of remote machine to connect to.
     );
