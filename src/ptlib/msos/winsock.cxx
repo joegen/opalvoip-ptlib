@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.17 1996/04/12 09:45:06 robertj Exp $
+ * $Id: winsock.cxx,v 1.18 1996/04/17 12:09:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.18  1996/04/17 12:09:52  robertj
+ * Fixed bug in detecting infinte timeout.
+ *
  * Revision 1.17  1996/04/12 09:45:06  robertj
  * Rewrite of PSocket::Read() to avoid "Connection Reset" errors caused by SO_RCVTIMEO
  *
@@ -165,7 +168,7 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   int timeout = writeTimeout.GetMilliseconds();
   if (timeout == 0)
     timeout = 1;
-  else if (timeout == -1)
+  else if (timeout == 0x7fffffff)
     timeout = 0;
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
@@ -315,7 +318,7 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
   int timeout = readTimeout.GetMilliseconds();
   if (timeout == 0)
     timeout = 1;
-  else if (timeout == -1)
+  else if (timeout == 0x7fffffff)
     timeout = 0;
   if (!SetOption(SO_RCVTIMEO, timeout))
     return FALSE;
@@ -343,7 +346,7 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
   int timeout = writeTimeout.GetMilliseconds();
   if (timeout == 0)
     timeout = 1;
-  else if (timeout == -1)
+  else if (timeout == 0x7fffffff)
     timeout = 0;
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
