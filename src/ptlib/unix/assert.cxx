@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.10  2001/05/03 01:14:09  robertj
+ * Put in check to ignore assert if stdin not TTY or not open.
+ * Changed default action on assert to ignore if get EOF.
+ *
  * Revision 1.9  2001/04/20 10:13:02  robertj
  * Made sure cannot have nested asserts.
  *
@@ -74,6 +78,13 @@ void PAssertFunc (const char * file, int line, const char * msg)
     PError << msg << endl;
 
 #ifndef P_VXWORKS
+
+  // Check for if stdin is not a TTY and just ignore the assert if so.
+  if (!isatty(STDIN_FILENO)) {
+    inAssert = FALSE;
+    return;
+  }
+
   for(;;) {
     PError << "\n<A>bort, <C>ore dump, <I>gnore"
 #ifdef _DEBUG
@@ -85,7 +96,6 @@ void PAssertFunc (const char * file, int line, const char * msg)
     switch (c) {
       case 'a' :
       case 'A' :
-      case EOF :
         PError << "\nAborting.\n";
         _exit(1);
 
@@ -110,15 +120,19 @@ void PAssertFunc (const char * file, int line, const char * msg)
 
       case 'i' :
       case 'I' :
+      case EOF :
         PError << "\nIgnoring.\n";
         inAssert = FALSE;
         return;
     }
   }
-#else
+
+#else // P_VXWORKS
+
   exit(1);
   kill(taskIdSelf(), SIGABRT);
-#endif
+
+#endif // P_VXWORKS
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
