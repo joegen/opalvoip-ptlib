@@ -234,7 +234,7 @@ TargetName=PTLib
 InputPath=..\..\..\include\ptlib\msos\ptlib.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 	
 # End Custom Build
@@ -258,7 +258,7 @@ TargetName=PTLib
 InputPath=..\..\..\include\ptlib\msos\ptlib.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym $(OutDir)\ptlibs.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibs.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def > nul 
 	
 # End Custom Build
@@ -305,7 +305,7 @@ TargetName=PTLibd
 InputPath=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
+	MergeSym -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 	
 # End Custom Build
@@ -322,7 +322,7 @@ TargetName=PTLibd
 InputPath=..\..\..\include\ptlib\msos\ptlibd.dtf
 
 "$(IntDir)\$(TargetName).def" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	MergeSym $(OutDir)\ptlibsd.lib $(InputPath) 
+	MergeSym -v -I "$(Include)" -x ptlib.ignore $(OutDir)\ptlibsd.lib $(InputPath) 
 	copy $(InputPath)+nul $(IntDir)\$(TargetName).def  > nul 
 	
 # End Custom Build
