@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.17  2004/05/11 01:15:53  csoutheren
+ * Included name into Unix PDynaLink implementation
+ *
  * Revision 1.16  2003/09/11 00:52:13  dereksmithies
  * Full dependancy check on dynamically loading a library.
  * Thanks to Snark on #gnomemeeting for pointing this out...
@@ -336,10 +339,11 @@ PDynaLink::PDynaLink()
   dllHandle = NULL;
 }
 
-PDynaLink::PDynaLink(const PString & name)
+PDynaLink::PDynaLink(const PString & _name)
+  : name(_name)
 {
   dllHandle = NULL;
-  Open(name);
+  Open(_name);
 }
 
 PDynaLink::~PDynaLink()
@@ -352,9 +356,11 @@ PString PDynaLink::GetExtension()
   return PString(".so");
 }
 
-BOOL PDynaLink::Open(const PString & name)
+BOOL PDynaLink::Open(const PString & _name)
 {
   Close();
+
+  name = _name;
 
 #if defined(P_OPENBSD)
   dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
@@ -371,6 +377,7 @@ void PDynaLink::Close()
     dlclose(dllHandle);
     dllHandle = NULL;
   }
+  name.MakeEmpty();
 }
 
 BOOL PDynaLink::IsLoaded() const
@@ -383,7 +390,15 @@ PString PDynaLink::GetName(BOOL full) const
   if (!IsLoaded())
     return "";
 
-  return "loaded";
+  PString str = name;
+  PINDEX pos = str.FindLast('/');
+  if (pos != P_MAX_INDEX)
+    str = str.Mid(pos+1);
+  pos = str.FindLast(".so");
+  if (pos != P_MAX_INDEX)
+    str = str.Left(pos);
+
+  return str;
 }
 
 
@@ -392,15 +407,15 @@ BOOL PDynaLink::GetFunction(PINDEX, Function &)
   return FALSE;
 }
 
-BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+BOOL PDynaLink::GetFunction(const PString & fn, Function & func)
 {
   if (dllHandle == NULL)
     return FALSE;
 
 #if defined(P_OPENBSD)
-  void * p = dlsym(dllHandle, (char *)(const char *)name);
+  void * p = dlsym(dllHandle, (char *)(const char *)fn);
 #else
-  void * p = dlsym(dllHandle, (const char *)name);
+  void * p = dlsym(dllHandle, (const char *)fn);
 #endif
 
   if (p == NULL)
