@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.47  1998/11/24 23:05:14  robertj
+ * Fixed extra *** in demo message
+ *
  * Revision 1.46  1998/11/16 07:23:15  robertj
  * More PPC GNU compatibility.
  *
@@ -1280,7 +1283,7 @@ CREATE_MACRO(Registration,EMPTY,args)
 
   PString regNow = "Register Now!";
   PString viewReg = "View Registration";
-  PString demoCopy = "Unregistered Demonstration Copy ***";
+  PString demoCopy = "Unregistered Demonstration Copy";
   PINDEX open;
   PINDEX close = 0;
   if (FindBrackets(args, open, close)) {
