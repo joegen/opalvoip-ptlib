@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.17 1995/12/23 03:46:02 robertj Exp $
+ * $Id: pprocess.h,v 1.18 1996/01/02 11:57:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.18  1996/01/02 11:57:17  robertj
+ * Added thread for timers.
+ *
  * Revision 1.17  1995/12/23 03:46:02  robertj
  * Changed version numbers.
  *
@@ -273,7 +276,18 @@ PDECLARE_CLASS(PProcess, PThread)
        <CODE>_main()</CODE>. The user should never call this function.
      */
 
-#ifndef P_PLATFORM_HAS_THREADS
+#if defined(P_PLATFORM_HAS_THREADS)
+
+    PDECLARE_CLASS(TimerThread, PThread)
+      public:
+        TimerThread();
+        void Main();
+        PSemaphore semaphore;
+    };
+    TimerThread * timerThread;
+    // Thread for doing timers.
+
+#else
 
     virtual void OperatingSystemYield();
     /* Yield to the platforms operating system. This is an internal function
@@ -282,7 +296,6 @@ PDECLARE_CLASS(PProcess, PThread)
      */
 
 #endif
-
 
   private:
   // Member variables
@@ -316,18 +329,7 @@ PDECLARE_CLASS(PProcess, PThread)
     PTimerList timers;
     // List of active timers in system
 
-#if defined(P_PLATFORM_HAS_THREADS)
-
-    PDECLARE_CLASS(TimerThread, PThread)
-      public:
-        TimerThread();
-        void Main();
-        PSemaphore semaphore;
-    };
-    TimerThread * timerThread;
-    // Thread for doing timers.
-
-#else
+#if !defined(P_PLATFORM_HAS_THREADS)
 
     PThread * currentThread;
     // Currently running thread in the process
