@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.9 1996/09/16 12:56:27 robertj Exp $
+ * $Id: svcproc.cxx,v 1.10 1996/10/08 13:04:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.10  1996/10/08 13:04:43  robertj
+ * Rewrite to use standard window isntead of console window.
+ *
  * Revision 1.9  1996/09/16 12:56:27  robertj
  * DLL support
  *
@@ -53,6 +56,26 @@
 #include <io.h>
 
 
+static HINSTANCE hInstance;
+
+enum {
+  SvcCmdDebug,
+  SvcCmdVersion,
+  SvcCmdInstall,
+  SvcCmdRemove,
+  SvcCmdStart,
+  SvcCmdStop,
+  SvcCmdPause,
+  SvcCmdResume,
+  SvcCmdDeinstall,
+  NumSvcCmds
+};
+
+static const char * ServiceCommandNames[NumSvcCmds] = {
+  "debug", "version", "install", "remove", "start", "stop", "pause", "resume", "deinstall"
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PSystemLog
 
@@ -67,6 +90,16 @@ void PSystemLog::Output(Level level, const char * msg)
   if (process.debugMode || process.isWin95) {
     static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
     WaitForSingleObject(mutex, INFINITE);
+
+    ostream * out;
+    if (process.debugMode)
+      out = new PStringStream;
+    else {
+      PString dir;
+      GetWindowsDirectory(dir.GetPointer(256), 255);
+      out = new ofstream(dir+"\\"+process.GetName()+" Log.TXT", ios::app);
+    }
+
     static const char * levelName[NumLogLevels] = {
       "Fatal error",
       "Error",
@@ -74,12 +107,6 @@ void PSystemLog::Output(Level level, const char * msg)
       "Info",
       "Debug"
     };
-    ostream * out = PErrorStream;
-    if (!process.debugMode) {
-      PString dir;
-      GetWindowsDirectory(dir.GetPointer(256), 255);
-      out = new ofstream(dir+"\\"+process.GetName()+" Log.TXT", ios::app);
-    }
     PTime now;
     *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
     if (msg[0] != '\0')
@@ -87,8 +114,11 @@ void PSystemLog::Output(Level level, const char * msg)
     if (level != Info && err != 0)
       *out << " - error = " << err;
     *out << endl;
-    if (!process.debugMode)
-      delete out;
+
+    if (process.debugMode)
+      process.DebugOutput(*(PStringStream*)out);
+
+    delete out;
     ReleaseMutex(mutex);
     SetLastError(0);
   }
@@ -171,134 +201,291 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
   : PProcess(manuf, name, major, minor, stat, build)
 {
-}
-
-
-void PServiceProcess::Control_C(int)
-{
-  SetEvent(PServiceProcess::Current()->terminationEvent);
+  controlWindow = NULL;
+  currentLogLevel = PSystemLog::Warning;
 }
 
 
 int PServiceProcess::_main(int argc, char ** argv, char **)
 {
-  PErrorStream = &cerr;
+  PErrorStream = new PSystemLog(PSystemLog::Error);
   PreInitialise(1, argv);
 
   debugMode = FALSE;
   isWin95 = GetOSName() == "95";
 
-  if (argc > 1) {
-    PAssertOS(AllocConsole());
+  BOOL processedCommand = FALSE;
+  while (--argc > 0) {
+    if (!CreateControlWindow())
+      return 1;
 
-    HANDLE h1 = GetStdHandle(STD_INPUT_HANDLE);
-    int h2 = _open_osfhandle((long)h1, _O_RDONLY|_O_TEXT);
-    cin = *new ifstream(h2);
-
-    h1 = GetStdHandle(STD_OUTPUT_HANDLE);
-    h2 = _open_osfhandle((long)h1, _O_APPEND|_O_TEXT);
-    cout = *new ofstream(h2);
-
-    h1 = GetStdHandle(STD_ERROR_HANDLE);
-    h2 = _open_osfhandle((long)h1, _O_APPEND|_O_TEXT);
-    cerr = *new ofstream(h2);
-
-    switch (ProcessCommand(argv[1])) {
+    switch (ProcessCommand(*++argv)) {
       case CommandProcessed :
-        return 0;
+        processedCommand = TRUE;
+        break;
+
       case ProcessCommandError :
-        return 1;
+        RunMessageLoop();
+        return 2;
+
       case DebugCommandMode :
-        PError << "Service simulation started for \"" << GetName() << "\".\n"
-                  "Press Ctrl-C to terminate.\n" << endl;
         debugMode = TRUE;
     }
   }
 
-  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Error;
-
-  if (debugMode || isWin95) {
-    signal(SIGINT, Control_C);
-    SetTerminationValue(1);
-
-    PConfig cfg;
-    DWORD pid = cfg.GetInteger("Pid");
-    if (pid != 0) {
-      HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-      if (h != NULL) {
-        DWORD exitCode;
-        GetExitCodeProcess(h, &exitCode);
-        CloseHandle(h);
-        if (exitCode == STILL_ACTIVE) {
-          PError << "Service already running" << endl;
-          return 1;
-        }
-      }
-    }
-    cfg.SetInteger("Pid", GetProcessID());
-
-    terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
-    PAssertOS(terminationEvent != NULL);
-
-    threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
-    PAssertOS(threadHandle != (HANDLE)-1);
-
-    HWND wnd = CreateWindow(MAKEINTRESOURCE(32770),
-                            "",
-                            WS_OVERLAPPED,
-                            0, 0, 0, 0, 
-                            NULL, NULL, 
-                            (HINSTANCE)0x00400000,
-                            NULL);
-
-    MSG msg;
-    do {
-      switch (MsgWaitForMultipleObjects(1, &terminationEvent,
-                                        TRUE, INFINITE, QS_ALLINPUT)) {
-        case WAIT_OBJECT_0 :
-          msg.message = WM_QUIT;
-          break;
-
-        case WAIT_OBJECT_0+1 :
-          while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-            if (msg.message != WM_QUIT)
-              DispatchMessage(&msg);
-          }
-          break;
-
-        default :
-          // This is a work around for '95 coming up with an erroneous error
-          if (GetLastError() != ERROR_INVALID_HANDLE ||
-              WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
-            msg.message = WM_QUIT;
-      }
-    } while (msg.message != WM_QUIT);
-
-    DestroyWindow(wnd);
-
-    OnStop();
-    cfg.SetInteger("Pid", 0);
+  if (processedCommand) {
+    RunMessageLoop();
     return GetTerminationValue();
   }
 
-  // SERVICE_STATUS members that don't change
-  status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-  status.dwServiceSpecificExitCode = 0;
+  currentLogLevel = debugMode ? PSystemLog::Info : PSystemLog::Error;
 
-  static SERVICE_TABLE_ENTRY dispatchTable[] = {
-    { "", PServiceProcess::StaticMainEntry },
-    { NULL, NULL }
-  };
+  if (!processedCommand && !debugMode && !isWin95) {
+    static SERVICE_TABLE_ENTRY dispatchTable[] = {
+      { "", PServiceProcess::StaticMainEntry },
+      { NULL, NULL }
+    };
+    dispatchTable[0].lpServiceName = (char *)(const char *)GetName();
 
-  dispatchTable[0].lpServiceName = (char *)(const char *)GetName();
+    if (StartServiceCtrlDispatcher(dispatchTable))
+      return GetTerminationValue();
 
-  if (StartServiceCtrlDispatcher(dispatchTable))
-    return GetTerminationValue();
+    PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
+    if (!CreateControlWindow())
+      return 1;
+    PError << endl;
+    RunMessageLoop();
+    return 1;
+  }
 
-  PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
-  PError << "Could not start service.\n";
-  ProcessCommand("");
-  return 1;
+  if (!CreateControlWindow())
+    return 1;
+
+  PConfig cfg;
+  DWORD pid = cfg.GetInteger("Pid");
+  if (pid != 0) {
+    HANDLE h = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+    if (h != NULL) {
+      DWORD exitCode;
+      GetExitCodeProcess(h, &exitCode);
+      CloseHandle(h);
+      if (exitCode == STILL_ACTIVE) {
+        PError << "Service already running" << endl;
+        RunMessageLoop();
+        return 3;
+      }
+    }
+  }
+  cfg.SetInteger("Pid", GetProcessID());
+
+  if (debugMode) {
+    ::SetLastError(0);
+    PError << "Service simulation started for \"" << GetName() << "\".\n"
+              "Close window to terminate.\n" << endl;
+  }
+
+  SetTerminationValue(0);
+
+  threadHandle = (HANDLE)_beginthread(StaticThreadEntry, 0, this);
+  PAssertOS(threadHandle != (HANDLE)-1);
+
+  RunMessageLoop();
+
+  OnStop();
+
+  cfg.SetInteger("Pid", 0);
+  return GetTerminationValue();
+}
+
+
+BOOL PServiceProcess::CreateControlWindow()
+{
+  if (controlWindow != NULL)
+    return TRUE;
+
+  WNDCLASS wclass;
+  wclass.style = CS_HREDRAW|CS_VREDRAW;
+  wclass.lpfnWndProc = (WNDPROC)StaticWndProc;
+  wclass.cbClsExtra = 0;
+  wclass.cbWndExtra = 0;
+  wclass.hInstance = hInstance;
+  wclass.hIcon = NULL;
+  wclass.hCursor = NULL;
+  wclass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+  wclass.lpszMenuName = NULL;
+  wclass.lpszClassName = GetName();
+  if (RegisterClass(&wclass) == 0)
+    return FALSE;
+
+  HMENU menubar = CreateMenu();
+  HMENU menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, 101, "&Hide");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdVersion, "&Version");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+  AppendMenu(menu, MF_STRING, 100, "E&xit");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
+
+  menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdInstall, "&Install");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdRemove, "&Remove");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdDeinstall, "&Deinstall");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdStart, "&Start");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdStop, "S&top");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdPause, "&Pause");
+  AppendMenu(menu, MF_STRING, 1000+SvcCmdResume, "R&esume");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
+
+  menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Fatal, "&Fatal Error");
+  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Error, "&Error");
+  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Warning, "&Warning");
+  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Info, "&Information");
+  AppendMenu(menu, MF_STRING, 2000+PSystemLog::Debug, "&Debug");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+
+  CreateWindow(GetName(),
+               GetName(),
+               WS_OVERLAPPEDWINDOW,
+               CW_USEDEFAULT, CW_USEDEFAULT,
+               CW_USEDEFAULT, CW_USEDEFAULT, 
+               NULL,
+               menubar,
+               hInstance,
+               NULL);
+  return controlWindow != NULL && debugWindow != NULL;
+}
+
+
+LPARAM WINAPI PServiceProcess::StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  return PServiceProcess::Current()->WndProc(hWnd, msg, wParam, lParam);
+}
+
+
+LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  switch (msg) {
+    case WM_CREATE :
+      controlWindow = hWnd;
+      debugWindow = CreateWindow("edit",
+                                 "",
+                                 WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
+                                        ES_MULTILINE|ES_READONLY,
+                                 0, 0, 0, 0,
+                                 hWnd,
+                                 (HMENU)200,
+                                 hInstance,
+                                 NULL);
+      SendMessage(debugWindow, EM_SETLIMITTEXT, isWin95 ? 32000 : 64000, 0);
+      break;
+
+    case WM_DESTROY :
+      controlWindow = debugWindow = NULL;
+      PostQuitMessage(0);
+      break;
+
+    case WM_SIZE :
+      MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+      break;
+
+    case WM_INITMENUPOPUP :
+    {
+      for (int i = 0; i < PSystemLog::NumLogLevels; i++)
+        CheckMenuItem((HMENU)wParam, 2000+i, MF_BYCOMMAND|MF_UNCHECKED);
+      CheckMenuItem((HMENU)wParam, 2000+GetLogLevel(), MF_BYCOMMAND|MF_CHECKED);
+      break;
+    }
+
+    case WM_COMMAND :
+      switch (wParam) {
+        case 101 :
+          ShowWindow(hWnd, SW_HIDE);
+          break;
+
+        case 100 :
+          DestroyWindow(hWnd);
+          break;
+
+        default :
+          if (wParam >= 1000 && wParam < 1000+NumSvcCmds)
+            ProcessCommand(ServiceCommandNames[wParam-1000]);
+          if (wParam >= 2000 && wParam < 2000+PSystemLog::NumLogLevels)
+            SetLogLevel((PSystemLog::Level)(wParam-2000));
+      }
+      break;
+
+    case WM_ENDSESSION :
+      if (wParam)
+        PostQuitMessage(0);
+      return 0;
+  }
+
+  return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+
+void PServiceProcess::RunMessageLoop()
+{
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
+  PAssertOS(terminationEvent != NULL);
+
+  MSG msg;
+  do {
+    switch (MsgWaitForMultipleObjects(1, &terminationEvent,
+                                      FALSE, INFINITE, QS_ALLINPUT)) {
+      case WAIT_OBJECT_0 :
+        msg.message = WM_QUIT;
+        break;
+
+      case WAIT_OBJECT_0+1 :
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+          if (msg.message != WM_QUIT)
+            DispatchMessage(&msg);
+        }
+        break;
+
+      default :
+        // This is a work around for '95 coming up with an erroneous error
+        if (GetLastError() != ERROR_INVALID_HANDLE ||
+            WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
+          msg.message = WM_QUIT;
+    }
+  } while (msg.message != WM_QUIT);
+
+  if (controlWindow != NULL)
+    DestroyWindow(controlWindow);
+}
+
+
+void PServiceProcess::DebugOutput(const char * out)
+{
+  if (controlWindow == NULL || debugWindow == NULL)
+    return;
+
+  if (!IsWindowVisible(controlWindow))
+    ShowWindow(controlWindow, SW_SHOWDEFAULT);
+
+  int len = strlen(out);
+  int max = SendMessage(debugWindow, EM_GETLIMITTEXT, 0, 0);
+  while (GetWindowTextLength(debugWindow)+len >= max) {
+    SendMessage(debugWindow, WM_SETREDRAW, FALSE, 0);
+    SendMessage(debugWindow, EM_SETSEL, 0,
+                SendMessage(debugWindow, EM_LINEINDEX, 1, 0));
+    SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"");
+    SendMessage(debugWindow, WM_SETREDRAW, TRUE, 0);
+  }
+
+  SendMessage(debugWindow, EM_SETSEL, max, max);
+  char * lf;
+  while ((lf = strchr(out, '\n')) != NULL) {
+    if (*(lf-1) != '\r') {
+      *lf++ = '\0';
+      SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
+      SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
+      out = lf;
+    }
+  }
+  SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
 }
 
 
@@ -310,6 +497,10 @@ void PServiceProcess::StaticMainEntry(DWORD argc, LPTSTR * argv)
 
 void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
 {
+  // SERVICE_STATUS members that don't change
+  status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+  status.dwServiceSpecificExitCode = 0;
+
   // register our service control handler:
   statusHandle = RegisterServiceCtrlHandler(GetName(), StaticControlEntry);
   if (statusHandle == NULL)
@@ -346,8 +537,11 @@ void PServiceProcess::StaticThreadEntry(void * arg)
 void PServiceProcess::ThreadEntry()
 {
   threadId = GetCurrentThreadId();
+  activeThreads.SetAt(threadId, this);
+  SetTerminationValue(1);
   if (OnStart()) {
     ReportStatus(SERVICE_RUNNING);
+    SetTerminationValue(0);
     Main();
     ReportStatus(SERVICE_STOP_PENDING, NO_ERROR, 1, 3000);
   }
@@ -747,19 +941,17 @@ BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
 PServiceProcess::ProcessCommandResult
                              PServiceProcess::ProcessCommand(const char * cmd)
 {
-  static const char * commandNames[] = {
-    "debug", "version", "install", "remove", "start", "stop", "pause", "resume", "deinstall"
-  };
-
   PINDEX cmdNum = 0;
-  while (stricmp(cmd, commandNames[cmdNum]) != 0) {
-    if (++cmdNum >= PARRAYSIZE(commandNames)) {
+  while (stricmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
+    if (++cmdNum >= NumSvcCmds) {
       if (*cmd != '\0')
         PError << "Unknown command \"" << cmd << "\".\n";
+      else
+        PError << "Could not start service.\n";
       PError << "usage: " << GetName() << " [ ";
-      for (cmdNum = 0; cmdNum < PARRAYSIZE(commandNames)-1; cmdNum++)
-        PError << commandNames[cmdNum] << " | ";
-      PError << commandNames[cmdNum] << " ]" << endl;
+      for (cmdNum = 0; cmdNum < NumSvcCmds-1; cmdNum++)
+        PError << ServiceCommandNames[cmdNum] << " | ";
+      PError << ServiceCommandNames[cmdNum] << " ]" << endl;
       return ProcessCommandError;
     }
   }
@@ -770,40 +962,41 @@ PServiceProcess::ProcessCommandResult
                     isWin95 ? (ServiceManager *)&win95 : (ServiceManager *)&nt;
   BOOL good = FALSE;
   switch (cmdNum) {
-    case 0 : // Debug mode
+    case SvcCmdDebug : // Debug mode
       return DebugCommandMode;
 
-    case 1 : // Version command
+    case SvcCmdVersion : // Version command
+      ::SetLastError(0);
       PError << GetName() << ' '
              << GetOSClass() << '/' << GetOSName()
              << " Version " << GetVersion(TRUE) << endl;
       return ProcessCommandError;
 
-    case 2 : // install
+    case SvcCmdInstall : // install
       good = svcManager->Create(this);
       break;
 
-    case 3 : // remove
+    case SvcCmdRemove : // remove
       good = svcManager->Delete(this);
       break;
 
-    case 4 : // start
+    case SvcCmdStart : // start
       good = svcManager->Start(this);
       break;
 
-    case 5 : // stop
+    case SvcCmdStop : // stop
       good = svcManager->Stop(this);
       break;
 
-    case 6 : // pause
+    case SvcCmdPause : // pause
       good = svcManager->Pause(this);
       break;
 
-    case 7 : // resume
+    case SvcCmdResume : // resume
       good = svcManager->Resume(this);
       break;
 
-    case 8 : // deinstall
+    case SvcCmdDeinstall : // deinstall
       svcManager->Delete(this);
       PConfig cfg;
       PStringList sections = cfg.GetSections();
@@ -814,7 +1007,7 @@ PServiceProcess::ProcessCommandResult
       break;
   }
 
-  PError << "Service command \"" << commandNames[cmdNum] << "\" ";
+  PError << "Service command \"" << ServiceCommandNames[cmdNum] << "\" ";
   if (good) {
     PError << "successful." << endl;
     return CommandProcessed;
@@ -828,8 +1021,9 @@ PServiceProcess::ProcessCommandResult
 
 #ifndef PMAKEDLL
 
-extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+extern "C" int PASCAL WinMain(HINSTANCE hInst, HINSTANCE, LPSTR, int)
 {
+  hInstance = hInst;
   return main(__argc, __argv, NULL);
 }
 
