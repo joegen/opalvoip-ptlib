@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.47  1999/09/03 02:26:25  robertj
+ * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
+ *
  * Revision 1.46  1999/07/19 01:32:24  craigs
  * Changed signals used in pthreads code, is used by linux version.
  *
@@ -410,6 +413,9 @@ void SetSignals(void (*handler)(int))
 #endif
 #ifdef SIGWINCH
   signal(SIGWINCH, HANDLER(handler));
+#endif
+#ifdef SIGPROF
+  signal(SIGPROF, HANDLER(handler));
 #endif
 //#ifdef SIGCHLD		
 //  signal(SIGCHLD, HANDLER(handler));

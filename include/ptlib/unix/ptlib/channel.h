@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.16  1999/09/03 02:26:25  robertj
+ * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
+ *
  * Revision 1.15  1999/01/07 03:37:12  robertj
  * dded default for pthreads, shortens command line in compile.
  *
@@ -79,11 +82,6 @@
 
 #include "../../channel.h"
 
-#ifdef P_PTHREADS
-  protected:
-     PMutex mutex;
-#endif
-
   public:
     enum {
       PXReadBlock,
@@ -91,14 +89,21 @@
       PXAcceptBlock,
       PXConnectBlock
     };
+
   protected:
     BOOL PXSetIOBlock(int type, const PTimeInterval & timeout);
     BOOL PXSetIOBlock(int type, int blockHandle, const PTimeInterval & timeout);
 
     int  PXClose();
 
-  protected:
     PString channelName;
+
+#ifdef P_PTHREADS
+#define P_IO_BREAK_SIGNAL SIGPROF
+  protected:
+    PMutex    PX_readMutex;
+    pthread_t PX_readThreadId;
+#endif
 };
 
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.15  1999/09/03 02:26:25  robertj
+ * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
+ *
  * Revision 1.14  1999/03/02 05:41:58  robertj
  * More BeOS changes
  *
@@ -109,10 +112,10 @@ class PSemaphore;
     //void InitialiseProcessThread();
     static void * PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
+    unsigned PX_GetThreadId() const;
 
   protected:
     void PX_NewThread(BOOL startSuspended);
-    unsigned PX_GetThreadId() const;
 
     PINDEX     PX_origStackSize;
     int        PX_suspendCount;
