@@ -6,6 +6,9 @@
  * Copyright 98 Equivalence
  *
  * $Log: socks.h,v $
+ * Revision 1.4  1999/05/01 03:52:20  robertj
+ * Fixed various egcs warnings.
+ *
  * Revision 1.3  1999/03/09 08:01:47  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -32,6 +35,7 @@ class PSocksProtocol
 {
   public:
     PSocksProtocol(WORD port);
+    virtual ~PSocksProtocol() { }
 
   // New functions for class
     enum {
