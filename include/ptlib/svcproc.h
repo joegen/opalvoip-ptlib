@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.4 1996/08/09 11:16:53 robertj Exp $
+ * $Id: svcproc.h,v 1.5 1996/08/17 10:00:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.5  1996/08/17 10:00:27  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.4  1996/08/09 11:16:53  robertj
  * Moved log macro to platform dependent header.
  *
@@ -37,7 +40,7 @@
 #pragma interface
 #endif
 
-PCLASS PSystemLog : public PObject, public iostream {
+class PEXPORT PSystemLog : public PObject, public iostream {
   PCLASSINFO(PSystemLog, PObject)
 
   public:
@@ -69,7 +72,7 @@ PCLASS PSystemLog : public PObject, public iostream {
     PSystemLog(const PSystemLog &) { }
     PSystemLog & operator=(const PSystemLog &) { return *this; }
 
-    PCLASS Buffer : public streambuf {
+    class PEXPORT Buffer : public streambuf {
       public:
         Buffer(PSystemLog * l) { log = l; }
         virtual int overflow(int=EOF);
