@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.46  2000/10/31 07:52:06  rogerh
+ * Add type casts to allow the code to compile on FreeBSD 4.1.1
+ *
  * Revision 1.45  2000/10/30 05:48:33  robertj
  * Added assert when get nested mutex.
  *
@@ -476,7 +479,7 @@ void PThread::PX_ThreadEnd(void * arg)
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
   
-  pthread_t id = thread->PX_GetThreadId();
+  pthread_t id = (pthread_t)thread->PX_GetThreadId();
   thread->PX_threadId = 0;  // Prevent terminating terminated thread
 
   // delete the thread if required
@@ -485,7 +488,7 @@ void PThread::PX_ThreadEnd(void * arg)
 
   // remove this thread from the thread list
   process.threadMutex.Wait();
-  process.activeThreads.SetAt(id, NULL);
+  process.activeThreads.SetAt((unsigned)id, NULL);
   process.threadMutex.Signal();
 }
 
