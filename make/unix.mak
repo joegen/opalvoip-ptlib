@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.50  1999/09/27 01:04:42  robertj
+# BeOS support changes.
+#
 # Revision 1.49  1999/09/21 00:56:29  robertj
 # Added more sound support for BeOS (thanks again Yuri!)
 #
@@ -347,6 +350,8 @@ LDLIBS		+= -lbe -lmedia -lgame
 ifdef BE_THREADS
 STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
 endif
+
+STDCCFLAGS	+= -Wno-multichar
 
 endif # beos
 
