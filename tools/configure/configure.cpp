@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.20  2004/08/13 01:08:09  csoutheren
+ * Changed to look for configure.ac, then configure.in
+ *
  * Revision 1.19  2004/07/12 02:32:58  csoutheren
  * Fixed problem when more than two elements in env var
  *
@@ -102,7 +105,7 @@
 #include <windows.h>
 
 
-#define VERSION "1.3.2"
+#define VERSION "1.3.3"
 
 
 using namespace std;
@@ -377,10 +380,18 @@ bool ProcessHeader(const string & headerFilename)
 
 int main(int argc, char* argv[])
 {
-  ifstream conf("configure.in", ios::in);
-  if (!conf.is_open()) {
-    cerr << "Could not open configure.in file" << endl;
-    return 1;
+  ifstream conf("configure.ac", ios::in);
+  if (conf.is_open()) {
+    cout << "Opened " << "configure.ac" << endl;
+  } else {
+    conf.clear();
+    conf.open("configure.in", ios::in);
+    if (conf.is_open()) {
+      cout << "Opened " << "configure.in" << endl;
+    } else {
+      cerr << "Could not open configure.ac/configure.in" << endl;
+      return 1;
+    }
   }
 
   list<string> headers;
