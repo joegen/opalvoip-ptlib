@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.34  2004/07/19 12:32:25  csoutheren
+ * Removed vestigial debug comment
+ *
  * Revision 1.33  2004/07/19 12:23:38  csoutheren
  * Removed compiler crash under gcc 3.4.0
  *
@@ -758,8 +761,6 @@ BOOL PWAVFile::GenerateHeader()
 
   return (TRUE);
 }
-
-// #if 0
 
 // Update the WAV header according to the file length
 BOOL PWAVFile::UpdateHeader()
