@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.33 1998/02/16 00:12:22 robertj Exp $
+ * $Id: svcproc.cxx,v 1.34 1998/02/16 01:43:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.34  1998/02/16 01:43:57  robertj
+ * Really fixed spurious error display on install/start/stop etc
+ *
  * Revision 1.33  1998/02/16 00:12:22  robertj
  * Added tray icon support.
  * Fixed problem with services and directory paths with spaces in them.
@@ -1390,7 +1393,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       break;
   }
 
-  SetLastError(svcManager->GetError());
+  SetLastError(0);
 
   PError << "Service command \"" << ServiceCommandNames[cmdNum] << "\" ";
   if (good)
