@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.7 1995/12/10 11:48:08 robertj Exp $
+ * $Id: pprocess.h,v 1.8 1996/03/12 11:31:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.8  1996/03/12 11:31:06  robertj
+ * Moved PProcess destructor to platform dependent code.
+ *
  * Revision 1.7  1995/12/10 11:48:08  robertj
  * Fixed bug in application shutdown of child threads.
  *
@@ -40,6 +43,9 @@
 // PProcess
 
 #include "../../common/process.h"
+  public:
+    ~PProcess();
+
 #if defined(P_PLATFORM_HAS_THREADS)
   private:
     PDICTIONARY(ThreadDict, POrdinalKey, PThread);
