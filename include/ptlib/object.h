@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.68  2001/02/22 08:16:41  robertj
+ * Added standard trace file setup subroutine.
+ *
  * Revision 1.67  2001/02/13 03:27:24  robertj
  * Added function to do heap validation.
  *
@@ -394,12 +397,6 @@ and NT GUI applications. An application could change this pointer to a
 class PTrace
 {
 public:
-  /** Set the stream to be used for trace output.
-  This stream is used for all trace output using the various trace functions
-  and macros.
-  */
-  static void SetStream(ostream * out /** New output stream from trace. */ );
-
   /// Options for trace output.
   enum Options {
     /**Include PTrace::Block constructs in output
@@ -425,6 +422,19 @@ public:
       */
     SystemLogStream = 32768
   };
+
+  /**Set the most common trace options.
+     If filename is not NULL then a PTextFile is created and attached the
+     trace output stream. This object is never closed or deleted until the
+     termination of the program.
+
+     A trace output of the program name version and OS is written as well.
+    */
+  static void Initialise(
+    unsigned level,
+    const char * filename = NULL,
+    unsigned options = Timestamp | Thread | Blocks
+  );
 
   /** Set the trace options.
   The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
@@ -468,6 +478,12 @@ public:
   for if the trace output may be emitted. This is used by the PTRACE macro.
   */
   static BOOL CanTrace(unsigned level /** Trace level to check */);
+
+  /** Set the stream to be used for trace output.
+  This stream is used for all trace output using the various trace functions
+  and macros.
+  */
+  static void SetStream(ostream * out /** New output stream from trace. */ );
 
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it
