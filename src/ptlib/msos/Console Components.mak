@@ -250,7 +250,7 @@ INTDIR=.\..\..\..\Lib\Debug
 OutDir=.\..\..\..\Lib
 # End Custom Macros
 
-ALL : "$(OUTDIR)\ptsslclibd.lib" "$(OUTDIR)\Console Components.bsc"
+ALL : "$(OUTDIR)\ptclibd.lib" "$(OUTDIR)\Console Components.bsc"
 
 
 CLEAN :
@@ -306,7 +306,7 @@ CLEAN :
 	-@erase "$(INTDIR)\vc60.idb"
 	-@erase "$(INTDIR)\vc60.pdb"
 	-@erase "$(OUTDIR)\Console Components.bsc"
-	-@erase "$(OUTDIR)\ptsslclibd.lib"
+	-@erase "$(OUTDIR)\ptclibd.lib"
 
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
@@ -349,7 +349,7 @@ BSC32_SBRS= \
 <<
 
 LIB32=link.exe -lib
-LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptsslclibd.lib" 
+LIB32_FLAGS=/nologo /out:"$(OUTDIR)\ptclibd.lib" 
 LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
@@ -376,7 +376,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\socks.obj" \
 	"$(INTDIR)\Telnet.obj"
 
-"$(OUTDIR)\ptsslclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+"$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
   $(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
 <<
