@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.h,v $
+ * Revision 1.3  2003/02/09 23:31:39  robertj
+ * Added referention PString's for efficiency.
+ *
  * Revision 1.2  2003/02/09 23:22:37  robertj
  * Fixed spelling errors, and setting return values, thanks Andreas Sikkema
  *
@@ -80,13 +83,13 @@ public:
   void AddParameter( PXMLElement* parameter, BOOL dirty = TRUE );
 
   //! Get parameter "name" with type "string"
-  BOOL GetParameter( PString name, PString & value );
+  BOOL GetParameter( const PString & name, PString & value );
 
   //! Get parameter "name" with type "int"
-  BOOL GetParameter( PString name, int & value );
+  BOOL GetParameter( const PString & name, int & value );
 
   //! Get parameter "name"
-  PXMLElement* GetParemater( PString name );
+  PXMLElement* GetParameter( const PString & name );
 
   //! Print the contents of this SOAP message on an ostream
   void PrintOn(ostream & strm) const;
