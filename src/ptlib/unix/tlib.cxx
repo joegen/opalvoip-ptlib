@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.33  1998/10/19 00:29:57  robertj
+ * Moved error stream to common.
+ *
  * Revision 1.32  1998/09/24 04:12:22  robertj
  * Added open software license.
  *
@@ -156,18 +159,6 @@ extern "C" int select(int width,
 			fd_set *exceptfds,
 			struct timeval *timeout);
 #endif
-
-ostream  * PErrorStream = &cerr;
-
-ostream & PGetErrorStream()
-{
-  return *PErrorStream;
-}
-
-void PSetErrorStream(ostream * s)
-{
-  PErrorStream = s;
-}
 
 PString PProcess::GetOSClass()
 {
