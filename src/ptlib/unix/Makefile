@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.132  2005/01/03 12:48:43  csoutheren
+# Added new configure options and ability to disable/enable modules
+#
 # Revision 1.131  2005/01/03 04:41:39  csoutheren
 # Normalise handling of configure flags
 # Add --enable-minsize option (more to follow)
@@ -451,7 +454,6 @@ PLUGIN_DIR		= ../../../plugins
 
 #####CFLAGS += -DPTRACING=1
 
-
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
@@ -466,173 +468,96 @@ SOURCES	+= \
 endif
 
 ifdef HAS_OPENSSL
-SOURCES += \
-	$(COMPONENT_SRC_DIR)/pssl.cxx \
-        $(COMPONENT_SRC_DIR)/shttpsvc.cxx
+SOURCES += $(COMPONENT_SRC_DIR)/pssl.cxx 
 endif
 
 ifdef HAS_SDL
-SOURCES + $(COMPONENT_SRC_DIR)/vsdl.cxx
+SOURCES += $(COMPONENT_SRC_DIR)/vsdl.cxx
 endif
 
 
-## VIDEOCAPTURE DRIVERS
+## VIDEO DRIVERS
 ## Note this is mostly handled by the plugin system
 
-VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \
-                $(COMMON_SRC_DIR)/videoio.cxx \
-	        $(COMMON_SRC_DIR)/vconvert.cxx
+ifdef HAS_VIDEO
+
+
+SOURCES	 += $(COMMON_SRC_DIR)/vfakeio.cxx \
+            $(COMMON_SRC_DIR)/videoio.cxx \
+	    $(COMMON_SRC_DIR)/vconvert.cxx \
+	    $(COMMON_SRC_DIR)/pvidchan.cxx 
 	        
-ifeq (1,$(USE_SHM_VIDEO_DEVICES))
-VIDEO_SOURCE	+= shmvideo.cxx
+ifdef USE_SHM_VIDEO_DEVICES
+SOURCES	+= shmvideo.cxx
 endif
 
-ifeq ($(HAS_PLUGINS),0)
+ifndef HAS_PLUGINS
 
 ifeq ($(OSTYPE),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/vidinput_v4l
-VIDEO_SOURCE	+= $(PLUGIN_DIR)/vidinput_v4l/vidinput_v4l.cxx
+SOURCES		+= $(PLUGIN_DIR)/vidinput_v4l/vidinput_v4l.cxx
 endif
 
-# ifneq (,$(wildcard $(SYSINCDIR)/linux/videodev.h))
-# VIDEO_CAPTURE_SOURCE = video4linux.cxx
-# endif
+endif  # HAS_PLUGINS
 
-# VIDEO_CAPTURE_SOURCE = dummyvideo.cxx
-#
-# ifeq ($(OSTYPE),FreeBSD)
-# VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-# endif
-# 
-# ifeq ($(OSTYPE),OpenBSD)
-# VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-# endif
-# 
-# ifeq ($(OSTYPE),NetBSD)
-# VIDEO_CAPTURE_SOURCE = video4bsd.cxx
-# endif
-# 
-# ifeq (1,$(TRY_1394DC))
-# VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
-# endif
-# 
-# ifeq (1,$(TRY_1394AVC))
-# VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
-# endif
-
-endif  #  HAS_PLUGINS
-
+endif # P_VIDEO
 
 ## SOUND DRIVERS
 ## Note this is mostly handled by the plugin system
 
-ifeq ($(HAS_PLUGINS),0)
+ifdef HAS_AUDIO
+
+SOURCES += $(COMMON_SRC_DIR)/sound.cxx 
+
+ifndef HAS_PLUGINS
 
 ifeq ($(OSTYPE),linux)
 VPATH_CXX	+= $(PLUGIN_DIR)/sound_oss
-SOUND_SOURCE	= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
+SOURCES		+= $(PLUGIN_DIR)/sound_oss/sound_oss.cxx
+endif # linux
 
-ifeq ($(HAS_ALSA),1)
-
+ifdef HAS_ALSA
 VPATH_CXX	+= $(PLUGIN_DIR)/sound_alsa
-SOUND_SOURCE	= $(PLUGIN_DIR)/sound_alsa/sound_alsa.cxx
-endif
+SOURCES		+= $(PLUGIN_DIR)/sound_alsa/sound_alsa.cxx
+endif  # HAS_ALSA
 
-endif
-
-#  #Set SOUND_SOURCE to dummyaudio, a file which links but does not
-#  #actually play or record audio.
-#  #This will then be overridden by platform specific audio files.
-#  
-#  SOUND_SOURCE = dummyaudio.cxx
-#  
-#  
-#  ifeq ($(OSTYPE),solaris)
-#  ifneq (,$(wildcard /usr/include/sys/audioio.h))
-#  SOUND_SOURCE = sunaudio.cxx
-#  endif
-#  endif
-#  
-#  ifeq ($(OSTYPE),FreeBSD)
-#  SOUND_SOURCE = oss.cxx
-#  endif
-#  
-#  ifeq ($(OSTYPE),OpenBSD)
-#  SOUND_SOURCE = oss.cxx
-#  endif
-#  
-#  ifeq ($(OSTYPE),NetBSD)
-#  SOUND_SOURCE = oss.cxx
-#  endif
-#  
-#  ifeq ($(OSTYPE),AIX)
-#  SOUND_SOURCE = ossaix.cxx
-#  endif
-#  
-  ifeq ($(OSTYPE),beos)
-#  
-#  ifdef MEDIA_KIT_UPDATE
-  SOUND_SOURCE = beaudio.cxx
-#  else
-#  BEAUDIO_SRC_DIR	= ./beaudio
-#  VPATH_CXX += $(BEAUDIO_SRC_DIR)
-#  
-#  SOUND_SOURCE = beaudio.cxx \
-#  	$(BEAUDIO_SRC_DIR)/MediaRecorder.cxx \
-#  	$(BEAUDIO_SRC_DIR)/MediaRecorderNode.cxx
-#  endif
-# 
-# VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
-#                $(COMMON_SRC_DIR)/videoio.cxx \
-# 	       	   video4beos.cxx \
-# 	       	   $(COMMON_SRC_DIR)/vconvert.cxx
- endif
-# 
-# ifeq ($(OSTYPE),Carbon)
-# MACAUDIO_SRC_DIR	= ./macosaudio
-# VPATH_CXX += $(MACAUDIO_SRC_DIR)
-# 
-# SOUND_SOURCE = macosaudio.cxx \
-# 	$(MACAUDIO_SRC_DIR)/ringbuffer.cxx \
-# 	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
-# 	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
-# 	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
-# endif
+ifeq ($(OSTYPE),beos)
+SOURCES	 += beaudio.cxx
+endif  # beos
 
 ifeq ($(OSTYPE),Darwin)
-SOUND_SOURCE = maccoreaudio.cxx
-endif
+SOURCES	+= maccoreaudio.cxx
+endif # Darwin
  
-# ifeq ($(OSTYPE),VxWorks)
-# SOUND_SOURCE = vxaudio.cxx
-# endif
-# 
-# ifdef HAS_ESD
-# SOUND_SOURCE = esdaudio.cxx
-# endif
-# 
-# ifeq ($(OSTYPE),QNX)
-# SOUND_SOURCE = qsa.cxx
-# endif
+endif  # HAS_PLUGINS
+endif  # HAS_AUDIO
 
-endif  #  HAS_PLUGINS
-
-
+## Various modules
 
 ifdef HAS_EXPAT
+SOURCES	+= $(COMPONENT_SRC_DIR)/pxml.cxx 
+
+ifdef HAS_XMLRPC
 SOURCES	+= \
-	$(COMPONENT_SRC_DIR)/pxml.cxx \
 	$(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
-	$(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
-	$(COMPONENT_SRC_DIR)/psoap.cxx \
-	$(COMPONENT_SRC_DIR)/vxml.cxx 
+	$(COMPONENT_SRC_DIR)/pxmlrpcs.cxx 
+endif
+
+ifdef HAS_SOAP
+SOURCES	+= $(COMPONENT_SRC_DIR)/psoap.cxx 
+endif
+
+ifdef HAS_VXML
+SOURCES	+= $(COMPONENT_SRC_DIR)/vxml.cxx 
+endif
+
+endif # HAS_EXPAT
 
 ifdef HAS_SASL2
 SOURCES += \
 	$(COMPONENT_SRC_DIR)/xmpp.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
 	$(COMPONENT_SRC_DIR)/xmpp_roster.cxx
-endif
 endif
 
 ifdef HAS_RESOLVER
@@ -641,62 +566,115 @@ SOURCES += \
 	$(COMPONENT_SRC_DIR)/enum.cxx 
 endif
 
+ifdef HAS_TTS
+SOURCES += $(COMPONENT_SRC_DIR)/ptts.cxx 
+endif
+
+ifdef HAS_ASN
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/asner.cxx \
+	$(COMPONENT_SRC_DIR)/pasn.cxx 
+endif
+
+ifdef HAS_SNMP
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/snmpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
+	$(COMPONENT_SRC_DIR)/psnmp.cxx 
+endif
+
+ifdef HAS_FTP
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/ftpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/ftpsrvr.cxx \
+	$(COMPONENT_SRC_DIR)/ftp.cxx 
+endif
+
+ifdef HAS_TELNET
+SOURCES += $(COMPONENT_SRC_DIR)/telnet.cxx 
+endif
+
+ifdef HAS_STUN
+SOURCES += $(COMPONENT_SRC_DIR)/pstun.cxx 
+endif
+
+ifdef HAS_SOCKS
+SOURCES += $(COMPONENT_SRC_DIR)/socks.cxx 
+endif
+
+ifdef HAS_PIPECHAN
+SOURCES += pipechan.cxx 
+endif
+
+ifdef HAS_REMCONN
+SOURCES += remconn.cxx 
+endif
+
+ifdef HAS_WAVFILE
+SOURCES += $(COMPONENT_SRC_DIR)/pwavfile.cxx 
+endif
+
+ifdef HAS_DTMF
+SOURCES += $(COMPONENT_SRC_DIR)/dtmf.cxx 
+endif
+
+ifdef HAS_SERIAL
+SOURCES += \
+	serchan.cxx \
+	$(COMPONENT_SRC_DIR)/modem.cxx 
+endif
+
+ifdef HAS_POP3SMTP
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/inetmail.cxx 
+endif
+
+ifdef HAS_HTTP
+SOURCES += $(COMPONENT_SRC_DIR)/http.cxx 
+endif
+
+ifdef HAS_HTTPSVC
+SOURCES += \
+	svcproc.cxx \
+	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
+	$(COMPONENT_SRC_DIR)/httpform.cxx \
+	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
+	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
+	$(COMPONENT_SRC_DIR)/html.cxx 
+
+ifdef HAS_OPENSSL
+SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
+endif #HAS_OPENSSL
+endif #HAS_HTTPSVC
+
+ifdef HAS_PLUGINS
+SOURCES += $(COMMON_SRC_DIR)/pluginmgr.cxx 
+endif
+
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
 SOURCES	+= \
-	$(COMPONENT_SRC_DIR)/asner.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
-	$(COMPONENT_SRC_DIR)/modem.cxx \
 	$(COMPONENT_SRC_DIR)/qchannel.cxx \
 	$(COMPONENT_SRC_DIR)/delaychan.cxx \
 	$(COMPONENT_SRC_DIR)/memfile.cxx \
 	$(COMPONENT_SRC_DIR)/cypher.cxx \
 	$(COMPONENT_SRC_DIR)/random.cxx \
-	$(COMPONENT_SRC_DIR)/socks.cxx \
-	$(COMPONENT_SRC_DIR)/httpsvc.cxx \
-	$(COMPONENT_SRC_DIR)/snmpclnt.cxx \
-	$(COMPONENT_SRC_DIR)/snmpserv.cxx \
-	$(COMPONENT_SRC_DIR)/psnmp.cxx \
-	$(COMPONENT_SRC_DIR)/pasn.cxx \
-	$(COMPONENT_SRC_DIR)/httpform.cxx \
-	$(COMPONENT_SRC_DIR)/httpclnt.cxx \
-	$(COMPONENT_SRC_DIR)/httpsrvr.cxx \
-	$(COMPONENT_SRC_DIR)/http.cxx \
-	$(COMPONENT_SRC_DIR)/html.cxx \
-	$(COMPONENT_SRC_DIR)/ftpclnt.cxx \
-	$(COMPONENT_SRC_DIR)/ftpsrvr.cxx \
-	$(COMPONENT_SRC_DIR)/ftp.cxx \
-	$(COMPONENT_SRC_DIR)/inetmail.cxx \
 	$(COMPONENT_SRC_DIR)/inetprot.cxx \
-	$(COMPONENT_SRC_DIR)/telnet.cxx \
-	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
-	$(COMPONENT_SRC_DIR)/dtmf.cxx \
-	$(COMPONENT_SRC_DIR)/ptts.cxx \
-	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
-	$(VIDEO_SOURCE) \
 	$(GETDATE_SOURCE) \
-        $(SOUND_SOURCE) \
 	uicmp.cxx \
 	socket.cxx \
-	svcproc.cxx \
-	remconn.cxx \
 	config.cxx \
 	udll.cxx \
-	pipechan.cxx \
-	serchan.cxx \
 	channel.cxx \
 	osutil.cxx \
 	tlib.cxx \
 	switch.cxx \
 	assert.cxx \
-	$(COMMON_SRC_DIR)/sound.cxx \
-	$(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
-	$(COMMON_SRC_DIR)/pvidchan.cxx \
 	$(COMMON_SRC_DIR)/ptime.cxx \
-	$(COMMON_SRC_DIR)/sfile.cxx \
 	$(COMMON_SRC_DIR)/osutils.cxx \
 	$(COMMON_SRC_DIR)/safecoll.cxx \
 	$(COMMON_SRC_DIR)/collect.cxx \
