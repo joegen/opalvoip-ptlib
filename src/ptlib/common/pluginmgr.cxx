@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.1.2.2  2003/10/20 03:29:48  dereksmithies
+ * Add some seriously defensive programming tests.
+ *
  * Revision 1.1.2.1  2003/10/07 01:33:19  csoutheren
  * Initial checkin of pwlib code to do plugins.
  * Modified from original code and concept provided by Snark of Gnomemeeting
@@ -164,11 +167,12 @@ PStringArray PPluginManager::GetDevicePluginNames(const PString & type)
   PINDEX i;
   for (i = 0; i < pluginNames.GetSize(); i++) {
     PPlugin * plugin = GetPlugin(pluginNames[i], type);
-    PString (*typeFn)();
-    if (plugin->GetFunction("GetType", (PDynaLink::Function &)typeFn)) {
-      PString str = (*typeFn)();
-      devNames.AppendString(str);
-    }
+    PString (*typeFn)() = NULL;
+    if (plugin->GetFunction("GetType", (PDynaLink::Function &)typeFn)) 
+      if (typeFn != NULL) {
+	PString str = (*typeFn)();
+	devNames.AppendString(str);
+      }
   }
   return devNames;
 }
@@ -180,10 +184,12 @@ PPlugin * PPluginManager::GetDevicePluginByName(const PString & type, const PStr
   PINDEX i;
   for (i = 0; i < pluginNames.GetSize(); i++) {
     PPlugin * plugin = GetPlugin(pluginNames[i], type);
-    PString (*typeFn)();
-    if (plugin->GetFunction("GetType", (PDynaLink::Function &)typeFn) &&
-        (*typeFn)() == name) 
-      return plugin;
+    PString (*typeFn)() = NULL;
+    if (plugin->GetFunction("GetType", (PDynaLink::Function &)typeFn))
+      if (typeFn != NULL) {
+	if ((*typeFn)() == name) 
+	  return plugin;
+      }
   }
   return NULL;
 }
@@ -195,11 +201,14 @@ PChannel * PPluginManager::CreateDeviceChannelByName(const PString & name,
   if (plugin == NULL)
     return NULL;
 
-  PChannel * (*createFn)();
+  PChannel * (*createFn)() = NULL;
   if (!plugin->GetFunction("Create", (PDynaLink::Function &)createFn))
     return NULL;
 
-  return (*createFn)();
+  if (createFn == NULL)
+    return NULL;
+  else
+    return (*createFn)();
 }
 
 PStringArray PPluginManager::GetDevicePluginDeviceNames(const PString & name,
@@ -210,25 +219,31 @@ PStringArray PPluginManager::GetDevicePluginDeviceNames(const PString & name,
   if (plugin == NULL)
     return NULL;
 
-  PStringArray (*deviceNamesFn)(int);
+  PStringArray (*deviceNamesFn)(int) = NULL;
   if (!plugin->GetFunction("GetDeviceNames", (PDynaLink::Function &)deviceNamesFn))
     return FALSE;
-
-  return (*deviceNamesFn)(dir);
+  
+  if (deviceNamesFn == NULL)
+    return FALSE;
+  else
+    return (*deviceNamesFn)(dir);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
 PDynamicPlugin::PDynamicPlugin(const PString & name)
 {
+  fileName = name;
+
   dll = new PDynaLink(name);
   if (!dll->IsLoaded() ||
       !dll->GetFunction(APIVERSION_FUNCTIONNAME, (PDynaLink::Function &)versionFn) ||
       !dll->GetFunction(BASECLASS_FUNCTIONNAME,  (PDynaLink::Function &)baseClassNameFn) ||
       !dll->GetFunction(CLASSNAME_FUNCTIONNAME,  (PDynaLink::Function &)classNameFn)) {
-    dll->Close();
-    delete dll;
-    dll = NULL;
+      cerr << "Reject " << name << " as a plugin as it does not have the requisite functions." << endl;
+      dll->Close();
+      delete dll;
+      dll = NULL;
   }
 }
 
