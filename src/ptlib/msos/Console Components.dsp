@@ -164,6 +164,10 @@ SOURCE=..\..\ptclib\delaychan.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\dtmf.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Ftp.cxx
 # End Source File
 # Begin Source File
@@ -290,6 +294,10 @@ SOURCE=..\..\..\Include\PtCLib\cypher.h
 # Begin Source File
 
 SOURCE=..\..\..\include\ptclib\delaychan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\dtmf.h
 # End Source File
 # Begin Source File
 
