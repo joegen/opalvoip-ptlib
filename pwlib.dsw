@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 5.00
 
 ###############################################################################
 
-Project: "Console"=.\Console.dsp - Package Owner=<4>
+Project: "ASNParser"=.\tools\asnparser\asnparser.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,55 @@ Package=<4>
 
 ###############################################################################
 
-Project: "FireDoor"=.\Apps\FireDoor\FireDoor.dsp - Package Owner=<4>
+Project: "Console"=.\src\ptlib\msos\Console.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "Console Componets"=".\src\ptlib\msos\Console Componets.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "GUI"=.\src\pwlib\mswin\Gui.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "GUI Components"=".\src\pwlib\mswin\GUI Components.dsp" - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "MergeSym"=.\tools\MergeSym\MergeSym.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -30,7 +78,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "GUI"=.\GUI.DSP - Package Owner=<4>
+Project: "MsDevWizard"=.\tools\MsDevWizard\MsDevWizard.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -42,7 +90,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PTLib"=.\PTLib.dsp - Package Owner=<4>
+Project: "PTLib"=.\src\ptlib\msos\PTLib.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -57,7 +105,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PWLib"=.\PWLib.dsp - Package Owner=<4>
+Project: "PWLib"=.\src\pwlib\mswin\PWLIB.DSP - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -75,24 +123,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PWRCS"=.\Apps\PWRCS\PWRCS.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name PWLib
-    End Project Dependency
-}}}
-
-###############################################################################
-
 Project: "PacketVxD"=.\Tools\PacketVxD\PacketVxD.dsp - Package Owner=<4>
 
 Package=<5>
@@ -101,36 +131,6 @@ Package=<5>
 
 Package=<4>
 {{{
-}}}
-
-###############################################################################
-
-Project: "PhonePatch"=.\Apps\PhonePatch\PhonePatch.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Console
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "Test"=.\Tools\Test\Test.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -160,6 +160,15 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name PWLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Console Componets
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name GUI Components
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name PTLib
     End Project Dependency
 }}}
 

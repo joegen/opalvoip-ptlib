@@ -56,7 +56,7 @@ LINK32=link.exe
 # Begin Custom Build - Extracting debug symbols
 OutDir=.\..\..\..\Lib
 TargetName=PTLib
-InputPath=..\..\..\Lib\PTLib.dll
+InputPath=\Work\pwlib\Lib\PTLib.dll
 SOURCE=$(InputPath)
 
 "$(OutDir)\$(TargetName).dbg" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
@@ -118,13 +118,13 @@ SOURCE=..\..\..\Lib\Release\ptlib.def
 # Begin Source File
 
 SOURCE=.\ptlib.dtf
+USERDEP__PTLIB="$(OutDir)\ptlibs.lib"	
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
-USERDEP__PTLIB="$(InputPath)"	"$(OutDir)\ptlibs.lib"	
 # Begin Custom Build - Merging exported library symbols
-IntDir=..\..\..\Lib\Release
-OutDir=..\..\..\Lib
+IntDir=.\..\..\..\Lib\Release
+OutDir=.\..\..\..\Lib
 TargetName=PTLib
 InputPath=.\ptlib.dtf
 
@@ -157,7 +157,7 @@ SOURCE=..\..\..\Lib\Debug\PTLibd.def
 # Begin Source File
 
 SOURCE=.\ptlibd.dtf
-USERDEP__PTLIBD="$(InputPath)"	"$(OutDir)\ptlibsd.lib"	
+USERDEP__PTLIBD="$(OutDir)\ptlibsd.lib"	
 
 !IF  "$(CFG)" == "PTLib - Win32 Release"
 
@@ -167,8 +167,8 @@ USERDEP__PTLIBD="$(InputPath)"	"$(OutDir)\ptlibsd.lib"
 
 # PROP Ignore_Default_Tool 1
 # Begin Custom Build - Merging exported library symbols
-IntDir=..\..\..\Lib\Debug
-OutDir=..\..\..\Lib
+IntDir=.\..\..\..\Lib\Debug
+OutDir=.\..\..\..\Lib
 TargetName=PTLibd
 InputPath=.\ptlibd.dtf
 
