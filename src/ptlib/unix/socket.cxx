@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.57  2001/03/06 00:16:59  robertj
+ * Fixed BSD compatibility problem.
+ *
  * Revision 1.56  2001/03/05 04:28:56  robertj
  * Added net mask to interface info returned by GetInterfaceTable()
  *
@@ -157,6 +160,12 @@
 #define SIO_Get_MAC_Address SIOCGIFHWADDR
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#define ifr_netmask ifr_addr
+#endif
+
+
 
 PSocket::~PSocket()
 {
