@@ -1607,7 +1607,11 @@ EXPORTS
     ?GetKeyAt@?$PSet@VPString@@@@UBEABVPString@@H@Z @1561 NONAME ;public: virtual class PString const & __thiscall PSet<class PString>::GetKeyAt(int)const 
     ?GetKeys@PConfig@@QBE?AVPStringList@@ABVPString@@@Z @1562 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(class PString const &)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @1563 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
+    ?GetLastReadCount@PChannel@@UBEHXZ @2963 NONAME ;public: virtual int __thiscall PChannel::GetLastReadCount(void)const 
+    ?GetLastReadCount@PSoundChannel@@UBEHXZ @2964 NONAME ;public: virtual int __thiscall PSoundChannel::GetLastReadCount(void)const 
     ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @1564 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
+    ?GetLastWriteCount@PChannel@@UBEHXZ @2965 NONAME ;public: virtual int __thiscall PChannel::GetLastWriteCount(void)const 
+    ?GetLastWriteCount@PSoundChannel@@UBEHXZ @2966 NONAME ;public: virtual int __thiscall PSoundChannel::GetLastWriteCount(void)const 
     ?GetLength@PFile@@UBEJXZ @1565 NONAME ;public: virtual long __thiscall PFile::GetLength(void)const 
     ?GetLevel@PTrace@@SAIXZ @1566 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1567 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &)
