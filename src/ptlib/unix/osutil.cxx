@@ -22,6 +22,8 @@
 #pragma implementation "pstring.h"
 #pragma implementation "dict.h"
 #pragma implementation "array.h"
+#pragma implementation "object.h"
+#pragma implementation "contain.h"
 
 #include <fcntl.h>
 #include <sys/types.h>
@@ -261,23 +263,23 @@ BOOL PFile::Open(OpenMode mode, int opt)
 }
 
 
-BOOL PFile::Rename(const PFilePath & oldname, const PFilePath & newname, BOOL force)
+BOOL PFile::Rename(const PFilePath & oldname, const PString & newname, BOOL force)
 {
-  PFilePath from = oldname.GetDirectory() + oldname.GetFileName();
-  PFilePath to = newname.GetDirectory() + newname.GetFileName();
-
-  if (from.GetPath() != to.GetPath())
+  if (newname.Find('/') != P_MAX_INDEX) {
+    errno = EINVAL;
     return FALSE;
+  }
 
-  if (rename(from, to) == 0)
+  if (rename(oldname, oldname.GetPath() + newname) == 0)
     return TRUE;
 
-  if (force && errno == EEXIST)
-    if (Remove(to, TRUE))
-      if (rename(from, to) == 0)
-	return TRUE;
+  if (!force || errno == ENOENT || !Exists(newname))
+    return FALSE;
 
-  return FALSE;
+  if (!Remove(newname, TRUE))
+    return FALSE;
+
+  return rename(oldname, oldname.GetPath() + newname) == 0;
 }
 
 
@@ -470,9 +472,14 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
     free (n);
   } else {
     PDirectory s(dir);
-    PString p = PString(prefix) + "XXXXXX";
-    mktemp(p.GetPointer());
-    *this = s + p;
+    PString p = s + prefix + "XXXXXX";
+    if (mktemp(p.GetPointer()) == NULL) {
+      char extra = 'a';
+      do 
+        PString p = s + prefix + extra++ + "XXXXXX";
+      while (mktemp(p.GetPointer()) == NULL && extra <= 'z');
+    }
+    *this = PString(p);
   }
 }
 
