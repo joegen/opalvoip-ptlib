@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.13 1997/01/28 11:45:19 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.14 1997/02/05 11:54:54 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.14  1997/02/05 11:54:54  robertj
+ * Added support for order form page overridiing.
+ *
  * Revision 1.13  1997/01/28 11:45:19  robertj
  * .
  *
@@ -71,11 +74,15 @@ PHTTPServiceProcess::PHTTPServiceProcess(
 
                   const char * _homePage,  // WWW address of manufacturers home page
                   const char * _email,     // contact email for manufacturer
+                  const PTEACypher::Key * prodKey,  // Poduct key for registration
+                  const char * const * securedKeys, // Product secured keys for registration
+                  PINDEX securedKeyCount,
                   const PTEACypher::Key * sigKey // Signature key for encryption of HTML files
                 )
   : PServiceProcess(manuf, name, majorVersion,
                     minorVersion, status, buildNumber),
-    gifText(_gifName) 
+    gifText(_gifName),
+    securedKeys(securedKeyCount, securedKeys)
 {
   if (_email != NULL)
     email = _email;
@@ -87,10 +94,21 @@ PHTTPServiceProcess::PHTTPServiceProcess(
   else
     homePage = HOME_PAGE;
 
+  if (prodKey != NULL)
+    productKey = *prodKey;
+
   if (sigKey != NULL)
     signatureKey = *sigKey;
 
   restartThread = NULL;
+}
+
+
+PHTTPServiceProcess & PHTTPServiceProcess::Current() 
+{
+  PHTTPServiceProcess & process = (PHTTPServiceProcess &)PProcess::Current();
+  PAssert(process.IsDescendant(PHTTPServiceProcess::Class()), "Not a HTTP service!");
+  return process;
 }
 
 
@@ -247,13 +265,10 @@ BOOL PConfigPage::GetExpirationDate(PTime & when)
 //////////////////////////////////////////////////////////////
 
 PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
-                             const PSecureConfig & securedConf,
                              const PHTTPAuthority & auth)
-  : PConfigPage(app, "register.html", securedConf.GetDefaultSection(), auth),
+  : PConfigPage(app, "register.html", "Secured Options", auth),
     process(app)
 {
-  securedKeys = securedConf.GetSecuredKeys();
-  securedConf.GetProductKey(productKey);
 }
 
 
@@ -282,7 +297,7 @@ PString PRegisterPage::LoadText(PHTTPRequest & request)
 
   PServiceHTML regPage(process.GetName() & "Registration", "reghelp.html");
 
-  PSecureConfig securedConf(productKey, securedKeys);
+  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
   PSecureConfig::ValidationState state = securedConf.GetValidation();
 
   PString prefix;
@@ -363,7 +378,7 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
   if (!PConfigPage::Post(request, data, reply))
     return FALSE;
 
-  PSecureConfig sconf(productKey, securedKeys);
+  PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
 
   BOOL anyEmpty = FALSE;
   for (PINDEX i = 0; i < fields.GetSize(); i++) 
@@ -404,19 +419,59 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
 
 ///////////////////////////////////////////////////////////////////
 
-POrderPage::POrderPage(PHTTPAuthority & auth, const PSecureConfig & securedConf)
-  : PHTTPString("/order.html", auth)
+static void DigestSecuredKeys(PHTTPServiceProcess & process,
+                              PString & reginfo,
+                              PHTML * html)
 {
-  securedKeys = securedConf.GetSecuredKeys();
-  securedConf.GetProductKey(productKey);
+  const PStringArray & securedKeys = process.GetSecuredKeys();
+  PSecureConfig sconf(process.GetProductKey(), securedKeys);
+
+  PString prefix;
+  if (sconf.GetValidation() != PSecureConfig::IsValid) 
+    prefix = sconf.GetPendingPrefix();
+
+  PMessageDigest5 digestor;
+
+  PStringStream info;
+  info << '"' << process.GetName() << "\" ===";
+
+  PINDEX i;
+  for (i = 0; i < securedKeys.GetSize(); i++) {
+    PString val = sconf.GetString(prefix + securedKeys[i]).Trim();
+    info << " \"" << val << '"';
+    if (html != NULL)
+      *html << PHTML::HiddenField(securedKeys[i], val);
+    digestor.Process(val);
+  }
+
+  PString digest = digestor.Complete();
+  if (html != NULL)
+    *html << PHTML::HiddenField("digest", digest);
+
+  info.Replace("===", digest);
+  reginfo = info;
+}
+
+
+///////////////////////////////////////////////////////////////////
+
+POrderPage::POrderPage(PHTTPServiceProcess & app, PHTTPAuthority & auth)
+  : PHTTPString("/order.html", auth),
+    process(app)
+{
 }
 
 
 PString POrderPage::LoadText(PHTTPRequest &)
 {
-  PHTML html;
+  PFile file;
+  if (file.Open("order.html", PFile::ReadOnly)) {
+    PString text = file.ReadString(file.GetLength());
+    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+    return text;
+  }
 
-  PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+  PHTML html;
   process.GetPageHeader(html, process.GetName() & "Order Page");
 
   html << PHTML::Heading(1)
@@ -427,27 +482,12 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
-  PSecureConfig sconf(productKey, securedKeys);
-  PString prefix;
-  if (sconf.GetValidation() != PSecureConfig::IsValid) 
-    prefix = sconf.GetPendingPrefix();
-
   html << PHTML::HiddenField("product", process.GetName());
 
-  PMessageDigest5 digestor;
+  PString reginfo;
+  DigestSecuredKeys(process, reginfo, &html);
 
-  PINDEX i;
-  for (i = 0; i < securedKeys.GetSize(); i++) {
-    PString val = sconf.GetString(prefix + securedKeys[i]).Trim();
-    html << PHTML::HiddenField(securedKeys[i], val);
-    digestor.Process(val);
-  }
-
-  PString digest = digestor.Complete();
-
-  html << PHTML::HiddenField("digest", digest)
-
-       << PHTML::TableStart()
+  html << PHTML::TableStart()
        << PHTML::TableRow("valign=baseline")
          << PHTML::TableHeader("align=right")
            << "Card Type:"
@@ -500,16 +540,11 @@ PString POrderPage::LoadText(PHTTPRequest &)
       << PHTML::Paragraph()
       << PHTML::Small()
       << PHTML::PreFormat()
-      << '"' << process.GetName() << "\" "
-      << digest;
-
-  for (i = 0; i < securedKeys.GetSize(); i++) 
-    html << " \"" << sconf.GetString(prefix + securedKeys[i]).Trim() << '"';
-
-  html << PHTML::PreFormat() << PHTML::Small()
-       << PHTML::HRule()
-       << process.GetCopyrightText()
-       << PHTML::Body();
+      << reginfo
+      << PHTML::PreFormat() << PHTML::Small()
+      << PHTML::HRule()
+      << process.GetCopyrightText()
+      << PHTML::Body();
 
   return html;
 }
@@ -519,7 +554,7 @@ PString POrderPage::LoadText(PHTTPRequest &)
 
 PServiceHTML::PServiceHTML(const char * title, const char * help)
 {
-  PHTTPServiceProcess::Current()->GetPageHeader(*this, title);
+  PHTTPServiceProcess::Current().GetPageHeader(*this, title);
 
   *this << PHTML::Heading(1);
   
@@ -585,7 +620,7 @@ PString PServiceHTML::CalculateSignature()
 
 PString PServiceHTML::CalculateSignature(const PString & out)
 {
-  return CalculateSignature(out, PHTTPServiceProcess::Current()->GetSignatureKey());
+  return CalculateSignature(out, PHTTPServiceProcess::Current().GetSignatureKey());
 }
 
 
@@ -626,7 +661,7 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
                                  const PString & filename,
                                  BOOL needSignature)
 {
-  PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
 
   if (needSignature) {
     if (!CheckSignature(text)) {
@@ -653,18 +688,21 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
     PString subs;
     PCaselessString cmd = text(pos+12, end-1).Trim();
     if (cmd == "os")
-      subs = PProcess::GetOSClass() & PProcess::GetOSName();
+      subs = process.GetOSClass() & process.GetOSName();
     else if (cmd == "version")
-      subs = PProcess::GetOSVersion();
+      subs = process.GetVersion(TRUE);
+    else if (cmd == "reginfo")
+      DigestSecuredKeys(process, subs, NULL);
     else if (cmd == "registration") {
-      PConfig sconf("Secured Options");
+      PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
+      PString pending = sconf.GetPendingPrefix();
       PHTML out = PHTML::InBody;
       out << PHTML::Heading(3)
-          << sconf.GetString("Name", sconf.GetString("Pending:Name",
+          << sconf.GetString("Name", sconf.GetString(pending+"Name",
                              "*** Unregistered Demonstration Copy ***"))
           << PHTML::Heading(3)
           << PHTML::Heading(4)
-          << sconf.GetString("Company", sconf.GetString("Pending:Company"))
+          << sconf.GetString("Company", sconf.GetString(pending+"Company"))
           << PHTML::Heading(4);
 
       out << PHTML::Paragraph()
@@ -672,6 +710,7 @@ BOOL PServiceHTML::ProcessMacros(PString & text,
           << (sconf.GetString("Name").IsEmpty()
                                    ? "Register Now!" : "View Registration")
           << PHTML::HotLink();
+      subs = out;
     }
 
     text.Splice(subs, pos, end-pos+3);
@@ -687,7 +726,7 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
 {
   PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), needSignature);
 
-  PHTTPServiceProcess & process = *PHTTPServiceProcess::Current();
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
 
   text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
                process.GetPageGraphic(), TRUE);
