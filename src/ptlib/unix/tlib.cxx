@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.18  1996/11/03 04:35:58  craigs
+ * Added hack to avoid log timeouts, which shouldn't happen!
+ *
  * Revision 1.17  1996/09/21 05:40:10  craigs
  * Changed signal hcnalding
  *
@@ -354,9 +357,11 @@ void PProcess::OperatingSystemYield()
   struct timeval   timeout_val;
   PTimeInterval delay = GetTimerList()->Process();
   if (delay != PMaxTimeInterval) {
-    timeout_val.tv_usec = (delay.GetMilliSeconds() % 1000) * 1000;
-    timeout_val.tv_sec  = delay.GetSeconds();
-    timeout             = &timeout_val;
+    if (delay.GetMilliSeconds() < 1000L*60L*60L*24L) {
+      timeout_val.tv_usec = (delay.GetMilliSeconds() % 1000) * 1000;
+      timeout_val.tv_sec  = delay.GetSeconds();
+      timeout             = &timeout_val;
+    }
   }
 
   // wait for something to happen on an I/O channel, or for a timeout, or a SIGCLD
