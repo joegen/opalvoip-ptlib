@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.28  2004/05/21 00:49:16  csoutheren
+ * Added PreShutdown to ~PProcess
+ *
  * Revision 1.27  2004/05/02 18:00:54  ykiryanov
  * Renamed unblock pipe to make code compatible with socket code
  *
@@ -574,6 +577,8 @@ BOOL PProcess::SetMaxHandles(int newMax)
 
 PProcess::~PProcess()
 {
+  PreShutdown();
+
   // Don't wait for housekeeper to stop if Terminate() is called from it.
   if (housekeepingThread != NULL && PThread::Current() != housekeepingThread) {
     housekeepingThread->SetClosing();

@@ -410,6 +410,8 @@ void PProcess::SignalTimerChange()
 
 PProcess::~PProcess()
 {
+  PreShutdown();
+
   Sleep(100);  // Give threads time to die a natural death
 
   delete houseKeeper;
