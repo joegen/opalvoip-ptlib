@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.35  2000/12/18 07:14:30  robertj
+ * Added ability to have fixed length array fields.
+ * Fixed regular expressions so can have single '-' in field name.
+ * Fixed use of non-array subforprefix based compsite fields.
+ *
  * Revision 1.34  2000/12/12 07:21:35  robertj
  * Added ability to expand fields based on regex into repeated chunks of HTML.
  *
@@ -276,7 +281,7 @@ static BOOL FindSpliceFieldName(const PString & text,
                             PINDEX & len,
                             PString & name)
 {
-  static PRegularExpression FieldName("<?!--#form[ \t\r\n]+[a-z0-9]+[ \t\r\n]+[^-]+[ \t\r\n]*-->?"
+  static PRegularExpression FieldName("<?!--#form[ \t\r\n]+[a-z0-9]+[ \t\r\n]+(-?[^-])+-->?"
                                       "|"
                                       "<[a-z]+[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
@@ -527,6 +532,9 @@ PHTTPCompositeField::PHTTPCompositeField(const char * nam,
 
 void PHTTPCompositeField::SetName(const PString & newName)
 {
+  if (fullName.IsEmpty() || newName.IsEmpty())
+    return;
+
   for (PINDEX i = 0; i < fields.GetSize(); i++) {
     PHTTPField & field = fields[i];
 
@@ -590,7 +598,7 @@ PString PHTTPCompositeField::GetHTMLInput(const PString & input) const
 
 void PHTTPCompositeField::ExpandFieldNames(PString & text, PINDEX start, PINDEX & finish) const
 {
-  static PRegularExpression FieldName( "!--#form[ \t\r\n]+[^-]*[ \t\r\n]+[^-]*[ \t\r\n]*)?--"
+  static PRegularExpression FieldName( "!--#form[ \t\r\n]+(-?[^-])+[ \t\r\n]+(-?[^-])+--"
                                        "|"
                                        "<[a-z]*[ \t\r\n][^>]*name[ \t\r\n]*=[ \t\r\n]*\"[^\"]*\"[^>]*>",
                                        PRegularExpression::IgnoreCase);
@@ -601,7 +609,7 @@ void PHTTPCompositeField::ExpandFieldNames(PString & text, PINDEX start, PINDEX 
     if (pos > finish)
       break;
     for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-      if (fields[fld].GetBaseName() == name) {
+      if (fields[fld].GetBaseName() *= name) {
         SpliceAdjust(fields[fld].GetName(), text, pos, len, finish);
         break;
       }
@@ -636,6 +644,7 @@ void PHTTPCompositeField::SetValue(const PString &)
 
 void PHTTPCompositeField::LoadFromConfig(PConfig & cfg)
 {
+  SetName(fullName);
   for (PINDEX i = 0; i < GetSize(); i++)
     fields[i].LoadFromConfig(cfg);
 }
@@ -738,12 +747,13 @@ void PHTTPSubForm::GetHTMLHeading(PHTML &) const
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPFieldArray
 
-PHTTPFieldArray::PHTTPFieldArray(PHTTPField * fld, BOOL ordered)
+PHTTPFieldArray::PHTTPFieldArray(PHTTPField * fld, BOOL ordered, PINDEX fixedSize)
   : PHTTPCompositeField(fld->GetName(), fld->GetTitle(), fld->GetHelp()),
     baseField(fld)
 {
   orderedArray = ordered;
-  AddBlankField();
+  canAddElements = fixedSize == 0;
+  SetSize(fixedSize);
 }
 
 
@@ -757,7 +767,9 @@ void PHTTPFieldArray::SetSize(PINDEX newSize)
 {
   while (fields.GetSize() > newSize)
     fields.RemoveAt(fields.GetSize()-1);
-  while (fields.GetSize() <= newSize)
+  while (fields.GetSize() < newSize)
+    AddBlankField();
+  if (canAddElements)
     AddBlankField();
 }
 
@@ -866,7 +878,8 @@ void PHTTPFieldArray::ExpandFieldNames(PString & text, PINDEX start, PINDEX & fi
                                          PRegularExpression::Extended|PRegularExpression::IgnoreCase);
     while (text.FindRegEx(RowControl, pos, len, start, finish)) {
       PHTML html(PHTML::InForm);
-      AddArrayControlBox(html, fld);
+      if (canAddElements)
+        AddArrayControlBox(html, fld);
       SpliceAdjust(html, text, pos, len, finish);
     }
 
@@ -914,30 +927,32 @@ static int SplitArraySizeKey(const PString & fullName,
 
 void PHTTPFieldArray::LoadFromConfig(PConfig & cfg)
 {
-  PString section, key;
-  switch (SplitArraySizeKey(fullName, section, key)) {
-    case 1 :
-      SetSize(cfg.GetInteger(key, GetSize()));
-      break;
-    case 2 :
-      SetSize(cfg.GetInteger(section, key, GetSize()));
+  if (canAddElements) {
+    PString section, key;
+    switch (SplitArraySizeKey(fullName, section, key)) {
+      case 1 :
+        SetSize(cfg.GetInteger(key, GetSize()));
+        break;
+      case 2 :
+        SetSize(cfg.GetInteger(section, key, GetSize()));
+    }
   }
-
   PHTTPCompositeField::LoadFromConfig(cfg);
 }
 
 
 void PHTTPFieldArray::SaveToConfig(PConfig & cfg) const
 {
-  PString section, key;
-  switch (SplitArraySizeKey(fullName, section, key)) {
-    case 1 :
-      cfg.SetInteger(key, GetSize());
-      break;
-    case 2 :
-      cfg.SetInteger(section, key, GetSize());
+  if (canAddElements) {
+    PString section, key;
+    switch (SplitArraySizeKey(fullName, section, key)) {
+      case 1 :
+        cfg.SetInteger(key, GetSize());
+        break;
+      case 2 :
+        cfg.SetInteger(section, key, GetSize());
+    }
   }
-
   PHTTPCompositeField::SaveToConfig(cfg);
 }
 
@@ -1020,15 +1035,18 @@ void PHTTPFieldArray::SetAllValues(const PStringToString & data)
     SetArrayFieldName(i);
   }
 
-  if (lastFieldIsSet)
+  if (lastFieldIsSet && canAddElements)
     AddBlankField();
 }
 
 
 PINDEX PHTTPFieldArray::GetSize() const
 {
-  PAssert(fields.GetSize() > 0, PLogicError);
-  return fields.GetSize()-1;
+  PINDEX size = fields.GetSize();
+  PAssert(size > 0, PLogicError);
+  if (canAddElements)
+    size--;
+  return fields.GetSize();
 }
 
 
@@ -1747,9 +1765,9 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   }
 
   // Locate <!--#form list name--> macros and expand them
-  static PRegularExpression ListRegEx("<!--#form[ \t\r\n]+listfields[ \t\r\n]+[^-]+-->",
+  static PRegularExpression ListRegEx("<!--#form[ \t\r\n]+listfields[ \t\r\n]+(-?[^-])+-->",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
-  static PRegularExpression EndBlock("<?!--#form[ \t\r\n]+end[ \t\r\n]+[^-]+-->?",
+  static PRegularExpression EndBlock("<?!--#form[ \t\r\n]+end[ \t\r\n]+(-?[^-])+-->?",
                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   pos = len = 0;
   while (FindSpliceBlock(ListRegEx, EndBlock, text, pos+len, pos, len, start, finish)) {
@@ -1780,7 +1798,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   }
 
   // Locate <!--#form array name--> macros and expand them
-  static PRegularExpression ArrayRegEx("<!--#form[ \t\r\n]+array[ \t\r\n]+[^-]+-->",
+  static PRegularExpression ArrayRegEx("<!--#form[ \t\r\n]+array[ \t\r\n]+(-?[^-])+-->",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   pos = len = 0;
   while (FindSpliceField(ArrayRegEx, EndBlock, text, pos+len, fields, pos, len, start, finish, field)) {
@@ -1790,7 +1808,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
 
   // Have now expanded all field names to be fully qualified
 
-  static PRegularExpression HTMLRegEx("<!--#form[ \t\r\n]+html[ \t\r\n]+[^-]+-->",
+  static PRegularExpression HTMLRegEx("<!--#form[ \t\r\n]+html[ \t\r\n]+(-?[^-])+-->",
                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(HTMLRegEx, "", text, 0, fields, pos, len, start, finish, field)) {
     if (field != NULL) {
@@ -1801,7 +1819,7 @@ void PHTTPForm::OnLoadedText(PHTTPRequest & request, PString & text)
   }
 
   pos = len = 0;
-  static PRegularExpression ValueRegEx("<!--#form[ \t\r\n]+value[ \t\r\n]+[^-]+-->",
+  static PRegularExpression ValueRegEx("<!--#form[ \t\r\n]+value[ \t\r\n]+(-?[^-])+-->",
                                        PRegularExpression::Extended|PRegularExpression::IgnoreCase);
   while (FindSpliceField(ValueRegEx, "", text, pos+len, fields, pos, len, start, finish, field)) {
     if (field != NULL)
