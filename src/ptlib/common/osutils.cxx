@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.60 1996/04/09 03:32:58 robertj Exp $
+ * $Id: osutils.cxx,v 1.61 1996/04/10 12:51:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.61  1996/04/10 12:51:29  robertj
+ * Fixed startup race condtion in timer thread.
+ *
  * Revision 1.60  1996/04/09 03:32:58  robertj
  * Fixed bug in config GetTime() cannot use PTime(0) in western hemisphere.
  *
@@ -394,8 +397,9 @@ PTimeInterval PTimerList::Process()
 #if defined(P_PLATFORM_HAS_THREADS)
 
 PProcess::TimerThread::TimerThread()
-  : PThread(1000, NoAutoDeleteThread, StartImmediate, LowPriority)
+  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
 {
+  Resume();
 }
 
 
@@ -416,7 +420,8 @@ void PProcess::SignalTimerChange()
     return;
   if (timerThread == NULL)
     timerThread = PNEW TimerThread;
-  timerThread->semaphore.Signal();
+  else
+    timerThread->semaphore.Signal();
 }
 
 
