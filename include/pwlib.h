@@ -49,6 +49,8 @@ typedef int PDIMENSION;
 
 #ifdef WIN32
 
+#pragma warning(disable:4705)
+
 typedef UINT PRESOURCE_ID;
 
 #define EXPORTED __stdcall
