@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.34 1996/07/27 04:13:47 robertj Exp $
+ * $Id: http.cxx,v 1.35 1996/08/19 13:42:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.35  1996/08/19 13:42:40  robertj
+ * Fixed errors in URL parsing and display.
+ * Fixed "Forbidden" problem out of HTTP authorisation system.
+ * Fixed authorisation so if have no user/password on basic authentication, does not require it.
+ *
  * Revision 1.34  1996/07/27 04:13:47  robertj
  * Fixed use of HTTP proxy on non-persistent connections.
  *
@@ -143,6 +148,20 @@
 // maximum delay between characters whilst reading a line of text
 #define	READLINE_TIMEOUT	30
 
+// RFC 1738
+// http://host:port/path...
+// https://host:port/path....
+// gopher://host:port
+// wais://host:port
+// nntp://host:port
+// prospero://host:port
+// ftp://user:password@host:port/path...
+// telnet://user:password@host:port
+// file://hostname/path...
+
+// mailto:user@hostname
+// news:string
+
 #define DEFAULT_FTP_PORT	21
 #define DEFAULT_TELNET_PORT	23
 #define DEFAULT_GOPHER_PORT	70
@@ -152,12 +171,55 @@
 #define DEFAULT_HTTPS_PORT	443
 #define DEFAULT_PROSPERO_PORT	1525
 
+enum SchemeFormat {
+  HostPort = 1,
+  UserPasswordHostPort = 2,
+  HostOnly = 3,
+  Other = 4
+};
+
+class schemeStruct {
+  public:
+    char * name;
+    int    type;
+    BOOL   hasDoubleSlash;
+    WORD   defaultPort;
+};
+
+static schemeStruct schemeInfo[] = {
+  { "http",      HostPort, TRUE, DEFAULT_HTTP_PORT },
+  { "https",     HostPort, TRUE, DEFAULT_HTTPS_PORT },
+  { "gopher",    HostPort, TRUE, DEFAULT_GOPHER_PORT },
+  { "wais",      HostPort, TRUE, DEFAULT_WAIS_PORT },
+  { "nntp",      HostPort, TRUE, DEFAULT_NNTP_PORT },
+  { "prospero",  HostPort, TRUE, DEFAULT_PROSPERO_PORT },
+
+  { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT },
+  { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT },
+  { "file",      HostOnly,             TRUE },
+  { "mailto",    Other, FALSE},
+  { "news",      Other, FALSE},
+  { NULL }
+};
+
+static schemeStruct defaultSchemeInfo = { "other", Other, FALSE};
+
+static schemeStruct * GetSchemeInfo(const PString & scheme)
+{
+  PINDEX i;
+  for (i = 0; schemeInfo[i].name != NULL; i++)
+    if (scheme *= schemeInfo[i].name)
+      return &schemeInfo[i];
+  return &defaultSchemeInfo;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // PURL
 
 PURL::PURL()
 {
-  port = DEFAULT_HTTP_PORT;
+  scheme = "http";
+  port   = 0;
 }
 
 
@@ -276,13 +338,11 @@ void PURL::SplitQueryVars(const PString & queryStr, PStringToString & queryVars)
 
 void PURL::Parse(const char * cstr)
 {
-  scheme = "http";
   hostname = PCaselessString();
   pathStr = username = password = parameters = fragment = queryStr = PString();
   path.SetSize(0);
   queryVars.RemoveAll();
   port = 0;
-  absolutePath = TRUE;
 
   // copy the string so we can take bits off it
   PString url = cstr;
@@ -292,6 +352,7 @@ void PURL::Parse(const char * cstr)
   static PString reservedChars = "=;/#?";
 
   // determine if the URL has a scheme
+  scheme = "";
   if (isalpha(url[0])) {
     for (pos = 0; url[pos] != '\0' &&
                           reservedChars.Find(url[pos]) == P_MAX_INDEX; pos++) {
@@ -304,49 +365,84 @@ void PURL::Parse(const char * cstr)
     }
   }
 
-  // determine if the URL is absolute or relative - only absolute
-  // URLs can have a username/password string
-  if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/') {
+  // if there is no scheme, then default to http for the local
+  // on the default port
+  if (scheme.IsEmpty()) {
+    scheme   = "http";
+    port     = 0;
+    hostname = PIPSocket::GetHostName();
+    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
+      url.Delete(0, 2);
+  } else {
 
-    // remove the leading //
+    // get information which tells us how to parse URL for this
+    // particular scheme
+    schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+    
+    // if the URL should have leading slash, then remove it if it has one
+    if (schemeInfo->hasDoubleSlash &&
+      url.GetLength() > 2 && url[0] == '/' && url[1] == '/') 
     url.Delete(0, 2);
 
-    // Find the end of the url hostname part
-    for (pos = 0; url[pos] != '\0'; pos++) {
-      if (reservedChars.Find(url[pos]) != P_MAX_INDEX)
-        break;
+    // if the rest of the URL isn't a path, then we are finished!
+    if (schemeInfo->type == Other) {
+      pathStr = url;
+      return;
     }
 
-    // extract username and password
-    PINDEX pos2 = url.Find('@');
-    if (pos2 != P_MAX_INDEX && pos2 > 0 && pos2 < pos) {
-      PINDEX pos3 = url.Find(":");
+    // parse user/password/host/port
+    if (schemeInfo->type == HostPort ||
+        schemeInfo->type == UserPasswordHostPort ||
+        schemeInfo->type == HostOnly) {
+      pos = url.Find('/');
+      PString uphp = url.Left(pos);
+      if (pos != P_MAX_INDEX)
+        url.Delete(0, pos);
+      else
+        url = PString();
 
-      // if no password...
-      if (pos3 > pos2)
-        username = url(0, pos2-1);
-      else {
-        username = url(0, pos3-1);
-        password = url(pos3+1, pos2-1);
+      // if the URL is of type HostOnly, then this is the hostname
+      if (schemeInfo->type == HostOnly) {
+        hostname = uphp;
+        UnmangleString(hostname);
+      } 
+
+      // if the URL is of type UserPasswordHostPort, then parse it
+      if (schemeInfo->type == UserPasswordHostPort) {
+
+        // extract username and password
+        PINDEX pos2 = uphp.Find('@');
+        if (pos2 != P_MAX_INDEX && pos2 > 0) {
+          PINDEX pos3 = uphp.Find(":");
+          // if no password...
+          if (pos3 > pos2)
+            username = uphp(0, pos2-1);
+          else {
+            username = uphp(0, pos3-1);
+            password = uphp(pos3+1, pos2-1);
+            UnmangleString(password);
+          }
+          UnmangleString(username);
+          uphp.Delete(0, pos2+1);
+        }
       }
-      UnmangleString(username);
-      UnmangleString(password);
-      url.Delete(0, pos2+1);
-      pos -= pos2+1;
-    }
 
-    // determine if the URL has a port number
-    pos2 = url.Find(":");
-    if (pos2 >= pos) 
-      hostname = url.Left(pos);
-    else {
-      hostname = url.Left(pos2);
-      port = (WORD)url(pos2+1, pos).AsInteger();
+      // determine if the URL has a port number
+      if (schemeInfo->type == HostPort ||
+          schemeInfo->type == UserPasswordHostPort) {
+        pos = uphp.Find(":");
+        if (pos == P_MAX_INDEX) {
+          hostname = uphp;
+          port = schemeInfo->defaultPort;
+        } else {
+          hostname = uphp.Left(pos);
+          port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
+        }
+        UnmangleString(hostname);
+        if (hostname.IsEmpty())
+          hostname = PIPSocket::GetHostName();
+      }
     }
-    UnmangleString(hostname);
-    if (hostname.IsEmpty())
-      hostname = PIPSocket::GetHostName();
-    url.Delete(0, pos);
   }
 
   // chop off any trailing fragment
@@ -376,8 +472,7 @@ void PURL::Parse(const char * cstr)
   // the hierarchy is what is left
   pathStr = url;
   path = url.Tokenise("/", FALSE);
-  absolutePath = path.GetSize() > 0 && path[0].IsEmpty();
-  if (absolutePath)
+  if (path.GetSize() > 0 && path[0].IsEmpty()) 
     path.RemoveAt(0);
   for (pos = 0; pos < path.GetSize(); pos++) {
     UnmangleString(path[pos]);
@@ -394,36 +489,44 @@ PString PURL::AsString(UrlFormat fmt) const
   PStringStream str;
 
   if (fmt == FullURL) {
-    if (!scheme.IsEmpty())
+
+    // if the scheme is empty, assume http
+    if (scheme.IsEmpty())
+      str << "http://";
+    else {
       str << scheme << ':';
-    if (!username.IsEmpty() || !password.IsEmpty() ||
-                                             !hostname.IsEmpty() || port != 0) {
-      str << "//" << username;
-      if (!password.IsEmpty())
-        str << ':' << password;
-      if (!username.IsEmpty() || !password.IsEmpty())
-        str << '@';
-      if (hostname.IsEmpty())
-        str << PIPSocket::GetHostName();
-      else
-        str << hostname;
-      // default the port as required
-      if (port != 0 &&
-          !(scheme == "http" &&     port == DEFAULT_HTTP_PORT) &&
-          !(scheme == "https" &&    port == DEFAULT_HTTPS_PORT) &&
-          !(scheme == "ftp" &&      port == DEFAULT_FTP_PORT) &&
-          !(scheme == "gopher" &&   port == DEFAULT_GOPHER_PORT) &&
-          !(scheme == "nntp" &&     port == DEFAULT_NNTP_PORT) &&
-          !(scheme == "telnet" &&   port == DEFAULT_TELNET_PORT) &&
-          !(scheme == "wais" &&     port == DEFAULT_WAIS_PORT) &&
-          !(scheme == "prospero" && port == DEFAULT_PROSPERO_PORT))
-        str << ':' << port;
+      schemeStruct * schemeInfo = GetSchemeInfo(scheme);
+
+      if (schemeInfo->hasDoubleSlash)
+        str << "//";
+
+      if (schemeInfo->type == Other) 
+        str << pathStr;
+      else {
+        if (schemeInfo->type == HostOnly)
+          str << hostname;
+
+        if (schemeInfo->type == UserPasswordHostPort) {
+          if (!username.IsEmpty() || !password.IsEmpty())
+            str << username
+                << ':'
+                << password;
+            str << '@';
+        }
+
+        if (schemeInfo->type == HostPort ||
+            schemeInfo->type == UserPasswordHostPort) {
+          str << hostname;
+          if (port != schemeInfo->defaultPort)
+            str << ':'
+                << port;
+        }
+      }
     }
   }
 
   PINDEX count = path.GetSize();
-  if (absolutePath)
-    str << '/';
+  str << '/';
   for (PINDEX i = 0; i < count; i++) {
     str << path[i];
     if (i < count-1)
@@ -815,9 +918,14 @@ BOOL PHTTPSocket::ProcessCommand()
   // the URL that comes with Connect requests is not quite kosher, so 
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistant
-  PURL url = tokens[0];
+  PURL url;
   if (cmd == CONNECT) 
     url = "https://" + tokens[0];
+  else {
+    url = tokens[0];
+    if (url.GetPort() == 0)
+      url.SetPort(GetPort());
+  }
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -828,9 +936,9 @@ BOOL PHTTPSocket::ProcessCommand()
   BOOL doProxy;
   if (url.GetScheme() != "http")
     doProxy = TRUE;
-  else if (url.GetPort() != 0 && url.GetPort() != GetPort())
-    doProxy = TRUE;
-  else if (url.GetHostName().IsEmpty())
+  else if (url.GetPort() == 0 || url.GetPort() == GetPort())
+    doProxy = FALSE;
+  else if (url.GetHostName().IsEmpty() || (url.GetHostName() *= "localhost"))
     doProxy = FALSE;
   else {
     Address urlAddress;
@@ -1142,6 +1250,12 @@ void PHTTPAuthority::DecodeBasicAuthority(const PString & authInfo,
 }
 
 
+BOOL PHTTPAuthority::IsActive() const
+{
+  return TRUE;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSimpleAuth
 
@@ -1157,6 +1271,12 @@ PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
 PObject * PHTTPSimpleAuth::Clone() const
 {
   return PNEW PHTTPSimpleAuth(realm, username, password);
+}
+
+
+BOOL PHTTPSimpleAuth::IsActive() const
+{
+  return !username.IsEmpty() || !password.IsEmpty();
 }
 
 
@@ -1318,8 +1438,9 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPSocket & socket,
 
   PHTTPRequest * request = CreateRequest(url, info);
 
-  BOOL retVal = FALSE;
+  BOOL retVal = TRUE;
   if (CheckAuthority(socket, *request, connectInfo)) {
+    retVal = FALSE;
     socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
     PTime expiryDate;
@@ -1401,24 +1522,44 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
                             const PHTTPRequest & request,
                      const PHTTPConnectionInfo & connectInfo)
 {
-  if (authority == NULL)
+  if (authority == NULL || !authority->IsActive())
     return TRUE;
 
   // if this is an authorisation request...
-  if (request.inMIME.Contains(PString("Authorization"))) {
-    if (authority->Validate(request, request.inMIME["Authorization"]))
-      return TRUE;
+  if (request.inMIME.Contains(PString("Authorization")) &&
+      authority->Validate(request, request.inMIME["Authorization"]))
+    return TRUE;
 
-    socket.OnError(PHTTPSocket::Forbidden, "", connectInfo);
-  }
-  else {
-    // it must be a request for authorisation
-    PMIMEInfo reply;
-    socket.SetDefaultMIMEInfo(reply, connectInfo);
-    reply.SetAt(WWWAuthenticateStr,
+  // it must be a request for authorisation
+  PMIMEInfo headers;
+  socket.SetDefaultMIMEInfo(headers, connectInfo);
+  headers.SetAt(WWWAuthenticateStr,
                        "Basic realm=\"" + authority->GetRealm(request) + "\"");
-    socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
-  }
+  headers.SetAt(ContentTypeStr, "text/html");
+
+  const httpStatusCodeStruct * statusInfo =
+                               GetStatusCodeStruct(PHTTPSocket::UnAuthorised);
+
+  PHTML reply;
+  reply << PHTML::Title()
+        << statusInfo->code
+        << ' '
+        << statusInfo->text
+        << PHTML::Body()
+        << PHTML::Heading(1)
+        << statusInfo->code
+        << ' '
+        << statusInfo->text
+        << PHTML::Heading(1)
+        << "Your request cannot be authorised because it requires authentication."
+        << PHTML::Paragraph()
+        << "This may be because you entered an incorrect username or password, "
+        << "or because your browser is not performing Basic authentication."
+        << PHTML::Body();
+
+  socket.StartResponse(PHTTPSocket::UnAuthorised, headers, reply.GetLength());
+  socket.WriteString(reply);
+
   return FALSE;
 }
 
