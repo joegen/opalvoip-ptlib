@@ -31,10 +31,10 @@ ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 #P_HPUX		= 1
 #P_ULTRIX	= 1
 
-endif
-endif
-endif
-endif
+endif	# P_LINUX 486
+endif	# P_LINUX 386
+endif	# P_SUN4
+endif	# P_SOLARIS
 	@echo
 #STDCCFLAGS	:= -DPHAS_TEMPLATES
 
@@ -59,18 +59,18 @@ OBJ_SUFFIX	= linux
 else
 OBJ_SUFFIX	= linuxpic
 ifdef SHAREDLIB
-endif
+ifndef PROG
 else
 OBJ_SUFFIX	= linux
 LIB_SUFFIX	= linux
-endif
+PLATFORM_TYPE	:= $(PLATFORM_TYPE)_pic
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
 # P_SSL		= $(PWLIBDIR)
 
 STATIC_LIBS	= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	= /usr/lib
 
-endif
+endif # P_LINUX
 
 endif # FreeBSD
 #
@@ -86,7 +86,7 @@ ifeq ($(OSTYPE),sunos)
 OBJ_SUFFIX	= sun4
 # Sparc Sun 4x, using gcc 2.7.2
 
-endif
+endif # P_SUN4
 
 endif # sunos
 #
@@ -114,7 +114,7 @@ SYSLIBDIR	:= /usr/local/gnu/lib
 
 ifdef P_PTHREADS
 ENDLDLIBS	:= $(ENDLDLIBS) -lpthread
-endif
+endif # P_SOLARIS
 
 endif # solaris
 #
@@ -129,7 +129,7 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX  -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN 
 
 OBJ_SUFFIX	= ultrix
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_ULTRIX
-endif
+endif # P_ULTRIX
 
 ifdef P_HPUX
 ####################################################
@@ -138,7 +138,7 @@ ifeq ($(OSTYPE),hpux)
 
 OBJ_SUFFIX	= hpux
 
-endif
+endif # P_HPUX
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_HPUX9
 
 
@@ -173,7 +173,7 @@ ENDLDLIBS	:= $(ENDLDLIBS) -lssl -lcrypto
 endif
 #
 
-CFLAGS          := $(CFLAGS) -DP_PLATFORM_HAS_THREADS -DP_PTHREADS
+STDCCFLAGS          := $(STDCCFLAGS) -DP_PLATFORM_HAS_THREADS -DP_PTHREADS
 # define Posix threads stuff
 ifdef P_PTHREADS
 #
