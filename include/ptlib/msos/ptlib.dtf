@@ -309,6 +309,7 @@ EXPORTS
     ??1PUDPSocket@@UAE@XZ @259 NONAME ;public: virtual __thiscall PUDPSocket::~PUDPSocket(void)
     ??1PUnSerialiser@@UAE@XZ @260 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PUnsignedArray@@UAE@XZ @2281 NONAME ;public: virtual __thiscall PUnsignedArray::~PUnsignedArray(void)
+    ??1PWaitAndSignal@@QAE@XZ @2388 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
     ??1PWaveBuffer@@EAE@XZ @2034 NONAME ;private: virtual __thiscall PWaveBuffer::~PWaveBuffer(void)
     ??1PWaveFormat@@UAE@XZ @2234 NONAME ;public: virtual __thiscall PWaveFormat::~PWaveFormat(void)
     ??1PWin32AsnAny@@QAE@XZ @1827 NONAME ;public: __thiscall PWin32AsnAny::~PWin32AsnAny(void)
@@ -1711,8 +1712,6 @@ EXPORTS
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1496 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
     ?PDummyFunctionToMakeSureSymbolsAreInDEFFile@@YAXXZ @2331 NONAME ;void __cdecl PDummyFunctionToMakeSureSymbolsAreInDEFFile(void)
     ?PGetErrorStream@@YAAAVostream@@XZ @1497 NONAME ;class ostream & __cdecl PGetErrorStream(void)
-    ?pHostByAddr@@3VPHostByAddr@@A @1499 NONAME ;class PHostByAddr  pHostByAddr
-    ?pHostByName@@3VPHostByName@@A @1500 NONAME ;class PHostByName  pHostByName
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @1501 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
     ?Ping@PICMPSocket@@QAEHABVPString@@AAVPingInfo@1@@Z @1502 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &,class PICMPSocket::PingInfo &)
     ?PlatformOpen@PPipeChannel@@AAEHABVPString@@ABVPStringArray@@W4OpenMode@1@HHPBVPStringToString@@@Z @1503 NONAME ;private: int __thiscall PPipeChannel::PlatformOpen(class PString const &,class PStringArray const &,enum PPipeChannel::OpenMode,int,int,class PStringToString const *)
@@ -2048,4 +2047,5 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??1PWaitAndSignal@@QAE@XZ @2388 NONAME ;public: __thiscall PWaitAndSignal::~PWaitAndSignal(void)
+    ??0?$PDictionary@VPCaselessString@@VPIPCacheData@@@@QAE@XZ @2389 NONAME ;public: __thiscall PDictionary<class PCaselessString,class PIPCacheData>::PDictionary<class PCaselessString,class PIPCacheData>(void)
+    ??0?$PDictionary@VPIPCacheKey@@VPIPCacheData@@@@QAE@XZ @2390 NONAME ;public: __thiscall PDictionary<class PIPCacheKey,class PIPCacheData>::PDictionary<class PIPCacheKey,class PIPCacheData>(void)
