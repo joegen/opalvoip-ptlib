@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.24 1997/03/28 04:40:22 robertj Exp $
+ * $Id: http.h,v 1.25 1997/10/03 13:30:15 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.25  1997/10/03 13:30:15  craigs
+ * Added ability to access client socket from within HTTP resources
+ *
  * Revision 1.24  1997/03/28 04:40:22  robertj
  * Added tags for cookies.
  *
@@ -104,6 +107,7 @@
 #include <mime.h>
 #include <url.h>
 #include <html.h>
+#include <ipsock.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -678,7 +682,8 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
   public:
     PHTTPRequest(
       const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME      // Extra MIME information in command.
+      const PMIMEInfo & inMIME,     // Extra MIME information in command.
+	  PHTTPServer & socket			// socket that request initiated on
     );
 
     const PURL & url;               // Universal Resource Locator for document.
@@ -686,6 +691,7 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
     PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
     PINDEX contentSize;             // Size of the body of the resource data.
+	PIPSocket::Address origin;	    // IP address of origin of request
 };
 
 
@@ -999,7 +1005,8 @@ PDECLARE_CLASS(PHTTPResource, PObject)
 
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                   // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME            // Extra MIME information in command.
+      const PMIMEInfo & inMIME,           // Extra MIME information in command.
+	  PHTTPServer & socket
     );
     /* Create a new request block for this type of resource.
 
@@ -1231,7 +1238,8 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
   // Overrides from class PHTTPResource
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME           // Extra MIME information in command.
+      const PMIMEInfo & inMIME,          // Extra MIME information in command.
+  	  PHTTPServer & socket
     );
     /* Create a new request block for this type of resource.
 
@@ -1288,7 +1296,8 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 PDECLARE_CLASS(PHTTPFileRequest, PHTTPRequest)
   PHTTPFileRequest(
     const PURL & url,             // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME      // Extra MIME information in command.
+    const PMIMEInfo & inMIME,     // Extra MIME information in command.
+	PHTTPServer & server
   );
 
   PFile file;
@@ -1328,7 +1337,8 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
   // Overrides from class PHTTPResource
     virtual PHTTPRequest * CreateRequest(
       const PURL & url,                  // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME           // Extra MIME information in command.
+      const PMIMEInfo & inMIME,          // Extra MIME information in command.
+  	  PHTTPServer & socket
     );
     /* Create a new request block for this type of resource.
 
@@ -1368,7 +1378,8 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
   PHTTPDirRequest(
     const PURL & url,             // Universal Resource Locator for document.
-    const PMIMEInfo & inMIME      // Extra MIME information in command.
+    const PMIMEInfo & inMIME,     // Extra MIME information in command.
+	PHTTPServer & server
   );
 
   PString fakeIndex;
