@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2004/08/17 04:59:28  csoutheren
+ * Cleaned up help message and added factory based routines
+ *
  * Revision 1.4  2004/08/16 06:41:57  csoutheren
  * Added options to get access to devices via the abstract factory interface
  *
@@ -68,23 +71,34 @@ PluginTest::PluginTest()
 
 void Usage()
 {
-  PError << "usage: plugintest dir\n \n"
-	 << "-l List ALL plugins regardless of type\n"
-	 << "-s Show the list of loaded PSoundChannel drivers\n"
-	 << "-d dir Set the directory from which plugins are loaded\n"
-	 << "-x Attempt to load the OSS sound plugin\n"
-	 << "-t (more t's for more detail) logging on\n"
-	 << "-o output file for logging \n"
-	 << "-p play a beep beep beep sound, and test created PSoundChannel\n"
-	 << "     Requires that you have specified -x also\n"
-	 << "-h print this help\n";
-
+  PError << "usage: plugintest [options]\n \n"
+	    "  -d dir      : Set the directory from which plugins are loaded\n"
+	    "  -s          : show the list of available PSoundChannel drivers\n"
+	    "  -l          : list all plugin drivers\n"
+	    "  -L          : list all plugin drivers using abstract factory interface\n"
+            "  -a driver   : play test sound using specified driver and default device\n"
+            "                Use \"default\" as driver to use default (first) driver\n"
+            "                Can also specify device as first arg, or use \"list\" to list all devices\n"
+            "  -A driver   : same as -a but uses abstract factory based routines\n"
+            "  -t          : set trace level (can be set more than once)\n"
+            "  -o fn       : write trace output to file\n"
+            "  -h          : display this help message\n";
+   return;
 }
 
 ostream & operator << (ostream & strm, const std::vector<PString> & vec)
 {
-  for (std::vector<PString>::const_iterator r = vec.begin(); r != vec.end(); ++r)
-    strm << *r << endl;
+  char separator = strm.fill();
+  int width = strm.width();
+  for (std::vector<PString>::const_iterator r = vec.begin(); r != vec.end(); ++r) {
+    if (r != vec.begin() && separator != '\0')
+      strm << separator;
+    strm.width(width);
+    strm << *r;
+  }
+  if (separator == '\n')
+    strm << '\n';
+
   return strm;
 }
 
@@ -114,10 +128,6 @@ void PluginTest::Main()
 	     "a-audio:"
 	     "A-Audio:"
 	     "d-directory:"          
-
-	     //"x-xamineOSS."          
-	     //"s-soundPlugins."       
-	     //"p-play."               
 	     );
 
   PTrace::Initialise(args.GetOptionCount('t'),
@@ -156,16 +166,15 @@ void PluginTest::Main()
 
   if (args.HasOption('L')) {
     DisplayPluginTypes<PSoundChannel>("PSoundChannel");
+    DisplayPluginTypes<PVideoInputDevice>("PVideoInputDevice");
+    DisplayPluginTypes<PVideoOutputDevice>("PVideoOutputDevice");
+    return;
   }
 
   if (args.HasOption('s')) {
     cout << "Available " << args.GetOptionString('s') << " :" <<endl;
     cout << "Sound plugin names = " << setfill(',') << PSoundChannel::GetDriverNames() << setfill(' ') << endl;
-
-    //cout << "Default device names = " << setfill(',') << PSoundChannel::GetDeviceNames(PSoundChannel::Player) << setfill(' ') << endl;
-    //PSoundChannel * snd = new PSoundChannel();
-    //cout << "PSoundChannel has a name of \"" << snd->GetClass() << "\"" << endl 
-    //	 << endl;
+    return;
   }
 
 
@@ -179,8 +188,14 @@ void PluginTest::Main()
       useFactory = TRUE;
     }
     PString device;
-    if (args.GetCount() > 0)
+    if (args.GetCount() > 0) {
       device  = args[0];
+      if (device *= "list") {
+        PStringList deviceList = PSoundChannel::GetDeviceNames(service, PSoundChannel::Player);
+        cout << "Devices = " << deviceList << endl;
+        return;
+      }
+    }
     else if (service != "default") {
       PStringList deviceList;
       if (useFactory)
