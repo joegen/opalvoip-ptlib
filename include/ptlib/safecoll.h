@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.12  2004/10/28 12:19:44  rjongbloed
+ * Added oeprator! to assure test for NULL that some people use is correct for PSafePtr
+ *
  * Revision 1.11  2004/10/14 12:31:45  rjongbloed
  * Added synchronous mode for safe collection RemoveAll() to wait until all objects
  *   have actually been deleted before returning.
@@ -532,7 +535,10 @@ class PSafePtrBase : public PObject
 
   /**@name Operations */
   //@{
-  public:
+    /**Return TRUE if pointer is NULL.
+      */
+    bool operator!() const { return currentObject == NULL; }
+
     /**Get the locking mode used by this pointer.
       */
     PSafetyMode GetSafetyMode() const { return lockMode; }
