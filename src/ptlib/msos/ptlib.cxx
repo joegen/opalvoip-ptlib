@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.59  2002/07/25 08:42:33  robertj
+ * Fixed conversion of string to 64 bit integer(s), thanks Jose Luis Urien
+ *
  * Revision 1.58  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -343,8 +346,6 @@ PInt64 PString::AsInt64(unsigned base) const
       break;
 
     total = base * total + c;
-
-    c = *ptr++;
   }
 
   if (negative)
@@ -378,8 +379,6 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
       break;
 
     total = base * total + c;
-
-    c = *ptr++;
   }
 
   return total;
