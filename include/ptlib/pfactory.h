@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.10  2004/06/03 13:30:57  csoutheren
+ * Renamed INSTANTIATE_FACTORY to avoid potential namespace collisions
+ * Added documentaton on new PINSTANTIATE_FACTORY macro
+ * Added generic form of PINSTANTIATE_FACTORY
+ *
  * Revision 1.9  2004/06/03 12:47:58  csoutheren
  * Decomposed PFactory declarations to hopefully avoid problems with Windows DLLs
  *
@@ -101,7 +106,26 @@
  *       std::vector<unsigned> list = PGenericFactory<C, unsigned>::GetKeyList()
  *
  * Finally, note that the factory lists are all thread safe for addition,
- * creation, and obtaining the key lists
+ * creation, and obtaining the key lists.
+ *
+ * On Windows, static variables declared within functions in DLLs are put into
+ * seperate data spaces. As the factory code uses a template that declares
+ * the factory instance within a static function, this results in each DLL and
+ * the main program all getting seperate factories. As a result, the factory
+ * instance must be defined seperately using the PINSTANTIATE_FACTORY macro.
+ * This ensures that the static function that contains the factory instance
+ * is only declared in one compile unit, and hence, all usages must use the
+ * same factory instance.
+ *
+ * Using the example above, the factory is instantiated as follows:
+ * 
+ *      PINSTANTIATE_FACTORY(A)
+ *
+ * Note that INSTANTIATE_FACTORY assumes the default key type is being used (PString)
+ * If another key type is used, then the PINSTANTIATE_GENERIC_FACTORY macro
+ * can be used as follows
+ *
+ *      PINSTANTIATE_GENERIC_FACTORY(C, unsigned)
  *  
  */
 
@@ -208,13 +232,15 @@ class PGenericFactory
     void operator=(const PGenericFactory &) {}
 };
 
-#define INSTANTIATE_FACTORY(Abstract_T) \
-PGenericFactory<Abstract_T> & PGenericFactory<Abstract_T>::GetFactory() \
+#define PINSTANTIATE_GENERIC_FACTORY(Abstract_T, Key_T) \
+PGenericFactory<Abstract_T, Key_T> & PGenericFactory<Abstract_T, Key_T>::GetFactory() \
 { \
-  static PGenericFactory<Abstract_T> factory; \
+  static PGenericFactory<Abstract_T, Key_T> factory; \
   return factory; \
 } \
 
+#define PINSTANTIATE_FACTORY(Abstract_T) \
+PINSTANTIATE_GENERIC_FACTORY(Abstract_T, PString)
 
 template <class _Abstract_T, class ConcreteType, typename _Key_T = PString>
 class PAbstractFactory
