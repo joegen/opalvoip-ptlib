@@ -1,5 +1,5 @@
 /*
- * $Id: config.h,v 1.13 1996/01/28 14:10:10 robertj Exp $
+ * $Id: config.h,v 1.14 1996/02/25 02:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: config.h,v $
+ * Revision 1.14  1996/02/25 02:50:33  robertj
+ * Added consts to all GetXxxx functions.
+ *
  * Revision 1.13  1996/01/28 14:10:10  robertj
  * Added time functions to PConfig.
  *
@@ -145,7 +148,7 @@ PDECLARE_CLASS(PConfig, PObject)
        default section name string.
      */
 
-    PStringList GetSections();
+    PStringList GetSections() const;
     /* Get all of the section names currently specified in the file. A section
        is the part specified by the [ and ] characters.
 
@@ -198,16 +201,16 @@ PDECLARE_CLASS(PConfig, PObject)
 
     PString GetString(
       const PString & key       // The key name for the variable.
-    );
+    ) const;
     PString GetString(
       const PString & key,      // The key name for the variable.
       const PString & dflt      // Default value for the variable.
-    );
+    ) const;
     PString GetString(
       const PString & section,  // Section to use instead of the default.
       const PString & key,      // The key name for the variable.
       const PString & dflt      // Default value for the variable.
-    );
+    ) const;
     /* Get a string variable determined by the key in the section. If the
        section name is not specified then the default section is used.
        
@@ -237,12 +240,12 @@ PDECLARE_CLASS(PConfig, PObject)
     BOOL GetBoolean(
       const PString & key,      // The key name for the variable.
       BOOL dflt = FALSE         // Default value for the variable.
-    );
+    ) const;
     BOOL GetBoolean(
       const PString & section,  // Section to use instead of the default.
       const PString & key,      // The key name for the variable.
       BOOL dflt = FALSE         // Default value for the variable.
-    );
+    ) const;
     /* Get a boolean variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
@@ -281,12 +284,12 @@ PDECLARE_CLASS(PConfig, PObject)
     long GetInteger(
       const PString & key,      // The key name for the variable.
       long dflt = 0             // Default value for the variable.
-    );
+    ) const;
     long GetInteger(
       const PString & section,  // Section to use instead of the default.
       const PString & key,      // The key name for the variable.
       long dflt = 0             // Default value for the variable.
-    );
+    ) const;
     /* Get an integer variable determined by the key in the section. If the
        section name is not specified then the default section is used.
 
@@ -318,12 +321,12 @@ PDECLARE_CLASS(PConfig, PObject)
     double GetReal(
       const PString & key,      // The key name for the variable.
       double dflt = 0           // Default value for the variable.
-    );
+    ) const;
     double GetReal(
       const PString & section,  // Section to use instead of the default.
       const PString & key,      // The key name for the variable.
       double dflt = 0           // Default value for the variable.
-    );
+    ) const;
     /* Get a floating point variable determined by the key in the section. If
        the section name is not specified then the default section is used.
 
@@ -354,20 +357,20 @@ PDECLARE_CLASS(PConfig, PObject)
 
     PTime GetTime(
       const PString & key       // The key name for the variable.
-    );
+    ) const;
     PTime GetTime(
       const PString & key,      // The key name for the variable.
       const PTime & dflt        // Default value for the variable.
-    );
+    ) const;
     PTime GetTime(
       const PString & section,  // Section to use instead of the default.
       const PString & key       // The key name for the variable.
-    );
+    ) const;
     PTime GetTime(
       const PString & section,  // Section to use instead of the default.
       const PString & key,      // The key name for the variable.
       const PTime & dflt        // Default value for the variable.
-    );
+    ) const;
     /* Get a <A>PTime</A> variable determined by the key in the section. If
        the section name is not specified then the default section is used.
 
