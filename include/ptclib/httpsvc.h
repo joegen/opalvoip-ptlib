@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.35  2001/03/04 02:24:44  robertj
+ * Removed default OnControl() from http service as cannot get port number.
+ *
  * Revision 1.34  2001/02/20 02:32:41  robertj
  * Added PServiceMacro version that can do substitutions on blocks of HTML.
  *
@@ -192,7 +195,6 @@ class PHTTPServiceProcess : public PServiceProcess
     void OnStop();
     BOOL OnPause();
     void OnContinue();
-    void OnControl();
     const char * GetServiceDependencies() const;
 
     virtual void OnConfigChanged() = 0;
