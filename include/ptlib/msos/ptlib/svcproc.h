@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.28  2002/04/19 02:06:06  robertj
+ * Moved systemLogFile to protected status so can be used in applications.
+ *
  * Revision 1.27  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -152,6 +155,9 @@ extern "C" char ** __argv;
 
     virtual BOOL IsServiceProcess() const;
 
+  protected:
+    PCaselessString systemLogFileName;
+
   private:
     static void __stdcall StaticMainEntry(DWORD argc, LPTSTR * argv);
     /* Internal function called from the Service Manager. This simply calls the
@@ -217,7 +223,6 @@ extern "C" char ** __argv;
     HANDLE                terminationEvent;
     HWND                  controlWindow;
     HWND                  debugWindow;
-    PCaselessString       systemLogFileName;
 
 #endif
 
