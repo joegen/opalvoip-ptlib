@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.94  2004/06/10 01:36:44  csoutheren
+# Fixed problems with static links
+#
 # Revision 1.93  2004/04/29 14:07:07  csoutheren
 # Changed install target to use $(INSTALL)
 # Various makefile cleanups and verified install and uninstall targets
@@ -285,9 +288,9 @@ STDCCFLAGS	+= -I$(PWLIBDIR)/include
 
 ifneq ($(P_SHAREDLIB),1)
 
-ifneq ($(OSTYPE),Darwin) # Mac OS X does not really support -static
-LDFLAGS += -static
-endif
+#ifneq ($(OSTYPE),Darwin) # Mac OS X does not really support -static
+#LDFLAGS += -static
+#endif
 
 ifneq ($(P_STATIC_LDFLAGS),)
 LDFLAGS += $(P_STATIC_LDFLAGS)
