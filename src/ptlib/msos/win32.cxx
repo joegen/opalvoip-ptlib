@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.107  2001/05/29 00:49:18  robertj
+ * Added ability to put in a printf %x in thread name to get thread object
+ *   address into user settable thread name.
+ *
  * Revision 1.106  2001/05/10 15:21:30  yurik
  * Fixed bug in PSemaphore::Signal(), courtesy of Dave Cassel, dcassel@cyberfone.com.
  * Also Refined thread priorities for WinCE.
@@ -1012,6 +1016,7 @@ void PWin32Overlapped::Reset()
 UINT __stdcall PThread::MainFunction(void * threadPtr)
 {
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
+  thread->SetThreadName(thread->GetThreadName());
 
   PProcess & process = PProcess::Current();
 
@@ -1052,10 +1057,10 @@ PThread::PThread(PINDEX stackSize,
                                         this, CREATE_SUSPENDED, &threadId);
 #else
    threadHandle = CreateThread(NULL, stackSize, 
-								(LPTHREAD_START_ROUTINE) MainFunction,
-							    this, CREATE_SUSPENDED, (LPDWORD) &threadId);
+                               (LPTHREAD_START_ROUTINE)MainFunction,
+                               this, CREATE_SUSPENDED, (LPDWORD) &threadId);
 #endif
-  
+
   PAssertOS(threadHandle != NULL);
 
   SetPriority(priorityLevel);
