@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.9  2000/11/14 08:25:58  robertj
+ * Added function to propagate the error text through to indirect channel.
+ *
  * Revision 1.8  2000/08/22 08:33:37  robertj
  * Removed PAssert() for write to unattached indirect channel, now sets
  *    return code so is similay to "unopened file" semantics.
@@ -642,6 +645,18 @@ BOOL PIndirectChannel::Shutdown(ShutdownValue value)
   channelPointerMutex.EndRead();
 
   return returnValue;
+}
+
+
+PString PIndirectChannel::GetErrorText() const
+{
+  if (readChannel != NULL)
+    return readChannel->GetErrorText();
+
+  if (writeChannel != NULL)
+    return writeChannel->GetErrorText();
+
+  return PChannel::GetErrorText();
 }
 
 
