@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.32  2004/04/11 03:20:42  csoutheren
+ * Added Unix implementation of PCriticalSection
+ *
  * Revision 1.31  2004/04/03 15:47:58  ykiryanov
  * Changed thread id member name for BeOS
  *
@@ -169,5 +172,28 @@ PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
 #endif // !VX_TASKS
 
 #endif // BE_THREADS
+
+///////////////////////////////////////////////////////////////////////////////
+
+PINLINE PCriticalSection::PCriticalSection()
+{
+  ::sem_init(&sem, 0, 1);
+}
+
+PINLINE PCriticalSection::~PCriticalSection()
+{
+  ::sem_destroy(&sem);
+}
+
+PINLINE void PCriticalSection::Enter()
+{
+  ::sem_wait(&sem);
+}
+
+PINLINE void PCriticalSection::Leave()
+{
+  ::sem_post(&sem);
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
