@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.74 1996/08/11 06:53:04 robertj Exp $
+ * $Id: osutils.cxx,v 1.75 1996/09/14 13:09:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.75  1996/09/14 13:09:37  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.74  1996/08/11 06:53:04  robertj
  * Fixed bug in Sleep() function (nonpreemptive version).
  *
@@ -839,6 +845,197 @@ BOOL PChannel::SendCommandString(const PString & command)
   }
 
   return FALSE;
+}
+
+
+BOOL PChannel::Shutdown(ShutdownValue)
+{
+  return FALSE;
+}
+
+
+PChannel * PChannel::GetBaseReadChannel() const
+{
+  return (PChannel *)this;
+}
+
+
+PChannel * PChannel::GetBaseWriteChannel() const
+{
+  return (PChannel *)this;
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PIndirectChannel
+
+#if defined(_PINDIRECTCHANNEL)
+
+PIndirectChannel::PIndirectChannel()
+{
+  readChannel = writeChannel = NULL;
+  writeAutoDelete = readAutoDelete = FALSE;
+}
+
+
+PObject::Comparison PIndirectChannel::Compare(const PObject & obj) const
+{
+  PAssert(obj.IsDescendant(PIndirectChannel::Class()), PInvalidCast);
+  const PIndirectChannel & other = (const PIndirectChannel &)obj;
+  return readChannel == other.readChannel &&
+         writeChannel == other.writeChannel ? EqualTo : GreaterThan;
+}
+
+
+PString PIndirectChannel::GetName() const
+{
+  if (readChannel != NULL && readChannel == writeChannel)
+    return readChannel->GetName();
+
+  PString name = "R<";
+  if (readChannel != NULL)
+    name += readChannel->GetName();
+  name += "> T<";
+  if (writeChannel != NULL)
+    name += writeChannel->GetName();
+  name += ">";
+  return name;
+}
+
+
+BOOL PIndirectChannel::Close()
+{
+  if (readAutoDelete)
+    delete readChannel;
+
+  if (writeAutoDelete && readChannel != writeChannel)
+    delete writeChannel;
+
+  readChannel = NULL;
+  writeChannel = NULL;
+  return TRUE;
+}
+
+
+BOOL PIndirectChannel::IsOpen() const
+{
+  if (readChannel != NULL && readChannel == writeChannel)
+    return readChannel->IsOpen();
+
+  BOOL readOk = readChannel != NULL ? readChannel->IsOpen() : FALSE;
+  BOOL writeOk = writeChannel != NULL ? writeChannel->IsOpen() : FALSE;
+  return readOk && writeOk;
+}
+
+
+BOOL PIndirectChannel::Read(void * buf, PINDEX len)
+{
+  PAssert(readChannel != NULL, "Indirect read though NULL channel");
+  flush();
+  readChannel->SetReadTimeout(readTimeout);
+  BOOL ret = readChannel->Read(buf, len);
+  lastError = readChannel->GetErrorCode();
+  osError = readChannel->GetErrorNumber();
+  lastReadCount = readChannel->GetLastReadCount();
+  return ret;
+}
+
+
+BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
+{
+  PAssert(writeChannel != NULL, "Indirect write though NULL channel");
+  flush();
+  writeChannel->SetWriteTimeout(writeTimeout);
+  BOOL ret = writeChannel->Write(buf, len);
+  lastError = writeChannel->GetErrorCode();
+  osError = writeChannel->GetErrorNumber();
+  lastWriteCount = writeChannel->GetLastWriteCount();
+  return ret;
+}
+
+
+BOOL PIndirectChannel::Shutdown(ShutdownValue value)
+{
+  if (readChannel != NULL && readChannel == writeChannel)
+    return readChannel->Shutdown(value);
+
+  BOOL readOk = readChannel != NULL ? readChannel->Shutdown(value) : FALSE;
+  BOOL writeOk = writeChannel != NULL ? writeChannel->Shutdown(value) : FALSE;
+  return readOk && writeOk;
+}
+
+
+BOOL PIndirectChannel::Open(PChannel & channel)
+{
+  return Open(&channel, FALSE);
+}
+
+
+BOOL PIndirectChannel::Open(PChannel * channel, BOOL autoDelete)
+{
+  return Open(channel, channel, autoDelete, autoDelete);
+}
+
+
+BOOL PIndirectChannel::Open(PChannel * readChan,
+                            PChannel * writeChan,
+                            BOOL autoDeleteRead,
+                            BOOL autoDeleteWrite)
+{
+  if (readAutoDelete)
+    delete readChannel;
+  readChannel = readChan;
+  readAutoDelete = autoDeleteRead;
+
+  if (writeAutoDelete)
+    delete writeChannel;
+  writeChannel = writeChan;
+  writeAutoDelete = autoDeleteWrite;
+
+  return IsOpen() && OnOpen();
+}
+
+
+BOOL PIndirectChannel::OnOpen()
+{
+  return TRUE;
+}
+
+
+BOOL PIndirectChannel::SetReadChannel(PChannel * channel, BOOL autoDelete)
+{
+  if (readAutoDelete)
+    delete readChannel;
+
+  readChannel = channel;
+  readAutoDelete = autoDelete;
+  return IsOpen();
+}
+
+
+BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
+{
+  if (writeAutoDelete)
+    delete writeChannel;
+
+  writeChannel = channel;
+  writeAutoDelete = autoDelete;
+  return IsOpen();
+}
+
+
+PChannel * PIndirectChannel::GetBaseReadChannel() const
+{
+  return readChannel != NULL ? readChannel->GetBaseReadChannel() : NULL;
+}
+
+
+PChannel * PIndirectChannel::GetBaseWriteChannel() const
+{
+  return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : NULL;
 }
 
 
