@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.cxx,v $
+ * Revision 1.6  2002/02/20 02:59:34  yurik
+ * Added end of line to trace statement
+ *
  * Revision 1.5  2002/02/12 10:21:56  rogerh
  * Stop sending '?' when a bad DTMF tone is detected.
  *
@@ -122,7 +125,7 @@ PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
 			nn = 0;
 			so = s;
 		} else if ((nn++ == 520) && (key[s] != '?')) {
-			PTRACE(1,"Got 16bit PCM DTMF " << key[s]);
+			PTRACE(1,"Got 16bit PCM DTMF " << key[s] << endl);
 			keyString = keyString + key[s];
 		}
 	}
