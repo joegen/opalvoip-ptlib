@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.55  2001/12/13 09:13:57  robertj
+ * Added function get get oid as a string.
+ *
  * Revision 1.54  2001/11/26 03:07:13  robertj
  * Fixed decode of extendable constrained integer types.
  *
@@ -1138,6 +1141,14 @@ void PASN_ObjectId::PrintOn(ostream & strm) const
     if (i < value.GetSize()-1)
       strm << '.';
   }
+}
+
+
+PString PASN_ObjectId::AsString() const
+{
+  PStringStream s;
+  PrintOn(s);
+  return s;
 }
 
 
