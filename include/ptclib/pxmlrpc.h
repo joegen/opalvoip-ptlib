@@ -1,7 +1,7 @@
 /*
  * pxmlrpc.h
  *
- * XML parser support
+ * XML/RPC support
  *
  * Portable Windows Library
  *
@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.10  2002/12/04 00:15:56  robertj
+ * Large enhancement to create automatically encoding and decoding structures
+ *   using macros to build a class.
+ *
  * Revision 1.9  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -65,9 +69,11 @@
 #include <ptclib/url.h>
 
 
-/////////////////////////////////////////////////////////////////
-
 class PXMLRPCBlock;
+class PXMLRPCStructBase;
+
+
+/////////////////////////////////////////////////////////////////
 
 class PXMLRPC : public PObject
 {
@@ -150,10 +156,15 @@ class PXMLRPCBlock : public PXML
     BOOL GetParam(PINDEX idx, double & result);
     BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
     BOOL GetParam(PINDEX idx, PStringToString & result);
+    BOOL GetParam(PINDEX idx, PXMLRPCStructBase & result);
+
+    PXMLElement * GetStructParam(PINDEX idx);
 
     // static functions for parsing values
-    BOOL ParseStruct(PXMLElement * element, PStringToString & structDict);
     BOOL ParseScalar(PXMLElement * element, PString & type, PString & value);
+    BOOL ParseStruct(PXMLElement * element, PStringToString & structDict);
+    BOOL ParseStruct(PXMLElement * element, PXMLRPCStructBase & structData);
+    PXMLElement * ParseStructElement(PXMLElement * structElement, PINDEX idx, PString & name);
 
     // static functions for creating values
     static PXMLElement * CreateValueElement(PXMLElement * element);
@@ -169,6 +180,7 @@ class PXMLRPCBlock : public PXML
     static PXMLElement * CreateStruct();
     static PXMLElement * CreateStruct(const PStringToString & dict);
     static PXMLElement * CreateStruct(const PStringToString & dict, const PString & typeStr);
+    static PXMLElement * CreateStruct(const PXMLRPCStructBase & structData);
 
     // helper functions for adding parameters
     void AddParam(PXMLElement * parm);
@@ -176,6 +188,7 @@ class PXMLRPCBlock : public PXML
     void AddParam(int value);
     void AddParam(double value);
     void AddParam(const PTime & time);
+    void AddParam(const PXMLRPCStructBase & structData);
     void AddBinary(const PBYTEArray & data);
     void AddStruct(const PStringToString & dict);
     void AddStruct(const PStringToString & dict, const PString & typeStr);
@@ -185,6 +198,99 @@ class PXMLRPCBlock : public PXML
     PString faultText;
     PINDEX  faultCode;
 };
+
+
+/////////////////////////////////////////////////////////////////
+
+class PXMLRPCStructBase;
+
+class PXMLRPCVariableBase : public PObject {
+    PCLASSINFO(PXMLRPCVariableBase, PObject);
+  public:
+    PXMLRPCVariableBase(const char * name, const char * type = NULL);
+
+    const char * GetName() const { return name; }
+    const char * GetType() const { return type; }
+
+    virtual PString ToString() const;
+    virtual void FromString(const PString & str);
+    virtual PXMLRPCStructBase * GetStruct() const { return NULL; }
+
+    PString ToBase64(PAbstractArray & data) const;
+    void FromBase64(const PString & str, PAbstractArray & data);
+
+  protected:
+    const char * name;
+    const char * type;
+};
+
+
+class PXMLRPCStructBase : public PObject {
+    PCLASSINF(PXMLRPCStructBase, PObject);
+  protected:
+    PXMLRPCStructBase();
+    void EndConstructor();
+
+  public:
+    void PrintOn(ostream & strm) const;
+
+    PINDEX GetNumVariables() const { return variables.GetSize(); }
+    PXMLRPCVariableBase & GetVariable(PINDEX idx) const { return variables.GetDataAt(idx); }
+    PXMLRPCVariableBase * GetVariable(const char * name) const { return variables.GetAt(name); }
+
+    void AddVariable(PXMLRPCVariableBase * var) { variables.SetAt(var->GetName(), var); }
+    static PXMLRPCStructBase & GetInitialiser() { return *PAssertNULL(initialiserInstance); }
+
+  protected:
+    PDictionary<PString, PXMLRPCVariableBase> variables;
+
+    PXMLRPCStructBase        * initialiserStack;
+    static PMutex              initialiserMutex;
+    static PXMLRPCStructBase * initialiserInstance;
+};
+
+
+#define PXML_STRUCT_BEGIN(name) \
+  class name : public PXMLRPCStructBase { \
+    public: name() { EndConstructor(); }
+
+#define PXML_VARIABLE_CUSTOM(base, type, variable, xmltype, extras) \
+    public: type variable; \
+    private: struct PXmlVar_##variable : public PXMLRPCVariableBase { \
+      PXmlVar_##variable() \
+        : PXMLRPCVariableBase(#variable, #xmltype), \
+          instance(((base &)base::GetInitialiser()).variable) \
+        { } \
+      virtual void PrintOn (ostream & s) const { s << instance; } \
+      virtual void ReadFrom(istream & s)       { s >> instance; } \
+      extras \
+      type & instance; \
+    } pxmlvar_##variable
+
+#define PXML_STRUCT_END() \
+  };
+
+#define PXML_VARIABLE(base, type, variable, xmltype) \
+        PXML_VARIABLE_CUSTOM(base, type, variable, xmltype, ;)
+
+#define PXML_STRING(base, type, variable)  PXML_VARIABLE(base, type, variable, string)
+#define PXML_INTEGER(base, type, variable) PXML_VARIABLE(base, type, variable, int)
+#define PXML_BOOLEAN(base, type, variable) PXML_VARIABLE(base, type, variable, boolean)
+#define PXML_DOUBLE(base, type, variable)  PXML_VARIABLE(base, type, variable, double)
+
+#define PXML_DATETIME(base, type, variable) \
+        PXML_VARIABLE_CUSTOM(base, type, variable, dateTime.iso8601, \
+             PString ToString() const { return instance.AsString("yyyyMMddThh:mm:ss"); } )
+
+#define PXML_BINARY(base, type, variable) \
+        PXML_VARIABLE_CUSTOM(base, type, variable, base64, \
+                     PString ToString() const { return ToBase64(instance); } \
+                     void FromString(const PString & str) { FromBase64(str, instance); } )
+
+#define PXML_STRUCT(base, type, variable) \
+        PXML_VARIABLE_CUSTOM(base, type, variable, struct, \
+                             PXMLRPCStructBase * GetStruct() const { return &instance; } )
+
 
 /////////////////////////////////////////////////////////////////
 
