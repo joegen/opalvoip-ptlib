@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.65  1998/10/30 12:23:56  robertj
+ * Added ability to get all key values as a dictionary.
+ *
  * Revision 1.64  1998/10/30 05:24:30  robertj
  * Added return value to << and >> operators for shifting arguments.
  *
@@ -600,6 +603,9 @@ PINLINE PString PConfig::GetDefaultSection() const
 
 PINLINE PStringList PConfig::GetKeys() const
   { return GetKeys(defaultSection); }
+
+PINLINE PStringToString PConfig::GetAllKeyValues() const
+  { return GetAllKeyValues(defaultSection); }
 
 PINLINE void PConfig::DeleteSection()
   { DeleteSection(defaultSection); }
