@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.112  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.111  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -799,10 +803,10 @@ BOOL PSocket::Accept(PSocket &)
 BOOL PSocket::SetOption(int option, int value, int level)
 {
 #ifdef _WIN32_WCE
-	if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
-		return TRUE;
+  if(option == SO_RCVBUF || option == SO_SNDBUF || option == IP_TOS)
+    return TRUE;
 #endif
-	return ConvertOSError(::setsockopt(os_handle, level, option,
+  return ConvertOSError(::setsockopt(os_handle, level, option,
                                      (char *)&value, sizeof(value)));
 }
 
@@ -1719,7 +1723,7 @@ BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 #endif
   if (count < 0) {
     lastWriteCount = 0;
-    return ConvertOSError(count);
+    return ConvertOSError(count, LastWriteError);
   }
   else {
     lastWriteCount = count;

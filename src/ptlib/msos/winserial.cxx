@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winserial.cxx,v $
+ * Revision 1.4  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.3  2000/03/20 17:55:05  robertj
  * Fixed prolem with XON/XOFF under NT, thanks Damien Slee.
  *
@@ -75,11 +79,8 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 {
   lastReadCount = 0;
 
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   COMMTIMEOUTS cto;
   PAssertOS(GetCommTimeouts(commsResource, &cto));
@@ -103,9 +104,9 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
     DWORD readCount = 0;
     if (!ReadFile(commsResource, bufferPtr, bytesToGo, &readCount, &overlap)) {
       if (GetLastError() != ERROR_IO_PENDING)
-        return ConvertOSError(-2);
+        return ConvertOSError(-2, LastReadError);
       if (!GetOverlappedResult(commsResource, &overlap, &readCount, FALSE))
-        return ConvertOSError(-2);
+        return ConvertOSError(-2, LastReadError);
     }
 
     bytesToGo -= readCount;
@@ -116,9 +117,9 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 
     if (!WaitCommEvent(commsResource, &eventMask, &overlap)) {
       if (GetLastError() != ERROR_IO_PENDING)
-        return ConvertOSError(-2);
+        return ConvertOSError(-2, LastReadError);
       if (WaitForSingleObject(overlap.hEvent, timeToGo) == WAIT_FAILED)
-        return ConvertOSError(-2);
+        return ConvertOSError(-2, LastReadError);
     }
   }
 }
@@ -128,11 +129,8 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
 {
   lastWriteCount = 0;
 
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   COMMTIMEOUTS cto;
   PAssertOS(GetCommTimeouts(commsResource, &cto));
@@ -154,13 +152,12 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
   }
 
   if (GetLastError() == ERROR_IO_PENDING)
-    if (GetOverlappedResult(commsResource,
-                                   &overlap, (LPDWORD)&lastWriteCount, TRUE)) {
+    if (GetOverlappedResult(commsResource, &overlap, (LPDWORD)&lastWriteCount, TRUE)) {
       CloseHandle(overlap.hEvent);
       return lastWriteCount == len;
     }
 
-  ConvertOSError(-2);
+  ConvertOSError(-2, LastWriteError);
   CloseHandle(overlap.hEvent);
 
   return FALSE;
@@ -169,11 +166,8 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
 
 BOOL PSerialChannel::Close()
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   CloseHandle(commsResource);
   commsResource = INVALID_HANDLE_VALUE;
@@ -251,13 +245,10 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
       break;
   }
 
-  if (IsOpen())
-   return ConvertOSError(SetCommState(commsResource,
-                                                &deviceControlBlock) ? 0 : -2);
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
-  osError = EBADF;
-  lastError = NotOpen;
-  return FALSE;
+  return ConvertOSError(SetCommState(commsResource, &deviceControlBlock) ? 0 : -2);
 }
 
 
@@ -390,10 +381,8 @@ void PSerialChannel::SetDTR(BOOL state)
 {
   if (IsOpen())
     PAssertOS(EscapeCommFunction(commsResource, state ? SETDTR : CLRDTR));
-  else {
-    osError = EBADF;
-    lastError = NotOpen;
-  }
+  else
+    SetErrorValues(NotOpen, EBADF);
 }
 
 
@@ -401,10 +390,8 @@ void PSerialChannel::SetRTS(BOOL state)
 {
   if (IsOpen())
     PAssertOS(EscapeCommFunction(commsResource, state ? SETRTS : CLRRTS));
-  else {
-    osError = EBADF;
-    lastError = NotOpen;
-  }
+  else
+    SetErrorValues(NotOpen, EBADF);
 }
 
 
@@ -415,20 +402,15 @@ void PSerialChannel::SetBreak(BOOL state)
       PAssertOS(SetCommBreak(commsResource));
     else
       PAssertOS(ClearCommBreak(commsResource));
-  else {
-    osError = EBADF;
-    lastError = NotOpen;
-  }
+  else
+    SetErrorValues(NotOpen, EBADF);
 }
 
 
 BOOL PSerialChannel::GetCTS()
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -438,11 +420,8 @@ BOOL PSerialChannel::GetCTS()
 
 BOOL PSerialChannel::GetDSR()
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -452,11 +431,8 @@ BOOL PSerialChannel::GetDSR()
 
 BOOL PSerialChannel::GetDCD()
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));
@@ -466,11 +442,8 @@ BOOL PSerialChannel::GetDCD()
 
 BOOL PSerialChannel::GetRing()
 {
-  if (!IsOpen()) {
-    osError = EBADF;
-    lastError = NotOpen;
-    return FALSE;
-  }
+  if (!IsOpen())
+    return SetErrorValues(NotOpen, EBADF);
 
   DWORD stat;
   PAssertOS(GetCommModemStatus(commsResource, &stat));

@@ -29,8 +29,12 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.24 2001/06/01 00:53:59 robertj Exp $
+ * $Id: pssl.cxx,v 1.25 2001/09/10 02:51:23 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.25  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.24  2001/06/01 00:53:59  robertj
  * Added certificate constructor that takes a PBYTEArray
  *
@@ -521,23 +525,18 @@ BOOL PSSLChannel::Read(void * buf, PINDEX len)
   channelPointerMutex.StartRead();
 
   BOOL returnValue = FALSE;
-  if (readChannel == NULL) {
-    lastError = NotOpen;
-    osError = EBADF;
-  }
-  else if (readTimeout == 0 && SSL_pending(ssl) == 0) {
-    lastError = Timeout;
-    osError = ETIMEDOUT;
-  }
+  if (readChannel == NULL)
+    SetErrorValues(NotOpen, EBADF, LastReadError);
+  else if (readTimeout == 0 && SSL_pending(ssl) == 0)
+    SetErrorValues(Timeout, ETIMEDOUT, LastReadError);
   else {
     readChannel->SetReadTimeout(readTimeout);
 
     int readResult = SSL_read(ssl, (char *)buf, len);
-    returnValue = ConvertOSError(readResult);
-
-    lastError = readChannel->GetErrorCode();
-    osError = readChannel->GetErrorNumber();
     lastReadCount = readResult;
+    returnValue = readResult >= 0;
+    if (!returnValue && GetErrorCode(LastReadError) == NoError)
+      ConvertOSError(-1, LastReadError);
   }
 
   channelPointerMutex.EndRead();
@@ -553,19 +552,17 @@ BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 
   BOOL returnValue;
   if (writeChannel == NULL) {
-    lastError = NotOpen;
-    osError = EBADF;
+    SetErrorValues(NotOpen, EBADF, LastWriteError);
     returnValue = FALSE;
   }
   else {
     writeChannel->SetWriteTimeout(writeTimeout);
 
     int writeResult = SSL_write(ssl, (const char *)buf, len);
-
-    returnValue = ConvertOSError(writeResult);
-    lastError = writeChannel->GetErrorCode();
-    osError = writeChannel->GetErrorNumber();
     lastWriteCount = writeResult;
+    returnValue = writeResult >= 0;
+    if (!returnValue && GetErrorCode(LastWriteError) == NoError)
+      ConvertOSError(-1, LastWriteError);
   }
 
   channelPointerMutex.EndRead();
@@ -581,33 +578,26 @@ BOOL PSSLChannel::Close()
 }
 
 
-BOOL PSSLChannel::ConvertOSError(int error)
+BOOL PSSLChannel::ConvertOSError(int error, ErrorGroup group)
 {
-  if (SSL_get_error(ssl, error) == SSL_ERROR_NONE)
-    osError = 0;
-  else {
-    osError = ERR_peek_error();
-    if (osError != 0)
-      osError |= 0x80000000;
+  Errors lastError = NoError;
+  DWORD osError = 0;
+  if (SSL_get_error(ssl, error) != SSL_ERROR_NONE && (osError = ERR_peek_error()) != 0) {
+    osError |= 0x80000000;
+    lastError = Miscellaneous;
   }
 
-  if (osError == 0) {
-    lastError = NoError;
-    return TRUE;
-  }
-
-  lastError = Miscellaneous;
-  return FALSE;
+  return SetErrorValues(lastError, osError, group);
 }
 
 
-PString PSSLChannel::GetErrorText() const
+PString PSSLChannel::GetErrorText(ErrorGroup group) const
 {
-  if ((osError&0x80000000) == 0)
-    return PIndirectChannel::GetErrorText();
+  if ((lastErrorNumber[group]&0x80000000) == 0)
+    return PIndirectChannel::GetErrorText(group);
 
   char buf[200];
-  return ERR_error_string(osError&0x7fffffff, buf);
+  return ERR_error_string(lastErrorNumber[group]&0x7fffffff, buf);
 }
 
 
@@ -686,13 +676,16 @@ void PSSLChannel::SetVerifyMode(VerifyMode mode)
   SSL_set_verify(ssl, verify, VerifyCallBack);
 }
 
-BOOL PSSLChannel::RawSSLRead(PChannel * chan, void * buf, PINDEX & len)
+
+BOOL PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 {
-  if (!chan->Read(buf, len)) 
-    return FALSE; 
-  len = chan->GetLastReadCount(); 
-  return TRUE; 
+  if (!PIndirectChannel::Read(buf, len)) 
+    return FALSE;
+
+  len = GetLastReadCount();
+  return TRUE;
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -784,56 +777,54 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, void * ptr)
 }
 
 
-static int Psock_should_retry(int i)
-{
-  if (i == PChannel::Interrupted)
-    return 1;
-  if (i == PChannel::Timeout)
-    return 1;
-
-  return 0;
-}
-
-	
 static int Psock_read(BIO * bio, char * out, int outl)
 {
-  int ret = 0;
+  if (out == NULL)
+    return 0;
 
-  if (out != NULL) {
-    PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
+  BIO_clear_retry_flags(bio);
 
-    // redirect the read through the channel so we can intercept data if required
-    PINDEX readBytes = outl;
-    BOOL b = PSSLSOCKET(bio)->RawSSLRead(chan, out, readBytes);
+  // Skip over the polymorphic read, want to do real one
+  PINDEX len = outl;
+  if (PSSLSOCKET(bio)->RawSSLRead(out, len))
+    return len;
 
-    BIO_clear_retry_flags(bio);
-    if (b) 
-      ret = readBytes;
-    else if (Psock_should_retry(chan->GetErrorCode())) {
+  switch (PSSLSOCKET(bio)->GetErrorCode(PChannel::LastReadError)) {
+    case PChannel::Interrupted :
+    case PChannel::Timeout :
       BIO_set_retry_read(bio);
-      ret = -1;
-    }
+      return -1;
+
+    default :
+      break;
   }
-  return(ret);
+
+  return 0;
 }
 
 
 static int Psock_write(BIO * bio, const char * in, int inl)
 {
-  int ret = 0;
+  if (in == NULL)
+    return 0;
 
-  if (in != NULL) {
-    PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
-    BOOL b = chan->Write(in, inl);
-    BIO_clear_retry_flags(bio);
-    if (b)
-      ret = chan->GetLastWriteCount();
-    else if (Psock_should_retry(chan->GetErrorCode())) {
+  BIO_clear_retry_flags(bio);
+
+  // Skip over the polymorphic write, want to do real one
+  if (PSSLSOCKET(bio)->PIndirectChannel::Write(in, inl))
+    return PSSLSOCKET(bio)->GetLastWriteCount();
+
+  switch (PSSLSOCKET(bio)->GetErrorCode(PChannel::LastWriteError)) {
+    case PChannel::Interrupted :
+    case PChannel::Timeout :
       BIO_set_retry_write(bio);
-      ret = -1;
-    }
+      return -1;
+
+    default :
+      break;
   }
-  return(ret);
+
+  return 0;
 }
 
 

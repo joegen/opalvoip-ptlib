@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.25  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.24  2001/09/10 02:48:51  robertj
  * Removed previous change as breaks semantics of Read() function, moved test
  *   for zero buffer length to part that waits for buffer to be full.
@@ -743,8 +747,7 @@ BOOL PSoundChannel::Open(const PString & device,
       case Player :
         if (id < waveOutGetNumDevs()) {
           WAVEOUTCAPS caps;
-          osError = waveOutGetDevCaps(id, &caps, sizeof(caps));
-          if (osError == 0) {
+          if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
           }
@@ -754,8 +757,7 @@ BOOL PSoundChannel::Open(const PString & device,
       case Recorder :
         if (id < waveInGetNumDevs()) {
           WAVEINCAPS caps;
-          osError = waveInGetDevCaps(id, &caps, sizeof(caps));
-          if (osError == 0) {
+          if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
           }
@@ -768,8 +770,8 @@ BOOL PSoundChannel::Open(const PString & device,
       case Player :
         for (id = 0; id < waveOutGetNumDevs(); id++) {
           WAVEOUTCAPS caps;
-          osError = waveOutGetDevCaps(id, &caps, sizeof(caps));
-          if (osError == 0 && stricmp(caps.szPname, device) == 0) {
+          if (waveOutGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
+              stricmp(caps.szPname, device) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
             break;
@@ -780,8 +782,8 @@ BOOL PSoundChannel::Open(const PString & device,
       case Recorder :
         for (id = 0; id < waveInGetNumDevs(); id++) {
           WAVEINCAPS caps;
-          osError = waveInGetDevCaps(id, &caps, sizeof(caps));
-          if (osError == 0 && stricmp(caps.szPname, device) == 0) {
+          if (waveInGetDevCaps(id, &caps, sizeof(caps)) == 0 &&
+              stricmp(caps.szPname, device) == 0) {
             deviceName = caps.szPname;
             bad = FALSE;
             break;
@@ -791,10 +793,8 @@ BOOL PSoundChannel::Open(const PString & device,
     }
   }
 
-  if (bad) {
-    osError = MMSYSERR_BADDEVICEID;
-    return FALSE;
-  }
+  if (bad)
+    return SetErrorValues(NotFound, MMSYSERR_BADDEVICEID|PWIN32ErrorFlag);
 
   waveFormat.SetFormat(numChannels, sampleRate, bitsPerSample);
 
@@ -813,21 +813,22 @@ BOOL PSoundChannel::OpenDevice(unsigned id)
   bufferIndex = 0;
 
   WAVEFORMATEX* format = (WAVEFORMATEX*) waveFormat;
-  
+
+  DWORD osError = MMSYSERR_BADDEVICEID;
   switch (direction) {
     case Player :
       osError = waveOutOpen(&hWaveOut, id, format,
-                            (DWORD) hEventDone, 0, CALLBACK_EVENT);
+                            (DWORD)hEventDone, 0, CALLBACK_EVENT);
       break;
 
     case Recorder :
       osError = waveInOpen(&hWaveIn, id, format,
-                           (DWORD) hEventDone, 0, CALLBACK_EVENT);
+                           (DWORD)hEventDone, 0, CALLBACK_EVENT);
       break;
   }
 
   if (osError != MMSYSERR_NOERROR)
-    return FALSE;
+    return SetErrorValues(NotFound, osError|PWIN32ErrorFlag);
 
   os_handle = id;
   return TRUE;
@@ -877,18 +878,18 @@ unsigned PSoundChannel::GetSampleSize() const
 BOOL PSoundChannel::Close()
 {
   if (!IsOpen())
-    return FALSE;
+    return SetErrorValues(NotOpen, EBADF);
 
   Abort();
 
   if (hWaveOut != NULL) {
-    while ((osError = waveOutClose(hWaveOut)) == WAVERR_STILLPLAYING)
+    while (waveOutClose(hWaveOut) == WAVERR_STILLPLAYING)
       waveOutReset(hWaveOut);
     hWaveOut = NULL;
   }
 
   if (hWaveIn != NULL) {
-    while ((osError = waveInClose(hWaveIn)) == WAVERR_STILLPLAYING)
+    while (waveInClose(hWaveIn) == WAVERR_STILLPLAYING)
       waveInReset(hWaveIn);
     hWaveIn = NULL;
   }
@@ -947,24 +948,21 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
 {
   lastWriteCount = 0;
 
-  if (hWaveOut == NULL) {
-    osError = MMSYSERR_NOTSUPPORTED;
-    return FALSE;
-  }
+  if (hWaveOut == NULL)
+    return SetErrorValues(NotOpen, EBADF, LastWriteError);
 
   const BYTE * ptr = (const BYTE *)data;
 
   bufferMutex.Wait();
 
+  DWORD osError = MMSYSERR_NOERROR;
   while (size > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
       bufferMutex.Signal();
       // No free buffers, so wait for one
-      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
-        osError = MMSYSERR_ERROR;
-        return FALSE; // No free buffers
-      }
+      if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0)
+        return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
       bufferMutex.Wait();
     }
 
@@ -986,7 +984,10 @@ BOOL PSoundChannel::Write(const void * data, PINDEX size)
 
   bufferMutex.Signal();
 
-  return size == 0;
+  if (size != 0)
+    return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
+
+  return TRUE;
 }
 
 
@@ -1019,14 +1020,17 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
     PWaveBuffer & buffer = buffers[0];
     buffer = sound;
 
+    DWORD osError;
     PINDEX count = sound.GetSize();
     if ((osError = buffer.Prepare(hWaveOut, count)) == MMSYSERR_NOERROR &&
         (osError = waveOutWrite(hWaveOut, &buffer.header, sizeof(WAVEHDR))) == MMSYSERR_NOERROR) {
       if (wait)
         ok = WaitForPlayCompletion();
     }
-    else
+    else {
+      SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
       ok = FALSE;
+    }
 
     bufferMutex.Signal();
   }
@@ -1044,10 +1048,8 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
   PMultiMediaFile mmio;
   PWaveFormat fileFormat;
   DWORD dataSize;
-  if (!mmio.OpenWaveFile(filename, fileFormat, dataSize)) {
-    osError = mmio.GetLastError();
-    return FALSE;
-  }
+  if (!mmio.OpenWaveFile(filename, fileFormat, dataSize))
+    return SetErrorValues(NotOpen, mmio.GetLastError()|PWIN32ErrorFlag, LastWriteError);
 
   // Save old format and set to one loaded from file.
   unsigned numChannels = waveFormat->nChannels;
@@ -1061,6 +1063,7 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
   bufferMutex.Wait();
 
+  DWORD osError = MMSYSERR_NOERROR;
   while (dataSize > 0) {
     PWaveBuffer & buffer = buffers[bufferIndex];
     while ((buffer.header.dwFlags&WHDR_DONE) == 0) {
@@ -1068,7 +1071,7 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
       // No free buffers, so wait for one
       if (WaitForSingleObject(hEventDone, INFINITE) != WAIT_OBJECT_0) {
         SetFormat(numChannels, sampleRate, bitsPerSample);
-        return FALSE;
+        return SetErrorValues(Miscellaneous, ::GetLastError()|PWIN32ErrorFlag, LastWriteError);
       }
       bufferMutex.Wait();
     }
@@ -1097,6 +1100,9 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
     WaitForPlayCompletion();
 
   SetFormat(numChannels, sampleRate, bitsPerSample);
+  if (osError != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastWriteError);
+
   return TRUE;
 }
 
@@ -1133,6 +1139,8 @@ BOOL PSoundChannel::StartRecording()
   if (bufferByteOffset != P_MAX_INDEX)
     return TRUE;
 
+  DWORD osError;
+
   // Start the first read, queue all the buffers
   for (PINDEX i = 0; i < buffers.GetSize(); i++) {
     PWaveBuffer & buffer = buffers[i];
@@ -1148,7 +1156,7 @@ BOOL PSoundChannel::StartRecording()
     return TRUE;
 
   bufferByteOffset = P_MAX_INDEX;
-  return FALSE;
+  return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
 }
 
 
@@ -1156,10 +1164,8 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 {
   lastReadCount = 0;
 
-  if (hWaveIn == NULL) {
-    osError = MMSYSERR_NOTSUPPORTED;
-    return FALSE;
-  }
+  if (hWaveIn == NULL)
+    return SetErrorValues(NotOpen, EBADF, LastReadError);
 
   if (!StartRecording())  // Start the first read, queue all the buffers
     return FALSE;
@@ -1179,10 +1185,11 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
   bufferByteOffset += lastReadCount;
   if (bufferByteOffset >= (PINDEX)buffer.header.dwBytesRecorded) {
+    DWORD osError;
     if ((osError = buffer.Prepare(hWaveIn)) != MMSYSERR_NOERROR)
-      return FALSE;
+      return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
     if ((osError = waveInAddBuffer(hWaveIn, &buffer.header, sizeof(WAVEHDR))) != MMSYSERR_NOERROR)
-      return FALSE;
+      return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag, LastReadError);
 
     bufferIndex = (bufferIndex+1)%buffers.GetSize();
     bufferByteOffset = 0;
@@ -1215,10 +1222,8 @@ BOOL PSoundChannel::RecordSound(PSound & sound)
     for (i = 0; i < buffers.GetSize(); i++)
       totalSize += buffers[i].header.dwBytesRecorded;
 
-    if (!sound.SetSize(totalSize)) {
-      osError = MMSYSERR_NOMEM;
-      return FALSE;
-    }
+    if (!sound.SetSize(totalSize))
+      return SetErrorValues(NoMemory, ENOMEM, LastReadError);
 
     BYTE * ptr = sound.GetPointer();
     for (i = 0; i < buffers.GetSize(); i++) {
@@ -1248,16 +1253,12 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
     dataSize += buffers[i].header.dwBytesRecorded;
 
   PMultiMediaFile mmio;
-  if (!mmio.CreateWaveFile(filename, waveFormat, dataSize)) {
-    osError = mmio.GetLastError();
-    return FALSE;
-  }
+  if (!mmio.CreateWaveFile(filename, waveFormat, dataSize))
+    return SetErrorValues(Miscellaneous, mmio.GetLastError()|PWIN32ErrorFlag, LastReadError);
 
   for (i = 0; i < buffers.GetSize(); i++) {
-    if (!mmio.Write(buffers[i], buffers[i].header.dwBytesRecorded)) {
-      osError = mmio.GetLastError();
-      return FALSE;
-    }
+    if (!mmio.Write(buffers[i], buffers[i].header.dwBytesRecorded))
+      return SetErrorValues(Miscellaneous, mmio.GetLastError()|PWIN32ErrorFlag, LastReadError);
   }
 
   return TRUE;
@@ -1322,6 +1323,8 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannel::Abort()
 {
+  DWORD osError = MMSYSERR_NOERROR;
+
   if (hWaveOut != NULL)
     osError = waveOutReset(hWaveOut);
 
@@ -1342,21 +1345,28 @@ BOOL PSoundChannel::Abort()
   bufferByteOffset = P_MAX_INDEX;
   bufferIndex = 0;
 
-  return osError == MMSYSERR_NOERROR;
+  if (osError != MMSYSERR_NOERROR)
+    return SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
+
+  return TRUE;
 }
 
 
-PString PSoundChannel::GetErrorText() const
+PString PSoundChannel::GetErrorText(ErrorGroup group) const
 {
   PString str;
 
+  if ((lastErrorNumber[group]&PWIN32ErrorFlag) == 0)
+    return PChannel::GetErrorText(group);
+
+  DWORD osError = lastErrorNumber[group]&~PWIN32ErrorFlag;
   if (direction == Recorder) {
     if (waveInGetErrorText(osError, str.GetPointer(256), 256) != MMSYSERR_NOERROR)
-      return PChannel::GetErrorText();
+      return PChannel::GetErrorText(group);
   }
   else {
     if (waveOutGetErrorText(osError, str.GetPointer(256), 256) != MMSYSERR_NOERROR)
-      return PChannel::GetErrorText();
+      return PChannel::GetErrorText(group);
   }
 
   return str;

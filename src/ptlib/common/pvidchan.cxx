@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.4  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.3  2001/06/19 00:51:57  dereks
  * The ::Write method now returns the result of mpOutput->Redraw(), rather than
  *   always true.
@@ -150,16 +154,6 @@ BOOL PVideoChannel::IsOpen() const
   return ((mpInput != NULL) || (mpOutput != NULL) );
 }
 
-
-PString PVideoChannel::GetErrorText() const
-{
-  PString str;
-  
-  str="PVideoChannel::GetErrorText is not implemented";
-  PTRACE(0,str);
-  
-  return str;
-}
 
 PString PVideoChannel::GetName() const
 {
