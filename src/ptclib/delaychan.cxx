@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.2  2002/01/15 03:56:03  craigs
+ * Added PAdaptiveDelay class
+ *
  * Revision 1.1  2001/07/10 03:07:07  robertj
  * Added queue channel and delay channel classes to ptclib.
  *
@@ -36,7 +39,43 @@
 #include <ptlib.h>
 #include <ptclib/delaychan.h>
 
+/////////////////////////////////////////////////////////
 
+PAdaptiveDelay::PAdaptiveDelay()
+{
+  firstTime = TRUE;
+  error = 0;
+}
+
+void PAdaptiveDelay::Restart()
+{
+  firstTime = TRUE;
+}
+
+BOOL PAdaptiveDelay::Delay(int frameTime)
+{
+  if (firstTime) {
+    firstTime = FALSE;
+    previousTime = PTime();
+    return TRUE;
+  }
+
+  error += frameTime;
+
+  PTime now;
+  PTimeInterval delay = now - previousTime;
+  error -= (int)delay.GetMilliSeconds();
+  previousTime = now;
+
+  if (error > 0)
+#ifdef P_LINUX
+    usleep(error * 1000);
+#else
+    PThread::Current()->Sleep(error);
+#endif
+
+  return error <= -frameTime;
+}
 
 /////////////////////////////////////////////////////////
 
