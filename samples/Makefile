@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.2  2004/09/13 01:14:08  dereksmithies
+# Add two new targets to unix build, dtmftest and threadex
+#
 # Revision 1.1  2003/01/07 09:41:38  rogerh
 # Makefile to build most of the pwlib sample programs
 #
@@ -37,7 +40,7 @@ all ::
 
 include ../make/ptlib.mak
 
-SUBDIRS += ThreadSafe audio find_ip hello_world netif thread
+SUBDIRS += ThreadSafe audio find_ip hello_world netif thread threadex dtmftest
 #SUBDIRS += pxml xmlrpc xmlrpcsrvr   #expat + some are broken
 #SUBDIRS += vxmltest                 # no makefile
 
