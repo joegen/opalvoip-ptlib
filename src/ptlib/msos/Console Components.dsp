@@ -171,6 +171,10 @@ SOURCE=..\..\Ptclib\Pasn.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pdns.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\pils.cxx
 # End Source File
 # Begin Source File
@@ -336,6 +340,10 @@ SOURCE=..\..\..\Include\PtCLib\modem.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pasn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pdns.h
 # End Source File
 # Begin Source File
 
