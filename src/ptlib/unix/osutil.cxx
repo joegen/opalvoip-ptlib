@@ -226,7 +226,8 @@ BOOL PDirectory::Next()
 
   do {
     do {
-      if ((entry = readdir(directory)) == NULL)
+      struct dirent dirEnt;
+      if ((entry = readdir_r(directory, &dirEnt)) == NULL)
         return FALSE;
     } while (strcmp(entry->d_name, "." ) == 0 ||
              strcmp(entry->d_name, "..") == 0);
@@ -269,6 +270,7 @@ PString PDirectory::GetVolume() const
     dev_t my_dev = status.st_dev;
 
     FILE * fp = setmntent(MOUNTED, "r");
+    PAssert(fp != NULL, "Cannot open " MOUNTED);
     struct mntent * mnt;
     while ((mnt = getmntent(fp)) != NULL) {
       if (stat(mnt->mnt_dir, &status) != -1 && status.st_dev == my_dev) {
@@ -284,10 +286,11 @@ PString PDirectory::GetVolume() const
     dev_t my_dev = status.st_dev;
 
     FILE * fp = fopen("/etc/mnttab", "r");
-    struct mnttab * mnt;
-    while (getmntent(fp, mnt) == 0) {
-      if (stat(mnt->mnt_mountp, &status) != -1 && status.st_dev == my_dev) {
-        volume = mnt->mnt_special;
+    PAssert(fp != NULL, "Cannot open /etc/mnttab");
+    struct mnttab mnt;
+    while (getmntent(fp, &mnt) == 0) {
+      if (stat(mnt.mnt_mountp, &status) != -1 && status.st_dev == my_dev) {
+        volume = mnt.mnt_special;
         break;
       }
     }
@@ -852,6 +855,17 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 #warning No timezone name information
   return PString(); 
 #endif
+}
+
+// note that PX_tm is local storage inside the PTime instance
+struct tm * PTime::os_localtime(const time_t * clock, struct tm * ts)
+{
+  return ::localtime_r(clock, ts);
+}
+
+struct tm * PTime::os_gmtime(const time_t * clock, struct tm * ts)
+{
+  return ::gmtime_r(clock, ts);
 }
 
 
