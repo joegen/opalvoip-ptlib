@@ -69,7 +69,7 @@ endif
 
 endif # FreeBSD
 #
-#  Sun
+#  Sunos 4.1.x
 #
 ####################################################
 
@@ -83,11 +83,17 @@ OBJ_SUFFIX	= sun4
 
 endif
 
+endif # sunos
+#
+#  Solaris (Sunos 5.x)
+#
+####################################################
+
 ifdef P_SOLARIS
 else
 
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS -DP_HAS_INT64 -DPBYTE_ORDER=PBIG_ENDIAN -DPCHAR8=PANSI_CHAR 
-LDLIBS		:= $(LDLIBS) -lsocket -lnsl
+LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
 OBJ_SUFFIX	= solaris
@@ -95,6 +101,8 @@ LDFLAGS		:= -R/usr/local/gnu/lib
 STATIC_LIBS	= libstdc++.a libg++.a 
 SYSLIBDIR	= /usr/local/gnu/lib
 
+P_SSL		= $(PWLIBDIR)
+ENDLDLIBS	:= $(ENDLDLIBS) -lpthread
 endif
 
 endif # solaris
@@ -142,10 +150,9 @@ endif # DEBUG
 
 
 # define SSL variables
-SSLDIR		= $(PWLIBDIR)/SSLeay-0.6.2
-SSLLIBDIR	= $(PWLIBDIR)/ssl
-CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLLIBDIR)/include -I$(SSLDIR)/crypto -I$(SSLDIR)/crypto/buffer
-LDFLAGS		:= $(LDFLAGS) -L$(SSLLIBDIR)/lib
+SSLDIR		= $(PWLIBDIR)/SSLeay-0.6.6
+CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/out/include -I$(SSLDIR)/crypto
+LDFLAGS		:= $(LDFLAGS) -L$(SSLDIR)/out/lib
 SSLDIR		:= /usr/local/ssl
 CFLAGS		:= $(CFLAGS) -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
 # define Posix threads stuff
