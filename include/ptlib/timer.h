@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.16  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.15  1998/09/23 06:21:45  robertj
  * Added open source copyright license.
  *
@@ -86,7 +89,9 @@
 class PThread;
 
 
-PDECLARE_CLASS(PTimer, PTimeInterval)
+class PTimer : public PTimeInterval
+{
+  PCLASSINFO(PTimer, PTimeInterval)
 /* A class representing a system timer. The time interval ancestor value is
    the amount of time left in the timer.
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.4  1999/02/16 08:11:17  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.3  1998/11/30 02:52:00  robertj
  * New directory structure
  *
@@ -48,7 +51,9 @@
 #include <ptlib/semaphor.h>
 
 
-PDECLARE_CLASS(PSyncPoint, PSemaphore)
+class PSyncPoint : public PSemaphore
+{
+  PCLASSINFO(PSyncPoint, PSemaphore)
 /* This class defines a thread synchonisation object.
  */
 
