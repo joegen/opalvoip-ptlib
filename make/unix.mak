@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.115  2002/01/26 23:57:08  craigs
+# Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+#
 # Revision 1.114  2002/01/26 00:22:27  robertj
 # Normalised MACHTYPE for sparc processors
 #
@@ -511,6 +514,9 @@ endif
 # -Wall must be at the start of the options otherwise
 # any -W overrides won't have any effect
 STDCCFLAGS += -Wall
+
+# We want to be GCC 3.0 compatible
+STDCCFLAGS	+= -DGCC3 -D__USE_STL__
 
 
 ####################################################
@@ -1047,7 +1053,16 @@ endif
 PW_LIBDIR	= $(PWLIBDIR)/lib
 
 # set name of the PT library
-PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+ifeq ($(findstring $(OBJ_SUFFIX),d),)
+ifeq ($(LIB_SUFFIX),a)
+PTLIB_BASE	= pt
+else
+PTLIB_BASE	= pt$(LIBPTCOMPAT)
+endif
+LIB_TYPE	=
+else
+PTLIB_BASE	= pt_$(OBJ_SUFFIX)
+endif
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
