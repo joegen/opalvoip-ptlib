@@ -199,10 +199,11 @@ BOOL PUDPSocket::ReadFrom(
   // attempt to read data
   struct sockaddr_in rec_addr;
   int    addr_len;
+
   if (ConvertOSError(lastReadCount = ::recvfrom(os_handle, buf, len, 0,
                                        (sockaddr *)&rec_addr, &addr_len))) {
     addr = rec_addr.sin_addr;
-    port = rec_addr.sin_port;
+    port = ntohs(rec_addr.sin_port);
     return lastReadCount > 0;
   }
 
@@ -231,9 +232,11 @@ virtual BOOL PUDPSocket::WriteTo(
   // attempt to read data
   struct sockaddr_in rec_addr;
   int    addr_len = sizeof(rec_addr);
+  memset(&rec_addr, 0, addr_len);
 
-  rec_addr.sin_addr = addr;
-  rec_addr.sin_port = port;
+  rec_addr.sin_family = AF_INET;
+  rec_addr.sin_addr   = addr;
+  rec_addr.sin_port   = htons(port);
 
   if (ConvertOSError(lastWriteCount = ::sendto(os_handle, buf, len, 0,
                                        (sockaddr *)&rec_addr, addr_len))) {
