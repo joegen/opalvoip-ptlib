@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.33  2003/05/29 09:03:36  rjongbloed
+# Changed SONAME so includes minor version number to allow for API changes.
+#
 # Revision 1.32  2003/05/06 09:47:20  robertj
 # Fixed up MacOSX changes so is compatible with previous "API" not requiring
 #   downstream libraries to change
@@ -166,11 +169,11 @@ ifeq ($(P_SHAREDLIB),1)
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
-    LDSOOPTS = -Bdynamic -G -h $(LIBNAME_MAJ)
+    LDSOOPTS = -Bdynamic -G -h $(LIBNAME_MIN)
     LD = ld
   else
     ifneq ($(OSTYPE),Darwin)
-      LDSOOPTS += -Wl,-soname,$(LIBNAME_MAJ)
+      LDSOOPTS += -Wl,-soname,$(LIBNAME_MIN)
     endif
     LD = $(CPLUS)
   endif
