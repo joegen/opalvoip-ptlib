@@ -14,6 +14,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <signal.h>
 
 #define PSETPGRP()  setpgrp(0, 0)
@@ -48,6 +49,8 @@ int getpeername(int, struct sockaddr *, int *);
 int gethostname(char *, int);
 int getsockname(int, struct sockaddr *, int *);
 char * inet_ntoa(struct in_addr);
+
+int ftime (struct timeb *);
 
 struct hostent * gethostbyname(const char *);
 struct hostent * gethostbyaddr(const char *, int, int);
