@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.62  2001/02/14 06:52:26  robertj
+ * Fixed GNU compatibility with last change to PServiceMacro.
+ *
  * Revision 1.61  2001/02/14 02:30:59  robertj
  * Moved HTTP Service Macro facility to public API so can be used by apps.
  * Added ability to specify the service macro keyword, defaults to "macro".
@@ -230,6 +233,15 @@
 #include <ptlib.h>
 #include <ptclib/httpsvc.h>
 #include <ptlib/sockets.h>
+
+
+PSORTED_LIST(PServiceMacros_base, PServiceMacro);
+
+class PServiceMacros_list : public PServiceMacros_base
+{
+  public:
+    PServiceMacros_list();
+};
 
 
 #define new PNEW
@@ -1151,15 +1163,6 @@ PString PServiceMacro::Translate(PHTTPRequest &, const PString &) const
   return PString();
 };
 
-
-
-PSORTED_LIST(PServiceMacros_base, PServiceMacro);
-
-class PServiceMacros_list : public PServiceMacros_base
-{
-  public:
-    PServiceMacros_list();
-};
 
 
 PServiceMacros_list::PServiceMacros_list()
