@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.29 1996/12/05 11:51:50 craigs Exp $
+ * $Id: winsock.cxx,v 1.30 1997/01/03 04:37:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.30  1997/01/03 04:37:11  robertj
+ * Fixed '95 problem with send timeouts.
+ *
  * Revision 1.29  1996/12/05 11:51:50  craigs
  * Fixed Win95 recvfrom timeout problem
  *
@@ -175,18 +178,8 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   flush();
   lastWriteCount = 0;
 
-  int timeout;
-  if (writeTimeout == PMaxTimeInterval)
-    timeout = 0;
-  else if (writeTimeout == 0)
-    timeout = 1;
-  else
-    timeout = writeTimeout.GetInterval();
-  if (!SetOption(SO_SNDTIMEO, timeout))
-    return FALSE;
-
   while (len > 0) {
-    int sendResult = ::send(os_handle, ((char *)buf)+lastWriteCount, len, 0);
+    int sendResult = os_sendto(((char *)buf)+lastWriteCount, len, 0, NULL, 0);
     if (!ConvertOSError(sendResult))
       return FALSE;
     lastWriteCount += sendResult;
@@ -226,22 +219,36 @@ int PSocket::os_connect(struct sockaddr * addr, int size)
 }
 
 
+class fd_set_class : public fd_set {
+  public:
+    fd_set_class(SOCKET fd)
+      {
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+        FD_ZERO(this);
+        FD_SET(fd, this);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+      }
+};
+
+class timeval_class : public timeval {
+  public:
+    timeval_class(const PTimeInterval & time)
+      {
+        tv_usec = (long)(time.GetMilliSeconds()%1000)*1000;
+        tv_sec = time.GetSeconds();
+      }
+};
+
 int PSocket::os_accept(int sock, struct sockaddr * addr, int * size,
                        const PTimeInterval & timeout)
 {
   if (timeout != PMaxTimeInterval) {
-    struct timeval tv;
-    tv.tv_usec = (long)(timeout.GetMilliSeconds()%1000)*1000;
-    tv.tv_sec = timeout.GetSeconds();
-    fd_set readfds;
-#ifdef _MSC_VER
-#pragma warning(disable:4127)
-#endif
-    FD_ZERO(&readfds);
-    FD_SET(sock, &readfds);
-#ifdef _MSC_VER
-#pragma warning(default:4127)
-#endif
+    fd_set_class readfds = sock;
+    timeval_class tv = timeout;
     switch (select(0, &readfds, NULL, NULL, &tv)) {
       case 1 :
         break;
@@ -267,19 +274,9 @@ BOOL PSocket::os_recvfrom(void * buf,
       return FALSE;
 
     if (available == 0) {
-      fd_set readfds;
-#ifdef _MSC_VER
-#pragma warning(disable:4127)
-#endif
-      FD_ZERO(&readfds);
-      FD_SET(os_handle, &readfds);
-#ifdef _MSC_VER
-#pragma warning(default:4127)
-#endif
-      struct timeval tv;
-      tv.tv_usec = (long)(readTimeout.GetMilliSeconds()%1000)*1000;
-      tv.tv_sec = readTimeout.GetSeconds();
-      int selval = select(0, &readfds, NULL, NULL, &tv);
+      fd_set_class readfds = os_handle;
+      timeval_class tv = readTimeout;
+      int selval = ::select(0, &readfds, NULL, NULL, &tv);
       if (!ConvertOSError(selval))
         return FALSE;
 
@@ -312,15 +309,18 @@ BOOL PSocket::os_sendto(const void * buf,
                         struct sockaddr * to,
                         int tolen)
 {
-  int timeout;
-  if (writeTimeout == PMaxTimeInterval)
-    timeout = 0;
-  else if (writeTimeout == 0)
-    timeout = 1;
-  else
-    timeout = writeTimeout.GetInterval();
-  if (!SetOption(SO_SNDTIMEO, timeout))
-    return FALSE;
+  if (readTimeout != PMaxTimeInterval) {
+    fd_set_class writefds = os_handle;
+    timeval_class tv = writeTimeout;
+    int selval = ::select(0, NULL, &writefds, NULL, &tv);
+    if (selval < 0)
+      return -1;
+
+    if (selval == 0) {
+      errno = EAGAIN;
+      return -1;
+    }
+  }
 
   return ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
 }
