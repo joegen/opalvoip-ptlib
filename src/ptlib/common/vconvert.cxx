@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.37  2004/10/27 09:24:18  dsandras
+ * Added patch from Nicola Orru' to convert from SBGGR8 to YUV420P. Thanks!
+ *
  * Revision 1.36  2004/09/21 13:01:08  dsandras
  * Added conversion from sbggr to rgb thanks to an anonymous patcher.
  *
@@ -181,7 +184,7 @@ PSYNONYM_COLOUR_CONVERTER(I420,   YUV420P);
 
 class PStandardColourConverter : public PColourConverter
 {
-    PCLASSINFO(PStandardColourConverter, PColourConverter);
+  PCLASSINFO(PStandardColourConverter, PColourConverter);
   protected:
     PStandardColourConverter(
       const PString & srcFmt,
@@ -189,6 +192,14 @@ class PStandardColourConverter : public PColourConverter
       unsigned w, unsigned h
     ) : PColourConverter(srcFmt, dstFmt, w, h) { }
 
+  BOOL SBGGR8toYUV420P(
+     const BYTE * srgb,
+      BYTE * rgb,
+      PINDEX * bytesReturned,
+      unsigned rgbIncrement,
+      BOOL flipVertical,
+      BOOL flipBR
+    ) const;
     BOOL SBGGR8toRGB(
       const BYTE * srgb,
       BYTE * rgb,
@@ -888,6 +899,109 @@ PSTANDARD_COLOUR_CONVERTER(YUV422,YUV420P)
 
 
 #define LIMIT(x) (unsigned char) (((x > 0xffffff) ? 0xff0000 : ((x <= 0xffff) ? 0 : x & 0xff0000)) >> 16)
+static inline int clip(int a, int limit) {
+  return a<limit?a:limit;
+}
+
+BOOL PStandardColourConverter::SBGGR8toYUV420P(const BYTE * src,
+					       BYTE * dst,
+					       PINDEX * bytesReturned,
+					       unsigned rgbIncrement,
+					       BOOL     flipVertical,
+					       BOOL     flipBR) const
+{
+  const bool native=true; // set to false to use the double conversion algorithm (Bayer->RGB->YUV420P)
+  
+  if (native) {
+    // kernels for Y conversion, normalised by 2^16
+    const int kR[]={1802,9667,1802,9667,19661,9667,1802,9667,1802}; 
+    const int kG1[]={7733,9830,7733,3604,7733,3604,7733,9830,7733};
+    const int kG2[]={7733,3604,7733,9830,7733,9830,7733,3604,7733};
+    const int kB[]={4915,9667,4915,9667,7209,9667,4915,9667,4915};
+    //  const int kID[]={0,0,0,0,65536,0,0,0,0}; identity kernel, use to test
+
+    int B, G, G1, G2, R;
+    unsigned const int stride = srcFrameWidth;
+    unsigned const int hSize =srcFrameHeight/2;
+    unsigned const int vSize =srcFrameWidth/2;
+    unsigned const int lastRow=srcFrameHeight-1;
+    unsigned const int lastCol=srcFrameWidth-1;
+    unsigned int i,j;
+    const BYTE *sBayer = src;
+
+    //	Y = round( 0.256788 * R + 0.504129 * G + 0.097906 * B) +  16;
+    //  Y = round( 0.30 * R + 0.59 * G + 0.11 * B ) use this!
+    //	U = round(-0.148223 * R - 0.290993 * G + 0.439216 * B) + 128;
+    //	V = round( 0.439216 * R - 0.367788 * G - 0.071427 * B) + 128;
+
+    // Compute U and V planes using EXACT values, reading 2x2 pixels at a time
+    BYTE *dU = dst+srcFrameHeight*srcFrameWidth;
+    BYTE *dV = dU+hSize*vSize;
+    for (i=0; i<hSize; i++) {      
+      for (j=0; j<vSize; j++) {
+	B=sBayer[0];
+	G1=sBayer[1];
+	G2=sBayer[stride];
+	R=sBayer[stride+1];
+	G=G1+G2;
+	*dU = ( (-19428 * R -19071*G +57569 * B) >> 17) + 128;
+	*dV = ( ( 57569 * R -24103*G -9362 * B) >> 17) + 128;
+	sBayer+=2;
+	dU++;
+	dV++;
+      }
+      sBayer+=stride; // skip odd lines
+    }
+    // Compute Y plane
+    BYTE *dY = dst;
+    sBayer=src;
+    const int * k; // kernel pointer
+    int dxLeft, dxRight; // precalculated offsets, needed for first and last column
+    const BYTE *sBayerTop, *sBayerBottom;
+    for (i=0; i<srcFrameHeight; i++) {
+      // Pointer to previous row, to the next if we are on the first one
+      sBayerTop=sBayer+(i?(-stride):stride);
+      // Pointer to next row, to the previous one if we are on the last
+      sBayerBottom=sBayer+((i<lastRow)?stride:(-stride));
+      // offset to previous column, to the next if we are on the first col
+      dxLeft=1;
+      for (j=0; j<srcFrameWidth; j++) {
+	// offset to next column, to previous if we are on the last one
+	dxRight=j<lastCol?1:(-1);
+	// find the proper kernel according to the current pixel color
+	if ( (i ^ j) & 1)  k=(j&1)?kG1:kG2; // green 1 or green 2
+	else if (!(i & 1))  k=kB; // blue
+	else /* if (!(j & 1)) */ k=kR; // red
+	
+	// apply the proper kernel to this pixel and surrounding ones
+	*dY= (BYTE)(clip( (k[0])*(int)sBayerTop[dxLeft]+
+			  (k[1])*(int)(*sBayerTop)+
+			  (k[2])*(int)sBayerTop[dxRight]+
+			  (k[3])*(int)sBayer[dxLeft]+
+			  (k[4])*(int)(*sBayer)+
+			  (k[5])*(int)sBayer[dxRight]+
+			  (k[6])*(int)sBayerBottom[dxLeft]+
+			  (k[7])*(int)(*sBayerBottom)+
+			  (k[8])*(int)sBayerBottom[dxRight], (1<<24)) >> 16);
+	dY++;
+	sBayer++;
+	sBayerTop++;
+	sBayerBottom++;
+	dxLeft=-1;
+      }
+    }
+    if (bytesReturned) *bytesReturned=srcFrameHeight*srcFrameWidth+2*hSize*vSize;
+    return true;
+  }
+  else {
+    // shortest but less efficient (one malloc per conversion!)
+    BYTE * tempDest=(BYTE*)malloc(3*srcFrameWidth*srcFrameHeight);
+    SBGGR8toRGB(src, tempDest, bytesReturned, 3, FALSE , FALSE);
+    BOOL r = RGBtoYUV420P(tempDest, dst, bytesReturned, 3, flipVertical, flipBR);
+    free(tempDest);
+    return r;
+  }
+}
 
 BOOL PStandardColourConverter::SBGGR8toRGB(const BYTE * src,
                                             BYTE * dst,
@@ -1071,7 +1185,12 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
 
 PSTANDARD_COLOUR_CONVERTER(SBGGR8,RGB24)
 {
-  return SBGGR8toRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, !doVFlip, FALSE);
+  return SBGGR8toRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, TRUE);
+}
+
+PSTANDARD_COLOUR_CONVERTER(SBGGR8,YUV420P)
+{
+  return SBGGR8toYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, TRUE);
 }
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24)

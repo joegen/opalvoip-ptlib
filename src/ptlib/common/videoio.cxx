@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.51  2004/10/27 09:24:18  dsandras
+ * Added patch from Nicola Orru' to convert from SBGGR8 to YUV420P. Thanks!
+ *
  * Revision 1.50  2004/10/23 10:54:39  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -456,7 +459,8 @@ static struct {
   { "Grey",     8 },
   { "GreyF",    8 },
   { "UYVY422", 16 },
-  { "UYV444",  24 }
+  { "UYV444",  24 },
+  { "SBGGR8",   8 }
 };
 
 
