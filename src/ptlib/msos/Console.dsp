@@ -223,6 +223,14 @@ SOURCE=.\svcproc.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\common\vconvert.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\common\vfakeio.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\vfw.cxx
 # End Source File
 # Begin Source File
@@ -415,6 +423,14 @@ SOURCE=..\..\..\Include\PtLib\Timer.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\Udpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\vconvert.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\vfakeio.h
 # End Source File
 # Begin Source File
 
