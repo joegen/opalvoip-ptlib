@@ -71,7 +71,6 @@ extern "C" char *mktemp(char *);
 static PString CanonicaliseDirectory (const PString & path)
 
 {
-  int l;
   PString canonical_path;
   PString slash("/");
 
