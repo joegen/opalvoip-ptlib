@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.7  2004/01/17 17:45:59  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.6  2003/10/08 21:58:13  dereksmithies
  * Add client authentication support. many thanks to Ben Lear.
  *
@@ -257,7 +260,7 @@ BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
     return TRUE;
   }
 
-  value = PString::Empty();
+  value.MakeEmpty();
   return FALSE;
 }
 
