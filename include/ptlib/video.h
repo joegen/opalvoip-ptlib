@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.11  2003/01/11 05:30:13  robertj
+ * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -78,6 +81,9 @@
 #include <ptlib/vfakeio.h>
 #ifdef TRY_1394DC
 #include <ptlib/videoio1394dc.h>
+#endif
+#ifdef TRY_1394AVC
+#include <ptlib/videoio1394avc.h>
 #endif
 
 /**A class representing a video channel. This class is provided mainly for
