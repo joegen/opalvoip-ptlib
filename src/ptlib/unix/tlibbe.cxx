@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.30  2004/05/24 04:17:16  ykiryanov
+ * Made PSyncPoint::Wait to return FALSE if called with timeout 0
+ *
  * Revision 1.29  2004/05/23 22:20:37  ykiryanov
  * Got rid of 2 housekeeper thread problem
  *
@@ -108,6 +111,8 @@ class PMutex;
 #include <be/support/Locker.h>
 
 int PX_NewHandle(const char *, int);
+
+#define DEBUG_SEMAPHORES1 1
 
 //////////////////////////////////////////////////////////////////////////////
 // Threads
@@ -601,8 +606,7 @@ void PSemaphore::Create(unsigned initial)
   }
   else // Use BLocker
   {
-    semId = (sem_id) new BLocker("PWLN", true); // PWLib use recursive locks. true for benaphore style
-    PAssertOS(semId);
+    semId = (sem_id) new BLocker("PWLN", true); // PWLib use recursive locks. true for benaphore style, false for not
   }
 }
 
@@ -639,7 +643,6 @@ PSemaphore::~PSemaphore()
   }
   else // Use BLocker
   {
-    PAssertOS(semId);
     delete (BLocker*) semId; // Thanks!
   }
 }
@@ -665,14 +668,14 @@ void PSemaphore::Wait()
   }
   else
   {
-   ((BLocker*)semId)->Lock(); // Using class to support recursive locks 
+    ((BLocker*)semId)->Lock(); // Using class to support recursive locks 
   }
 }
 
 BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
   PInt64 ms = timeout.GetMilliSeconds();
-  bigtime_t microseconds = 0;
+  bigtime_t microseconds = ms * 1000;
 
   status_t result = B_NO_ERROR;
    
@@ -681,9 +684,6 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
     PAssertOS(semId >= B_NO_ERROR);
     PAssertOS(timeout < PMaxTimeInterval);
 
-    if(ms > 0)
-       microseconds = ms * 1000;
- 
     #ifdef DEBUG_SEMAPHORES
     sem_info info;
     get_sem_info(semId, &info);
@@ -699,14 +699,14 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 
     if(ms == 0)
      return (result != B_TIMED_OUT); // Not timed out - check Wait(0) passed
-
-    return (result == B_OK);
   }
   else
   {
-   result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
-   return result == B_OK;  
+    PError << "Semaphore Wait (locker type) with timeout " << microseconds << endl;
+    result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
   }
+
+  return result == B_OK;
 }
 
 void PSemaphore::Signal()
@@ -724,7 +724,7 @@ void PSemaphore::Signal()
    }
    else
    {
-    ((BLocker*)semId)->Unlock(); // Using BLocker class to support recursive locks 
+     ((BLocker*)semId)->Unlock(); // Using BLocker class to support recursive locks 
    }		
 }
 
@@ -753,7 +753,7 @@ BOOL PSemaphore::WillBlock() const
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
- : PSemaphore(FALSE)
+ : PSemaphore(TRUE) // TREU means Implemented through BLocker
 {
    PSemaphore::Create(0);
 }
@@ -770,7 +770,7 @@ void PSyncPoint::Wait()
                                                                                                       
 BOOL PSyncPoint::Wait(const PTimeInterval & timeout)
 {
-  return PSemaphore::Wait(timeout);
+  return timeout.GetMilliSeconds() ==0 ? FALSE: PSemaphore::Wait(timeout);
 }
                                                                                                       
 BOOL PSyncPoint::WillBlock() const
@@ -782,7 +782,7 @@ BOOL PSyncPoint::WillBlock() const
 // PMutex, derived from BLightNestedLocker  
 
 PMutex::PMutex() 
-  : PSemaphore(TRUE) 
+  : PSemaphore(TRUE) // TRUE means implemented through BLocker
 {
   PSemaphore::Create(0);
 }
@@ -813,7 +813,7 @@ BOOL PMutex::WillBlock() const
   return PSemaphore::WillBlock();
 }
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // Extra functionality not found in BeOS
 
 int seteuid(uid_t uid) { return 0; }
