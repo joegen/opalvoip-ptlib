@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.157  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.156  2004/04/18 04:33:37  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -610,7 +614,7 @@ PContainer::PContainer(PINDEX initialSize)
 
 PContainer::PContainer(int, const PContainer * cont)
 {
-  PAssertNULL(cont);
+  PAssert(cont != NULL, PInvalidParameter);
   PAssert2(cont->reference != NULL, cont->GetClass(), "Clone of deleted container");
 
 #if PCONTAINER_USES_CRITSEC
@@ -2732,7 +2736,9 @@ PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseles
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
     if (caseless)
@@ -2792,7 +2798,9 @@ PSortedStringList::PSortedStringList(PINDEX count,
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     PString * newString;
     if (caseless)
@@ -2885,7 +2893,9 @@ PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
   if (count == 0)
     return;
 
-  PAssertNULL(strarr);
+  if (PAssertNULL(strarr) == NULL)
+    return;
+
   for (PINDEX i = 0; i < count; i++) {
     if (caseless)
       Include(PCaselessString(strarr[i]));

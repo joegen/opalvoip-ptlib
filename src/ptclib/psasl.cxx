@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.cxx,v $
+ * Revision 1.3  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.2  2004/04/18 12:34:22  csoutheren
  * Modified to compile under Unix
  *
@@ -74,9 +78,10 @@ static int PSASL_ClientAuthID(void *context, int id, const char **result, unsign
     if (id != SASL_CB_AUTHNAME)
         return SASL_FAIL;
 
-    const PSASLClient * c = (const PSASLClient *)context;
-    PAssertNULL(c);
+    if (PAssertNULL(context) == NULL)
+        return SASL_FAIL;
 
+    const PSASLClient * c = (const PSASLClient *)context;
     *result = (const char *)c->GetAuthID();
 
     if (len)
@@ -90,9 +95,10 @@ static int PSASL_ClientUserID(void *context, int id, const char **result, unsign
     if (id != SASL_CB_USER)
         return SASL_FAIL;
 
-    const PSASLClient * c = (const PSASLClient *)context;
-    PAssertNULL(c);
+    if (PAssertNULL(context) == NULL)
+        return SASL_FAIL;
 
+    const PSASLClient * c = (const PSASLClient *)context;
     *result = (const char *)c->GetUserID();
 
     if (len)
@@ -106,9 +112,10 @@ static int PSASL_ClientPassword(sasl_conn_t *, void *context, int id, sasl_secre
     if (id != SASL_CB_PASS)
         return SASL_FAIL;
 
-    const PSASLClient * c = (const PSASLClient *)context;
-    PAssertNULL(c);
+    if (PAssertNULL(context) == NULL)
+        return SASL_FAIL;
 
+    const PSASLClient * c = (const PSASLClient *)context;
     const char * pwd = c->GetPassword();
 
     if (!pwd)
@@ -131,7 +138,9 @@ static int PSASL_ClientGetPath(void *, const char ** path)
 
 static int PSASL_ClientLog(void *, int priority, const char *message) 
 {
+#if PTRACING
     static const char * labels[7] = { "Error", "Fail", "Warning", "Note", "Debug", "Trace", "Pass" };
+#endif
 
     if (!message || priority > SASL_LOG_PASS)
         return SASL_BADPARAM;
