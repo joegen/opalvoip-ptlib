@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.31 1998/01/26 00:56:11 robertj Exp $
+ * $Id: svcproc.cxx,v 1.32 1998/02/03 06:16:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.32  1998/02/03 06:16:31  robertj
+ * Added extra log levels.
+ * Fixed bug where window disappears after debug service termination.
+ *
  * Revision 1.31  1998/01/26 00:56:11  robertj
  * Changed ServiceProcess to exclusively use named event to detect running process.
  *
@@ -158,7 +162,7 @@ static PString CreateLogFileName(const PString & processName)
 void PSystemLog::Output(Level level, const char * msg)
 {
   PServiceProcess & process = PServiceProcess::Current();
-  if (level != NumLogLevels && level > process.GetLogLevel())
+  if (level > process.GetLogLevel())
     return;
 
   DWORD err = GetLastError();
@@ -176,15 +180,17 @@ void PSystemLog::Output(Level level, const char * msg)
     }
 
     static const char * const levelName[NumLogLevels+1] = {
+      "Message",
       "Fatal error",
       "Error",
       "Warning",
       "Info",
       "Debug",
-      "Message"
+      "Debug2",
+      "Debug3"
     };
     PTime now;
-    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level];
+    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1];
     if (msg[0] != '\0')
       *out << ": " << msg;
     if (level < Info && err != 0)
@@ -217,15 +223,17 @@ void PSystemLog::Output(Level level, const char * msg)
     strings[2] = level != Fatal ? "" : " Program aborted.";
 
     static const WORD levelType[NumLogLevels+1] = {
+      EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_ERROR_TYPE,
       EVENTLOG_WARNING_TYPE,
       EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_INFORMATION_TYPE,
+      EVENTLOG_INFORMATION_TYPE,
       EVENTLOG_INFORMATION_TYPE
     };
     ReportEvent(hEventSource, // handle of event source
-                levelType[level],     // event type
+                levelType[level+1],     // event type
                 (WORD)(level+1),      // event category
                 0x1000,               // event ID
                 NULL,                 // current user's SID
@@ -297,7 +305,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 
-  PSetErrorStream(new PSystemLog(PSystemLog::NumLogLevels));
+  PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PreInitialise(1, argv);
 
   debugMode = FALSE;
@@ -364,10 +372,6 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   do {
     switch (MsgWaitForMultipleObjects(1, &terminationEvent,
                                       FALSE, INFINITE, QS_ALLINPUT)) {
-      case WAIT_OBJECT_0 :
-        msg.message = WM_QUIT;
-        break;
-
       case WAIT_OBJECT_0+1 :
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
           if (msg.message != WM_QUIT)
@@ -377,9 +381,19 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 
       default :
         // This is a work around for '95 coming up with an erroneous error
-        if (GetLastError() != ERROR_INVALID_HANDLE ||
-            WaitForSingleObject(terminationEvent, 0) != WAIT_TIMEOUT)
+        if (GetLastError() == ERROR_INVALID_HANDLE &&
+                          WaitForSingleObject(terminationEvent, 0) == WAIT_TIMEOUT)
+          break;
+        // Else fall into next case
+
+      case WAIT_OBJECT_0 :
+        if (!debugMode || controlWindow == NULL)
           msg.message = WM_QUIT;
+        else {
+          PError << "nService simulation stopped for \"" << GetName() << "\".\n\n"
+                    "Close window to terminate.\n" << endl;
+          ResetEvent(terminationEvent);
+        }
     }
   } while (msg.message != WM_QUIT);
 
@@ -454,11 +468,13 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
     AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
 
     menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal, "&Fatal Error");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Error, "&Error");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal,   "&Fatal Error");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Error,   "&Error");
     AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Warning, "&Warning");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Info, "&Information");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug, "&Debug");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Info,    "&Information");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug,   "&Debug");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug2,  "Debug &2");
+    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug3,  "Debug &3");
     AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
 
     if (CreateWindow(GetName(),
@@ -516,7 +532,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_INITMENUPOPUP :
     {
       int enableItems = MF_BYCOMMAND|(debugMode ? MF_ENABLED : MF_GRAYED);
-      for (int i = 0; i < PSystemLog::NumLogLevels; i++) {
+      for (int i = PSystemLog::Fatal; i < PSystemLog::NumLogLevels; i++) {
         CheckMenuItem((HMENU)wParam, LogLevelBaseMenuID+i, MF_BYCOMMAND|MF_UNCHECKED);
         EnableMenuItem((HMENU)wParam, LogLevelBaseMenuID+i, enableItems);
       }
@@ -573,7 +589,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         default :
           if (wParam >= SvcCmdBaseMenuID && wParam < SvcCmdBaseMenuID+NumSvcCmds)
             ProcessCommand(ServiceCommandNames[wParam-SvcCmdBaseMenuID]);
-          if (wParam >= LogLevelBaseMenuID && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
+          if (wParam >= LogLevelBaseMenuID+PSystemLog::Fatal && wParam < LogLevelBaseMenuID+PSystemLog::NumLogLevels)
             SetLogLevel((PSystemLog::Level)(wParam-LogLevelBaseMenuID));
       }
       break;
@@ -1147,6 +1163,8 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       good = TRUE;
       break;
   }
+
+  SetLastError(svcManager->GetError());
 
   PError << "Service command \"" << ServiceCommandNames[cmdNum] << "\" ";
   if (good)
