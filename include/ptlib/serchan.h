@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.3 1994/07/17 10:46:06 robertj Exp $
+ * $Id: serchan.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
- * Revision 1.3  1994/07/17 10:46:06  robertj
+ * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.3  1994/07/17  10:46:06  robertj
  * Moved data to PChannel class.
  *
  * Revision 1.2  1994/06/25  11:55:15  robertj
@@ -21,6 +24,11 @@
 
 
 #define _PSERIALCHANNEL
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 class PConfig;
 

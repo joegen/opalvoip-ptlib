@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.6 1994/07/02 03:03:49 robertj Exp $
+ * $Id: timer.h,v 1.7 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.6  1994/07/02 03:03:49  robertj
+ * Revision 1.7  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.6  1994/07/02  03:03:49  robertj
  * Redesign of timers.
  *
  * Revision 1.5  1994/06/25  11:55:15  robertj
@@ -30,6 +33,11 @@
 
 
 #define _PTIMER
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 class PTimer;
 

@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.5 1994/08/21 23:43:02 robertj Exp $
+ * $Id: channel.h,v 1.6 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
- * Revision 1.5  1994/08/21 23:43:02  robertj
+ * Revision 1.6  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.5  1994/08/21  23:43:02  robertj
  * Moved meta-string transmitter from PModem to PChannel.
  * Added common entry point to convert OS error to PChannel error.
  *
@@ -28,6 +31,11 @@
 
 
 #define _PCHANNEL
+
+#ifdef __GNU__
+#pragma interface
+#endif
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

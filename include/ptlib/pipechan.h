@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.1 1994/04/20 12:17:44 robertj Exp $
+ * $Id: pipechan.h,v 1.2 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,13 +8,20 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
- * Revision 1.1  1994/04/20 12:17:44  robertj
+ * Revision 1.2  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.1  1994/04/20  12:17:44  robertj
  * Initial revision
  *
  */
 
 
 #define _PPIPECHANNEL
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 PDECLARE_CLASS(PPipeChannel, PChannel)

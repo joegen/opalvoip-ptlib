@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.5 1994/08/21 23:43:02 robertj Exp $
+ * $Id: thread.h,v 1.6 1994/08/22 00:46:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.5  1994/08/21 23:43:02  robertj
+ * Revision 1.6  1994/08/22 00:46:48  robertj
+ * Added pragma fro GNU C++ compiler.
+ *
+ * Revision 1.5  1994/08/21  23:43:02  robertj
  * Added SuspendBlock state to cooperative multi-threading to fix logic fault.
  *
  * Revision 1.4  1994/08/04  12:32:22  robertj
@@ -27,6 +30,10 @@
 
 
 #define _PTHREAD
+
+#ifdef __GNU__
+#pragma interface
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
