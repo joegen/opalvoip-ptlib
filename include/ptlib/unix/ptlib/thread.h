@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.7 1996/12/30 03:23:52 robertj Exp $
+ * $Id: thread.h,v 1.8 1997/04/22 11:00:44 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.8  1997/04/22 11:00:44  craigs
+ * Added FreeStack function
+ *
  * Revision 1.7  1996/12/30 03:23:52  robertj
  * Added timeout to block on child process function.
  *
@@ -64,6 +67,7 @@ class PSemaphore;
                                 const PTimeInterval & timeout);
                      
   protected:
+    void FreeStack();
     void PXSetOSHandleBlock  (int fd, int type);
     void PXClearOSHandleBlock(int fd, int type);
 
