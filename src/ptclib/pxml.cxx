@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.35  2003/05/14 02:50:53  rjongbloed
+ * Simplified name space initialisation
+ *
  * Revision 1.34  2003/05/06 07:55:25  craigs
  * Fixed problem with initialising XML parser for namespaces
  *
@@ -144,20 +147,12 @@ static void PXML_EndNamespaceDeclHandler(void *userData, const XML_Char *prefix)
 }
 
 PXMLParser::PXMLParser(int _options)
+  : options(_options)
 {
-  BOOL useNS = FALSE;
-  if (_options == WithNS) {
-    useNS = TRUE;
-    options = -1;
-  } else if ((_options > 0) && ((_options & WithNS) != 0)) {
-    useNS = TRUE;
-    options = _options & (!WithNS);
-  } 
-
   if (options < 0)
     options = 0;
 
-  if (useNS)
+  if ((options & WithNS) != 0)
     expat = XML_ParserCreateNS(NULL, '|');
   else
     expat = XML_ParserCreate(NULL);
