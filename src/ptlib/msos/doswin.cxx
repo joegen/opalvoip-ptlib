@@ -1,5 +1,5 @@
 /*
- * $Id: doswin.cxx,v 1.3 1995/03/25 02:09:11 robertj Exp $
+ * $Id: doswin.cxx,v 1.4 1995/04/01 08:05:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: doswin.cxx,v $
+ * Revision 1.4  1995/04/01 08:05:59  robertj
+ * Fixed yield for straight DOS and QUICKWIN systems.
+ *
  * Revision 1.3  1995/03/25 02:09:11  robertj
  * Added check for network login name.
  *
@@ -304,10 +307,15 @@ void PThread::Block(BlockFunction isBlockFun, PObject * obj)
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
 void PProcess::OperatingSystemYield()
 {
+#ifdef P_QUICKWIN
+  _wyield();
+#endif
 }
-
 
 
 PString PProcess::GetUserName() const
