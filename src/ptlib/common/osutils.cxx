@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.174  2001/12/14 00:42:56  robertj
+ * Fixed unix compatibility with trace of threads not created by pwlib.
+ *
  * Revision 1.173  2001/12/13 09:21:43  robertj
  * Changed trace so shows thread id if current thread not created by PWLib.
  *
@@ -772,8 +775,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       PThread * thread = PThread::Current();
       if (thread == NULL)
         *PTraceStream << "ThreadID=0x"
-                      << setfill('0') << hex
-                      << setw(8) << GetCurrentThreadId()
+                      << setfill('0') << hex << setw(8)
+#ifdef _WIN32
+                      << GetCurrentThreadId()
+#elif defined(P_PTHREADS)
+                      << pthread_self()
+#endif
                       << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
