@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.6 1996/03/04 12:21:42 robertj Exp $
+ * $Id: ptime.cxx,v 1.7 1996/03/05 14:09:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.7  1996/03/05 14:09:20  robertj
+ * Fixed bugs in PTimerInterval stream output.
+ *
  * Revision 1.6  1996/03/04 12:21:42  robertj
  * Fixed output of leading zeros in PTimeInterval stream output.
  *
@@ -69,22 +72,23 @@ void PTimeInterval::PrintOn(ostream & strm) const
   }
 
   tmp = (milliseconds%86400000)/3600000;
-  if (tmp > 0) {
+  if (hadPrevious || tmp > 0) {
     if (hadPrevious)
-      strm.precision(2);
+      strm.width(2);
     strm << tmp << ':';
     hadPrevious = TRUE;
   }
 
   tmp = (milliseconds%3600000)/60000;
-  if (tmp > 0) {
+  if (hadPrevious || tmp > 0) {
     if (hadPrevious)
-      strm.precision(2);
+      strm.width(2);
     strm << tmp << ':';
+    hadPrevious = TRUE;
   }
 
   if (hadPrevious)
-    strm.precision(2);
+    strm.width(2);
   strm << (milliseconds%60000)/1000;
 
   if (decs > 0)
