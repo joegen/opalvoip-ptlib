@@ -42,30 +42,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "GUI"=.\src\pwlib\mswin\Gui.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
-Project: "GUI Components"=".\src\pwlib\mswin\GUI Components.dsp" - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "MergeSym"=.\tools\MergeSym\MergeSym.dsp - Package Owner=<4>
 
 Package=<5>
@@ -106,27 +82,6 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name Console
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "PWLib"=.\src\pwlib\mswin\PWLib.DSP - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name GUI
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name pwrc
     End Project Dependency
 }}}
 
@@ -244,45 +199,6 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name Console Components
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name PTLib
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "pwrc"=.\Tools\PWRc\pwrc.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Console
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "pwtest"=.\Tools\pwtest\pwtest.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name PWLib
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Console Components
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name GUI Components
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name PTLib
