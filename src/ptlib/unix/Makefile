@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.110  2003/04/15 08:05:43  craigs
+# Added pdns.cxx
+#
 # Revision 1.109  2003/04/14 21:20:59  dereks
 # Fix problems for Firewire video. Thanks to Snark on #gnomemeeting
 #
@@ -550,6 +553,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/stun.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
 	$(COMPONENT_SRC_DIR)/udp.cxx \
+	$(COMPONENT_SRC_DIR)/pdns.cxx \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
 	$(VIDEO_SOURCE) \
