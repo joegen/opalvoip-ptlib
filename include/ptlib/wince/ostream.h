@@ -102,8 +102,7 @@ class ostream_withassign : public ostream
 };
 
 #ifndef WCE_NO_EXTERNAL_STREAMS
-#include "YWinCEOStream.h"
-
+#include "ceostream.h"
 extern YWinCEOStream cout;
 extern YWinCEOStream cerr;
 
