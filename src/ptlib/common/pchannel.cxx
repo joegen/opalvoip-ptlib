@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.8  2000/08/22 08:33:37  robertj
+ * Removed PAssert() for write to unattached indirect channel, now sets
+ *    return code so is similay to "unopened file" semantics.
+ *
  * Revision 1.7  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -572,11 +576,12 @@ BOOL PIndirectChannel::Read(void * buf, PINDEX len)
 
   channelPointerMutex.StartRead();
 
-  PAssert(readChannel != NULL, "Indirect read though NULL channel");
-
   BOOL returnValue;
-  if (readChannel == NULL)
+  if (readChannel == NULL) {
+    lastError = NotOpen;
+    osError = EBADF;
     returnValue = FALSE;
+  }
   else {
     readChannel->SetReadTimeout(readTimeout);
 
@@ -599,11 +604,12 @@ BOOL PIndirectChannel::Write(const void * buf, PINDEX len)
 
   channelPointerMutex.StartRead();
 
-  PAssert(writeChannel != NULL, "Indirect write though NULL channel");
-
   BOOL returnValue;
-  if (writeChannel == NULL)
+  if (writeChannel == NULL) {
+    lastError = NotOpen;
+    osError = EBADF;
     returnValue = FALSE;
+  }
   else {
     writeChannel->SetWriteTimeout(writeTimeout);
 
