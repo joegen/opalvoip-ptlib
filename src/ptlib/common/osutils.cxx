@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.126  1999/10/14 08:08:27  robertj
+ * Fixed problem, assuring millisecond accuracy in timestamp of trace output.
+ *
  * Revision 1.125  1999/09/14 13:02:52  robertj
  * Fixed PTRACE to PSYSTEMLOG conversion problem under Unix.
  *
@@ -506,7 +509,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     }
 
     if ((Options&Timestamp) != 0)
-      *Stream << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
+      *Stream << setprecision(3) << setw(10) << (PTimer::Tick()-ApplicationStartTick) << '\t';
 
     if ((Options&Thread) != 0)
       *Stream << PThread::Current() << '\t';
