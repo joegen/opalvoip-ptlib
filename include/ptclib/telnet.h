@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.10 1995/03/14 12:42:47 robertj Exp $
+ * $Id: telnet.h,v 1.11 1995/03/18 06:27:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.10  1995/03/14 12:42:47  robertj
+ * Revision 1.11  1995/03/18 06:27:50  robertj
+ * Rewrite of telnet socket protocol according to RFC1143.
+ *
+ * Revision 1.10  1995/03/14  12:42:47  robertj
  * Updated documentation to use HTML codes.
  *
  * Revision 1.9  1995/02/21  11:25:33  robertj
@@ -221,44 +224,94 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     // Defined TELNET options.
 
 
-    virtual void SendDo(
-      BYTE option,    // Option to DO
-      BOOL initiating // Flag indicating we are initiating the DO
+    virtual BOOL SendDo(
+      BYTE option    // Option to DO
     );
     // Send DO request.
 
-    virtual void SendDont(
-      BYTE option,    // Option to DONT
-      BOOL initiating // Flag indicating we are initiating the DONT
+    virtual BOOL SendDont(
+      BYTE option    // Option to DONT
     );
     // Send DONT command.
 
-    virtual void SendWill(
-      BYTE option,    // Option to WILL
-      BOOL initiating // Flag indicating we are initiating the WILL
+    virtual BOOL SendWill(
+      BYTE option    // Option to WILL
     );
     // Send WILL request.
 
-    virtual void SendWont(
-      BYTE option,    // Option to WONT
-      BOOL initiating // Flag indicating we are initiating the WONT
+    virtual BOOL SendWont(
+      BYTE option    // Option to WONT
     );
     // Send WONT command.
 
     void SendSubOption(
-      BYTE code,          // Suboptions option code.
+      BYTE code,       // Suboptions option code.
       const BYTE * info,  // Information to send.
       PINDEX len          // Length of information.
     );
     // Send a sub-option with the information given.
 
 
-    enum OptionAction {
-      WillDo, WontDont, IgnoreOption
-    };
-    // Set of actions returned by the OnDo and OnWill functions.
+    void SetOurOption(
+      BYTE code,          // Option to check.
+      BOOL state = TRUE   // New state for for option.
+    ) { option[code].weCan = state; }
+    /* Set if the option on our side is possible, this does not mean it is set
+       it only means that in response to a DO we WILL rather than WONT.
+     */
 
-    virtual OptionAction OnDo(
+    void SetTheirOption(
+      BYTE code,          // Option to check.
+      BOOL state = TRUE  // New state for for option.
+    ) { option[code].theyShould = state; }
+    /* Set if the option on their side is desired, this does not mean it is set
+       it only means that in response to a WILL we DO rather than DONT.
+     */
+
+    BOOL IsOurOption(
+      BYTE code    // Option to check.
+    ) const { return option[code].ourState == OptionInfo::IsYes; }
+    /* Determine if the option on our side is enabled.
+
+       <H2>Returns:</H2>
+       TRUE if option is enabled.
+     */
+
+    BOOL IsTheirOption(
+      BYTE code    // Option to check.
+    ) const { return option[code].theirState == OptionInfo::IsYes; }
+    /* Determine if the option on their side is enabled.
+
+       <H2>Returns:</H2>
+       TRUE if option is enabled.
+     */
+
+    void SetTerminalType(
+      const PString & newType   // New terminal type description string.
+    );
+    // Set the terminal type description string for TELNET protocol.
+
+    const PString & GetTerminalType() const { return terminalType; }
+    // Get the terminal type description string for TELNET protocol.
+
+    void SetWindowSize(
+      WORD width,   // New window width.
+      WORD height   // New window height.
+    );
+    // Set the width and height of the Network Virtual Terminal window.
+
+    void GetWindowSize(
+      WORD & width,   // Old window width.
+      WORD & height   // Old window height.
+    ) const;
+    // Get the width and height of the Network Virtual Terminal window.
+
+
+  protected:
+    void Construct();
+    // Common construct code for TELNET socket channel.
+
+    virtual void OnDo(
       BYTE option   // Option to DO
     );
     /* This callback function is called by the system when it receives a DO
@@ -281,7 +334,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
        standard TELNET class. All others are ignored.
      */
 
-    virtual OptionAction OnWill(
+    virtual void OnWill(
       BYTE option   // Option to WILL
     );
     /* This callback function is called by the system when it receives a WILL
@@ -331,40 +384,15 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
      */
 
 
-    void SetTerminalType(
-      const PString & newType   // New terminal type description string.
-    );
-    // Set the terminal type description string for TELNET protocol.
-
-    const PString & GetTerminalType() const { return terminalType; }
-    // Get the terminal type description string for TELNET protocol.
-
-    void SetWindowSize(
-      WORD width,   // New window width.
-      WORD height   // New window height.
-    );
-    // Set the width and height of the Network Virtual Terminal window.
-
-    void GetWindowSize(
-      WORD & width,   // Old window width.
-      WORD & height   // Old window height.
-    ) const;
-    // Get the width and height of the Network Virtual Terminal window.
-
-
-  protected:
-    void Construct();
-    // Common construct code for TELNET socket channel.
-
-
   // Member variables.
     struct OptionInfo {
-      unsigned isWill:1;    // Option is set
-      unsigned wantWill:1;
-      unsigned isDo:1;
-      unsigned wantDo:1;
-      unsigned respondDoDont:6;
-      unsigned respondWillWont:6;
+      enum {
+        IsNo, IsYes, WantNo, WantNoQueued, WantYes, WantYesQueued
+      };
+      unsigned weCan:1;      // We can do the option if they want us to do.
+      unsigned ourState:3;
+      unsigned theyShould:1; // They should if they will.
+      unsigned theirState:3;
     };
     
     OptionInfo option[MaxOptions];
@@ -381,13 +409,6 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
 
   private:
-    void ProcessDo(BYTE option);
-    void ProcessDont(BYTE option);
-    void ProcessWill(BYTE option);
-    void ProcessWont(BYTE option);
-    // Process command and sub options received.
-
-
     enum State {
       StateNormal,
       StateCarriageReturn,
