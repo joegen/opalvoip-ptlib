@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.55  2005/03/19 02:52:54  csoutheren
+ * Fix warnings from gcc 4.1-20050313 shapshot
+ *
  * Revision 1.54  2004/12/03 02:06:05  csoutheren
  * Ensure FlushQueue called OnStop for queued elements
  *
@@ -994,7 +997,8 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 
 void PVXMLSession::ProcessUserInput()
 {
-  char ch;
+  // without this initialisation, gcc 4.1 gives a warning
+  char ch = 0;
   {
     PWaitAndSignal m(userInputMutex);
     if (userInputQueue.size() == 0)
