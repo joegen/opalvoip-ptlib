@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.36 1996/08/22 13:22:26 robertj Exp $
+ * $Id: http.cxx,v 1.37 1996/08/25 09:37:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.37  1996/08/25 09:37:41  robertj
+ * Added function to detect "local" host name.
+ * Fixed printing of trailing '/' in empty URL, is distinction between with and without.
+ *
  * Revision 1.36  1996/08/22 13:22:26  robertj
  * Fixed bug in print of URLs, extra @ signs.
  *
@@ -529,11 +533,13 @@ PString PURL::AsString(UrlFormat fmt) const
   }
 
   PINDEX count = path.GetSize();
-  str << '/';
-  for (PINDEX i = 0; i < count; i++) {
-    str << path[i];
-    if (i < count-1)
-      str << '/';
+  if (count > 0) {
+    str << '/';
+    for (PINDEX i = 0; i < count; i++) {
+      str << path[i];
+      if (i < count-1)
+        str << '/';
+    }
   }
 
   if (fmt == FullURL || fmt == URIOnly) {
@@ -936,31 +942,9 @@ BOOL PHTTPSocket::ProcessCommand()
   // it anyway even though we are not a proxy. The usage of GetHostName()
   // below are to catch every way of specifying the host (name, alias, any of
   // several IP numbers etc).
-  BOOL doProxy;
-  if (url.GetScheme() != "http")
-    doProxy = TRUE;
-  else if (url.GetPort() == 0 || url.GetPort() == GetPort())
-    doProxy = FALSE;
-  else if (url.GetHostName().IsEmpty() || (url.GetHostName() *= "localhost"))
-    doProxy = FALSE;
-  else {
-    Address urlAddress;
-    if (!PIPSocket::GetHostAddress(url.GetHostName(), urlAddress))
-      doProxy = TRUE;
-    else if (Address(127,0,0,1) == urlAddress)
-      doProxy = FALSE;
-    else {
-      Address myAddress;
-      GetLocalAddress(myAddress);
-      if (myAddress == urlAddress)
-        doProxy = FALSE;
-      else
-        doProxy = PIPSocket::GetHostName() !=
-                                    PIPSocket::GetHostName(url.GetHostName());
-    }
-  }
-
-  if (doProxy)
+  if (url.GetScheme() != "http" ||
+      (url.GetPort() != 0 && url.GetPort() != GetPort()) ||
+      !PIPSocket::IsLocalHost(url.GetHostName()))
     return OnProxy((Commands)cmd, url, mimeInfo, connectInfo) && connectInfo.IsPersistant();
 
   PString entityBody = ReadEntityBody(connectInfo);
