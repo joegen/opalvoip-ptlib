@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.7 1996/04/15 10:49:11 craigs Exp $
+ * $Id: channel.cxx,v 1.8 1996/05/02 12:01:23 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.8  1996/05/02 12:01:23  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.7  1996/04/15 10:49:11  craigs
  * Last build prior to release of MibMaster v1.0
  *
@@ -31,14 +34,12 @@
 #pragma implementation "channel.h"
 
 #include <ptlib.h>
-
-#include <unistd.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <termio.h>
-#include <signal.h>
+
+#ifdef P_SUN4
+#include <errno.h>
+extern "C" int ioctl(int, int, void *);
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
