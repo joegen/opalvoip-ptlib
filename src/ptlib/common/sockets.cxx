@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.34 1996/03/17 05:51:18 robertj Exp $
+ * $Id: sockets.cxx,v 1.35 1996/03/18 13:33:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.35  1996/03/18 13:33:18  robertj
+ * FireDoorV10
+ *
  * Revision 1.34  1996/03/17 05:51:18  robertj
  * Fixed strange bug in accept cant have NULL address.
  *
@@ -154,7 +157,7 @@ BOOL PSocket::GetOption(int option, int & value)
 }
 
 
-BOOL PSocket::GetOption(int option, void * valuePtr, PINDEX valueSize)
+BOOL PSocket::GetOption(int option, void * valuePtr, int valueSize)
 {
   return ConvertOSError(getsockopt(os_handle,
                             SOL_SOCKET, option, (char *)valuePtr, &valueSize));
@@ -755,6 +758,7 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
   sockaddr_in address;
+  address.sin_family = AF_INET;
   int size = sizeof(address);
   if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
                                           (struct sockaddr *)&address, &size)))
