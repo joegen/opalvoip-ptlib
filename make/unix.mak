@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.148  2003/01/06 12:57:34  rogerh
+# On Mac OS X uname -m returns Power Macintosh. Map this to MACHTYPE of ppc.
+# (note uname -p returns powerpc)
+# Reported by Andreas Wrede <awrede@mac.com>
+#
 # Revision 1.147  2002/11/22 10:59:27  robertj
 # Added PREFIX variable to move the include directory, required by packagers.
 #
@@ -556,16 +561,20 @@ ifneq (,$(findstring powerpc, $(MACHTYPE)))
 MACHTYPE := ppc
 endif
 
+ifneq (,$(findstring ppc, $(MACHTYPE)))
+MACHTYPE := ppc
+endif
+
+ifneq (,$(findstring Power, $(MACHTYPE)))
+MACHTYPE := ppc
+endif
+
 ifneq (,$(findstring mips, $(MACHTYPE)))
 MACHTYPE := mips
 endif
 
 ifneq (,$(findstring alpha, $(MACHTYPE)))
 MACHTYPE := alpha
-endif
-
-ifneq (,$(findstring ppc, $(MACHTYPE)))
-MACHTYPE := ppc
 endif
 
 ifneq (,$(findstring sparc, $(MACHTYPE)))
