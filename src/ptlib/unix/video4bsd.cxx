@@ -24,6 +24,11 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.17  2002/01/08 17:16:13  rogerh
+ * Add code to grab Even fields (instead of interlaced frames) whenever
+ * possible. This improves the image quality.
+ * Add TestAllFormats
+ *
  * Revision 1.16  2001/12/05 14:45:20  rogerh
  * Implement GetFrameData and GetFrameDataNoDelay
  *
@@ -216,6 +221,8 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
   if (::ioctl(videoFd, METEORSFMT, &format) >= 0)
     return TRUE;
 
+  // setting the format failed. Fall back trying other standard formats
+
   if (newFormat != Auto)
     return FALSE;
 
@@ -348,6 +355,13 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
     geo.frames = 1;
     geo.oformat = METEOR_GEO_YUV_422 | METEOR_GEO_YUV_12;
 
+    // Grab even field (instead of interlaced frames) where possible to stop
+    // jagged interlacing artifacts. NTSC is 640x480, PAL/SECAM is 768x576.
+    if (  ((PVideoDevice::GetVideoFormat() == PAL) && (frameHeight <= 288))
+       || ((PVideoDevice::GetVideoFormat() == SECAM) && (frameHeight <= 288))
+       || ((PVideoDevice::GetVideoFormat() == NTSC) && (frameHeight <= 240)) ){
+        geo.oformat |=  METEOR_GEO_EVEN_ONLY;
+    }
 
     // set the new geometry
     if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
@@ -526,4 +540,8 @@ BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
   return TRUE;
 }
 
+BOOL PVideoInputDevice::TestAllFormats()
+{
+  return TRUE;
+}
 // End Of File ///////////////////////////////////////////////////////////////
