@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.18  1999/09/21 08:20:16  robertj
+ * Fixed name space problem with PSYSTEMLOG() macro.
+ *
  * Revision 1.17  1999/09/13 13:15:06  robertj
  * Changed PTRACE so will output to system log in PServiceProcess applications.
  *
@@ -188,10 +191,10 @@ class PSystemLog : public PObject, public iostream {
 The current log level is checked and if allowed, the second argument is evaluated
 as a stream output sequence which is them output to the system log.
 */
-#define PSYSTEMLOG(l, v) \
-  if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::l) { \
-    PSystemLog s(PSystemLog::l); \
-    s << v; \
+#define PSYSTEMLOG(level, variables) \
+  if (PServiceProcess::Current().GetLogLevel() >= PSystemLog::level) { \
+    PSystemLog P_systemlog(PSystemLog::level); \
+    P_systemlog << variables; \
   } else (void)0
 
 
