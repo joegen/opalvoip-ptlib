@@ -1243,6 +1243,15 @@ To build the DLL:
 Version 1.2.5 has support for Windows and MSVC so you just need to download it
 from http://www.libsdl.org/ and follow the build instructions.
 
+7.8.5 SASL under Windows
+------------------------
+The standard distribution of Cyrus SASL comes with makefiles for Windows and
+clear instructions on how to build the library. The current implementation
+in PWLib was tested with Cyrus SASL version 2.1.18. Tarballs can be downloaded
+from:
+
+    http://asg.web.cmu.edu/sasl/sasl-library.html
+
 
 --------------------------------------------------------------------------------
 7.9. ESD (Esound)
