@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.147  2003/01/14 04:36:08  robertj
+ * Fixed v6 conversion of numeric string to binary so does not internally
+ *   doa DNS lookup, confuses other parts of the system.
+ *
  * Revision 1.146  2003/01/11 05:10:51  robertj
  * Fixed Win CE compatibility issues, thanks Joerg Schoemer
  *
@@ -2016,12 +2020,9 @@ PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 #if P_HAS_IPV6
 
   struct addrinfo *res;
-  struct addrinfo hints= {AI_PASSIVE, 0, SOCK_STREAM, 0, 0, NULL, NULL, NULL };
+  struct addrinfo hints = { AI_NUMERICHOST, PF_UNSPEC }; // Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
   
   version = 0;
-  
-  hints.ai_family = PF_UNSPEC;//PF_INET6; Could be IPv4: x.x.x.x or IPv6: x:x:x:x::x
-  hints.ai_socktype = 0;//SOCK_STREAM;
   
   if (getaddrinfo((const char *)dotNotation, NULL , &hints, &res) == 0) {
     if (res->ai_family == PF_INET6) {
