@@ -1,10 +1,12 @@
 Portable Windows Library Modification History
 =============================================
 
-
+current code
+------------
+	Complete Mac OS X (using Darwin 1.2) port.
 
 Release 1.1pl19
-------------
+---------------
 	More bullet proofing of PER decoder, could crash if given garbage data
 	to decode.
 
