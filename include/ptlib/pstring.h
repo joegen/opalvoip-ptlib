@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.2 1994/12/12 13:13:13 robertj Exp $
+ * $Id: pstring.h,v 1.3 1994/12/21 11:53:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
- * Revision 1.2  1994/12/12 13:13:13  robertj
+ * Revision 1.3  1994/12/21 11:53:21  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.2  1994/12/12  13:13:13  robertj
  * Fixed bugs in PString mods just made.
  *
  * Revision 1.1  1994/12/12  09:59:37  robertj
@@ -1185,7 +1188,8 @@ PDECLARE_SET(PStringSet, PString, TRUE)
 
 #ifdef PHAS_TEMPLATES
 
-template <class K> PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
+template <class K>
+PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 /* This template class maps the PAbstractDictionary to a specific key type and
    a $H$PString data type. The functions in this class primarily do all the
    appropriate casting of types.
