@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.4  2001/01/03 10:34:18  rogerh
+ * Put Linux specific parts in P_LINUX sections and start adding some FreeBSD
+ * and OpenBSD code.
+ *
  * Revision 1.3  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -39,7 +43,17 @@
 
 #ifndef _PVIDEOIO
 
+#if defined(P_LINUX)
 #include <linux/videodev.h>     /* change this to "videodev2.h" for v4l2 */
+#endif
+
+#if defined(P_FREEBSD)
+#include <machine/ioctl_meteor.h>
+#endif
+
+#if defined(P_OPENBSD)
+#include <i386/ioctl_meteor.h>
+#endif
 
 
 #include "../../videoio.h"
@@ -54,6 +68,8 @@
   protected:
     void ClearMapping();
 
+
+#if defined(P_LINUX)
     int    videoFd;
     struct video_capability videoCapability;
     int    canMap;  // -1 = don't know, 0 = no, 1 = yes
@@ -62,6 +78,12 @@
     int    currentFrame;
     struct video_mbuf frame;
     struct video_mmap frameBuffer[2];
+#endif
+
+#if defined(P_FREEBSD) || defined(P_OPENBSD)
+    int    videoFd;
+    BYTE * videoBuffer;
+#endif
 };
 
 
