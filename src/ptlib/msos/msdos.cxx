@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.6 1994/10/30 11:25:36 robertj Exp $
+ * $Id: msdos.cxx,v 1.7 1994/12/13 11:53:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.6  1994/10/30 11:25:36  robertj
+ * Revision 1.7  1994/12/13 11:53:44  robertj
+ * Added missing PConfig Construct() function for pure DOS.
+ *
+ * Revision 1.6  1994/10/30  11:25:36  robertj
  * Fixed DOS version of configuration files.
  *
  * Revision 1.5  1994/08/22  00:18:02  robertj
@@ -436,6 +439,12 @@ void PConfig::Construct(Source src)
       configFile = appFile.GetVolume() +
                               appFile.GetPath() + appFile.GetTitle() + ".INI";
   }
+}
+
+
+void PConfig::Construct(const PFilePath & file)
+{
+  configFile = file;
 }
 
 
