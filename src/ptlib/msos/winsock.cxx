@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.49  2002/05/23 09:07:41  robertj
+ * Further adjustments to compensate for Winsock weirdness on some platforms.
+ *
  * Revision 1.48  2002/05/23 01:54:35  robertj
  * Worked around WinSock bug where getsockopt() does not work immediately
  *   after the select() function returns an exception.
@@ -282,6 +285,10 @@ class fd_set_class : public fd_set {
   public:
     fd_set_class(SOCKET fd)
       {
+        operator=(fd);
+      }
+    fd_set_class & operator=(SOCKET fd)
+      {
 #ifdef _MSC_VER
 #pragma warning(disable:4127)
 #endif
@@ -290,17 +297,30 @@ class fd_set_class : public fd_set {
 #ifdef _MSC_VER
 #pragma warning(default:4127)
 #endif
+        return *this;
       }
     BOOL IsPresent(int h) const
-      { return FD_ISSET(h, this); }
+      {
+        return FD_ISSET(h, this);
+      }
 };
 
 class timeval_class : public timeval {
   public:
+    timeval_class()
+      {
+        tv_usec = 0;
+        tv_sec = 0;
+      }
     timeval_class(const PTimeInterval & time)
+      {
+        operator=(time);
+      }
+    timeval_class & operator=(const PTimeInterval & time)
       {
         tv_usec = (long)(time.GetMilliSeconds()%1000)*1000;
         tv_sec = time.GetSeconds();
+        return *this;
       }
 };
 
@@ -327,45 +347,62 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
   fd_set_class writefds = os_handle;
   fd_set_class exceptfds = os_handle;
-  timeval_class tv = readTimeout;
-  switch (::select(1, NULL, &writefds, &exceptfds, &tv)) {
-    default :
-      err = GetLastError();
-      break;
+  timeval_class tv;
+
+  /* To avoid some strange behaviour on various windows platforms, do a zero
+     timeout select first to pick up errors. Then do real timeout. */
+  int selerr = ::select(1, NULL, &writefds, &exceptfds, &tv);
+  if (selerr == 0) {
+    writefds = os_handle;
+    exceptfds = os_handle;
+    tv = readTimeout;
+    selerr = ::select(1, NULL, &writefds, &exceptfds, &tv);
+  }
+
+  switch (selerr) {
     case 1 :
       if (writefds.IsPresent(os_handle)) {
+        // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
+        // work for some period of time after a connect, saying it is not connected yet!
+        for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+          sockaddr_in address;
+          int sz = sizeof(address);
+          if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0) {
+            if (address.sin_port != 0)
+              break;
+          }
+          ::Sleep(0);
+        }
+
         err = 0;
-        break;
       }
-      // Do case for timeout
+      else {
+        // The following is to avoid a bug in Win32 sockets. The getsockopt() function
+        // doesn't work for some period of time after a connect, saying no error!
+        for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
+          int sz = sizeof(err);
+          if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) == 0) {
+            if (err != 0)
+              break;
+          }
+          ::Sleep(0);
+        }
+        if (err == 0)
+          err = WSAEFAULT; // Need to have something!
+      }
+      break;
+
     case 0 :
-      // The following is to avoid a bug in Win32 sockets. The getsockopt() function
-      // doesn't work for some period of time after a connect, saying no error!
-      for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
-        int sz = sizeof(err);
-        if (::getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&err, &sz) != 0)
-          err = GetLastError();
-        if (err != 0)
-          break;
-        ::Sleep(0);
-      }
+      err = WSAETIMEDOUT;
+      break;
+
+    default :
+      err = GetLastError();
   }
 
   if (::ioctlsocket(os_handle, FIONBIO, &fionbio) == SOCKET_ERROR) {
     if (err == 0)
       err = GetLastError();
-  }
-
-  if (err == 0) {
-    // The following is to avoid a bug in Win32 sockets. The getpeername() function doesn't
-    // work for some period of time after a connect, saying it is not connected yet!
-    for (PINDEX failsafe = 0; failsafe < 1000; failsafe++) {
-      sockaddr_in address;
-      int sz = sizeof(address);
-      if (::getpeername(os_handle, (struct sockaddr *)&address, &sz) == 0)
-        break;
-      ::Sleep(0);
-    }
   }
 
   SetLastError(err);
