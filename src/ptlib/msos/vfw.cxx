@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.23  2003/11/05 05:58:10  csoutheren
+ * Added #pragma to include required libs
+ *
  * Revision 1.22  2003/05/14 02:51:42  rjongbloed
  * Protected use of user data in video for windows calls.
  *
@@ -107,6 +110,7 @@
 #include <ptlib/videoio.h>
 #include <ptlib/vconvert.h>
 
+#pragma comment(lib, "vfw32.lib")
 
 #define STEP_GRAB_CAPTURE 1
 
