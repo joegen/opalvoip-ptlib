@@ -24,6 +24,10 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.27  2002/08/30 11:42:46  robertj
+# Added formatting.
+# Changed alpha & beta sharable library file name convention.
+#
 # Revision 1.26  2002/02/01 11:11:27  rogerh
 # Use .$(MAJOR_VERSION) with soname (instead of hard coding .1)
 #
@@ -82,79 +86,67 @@
 #
 
 
-LIBNAME_MAJ		= $(LIB_FILENAME).$(MAJOR_VERSION)
-LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
-LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
+LIBNAME_MAJ	= $(LIB_FILENAME).$(MAJOR_VERSION)
+LIBNAME_MIN	= $(LIBNAME_MAJ).$(MINOR_VERSION)
+
+ifeq ($(BUILD_TYPE),.)
+  LIBNAME_PAT	= $(LIBNAME_MIN).$(BUILD_NUMBER)
+else
+  LIBNAME_PAT	= $(LIBNAME_MIN)-$(BUILD_TYPE)$(BUILD_NUMBER)
+endif
 
 CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_FILENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
 ifneq ($(P_SHAREDLIB),1)
-STATIC_LIB_FILE=$(LIBDIR)/$(LIB_FILENAME)
+  STATIC_LIB_FILE=$(LIBDIR)/$(LIB_FILENAME)
 else
-STATIC_LIB_FILE=$(LIBDIR)/lib$(LIB_BASENAME)_s.a
 
-ifndef MAJOR_VERSION
-MAJOR_VERSION	:= 1
-endif
+  STATIC_LIB_FILE=$(LIBDIR)/lib$(LIB_BASENAME)_s.a
 
-ifndef MINOR_VERSION
-MINOR_VERSION	:= 0
-endif
-
-ifndef BUILD_TYPE
-BUILD_TYPE	:= a
-else
-BUILD_TYPE	:= $(subst .,,$(subst beta,b,$(subst alpha,a,$(BUILD_TYPE))))
-endif
-
-ifndef BUILD_NUMBER
-BUILD_NUMBER	:= 0
-endif
-
-ifeq ($(OSTYPE),beos)
-# BeOS requires different options when building shared libraries
-# Also, when building a shared library x that references symbols in libraries y,
-# the y libraries need to be added to the linker command
-LDSOOPTS = -nostdlib -nostart
-EXTLIBS = $(SYSLIBS) -lstdc++.r4
-else
-LDSOOPTS = -shared
-endif
+  ifeq ($(OSTYPE),beos)
+    # BeOS requires different options when building shared libraries
+    # Also, when building a shared library x that references symbols in libraries y,
+    # the y libraries need to be added to the linker command
+    LDSOOPTS = -nostdlib -nostart
+    EXTLIBS = $(SYSLIBS) -lstdc++.r4
+  else
+    LDSOOPTS = -shared
+  endif
 
 
-ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
-ifdef P_PTHREADS
-EXTLIBS += -pthread
-endif
-else
-ifdef P_PTHREADS
-EXTLIBS += -lpthread
-endif
-endif
+  ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
+    ifdef P_PTHREADS
+      EXTLIBS += -pthread
+    endif
+  else
+    ifdef P_PTHREADS
+      EXTLIBS += -lpthread
+    endif
+  endif
 
 
-# Solaris loader doesn't grok -soname  (sees it as -s -oname)
-# We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist
-# to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
-# directly and passing it the equivalent arguments...jpd@louisiana.edu
-ifeq ($(OSTYPE),solaris)
-LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).$(MAJOR_VERSION)
-LD = ld
-else
-LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).$(MAJOR_VERSION)
-LD = $(CPLUS)
-endif
+  # Solaris loader doesn't grok -soname  (sees it as -s -oname)
+  # We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist
+  # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
+  # directly and passing it the equivalent arguments...jpd@louisiana.edu
+  ifeq ($(OSTYPE),solaris)
+    LDSOOPTS = -Bdynamic -G -h $(LIB_FILENAME).$(MAJOR_VERSION)
+    LD = ld
+  else
+    LDSOOPTS += -Wl,-soname,$(LIB_FILENAME).$(MAJOR_VERSION)
+    LD = $(CPLUS)
+  endif
 
-$(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
+  $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 	cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MAJ) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MIN) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MIN)
 
-$(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
+  $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	$(LD) $(LDSOOPTS) -o $(LIBDIR)/$(LIBNAME_PAT) $(LDFLAGS) $(EXTLIBS) $(OBJS) $(ENDLDLIBS)
 
-install: $(LIBDIR)/$(LIBNAME_PAT)
+  install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
 	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIB_BASENAME)
 	ln -s $(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_MAJ)
