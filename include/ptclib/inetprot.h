@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.7 1996/03/16 04:35:32 robertj Exp $
+ * $Id: inetprot.h,v 1.8 1996/03/31 08:43:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,13 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.8  1996/03/31 08:43:38  robertj
+ * Added version of WriteCommand() and ExecteCommand() without argument string.
+ *
  * Revision 1.7  1996/03/16 04:35:32  robertj
- * Redesigned response codes to be more flexible.
+ * Added PString parameter version of UnRead().
+ * Changed lastResponseCode to an integer.
+ * Added ParseReponse() for splitting reponse line into code and info.
  *
  * Revision 1.6  1996/02/13 12:57:05  robertj
  * Added access to the last response in an application socket.
@@ -181,6 +186,9 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
      */
 
     BOOL WriteCommand(
+      PINDEX cmdNumber       // Number of command to write.
+    );
+    BOOL WriteCommand(
       PINDEX cmdNumber,      // Number of command to write.
       const PString & param  // Extra parameters required by the command.
     );
@@ -271,6 +279,9 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
        TRUE if the response was completely read without a socket error.
      */
 
+    int ExecuteCommand(
+      PINDEX cmdNumber       // Number of command to write.
+    );
     int ExecuteCommand(
       PINDEX cmdNumber,      // Number of command to write.
       const PString & param  // Extra parameters required by the command.
