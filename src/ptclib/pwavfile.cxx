@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.20  2002/02/06 00:52:23  robertj
+ * Fixed GNU warning.
+ *
  * Revision 1.19  2002/01/31 15:29:26  rogerh
  * Fix a problem with .wav files recorded in GoldWave.  The GoldWave copyright
  * string (embedded at the end of the wav file) was returned as audio data and
@@ -186,7 +189,7 @@ BOOL PWAVFile::Read(void * buf, PINDEX len)
   // We do not want to return this data by mistake.
 
   PINDEX readlen;
-  if ((GetPosition() + len) > lenData) {
+  if ((off_t)(GetPosition() + len) > lenData) {
     PTRACE(1, "Detected non audio data after the sound samples");
     readlen = lenData-GetPosition(); 
   } else {
