@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.26  2000/10/19 04:17:04  craigs
+ * Changed to allow writing of config files whilst config file is open
+ *
  * Revision 1.25  2000/10/02 20:58:06  robertj
  * Fixed bug where subsequent config file opening uses first opened filename.
  *
@@ -259,9 +262,11 @@ BOOL PXConfig::Flush(const PFilePath & filename, BOOL force)
 
   BOOL stat = instanceCount == 0;
 
-  if ((force || (instanceCount == 0)) && saveOnExit && dirty) {
-    if (instanceCount != 0) 
-      PProcess::PXShowSystemWarning(2000, "Flush of config with non-zero instance");
+//  if ((force || (instanceCount == 0)) && saveOnExit && dirty) {
+//    if (instanceCount != 0) 
+//      PProcess::PXShowSystemWarning(2000, "Flush of config with non-zero instance");
+
+  if (force || (saveOnExit && dirty)) {
     WriteToFile(filename);
     dirty = FALSE;
   }
