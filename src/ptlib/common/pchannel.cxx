@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.22  2003/03/19 00:10:24  robertj
+ * Added ability to use seekoff() in a PChannel streambuf that is not a file.
+ *
  * Revision 1.21  2003/02/11 07:22:43  robertj
  * Fixed strange behaviour in ReadString(P_MAX_INDEX) with DOS text files where
  *   it would get extra garbage at the end of the string, thanks Joerg Schoemer.
@@ -187,10 +190,27 @@ streampos PChannelStreamBuffer::seekoff(streamoff off,
 #endif
 {
   sync();
-  if (!channel->IsDescendant(PFile::Class()))
-    return -1;
-  ((PFile *)channel)->SetPosition(off, (PFile::FilePositionOrigin)dir);
-  return ((PFile *)channel)->GetPosition();
+  if (channel->IsDescendant(PFile::Class())) {
+    PFile * file = (PFile *)channel;
+    file->SetPosition(off, (PFile::FilePositionOrigin)dir);
+    return file->GetPosition();
+  }
+
+  // If we have an input stream and the buffer is empty then force a read so
+  // we can seek ahead.
+  if (eback() != NULL && egptr() == gptr()) {
+    int c = underflow();
+    if (c == EOF)
+      return EOF;
+    sputbackc((char)c);
+  }
+
+  while (off-- > 0) {
+    if (sbumpc() == EOF)
+      return EOF;
+  }
+    
+  return egptr() - gptr();
 }
 
 
