@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.4  2003/03/31 06:20:56  craigs
+ * Split the expat wrapper from the XML file handling to allow reuse of the parser
+ *
  * Revision 1.3  2003/02/09 23:31:54  robertj
  * Added referention PString's for efficiency.
  *
@@ -64,7 +67,7 @@ PSOAPMessage::PSOAPMessage( int options ) :
 }
 
 PSOAPMessage::PSOAPMessage( const PString & method, const PString & nameSpace ) :
-  PXML( PXML::Indent + PXML::NewLineAfterElement ),
+  PXML( PXMLParser::Indent + PXMLParser::NewLineAfterElement ),
   pSOAPBody( 0 ),
   pSOAPMethod( 0 ),
   faultCode( PSOAPMessage::NoFault )
@@ -142,7 +145,7 @@ void PSOAPMessage::AddParameter( PXMLElement* parameter, BOOL dirty )
 
 void PSOAPMessage::PrintOn(ostream & strm) const
 {
-  BOOL newLine = ( options & PXML::NewLineAfterElement ) != 0;
+  BOOL newLine = ( options & PXMLParser::NewLineAfterElement ) != 0;
 
   PString ver = version;
   PString enc = encoding;
