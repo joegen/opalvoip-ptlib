@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.53  2000/01/10 02:23:47  craigs
+# Updated for new OpenSSL
+#
 # Revision 1.52  1999/11/11 08:11:01  robertj
 # Reworded warning in vain hope people will understand!
 #
@@ -247,8 +250,6 @@ endif
 endif
 
 
-# P_SSL		= $(PWLIBDIR)
-
 # i486 Linux for x86, using gcc 2.7.2
 STDCCFLAGS	+= -DP_LINUX
 
@@ -323,7 +324,6 @@ ifeq ($(OSTYPE),solaris)
 
 #  Solaris (Sunos 5.x)
 
-#P_SSL		= $(PWLIBDIR)
 P_PTHREADS	:= 1
 
 ifeq ($(MACHTYPE),x86)
@@ -471,16 +471,11 @@ LDFLAGS		+= -s
 endif # DEBUG
 
 
-# define SSL variables
-
-ifdef P_SSL
-
-SSLEAY		 = $(HOME)/src/SSLeay-0.6.6
-SSLDIR		:= /usr/local/ssl
-CFLAGS		+= -DP_SSL -I$(SSLDIR)/include -I$(SSLEAY)/crypto
-LDFLAGS		+= -L$(SSLDIR)/lib
+# define OpenSSL variables if installed
+ifdef  OPENSSLDIR
+CFLAGS		+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
+LDFLAGS		+= -L$(OPENSSLDIR)/lib
 ENDLDLIBS	+= -lssl -lcrypto
-
 endif
 
 
