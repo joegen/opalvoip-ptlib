@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.5  1999/06/17 13:38:11  robertj
+ * Fixed race condition on indirect channel close, mutex needed in PIndirectChannel.
+ *
  * Revision 1.4  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -300,6 +303,9 @@ class PIndirectChannel : public PChannel
 
     /// Automatically delete write channel on destruction.
     BOOL writeAutoDelete;
+
+    /// Race condition prevention on closing channel
+    PReadWriteMutex channelPointerMutex;
 };
 
 
