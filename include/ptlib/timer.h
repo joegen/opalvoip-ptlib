@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.2 1993/08/31 03:38:02 robertj Exp $
+ * $Id: timer.h,v 1.3 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
- * Revision 1.2  1993/08/31 03:38:02  robertj
+ * Revision 1.3  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.2  1993/08/31  03:38:02  robertj
  * Added missing virtual on destructor.
  *
  * Revision 1.1  1993/08/27  18:17:47  robertj
@@ -21,7 +24,7 @@
 
 class PTimer;
 
-DECLARE_CLASS(PTimerList, PAbstractSortedList)
+PDECLARE_CLASS(PTimerList, PAbstractSortedList)
   public:
     PTimerList();
       // Create a new timer list
@@ -35,7 +38,7 @@ DECLARE_CLASS(PTimerList, PAbstractSortedList)
 };
 
 
-DECLARE_CLASS(PTimer, PTimeInterval)
+PDECLARE_CLASS(PTimer, PTimeInterval)
   // A class representing a system timer.
 
   public:

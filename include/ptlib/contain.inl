@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.10 1993/12/31 06:48:46 robertj Exp $
+ * $Id: contain.inl,v 1.11 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.10  1993/12/31 06:48:46  robertj
+ * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.10  1993/12/31  06:48:46  robertj
  * Made inlines optional for debugging purposes.
  * Added PImgIcon class.
  *
@@ -39,6 +42,9 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+BOOL PObject::IsClass(const char * clsName) const
+  { return strcmp(clsName, GetClassName()) == 0; }
+
 PINLINE BOOL PObject::operator==(const PObject & obj) const
   { return Compare(obj) == EqualTo; }
 
@@ -67,17 +73,20 @@ PINLINE istream & operator>>(istream &strm, PObject & obj)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PContainer::PContainer(PINDEX initialSize)
-  : reference(new Reference(initialSize)) { PAssertNULL(reference); }
+PINLINE PContainer::~PContainer()
+  { Destruct(); }
 
 PINLINE BOOL PContainer::IsUnique() const
   { return PAssertNULL(reference)->count <= 1; }
 
+PINLINE void PContainer::CloneContents(const PContainer *)
+  { }
+
+PINLINE void PContainer::CopyContents(const PContainer &)
+  { }
+
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PINLINE PAbstractArray::~PAbstractArray()
-  { DestroyContents(); }
 
 PINLINE BOOL PAbstractArray::MakeUnique()
   { return IsUnique() || SetSize(GetSize()); }
@@ -88,11 +97,8 @@ PINLINE BOOL PAbstractArray::MakeUnique()
 PINLINE PString::PString()
   : PCharArray(1) { }
 
-PINLINE PString::PString(const PString & str)
-  : PCharArray(str) { }
-
 PINLINE PString::PString(const char * cstr)
-  : PCharArray(PAssertNULL(cstr), strlen(cstr)+1) { }
+  : PCharArray(strlen(PAssertNULL(cstr))+1) { strcpy(theArray, cstr); }
 
 PINLINE PString::PString(const char * cstr, PINDEX len)
   : PCharArray(len+1) { memcpy(theArray, PAssertNULL(cstr), len); }
@@ -108,9 +114,6 @@ PINLINE BOOL PString::MakeMinimumSize()
 
 PINLINE PINDEX PString::Length() const
   { return strlen(theArray); }
-
-PINLINE PString & PString::operator=(const PString & str)
-  { PCharArray::operator=(str); return *this; }
 
 PINLINE PString PString::operator+(const PString & str) const
   { return operator+((const char *)str); }
@@ -172,24 +175,14 @@ PINLINE PCaselessString::PCaselessString(const char * cstr)
 PINLINE PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
 
-PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
-  { PString::operator=(str); return *this; }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PCollection::PCollection(PINDEX initialSize)
-  : PContainer(initialSize), deleteObjects(TRUE) { }
-
-PINLINE PCollection::PCollection(const PCollection & coll)
-  : PContainer(coll), deleteObjects(coll.deleteObjects) { }
-
-PINLINE PCollection & PCollection::operator=(const PCollection & coll)
-  { PContainer::operator=(coll);
-                            deleteObjects = coll.deleteObjects; return *this; }
+  : PContainer(initialSize) { }
 
 PINLINE void PCollection::DeleteObjects(BOOL yes)
-  { deleteObjects = yes; }
+  { reference->deleteObjects = yes; }
 
 PINLINE void PCollection::NoDeleteObjects()
   { DeleteObjects(FALSE); }
@@ -200,11 +193,8 @@ PINLINE void PCollection::NoDeleteObjects()
 PINLINE PArrayObjects::PArrayObjects(PINDEX initialSize)
   : theArray(initialSize) { }
 
-PINLINE PArrayObjects::PArrayObjects(const PArrayObjects & arr)
-  : PCollection(arr), theArray(arr.theArray) { }
-
-PINLINE PArrayObjects::~PArrayObjects()
-  { DestroyContents(); }
+PINLINE void PArrayObjects::CopyContents(const PArrayObjects & array)
+  { theArray = array.theArray; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,17 +202,11 @@ PINLINE PArrayObjects::~PArrayObjects()
 PINLINE PAbstractList::PAbstractList()
   : info(new ListInfo) { PAssertNULL(info); }
 
-PINLINE PAbstractList::~PAbstractList()
- { DestroyContents(); }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractSortedList::PAbstractSortedList()
   : info(new SortedListInfo) { PAssertNULL(info); }
-
-PINLINE PAbstractSortedList::~PAbstractSortedList()
-  { DestroyContents(); }
 
 PINLINE void PSortedListElement::MakeBlack()
   { colour = Black; }
@@ -257,9 +241,6 @@ PINLINE PScalarKey::operator PINDEX() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PINLINE PHashTable::~PHashTable()
-  { DestroyContents(); }
-
 PINLINE PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
   { return *(PObject *)(hashTable->SetLastElementAt(index)
                                       ? hashTable->lastElement->data : NULL); }
@@ -274,12 +255,6 @@ PINLINE const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
 PINLINE PAbstractSet::PAbstractSet()
   { }
   
-PINLINE PAbstractSet::PAbstractSet(const PAbstractSet & set)
-  : PHashTable(set) { }
-  
-PINLINE PAbstractSet::PAbstractSet(const PAbstractSet * set)
-  : PHashTable(set) { }
-
 PINLINE BOOL PAbstractSet::Contains(const PObject & key)
   { return hashTable->GetElementAt(key) != NULL; }
 
@@ -289,14 +264,6 @@ PINLINE BOOL PAbstractSet::Contains(const PObject & key)
 PINLINE PAbstractDictionary::PAbstractDictionary()
   { }
   
-PINLINE 
-     PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary & dict)
-  : PHashTable(dict) { }
-  
-PINLINE 
-     PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary * dict)
-  : PHashTable(dict) { }
-
 
 
 // End Of File ///////////////////////////////////////////////////////////////

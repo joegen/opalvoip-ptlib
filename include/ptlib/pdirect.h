@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.5 1993/12/31 06:45:38 robertj Exp $
+ * $Id: pdirect.h,v 1.6 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.5  1993/12/31 06:45:38  robertj
+ * Revision 1.6  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.5  1993/12/31  06:45:38  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.4  1993/08/21  01:50:33  robertj
@@ -61,7 +64,7 @@ enum PPermissions {
 
 
 
-DECLARE_CLASS(PDirectory, PContainer)
+PDECLARE_CONTAINER(PDirectory, PContainer)
 
   public:
     PDirectory();
@@ -70,7 +73,6 @@ DECLARE_CLASS(PDirectory, PContainer)
     PDirectory(const PString & pathname);
       // Create a directory object of the specified directory
       
-    virtual ~PDirectory();
 
     // Overrides from class PObject
     Comparison Compare(const PObject & obj) const;
@@ -118,11 +120,14 @@ DECLARE_CLASS(PDirectory, PContainer)
   protected:
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
-    virtual void DestroyContents();
 
+
+    // New functions for class
     void Construct();
       // Common constructor code
 
+
+    // Member variables
     PString path;
     int     scanMask;
 

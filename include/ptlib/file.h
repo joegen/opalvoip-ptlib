@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.10 1993/12/31 06:45:38 robertj Exp $
+ * $Id: file.h,v 1.11 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.10  1993/12/31 06:45:38  robertj
+ * Revision 1.11  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.10  1993/12/31  06:45:38  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.9  1993/09/27  16:35:25  robertj
@@ -43,7 +46,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
 
-DECLARE_CLASS(PFile, PContainer)
+PDECLARE_CONTAINER(PFile, PContainer)
 
   public:
     PFile();
@@ -66,10 +69,6 @@ DECLARE_CLASS(PFile, PContainer)
     PFile(const PString & name, OpenMode mode, int opts = Normal);
       // Create a file object with name and open it in the specified mode.
       
-    virtual ~PFile();
-      // Destroy the object and close the file. Note this does not delete the
-      // file!!
-
 
     // Overrides from class PObject
     Comparison Compare(const PObject & obj) const;
@@ -208,7 +207,6 @@ DECLARE_CLASS(PFile, PContainer)
   private:
     // Overrides from class PContainer
     virtual BOOL SetSize(PINDEX newSize);
-    virtual void DestroyContents();
 
 
     // New member functions

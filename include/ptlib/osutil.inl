@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.8 1993/12/31 06:47:59 robertj Exp $
+ * $Id: osutil.inl,v 1.9 1994/01/03 04:42:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.8  1993/12/31 06:47:59  robertj
+ * Revision 1.9  1994/01/03 04:42:23  robertj
+ * Mass changes to common container classes and interactors etc etc etc.
+ *
+ * Revision 1.8  1993/12/31  06:47:59  robertj
  * Made inlines optional for debugging purposes.
  *
  * Revision 1.7  1993/08/31  03:38:02  robertj
@@ -150,6 +153,8 @@ PINLINE BOOL PDirectory::SetSize(PINDEX newSize)
 PINLINE void PDirectory::DestroyContents()
   { Close(); }
 
+PINLINE void PDirectory::CloneContents(const PDirectory * d)
+  { CopyContents(*d); }
 
 PINLINE PString PDirectory::GetPath() const
   { return path; }
@@ -162,10 +167,6 @@ PINLINE BOOL PDirectory::Create(int perm) const
 
 PINLINE BOOL PDirectory::Remove() const
   { return Remove(path); }
-
-
-PINLINE PDirectory::~PDirectory()
-  { DestroyContents(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -182,9 +183,8 @@ PINLINE BOOL PFile::SetSize(PINDEX newSize)
 PINLINE void PFile::DestroyContents()
   { Close(); }
 
-PINLINE PFile::~PFile()
-  { DestroyContents(); }
-
+PINLINE void PFile::CloneContents(const PFile * f)
+  { CopyContents(*f); }
 
 PINLINE BOOL PFile::Exists() const
   { return Exists(fullname); }
