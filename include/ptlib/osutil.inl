@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.47 1996/04/15 12:33:04 robertj Exp $
+ * $Id: osutil.inl,v 1.48 1996/05/09 12:15:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.48  1996/05/09 12:15:34  robertj
+ * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
+ *
  * Revision 1.47  1996/04/15 12:33:04  robertj
  * Fixed SetReadTimeout/SetWriteTimeout to use const reference so works with GNU compiler.
  *
@@ -159,6 +162,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
+
+PINLINE PTimeInterval::PTimeInterval(int millisecs)
+  : milliseconds(millisecs) { }
+
+PINLINE PTimeInterval::PTimeInterval(PInt64 millisecs)
+  : milliseconds(millisecs) { }
+
 
 PINLINE PObject * PTimeInterval::Clone() const
   { return PNEW PTimeInterval(milliseconds); }
