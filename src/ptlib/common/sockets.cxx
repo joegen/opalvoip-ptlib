@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.91  1999/06/01 07:39:23  robertj
+ * Added retries to DNS lookup if get temporary error.
+ *
  * Revision 1.90  1999/03/09 08:13:52  robertj
  * Fixed race condition in doing Select() on closed sockets. Could go into infinite wait.
  *
@@ -487,27 +490,31 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
   if (host == NULL) {
     mutex.Signal();
+
+    struct hostent * host_info;
+    int retry = 3;
+    do {
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
-    // this function should really be a static on PIPSocket, but this would
-    // require allocating thread-local storage for the data and that's too much
-    // of a pain!
-    struct hostent hostEnt;
-    int localErrNo;
-    char buffer[REENTRANT_BUFFER_LEN];
-    host = new PIPCacheData(
-                ::gethostbyname_r(name, &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo),
-                name);
+      // this function should really be a static on PIPSocket, but this would
+      // require allocating thread-local storage for the data and that's too much
+      // of a pain!
+      struct hostent hostEnt;
+      int localErrNo;
+      char buffer[REENTRANT_BUFFER_LEN];
+      host_info = ::gethostbyname_r(name,
+			 &hostEnt, buffer, REENTRANT_BUFFER_LEN,
+			 &localErrNo);
 #else
-     host = new PIPCacheData(::gethostbyname(name), name);
+      host_info = ::gethostbyname(name);
 #endif
+    } while (h_errno == TRY_AGAIN && --retry > 0);
+
     mutex.Wait();
 
-    if (h_errno == TRY_AGAIN) {
-      delete host;
+    if (retry == 0)
       return NULL;
-    }
 
-    SetAt(key, host);
+    SetAt(key, new PIPCacheData(host_info, name));
   }
 
   if (host->GetHostAddress() == 0)
@@ -572,32 +579,35 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
   if (host == NULL) {
     mutex.Signal();
+
+    struct hostent * host_info;
+    int retry = 3;
+    do {
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
-// this function should really be a static on PIPSocket, but this would
-// require allocating thread-local storage for the data and that's too much
-// of a pain!
-    struct hostent hostEnt;
-    int localErrNo;
-    char buffer[REENTRANT_BUFFER_LEN];
-    struct hostent * host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
-                                           &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
+      // this function should really be a static on PIPSocket, but this would
+      // require allocating thread-local storage for the data and that's too much
+      // of a pain!
+      struct hostent hostEnt;
+      int localErrNo;
+      char buffer[REENTRANT_BUFFER_LEN];
+      host_info = ::gethostbyaddr_r((const char *)&addr, sizeof(addr), PF_INET, 
+                                    &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
 #else
-    struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+      host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
-    extern P_IsOldWin95();
-    if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
-      host_info->h_addr_list[1] = NULL;
+      extern P_IsOldWin95();
+      if (P_IsOldWin95() && host_info != NULL && host_info->h_addr_list[0] != NULL)
+        host_info->h_addr_list[1] = NULL;
 #endif
 #endif
-    host = new PIPCacheData(host_info, inet_ntoa(addr));
+    } while (h_errno == TRY_AGAIN && --retry > 0);
+
     mutex.Wait();
 
-    if (h_errno == TRY_AGAIN) {
-      delete host;
+    if (retry == 0)
       return FALSE;
-    }
 
-    SetAt(key, host);
+    SetAt(key, new PIPCacheData(host_info, inet_ntoa(addr)));
   }
 
   if (host->GetHostAddress() == 0)
