@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.19  1999/05/12 02:12:02  robertj
+ * Fixed stack size on alpha
+ *
  * Revision 1.18  1999/05/01 11:29:20  robertj
  * Alpha linux port changes.
  *
@@ -64,9 +67,13 @@
 #else
 #define	SET_STACK	context[0].__sp = (__ptr_t)stackTop-16;
 #endif
-#endif
+#ifdef P_64BIT
+#define STACK_MULT	5
+#else
 #include <sys/mman.h>
 #define	USE_MMAP	MAP_ANON | MAP_PRIVATE
+#endif
+#endif
 #endif
 
 #ifdef P_FREEBSD
