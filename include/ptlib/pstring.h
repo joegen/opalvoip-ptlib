@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.74  2004/05/04 11:10:36  rjongbloed
+ * Fixed usage of MakeEmpty() with PStringStream.
+ *
  * Revision 1.73  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -329,14 +332,6 @@ class PString : public PCharArray {
   public:
   /**@name Construction */
   //@{
-    /**Return an empty string.
-      */
-    static PString Empty();
-
-    /**Make the current string empty
-      */
-    PString & MakeEmpty();
-
     /**Construct an empty string. This will have one character in it which is
        the '\0' character.
      */
@@ -625,6 +620,14 @@ class PString : public PCharArray {
     PString & operator=(
       PUInt64 n   /// Integer to convert
     );
+
+    /**Make the current string empty
+      */
+    virtual PString & MakeEmpty();
+
+    /**Return an empty string.
+      */
+    static PString Empty();
   //@}
 
   /**@name Overrides from class PObject */
@@ -1956,6 +1959,10 @@ class PStringStream : public PString, public iostream
     PStringStream(
       const char * cstr   /// Initial value for the string stream.
     );
+
+    /**Make the current string empty
+      */
+    virtual PString & MakeEmpty();
 
     /**Assign the string part of the stream to the current object. The current
        instance then becomes another reference to the same string in the #strm#
