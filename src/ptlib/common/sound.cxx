@@ -25,6 +25,9 @@
  *                 Snark at GnomeMeeting
  *
  * $Log: sound.cxx,v $
+ * Revision 1.9  2004/10/28 20:07:10  csoutheren
+ * Fixes for MacOSX platforms, thanks to Hannes Friederich
+ *
  * Revision 1.8  2004/08/16 06:40:59  csoutheren
  * Added adapters template to make device plugins available via the abstract factory interface
  *
@@ -198,7 +201,7 @@ BOOL PSoundChannel::Open(
 
 ///////////////////////////////////////////////////////////////////////////
 
-#if !defined(_WIN32) && !defined(__BEOS__)
+#if !defined(_WIN32) && !defined(__BEOS__) && !defined(__APPLE__)
 
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
