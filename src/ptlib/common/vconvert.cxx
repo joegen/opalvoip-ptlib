@@ -25,6 +25,11 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.9  2001/03/08 23:36:03  robertj
+ * Added backward compatibility SetFrameSize() function.
+ * Added internal SimpleConvert() function for same type converters.
+ * Fixed some documentation.
+ *
  * Revision 1.8  2001/03/08 08:31:34  robertj
  * Numerous enhancements to the video grabbing code including resizing
  *   infrastructure to converters. Thanks a LOT, Mark Cooke.
@@ -110,8 +115,15 @@ PColourConverter::PColourConverter(const PString & src,
   : srcColourFormat(src),
     dstColourFormat(dst)
 {
-    SetSrcFrameSize(width, height);
-    SetDstFrameSize(width, height, FALSE);
+    SetFrameSize(width, height);
+}
+
+
+BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
+{
+  BOOL ok1 = SetSrcFrameSize(width, height);
+  BOOL ok2 = SetDstFrameSize(width, height, FALSE);
+  return ok1 && ok2;
 }
 
 
@@ -156,6 +168,21 @@ BOOL PColourConverter::ConvertInPlace(BYTE * frameBuffer,
     *bytesReturned = bytes;
   return TRUE;
 }
+
+
+BOOL PColourConverter::SimpleConvert(const BYTE * srcFrameBuffer,
+                                     BYTE * dstFrameBuffer,
+                                     PINDEX * bytesReturned)
+{
+  if (srcFrameBuffer != dstFrameBuffer)
+    memcpy(dstFrameBuffer, srcFrameBuffer, dstFrameBytes);
+  
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+
+  return TRUE;
+}
+
 
 
 #define rgbtoyuv(b, g, r, y, u, v) \
@@ -335,30 +362,40 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,RGB32)
 }
 
 
+PSTANDARD_COLOUR_CONVERTER(RGB32,RGB24)
+{
+  const BYTE * src = srcFrameBuffer;
+  BYTE * dst = dstFrameBuffer;
+
+  for (unsigned x = 0; x < srcFrameWidth; x++) {
+    for (unsigned y = 0; y < srcFrameHeight; y++) {
+      for (unsigned p = 0; p < 3; p++)
+        *dst++ = *src++;
+      src++;
+    }
+  }
+  
+  if (bytesReturned != NULL)
+    *bytesReturned = dstFrameBytes;
+  return TRUE;
+}
+
+
 PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV411P)
 {
-  if (srcFrameBuffer != dstFrameBuffer)
-    memcpy(dstFrameBuffer, srcFrameBuffer, (srcFrameWidth*srcFrameHeight*3)>>1);
-  
-  return TRUE;
+  return SimpleConvert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,RGB24)
 {
-  if (srcFrameBuffer != dstFrameBuffer)
-    memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight*3);
-  
-  return TRUE;
+  return SimpleConvert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,RGB32)
 {
-  if (srcFrameBuffer != dstFrameBuffer)
-    memcpy(dstFrameBuffer, srcFrameBuffer, srcFrameWidth*srcFrameHeight*4);
-  
-  return TRUE;
+  return SimpleConvert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
 }
 
 
