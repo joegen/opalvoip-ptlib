@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.46 1996/02/03 11:06:49 robertj Exp $
+ * $Id: osutils.cxx,v 1.47 1996/02/08 12:26:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.47  1996/02/08 12:26:55  robertj
+ * Changed time for full support of time zones.
+ *
  * Revision 1.46  1996/02/03 11:06:49  robertj
  * Added string constructor for times, parses date/time from string.
  *
@@ -213,11 +216,13 @@ void PTimeInterval::SetInterval(long millisecs,
 
 #if defined(_PTIME)
 
-PTime::PTime(time_t t, PTime::TimeZone zone)
+PTime::PTime(time_t t, int zone)
   : theTime(t)
 { 
-  if (zone == GMT)
-    t -= GetTimeZone();
+  if (zone != Local) {
+    theTime -= zone*60;
+    theTime += GetTimeZone()*60;
+  }
 }
 
 
@@ -232,7 +237,7 @@ PTime::PTime(const PString & str)
 
 PTime::PTime(int second, int minute, int hour,
              int day,    int month,  int year,
-             PTime::TimeZone zone)
+             int zone)
 {
   struct tm t;
   PAssert(second >= 0 && second <= 59, PInvalidParameter);
@@ -249,8 +254,10 @@ PTime::PTime(int second, int minute, int hour,
   t.tm_year = year-1900;
   theTime = mktime(&t);
   PAssert(theTime != -1, PInvalidParameter);
-  if (zone == UTC)
-    theTime -= GetTimeZone();
+  if (zone != Local) {
+    theTime -= zone*60;
+    theTime += GetTimeZone()*60;
+  }
 }
 
 
@@ -354,8 +361,11 @@ void PTime::ReadFrom(istream &strm)
 }
 
 
-PString PTime::AsString(TimeFormat format, TimeZone zone) const
+PString PTime::AsString(TimeFormat format, int zone) const
 {
+  if (format == RFC1123)
+    return AsString("www, dd MMM yyyy hh:mm:ss z", zone);
+
   PString fmt, dsep;
 
   PString tsep = GetTimeSeparator();
@@ -450,14 +460,14 @@ PString PTime::AsString(TimeFormat format, TimeZone zone) const
       break;
   }
 
-  if (zone == UTC)
-    fmt += "u";
+  if (zone != Local)
+    fmt += " z";
 
-  return AsString(fmt);
+  return AsString(fmt, zone);
 }
 
 
-PString PTime::AsString(const char * format) const
+PString PTime::AsString(const char * format, int zone) const
 {
   PAssert(format != NULL, PInvalidParameter);
 
@@ -481,12 +491,6 @@ PString PTime::AsString(const char * format) const
           str += GetTimeAM();
         else
           str += GetTimePM();
-        break;
-
-      case 'g' :
-      case 'u' :
-        while (*format == 'g' || *format == 'u')
-          ++format;
         break;
 
       case 'h' :
@@ -543,8 +547,12 @@ PString PTime::AsString(const char * format) const
       case 'z' :
         while (*++format == 'z')
           ;
-        str += GetTimeZoneString(
-                         IsDaylightSavings() ? DaylightSavings : StandardTime);
+        if (zone == Local)
+          zone = GetTimeZone();
+        str += zone < 0 ? '-' : '+';
+        if (zone < 0)
+          zone = -zone;
+        str += psprintf("%02u%02u", zone/60, zone%60);
         break;
 
       default :
