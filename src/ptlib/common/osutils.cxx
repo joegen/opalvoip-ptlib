@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.66 1996/05/23 23:05:07 robertj Exp $
+ * $Id: osutils.cxx,v 1.67 1996/05/26 03:46:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.67  1996/05/26 03:46:56  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.66  1996/05/23 23:05:07  robertj
  * Fixed process filename on MSOS platforms.
  *
@@ -385,7 +388,9 @@ void PTimerList::AppendTimer(PTimer * timer)
     mutex.Wait();
     PInternalTimerList::InsertAt(0, timer);
     mutex.Signal();
+#if defined(P_PLATFORM_HAS_THREADS)
     PProcess::Current()->SignalTimerChange();
+#endif
   }
 }
 
@@ -398,7 +403,9 @@ void PTimerList::RemoveTimer(PTimer * timer)
     mutex.Wait();
     PInternalTimerList::Remove(timer);
     mutex.Signal();
+#if defined(P_PLATFORM_HAS_THREADS)
     PProcess::Current()->SignalTimerChange();
+#endif
   }
 }
 
@@ -573,7 +580,7 @@ PChannel::PChannel()
   osError = 0;
   lastError = NoError;
   lastReadCount = lastWriteCount = 0;
-  init(PNEW PChannelStreamBuffer(this));
+  init(new PChannelStreamBuffer(this));
   Construct();
 }
 
@@ -1207,10 +1214,11 @@ PString PArgList::GetOptionString(const char * option, const char * dflt) const
 
 PString PArgList::GetParameter(PINDEX num) const
 {
-  if ((num+shift) < arg_count)
-    return arg_values[num+shift];
+  int i = shift+(int)num;
+  if (i >= 0 && i < arg_count)
+    return arg_values[i];
 
-  IllegalArgumentIndex(num+shift);
+  IllegalArgumentIndex(i);
   return PString();
 }
 
