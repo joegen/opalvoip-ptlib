@@ -5,6 +5,11 @@
  *
  * Portable Windows Library
  *
+ * $Log: asnper.cxx,v $
+ * Revision 1.5  2003/12/03 03:50:03  csoutheren
+ * Reversed last change as it broke decoding in some circumstances
+ *
+ *
  */
 
 ///////////////////////////////////////////////////////////////////////
@@ -682,20 +687,18 @@ BOOL PASN_Choice::DecodePER(PPER_Stream & strm)
   if (strm.IsAtEnd())
     return FALSE;
 
-  unsigned newTag;
-  BOOL ok;
-
   if (extendable) {
     if (strm.SingleBitDecode()) {
-      if (!strm.SmallUnsignedDecode(newTag))
+      if (!strm.SmallUnsignedDecode(tag))
         return FALSE;
 
-      newTag += numChoices;
+      tag += numChoices;
 
       unsigned len;
       if (strm.LengthDecode(0, INT_MAX, len) != 0)
         return FALSE;
 
+      BOOL ok;
       if (CreateObject()) {
         PINDEX nextPos = strm.GetPosition() + len;
         ok = choice->Decode(strm);
@@ -712,23 +715,18 @@ BOOL PASN_Choice::DecodePER(PPER_Stream & strm)
           ok = FALSE;
         }
       }
-      if (ok)
-        tag = newTag;
       return ok;
     }
   }
 
   if (numChoices < 2)
-    newTag = 0;
+    tag = 0;
   else {
-    if (strm.UnsignedDecode(0, numChoices-1, newTag) < 0)
+    if (strm.UnsignedDecode(0, numChoices-1, tag) < 0)
       return FALSE;
   }
 
-  ok = CreateObject() && choice->Decode(strm);
-  if (ok)
-    tag  = newTag;
-  return ok;
+  return CreateObject() && choice->Decode(strm);
 }
 
 
