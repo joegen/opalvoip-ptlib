@@ -29,6 +29,9 @@
  * Bits by Jac Goudsmit
  *
  * $Log: beaudio.h,v $
+ * Revision 1.4  2004/10/26 18:07:36  ykiryanov
+ * Added ifdef for Zeta build
+ *
  * Revision 1.3  2004/06/16 01:57:57  ykiryanov
  * Working capture code
  *
@@ -61,8 +64,6 @@
 #include <media/SoundPlayer.h>
 #include <media/PlaySound.h>
 
-#include <media/MediaRecorder.h>
-
 // Kernel kit
 #include <kernel/OS.h>
 
@@ -70,6 +71,16 @@
 #include <support/Beep.h>
 
 #include "resampler.h"
+
+#ifdef B_ZETA_VERSION
+#define MEDIA_KIT_UPDATE
+#endif
+
+#ifdef MEDIA_KIT_UPDATE
+#include <media/MediaRecorder.h>
+#else
+#include "beaudio/MediaRecorder.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // PSoundChannelBeOS declaration
