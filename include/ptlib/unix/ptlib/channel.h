@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.2 1995/01/23 22:59:47 craigs Exp $
+ * $Id: channel.h,v 1.3 1995/07/09 00:34:58 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.3  1995/07/09 00:34:58  craigs
+ * Latest and greatest omnibus change
+ *
  * Revision 1.2  1995/01/23 22:59:47  craigs
  * Changes for HPUX and Sun 4
  *
@@ -25,7 +28,6 @@
 #include "../../common/channel.h"
   protected:
     BOOL SetIOBlock(BOOL isRead);
-
     PString channelName;
 };
 
