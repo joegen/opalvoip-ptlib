@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.56  2001/03/19 05:49:44  robertj
+ * Redid int64 stream input to use library conversion function and
+ *   set fail bit if no valid integer was found in the input stream.
+ *
  * Revision 1.55  2001/03/15 23:49:42  robertj
  * Added missing operators for reading 64 bit integers from streams.
  *
@@ -248,55 +252,55 @@ ostream & operator<<(ostream & s, PUInt64 v)
 }
 
 
-istream & operator>>(istream & s, PInt64 & v)
-{
-  while (isspace(s.peek()))
-    s.get();
+const int MaxDigits = (64+2)/3+1; // Maximum is 22 digit octal number, plus sign
 
-  int sign = 1;
-  switch (s.peek()) {
-    case '-' :
-      sign = -1;
-      // Do '+' case
-    case '+' :
-      s.get();
+static void GetDigits(BOOL sign, istream & s, char * buffer)
+{
+  PINDEX count = 0;
+
+  s.eatwhite();
+
+  if (s.peek() == '+')
+    s.get(); // Skip leading '+'
+  else if (sign && s.peek() == '-')
+    s.get(buffer[count++]);
+
+  if ((s.flags()&ios::oct) != 0) {
+    while (isdigit(s.peek()) && s.peek() < '8' && count < MaxDigits)
+      s.get(buffer[count++]);
+  }
+  else if ((s.flags()&ios::hex) != 0) {
+    while (isxdigit(s.peek()) && count < MaxDigits)
+      s.get(buffer[count++]);
+  }
+  else {
+    while (isdigit(s.peek()) && count < MaxDigits)
+      s.get(buffer[count++]);
   }
 
-  operator>>(s, (PUInt64&)v);
+  buffer[count] = '\0';
 
-  if (sign < 0)
-    v = -v;
+  if (count > (buffer[0] == '-' ? 1 : 0))
+    return;
 
+  s.clear(ios::failbit);
+}
+
+
+istream & operator>>(istream & s, PInt64 & v)
+{
+  char b[MaxDigits+1];
+  GetDigits(TRUE, s, b);
+  v = _atoi64(b);
   return s;
 }
 
 
 istream & operator>>(istream & s, PUInt64 & v)
 {
-  while (isspace(s.peek()))
-    s.get();
-
-  v = 0;
-
-  if ((s.flags()&ios::oct) != 0) {
-    while (isdigit(s.peek()) && s.peek() < '8')
-      v = v*8 + s.get()-'0';
-  }
-  else if ((s.flags()&ios::hex) != 0) {
-    while (isxdigit(s.peek())) {
-      int c = s.get()-'0';
-      if (c > 9)
-        c -= 'A'-'9'+1;
-      if (c > 15)
-        c -= 'a'-'A';
-      v = v*16 + c;
-    }
-  }
-  else {
-    while (isdigit(s.peek()))
-      v = v* 10 + s.get()-'0';
-  }
-
+  char b[MaxDigits+1];
+  GetDigits(FALSE, s, b);
+  v = _atoi64(b);
   return s;
 }
 
