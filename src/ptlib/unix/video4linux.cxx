@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.14  2001/03/08 23:08:28  robertj
+ * Fixed incorrect usage of VIDIOCSYNC, thanks Thorsten Westheider
+ *
  * Revision 1.13  2001/03/08 21:46:11  dereks
  * Removed check when setting framesize. Thanks Mark Cooke
  *
@@ -442,7 +445,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   // device does support memory mapping, get data
 
   // wait for the frame to load
-  ::ioctl(videoFd, VIDIOCSYNC, currentFrame);
+  ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
 
   // If converting on the fly do it from frame store to output buffer, otherwise do
   // straight copy.
