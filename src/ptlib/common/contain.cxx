@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.35 1995/01/09 12:32:56 robertj Exp $
+ * $Id: contain.cxx,v 1.36 1995/01/10 11:44:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.35  1995/01/09 12:32:56  robertj
+ * Revision 1.36  1995/01/10 11:44:13  robertj
+ * Removed PString parameter in stdarg function for GNU C++ compatibility.
+ *
+ * Revision 1.35  1995/01/09  12:32:56  robertj
  * Removed unnecesary return value from I/O functions.
  * Changed function names due to Mac port.
  *
@@ -987,14 +990,6 @@ PString & PString::sprintf(const char * fmt, ...)
 }
 
 
-PString & PString::sprintf(PString fmt, ...)
-{
-  va_list args;
-  va_start(args, fmt);
-  return vsprintf((const char *)fmt, args);
-}
-
-
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
   ::vsprintf(GetPointer(1000)+strlen(theArray), fmt, arg);
@@ -1010,15 +1005,6 @@ PString psprintf(const char * fmt, ...)
   va_list args;
   va_start(args, fmt);
   return str.vsprintf(fmt, args);
-}
-
-
-PString psprintf(PString fmt, ...)
-{
-  PString str;
-  va_list args;
-  va_start(args, fmt);
-  return str.vsprintf((const char *)fmt, args);
 }
 
 
