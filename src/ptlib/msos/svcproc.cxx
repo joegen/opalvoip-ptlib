@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.36 1998/03/05 12:49:55 robertj Exp $
+ * $Id: svcproc.cxx,v 1.37 1998/03/20 03:20:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.37  1998/03/20 03:20:45  robertj
+ * Lined up debug output.
+ *
  * Revision 1.36  1998/03/05 12:49:55  robertj
  * MemCheck fixes.
  *
@@ -276,14 +279,12 @@ void PSystemLog::Output(Level level, const char * msg)
       "Error",
       "Warning",
       "Info",
-      "Debug",
+      "Debug1",
       "Debug2",
       "Debug3"
     };
     PTime now;
-    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1];
-    if (msg[0] != '\0')
-      *out << ": " << msg;
+    *out << now.AsString("yy/MM/dd hh:mm:ss ") << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
       *out << " - error = " << err << endl;
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
@@ -834,7 +835,8 @@ void PServiceProcess::DebugOutput(const char * out)
       prev = out = lf;
     }
   }
-  SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
+  if (*out != '\0')
+    SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
 }
 
 
