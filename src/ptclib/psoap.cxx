@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.6  2003/10/08 21:58:13  dereksmithies
+ * Add client authentication support. many thanks to Ben Lear.
+ *
  * Revision 1.5  2003/04/28 00:09:14  craigs
  * Patches from Andreas Sikkema
  *
@@ -606,6 +609,12 @@ BOOL PSOAPClient::PerformRequest( PSOAPMessage & request, PSOAPMessage & respons
   sendMIME.SetAt( "Server", url.GetHostName() );
   sendMIME.SetAt( PHTTP::ContentTypeTag, "text/xml" );
   sendMIME.SetAt( "SOAPAction", soapAction );
+
+  if(url.GetUserName() != "") {
+      PStringStream SoapAuthToken;
+      SoapAuthToken << url.GetUserName() << ":" << url.GetPassword();
+      sendMIME.SetAt( "Authorization", PBase64::Encode(SoapAuthToken) );
+  }
 
   // Set thetimeout
   client.SetReadTimeout( timeout );
