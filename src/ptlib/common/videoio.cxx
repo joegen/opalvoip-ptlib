@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.34  2002/09/01 23:25:26  dereks
+ * Documentation fix from Walter Whitlock. Many thanks.
+ *
  * Revision 1.33  2002/09/01 22:38:21  dereks
  * Remove previous clarification, cause it breaks openphone code.
  *
@@ -721,7 +724,7 @@ BOOL PVideoInputDevice::GetVFlipState()
 BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip) 
 {
   if (converter == NULL)
-    //We return !newVFlip here because of constraints from openPhone code.
+    //return FALSE only when requested vertical flip behavior will not result
     return !newVFlip;
 
   converter->SetVFlipState(newVFlip);
