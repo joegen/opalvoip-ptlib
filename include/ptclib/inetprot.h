@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.8 1996/03/31 08:43:38 robertj Exp $
+ * $Id: inetprot.h,v 1.9 1996/05/09 12:14:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.9  1996/05/09 12:14:02  robertj
+ * Rewrote the "unread" buffer usage and then used it to improve ReadLine() performance.
+ *
  * Revision 1.8  1996/03/31 08:43:38  robertj
  * Added version of WriteCommand() and ExecteCommand() without argument string.
  *
@@ -336,6 +339,9 @@ PDECLARE_CLASS(PApplicationSocket, PTCPSocket)
 
     PCharArray unReadBuffer;
     // Buffer for characters put back into the data stream.
+
+    PINDEX unReadCount;
+    // Buffer count for characters put back into the data stream.
 
     PTimeInterval readLineTimeout;
     // Time for characters in a line to be received.
