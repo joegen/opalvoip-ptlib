@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.16  2001/02/07 04:45:54  robertj
+ * Added functions to get current sound channel format parameters.
+ *
  * Revision 1.15  2000/07/04 04:30:47  robertj
  * Fixed shutdown issues with buffers in use, again.
  *
@@ -824,6 +827,24 @@ BOOL PSoundChannel::SetFormat(const PWaveFormat & format)
   waveFormat = format;
 
   return OpenDevice(os_handle);
+}
+
+
+unsigned PSoundChannel::GetChannels() const
+{
+  return waveFormat->nChannels;
+}
+
+
+unsigned PSoundChannel::GetSampleRate() const
+{
+  return waveFormat->nSamplesPerSec;
+}
+
+
+unsigned PSoundChannel::GetSampleSize() const
+{
+  return waveFormat->wBitsPerSample;
 }
 
 
