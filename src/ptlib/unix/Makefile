@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.96  2002/10/02 08:59:13  craigs
+# Added pxmlrpcs.cxx
+#
 # Revision 1.95  2002/09/09 06:42:00  robertj
 # Added check for Sun audio header before compiling module, thanks Nils Bokermann
 #
@@ -443,6 +446,7 @@ endif
 ifdef HAS_EXPAT
 PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
 		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
+		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
 		  $(COMPONENT_SRC_DIR)/vxml.cxx
 endif
 
