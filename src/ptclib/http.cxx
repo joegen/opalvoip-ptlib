@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.10 1996/02/19 13:48:28 robertj Exp $
+ * $Id: http.cxx,v 1.11 1996/02/25 03:10:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.11  1996/02/25 03:10:34  robertj
+ * Removed pass through HTTP resource.
+ * Fixed PHTTPConfig resource to use correct name for config key.
+ *
  * Revision 1.10  1996/02/19 13:48:28  robertj
  * Put multiple uses of literal strings into const variables.
  * Fixed URL parsing so that the unmangling of strings occurs correctly.
@@ -1539,11 +1543,15 @@ PHTTPSocket::StatusCode PHTTPConfig::Post(const PURL & url,
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
-    if (data.Contains(field.GetName())) {
-      if (&field == keyField)
-        cfg.SetString(field.GetValue(), valField->GetValue());
+    const PCaselessString & name = field.GetName();
+    if (data.Contains(name)) {
+      if (&field == keyField) {
+        PString key = field.GetValue();
+        if (!key.IsEmpty())
+          cfg.SetString(key, valField->GetValue());
+      }
       else if (&field != valField)
-        cfg.SetString(field.GetTitle(), field.GetValue());
+        cfg.SetString(name, field.GetValue());
     }
   }
 
@@ -1556,7 +1564,7 @@ void PHTTPConfig::SetConfigValues()
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
-    field.SetValue(cfg.GetString(field.GetTitle(), field.GetValue()));
+    field.SetValue(cfg.GetString(field.GetName(), field.GetValue()));
   }
 }
 
@@ -1568,29 +1576,6 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
   Add(keyFld);
   valField = PAssertNULL(valFld);
   Add(valFld);
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPPassThrough
-
-PHTTPPassThrough::PHTTPPassThrough(const PURL & localURL,
-                                   const PURL & remURL)
-  : PHTTPResource(localURL, PString()), remoteURL(remURL)
-{
-}
-
-
-void PHTTPPassThrough::OnGET(PHTTPSocket & socket,
-                             const PURL & url,
-                             const PMIMEInfo & info)
-{
-  const PStringArray & path = url.GetPath();
-  PString newURL = remoteURL.AsString();
-  for (PINDEX i = baseURL.GetPath().GetSize(); i < path.GetSize()-1; i++)
-    newURL += '/' + path[i];
-
-  // More to come
 }
 
 
