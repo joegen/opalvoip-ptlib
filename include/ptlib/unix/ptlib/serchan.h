@@ -1,5 +1,5 @@
 /*
- * $Id: serchan.h,v 1.4 1996/05/02 12:01:47 craigs Exp $
+ * $Id: serchan.h,v 1.5 1996/05/03 13:12:07 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serchan.h,v $
+ * Revision 1.5  1996/05/03 13:12:07  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.4  1996/05/02 12:01:47  craigs
  * More Sun4 fixed
  *
@@ -25,30 +28,6 @@
 #ifndef _PSERIALCHANNEL
 
 #pragma interface
-
-#include <sys/termios.h>
-
-#ifdef P_SUN4
-#undef NL0
-#undef NL1
-#undef CR0
-#undef CR1
-#undef CR2
-#undef CR3
-#undef TAB0
-#undef TAB1
-#undef TAB2
-#undef XTABS
-#undef BS0
-#undef BS1
-#undef FF0
-#undef FF1
-#undef ECHO
-#undef NOFLSH
-#undef TOSTOP
-#undef FLUSHO
-#undef PENDIN
-#endif
 
 #include "../../common/serchan.h"
   public:
