@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.14 1995/11/21 11:51:54 robertj Exp $
+ * $Id: object.cxx,v 1.15 1996/01/02 12:52:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.15  1996/01/02 12:52:02  robertj
+ * Mac OS compatibility changes.
+ *
  * Revision 1.14  1995/11/21 11:51:54  robertj
  * Improved streams compatibility.
  *
@@ -918,7 +921,8 @@ static PUInt64 Inp64(istream & stream)
       base = 10;
   }
 
-  stream.eatwhite();
+  if (isspace(stream.peek()))
+    stream.get();
 
   PInt64 num = 0;
   while (isxdigit(stream.peek())) {
@@ -936,12 +940,16 @@ static PUInt64 Inp64(istream & stream)
 
 istream & operator>>(istream & stream, PInt64 & v)
 {
-  stream.eatwhite();
+  if (isspace(stream.peek()))
+    stream.get();
 
   switch (stream.peek()) {
     case '-' :
       stream.ignore();
-      v = -(PInt64)Inp64(stream);
+      {
+        PInt64 i = Inp64(stream)
+        v = -i;
+      }
       break;
     case '+' :
       stream.ignore();
