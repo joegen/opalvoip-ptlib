@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.43  2002/12/10 05:22:16  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.42  2002/12/10 04:45:41  robertj
  * Added support in PTime for ISO 8601 format.
  *
@@ -416,6 +419,8 @@ PString PTime::AsString(TimeFormat format, int zone) const
       return AsString("yyyyMMddThhmmssZ");
     case LongISO8601 :
       return AsString("yyyy-MM-dd T hh:mm:ss Z");
+    default :
+      break;
   }
 
   PString fmt, dsep;
