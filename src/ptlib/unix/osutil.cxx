@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.56  2000/09/11 22:49:31  robertj
+ * Fixed bug where last char was always removed in mkdir() instead of only if '/'.
+ *
  * Revision 1.55  2000/06/21 01:01:22  robertj
  * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
  *
@@ -437,7 +440,10 @@ BOOL PDirectory::GetInfo(PFileInfo & info) const
 BOOL PDirectory::Create(const PString & p, int perm)
 {
   PAssert(!p.IsEmpty(), "attempt to create dir with empty name");
-  PString str = p.Left(p.GetLength()-1);
+  PINDEX last = p.GetLength()-1;
+  PString str = p;
+  if (p[last] == '/')
+    str = p.Left(last);
   return mkdir(str, perm) == 0;
 }
 
