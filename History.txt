@@ -55,8 +55,9 @@ Release 1.15
 
 	Some VxWorks port changes, still not complete.
 
-	Some Mac OS X port changes, still not complete.
+	Add some Mac OS X port changes, still not complete.
 
+	Add some NetBSD port changes, still not complete.
 
 Release 1.14
 ------------

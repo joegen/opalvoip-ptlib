@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.35  2000/04/09 18:29:02  rogerh
+ * Add my NetBSD changes
+ *
  * Revision 1.34  2000/04/07 05:45:49  rogerh
  * Add extra include to Mac OS X section
  *
@@ -148,6 +151,32 @@ typedef int socklen_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_OPENBSD)
+
+#if defined(P_PTHREADS)
+#define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+
+#include <pthread.h>
+#endif
+
+#include <paths.h>
+#include <errno.h>
+#include <dlfcn.h>
+#include <termios.h>
+#include <sys/fcntl.h>
+#include <sys/filio.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/ioctl.h>
+#include <sys/signal.h>
+#include <net/if.h>
+
+#define HAS_IFREQ
+
+#define PSETPGRP()  setpgrp(0, 0)
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined(P_NETBSD)
 
 #if defined(P_PTHREADS)
 #define _THREAD_SAFE
