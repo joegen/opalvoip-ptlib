@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.14  2002/01/28 21:22:10  dereks
+ * Fix the method for returning the device name.
+ *
  * Revision 1.13  2002/01/17 03:47:27  dereks
  * Fix latest addition to the fake images gallery.
  *
@@ -128,11 +131,11 @@ BOOL PFakeVideoInputDevice::IsCapturing()
 }
 
 
-PStringList PFakeVideoInputDevice::GetDeviceNames() const
+PStringList PFakeVideoInputDevice::GetInputDeviceNames()
 {
   PStringList list;
 
-  list.AppendString("/dev/vFAKE");
+  list.AppendString("fake");
 
   return list;
 }
