@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.22 1995/01/14 06:22:11 robertj Exp $
+ * $Id: file.h,v 1.23 1995/03/12 04:37:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.22  1995/01/14 06:22:11  robertj
+ * Revision 1.23  1995/03/12 04:37:13  robertj
+ * Moved GetHandle() function from PFile to PChannel.
+ *
+ * Revision 1.22  1995/01/14  06:22:11  robertj
  * Documentation
  *
  * Revision 1.21  1994/12/21  11:52:54  robertj
@@ -350,12 +353,6 @@ PDECLARE_CONTAINER(PFile, PChannel)
        Returns: TRUE if the file was successfully opened.
      */
       
-    int GetHandle() const;
-    /* Get the integer operating system handle for the file.
-
-       Returns: standard C file descriptor integer.
-     */
-
     off_t GetLength() const;
     /* Get the current size of the file.
 
