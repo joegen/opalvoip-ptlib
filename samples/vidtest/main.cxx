@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2003/04/28 14:30:21  craigs
+ * Started rearranging code
+ *
  * Revision 1.1  2003/04/28 08:18:42  craigs
  * Initial version
  *
@@ -78,12 +81,14 @@ void Vidtest::Main()
   }
 
   PVideoChannel * channel = new PVideoChannel;
-  grabber.Start();
   channel->AttachVideoReader(&grabber);
 
-  BOOL isEncoding = FALSE;
+  grabber.Start();
+
+  BOOL isEncoding = TRUE;
   PSDLDisplayThread * sdlThread = new PSDLDisplayThread(FALSE);
   PSDLVideoDevice * display = new PSDLVideoDevice("VideoTest", isEncoding, sdlThread);
+
   display->SetFrameSize(channel->GetGrabWidth(), channel->GetGrabHeight());
   display->SetColourFormatConverter("YUV420P");
 
