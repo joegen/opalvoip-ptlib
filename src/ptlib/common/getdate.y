@@ -863,7 +863,7 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
 
 
     var.yyInput = inputStream;
-    var.yyYear = now->tm_year;
+    var.yyYear = now->tm_year + 1900;
     var.yyMonth = now->tm_mon + 1;
     var.yyDay = now->tm_mday;
     var.yyTimezone = -timezone;
@@ -880,11 +880,14 @@ time_t STDAPICALLTYPE PTimeParse(void * inputStream, struct tm * now, int timezo
     var.yyHaveTime = 0;
     var.yyHaveZone = 0;
 
-    if (yyparse(&var) ||
-	    var.yyHaveTime > 1 ||
-	    var.yyHaveZone > 1 ||
-	    var.yyHaveDate > 1 ||
-	    var.yyHaveDay > 1)
+    yyparse(&var);
+
+    if (var.yyHaveTime > 1 || var.yyHaveZone > 1 ||
+	var.yyHaveDate > 1 || var.yyHaveDay > 1)
+	return -1;
+
+    if (var.yyHaveTime == 0 && var.yyHaveZone == 0 &&
+	var.yyHaveDate == 0 && var.yyHaveDay == 0 && var.yyHaveRel == 0)
 	return -1;
 
     if (var.yyHaveDate || var.yyHaveTime || var.yyHaveDay) {
