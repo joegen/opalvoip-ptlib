@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.95  2001/01/24 06:44:35  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.94  2000/11/02 01:31:11  robertj
  * Fixed problem with PSemaphore::WillBlock actually locking semaphore.
  *
@@ -365,6 +368,12 @@
 
 PTime::PTime()
 {
+#ifdef _WIN32_WCE
+	SYSTEMTIME SystemTime;
+	GetSystemTime(&SystemTime);
+	theTime = SystemTimeToTime(&SystemTime);
+	microseconds=1000*SystemTime.wMilliseconds;
+#else	
   // Magic constant to convert epoch from 1601 to 1970
   static const PInt64 delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
   static const PInt64 scale = 10000000;
@@ -373,13 +382,30 @@ PTime::PTime()
   GetSystemTimeAsFileTime((LPFILETIME)&timestamp);
   theTime = (time_t)(timestamp/scale - delta);
   microseconds = (long)(timestamp%scale/10);
+#endif  
+  
 }
+
+#ifdef UNICODE
+static PWIN32GetLocaleInfo(LCID Locale,LCTYPE LCType,LPSTR lpLCData,int cchData)
+{
+	TCHAR* pw = new TCHAR[cchData+1];
+	GetLocaleInfo(Locale,LCType,pw,cchData);	
+	lpLCData[0]=0;
+	WideCharToMultiByte(GetACP(), 0, pw, -1, lpLCData, cchData, NULL, NULL);
+}
+#else
+
+#define PWIN32GetLocaleInfo GetLocaleInfo
+
+#endif
+
 
 
 PString PTime::GetTimeSeparator()
 {
   PString str;
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_STIME, str.GetPointer(100), 99);
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_STIME, str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -388,7 +414,7 @@ PString PTime::GetTimeSeparator()
 BOOL PTime::GetTimeAMPM()
 {
   char str[2];
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_ITIME, str, sizeof(str));
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_ITIME, str, sizeof(str));
   return str[0] == '0';
 }
 
@@ -396,7 +422,7 @@ BOOL PTime::GetTimeAMPM()
 PString PTime::GetTimeAM()
 {
   PString str;
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S1159, str.GetPointer(100), 99);
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S1159, str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -405,7 +431,7 @@ PString PTime::GetTimeAM()
 PString PTime::GetTimePM()
 {
   PString str;
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S2359, str.GetPointer(100), 99);
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_S2359, str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -415,7 +441,7 @@ PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
   PString str;
   // Of course Sunday is 6 and Monday is 1...
-  GetLocaleInfo(GetUserDefaultLCID(), (dayOfWeek+6)%7 +
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), (dayOfWeek+6)%7 +
           (type == Abbreviated ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1),
           str.GetPointer(100), 99);
   str.MakeMinimumSize();
@@ -426,7 +452,7 @@ PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 PString PTime::GetDateSeparator()
 {
   PString str;
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_SDATE, str.GetPointer(100), 99);
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_SDATE, str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -435,7 +461,7 @@ PString PTime::GetDateSeparator()
 PString PTime::GetMonthName(Months month, NameType type)
 {
   PString str;
-  GetLocaleInfo(GetUserDefaultLCID(), month-1 +
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), month-1 +
       (type == Abbreviated ? LOCALE_SABBREVMONTHNAME1 : LOCALE_SMONTHNAME1),
       str.GetPointer(100), 99);
   str.MakeMinimumSize();
@@ -446,7 +472,7 @@ PString PTime::GetMonthName(Months month, NameType type)
 PTime::DateOrder PTime::GetDateOrder()
 {
   char str[2];
-  GetLocaleInfo(GetUserDefaultLCID(), LOCALE_IDATE, str, sizeof(str));
+  PWIN32GetLocaleInfo(GetUserDefaultLCID(), LOCALE_IDATE, str, sizeof(str));
   return (DateOrder)(str[0] - '0');
 }
 
@@ -510,7 +536,7 @@ unsigned PTimer::Resolution()
     return 1;
 
   DWORD err = GetLastError();
-
+#ifndef _WIN32_WCE
   DWORD timeAdjustment;
   DWORD timeIncrement;
   BOOL timeAdjustmentDisabled;
@@ -518,6 +544,8 @@ unsigned PTimer::Resolution()
     return timeIncrement/10000;
 
   err = GetLastError();
+#endif
+
   return 55;
 }
 
@@ -544,8 +572,12 @@ void PDirectory::CopyContents(const PDirectory & dir)
 BOOL PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
-
+#ifdef UNICODE
+  USES_CONVERSION;
+  hFindFile = FindFirstFile(A2T(operator+("*.*")), &fileinfo);
+#else
   hFindFile = FindFirstFile(operator+("*.*"), &fileinfo);
+#endif
   if (hFindFile == INVALID_HANDLE_VALUE)
     return FALSE;
 
@@ -581,9 +613,13 @@ BOOL PDirectory::IsSubDir() const
 
 PCaselessString PDirectory::GetVolume() const
 {
+#ifdef _WIN32_WCE
+  return PCaselessString("\\");
+#else
   char volName[100];
   PAssertOS(GetVolumeInformation(NULL, volName, sizeof(volName), NULL, NULL, NULL, NULL, 0));
   return PCaselessString(volName);
+#endif
 }
 
 
@@ -598,6 +634,11 @@ void PDirectory::Close()
 
 PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 {
+#ifdef _WIN32_WCE //doesn't support Current Directory so the path suppose to be full
+  PString fullpath=path;
+  PINDEX len = fullpath.GetLength();
+
+#else
   PString partialpath = path;
   if (path.IsEmpty())
     partialpath = ".";
@@ -606,6 +647,7 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
   PString fullpath;
   PINDEX len = (PINDEX)GetFullPathName(partialpath,
                            _MAX_PATH, fullpath.GetPointer(_MAX_PATH), &dummy);
+#endif
   if (isDirectory && len > 0 && fullpath[len-1] != PDIR_SEPARATOR)
     fullpath += PDIR_SEPARATOR;
   PINDEX pos = 0;
@@ -640,6 +682,24 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
 
   if (root.IsEmpty())
     return FALSE;
+
+#ifdef _WIN32_WCE
+	USES_CONVERSION;
+    ULARGE_INTEGER freeBytesAvailableToCaller;
+    ULARGE_INTEGER totalNumberOfBytes; 
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+    if (GetDiskFreeSpaceEx(A2T(root),
+                           &freeBytesAvailableToCaller,
+                           &totalNumberOfBytes,
+                           &totalNumberOfFreeBytes)) 
+	{
+      total = totalNumberOfBytes.QuadPart;
+      free = totalNumberOfFreeBytes.QuadPart;
+	  clusterSize = 512; //X3
+	  return TRUE;
+	}
+	return FALSE;
+#else
 
   BOOL needTotalAndFree = TRUE;
 
@@ -678,7 +738,8 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
                         &sectorsPerCluster,
                         &bytesPerSector,
                         &numberOfFreeClusters,
-                        &totalNumberOfClusters)) {
+                        &totalNumberOfClusters)) 
+{
     if (root[0] != '\\' || ::GetLastError() != ERROR_NOT_SUPPORTED)
       return FALSE;
 
@@ -707,6 +768,7 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
     clusterSize = bytesPerSector*sectorsPerCluster;
 
   return TRUE;
+#endif
 }
 
 
@@ -751,10 +813,10 @@ PString PChannel::GetErrorText(Errors lastError, int osError)
     };
     osError = errors[lastError];
   }
-
+#ifndef _WIN32_WCE
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
     return _sys_errlist[osError];
-
+#endif
   if ((osError & 0x40000000) == 0)
     return psprintf("C runtime error %u", osError);
 
@@ -917,8 +979,10 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 
   PProcess & process = PProcess::Current();
 
+#ifndef _WIN32_WCE
   AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
+#endif
 
   process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->threadId, thread);
@@ -943,8 +1007,15 @@ PThread::PThread(PINDEX stackSize,
 
   autoDelete = deletion == AutoDeleteThread;
 
+#ifndef _WIN32_WCE
   threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction,
                                         this, CREATE_SUSPENDED, &threadId);
+#else
+   threadHandle = CreateThread(NULL, stackSize, 
+								(LPTHREAD_START_ROUTINE) MainFunction,
+							    this, CREATE_SUSPENDED, (LPDWORD) &threadId);
+#endif
+  
   PAssertOS(threadHandle != NULL);
 
   SetPriority(priorityLevel);
@@ -980,8 +1051,14 @@ void PThread::Restart()
 {
   PAssert(IsTerminated(), "Cannot restart running thread");
 
+#ifndef _WIN32_WCE
   threadHandle = (HANDLE)_beginthreadex(NULL,
                          originalStackSize, MainFunction, this, 0, &threadId);
+#else
+   threadHandle = CreateThread(NULL, originalStackSize, 
+								(LPTHREAD_START_ROUTINE) MainFunction,
+							    this, 0, (LPDWORD) &threadId);
+#endif
   PAssertOS(threadHandle != NULL);
 }
 
@@ -1302,6 +1379,11 @@ PString PProcess::GetOSVersion()
 
 PDirectory PProcess::GetOSConfigDir()
 {
+#ifdef _WIN32_WCE
+	TCHAR  dir[_MAX_PATH];dir[0]=0;
+	wce_GetSystemDirectory(dir,sizeof(dir));	
+	return PString(dir);
+#else	
   OSVERSIONINFO info;
   info.dwOSVersionInfoSize = sizeof(info);
   GetVersionEx(&info);
@@ -1316,15 +1398,20 @@ PDirectory PProcess::GetOSConfigDir()
   PAssertOS(GetSystemDirectory(dir, sizeof(dir)) != 0);
   PDirectory sysdir = dir;
   return sysdir + "drivers\\etc";
+#endif
 }
 
 
 PString PProcess::GetUserName() const
 {
+#ifndef _WIN32_WCE
   PString username;
   unsigned long size = 50;
   ::GetUserName(username.GetPointer((PINDEX)size), &size);
   username.MakeMinimumSize();
+#else
+  PString username("User");
+#endif
   return username;
 }
 
@@ -1361,7 +1448,11 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
   if (initial > maxCount)
     initial = maxCount;
+#ifndef _WIN32_WCE
   handle = CreateSemaphore(NULL, initial, maxCount, NULL);
+#else
+  handle = CreateEvent(NULL, FALSE, FALSE, NULL); // non-signaled initially. TODO test it on count>1
+#endif
   PAssertOS(handle != NULL);
 }
 
@@ -1389,7 +1480,11 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 
 void PSemaphore::Signal()
 {
+#ifndef _WIN32_WCE
   if (!ReleaseSemaphore(handle, 1, NULL))
+#else
+  if (!SetEvent(handle))
+#endif
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
 }
@@ -1466,7 +1561,12 @@ PString PDynaLink::GetExtension()
 
 BOOL PDynaLink::Open(const PString & name)
 {
+#ifdef UNICODE
+  USES_CONVERSION;
+  _hDLL = LoadLibrary(A2T(name));
+#else
   _hDLL = LoadLibrary(name);
+#endif
   return _hDLL != NULL;
 }
 
@@ -1487,9 +1587,18 @@ BOOL PDynaLink::IsLoaded() const
 PString PDynaLink::GetName(BOOL full) const
 {
   PFilePathString str;
-  if (_hDLL != NULL) {
+  if (_hDLL != NULL) 
+{
+
+#ifdef UNICODE
+	TCHAR path[_MAX_PATH];
+    GetModuleFileName(_hDLL, path, _MAX_PATH-1);
+    str=PString(path);
+#else
     GetModuleFileName(_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
-    if (!full) {
+#endif
+    if (!full) 
+    {
       str.Delete(0, str.FindLast('\\')+1);
       PINDEX pos = str.Find(".DLL");
       if (pos != P_MAX_INDEX)
@@ -1506,7 +1615,11 @@ BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
   if (_hDLL == NULL)
     return FALSE;
 
+#ifndef _WIN32_WCE 
   FARPROC p = GetProcAddress(_hDLL, (LPSTR)(DWORD)LOWORD(index));
+#else
+ FARPROC p = GetProcAddress(_hDLL, (LPTSTR)(DWORD)LOWORD(index));
+#endif
   if (p == NULL)
     return FALSE;
 
@@ -1520,7 +1633,12 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
   if (_hDLL == NULL)
     return FALSE;
 
+#ifdef UNICODE
+  USES_CONVERSION;
+  FARPROC p = GetProcAddress(_hDLL, A2T(name));
+#else
   FARPROC p = GetProcAddress(_hDLL, name);
+#endif
   if (p == NULL)
     return FALSE;
 
@@ -1559,7 +1677,13 @@ int PDebugStream::Buffer::overflow(int c)
     char * p = pbase();
     setp(p, epptr());
     p[bufSize] = '\0';
+
+#ifdef UNICODE
+    USES_CONVERSION;
+    OutputDebugString(A2T(p));
+#else
     OutputDebugString(p);
+#endif
   }
 
   return 0;
