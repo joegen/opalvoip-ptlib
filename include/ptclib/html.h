@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.3 1996/01/28 02:45:38 robertj Exp $
+ * $Id: html.h,v 1.4 1996/01/28 14:15:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.4  1996/01/28 14:15:56  robertj
+ * More comments.
+ *
  * Revision 1.3  1996/01/28 02:45:38  robertj
  * Further implementation.
  *
@@ -48,7 +51,9 @@ PDECLARE_CLASS(PHTML, PStringStream)
     PHTML(
       const PString & str   // String representation of the title string.
     );
-    /* Construct a new HTML object.
+    /* Construct a new HTML object. If a title is specified in the
+       constructor then the HEAD, TITLE and BODY elements are output and the
+       string is used in a H1 element.
      */
 
     ~PHTML();
