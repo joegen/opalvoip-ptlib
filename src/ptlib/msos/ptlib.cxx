@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.27 1997/04/27 05:50:26 robertj Exp $
+ * $Id: ptlib.cxx,v 1.28 1997/08/28 12:49:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.28  1997/08/28 12:49:51  robertj
+ * Fixed bug where could not change directory to UNC.
+ *
  * Revision 1.27  1997/04/27 05:50:26  robertj
  * DLL support.
  *
@@ -179,7 +182,12 @@ PDirectory PDirectory::GetParent() const
 BOOL PDirectory::Change(const PString & p)
 {
   PDirectory d = p;
-  return _chdrive(toupper(d[0])-'A'+1) == 0 && _chdir(d + ".") == 0;
+
+  if (d[0] != '\\')
+    if (_chdrive(toupper(d[0])-'A'+1) != 0)
+      return FALSE;
+
+  return _chdir(d + ".") == 0;
 }
 
 
