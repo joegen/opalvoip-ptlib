@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.29 1997/06/08 04:48:30 robertj Exp $
+ * $Id: collect.cxx,v 1.30 1997/12/11 10:30:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.30  1997/12/11 10:30:02  robertj
+ * Added type correct Contains() function to dictionaries.
+ *
  * Revision 1.29  1997/06/08 04:48:30  robertj
  * Fixed problems in sorted list with multiple identical entries.
  *
@@ -1330,7 +1333,7 @@ void PAbstractSet::CloneContents(const PAbstractSet * )
 
 PINDEX PAbstractSet::Append(PObject * obj)
 {
-  if (Contains(*obj)) {
+  if (AbstractContains(*obj)) {
     if (reference->deleteObjects)
       delete obj;
     return P_MAX_INDEX;
