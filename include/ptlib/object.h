@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.78  2002/05/22 00:23:31  craigs
+ * Added GMTTime flag to tracing options
+ *
  * Revision 1.77  2002/04/19 00:20:51  craigs
  * Added option to append to log file rather than create anew each time
  *
@@ -452,6 +455,9 @@ public:
     AppendToFile = 128,
     /** SystemLog flag for tracing within a PServiceProcess application. Must
         be set in conjection with SetStream(new PSystemLog).
+      */
+    GMTTime = 256,
+    /** Output timestamps in GMT time rather than local time
       */
     SystemLogStream = 32768
   };
