@@ -1,14 +1,35 @@
-
 /*
- * $Id: ipsock.h,v 1.4 1997/10/03 14:47:07 craigs Exp $
+ * ipsock.h
+ *
+ * Internet Protocol socket I/O channel class.
  *
  * Portable Windows Library
  *
- * Operating System Classes Interface Declarations
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.5  1998/09/24 04:11:40  robertj
+ * Added open software license.
+ *
  * Revision 1.4  1997/10/03 14:47:07  craigs
  * Fixed ifdef guard
  *
@@ -17,9 +38,6 @@
  *
  * Revision 1.2  1996/04/15 10:50:48  craigs
  * Last revision prior to release of MibMaster
- *
- * Revision 1.1  1995/01/23 18:43:27  craigs
- * Initial revision
  *
  * Revision 1.1  1994/04/12  08:31:05  robertj
  * Initial revision
