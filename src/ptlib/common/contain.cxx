@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.5 1993/12/04 05:22:38 robertj Exp $
+ * $Id: contain.cxx,v 1.6 1993/12/14 18:44:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,13 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.5  1993/12/04 05:22:38  robertj
+ * Revision 1.6  1993/12/14 18:44:56  robertj
+ * Added RemoveAll() function to collections.
+ * Fixed bug in list processing when being destroyed (removes the item being
+ *     deleted from the list before deleting it).
+ * Changed GetIndex() so does not assert if entry not in collection.
+ *
+ * Revision 1.5  1993/12/04  05:22:38  robertj
  * Added more string functions.
  *
  * Revision 1.4  1993/09/27  16:35:25  robertj
@@ -797,6 +803,15 @@ int PCaselessString::FindLast(const char *cstr) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void PCollection::RemoveAll()
+{
+  while (GetSize() > 0)
+    RemoveAt(0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 void PArrayObjects::DestroyContents()
 {
   if (deleteObjects && *PAssertNULL(referenceCount) <= 1) {
@@ -910,9 +925,9 @@ PINDEX PArrayObjects::GetIndex(const PObject * obj)
 {
   for (PINDEX i = 0; i < size; i++) {
     if (theArray[i] == obj)
-      break;
+      return i;
   }
-  return i;
+  return P_MAX_INDEX;
 }
 
 
@@ -962,16 +977,8 @@ PAbstractList & PAbstractList::operator=(const PAbstractList & list)
 
 void PAbstractList::DestroyContents()
 {
-  if (*PAssertNULL(referenceCount) <= 1) {
-    PListElement *elmt = head;
-    while (elmt != NULL) {
-      PListElement *next = elmt->next;
-      if (deleteObjects && elmt->data != NULL)
-        delete elmt->data;
-      delete elmt;
-      elmt = next;
-    }
-  }
+  if (*PAssertNULL(referenceCount) <= 1)
+    RemoveAll();
 }
 
 
@@ -1092,7 +1099,12 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
       tail->next = NULL;
   }
 
-  lastElement = lastElement->next;
+  if (lastElement->next != NULL)
+    lastElement = lastElement->next;
+  else {
+    lastElement = lastElement->prev;
+    lastIndex--;
+  }
   size--;
 
   if (obj != NULL && deleteObjects)
@@ -1133,7 +1145,10 @@ PINDEX PAbstractList::GetIndex(const PObject * obj)
     }
   }
 
-  lastElement = PAssertNULL(element);
+  if (element == NULL)
+    return P_MAX_INDEX;
+
+  lastElement = element;
   lastIndex = index;
   return index;
 }
