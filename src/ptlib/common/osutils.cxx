@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.211  2004/03/22 10:15:27  rjongbloed
+ * Added classes similar to PWaitAndSignal to automatically unlock a PReadWriteMutex
+ *   when goes out of scope.
+ *
  * Revision 1.210  2004/03/20 09:08:15  rjongbloed
  * Changed interaction between PTrace and PSystemLog so that the tracing code does
  *   not need to know about the system log, thus reducing the code footprint for most apps.
@@ -2312,6 +2316,38 @@ void PReadWriteMutex::EndWrite()
     InternalStartRead();
   else
     EndNest();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+PReadWaitAndSignal::PReadWaitAndSignal(const PReadWriteMutex & rw, BOOL start)
+  : mutex((PReadWriteMutex &)rw)
+{
+  if (start)
+    mutex.StartRead();
+}
+
+
+PReadWaitAndSignal::~PReadWaitAndSignal()
+{
+  mutex.EndRead();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+PWriteWaitAndSignal::PWriteWaitAndSignal(const PReadWriteMutex & rw, BOOL start)
+  : mutex((PReadWriteMutex &)rw)
+{
+  if (start)
+    mutex.StartWrite();
+}
+
+
+PWriteWaitAndSignal::~PWriteWaitAndSignal()
+{
+  mutex.EndWrite();
 }
 
 
