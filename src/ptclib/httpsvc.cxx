@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.71  2001/05/07 23:27:06  robertj
+ * Added SO_LINGER setting to HTTP sockets to help with clearing up sockets
+ *   when the application exits, which prevents new run of app as "port in use".
+ *
  * Revision 1.70  2001/03/26 04:55:26  robertj
  * Made sure OnConfigChanged() is called from OnStart() function.
  *
@@ -514,6 +518,11 @@ BOOL PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PStrin
 
 PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 {
+#ifdef SO_LINGER
+  const linger ling = { 1, 5 };
+  socket.SetOption(SO_LINGER, &ling, sizeof(ling));
+#endif
+
   PHTTPServer * server = new PHTTPServer(httpNameSpace);
   if (server->Open(socket))
     return server;
