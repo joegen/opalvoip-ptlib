@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.42  2001/02/23 08:05:19  rogerh
+ * Add tcp.h for MACOS_X (Darwin)
+ *
  * Revision 1.41  2001/01/16 11:52:46  rogerh
  * Add patch from Jac Goudsmit <jac_goudsmit@yahoo.com> for BONE in BeOS 5
  *
@@ -380,6 +383,7 @@ typedef int socklen_t;
 #include <sys/sockio.h>
 #include <sys/signal.h>
 #include <net/if.h>
+#include <netinet/tcp.h>
 #include <sys/ioctl.h>
  
 typedef int socklen_t;
