@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.7  1998/10/26 09:11:30  robertj
+ * Added ability to separate out stdout from stderr on pipe channels.
+ *
  * Revision 1.6  1998/09/24 03:30:15  robertj
  * Added open software license.
  *
@@ -57,7 +60,7 @@
   protected:
 #if defined(_WIN32)
     PROCESS_INFORMATION info;
-    HANDLE hToChild, hFromChild;
+    HANDLE hToChild, hFromChild, hStandardError;
 #else
     BOOL hasRun;
     PFilePath toChild, fromChild;
