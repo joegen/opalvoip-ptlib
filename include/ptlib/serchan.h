@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.14  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.13  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -72,7 +76,7 @@
 
 #define _PSERIALCHANNEL
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

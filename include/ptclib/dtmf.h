@@ -12,6 +12,10 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.2  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.1  2002/01/23 11:43:26  rogerh
  * Add DTMF Decoder class. This can be passed PCM audio data
  * (at 16 bit, 8 KHz) and returns any DTMF codes detected.
@@ -22,7 +26,7 @@
 #ifndef _DTMF_H
 #define _DTMF_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

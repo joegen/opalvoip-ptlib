@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.53  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.52  2002/05/08 05:38:53  robertj
  * Added PHTTPTailFile resource to do a unix 'tail -f' of a file.
  *
@@ -206,7 +210,7 @@
 #ifndef _PHTTP
 #define _PHTTP
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

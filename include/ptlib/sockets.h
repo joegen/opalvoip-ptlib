@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.h,v $
+ * Revision 1.14  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.13  1998/11/30 02:51:59  robertj
  * New directory structure
  *
@@ -83,7 +87,7 @@
 #ifndef _SOCKETS_H
 #define _SOCKETS_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

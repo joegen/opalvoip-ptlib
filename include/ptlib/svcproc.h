@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.21  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.20  2002/01/26 23:55:55  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -104,7 +108,7 @@
 
 #define _PSERVICEPROCESS
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

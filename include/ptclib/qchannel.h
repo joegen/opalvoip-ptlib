@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.h,v $
+ * Revision 1.2  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.1  2001/07/10 03:07:07  robertj
  * Added queue channel and delay channel classes to ptclib.
  *
@@ -33,7 +37,7 @@
 #define _QCHANNEL_H
 
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

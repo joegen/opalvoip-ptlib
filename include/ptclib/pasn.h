@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pasn.h,v $
+ * Revision 1.12  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.11  1999/05/01 03:52:20  robertj
  * Fixed various egcs warnings.
  *
@@ -65,7 +69,7 @@
 #ifndef _PASN_H
 #define _PASN_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.13  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.12  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -75,9 +79,10 @@ class P_CircularBuffer;
 template <class ISample, class IntSample, class OSample> class BaseResampler;
 typedef class BaseResampler<short, long, short> Resampler;
 #endif // __BEOS__
- 
-#pragma interface
 
+#ifdef P_USE_PRAGMA 
+#pragma interface
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
