@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.17 1997/05/16 12:05:57 robertj Exp $
+ * $Id: ptime.cxx,v 1.18 1997/07/08 13:05:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.18  1997/07/08 13:05:21  robertj
+ * Fixed bug in parsing time zone incorrectly.
+ *
  * Revision 1.17  1997/05/16 12:05:57  robertj
  * Changed PTimeInterval to guarentee no overflow in millisecond calculations.
  *
@@ -732,7 +735,7 @@ void PTime::ReadFrom(istream &strm)
           token = get_token(strm, yytext, yyval);
           if (token == INTEGER) {
             if (yytext.GetLength() > 2) {
-              zone = mul * ((60 * yyval.ival / 100) + (yyval.ival % 100));
+              zone = mul * ((yyval.ival / 100) * 60 + (yyval.ival % 100));
               token = get_token(strm, yytext, yyval);
             }
             else {
