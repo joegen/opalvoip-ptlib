@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.29  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.28  2002/10/08 12:41:51  robertj
  * Changed for IPv6 support, thanks Sébastien Josset.
  *
@@ -117,6 +121,7 @@
  *
  */
 
+#ifndef _PTCPSOCKET
 #define _PTCPSOCKET
 
 #ifdef P_USE_PRAGMA
@@ -290,8 +295,13 @@ class PTCPSocket : public PIPSocket
 
 
 // Include platform dependent part of class
-#include <ptlib/tcpsock.h>
+#ifdef _WIN32
+#include "win32/ptlib/tcpsock.h"
+#else
+#include "unix/ptlib/tcpsock.h"
+#endif
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////

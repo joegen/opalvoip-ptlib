@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.23  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.22  2002/10/22 07:42:52  robertj
  * Added extra debugging for file handle and thread leak detection.
  *
@@ -109,6 +113,7 @@
  *
  */
 
+#ifndef _PSERVICEPROCESS
 #define _PSERVICEPROCESS
 
 #ifdef P_USE_PRAGMA
@@ -327,8 +332,14 @@ class PServiceProcess : public PProcess
 
 
 // Include platform dependent part of class
-#include <ptlib/svcproc.h>
+#ifdef _WIN32
+#include "win32/ptlib/svcproc.h"
+#else
+#include "unix/ptlib/svcproc.h"
+#endif
 };
+
+#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

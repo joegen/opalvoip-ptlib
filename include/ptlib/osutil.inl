@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.87  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.86  2002/12/18 05:05:43  robertj
  * Fixed problem with returning DWORD time interval when PTimeInterval is
  *   out of range, especially when negative!
@@ -782,32 +786,6 @@ PINLINE PWaitAndSignal::PWaitAndSignal(const PSemaphore & sem, BOOL wait)
 
 PINLINE PWaitAndSignal::~PWaitAndSignal()
   { semaphore.Signal(); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PThread
-
-#ifndef P_PLATFORM_HAS_THREADS
-
-PINLINE PThread * PThread::Current()
-  { return PProcess::Current().currentThread; }
-
-PINLINE BOOL PThread::IsTerminated() const
-  { return status == Terminated; }
-
-PINLINE void PThread::Resume()
-  { Suspend(FALSE); }
-
-PINLINE BOOL PThread::IsSuspended() const
-  { return suspendCount > 0; }
-
-PINLINE void PThread::SetPriority(Priority priorityLevel)
-  { basePriority = priorityLevel; }
-
-PINLINE PThread::Priority PThread::GetPriority() const
-  { return basePriority; }
-
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

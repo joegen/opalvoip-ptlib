@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.56  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.55  2003/03/31 01:23:56  robertj
  * Added ReadFrom functions for standard container classes such as
  *   PIntArray and PStringList etc
@@ -220,7 +224,6 @@
 #endif
 
 #include <ptlib/object.h>
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Abstract container class

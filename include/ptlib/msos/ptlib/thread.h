@@ -27,8 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.21  2003/09/17 01:18:02  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.20  2002/10/04 04:34:02  robertj
- * Added functions for getting operating system thread identifer values.
+ * Added functions for getting operating system thread identifier values.
  *
  * Revision 1.19  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
@@ -118,7 +122,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-typedef DWORD PThreadIdentifer;
+typedef DWORD PThreadIdentifier;
 
 #define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
@@ -176,10 +180,10 @@ typedef DWORD PThreadIdentifer;
 inline PThread::PThread()
   { }
 
-inline PThreadIdentifer PThread::GetThreadId() const
+inline PThreadIdentifier PThread::GetThreadId() const
   { return threadId; }
 
-inline PThreadIdentifer PThread::GetCurrentThreadId()
+inline PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::GetCurrentThreadId(); }
 
 
