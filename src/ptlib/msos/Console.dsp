@@ -160,7 +160,7 @@ SOURCE=..\common\getdate.y
 InputPath=..\common\getdate.y
 
 "../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 
 # End Custom Build
 
@@ -170,7 +170,7 @@ InputPath=..\common\getdate.y
 InputPath=..\common\getdate.y
 
 "../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 
 # End Custom Build
 
@@ -180,7 +180,7 @@ InputPath=..\common\getdate.y
 InputPath=..\common\getdate.y
 
 "../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 
 # End Custom Build
 
@@ -190,7 +190,7 @@ InputPath=..\common\getdate.y
 InputPath=..\common\getdate.y
 
 "../common/getdate_tab.c" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
-	bison ../common/getdate.y
+	bison -o ../common/getdate_tab.c ../common/getdate.y
 
 # End Custom Build
 
