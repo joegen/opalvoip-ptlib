@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.45 1996/07/30 12:24:53 robertj Exp $
+ * $Id: sockets.cxx,v 1.46 1996/08/25 09:33:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.46  1996/08/25 09:33:32  robertj
+ * Added function to detect "local" host name.
+ *
  * Revision 1.45  1996/07/30 12:24:53  robertj
  * Fixed incorrect conditional stopping Select() from working.
  *
@@ -450,7 +453,6 @@ BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
     return TRUE;
   }
 
-
   // otherwise lookup the name as a host name
   struct hostent * host_info;
   if ((host_info = ::gethostbyname(hostname)) == NULL)
@@ -501,6 +503,48 @@ PStringArray PIPSocket::GetHostAliases(const Address & addr)
                aliases);
 
   return aliases;
+}
+
+
+BOOL PIPSocket::IsLocalHost(const PString & hostname)
+{
+  if (hostname.IsEmpty())
+    return TRUE;
+
+  if (hostname *= "localhost")
+    return TRUE;
+
+  // lookup the host address using inet_addr, assuming it is a "." address
+  DWORD temp = inet_addr((const char *)hostname);
+  struct hostent * itsHost;
+  if (temp != INADDR_NONE)
+    itsHost = ::gethostbyaddr((const char *)&temp, 4, PF_INET);
+  else
+    itsHost = ::gethostbyname(hostname);
+  if (itsHost == NULL)
+    return FALSE;
+
+  if (memcmp(itsHost->h_addr, "\x7f\0\0\1", itsHost->h_length) == 0)
+    return TRUE;
+
+  char myname[64];
+  if (gethostname(myname, sizeof(myname)-1) != 0)
+    return FALSE;
+
+  struct hostent * myHost = ::gethostbyname(myname);
+  if (myHost == NULL)
+    return FALSE;
+
+  for (PINDEX mine = 0; myHost->h_addr_list[mine] != NULL; mine++) {
+    for (PINDEX its = 0; itsHost->h_addr_list[its] != NULL; its++) {
+      if (memcmp(myHost->h_addr_list[mine],
+                 itsHost->h_addr_list[its],
+                 itsHost->h_length) == 0)
+        return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 
