@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.19 1996/11/17 08:35:50 craigs Exp $
+# $Id: Makefile,v 1.20 1997/04/22 11:00:01 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.20  1997/04/22 11:00:01  craigs
+# Added SSL and DLL functions
+#
 # Revision 1.19  1996/11/17 08:35:50  craigs
 # Fixed distsrc target
 #
@@ -92,6 +95,8 @@ SOURCES		= switch.cxx \
 		  usnmp.cxx \
 		  usocket.cxx \
 		  uicmp.cxx \
+		  ussl.cxx \
+		  udll.cxx \
 		  $(COMMONSRC)/object.cxx \
 		  $(COMMONSRC)/contain.cxx \
 		  $(COMMONSRC)/osutils.cxx \
@@ -168,5 +173,3 @@ else
 endif
 
 endif
-
-# Do not delete this line - make depend depends upon it
