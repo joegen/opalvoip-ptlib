@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.11 1996/01/02 12:58:33 robertj Exp $
+ * $Id: win32.cxx,v 1.12 1996/01/23 13:25:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.12  1996/01/23 13:25:21  robertj
+ * Added time zones.
+ * Fixed bug if daylight savings indication.
+ *
  * Revision 1.11  1996/01/02 12:58:33  robertj
  * Fixed copy of directories.
  * Changed process construction mechanism.
@@ -64,6 +68,158 @@
 #include <signal.h>
 
 
+class RegistryKey
+{
+  public:
+    RegistryKey(const PString & subkey, BOOL create = FALSE);
+    ~RegistryKey();
+    BOOL EnumKey(PINDEX idx, PString & str);
+    BOOL EnumValue(PINDEX idx, PString & str);
+    BOOL DeleteKey(const PString & subkey);
+    BOOL DeleteValue(const PString & value);
+    BOOL QueryValue(const PString & value, PString & str);
+    BOOL QueryValue(const PString & value, DWORD & num);
+    BOOL SetValue(const PString & value, const PString & str);
+    BOOL SetValue(const PString & value, DWORD num);
+  private:
+    HKEY key;
+};
+
+
+RegistryKey::RegistryKey(const PString & subkey, BOOL create)
+{
+  if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (create) {
+    HKEY rootKey = HKEY_CURRENT_USER;
+    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
+      rootKey = HKEY_LOCAL_MACHINE;
+    DWORD disposition;
+    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
+      return;
+  }
+
+  key = NULL;
+}
+
+
+RegistryKey::~RegistryKey()
+{
+  if (key != NULL)
+    RegCloseKey(key);
+}
+
+
+BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD sizeofname = MAX_PATH;
+  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
+                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::DeleteKey(const PString & subkey)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::DeleteValue(const PString & value)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  if (type != REG_SZ)
+    return FALSE;
+
+  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  if (type != REG_DWORD)
+    return FALSE;
+
+  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, const PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
+                (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
+
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, DWORD num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value,
+                     0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
@@ -102,13 +258,13 @@ PString PTime::GetTimePM()
 }
 
 
-PString PTime::GetDayName(Weekdays dayOfWeek, BOOL abbreviated)
+PString PTime::GetDayName(Weekdays dayOfWeek, NameType type)
 {
   PString str;
   // Of course Sunday is 6 and Monday is 1...
   GetLocaleInfo(GetUserDefaultLCID(), (dayOfWeek+6)%7 +
-                (abbreviated ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1),
-                str.GetPointer(100), 99);
+          (type == Abbreviated ? LOCALE_SABBREVDAYNAME1 : LOCALE_SDAYNAME1),
+          str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -123,12 +279,12 @@ PString PTime::GetDateSeparator()
 }
 
 
-PString PTime::GetMonthName(Months month, BOOL abbreviated)
+PString PTime::GetMonthName(Months month, NameType type)
 {
   PString str;
   GetLocaleInfo(GetUserDefaultLCID(), month-1 +
-                (abbreviated ? LOCALE_SABBREVMONTHNAME1 : LOCALE_SMONTHNAME1),
-                str.GetPointer(100), 99);
+      (type == Abbreviated ? LOCALE_SABBREVMONTHNAME1 : LOCALE_SMONTHNAME1),
+      str.GetPointer(100), 99);
   str.MakeMinimumSize();
   return str;
 }
@@ -139,6 +295,34 @@ PTime::DateOrder PTime::GetDateOrder()
   char str[2];
   GetLocaleInfo(GetUserDefaultLCID(), LOCALE_IDATE, str, sizeof(str));
   return (DateOrder)(str[0] - '0');
+}
+
+
+BOOL PTime::IsDaylightSavings() const
+{
+  TIME_ZONE_INFORMATION tz;
+  DWORD result = GetTimeZoneInformation(&tz);
+  PAssertOS(result != 0xffffffff);
+  return result == TIME_ZONE_ID_DAYLIGHT;
+}
+
+
+long PTime::GetTimeZone() const
+{
+  TIME_ZONE_INFORMATION tz;
+  DWORD result = GetTimeZoneInformation(&tz);
+  PAssertOS(result != 0xffffffff);
+  if (result == TIME_ZONE_ID_DAYLIGHT)
+    tz.Bias += tz.DaylightBias;
+  return tz.Bias*60;
+}
+
+
+PString PTime::GetTimeZoneString(TimeZoneType type) const
+{
+  TIME_ZONE_INFORMATION tz;
+  PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
+  return type == StandardTime ? tz.StandardName : tz.DaylightName;
 }
 
 
@@ -923,158 +1107,6 @@ void PConfig::Construct(const PFilePath & filename)
 {
   location = filename;
   source = NumSources;
-}
-
-
-class RegistryKey
-{
-  public:
-    RegistryKey(const PString & subkey, BOOL create = FALSE);
-    ~RegistryKey();
-    BOOL EnumKey(PINDEX idx, PString & str);
-    BOOL EnumValue(PINDEX idx, PString & str);
-    BOOL DeleteKey(const PString & subkey);
-    BOOL DeleteValue(const PString & value);
-    BOOL QueryValue(const PString & value, PString & str);
-    BOOL QueryValue(const PString & value, DWORD & num);
-    BOOL SetValue(const PString & value, const PString & str);
-    BOOL SetValue(const PString & value, DWORD num);
-  private:
-    HKEY key;
-};
-
-
-RegistryKey::RegistryKey(const PString & subkey, BOOL create)
-{
-  if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
-    return;
-
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
-    return;
-
-  if (create) {
-    HKEY rootKey = HKEY_CURRENT_USER;
-    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
-      rootKey = HKEY_LOCAL_MACHINE;
-    DWORD disposition;
-    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
-                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
-      return;
-  }
-
-  key = NULL;
-}
-
-
-RegistryKey::~RegistryKey()
-{
-  if (key != NULL)
-    RegCloseKey(key);
-}
-
-
-BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
-    return FALSE;
-
-  str.MakeMinimumSize();
-  return TRUE;
-}
-
-
-BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD sizeofname = MAX_PATH;
-  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
-                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
-    return FALSE;
-
-  str.MakeMinimumSize();
-  return TRUE;
-}
-
-
-BOOL RegistryKey::DeleteKey(const PString & subkey)
-{
-  if (key == NULL)
-    return TRUE;
-
-  return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::DeleteValue(const PString & value)
-{
-  if (key == NULL)
-    return TRUE;
-
-  return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::QueryValue(const PString & value, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD type, size;
-  if (RegQueryValueEx(key, (char *)(const char *)value,
-                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
-    return FALSE;
-
-  if (type != REG_SZ)
-    return FALSE;
-
-  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD type, size;
-  if (RegQueryValueEx(key, (char *)(const char *)value,
-                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
-    return FALSE;
-
-  if (type != REG_DWORD)
-    return FALSE;
-
-  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::SetValue(const PString & value, const PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
-                (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
-
-}
-
-
-BOOL RegistryKey::SetValue(const PString & value, DWORD num)
-{
-  if (key == NULL)
-    return FALSE;
-
-  return RegSetValueEx(key, (char *)(const char *)value,
-                     0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
 }
 
 
