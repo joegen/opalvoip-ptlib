@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.10  2001/03/08 02:18:45  robertj
+ * Added improved defaulting of video formats so Open() does not fail.
+ * Removed the requirement that the device be open before you can set
+ *   formats such as colour, video, channel number etc.
+ *
  * Revision 1.9  2001/03/06 23:34:20  robertj
  * Added static function to get input device names.
  * Moved some inline virtuals to non-inline.
@@ -191,9 +196,6 @@ PVideoInputDevice::PVideoInputDevice()
 
 BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 {
-  if( channelNumber < 0 )
-    return FALSE;
-
   Close();
 
   deviceName = devName;
@@ -424,7 +426,6 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 }
 
 
-    
 LRESULT CALLBACK PVideoInputDevice::ErrorHandler(HWND hWnd, int id, LPCSTR err)
 {
   if (hWnd == NULL)

@@ -351,7 +351,7 @@ EXPORTS
     ??1PUnSerialiser@@UAE@XZ @260 NONAME ;public: virtual __thiscall PUnSerialiser::~PUnSerialiser(void)
     ??1PUnsignedArray@@UAE@XZ @2281 NONAME ;public: virtual __thiscall PUnsignedArray::~PUnsignedArray(void)
     ??1PVideoChannel@@UAE@XZ @2506 NONAME ;public: virtual __thiscall PVideoChannel::~PVideoChannel(void)
-    ??1PVideoDevice@@UAE@XZ @2422 NONAME ;public: virtual __thiscall PVideoDevice::~PVideoDevice(void)
+    ??1PVideoDevice@@MAE@XZ @2847 NONAME ;protected: virtual __thiscall PVideoDevice::~PVideoDevice(void)
     ??1PVideoDeviceBitmap@@UAE@XZ @2470 NONAME ;public: virtual __thiscall PVideoDeviceBitmap::~PVideoDeviceBitmap(void)
     ??1PVideoInputDevice@@UAE@XZ @2423 NONAME ;public: virtual __thiscall PVideoInputDevice::~PVideoInputDevice(void)
     ??1PVideoInputThread@@UAE@XZ @2424 NONAME ;public: virtual __thiscall PVideoInputThread::~PVideoInputThread(void)
