@@ -20,10 +20,12 @@ EXPORTS
     ??0Address@PEthSocket@@QAE@ABVPString@@@Z @18 NONAME ;public: __thiscall PEthSocket::Address::Address(class PString const &)
     ??0Address@PEthSocket@@QAE@PBE@Z @19 NONAME ;public: __thiscall PEthSocket::Address::Address(unsigned char const *)
     ??0Address@PEthSocket@@QAE@XZ @20 NONAME ;public: __thiscall PEthSocket::Address::Address(void)
+    ??0Address@PIPSocket@@QAE@ABUin6_addr@@@Z @2918 NONAME ;public: __thiscall PIPSocket::Address::Address(struct in6_addr const &)
     ??0Address@PIPSocket@@QAE@ABUin_addr@@@Z @21 NONAME ;public: __thiscall PIPSocket::Address::Address(struct in_addr const &)
     ??0Address@PIPSocket@@QAE@ABV01@@Z @22 NONAME ;public: __thiscall PIPSocket::Address::Address(class Address::Address const &)
     ??0Address@PIPSocket@@QAE@ABVPString@@@Z @23 NONAME ;public: __thiscall PIPSocket::Address::Address(class PString const &)
     ??0Address@PIPSocket@@QAE@EEEE@Z @24 NONAME ;public: __thiscall PIPSocket::Address::Address(unsigned char,unsigned char,unsigned char,unsigned char)
+    ??0Address@PIPSocket@@QAE@HHPAUsockaddr@@@Z @2919 NONAME ;public: __thiscall PIPSocket::Address::Address(int,int,struct sockaddr *)
     ??0Address@PIPSocket@@QAE@HPBE@Z @25 NONAME ;public: __thiscall PIPSocket::Address::Address(int,unsigned char const *)
     ??0Address@PIPSocket@@QAE@K@Z @26 NONAME ;public: __thiscall PIPSocket::Address::Address(unsigned long)
     ??0Address@PIPSocket@@QAE@XZ @27 NONAME ;public: __thiscall PIPSocket::Address::Address(void)
@@ -96,6 +98,7 @@ EXPORTS
     ??0PIndirectChannel@@QAE@XZ @95 NONAME ;public: __thiscall PIndirectChannel::PIndirectChannel(void)
     ??0PingInfo@PICMPSocket@@QAE@G@Z @96 NONAME ;public: __thiscall PICMPSocket::PingInfo::PingInfo(unsigned short)
     ??0PIntCondMutex@@QAE@HHW4Operation@0@@Z @97 NONAME ;public: __thiscall PIntCondMutex::PIntCondMutex(int,int,enum PIntCondMutex::Operation)
+    ??0PIPCacheData@@QAE@PAUaddrinfo@@PBD@Z @2920 NONAME ;public: __thiscall PIPCacheData::PIPCacheData(struct addrinfo *,char const *)
     ??0PIPCacheData@@QAE@PAUhostent@@PBD@Z @98 NONAME ;public: __thiscall PIPCacheData::PIPCacheData(struct hostent *,char const *)
     ??0PIPDatagramSocket@@IAE@XZ @99 NONAME ;protected: __thiscall PIPDatagramSocket::PIPDatagramSocket(void)
     ??0PIPSocket@@IAE@XZ @100 NONAME ;protected: __thiscall PIPSocket::PIPSocket(void)
@@ -145,6 +148,7 @@ EXPORTS
     ??0PServiceProcess@@QAE@PBD0GGW4CodeStatus@PProcess@@G@Z @136 NONAME ;public: __thiscall PServiceProcess::PServiceProcess(char const *,char const *,unsigned short,unsigned short,enum PProcess::CodeStatus,unsigned short)
     ??0PSimpleThread@@QAE@ABVPNotifier@@HW4AutoDeleteFlag@PThread@@W4Priority@3@ABVPString@@H@Z @137 NONAME ;public: __thiscall PSimpleThread::PSimpleThread(class PNotifier const &,int,enum PThread::AutoDeleteFlag,enum AutoDeleteFlag::Priority,class PString const &,int)
     ??0PSmartPointer@@QAE@ABV0@@Z @138 NONAME ;public: __thiscall PSmartPointer::PSmartPointer(class PSmartPointer const &)
+    ??0Psockaddr@@QAE@ABVAddress@PIPSocket@@G@Z @2921 NONAME ;public: __thiscall Psockaddr::Psockaddr(class PIPSocket::Address const &,unsigned short)
     ??0PSocket@@IAE@XZ @139 NONAME ;protected: __thiscall PSocket::PSocket(void)
     ??0PSortedStringList@@QAE@ABVPString@@@Z @140 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PString const &)
     ??0PSortedStringList@@QAE@ABVPStringArray@@@Z @141 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PStringArray const &)
@@ -244,6 +248,7 @@ EXPORTS
     ??0PWin32PacketSYS@@QAE@XZ @233 NONAME ;public: __thiscall PWin32PacketSYS::PWin32PacketSYS(void)
     ??0PWin32PacketVxD@@QAE@XZ @234 NONAME ;public: __thiscall PWin32PacketVxD::PWin32PacketVxD(void)
     ??0PWin32SnmpLibrary@@QAE@XZ @235 NONAME ;public: __thiscall PWin32SnmpLibrary::PWin32SnmpLibrary(void)
+    ??0PWinQoS@@QAE@AAVPQoS@@PAUsockaddr@@PADAAK@Z @2922 NONAME ;public: __thiscall PWinQoS::PWinQoS(class PQoS &,struct sockaddr *,char *,unsigned long &)
     ??0PWinSock@@QAE@XZ @236 NONAME ;public: __thiscall PWinSock::PWinSock(void)
     ??0P_BGR24_YUV420P_Registration@@QAE@XZ @2829 NONAME ;public: __thiscall P_BGR24_YUV420P_Registration::P_BGR24_YUV420P_Registration(void)
     ??0P_BGR32_YUV420P_Registration@@QAE@XZ @2830 NONAME ;public: __thiscall P_BGR32_YUV420P_Registration::P_BGR32_YUV420P_Registration(void)
@@ -436,6 +441,7 @@ EXPORTS
     ??1PWin32PacketSYS@@UAE@XZ @416 NONAME ;public: virtual __thiscall PWin32PacketSYS::~PWin32PacketSYS(void)
     ??1PWin32PacketVxD@@UAE@XZ @417 NONAME ;public: virtual __thiscall PWin32PacketVxD::~PWin32PacketVxD(void)
     ??1PWin32SnmpLibrary@@UAE@XZ @418 NONAME ;public: virtual __thiscall PWin32SnmpLibrary::~PWin32SnmpLibrary(void)
+    ??1PWinQoS@@UAE@XZ @2923 NONAME ;public: virtual __thiscall PWinQoS::~PWinQoS(void)
     ??1PWinSock@@UAE@XZ @419 NONAME ;public: virtual __thiscall PWinSock::~PWinSock(void)
     ??1P_BGR24_YUV420P@@UAE@XZ @2834 NONAME ;public: virtual __thiscall P_BGR24_YUV420P::~P_BGR24_YUV420P(void)
     ??1P_BGR24_YUV420P_Registration@@UAE@XZ @2835 NONAME ;public: virtual __thiscall P_BGR24_YUV420P_Registration::~P_BGR24_YUV420P_Registration(void)
@@ -499,6 +505,7 @@ EXPORTS
     ??4?$PScalarArray@K@@QAEAAV0@ABV0@@Z @523 NONAME ;public: class PScalarArray<unsigned long> & __thiscall PScalarArray<unsigned long>::operator=(class PScalarArray<unsigned long> const &)
     ??4Address@PEthSocket@@QAEAAT01@ABT01@@Z @524 NONAME ;public: union PEthSocket::Address & __thiscall PEthSocket::Address::operator=(union PEthSocket::Address const &)
     ??4Address@PEthSocket@@QAEAAT01@ABVPString@@@Z @525 NONAME ;public: union PEthSocket::Address & __thiscall PEthSocket::Address::operator=(class PString const &)
+    ??4Address@PIPSocket@@QAEAAV01@ABUin6_addr@@@Z @2924 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(struct in6_addr const &)
     ??4Address@PIPSocket@@QAEAAV01@ABUin_addr@@@Z @526 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(struct in_addr const &)
     ??4Address@PIPSocket@@QAEAAV01@ABV01@@Z @527 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(class PIPSocket::Address const &)
     ??4Address@PIPSocket@@QAEAAV01@ABVPString@@@Z @528 NONAME ;public: class PIPSocket::Address & __thiscall PIPSocket::Address::operator=(class PString const &)
@@ -538,6 +545,7 @@ EXPORTS
     ??6@YAAAVostream@@AAV0@_J@Z @562 NONAME ;class ostream & __cdecl operator<<(class ostream &,__int64)
     ??6@YAAAVostream@@AAV0@_K@Z @563 NONAME ;class ostream & __cdecl operator<<(class ostream &,unsigned __int64)
     ??8Address@PEthSocket@@QBEHPBE@Z @564 NONAME ;public: int __thiscall PEthSocket::Address::operator==(unsigned char const *)const 
+    ??8Address@PIPSocket@@QBEHAAUin6_addr@@@Z @2925 NONAME ;public: int __thiscall PIPSocket::Address::operator==(struct in6_addr &)const 
     ??8Address@PIPSocket@@QBEHAAUin_addr@@@Z @565 NONAME ;public: int __thiscall PIPSocket::Address::operator==(struct in_addr &)const 
     ??8Address@PIPSocket@@QBEHK@Z @566 NONAME ;public: int __thiscall PIPSocket::Address::operator==(unsigned long)const 
     ??9Address@PEthSocket@@QBEHPBE@Z @567 NONAME ;public: int __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
@@ -549,6 +557,7 @@ EXPORTS
     ??APArgList@@QBE?AVPString@@H@Z @573 NONAME ;public: class PString  __thiscall PArgList::operator[](int)const 
     ??APStringArray@@QAEAAVPString@@H@Z @574 NONAME ;public: class PString & __thiscall PStringArray::operator[](int)
     ??BAddress@PEthSocket@@QBE?AVPString@@XZ @575 NONAME ;public: __thiscall PEthSocket::Address::operator class PString(void)const 
+    ??BAddress@PIPSocket@@QBE?AUin6_addr@@XZ @2926 NONAME ;public: __thiscall PIPSocket::Address::operator struct in6_addr(void)const 
     ??BAddress@PIPSocket@@QBE?AUin_addr@@XZ @576 NONAME ;public: __thiscall PIPSocket::Address::operator struct in_addr(void)const 
     ??BAddress@PIPSocket@@QBE?AVPString@@XZ @577 NONAME ;public: __thiscall PIPSocket::Address::operator class PString(void)const 
     ??BAddress@PIPSocket@@QBEKXZ @578 NONAME ;public: __thiscall PIPSocket::Address::operator unsigned long(void)const 
@@ -753,6 +762,7 @@ EXPORTS
     ??_7PWin32PacketSYS@@6B@ @770 NONAME ;const  PWin32PacketSYS::`vftable'
     ??_7PWin32PacketVxD@@6B@ @771 NONAME ;const  PWin32PacketVxD::`vftable'
     ??_7PWin32SnmpLibrary@@6B@ @772 NONAME ;const  PWin32SnmpLibrary::`vftable'
+    ??_7PWinQoS@@6B@ @2927 NONAME ;const  PWinQoS::`vftable'
     ??_7PWinSock@@6Biostream@@@ @773 NONAME ;const  PWinSock::`vftable'{for `iostream'}
     ??_7PWinSock@@6BPObject@@@ @774 NONAME ;const  PWinSock::`vftable'{for `PObject'}
     ??_7P_BGR24_YUV420P@@6B@ @2842 NONAME ;const  P_BGR24_YUV420P::`vftable'
@@ -867,6 +877,7 @@ EXPORTS
     ?Accept@PTCPSocket@@UAEHAAVPSocket@@@Z @877 NONAME ;public: virtual int __thiscall PTCPSocket::Accept(class PSocket &)
     ?Access@PFile@@SAHABVPFilePath@@W4OpenMode@1@@Z @878 NONAME ;public: static int __cdecl PFile::Access(class PFilePath const &,enum PFile::OpenMode)
     ?Acknowledge@PSyncPointAck@@QAEXXZ @879 NONAME ;public: void __thiscall PSyncPointAck::Acknowledge(void)
+    ?AddEntry@PIPCacheData@@QAEXPAUaddrinfo@@@Z @2928 NONAME ;public: void __thiscall PIPCacheData::AddEntry(struct addrinfo *)
     ?Append@PAbstractDictionary@@EAEHPAVPObject@@@Z @880 NONAME ;private: virtual int __thiscall PAbstractDictionary::Append(class PObject *)
     ?Append@PAbstractList@@UAEHPAVPObject@@@Z @881 NONAME ;public: virtual int __thiscall PAbstractList::Append(class PObject *)
     ?Append@PAbstractSet@@UAEHPAVPObject@@@Z @882 NONAME ;public: virtual int __thiscall PAbstractSet::Append(class PObject *)
@@ -915,6 +926,7 @@ EXPORTS
     ?bestEffortDSCP@PQoS@@2DA @2656 NONAME ;public: static char  PQoS::bestEffortDSCP
     ?BindInterface@PWin32PacketSYS@@UAEHABVPString@@@Z @923 NONAME ;public: virtual int __thiscall PWin32PacketSYS::BindInterface(class PString const &)
     ?BindInterface@PWin32PacketVxD@@UAEHABVPString@@@Z @924 NONAME ;public: virtual int __thiscall PWin32PacketVxD::BindInterface(class PString const &)
+    ?bInitialized@?1??WspiapiLoad@@9@4@4HA @2929 NONAME ;?bInitialized@?1??WspiapiLoad@@9@4@4HA
     ?Byte1@Address@PIPSocket@@QBEEXZ @925 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte1(void)const 
     ?Byte2@Address@PIPSocket@@QBEEXZ @926 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte2(void)const 
     ?Byte3@Address@PIPSocket@@QBEEXZ @927 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte3(void)const 
@@ -1147,6 +1159,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PWaveFormat@@UBE?AW4Comparison@PObject@@ABV3@@Z @1147 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWaveFormat::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWin32PacketBuffer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1148 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWin32PacketBuffer::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWin32SnmpLibrary@@UBE?AW4Comparison@PObject@@ABV3@@Z @1149 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWin32SnmpLibrary::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PWinQoS@@UBE?AW4Comparison@PObject@@ABV3@@Z @2930 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWinQoS::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PWinSock@@UBE?AW4Comparison@PObject@@ABV3@@Z @1150 NONAME ;public: virtual enum PObject::Comparison  __thiscall PWinSock::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@RouteEntry@PIPSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @1151 NONAME ;public: virtual enum PObject::Comparison  __thiscall PIPSocket::RouteEntry::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@SelectList@PSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @1152 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSocket::SelectList::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1326,6 +1339,7 @@ EXPORTS
     ?GetAddress@PEthSocket@@QAEHAATAddress@1@@Z @1314 NONAME ;public: int __thiscall PEthSocket::GetAddress(union PEthSocket::Address &)
     ?GetAddress@PRemoteConnection@@QAE?AVPString@@XZ @1315 NONAME ;public: class PString  __thiscall PRemoteConnection::GetAddress(void)
     ?GetAllKeyValues@PConfig@@QBE?AVPStringToString@@ABVPString@@@Z @1316 NONAME ;public: class PStringToString  __thiscall PConfig::GetAllKeyValues(class PString const &)const 
+    ?GetAny6@Address@PIPSocket@@SAABV12@XZ @2931 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetAny6(void)
     ?GetAt@?$PBaseArray@D@@QBEDH@Z @1317 NONAME ;public: char __thiscall PBaseArray<char>::GetAt(int)const 
     ?GetAt@?$PBaseArray@I@@QBEIH@Z @1318 NONAME ;public: unsigned int __thiscall PBaseArray<unsigned int>::GetAt(int)const 
     ?GetAt@?$PBaseArray@K@@QBEKH@Z @1319 NONAME ;public: unsigned long __thiscall PBaseArray<unsigned long>::GetAt(int)const 
@@ -1478,6 +1492,7 @@ EXPORTS
     ?GetClass@PWaveFormat@@UBEPBDI@Z @1461 NONAME ;public: virtual char const * __thiscall PWaveFormat::GetClass(unsigned int)const 
     ?GetClass@PWin32PacketBuffer@@UBEPBDI@Z @1462 NONAME ;public: virtual char const * __thiscall PWin32PacketBuffer::GetClass(unsigned int)const 
     ?GetClass@PWin32SnmpLibrary@@UBEPBDI@Z @1463 NONAME ;public: virtual char const * __thiscall PWin32SnmpLibrary::GetClass(unsigned int)const 
+    ?GetClass@PWinQoS@@UBEPBDI@Z @2932 NONAME ;public: virtual char const * __thiscall PWinQoS::GetClass(unsigned int)const 
     ?GetClass@PWinSock@@UBEPBDI@Z @1464 NONAME ;public: virtual char const * __thiscall PWinSock::GetClass(unsigned int)const 
     ?GetClass@RouteEntry@PIPSocket@@UBEPBDI@Z @1465 NONAME ;public: virtual char const * __thiscall PIPSocket::RouteEntry::GetClass(unsigned int)const 
     ?GetClass@SelectList@PSocket@@UBEPBDI@Z @1466 NONAME ;public: virtual char const * __thiscall PSocket::SelectList::GetClass(unsigned int)const 
@@ -1507,14 +1522,15 @@ EXPORTS
     ?GetDeviceNames@PSoundChannelWin32@@SA?AVPStringArray@@W4Directions@PSoundChannel@@@Z @2729 NONAME ;public: static class PStringArray  __cdecl PSoundChannelWin32::GetDeviceNames(enum PSoundChannel::Directions)
     ?GetDeviceNames@PVideoChannel@@SA?AVPStringList@@W4Directions@1@@Z @1488 NONAME ;public: static class PStringList  __cdecl PVideoChannel::GetDeviceNames(enum PVideoChannel::Directions)
     ?GetDeviceNames@PVideoDevice@@UBE?AVPStringList@@XZ @2730 NONAME ;public: virtual class PStringList  __thiscall PVideoDevice::GetDeviceNames(void)const 
-    ?GetDeviceNames@PVideoInputDevice@@MBE?AVPStringList@@XZ @2731 NONAME ;protected: virtual class PStringList  __thiscall PVideoInputDevice::GetDeviceNames(void)const 
-    ?GetDeviceNames@PVideoInputDevice@@SA?AVPStringList@@ABVPString@@PAVPPluginManager@@@Z @2732 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetDeviceNames(class PString const &,class PPluginManager *)
-    ?GetDeviceNames@PVideoOutputDevice@@MBE?AVPStringList@@XZ @2865 NONAME ;protected: virtual class PStringList  __thiscall PVideoOutputDevice::GetDeviceNames(void)const 
-    ?GetDeviceNames@PVideoOutputDevice@@SA?AVPStringList@@ABVPString@@PAVPPluginManager@@@Z @2866 NONAME ;public: static class PStringList  __cdecl PVideoOutputDevice::GetDeviceNames(class PString const &,class PPluginManager *)
+    ?GetDeviceNames@PVideoInputDevice_FakeVideo@@UBE?AVPStringList@@XZ @2933 NONAME ;public: virtual class PStringList  __thiscall PVideoInputDevice_FakeVideo::GetDeviceNames(void)const 
+    ?GetDeviceNames@PVideoInputDevice_VideoForWindows@@UBE?AVPStringList@@XZ @2934 NONAME ;public: virtual class PStringList  __thiscall PVideoInputDevice_VideoForWindows::GetDeviceNames(void)const 
+    ?GetDeviceNames@PVideoOutputDevice_NULLOutput@@UBE?AVPStringList@@XZ @2935 NONAME ;public: virtual class PStringList  __thiscall PVideoOutputDevice_NULLOutput::GetDeviceNames(void)const 
     ?GetDirectory@PFilePath@@QBE?AVPDirectory@@XZ @1492 NONAME ;public: class PDirectory  __thiscall PFilePath::GetDirectory(void)const 
     ?GetDriverNames@PSoundChannel@@SA?AVPStringList@@PAVPPluginManager@@@Z @2733 NONAME ;public: static class PStringList  __cdecl PSoundChannel::GetDriverNames(class PPluginManager *)
     ?GetDriverNames@PVideoInputDevice@@SA?AVPStringList@@PAVPPluginManager@@@Z @2734 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetDriverNames(class PPluginManager *)
     ?GetDriverNames@PVideoOutputDevice@@SA?AVPStringList@@PAVPPluginManager@@@Z @2867 NONAME ;public: static class PStringList  __cdecl PVideoOutputDevice::GetDriverNames(class PPluginManager *)
+    ?GetDriversDeviceNames@PVideoInputDevice@@SA?AVPStringList@@ABVPString@@PAVPPluginManager@@@Z @2936 NONAME ;public: static class PStringList  __cdecl PVideoInputDevice::GetDriversDeviceNames(class PString const &,class PPluginManager *)
+    ?GetDriversDeviceNames@PVideoOutputDevice@@SA?AVPStringList@@ABVPString@@PAVPPluginManager@@@Z @2937 NONAME ;public: static class PStringList  __cdecl PVideoOutputDevice::GetDriversDeviceNames(class PString const &,class PPluginManager *)
     ?GetDSR@PSerialChannel@@QAEHXZ @1493 NONAME ;public: int __thiscall PSerialChannel::GetDSR(void)
     ?GetDstFrameSize@PColourConverter@@QBEHAAI0@Z @1494 NONAME ;public: int __thiscall PColourConverter::GetDstFrameSize(unsigned int &,unsigned int &)const 
     ?GetElementAt@Table@PHashTable@@QAEPAVElement@2@ABVPObject@@@Z @1495 NONAME ;public: class PHashTable::Element * __thiscall PHashTable::Table::GetElementAt(class PObject const &)
@@ -1582,6 +1598,7 @@ EXPORTS
     ?GetInterfaceName@PWin32SnmpLibrary@@QAE?AVPString@@VAddress@PIPSocket@@@Z @1555 NONAME ;public: class PString  __thiscall PWin32SnmpLibrary::GetInterfaceName(class PIPSocket::Address)
     ?GetInterfaceTable@PIPSocket@@SAHAAV?$PList@VInterfaceEntry@PIPSocket@@@@@Z @1556 NONAME ;public: static int __cdecl PIPSocket::GetInterfaceTable(class PList<class PIPSocket::InterfaceEntry> &)
     ?GetInterval@PTimeInterval@@QBEKXZ @1557 NONAME ;public: unsigned long __thiscall PTimeInterval::GetInterval(void)const 
+    ?GetIP@Psockaddr@@QBE?AVAddress@PIPSocket@@XZ @2938 NONAME ;public: class PIPSocket::Address  __thiscall Psockaddr::GetIP(void)const 
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@0@Z @1558 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &,class PIPSocket::Address &)
     ?GetIpAddress@PEthSocket@@QAEHAAVAddress@PIPSocket@@@Z @1559 NONAME ;public: int __thiscall PEthSocket::GetIpAddress(class PIPSocket::Address &)
     ?GetIpAddress@PWin32AsnAny@@QAEHAAVAddress@PIPSocket@@@Z @1560 NONAME ;public: int __thiscall PWin32AsnAny::GetIpAddress(class PIPSocket::Address &)
@@ -1596,6 +1613,7 @@ EXPORTS
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@@Z @1569 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &)
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@AAG@Z @1570 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &,unsigned short &)
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1571 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
+    ?GetLoopback6@Address@PIPSocket@@SAABV12@XZ @2939 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetLoopback6(void)
     ?GetLoopback@Address@PIPSocket@@SAABV12@XZ @1572 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetLoopback(void)
     ?GetManufacturer@PProcess@@UBEABVPString@@XZ @1573 NONAME ;public: virtual class PString const & __thiscall PProcess::GetManufacturer(void)const 
     ?GetMaxFrameBytes@PVideoInputDevice_FakeVideo@@UAEHXZ @2873 NONAME ;public: virtual int __thiscall PVideoInputDevice_FakeVideo::GetMaxFrameBytes(void)
@@ -1676,6 +1694,7 @@ EXPORTS
     ?GetPluginTypes@PPluginManager@@QBE?AVPStringList@@XZ @2745 NONAME ;public: class PStringList  __thiscall PPluginManager::GetPluginTypes(void)const 
     ?GetPointer@PAbstractArray@@QAEPAXH@Z @1647 NONAME ;public: void * __thiscall PAbstractArray::GetPointer(int)
     ?GetPointer@PBitArray@@QAEPAEH@Z @1648 NONAME ;public: unsigned char * __thiscall PBitArray::GetPointer(int)
+    ?GetPort@Psockaddr@@QBEGXZ @2940 NONAME ;public: unsigned short __thiscall Psockaddr::GetPort(void)const 
     ?GetPort@PSocket@@QBEGXZ @1649 NONAME ;public: unsigned short __thiscall PSocket::GetPort(void)const 
     ?GetPortByService@PSocket@@SAGPBDABVPString@@@Z @1650 NONAME ;public: static unsigned short __cdecl PSocket::GetPortByService(char const *,class PString const &)
     ?GetPortByService@PSocket@@UBEGABVPString@@@Z @1651 NONAME ;public: virtual unsigned short __thiscall PSocket::GetPortByService(class PString const &)const 
@@ -1718,6 +1737,7 @@ EXPORTS
     ?GetSize@PArrayObjects@@UBEHXZ @1685 NONAME ;public: virtual int __thiscall PArrayObjects::GetSize(void)const 
     ?GetSize@PBitArray@@UBEHXZ @1686 NONAME ;public: virtual int __thiscall PBitArray::GetSize(void)const 
     ?GetSize@PContainer@@UBEHXZ @1687 NONAME ;public: virtual int __thiscall PContainer::GetSize(void)const 
+    ?GetSize@Psockaddr@@QBEHXZ @2941 NONAME ;public: int __thiscall Psockaddr::GetSize(void)const 
     ?GetSpeed@PSerialChannel@@QBEKXZ @1688 NONAME ;public: unsigned long __thiscall PSerialChannel::GetSpeed(void)const 
     ?GetSrcFrameSize@PColourConverter@@QBEHAAI0@Z @1689 NONAME ;public: int __thiscall PColourConverter::GetSrcFrameSize(unsigned int &,unsigned int &)const 
     ?GetStartTime@PProcess@@QBE?AVPTime@@XZ @1690 NONAME ;public: class PTime  __thiscall PProcess::GetStartTime(void)const 
@@ -1803,6 +1823,7 @@ EXPORTS
     ?InternalFromUCS2@PString@@IAEXPBGH@Z @1767 NONAME ;protected: void __thiscall PString::InternalFromUCS2(unsigned short const *,int)
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @1768 NONAME ;protected: void __thiscall PReadWriteMutex::InternalStartRead(void)
     ?InternalStringSelect@PSortedStringList@@KAHPBDHPAVElement@PAbstractSortedList@@AAPAV23@@Z @1769 NONAME ;protected: static int __cdecl PSortedStringList::InternalStringSelect(char const *,int,class PAbstractSortedList::Element *,class PAbstractSortedList::Element * &)
+    ?iNumGlobal@?1??WspiapiLoad@@9@4@4HB @2942 NONAME ;?iNumGlobal@?1??WspiapiLoad@@9@4@4HB
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @1770 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
     ?IsAny@Address@PIPSocket@@QAEHXZ @1771 NONAME ;public: int __thiscall PIPSocket::Address::IsAny(void)
     ?IsBroadcast@Address@PIPSocket@@QBEHXZ @1772 NONAME ;public: int __thiscall PIPSocket::Address::IsBroadcast(void)const 
@@ -1931,6 +1952,7 @@ EXPORTS
     ?IsClass@PWaveFormat@@UBEHPBD@Z @1892 NONAME ;public: virtual int __thiscall PWaveFormat::IsClass(char const *)const 
     ?IsClass@PWin32PacketBuffer@@UBEHPBD@Z @1893 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsClass(char const *)const 
     ?IsClass@PWin32SnmpLibrary@@UBEHPBD@Z @1894 NONAME ;public: virtual int __thiscall PWin32SnmpLibrary::IsClass(char const *)const 
+    ?IsClass@PWinQoS@@UBEHPBD@Z @2943 NONAME ;public: virtual int __thiscall PWinQoS::IsClass(char const *)const 
     ?IsClass@PWinSock@@UBEHPBD@Z @1895 NONAME ;public: virtual int __thiscall PWinSock::IsClass(char const *)const 
     ?IsClass@RouteEntry@PIPSocket@@UBEHPBD@Z @1896 NONAME ;public: virtual int __thiscall PIPSocket::RouteEntry::IsClass(char const *)const 
     ?IsClass@SelectList@PSocket@@UBEHPBD@Z @1897 NONAME ;public: virtual int __thiscall PSocket::SelectList::IsClass(char const *)const 
@@ -2059,6 +2081,7 @@ EXPORTS
     ?IsDescendant@PWaveFormat@@UBEHPBD@Z @2017 NONAME ;public: virtual int __thiscall PWaveFormat::IsDescendant(char const *)const 
     ?IsDescendant@PWin32PacketBuffer@@UBEHPBD@Z @2018 NONAME ;public: virtual int __thiscall PWin32PacketBuffer::IsDescendant(char const *)const 
     ?IsDescendant@PWin32SnmpLibrary@@UBEHPBD@Z @2019 NONAME ;public: virtual int __thiscall PWin32SnmpLibrary::IsDescendant(char const *)const 
+    ?IsDescendant@PWinQoS@@UBEHPBD@Z @2944 NONAME ;public: virtual int __thiscall PWinQoS::IsDescendant(char const *)const 
     ?IsDescendant@PWinSock@@UBEHPBD@Z @2020 NONAME ;public: virtual int __thiscall PWinSock::IsDescendant(char const *)const 
     ?IsDescendant@RouteEntry@PIPSocket@@UBEHPBD@Z @2021 NONAME ;public: virtual int __thiscall PIPSocket::RouteEntry::IsDescendant(char const *)const 
     ?IsDescendant@SelectList@PSocket@@UBEHPBD@Z @2022 NONAME ;public: virtual int __thiscall PSocket::SelectList::IsDescendant(char const *)const 
@@ -2069,6 +2092,7 @@ EXPORTS
     ?IsGrabberOpen@PVideoChannel@@UAEHXZ @2027 NONAME ;public: virtual int __thiscall PVideoChannel::IsGrabberOpen(void)
     ?IsGUIProcess@PProcess@@UBEHXZ @2028 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
     ?IsInitialised@PProcess@@SAHXZ @2029 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
+    ?IsIpAddressFamilyV6Supported@PIPSocket@@SAHXZ @2945 NONAME ;public: static int __cdecl PIPSocket::IsIpAddressFamilyV6Supported(void)
     ?IsLoaded@PDynaLink@@UBEHXZ @2030 NONAME ;public: virtual int __thiscall PDynaLink::IsLoaded(void)const 
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @2031 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @2032 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
@@ -2097,6 +2121,7 @@ EXPORTS
     ?IsTextFile@PFile@@MBEHXZ @2053 NONAME ;protected: virtual int __thiscall PFile::IsTextFile(void)const 
     ?IsTextFile@PTextFile@@MBEHXZ @2054 NONAME ;protected: virtual int __thiscall PTextFile::IsTextFile(void)const 
     ?IsType@PWin32PacketBuffer@@QBEHG@Z @2055 NONAME ;public: int __thiscall PWin32PacketBuffer::IsType(unsigned short)const 
+    ?IsV4Mapped@Address@PIPSocket@@QBEHXZ @2946 NONAME ;public: int __thiscall PIPSocket::Address::IsV4Mapped(void)const 
     ?IsValid@Address@PIPSocket@@QBEHXZ @2056 NONAME ;public: int __thiscall PIPSocket::Address::IsValid(void)const 
     ?IsValid@Address@PIPXSocket@@QBEHXZ @2057 NONAME ;public: int __thiscall PIPXSocket::Address::IsValid(void)const 
     ?IsValid@PFilePath@@SAHABVPString@@@Z @2058 NONAME ;public: static int __cdecl PFilePath::IsValid(class PString const &)
@@ -2227,6 +2252,9 @@ EXPORTS
     ?Pause@PTimer@@QAEXXZ @2179 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2180 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
     ?PDummyFunctionToMakeSureSymbolsAreInDEFFile@@YAXXZ @2181 NONAME ;void __cdecl PDummyFunctionToMakeSureSymbolsAreInDEFFile(void)
+    ?pfFreeAddrInfo@?1??WspiapiFreeAddrInfo@@9@4@4P6GXPAUaddrinfo@@@ZA @2947 NONAME ;?pfFreeAddrInfo@?1??WspiapiFreeAddrInfo@@9@4@4P6GXPAUaddrinfo@@@ZA
+    ?pfGetAddrInfo@?1??WspiapiGetAddrInfo@@9@16@4P6GHPBD0PBUaddrinfo@@PAPAU2@@ZA @2948 NONAME ;?pfGetAddrInfo@?1??WspiapiGetAddrInfo@@9@16@4P6GHPBD0PBUaddrinfo@@PAPAU2@@ZA
+    ?pfGetNameInfo@?1??WspiapiGetNameInfo@@9@28@4P6GHPBUsockaddr@@HPADI1IH@ZA @2949 NONAME ;?pfGetNameInfo@?1??WspiapiGetNameInfo@@9@28@4P6GHPBUsockaddr@@HPADI1IH@ZA
     ?PGetErrorStream@@YAAAVostream@@XZ @2182 NONAME ;class ostream & __cdecl PGetErrorStream(void)
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @2183 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
     ?Ping@PICMPSocket@@QAEHABVPString@@AAVPingInfo@1@@Z @2184 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &,class PICMPSocket::PingInfo &)
@@ -2414,6 +2442,7 @@ EXPORTS
     ?RGBtoYUV420P@PStandardColourConverter@@IBEHPBEPAEPAHIHH@Z @2903 NONAME ;protected: int __thiscall PStandardColourConverter::RGBtoYUV420P(unsigned char const *,unsigned char *,int *,unsigned int,int,int)const 
     ?RGBtoYUV420PSameSize@PStandardColourConverter@@IBEXPBEPAEIHH@Z @2904 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PSameSize(unsigned char const *,unsigned char *,unsigned int,int,int)const 
     ?RGBtoYUV420PWithResize@PStandardColourConverter@@IBEXPBEPAEIHH@Z @2905 NONAME ;protected: void __thiscall PStandardColourConverter::RGBtoYUV420PWithResize(unsigned char const *,unsigned char *,unsigned int,int,int)const 
+    ?rgtGlobal@?1??WspiapiLoad@@9@4@4PAUWSPIAPI_FUNCTION@@A @2950 NONAME ;?rgtGlobal@?1??WspiapiLoad@@9@4@4PAUWSPIAPI_FUNCTION@@A
     ?Right@PString@@QBE?AV1@H@Z @2343 NONAME ;public: class PString  __thiscall PString::Right(int)const 
     ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2344 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @2345 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
@@ -2491,6 +2520,7 @@ EXPORTS
     ?SetDataBits@PSerialChannel@@QAEHE@Z @2416 NONAME ;public: int __thiscall PSerialChannel::SetDataBits(unsigned char)
     ?SetDefaultIpAddressFamily@PIPSocket@@SAXH@Z @2417 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamily(int)
     ?SetDefaultIpAddressFamilyV4@PIPSocket@@SAXXZ @2418 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV4(void)
+    ?SetDefaultIpAddressFamilyV6@PIPSocket@@SAXXZ @2951 NONAME ;public: static void __cdecl PIPSocket::SetDefaultIpAddressFamilyV6(void)
     ?SetDSCP@PQoS@@QAEXH@Z @2670 NONAME ;public: void __thiscall PQoS::SetDSCP(int)
     ?SetDSCPAlternative@PQoS@@SAXKI@Z @2671 NONAME ;public: static void __cdecl PQoS::SetDSCPAlternative(unsigned long,unsigned int)
     ?SetDstFrameSize@PColourConverter@@UAEHIIH@Z @2419 NONAME ;public: virtual int __thiscall PColourConverter::SetDstFrameSize(unsigned int,unsigned int,int)
@@ -2595,6 +2625,7 @@ EXPORTS
     ?Start@PVideoDevice@@UAEHXZ @2515 NONAME ;public: virtual int __thiscall PVideoDevice::Start(void)
     ?Start@PVideoInputDevice_FakeVideo@@UAEHXZ @2912 NONAME ;public: virtual int __thiscall PVideoInputDevice_FakeVideo::Start(void)
     ?Start@PVideoInputDevice_VideoForWindows@@UAEHXZ @2811 NONAME ;public: virtual int __thiscall PVideoInputDevice_VideoForWindows::Start(void)
+    ?Start@PVideoOutputDevice@@UAEHXZ @2952 NONAME ;public: virtual int __thiscall PVideoOutputDevice::Start(void)
     ?Start@PVideoOutputDevice_NULLOutput@@UAEHXZ @2913 NONAME ;public: virtual int __thiscall PVideoOutputDevice_NULLOutput::Start(void)
     ?Start@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2517 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Start(class PServiceProcess *)
     ?StartNest@PReadWriteMutex@@IAEAAVNest@1@XZ @2518 NONAME ;protected: class PReadWriteMutex::Nest & __thiscall PReadWriteMutex::StartNest(void)
@@ -2612,6 +2643,7 @@ EXPORTS
     ?Stop@PVideoDevice@@UAEHXZ @2530 NONAME ;public: virtual int __thiscall PVideoDevice::Stop(void)
     ?Stop@PVideoInputDevice_FakeVideo@@UAEHXZ @2914 NONAME ;public: virtual int __thiscall PVideoInputDevice_FakeVideo::Stop(void)
     ?Stop@PVideoInputDevice_VideoForWindows@@UAEHXZ @2814 NONAME ;public: virtual int __thiscall PVideoInputDevice_VideoForWindows::Stop(void)
+    ?Stop@PVideoOutputDevice@@UAEHXZ @2953 NONAME ;public: virtual int __thiscall PVideoOutputDevice::Stop(void)
     ?Stop@PVideoOutputDevice_NULLOutput@@UAEHXZ @2915 NONAME ;public: virtual int __thiscall PVideoOutputDevice_NULLOutput::Stop(void)
     ?Stop@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2532 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Stop(class PServiceProcess *)
     ?Successor@Element@PAbstractSortedList@@QBEPAV12@XZ @2533 NONAME ;public: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Successor(void)const 
@@ -2701,3 +2733,10 @@ EXPORTS
     _PTimeIsMonthName@12 @2613 NONAME ;_PTimeIsMonthName@12
     _PTimeParse@12 @2614 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2615 NONAME ;_PTimeUngetChar@8
+    _WspiapiGetAddrInfo@16 @2954 NONAME ;_WspiapiGetAddrInfo@16
+    _WspiapiLegacyFreeAddrInfo@4 @2955 NONAME ;_WspiapiLegacyFreeAddrInfo@4
+    _WspiapiLegacyGetAddrInfo@16 @2956 NONAME ;_WspiapiLegacyGetAddrInfo@16
+    _WspiapiLegacyGetNameInfo@28 @2957 NONAME ;_WspiapiLegacyGetNameInfo@28
+    _WspiapiLoad@4 @2958 NONAME ;_WspiapiLoad@4
+    _WspiapiNewAddrInfo@16 @2959 NONAME ;_WspiapiNewAddrInfo@16
+    _WspiapiStrdup@4 @2960 NONAME ;_WspiapiStrdup@4
