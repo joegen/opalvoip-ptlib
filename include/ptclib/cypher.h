@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.22  2005/01/26 05:37:40  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.21  2004/11/11 07:34:50  csoutheren
  * Added #include <ptlib.h>
  *
@@ -753,6 +756,7 @@ class PTEACypher : public PCypher
 };
 
 
+#ifdef P_CONFIG_FILE
 
 class PSecureConfig : public PConfig
 {
@@ -870,6 +874,7 @@ class PSecureConfig : public PConfig
     PString         pendingPrefix;
 };
 
+#endif // P_CONFIG_FILE
 
 #endif // _PCYPHER
 
