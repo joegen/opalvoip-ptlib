@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.77  2001/02/13 06:55:21  robertj
+ * Fixed problem with operator= in PDirectory class, part of larger change previously made.
+ *
  * Revision 1.76  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -504,6 +507,12 @@ PINLINE PDirectory::PDirectory(const char * cpathname)
 PINLINE PDirectory::PDirectory(const PString & pathname)
   : PFilePathString(pathname) { Construct(); }
   
+PINLINE PDirectory & PDirectory::operator=(const PString & str)
+  { AssignContents(PDirectory(str)); return *this; }
+
+PINLINE PDirectory & PDirectory::operator=(const char * cstr)
+  { AssignContents(PDirectory(cstr)); return *this; }
+
 
 PINLINE void PDirectory::DestroyContents()
   { Close(); PFilePathString::DestroyContents(); }
