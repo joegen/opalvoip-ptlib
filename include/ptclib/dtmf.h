@@ -12,6 +12,9 @@
  * Made into a C++ class by Roger Hardiman <roger@freebsd.org>, January 2002
  *
  * $Log: dtmf.h,v $
+ * Revision 1.6  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.5  2004/09/09 23:50:48  csoutheren
  * Fixed problem with duplicate definition of sinetab causing problems
  *
@@ -38,6 +41,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
 
 class PDTMFDecoder : public PObject
 {

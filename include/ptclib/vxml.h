@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.35  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.34  2004/08/09 11:10:34  csoutheren
  * Changed SetTextToSpeech to return ptr to new engine
  *
@@ -173,8 +176,6 @@
 #pragma interface
 #endif
 
-#include <queue>
-
 #include <ptlib/pipechan.h>
 
 #include <ptclib/pxml.h>
@@ -182,6 +183,9 @@
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
 #include <ptclib/url.h>
+
+#include <queue>
+
 
 class PVXMLSession;
 class PVXMLDialog;

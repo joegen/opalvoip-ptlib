@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: modem.h,v $
+ * Revision 1.15  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.14  2002/11/06 22:47:24  robertj
  * Fixed header comment (copyright etc)
  *
@@ -75,6 +78,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
 
 #ifndef _PSERIALCHANNEL
 #include <ptlib/serchan.h>
