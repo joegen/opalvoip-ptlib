@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.7  1998/12/04 12:12:58  robertj
+ * Fixed missing forward reference.
+ *
  * Revision 1.6  1998/11/30 22:07:03  robertj
  * New directory structure.
  *
@@ -51,7 +54,9 @@
 
 #pragma interface
 
+class PPipeChannel;
 class PXRemoteThread;
+
 
 #include "../../remconn.h"
   protected:
