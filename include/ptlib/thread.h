@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.4 1994/08/04 12:32:22 robertj Exp $
+ * $Id: thread.h,v 1.5 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.4  1994/08/04 12:32:22  robertj
+ * Revision 1.5  1994/08/21 23:43:02  robertj
+ * Added SuspendBlock state to cooperative multi-threading to fix logic fault.
+ *
+ * Revision 1.4  1994/08/04  12:32:22  robertj
  * Better name of thread block check function.
  *
  * Revision 1.3  1994/07/21  12:33:49  robertj
@@ -159,6 +162,7 @@ PDECLARE_CLASS(PThread, PObject)
       Sleeping,
       Suspended,
       Blocked,
+      SuspendedBlock,
       Terminating,
       Terminated
     } status;
