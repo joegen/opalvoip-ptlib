@@ -74,6 +74,10 @@ class PXML : public PObject
     PXMLElement * GetElement(const PCaselessString & name, PINDEX idx = 0) const;
     PCaselessString GetDocumentType() const;
 
+    PString GetErrorString() const { return errorString; }
+    PINDEX  GetErrorColumn() const { return errorCol; }
+    PINDEX  GetErrorLine() const   { return errorLine; }
+
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
     virtual void EndElement(const char * name);
@@ -95,6 +99,11 @@ class PXML : public PObject
     PFilePath loadFilename;
     PString version, encoding;
     int standAlone;
+
+    PString errorString;
+    PINDEX errorCol;
+    PINDEX errorLine;
+
 };
 
 ////////////////////////////////////////////////////////////
