@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.9  2002/10/08 08:22:18  craigs
+ * Fixed problem with parsing struct parameters
+ *
  * Revision 1.8  2002/10/02 08:54:01  craigs
  * Added support for XMLRPC server
  *
@@ -347,7 +350,7 @@ BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
 {
   // get the parameter
   if (!ParseScalar(GetParam(idx), type, value)) {
-    PTRACE(3, "XMLRPC\tCannot get parm " << idx);
+    PTRACE(3, "XMLRPC\tCannot get scalar parm " << idx);
     return FALSE;
   }
 
@@ -417,24 +420,31 @@ BOOL PXMLRPCBlock::GetParam(PINDEX idx, PTime & val, int tz)
 
 BOOL PXMLRPCBlock::GetParam(PINDEX idx, PStringToString & result)
 {
-  if (idx >= params->GetSize()) {
-    PTRACE(2, "RPCXML\tParam " << idx << " not in response");
+  PXMLElement * param = GetParam(idx);
+  if (param == NULL) {
+    PTRACE(3, "XMLRPC\tCannot get struct parm " << idx);
     return FALSE;
   }
 
-  PXMLObject * param = params->GetElement(idx);
-  if (!param->IsElement()) {
-    PTRACE(2, "RPCXML\tParam " << idx << " malformed");
+  if (param->GetName() != "value") {
+    SetFault(PXMLRPC::ParamNotValue, "Struct value does not contain value element");
+    PTRACE(2, "RPCXML\t" << GetFaultText());
     return FALSE;
   }
 
-  PXMLElement * value = ((PXMLElement *)param)->GetElement("struct");
-  if (value == NULL) {
-    PTRACE(2, "RPCXML\tParam " << idx << " is malformed");
+  PXMLElement * element = (PXMLElement *)param->GetElement(0);
+  if ((element == NULL) || !element->IsElement()) {
+    SetFault(PXMLRPC::ScalarWithoutElement, "Scalar without sub-element");
+    PTRACE(2, "XMLRPC\t" << GetFaultText());
     return FALSE;
   }
 
-  return ParseStruct(value, result);
+  if (element->GetName() != "struct") {
+    PTRACE(2, "RPCXML\tParam " << idx << " is not struct as expected");
+    return FALSE;
+  }
+
+  return ParseStruct(element, result);
 }
 
 ////////////////////////////////////////////////////////
