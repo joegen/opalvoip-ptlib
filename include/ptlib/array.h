@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.1 1994/12/12 09:59:29 robertj Exp $
+ * $Id: array.h,v 1.2 1994/12/21 11:52:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
- * Revision 1.1  1994/12/12 09:59:29  robertj
+ * Revision 1.2  1994/12/21 11:52:46  robertj
+ * Documentation and variable normalisation.
+ *
+ * Revision 1.1  1994/12/12  09:59:29  robertj
  * Initial revision
  *
  */
@@ -172,7 +175,8 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> PDECLARE_CLASS(PBaseArray, PAbstractArray)
+template <class T>
+PDECLARE_CLASS(PBaseArray, PAbstractArray)
 /* This template class maps the PAbstractArray to a specific element type. The
    functions in this class primarily do all the appropriate casting of types.
 
@@ -568,7 +572,8 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 
 #ifdef PHAS_TEMPLATES
 
-template <class T> PDECLARE_CLASS(PArray, PObjectArray)
+template <class T>
+PDECLARE_CLASS(PArray, PObjectArray)
 /* This template class maps the PObjectArray to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
