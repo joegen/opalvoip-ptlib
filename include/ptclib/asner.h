@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.17  2001/03/21 03:32:35  robertj
+ * Aded ability to get at the data bits buffer in a PASN_BitString
+ *
  * Revision 1.16  2001/01/24 04:36:56  robertj
  * Added more bulletproofing to ASN structures to obey constraints.
  *
@@ -415,6 +418,8 @@ class PASN_BitString : public PASN_ConstrainedObject
 
     void SetData(unsigned nBits, const PBYTEArray & bytes);
     void SetData(unsigned nBits, const BYTE * buf, PINDEX size);
+
+    const BYTE * GetDataPointer() const { return bitData; }
 
     unsigned GetSize() const { return totalBits; }
     BOOL SetSize(unsigned nBits);
