@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.9  2004/11/25 07:23:46  csoutheren
+ * Added IsSupportingRTP function to simplify detecting when STUN supports RTP
+ *
  * Revision 1.8  2004/03/14 05:47:52  rjongbloed
  * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
  *   some NAT systems which are partially blocked due to firewall rules.
@@ -170,6 +173,20 @@ class PSTUNClient : public PObject
        guarantee an up to date value.
       */
     NatTypes GetNatType(
+      BOOL force = FALSE    /// Force a new check
+    );
+
+    enum RTPSupportTypes {
+      RTPOK,
+      RTPUnknown,
+      RTPUnsupported,
+      RTPIfSendMedia
+    };
+
+    /**Return an indication if the current STUN type supports RTP
+      Use the force variable to guarantee an up to date test
+      */
+    RTPSupportTypes IsSupportingRTP(
       BOOL force = FALSE    /// Force a new check
     );
 
