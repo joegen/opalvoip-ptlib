@@ -2634,11 +2634,60 @@ echo "${ECHO_T}yes" >&6
 echo "${ECHO_T}no" >&6
   fi
 fi
-
 cat >>confdefs.h <<_ACEOF
 #define P_HAS_POSIX_READDIR_R ${P_HAS_POSIX_READDIR_R}
 _ACEOF
 
+
+
+P_HAS_STL_STREAMS=0
+echo "$as_me:$LINENO: checking if using STL streams" >&5
+echo $ECHO_N "checking if using STL streams... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <iostream>
+int
+main ()
+{
+int v = (int)std::ios_base::seekdir();
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  P_HAS_STL_STREAMS=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+if test ${P_HAS_STL_STREAMS} = 1 ; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+fi
+cat >>confdefs.h <<_ACEOF
+#define P_HAS_STL_STREAMS ${P_HAS_STL_STREAMS}
+_ACEOF
 
 
 
