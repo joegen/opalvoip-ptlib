@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.57  2002/06/25 02:24:59  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.56  2002/06/12 09:40:58  robertj
  * Fixed printing of a dictionary to utilise the stream fill character between
  *   each dictiionary element, as per general container semantics.
@@ -211,6 +215,8 @@
 
 #ifndef _WIN32_WCE
 #define new PNEW
+#undef  __CLASS__
+#define __CLASS__ GetClass()
 #endif
 
 
@@ -696,7 +702,7 @@ void PAbstractSortedList::CloneContents(const PAbstractSortedList * list)
     element = element->left;
 
   info = new Info;
-  PAssertNULL(info);
+  PAssert(info != NULL, POutOfMemory);
   reference->size = 0;
 
   while (element != &nil) {
@@ -1135,7 +1141,7 @@ PAbstractSortedList::Element * PAbstractSortedList::Element::OrderSelect(PINDEX 
       return right->OrderSelect(index - r);
   }
 
-  PAssertAlways("Order select failed!");
+  PAssertAlways2("PAbstractSortedList::Element", "Order select failed!");
   return &nil;
 }
 
@@ -1258,7 +1264,7 @@ PINDEX PHashTable::Table::AppendElement(PObject * key, PObject * data)
   PINDEX bucket = PAssertNULL(key)->HashFunction();
   Element * list = GetAt(bucket);
   Element * element = new Element;
-  PAssertNULL(element);
+  PAssert(element != NULL, POutOfMemory);
   element->key = key;
   element->data = data;
   if (list == NULL) {
@@ -1396,7 +1402,7 @@ PINDEX PHashTable::Table::GetElementsIndex(
 PHashTable::PHashTable()
   : hashTable(new PHashTable::Table)
 {
-  PAssertNULL(hashTable);
+  PAssert(hashTable != NULL, POutOfMemory);
   hashTable->lastElement = NULL;
 }
 
@@ -1422,7 +1428,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
   PHashTable::Table * original = hash->hashTable;
 
   hashTable = new PHashTable::Table(original->GetSize());
-  PAssertNULL(hashTable);
+  PAssert(hashTable != NULL, POutOfMemory);
   hashTable->lastElement = NULL;
 
   for (PINDEX i = 0; i < sz; i++) {
