@@ -2,20 +2,20 @@
 
 #include "abstract.h"
 
-class SolidClass : public AbstractClass
+class MySolidClass : public MyAbstractClass
 {
   public:
     PString Function()
     { return "Solid"; }
 };
 
-PAbstractFactory<AbstractClass, SolidClass> solidFactory("solid");
+PAbstractFactory<MyAbstractClass, MySolidClass> solidFactory("solid");
 
-class Solid2Class : public AbstractClass
+class MySolid2Class : public MyAbstractClass
 {
   public:
     PString Function()
     { return "Solid2"; }
 };
 
-PAbstractFactory<AbstractClass, Solid2Class> solid2Factory("solid2");
+PAbstractSingletonFactory<MyAbstractClass, MySolid2Class> solid2Factory("solid2");

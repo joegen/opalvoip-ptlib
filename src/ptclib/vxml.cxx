@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.43  2004/06/30 12:17:05  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.42  2004/06/19 07:21:08  csoutheren
  * Change TTS engine registration to use abstract factory code
  * Started disentanglement of PVXMLChannel from PVXMLSession
@@ -303,7 +307,7 @@ void PVXMLSession::SetTextToSpeech(const PString & ttsName)
     delete textToSpeech;
 
   autoDeleteTextToSpeech = TRUE;
-  textToSpeech = PGenericFactory<PTextToSpeech>::CreateInstance(ttsName);;
+  textToSpeech = PFactory<PTextToSpeech>::CreateInstance(ttsName);;
 }
 
 
