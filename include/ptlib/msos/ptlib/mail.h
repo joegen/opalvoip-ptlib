@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.5 1995/08/12 22:54:26 robertj Exp $
+ * $Id: mail.h,v 1.6 1996/08/08 10:09:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.6  1996/08/08 10:09:05  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.5  1995/08/12 22:54:26  robertj
  * GUI interface additions for mail.
  *
@@ -45,7 +48,7 @@
 #endif
 
 
-#include "../../common/mail.h"
+#include "../../common/ptlib/mail.h"
 
   protected:
     DWORD    sessionId;
