@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.3 1996/12/12 09:24:44 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.4 1996/12/21 01:26:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.4  1996/12/21 01:26:21  robertj
+ * Fixed bug in persistent connections when server closes socket during command.
+ *
  * Revision 1.3  1996/12/12 09:24:44  robertj
  * Persistent connection support.
  *
@@ -187,6 +190,12 @@ BOOL PHTTPClient::WriteCommand(Commands cmd,
 BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 {
   PString http = ReadString(7);
+  if (http.IsEmpty()) {
+    lastResponseCode = -1;
+    lastResponseInfo = GetErrorText();
+    return FALSE;
+  }
+
   UnRead(http);
 
   if (http.Left(5) != "HTTP/" && http != "\r\nHTTP/") {
@@ -200,6 +209,7 @@ BOOL PHTTPClient::ReadResponse(PMIMEInfo & replyMIME)
 
   if (PHTTP::ReadResponse())
     return replyMIME.Read(*this);
+
   return FALSE;
 }
 
