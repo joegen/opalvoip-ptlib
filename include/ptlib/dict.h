@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.14 1996/02/08 11:50:01 robertj Exp $
+ * $Id: dict.h,v 1.15 1996/03/31 08:44:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.15  1996/03/31 08:44:10  robertj
+ * Added RemoveAt() function to remove entries from dictionaries.
+ *
  * Revision 1.14  1996/02/08 11:50:01  robertj
  * Moved Contains function from PSet to PHashTable so available for dictionaries.
  * Added print for dictionaries key=data\n.
@@ -781,6 +784,18 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        reference to the object indexed by the key.
      */
 
+    virtual PObject * RemoveAt(
+      const K & key   // Key for position in dictionary to get object.
+    ) { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; }
+    /* Remove an object at the specified key. The returned pointer is then
+       removed using the <A>SetAt()</A> function to set that key value to
+       NULL. If the <CODE>AllowDeleteObjects</CODE> option is set then the
+       object is also deleted.
+
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
+     */
+
     virtual D * GetAt(
       const K & key   // Key for position in dictionary to get object.
     ) const { return (D *)PAbstractDictionary::GetAt(key); }
@@ -1054,6 +1069,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return PNEW cls(0, this); } \
     D & operator[](const K & key) const \
       { return (D &)GetRefAt(key); } \
+    virtual PObject * RemoveAt(const K & key) \
+      { PObject * obj = GetAt(key); SetAt(key, NULL); return obj; } \
     PObject * GetAt(PINDEX idx) const \
       { return PAbstractDictionary::GetAt(idx); } \
     virtual D * GetAt(const K & key) const \
