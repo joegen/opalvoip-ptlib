@@ -1,6 +1,6 @@
 #include <ptlib.h>
 
-static volatile PThread * localThis;
+static PThread * localThis;
 
 void PThread::SwitchContext(PThread * from)
 {

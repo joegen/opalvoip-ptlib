@@ -411,7 +411,7 @@ BOOL PSerialChannel::SetStopBits(BYTE stop)
 }
 
 
-BOOL PSerialChannel::SetInputFlowControl(FlowControl flowControl)
+BOOL PSerialChannel::SetInputFlowControl(FlowControl)
 {
   return TRUE;
 }
@@ -423,7 +423,7 @@ PSerialChannel::FlowControl PSerialChannel::GetInputFlowControl() const
 }
 
 
-BOOL PSerialChannel::SetOutputFlowControl(FlowControl flowControl)
+BOOL PSerialChannel::SetOutputFlowControl(FlowControl)
 {
   return TRUE;
 }
@@ -435,21 +435,18 @@ PSerialChannel::FlowControl PSerialChannel::GetOutputFlowControl() const
 }
 
 
-void PSerialChannel::SetDTR(BOOL state)
+void PSerialChannel::SetDTR(BOOL)
 {
-  return;
 }
 
 
-void PSerialChannel::SetRTS(BOOL state)
+void PSerialChannel::SetRTS(BOOL)
 {
-  return;
 }
 
 
-void PSerialChannel::SetBreak(BOOL state)
+void PSerialChannel::SetBreak(BOOL)
 {
-  return;
 }
 
 
@@ -485,7 +482,8 @@ PStringList PSerialChannel::GetPortNames()
   if (env != NULL) {
     PString str(env);
     PStringArray tokens = str.Tokenise(" ,\t", FALSE);
-    for (int i = 0; i < tokens.GetSize(); i++) 
+    PINDEX i;
+    for (i = 0; i < tokens.GetSize(); i++) 
       ports.AppendString(tokens[i]);
   } else {
     ports.AppendString(PString("ttyS0"));

@@ -122,7 +122,8 @@ BOOL PRemoteConnection::Open(const PString & name,
   }
 
   // try and find name of ppp device
-  for (PINDEX i = 0; i < MAX_PPP_DEVICES; i++) {
+  PINDEX i;
+  for (i = 0; i < MAX_PPP_DEVICES; i++) {
     pppDeviceName = psprintf("ppp%i", i);
     if (!PPPDeviceExists(pppDeviceName))
       break;
