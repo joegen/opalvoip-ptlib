@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.23  1998/11/14 01:11:45  robertj
+ * PPC linux GNU compatibility.
+ *
  * Revision 1.22  1998/09/23 06:22:36  robertj
  * Added open source copyright license.
  *
@@ -240,7 +243,7 @@ static time_t p_mktime(struct tm * t, int zone)
 
 PTime::PTime(const PString & str)
 {
-  PStringStream s = str;
+  PStringStream s(str);
   ReadFrom(s);
 }
 
