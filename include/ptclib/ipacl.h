@@ -6,6 +6,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.h,v $
+ * Revision 1.3  1999/02/25 05:05:15  robertj
+ * Added missing test for hidden entries not to be written to config file
+ *
  * Revision 1.2  1999/02/08 08:05:39  robertj
  * Changed semantics of IP access control list for empty list.
  *
@@ -128,6 +131,7 @@ class PIpAccessControlEntry : public PObject
      */
 
     BOOL IsAllowed() const { return allowed; }
+    BOOL IsHidden()  const { return hidden; }
 
 
   protected:
