@@ -60,6 +60,12 @@ if test "$enable_oss" = "yes" ; then
   fi
 fi
 
+AC_ARG_ENABLE(video,
+       [  --disable-video         disable video device support in PWLIB],
+       video=$enableval)
+
+if test "$video" != "no" ; then
+
 dnl #########################################################################
 dnl check for V4L video support
 dnl ########################################################################
@@ -132,6 +138,9 @@ if test "$enable_dc" = "yes" ; then
     AC_MSG_RESULT(no)
   fi
 fi
+
+fi
+dnl end of test for video
 
 dnl ########################################################################
 dnl output header file
