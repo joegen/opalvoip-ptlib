@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.52  2001/03/23 19:59:48  craigs
+# Added detection of broken gcc versions
+#
 # Revision 1.51  2001/03/22 01:14:16  robertj
 # Allowed for the version file #defines to configured by calling makefile.
 #
@@ -122,6 +125,16 @@
 # Added open software license.
 #
 
+#
+#  set BROKEN_GCC if the gcc version is 2.96
+#
+ifndef	BROKEN_GCC
+GCC_VER	= $(shell gcc --version)
+ifeq	($(GCC_VER),2.96)
+BROKEN_GCC	= $(GCC_VER)
+endif
+endif
+
 
 ######################################################################
 #
@@ -163,7 +176,12 @@ SOURCES         := $(strip $(SOURCES))
 #
 $(OBJDIR)/%.o : %.cxx 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+ifdef BROKEN_GCC
+	@echo $(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
+	@( export PWLIBDIR=$(PWLIBDIR) ; $(PWLIBDIR)/make/gcc_filter $(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@ )
+else
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
+endif
 
 $(OBJDIR)/%.o : %.c 
 	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
