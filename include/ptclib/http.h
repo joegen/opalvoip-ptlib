@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.10 1996/03/02 03:12:55 robertj Exp $
+ * $Id: http.h,v 1.11 1996/03/10 13:15:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.11  1996/03/10 13:15:23  robertj
+ * Redesign to make resources thread safe.
+ *
  * Revision 1.10  1996/03/02 03:12:55  robertj
  * Added radio button and selection boxes to HTTP form resource.
  *
@@ -495,6 +498,29 @@ PDECLARE_CLASS(PHTTPSimpleAuth, PHTTPAuthority)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// PHTTPRequest
+
+PDECLARE_CLASS(PHTTPRequest, PObject)
+/* This object describes a HyperText Transport Protocol request. An individual
+   request is passed to handler functions on <A>PHTTPResource</A> descendant
+   classes.
+ */
+
+  public:
+    PHTTPRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME      // Extra MIME information in command.
+    );
+
+    const PURL & url;               // Universal Resource Locator for document.
+    const PMIMEInfo & inMIME;       // Extra MIME information in command.
+    PHTTPSocket::StatusCode code;   // Status code for OnError() reply.
+    PMIMEInfo outMIME;              // MIME information used in reply.
+    PINDEX contentSize;             // Size of the body of the resource data.
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
 // PHTTPResource
 
 PDECLARE_CLASS(PHTTPResource, PObject)
@@ -618,12 +644,20 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        Status of load operation.
      */
 
+    virtual PHTTPRequest * CreateRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME      // Extra MIME information in command.
+    );
+    /* Create a new request block for this type of resource.
+
+       The default behaviour is to create a new PHTTPRequest instance.
+
+       <H2>Returns:</H2>
+       Pointer to instance of PHTTPRequest descendant class.
+     */
+
     virtual BOOL LoadHeaders(
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PHTTPSocket::StatusCode & code,   // Status code for OnError() reply.
-      PMIMEInfo & outMIME,        // MIME information used in reply.
-      PINDEX & contentSize        // Size of the body of the resource data
+      PHTTPRequest & request    // Information on this request.
     ) = 0;
     /* Get the headers for block of data (eg HTML) that the resource contains.
        This will fill in all the fields of the <CODE>outMIME</CODE> parameter
@@ -634,10 +668,8 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual BOOL LoadData(
-           PCharArray & data,           // Data used in reply.
-            PMIMEInfo & outMIME,
-           const PURL & url,
-      const PMIMEInfo & inMIME
+      PHTTPRequest & request,    // Information on this request.
+      PCharArray & data          // Data used in reply.
     );
     /* Get a block of data that the resource contains.
 
@@ -648,7 +680,9 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        TRUE if there is still more to load.
      */
 
-    virtual PString LoadText();
+    virtual PString LoadText(
+      PHTTPRequest & request    // Information on this request.
+    );
     /* Get a block of text data (eg HTML) that the resource contains.
 
        The default behaviour is to assert, one of <A>LoadText()</A> or
@@ -659,10 +693,8 @@ PDECLARE_CLASS(PHTTPResource, PObject)
      */
 
     virtual void OnLoadedText(
-              PString & text,       // Data used in reply.
-            PMIMEInfo & outMIME,
-           const PURL & url,
-      const PMIMEInfo & inMIME
+      PHTTPRequest & request,    // Information on this request.
+      PString & text             // Data used in reply.
     );
     /* This is called after the text has been loaded and may be used to
        customise or otherwise mangle a loaded piece of text. Typically this is
@@ -671,11 +703,10 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        The default action for this function is to do nothing.
      */
 
-    virtual PHTTPSocket::StatusCode Post(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
+    virtual BOOL Post(
+      PHTTPRequest & request,       // Information on this request.
       const PStringToString & data, // Variables in the POST data.
-      PStringStream & replyMessage  // Reply message for post.
+      PHTML & replyMessage          // Reply message for post.
     );
     /* Get a block of data (eg HTML) that the resource contains.
 
@@ -683,7 +714,7 @@ PDECLARE_CLASS(PHTTPResource, PObject)
        success.
 
        <H2>Returns:</H2>
-       Status of post operation.
+       TRUE if all OK, FALSE if an error occurred.
      */
 
 
@@ -745,11 +776,7 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
 
   // Overrides from class PHTTPResource
     virtual BOOL LoadHeaders(
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PHTTPSocket::StatusCode & code,   // Status code for OnError() reply.
-      PMIMEInfo & outMIME,        // MIME information used in reply.
-      PINDEX & contentSize        // Size of the body of the resource data
+      PHTTPRequest & request    // Information on this request.
     );
     /* Get the headers for block of data (eg HTML) that the resource contains.
        This will fill in all the fields of the <CODE>outMIME</CODE> parameter
@@ -759,7 +786,9 @@ PDECLARE_CLASS(PHTTPString, PHTTPResource)
        TRUE if all OK, FALSE if an error occurred.
      */
 
-    virtual PString LoadText();
+    virtual PString LoadText(
+      PHTTPRequest & request    // Information on this request.
+    );
     /* Get a block of text data (eg HTML) that the resource contains.
 
        The default behaviour is to assert, one of <A>LoadText()</A> or
@@ -832,12 +861,18 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 
 
   // Overrides from class PHTTPResource
+    virtual PHTTPRequest * CreateRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME      // Extra MIME information in command.
+    );
+    /* Create a new request block for this type of resource.
+
+       <H2>Returns:</H2>
+       Pointer to instance of PHTTPRequest descendant class.
+     */
+
     virtual BOOL LoadHeaders(
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PHTTPSocket::StatusCode & code,   // Status code for OnError() reply.
-      PMIMEInfo & outMIME,        // MIME information used in reply.
-      PINDEX & contentSize        // Size of the body of the resource data
+      PHTTPRequest & request    // Information on this request.
     );
     /* Get the headers for block of data (eg HTML) that the resource contains.
        This will fill in all the fields of the <CODE>outMIME</CODE> parameter
@@ -848,10 +883,8 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
      */
 
     virtual BOOL LoadData(
-           PCharArray & data,       // Data used in reply.
-            PMIMEInfo & outMIME,
-           const PURL & url,
-      const PMIMEInfo & inMIME
+      PHTTPRequest & request,    // Information on this request.
+      PCharArray & data          // Data used in reply.
     );
     /* Get a block of data that the resource contains.
 
@@ -859,7 +892,9 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
        TRUE if more to load.
      */
 
-    virtual PString LoadText();
+    virtual PString LoadText(
+      PHTTPRequest & request    // Information on this request.
+    );
     /* Get a block of text data (eg HTML) that the resource contains.
 
        The default behaviour is to assert, one of <A>LoadText()</A> or
@@ -872,10 +907,23 @@ PDECLARE_CLASS(PHTTPFile, PHTTPResource)
 
   protected:
     PHTTPFile(
-      const PURL & url       // Name of the resource in URL space.
+      const PURL & url,       // Name of the resource in URL space.
+      int dummy
     );
+    // Constructor used by PHTTPDirectory
 
-    PFile file;
+
+    PFilePath filePath;
+};
+
+
+PDECLARE_CLASS(PHTTPFileRequest, PHTTPRequest)
+  PHTTPFileRequest(
+    const PURL & url,             // Universal Resource Locator for document.
+    const PMIMEInfo & inMIME      // Extra MIME information in command.
+  );
+
+  PFile file;
 };
 
 
@@ -910,12 +958,18 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 
 
   // Overrides from class PHTTPResource
+    virtual PHTTPRequest * CreateRequest(
+      const PURL & url,             // Universal Resource Locator for document.
+      const PMIMEInfo & inMIME      // Extra MIME information in command.
+    );
+    /* Create a new request block for this type of resource.
+
+       <H2>Returns:</H2>
+       Pointer to instance of PHTTPRequest descendant class.
+     */
+
     virtual BOOL LoadHeaders(
-      const PURL & url,           // Universal Resource Locator for document.
-      const PMIMEInfo & inMIME,   // Extra MIME information in command.
-      PHTTPSocket::StatusCode & code,   // Status code for OnError() reply.
-      PMIMEInfo & outMIME,        // MIME information used in reply.
-      PINDEX & contentSize        // Size of the body of the resource data
+      PHTTPRequest & request    // Information on this request.
     );
     /* Get the headers for block of data (eg HTML) that the resource contains.
        This will fill in all the fields of the <CODE>outMIME</CODE> parameter
@@ -925,7 +979,9 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
        TRUE if all OK, FALSE if an error occurred.
      */
 
-    virtual PString LoadText();
+    virtual PString LoadText(
+      PHTTPRequest & request    // Information on this request.
+    );
     /* Get a block of text data (eg HTML) that the resource contains.
 
        The default behaviour is to assert, one of <A>LoadText()</A> or
@@ -938,7 +994,17 @@ PDECLARE_CLASS(PHTTPDirectory, PHTTPFile)
 
   protected:
     PDirectory basePath;
-    PString fakeIndex;
+};
+
+
+PDECLARE_CLASS(PHTTPDirRequest, PHTTPFileRequest)
+  PHTTPDirRequest(
+    const PURL & url,             // Universal Resource Locator for document.
+    const PMIMEInfo & inMIME      // Extra MIME information in command.
+  );
+
+  PFile file;
+  PString fakeIndex;
 };
 
 
@@ -951,8 +1017,9 @@ PDECLARE_CLASS(PHTTPField, PObject)
  */
   public:
     PHTTPField(
-      const char * name,        // Name (identifier) for the field.
-      const char * title = NULL // Title text for field (defaults to name).
+      const char * name,   // Name (identifier) for the field.
+      const char * title,  // Title text for field (defaults to name).
+      const char * help    // Help text for the field.
     );
     // Create a new field in a HTTP form.
 
@@ -978,6 +1045,27 @@ PDECLARE_CLASS(PHTTPField, PObject)
        <H2>Returns:</H2>
        String for title placed next to the field.
      */
+
+    const PString & GetHelp() const { return help; }
+    /* Get the title of the field.
+
+       <H2>Returns:</H2>
+       String for title placed next to the field.
+     */
+
+    void SetHelp(
+      const PString & text        // Help text.
+    ) { help = text; }
+    void SetHelp(
+      const PString & hotLinkURL, // URL for link to help page.
+      const PString & linkText    // Help text in the link.
+    );
+    void SetHelp(
+      const PString & hotLinkURL, // URL for link to help page.
+      const PString & imageURL,   // URL for image to be displayed in link.
+      const PString & imageText   // Text in the link when image unavailable.
+    );
+    // Set the help text for the field.
 
     virtual void GetHTML(
       PHTML & html    // HTML to receive the field info.
@@ -1013,6 +1101,7 @@ PDECLARE_CLASS(PHTTPField, PObject)
   protected:
     PCaselessString name;
     PString title;
+    PString help;
     BOOL notInHTML;
 };
 
@@ -1022,13 +1111,15 @@ PDECLARE_CLASS(PHTTPStringField, PHTTPField)
     PHTTPStringField(
       const char * name,
       PINDEX size,
-      const char * initVal = NULL
+      const char * initVal = NULL,
+      const char * help = NULL
     );
     PHTTPStringField(
       const char * name,
       const char * title,
       PINDEX size,
-      const char * initVal = NULL
+      const char * initVal = NULL,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1053,13 +1144,15 @@ PDECLARE_CLASS(PHTTPPasswordField, PHTTPStringField)
     PHTTPPasswordField(
       const char * name,
       PINDEX size,
-      const char * initVal = NULL
+      const char * initVal = NULL,
+      const char * help = NULL
     );
     PHTTPPasswordField(
       const char * name,
       const char * title,
       PINDEX size,
-      const char * initVal = NULL
+      const char * initVal = NULL,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1074,14 +1167,16 @@ PDECLARE_CLASS(PHTTPIntegerField, PHTTPField)
       const char * name,
       int low, int high,
       int initVal = 0,
-      const char * units = NULL
+      const char * units = NULL,
+      const char * help = NULL
     );
     PHTTPIntegerField(
       const char * name,
       const char * title,
       int low, int high,
       int initVal = 0,
-      const char * units = NULL
+      const char * units = NULL,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1110,12 +1205,14 @@ PDECLARE_CLASS(PHTTPBooleanField, PHTTPField)
   public:
     PHTTPBooleanField(
       const char * name,
-      BOOL initVal = FALSE
+      BOOL initVal = FALSE,
+      const char * help = NULL
     );
     PHTTPBooleanField(
       const char * name,
       const char * title,
-      BOOL initVal = FALSE
+      BOOL initVal = FALSE,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1139,46 +1236,53 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
     PHTTPRadioField(
       const char * name,
       const PStringArray & valueArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       const PStringArray & valueArray,
       const PStringArray & titleArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       PINDEX count,
       const char * const * valueStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       PINDEX count,
       const char * const * valueStrings,
       const char * const * titleStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       const char * groupTitle,
       const PStringArray & valueArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       const char * groupTitle,
       const PStringArray & valueArray,
       const PStringArray & titleArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
       const char * groupTitle,
       PINDEX count,
       const char * const * valueStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPRadioField(
       const char * name,
@@ -1186,7 +1290,8 @@ PDECLARE_CLASS(PHTTPRadioField, PHTTPField)
       PINDEX count,
       const char * const * valueStrings,
       const char * const * titleStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1212,26 +1317,30 @@ PDECLARE_CLASS(PHTTPSelectField, PHTTPField)
     PHTTPSelectField(
       const char * name,
       const PStringArray & valueArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPSelectField(
       const char * name,
       PINDEX count,
       const char * const * valueStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPSelectField(
       const char * name,
       const char * title,
       const PStringArray & valueArray,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
     PHTTPSelectField(
       const char * name,
       const char * title,
       PINDEX count,
       const char * const * valueStrings,
-      PINDEX initVal = 0
+      PINDEX initVal = 0,
+      const char * help = NULL
     );
 
     virtual void GetHTML(
@@ -1271,15 +1380,14 @@ PDECLARE_CLASS(PHTTPForm, PHTTPString)
     );
 
 
-    virtual PHTTPSocket::StatusCode Post(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
+    virtual BOOL Post(
+      PHTTPRequest & request,       // Information on this request.
       const PStringToString & data, // Variables in the POST data.
-      PStringStream & replyMessage  // Reply message for post.
+      PHTML & replyMessage          // Reply message for post.
     );
 
 
-    void Add(
+    PHTTPField * Add(
       PHTTPField * fld
     );
 
@@ -1334,11 +1442,10 @@ PDECLARE_CLASS(PHTTPConfig, PHTTPForm)
       const PHTTPAuthority & auth
     );
 
-    virtual PHTTPSocket::StatusCode Post(
-      const PURL & url,             // Universal Resource Locator for document.
-      const PMIMEInfo & info,       // Extra MIME information in command.
+    virtual BOOL Post(
+      PHTTPRequest & request,       // Information on this request.
       const PStringToString & data, // Variables in the POST data.
-      PStringStream & replyMessage  // Reply message for post.
+      PHTML & replyMessage          // Reply message for post.
     );
 
 
