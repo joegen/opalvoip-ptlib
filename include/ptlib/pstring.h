@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.42  2001/02/21 03:38:37  robertj
+ * Added ability to copy between various string lists/arrays etc during construction.
+ *
  * Revision 1.41  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -1734,6 +1737,9 @@ class PStringStream : public PString, public iostream
 };
 
 
+class PStringList;
+class PSortedStringList;
+
 /**This is an array collection class of #PString# objects. It has all the
    usual functions for a collection, with the object types set to
    #PString# pointers.
@@ -1760,6 +1766,16 @@ PDECLARE_ARRAY(PStringArray, PString);
       PINDEX count,                 /// Count of strings in array
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+    /**Create a PStringArray from the list of strings.
+     */
+    PStringArray(
+      const PStringList & list  /// List of strings to convert to array.
+    );
+    /**Create a PStringArray from the sorted list strings.
+     */
+    PStringArray(
+      const PSortedStringList & list  /// List of strings to convert to array.
     );
   //@}
 
@@ -1812,12 +1828,22 @@ PDECLARE_LIST(PStringList, PString);
   public:
   /**@name Construction */
   //@{
-    /**Create a PStringArray from the array of C strings.
+    /**Create a PStringList from the array of C strings.
      */
     PStringList(
       PINDEX count,                 /// Count of strings in array
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+    /**Create a PStringList from the array of strings.
+     */
+    PStringList(
+      const PStringArray & array  /// Array of strings to convert to list
+    );
+    /**Create a PStringList from the sorted list of strings.
+     */
+    PStringList(
+      const PSortedStringList & list  /// List of strings to convert to list.
     );
   //@}
 
@@ -1871,6 +1897,16 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
       PINDEX count,                 /// Count of strings in array
       char const * const * strarr,  /// Array of C strings
       BOOL caseless = FALSE         /// New strings are to be PCaselessStrings
+    );
+    /**Create a PSortedStringList from the array of strings.
+     */
+    PSortedStringList(
+      const PStringArray & array  /// Array of strings to convert to list
+    );
+    /**Create a PSortedStringList from the list of strings.
+     */
+    PSortedStringList(
+      const PStringList & list  /// List of strings to convert to list.
     );
   //@}
 
