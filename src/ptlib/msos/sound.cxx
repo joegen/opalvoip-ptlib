@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.33  2003/05/01 00:17:40  robertj
+ * Fixed setting of stereo volume levels, thanks Diego Tártara
+ *
  * Revision 1.32  2002/08/05 01:22:59  robertj
  * Fixed possible range error on SetVolume(), thanks Sonya Cooper-Hull
  *
@@ -1433,7 +1436,7 @@ BOOL PSoundChannel::SetVolume(unsigned newVolume)
     // Does not appear to be an input volume!!
   }
   else {
-    DWORD osError = waveOutSetVolume(hWaveOut, rawVolume);
+    DWORD osError = waveOutSetVolume(hWaveOut, MAKELPARAM(rawVolume, rawVolume));
     if (osError != MMSYSERR_NOERROR)
       SetErrorValues(Miscellaneous, osError|PWIN32ErrorFlag);
   }
