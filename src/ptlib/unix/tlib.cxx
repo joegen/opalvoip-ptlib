@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.9  1996/05/02 12:11:54  craigs
+ * Sun4 fixes
+ *
  * Revision 1.8  1996/04/18 11:43:38  craigs
  * Changed GetHomeDir to use effective UID for uid, and changed to
  * look at passwd file info *before* $HOME variable
@@ -34,14 +37,24 @@
 #include <pwd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <errno.h>
 
-#ifdef P_LINUX
+#if defined(P_LINUX)
 #include <sys/cdefs.h>
-#include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #define VIRTUAL_STACK_SIZE (stackSize*5)
 #endif
+
+#if defined(P_SUN4)
+pid_t wait3(int *status, int options, struct rusage *rusage);
+#endif
+
+#if defined(P_LINUX) || defined(P_SUN4)
+#include <sys/utsname.h>
+#define  HAS_UNAME
+#endif
+
 
 #include "uerror.h"
 
@@ -114,11 +127,12 @@ PString PProcess::GetOSName()
 
 PString PProcess::GetOSVersion()
 {
-#if defined(P_LINUX)
+#if defined(HAS_UNAME)
   struct utsname info;
   uname(&info);
   return PString(info.release);
-#elif
+#else
+#warning No GetOSVersion specified
   return PString("unknown");
 #endif
 }
