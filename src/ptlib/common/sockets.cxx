@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.117  2002/01/26 23:57:45  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.116  2002/01/07 05:37:32  robertj
  * Changed to allow for a service name that starts with a number.
  *
@@ -790,6 +793,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 PSocket::PSocket()
 {
+  SetReadTimeout(10000);
+  SetWriteTimeout(10000);
   port = 0;
 }
 
