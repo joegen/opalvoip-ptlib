@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.16  2001/12/13 09:15:20  robertj
+ * Added function to get private key as ray DER binary data or as base64 string.
+ *
  * Revision 1.15  2001/12/06 04:06:03  robertj
  * Removed "Win32 SSL xxx" build configurations in favour of system
  *   environment variables to select optional libraries.
@@ -165,6 +168,14 @@ class PSSLPrivateKey : public PObject
       void (*callback)(int,int,void *) = NULL,  /// Progress callback function
       void *cb_arg = NULL                       /// Argument passed to callback
     );
+
+    /**Get the certificate as binary ASN1 DER encoded data.
+      */
+    PBYTEArray GetData() const;
+
+    /**Get the certificate as ASN1 DER base64 encoded data.
+      */
+    PString AsString() const;
 
     /**Load private key from file.
        The type of the private key can be specified explicitly, or if
