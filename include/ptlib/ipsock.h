@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.6 1994/12/15 12:47:14 robertj Exp $
+ * $Id: ipsock.h,v 1.7 1995/01/01 01:07:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.6  1994/12/15 12:47:14  robertj
+ * Revision 1.7  1995/01/01 01:07:33  robertj
+ * More implementation.
+ *
+ * Revision 1.6  1994/12/15  12:47:14  robertj
  * Documentation.
  *
  * Revision 1.5  1994/08/23  11:32:52  robertj
@@ -53,6 +56,9 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        compatible system. It will obtain the address in a socket ready form
        given a host domain name or dot form IP address as a string.
      */
+
+    virtual WORD    GetPort(const PString & service) const = 0;
+    virtual PString GetService(WORD port) const = 0;
 
 #endif
 
