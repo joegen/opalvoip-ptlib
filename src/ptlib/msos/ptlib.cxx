@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.7 1994/08/04 13:24:27 robertj Exp $
+ * $Id: ptlib.cxx,v 1.8 1994/10/23 05:42:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.7  1994/08/04 13:24:27  robertj
+ * Revision 1.8  1994/10/23 05:42:39  robertj
+ * PipeChannel headers.
+ * ConvertOSError function added.
+ * Numerous implementation enhancements.
+ *
+ * Revision 1.7  1994/08/04  13:24:27  robertj
  * Added debug stream.
  *
  * Revision 1.6  1994/07/27  06:00:10  robertj
@@ -98,12 +103,49 @@ PString PChannel::GetErrorText() const
 }
 
 
+BOOL PChannel::ConvertOSError(int error)
+{
+  if (error >= 0)
+    return TRUE;
+
+  switch (osError) {
+    case 0 :
+      lastError = NoError;
+      return TRUE;
+    case ENOENT :
+      lastError = NotFound;
+      break;
+    case EEXIST :
+      lastError = FileExists;
+      break;
+    case EACCES :
+      lastError = AccessDenied;
+      break;
+    case ENOMEM :
+      lastError = NoMemory;
+      break;
+    case ENOSPC :
+      lastError = DiskFull;
+      break;
+    case EINVAL :
+      lastError = BadParameter;
+      break;
+    case EBADF :
+      lastError = NotOpen;
+      break;
+    default :
+      lastError = Miscellaneous;
+  }
+
+  return FALSE;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Directories
 
 void PDirectory::CopyContents(const PDirectory & dir)
 {
-  path = dir.path;
   scanMask = dir.scanMask;
   fileinfo = dir.fileinfo;
 }
@@ -166,7 +208,7 @@ static PString FixPath(const PString & path, BOOL isDirectory)
 
 void PDirectory::Construct()
 {
-  path = FixPath(path, TRUE);
+  PString::operator=(FixPath(*this, TRUE));
 }
 
 
@@ -176,10 +218,7 @@ BOOL PDirectory::Change(const PString & p)
     if (_chdrive(toupper(p[0])-'A'+1) < 0)
       return FALSE;
   }
-  PINDEX len = p.GetLength();
-  if (p[len-1] == '\\')
-    len--;
-  return chdir(p(0, len-1)) == 0;
+  return chdir(p(0, p.GetLength()-1)) == 0;
 }
 
 
@@ -193,7 +232,7 @@ BOOL PDirectory::Filtered()
     return FALSE;
 
   PFileInfo inf;
-  PAssert(PFile::GetInfo(path+fileinfo.name, inf), POperatingSystemError);
+  PAssert(PFile::GetInfo(*this+fileinfo.name, inf), POperatingSystemError);
   return (inf.type&scanMask) == 0;
 }
 
@@ -201,7 +240,7 @@ BOOL PDirectory::Filtered()
 BOOL PDirectory::Open(int newScanMask)
 {
   scanMask = newScanMask;
-  if (_dos_findfirst(path+"*.*", 0xff, &fileinfo) != 0)
+  if (_dos_findfirst(*this+"*.*", 0xff, &fileinfo) != 0)
     return FALSE;
 
   return Filtered() ? Next() : TRUE;
@@ -302,6 +341,30 @@ BOOL PFile::Access(const PString & name, OpenMode mode)
 }
 
 
+BOOL PFile::Remove(const PString & name, BOOL force)
+{
+  if (remove(name) == 0)
+    return TRUE;
+  if (!force || errno != EACCES)
+    return FALSE;
+  if (_chmod(name, _S_IWRITE) != 0)
+    return FALSE;
+  return remove(name) == 0;
+}
+
+
+BOOL PFile::Rename(const PString & oldname, const PString & newname, BOOL force)
+{
+  if (rename(oldname, newname) == 0)
+    return TRUE;
+  if (!force || errno != EEXIST)
+    return FALSE;
+  if (!Remove(newname, TRUE))
+    return FALSE;
+  return rename(oldname, newname) == 0;
+}
+
+
 BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
 {
   struct stat s;
@@ -340,6 +403,12 @@ BOOL PFile::GetInfo(const PFilePath & name, PFileInfo & info)
   info.hidden = (attr & _A_HIDDEN) != 0;
 
   return TRUE;
+}
+
+
+BOOL PFile::SetPermissions(const PFilePath & name, int permissions)
+{
+  return _chmod(name, permissions&(_S_IWRITE|_S_IREAD)) == 0;
 }
 
 
@@ -447,6 +516,58 @@ BOOL PTextFile::Write(const void * buf, PINDEX len)
 {
   BOOL retVal = PFile::Write(buf, len);
   return retVal;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+void PPipeChannel::Construct(const PString & subProgram,
+                const char * const * arguments, OpenMode mode, BOOL searchPath)
+{
+}
+
+
+void PPipeChannel::DestroyContents()
+{
+}
+
+
+void PPipeChannel::CloneContents(const PPipeChannel *)
+{
+  PAssertAlways("Cannot clone pipe");
+}
+
+
+void PPipeChannel::CopyContents(const PPipeChannel & chan)
+{
+}
+
+
+BOOL PPipeChannel::Read(void * buffer, PINDEX len)
+{
+  return FALSE;
+}
+      
+
+BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
+{
+  return FALSE;
+}
+
+
+BOOL PPipeChannel::Close()
+{
+  if (IsOpen()) {
+    os_handle = -1;
+  }
+  return TRUE;
+}
+
+
+BOOL PPipeChannel::Execute()
+{
+  return TRUE;
 }
 
 
