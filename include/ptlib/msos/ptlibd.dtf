@@ -1936,6 +1936,7 @@ EXPORTS
     ?DestroyContents@Table@PHashTable@@UAEXXZ @1256 NONAME ;public: virtual void __thiscall PHashTable::Table::DestroyContents(void)
     ?Destruct@PContainer@@IAEXXZ @1257 NONAME ;protected: void __thiscall PContainer::Destruct(void)
     ?DisallowDeleteObjects@PCollection@@QAEXXZ @1258 NONAME ;public: void __thiscall PCollection::DisallowDeleteObjects(void)
+    ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @4225 NONAME ;public: int __thiscall PVideoChannel::DisplayRawData(void *)
     ?DumpObjectsSince@PMemoryHeap@@SAXK@Z @4038 NONAME ;public: static void __cdecl PMemoryHeap::DumpObjectsSince(unsigned long)
     ?DumpObjectsSince@PMemoryHeap@@SAXKAAVostream@@@Z @4039 NONAME ;public: static void __cdecl PMemoryHeap::DumpObjectsSince(unsigned long,class ostream &)
     ?DumpStatistics@PMemoryHeap@@SAXAAVostream@@@Z @4040 NONAME ;public: static void __cdecl PMemoryHeap::DumpStatistics(class ostream &)

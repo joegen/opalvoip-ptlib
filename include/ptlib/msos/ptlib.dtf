@@ -1236,6 +1236,7 @@ EXPORTS
     ?DestroyContents@PHashTable@@MAEXXZ @836 NONAME ;protected: virtual void __thiscall PHashTable::DestroyContents(void)
     ?DestroyContents@Table@PHashTable@@UAEXXZ @837 NONAME ;public: virtual void __thiscall PHashTable::Table::DestroyContents(void)
     ?Destruct@PContainer@@IAEXXZ @838 NONAME ;protected: void __thiscall PContainer::Destruct(void)
+    ?DisplayRawData@PVideoChannel@@QAEHPAX@Z @3080 NONAME ;public: int __thiscall PVideoChannel::DisplayRawData(void *)
     ?End@PTrace@@SAAAVostream@@AAV2@@Z @2174 NONAME ;public: static class ostream & __cdecl PTrace::End(class ostream &)
     ?EndRead@PReadWriteMutex@@QAEXXZ @840 NONAME ;public: void __thiscall PReadWriteMutex::EndRead(void)
     ?EndWrite@PReadWriteMutex@@QAEXXZ @841 NONAME ;public: void __thiscall PReadWriteMutex::EndWrite(void)
