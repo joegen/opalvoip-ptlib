@@ -22,6 +22,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vsdl.h,v $
+ * Revision 1.4  2003/05/17 03:20:48  rjongbloed
+ * Removed need to do strange things with main() function.
+ *
  * Revision 1.3  2003/04/28 14:29:45  craigs
  * Started rearranging code
  *
@@ -60,190 +63,201 @@
  *
  */
 
-#if	P_SDL
+#if P_SDL
 
 #include <ptlib.h>
 #include <SDL/SDL.h>
 
+#undef main
+
+
 class PSDLVideoFrame : public PObject
 {
-  PCLASSINFO(PSDLVideoFrame, PObject);
-	public:
-		PSDLVideoFrame(unsigned newWidth, unsigned newHeight, Uint8 *data);
-		PSDLVideoFrame(unsigned newWidth, unsigned newHeight, const void *_data);
-
-		~PSDLVideoFrame();
-
-		unsigned GetWidth() { return width; }
-		unsigned GetHeight() { return height; }
-
-		Uint8 *GetDataPointer() { return data; }
-
-		void PrintOn(ostream & str) const;
-
- protected:
-		void Initialise(unsigned newWidth, unsigned newHeight, Uint8 *_data);
-
-		unsigned width;
-		unsigned height;
+    PCLASSINFO(PSDLVideoFrame, PObject);
+  public:
+    PSDLVideoFrame(
+      unsigned newWidth,
+      unsigned newHeight,
+      Uint8 *data
+    );
+    PSDLVideoFrame(
+      unsigned newWidth,
+      unsigned newHeight,
+      const void *_data
+    );
   
-		Uint8 *data;
+    ~PSDLVideoFrame();
+  
+    unsigned GetWidth() { return width; }
+    unsigned GetHeight() { return height; }
+  
+    Uint8 *GetDataPointer() { return data; }
+  
+    void PrintOn(ostream & str) const;
+  
+  protected:
+    void Initialise(unsigned newWidth, unsigned newHeight, Uint8 *_data);
+  
+    unsigned width;
+    unsigned height;
+  
+    Uint8 *data;
 };
+
 
 class PSDLDisplayThread : public PThread
 {
-  PCLASSINFO(PSDLDisplayThread, PThread);
-
- public:
-  PSDLDisplayThread(BOOL _videoPIP);
-  ~PSDLDisplayThread();
-
-  void Main();
- 
-  /** returns FALSE if the thread is closed, so cannot add frame.
-      The frame is deleted by the thread - in all cases.*/
-  BOOL AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding);
-
-  BOOL IsOpen();
-
-  virtual void Terminate();
-  void RequestOpenWindow(BOOL isEncoding);
-  void RequestCloseWindow(BOOL isEncoding);
-
- protected:
-  BOOL ScreenIsOpen();
-  BOOL DisplayIsShutDown();
-  void CloseWindow(BOOL isEncoding);
+    PCLASSINFO(PSDLDisplayThread, PThread);
+  public:
+    PSDLDisplayThread(
+      BOOL _videoPIP
+    );
+    ~PSDLDisplayThread();
   
-
-  PSDLVideoFrame *GetNextFrame(BOOL isEncoding);
-
-  BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
-  void InitDisplayPosn();
-  void InitDisplayPosn(unsigned w, unsigned h);
-  void CloseScreen();
-  BOOL CreateOverlay(BOOL isEncoding);
-  BOOL SetOverlaySize (BOOL isEncoding, unsigned _width, unsigned _height);
-
-  void WriteOutDisplay();
-
-  unsigned GetDisplayIndex(BOOL isEncoding);
-
-  /**Store the height,widths etc for this classes window
-   */
-    
-  BOOL SetFrameSize(BOOL isEncoding, unsigned _width, unsigned _height);
-
-  /**Handles all events that occur in the SDL window (resize and quit)
-   */
-  void ProcessSDLEvents(void);
-
-  BOOL Redraw(BOOL isEncoding, PSDLVideoFrame *frame);
-
-  enum { RemoteIndex = 0 };
-  enum { EncodeIndex = 1 };
-
-  const char * GetDirName(BOOL isEncoding) 
-    { return (isEncoding ? "local" : "remote"); }
-
-  PMutex     mutex;  
-  PSyncPoint commandSync;
-  BOOL       threadRunning;
-
-  SDL_Surface  *screen;
-  SDL_Overlay  *overlay[2];
-  SDL_Rect      displayPosn[2];
+    void Main();
   
-  unsigned   width[2];
-  unsigned   height[2];
-  unsigned   oldScreenWidth, oldScreenHeight;
-
-  PString  remoteName;
-  BOOL   displayIsShutDown;
-  BOOL   videoPIP;
-
-  BOOL  closeEncWindow;
-  BOOL  closeRecWindow;
-
-  PSDLVideoFrame *nextEncFrame;
-  PSDLVideoFrame *nextRcvFrame;
+    /** returns FALSE if the thread is closed, so cannot add frame.
+    The frame is deleted by the thread - in all cases.*/
+    BOOL AddFrame(PSDLVideoFrame *newFrame, BOOL isEncoding);
   
+    BOOL IsOpen();
+  
+    virtual void Terminate();
+    void RequestOpenWindow(BOOL isEncoding);
+    void RequestCloseWindow(BOOL isEncoding);
+  
+  protected:
+    BOOL ScreenIsOpen();
+    BOOL DisplayIsShutDown();
+    void CloseWindow(BOOL isEncoding);
+  
+    PSDLVideoFrame *GetNextFrame(BOOL isEncoding);
+  
+    BOOL ResizeScreen(unsigned newWidth, unsigned newHeight);
+    void InitDisplayPosn();
+    void InitDisplayPosn(unsigned w, unsigned h);
+    void CloseScreen();
+    BOOL CreateOverlay(BOOL isEncoding);
+    BOOL SetOverlaySize (BOOL isEncoding, unsigned _width, unsigned _height);
+  
+    void WriteOutDisplay();
+  
+    unsigned GetDisplayIndex(BOOL isEncoding);
+  
+    /**Store the height,widths etc for this classes window
+    */
+    BOOL SetFrameSize(BOOL isEncoding, unsigned _width, unsigned _height);
+  
+    /**Handles all events that occur in the SDL window (resize and quit)
+    */
+    void ProcessSDLEvents(void);
+  
+    BOOL Redraw(BOOL isEncoding, PSDLVideoFrame *frame);
+  
+    enum { RemoteIndex = 0 };
+    enum { EncodeIndex = 1 };
+  
+    const char * GetDirName(BOOL isEncoding) 
+      { return (isEncoding ? "local" : "remote"); }
+  
+    PMutex     mutex;  
+    PSyncPoint commandSync;
+    BOOL       threadRunning;
+  
+    SDL_Surface  *screen;
+    SDL_Overlay  *overlay[2];
+    SDL_Rect      displayPosn[2];
+  
+    unsigned   width[2];
+    unsigned   height[2];
+    unsigned   oldScreenWidth, oldScreenHeight;
+  
+    PString  remoteName;
+    BOOL   displayIsShutDown;
+    BOOL   videoPIP;
+  
+    BOOL  closeEncWindow;
+    BOOL  closeRecWindow;
+  
+    PSDLVideoFrame *nextEncFrame;
+    PSDLVideoFrame *nextRcvFrame;
 };
+
 
 /**Display data to the SDL screen.
   */
-
 class PSDLVideoDevice : public PVideoOutputDevice
 {
-  PCLASSINFO(PSDLVideoDevice, PVideoOutputDevice);
-
- public:
-  /**Constructor. Does not make a window.
-   */
-  PSDLVideoDevice(const PString & _remoteName,
-		                         BOOL _isEncoding, 
-		           PSDLDisplayThread *_sdlThread);
-
-  /**Destructor.  Closes window if necessary, (which initializes all variables)
-   */
-  ~PSDLVideoDevice();
-
-    /**Open the device given the device name.
+    PCLASSINFO(PSDLVideoDevice, PVideoOutputDevice);
+  
+  public:
+    /**Constructor. Does not make a window.
       */
+    PSDLVideoDevice(
+      const PString & _remoteName,
+      BOOL _isEncoding, 
+      PSDLDisplayThread *_sdlThread
+    );
+  
+      /**Destructor.  Closes window if necessary, (which initializes all variables)
+    */
+    ~PSDLVideoDevice();
+  
+    /**Open the device given the device name.
+    */
     virtual BOOL Open(
       const PString & /*deviceName*/,   /// Device name to open
       BOOL /*startImmediate*/ = TRUE    /// Immediately start device
-    ) 
-      {return TRUE; }
-
-  /**Synonymous with the destructor.
-   */
-  BOOL Close();
+      ) { return TRUE; }
   
-  /**Global test function to determine if this video rendering
-     class is open.*/
-  BOOL IsOpen();
-
-  unsigned GetFrameWidth() const { return width; }
-
-  unsigned GetFrameHeight() const { return height; }
-
-  /**Take a YUV420P format image, render it on the existing window. 
-     If the window is not present, there is no rendering.
-  */
-   BOOL Redraw (const void *frame);
-
+    /**Synonymous with the destructor.
+    */
+    BOOL Close();
+  
+    /**Global test function to determine if this video rendering
+    class is open.*/
+    BOOL IsOpen();
+  
+    unsigned GetFrameWidth() const { return width; }
+  
+    unsigned GetFrameHeight() const { return height; }
+  
+    /**Take a YUV420P format image, render it on the existing window. 
+    If the window is not present, there is no rendering.
+    */
+    BOOL Redraw (const void *frame);
+  
     /**Get a list of all of the drivers available.
-      */
+    */
     virtual PStringList GetDeviceNames() const;
-
+  
     /**Get the maximum frame size in bytes.
-
-       Note a particular device may be able to provide variable length
-       frames (eg motion JPEG) so will be the maximum size of all frames.
-      */
+  
+      Note a particular device may be able to provide variable length
+      frames (eg motion JPEG) so will be the maximum size of all frames.
+    */
     virtual PINDEX GetMaxFrameBytes()
       { return 352 * 288 * 3 * 2; }
-
-   /**Set size of the window. Closes existing window, opens new window.
-    */
-   BOOL SetFrameSize (unsigned _width ,unsigned _height);
-
-   virtual PString GetRemoteName() const
-     { return remoteName ; }
-    
-   /**Name of remote computer, which is used for window title.
-    */
-   virtual void SetRemoteName(const PString & _remoteName)
-     { remoteName = _remoteName; }
-
-   /**Specifies required number of bitplanes in the image. Does nothing.
-    */
   
- void ForceDepth(int /*d*/) { return;  }
-
-
-   BOOL SetFrameData(
+    /**Set size of the window. Closes existing window, opens new window.
+    */
+    BOOL SetFrameSize (unsigned _width ,unsigned _height);
+  
+    virtual PString GetRemoteName() const
+      { return remoteName ; }
+  
+    /**Name of remote computer, which is used for window title.
+    */
+    virtual void SetRemoteName(
+      const PString & _remoteName
+    ) { remoteName = _remoteName; }
+  
+    /**Specifies required number of bitplanes in the image. Does nothing.
+    */
+    void ForceDepth(int /*d*/) { }
+  
+  
+    BOOL SetFrameData(
       unsigned x,
       unsigned y,
       unsigned width,
@@ -251,17 +265,12 @@ class PSDLVideoDevice : public PVideoOutputDevice
       const BYTE * data,
       BOOL endFrame = TRUE
     ) ;
-
-    /**Indicate frame may be displayed.
-      */
+  
+      /**Indicate frame may be displayed.
+    */
     BOOL EndFrame();
-
-  protected:
-    // overrides from H323VideoDevice
-    BOOL WriteLineSegment(int /*x*/, int /*y*/, unsigned /*len*/, const BYTE * /*data*/)
-       { return TRUE; }
-
- private:
+  
+  private:
     BOOL     isEncoding;
     PString  remoteName;
     PSDLDisplayThread *sdlThread;
