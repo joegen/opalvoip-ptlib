@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.30  1999/02/10 13:19:45  robertj
+ * Fixed PConfig update problem when POSTing to the form. Especiall with arrays.
+ *
  * Revision 1.29  1998/11/30 04:51:57  robertj
  * New directory structure
  *
@@ -1988,6 +1991,11 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & msg)
 {
+  // Make sure the internal structure is up to date before accepting new data
+  if (!section)
+    LoadFromConfig();
+
+
   PSortedStringList oldValues;
 
   // Remember fields that are here now, so can delete removed array fields
