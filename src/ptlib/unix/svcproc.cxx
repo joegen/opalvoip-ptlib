@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.36  2001/03/13 03:47:18  robertj
+ * Added ability to set pid file from command line.
+ *
  * Revision 1.35  2001/03/09 06:31:22  robertj
  * Added ability to set default PConfig file or path to find it.
  *
@@ -94,6 +97,7 @@
 #include <signal.h>
 
 #include "uerror.h"
+
 
 #define	MAX_LOG_LINE_LEN	1024
 
@@ -206,6 +210,14 @@ PServiceProcess::PServiceProcess(const char * manuf,
   currentLogLevel = PSystemLog::Warning;
 }
 
+
+PServiceProcess::~PServiceProcess()
+{
+  if (!pidFileToRemove)
+    PFile::Remove(pidFileToRemove);
+}
+
+
 PServiceProcess & PServiceProcess::Current()
 {
   PProcess & process = PProcess::Current();
@@ -222,35 +234,6 @@ void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
                       << endl);
 }
 
-#ifdef _PATH_VARRUN
-static PString get_pid_filename()
-{
-  return _PATH_VARRUN + PProcess::Current().GetFile().GetFileName() + ".pid";
-}
-
-static void killpidfile()
-{
-  PFile::Remove(get_pid_filename());
-}
-
-static pid_t get_daemon_pid(BOOL showError)
-{
-  PString pidfilename = get_pid_filename();
-  ifstream pidfile(pidfilename);
-  if (!pidfile.is_open()) {
-    if (showError)
-      PError << "Could not open pid file: " << pidfilename << endl;
-    return 0;
-  }
-
-  pid_t pid;
-  pidfile >> pid;
-  if (pid == 0 && showError)
-    PError << "Illegal format pid file: " << pidfilename << endl;
-
-  return pid;
-}
-#endif
 
 int PServiceProcess::_main(void *)
 {
@@ -274,7 +257,7 @@ int PServiceProcess::_main(void *)
              "c-console."
              "h-help."
              "x-execute."
-             "p-pid-file."
+             "p-pid-file:"
              "i-ini-file:"
              "k-kill."
              "t-terminate."
@@ -293,17 +276,38 @@ int PServiceProcess::_main(void *)
     return 0;
   }
 
+  PString pidfilename;
+  if (args.HasOption('p'))
+    pidfilename = args.GetOptionString('p');
 #ifdef _PATH_VARRUN
+  else
+    pidfilename =  _PATH_VARRUN;
+#endif
+
+  if (!pidfilename && PDirectory::Exists(pidfilename))
+    pidfilename = PDirectory(pidfilename) + PProcess::Current().GetFile().GetFileName() + ".pid";
+
   if (args.HasOption('k') || args.HasOption('t')) {
-    pid_t pid = get_daemon_pid(TRUE);
-    if (pid != 0) {
-      if (kill(pid, args.HasOption('t') ? SIGTERM : SIGKILL) == 0)
-        return 0;
-      PError << "Could not kill process " << pid << " - " << strerror(errno) << endl;
+    ifstream pidfile(pidfilename);
+    if (!pidfile.is_open()) {
+      PError << "Could not open pid file: \"" << pidfilename << "\""
+                " - " << strerror(errno) << endl;
+      return 1;
     }
+
+    pid_t pid;
+    pidfile >> pid;
+    if (pid == 0) {
+      PError << "Illegal format pid file \"" << pidfilename << '"' << endl;
+      return 1;
+    }
+
+    if (kill(pid, args.HasOption('t') ? SIGTERM : SIGKILL) == 0)
+      return 0;
+
+    PError << "Could not stop process " << pid << " - " << strerror(errno) << endl;
     return 2;
   }
-#endif
 
   BOOL helpAndExit = FALSE;
 
@@ -312,9 +316,7 @@ int PServiceProcess::_main(void *)
     helpAndExit = TRUE;
   else if (!args.HasOption('d') && !args.HasOption('x')) {
     PError << "error: must specify one of -v, -h, "
-#ifdef _PATH_VARRUN
               "-t, -k, "
-#endif
               "-d or -x" << endl;
     helpAndExit = TRUE;
   }
@@ -340,11 +342,9 @@ int PServiceProcess::_main(void *)
 #endif
               "  -u --uid uid        set user id to run as\n"
               "  -g --gid gid        set group id to run as\n"
-#ifdef _PATH_VARRUN
               "  -p --pid-file       do not write pid file\n"
               "  -t --terminate      terminate process in pid file\n"
               "  -k --kill           kill process in pid file\n"
-#endif
               "  -c --console        output messages to stdout rather than syslog\n"
               "  -l --log-file file  output messages to file rather than syslog\n"
               "  -x --execute        execute as a normal program\n"
@@ -380,7 +380,8 @@ int PServiceProcess::_main(void *)
       uid = pw->pw_uid;
     }
     if (setuid(uid) != 0) {
-      PError << "Could not set UID to \"" << uidstr << '"' << endl;
+      PError << "Could not set UID to \"" << uidstr << "\""
+                " (" << uid << ") : " << strerror(errno) << endl;
       return 1;
     }
   }
@@ -402,7 +403,8 @@ int PServiceProcess::_main(void *)
       gid = gr->gr_gid;
     }
     if (setgid(gid) != 0) {
-      PError << "Could not set GID to \"" << gidstr << '"' << endl;
+      PError << "Could not set GID to \"" << gidstr << "\""
+                " (" << gid << ") : " << strerror(errno) << endl;
       return 1;
     }
   }
@@ -410,13 +412,17 @@ int PServiceProcess::_main(void *)
   // Run as a daemon, ie fork
 #ifndef BE_THREADS
   if (args.HasOption('d')) {
-#ifdef _PATH_VARRUN
-    pid_t old_pid = get_daemon_pid(FALSE);
-    if (old_pid != 0 && kill(old_pid, 0) == 0) {
-      PError << "Already have daemon running with pid " << old_pid << endl;
-      return 3;
+    if (!pidfilename) {
+      ifstream pidfile(pidfilename);
+      if (pidfile.is_open()) {
+        pid_t pid;
+        pidfile >> pid;
+        if (pid != 0 && kill(pid, 0) == 0) {
+          PError << "Already have daemon running with pid " << pid << endl;
+          return 3;
+        }
+      }
     }
-#endif
 
     // Need to get rid of the config write thread before fork, as on
     // pthreads platforms the forked process does not have the thread
@@ -430,9 +436,7 @@ int PServiceProcess::_main(void *)
         return -1;
 
       case 0 : // The forked process
-#ifdef _PATH_VARRUN
-        atexit(killpidfile);
-#endif
+        pidFileToRemove = pidfilename;
         // set the SIGINT and SIGQUIT to ignore so the child process doesn't
         // inherit them from the parent
         signal(SIGINT,  SIG_IGN);
@@ -444,17 +448,15 @@ int PServiceProcess::_main(void *)
         break;
 
       default :
-#ifdef _PATH_VARRUN
-        if (!args.HasOption('p')) {
+        if (!pidfilename) {
           // Write out the child pid to magic file in /var/run (at least for linux)
-          PString pidfilename = get_pid_filename();
           ofstream pidfile(pidfilename);
           if (pidfile.is_open())
             pidfile << pid;
           else
-            PError << "Could not write pid to file: " << pidfilename << endl;
+            PError << "Could not write pid to file \"" << pidfilename << "\""
+                      " - " << strerror(errno) << endl;
         }
-#endif
         return 0;
     }
   }
