@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.35  1998/11/30 02:50:47  robertj
+ * New directory structure
+ *
  * Revision 1.34  1998/10/31 12:49:21  robertj
  * Added read/write mutex to the HTTP space variable to avoid thread crashes.
  *
@@ -151,11 +154,11 @@
 #pragma interface
 #endif
 
-#include <inetprot.h>
-#include <mime.h>
-#include <url.h>
-#include <html.h>
-#include <ipsock.h>
+#include <ptclib/inetprot.h>
+#include <ptclib/mime.h>
+#include <ptclib/url.h>
+#include <ptclib/html.h>
+#include <ptlib/ipsock.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
