@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.12  2003/04/16 07:17:35  craigs
+ * CHanged to use new #define
+ *
  * Revision 1.11  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -68,10 +71,10 @@
 
 #include <ptlib.h>
 
-#ifndef __BEOS__
+#ifndef	P_DYNALINK
 
-#ifndef RTLD_LAZY
 #warning "No implementation for dynamic library functions"
+
 #else
 
 PDynaLink::PDynaLink()
@@ -144,8 +147,6 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
 }
 
 #endif
-
-#endif //__BEOS__
 
 // End of file
 
