@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.38  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.37  2001/10/02 00:56:14  robertj
  * Fixed problem with autonumering enumerated types.
  *
@@ -296,7 +300,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 3)
+  : PProcess("Equivalence", "ASNParse", 1, 5, ReleaseCode, 4)
 {
 }
 
@@ -3549,7 +3553,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
   hdrFile << "#ifndef __" << moduleName.ToUpper() << "_H\n"
              "#define __" << moduleName.ToUpper() << "_H\n"
              "\n"
-             "#ifdef __GNUC__\n"
+             "#ifdef P_USE_PRAGMA\n"
              "#pragma interface\n"
              "#endif\n"
              "\n"

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.16  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.15  2001/09/26 09:37:04  robertj
  * Added virtual keyword to a lot of functions so can be overridden.
  *
@@ -82,7 +86,7 @@
 #ifndef _PINTERNETPROTOCOL
 #define _PINTERNETPROTOCOL
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.49  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.48  2001/12/13 09:17:01  robertj
  * Added function to convert PString to IP address with error checking that can
  *   distinguish between 0.0.0.0 or 255.255.255.255 and illegal address.
@@ -180,7 +184,7 @@
 
 #define _PIPSOCKET
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

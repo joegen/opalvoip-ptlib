@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.17  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.16  2000/11/10 01:08:11  robertj
  * Added content transfer encoding and automatic base64 translation.
  *
@@ -91,7 +95,7 @@
 #ifndef _PMAILPROTOCOL
 #define _PMAILPROTOCOL
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

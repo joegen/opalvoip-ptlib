@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.17  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.16  2002/06/09 16:36:34  rogerh
  * friend BOOL PThread::Terminate() should be type void (found by gcc 3.1)
  *
@@ -83,7 +87,9 @@
 
 #ifndef _PSEMAPHORE
 
+#ifdef P_USE_PRAGMA
 #pragma interface
+#endif
 
 #include <ptlib/thread.h>
 

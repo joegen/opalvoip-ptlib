@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.16  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.15  2002/01/23 04:26:36  craigs
  * Added copy constructors for PSemaphore, PMutex and PSyncPoint to allow
  * use of default copy constructors for objects containing instances of
@@ -81,7 +85,7 @@
 
 #define _PSEMAPHORE
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 

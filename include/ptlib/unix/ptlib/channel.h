@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.22  2002/09/16 01:08:59  robertj
+ * Added #define so can select if #pragma interface/implementation is used on
+ *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
+ *
  * Revision 1.21  2001/11/27 02:20:20  robertj
  * Fixed problem with a read ro write blocking until connect completed, it
  *   really should return an error as the caller is doing a bad thing.
@@ -95,7 +99,9 @@
 
 #ifndef _PCHANNEL
 
+#ifdef P_USE_PRAGMA
 #pragma interface
+#endif
 
 #include <ptlib/mutex.h>
 

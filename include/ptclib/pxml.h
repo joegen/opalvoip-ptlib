@@ -31,7 +31,7 @@
 #ifndef _PXML_H
 #define _PXML_H
 
-#ifdef __GNUC__
+#ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
