@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.27 1998/01/26 00:24:24 robertj Exp $
+ * $Id: http.h,v 1.28 1998/02/03 06:29:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.28  1998/02/03 06:29:38  robertj
+ * Added local address and port to PHTTPRequest.
+ *
  * Revision 1.27  1998/01/26 00:24:24  robertj
  * Added more information to PHTTPConnectionInfo.
  * Added function to allow HTTPClient to automatically connect if URL has hostname.
@@ -712,7 +715,9 @@ PDECLARE_CLASS(PHTTPRequest, PObject)
     PHTTP::StatusCode code;         // Status code for OnError() reply.
     PMIMEInfo outMIME;              // MIME information used in reply.
     PINDEX contentSize;             // Size of the body of the resource data.
-    PIPSocket::Address origin;      // IP address of origin of request
+    PIPSocket::Address origin;      // IP address of origin host for request
+    PIPSocket::Address localAddr;   // IP address of local interface for request
+    WORD               localPort;   // Port number of local server for request
 };
 
 
