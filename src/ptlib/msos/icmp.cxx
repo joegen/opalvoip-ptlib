@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.11  1998/11/30 04:48:39  robertj
+ * New directory structure
+ *
  * Revision 1.10  1998/09/24 03:30:46  robertj
  * Added open software license.
  *
@@ -42,7 +45,7 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 ///////////////////////////////////////////////////////////////
 //
