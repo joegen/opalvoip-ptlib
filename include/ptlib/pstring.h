@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.80  2004/11/23 11:33:08  csoutheren
+ * Fixed problem with RemoveAt returning invalid pointer in some cases,
+ * and added extra documentation on this case.
+ * Thanks to Diego Tartara for pointing out this potential problem
+ *
  * Revision 1.79  2004/10/21 13:04:20  rjongbloed
  * Fixed possibility of const operator[] on PStringArray returning a NULL reference. This
  *   function should return a non-lvalue PString anyway as it is const!
@@ -2602,11 +2607,17 @@ template <class K> class PStringDictionary : public PAbstractDictionary
        object is also deleted.
 
        @return
-       pointer to the object being removed, or NULL if it was deleted.
+       pointer to the object being removed, or NULL if the key was not 
+       present in the dictionary. If the dictionary is set to delete objects
+       upon removal, the value -1 is returned if the key existed prior to removal
+       rather than returning an illegal pointer
      */
     virtual PString * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
-    ) { PString * s = GetAt(key); AbstractSetAt(key, NULL); return s; }
+    ) {
+        PString * s = GetAt(key); AbstractSetAt(key, NULL);
+        return reference->deleteObjects ? (s ? (PString *)-1 : NULL) : s;
+      }
 
     /**Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
@@ -2744,7 +2755,8 @@ template <class K> class PStringDictionary : public PAbstractDictionary
     virtual BOOL Contains(const K & key) const \
       { return AbstractContains(key); } \
     virtual PString * RemoveAt(const K & key) \
-      { PString * s = GetAt(key); AbstractSetAt(key, NULL); return s; } \
+      { PString * s = GetAt(key); AbstractSetAt(key, NULL); \
+        return reference->deleteObjects ? (s ? (PString *)-1 : NULL) : s; } \
     virtual PString * GetAt(const K & key) const \
       { return (PString *)AbstractGetAt(key); } \
     virtual BOOL SetDataAt(PINDEX index, const PString & str) \
