@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.26 1995/06/17 11:12:33 robertj Exp $
+ * $Id: file.h,v 1.27 1995/07/31 12:15:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
+ * Revision 1.27  1995/07/31 12:15:43  robertj
+ * Removed PContainer from PChannel ancestor.
+ *
  * Revision 1.26  1995/06/17 11:12:33  robertj
  * Documentation update.
  *
@@ -102,7 +105,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Binary Files
 
-PDECLARE_CONTAINER(PFile, PChannel)
+PDECLARE_CLASS(PFile, PChannel)
 /* This class represents a disk file. This is a particular type of I/O channel
    that has certain attributes. All platforms have a disk file, though exact
    details of naming convertions etc may be different.
@@ -176,6 +179,9 @@ PDECLARE_CONTAINER(PFile, PChannel)
        The <A>PChannel::IsOpen()</A> function may be used after object
        construction to determine if the file was successfully opened.
      */
+
+    ~PFile();
+    // Close the file on destruction.
 
 
     // Overrides from class PObject
