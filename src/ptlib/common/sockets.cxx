@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.144  2002/12/13 04:01:46  robertj
+ * Initialised error code in gethostbyname usage.
+ *
  * Revision 1.143  2002/12/04 00:52:59  robertj
  * Fixed GNU warning
  *
@@ -778,7 +781,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 #endif
 
     int retry = 3;
-    int localErrNo;
+    int localErrNo = 0;
 
     do {
 #if ( ( defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB) ) || (defined(__NUCLEUS_PLUS__) ) )
