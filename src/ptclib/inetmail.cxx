@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.19  2000/11/21 01:49:25  robertj
+ * Fixed warning on GNU compiler.
+ *
  * Revision 1.18  2000/11/16 07:15:15  robertj
  * Fixed problem with not closing off base64 encoding at next MIME part.
  *
@@ -1228,7 +1231,7 @@ PString PRFC822Channel::MultipartMessage()
   PString boundary;
 
   do {
-    boundary.sprintf("PWLib.%u.%u", time(NULL), rand());
+    boundary.sprintf("PWLib.%lu.%u", time(NULL), rand());
   } while (!MultipartMessage(boundary));
 
   return boundary;
