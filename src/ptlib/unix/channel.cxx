@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.17 1998/05/25 10:03:26 robertj Exp $
+ * $Id: channel.cxx,v 1.18 1998/08/27 01:06:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.18  1998/08/27 01:06:30  robertj
+ * Fixed very strange link error with GNU C library v6.
+ *
  * Revision 1.17  1998/05/25 10:03:26  robertj
  * Fixed problem with socket/channel close and blocked threads.
  *
@@ -66,6 +69,11 @@
 #include <sys/ioctl.h>
 
 PMutex PX_iostreamMutex;
+
+ios::ios(const ios &)
+{
+  PAssertAlways("Cannot copy ios");
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
