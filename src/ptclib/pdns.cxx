@@ -24,6 +24,10 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.13  2004/04/09 06:52:17  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.12  2004/02/23 23:52:19  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -78,9 +82,7 @@
 
 #include <windns.h>
 
-#pragma comment(lib,    P_DNS_LIBRARY)
-#pragma comment(linker, "/delayload:dnsapi.dll")
-#pragma comment(lib,    "Delayimp.lib")
+#pragma comment(lib, P_DNS_LIBRARY)
 
 #else
 
