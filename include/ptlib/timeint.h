@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.22  2000/10/05 23:36:26  robertj
+ * Fixed compiler ambiguities in PTimeInterval constructor.
+ *
  * Revision 1.21  2000/03/06 04:09:23  robertj
  * Added constructor to do PString conversion to PTimeInterval
  *
@@ -131,17 +134,11 @@ class PTimeInterval : public PObject
 \end{verbatim}
      */
     PTimeInterval(
-      int milliseconds = 0  /// Number of milliseconds for interval.
-    );
-    PTimeInterval(
-      unsigned millisecs    /// Number of milliseconds for interval.
-    );
-    PTimeInterval(
-      PInt64 mseconds       /// Number of milliseconds for interval.
+      PInt64 millisecs = 0   /// Number of milliseconds for interval.
     );
     PTimeInterval(
       long millisecs,       /// Number of milliseconds for interval.
-      long seconds = 0,     /// Number of seconds for interval.
+      long seconds,         /// Number of seconds for interval.
       long minutes = 0,     /// Number of minutes for interval.
       long hours = 0,       /// Number of hours for interval.
       int days = 0          /// Number of days for interval.
