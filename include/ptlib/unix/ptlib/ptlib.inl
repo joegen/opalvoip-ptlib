@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.28  2003/02/26 02:01:10  robertj
+ * Fixed compatibility with a MIPS compiler, Thanks Eize Slange
+ *
  * Revision 1.27  2002/11/19 12:14:44  robertj
  * Added function to get root directory.
  *
@@ -120,7 +123,7 @@ PINLINE BOOL PDirectory::IsSeparator(char ch)
   { return ch == PDIR_SEPARATOR; }
 
 PINLINE BOOL PDirectory::Change(const PString & p)
-  { return chdir(p) == 0; }
+  { return chdir((char *)(const char *)p) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -130,7 +133,7 @@ PINLINE PString PFilePath::GetVolume() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
-  { return unlink(name) == 0; }
+  { return unlink((char *)(const char *)name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
 
