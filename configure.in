@@ -553,6 +553,12 @@ if test $HAS_IPV6 = yes ; then
 fi
 
 dnl ########################################################################
+dnl look for QoS functions
+
+dnl MSWIN QoS Support,ipv6,P_HAS_QOS,1,@QOS_DIR@,qossp.h,QOS_DESTADDR,\Program Files\Microsoft SDK\
+AC_DEFINE(P_HAS_QOS, 1)
+
+dnl ########################################################################
 dnl check for video capture support.
 dnl videodev.h on linux
 dnl machine/ioctl_meteor on FreeBSD
