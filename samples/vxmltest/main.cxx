@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2003/09/26 13:41:31  rjongbloed
+ * Added special test to give more indicative error if try to compile without Expat support.
+ *
  * Revision 1.1  2002/08/06 05:26:33  craigs
  * Initial version
  *
@@ -16,6 +19,11 @@
 #include <ptlib.h>
 #include <ptlib/sound.h>
 #include <ptclib/vxml.h>
+
+#if !P_EXPAT
+#error Must have Expat XML support for this application
+#endif
+
 
 #include "main.h"
 
