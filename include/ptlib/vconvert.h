@@ -26,6 +26,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.9  2001/05/14 05:10:38  robertj
+ * Fixed problems with video colour converters registration, could not rely
+ *   on static PList being initialised before all registration instances.
+ *
  * Revision 1.8  2001/03/20 02:21:57  robertj
  * More enhancements from Mark Cooke
  *
@@ -74,9 +78,9 @@ class PColourConverter;
    srcColurFormat and dstColourFormat strings. Use the
    PCOLOUR_CONVERTER_REGISTRATION macro to do this.
  */
-class PColourConverterRegistration : public PString
+class PColourConverterRegistration : public PCaselessString
 {
-    PCLASSINFO(PColourConverterRegistration, PString);
+    PCLASSINFO(PColourConverterRegistration, PCaselessString);
   public:
     PColourConverterRegistration(
       const PString & srcColourFormat,  /// Name of source colour format
@@ -87,18 +91,9 @@ class PColourConverterRegistration : public PString
       unsigned width,   /// Width of frame
       unsigned height   /// Height of frame
     ) const = 0;
-};
 
-
-/**Internal list of registered colour conversion classes.
-  */
-class PColourConverterRegistrations : PSortedStringList
-{
-    PCLASSINFO(PColourConverterRegistrations, PSortedStringList);
-  public:
-    PColourConverterRegistrations();
-
-    void Register(PColourConverterRegistration * reg);
+  protected:
+    PColourConverterRegistration * link;
 
   friend class PColourConverter;
 };
@@ -253,8 +248,6 @@ class PColourConverter : public PObject
     BOOL     scaleNotCrop;
 
     PBYTEArray intermediateFrameStore;
-
-    static PColourConverterRegistrations converters;
 
   friend class PColourConverterRegistration;
 };
