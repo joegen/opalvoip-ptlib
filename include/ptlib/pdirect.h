@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.15 1994/10/23 04:49:25 robertj Exp $
+ * $Id: pdirect.h,v 1.16 1994/10/24 00:07:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.15  1994/10/23 04:49:25  robertj
+ * Revision 1.16  1994/10/24 00:07:03  robertj
+ * Changed PFilePath and PDirectory so descends from either PString or
+ *     PCaselessString depending on the platform.
+ *
+ * Revision 1.15  1994/10/23  04:49:25  robertj
  * Chnaged PDirectory to descend of PString.
  * Added PDirectory Exists() function.
  *
@@ -101,7 +105,7 @@ struct PFileInfo {
 };
 
 
-PDECLARE_CONTAINER(PDirectory, PString)
+PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
   // Class to represent a directory in the operating system file system.
 
   public:
