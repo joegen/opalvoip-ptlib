@@ -57,7 +57,6 @@ EXPORTS
     ??0PBinaryUnSerialiser@@QAE@AAVistream@@@Z @40 NONAME ;public: __thiscall PBinaryUnSerialiser::PBinaryUnSerialiser(class istream &)
     ??0PBYTEArray@@QAE@H@Z @2877 NONAME ;public: __thiscall PBYTEArray::PBYTEArray(int)
     ??0PCapStatus@@QAE@PAUHWND__@@@Z @2467 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
-    ??0PCaselessString@@QAE@ABV0@@Z @2198 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PCaselessString const &)
     ??0PCaselessString@@QAE@ABVPString@@@Z @42 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PString const &)
     ??0PCaselessString@@QAE@PBD@Z @43 NONAME ;public: __thiscall PCaselessString::PCaselessString(char const *)
     ??0PChannel@@QAE@XZ @46 NONAME ;public: __thiscall PChannel::PChannel(void)
@@ -1358,6 +1357,7 @@ EXPORTS
     ?GetColourFormat@PVideoDevice@@QBEABVPString@@XZ @2734 NONAME ;public: class PString const & __thiscall PVideoDevice::GetColourFormat(void)const 
     ?GetConfiguration@PRemoteConnection@@QAE?AW4Status@1@AAUConfiguration@1@@Z @980 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetConfiguration(struct PRemoteConnection::Configuration &)
     ?GetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@AAUConfiguration@1@@Z @981 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::GetConfiguration(class PString const &,struct PRemoteConnection::Configuration &)
+    ?GetConfigurationFile@PProcess@@UAE?AVPString@@XZ @2887 NONAME ;public: virtual class PString  __thiscall PProcess::GetConfigurationFile(void)
     ?GetCreator@PSerialRegistration@@SAP6APAVPObject@@PAVPUnSerialiser@@@ZPBD@Z @983 NONAME ;public: static class PObject * (__cdecl*__cdecl PSerialRegistration::GetCreator(char const *))(class PUnSerialiser *)
     ?GetCTS@PSerialChannel@@QAEHXZ @984 NONAME ;public: int __thiscall PSerialChannel::GetCTS(void)
     ?GetData@PWin32PacketBuffer@@QAEHPAXH@Z @1895 NONAME ;public: int __thiscall PWin32PacketBuffer::GetData(void *,int)
@@ -2195,6 +2195,7 @@ EXPORTS
     ?SetCommsParam@PSerialChannel@@AAEHKEW4Parity@1@EW4FlowControl@1@1@Z @1650 NONAME ;private: int __thiscall PSerialChannel::SetCommsParam(unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?SetConfiguration@PRemoteConnection@@QAE?AW4Status@1@ABUConfiguration@1@H@Z @1651 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::SetConfiguration(struct PRemoteConnection::Configuration const &,int)
     ?SetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@ABUConfiguration@1@H@Z @1652 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::SetConfiguration(class PString const &,struct PRemoteConnection::Configuration const &,int)
+    ?SetConfigurationPath@PProcess@@QAEXABVPString@@@Z @2888 NONAME ;public: void __thiscall PProcess::SetConfigurationPath(class PString const &)
     ?SetCurrent@PAbstractList@@IBEHH@Z @1653 NONAME ;protected: int __thiscall PAbstractList::SetCurrent(int)const 
     ?SetDataAt@?$POrdinalDictionary@VPString@@@@UAEHHH@Z @1654 NONAME ;public: virtual int __thiscall POrdinalDictionary<class PString>::SetDataAt(int,int)
     ?SetDataAt@?$PStringDictionary@VPOrdinalKey@@@@UAEHHABVPString@@@Z @1655 NONAME ;public: virtual int __thiscall PStringDictionary<class POrdinalKey>::SetDataAt(int,class PString const &)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.159  2001/03/09 05:50:48  robertj
+ * Added ability to set default PConfig file or path to find it.
+ *
  * Revision 1.158  2001/03/02 22:29:08  yurik
  * New pragma for WinCE related port which enables (de)construction of library static objects be before applications'
  * Eliminated nasty access violation stemmed from using static PMutex object in PTrace code. Thanks to Yuriy Gorvitovskiy.
@@ -1597,6 +1600,12 @@ PString PProcess::GetVersion(BOOL full) const
     { "alpha", "beta", "." };
   return psprintf(full ? "%u.%u%s%u" : "%u.%u",
                   majorVersion, minorVersion, statusLetter[status], buildNumber);
+}
+
+
+void PProcess::SetConfigurationPath(const PString & path)
+{
+  configurationPaths = path.Tokenise(";:", FALSE);
 }
 
 

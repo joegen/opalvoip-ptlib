@@ -803,6 +803,7 @@ EXPORTS
     ??4?$PBaseArray@I@@QAEAAV0@ABV0@@Z @3229 NONAME ;public: class PBaseArray<unsigned int> & __thiscall PBaseArray<unsigned int>::operator=(class PBaseArray<unsigned int> const &)
     ??4?$PBaseArray@J@@QAEAAV0@ABV0@@Z @3230 NONAME ;public: class PBaseArray<long> & __thiscall PBaseArray<long>::operator=(class PBaseArray<long> const &)
     ??4?$PBaseArray@K@@QAEAAV0@ABV0@@Z @3231 NONAME ;public: class PBaseArray<unsigned long> & __thiscall PBaseArray<unsigned long>::operator=(class PBaseArray<unsigned long> const &)
+    ??4?$PList@VPString@@@@QAEAAV0@ABV0@@Z @3782 NONAME ;public: class PList<class PString> & __thiscall PList<class PString>::operator=(class PList<class PString> const &)
     ??4?$POrdinalDictionary@VPString@@@@QAEAAV0@ABV0@@Z @3256 NONAME ;public: class POrdinalDictionary<class PString> & __thiscall POrdinalDictionary<class PString>::operator=(class POrdinalDictionary<class PString> const &)
     ??4?$PSet@VPString@@@@QAEAAV0@ABV0@@Z @3257 NONAME ;public: class PSet<class PString> & __thiscall PSet<class PString>::operator=(class PSet<class PString> const &)
     ??4?$PStringDictionary@VPOrdinalKey@@@@QAEAAV0@ABV0@@Z @3258 NONAME ;public: class PStringDictionary<class POrdinalKey> & __thiscall PStringDictionary<class POrdinalKey>::operator=(class PStringDictionary<class POrdinalKey> const &)
@@ -817,6 +818,7 @@ EXPORTS
     ??4Buffer@PStringStream@@QAEAAV01@ABV01@@Z @509 NONAME ;public: class PStringStream::Buffer & __thiscall PStringStream::Buffer::operator=(class PStringStream::Buffer const &)
     ??4PAbstractArray@@QAEAAV0@ABV0@@Z @510 NONAME ;public: class PAbstractArray & __thiscall PAbstractArray::operator=(class PAbstractArray const &)
     ??4PAbstractDictionary@@QAEAAV0@ABV0@@Z @3260 NONAME ;public: class PAbstractDictionary & __thiscall PAbstractDictionary::operator=(class PAbstractDictionary const &)
+    ??4PAbstractList@@QAEAAV0@ABV0@@Z @3783 NONAME ;public: class PAbstractList & __thiscall PAbstractList::operator=(class PAbstractList const &)
     ??4PAbstractSet@@QAEAAV0@ABV0@@Z @3261 NONAME ;public: class PAbstractSet & __thiscall PAbstractSet::operator=(class PAbstractSet const &)
     ??4PArrayObjects@@QAEAAV0@ABV0@@Z @511 NONAME ;public: class PArrayObjects & __thiscall PArrayObjects::operator=(class PArrayObjects const &)
     ??4PBYTEArray@@QAEAAV0@ABV0@@Z @2923 NONAME ;public: class PBYTEArray & __thiscall PBYTEArray::operator=(class PBYTEArray const &)
@@ -847,6 +849,7 @@ EXPORTS
     ??4PString@@QAEAAV0@D@Z @528 NONAME ;public: class PString & __thiscall PString::operator=(char)
     ??4PString@@QAEAAV0@PBD@Z @529 NONAME ;public: class PString & __thiscall PString::operator=(char const *)
     ??4PStringArray@@QAEAAV0@ABV0@@Z @530 NONAME ;public: class PStringArray & __thiscall PStringArray::operator=(class PStringArray const &)
+    ??4PStringList@@QAEAAV0@ABV0@@Z @3784 NONAME ;public: class PStringList & __thiscall PStringList::operator=(class PStringList const &)
     ??4PStringSet@@QAEAAV0@ABV0@@Z @3264 NONAME ;public: class PStringSet & __thiscall PStringSet::operator=(class PStringSet const &)
     ??4PStringStream@@QAEAAV0@ABV0@@Z @3526 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(class PStringStream const &)
     ??4PStringStream@@QAEAAV0@ABVPString@@@Z @531 NONAME ;public: class PStringStream & __thiscall PStringStream::operator=(class PString const &)
@@ -2073,6 +2076,7 @@ EXPORTS
     ?GetColourFormat@PVideoDevice@@QBEABVPString@@XZ @3611 NONAME ;public: class PString const & __thiscall PVideoDevice::GetColourFormat(void)const 
     ?GetConfiguration@PRemoteConnection@@QAE?AW4Status@1@AAUConfiguration@1@@Z @1424 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::GetConfiguration(struct PRemoteConnection::Configuration &)
     ?GetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@AAUConfiguration@1@@Z @1425 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::GetConfiguration(class PString const &,struct PRemoteConnection::Configuration &)
+    ?GetConfigurationFile@PProcess@@UAE?AVPString@@XZ @3786 NONAME ;public: virtual class PString  __thiscall PProcess::GetConfigurationFile(void)
     ?GetCount@PArgList@@QBEHXZ @1426 NONAME ;public: int __thiscall PArgList::GetCount(void)const 
     ?GetCreator@PSerialRegistration@@SAP6APAVPObject@@PAVPUnSerialiser@@@ZPBD@Z @1427 NONAME ;public: static class PObject * (__cdecl*__cdecl PSerialRegistration::GetCreator(char const *))(class PUnSerialiser *)
     ?GetCTS@PSerialChannel@@QAEHXZ @1428 NONAME ;public: int __thiscall PSerialChannel::GetCTS(void)
@@ -3043,6 +3047,7 @@ EXPORTS
     ?SetCommsParam@PSerialChannel@@AAEHKEW4Parity@1@EW4FlowControl@1@1@Z @2148 NONAME ;private: int __thiscall PSerialChannel::SetCommsParam(unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?SetConfiguration@PRemoteConnection@@QAE?AW4Status@1@ABUConfiguration@1@H@Z @2149 NONAME ;public: enum PRemoteConnection::Status  __thiscall PRemoteConnection::SetConfiguration(struct PRemoteConnection::Configuration const &,int)
     ?SetConfiguration@PRemoteConnection@@SA?AW4Status@1@ABVPString@@ABUConfiguration@1@H@Z @2150 NONAME ;public: static enum PRemoteConnection::Status  __cdecl PRemoteConnection::SetConfiguration(class PString const &,struct PRemoteConnection::Configuration const &,int)
+    ?SetConfigurationPath@PProcess@@QAEXABVPString@@@Z @3785 NONAME ;public: void __thiscall PProcess::SetConfigurationPath(class PString const &)
     ?SetCurrent@PAbstractList@@IBEHH@Z @2151 NONAME ;protected: int __thiscall PAbstractList::SetCurrent(int)const 
     ?SetDataAt@?$POrdinalDictionary@VPString@@@@UAEHHH@Z @2152 NONAME ;public: virtual int __thiscall POrdinalDictionary<class PString>::SetDataAt(int,int)
     ?SetDataAt@?$PStringDictionary@VPOrdinalKey@@@@UAEHHABVPString@@@Z @2153 NONAME ;public: virtual int __thiscall PStringDictionary<class POrdinalKey>::SetDataAt(int,class PString const &)
