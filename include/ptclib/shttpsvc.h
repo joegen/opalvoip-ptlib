@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.h,v $
+ * Revision 1.2  2001/03/27 03:56:01  craigs
+ * Added hack to allow secure servers to act as non-secure servers
+ *
  * Revision 1.1  2001/02/15 02:41:14  robertj
  * Added class to do secure HTTP based service process.
  *
@@ -54,6 +57,9 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 
   protected:
     PSSLContext * sslContext;
+#ifdef _DEBUG
+    static BOOL secureServerHack;
+#endif
 };
 
 
