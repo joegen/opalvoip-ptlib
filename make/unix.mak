@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.77  2000/04/11 21:22:08  robertj
+# Made CC compiler explicitly gcc on Solaris systems.
+#
 # Revision 1.76  2000/04/11 15:14:33  rogerh
 # Tidy up NetBSD comments
 #
@@ -512,7 +515,8 @@ endif
 
 OSRELEASE	:= $(subst 5.,,$(shell uname -r))
 
-# Sparc Solaris 2.x, using gcc 2.7.2
+# Sparc Solaris 2.x, using gcc 2.x
+CC		:= gcc
 STDCCFLAGS	+= -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		+= -lsocket -lnsl -ldl -lposix4
 LDFLAGS		+= -R/usr/local/gnu/lib
