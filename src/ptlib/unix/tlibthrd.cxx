@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.122  2003/09/17 09:02:15  csoutheren
+ * Removed memory leak detection code
+ *
  * Revision 1.121  2003/05/16 17:40:55  shawn
  * On Mac OS X, thread with the highest priority should use fixed priority
  * scheduling policy.  This avoids starvation caused by desktop activity.
@@ -536,13 +539,7 @@ void PHouseKeepingThread::Main()
 void PProcess::SignalTimerChange()
 {
   if (housekeepingThread == NULL) {
-#if PMEMORY_CHECK
-    BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-#endif
     housekeepingThread = new PHouseKeepingThread;
-#if PMEMORY_CHECK
-    PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
-#endif
   }
 
   BYTE ch;
