@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.19 1996/03/03 07:37:58 robertj Exp $
+ * $Id: socket.h,v 1.20 1996/03/18 13:33:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.20  1996/03/18 13:33:12  robertj
+ * FireDoorV10
+ *
  * Revision 1.19  1996/03/03 07:37:58  robertj
  * Added Reusability clause to the Listen() function on sockets.
  *
@@ -171,7 +174,7 @@ PDECLARE_CLASS(PSocket, PChannel)
     BOOL GetOption(
       int option,
       void * valuePtr,
-      PINDEX valueSize
+      int valueSize
     );
     /* Get options on the socket. These options are defined as Berkeley socket
        options of the class SOL_SOCKET.
