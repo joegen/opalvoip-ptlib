@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.h,v 1.10 1998/08/20 06:02:35 robertj Exp $
+ * $Id: sockets.h,v 1.11 1998/08/21 05:25:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: sockets.h,v $
+ * Revision 1.11  1998/08/21 05:25:21  robertj
+ * Added ethernet socket in right place this time.
+ *
  * Revision 1.10  1998/08/20 06:02:35  robertj
  * Added direct ethernet socket type.
  *
@@ -105,17 +108,18 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PEthSocket
-
-#include <ethsock.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
 // PSPXSocket
 
 #include <spxsock.h>
 
 #endif // PIPX
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PEthSocket
+
+#include <ethsock.h>
+
 
 #endif // _SOCKETS_H
 
