@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.72 1998/08/25 11:09:20 robertj Exp $
+ * $Id: sockets.cxx,v 1.73 1998/08/25 14:07:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.73  1998/08/25 14:07:43  robertj
+ * Added getprotobyxxx wrapper functions.
+ *
  * Revision 1.72  1998/08/25 11:09:20  robertj
  * Fixed parsing of 802.x header on ethernet frames.
  * Changed DNS cache to not cache temporary lookup failures, only an authoratative 'no such host'.
@@ -304,6 +307,26 @@ BOOL PSocket::GetOption(int option, void * valuePtr, int valueSize)
 BOOL PSocket::Shutdown(ShutdownValue value)
 {
   return ConvertOSError(::shutdown(os_handle, value));
+}
+
+
+WORD PSocket::GetProtocolByName(const PString & name)
+{
+  struct protoent * ent = getprotobyname(name);
+  if (ent != NULL)
+    return ent->p_proto;
+
+  return 0;
+}
+
+
+PString PSocket::GetNameByProtocol(WORD proto)
+{
+  struct protoent * ent = getprotobynumber(proto);
+  if (ent != NULL)
+    return ent->p_name;
+
+  return psprintf("%u", proto);
 }
 
 
@@ -671,7 +694,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
   PCaselessString key = name;
   PIPCacheData * host = GetAt(key);
 
-  if (host->HasAged()) {
+  if (host != NULL && host->HasAged()) {
     SetAt(key, NULL);
     host = NULL;
   }
@@ -780,7 +803,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
   PIPCacheKey key = addr;
   PIPCacheData * host = GetAt(key);
 
-  if (host->HasAged()) {
+  if (host != NULL && host->HasAged()) {
     SetAt(key, NULL);
     host = NULL;
   }
