@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.6 1993/12/15 21:10:10 robertj Exp $
+ * $Id: contain.inl,v 1.7 1993/12/16 00:51:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.6  1993/12/15 21:10:10  robertj
+ * Revision 1.7  1993/12/16 00:51:46  robertj
+ * Made some container functions const.
+ *
+ * Revision 1.6  1993/12/15  21:10:10  robertj
  * Fixed reference system used by container classes.
  *
  * Revision 1.5  1993/08/27  18:17:47  robertj
@@ -250,11 +253,13 @@ inline PScalarKey::operator PINDEX() const
 inline PHashTable::~PHashTable()
   { DestroyContents(); }
 
-inline PObject & PHashTable::AbstractGetDataAt(PINDEX index)
-  { return *(PObject *)(SetLastElementAt(index) ? lastElement->data : NULL); }
+inline PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
+  { return *(PObject *)(hashTable->SetLastElementAt(index)
+                                      ? hashTable->lastElement->data : NULL); }
 
-inline const PObject & PHashTable::AbstractGetKeyAt(PINDEX index)
-  { return *(PObject *)(SetLastElementAt(index) ? lastElement->key : NULL); }
+inline const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
+  { return *(PObject *)(hashTable->SetLastElementAt(index)
+                                       ? hashTable->lastElement->key : NULL); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -269,7 +274,7 @@ inline PAbstractSet::PAbstractSet(const PAbstractSet * set)
   : PHashTable(set) { }
 
 inline BOOL PAbstractSet::Contains(const PObject & key)
-  { return GetElementAt(key) != NULL; }
+  { return hashTable->GetElementAt(key) != NULL; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -284,12 +289,6 @@ inline
 inline 
      PAbstractDictionary::PAbstractDictionary(const PAbstractDictionary * dict)
   : PHashTable(dict) { }
-
-inline PObject * PAbstractDictionary::GetAt(PINDEX index) const
-  { return ((PAbstractDictionary *)this)->GetAt(index); }
-
-inline PObject * PAbstractDictionary::GetAt(const PObject & key) const
-  { return ((PAbstractDictionary *)this)->GetAt(key); }
 
 
 

@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.7 1993/12/15 21:10:10 robertj Exp $
+ * $Id: contain.cxx,v 1.8 1993/12/16 00:51:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.7  1993/12/15 21:10:10  robertj
+ * Revision 1.8  1993/12/16 00:51:46  robertj
+ * Made some container functions const.
+ *
+ * Revision 1.7  1993/12/15  21:10:10  robertj
  * Fixed reference system used by container classes.
  * Plugged memory leaks in PList and PSortedList.
  *
@@ -838,7 +841,7 @@ void PArrayObjects::DestroyContents()
 PArrayObjects::PArrayObjects(const PArrayObjects * array)
 {
   for (PINDEX i = 0; i < array->GetSize(); i++) {
-    PObject * ptr = ((PArrayObjects *)array)->GetAt(i);
+    PObject * ptr = array->GetAt(i);
     if (ptr != NULL)
       SetAt(i, ptr->Clone());
   }
@@ -891,7 +894,7 @@ void PArrayObjects::Remove(const PObject * obj)
 }
 
 
-PObject * PArrayObjects::GetAt(PINDEX index)
+PObject * PArrayObjects::GetAt(PINDEX index) const
 {
   return theArray[index];
 }
@@ -931,7 +934,7 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
 }
 
 
-PINDEX PArrayObjects::GetIndex(const PObject * obj)
+PINDEX PArrayObjects::GetIndex(const PObject * obj) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     if (theArray[i] == obj)
@@ -1128,7 +1131,7 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
 }
 
 
-PObject * PAbstractList::GetAt(PINDEX index)
+PObject * PAbstractList::GetAt(PINDEX index) const
 {
   return SetCurrent(index) ? info->lastElement->data : NULL;
 }
@@ -1143,7 +1146,7 @@ BOOL PAbstractList::SetAt(PINDEX index, PObject * val)
 }
 
 
-PINDEX PAbstractList::GetIndex(const PObject * obj)
+PINDEX PAbstractList::GetIndex(const PObject * obj) const
 {
   PListElement * element = info->lastElement;
   PINDEX index = info->lastIndex;
@@ -1180,7 +1183,7 @@ BOOL PAbstractList::Enumerate(PEnumerator func, PObject * inf) const
 }
 
 
-BOOL PAbstractList::SetCurrent(PINDEX index)
+BOOL PAbstractList::SetCurrent(PINDEX index) const
 {
   if (index >= GetSize())
     return FALSE;
@@ -1387,13 +1390,13 @@ BOOL PAbstractSortedList::SetAt(PINDEX, PObject *)
 }
 
 
-PINDEX PAbstractSortedList::GetIndex(const PObject *)
+PINDEX PAbstractSortedList::GetIndex(const PObject *) const
 {
   return 0;
 }
 
 
-PObject * PAbstractSortedList::GetAt(PINDEX index)
+PObject * PAbstractSortedList::GetAt(PINDEX index) const
 {
   if (index >= GetSize())
     return NULL;
@@ -1689,28 +1692,20 @@ ostream & PScalarKey::PrintOn(ostream & strm) const
 
 PHashTable::PHashTable()
   : PCollection(0),
-    lastIndex(0),
-    lastBucket(0),
-    lastElement(NULL)
+    hashTable(new InternalHashTable)
 {
 }
 
 
 PHashTable::PHashTable(const PHashTable & ht)
   : PCollection(ht),
-    hashTable(ht.hashTable),
-    lastIndex(0),
-    lastBucket(0),
-    lastElement(NULL)
+    hashTable(ht.hashTable)
 {
 }
 
   
 PHashTable::PHashTable(const PHashTable * ht)
-  : hashTable(*(HashArray *)ht->hashTable.Clone()),
-    lastIndex(0),
-    lastBucket(0),
-    lastElement(NULL)
+  : hashTable((InternalHashTable *)ht->hashTable->Clone())
 {
 }
 
@@ -1719,9 +1714,6 @@ PHashTable & PHashTable::operator=(const PHashTable & ht)
 {
   PCollection::operator=(ht);
   hashTable = ht.hashTable;
-  lastIndex = 0;
-  lastBucket = 0;
-  lastElement = NULL;
   return *this;
 }
 
@@ -1741,22 +1733,25 @@ BOOL PHashTable::SetSize(PINDEX)
 
 void PHashTable::DestroyContents()
 {
-  /* Do Nothing */
+  if (hashTable != NULL && IsUnique()) {
+    delete hashTable;
+    hashTable = NULL;
+  }
 }
 
 
-void PHashTable::AppendElement(const PObject & key, PObject * data)
+void PHashTable::InternalHashTable::AppendElement(const PObject & key, PObject * data)
 {
   lastElement = NULL;
 
   PINDEX bucket = key.HashFunction();
-  HashTableElement * list = hashTable.GetAt(bucket);
+  HashTableElement * list = GetAt(bucket);
   HashTableElement * element = new HashTableElement;
   element->key = key.Clone();
   element->data = data;
   if (list == NULL) {
     element->next = element->prev = element;
-    hashTable.SetAt(bucket, element);
+    SetAt(bucket, element);
   }
   else if (list == list->prev) {
     list->next = list->prev = element;
@@ -1770,37 +1765,36 @@ void PHashTable::AppendElement(const PObject & key, PObject * data)
   }
   lastElement = element;
   lastIndex = P_MAX_INDEX;
-  reference->size++;
 }
 
 
-void PHashTable::RemoveElement(const PObject & key)
+PObject * PHashTable::InternalHashTable::RemoveElement(const PObject & key)
 {
+  PObject * obj = NULL;
   if (GetElementAt(key) != NULL) {
     if (lastElement == lastElement->prev)
-      hashTable.SetAt(key.HashFunction(), NULL);
+      SetAt(key.HashFunction(), NULL);
     else {
       lastElement->prev->next = lastElement->next;
       lastElement->next->prev = lastElement->prev;
-      hashTable.SetAt(key.HashFunction(), lastElement->next);
+      SetAt(key.HashFunction(), lastElement->next);
     }
-    if (deleteObjects)
-      delete lastElement->data;
+    obj = lastElement->data;
     delete lastElement->key;
     delete lastElement;
     lastElement = NULL;
-    reference->size--;
   }
+  return obj;
 }
 
 
-BOOL PHashTable::SetLastElementAt(PINDEX index)
+BOOL PHashTable::InternalHashTable::SetLastElementAt(PINDEX index)
 {
   if (lastElement == NULL || lastIndex == P_MAX_INDEX) {
     lastIndex = 0;
     lastBucket = 0;
-    while ((lastElement = hashTable[lastBucket]) == NULL) {
-      if (lastBucket >= hashTable.GetSize())
+    while ((lastElement = operator[](lastBucket)) == NULL) {
+      if (lastBucket >= GetSize())
         return FALSE;
       lastBucket++;
     }
@@ -1811,26 +1805,26 @@ BOOL PHashTable::SetLastElementAt(PINDEX index)
 
   if (lastIndex < index) {
     while (lastIndex != index) {
-      if (lastElement->next != hashTable[lastBucket])
+      if (lastElement->next != operator[](lastBucket))
         lastElement = lastElement->next;
       else {
         do {
-          if (++lastBucket >= hashTable.GetSize())
+          if (++lastBucket >= GetSize())
             return FALSE;
-        } while ((lastElement = hashTable[lastBucket]) == NULL);
+        } while ((lastElement = operator[](lastBucket)) == NULL);
       }
       lastIndex++;
     }
   }
   else {
     while (lastIndex != index) {
-      if (lastElement != hashTable[lastBucket])
+      if (lastElement != operator[](lastBucket))
         lastElement = lastElement->prev;
       else {
         do {
           if (lastBucket-- == 0)
             return FALSE;
-        } while ((lastElement = hashTable[lastBucket]) == NULL);
+        } while ((lastElement = operator[](lastBucket)) == NULL);
       }
       lastIndex--;
     }
@@ -1840,12 +1834,13 @@ BOOL PHashTable::SetLastElementAt(PINDEX index)
 }
 
 
-PHashTable::HashTableElement * PHashTable::GetElementAt(const PObject & key)
+PHashTable::HashTableElement *
+               PHashTable::InternalHashTable::GetElementAt(const PObject & key)
 {
   if (lastElement != NULL && *lastElement->key == key)
     return lastElement;
 
-  HashTableElement * list = hashTable.GetAt(key.HashFunction());
+  HashTableElement * list = GetAt(key.HashFunction());
   if (list != NULL) {
     HashTableElement * element = list;
     do {
@@ -1861,10 +1856,11 @@ PHashTable::HashTableElement * PHashTable::GetElementAt(const PObject & key)
 }
 
 
-BOOL PHashTable::EnumerateElements(PEnumerator func, PObject * info, BOOL keys) const
+BOOL PHashTable::InternalHashTable::EnumerateElements(
+                            PEnumerator func, PObject * info, BOOL keys) const
 {
-  for (PINDEX i = 0; i < hashTable.GetSize(); i++) {
-    HashTableElement * list = hashTable[i];
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    HashTableElement * list = operator[](i);
     if (list != NULL) {
       HashTableElement * element = list;
       do {
@@ -1882,8 +1878,10 @@ BOOL PHashTable::EnumerateElements(PEnumerator func, PObject * info, BOOL keys) 
 
 PINDEX PAbstractSet::Append(PObject * obj)
 {
-  if (!Contains(*obj))
-    AppendElement(*obj, NULL);
+  if (!Contains(*obj)) {
+    hashTable->AppendElement(*obj, NULL);
+    reference->size++;
+  }
   return 0;
 }
 
@@ -1902,7 +1900,8 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 
 void PAbstractSet::Remove(const PObject * obj)
 {
-  RemoveElement(*obj);
+  hashTable->RemoveElement(*obj);
+  reference->size--;
 }
 
 
@@ -1913,7 +1912,7 @@ PObject * PAbstractSet::RemoveAt(PINDEX)
 }
 
 
-PINDEX PAbstractSet::GetIndex(const PObject *)
+PINDEX PAbstractSet::GetIndex(const PObject *) const
 {
   PAssertAlways();
   return 0;
@@ -1927,7 +1926,7 @@ BOOL PAbstractSet::SetAt(PINDEX, PObject *)
 }
 
 
-PObject * PAbstractSet::GetAt(PINDEX)
+PObject * PAbstractSet::GetAt(PINDEX) const
 {
   PAssertAlways();
   return NULL;
@@ -1936,7 +1935,7 @@ PObject * PAbstractSet::GetAt(PINDEX)
 
 BOOL PAbstractSet::Enumerate(PEnumerator func, PObject * info) const
 {
-  return EnumerateElements(func, info, TRUE);
+  return hashTable->EnumerateElements(func, info, TRUE);
 }
 
 
@@ -1947,7 +1946,7 @@ BOOL PAbstractSet::Enumerate(PEnumerator func, PObject * info) const
 PObject * PAbstractDictionary::Clone() const
 {
   PAbstractDictionary * newDict = new PAbstractDictionary();
-  HashArray * ht = (HashArray *)hashTable.Clone();
+  InternalHashTable * ht = (InternalHashTable *)hashTable.Clone();
   newDict->hashTable = *ht;
   delete ht;
   return newDict;
@@ -1990,7 +1989,7 @@ PObject * PAbstractDictionary::RemoveAt(PINDEX index)
 }
 
 
-PINDEX PAbstractDictionary::GetIndex(const PObject *)
+PINDEX PAbstractDictionary::GetIndex(const PObject *) const
 {
   PAssertAlways();
   return 0;
@@ -2003,7 +2002,7 @@ BOOL PAbstractDictionary::SetAt(PINDEX index,PObject * val)
 }
 
 
-PObject * PAbstractDictionary::GetAt(PINDEX index)
+PObject * PAbstractDictionary::GetAt(PINDEX index) const
 {
   return GetAt(PScalarKey(index));
 }
@@ -2011,37 +2010,43 @@ PObject * PAbstractDictionary::GetAt(PINDEX index)
  
 BOOL PAbstractDictionary::Enumerate(PEnumerator func, PObject * info) const
 {
-  return EnumerateElements(func, info, FALSE);
+  return hashTable->EnumerateElements(func, info, FALSE);
 }
 
 
 BOOL PAbstractDictionary::EnumerateKeys(PEnumerator func, PObject * info) const
 {
-  return EnumerateElements(func, info, TRUE);
+  return hashTable->EnumerateElements(func, info, TRUE);
 }
 
 
 BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
 {
-  if (obj == NULL)
-    RemoveElement(key);
+  if (obj == NULL) {
+    obj = hashTable->RemoveElement(key);
+    if (deleteObjects)
+      delete obj;
+    reference->size--;
+  }
   else {
-    HashTableElement * element = GetElementAt(key);
-    if (element == NULL)
-      AppendElement(key, obj);
+    HashTableElement * element = hashTable->GetElementAt(key);
+    if (element == NULL) {
+      hashTable->AppendElement(key, obj);
+      reference->size++;
+    }
     else {
       if (deleteObjects)
-        delete lastElement->data;
-      lastElement->data = obj;
+        delete hashTable->lastElement->data;
+      hashTable->lastElement->data = obj;
     }
   }
   return TRUE;
 }
 
 
-PObject * PAbstractDictionary::GetAt(const PObject & key)
+PObject * PAbstractDictionary::GetAt(const PObject & key) const
 {
-  HashTableElement * element = GetElementAt(key);
+  HashTableElement * element = hashTable->GetElementAt(key);
   return element != NULL ? element->data : NULL;
 }
 
