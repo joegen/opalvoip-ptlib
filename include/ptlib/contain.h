@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.38 1994/12/05 11:18:58 robertj Exp $
+ * $Id: contain.h,v 1.39 1994/12/12 10:16:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,14 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.38  1994/12/05 11:18:58  robertj
+ * Revision 1.39  1994/12/12 10:16:18  robertj
+ * Restructuring and documentation of container classes.
+ * Renaming of some macros for declaring container classes.
+ * Added some extra functionality to PString.
+ * Added start to 2 byte characters in PString.
+ * Fixed incorrect overrides in PCaselessString.
+ *
+ * Revision 1.38  1994/12/05  11:18:58  robertj
  * Moved SetMinSize from PAbstractArray to PContainer.
  *
  * Revision 1.37  1994/11/28  12:33:44  robertj
@@ -147,32 +154,164 @@
 // Abstract container class
 
 PDECLARE_CLASS(PContainer, PObject)
-  public:
-    PContainer(PINDEX initialSize = 0);
-    PContainer(const PContainer & cont);
-    PContainer & operator=(const PContainer & cont);
-    virtual ~PContainer();
+/* Abstract class to embody the base functionality of a $I$container$I$.
 
-    // New functions for class
+   Fundamentally, a container is an object that contains other objects. There
+   are two main areas of support for tha that are provided by this class. The
+   first is simply to keep a count of the number of things that the container
+   contains. The current size is stored and accessed by members of this class.
+   The setting of size is determined by the semantics of the descendent class
+   and so is a pure function.
+
+   The second area of support is for reference integrity. When an instance of
+   a container is copied to another instance, the two instance contain the
+   same thing. There can therefore be multiple references to the same things.
+   When one reference is destroyed this must $U$not$U$ destroy the contained
+   object as it may be referenced by another instance of a container class.
+   To this end a reference count is provided by the PContainer class. This
+   assures that the container only destroys the objects it contains when there
+   are no more references to them.
+
+   In support of this, descendent classes must provide a DestroyContents()
+   function. As the normal destructor cannot be used, this function will free
+   the memory or unlock the resource the container is wrapping.
+ */
+
+  public:
+    PContainer(
+      PINDEX initialSize = 0  // Initial number of things in the container.
+    );
+    // Create a new unique container.
+
+    PContainer(
+      const PContainer & cont  // Container to create a new reference from.
+    );
+    /* Create a new container referencing the same contents as the container
+       specified in the parameter.
+     */
+
+    PContainer & operator=(const PContainer & cont);
+    /* Set the current container to reference the same thing as the container
+       specified in the parameter.
+
+       Note that the old contents of the container is dereferenced and if
+       it was unique, destroyed using the DestroyContents() function.
+     */
+
+    virtual ~PContainer();
+    /* Destroy the container class. This will decrement the reference count
+       on the contents and if unique, will destroy it using the
+       DestroyContents() function.
+     */
+
+
+  // New functions for class
     virtual PINDEX GetSize() const;
-    virtual BOOL SetSize(PINDEX newSize) = 0;
-    BOOL SetMinSize(PINDEX minSize);
+    /* Get the current size of the container. This represents the number of
+       things the container contains. For some types of containers this will
+       always return 1.
+
+       Returns: number of objects in container.
+     */
+
+    virtual BOOL SetSize(
+      PINDEX newSize  // New size for the container.
+    ) = 0;
+    /* Set the new current size of the container. The exact behavious of this
+       is determined by the descendent class. For instance an array class would
+       reallocate memory to make space for the new number of elements.
+
+       Note for some types of containers this does not do anything as they
+       inherently only contain one item. The function returns TRUE always and
+       the new value is ignored.
+
+       Returns: TRUE if the size was successfully changed. The value FALSE
+                usually indicates failure due to insufficient memory.
+     */
+
+    BOOL SetMinSize(
+      PINDEX minSize  // Possible, new size for the container.
+    );
+    /* This function will set the size of the object to be at least the size
+       specified. The SetSize() function is always called, either with the
+       new value or the previous size, whichever is the larger.
+     */
+
     virtual BOOL IsEmpty() const;
-    
+    /* Determine if the container is empty, that is there are no objects in its
+       contents.
+
+       Returns: TRUE if GetSize() returns zero.
+     */
+
 
   protected:
-    PContainer(int dummy, const PContainer * cont);
+    PContainer(
+      int dummy,        // Dummy to prevent accidental use of the constructor.
+      const PContainer * cont  // Container class to clone.
+    );
+    /* Constructor used in support of the Clone() function. This creates a
+       new unique reference of a copy of the contents. It does $U$not$U$ create
+       another reference.
 
-    void Destruct();
-      // Function called from container destructors. This will conditionally
-      // call DestroyContents() to destroy the container content.
+       The dummy parameter is there to prevent the contructor from being
+       invoked automatically by the compiler when a pointer is used by accident
+       when a normal instance or reference was expected. The container would
+       be silently cloned and the copy used instead of the container expected
+       leading to unpredictable results.
+     */
 
     virtual void DestroyContents() = 0;
-      // Destroy the container content.
+    /* Destroy the container contents. This function must be defined by the
+       descendent class to do the actual destruction of the contents. It is
+       automatically declared when the PDECLARE_CONTAINER() macro is used.
+
+       For all descendent classes not immediately inheriting off the PContainer
+       itself, the implementation of DestroyContents() should always call its
+       ancestors function. This is especially relevent if many of the standard
+       container classes, such as arrays, are descended from as memory leaks
+       will occur.
+     */
+
+    virtual void CopyContents(const PContainer & c);
+    /* Copy the container contents. This copies the contents from one reference
+       to another. It is automatically declared when the PDECLARE_CONTAINER()
+       macro is used.
+       
+       No duplication of contents occurs, for instance if the container is an
+       array, the pointer to the array memory is copied, not the array memory
+       block itself.
+
+       This function will get called once for every class in the heirarchy, so
+       the ancestor function should $U$not$U$ be called.
+     */
 
     virtual void CloneContents(const PContainer * c);
-    virtual void CopyContents(const PContainer & c);
-      // Copy the container content
+    /* Create a duplicate of the container contents. This copies the contents
+       from one container to another, unique container. It is automatically
+       declared when the PDECLARE_CONTAINER() macro is used.
+       
+       This class will duplicate the contents completely, for instance if the
+       container is an array, the actual array memory is copied, not just the
+       pointer. If the container contains objects that descend from PObject,
+       they too should also be cloned and not simply copied.
+
+       This function will get called once for every class in the heirarchy, so
+       the ancestor function should $U$not$U$ be called.
+     */
+
+    void Destruct();
+    /* Internal function called from container destructors. This will
+       conditionally call DestroyContents() to destroy the container contents.
+     */
+
+    BOOL IsUnique() const;
+    /* Determine if this instance is the one and only reference to the
+       container contents.
+
+       Returns: TRUE if the refernece count is one.
+     */
+
 
     class Reference {
       public:
@@ -182,10 +321,48 @@ PDECLARE_CLASS(PContainer, PObject)
         unsigned count;     // reference count to the container content
         BOOL deleteObjects; // Used by PCollection but put here for efficieny
     } * reference;
-    BOOL IsUnique() const;
 };
 
 
+/*$MACRO PCONTAINERINFO(cls, par)
+   This macro is used to declare all the functions that should be implemented
+   for a working container class. It will also define some inline code for
+   some standard function behaviour.
+
+   This may be used when multiple inheritance requires a special class
+   declaration. Normally, the $H$PDECLARE_CONTAINER macro would be used, which
+   includes this macro in it.
+
+   The default implementation for contructors, destructor and the assignment
+   operator is as follows:$F$
+        cls(const cls & c)
+          : par(c)
+        {
+          CopyContents(c);
+        }
+
+        cls & operator=(const cls & c)
+        {
+          par::operator=(c);
+          cls::CopyContents(c);
+          return *this;
+        }
+
+        cls(int dummy, const cls * c)
+          : par(dummy, c)
+        {
+          CloneContents(c);
+        }
+
+        virtual ~cls()
+        {
+          Destruct();
+        }
+    
+    $F$Then the DestroyContents(), CloneContents() and CopyContents()
+    functions are declared and must be implemted by the programmer. See the
+    $H$PContainer class for more information on these functions.
+ */
 #define PCONTAINERINFO(cls, par) \
     PCLASSINFO(cls, par) \
   public: \
@@ -199,773 +376,261 @@ PDECLARE_CLASS(PContainer, PObject)
     virtual void CloneContents(const cls * c); \
     virtual void CopyContents(const cls & c); \
 
+/*$MACRO PDECLARE_CONTAINER(cls, par)
+   This macro is used to declare a descendent of $H$PContainer class. It
+   declares all the functions that should be implemented for a working
+   container class.
+
+   See the $H$PCONTAINERINFO macro for more information.
+ */
 #define PDECLARE_CONTAINER(cls, par) \
                              PCLASS cls : public par { PCONTAINERINFO(cls, par)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// The abstract array class
+// Abstract collection of objects class
 
-class PArrayObjects;
+PDECLARE_CLASS(PCollection, PContainer)
+/* A collection is a container that collects together descendents of the
+   $H$PObject class. The objects contained in the collection are always
+   pointers to objects, not the objects themselves. The life of an object in
+   the collection should be carefully considered. Typically, it is allocated
+   by the user of the collection when it is added. The collection then
+   automatically deletes it when it is removed or the collection is destroyed,
+   ie when the container class has no more references to the collection. Other
+   models may be accommodated but it is up to the programmer to determine the
+   scope and life of the objects.
 
-PDECLARE_CONTAINER(PAbstractArray, PContainer)
-  friend class PArrayObjects;
+   The exact form of the collection depends on the descendent of PCollection
+   and determines the access modes for the objects in it. Thus a collection
+   can be an array which allows fast random access at the expense of slow
+   insertion and deletion. Or the collection may be a list which has fast
+   insertion and deletion but very slow random access.
+
+   The basic paradigm of all collections is the "virtual array". Regardless of
+   the internal implementation of the collection; array, list, sorted list etc,
+   the user may access elements via an ordinal index. The implementation then
+   optimises the access as best it can. For instance, in a list ordinal zero
+   will go directly to the head of the list. Stepping along sequential indexes
+   then will return the next element of the list, remembering the new position
+   at each step, thus allowing sequential access with little overhead as is
+   expected for lists. If a random location is specified, then the list
+   implementation must sequentially search for that ordinal from either the
+   last location or an end of the list, incurring an overhead.
+
+   All collection classes implement a base set of functions, though they may
+   be meaningless or degenerative in some collection types eg $B$Insert()$B$$
+   for $H$PSortedList will degenerate to be the same as $B$Append()$B$.
+ */
 
   public:
-    PAbstractArray(PINDEX elementSizeInBytes,
-                   PINDEX initialSize = 0);
-    PAbstractArray(PINDEX elementSizeInBytes,
-                   const void *buffer,
-                   PINDEX bufferSizeInElements);
+    PCollection(
+      PINDEX initialSize = 0  // Initial number of things in the collection.
+    );
+    /* Create a new collection
+     */
 
     // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
+    virtual ostream & PrintOn(
+      ostream &strm   // Output stream to print the collection.
+    ) const;
+    /* Print the collection on the stream. This simply executes the
+       $B$PrintOn()$B$ function on each element in the collection.
 
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
+       Returns: the stream printed to.
+     */
 
     // New functions for class
-    void * GetPointer(PINDEX minSize = 0);
+    virtual PINDEX Append(
+      PObject * obj   // New object to place into the collection.
+    ) = 0;
+    /* Append a new object to the collection.
+    
+       The exact semantics depends on the specific type of the collection. So
+       the function may not place the object at the "end" of the collection at
+       all. For example, in a $H$PSortedList the object is placed in the
+       correct ordinal position in the list.
+
+       Returns: index of the newly added object.
+     */
+
+    virtual PINDEX Insert(
+      const PObject & before,   // Object value to insert before.
+      PObject * obj             // New object to place into the collection.
+    ) = 0;
+    /* Insert a new object immediately before the specified object. If the
+       object to insert before is not in the collection then the equivalent of
+       the $B$Append()$B$ function is performed.
+       
+       The exact semantics depends on the specific type of the collection. So
+       the function may not place the object before the specified object at
+       all. For example, in a $H$PSortedList the object is placed in the
+       correct ordinal position in the list.
+
+       Note that the object values are compared for the search of the
+       $B$before$B$ parameter, not the pointers. So the objects in the
+       collection must correctly implement the $B$Comapre()$B$ function.
+
+       Returns: index of the newly inserted object.
+     */
+
+    virtual PINDEX InsertAt(
+      PINDEX index,   // Index position in collection to place the object.
+      PObject * obj   // New object to place into the collection.
+    ) = 0;
+    /* Insert a new object at the specified ordinal index. If the index is
+       greater than the number of objects in the collection then the
+       equivalent of the $B$Append()$B$ function is performed.
+
+       The exact semantics depends on the specific type of the collection. So
+       the function may not place the object at the specified index at all.
+       For example, in a $H$PSortedList the object is placed in the correct
+       ordinal position in the list.
+
+       Returns: index of the newly inserted object.
+     */
+
+    virtual BOOL Remove(
+      const PObject * obj   // Existing object to remove from the collection.
+    ) = 0;
+    /* Remove the object from the collection. If the AllowDeleteObjects option
+       is set then the object is also deleted.
+
+       Note that the comparison for searching for the object in collection is
+       made by pointer, not by value. Thus the parameter must point to the
+       same instance of the object that is in the collection.
+
+       Returns: TRUE if the object was in the collection.
+     */
+
+    virtual PObject * RemoveAt(
+      PINDEX index   // Index position in collection to place the object.
+    ) = 0;
+    /* Remove the object at the specified ordinal index from the collection.
+       If the AllowDeleteObjects option is set then the object is also deleted.
+
+       Note if the index is beyond the size of the collection then the
+       function will assert.
+
+       Returns: pointer to the object being removed, or NULL if it was deleted.
+     */
+
+    virtual void RemoveAll();
+    /* Remove all of the elements in the collection. This operates by
+       continually calling $B$RemoveAt()$B$ until there are no objects left.
+
+       The objects are removed from the last, at index $F$(GetSize()-1)$F$
+       toward the first at index zero.
+     */
+
+    virtual BOOL SetAt(
+      PINDEX index,   // Index position in collection to set.
+      PObject * val   // New value to place into the collection.
+    ) = 0;
+    /* Set the object at the specified ordinal position to the new value. This
+       will overwrite the existing entry. If the AllowDeleteObjects option is
+       set then the old object is also deleted.
+
+       The exact semantics depends on the specific type of the collection. For
+       some, eg $H$PSortedList, the object inserted will not stay at the
+       ordinal position. Also the exact behaviour when the index is greater
+       than the size of the collection depends on the collection type, eg in
+       an array collection the array is expanded to accommodate the new index,
+       whereas in a list it will return FALSE.
+
+       Returns: TRUE if the object was successfully added.
+     */
+
+    virtual PObject * GetAt(
+      PINDEX index  // Index position in the collection of the object.
+    ) const = 0;
+    /* Get the object at the specified ordinal position. If the index was
+       greater than the size of the collection then NULL is returned.
+
+       Returns: pointer to object at the specified index.
+     */
+
+    virtual PINDEX GetObjectsIndex(
+      const PObject * obj
+    ) const = 0;
+    /* Search the collection for the specific instance of the object. The
+       object pointers are compared, not the values. The fastest search
+       algorithm is employed depending on the collection type.
+
+       Returns: ordinal index position of the object, or P_MAX_INDEX.
+     */
+
+    virtual PINDEX GetValuesIndex(
+      const PObject & obj
+    ) const = 0;
+    /* Search the collection for the specified value of the object. The object
+       values are compared, not the pointers.  So the objects in the
+       collection must correctly implement the $B$Comapre()$B$ function. The
+       fastest search algorithm is employed depending on the collection type.
+
+       Returns: ordinal index position of the object, or P_MAX_INDEX.
+     */
+
+    void AllowDeleteObjects(
+      BOOL yes = TRUE   // New value for flag for deleting objects
+    );
+    /* Allow or disallow the deletion of the objects contained in the
+       collection. If TRUE then whenever an object is removed, overwritten or
+       the colelction is deleted due to all references being destroyed, the
+       object is deleted.
+
+       For example: $F$
+              coll.SetAt(2, new PString("one"));
+              coll.SetAt(2, new PString("Two"));
+              $F$
+       would automatically delete the string containing "one" on the second
+       call to SetAt().
+     */
+
+    void DisallowDeleteObjects();
+    /* Disallow the deletion of the objects contained in the collection. See
+       the $H$AllowDeleteObjects() function for more details.
+     */
 
   protected:
-    PINDEX elementSize;
-    char * theArray;
+    PCollection(
+      int dummy,        // Dummy to prevent accidental use of the constructor.
+      const PCollection * coll  // Collection class to clone.
+    );
+    /* Constructor used in support of the Clone() function. This creates a
+       new unique reference of a copy of the contents. It does $U$not$U$ create
+       another reference.
+
+       The dummy parameter is there to prevent the contructor from being
+       invoked automatically by the compiler when a pointer is used by accident
+       when a normal instance or reference was expected. The container would
+       be silently cloned and the copy used instead of the container expected
+       leading to unpredictable results.
+     */
 };
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// An array of some base type
+// The abstract array class
 
-#define PBASEARRAYCLASS(cls, T) \
-  typedef T P_##cls##_Base_Type; \
-  PDECLARE_CLASS(cls, PAbstractArray) \
-  public: \
-    inline cls(PINDEX initialSize = 0) \
-      : PAbstractArray(sizeof(P_##cls##_Base_Type), initialSize) { } \
-    inline cls(P_##cls##_Base_Type const * buffer, PINDEX length) \
-      : PAbstractArray(sizeof(P_##cls##_Base_Type), buffer, length) { } \
-    inline BOOL SetAt(PINDEX index, P_##cls##_Base_Type val) \
-      { return SetMinSize(index+1) && val==(((P_##cls##_Base_Type *)theArray)[index] = val); } \
-    inline P_##cls##_Base_Type GetAt(PINDEX index) const \
-      { PASSERTINDEX(index); \
-                  return index < GetSize() ? ((P_##cls##_Base_Type *)theArray)[index] : (P_##cls##_Base_Type)0; } \
-    inline P_##cls##_Base_Type * GetPointer(PINDEX minSize = 0) \
-      { return (P_##cls##_Base_Type *)PAbstractArray::GetPointer(minSize); } \
-    inline P_##cls##_Base_Type operator[](PINDEX index) const \
-      { PASSERTINDEX(index); return GetAt(index); } \
-    inline P_##cls##_Base_Type & operator[](PINDEX index) \
-      { PASSERTINDEX(index); PAssert(SetMinSize(index+1), POutOfMemory); \
-        return ((P_##cls##_Base_Type *)theArray)[index]; } \
-    inline operator P_##cls##_Base_Type const *() const \
-      { return (P_##cls##_Base_Type const *)theArray; } \
+#include <array.h>
 
-#define PBASEARRAY(cls, T) PBASEARRAYCLASS(cls, T) }
+///////////////////////////////////////////////////////////////////////////////
+// The abstract array class
 
-
-PBASEARRAY(PCharArray, char);
-PBASEARRAY(PShortArray, short);
-PBASEARRAY(PIntArray, int);
-PBASEARRAY(PLongArray, long);
-PBASEARRAY(PBYTEArray, BYTE);
-PBASEARRAY(PWORDArray, WORD);
-PBASEARRAY(PUnsignedArray, unsigned);
-PBASEARRAY(PDWORDArray, DWORD);
-
-
-
+#include <lists.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // PString class (specialised version of PBASEARRAY(char))
 
-class PStringArray;
-
-PDECLARE_CLASS(PString, PCharArray)
-  public:
-    PINLINE PString();
-    PString(const PString & str);
-    PString(const char * cstr);
-    PString(const char * cstr, PINDEX len);
-    PString(char c);
-    enum ConversionType {
-      Pascal,   // Length byte followed by data
-      Basic,    // Two Length bytes followed by data
-      Literal,  // C style string with \ escape codes
-      Signed,   // Signed integer
-      Unsigned, // Unsigned integer
-      Decimal,  // Real decimal number
-      Exponent, // Real exponent number
-      Printf,   // Formatted print
-      NumConversionTypes
-    };
-    PString(ConversionType type, const char * str, ...);
-    PString(ConversionType type, long value, unsigned base = 10);
-    PString(ConversionType type, double value, unsigned places = 4);
-
-
-    // Overrides from class PObject
-    virtual PObject * Clone() const;
-    virtual Comparison Compare(const PObject & obj) const;
-    virtual ostream & PrintOn(ostream &strm) const;
-    virtual istream & ReadFrom(istream &strm);
-    virtual PINDEX HashFunction() const;
-
-
-    // Overrides from class PContainer
-    virtual BOOL IsEmpty() const;
-
-
-    // New functions for class
-    BOOL MakeMinimumSize();
-    PINDEX GetLength() const;
-
-    PString & operator=(const PString & str);
-    PString & operator=(const char * cstr);
-    PString operator+(const PString & str) const;
-    PString operator+(const char * cstr) const;
-    PString operator+(char c) const;
-    friend PString operator+(const char * cstr, const PString & str);
-    PString & operator+=(const PString & cstr);
-    PString & operator+=(const char * cstr);
-
-    BOOL operator==(const PObject & str) const;
-    BOOL operator!=(const PObject & str) const;
-    BOOL operator<(const PObject & str) const;
-    BOOL operator>(const PObject & str) const;
-    BOOL operator<=(const PObject & str) const;
-    BOOL operator>=(const PObject & str) const;
-
-    BOOL operator==(const char * cstr) const;
-    BOOL operator!=(const char * cstr) const;
-    BOOL operator<(const char * cstr) const;
-    BOOL operator>(const char * cstr) const;
-    BOOL operator<=(const char * cstr) const;
-    BOOL operator>=(const char * cstr) const;
-
-    virtual PINDEX Find(char ch, PINDEX offset = 0) const;
-    virtual PINDEX Find(const PString & str, PINDEX offset = 0) const;
-    virtual PINDEX FindLast(char ch, PINDEX offset = P_MAX_INDEX) const;
-    virtual PINDEX FindLast(const PString & str,
-                                          PINDEX offset = P_MAX_INDEX) const;
-
-    virtual PINDEX FindOneOf(const PString & set, PINDEX offset = 0) const;
-
-    void Delete(PINDEX start, PINDEX len);
-
-    PString operator()(PINDEX start, PINDEX end) const; // Sub-string
-    PString Left(PINDEX len) const;
-    PString Right(PINDEX len) const;
-    PString Mid(PINDEX start, PINDEX len = P_MAX_INDEX) const;
-
-    PString LeftTrim() const;
-    PString RightTrim() const;
-    PString Trim() const;
-
-    PString ToLower() const;
-    PString ToUpper() const;
-
-    PString & sprintf(const char * fmt, ...);
-    PString & sprintf(PString fmt, ...);
-    PString & vsprintf(const char * fmt, va_list args);
-    PString & vsprintf(const PString & fmt, va_list args);
-
-    long AsInteger(unsigned base = 10) const;
-    double AsReal() const;
-
-    PStringArray Tokenise(const PString & separators,
-                                          BOOL onePerSeparator = TRUE) const;
-    PStringArray Lines() const;
-
-
-    // Some Mac support.
-    PString ToPascal() const;
-    operator const unsigned char *() const;
-
-    PString ToLiteral() const; // Convert to C literal string format
-
-
-  protected:
-    PString(int dummy, const PString * str);
-    virtual Comparison CompareString(const char * cstr) const;
-};
-
-PString psprintf(const char * fmt, ...);
-PString psprintf(PString fmt, ...);
-PString pvsprintf(const char * fmt, va_list args);
-PString pvsprintf(const PString & fmt, va_list args);
-
-
-PDECLARE_CLASS(PCaselessString, PString)
-  public:
-    PCaselessString();
-    PCaselessString(const char * cstr);
-    PCaselessString(const PString & str);
-    PCaselessString & operator=(const PString & str);
-
-    // Overrides from class PString
-    virtual PINDEX Find(char ch, PINDEX offset = 0) const;
-    virtual PINDEX Find(const char * cstr, PINDEX offset = 0) const;
-    virtual PINDEX FindLast(char ch) const;
-    virtual PINDEX FindLast(const char * cstr) const;
-
-  protected:
-    PCaselessString(int dummy, const PCaselessString * str);
-    virtual Comparison CompareString(const char * cstr) const;
-};
-
-
-class PStringStream;
-
-PCLASS PStringStreamBuffer : public PObject, public streambuf {
-  PCLASSINFO(PStringStreamBuffer, PObject)
-
-  public:
-    PStringStreamBuffer(const PStringStreamBuffer & sbuf);
-    PStringStreamBuffer & operator=(const PStringStreamBuffer & sbuf);
-
-  protected:
-    PStringStreamBuffer(PStringStream * str);
-      // Construct the streambuf for standard streams
-
-    virtual int overflow(int=EOF);
-      // Function to flush the output buffer to the file
-
-    virtual int underflow();
-      // Function to refill the input buffer from the file
-
-    virtual int sync();
-      // Function to refill the input buffer from the file
-
-    virtual streampos seekoff(streamoff, ios::seek_dir, int);
-      // Function to seek a location in the file
-
-
-  private:
-    // Member variables
-    PStringStream * string;
-
-
-  friend class PStringStream;
-};
-
-
-PCLASS PStringStream : public PString, public iostream {
-  PCLASSINFO(PStringStream, PString)
-
-  public:
-    PStringStream();
-    PStringStream(const PString & str);
-    PStringStream(const char * cstr);
-    PStringStream & operator=(const PString & str);
-      // Create a string that can do standard stream I/O.
-
-    virtual ~PStringStream();
-      // Destroy the string stream, deleting the stream buffer
-
-  private:
-    PStringStream(int, const PStringStream &) { }
-    PStringStream & operator=(const PStringStream &) { return *this; }
-};
-
+#include <dict.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Abstract collection of objects class
+// PString class
 
-typedef BOOL (*PEnumerator)(const PObject & obj, PObject * info);
-
-PDECLARE_CLASS(PCollection, PContainer)
-  public:
-    PCollection(PINDEX initialSize = 0);
-
-    // Overrides from class PObject
-    virtual ostream & PrintOn(ostream &strm) const;
-
-    // New functions for class
-    virtual PINDEX Append(PObject * obj) = 0;
-    virtual PINDEX Insert(const PObject & before, PObject * obj) = 0;
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj) = 0;
-    virtual BOOL Remove(const PObject * obj) = 0;
-    virtual PObject * RemoveAt(PINDEX index) = 0;
-    virtual void RemoveAll();
-    virtual BOOL SetAt(PINDEX index, PObject * val) = 0;
-    virtual PObject * GetAt(PINDEX index) const = 0;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const = 0;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const = 0;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const = 0;
-
-    void AllowDeleteObjects(BOOL yes = TRUE);
-    void DisallowDeleteObjects();
-
-  protected:
-    PCollection(int dummy, const PCollection *);
-};
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Linear array of objects
-
-PDECLARE_CONTAINER(PArrayObjects, PCollection)
-  public:
-    PINLINE PArrayObjects(PINDEX initialSize = 0);
-
-    // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-
-    // Overrides from class PContainer
-    virtual PINDEX GetSize() const;
-    virtual BOOL SetSize(PINDEX newSize);
-
-    // Overrides from class PCollection
-    virtual PINDEX Append(PObject * obj);
-    virtual PINDEX Insert(const PObject & before, PObject * obj);
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj);
-    virtual BOOL Remove(const PObject * obj);
-    virtual PObject * RemoveAt(PINDEX index);
-    virtual BOOL SetAt(PINDEX index, PObject * val);
-    virtual PObject * GetAt(PINDEX index) const;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const;
-
-  protected:
-    PBASEARRAY(ObjPtrArray, PObject *);
-    ObjPtrArray * theArray;
-};
-
-
-#define PARRAYCLASS(cls, T) \
-  PDECLARE_CLASS(cls, PArrayObjects) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PArrayObjects(dummy, c) { } \
-  public: \
-    inline cls(PINDEX initialSize = 0) \
-      : PArrayObjects(initialSize) { } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const\
-      { PAssert((*theArray)[index] != NULL, PInvalidArrayElement); return *(T *)(*theArray)[index]; } \
-    inline T & operator[](PINDEX index) \
-      { return *(T *)((*theArray)[index] != NULL ?  (*theArray)[index] \
-                                            : ((*theArray)[index] = PNEW T)); } \
-
-#define PARRAY(cls, T) PARRAYCLASS(cls, T) }
-
-
-PARRAYCLASS(PStringArray, PString)
-  public:
-    PStringArray(PINDEX count, char **strarr);
-    PINDEX GetStringsIndex(const PString & str) const;
-};
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PList container class
-
-class PAbstractList;
-
-PCLASS PListElement {
-  PListElement(PObject * theData);
-  PListElement * prev, * next;
-  PObject * data;
-  friend class PAbstractList;
-};
-
-PDECLARE_CONTAINER(PAbstractList, PCollection)
-  public:
-    PINLINE PAbstractList();
-
-    // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-
-    // Overrides from class PCollection
-    virtual PINDEX Append(PObject * obj);
-    virtual PINDEX Insert(const PObject & before, PObject * obj);
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj);
-    virtual BOOL Remove(const PObject * obj);
-    virtual PObject * RemoveAt(PINDEX index);
-    virtual BOOL SetAt(PINDEX index, PObject * val);
-    virtual PObject * GetAt(PINDEX index) const;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const;
-
-  protected:
-    class ListInfo {
-      public:
-        ListInfo() { head = tail = lastElement = NULL; }
-        PListElement * head, * tail, * lastElement;
-        PINDEX lastIndex;
-    } * info;
-
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-
-    BOOL SetCurrent(PINDEX index) const;
-};
-
-
-#define PLISTCLASS(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractList() { } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const \
-      { return *(T *)GetAt(index); } \
-
-#define PLIST(cls, T) PLISTCLASS(cls, T) }
-
-
-#define PQUEUECLASS(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) { DisallowDeleteObjects(); } \
-  public: \
-    inline cls() \
-      : PAbstractList() { DisallowDeleteObjects(); } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    virtual inline void Enqueue(T * t) \
-      { PAbstractList::Append(t); } \
-    virtual inline T * Dequeue() \
-      { return (T *)PAbstractList::RemoveAt(0);} \
-
-#define PQUEUE(cls, T) PQUEUECLASS(cls, T) }
-
-
-#define PSTACKCLASS(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractList) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractList(dummy, c) { DisallowDeleteObjects(); } \
-  public: \
-    inline cls() \
-      : PAbstractList() { DisallowDeleteObjects(); } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    virtual inline void Push(T * t) \
-      { PAbstractList::Append(t); } \
-    virtual inline T * Pop() \
-      { return (T *)PAbstractList::RemoveAt(GetSize()-1); } \
-    virtual inline T & Top() \
-      { PAssert(GetSize() > 0, PStackEmpty); return *(T *)GetAt(GetSize()-1); } \
-
-#define PSTACK(cls, T) PSTACKCLASS(cls, T) }
-
-
-PLISTCLASS(PStringList, PString)
-  public:
-    PINDEX AppendString(const PString & str);
-    PINDEX InsertString(const PString & before, const PString & str);
-    PINDEX GetStringsIndex(const PString & str) const;
-};
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Sorted List of PObjects
-
-class PAbstractSortedList;
-
-PCLASS PSortedListElement {
-  PSortedListElement(PObject * theData);
-  PSortedListElement * parent, * left, * right;
-  PObject * data;
-  PINDEX subTreeSize;
-  enum { Red, Black } colour;
-  void MakeBlack();
-  void MakeRed();
-  BOOL IsBlack();
-  BOOL IsLeftBlack();
-  BOOL IsRightBlack();
-  void DeleteSubTrees(BOOL deleteObject);
-  BOOL LeftTreeSize();
-  BOOL RightTreeSize();
-  PSortedListElement * Successor() const;
-  PSortedListElement * Predecessor() const;
-  PSortedListElement * OrderSelect(PINDEX index);
-  PINDEX ValueSelect(const PObject & obj);
-
-  friend class PAbstractSortedList;
-};
-
-
-
-PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
-  public:
-    PINLINE PAbstractSortedList();
-
-    // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-
-    // Overrides from class PCollection
-    virtual PINDEX Append(PObject * obj);
-    virtual PINDEX Insert(const PObject & before, PObject * obj);
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj);
-    virtual BOOL Remove(const PObject * obj);
-    virtual PObject * RemoveAt(PINDEX index);
-    virtual void RemoveAll();
-    virtual BOOL SetAt(PINDEX index, PObject * val);
-    virtual PObject * GetAt(PINDEX index) const;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const;
-
-  protected:
-    class SortedListInfo {
-    public:
-      SortedListInfo() { root = lastElement = NULL; }
-        PSortedListElement * root, * lastElement;
-        PINDEX lastIndex;
-    } * info;
-
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-
-    // New functions for class
-    void RemoveElement(PSortedListElement * node);
-    void LeftRotate(PSortedListElement * node);
-    void RightRotate(PSortedListElement * node);
-
-    friend class PSortedListElement;
-};
-
-
-#define PSORTEDLISTCLASS(cls, T) \
-  PDECLARE_CLASS(cls, PAbstractSortedList) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractSortedList(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractSortedList() { } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline T & operator[](PINDEX index) const \
-      { return *(T *)GetAt(index); } \
-
-#define PSORTEDLIST(cls, T) PSORTEDLISTCLASS(cls, T) }
-
-
-PSORTEDLISTCLASS(PSortedStringList, PString)
-  public:
-    PINDEX AppendString(const PString & str);
-    PINDEX InsertString(const PString & before, const PString & str);
-    PINDEX GetStringsIndex(const PString & str) const;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PDictionary classes
-
-PDECLARE_CLASS(PScalarKey, PObject)
-  public:
-    PScalarKey(PINDEX newKey);
-
-    // Overrides from class PObject
-    virtual PObject * Clone() const;
-    virtual Comparison Compare(const PObject & obj) const;
-    virtual PINDEX HashFunction() const;
-    virtual ostream & PrintOn(ostream & strm) const;
-    operator PINDEX() const;
-
-  private:
-    PINDEX theKey;
-};
-
-
-class PHashTable;
-class PInternalHashTable;
-class PAbstractDictionary;
-
-PCLASS PHashTableElement {
-  PObject * key;
-  PObject * data;
-  PHashTableElement * next;
-  PHashTableElement * prev;
-  friend class PHashTable;
-  friend class PInternalHashTable;
-  friend class PAbstractDictionary;
-};
-
-PBASEARRAYCLASS(PInternalHashTable, PHashTableElement *)
-  private:
-    virtual ~PInternalHashTable() { Destruct(); }
-    virtual void DestroyContents();
-
-    void AppendElement(PObject * key, PObject * data);
-    PObject * RemoveElement(const PObject & key);
-    BOOL SetLastElementAt(PINDEX index);
-    PHashTableElement * GetElementAt(const PObject & key);
-    PINDEX GetElementsIndex(const PObject * obj, BOOL byVal, BOOL keys) const;
-    BOOL EnumerateElements(PEnumerator func, PObject * info, BOOL keys) const;
-
-    PINDEX lastIndex, lastBucket;
-    PHashTableElement * lastElement;
-
-    BOOL deleteKeys;
-
-
-  friend class PHashTable;
-  friend class PAbstractSet;
-  friend class PAbstractDictionary;
-};
-
-
-PDECLARE_CONTAINER(PHashTable, PCollection)
-  public:
-    PHashTable();
-
-    // Overrides from class PObject
-    virtual Comparison Compare(const PObject & obj) const;
-
-
-  protected:
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-
-    // New functions for class
-    virtual const PObject & AbstractGetKeyAt(PINDEX index) const;
-    virtual PObject & AbstractGetDataAt(PINDEX index) const;
-
-    // Member variables
-    PInternalHashTable * hashTable;
-};
-
-
-PDECLARE_CONTAINER(PAbstractSet, PHashTable)
-  public:
-    PINLINE PAbstractSet();
-
-    // Overrides from class PCollection
-    virtual PINDEX Append(PObject * obj);
-    virtual PINDEX Insert(const PObject & before, PObject * obj);
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj);
-    virtual BOOL Remove(const PObject * obj);
-    virtual PObject * RemoveAt(PINDEX index);
-    virtual BOOL SetAt(PINDEX index, PObject * val);
-    virtual PObject * GetAt(PINDEX index) const;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const;
-
-    // New functions for class
-    PINLINE BOOL Contains(const PObject & key);
-};
-
-
-PDECLARE_CLASS(PStringSet, PAbstractSet)
-  protected:
-    PStringSet(int dummy, const PStringSet * c);
-  public:
-    PStringSet();
-    virtual PObject * Clone() const;
-    void Include(const PString & key);
-    void Exclude(const PString & key);
-    BOOL operator[](const PString & key);
-    const PString & GetKeyAt(PINDEX index) const;
-};
-
-
-#define PSETCLASS(cls, K) \
-  PDECLARE_CLASS(cls, PAbstractSet) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractSet(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractSet() { DisallowDeleteObjects(); } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline void Include(const PObject * key) \
-      { Append((PObject *)key); } \
-    inline void Exclude(const PObject * key) \
-      { Remove(key); } \
-    inline BOOL operator[](const K & key) \
-        { return Contains(key); } \
-    virtual const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-
-#define PSET(cls, K) PSETCLASS(cls, K) }
-
-
-
-PDECLARE_CLASS(PAbstractDictionary, PHashTable)
-  public:
-    PINLINE PAbstractDictionary();
-
-    // Overrides from class PCollection
-    virtual PINDEX Append(PObject * obj);
-    virtual PINDEX Insert(const PObject & before, PObject * obj);
-    virtual PINDEX InsertAt(PINDEX index, PObject * obj);
-    virtual BOOL Remove(const PObject * obj);
-    virtual PObject * RemoveAt(PINDEX index);
-    virtual BOOL SetAt(PINDEX index, PObject * val);
-    virtual PObject * GetAt(PINDEX index) const;
-    virtual PINDEX GetObjectsIndex(const PObject * obj) const;
-    virtual PINDEX GetValuesIndex(const PObject & obj) const;
-
-    virtual BOOL Enumerate(PEnumerator func, PObject * info = NULL) const;
-
-    // New functions for class
-    virtual BOOL SetDataAt(PINDEX index, PObject * obj);
-    virtual BOOL SetAt(const PObject & key, PObject * obj);
-    virtual PObject * GetAt(const PObject & key) const;
-    virtual PObject & GetRefAt(const PObject & key) const;
-    virtual BOOL EnumerateKeys(PEnumerator func, PObject * info = NULL) const;
-
-  protected:
-    PAbstractDictionary(int dummy, const PAbstractDictionary * c);
-};
-
-
-PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
-  public:
-    PStringDictionary();
-    virtual PObject * Clone() const;
-    virtual BOOL SetAt(const PObject & key, PString str);
-    PString & operator[](const PString & key) const;
-    const PString & GetKeyAt(PINDEX index) const;
-    PString & GetDataAt(PINDEX index) const;
-    BOOL SetDataAt(PINDEX index, const PString & str);
-
-  protected:
-    PStringDictionary(int dummy, const PStringDictionary * c);
-};
-
-
-#define PDICTIONARYCLASS(cls, K, D) \
-  PDECLARE_CLASS(cls, PAbstractDictionary) \
-  protected: \
-    inline cls(int dummy, const cls * c) \
-      : PAbstractDictionary(dummy, c) { } \
-  public: \
-    inline cls() \
-      : PAbstractDictionary() { } \
-    inline virtual PObject * Clone() const \
-      { return PNEW cls(0, this); } \
-    inline D & operator[](const K & key) const \
-      { return (D &)GetRefAt(key); } \
-    inline const K & GetKeyAt(PINDEX index) const \
-      { return (const K &)AbstractGetKeyAt(index); } \
-    inline D & GetDataAt(PINDEX index) const \
-      { return (D &)AbstractGetDataAt(index); } \
-
-#define PDICTIONARY(cls, K, D) PDICTIONARYCLASS(cls, K, D) }
+#include <pstring.h>
 
 
 
