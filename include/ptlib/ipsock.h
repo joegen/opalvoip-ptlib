@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.64  2004/04/07 05:29:50  csoutheren
+ * Added function to detect RFC 1918 addresses
+ *
  * Revision 1.63  2004/02/23 17:27:19  ykiryanov
  * Added == and != operators for in_addr_t on BeOS as suggested by Craig Southeren to please compiler
  *
@@ -395,6 +398,27 @@ class PIPSocket : public PSocket
 
         /// Check for Broadcast address 255.255.255.255
         BOOL IsBroadcast() const;
+
+        // Check if the remote address is private address as specified
+        // by RFC 1918 address
+        //  10.0.0.0    - 10.255.255.255.255
+        //  172.16.0.0  - 172.31.255.255
+        //  192.168.0.0 - 192.168.255.255
+        BOOL IsRFC1918() const 
+        { return (Byte1() == 10)
+                  ||
+                  (
+                    (Byte1() == 172)
+                    &&
+                    (Byte2() >= 16) && (Byte2() <= 31)
+                  )
+                  ||
+                  (
+                    (Byte1() == 192) 
+                    &&
+                    (Byte2() == 168)
+                  );
+        }
 
 #if P_HAS_IPV6
         /// Check for v4 mapped i nv6 address ::ffff:a.b.c.d
