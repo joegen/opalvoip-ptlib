@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.7 1997/06/08 04:47:27 robertj Exp $
+ * $Id: httpform.cxx,v 1.8 1997/07/08 13:12:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.8  1997/07/08 13:12:29  robertj
+ * Major HTTP form enhancements for lists and arrays of fields.
+ *
  * Revision 1.7  1997/06/08 04:47:27  robertj
  * Adding new llist based form field.
  *
@@ -49,10 +52,23 @@ PHTTPField::PHTTPField(const char * nam, const char * titl, const char * hlp)
   notInHTML = TRUE;
 }
 
+
 PObject::Comparison PHTTPField::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PHTTPField::Class()), PInvalidCast);
   return name.Compare(((const PHTTPField &)obj).name);
+}
+
+
+PCaselessString PHTTPField::GetNameAt(PINDEX) const
+{
+  return name;
+}
+
+
+void PHTTPField::SetName(const PString & newName)
+{
+  name = newName;
 }
 
 
@@ -72,96 +88,299 @@ void PHTTPField::SetHelp(const PString & hotLinkURL,
 }
 
 
+PINDEX PHTTPField::GetSize() const
+{
+  return 1;
+}
+
+
+void PHTTPField::GetHTMLHeading(PHTML &)
+{
+}
+
+
+PString PHTTPField::GetValueAt(PINDEX) const
+{
+  return GetValue();
+}
+
+
+void PHTTPField::SetValueAt(PINDEX, const PString & value)
+{
+  SetValue(value);
+}
+
+
 BOOL PHTTPField::Validated(const PString &, PStringStream &) const
 {
   return TRUE;
 }
 
 
-PINDEX PHTTPField::GetListCount() const
-{
-  return 1;
-}
-
-
-PString PHTTPField::GetListValue(PINDEX) const
-{
-  return GetValue();
-}
-
-
-void PHTTPField::SetListValue(const PStringToString & data)
+void PHTTPField::SetAllValues(const PStringToString & data)
 {
   SetValue(data(name));
 }
 
 
-BOOL PHTTPField::ValidateList(const PStringToString & data, PStringStream & msg) const
+BOOL PHTTPField::ValidateAll(const PStringToString & data, PStringStream & msg) const
 {
   return Validated(data(name), msg);
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTTPListField
+// PHTTPCompositeField
 
-PHTTPListField::PHTTPListField(PHTTPField * fld)
-  : PHTTPField(*fld), templateField(fld)
+PHTTPCompositeField::PHTTPCompositeField(const char * nam,
+                                         const char * titl,
+                                         const char * hlp)
+  : PHTTPField(nam, titl, hlp)
 {
 }
 
 
-PHTTPListField::~PHTTPListField()
+PCaselessString PHTTPCompositeField::GetNameAt(PINDEX idx) const
 {
-  delete templateField;
-}
-
-
-void PHTTPListField::GetHTML(PHTML & html)
-{
-  for (PINDEX i = 0; i < fields.GetSize(); i++)
-    fields[i].GetHTML(html);
-}
-
-
-PINDEX PHTTPListField::GetListCount() const
-{
-  return fields.GetSize();
-}
-
-
-BOOL PHTTPListField::ValidateList(const PStringToString & data,
-                                  PStringStream & msg) const
-{
-  PString name_n;
-  PINDEX i = 0;
-  for (;;) {
-    name_n = name+psprintf("%u", i+1);
-    if (i >= fields.GetSize())
-      break;
-
-    if (!fields[i].Validated(data(name_n), msg))
-      return FALSE;
-    i++;
+  PINDEX base = 0;
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    PINDEX fieldSize = fields[i].GetSize();
+    if (idx - base < fieldSize)
+      return fields[i].GetNameAt(idx - base);
+    base += fieldSize;
   }
 
-  if (data.Contains(name_n) && !Validated(data[name_n], msg))
-    return FALSE;
+  return GetName();
+}
+
+
+void PHTTPCompositeField::SetName(const PString & newName)
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    PHTTPField & field = fields[i];
+    PINDEX pos = 0;
+    if (field.GetName().Find(name) == 0)
+      pos = name.GetLength();
+    field.SetName(newName & field.GetName().Mid(pos));
+  }
+
+  name = newName;
+}
+
+
+PINDEX PHTTPCompositeField::GetSize() const
+{
+  PINDEX total = 0;
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    total += fields[i].GetSize();
+  return total;
+}
+
+
+PHTTPField * PHTTPCompositeField::NewField() const
+{
+  PHTTPCompositeField * fld = new PHTTPCompositeField(name, title, help);
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    fld->Append(fields[i].NewField());
+  return fld;
+}
+
+
+void PHTTPCompositeField::GetHTML(PHTML & html)
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    if (i != 0)
+      html << PHTML::TableData();
+    fields[i].GetHTML(html);
+  }
+}
+
+
+void PHTTPCompositeField::GetHTMLHeading(PHTML & html)
+{
+  html << PHTML::TableRow();
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    html << PHTML::TableData() << fields[i].GetName();
+}
+
+
+PString PHTTPCompositeField::GetValue() const
+{
+  PString value;
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    value += fields[i].GetValue();
+  return value;
+}
+
+
+PString PHTTPCompositeField::GetValueAt(PINDEX idx) const
+{
+  PINDEX base = 0;
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    PINDEX fieldSize = fields[i].GetSize();
+    if (idx - base < fieldSize)
+      return fields[i].GetValueAt(idx - base);
+    base += fieldSize;
+  }
+
+  return PString();
+}
+
+
+void PHTTPCompositeField::SetValue(const PString &)
+{
+  PAssertAlways("PHTTPCompositeField::SetValue() called");
+}
+
+
+void PHTTPCompositeField::SetValueAt(PINDEX idx, const PString & value)
+{
+  PINDEX base = 0;
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    PINDEX fieldSize = fields[i].GetSize();
+    if (idx - base < fieldSize) {
+      fields[i].SetValueAt(idx - base, value);
+      break;
+    }
+    base += fieldSize;
+  }
+}
+
+
+void PHTTPCompositeField::SetAllValues(const PStringToString & data)
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    fields[i].SetAllValues(data);
+}
+
+
+BOOL PHTTPCompositeField::ValidateAll(const PStringToString & data,
+                                      PStringStream & msg) const
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    if (!fields[i].ValidateAll(data, msg))
+      return FALSE;
 
   return TRUE;
 }
 
 
-PString PHTTPListField::GetListValue(PINDEX idx) const
+void PHTTPCompositeField::Append(PHTTPField * fld)
 {
-  return fields[idx].GetValue();
+  fields.Append(fld);
 }
 
 
-void PHTTPListField::SetListValue(const PStringToString & data)
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPFieldArray
+
+PHTTPFieldArray::PHTTPFieldArray(PHTTPField * fld)
+  : PHTTPCompositeField(fld->GetName(), fld->GetTitle(), fld->GetHelp()),
+    baseField(fld)
 {
-  for (PINDEX i = 0; i < fields.GetSize(); i++)
-    fields[i].SetValue(data(name + psprintf("%u", i+1)));
+  AddBlankField();
+}
+
+
+PHTTPFieldArray::~PHTTPFieldArray()
+{
+  delete baseField;
+}
+
+
+PCaselessString PHTTPFieldArray::GetNameAt(PINDEX idx) const
+{
+  if (idx > 0)
+    return PHTTPCompositeField::GetNameAt(idx-1);
+
+  return name & "Array Size";
+}
+
+
+PINDEX PHTTPFieldArray::GetSize() const
+{
+  return PHTTPCompositeField::GetSize() + 1;
+}
+
+
+PHTTPField * PHTTPFieldArray::NewField() const
+{
+  return new PHTTPFieldArray(baseField->NewField());
+}
+
+
+static const char IncludeCheckBox[] = "Include";
+
+void PHTTPFieldArray::GetHTML(PHTML & html)
+{
+  html << PHTML::TableStart();
+  baseField->GetHTMLHeading(html);
+  for (PINDEX i = 0; i < fields.GetSize(); i++) {
+    html << PHTML::TableRow() << PHTML::TableData();
+    fields[i].GetHTML(html);
+    html << PHTML::TableData()
+         << PHTML::CheckBox(IncludeCheckBox & fields[i].GetName(),
+                            i < fields.GetSize()-1 ? PHTML::Checked : PHTML::UnChecked);
+  }
+  html << PHTML::TableEnd();
+}
+
+
+PString PHTTPFieldArray::GetValueAt(PINDEX idx) const
+{
+  if (idx > 0)
+    return PHTTPCompositeField::GetValueAt(idx-1);
+
+  return psprintf("%u", fields.GetSize());
+}
+
+
+void PHTTPFieldArray::SetValueAt(PINDEX idx, const PString & value)
+{
+  if (idx > 0)
+    PHTTPCompositeField::SetValueAt(idx-1, value);
+  else {
+    PINDEX newSize = value.AsInteger();
+    if (newSize == 0)
+      newSize = 1;
+    while (fields.GetSize() > newSize)
+      fields.RemoveAt(fields.GetSize()-1);
+    while (fields.GetSize() < newSize)
+      AddBlankField();
+  }
+}
+
+
+void PHTTPFieldArray::SetAllValues(const PStringToString & data)
+{
+  BOOL lastFieldIsSet = TRUE;
+  PINDEX i;
+  for (i = 0; i < fields.GetSize(); i++) {
+    if (data.Contains(IncludeCheckBox & fields[i].GetName()))
+      fields[i].SetAllValues(data);
+    else if (i < fields.GetSize()-1)
+      fields.SetAt(i, NULL);
+    else
+      lastFieldIsSet = FALSE;
+  }
+  for (i = 0; i < fields.GetSize(); i++) {
+    if (fields.GetAt(i) == NULL) {
+      fields.RemoveAt(i);
+      for (PINDEX j = i; j < fields.GetSize(); j++)
+        fields[j].SetName(name + psprintf(" %u", j+1));
+      i--;
+    }
+  }
+  if (lastFieldIsSet)
+    AddBlankField();
+}
+
+
+void PHTTPFieldArray::AddBlankField()
+{
+  PHTTPField * fld = baseField->NewField();
+  fields.Append(fld);
+  fld->SetName(name + psprintf(" %u", fields.GetSize()));
 }
 
 
@@ -186,6 +405,12 @@ PHTTPStringField::PHTTPStringField(const char * name,
   : PHTTPField(name, title, help), value(initVal != NULL ? initVal : "")
 {
   size = siz;
+}
+
+
+PHTTPField * PHTTPStringField::NewField() const
+{
+  return new PHTTPStringField(name, title, size, "", help);
 }
 
 
@@ -229,6 +454,12 @@ PHTTPPasswordField::PHTTPPasswordField(const char * name,
 }
 
 
+PHTTPField * PHTTPPasswordField::NewField() const
+{
+  return new PHTTPPasswordField(name, title, size, "", help);
+}
+
+
 void PHTTPPasswordField::GetHTML(PHTML & html)
 {
   html << PHTML::InputPassword(name, size, value);
@@ -264,15 +495,9 @@ PHTTPIntegerField::PHTTPIntegerField(const char * nam,
 }
 
 
-BOOL PHTTPIntegerField::Validated(const PString & newVal, PStringStream & msg) const
+PHTTPField * PHTTPIntegerField::NewField() const
 {
-  int val = newVal.AsInteger();
-  if (val >= low && val <= high)
-    return TRUE;
-
-  msg << "The field \"" << name << "\" should be between "
-      << low << " and " << high << ".<BR>";
-  return FALSE;
+  return new PHTTPIntegerField(name, title, low, high, 0, units, help);
 }
 
 
@@ -291,6 +516,18 @@ void PHTTPIntegerField::SetValue(const PString & newVal)
 PString PHTTPIntegerField::GetValue() const
 {
   return PString(PString::Signed, value);
+}
+
+
+BOOL PHTTPIntegerField::Validated(const PString & newVal, PStringStream & msg) const
+{
+  int val = newVal.AsInteger();
+  if (val >= low && val <= high)
+    return TRUE;
+
+  msg << "The field \"" << name << "\" should be between "
+      << low << " and " << high << ".<BR>";
+  return FALSE;
 }
 
 
@@ -313,6 +550,12 @@ PHTTPBooleanField::PHTTPBooleanField(const char * name,
   : PHTTPField(name, title, help)
 {
   value = initVal;
+}
+
+
+PHTTPField * PHTTPBooleanField::NewField() const
+{
+  return new PHTTPBooleanField(name, title, FALSE, help);
 }
 
 
@@ -445,6 +688,12 @@ PHTTPRadioField::PHTTPRadioField(const char * name,
 }
 
 
+PHTTPField * PHTTPRadioField::NewField() const
+{
+  return new PHTTPRadioField(name, title, values, titles, 0, help);
+}
+
+
 void PHTTPRadioField::GetHTML(PHTML & html)
 {
   for (PINDEX i = 0; i < values.GetSize(); i++)
@@ -518,6 +767,12 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
     values(count, valueStrings),
     value(valueStrings[initVal])
 {
+}
+
+
+PHTTPField * PHTTPSelectField::NewField() const
+{
+  return new PHTTPSelectField(name, title, values, 0, help);
 }
 
 
@@ -656,7 +911,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   BOOL good = TRUE;
   PINDEX fld;
   for (fld = 0; fld < fields.GetSize(); fld++) {
-    if (!fields[fld].ValidateList(data, msg))
+    if (!fields[fld].ValidateAll(data, msg))
       good = FALSE;
   }
 
@@ -667,7 +922,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   }
 
   for (fld = 0; fld < fields.GetSize(); fld++)
-    fields[fld].SetListValue(data);
+    fields[fld].SetAllValues(data);
 
   msg = "Accepted New Configuration";
   msg << PHTML::Body();
@@ -724,17 +979,21 @@ void PHTTPConfig::Construct()
 
 void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
 {
-  if (sectionField != NULL)
-    return;
-
-  PString sectionName = request.url.GetQueryVars()("section", section);
-  if (sectionName.IsEmpty())
-    return;
-
-  PConfig cfg(sectionName);
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    field.SetValue(cfg.GetString(field.GetName(), field.GetValue()));
+  if (sectionField == NULL) {
+    PString sectionName = request.url.GetQueryVars()("section", section);
+    if (!sectionName) {
+      PConfig cfg(sectionName);
+      for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+        PHTTPField & field = fields[fld];
+        for (PINDEX i = 0; i < field.GetSize(); i++) {
+          if (section != sectionName)
+            field.SetValueAt(i, cfg.GetString(field.GetNameAt(i)));
+          else
+            field.SetValueAt(i, cfg.GetString(field.GetNameAt(i), field.GetValueAt(i)));
+        }
+      }
+      section = sectionName;
+    }
   }
 
   PHTTPForm::OnLoadedText(request, text);
@@ -745,6 +1004,17 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & msg)
 {
+  PSortedStringList oldValues;
+
+  PINDEX fld;
+  for (fld = 0; fld < fields.GetSize(); fld++) {
+    PHTTPField & field = fields[fld];
+    if (&field != keyField && &field != valField && &field != sectionField) {
+      for (PINDEX i = 0; i < field.GetSize(); i++)
+        oldValues.AppendString(field.GetNameAt(i));
+    }
+  }
+
   PHTTPForm::Post(request, data, msg);
   if (request.code != PHTTP::OK)
     return TRUE;
@@ -757,16 +1027,35 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
     return TRUE;
 
   PConfig cfg(sectionName);
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+
+  for (fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field == keyField) {
       PString key = field.GetValue();
       if (!key)
         cfg.SetString(key, valField->GetValue());
     }
-    else if (&field != valField && &field != sectionField)
-      cfg.SetString(field.GetName(), field.GetValue());
+    else if (&field != valField && &field != sectionField) {
+      for (PINDEX i = 0; i < field.GetSize(); i++)
+        cfg.SetString(field.GetNameAt(i), field.GetValueAt(i));
+    }
   }
+
+  for (fld = 0; fld < fields.GetSize(); fld++) {
+    PHTTPField & field = fields[fld];
+    if (&field != keyField && &field != valField && &field != sectionField) {
+      for (PINDEX i = 0; i < field.GetSize(); i++) {
+        PINDEX idx = oldValues.GetStringsIndex(field.GetNameAt(i));
+        if (idx != P_MAX_INDEX)
+          oldValues.RemoveAt(idx);
+      }
+    }
+  }
+
+  for (fld = 0; fld < oldValues.GetSize(); fld++)
+    cfg.DeleteKey(oldValues[fld]);
+
+  section = sectionName;
   return TRUE;
 }
 
@@ -776,6 +1065,7 @@ PHTTPField * PHTTPConfig::AddSectionField(PHTTPField * sectionFld,
                                           const char * suffix)
 {
   sectionField = PAssertNULL(sectionFld);
+  PAssert(sectionField->GetSize() == 1, "Section field is list");
   Add(sectionField);
 
   if (prefix != NULL)
@@ -795,6 +1085,88 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
   valField = PAssertNULL(valFld);
   Add(valFld);
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPConfigSectionList
+
+PHTTPConfigSectionList::PHTTPConfigSectionList(const PURL & url,
+                                               const PHTTPAuthority & auth,
+                                               const PString & prefix,
+                                               const PString & valueName,
+                                               const PURL & editSection,
+                                               const PURL & newSection,
+                                               const PString & newTitle,
+                                               PHTML & heading)
+  : PHTTPString(url, auth),
+    sectionPrefix(prefix),
+    additionalValueName(valueName),
+    newSectionLink(newSection.AsString(PURL::URIOnly)),
+    newSectionTitle(newTitle),
+    editSectionLink(editSection.AsString(PURL::URIOnly) +
+                      "?section=" + PURL::TranslateString(prefix, PURL::QueryTranslation))
+{
+  if (heading.Is(PHTML::InBody))
+    heading << "<!--PHTTPConfigSectionList-->" << PHTML::Body();
+  SetString(heading);
+}
+
+
+void PHTTPConfigSectionList::OnLoadedText(PHTTPRequest &, PString & text)
+{
+  PConfig cfg;
+  PStringList nameList = cfg.GetSections();
+  PHTML html = PHTML::InBody;
+
+  html << PHTML::Form() << PHTML::TableStart();
+
+  PINDEX i; 
+  for (i = 0; i < nameList.GetSize(); i++) {
+    if (nameList[i].Find(sectionPrefix) == 0) {
+      PString name = nameList[i].Mid(sectionPrefix.GetLength());
+      html << PHTML::TableRow()
+           << PHTML::TableData()
+           << PHTML::HotLink(editSectionLink + name)
+           << name
+           << PHTML::HotLink();
+      if (!additionalValueName)
+        html << PHTML::TableData() << cfg.GetString(nameList[i], additionalValueName, "");
+      html << PHTML::TableData() << PHTML::SubmitButton("Remove", name);
+    }
+  }
+
+  html << PHTML::TableRow()
+       << PHTML::TableData()
+       << PHTML::HotLink(newSectionLink)
+       << newSectionTitle
+       << PHTML::HotLink()
+       << PHTML::TableEnd()
+       << PHTML::Form();
+
+  text.Replace("<!--PHTTPConfigSectionList-->", html);
+}
+
+
+BOOL PHTTPConfigSectionList::Post(PHTTPRequest &,
+                                  const PStringToString & data,
+                                  PHTML & replyMessage)
+{
+  PConfig cfg;
+  PStringList nameList = cfg.GetSections();
+  PINDEX i; 
+  for (i = 0; i < nameList.GetSize(); i++) {
+    if (nameList[i].Find(sectionPrefix) == 0) {
+      PString name = nameList[i].Mid(sectionPrefix.GetLength());
+      if (data.Contains(name)) {
+        cfg.DeleteSection(nameList[i]);
+        replyMessage << name << " removed.";
+      }
+    }
+  }
+
+  return TRUE;
+}
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
