@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.22  2003/05/14 02:51:42  rjongbloed
+ * Protected use of user data in video for windows calls.
+ *
  * Revision 1.21  2003/03/17 07:52:15  robertj
  * Fixed return value if starting capture and already have it started.
  *
@@ -692,7 +695,7 @@ LRESULT PVideoInputDevice::HandleError(int id, LPCSTR err)
 
 LRESULT CALLBACK PVideoInputDevice::VideoHandler(HWND hWnd, LPVIDEOHDR vh)
 {
-  if (hWnd == NULL)
+  if (hWnd == NULL || capGetUserData(hWnd) == NULL)
     return FALSE;
 
   return ((PVideoInputDevice *)capGetUserData(hWnd))->HandleVideo(vh);
@@ -763,14 +766,14 @@ BOOL PVideoInputDevice::InitialiseCapture()
     }
   }
 
+  capSetUserData(hCaptureWindow, this);
+
   // Use first driver available.
   if (!capDriverConnect(hCaptureWindow, devId)) {
     lastError = ::GetLastError();
     PTRACE(1, "PVidInp\tcapDriverConnect failed - " << lastError);
     return FALSE;
   }
-
-  capSetUserData(hCaptureWindow, this);
 
   CAPDRIVERCAPS driverCaps;
   memset(&driverCaps, 0, sizeof(driverCaps));
