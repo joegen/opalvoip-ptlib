@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.5 1997/03/18 22:04:03 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.6 1997/03/28 04:40:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.6  1997/03/28 04:40:46  robertj
+ * Fixed bug in Post function doing wrong command.
+ *
  * Revision 1.5  1997/03/18 22:04:03  robertj
  * Fix bug for binary POST commands.
  *
@@ -240,7 +243,7 @@ BOOL PHTTPClient::PostData(const PURL & url,
 {
   PStringStream body;
   body << data;
-  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, body, replyMIME);
+  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME);
 }
 
 
