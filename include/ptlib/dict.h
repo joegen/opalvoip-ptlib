@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.34  2004/11/23 11:33:08  csoutheren
+ * Fixed problem with RemoveAt returning invalid pointer in some cases,
+ * and added extra documentation on this case.
+ * Thanks to Diego Tartara for pointing out this potential problem
+ *
  * Revision 1.33  2004/04/09 03:42:34  csoutheren
  * Removed all usages of "virtual inline" and "inline virtual"
  *
@@ -1030,11 +1035,17 @@ template <class K, class D> class PDictionary : public PAbstractDictionary
        object is also deleted.
 
        @return
-       pointer to the object being removed, or NULL if it was deleted.
+       pointer to the object being removed, or NULL if the key was not 
+       present in the dictionary. If the dictionary is set to delete objects
+       upon removal, the value -1 is returned if the key existed prior to removal
+       rather than returning an illegal pointer
      */
     virtual D * RemoveAt(
       const K & key   /// Key for position in dictionary to get object.
-    ) { D * obj = GetAt(key); AbstractSetAt(key, NULL); return obj; }
+    ) {
+        D * obj = GetAt(key); AbstractSetAt(key, NULL); 
+        return reference->deleteObjects ? (obj ? (D *)-1 : NULL) : obj;
+      }
 
     /**Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
