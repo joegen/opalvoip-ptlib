@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.22  2002/11/20 00:50:09  robertj
+ * Fixed correct interpretation of url re double slashes as per latest RFC,
+ *   including file: mapping and relative paths. Probably still more to do.
+ *
  * Revision 1.21  2002/11/19 10:36:08  robertj
  * Added functions to set anf get "file:" URL. as PFilePath and do the right
  *   things with platform dependent directory components.
@@ -274,14 +278,14 @@ class PURL : public PObject
     /// Set the port field in the URL.
     void SetPort(WORD newPort);
 
+    /// Get if path is relative or absolute
+    BOOL GetRelativePath() const { return relativePath; }
+
     /// Get the path field of the URL as a string.
     const PString & GetPathStr() const { return pathStr; }
 
     /// Set the path field of the URL as a string.
     void SetPathStr(const PString & pathStr);
-
-    /// Set the path field of the URL as a string.
-    void SetPathStr(const PFilePath & pathStr);
 
     /// Get the path field of the URL as a string array.
     const PStringArray & GetPath() const { return path; }
@@ -342,6 +346,7 @@ class PURL : public PObject
     PString password;
     PCaselessString hostname;
     WORD port;
+    BOOL relativePath;
     PString pathStr;
     PStringArray path;
     PStringToString paramVars;
