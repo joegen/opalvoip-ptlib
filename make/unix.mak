@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.152  2003/01/07 10:33:56  rogerh
+# New Sleep() code for use with GNU PTH threads (taken from NetBSD pkg)
+#
 # Revision 1.151  2003/01/06 23:22:51  rogerh
 # Fix typo
 #
@@ -862,14 +865,18 @@ endif
 STDCCFLAGS	+= -DP_NETBSD=$(OSRELEASE)
 LDLIBS		+= -lossaudio
 
+STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include
+
 # enable the USE_PTH line to compile using pth
 # comment out USE_PTH to compile using unproven threads
 USE_PTH := 1
 
 ifdef P_PTHREADS
 ifdef USE_PTH 
-STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include -I/usr/pkg/include
-LDFLAGS += -L/usr/pkg/lib -lpthread
+STDCCFLAGS += -DP_GNU_PTH
+STDCCFLAGS += -I/usr/pkg/include
+LDFLAGS += -L/usr/pkg/lib
+LDLIBS  += -lpthread
 else
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
