@@ -19,6 +19,14 @@
 #define	tZONE	269
 #define	tDST	270
 
+#ifdef _MSC_VER
+#pragma warning(disable:4131 4701 4129 4146 4307 4018)
+#define STDAPICALLTYPE __stdcall
+#define MSDOS
+#else
+#define STDAPICALLTYPE
+#endif
+
 #line 3 "..\..\common\getdate.y"
 
 /*
@@ -41,14 +49,6 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4131 4701)
-#define STDAPICALLTYPE __stdcall
-#define MSDOS
-#else
-#define STDAPICALLTYPE
-#endif
 
 extern "C" {
 extern int  STDAPICALLTYPE PTimeGetChar(void * stream);
