@@ -150,6 +150,19 @@ system for all of the various unix systems.
     If you have NOT included these variables then you will get a warning
     during the build. YOu can safely ignore this warning.
 
+2c. If you have OPenLDAP installed and compiled on your system then you
+    can define the following environment variables to get LDAP support:
+    
+        OPENLDAPFLAG=1
+        OPENLDAPDIR=c:\somewhere\openldap
+        OPENLDAPLIBS=openldap.lib
+
+    If you have NOT included these variables then you will get a warning
+    during the build. You can safely ignore this warning.
+
+    There are additional notes in the "Platform Specific Issues" on how to
+    compile OpenLDAP in a manner suitable for use by PWLib under Windows.
+
 3.  In VisualStudio v5/6 open the pwlib.dsw file in the pwlib top directory.
     If you have the minimum library it will come up with several requests to
     find .dsp files, just cancel past these.
@@ -1194,6 +1207,23 @@ There is currently no implementation of GetRouteTable() in socket.cxx
 so OpenH323Proxy will not work.
 
 
+--------------------------------------------------------------------------------
+7.8. OpenLDAP under Windows
+---------------------------
+To use OpenLDAP with PWLib you have to compile the OpenLDAP library as a DLL.
+Unfortunately, the standard distribution does not do this. So there is a file in
+PWLib called pwlib/tools/openldap-2.1.12-win32.zip which contains altered build
+files for that version of OpenLDAP. Note if you have a different version these
+files may not work.
+
+To build the DLL:
+
+   1   Get OpenLDAP v 1.1.12 (STABLE)
+   2   Unpack it somewhere, eg c:\work\openldap
+   3   Unzip the openldap-2.1.12-win32.zip file in the directory above, eg c:\work
+   4   Open openldap/build/main.dsw
+   5   Select the "dll" project and build the "DLL Release" target.
+   6   Put the resulting openldap/DLLRelease/openldap.dll file in your path.
 
 
 ================================================================================
