@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.22 1998/03/20 03:16:09 robertj Exp $
+ * $Id: httpsvc.h,v 1.23 1998/04/01 01:56:47 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.23  1998/04/01 01:56:47  robertj
+ * Added PServiceHTTPFile constructor so file path and URL can be different.
+ *
  * Revision 1.22  1998/03/20 03:16:09  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -357,7 +360,8 @@ PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
   public:
     PServiceHTTPFile(const PString & filename, BOOL needSig = FALSE)
       : PHTTPFile(filename) { needSignature = needSig; }
-
+    PServiceHTTPFile(const PString & filename, const PFilePath & file, BOOL needSig = FALSE)
+      : PHTTPFile(filename, file) { needSignature = needSig; }
     PServiceHTTPFile(const PString & filename, const PHTTPAuthority & auth, BOOL needSig = FALSE)
       : PHTTPFile(filename, auth) { needSignature = needSig; }
 
