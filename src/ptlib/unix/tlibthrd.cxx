@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.12  1999/01/12 12:09:51  robertj
+ * Removed redundent member variable, was in common.
+ * Fixed BSD threads compatibility.
+ *
  * Revision 1.11  1999/01/11 12:05:56  robertj
  * Fixed some more race conditions in threads.
  *
@@ -97,7 +101,8 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
   struct timeval * tptr = NULL;
   struct timeval   timeout_val;
   if (timeout != PMaxTimeInterval) {
-    if (timeout.GetMilliSeconds() < 1000L*60L*60L*24L) {
+    static const PTimeInterval oneDay(0, 0, 0, 0, 1);
+    if (timeout < oneDay) {
       timeout_val.tv_usec = (timeout.GetMilliSeconds() % 1000) * 1000;
       timeout_val.tv_sec  = timeout.GetSeconds();
       tptr                = &timeout_val;
@@ -185,12 +190,12 @@ PThread::PThread()
 void PThread::InitialiseProcessThread()
 {
   PX_origStackSize    = 0;
-  PX_autoDelete       = FALSE;
+  autoDelete          = FALSE;
   PX_waitingSemaphore = NULL;
   PX_threadId         = pthread_self();
 
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
-  ((PProcess *)this)->activeThreads.SetAt(PX_threadId, this);
+  ((PProcess *)this)->activeThreads.SetAt((unsigned)PX_threadId, this);
 }
 
 
@@ -201,7 +206,8 @@ PThread::PThread(PINDEX stackSize,
   PAssert(stackSize > 0, PInvalidParameter);
 
   PX_origStackSize = stackSize;
-  PX_autoDelete  = (deletion == AutoDeleteThread);
+  autoDelete       = (deletion == AutoDeleteThread);
+
   PX_waitingSemaphore = NULL;
   pthread_mutex_init(&PX_WaitSemMutex, NULL);
 
@@ -214,7 +220,6 @@ PThread::~PThread()
 {
   if (!IsTerminated())
     Terminate();
-//  printf("PThread destroyed\n");
 
   PAssertOS(pthread_mutex_destroy(&PX_WaitSemMutex) == 0);
 }
@@ -256,7 +261,7 @@ void * PThread::PX_ThreadStart(void * arg)
 
   // add thread to thread list
   process.threadMutex.Wait();
-  process.activeThreads.SetAt(threadId, thread);
+  process.activeThreads.SetAt((unsigned)threadId, thread);
   process.threadMutex.Signal();
 
   // make sure the cleanup routine is called when the thread exits
@@ -311,7 +316,7 @@ void PThread::PX_ThreadEnd(void * arg)
   PAssertOS(pthread_mutex_destroy(&thread->PX_suspendMutex) == 0);
 
   // delete the thread if required
-  if (thread->PX_autoDelete) {
+  if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
     delete thread;
 //    printf("auto deleted thread object\n");
