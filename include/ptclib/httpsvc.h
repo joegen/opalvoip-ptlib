@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.41  2002/07/30 03:47:13  craigs
+ * Added PHTTPServiceString with content type
+ *
  * Revision 1.40  2002/07/17 08:02:53  robertj
  * Allowed for adjustable copyright holder
  *
@@ -526,6 +529,9 @@ class PServiceHTTPString : public PHTTPString
 
     PServiceHTTPString(const PURL & url, const PString & string, const PHTTPAuthority & auth)
       : PHTTPString(url, string, auth) { }
+
+    PServiceHTTPString(const PURL & url, const PString & string, const PString & contentType, const PHTTPAuthority & auth)
+      : PHTTPString(url, string, contentType, auth) { }
 
     PString LoadText(PHTTPRequest &);
 
