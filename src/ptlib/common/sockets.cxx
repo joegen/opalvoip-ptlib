@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.107  2001/03/05 04:18:27  robertj
+ * Added net mask to interface info returned by GetInterfaceTable()
+ *
  * Revision 1.106  2001/01/29 06:41:32  robertj
  * Added printing of entry of interface table.
  *
@@ -1530,12 +1533,15 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
 
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
+                                          const Address & _mask,
                                           const PString & _macAddr)
   : name(_name.Trim()),
     ipAddr(_addr),
+    netMask(_mask),
     macAddr(_macAddr)
 {
 }
+
 
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
@@ -1565,6 +1571,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
     return true;
 }
 #endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PTCPSocket
