@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.82  1999/03/09 08:19:15  robertj
+ * Adjustment found during documentation frenzy.
+ *
  * Revision 1.81  1999/02/12 01:01:57  craigs
  * Fixed problem with linking static versions of libraries
  *
@@ -1358,7 +1361,7 @@ BOOL PDynaLink::IsLoaded() const
 
 PString PDynaLink::GetName(BOOL full) const
 {
-  PFILE_PATH_STRING str;
+  PFilePathString str;
   if (_hDLL != NULL) {
     GetModuleFileName(_hDLL, str.GetPointer(_MAX_PATH), _MAX_PATH-1);
     if (!full) {
