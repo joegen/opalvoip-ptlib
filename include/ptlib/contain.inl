@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.25 1994/11/28 12:33:46 robertj Exp $
+ * $Id: contain.inl,v 1.26 1994/12/05 11:19:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.25  1994/11/28 12:33:46  robertj
+ * Revision 1.26  1994/12/05 11:19:09  robertj
+ * Moved SetMinSize from PAbstractArray to PContainer.
+ *
+ * Revision 1.25  1994/11/28  12:33:46  robertj
  * Added dummy parameter for cls* constructor in containers. This prevents some very
  * strange an undesirable default construction of clones.
  *
@@ -104,12 +107,6 @@ PINLINE BOOL PContainer::IsEmpty() const
 
 PINLINE BOOL PContainer::IsUnique() const
   { return PAssertNULL(reference)->count <= 1; }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-PINLINE BOOL PAbstractArray::MakeUnique()
-  { return IsUnique() || SetSize(GetSize()); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
