@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.8  2003/06/05 05:29:30  rjongbloed
+ * Fixed LDAP bind authentication methods, thanks Ravelli Rossano
+ *
  * Revision 1.7  2003/04/17 08:34:48  robertj
  * Changed LDAP structure output so if field is empty it leaves it out
  *   altogether rather then encoding an empty string, some servers barf.
@@ -142,7 +145,11 @@ BOOL PLDAPSession::Bind(const PString & who,
     whoPtr = NULL;
   else
     whoPtr = who;
-  errorNumber = ldap_bind_s(ldapContext, whoPtr, passwd, authMethod);
+
+  static const int AuthMethodCode[NumAuthenticationMethod] = {
+    LDAP_AUTH_SIMPLE, LDAP_AUTH_SASL, LDAP_AUTH_KRBV4
+  };
+  errorNumber = ldap_bind_s(ldapContext, whoPtr, passwd, AuthMethodCode[authMethod]);
   return errorNumber == LDAP_SUCCESS;
 }
 
