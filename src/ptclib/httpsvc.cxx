@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.68  2001/03/19 02:41:53  robertj
+ * Made sure HTTP listener thread is shut down in OnStop().
+ *
  * Revision 1.67  2001/03/16 03:33:21  robertj
  * Fixed HTML signature code due to changes in encryption code.
  *
@@ -325,6 +328,7 @@ BOOL PHTTPServiceProcess::OnStart()
 
 void PHTTPServiceProcess::OnStop()
 {
+  ShutdownListener();
   PSYSTEMLOG(Warning, GetName() << " stopped.");
   PServiceProcess::OnStop();
 }
