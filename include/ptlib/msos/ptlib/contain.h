@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.18 1997/07/08 13:01:30 robertj Exp $
+ * $Id: contain.h,v 1.19 1998/01/26 00:52:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.19  1998/01/26 00:52:13  robertj
+ * Fixed istream << operator for PInt64, should be reference.
+ *
  * Revision 1.18  1997/07/08 13:01:30  robertj
  * DLL support.
  *
@@ -177,8 +180,8 @@ class istream;
 ostream & operator<<(ostream & s, PInt64 v);
 ostream & operator<<(ostream & s, PUInt64 v);
 
-istream & operator>>(istream & s, PInt64 v);
-istream & operator>>(istream & s, PUInt64 v);
+istream & operator>>(istream & s, PInt64 & v);
+istream & operator>>(istream & s, PUInt64 & v);
 
 #endif
 
