@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.6 1997/01/12 04:15:11 robertj Exp $
+ * $Id: remconn.h,v 1.7 1997/04/01 06:00:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.7  1997/04/01 06:00:05  robertj
+ * Added Remove Configuration.
+ *
  * Revision 1.6  1997/01/12 04:15:11  robertj
  * Added ability to add/change new connections.
  *
@@ -86,10 +89,6 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
        Array of strings for remote connection names.
      */
 
-    enum MultiChannelDialMode {
-
-    };
-
     struct Configuration {
       PString device;
       PString phoneNumber;
@@ -110,10 +109,10 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     /* Get the configuration of the specified remote access connection.
 
        <H2>Returns:</H2>
-       Connected if the configuration information was obtained,
-       NoNameOrNumber if the particular RAS name does not exist,
-       NotInstalled if there is no RAS support in the operating system,
-       GeneralFailure on any other error.
+       <CODE>Connected</CODE> if the configuration information was obtained,
+       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
+       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
+       <CODE>GeneralFailure</CODE> on any other error.
      */
 
     Status SetConfiguration(
@@ -128,10 +127,22 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
     /* Set the configuration of the specified remote access connection.
 
        <H2>Returns:</H2>
-       Connected if the configuration information was obtained,
-       NoNameOrNumber if the particular RAS name does not exist,
-       NotInstalled if there is no RAS support in the operating system,
-       GeneralFailure on any other error.
+       <CODE>Connected</CODE> if the configuration information was set,
+       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
+       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
+       <CODE>GeneralFailure</CODE> on any other error.
+     */
+
+    static Status RemoveConfiguration(
+      const PString & name          // Remote connection name to configure
+    );
+    /* Remove the specified remote access connection.
+
+       <H2>Returns:</H2>
+       <CODE>Connected</CODE> if the configuration information was removed,
+       <CODE>NoNameOrNumber</CODE> if the particular RAS name does not exist,
+       <CODE>NotInstalled</CODE> if there is no RAS support in the operating system,
+       <CODE>GeneralFailure</CODE> on any other error.
      */
 
     
