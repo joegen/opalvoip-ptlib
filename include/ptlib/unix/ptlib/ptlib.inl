@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.22  2002/01/26 23:56:43  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.21  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -52,7 +55,7 @@
  */
 
 #if defined(P_LINUX)
-#if (__GNUC_MINOR__ < 7)
+#if (__GNUC_MINOR__ < 7 && __GNUC__ <= 2)
 #include <localeinfo.h>
 #else
 #define P_USE_LANGINFO
