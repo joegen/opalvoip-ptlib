@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.55 1997/08/07 11:58:02 robertj Exp $
+ * $Id: osutil.inl,v 1.56 1997/10/03 13:38:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.56  1997/10/03 13:38:26  robertj
+ * Fixed race condition on socket close in Select() function.
+ *
  * Revision 1.55  1997/08/07 11:58:02  robertj
  * Added ability to get registry data from other applications and anywhere in system registry.
  *
@@ -378,7 +381,7 @@ PINLINE PINDEX PChannel::GetLastWriteCount() const
   { return lastWriteCount; }
 
 PINLINE int PChannel::GetHandle() const
-  { PAssert(os_handle >= 0, PChannelNotOpen); return os_handle; }
+  { return os_handle; }
 
 PINLINE PChannel::Errors PChannel::GetErrorCode() const
   { return lastError; }
