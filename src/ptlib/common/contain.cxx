@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.133  2003/05/14 00:48:33  rjongbloed
+ * Added constructor to string lists/arrays etc that takes a single PString.
+ * Fixed bug in doing a MakeUnique on a container, it would lose the
+ *   DisallowDeleteObjects flag.
+ *
  * Revision 1.132  2003/04/28 09:14:14  robertj
  * Fixed bad sign extension problem in PBYTEArray output
  *
@@ -594,7 +599,7 @@ BOOL PContainer::MakeUnique()
     return TRUE;
 
   reference->count--;
-  reference = new Reference(GetSize());
+  reference = new Reference(*reference);
   return FALSE;
 }
 
@@ -2507,6 +2512,13 @@ PStringArray::PStringArray(PINDEX count, char const * const * strarr, BOOL casel
 }
 
 
+PStringArray::PStringArray(const PString & str)
+{
+  SetSize(1);
+  (*theArray)[0] = new PString(str);
+}
+
+
 PStringArray::PStringArray(const PStringList & list)
 {
   SetSize(list.GetSize());
@@ -2596,6 +2608,12 @@ PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseles
 }
 
 
+PStringList::PStringList(const PString & str)
+{
+  AppendString(str);
+}
+
+
 PStringList::PStringList(const PStringArray & array)
 {
   for (PINDEX i = 0; i < array.GetSize(); i++)
@@ -2647,6 +2665,12 @@ PSortedStringList::PSortedStringList(PINDEX count,
       newString = new PString(strarr[i]);
     Append(newString);
   }
+}
+
+
+PSortedStringList::PSortedStringList(const PString & str)
+{
+  AppendString(str);
 }
 
 
@@ -2733,6 +2757,12 @@ PStringSet::PStringSet(PINDEX count, char const * const * strarr, BOOL caseless)
     else
       Include(PString(strarr[i]));
   }
+}
+
+
+PStringSet::PStringSet(const PString & str)
+{
+  Include(str);
 }
 
 
