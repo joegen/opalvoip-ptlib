@@ -1415,6 +1415,7 @@ EXPORTS
     ??R?$less@VPString@@@std@@QBE_NABVPString@@0@Z @6332 NONAME
     ??RPNotifier@@UBEXAAVPObject@@H@Z @1087 NONAME
     ??RPString@@QBE?AV0@HH@Z @1088 NONAME
+    ??XAddress@PIPSocket@@QBE_NABV01@@Z @7662 NONAME
     ??XPString@@QBE_NABV0@@Z @5936 NONAME
     ??XPString@@QBE_NPBD@Z @5937 NONAME
     ??XPTimeInterval@@QAEAAV0@H@Z @1091 NONAME
