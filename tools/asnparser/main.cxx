@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.52  2004/08/13 00:18:34  csoutheren
+ * Fixed problem with indent when outputting single elements
+ *
  * Revision 1.51  2004/04/25 08:58:58  rjongbloed
  * Fixed GCC 3.4 warning
  *
@@ -182,7 +185,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 9
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 1
+#define BUILD_NUMBER 2
 
 
 unsigned lineNumber;
@@ -2159,7 +2162,7 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
         << id << " = \" << setprecision(indent) << m_" << id << " << '\\n';\n";
   }
 
-  cxx << "  strm << setw(indent-1) << \"}\";\n"
+  cxx << "  strm << setw(indent-1) << setprecision(indent-2) << \"}\";\n"
          "}\n"
          "#endif\n"
          "\n"
