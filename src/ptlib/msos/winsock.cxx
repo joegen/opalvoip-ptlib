@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.18 1996/04/17 12:09:52 robertj Exp $
+ * $Id: winsock.cxx,v 1.19 1996/04/29 12:22:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.19  1996/04/29 12:22:26  robertj
+ * Fixed detection of infinite timeout.
+ *
  * Revision 1.18  1996/04/17 12:09:52  robertj
  * Fixed bug in detecting infinte timeout.
  *
@@ -115,16 +118,12 @@ BOOL PSocket::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  int timeout = readTimeout.GetMilliseconds();
-  if (timeout != -1) {
+  if (readTimeout != PMaxTimeInterval) {
     DWORD available;
     if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
       return FALSE;
 
     if (available == 0) {
-      struct timeval tv;
-      tv.tv_usec = timeout%1000*1000;
-      tv.tv_sec = timeout/1000;
       fd_set readfds;
 #ifdef _MSC_VER
 #pragma warning(disable:4127)
@@ -134,6 +133,9 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 #ifdef _MSC_VER
 #pragma warning(default:4127)
 #endif
+      struct timeval tv;
+      tv.tv_usec = readTimeout.GetMilliseconds()%1000*1000;
+      tv.tv_sec = readTimeout.GetSeconds();
       int selval = select(0, &readfds, NULL, NULL, &tv);
       if (!ConvertOSError(selval))
         return FALSE;
@@ -165,11 +167,13 @@ BOOL PSocket::Write(const void * buf, PINDEX len)
   flush();
   lastWriteCount = 0;
 
-  int timeout = writeTimeout.GetMilliseconds();
-  if (timeout == 0)
-    timeout = 1;
-  else if (timeout == 0x7fffffff)
+  int timeout;
+  if (writeTimeout == PMaxTimeInterval)
     timeout = 0;
+  else if (writeTimeout == 0)
+    timeout = 1;
+  else
+    timeout = writeTimeout.GetMilliseconds();
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
@@ -315,11 +319,13 @@ BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 {
   lastReadCount = 0;
 
-  int timeout = readTimeout.GetMilliseconds();
-  if (timeout == 0)
-    timeout = 1;
-  else if (timeout == 0x7fffffff)
+  int timeout;
+  if (readTimeout == PMaxTimeInterval)
     timeout = 0;
+  else if (readTimeout == 0)
+    timeout = 1;
+  else
+    timeout = readTimeout.GetMilliseconds();
   if (!SetOption(SO_RCVTIMEO, timeout))
     return FALSE;
 
@@ -343,11 +349,13 @@ BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
 {
   lastWriteCount = 0;
 
-  int timeout = writeTimeout.GetMilliseconds();
-  if (timeout == 0)
-    timeout = 1;
-  else if (timeout == 0x7fffffff)
+  int timeout;
+  if (writeTimeout == PMaxTimeInterval)
     timeout = 0;
+  else if (writeTimeout == 0)
+    timeout = 1;
+  else
+    timeout = writeTimeout.GetMilliseconds();
   if (!SetOption(SO_SNDTIMEO, timeout))
     return FALSE;
 
