@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.5 1995/03/14 12:40:58 robertj Exp $
+ * $Id: array.h,v 1.6 1995/06/17 11:12:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.6  1995/06/17 11:12:18  robertj
+ * Documentation update.
+ *
  * Revision 1.5  1995/03/14 12:40:58  robertj
  * Updated documentation to use HTML codes.
  *
@@ -42,7 +45,7 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
    destructors of objects.
 
    An abstract array consists of a linear block of memory sufficient to hold
-   <A><CODE>GetSize()</CODE></A> elements of <CODE>elementSize</CODE> bytes
+   <A>PContainer::GetSize()</A> elements of <CODE>elementSize</CODE> bytes
    each. The memory block itself will atuomatically be resized when required
    and freed when no more references to it are present.
 
@@ -67,8 +70,9 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
    (using inline functions) if templates are not being used.
 
    The <A>PBaseArray</A> class or <A>PDECLARE_BASEARRAY</A> macro will define
-   the correctly typed operators for pointer access (operator const T *) and
-   subscript access (operator[]).
+   the correctly typed operators for pointer access
+   (<CODE>operator const T *</CODE>) and subscript access
+   (<CODE>operator[]</CODE>).
  */
 
   friend class PArrayObjects;
@@ -201,14 +205,14 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
    The following classes are instantiated automatically for the basic scalar
    types:
         <UL>
-        <LI><A><CODE>PCharArray</A></CODE>
-        <LI><A><CODE>PBYTEArray</A></CODE>
-        <LI><A><CODE>PShortArray</A></CODE>
-        <LI><A><CODE>PWORDArray</A></CODE>
-        <LI><A><CODE>PIntArray</A></CODE>
-        <LI><A><CODE>PUnsignedArray</A></CODE>
-        <LI><A><CODE>PLongArray</A></CODE>
-        <LI><A><CODE>PDWORDArray</A></CODE>
+        <LI><CODE><A>PCharArray</A></CODE>
+        <LI><CODE><A>PBYTEArray</A></CODE>
+        <LI><CODE><A>PShortArray</A></CODE>
+        <LI><CODE><A>PWORDArray</A></CODE>
+        <LI><CODE><A>PIntArray</A></CODE>
+        <LI><CODE><A>PUnsignedArray</A></CODE>
+        <LI><CODE><A>PLongArray</A></CODE>
+        <LI><CODE><A>PDWORDArray</A></CODE>
         </UL>
  */
 
@@ -263,7 +267,7 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     /* Get a value from the array. If the <CODE>index</CODE> is beyond the end
        of the allocated array then a zero value is returned.
 
-       This is functionally identical to the <A><CODE>GetAt()</CODE></A>
+       This is functionally identical to the <A>PContainer::GetAt()</A>
        function.
 
        <H2>Returns:</H2>
@@ -278,8 +282,8 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        beyond the end of the allocated array then the array is expanded. If a
        memory allocation failure occurs the function asserts.
 
-       This is functionally similar to the <A><CODE>SetAt()</CODE></A> function
-       and allows the array subscript to be an lvalue.
+       This is functionally similar to the <A>SetAt()</A> function and allows
+       the array subscript to be an lvalue.
 
        <H2>Returns:</H2>
        reference to value at the array position.
@@ -505,14 +509,14 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     );
     /* Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the <A><CODE>Append()</CODE></A> function is performed.
+       the <A>Append()</A> function is performed.
 
        All objects, including the <CODE>before</CODE> object are shifted up
        one in the array.
 
        Note that the object values are compared for the search of the
        <CODE>before</CODE> parameter, not the pointers. So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function.
 
        <H2>Returns:</H2>
@@ -525,7 +529,7 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     );
     /* Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the <A><CODE>Append()</CODE></A> function is performed.
+       equivalent of the <A>Append()</A> function is performed.
 
        All objects, including the <CODE>index</CODE> position object are
        shifted up one in the array.
@@ -599,7 +603,7 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. A simple linear search from ordinal position zero is
        performed.
 
