@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.13  2001/11/28 04:37:46  robertj
+ * Added "flipped" colour formats, thanks Telefonica Spain.
+ * Added support for grabbing at a frame rate (from Linux).
+ * Adjusted thread priority causing starvation, thanks Telefonica Spain.
+ * Fixed startup problem if initialise gets error, thanks Telefonica Spain.
+ *
  * Revision 1.12  2001/03/30 07:20:37  robertj
  * Some drivers (QuickCam) use key frame bit to indicate grab complete.
  *
@@ -78,8 +84,9 @@ class PVideoInputThread : public PThread
 {
   PCLASSINFO(PVideoInputThread, PThread);
   public:
+ 
     PVideoInputThread(PVideoInputDevice & dev)
-      : PThread(30000, NoAutoDeleteThread, HighPriority), device(dev) { Resume(); }
+      : PThread(30000, NoAutoDeleteThread, NormalPriority), device(dev) { Resume(); }
     void Main() { device.HandleCapture(); }
   protected:
     PVideoInputDevice & device;
@@ -112,55 +119,75 @@ class PVideoDeviceBitmap : PBYTEArray
 
 ///////////////////////////////////////////////////////////////////////////////
 
+
+static struct {
+  const char * colourFormat;
+  BOOL  flipped;
+  WORD  bitCount;
+  DWORD compression;
+} FormatTable[] = {
+  { "Grey",    FALSE, 8,  BI_RGB,       },
+  { "Gray",    FALSE, 8,  BI_RGB,       },
+  { "GreyF",   TRUE,  8,  BI_RGB,       },
+  { "GrayF",   TRUE,  8,  BI_RGB,       },
+  { "RGB32",   FALSE, 32, BI_RGB,       },
+  { "RGB32F",  TRUE,  32, BI_RGB,       },
+  { "RGB24",   FALSE, 24, BI_RGB,       },
+  { "RGB24F",  TRUE,  24, BI_RGB,       },
+  { "RGB565",  FALSE, 16, BI_BITFIELDS, },
+  { "RGB565F", TRUE,  16, BI_BITFIELDS, },
+  { "RGB555",  FALSE, 15, BI_BITFIELDS, },
+  { "RGB555F", TRUE,  15, BI_BITFIELDS, },
+
+  // http://support.microsoft.com/support/kb/articles/q294/8/80.asp
+  { "YUV420P", FALSE, 12, mmioFOURCC('I','Y','U','V') },
+  { "IYUV",    FALSE, 12, mmioFOURCC('I','Y','U','V') },
+  { "I420",    FALSE, 12, mmioFOURCC('I','4','2','0') }, // Like YVUV
+  { "YV12",    FALSE, 12, mmioFOURCC('Y','V','1','2') }, // Like YVUV except planes switched
+
+  { "YUV422",  FALSE, 16, mmioFOURCC('Y','U','Y','2') },
+  { "YUY2",    FALSE, 16, mmioFOURCC('Y','U','Y','2') },
+  { "UYVY",    FALSE, 16, mmioFOURCC('U','Y','V','Y') }, // Like YUY2 except for ordering
+  { "YVYU",    FALSE, 16, mmioFOURCC('Y','V','Y','U') }, // Like YUY2 except for ordering
+
+  { "MJPEG",   FALSE, 0,  mmioFOURCC('M','J','P','G') },
+  { NULL },
+};
+
+
 PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned width, unsigned height,
                                        const PString & fmt)
   : PBYTEArray(sizeof(BITMAPINFO))
 {
-  PINDEX i;
+  PINDEX i = 0;
+  while (FormatTable[i].colourFormat != NULL && !(fmt *= FormatTable[i].colourFormat))
+    i++;
+
   BITMAPINFO * bi = (BITMAPINFO *)theArray;
 
   bi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
   bi->bmiHeader.biWidth = width;
-  bi->bmiHeader.biHeight = height;
+  bi->bmiHeader.biHeight = FormatTable[i].flipped ? height : -(int)height;
   bi->bmiHeader.biPlanes = 1;
+  bi->bmiHeader.biBitCount = FormatTable[i].bitCount;
 
-  if ((fmt *= "Grey") || (fmt *= "Gray")) {
-    bi->bmiHeader.biCompression = BI_RGB;
-    bi->bmiHeader.biBitCount = 8;
-    SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
-    for (i = 0; i < 256; i++)
-      bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
-  }
-  else if (fmt *= "RGB32") {
-    bi->bmiHeader.biCompression = BI_RGB;
-    bi->bmiHeader.biBitCount = 32;
-  }
-  else if (fmt *= "RGB24") {
-    bi->bmiHeader.biCompression = BI_RGB;
-    bi->bmiHeader.biBitCount = 24;
-  }
-  else if (fmt *= "RGB565") {
-    bi->bmiHeader.biCompression = BI_BITFIELDS;
-    bi->bmiHeader.biBitCount = 16;
-  }
-  else if (fmt *= "RGB555") {
-    bi->bmiHeader.biCompression = BI_BITFIELDS;
-    bi->bmiHeader.biBitCount = 15;
-  }
-  else if (fmt *= "YUV422") {
-    bi->bmiHeader.biCompression = mmioFOURCC('Y', 'U', 'Y', '2');
-    bi->bmiHeader.biBitCount = 16;
-  }
-  else if (fmt *= "MJPEG") {
-    bi->bmiHeader.biCompression = mmioFOURCC('M','J','P','G');
-    bi->bmiHeader.biBitCount = 0;
-  }
+  if (FormatTable[i].colourFormat != NULL)
+    bi->bmiHeader.biCompression = FormatTable[i].compression;
+  else if (fmt.GetLength() == 4)
+    bi->bmiHeader.biCompression = mmioFOURCC(fmt[0],fmt[1],fmt[2],fmt[3]);
   else {
     bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
     return;
   }
 
   bi->bmiHeader.biSizeImage = height*((bi->bmiHeader.biBitCount*width + 31)/32)*4;
+
+  if (bi->bmiHeader.biCompression == BI_RGB && bi->bmiHeader.biBitCount == 8) {
+    SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
+    for (i = 0; i < 256; i++)
+      bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
+    bi->bmiHeader.biHeight = -bi->bmiHeader.biHeight;
+  }
 }
 
 
@@ -413,6 +440,12 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
 
 BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
+  return GetFrameDataNoDelay(buffer, bytesReturned);
+}
+
+
+BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+{
   if (!frameAvailable.Wait(1000))
     return FALSE;
 
@@ -434,6 +467,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   if (isCapturingNow)
     capGrabFrameNoStop(hCaptureWindow);
 #endif
+
   return TRUE;
 }
 
@@ -557,21 +591,28 @@ BOOL PVideoInputDevice::InitialiseCapture()
 
 void PVideoInputDevice::HandleCapture()
 {
-  if (InitialiseCapture()) {
+  BOOL initSucceeded = InitialiseCapture();
+
+  if (initSucceeded) {
     threadStarted.Signal();
 
     MSG msg;
     while (::GetMessage(&msg, NULL, 0, 0))
       ::DispatchMessage(&msg);
   }
-
+  
   capDriverDisconnect(hCaptureWindow);
+  capSetUserData(hCaptureWindow, NULL);
+
+  capSetCallbackOnError(hCaptureWindow, NULL);
   capSetCallbackOnVideoStream(hCaptureWindow, NULL);
 
   DestroyWindow(hCaptureWindow);
   hCaptureWindow = NULL;
 
-  threadStarted.Signal();
+  // Signal the other thread we have completed, even if have error
+  if (!initSucceeded)
+    threadStarted.Signal();
 }
 
 
