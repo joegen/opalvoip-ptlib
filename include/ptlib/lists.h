@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.26  2004/04/03 06:54:21  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.25  2004/02/15 03:04:52  rjongbloed
  * Fixed problem with PSortedList nil variable and assignment between instances,
  *   pointed out by Ben Lear.
@@ -460,13 +463,13 @@ template <class T> class PList : public PAbstractList
  */
 #define PDECLARE_LIST(cls, T) \
   PLIST(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  PDECLARE_CLASS(cls, PSortedList<T>) \
   protected: \
     cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
+      : PSortedList<T>(dummy, c) { } \
   public: \
     cls() \
-      : cls##_PTemplate() { } \
+      : PSortedList<T>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
@@ -1113,13 +1116,13 @@ template <class T> class PSortedList : public PAbstractSortedList
  */
 #define PDECLARE_SORTED_LIST(cls, T) \
   PSORTED_LIST(cls##_PTemplate, T); \
-  PDECLARE_CLASS(cls, cls##_PTemplate) \
+  PDECLARE_CLASS(cls, PSortedList<T>) \
   protected: \
     cls(int dummy, const cls * c) \
-      : cls##_PTemplate(dummy, c) { } \
+      : PSortedList<T>(dummy, c) { } \
   public: \
     cls() \
-      : cls##_PTemplate() { } \
+      : PSortedList<T>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
