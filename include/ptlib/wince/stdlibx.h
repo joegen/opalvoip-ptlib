@@ -155,6 +155,12 @@ size_t strspn( const char *string, const char *strCharSet );
 int stricmp( const unsigned short*string1, const char* string2 );
 int stricmp( const char*string1, const char* string2 );
 
+int strcasecmp( const unsigned short*string1, const char* string2 );
+int strcasecmp( const char*string1, const char* string2 );
+
+int strncasecmp( const unsigned short*string1, const char* string2, int n );
+int strncasecmp( const char*string1, const char* string2, int n );
+
 LONG RegOpenKeyEx( HKEY hKey, const char* lpSubKey, DWORD ulOptions, REGSAM samDesired, PHKEY phkResult );
 
 LONG RegCreateKeyEx( HKEY hKey, const char* lpSub, DWORD dwr, LPSTR lpcls, DWORD dwo, 
