@@ -2,6 +2,7 @@ Portable Windows Library Modification History
 =============================================
 
 
+
 Release 1.1pl19
 ------------
 	More bullet proofing of PER decoder, could crash if given garbage data
