@@ -219,7 +219,6 @@ EXPORTS
     ??0PPipeChannel@@QAE@ABVPString@@ABVPStringToString@@W4OpenMode@0@HH@Z @214 NONAME ;public: __thiscall PPipeChannel::PPipeChannel(class PString const &,class PStringToString const &,enum PPipeChannel::OpenMode,int,int)
     ??0PPipeChannel@@QAE@ABVPString@@W4OpenMode@0@HH@Z @215 NONAME ;public: __thiscall PPipeChannel::PPipeChannel(class PString const &,enum PPipeChannel::OpenMode,int,int)
     ??0PPipeChannel@@QAE@XZ @216 NONAME ;public: __thiscall PPipeChannel::PPipeChannel(void)
-    ??0PPluginDynamic@@QAE@PAVPDynaLink@@@Z @3603 NONAME ;public: __thiscall PPluginDynamic::PPluginDynamic(class PDynaLink *)
     ??0PPluginManager@@QAE@XZ @3604 NONAME ;public: __thiscall PPluginManager::PPluginManager(void)
     ??0PPluginService@@QAE@ABVPString@@0PAVPPluginServiceDescriptor@@@Z @3605 NONAME ;public: __thiscall PPluginService::PPluginService(class PString const &,class PString const &,class PPluginServiceDescriptor *)
     ??0PPluginServiceDescriptor@@QAE@P6AIXZ@Z @3606 NONAME ;public: __thiscall PPluginServiceDescriptor::PPluginServiceDescriptor(unsigned int (__cdecl*)(void))
@@ -547,7 +546,6 @@ EXPORTS
     ??1POrdinalKey@@UAE@XZ @516 NONAME ;public: virtual __thiscall POrdinalKey::~POrdinalKey(void)
     ??1POrdinalToString@@UAE@XZ @517 NONAME ;public: virtual __thiscall POrdinalToString::~POrdinalToString(void)
     ??1PPipeChannel@@UAE@XZ @518 NONAME ;public: virtual __thiscall PPipeChannel::~PPipeChannel(void)
-    ??1PPluginDynamic@@UAE@XZ @3617 NONAME ;public: virtual __thiscall PPluginDynamic::~PPluginDynamic(void)
     ??1PPluginManager@@UAE@XZ @3618 NONAME ;public: virtual __thiscall PPluginManager::~PPluginManager(void)
     ??1PPluginService@@UAE@XZ @3619 NONAME ;public: virtual __thiscall PPluginService::~PPluginService(void)
     ??1PProcess@@UAE@XZ @519 NONAME ;public: virtual __thiscall PProcess::~PProcess(void)
@@ -1024,7 +1022,6 @@ EXPORTS
     ??_7POrdinalToString@@6B@ @1218 NONAME ;const  POrdinalToString::`vftable'
     ??_7PPipeChannel@@6Biostream@@@ @1219 NONAME ;const  PPipeChannel::`vftable'{for `iostream'}
     ??_7PPipeChannel@@6BPObject@@@ @1220 NONAME ;const  PPipeChannel::`vftable'{for `PObject'}
-    ??_7PPluginDynamic@@6B@ @3625 NONAME ;const  PPluginDynamic::`vftable'
     ??_7PPluginManager@@6B@ @3626 NONAME ;const  PPluginManager::`vftable'
     ??_7PPluginService@@6B@ @3627 NONAME ;const  PPluginService::`vftable'
     ??_7PProcess@@6B@ @1221 NONAME ;const  PProcess::`vftable'
