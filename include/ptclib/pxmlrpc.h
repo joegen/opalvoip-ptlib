@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.2  2002/03/27 00:50:44  craigs
+ * Fixed problems with parsing faults and creating structs
+ *
  * Revision 1.1  2002/03/26 07:06:50  craigs
  * Initial version
  *
@@ -42,19 +45,8 @@ class PXMLRPCElement : public PXMLElement
     void AddStructParam(PXMLRPCStruct * structParam);
 
   protected:
-    void AddParam(PXMLElement * element);
+    PXMLElement * AddParam(PXMLElement * element);
     PString subName;
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCStruct : public PXMLRPCElement
-{
-  PCLASSINFO(PXMLRPCStruct, PXMLRPCElement);
-  public:
-    PXMLRPCStruct(PXMLElement * parent = NULL)
-      : PXMLRPCElement(parent, "struct", "member") 
-    { }
 };
 
 /////////////////////////////////////////////////////////////////
@@ -88,6 +80,17 @@ class PXMLRPCArrayElement : public PXMLElement
     PXMLRPCArrayElement(PXMLElement * parent, 
                        const PStringArray & array,
                        const char * typeStr = NULL);
+};
+
+/////////////////////////////////////////////////////////////////
+
+class PXMLRPCStructElement : public PXMLElement
+{
+  PCLASSINFO(PXMLRPCStructElement, PXMLElement);
+  public:
+    PXMLRPCStructElement(PXMLElement * parent, 
+               const PStringToString & dict, 
+                          const char * type = NULL);
 };
 
 /////////////////////////////////////////////////////////////////
