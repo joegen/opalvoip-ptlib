@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.8  2004/03/14 05:47:52  rjongbloed
+ * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
+ *   some NAT systems which are partially blocked due to firewall rules.
+ *
  * Revision 1.7  2004/02/24 11:15:48  rjongbloed
  * Added function to get external router address, also did a bunch of documentation.
  *
@@ -157,6 +161,7 @@ class PSTUNClient : public PObject
       SymmetricNat,
       SymmetricFirewall,
       BlockedNat,
+      PartialBlockedNat,
       NumNatTypes
     };
 

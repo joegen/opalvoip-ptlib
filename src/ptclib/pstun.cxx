@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.13  2004/03/14 05:47:52  rjongbloed
+ * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
+ *   some NAT systems which are partially blocked due to firewall rules.
+ *
  * Revision 1.12  2004/02/24 11:15:48  rjongbloed
  * Added function to get external router address, also did a bunch of documentation.
  *
@@ -462,14 +466,15 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
 
   // RFC3489 discovery
 
-  // test I
+  /* test I - the client sends a STUN Binding Request to a server, without
+     any flags set in the CHANGE-REQUEST attribute, and without the
+     RESPONSE-ADDRESS attribute. This causes the server to send the response
+     back to the address and port that the request came from. */
   PSTUNMessage requestI(PSTUNMessage::BindingRequest);
   requestI.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI;
-  if (!responseI.Poll(socket, requestI))
-  {
-    if (socket.GetErrorCode(PChannel::LastWriteError) != PChannel::NoError)
-    {
+  if (!responseI.Poll(socket, requestI)) {
+    if (socket.GetErrorCode(PChannel::LastWriteError) != PChannel::NoError) {
       PTRACE(1, "STUN\tError writing to server " << serverAddress << ':' << serverPort << " - " << socket.GetErrorText(PChannel::LastWriteError));
       return natType = UnknownNat; // No response usually means blocked
     }
@@ -479,8 +484,7 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
   }
 
   PSTUNMappedAddress * mappedAddress = (PSTUNMappedAddress *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-  if (mappedAddress == NULL)
-  {
+  if (mappedAddress == NULL) {
     PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
     return natType = UnknownNat; // Protocol error
   }
@@ -489,13 +493,14 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
   WORD mappedPortI = mappedAddress->port;
   bool notNAT = socket.GetPort() == mappedPortI && PIPSocket::IsLocalHost(mappedAddressI);
 
+  /* Test II - the client sends a Binding Request with both the "change IP"
+     and "change port" flags from the CHANGE-REQUEST attribute set. */
   PSTUNMessage requestII(PSTUNMessage::BindingRequest);
   requestII.AddAttribute(PSTUNChangeRequest(true, true));
   PSTUNMessage responseII;
   bool testII = responseII.Poll(socket, requestII);
 
-  if (notNAT)
-  {
+  if (notNAT) {
     // Is not NAT or symmetric firewall
     return natType = (testII ? OpenNat : SymmetricFirewall);
   }
@@ -507,29 +512,29 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType(BOOL force)
   if (changedAddress == NULL)
     return natType = UnknownNat; // Protocol error
 
-  // Send to another server
-  bool mappedIPdifferent = false;
+  // Send test I to another server, to see if restricted or symmetric
   PIPSocket::Address secondaryServer = changedAddress->GetIP();
   WORD secondaryPort = changedAddress->port;
   socket.SetSendAddress(secondaryServer, secondaryPort);
   PSTUNMessage requestI2(PSTUNMessage::BindingRequest);
   requestI2.AddAttribute(PSTUNChangeRequest(false, false));
   PSTUNMessage responseI2;
-  if (responseI2.Poll(socket, requestI2))
-  {
-    mappedAddress = (PSTUNMappedAddress *)responseI.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
-    if (mappedAddress == NULL)
-    {
-      PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
-      return UnknownNat; // Protocol error
-    }
-
-    mappedIPdifferent = mappedAddress->port != mappedPortI || mappedAddress->GetIP() != mappedAddressI;
+  if (!responseI2.Poll(socket, requestI2)) {
+    PTRACE(2, "STUN\tPoll of secondary server " << secondaryServer << ':' << secondaryPort
+           << " failed, NAT partially blocked by firwall rules.");
+    return natType = PartialBlockedNat;
   }
 
-  if (mappedIPdifferent)
+  mappedAddress = (PSTUNMappedAddress *)responseI2.FindAttribute(PSTUNAttribute::MAPPED_ADDRESS);
+  if (mappedAddress == NULL) {
+    PTRACE(2, "STUN\tExpected mapped address attribute from server " << serverAddress << ':' << serverPort);
+    return UnknownNat; // Protocol error
+  }
+
+  if (mappedAddress->port != mappedPortI || mappedAddress->GetIP() != mappedAddressI)
     return natType = SymmetricNat;
 
+  socket.SetSendAddress(serverAddress, serverPort);
   PSTUNMessage requestIII(PSTUNMessage::BindingRequest);
   requestIII.SetAttribute(PSTUNChangeRequest(false, true));
   PSTUNMessage responseIII;
@@ -547,7 +552,8 @@ PString PSTUNClient::GetNatTypeName(BOOL force)
     "Port Restricted NAT",
     "Symmetric NAT",
     "Symmetric Firewall",
-    "Blocked"
+    "Blocked",
+    "Partially Blocked"
   };
 
   return Names[GetNatType(force)];
