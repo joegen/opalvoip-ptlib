@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.60  2004/04/11 06:15:27  csoutheren
+ * Modified to use Atomic_word if available
+ *
  * Revision 1.59  2004/04/11 02:55:17  csoutheren
  * Added PCriticalSection for Windows
  * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
@@ -446,7 +449,11 @@ class PContainer : public PObject
         inline Reference(PINDEX initialSize)
           : size(initialSize), count(1), deleteObjects(TRUE) { }
         PINDEX   size;         // Size of what the container contains
+#if P_HAS_ATOMIC_INT && defined(__GNUC__)
+        _Atomic_word count;    // reference count to the container content
+#else
         unsigned count;        // reference count to the container content
+#endif
         BOOL deleteObjects;    // Used by PCollection but put here for efficiency
 #if PCONTAINER_USES_CRITSEC
         PCriticalSection critSec;
