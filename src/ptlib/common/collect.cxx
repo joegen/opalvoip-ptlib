@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.27 1997/02/14 13:59:09 robertj Exp $
+ * $Id: collect.cxx,v 1.28 1997/04/27 05:50:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.28  1997/04/27 05:50:14  robertj
+ * DLL support.
+ *
  * Revision 1.27  1997/02/14 13:59:09  robertj
  * Rewrite of sorted list to use sentinel record rather than NULL pointer.
  *
@@ -521,7 +524,7 @@ PAbstractList::Element::Element(PObject * theData)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractSortedList::Element PAbstractSortedList::nil = NULL;
+PAbstractSortedList::Element nil = NULL;
 
 PAbstractSortedList::PAbstractSortedList()
 {
@@ -991,6 +994,14 @@ void PAbstractSortedList::Element::DeleteSubTrees(BOOL deleteObject)
     delete data;
     data = NULL;
   }
+}
+
+
+PAbstractSortedList::Info::Info()
+{
+  root = &nil;
+  lastElement = NULL;
+  lastIndex = P_MAX_INDEX;
 }
 
 
