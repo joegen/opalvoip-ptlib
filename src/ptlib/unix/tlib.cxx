@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.17  1996/09/21 05:40:10  craigs
+ * Changed signal hcnalding
+ *
  * Revision 1.16  1996/09/03 11:55:19  craigs
  * Removed some potential problems with return values from system calls
  *
@@ -90,7 +93,7 @@ extern "C" int select(int width,
 #endif
 
 PProcess * PProcessInstance;
-//ostream  * PErrorStream = &cerr;
+ostream  * PErrorStream = &cerr;
 
 void PProcess::Construct()
 {
@@ -257,6 +260,9 @@ void PThread::ClearBlock()
 
 BOOL PThread::IsNoLongerBlocked()
 {
+  // check signals
+  PProcess::Current()->PXCheckSignals();
+
   // if are blocked on a child process, see if that child is still going
   if (waitPid > 0) 
     return kill(waitPid, 0) != 0;
@@ -276,7 +282,18 @@ BOOL PThread::IsNoLongerBlocked()
   fd_set wfds = *write_fds;
   fd_set efds = *exception_fds;
 
-  if ((selectReturnVal = SELECT (handleWidth, read_fds, write_fds, exception_fds, &timeout)) != 0) {
+  // check signals on the way in
+  PProcess::Current()->PXCheckSignals();
+
+  // do the select
+  selectReturnVal = SELECT (handleWidth,
+                            read_fds, write_fds, exception_fds,
+                            &timeout);
+
+  // check signals on the way out
+  PProcess::Current()->PXCheckSignals();
+  
+  if (selectReturnVal != 0) {
     selectErrno  = errno;
     return TRUE;
   }
@@ -559,56 +576,25 @@ BOOL PDynaLink::GetFunction(const PString &, Function &)
 
 void PXSignalHandler(int sig)
 {
-  signal(sig, PXSignalHandler);
-
   PProcess * process = PProcess::Current();
-  switch (sig) {
-#ifdef SIGHUP
-    case SIGHUP:
-      process->PXOnSigHup();
-      break;
-#endif
-#ifdef SIGINT
-    case SIGINT:
-      process->PXOnSigInt();
-      break;
-#endif
-#ifdef SIGQUIT
-    case SIGQUIT:
-      process->PXOnSigQuit();
-      break;
-#endif
-#ifdef SIGUSR1
-    case SIGUSR1:
-      process->PXOnSigUsr1();
-      break;
-#endif
-#ifdef SIGUSR2
-    case SIGUSR2:
-      process->PXOnSigUsr1();
-      break;
-#endif
-#ifdef SIGPIPE
-    case SIGPIPE:
-      process->PXOnSigPipe();
-      break;
-#endif
-#ifdef SIGTERM
-    case SIGTERM:
-      process->PXOnSigTerm();
-      break;
-#endif
-#ifdef SIGCHLD		
-    case SIGCHLD:
-      process->PXOnSigChld();
-      break;
-#endif
-  }
+  process->pxSignals |= sig;
+  process->PXOnSignal(sig);
+  signal(sig, PXSignalHandler);
+}
+
+void PProcess::PXCheckSignals()
+{
+  if (pxSignals == 0)
+    return;
+  PXOnAsyncSignal(pxSignals);
+  pxSignals = 0;
 }
 
 void PProcess::PXSetupProcess()
 {
   // Setup signal handlers
+  pxSignals = 0;
+
 #ifdef SIGHUP
   signal(SIGHUP, &PXSignalHandler);
 #endif
@@ -657,38 +643,21 @@ int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
   return terminationValue;
 }
 
-void PProcess::PXOnSigHup()
+void PProcess::PXOnSignal(int sig)
 {
-  raise(SIGKILL);
+  switch (sig) {
+    case SIGINT:
+    case SIGTERM:
+    case SIGHUP:
+    case SIGQUIT:
+      raise(SIGKILL);
+      break;
+    default:
+      return;
+  }
 }
 
-void PProcess::PXOnSigInt()
-{
-  raise(SIGKILL);
-}
-
-void PProcess::PXOnSigQuit()
-{
-  raise(SIGKILL);
-}
-
-void PProcess::PXOnSigUsr1()
-{
-}
-
-void PProcess::PXOnSigUsr2()
+void PProcess::PXOnAsyncSignal(int sig)
 {
 }
 
-void PProcess::PXOnSigPipe()
-{
-}
-
-void PProcess::PXOnSigTerm()
-{
-  raise(SIGKILL);
-}
-
-void PProcess::PXOnSigChld()
-{
-}
