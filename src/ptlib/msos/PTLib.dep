@@ -1,6 +1,7 @@
 # Microsoft Developer Studio Generated Dependency File, included by PTLib.mak
 
 .\dllmain.cxx : \
+	"..\..\..\..\..\program files\microsoft visual studio\vc98\include\basetsd.h"\
 	
 
 .\libver.rc : \

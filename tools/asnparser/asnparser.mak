@@ -53,7 +53,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -111,7 +111,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -155,7 +155,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=1 /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -196,7 +196,7 @@ CLEAN :
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_PROJ=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=1 /Fp"$(INTDIR)\asnparser.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\asnparser.bsc" 
 BSC32_SBRS= \
@@ -275,7 +275,7 @@ SOURCE=.\asn_grammar.cxx
 
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=0$(OPENSSLFLAG) /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_grammar.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -285,7 +285,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\inc
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=0$(OPENSSLFLAG) /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_grammar.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -295,7 +295,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=1 /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_grammar.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -305,7 +305,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=1 /D "MSDOS" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_grammar.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -379,7 +379,7 @@ SOURCE=.\asn_lex.cxx
 
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W2 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W2 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_lex.obj" : $(SOURCE) "$(INTDIR)" ".\asn_grammar.h"
 	$(CPP) @<<
@@ -389,7 +389,7 @@ CPP_SWITCHES=/nologo /MD /W2 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\inc
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_lex.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -399,7 +399,7 @@ CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_lex.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -409,7 +409,7 @@ CPP_SWITCHES=/nologo /MDd /W2 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W2 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W2 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=1 /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\asn_lex.obj" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -484,7 +484,7 @@ SOURCE=.\PreCompile.cpp
 
 !IF  "$(CFG)" == "ASNParser - Win32 Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\PreCompile.obj"	"$(INTDIR)\asnparser.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -494,7 +494,7 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\inc
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=0$(OPENSSLFLAG) /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\PreCompile.obj"	"$(INTDIR)\asnparser.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -504,7 +504,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Debug"
 
-CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /D "_DEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "_DEBUG" /D P_SSL=1 /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\PreCompile.obj"	"$(INTDIR)\asnparser.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
@@ -514,7 +514,7 @@ CPP_SWITCHES=/nologo /MDd /W4 /GX /ZI /Od /I "..\..\include\ptlib\msos" /I "..\.
 
 !ELSEIF  "$(CFG)" == "ASNParser - Win32 SSL Release"
 
-CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /D "NDEBUG" /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
+CPP_SWITCHES=/nologo /MD /W4 /GX /O2 /I "..\..\include\ptlib\msos" /I "..\..\include" /I "$(OPENSSLDIR)/inc32" /D "NDEBUG" /D P_SSL=1 /Fp"$(INTDIR)\asnparser.pch" /Yc"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
 
 "$(INTDIR)\PreCompile.obj"	"$(INTDIR)\asnparser.pch" : $(SOURCE) "$(INTDIR)"
 	$(CPP) @<<
