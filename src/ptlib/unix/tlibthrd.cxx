@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.124  2004/02/01 11:23:16  dsandras
+ * Reverted previous Change and removed Yield call from Current (). Fix from Christian Meder <chris@onestepahead.de>. Thanks for your help, Christian!
+ *
  * Revision 1.123  2004/01/31 13:49:18  dominance
  * Added 2.6 performance fix as proposed by Christian Meder <chris@onestepahead.de>.
  *
@@ -1060,11 +1063,7 @@ void PThread::Sleep(const PTimeInterval & timeout)
 
 void PThread::Yield()
 {
-  //sched_yield();
-  // re-add this if 2.4 becomes unusable..
-  // The following patch is improving 2.6 performance and it hopefully doesn't screw 2.4 ;)
-  struct timespec timer = { 0, 1 };
-  nanosleep (&timer, NULL);
+  sched_yield();
 }
 
 
@@ -1634,9 +1633,6 @@ void PMutex::Signal()
 #endif
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
-#ifdef P_LINUX
-  PThread::Yield();
-#endif
 }
 
 
