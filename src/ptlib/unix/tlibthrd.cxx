@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.120  2003/05/02 00:58:40  dereks
+ * Add test for linux at the end of PMutex::Signal. Thanks Robert!
+ *
  * Revision 1.119  2003/05/02 00:39:11  dereks
  * Changes to make threading work on Redhat 9
  *
@@ -1505,7 +1508,9 @@ void PMutex::Signal()
 #endif
 
   PAssertPTHREAD(pthread_mutex_unlock, (&mutex));
+#ifdef P_LINUX
   PThread::Yield();
+#endif
 }
 
 
