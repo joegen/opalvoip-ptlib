@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.2  2002/06/25 02:35:36  robertj
+ * Improved assertion system to allow C++ class name to be displayed if
+ *   desired, especially relevant to container classes.
+ *
  * Revision 1.1  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -49,12 +53,10 @@
 #include <ctype.h>
 #include <signal.h>
 
-void PAssertFunc (const char * file, int line, const char * msg)
+void PAssertFunc (const char * msg)
 
 {
-  PError << "Assertion fail: File " << file << ", Line " << line << endl;
-  if (msg != NULL)
-    PError << msg << endl;
+  PError << msg << endl;
   BREAKPOINT;
   return;
 }
