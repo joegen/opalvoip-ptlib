@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.8  2002/10/02 08:54:34  craigs
+ * Added support for XMLRPC server
+ *
  * Revision 1.7  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -41,102 +44,18 @@
 #include <ptclib/url.h>
 
 
-class PXMLRPCStruct;
-
-class PXMLRPCElement : public PXMLElement
-{
-  PCLASSINFO(PXMLRPCElement, PXMLElement);
-
-  public:
-    PXMLRPCElement(PXMLElement * parent, const PString & name, const PString & subName);
-
-    void AddParam(const PString & str);
-    void AddParam(int value);
-    void AddParam(double value);
-    void AddParam(const PTime & time);
-
-    void AddBinaryParam(const PString & str);
-    void AddBinaryParam(const char * cstr);
-    void AddBinaryParam(const PBYTEArray & data);
-    void AddBinaryParam(const void * dataBlock, PINDEX length);
-
-    void AddArrayParam(const PStringArray & array, const char * type = NULL);
-
-    void AddStructParam(const PStringToString & dict, const char * type = NULL);
-    void AddStructParam(PXMLRPCStruct * structParam);
-
-  protected:
-    PXMLElement * AddParam(PXMLElement * element);
-    PString subName;
-};
-
 /////////////////////////////////////////////////////////////////
 
-class PXMLRPCParams : public PXMLRPCElement
+class PXMLRPCBlock;
+
+class PXMLRPC : public PObject
 {
-  PCLASSINFO(PXMLRPCParams, PXMLRPCElement);
-  public:
-    PXMLRPCParams(PXMLElement * parent = NULL)
-      : PXMLRPCElement(parent, "params", "param")
-    { }
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCScalarElement : public PXMLElement
-{
-  PCLASSINFO(PXMLRPCScalarElement, PXMLElement);
-  public:
-    PXMLRPCScalarElement(PXMLElement * parent, 
-                       const PString & value,
-                       const char * typeStr = NULL);
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCArrayElement : public PXMLElement
-{
-  PCLASSINFO(PXMLRPCArrayElement, PXMLElement);
-  public:
-    PXMLRPCArrayElement(PXMLElement * parent, 
-                       const PStringArray & array,
-                       const char * typeStr = NULL);
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCStructElement : public PXMLElement
-{
-  PCLASSINFO(PXMLRPCStructElement, PXMLElement);
-  public:
-    PXMLRPCStructElement(PXMLElement * parent, 
-               const PStringToString & dict, 
-                          const char * type = NULL);
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCRequest : public PXML
-{
-  PCLASSINFO(PXMLRPCRequest, PXML);
-  public:
-    PXMLRPCRequest(const PString & method);
-
-    PXMLRPCParams * GetParams()  { return params; }
-
-  protected:
-    PXMLRPCParams * params;
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPCResponse : public PXML
-{
-  PCLASSINFO(PXMLRPCResponse, PXML);
+  PCLASSINFO(PXMLRPC, PObject);
   public:
     enum {
       CannotCreateRequestXML          = 100,
       CannotParseResponseXML,
+      CannotParseRequestXML,
       HTTPPostFailed,
       CannotReadResponseContentBody,
       ResponseRootNotMethodResponse,
@@ -148,57 +67,22 @@ class PXMLRPCResponse : public PXML
       MemberIncomplete,
       MemberUnnamed,
       FaultyFault,
+      RequestHasWrongDocumentType,
+      RequestHasNoMethodName,
+      RequestHasNoParms,
+      MethodNameIsEmpty,
+      UnknownMethod,
 
       UserFault                       = 1000,
     };
 
-    PXMLRPCResponse();
-
-    BOOL GetParam(PINDEX idx, PString & result);
-    BOOL GetParam(PINDEX idx, int & result);
-    BOOL GetParam(PINDEX idx, double & result);
-    BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
-    BOOL GetParam(PINDEX idx, PString & type, PString & result);
-    BOOL GetParam(PINDEX idx, PStringToString & result);
-
-    BOOL GetBinaryParam(PINDEX idx, PString & str);
-    BOOL GetBinaryParam(PINDEX idx, PBYTEArray & data);
-    BOOL GetBinaryParam(PINDEX idx, void * dataBlock, PINDEX & length);
-
-    PINDEX GetParamCount() const   { return (params == 0) ? 0 : params->GetSize(); }
-
-    PINDEX  GetFaultCode() const { return faultCode; }
-    PString GetFaultText() const { return faultText; }
-
-    void SetFault(PINDEX code, const PString & text) 
-      { faultCode = code; faultText = text; }
-
-    BOOL Validate();
-
-  protected:
-    BOOL GetExpectedParam(PINDEX idx, const PString & expectedType, PString & result);
-
-    BOOL ParseScalar(PXMLElement & valueElement, PString & type, PString & value);
-    BOOL ParseStruct(PXMLElement & valueElement, PStringToString & structDict);
-
-    PString faultText;
-    PINDEX  faultCode;
-    PXMLElement * params;
-};
-
-/////////////////////////////////////////////////////////////////
-
-class PXMLRPC : public PObject
-{
-  PCLASSINFO(PXMLRPC, PObject);
-  public:
     PXMLRPC(const PURL & url);
 
     void SetTimeout(const PTimeInterval & _timeout) { timeout = _timeout; }
 
     BOOL MakeRequest(const PString & method);
-    BOOL MakeRequest(const PString & method, PXMLRPCResponse & response);
-    BOOL MakeRequest(PXMLRPCRequest & request, PXMLRPCResponse & response);
+    BOOL MakeRequest(const PString & method,  PXMLRPCBlock & response);
+    BOOL MakeRequest(PXMLRPCBlock  & request, PXMLRPCBlock & response);
 
     PString GetFaultText() const { return faultText; }
     PINDEX  GetFaultCode() const { return faultCode; }
@@ -207,12 +91,81 @@ class PXMLRPC : public PObject
     static PString PTimeToISO8601(const PTime & val);
 
   protected:
-    BOOL PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & response);
+    BOOL PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response);
 
     PURL url;
     PINDEX  faultCode;
     PString faultText;
     PTimeInterval timeout;
 };
+
+/////////////////////////////////////////////////////////////////
+
+class PXMLRPCBlock : public PXML
+{
+  PCLASSINFO(PXMLRPCBlock, PXML);
+  public:
+    PXMLRPCBlock();
+    PXMLRPCBlock(const PString & method);
+
+    BOOL Load(const PString & str);
+
+    PXMLElement * GetParams();
+    PXMLElement * GetParam(PINDEX idx) const;
+    PINDEX GetParamCount() const             { return (params == NULL) ? 0 : params->GetSize(); }
+
+    // used when used as a response
+    PINDEX  GetFaultCode() const                     { return faultCode; }
+    PString GetFaultText() const                     { return faultText; }
+    void SetFault(PINDEX code, const PString & text) { faultCode = code; faultText = text; }
+    BOOL ValidateResponse();
+
+    // helper functions for getting parameters
+    BOOL GetParam(PINDEX idx, PString & type, PString & result);
+    BOOL GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value);
+
+    BOOL GetParam(PINDEX idx, PString & result);
+    BOOL GetParam(PINDEX idx, int & result);
+    BOOL GetParam(PINDEX idx, double & result);
+    BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
+    BOOL GetParam(PINDEX idx, PStringToString & result);
+
+    // static functions for parsing values
+    BOOL ParseStruct(PXMLElement * element, PStringToString & structDict);
+    BOOL ParseScalar(PXMLElement * element, PString & type, PString & value);
+
+    // static functions for creating values
+    static PXMLElement * CreateValueElement(PXMLElement * element);
+    static PXMLElement * CreateScalar(const PString & type, const PString & scalar);
+    static PXMLElement * CreateMember(const PString & name, PXMLElement * value);
+
+    static PXMLElement * CreateScalar(const PString & str);
+    static PXMLElement * CreateScalar(int value);
+    static PXMLElement * CreateScalar(double value);
+    static PXMLElement * CreateDateAndTime(const PTime & time);
+    static PXMLElement * CreateBinary(const PBYTEArray & data);
+
+    static PXMLElement * CreateStruct();
+    static PXMLElement * CreateStruct(const PStringToString & dict);
+    static PXMLElement * CreateStruct(const PStringToString & dict, const PString & typeStr);
+
+    // helper functions for adding parameters
+    void AddParam(PXMLElement * parm);
+    void AddParam(const PString & str);
+    void AddParam(int value);
+    void AddParam(double value);
+    void AddParam(const PTime & time);
+    void AddBinary(const PBYTEArray & data);
+    void AddStruct(const PStringToString & dict);
+    void AddStruct(const PStringToString & dict, const PString & typeStr);
+
+  protected:
+    PXMLElement * params;
+    PString faultText;
+    PINDEX  faultCode;
+};
+
+/////////////////////////////////////////////////////////////////
+
 
 #endif
