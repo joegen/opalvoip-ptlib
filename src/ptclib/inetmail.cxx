@@ -1,5 +1,5 @@
 /*
- * $Id: inetmail.cxx,v 1.6 1996/07/27 04:12:45 robertj Exp $
+ * $Id: inetmail.cxx,v 1.7 1996/09/14 13:18:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.7  1996/09/14 13:18:03  robertj
+ * Renamed file and changed to be a protocol off new indirect channel to separate
+ *   the protocol from the low level byte transport channel.
+ *
  * Revision 1.6  1996/07/27 04:12:45  robertj
  * Redesign and reimplement of mail sockets.
  *
@@ -30,7 +34,8 @@
  */
 
 #include <ptlib.h>
-#include <mailsock.h>
+#include <sockets.h>
+#include <inetmail.h>
 
 
 static const PString CRLF = "\r\n";
@@ -38,98 +43,56 @@ static const PString CRLFdotCRLF = "\r\n.\r\n";
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PSMTPSocket
+// PSMTP
 
-static char const * SMTPCommands[PSMTPSocket::NumCommands] = {
+static char const * SMTPCommands[PSMTP::NumCommands] = {
   "HELO", "EHLO", "QUIT", "HELP", "NOOP",
   "TURN", "RSET", "VRFY", "EXPN", "RCPT",
   "MAIL", "SEND", "SAML", "SOML", "DATA"
 };
 
 
-PSMTPSocket::PSMTPSocket()
-  : PApplicationSocket(NumCommands, SMTPCommands, "smtp 25")
+PSMTP::PSMTP()
+  : PInternetProtocol("smtp 25", NumCommands, SMTPCommands)
 {
-  Construct();
 }
 
 
-PSMTPSocket::PSMTPSocket(const PString & address)
-  : PApplicationSocket(NumCommands, SMTPCommands, "smtp 25")
-{
-  Construct();
-  Connect(address);
-}
+//////////////////////////////////////////////////////////////////////////////
+// PSMTPClient
 
-
-PSMTPSocket::PSMTPSocket(PSocket & socket)
-  : PApplicationSocket(NumCommands, SMTPCommands)
-{
-  Construct();
-  Accept(socket);
-}
-
-
-PSMTPSocket::~PSMTPSocket()
-{
-  Close();
-}
-
-
-void PSMTPSocket::Construct()
+PSMTPClient::PSMTPClient()
 {
   haveHello = FALSE;
   extendedHello = FALSE;
-  messageBufferSize = 30000;
-  ServerReset();
-}
-
-
-void PSMTPSocket::ServerReset()
-{
   eightBitMIME = FALSE;
-  sendCommand = WasMAIL;
-  fromAddress = PString();
-  toNames.RemoveAll();
 }
 
 
-BOOL PSMTPSocket::Connect(const PString & address)
+PSMTPClient::~PSMTPClient()
 {
-  if (!PApplicationSocket::Connect(address))
-    return FALSE;
-
-  if (ReadResponse() && lastResponseCode/100 == 2)
-    return TRUE;
-
   Close();
-  return FALSE;
 }
 
 
-BOOL PSMTPSocket::Accept(PSocket & socket)
+BOOL PSMTPClient::OnOpen()
 {
-  if (!PApplicationSocket::Accept(socket))
-    return FALSE;
-
-  return WriteResponse(220, GetLocalHostName() +
-                     " Sendmail v1.61/WinSMTPSrv ready at " +
-                      PTime(PTime::MediumDateTime).AsString());
+  return ReadResponse() && lastResponseCode/100 == 2;
 }
 
 
-BOOL PSMTPSocket::Close()
+BOOL PSMTPClient::Close()
 {
   BOOL ok = TRUE;
   if (IsOpen() && haveHello) {
     SetReadTimeout(60000);
     ok = ExecuteCommand(QUIT, "") == '2';
   }
-  return PApplicationSocket::Close() && ok;
+  return PInternetProtocol::Close() && ok;
 }
 
 
-BOOL PSMTPSocket::BeginMessage(const PString & from,
+BOOL PSMTPClient::BeginMessage(const PString & from,
                                const PString & to,
                                BOOL useEightBitMIME)
 {
@@ -141,7 +104,7 @@ BOOL PSMTPSocket::BeginMessage(const PString & from,
 }
 
 
-BOOL PSMTPSocket::BeginMessage(const PString & from,
+BOOL PSMTPClient::BeginMessage(const PString & from,
                                const PStringList & toList,
                                BOOL useEightBitMIME)
 {
@@ -152,10 +115,18 @@ BOOL PSMTPSocket::BeginMessage(const PString & from,
 }
 
 
-BOOL PSMTPSocket::_BeginMessage()
+BOOL PSMTPClient::_BeginMessage()
 {
+  PString localHost;
+  PString peerHost;
+  PIPSocket * socket = GetSocket();
+  if (socket != NULL) {
+    localHost = socket->GetLocalHostName();
+    peerHost = socket->GetPeerHostName();
+  }
+
   if (!haveHello) {
-    if (ExecuteCommand(EHLO, GetLocalHostName()) == '2')
+    if (ExecuteCommand(EHLO, localHost) == '2')
       haveHello = extendedHello = TRUE;
   }
 
@@ -163,21 +134,21 @@ BOOL PSMTPSocket::_BeginMessage()
     extendedHello = FALSE;
     if (eightBitMIME)
       return FALSE;
-    if (ExecuteCommand(HELO, GetLocalHostName()) != '2')
+    if (ExecuteCommand(HELO, localHost) != '2')
       return FALSE;
     haveHello = TRUE;
   }
 
   if (fromAddress[0] != '"' && fromAddress.Find(' ') != P_MAX_INDEX)
     fromAddress = '"' + fromAddress + '"';
-  if (fromAddress.Find('@') == P_MAX_INDEX)
-    fromAddress += '@' + GetLocalHostName();
+  if (!localHost && fromAddress.Find('@') == P_MAX_INDEX)
+    fromAddress += '@' + localHost;
   if (ExecuteCommand(MAIL, "FROM:<" + fromAddress + '>') != '2')
     return FALSE;
 
   for (PINDEX i = 0; i < toNames.GetSize(); i++) {
-    if (toNames[i].Find('@') == P_MAX_INDEX)
-      toNames[i] += '@' + GetPeerHostName();
+    if (!peerHost && toNames[i].Find('@') == P_MAX_INDEX)
+      toNames[i] += '@' + peerHost;
     if (ExecuteCommand(RCPT, "TO:<" + toNames[i] + '>') != '2')
       return FALSE;
   }
@@ -190,7 +161,7 @@ BOOL PSMTPSocket::_BeginMessage()
 }
 
 
-BOOL PSMTPSocket::EndMessage()
+BOOL PSMTPClient::EndMessage()
 {
   flush();
   stuffingState = DontStuff;
@@ -200,7 +171,28 @@ BOOL PSMTPSocket::EndMessage()
 }
 
 
-BOOL PSMTPSocket::ProcessCommand()
+//////////////////////////////////////////////////////////////////////////////
+// PSMTPServer
+
+PSMTPServer::PSMTPServer()
+{
+  extendedHello = FALSE;
+  eightBitMIME = FALSE;
+  messageBufferSize = 30000;
+  ServerReset();
+}
+
+
+void PSMTPServer::ServerReset()
+{
+  eightBitMIME = FALSE;
+  sendCommand = WasMAIL;
+  fromAddress = PString();
+  toNames.RemoveAll();
+}
+
+
+BOOL PSMTPServer::ProcessCommand()
 {
   PString args;
   PINDEX num;
@@ -258,16 +250,19 @@ BOOL PSMTPSocket::ProcessCommand()
 }
 
 
-void PSMTPSocket::OnHELO(const PCaselessString & remoteHost)
+void PSMTPServer::OnHELO(const PCaselessString & remoteHost)
 {
   extendedHello = FALSE;
   ServerReset();
 
-  PCaselessString peer = GetPeerHostName();
+  PCaselessString peerHost;
+  PIPSocket * socket = GetSocket();
+  if (socket != NULL)
+    peerHost = socket->GetPeerHostName();
 
-  PString response = GetLocalHostName() + " Hello " + peer + ", ";
+  PString response = PIPSocket::GetHostName() & "Hello" & peerHost + ", ";
 
-  if (remoteHost == peer)
+  if (remoteHost == peerHost)
     response += "pleased to meet you.";
   else if (remoteHost.IsEmpty())
     response += "why do you wish to remain anonymous?";
@@ -278,60 +273,63 @@ void PSMTPSocket::OnHELO(const PCaselessString & remoteHost)
 }
 
 
-void PSMTPSocket::OnEHLO(const PCaselessString & remoteHost)
+void PSMTPServer::OnEHLO(const PCaselessString & remoteHost)
 {
   extendedHello = TRUE;
   ServerReset();
 
-  PCaselessString peer = GetPeerHostName();
+  PCaselessString peerHost;
+  PIPSocket * socket = GetSocket();
+  if (socket != NULL)
+    peerHost = socket->GetPeerHostName();
 
-  PString response = GetLocalHostName() + " Hello " + peer + ", ";
+  PString response = PIPSocket::GetHostName() & "Hello" & peerHost + ", ";
 
-  if (remoteHost == peer)
+  if (remoteHost == peerHost)
     response += ", pleased to meet you.";
   else if (remoteHost.IsEmpty())
     response += "why do you wish to remain anonymous?";
   else
     response += "why do you wish to call yourself \"" + remoteHost + "\"?";
 
-  WriteResponse(250, response +
-               "\nHELP\nVERB\nONEX\nMULT\nEXPN\nTICK\n8BITMIME\n");
+  response += "\nHELP\nVERB\nONEX\nMULT\nEXPN\nTICK\n8BITMIME\n";
+  WriteResponse(250, response);
 }
 
 
-void PSMTPSocket::OnQUIT()
+void PSMTPServer::OnQUIT()
 {
-  WriteResponse(221, GetLocalHostName() + " closing connection, goodbye.");
+  WriteResponse(221, PIPSocket::GetHostName() + " closing connection, goodbye.");
   Close();
 }
 
 
-void PSMTPSocket::OnHELP()
+void PSMTPServer::OnHELP()
 {
   WriteResponse(214, "No help here.");
 }
 
 
-void PSMTPSocket::OnNOOP()
+void PSMTPServer::OnNOOP()
 {
   WriteResponse(250, "Ok");
 }
 
 
-void PSMTPSocket::OnTURN()
+void PSMTPServer::OnTURN()
 {
   WriteResponse(502, "I don't do that yet. Sorry.");
 }
 
 
-void PSMTPSocket::OnRSET()
+void PSMTPServer::OnRSET()
 {
   ServerReset();
   WriteResponse(250, "Reset state.");
 }
 
 
-void PSMTPSocket::OnVRFY(const PCaselessString & name)
+void PSMTPServer::OnVRFY(const PCaselessString & name)
 {
   PString expandedName;
   switch (LookUpName(name, expandedName)) {
@@ -353,7 +351,7 @@ void PSMTPSocket::OnVRFY(const PCaselessString & name)
 }
 
 
-void PSMTPSocket::OnEXPN(const PCaselessString &)
+void PSMTPServer::OnEXPN(const PCaselessString &)
 {
   WriteResponse(502, "I don't do that. Sorry.");
 }
@@ -413,7 +411,7 @@ static PINDEX ParseMailPath(const PCaselessString & args,
 }
 
 
-void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
+void PSMTPServer::OnRCPT(const PCaselessString & recipient)
 {
   PCaselessString toName;
   PCaselessString toDomain;
@@ -427,10 +425,10 @@ void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
         break;
 
       case WillForward :
-        if (!forwardList.IsEmpty())
+        if (!forwardList)
           forwardList += ":";
         forwardList += toName;
-        if (!toDomain.IsEmpty())
+        if (!toDomain)
           forwardList += "@" + toDomain;
         toNames.AppendString(toName);
         toDomains.AppendString(forwardList);
@@ -463,37 +461,37 @@ void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
 }
 
 
-void PSMTPSocket::OnMAIL(const PCaselessString & sender)
+void PSMTPServer::OnMAIL(const PCaselessString & sender)
 {
   sendCommand = WasMAIL;
   OnSendMail(sender);
 }
 
 
-void PSMTPSocket::OnSEND(const PCaselessString & sender)
+void PSMTPServer::OnSEND(const PCaselessString & sender)
 {
   sendCommand = WasSEND;
   OnSendMail(sender);
 }
 
 
-void PSMTPSocket::OnSAML(const PCaselessString & sender)
+void PSMTPServer::OnSAML(const PCaselessString & sender)
 {
   sendCommand = WasSAML;
   OnSendMail(sender);
 }
 
 
-void PSMTPSocket::OnSOML(const PCaselessString & sender)
+void PSMTPServer::OnSOML(const PCaselessString & sender)
 {
   sendCommand = WasSOML;
   OnSendMail(sender);
 }
 
 
-void PSMTPSocket::OnSendMail(const PCaselessString & sender)
+void PSMTPServer::OnSendMail(const PCaselessString & sender)
 {
-  if (!fromAddress.IsEmpty()) {
+  if (!fromAddress) {
     WriteResponse(503, "Sender already specified.");
     return;
   }
@@ -520,7 +518,7 @@ void PSMTPSocket::OnSendMail(const PCaselessString & sender)
 }
 
 
-void PSMTPSocket::OnDATA()
+void PSMTPServer::OnDATA()
 {
   if (fromAddress.IsEmpty()) {
     WriteResponse(503, "Need a valid MAIL command.");
@@ -563,14 +561,14 @@ void PSMTPSocket::OnDATA()
 }
 
 
-BOOL PSMTPSocket::OnUnknown(const PCaselessString & command)
+BOOL PSMTPServer::OnUnknown(const PCaselessString & command)
 {
   WriteResponse(500, "Command \"" + command + "\" unrecognised.");
   return TRUE;
 }
 
 
-BOOL PSMTPSocket::OnTextData(PCharArray & buffer, BOOL & completed)
+BOOL PSMTPServer::OnTextData(PCharArray & buffer, BOOL & completed)
 {
   PString line;
   while (ReadLine(line)) {
@@ -595,7 +593,7 @@ BOOL PSMTPSocket::OnTextData(PCharArray & buffer, BOOL & completed)
 }
 
 
-BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer, BOOL & completed)
+BOOL PSMTPServer::OnMIMEData(PCharArray & buffer, BOOL & completed)
 {
   PINDEX count = 0;
   int c;
@@ -662,14 +660,14 @@ BOOL PSMTPSocket::OnMIMEData(PCharArray & buffer, BOOL & completed)
 }
 
 
-PSMTPSocket::ForwardResult PSMTPSocket::ForwardDomain(PCaselessString & userDomain,
+PSMTPServer::ForwardResult PSMTPServer::ForwardDomain(PCaselessString & userDomain,
                                                       PCaselessString & forwardDomainList)
 {
   return userDomain.IsEmpty() && forwardDomainList.IsEmpty() ? LocalDomain : CannotForward;
 }
 
 
-PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(const PCaselessString &,
+PSMTPServer::LookUpResult PSMTPServer::LookUpName(const PCaselessString &,
                                                   PString & expandedName)
 {
   expandedName = PString();
@@ -677,95 +675,75 @@ PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(const PCaselessString &,
 }
 
 
-BOOL PSMTPSocket::HandleMessage(PCharArray &, BOOL, BOOL)
+BOOL PSMTPServer::HandleMessage(PCharArray &, BOOL, BOOL)
 {
   return FALSE;
 }
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PPOP3Socket
+// PPOP3
 
-static char const * POP3Commands[PPOP3Socket::NumCommands] = {
+static char const * POP3Commands[PPOP3::NumCommands] = {
   "USER", "PASS", "QUIT", "RSET", "NOOP", "STAT",
   "LIST", "RETR", "DELE", "APOP", "TOP",  "UIDL"
 };
 
 
-PString PPOP3Socket::okResponse = "+OK";
-PString PPOP3Socket::errResponse = "-ERR";
+PString PPOP3::okResponse = "+OK";
+PString PPOP3::errResponse = "-ERR";
 
 
-PPOP3Socket::PPOP3Socket()
-  : PApplicationSocket(NumCommands, POP3Commands, "pop3 110")
+PPOP3::PPOP3()
+  : PInternetProtocol("pop3 110", NumCommands, POP3Commands)
 {
-  Construct();
 }
 
 
-PPOP3Socket::PPOP3Socket(const PString & address)
-  : PApplicationSocket(NumCommands, POP3Commands, "pop3 110")
+PINDEX PPOP3::ParseResponse(const PString & line)
 {
-  Construct();
-  Connect(address);
+  lastResponseCode = line[0] == '+';
+  PINDEX endCode = line.Find(' ');
+  if (endCode != P_MAX_INDEX)
+    lastResponseInfo = line.Mid(endCode+1);
+  else
+    lastResponseInfo = PString();
+  return 0;
 }
 
 
-PPOP3Socket::PPOP3Socket(PSocket & socket)
-  : PApplicationSocket(NumCommands, POP3Commands)
-{
-  Construct();
-  Accept(socket);
-}
+//////////////////////////////////////////////////////////////////////////////
+// PPOP3Client
 
-
-PPOP3Socket::~PPOP3Socket()
-{
-  Close();
-}
-
-void PPOP3Socket::Construct()
+PPOP3Client::PPOP3Client()
 {
   loggedIn = FALSE;
 }
 
 
-BOOL PPOP3Socket::Connect(const PString & address)
+PPOP3Client::~PPOP3Client()
 {
-  if (!PApplicationSocket::Connect(address))
-    return FALSE;
-
-  if (ReadResponse() && lastResponseCode > 0)
-    return TRUE;
-
   Close();
-  return FALSE;
 }
 
-
-BOOL PPOP3Socket::Accept(PSocket & socket)
+BOOL PPOP3Client::OnOpen()
 {
-  if (!PApplicationSocket::Accept(socket))
-    return FALSE;
-
-  return WriteResponse(okResponse, GetLocalHostName() +
-                     " POP3 server ready at " +
-                      PTime(PTime::MediumDateTime).AsString());
+  return ReadResponse() && lastResponseCode > 0;
 }
 
 
-BOOL PPOP3Socket::Close()
+BOOL PPOP3Client::Close()
 {
   BOOL ok = TRUE;
   if (IsOpen() && loggedIn) {
     SetReadTimeout(60000);
     ok = ExecuteCommand(QUIT, "") > 0;
   }
-  return PApplicationSocket::Close() && ok;
+  return PInternetProtocol::Close() && ok;
 }
 
 
-BOOL PPOP3Socket::LogIn(const PString & username, const PString & password)
+BOOL PPOP3Client::LogIn(const PString & username, const PString & password)
 {
   if (ExecuteCommand(USER, username) <= 0)
     return FALSE;
@@ -778,7 +756,7 @@ BOOL PPOP3Socket::LogIn(const PString & username, const PString & password)
 }
 
 
-int PPOP3Socket::GetMessageCount()
+int PPOP3Client::GetMessageCount()
 {
   if (ExecuteCommand(STAT, "") <= 0)
     return -1;
@@ -787,7 +765,7 @@ int PPOP3Socket::GetMessageCount()
 }
 
 
-PUnsignedArray PPOP3Socket::GetMessageSizes()
+PUnsignedArray PPOP3Client::GetMessageSizes()
 {
   PUnsignedArray sizes;
 
@@ -802,7 +780,7 @@ PUnsignedArray PPOP3Socket::GetMessageSizes()
 }
 
 
-PStringArray PPOP3Socket::GetMessageHeaders()
+PStringArray PPOP3Client::GetMessageHeaders()
 {
   PStringArray headers;
 
@@ -818,31 +796,35 @@ PStringArray PPOP3Socket::GetMessageHeaders()
 }
 
 
-BOOL PPOP3Socket::BeginMessage(PINDEX messageNumber)
+BOOL PPOP3Client::BeginMessage(PINDEX messageNumber)
 {
   return ExecuteCommand(RETR, PString(PString::Unsigned, messageNumber)) > 0;
 }
 
 
-BOOL PPOP3Socket::DeleteMessage(PINDEX messageNumber)
+BOOL PPOP3Client::DeleteMessage(PINDEX messageNumber)
 {
   return ExecuteCommand(DELE, PString(PString::Unsigned, messageNumber)) > 0;
 }
 
 
-PINDEX PPOP3Socket::ParseResponse(const PString & line)
+//////////////////////////////////////////////////////////////////////////////
+// PPOP3Server
+
+PPOP3Server::PPOP3Server()
 {
-  lastResponseCode = line[0] == '+';
-  PINDEX endCode = line.Find(' ');
-  if (endCode != P_MAX_INDEX)
-    lastResponseInfo = line.Mid(endCode+1);
-  else
-    lastResponseInfo = PString();
-  return 0;
 }
 
 
-BOOL PPOP3Socket::ProcessCommand()
+BOOL PPOP3Server::OnOpen()
+{
+  return WriteResponse(okResponse, PIPSocket::GetHostName() +
+                     " POP3 server ready at " +
+                      PTime(PTime::MediumDateTime).AsString());
+}
+
+
+BOOL PPOP3Server::ProcessCommand()
 {
   PString args;
   PINDEX num;
@@ -895,7 +877,7 @@ BOOL PPOP3Socket::ProcessCommand()
 }
 
 
-void PPOP3Socket::OnUSER(const PString & name)
+void PPOP3Server::OnUSER(const PString & name)
 {
   messageSizes.SetSize(0);
   messageIDs.SetSize(0);
@@ -904,7 +886,7 @@ void PPOP3Socket::OnUSER(const PString & name)
 }
 
 
-void PPOP3Socket::OnPASS(const PString & password)
+void PPOP3Server::OnPASS(const PString & password)
 {
   if (username.IsEmpty())
     WriteResponse(errResponse, "No user name specified.");
@@ -916,13 +898,13 @@ void PPOP3Socket::OnPASS(const PString & password)
 }
 
 
-void PPOP3Socket::OnQUIT()
+void PPOP3Server::OnQUIT()
 {
   for (PINDEX i = 0; i < messageDeletions.GetSize(); i++)
     if (messageDeletions[i])
       HandleDeleteMessage(i+1, messageIDs[i]);
 
-  WriteResponse(okResponse, GetLocalHostName() +
+  WriteResponse(okResponse, PIPSocket::GetHostName() +
                      " POP3 server signing off at " +
                       PTime(PTime::MediumDateTime).AsString());
 
@@ -930,7 +912,7 @@ void PPOP3Socket::OnQUIT()
 }
 
 
-void PPOP3Socket::OnRSET()
+void PPOP3Server::OnRSET()
 {
   for (PINDEX i = 0; i < messageDeletions.GetSize(); i++)
     messageDeletions[i] = FALSE;
@@ -938,13 +920,13 @@ void PPOP3Socket::OnRSET()
 }
 
 
-void PPOP3Socket::OnNOOP()
+void PPOP3Server::OnNOOP()
 {
   WriteResponse(okResponse, "Doing nothing.");
 }
 
 
-void PPOP3Socket::OnSTAT()
+void PPOP3Server::OnSTAT()
 {
   DWORD total = 0;
   for (PINDEX i = 0; i < messageSizes.GetSize(); i++)
@@ -953,7 +935,7 @@ void PPOP3Socket::OnSTAT()
 }
 
 
-void PPOP3Socket::OnLIST(PINDEX msg)
+void PPOP3Server::OnLIST(PINDEX msg)
 {
   if (msg == 0) {
     WriteResponse(okResponse, psprintf("%u messages.", messageSizes.GetSize()));
@@ -969,7 +951,7 @@ void PPOP3Socket::OnLIST(PINDEX msg)
 }
 
 
-void PPOP3Socket::OnRETR(PINDEX msg)
+void PPOP3Server::OnRETR(PINDEX msg)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse, "No such message.");
@@ -984,7 +966,7 @@ void PPOP3Socket::OnRETR(PINDEX msg)
 }
 
 
-void PPOP3Socket::OnDELE(PINDEX msg)
+void PPOP3Server::OnDELE(PINDEX msg)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse, "No such message.");
@@ -995,7 +977,7 @@ void PPOP3Socket::OnDELE(PINDEX msg)
 }
 
 
-void PPOP3Socket::OnTOP(PINDEX msg, PINDEX count)
+void PPOP3Server::OnTOP(PINDEX msg, PINDEX count)
 {
   if (msg < 1 || msg > messageDeletions.GetSize())
     WriteResponse(errResponse, "No such message.");
@@ -1009,7 +991,7 @@ void PPOP3Socket::OnTOP(PINDEX msg, PINDEX count)
 }
 
 
-void PPOP3Socket::OnUIDL(PINDEX msg)
+void PPOP3Server::OnUIDL(PINDEX msg)
 {
   if (msg == 0) {
     WriteResponse(okResponse,
@@ -1026,25 +1008,25 @@ void PPOP3Socket::OnUIDL(PINDEX msg)
 }
 
 
-BOOL PPOP3Socket::OnUnknown(const PCaselessString & command)
+BOOL PPOP3Server::OnUnknown(const PCaselessString & command)
 {
   WriteResponse(errResponse, "Command \"" + command + "\" unrecognised.");
   return TRUE;
 }
 
 
-BOOL PPOP3Socket::HandleOpenMailbox(const PString &, const PString &)
+BOOL PPOP3Server::HandleOpenMailbox(const PString &, const PString &)
 {
   return FALSE;
 }
 
 
-void PPOP3Socket::HandleSendMessage(PINDEX, const PString &, PINDEX)
+void PPOP3Server::HandleSendMessage(PINDEX, const PString &, PINDEX)
 {
 }
 
 
-void PPOP3Socket::HandleDeleteMessage(PINDEX, const PString &)
+void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 {
 }
 
