@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.37 1995/11/21 11:50:57 robertj Exp $
+ * $Id: osutils.cxx,v 1.38 1995/12/10 11:41:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.38  1995/12/10 11:41:12  robertj
+ * Added extra user information to processes and applications.
+ * Implemented timer support in text only applications with platform threads.
+ * Fixed bug in non-platform threads and semaphore timeouts.
+ *
  * Revision 1.37  1995/11/21 11:50:57  robertj
  * Added timeout on semaphore wait.
  *
@@ -529,8 +534,12 @@ PTimer & PTimer::operator=(const PTimeInterval & time)
 PTimer::~PTimer()
 {
   PAssert(!inTimeout, "Timer destroyed in OnTimeout()");
-  if (state == Running)
+  if (state == Running) {
     PProcess::Current()->GetTimerList()->Remove(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+    PProcess::Current()->SignalTimerChange();
+#endif
+  }
 }
 
 
@@ -543,22 +552,34 @@ void PTimer::RunContinuous(const PTimeInterval & time)
 
 void PTimer::StartRunning(BOOL once)
 {
-  if (state == Running && !inTimeout)
+  if (state == Running && !inTimeout) {
     PProcess::Current()->GetTimerList()->Remove(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+    PProcess::Current()->SignalTimerChange();
+#endif
+  }
 
   PTimeInterval::operator=(resetTime);
   oneshot = once;
   state = (*this) != 0 ? Running : Stopped;
 
-  if (state == Running && !inTimeout)
+  if (state == Running && !inTimeout) {
     PProcess::Current()->GetTimerList()->Append(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+    PProcess::Current()->SignalTimerChange();
+#endif
+  }
 }
 
 
 void PTimer::Stop()
 {
-  if (state == Running && !inTimeout)
+  if (state == Running && !inTimeout) {
     PProcess::Current()->GetTimerList()->Remove(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+    PProcess::Current()->SignalTimerChange();
+#endif
+  }
   state = Stopped;
   SetInterval(0);
 }
@@ -567,8 +588,12 @@ void PTimer::Stop()
 void PTimer::Pause()
 {
   if (state == Running) {
-    if (!inTimeout)
+    if (!inTimeout) {
       PProcess::Current()->GetTimerList()->Remove(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+      PProcess::Current()->SignalTimerChange();
+#endif
+    }
     state = Paused;
   }
 }
@@ -577,8 +602,12 @@ void PTimer::Pause()
 void PTimer::Resume()
 {
   if (state == Paused) {
-    if (!inTimeout)
+    if (!inTimeout) {
       PProcess::Current()->GetTimerList()->Append(this);
+#if defined(P_PLATFORM_HAS_THREADS)
+      PProcess::Current()->SignalTimerChange();
+#endif
+    }
     state = Running;
   }
 }
@@ -642,6 +671,31 @@ PTimeInterval PTimerList::Process()
   return minTimeLeft;
 }
 
+
+#if defined(P_PLATFORM_HAS_THREADS)
+
+PProcess::TimerThread::TimerThread()
+  : PThread(1000, FALSE, LowPriority)
+{
+}
+
+
+void PProcess::TimerThread::Main()
+{
+  for (;;)
+    semaphore.Wait(PProcess::Current()->GetTimerList()->Process());
+}
+
+
+void PProcess::SignalTimerChange()
+{
+  if (timerThread == NULL)
+    timerThread = PNEW TimerThread;
+  timerThread->semaphore.Signal();
+}
+
+
+#endif
 
 #endif
 
@@ -1593,6 +1647,8 @@ BOOL PModem::CanRead() const
 
 #ifdef _PCONFIG
 
+#ifndef _WIN32
+
 BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt)
 {
   PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
@@ -1619,6 +1675,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
   SetString(section, key, str);
 }
 
+#endif
 
 double PConfig::GetReal(const PString & section, const PString & key, double dflt)
 {
@@ -2010,9 +2067,9 @@ void PThread::Yield()
         break;
 
       case BlockedSem :
-      case SuspendedBlockedSem :
-        if (blockingSemaphore->timer != 0)
-          blockingSemaphore->Signal();
+      case SuspendedBlockSem :
+        if (thread->blockingSemaphore->timeout != 0)
+          thread->blockingSemaphore->Signal();
         break;
 
       case Starting :
@@ -2056,9 +2113,27 @@ void PThread::Yield()
 
 #if defined(_PPROCESS)
 
+PProcess::PProcess(const char * manuf, const char * name, const char * ver)
+  : manufacturer(manuf), productName(name), version(ver)
+{
+  PProcessInstance = this;
+#if defined(P_PLATFORM_HAS_THREADS)
+  timerThread = NULL;
+#endif
+}
+
+
+PProcess::~PProcess()
+{
+#if defined(P_PLATFORM_HAS_THREADS)
+  delete timerThread;
+#endif
+}
+
+
 PObject::Comparison PProcess::Compare(const PObject & obj) const
 {
-  return executableName.Compare(((const PProcess &)obj).executableName);
+  return productName.Compare(((const PProcess &)obj).productName);
 }
 
 
@@ -2069,7 +2144,9 @@ void PProcess::PreInitialise(int argc, char ** argv)
   arguments.SetArgs(argc-1, argv+1);
 
   executableFile = PString(argv[0]);
-  executableName = executableFile.GetTitle().ToLower();
+
+  if (productName.IsEmpty())
+    productName = executableFile.GetTitle().ToLower();
 
   InitialiseProcessThread();
 }
@@ -2082,18 +2159,6 @@ void PProcess::Terminate()
 #else
   exit(terminationValue);
 #endif
-}
-
-
-void PProcess::SetTerminationValue(int value)
-{
-  terminationValue = value;
-}
-
-
-int PProcess::GetTerminationValue() const
-{
-  return terminationValue;
 }
 
 
@@ -2138,7 +2203,10 @@ BOOL PSemaphore::Wait(const PTimeInterval & time)
     if (time == PMaxTimeInterval)
       timeout.Pause();
     PThread::Yield();
+    if (timeout == 0)
+      return FALSE;
   }
+  return TRUE;
 }
 
 
