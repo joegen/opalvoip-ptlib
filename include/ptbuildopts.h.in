@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.31  2004/04/18 12:06:06  csoutheren
+ * Added classes for SASL authentication
+ * Thanks to Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.30  2004/04/11 07:58:07  csoutheren
  * Added configure.in check for recursive mutexes, and changed implementation
  * without recursive mutexes to use PCriticalSection or atomic word structs
@@ -341,6 +345,23 @@
 #pragma include_alias(<SPDebug.h>, <@SAPI_DIR@/include/SPDebug.h>)
 
 #define P_SAPI_LIBRARY "@SAPI_DIR@/Lib/i386/sapi.lib"
+
+#endif
+
+
+
+/////////////////////////////////////////////////
+//
+// Cyrus SASL
+//
+
+#undef P_SASL 
+
+#if defined(_MSC_VER) && P_SASL
+
+#pragma include_alias(<sasl/sasl.h>, <@SASL_DIR@/include/sasl.h>)
+
+#define P_SASL_LIBRARY "@SASL_DIR@/lib/libsasl.lib"
 
 #endif
 
