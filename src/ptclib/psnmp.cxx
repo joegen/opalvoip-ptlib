@@ -1,11 +1,14 @@
 /*
  * SNMP Library
  *
- * $Id: psnmp.cxx,v 1.4 1997/07/20 08:50:04 craigs Exp $
+ * $Id: psnmp.cxx,v 1.5 1998/01/26 02:50:17 robertj Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: psnmp.cxx,v $
+ * Revision 1.5  1998/01/26 02:50:17  robertj
+ * GNU Support
+ *
  * Revision 1.4  1997/07/20 08:50:04  craigs
  * Changed var binding list to use ASN NULL rather than empty string
  *
@@ -44,6 +47,10 @@
  *
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "psnmp.h"
+#endif
 
 #include <ptlib.h>
 #include <psnmp.h>
