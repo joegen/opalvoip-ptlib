@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.72  2000/04/09 18:29:02  rogerh
+# Add my NetBSD changes
+#
 # Revision 1.71  2000/04/07 06:22:33  rogerh
 # Add comment about the -s flag and Mac OS X
 #
@@ -243,6 +246,10 @@ ifneq (,$(findstring macos,$(OSTYPE)))
 OSTYPE := macos
 endif
 
+ifneq (,$(findstring netbsd,$(OSTYPE)))
+OSTYPE := NetBSD
+endif
+
 ifneq (,$(findstring $(MACHTYPE),sun4))
 MACHTYPE := sparc
 endif
@@ -279,7 +286,7 @@ endif
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
 
-ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD solaris beos macos))
+ifeq (,$(findstring $(OSTYPE),linux FreeBSD OpenBSD NetBSD solaris beos macos))
 
 all ::
 	@echo
@@ -293,7 +300,7 @@ all ::
 	@echo "         Currently supported OSTYPE names are:"
 	@echo "              linux Linux linux-gnu mklinux"
 	@echo "              solaris Solaris SunOS"
-	@echo "              FreeBSD OpenBSD beos macos"
+	@echo "              FreeBSD OpenBSD NetBSD beos macos"
 	@echo
 	@echo "              **********************************"
 	@echo "              *** DO NOT IGNORE THIS MESSAGE ***"
@@ -437,6 +444,28 @@ endif
 RANLIB		:= 1
 
 endif # OpenBSD
+
+
+####################################################
+
+ifeq ($(OSTYPE),NetBSD)
+
+# Do not use PThreads on NetBSD yet.
+##P_PTHREADS	:= 1
+
+ifeq ($(MACHTYPE),x86)
+STDCCFLAGS	+= -m486
+endif
+
+STDCCFLAGS	+= -DP_NETBSD
+
+ifdef P_PTHREADS
+CFLAGS	+= -pthread
+endif
+
+RANLIB		:= 1
+
+endif # NetBSD
 
 
 ####################################################
