@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.20  2002/10/28 19:12:45  rogerh
+ * Add svideo input support for Lars Eggert <larse@isi.edu>
+ *
  * Revision 1.19  2002/04/10 08:40:36  rogerh
  * Simplify the SetVideoChannelFormat() code. Use the implementation in the
  * ancestor class.
@@ -129,7 +132,7 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   videoCapability.minwidth  = 32;
   videoCapability.maxheight = 768;
   videoCapability.maxwidth  = 576;
-  videoCapability.channels  = 4;
+  videoCapability.channels  = 5;
 
   // set height and width
   frameHeight = videoCapability.maxheight;
@@ -259,8 +262,9 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
     return FALSE;
 
   // set channel information
-  static int chnl[4] = { METEOR_INPUT_DEV0, METEOR_INPUT_DEV1,
-                         METEOR_INPUT_DEV2, METEOR_INPUT_DEV3 };
+  static int chnl[5] = { METEOR_INPUT_DEV0, METEOR_INPUT_DEV1,
+                         METEOR_INPUT_DEV2, METEOR_INPUT_DEV3,
+                         METEOR_INPUT_DEV_SVIDEO };
   int channel = chnl[newChannel];
 
   // set the information
