@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.2 1996/01/26 02:24:32 robertj Exp $
+ * $Id: url.h,v 1.3 1996/02/03 11:06:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.3  1996/02/03 11:06:27  robertj
+ * Added splitting of query field into variables dictionary.
+ *
  * Revision 1.2  1996/01/26 02:24:32  robertj
  * Further implemetation.
  *
@@ -98,11 +101,13 @@ PDECLARE_CLASS(PURL, PObject)
     const PString & GetPassword() const         { return password; }
     const PCaselessString & GetHostName() const { return hostname; }
     WORD GetPort() const                        { return port; }
+    const PString & GetPathStr() const          { return pathStr; }
     const PStringArray & GetPath() const        { return path; }
     BOOL IsAbsolutePath() const                 { return absolutePath; }
     const PString & GetParameters() const       { return parameters; }
     const PString & GetFragment() const         { return fragment; }
-    const PString & GetQuery() const            { return query; }
+    const PString & GetQuery() const            { return queryStr; }
+    PStringToString GetQueryVars() const        { return queryVars; }
 
   protected:
     PCaselessString scheme;
@@ -110,11 +115,13 @@ PDECLARE_CLASS(PURL, PObject)
     PString password;
     PCaselessString hostname;
     WORD port;
+    PString pathStr;
     PStringArray path;
     BOOL absolutePath;
     PString parameters;
     PString fragment;
-    PString query;
+    PString queryStr;
+    PStringToString queryVars;
 };
 
 
