@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.36  1998/10/13 14:06:13  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.35  1998/09/23 06:21:10  robertj
  * Added open source copyright license.
  *
@@ -429,10 +432,6 @@ PDECLARE_CLASS(PProcess, PThread)
     static char ** argv;
     static char ** envp;
     // main arguments
-
-#if defined(_DEBUG) && defined(_MSC_VER)
-    PMemoryState memState;
-#endif
 
     int terminationValue;
     // Application return value
