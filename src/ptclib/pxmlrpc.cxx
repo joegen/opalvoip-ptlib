@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.8  2002/10/02 08:54:01  craigs
+ * Added support for XMLRPC server
+ *
  * Revision 1.7  2002/08/13 03:02:07  robertj
  * Removed previous fix for memory leak, as object was already deleted.
  *
@@ -49,159 +52,174 @@
 #include <ptclib/mime.h>
 #include <ptclib/http.h>
 
-PXMLRPCRequest::PXMLRPCRequest(const PString & method)
-  : PXML()
+PXMLRPCBlock::PXMLRPCBlock()
 {
-  rootElement = new PXMLElement(NULL, "methodCall");
-  rootElement->AddChild(         new PXMLElement  (rootElement, "methodName", method));
-  rootElement->AddChild(params = new PXMLRPCParams(rootElement));
+  faultCode = P_MAX_INDEX;
+  SetRootElement("methodResponse");
+  params = NULL;
+}
+
+PXMLRPCBlock::PXMLRPCBlock(const PString & method)
+{
+  faultCode = P_MAX_INDEX;
+  SetRootElement("methodCall");
+  rootElement->AddChild(new PXMLElement(rootElement, "methodName", method));
+  params = NULL;
+}
+
+BOOL PXMLRPCBlock::Load(const PString & str)
+{
+  if (!PXML::Load(str))
+    return FALSE;
+
+  if (rootElement != NULL)
+    params = rootElement->GetElement("params", 0);
+
+  return TRUE;
 }
 
 
-////////////////////////////////////////////////////////
-
-PXMLRPCElement::PXMLRPCElement(PXMLElement * parent, 
-                             const PString & name,
-                             const PString & _subName)
-  : PXMLElement(parent, name)
+PXMLElement * PXMLRPCBlock::GetParams()
 {
-  subName = _subName;
+  if (params == NULL)
+    params = rootElement->AddChild(new PXMLElement(rootElement, "params"));
+
+  return params;
 }
 
-PXMLElement * PXMLRPCElement::AddParam(PXMLElement * element) 
+PXMLElement * PXMLRPCBlock::CreateValueElement(PXMLElement * element) 
 { 
-  PXMLElement * parm = AddChild(new PXMLElement(this, subName));
-  parm->AddChild(element); 
-  element->SetParent(parm);
-  return parm;
+  PXMLElement * value = new PXMLElement(NULL, "value");
+  value->AddChild(element);
+  element->SetParent(value);
+
+  return value;
 }
 
-void PXMLRPCElement::AddParam(const PString & str) 
+PXMLElement * PXMLRPCBlock::CreateScalar(const PString & type, 
+                                           const PString & scalar)
 { 
-  AddParam(new PXMLRPCScalarElement(NULL, str, "string"));
+  return CreateValueElement(new PXMLElement(NULL, type, scalar));
 }
 
-void PXMLRPCElement::AddParam(int value) 
+PXMLElement * PXMLRPCBlock::CreateScalar(const PString & str) 
 { 
-  AddParam(new PXMLRPCScalarElement(NULL, PString(PString::Unsigned, value), "int")); 
+  return CreateScalar("string", str);
 }
 
-void PXMLRPCElement::AddParam(double value)
+PXMLElement * PXMLRPCBlock::CreateScalar(int value) 
+{
+  return CreateScalar("int", PString(PString::Unsigned, value)); 
+}
+
+PXMLElement * PXMLRPCBlock::CreateScalar(double value)
 { 
-  AddParam(new PXMLRPCScalarElement(NULL, psprintf("%lf", value), "double")); 
+  return CreateScalar("double", psprintf("%lf", value)); 
 }
 
-void PXMLRPCElement::AddParam(const PTime & time)
+PXMLElement * PXMLRPCBlock::CreateDateAndTime(const PTime & time)
 {
-  AddParam(new PXMLRPCScalarElement(NULL, PXMLRPC::PTimeToISO8601(time), "dateTime.iso8601")); 
+  return CreateScalar("dateTime.iso8601", PXMLRPC::PTimeToISO8601(time)); 
 }
 
-void PXMLRPCElement::AddBinaryParam(const PString & str)
+PXMLElement * PXMLRPCBlock::CreateBinary(const PBYTEArray & data)
 {
-  AddParam(new PXMLRPCScalarElement(NULL, PBase64::Encode(str), "base64")); 
+  return CreateScalar("base64", PBase64::Encode(data)); 
 }
 
-void PXMLRPCElement::AddBinaryParam(const char * cstr)
+PXMLElement * PXMLRPCBlock::CreateStruct()
 {
-  AddParam(new PXMLRPCScalarElement(NULL, PBase64::Encode(cstr), "base64")); 
+  return new PXMLElement(NULL, "struct");
 }
 
-void PXMLRPCElement::AddBinaryParam(const PBYTEArray & data)
+PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict)
 {
-  AddParam(new PXMLRPCScalarElement(NULL, PBase64::Encode(data), "base64")); 
+  return CreateStruct(dict, "string");
 }
 
-void PXMLRPCElement::AddBinaryParam(const void * dataBlock, PINDEX length)
+PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PString & typeStr)
 {
-  AddParam(new PXMLRPCScalarElement(NULL, PBase64::Encode(dataBlock, length), "base64")); 
-}
-
-void PXMLRPCElement::AddArrayParam(const PStringArray & array, const char * type)
-{ 
-  AddParam(new PXMLRPCArrayElement(NULL, array, type)); 
-}
-
-void PXMLRPCElement::AddStructParam(const PStringToString & dict, const char * type)
-{
-  AddParam(new PXMLRPCStructElement(NULL, dict, type)); 
-}
-
-void PXMLRPCElement::AddStructParam(PXMLRPCStruct * /*structParam*/)
-{
-}
-
-////////////////////////////////////////////////////////
-
-PXMLRPCScalarElement::PXMLRPCScalarElement(PXMLElement * parent, 
-                                         const PString & scalar,
-                                            const char * typeStr)
-  : PXMLElement(parent, "value")
-{
-  PString type = "string";
-  if (typeStr != NULL)
-    type = typeStr;
-
-  AddChild(new PXMLElement(this, type, scalar));
-}
-
-////////////////////////////////////////////////////////
-
-PXMLRPCArrayElement::PXMLRPCArrayElement(PXMLElement * parent, 
-                                  const PStringArray & stringArray,
-                                          const char * typeStr)
-  : PXMLElement(parent, "value")
-{
-  PXMLElement * array =        AddChild(new PXMLElement(this,  "array")); 
-  PXMLElement * data  = array->AddChild(new PXMLElement(array, "data" )); 
-
-  PINDEX i;
-  for (i = 0; i < stringArray.GetSize(); i++) 
-    data->AddChild(new PXMLRPCScalarElement(data, stringArray[i], typeStr));
-}
-
-////////////////////////////////////////////////////////
-
-PXMLRPCStructElement::PXMLRPCStructElement(PXMLElement * parent, 
-             const PStringToString & dict, 
-                        const char * typeStr)
-  : PXMLElement(parent, "value")
-{ 
-  PXMLElement * structElement = AddChild(new PXMLElement(this,  "struct")); 
+  PXMLElement * structElement = CreateStruct();
   PINDEX i;
   for (i = 0; i < dict.GetSize(); i++) {
     PString key = dict.GetKeyAt(i);
-    PXMLElement * member = structElement->AddChild(new PXMLElement(structElement, "member"));
-    member->AddChild(new PXMLElement         (member, "name",    key));
-    member->AddChild(new PXMLRPCScalarElement(member, dict[key], typeStr));
+    structElement->AddChild(CreateMember(key, CreateScalar(typeStr, dict[key])));
   }
+
+  return structElement;
 }
 
-////////////////////////////////////////////////////////
 
-PXMLRPCResponse::PXMLRPCResponse()
-  : PXML()
+PXMLElement * PXMLRPCBlock::CreateMember(const PString & name, PXMLElement * value)
 {
-  params = NULL;
-  faultCode = P_MAX_INDEX;
+  PXMLElement * member = new PXMLElement(NULL, "member");
+  member->AddChild(value);
+  member->AddChild(new PXMLElement(member, "name", name));
+
+  return member;
 }
 
-BOOL PXMLRPCResponse::Validate()
+/////////////////////////////////////////////
+
+void PXMLRPCBlock::AddParam(PXMLElement * parm)
+{
+  GetParams();
+  PXMLElement * child = params->AddChild(new PXMLElement(params, "param"));
+  child->AddChild(parm);
+  parm->SetParent(child);
+}
+
+void PXMLRPCBlock::AddParam(const PString & str) 
+{ 
+  AddParam(CreateScalar(str));
+}
+
+void PXMLRPCBlock::AddParam(int value) 
+{
+  AddParam(CreateScalar(value)); 
+}
+
+void PXMLRPCBlock::AddParam(double value)
+{ 
+  AddParam(CreateScalar(value)); 
+}
+
+void PXMLRPCBlock::AddParam(const PTime & time)
+{
+  AddParam(CreateDateAndTime(time)); 
+}
+
+void PXMLRPCBlock::AddBinary(const PBYTEArray & data)
+{
+  AddParam(CreateBinary(data)); 
+}
+
+void PXMLRPCBlock::AddStruct(const PStringToString & dict)
+{
+  AddParam(CreateStruct(dict, "string"));
+}
+
+void PXMLRPCBlock::AddStruct(const PStringToString & dict, const PString & typeStr)
+{
+  AddParam(CreateStruct(dict, typeStr));
+}
+
+/////////////////////////////////////////////
+
+BOOL PXMLRPCBlock::ValidateResponse()
 {
   // ensure root element exists and has correct name
   if ((rootElement == NULL) || 
       (rootElement->GetName() != "methodResponse")) {
-    SetFault(ResponseRootNotMethodResponse, "Response root not methodResponse");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
+    SetFault(PXMLRPC::ResponseRootNotMethodResponse, "Response root not methodResponse");
+    PTRACE(2, "XMLRPC\t" << GetFaultText());
     return FALSE;
   }
 
   // determine if response returned
   params = (PXMLElement *)rootElement->GetElement(0);
-  if (params == NULL) {
-    SetFault(ResponseEmpty, "Response empty");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
-    return FALSE;
-  }
+  if (params == NULL)
+    return TRUE;
 
   // determine if fault
   if (params->GetName() == "fault") {
@@ -210,15 +228,15 @@ BOOL PXMLRPCResponse::Validate()
     PStringToString faultInfo;
     PXMLElement * value = params->GetElement("value");
     if ((value == NULL) ||
-         !ParseStruct(*value, faultInfo) ||
+         !ParseStruct(value, faultInfo) ||
          (faultInfo.GetSize() != 2) ||
          (!faultInfo.Contains("faultCode")) ||
          (!faultInfo.Contains("faultString"))
          ) {
       PStringStream txt;
       txt << "Fault return is faulty:\n" << *this;
-      SetFault(FaultyFault, txt);
-      PTRACE(2, "RPCXML\t" << GetFaultText());
+      SetFault(PXMLRPC::FaultyFault, txt);
+      PTRACE(2, "XMLRPC\t" << GetFaultText());
       return FALSE;
     }
 
@@ -230,50 +248,20 @@ BOOL PXMLRPCResponse::Validate()
 
   // must be params
   else if (params->GetName() != "params") {
-    SetFault(ResponseUnknownFormat, PString("Response contains unknown element") & params->GetName());
-    PTRACE(2, "RPCXML\t" << GetFaultText());
+    SetFault(PXMLRPC::ResponseUnknownFormat, PString("Response contains unknown element") & params->GetName());
+    PTRACE(2, "XMLRPC\t" << GetFaultText());
     return FALSE;
   }
 
   return TRUE;
 }
 
-BOOL PXMLRPCResponse::ParseScalar(PXMLElement & valueElement, 
-                                      PString & type, 
-                                      PString & value)
+BOOL PXMLRPCBlock::ParseStruct(PXMLElement * structElement, 
+                           PStringToString & structDict)
 {
-  if (valueElement.GetName() != "value") {
-    SetFault(ParamNotValue, "Scalar value does not contain value element");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
-    return FALSE;
-  }
-
-  PXMLElement * element = (PXMLElement *)valueElement.GetElement(0);
-  if ((element == NULL) || !element->IsElement()) {
-    SetFault(ScalarWithoutElement, "Scalar without sub-element");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
-    return FALSE;
-  }
-
-  type = element->GetName();
-  value = element->GetData();
-
-  return TRUE;
-}
-
-BOOL PXMLRPCResponse::ParseStruct(PXMLElement & valueElement, 
-                              PStringToString & structDict)
-{
-  if (valueElement.GetName() != "value") {
-    SetFault(ParamNotValue, "Struct value does not contain value element");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
-    return FALSE;
-  }
-
-  PXMLElement * structElement = valueElement.GetElement("struct");
-  if (structElement == NULL) {
-    SetFault(ParamNotStruct, "Param is not struct");
-    PTRACE(2, "RPCXML\t" << GetFaultText());
+  if ((structElement == NULL) || (structElement->GetName() != "struct")) {
+    SetFault(PXMLRPC::ParamNotStruct, "Param is not struct");
+    PTRACE(2, "XMLRPC\t" << GetFaultText());
     return FALSE;
   }
 
@@ -286,23 +274,23 @@ BOOL PXMLRPCResponse::ParseStruct(PXMLElement & valueElement,
       if ((nameElement == NULL) || (element == NULL)) {
         PStringStream txt;
         txt << "Member " << i << " incomplete";
-        SetFault(MemberIncomplete, txt);
-        PTRACE(2, "RPCXML\t" << GetFaultText());
+        SetFault(PXMLRPC::MemberIncomplete, txt);
+        PTRACE(2, "XMLRPC\t" << GetFaultText());
         return FALSE;
       }
 
       if (nameElement->GetName() != "name") {
         PStringStream txt;
         txt << "Member " << i << " unnamed";
-        SetFault(MemberUnnamed, txt);
-        PTRACE(2, "RPCXML\t" << GetFaultText());
+        SetFault(PXMLRPC::MemberUnnamed, txt);
+        PTRACE(2, "XMLRPC\t" << GetFaultText());
         return FALSE;
       }
 
       PString name = nameElement->GetData();
       PString value;
       PString type;
-      if (!ParseScalar(*element, type, value))
+      if (!ParseScalar(element, type, value))
         return FALSE;
 
       structDict.SetAt(name, value);
@@ -312,12 +300,85 @@ BOOL PXMLRPCResponse::ParseStruct(PXMLElement & valueElement,
   return TRUE;
 }
 
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, PString & result)
+BOOL PXMLRPCBlock::ParseScalar(PXMLElement * valueElement, 
+                                   PString & type, 
+                                   PString & value)
+{
+  if (valueElement == NULL)
+    return FALSE;
+
+  if (valueElement->GetName() != "value") {
+    SetFault(PXMLRPC::ParamNotValue, "Scalar value does not contain value element");
+    PTRACE(2, "RPCXML\t" << GetFaultText());
+    return FALSE;
+  }
+
+  PXMLElement * element = (PXMLElement *)valueElement->GetElement(0);
+  if ((element == NULL) || !element->IsElement()) {
+    SetFault(PXMLRPC::ScalarWithoutElement, "Scalar without sub-element");
+    PTRACE(2, "XMLRPC\t" << GetFaultText());
+    return FALSE;
+  }
+
+  type = element->GetName();
+  value = element->GetData();
+
+  return TRUE;
+}
+
+PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const 
+{ 
+  if (params == NULL) 
+    return NULL;
+  
+  PXMLElement * param = params->GetElement("param", idx); 
+  if (param == NULL)
+    return FALSE;
+
+  PXMLObject * parm = param->GetElement(0);
+  if (!parm->IsElement())
+    return NULL;
+
+  return (PXMLElement *)parm;
+}
+
+
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
+{
+  // get the parameter
+  if (!ParseScalar(GetParam(idx), type, value)) {
+    PTRACE(3, "XMLRPC\tCannot get parm " << idx);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PXMLRPCBlock::GetExpectedParam(PINDEX idx, const PString & expectedType, PString & value)
+{
+  PString type;
+
+  // get parameter
+  if (!GetParam(idx, type, value))
+    return FALSE;
+
+  // see if correct type
+  if (!expectedType.IsEmpty() && (type != expectedType)) {
+    PTRACE(3, "XMLRPC\tExpected parm " << idx << " to be " << expectedType << ", was " << type);
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & result)
 {
   return GetExpectedParam(idx, "string", result); 
 }
 
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, int & val)
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, int & val)
 {
   PString type, result; 
   if (!GetExpectedParam(idx, type, result))
@@ -332,13 +393,10 @@ BOOL PXMLRPCResponse::GetParam(PINDEX idx, int & val)
   return TRUE;
 }
 
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, double & val)
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, double & val)
 {
-  PString type, result; 
-  if (!GetExpectedParam(idx, type, result))
-    return FALSE;
-
-  if (type != "double")
+  PString result; 
+  if (!GetExpectedParam(idx, "double", result))
     return FALSE;
 
   val = result.AsReal();
@@ -348,16 +406,16 @@ BOOL PXMLRPCResponse::GetParam(PINDEX idx, double & val)
 // 01234567890123456
 // yyyyMMddThh:mm:ss
 
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, PTime & val, int tz)
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, PTime & val, int tz)
 {
-  PString type, result; 
+  PString result; 
   if (!GetExpectedParam(idx, "dateTime.iso8601", result))
     return FALSE;
 
   return PXMLRPC::ISO8601ToPTime(result, val, tz);
 }
 
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, PStringToString & result)
+BOOL PXMLRPCBlock::GetParam(PINDEX idx, PStringToString & result)
 {
   if (idx >= params->GetSize()) {
     PTRACE(2, "RPCXML\tParam " << idx << " not in response");
@@ -370,77 +428,13 @@ BOOL PXMLRPCResponse::GetParam(PINDEX idx, PStringToString & result)
     return FALSE;
   }
 
-  PXMLElement * value = ((PXMLElement *)param)->GetElement("value");
+  PXMLElement * value = ((PXMLElement *)param)->GetElement("struct");
   if (value == NULL) {
     PTRACE(2, "RPCXML\tParam " << idx << " is malformed");
     return FALSE;
   }
 
-  return ParseStruct(*value, result);
-}
-
-BOOL PXMLRPCResponse::GetBinaryParam(PINDEX idx, PString & str)
-{
-  PString type, result; 
-  if (!GetExpectedParam(idx, "base64", result))
-    return FALSE;
-
-  str = PBase64::Decode(result);
-
-  return TRUE;
-}
-
-BOOL PXMLRPCResponse::GetBinaryParam(PINDEX idx, PBYTEArray & data)
-{
-  PString type, result; 
-  if (!GetExpectedParam(idx, "base64", result))
-    return FALSE;
-
-  return PBase64::Decode(result, data);
-}
-
-BOOL PXMLRPCResponse::GetBinaryParam(PINDEX idx, void * dataBlock, PINDEX & length)
-{
-  PString type, result; 
-  if (!GetExpectedParam(idx, "base64", result))
-    return FALSE;
-
-  return PBase64::Decode(result, dataBlock, length);
-}
-
-BOOL PXMLRPCResponse::GetExpectedParam(PINDEX idx, 
-                              const PString & expectedType, 
-                                    PString & result)
-{
-  PString type; 
-  if (!GetParam(idx, type, result))
-    return FALSE;
-
-  return type == expectedType;
-}
-
-BOOL PXMLRPCResponse::GetParam(PINDEX idx, 
-                            PString & type, 
-                            PString & result)
-{
-  if (idx >= params->GetSize()) {
-    PTRACE(2, "RPCXML\tParam " << idx << " not in response");
-    return FALSE;
-  }
-
-  PXMLObject * param = params->GetElement(idx);
-  if (!param->IsElement()) {
-    PTRACE(2, "RPCXML\tParam " << idx << " malformed");
-    return FALSE;
-  }
-
-  PXMLElement * value = ((PXMLElement *)param)->GetElement("value");
-  if (value == NULL) {
-    PTRACE(2, "RPCXML\tParam " << idx << " is malformed");
-    return FALSE;
-  }
-
-  return ParseScalar(*value, type, result);
+  return ParseStruct(value, result);
 }
 
 ////////////////////////////////////////////////////////
@@ -453,20 +447,20 @@ PXMLRPC::PXMLRPC(const PURL & _url)
 
 BOOL PXMLRPC::MakeRequest(const PString & method)
 {
-  PXMLRPCRequest request(method);
-  PXMLRPCResponse response;
+  PXMLRPCBlock request(method);
+  PXMLRPCBlock response;
 
   return MakeRequest(request, response);
 }
 
-BOOL PXMLRPC::MakeRequest(const PString & method, PXMLRPCResponse & response)
+BOOL PXMLRPC::MakeRequest(const PString & method, PXMLRPCBlock & response)
 {
-  PXMLRPCRequest request(method);
+  PXMLRPCBlock request(method);
 
   return MakeRequest(request, response);
 }
 
-BOOL PXMLRPC::MakeRequest(PXMLRPCRequest & request, PXMLRPCResponse & response)
+BOOL PXMLRPC::MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   if (PerformRequest(request, response))
     return TRUE;
@@ -477,7 +471,7 @@ BOOL PXMLRPC::MakeRequest(PXMLRPCRequest & request, PXMLRPCResponse & response)
   return FALSE;
 }
 
-BOOL PXMLRPC::PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & response)
+BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   // create XML version of request
   PString requestXML;
@@ -487,8 +481,8 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & respons
         << request.GetErrorLine() 
         << ") :" 
         << request.GetErrorString();
-    response.SetFault(PXMLRPCResponse::CannotCreateRequestXML, txt);
-    PTRACE(2, "RPCXML\t" << response.GetFaultText());
+    response.SetFault(PXMLRPC::CannotCreateRequestXML, txt);
+    PTRACE(2, "XMLRPC\t" << response.GetFaultText());
     return FALSE;
   }
 
@@ -527,8 +521,8 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & respons
         << client.GetLastResponseInfo() << '\n'
         << replyMIME << '\n'
         << replyBody;
-    response.SetFault(PXMLRPCResponse::HTTPPostFailed, txt);
-    PTRACE(2, "RPCXML\t" << response.GetFaultText());
+    response.SetFault(PXMLRPC::HTTPPostFailed, txt);
+    PTRACE(2, "XMLRPC\t" << response.GetFaultText());
     return FALSE;
   }
 
@@ -547,14 +541,14 @@ BOOL PXMLRPC::PerformRequest(PXMLRPCRequest & request, PXMLRPCResponse & respons
         txt << lines[(PINDEX)line] << '\n';
     }
 
-    response.SetFault(PXMLRPCResponse::CannotParseResponseXML, txt);
-    PTRACE(2, "RPCXML\t" << response.GetFaultText());
+    response.SetFault(PXMLRPC::CannotParseResponseXML, txt);
+    PTRACE(2, "XMLRPC\t" << response.GetFaultText());
     return FALSE;
   }
 
   // validate the response
-  if (!response.Validate()) {
-    PTRACE(2, "RPCXML\t" << response.GetFaultText());
+  if (!response.ValidateResponse()) {
+    PTRACE(2, "XMLRPC\t" << response.GetFaultText());
     return FALSE;
   }
 

@@ -131,6 +131,24 @@ void PXML::Construct()
   standAlone     = -2;
 }
 
+PXMLElement * PXML::SetRootElement(const PString & documentType)
+{
+  if (rootElement != NULL)
+    delete rootElement;
+
+  rootElement = new PXMLElement(rootElement, documentType);
+  return rootElement;
+}
+
+PXMLElement * PXML::SetRootElement(PXMLElement * element)
+{
+  if (rootElement != NULL)
+    delete rootElement;
+
+  rootElement = element;
+  return rootElement;
+}
+
 BOOL PXML::IsDirty() const
 {
   if (rootElement == NULL)
@@ -172,6 +190,11 @@ BOOL PXML::Load(const PString & data, int _options)
 {
   if (_options >= 0)
     options = _options;
+
+  if (rootElement != NULL) {
+    delete rootElement;
+    rootElement = NULL;
+  }
 
   XML_Parser parser = XML_ParserCreate(NULL);
   XML_SetUserData(parser, this);
