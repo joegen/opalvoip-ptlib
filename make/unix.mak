@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.59  2000/02/03 23:46:26  robertj
+# Added power PC linux variation, thanks Brad Midgley
+#
 # Revision 1.58  2000/01/25 04:55:36  robertj
 # Added FreeBSD support for distinction between v3.x and later versions. Thanks Roger Hardiman.
 #
@@ -211,6 +214,11 @@ endif
 ifneq (,$(findstring x86, $(MACHTYPE)))
 MACHTYPE := x86
 endif
+
+ifneq (,$(findstring powerpc, $(MACHTYPE)))
+MACHTYPE := ppc
+endif
+
 
 .PHONY: all debug opt both release clean debugclean optclean debugdepend optdepend bothdepend
 
