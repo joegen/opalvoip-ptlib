@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.6 1995/03/14 12:41:41 robertj Exp $
+ * $Id: lists.h,v 1.7 1995/06/17 11:12:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.7  1995/06/17 11:12:43  robertj
+ * Documentation update.
+ *
  * Revision 1.6  1995/03/14 12:41:41  robertj
  * Updated documentation to use HTML codes.
  *
@@ -126,11 +129,11 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
     );
     /* Insert a new object immediately before the specified object. If the
        object to insert before is not in the collection then the equivalent of
-       the <A><CODE>Append()</CODE></A> function is performed.
+       the <A>Append()</A> function is performed.
        
        Note that the object values are compared for the search of the
        <CODE>before</CODE> parameter, not the pointers. So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function.
 
        <H2>Returns:</H2>
@@ -143,7 +146,7 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
     );
     /* Insert a new object at the specified ordinal index. If the index is
        greater than the number of objects in the collection then the
-       equivalent of the <A><CODE>Append()</CODE></A> function is performed.
+       equivalent of the <A>Append()</A> function is performed.
 
        <H2>Returns:</H2>
        index of the newly inserted object.
@@ -221,7 +224,7 @@ PDECLARE_CONTAINER(PAbstractList, PCollection)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. A simple linear search from "head" of the list is performed.
 
        <H2>Returns:</H2>
@@ -471,7 +474,7 @@ PDECLARE_CLASS(PStack, PAbstractList)
       T * obj    // Object to add to the stack.
     ) { PAbstractList::InsertAt(0, obj); }
     /* Add an object to the stack. This object will be on "top" of the stack
-       and will be the object returned by the <A><CODE>Pop()</CODE></A>
+       and will be the object returned by the <A>Pop()</A>
        function.
      */
 
@@ -606,7 +609,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
 /* This class is a collection of objects which are descendents of the
    <A>PObject</A> class. It is implemeted as a Red-Black binary tree to
    maintain the objects in rank order. Note that this requires that the
-   <A><CODE>Compare()</CODE></A> function be fully implemented oin objects
+   <A>PObject::Compare()</A> function be fully implemented oin objects
    contained in the collection.
 
    The implementation of a sorted list allows fast inserting and deleting as
@@ -626,7 +629,8 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
    inline functions) if templates are not being used.
 
    The <A>PSortedList</A> class or <A>PDECLARE_SORTED_LIST</A> macro will
-   define the correctly typed operators for subscript access (operator[]).
+   define the correctly typed operators for subscript access
+   (<CODE>operator[]</CODE>).
  */
 
   public:
@@ -748,8 +752,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
 
     virtual void RemoveAll();
     /* Remove all of the elements in the collection. This operates by
-       continually calling <A><CODE>RemoveAt()</CODE></A> until there are no
-       objects left.
+       continually calling <A>RemoveAt()</A> until there are no objects left.
 
        The objects are removed from the last, at index
        <CODE>(GetSize()-1)</CODE> toward the first at index zero.
@@ -801,7 +804,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       collection must correctly implement the <A>PObject::Compare()</A>
        function. A binary search is employed to locate the entry.
 
        <H2>Returns:</H2>
