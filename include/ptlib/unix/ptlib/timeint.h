@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.12  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.11  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -67,28 +71,13 @@
  *
  */
 
-#ifndef _PTIMEINTERVAL
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
 #include <time.h>
 
 #define PMaxTimeInterval PTimeInterval((long)0x7fffffff)
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-#define _PTIMEINTERVAL_PLATFORM_INCLUDE
-#include "../../timeint.h"
-
-#endif
-#ifdef _PTIMEINTERVAL_PLATFORM_INCLUDE
-#undef _PTIMEINTERVAL_PLATFORM_INCLUDE
-
-#endif
-
+// nothing to do
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.6  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.5  2001/09/20 05:38:25  robertj
  * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
  * Also prevented semaphore from being created if subclass does not use it.
@@ -49,17 +53,8 @@
  *
  */
 
-#ifndef _PSYNCPOINT
-
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
-
-#define _PSYNCPOINT_PLATFORM_INCLUDE
-#include "../../syncpoint.h"
-
-#endif
-#ifdef _PSYNCPOINT_PLATFORM_INCLUDE
-#undef _PSYNCPOINT_PLATFORM_INCLUDE
 
 #if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
   public:
@@ -70,8 +65,5 @@
   private:
     unsigned signalCount;
 #endif
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

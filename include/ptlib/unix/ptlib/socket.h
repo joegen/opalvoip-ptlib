@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.19  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.18  2003/02/20 23:32:00  robertj
  * More RTEMS support patches, thanks Sebastian Meyer.
  *
@@ -85,53 +89,11 @@
  *
  */
 
-#ifndef _PSOCKET
-#define _PSOCKET
-
-
-#define	P_HAS_BERKELEY_SOCKETS
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <netinet/in.h>
-#include <errno.h>
-#include <sys/socket.h>
-
-#ifdef P_VXWORKS
-#include <sys/times.h>
-#include <time.h>
-#include <ioctl.h>
-#include <ioLib.h>
-#include <socklib.h>
-#include <net/if.h>
-#else
-#include <sys/time.h>
-#endif
-
-#ifdef P_RTEMS
-#include <netinet/tcp.h>
-#endif
-
-typedef	int SOCKET;
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
-
-#define _PSOCKET_PLATFORM_INCLUDE
-#include "../../socket.h"
-
-#endif
-#ifdef _PSOCKET_PLATFORM_INCLUDE
-#undef _PSOCKET_PLATFORM_INCLUDE
 
   public:
     BOOL Read(void * ptr, PINDEX len);
     ~PSocket();
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////
