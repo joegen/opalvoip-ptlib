@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.7 1997/01/27 10:22:33 robertj Exp $
+ * $Id: httpsvc.h,v 1.8 1997/02/05 11:54:52 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.8  1997/02/05 11:54:52  robertj
+ * Added support for order form page overridiing.
+ *
  * Revision 1.7  1997/01/27 10:22:33  robertj
  * Numerous changes to support OEM versions of products.
  *
@@ -61,6 +64,9 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
       const char * homePage = NULL,  // WWW address of manufacturers home page
       const char * email = NULL,     // contact email for manufacturer
+      const PTEACypher::Key * prodKey = NULL,  // Poduct key for registration
+      const char * const * securedKeys = NULL, // Product secured keys for registration
+      PINDEX securedKeyCount = 0,
       const PTEACypher::Key * sigKey = NULL // Signature key for encryption of HTML files
     );
 
@@ -78,10 +84,11 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     const PString & GetEMailAddress() const { return email; }
     const PString & GetHomePage() const { return homePage; }
+    const PTEACypher::Key GetProductKey() const { return productKey; }
+    const PStringArray & GetSecuredKeys() const { return securedKeys; }
     const PTEACypher::Key GetSignatureKey() const { return signatureKey; }
 
-    static PHTTPServiceProcess * Current() 
-      { return (PHTTPServiceProcess *)PServiceProcess::Current(); }
+    static PHTTPServiceProcess & Current();
 
 
   protected:
@@ -91,6 +98,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     PString    email;
     PString    homePage;
 
+    PTEACypher::Key productKey;
+    PStringArray    securedKeys;
     PTEACypher::Key signatureKey;
 
   private:
@@ -165,7 +174,6 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
   public:
     PRegisterPage(
       PHTTPServiceProcess & app,
-      const PSecureConfig & sconf,
       const PHTTPAuthority & auth
     );
 
@@ -185,8 +193,6 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
 
   protected:
     PHTTPServiceProcess & process;
-    PStringArray    securedKeys;
-    PTEACypher::Key productKey;
 };
 
 
@@ -194,12 +200,11 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
 
 PDECLARE_CLASS(POrderPage, PHTTPString)
   public:
-    POrderPage(PHTTPAuthority & auth, const PSecureConfig & sconf);
+    POrderPage(PHTTPServiceProcess & app, PHTTPAuthority & auth);
     PString LoadText(PHTTPRequest & request);
 
   protected:
-    PStringArray    securedKeys;
-    PTEACypher::Key productKey;
+    PHTTPServiceProcess & process;
 };
 
 
