@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.27  2001/09/10 02:51:22  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.26  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -311,7 +315,7 @@ class PThread : public PObject
     virtual BOOL IsSuspended() const;
 
     /// Suspend the current thread for the specified amount of time.
-    virtual void Sleep(
+    static void Sleep(
       const PTimeInterval & delay   /// Time interval to sleep for.
     );
 
