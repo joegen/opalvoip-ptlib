@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.18  2004/05/18 06:01:13  csoutheren
+ * Deferred plugin loading until after main has executed by using abstract factory classes
+ *
  * Revision 1.17  2004/05/06 11:29:35  rjongbloed
  * Added "current directory" to default plug in path.
  *
@@ -99,21 +102,8 @@ PStringArray PPluginManager::GetPluginDirs()
 
 PPluginManager & PPluginManager::GetPluginManager()
 {
-  static PMutex mutex;
-  static PPluginManager * systemPluginMgr = NULL;
-
-  PWaitAndSignal m(mutex);
-
-  if (systemPluginMgr == NULL) {
-    // split into directories on correct seperator
-    PStringArray dirs = GetPluginDirs();
-    systemPluginMgr = new PPluginManager;
-    PINDEX i;
-    for (i = 0; i < dirs.GetSize(); i++) 
-      systemPluginMgr->LoadPluginDirectory(dirs[i]);
-  }
-
-  return *systemPluginMgr;
+  static PPluginManager systemPluginMgr;
+  return systemPluginMgr;
 }
 
 //////////////////////////////////////////////////////
@@ -300,4 +290,37 @@ void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)
   OnLoadPlugin(dll, code);
 }
 
+////////////////////////////////////////////////////////////////////////////////////
 
+class PluginLoaderStartup : public PProcessStartup
+{
+  PCLASSINFO(PluginLoaderStartup, PProcessStartup);
+  public:
+    void OnStartup()
+    { 
+      // load the actual DLLs, which will also load the system plugins
+      PStringArray dirs = PPluginManager::GetPluginDirs();
+      PPluginManager & mgr = PPluginManager::GetPluginManager();
+      PINDEX i;
+      for (i = 0; i < dirs.GetSize(); i++) 
+        mgr.LoadPluginDirectory(dirs[i]);
+
+      // now load the plugin modules
+      PGenericFactory<PPluginModuleManager>::KeyList keyList = PGenericFactory<PPluginModuleManager>::GetKeyList();
+      PGenericFactory<PPluginModuleManager>::KeyList::const_iterator r;
+      for (r = keyList.begin(); r != keyList.end(); ++r) {
+        PPluginModuleManager * mgr = PGenericFactory<PPluginModuleManager>::CreateInstance(*r);
+        if (mgr == NULL) {
+          PTRACE(1, "PLUGIN\tCannot create manager for plugins of type " << *r);
+        } else {
+          PTRACE(1, "PLUGIN\tCreated manager for plugins of type " << *r);
+          managers.push_back(mgr);
+        }
+      }
+    }
+
+  protected:
+    std::vector<PPluginModuleManager *> managers;
+};
+
+PAbstractSingletonFactory<PProcessStartup, PluginLoaderStartup> pluginLoaderStartupFactory("PluginLoader");
