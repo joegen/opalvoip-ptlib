@@ -23,31 +23,21 @@
 #pragma implementation "object.h"
 #pragma implementation "contain.h"
 
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
+#include <ptlib.h>
+
 #include <fcntl.h>
-#include <termio.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <limits.h>
 #include <time.h>
 #include <sys/time.h>
-
-#if defined(P_HPUX9)
-#include <langinfo.h>
-#elif defined(P_SUN4)
-#warning No locale info include
-#else
-#include <localeinfo.h>
-#endif
-
 #include <ctype.h>
 
-#include <ptlib.h>
+#if defined(P_LINUX)
+#include <localeinfo.h>
+#elif defined(P_HPUX9)
+#include <langinfo.h>
+#else
+#warning No locale info include
+#endif
+
 
 #define	LINE_SIZE_STEP	100
 
