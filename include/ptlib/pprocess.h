@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.61  2003/11/25 08:28:13  rjongbloed
+ * Removed ability to have platform without threads, win16 finally deprecated
+ *
  * Revision 1.60  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -763,13 +766,6 @@ class PProcess : public PThread
 
     int maxHandles;
     // Maximum number of file handles process can open.
-
-#if !defined(P_PLATFORM_HAS_THREADS)
-
-    PThread * currentThread;
-    // Currently running thread in the process
-
-#endif
 
 
   friend class PThread;
