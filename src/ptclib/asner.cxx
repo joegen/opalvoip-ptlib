@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.66  2002/09/13 08:16:15  robertj
+ * Fixed missing line feed when dumping hex octet strings.
+ *
  * Revision 1.65  2002/08/06 02:27:58  robertj
  * GNU C++ v3 compatibility.
  *
@@ -1880,7 +1883,7 @@ void PASN_OctetString::PrintOn(ostream & strm) const
        << setprecision(indent) << setw(16);
 
   if (value.GetSize() <= 32 || (flags&ios::floatfield) != ios::fixed)
-    strm << value;
+    strm << value << '\n';
   else {
     PBYTEArray truncatedArray(value, 32);
     strm << truncatedArray << '\n'
