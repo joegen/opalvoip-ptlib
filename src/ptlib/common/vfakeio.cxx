@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.13  2002/01/17 03:47:27  dereks
+ * Fix latest addition to the fake images gallery.
+ *
  * Revision 1.12  2002/01/16 08:02:06  robertj
  * MSVC compatibilty changes
  *
@@ -74,7 +77,7 @@
 #include <ptlib/videoio.h>
 
 
-#define NUM_PATTERNS 5
+#define NUM_PATTERNS 6
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -599,8 +602,6 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
   static int gCount=0;
   gCount++;
 
-  memset(frame,64,framesize + (framesize/2));
-  return;
   colourIndex = gCount/10;
   colourNumber= (colourIndex/10)%7;   //Every 10 seconds, coloured background blocks move.
   
