@@ -1,5 +1,5 @@
 /*
- * $Id: serial.cxx,v 1.1 1996/04/14 02:54:14 robertj Exp $
+ * $Id: serial.cxx,v 1.2 1996/04/15 10:57:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: serial.cxx,v $
+ * Revision 1.2  1996/04/15 10:57:59  robertj
+ * Moved some functions from INL to serial.cxx so unix linker can make smaller executables.
+ *
  * Revision 1.1  1996/04/14 02:54:14  robertj
  * Initial revision
  *
@@ -109,6 +112,92 @@ PModem::PModem(const PString & port, DWORD speed, BYTE data,
 PModem::PModem(PConfig & cfg)
 {
   status = Open(cfg) ? Uninitialised : Unopened;
+}
+
+
+void PModem::SetInitString(const PString & str)
+{
+  initCmd = str;
+}
+
+PString PModem::GetInitString() const
+{
+  return initCmd;
+}
+
+void PModem::SetDeinitString(const PString & str)
+{
+  deinitCmd = str;
+}
+
+PString PModem::GetDeinitString() const
+{
+  return deinitCmd;
+}
+
+void PModem::SetPreDialString(const PString & str)
+{
+  preDialCmd = str;
+}
+
+PString PModem::GetPreDialString() const
+{
+  return preDialCmd;
+}
+
+void PModem::SetPostDialString(const PString & str)
+{
+  postDialCmd = str;
+}
+
+PString PModem::GetPostDialString() const
+{
+  return postDialCmd;
+}
+
+void PModem::SetBusyString(const PString & str)
+{
+  busyReply = str;
+}
+
+PString PModem::GetBusyString() const
+{
+  return busyReply;
+}
+
+void PModem::SetNoCarrierString(const PString & str)
+{
+  noCarrierReply = str;
+}
+
+PString PModem::GetNoCarrierString() const
+{ 
+  return noCarrierReply;
+}
+
+void PModem::SetConnectString(const PString & str)
+{
+  connectReply = str;
+}
+
+PString PModem::GetConnectString() const
+{
+  return connectReply;
+}
+
+void PModem::SetHangUpString(const PString & str)
+{
+  hangUpCmd = str;
+}
+
+PString PModem::GetHangUpString() const
+{
+  return hangUpCmd;
+}
+
+PModem::Status PModem::GetStatus() const
+{
+  return status;
 }
 
 
