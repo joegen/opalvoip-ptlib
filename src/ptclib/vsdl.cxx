@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.3  2003/04/28 08:33:00  craigs
+ * Linux SDL includes are in a SDL directory, but Windows is not
+ *
  * Revision 1.2  2003/04/28 07:27:15  craigs
  * Added missed functions
  *
@@ -43,7 +46,7 @@
 
 extern "C" {
 
-#include <SDL.h>
+#include <SDL/SDL.h>
 
 };
 
