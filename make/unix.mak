@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.107  2001/11/25 23:47:05  robertj
+# Changed sense of HAS_VIDEO_CAPTURE to NO_VIDEO_CAPTURE to reduce cmd line.
+#
 # Revision 1.106  2001/11/25 23:28:04  robertj
 # Fixed correct setting of HAS_VIDEO_CAPTURE compile flag
 #
@@ -488,8 +491,8 @@ PTLIB_ALT = libc5
 endif
 endif
 
-ifneq (,$(wildcard /usr/include/linux/videodev.h))
-STDCCFLAGS	+= -DHAS_VIDEO_CAPTURE
+ifeq (,$(wildcard /usr/include/linux/videodev.h))
+STDCCFLAGS	+= -DNO_VIDEO_CAPTURE
 endif
 
 
