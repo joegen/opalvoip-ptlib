@@ -1,11 +1,17 @@
 /*
- * $Id: httpsvc.cxx,v 1.25 1997/11/10 12:40:05 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.26 1998/01/26 00:45:44 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.26  1998/01/26 00:45:44  robertj
+ * Added option flags to ProcessMacros to automatically load from file etc.
+ * Assured that all service HTTP resources are overidable with file, using ; URL field.
+ * Added a number of extra #equival macros.
+ * Added "Pty. Ltd." to company name.
+ *
  * Revision 1.25  1997/11/10 12:40:05  robertj
  * Changed SustituteEquivalSequence so can override standard macros.
  *
@@ -90,7 +96,7 @@
 
 #define HOME_PAGE 	"http://www.equival.com"
 #define EMAIL     	"equival@equival.com.au"
-#define	EQUIVALENCE	"Equivalence"
+#define	EQUIVALENCE	"Equivalence Pty. Ltd."
 
 
 PHTTPServiceProcess::PHTTPServiceProcess(
@@ -357,16 +363,11 @@ PConfigPage::PConfigPage(PHTTPServiceProcess & app,
 
 void PConfigPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
-  PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
-  PFile file;
-  if (!file.Open(filePath, PFile::ReadOnly))
-    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), FALSE);
-  else {
-    text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
-  }
-
+  PServiceHTML::ProcessMacros(request, text,
+                              baseURL.AsString(PURL::PathOnly).Mid(1),
+                              PServiceHTML::LoadFromFile);
   PHTTPConfig::OnLoadedText(request, text);
+  PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
 }
 
 
@@ -385,7 +386,14 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & reply)
 {
+  PServiceHTML::ProcessMacros(request, reply,
+                              baseURL.AsString(PURL::PathOnly).Mid(1),
+                              PServiceHTML::LoadFromFile);
+
   BOOL retval = PHTTPConfig::Post(request, data, reply);
+
+  OnLoadedText(request, reply);
+
   if (request.code == PHTTP::OK)
     process.BeginRestartSystem();
   return retval;
@@ -421,14 +429,9 @@ PConfigSectionsPage::PConfigSectionsPage(PHTTPServiceProcess & app,
 
 void PConfigSectionsPage::OnLoadedText(PHTTPRequest & request, PString & text)
 {
-  PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
-  PFile file;
-  if (!file.Open(filePath, PFile::ReadOnly))
-    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), FALSE);
-  else {
-    text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
-  }
+  PServiceHTML::ProcessMacros(request, text,
+                              baseURL.AsString(PURL::PathOnly).Mid(1),
+                              PServiceHTML::LoadFromFile);
   PHTTPConfigSectionList::OnLoadedText(request, text);
 }
 
@@ -576,7 +579,7 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
                          const PStringToString & data,
                          PHTML & reply)
 {
-  if (fields.IsEmpty())
+  if (fields.GetSize() == 0)
     LoadText(request);
 
   if (!PConfigPage::Post(request, data, reply))
@@ -654,105 +657,6 @@ static void DigestSecuredKeys(PHTTPServiceProcess & process,
 
   info.Replace("===", digest);
   reginfo = info;
-}
-
-
-///////////////////////////////////////////////////////////////////
-
-POrderPage::POrderPage(PHTTPServiceProcess & app, PHTTPAuthority & auth)
-  : PHTTPString("/order.html", auth),
-    process(app)
-{
-}
-
-
-PString POrderPage::LoadText(PHTTPRequest & request)
-{
-  PFile file;
-  if (file.Open("order.html", PFile::ReadOnly)) {
-    PString text = file.ReadString(file.GetLength());
-    PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), TRUE);
-    return text;
-  }
-
-  PHTML html;
-  process.GetPageHeader(html, process.GetName() & "Order Page");
-
-  html << PHTML::Heading(1)
-       << "Order Form"
-       << PHTML::Heading(1)
-       << PHTML::Paragraph()
-       << PHTML::Form("POST", "mailto:" + process.GetEMailAddress())
-       << "If you would like to send your credit card details by email, "
-          "please fill out the form below:";
-
-  html << PHTML::HiddenField("product", process.GetName())
-	   << PHTML::HiddenField("os", process.GetOSClass() & process.GetOSName())
-	   << PHTML::HiddenField("version", process.GetVersion(TRUE));
-
-  PString reginfo;
-  DigestSecuredKeys(process, reginfo, &html);
-
-  html << PHTML::TableStart()
-       << PHTML::TableRow("valign=baseline")
-         << PHTML::TableHeader("align=right")
-           << "Card Type:"
-         << PHTML::TableData("align=left")
-           << PHTML::RadioButton("PaymentType", "VISA")
-           << "VISA "
-           << PHTML::RadioButton("PaymentType", "Mastercard")
-           << "Mastercard "
-           << PHTML::RadioButton("PaymentType", "Bankcard")
-           << "Bankcard "
-           << PHTML::RadioButton("PaymentType", "Amex")
-           << "Amex "
-       << PHTML::TableRow("valign=baseline")
-         << PHTML::TableHeader("align=right")
-           << "Card Holder:"
-         << PHTML::TableData("align=left")
-           << PHTML::InputText("CardName", 40)
-
-       << PHTML::TableRow("valign=baseline")
-         << PHTML::TableHeader("align=right")
-           << "Card No:"
-         << PHTML::TableData("align=left")
-           << PHTML::InputText("CardNum", 20)
-
-       << PHTML::TableRow("valign=baseline")
-         << PHTML::TableHeader("align=right")
-           << "Expiry Date:"
-         << PHTML::TableData("align=left")
-           << PHTML::InputText("ExpiryDate", 8)
-
-       << PHTML::TableRow("valign=baseline")
-         << PHTML::TableHeader("align=right")
-           << "Validation Number (Amex only):"
-         << PHTML::TableData("align=left")
-           << PHTML::InputText("ValNum", 8)
-
-      << PHTML::TableEnd()
-      << PHTML::Paragraph()
-      << "If you are paying by some other method, please enter the details "
-         "below. We recommend paying by credit card - you can fax or mail the "
-         "information to us."
-      << PHTML::BreakLine()
-      << "<textarea name=\"Info\" rows=5 cols=60></textarea>"
-      << PHTML::BreakLine()
-      << "Upon receipt of your order, we will issue you a temporary key. "
-         "We will issue a permanent key when payment has cleared."
-      << PHTML::Paragraph()
-      << PHTML::SubmitButton("Send Order Now")
-      << PHTML::Form()
-      << PHTML::Paragraph()
-      << PHTML::Small()
-      << PHTML::PreFormat()
-      << reginfo
-      << PHTML::PreFormat() << PHTML::Small()
-      << PHTML::HRule()
-      << process.GetCopyrightText()
-      << PHTML::Body();
-
-  return html;
 }
 
 
@@ -862,76 +766,345 @@ BOOL PServiceHTML::CheckSignature(const PString & html)
   return checkSignature == signature;
 }
 
-static void ReplaceIncludes(PHTTPRequest & request, PString & text)
+
+static BOOL FindBrackets(const PString & args, PINDEX & open, PINDEX & close)
 {
-  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  open = args.FindOneOf("[{(", close);
+  if (open == P_MAX_INDEX)
+    return FALSE;
 
-  for (;;) {
-    PINDEX pos = text.Find("<!--#equival");
-    PINDEX end = text.Find("-->", pos);
-    if (pos == P_MAX_INDEX || end == P_MAX_INDEX)
+  switch (args[open]) {
+    case '[' :
+      close = args.Find(']', open+1);
       break;
-
-    PString subs;
-    PCaselessString cmd = text(pos+12, end-1).Trim();
-    if (process.SubstituteEquivalSequence(request, cmd, subs))
-      ;
-    else if (cmd == "header") {
-      subs = process.GetPageGraphic();
-      ReplaceIncludes(request, subs);
-    }
-    else if (cmd == "copyright")
-      subs = process.GetCopyrightText();
-    else if (cmd == "os")
-      subs = process.GetOSClass() & process.GetOSName();
-    else if (cmd == "version")
-      subs = process.GetVersion(TRUE);
-    else if (cmd == "localhost")
-      subs = PIPSocket::GetHostName();
-    else if (cmd == "peerhost")
-      subs = PIPSocket::GetHostName(request.origin);
-    else if (cmd == "reginfo")
-      DigestSecuredKeys(process, subs, NULL);
-    else if (cmd == "registration") {
-      PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
-      PString pending = sconf.GetPendingPrefix();
-      PHTML out = PHTML::InBody;
-      out << PHTML::Heading(3)
-          << sconf.GetString("Name", sconf.GetString(pending+"Name",
-                             "*** Unregistered Demonstration Copy ***"))
-          << PHTML::Heading(3)
-          << PHTML::Heading(4)
-          << sconf.GetString("Company", sconf.GetString(pending+"Company"))
-          << PHTML::Heading(4)
-          << PHTML::Paragraph();
-
-      if (sconf.GetString("Name").IsEmpty())
-        process.AddUnregisteredText(out);
-      else
-        process.AddRegisteredText(out);
-
-      out << PHTML::HotLink("/register.html")
-          << (sconf.GetString("Name").IsEmpty()
-                                   ? "Register Now!" : "View Registration")
-          << PHTML::HotLink();
-      subs = out;
-    }
-
-    text.Splice(subs, pos, end-pos+3);
+    case '{' :
+      close = args.Find('}', open+1);
+      break;
+    case '(' :
+      close = args.Find(')', open+1);
+      break;
   }
+  return close != P_MAX_INDEX;
 }
 
+
+static BOOL ExtractVariables(const PString & args,
+                             PString & variable,
+                             PString & value)
+{
+  PINDEX open;
+  PINDEX close = 0;
+  if (FindBrackets(args, open, close))
+    variable = args(open+1, close-1);
+  else {
+    variable = args.Trim();
+    close = P_MAX_INDEX-1;
+  }
+  if (variable.IsEmpty())
+    return FALSE;
+
+  if (FindBrackets(args, open, close))
+    value = args(open+1, close-1);
+
+  return TRUE;
+}
+
+
+class PServiceMacro : public PCaselessString
+{
+  public:
+    PServiceMacro(const char * name);
+    virtual PString Translate(PHTTPRequest & request, const PString & args) const = 0;
+};
+
+
+PSORTED_LIST(PServiceMacros_base, PServiceMacro);
+
+
+class PServiceMacros_list : public PServiceMacros_base
+{
+  public:
+    PServiceMacros_list() { DisallowDeleteObjects(); }
+};
+
+
+static PServiceMacros_list ServiceMacros;
+
+
+PServiceMacro::PServiceMacro(const char * name)
+  : PCaselessString(name)
+{
+  ServiceMacros.Append(this);
+}
+
+
+#define CREATE_MACRO(name) \
+  static const class PServiceMacro_##name : public PServiceMacro { \
+    public: \
+      PServiceMacro_##name() : PServiceMacro(#name) { } \
+      PString Translate(PHTTPRequest & request, const PString & args) const; \
+  } serviceMacro_##name; \
+  PString PServiceMacro_##name::Translate(PHTTPRequest & request, const PString & args) const
+
+
+
+#ifdef _MSC_VER
+#pragma warning(disable:4100)
+#endif
+
+CREATE_MACRO(Header)
+{
+  PString hdr = PHTTPServiceProcess::Current().GetPageGraphic();
+  PServiceHTML::ProcessMacros(request, hdr, "header.html",
+                PServiceHTML::LoadFromFile|PServiceHTML::NoURLOverride);
+  return hdr;
+}
+
+
+CREATE_MACRO(Copyright)
+{
+  return PHTTPServiceProcess::Current().GetCopyrightText();
+}
+
+
+CREATE_MACRO(OS)
+{
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  return process.GetOSClass() & process.GetOSName();
+}
+
+
+CREATE_MACRO(Version)
+{
+  return PHTTPServiceProcess::Current().GetVersion(TRUE);
+}
+
+
+CREATE_MACRO(LongDateTime)
+{
+  return PTime().AsString(PTime::LongDateTime);
+}
+
+
+CREATE_MACRO(LongDate)
+{
+  return PTime().AsString(PTime::LongDate);
+}
+
+
+CREATE_MACRO(LongTime)
+{
+  return PTime().AsString(PTime::LongTime);
+}
+
+
+CREATE_MACRO(MediumDateTime)
+{
+  return PTime().AsString(PTime::MediumDateTime);
+}
+
+
+CREATE_MACRO(MediumDate)
+{
+  return PTime().AsString(PTime::MediumDate);
+}
+
+
+CREATE_MACRO(ShortDateTime)
+{
+  return PTime().AsString(PTime::ShortDateTime);
+}
+
+
+CREATE_MACRO(ShortDate)
+{
+  return PTime().AsString(PTime::ShortDate);
+}
+
+
+CREATE_MACRO(ShortTime)
+{
+  return PTime().AsString(PTime::ShortTime);
+}
+
+
+CREATE_MACRO(Time)
+{
+  PTime now;
+  if (args.IsEmpty())
+    return now.AsString();
+
+  return now.AsString(args);
+}
+
+
+CREATE_MACRO(LocalHost)
+{
+  return PIPSocket::GetHostName();
+}
+
+
+CREATE_MACRO(PeerHost)
+{
+  return PIPSocket::GetHostName(request.origin);
+}
+
+
+CREATE_MACRO(Manufacturer)
+{
+  return PHTTPServiceProcess::Current().GetManufacturer();
+}
+
+
+CREATE_MACRO(RegInfo)
+{
+  PString subs;
+  DigestSecuredKeys(PHTTPServiceProcess::Current(), subs, NULL);
+  return subs;
+}
+
+
+static PString GetRegInfo(const char * info)
+{
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
+  PString pending = sconf.GetPendingPrefix();
+  return sconf.GetString(info, sconf.GetString(pending+info));
+}
+
+CREATE_MACRO(RegUser)
+{
+  return GetRegInfo("Name");
+}
+
+
+CREATE_MACRO(RegCompany)
+{
+  return GetRegInfo("Company");
+}
+
+
+CREATE_MACRO(RegEmail)
+{
+  return GetRegInfo("EMail");
+}
+
+
+CREATE_MACRO(Registration)
+{
+  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  PSecureConfig sconf(process.GetProductKey(), process.GetSecuredKeys());
+  PString pending = sconf.GetPendingPrefix();
+  PHTML out = PHTML::InBody;
+  out << "<font size=5>"
+      << sconf.GetString("Name", sconf.GetString(pending+"Name",
+                         "*** Unregistered Demonstration Copy ***"))
+      << PHTML::BreakLine()
+      << "<font size=4>"
+      << sconf.GetString("Company", sconf.GetString(pending+"Company"))
+      << PHTML::BreakLine()
+      << PHTML::BreakLine()
+      << "<font size=3>";
+
+  if (sconf.GetString("Name").IsEmpty())
+    process.AddUnregisteredText(out);
+  else
+    process.AddRegisteredText(out);
+
+  out << PHTML::HotLink("/register.html")
+      << (sconf.GetString("Name").IsEmpty()
+                               ? "Register Now!" : "View Registration")
+      << PHTML::HotLink();
+  return out;
+}
+
+
+CREATE_MACRO(InputsFromQuery)
+{
+  PStringToString vars = request.url.GetQueryVars();
+  PStringStream subs;
+  for (PINDEX i = 0; i < vars.GetSize(); i++)
+    subs << "<INPUT TYPE=hidden NAME=\"" << vars.GetKeyAt(i)
+         << "\" VALUE=\"" << vars.GetDataAt(i) << "\">\r\n";
+  return subs;
+}
+
+
+CREATE_MACRO(Query)
+{
+  if (args.IsEmpty())
+    return request.url.GetQuery();
+
+  PString variable, value;
+  if (ExtractVariables(args, variable, value)) {
+    value = request.url.GetQueryVars()(variable, value);
+    if (!value)
+      return value;
+  }
+  return PString();
+}
+
+
+CREATE_MACRO(Get)
+{
+  PString variable, value;
+  if (ExtractVariables(args, variable, value)) {
+    PString section = request.url.GetQueryVars()("section");
+    PINDEX slash = variable.FindLast('\\');
+    if (slash != P_MAX_INDEX) {
+      section += variable.Left(slash);
+      variable = variable.Mid(slash+1);
+    }
+    if (!section && !variable) {
+      PConfig config(section);
+      return config.GetString(variable, value);
+    }
+  }
+  return PString();
+}
+
+
+CREATE_MACRO(URL)
+{
+  return request.url.AsString();
+}
+
+#ifdef _MSC_VER
+#pragma warning(default:4100)
+#endif
 
 
 BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
                                  PString & text,
-                                 const PString & filename,
-                                 BOOL needSignature)
+                                 const PString & defaultFile,
+                                 unsigned options)
 {
-  PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
+  PINDEX alreadyLoadedPrefixLength = 0;
 
-  if (needSignature) {
-    if (!CheckSignature(text)) {
+  PString filename = defaultFile;
+  if ((options&LoadFromFile) != 0 && !filename) {
+    if ((options&NoURLOverride) == 0) {
+      filename = request.url.GetParameters();
+      if (filename.IsEmpty())
+        filename = defaultFile;
+    }
+
+    PString alreadyLoaded = "<!--#loadedfrom " + filename + "-->\r\n";
+    alreadyLoadedPrefixLength = alreadyLoaded.GetLength();
+
+    if (text.Find(alreadyLoaded) != 0) {
+      PFile file;
+      if (file.Open(filename, PFile::ReadOnly)) {
+        text = alreadyLoaded + file.ReadString(file.GetLength());
+        if ((options&NoSignatureForFile) == 0)
+          options |= NeedSignature;
+      }
+    }
+  }
+
+  if ((options&NeedSignature) != 0) {
+    if (!CheckSignature(text.Mid(alreadyLoadedPrefixLength))) {
+      PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
       PHTML html = "Invalid OEM Signature";
       html << "The HTML file \""
            << filename
@@ -946,7 +1119,33 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
     }
   }
 
-  ReplaceIncludes(request, text);
+  PINDEX pos = 0;
+  for (;;) {
+    pos = text.Find("!--#equival", pos);
+    if (pos == P_MAX_INDEX)
+      break;
+    PINDEX end = text.Find("--", pos+3);
+    if (end == P_MAX_INDEX)
+      break;
+
+    PString include = text(pos+12, end-1).Trim();
+
+    if (text[pos-1] == '<')
+      pos--;
+    end += 2;
+    if (text[end] == '>')
+      end++;
+
+    PString subs;
+    if (!PHTTPServiceProcess::Current().SubstituteEquivalSequence(request, include, subs)) {
+      PCaselessString cmd = include.Left(include.Find(' '));
+      PINDEX idx = ServiceMacros.GetValuesIndex(cmd);
+      if (idx != P_MAX_INDEX)
+        subs = ServiceMacros[idx].Translate(request, include.Mid(cmd.GetLength()).LeftTrim());
+    }
+
+    text.Splice(subs, pos, end-pos);
+  }
 
   return TRUE;
 }
@@ -958,19 +1157,24 @@ static void ServiceOnLoadedText(PString & text)
 {
   PHTTPServiceProcess & process = PHTTPServiceProcess::Current();
 
-  text.Replace("<!--Standard_" + process.GetManufacturer() + "_Header-->",
-               process.GetPageGraphic(), TRUE);
-  text.Replace("<!--Standard_Equivalence_Header-->",
-               process.GetPageGraphic(), TRUE);
-  text.Replace("<!--Standard_Copyright_Header-->",
-               process.GetCopyrightText(), TRUE);
+  PString manuf = "<!--Standard_" + process.GetManufacturer() + "_Header-->";
+  if (text.Find(manuf) != P_MAX_INDEX)
+    text.Replace(manuf, process.GetPageGraphic(), TRUE);
+
+  static const char equiv[] = "<!--Standard_Equivalence_Header-->";
+  if (text.Find(equiv) != P_MAX_INDEX)
+    text.Replace(equiv, process.GetPageGraphic(), TRUE);
+
+  static const char copy[] = "<!--Standard_Copyright_Header-->";
+  if (text.Find(copy) != P_MAX_INDEX)
+    text.Replace(copy, process.GetCopyrightText(), TRUE);
 }
 
 PString PServiceHTTPString::LoadText(PHTTPRequest & request)
 {
   PString text = PHTTPString::LoadText(request);
   ServiceOnLoadedText(text);
-  PServiceHTML::ProcessMacros(request, text, "", FALSE);
+  PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
 
   return text;
 }
@@ -978,13 +1182,15 @@ PString PServiceHTTPString::LoadText(PHTTPRequest & request)
 void PServiceHTTPFile::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
-  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), needSignature);
+  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly),
+          needSignature ? PServiceHTML::NoOptions : PServiceHTML::NeedSignature);
 }
 
 void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
-  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly), needSignature);
+  PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly),
+          needSignature ? PServiceHTML::NoOptions : PServiceHTML::NeedSignature);
 }
 
 
