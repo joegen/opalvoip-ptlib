@@ -1,4 +1,3 @@
-%option nounput nodefault
 %{
 /*
  * asn_lex.l
@@ -32,6 +31,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.14  2001/01/17 00:33:59  robertj
+ * Removed extra %option, there need be only one.
+ *
  * Revision 1.13  2001/01/16 14:00:17  craigs
  * Changed MIN and MAX tokens to avoid namespace conflicts under BeOS
  *
