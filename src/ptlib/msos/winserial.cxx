@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winserial.cxx,v $
+ * Revision 1.3  2000/03/20 17:55:05  robertj
+ * Fixed prolem with XON/XOFF under NT, thanks Damien Slee.
+ *
  * Revision 1.2  1998/11/30 12:32:47  robertj
  * Added missing copyright header.
  *
@@ -34,6 +37,10 @@
 
 #include <ptlib.h>
 #include <ptlib/serchan.h>
+
+
+#define QUEUE_SIZE 2048
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSerialChannel
@@ -49,6 +56,12 @@ void PSerialChannel::Construct()
   memset(&deviceControlBlock, 0, sizeof(deviceControlBlock));
   deviceControlBlock.DCBlength = sizeof(deviceControlBlock);
   BuildCommDCB(str, &deviceControlBlock);
+
+  // These values are not set by BuildCommDCB
+  deviceControlBlock.XoffChar = 19;
+  deviceControlBlock.XonChar = 17;
+  deviceControlBlock.XoffLim = (QUEUE_SIZE * 7)/8;  // upper limit before XOFF is sent to stop reception
+  deviceControlBlock.XonLim = (QUEUE_SIZE * 3)/4;   // lower limit before XON is sent to re-enabled reception
 }
 
 
@@ -268,7 +281,7 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
 
   os_handle = 0;
 
-  SetupComm(commsResource, 2048, 2048);
+  SetupComm(commsResource, QUEUE_SIZE, QUEUE_SIZE);
 
   if (SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow))
     return TRUE;
