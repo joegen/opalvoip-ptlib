@@ -107,6 +107,11 @@ case "$target_os" in
                    STDCCFLAGS="$STDCCFLAGS -D__BEOS__"
 		   ;;
 
+  cygwin*)         OSTYPE=cygwin ;
+                   OS_TAG="P_CYGWIN" ;
+                   OSRELEASE="`uname -r`";
+		   ;;
+
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
   		   OSRELEASE="\"${OSTYPE}_`uname -r`\"" ;
