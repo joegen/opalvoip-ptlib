@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.6 1995/06/17 11:12:18 robertj Exp $
+ * $Id: array.h,v 1.7 1995/10/14 14:52:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.7  1995/10/14 14:52:33  robertj
+ * Changed arrays to not break references.
+ *
  * Revision 1.6  1995/06/17 11:12:18  robertj
  * Documentation update.
  *
@@ -48,20 +51,6 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
    <A>PContainer::GetSize()</A> elements of <CODE>elementSize</CODE> bytes
    each. The memory block itself will atuomatically be resized when required
    and freed when no more references to it are present.
-
-   An important feature of abstract array classes, which is not normally
-   present in container classes, is that when the array contents is changed, 
-   that is resized or elemnts set, the array is derefrerenced, and a duplicate
-   made of its contents. That is this instance of the array is disconnected
-   from all other references, if any, and a new array contents created. For
-   example consider the following:
-   <PRE><CODE>
-          PString s1 = "String"; // New array allocated and set to "String"
-          PString s2 = s1;       // s2 has pointer to same array as s1
-                                 // and reference count is 2 for both
-          s1[0] = 's';           // Breaks references into different strings
-   </CODE></PRE>
-   at the end s1 is "string" and s2 is "String" both with reference count of 1.
 
    The PAbstractArray class would very rarely be descended from directly by
    the user. The <A>PDECLARE_BASEARRAY</A> and <A>PBASEARRAY</A> macros would
@@ -149,10 +138,6 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        then the new bytes are initialised to zero. If the array is made smaller
        then the data beyond the new size is lost.
 
-       Note that this function will break the current instance from multiple
-       references to an array. A new array is allocated and the data from the
-       old array copied to it.
-
        <H2>Returns:</H2>
        TRUE if the memory for the array was allocated successfully.
      */
@@ -170,10 +155,6 @@ PDECLARE_CONTAINER(PAbstractArray, PContainer)
        changed and the pointer returned invalidated. It should be used for
        simple calls to atomic functions, or very careful examination of the
        program logic must be performed.
-
-       Note that this function will break the current instance from multiple
-       references to an array. A new array is allocated and the data from the
-       old array copied to it.
 
        <H2>Returns:</H2>
        pointer to the array memory.
@@ -242,10 +223,6 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
     /* Set the specific element in the array. The array will automatically
        expand, if necessary, to fit the new element in.
 
-       Note that this function will break the current instance from multiple
-       references to an array. A new array is allocated and the data from the
-       old array copied to it.
-
        <H2>Returns:</H2>
        TRUE if new memory for the array was successfully allocated.
      */
@@ -301,10 +278,6 @@ PDECLARE_CLASS(PBaseArray, PAbstractArray)
        changed and the pointer returned invalidated. It should be used for
        simple calls to atomic functions, or very careful examination of the
        program logic must be performed.
-
-       Note that this function will break the current instance from multiple
-       references to an array. A new array is allocated and the data from the
-       old array copied to it.
 
        <H2>Returns:</H2>
        pointer to the array memory.
