@@ -46,6 +46,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
 	-@erase "$(INTDIR)\delaychan.obj"
+	-@erase "$(INTDIR)\dtmf.obj"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
 	-@erase "$(INTDIR)\Ftpsrvr.obj"
@@ -62,6 +63,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\pssl.obj"
+	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
@@ -91,6 +93,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
 	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\dtmf.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -107,6 +110,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
@@ -140,6 +144,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Cypher.sbr"
 	-@erase "$(INTDIR)\delaychan.obj"
 	-@erase "$(INTDIR)\delaychan.sbr"
+	-@erase "$(INTDIR)\dtmf.obj"
+	-@erase "$(INTDIR)\dtmf.sbr"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftp.sbr"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
@@ -172,6 +178,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Psnmp.sbr"
 	-@erase "$(INTDIR)\pssl.obj"
 	-@erase "$(INTDIR)\pssl.sbr"
+	-@erase "$(INTDIR)\pwavfile.obj"
+	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\pxml.sbr"
 	-@erase "$(INTDIR)\qchannel.obj"
@@ -206,6 +214,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Asner.sbr" \
 	"$(INTDIR)\Cypher.sbr" \
 	"$(INTDIR)\delaychan.sbr" \
+	"$(INTDIR)\dtmf.sbr" \
 	"$(INTDIR)\Ftp.sbr" \
 	"$(INTDIR)\Ftpclnt.sbr" \
 	"$(INTDIR)\Ftpsrvr.sbr" \
@@ -222,6 +231,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
 	"$(INTDIR)\pssl.sbr" \
+	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\pxml.sbr" \
 	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
@@ -242,6 +252,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
 	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\dtmf.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -258,6 +269,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
@@ -291,6 +303,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Cypher.sbr"
 	-@erase "$(INTDIR)\delaychan.obj"
 	-@erase "$(INTDIR)\delaychan.sbr"
+	-@erase "$(INTDIR)\dtmf.obj"
+	-@erase "$(INTDIR)\dtmf.sbr"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftp.sbr"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
@@ -323,6 +337,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Psnmp.sbr"
 	-@erase "$(INTDIR)\pssl.obj"
 	-@erase "$(INTDIR)\pssl.sbr"
+	-@erase "$(INTDIR)\pwavfile.obj"
+	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\pxml.sbr"
 	-@erase "$(INTDIR)\qchannel.obj"
@@ -357,6 +373,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Asner.sbr" \
 	"$(INTDIR)\Cypher.sbr" \
 	"$(INTDIR)\delaychan.sbr" \
+	"$(INTDIR)\dtmf.sbr" \
 	"$(INTDIR)\Ftp.sbr" \
 	"$(INTDIR)\Ftpclnt.sbr" \
 	"$(INTDIR)\Ftpsrvr.sbr" \
@@ -373,6 +390,7 @@ BSC32_SBRS= \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
 	"$(INTDIR)\pssl.sbr" \
+	"$(INTDIR)\pwavfile.sbr" \
 	"$(INTDIR)\pxml.sbr" \
 	"$(INTDIR)\qchannel.sbr" \
 	"$(INTDIR)\random.sbr" \
@@ -393,6 +411,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
 	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\dtmf.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -409,6 +428,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"$(INTDIR)\pssl.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
@@ -439,6 +459,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
 	-@erase "$(INTDIR)\delaychan.obj"
+	-@erase "$(INTDIR)\dtmf.obj"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
 	-@erase "$(INTDIR)\Ftpsrvr.obj"
@@ -454,6 +475,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\pxml.obj"
 	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
@@ -484,6 +506,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Asner.obj" \
 	"$(INTDIR)\Cypher.obj" \
 	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\dtmf.obj" \
 	"$(INTDIR)\Ftp.obj" \
 	"$(INTDIR)\Ftpclnt.obj" \
 	"$(INTDIR)\Ftpsrvr.obj" \
@@ -500,6 +523,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
 	"..\..\..\Lib\Release\pssl.obj" \
+	"$(INTDIR)\pwavfile.obj" \
 	"$(INTDIR)\pxml.obj" \
 	"$(INTDIR)\qchannel.obj" \
 	"$(INTDIR)\random.obj" \
@@ -672,6 +696,38 @@ SOURCE=..\..\ptclib\delaychan.cxx
 
 
 "$(INTDIR)\delaychan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\dtmf.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\dtmf.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\dtmf.obj"	"$(INTDIR)\dtmf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\dtmf.obj"	"$(INTDIR)\dtmf.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\dtmf.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
@@ -1184,6 +1240,38 @@ SOURCE=..\..\ptclib\pssl.cxx
 
 
 "..\..\..\Lib\Release\pssl.obj" : $(SOURCE) "..\..\..\Lib\Release\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\pwavfile.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
