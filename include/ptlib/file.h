@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.4 1993/08/01 14:05:27 robertj Exp $
+ * $Id: file.h,v 1.5 1993/08/21 01:50:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.4  1993/08/01 14:05:27  robertj
+ * Revision 1.5  1993/08/21 01:50:33  robertj
+ * Made Clone() function optional, default will assert if called.
+ *
+ * Revision 1.4  1993/08/01  14:05:27  robertj
  * Added GetFileName() function required for proper portability.
  * Improved some comments.
  *
@@ -53,10 +56,6 @@ DECLARE_CLASS(PFile, PContainer)
 
 
     // Overrides from class PObject
-    PObject * Clone() const;
-      // Make a copy of the file object. Note that this does not actually make
-      // a copy of the file on the disk.
-
     Comparison Compare(const PObject & obj) const;
       // Return TRUE if the two objects refer to the same file. This is
       // essentially if they have the same full path name.
