@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.14 1995/07/31 12:15:42 robertj Exp $
+ * $Id: channel.h,v 1.15 1995/08/12 22:28:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.15  1995/08/12 22:28:22  robertj
+ * Work arounf for  GNU bug: can't have private copy constructor with multiple inheritance.
+ *
  * Revision 1.14  1995/07/31 12:15:42  robertj
  * Removed PContainer from PChannel ancestor.
  *
@@ -426,6 +429,11 @@ PCLASS PChannel : public PObject, public iostream {
 
 
   protected:
+    PChannel(const PChannel &);
+    PChannel & operator=(const PChannel &);
+    // Prevent usage by external classes
+
+
     BOOL ConvertOSError(int error);
     /* Convert an operating system error into platform independent error. This
        will set the lastError and osError member variables for access by
@@ -458,15 +466,8 @@ PCLASS PChannel : public PObject, public iostream {
     PTimeInterval writeTimeout;
       // Timeout for write operations.
 
+
   private:
-    PChannel(const PChannel &) { }
-    PChannel & operator=(const PChannel &) { return *this; }
-    // Prevent usage by descendents
-
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
-
-
     // New functions for class
     void Construct();
       // Complete platform dependent construction.
