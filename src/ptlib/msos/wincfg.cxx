@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.6  2000/09/05 02:28:38  robertj
+ * Removed PAssert with registry access denied error, changed to PTRACE.
+ *
  * Revision 1.5  2000/08/03 22:47:48  robertj
  * Removed assert for empty key name so can set registry default key for a section.
  *
@@ -242,20 +245,29 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
       if (error == ERROR_SUCCESS)
         return;
 
-      PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+#if PTRACING
+      if (error == ERROR_ACCESS_DENIED)
+        PTRACE(1, "PTLib\tAccess denied accessing registry entry HKEY_CURRENT_USER\\" << keyname);
+#endif
 
       error = RegOpenKeyEx(HKEY_LOCAL_MACHINE, keyname, 0, access, &key);
       if (error == ERROR_SUCCESS)
         return;
 
-      PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+#if PTRACING
+      if (error == ERROR_ACCESS_DENIED)
+        PTRACE(1, "PTLib\tAccess denied accessing registry entry HKEY_LOCAL_MACHINE\\" << keyname);
+#endif
     }
 
     error = RegOpenKeyEx(HKEY_CURRENT_USER, subkey, 0, access, &key);
     if (error == ERROR_SUCCESS)
       return;
 
-    PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+#if PTRACING
+    if (error == ERROR_ACCESS_DENIED)
+      PTRACE(1, "PTLib\tAccess denied accessing registry entry HKEY_CURRENT_USER\\" << subkey);
+#endif
   }
 
   error = RegOpenKeyEx(basekey != NULL ? basekey : HKEY_LOCAL_MACHINE,
@@ -263,7 +275,11 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
   if (error == ERROR_SUCCESS)
     return;
 
-  PAssert(error != ERROR_ACCESS_DENIED, "Access denied accessing registry entry.");
+#if PTRACING
+    if (error == ERROR_ACCESS_DENIED)
+      PTRACE(1, "PTLib\tAccess denied accessing registry entry "
+             << (basekey != NULL ? "" : "HKEY_LOCAL_MACHINE\\") << subkey);
+#endif
 
   key = NULL;
   if (mode != Create)
@@ -281,8 +297,11 @@ RegistryKey::RegistryKey(const PString & subkeyname, OpenMode mode)
     DWORD disposition;
     error = RegCreateKeyEx(basekey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
                            KEY_ALL_ACCESS, NULL, &key, &disposition);
-    if (error != ERROR_SUCCESS)
+    if (error != ERROR_SUCCESS) {
+      PTRACE(1, "PTLib\tCould not create registry entry "
+             << (basekey != NULL ? "" : "HKEY_LOCAL_MACHINE\\") << subkey);
       key = NULL;
+    }
   }
 }
 
