@@ -1,4 +1,4 @@
-%expect 14
+%expect 8
 
 %{
 /*
