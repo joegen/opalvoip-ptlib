@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.6 1996/03/16 04:38:09 robertj Exp $
+ * $Id: mime.h,v 1.7 1996/07/15 10:28:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.7  1996/07/15 10:28:31  robertj
+ * Changed memory block base64 conversion functions to be void *.
+ *
  * Revision 1.6  1996/03/16 04:38:09  robertj
  * Fixed bug in MIME write function, should be const.
  *
@@ -236,7 +239,7 @@ PDECLARE_CLASS(PBase64, PObject)
       const PBYTEArray & data  // Data block to be encoded
     );
     void ProcessEncoding(
-      const BYTE * dataBlock,  // Pointer to data to be encoded
+      const void * dataBlock,  // Pointer to data to be encoded
       PINDEX length            // Length of the data block.
     );
     // Incorporate the specified data into the base 64 encoding.
@@ -268,7 +271,7 @@ PDECLARE_CLASS(PBase64, PObject)
       const PBYTEArray & data // Data block to be encoded to Base64
     );
     static PString Encode(
-      const BYTE * dataBlock, // Pointer to data to be encoded to Base64
+      const void * dataBlock, // Pointer to data to be encoded to Base64
       PINDEX length           // Length of the data block.
     );
     // Encode the data in memory to Base 64 data returnin the string.
@@ -290,7 +293,7 @@ PDECLARE_CLASS(PBase64, PObject)
      */
 
     BOOL GetDecodedData(
-      BYTE * dataBlock,    // Pointer to data to be decoded from base64
+      void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
     );
     PBYTEArray GetDecodedData();
@@ -319,7 +322,7 @@ PDECLARE_CLASS(PBase64, PObject)
     );
     static BOOL Decode(
       const PString & str, // Encoded base64 string to be decoded.
-      BYTE * dataBlock,    // Pointer to data to be decoded from base64
+      void * dataBlock,    // Pointer to data to be decoded from base64
       PINDEX length        // Length of the data block.
     );
     /* Convert a printable text string to binary data using the Internet MIME
