@@ -2197,9 +2197,11 @@ EXPORTS
     ?GetKeys@PConfig@@QBE?AVPStringList@@XZ @2335 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(void)const 
     ?GetLastError@PMultiMediaFile@@QBEKXZ @2336 NONAME ;public: unsigned long __thiscall PMultiMediaFile::GetLastError(void)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @2337 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
-    ?GetLastReadCount@PChannel@@QBEHXZ @2338 NONAME ;public: int __thiscall PChannel::GetLastReadCount(void)const 
+    ?GetLastReadCount@PChannel@@UBEHXZ @3922 NONAME ;public: virtual int __thiscall PChannel::GetLastReadCount(void)const 
+    ?GetLastReadCount@PSoundChannel@@UBEHXZ @3923 NONAME ;public: virtual int __thiscall PSoundChannel::GetLastReadCount(void)const 
     ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2339 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
-    ?GetLastWriteCount@PChannel@@QBEHXZ @2340 NONAME ;public: int __thiscall PChannel::GetLastWriteCount(void)const 
+    ?GetLastWriteCount@PChannel@@UBEHXZ @3924 NONAME ;public: virtual int __thiscall PChannel::GetLastWriteCount(void)const 
+    ?GetLastWriteCount@PSoundChannel@@UBEHXZ @3925 NONAME ;public: virtual int __thiscall PSoundChannel::GetLastWriteCount(void)const 
     ?GetLength@PFile@@UBEJXZ @2341 NONAME ;public: virtual long __thiscall PFile::GetLength(void)const 
     ?GetLength@PString@@QBEHXZ @2342 NONAME ;public: int __thiscall PString::GetLength(void)const 
     ?GetLength@SecurityID@@QBEKXZ @2343 NONAME ;public: unsigned long __thiscall SecurityID::GetLength(void)const 
