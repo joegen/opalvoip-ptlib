@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.47 1997/11/10 12:40:20 robertj Exp $
+ * $Id: http.cxx,v 1.48 1998/01/26 02:49:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.48  1998/01/26 02:49:16  robertj
+ * GNU support.
+ *
  * Revision 1.47  1997/11/10 12:40:20  robertj
  * Fixed illegal character set for URL's.
  *
@@ -167,9 +170,16 @@
  *
  */
 
+#ifdef __GNUC__
+#pragma implementation "http.h"
+#pragma implementation "url.h"
+#endif
+
 #include <ptlib.h>
 #include <sockets.h>
 #include <http.h>
+#include <url.h>
+
 #include <ctype.h>
 
 
