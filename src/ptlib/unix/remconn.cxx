@@ -37,6 +37,8 @@
 #define	DEFAULT_ERRORS_STR	 "ABORT 'NO CARRIER' ABORT BUSY ABORT 'NO DIALTONE'"
 #define	DEFAULT_MODEMINIT_STR	 "'' ATE1Q0Z OK"
 #define	DEFAULT_DIALPREFIX_STR	 "ATDT"
+#define DEFAULT_PPPD_STR         "pppd"
+#define DEFAULT_CHAT_STR         "chat"
 
 static const PXErrorStruct ErrorTable[] =
 {
@@ -54,13 +56,14 @@ static PRemoteConnection::Status status;
 
 PDECLARE_CLASS(PXRemoteThread, PThread)
   public:
-    PXRemoteThread(const PString & cmdLine);
+    PXRemoteThread(PXRemoteThread ** myPtr, const PString & cmdLine);
     void Main();
     void KillPipeChannel();
 
   protected:
     int retVal;
     PPipeChannel * pipeChannel;
+    PXRemoteThread ** myPtr;
 };
 
 PRemoteConnection::PRemoteConnection()
@@ -90,7 +93,9 @@ static const PString PPPDOptsStr = "PPPDOpts";
 static const PString BaudRateStr = "BaudRate";
 static const PString ErrorsStr = "Errors";
 static const PString InitStr = "Init";
-
+static const PString GeneralStr = "General";
+static const PString PPPDStr    = "PPPD";
+static const PString ChatStr    = "Chat";
 
 BOOL PRemoteConnection::Open(const PString & name)
 {
@@ -121,17 +126,20 @@ BOOL PRemoteConnection::Open(const PString & name,
     return FALSE;
   }
 
-  // try and find name of ppp device
+  // Try and find name of ppp device. if we find any PPP devices up, then
+  // assume it is the connection we want. If we don't find any, then assume
+  // pppd will make one
   PINDEX i;
   for (i = 0; i < MAX_PPP_DEVICES; i++) {
     pppDeviceName = psprintf("ppp%i", i);
-    if (!PPPDeviceExists(pppDeviceName))
+    int stat = PPPDeviceExists(pppDeviceName);
+    if (stat > 0) {
+      status = Connected;
+      remoteThread = NULL;
+      return TRUE;
+    }
+    else if (stat == 0)
       break;
-  }
-  if (i == MAX_PPP_DEVICES) {
-    PProcess::PXShowSystemWarning(1004, ErrorTable[4].str);
-    status = PortInUse;
-    return FALSE;
   }
 
   // cannot open remote connection with port not in config file
@@ -151,6 +159,14 @@ BOOL PRemoteConnection::Open(const PString & name,
   // name        = name of configuration
   // sectionName = name of config section
   remoteName = name;
+
+  ///////////////////////////////////////////
+  //
+  // get name of program, if specified, in the general section
+  //
+  config.SetDefaultSection(GeneralStr);
+  PString pppdStr = config.GetString(PPPDStr, DEFAULT_PPPD_STR);
+  PString chatStr = config.GetString(ChatStr, DEFAULT_CHAT_STR);
 
   ///////////////////////////////////////////
   //
@@ -184,32 +200,16 @@ BOOL PRemoteConnection::Open(const PString & name,
   // instigate a dial using pppd
   //
   PString chatCmd     = chatErrs & modemInit & dialPrefix + dialNumber & loginStr;
-  PString commandLine = "pppd" & device & baudRate & pppdOpts;
+  PString commandLine = pppdStr & device & baudRate & pppdOpts;
   if (!chatCmd.IsEmpty()) 
-    commandLine &= PString("connect \"chat -t") + timeout &
+    commandLine &= PString("connect \"" + chatStr & "-t") + timeout &
                    chatCmd + "\"";
 
-  remoteThread = PNEW PXRemoteThread(commandLine);
+  remoteThread = PNEW PXRemoteThread(&remoteThread, commandLine);
 
-  ///////////////////////////////////////////
-  //
-  //  wait until the ppp device becomes available (connected)
-  //  or the PipeChannel disappears (not connected)
-  //
-  for (status = InProgress; status == InProgress; ) {
-    if (remoteThread->IsTerminated()) {
-      delete remoteThread;
-      remoteThread = NULL;
-      status = NoAnswer;
-    } else if (PPPDeviceExists(pppDeviceName)) 
-      status = Connected;
-    else {
-PError << "About to sleep...";
-      PThread::Current()->Sleep(PTimeInterval(0,3));
-PError << "done" << endl;
-    }
-  }
-  return status == Connected;
+  // dialling is now in progress
+  status = InProgress;
+  return TRUE;
 }
 
 
@@ -242,34 +242,24 @@ void PRemoteConnection::Close()
 {
   if (remoteThread != NULL) {
     remoteThread->KillPipeChannel();
-    for (PINDEX i = 0; i < 30 && !remoteThread->IsTerminated(); i++)
+    for (PINDEX i = 0; i < 30 && remoteThread != NULL; i++)
       PThread::Current()->Sleep(1000);
-    delete remoteThread;
   }
   remoteThread = NULL;
 }
 
 PRemoteConnection::Status PRemoteConnection::GetStatus() const
 {
-  if (status == Connected) {
-    if (remoteThread == NULL)
-      status = Idle;
-    else if (remoteThread->IsTerminated()) {
-//      delete remoteThread;
-//      remoteThread = NULL;
-      status = Idle;
-    } 
+  if (remoteThread != NULL) {
+    if (PPPDeviceExists(pppDeviceName) > 0)
+      return Connected;
+    else
+      return InProgress;
   }
-  return status;
 
-//  return NoNameOrNumber;
-//  return LineBusy;
-//  return NoDialTone;
-//  return NoAnswer;
-//  return PortInUse;
-//  return Connected;
-//  return InProgress
-//  return GeneralFailure;
+  if (PPPDeviceExists(pppDeviceName) > 0)
+    return Connected;
+  return Idle;
 }
 
 PStringArray PRemoteConnection::GetAvailableNames() 
@@ -292,8 +282,8 @@ PStringArray PRemoteConnection::GetAvailableNames()
   return names;
 }
 
-PXRemoteThread::PXRemoteThread(const PString & cmdLine)
-  : PThread(20000, NoAutoDeleteThread)
+PXRemoteThread::PXRemoteThread(PXRemoteThread ** ptr, const PString & cmdLine)
+  : PThread(20000, AutoDeleteThread), myPtr(ptr)
 {
   PStringArray argArray;
   argArray[0] = "-c";
@@ -308,6 +298,7 @@ void PXRemoteThread::Main()
   retVal = pipeChannel->GetReturnCode();
   delete pipeChannel;
   pipeChannel = NULL;
+  *myPtr = NULL;
 }
 
 void PXRemoteThread::KillPipeChannel()
