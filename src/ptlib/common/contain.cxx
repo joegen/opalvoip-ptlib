@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.107  2001/10/30 00:20:12  robertj
+ * Fixed broken signed number conversion from previous change.
+ *
  * Revision 1.106  2001/10/18 00:35:08  robertj
  * Fixed problem with Tokenise() includeing empty string at beginning when
  *   not in onePerSeparator mode and a separator starts the string.
@@ -1135,7 +1138,7 @@ PString::PString(ConversionType type, long value, unsigned base)
   PAssert(base >= 2 && base <= 36, PInvalidParameter);
   switch (type) {
     case Signed :
-      p_signed2string<long>(-value, base, theArray+1);
+      p_signed2string<long>(value, base, theArray);
       break;
 
     case Unsigned :
