@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.8  1999/02/16 08:20:48  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.7  1998/09/23 06:20:39  robertj
  * Added open source copyright license.
  *
@@ -60,7 +63,9 @@
 #endif
 
 
-PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
+class PICMPSocket : public PIPDatagramSocket
+{
+  PCLASSINFO(PICMPSocket, PIPDatagramSocket)
 /* Create a socket channel that uses allows ICMP commands in the Internal
    Protocol.
  */
