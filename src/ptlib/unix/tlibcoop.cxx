@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibcoop.cxx,v $
+ * Revision 1.6  1998/11/03 11:37:45  robertj
+ * Fixed big delay in waiting for child process termination
+ *
  * Revision 1.5  1998/09/24 04:12:24  robertj
  * Added open software license.
  *
@@ -190,6 +193,10 @@ void PProcess::OperatingSystemYield()
   // process the timer list BEFORE checking timers
   PTimeInterval delay = GetTimerList()->Process();
 
+  // Set maximum delay of 10 seconds if we have waiting child proceses
+  if (waitCount > 0)
+    delay = 10000;
+
   // collect the handles across all threads
   PThread * thread = current;
   BOOL      threadUnblocked = FALSE;
@@ -247,8 +254,11 @@ void PProcess::OperatingSystemYield()
   // wait for something to happen on an I/O channel, or for a timeout, or a SIGCLD
   int childPid;
   if ((width > 0) || (timeout != NULL)) {
-    SELECT (width, &rfds, &wfds, &efds, timeout);
     childPid = wait3(NULL, WNOHANG|WUNTRACED, NULL);
+    if (childPid < 0) {
+      SELECT (width, &rfds, &wfds, &efds, timeout);
+      childPid = wait3(NULL, WNOHANG|WUNTRACED, NULL);
+    }
   } else if (waitCount > 0)
     childPid = wait3(NULL, WUNTRACED, NULL);
   else {
