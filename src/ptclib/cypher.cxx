@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.7 1996/03/02 03:20:52 robertj Exp $
+ * $Id: cypher.cxx,v 1.8 1996/03/11 10:28:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.8  1996/03/11 10:28:53  robertj
+ * Fixed bug in C++ optimising compiler.
+ *
  * Revision 1.7  1996/03/02 03:20:52  robertj
  * Fixed secured config parameters so leading/trailing blanks not significant.
  *
@@ -663,10 +666,12 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
 PSecureConfig::ValidationState
               PSecureConfig::GetValidation(const PString & validationKey) const
 {
-  for (PINDEX i = 0; i < securedKey.GetSize(); i++)
-    if (!GetString(securedKey[i]).IsEmpty())
+  for (PINDEX i = 0; i < securedKey.GetSize(); i++) {
+    PString s = GetString(securedKey[i]);
+    if (!s.IsEmpty())
       return GetString(validationKey) == CalculateValidation(SecuredKeys)
                                                            ? IsValid : Invalid;
+  }
   return GetBoolean(PendingPrefix + validationKey) ? Pending : Defaults;
 }
 
