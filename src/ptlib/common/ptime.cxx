@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.26  1999/06/14 07:58:39  robertj
+ * Fixed bug in PTimeInteerval output, left stream fill char as '0'.
+ * Added ability to set the width of the PTimeInterval stream output.
+ *
  * Revision 1.25  1999/03/29 03:38:58  robertj
  * Improved time & date parser.
  *
@@ -136,22 +140,33 @@ void PTimeInterval::PrintOn(ostream & strm) const
 {
   PInt64 ms = milliseconds;
 
-  int precision = strm.precision();
+  char prevFill = strm.fill();
   strm.fill('0');
+
+  int precision = strm.precision();
+  if (precision > 3)
+    precision = 3;
+
+  int width = strm.width();
+  strm.width(1);
 
   BOOL hadPrevious = FALSE;
   long tmp;
 
   if (precision < 0) {
+    precision = -precision;
+    if (precision > 3)
+      precision = 3;
+
     tmp = (long)(ms/86400000);
-    if (tmp > 0) {
+    if (tmp > 0 || width > (precision+9)) {
       strm << tmp << ':';
       hadPrevious = TRUE;
     }
   }
 
   tmp = (long)(ms%86400000)/3600000;
-  if (hadPrevious || tmp > 0) {
+  if (hadPrevious || tmp > 0 || width > (precision+6)) {
     if (hadPrevious)
       strm.width(2);
     strm << tmp << ':';
@@ -159,7 +174,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
   }
 
   tmp = (long)(ms%3600000)/60000;
-  if (hadPrevious || tmp > 0) {
+  if (hadPrevious || tmp > 0 || width > (precision+3)) {
     if (hadPrevious)
       strm.width(2);
     strm << tmp << ':';
@@ -170,13 +185,10 @@ void PTimeInterval::PrintOn(ostream & strm) const
     strm.width(2);
   strm << (long)(ms%60000)/1000;
 
-  if (precision != 0) {
-    if (precision < 0)
-      precision = -precision;
-    if (precision > 3)
-      precision = 3;
+  if (precision > 0)
     strm << '.' << setw(precision) << (int)(ms%1000);
-  }
+
+  strm.fill(prevFill);
 }
 
 
