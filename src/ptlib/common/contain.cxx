@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.93  2001/02/14 06:50:01  robertj
+ * Fixed bug in doing ::flush on a PStringStream, did not set pointers correctly.
+ *
  * Revision 1.92  2001/02/13 04:39:08  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -1874,11 +1877,11 @@ int PStringStream::Buffer::underflow()
 
 int PStringStream::Buffer::sync()
 {
-  string->MakeMinimumSize();
   char * base = string->GetPointer();
-  char * end = base + string->GetLength();
-  setg(base, base, end);
-  setp(end, end);
+  PINDEX len = string->GetLength();
+  setg(base, base, base + len);
+  setp(base, base + string->GetSize() - 1);
+  pbump(len);
   return 0;
 }
 
