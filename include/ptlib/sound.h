@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.23.2.2  2003/10/13 02:42:39  dereksmithies
+ * Add additional functions, so plugins work better.
+ *
  * Revision 1.23.2.1  2003/10/07 03:02:28  csoutheren
  * Initial checkin of pwlib code to do plugins.
  * Modified from original code and concept provided by Snark of Gnomemeeting
@@ -430,6 +433,22 @@ class PSoundChannel : public PChannel
       unsigned bitsPerSample = 16   /// Number of bits per sample
     );
 
+    /**Test if this instance of PSoundChannel is open.
+
+       @return
+       TRUE if this instance is open.
+     */
+    virtual BOOL IsOpen() const
+      { return (baseChannel == NULL) ? FALSE : baseChannel->PChannel::IsOpen(); }
+
+    /**Get the OS specific handle for the PSoundChannel.
+
+       @return
+       integer value of the handle.
+     */
+    int GetHandle() const
+      { return (baseChannel == NULL) ? -1 : baseChannel->PChannel::GetHandle(); }
+
     /**Abort the background playing/recording of the sound channel.
 
        @return
@@ -523,6 +542,22 @@ class PSoundChannel : public PChannel
 
   /**@name Play functions */
   //@{
+
+    /** Low level write (or play) to the channel. This function will block until the
+       requested number of characters are written or the write timeout is
+       reached. The GetLastWriteCount() function returns the actual number
+       of bytes written.
+                                                                                                                                            
+       The GetErrorCode() function should be consulted after Write() returns
+       FALSE to determine what caused the failure.
+ 
+       @return
+       TRUE if at least len bytes were written to the channel.
+     */
+     BOOL Write(const void * buf, PINDEX len)
+      { return (baseChannel == NULL) ? FALSE : baseChannel->Write(buf, len); }
+
+
     /**Play a sound to the open device. If the #wait# parameter is
        TRUE then the function does not return until the file has been played.
        If FALSE then the sound play is begun asynchronously and the function
