@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.44  2000/10/24 03:32:40  robertj
+ * Fixed problem where thread that uses PThread::Current() in dtor crashes.
+ *
  * Revision 1.43  2000/10/20 06:11:48  robertj
  * Added function to change auto delete flag on a thread.
  *
@@ -469,17 +472,18 @@ void PThread::PX_ThreadEnd(void * arg)
 {
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
-
-  // remove this thread from the thread list
-  process.threadMutex.Wait();
-  process.activeThreads.SetAt(thread->PX_GetThreadId(), NULL);
-  process.threadMutex.Signal();
   
+  pthread_t id = thread->PX_GetThreadId();
   thread->PX_threadId = 0;  // Prevent terminating terminated thread
 
   // delete the thread if required
   if (thread->autoDelete)
     delete thread;
+
+  // remove this thread from the thread list
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt(id, NULL);
+  process.threadMutex.Signal();
 }
 
 
