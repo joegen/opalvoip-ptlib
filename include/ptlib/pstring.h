@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.54  2002/11/12 09:17:44  robertj
+ * Added PString::NumCompare() as functional equivalent of strncmp().
+ * Added PSortedStringList::GetNextStringsIndex() to do searches of binary
+ *   tree on partal strings.
+ *
  * Revision 1.53  2002/10/31 05:53:44  robertj
  * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
  *   there are far too many inheerent assumptions every to make it 16 bit.
@@ -1101,6 +1106,40 @@ PDECLARE_CLASS(PString, PCharArray);
     BOOL operator>=(
       const char * cstr  /// C string to compare against.
     ) const;
+
+    /**Compare a string against a substring of the object.
+       This will compare at most #count# characters of the string, starting at
+       the specified #offset#, against that many characters of the #str#
+       parameter. If #count# greater than the length of the #str# parameter
+       then the actual length of #str# is used. If #count# and the length of
+       #str# are greater than the length of the string remaining from the
+       #offset# then FALSE is returned.
+
+       @return
+       TRUE if str is a substring of .
+     */
+    Comparison NumCompare(
+      const PString & str,        /// PString object to compare against.
+      PINDEX count = P_MAX_INDEX, /// Number of chacracters in str to compare
+      PINDEX offset = 0           /// Offset into string to compare
+    ) const;
+
+    /**Compare a string against a substring of the object.
+       This will compare at most #count# characters of the string, starting at
+       the specified #offset#, against that many characters of the #str#
+       parameter. If #count# greater than the length of the #str# parameter
+       then the actual length of #str# is used. If #count# and the length of
+       #str# are greater than the length of the string remaining from the
+       #offset# then FALSE is returned.
+
+       @return
+       TRUE if str is a substring of .
+     */
+    Comparison NumCompare(
+      const char * cstr,          /// C string object to compare against.
+      PINDEX count = P_MAX_INDEX, /// Number of chacracters in str to compare
+      PINDEX offset = 0           /// Offset into string to compare
+    ) const;
   //@}
 
 
@@ -2170,7 +2209,23 @@ PDECLARE_SORTED_LIST(PSortedStringList, PString);
     PINDEX GetStringsIndex(
       const PString & str   /// String value to search for.
     ) const;
+
+    /** Get the index of the next string after specified value.
+      A binary search of tree is performed to find the string greater than
+      or equal to the specified string value.
+     */
+    PINDEX GetNextStringsIndex(
+      const PString & str   /// String value to search for.
+    ) const;
   //@}
+
+  protected:
+    static PINDEX InternalStringSelect(
+      const char * str,
+      PINDEX len,
+      Element * thisElement,
+      Element * & lastElement
+    );
 };
 
 
