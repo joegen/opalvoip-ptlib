@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.68  2001/08/20 06:55:45  robertj
+ * Fixed ability to have PMutex::Wait() with times less than one second.
+ * Fixed small error in return value of block on I/O function, not critical.
+ *
  * Revision 1.67  2001/08/07 02:50:03  craigs
  * Fixed potential race condition in IO blocking
  *
@@ -274,11 +278,11 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
-  //PTRACE(1,"PThread::PXBlockOnIO(" << handle << ',' << type << ')');
+  //PTRACE(1,"PWLib\tPThread::PXBlockOnIO(" << handle << ',' << type << ')');
 
   if ((handle < 0) || (handle >= FD_SETSIZE)) {
     errno = EINTR;
-    return FALSE;
+    return -1;
   }
 
   // make sure we flush the buffer before doing a write
@@ -300,23 +304,23 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 
   int retval;
 
-  for (;;) {
+  do {
 
-    FD_ZERO (read_fds);
-    FD_ZERO (write_fds);
-    FD_ZERO (exception_fds);
+    FD_ZERO(read_fds);
+    FD_ZERO(write_fds);
+    FD_ZERO(exception_fds);
 
     switch (type) {
       case PChannel::PXReadBlock:
       case PChannel::PXAcceptBlock:
-        FD_SET (handle, read_fds);
+        FD_SET(handle, read_fds);
         break;
       case PChannel::PXWriteBlock:
-        FD_SET (handle, write_fds);
+        FD_SET(handle, write_fds);
         break;
       case PChannel::PXConnectBlock:
-        FD_SET (handle, write_fds);
-        FD_SET (handle, exception_fds);
+        FD_SET(handle, write_fds);
+        FD_SET(handle, exception_fds);
         break;
       default:
         PAssertAlways(PLogicError);
@@ -324,22 +328,16 @@ int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
     }
 
     // include the termination pipe into all blocking I/O functions
-    int width = handle+1;
     FD_SET(unblockPipe[0], read_fds);
-    width = PMAX(width, unblockPipe[0]+1);
-  
-    retval = ::select(width, read_fds, write_fds, exception_fds, tptr);
-
-    if ((retval >= 0) || (errno != EINTR))
-      break;
-  }
+    retval = ::select(PMAX(handle, unblockPipe[0])+1, read_fds, write_fds, exception_fds, tptr);
+  } while (retval < 0 && errno == EINTR);
 
   if ((retval == 1) && FD_ISSET(unblockPipe[0], read_fds)) {
     BYTE ch;
     ::read(unblockPipe[0], &ch, 1);
     errno = EINTR;
     retval =  -1;
-    //PTRACE(1,"Unblocked I/O");
+    PTRACE(4, "PWLib\tUnblocked I/O");
   }
 
   return retval;
@@ -553,8 +551,7 @@ void PThread::PX_NewThread(BOOL startSuspended)
     PAssertOS( pthread_attr_setschedpolicy( &threadAttr, SCHED_FIFO ) == 0 );
 #endif
 
-  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) 
-            == 0);
+  PAssertOS(pthread_create(&PX_threadId, &threadAttr, PX_ThreadStart, this) == 0);
 
 #if defined(P_FREEBSD)
   // There is a potential race condition here which shows up with FreeBSD 4.2
@@ -646,7 +643,7 @@ void * PThread::PX_ThreadStart(void * arg)
 #endif // P_MACOSX
 
   // now call the the thread main routine
-  //PTRACE(1, "tlibthrd\tAbout to call Main");
+  //PTRACE(1, "PWLib\tAbout to call Main");
   thread->Main();
 
   // execute the cleanup routine
@@ -721,12 +718,12 @@ void PThread::Terminate()
   if (IsTerminated())
     return;
 
-  PTRACE(1, "tlibthrd\tForcing termination of thread " << (void *)this);
+  PTRACE(1, "PWLib\tForcing termination of thread " << (void *)this);
 
   if (Current() == this)
     pthread_exit(NULL);
   else {
-    WaitForTermination();
+    WaitForTermination(20);
 
 #ifndef P_HAS_SEMAPHORES
     PAssertOS(pthread_mutex_lock(&PX_WaitSemMutex) == 0);
@@ -761,7 +758,7 @@ void PThread::PXSetWaitingSemaphore(PSemaphore * sem)
 BOOL PThread::IsTerminated() const
 {
   if (PX_threadId == 0) {
-    //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") = 0");
+    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") = 0");
     return TRUE;
   }
 
@@ -770,12 +767,12 @@ BOOL PThread::IsTerminated() const
 
 #ifndef P_MACOSX
   if (pthread_kill(PX_threadId, 0) != 0)  {
-    //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") terminated");
+    //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") terminated");
     return TRUE;
   }
 #endif
 
-  //PTRACE(1, "tlibthrd\tIsTerminated(" << (void *)this << ") not dead yet");
+  //PTRACE(1, "PWLib\tIsTerminated(" << (void *)this << ") not dead yet");
   return FALSE;
 }
 
@@ -927,7 +924,7 @@ PThread::Priority PThread::GetPriority() const
       
     default:
       /* Unknown scheduler. We don't know what priority this thread has. */
-      PTRACE( 1, "tlibthrd\tPThread::GetPriority: unknown scheduling policy #" 
+      PTRACE( 1, "PWLib\tPThread::GetPriority: unknown scheduling policy #" 
               << schedulingPolicy );
       
       return originalPriority; /* as good a guess as any */
@@ -978,7 +975,7 @@ void PThread::WaitForTermination() const
   PXAbortIO();
 
   while (!IsTerminated())
-    Current()->Sleep(10);
+    usleep(1); // One time slice
 }
 
 
@@ -986,14 +983,14 @@ BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
   PAssert(Current() != this, "Waiting for self termination!");
   
-  //PTRACE(1, "tlibthrd\tWaitForTermination(delay)");
+  //PTRACE(1, "PWLib\tWaitForTermination(delay)");
   PXAbortIO();
 
   PTimer timeout = maxWait;
   while (!IsTerminated()) {
     if (timeout == 0)
       return FALSE;
-    Current()->Sleep(10);
+    usleep(1); // One time slice
   }
   return TRUE;
 }
@@ -1077,44 +1074,33 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
   }
 
   // create absolute finish time 
-  struct timeval finishTime;
-  ::gettimeofday(&finishTime, NULL);
-  finishTime.tv_sec += waitTime.GetSeconds();
-  finishTime.tv_usec += waitTime.GetMilliSeconds() % 1000L;
-  if (finishTime.tv_usec >= 1000000) {
-    finishTime.tv_usec -= 1000000;
-    finishTime.tv_sec++;
-  }
+  PTime finishTime;
+  finishTime += waitTime;
 
 #ifdef P_HAS_SEMAPHORES
 
   // loop until timeout, or semaphore becomes available
   // don't use a PTimer, as this causes the housekeeping
   // thread to get very busy
-  for (;;) {
+  do {
     if (sem_trywait(&semId) == 0)
       return TRUE;
 
-      PThread::Current()->Sleep(10);
+    usleep(1); // One time slice
+  } while (PTime() < finishTime);
 
-      struct timeval now;
-      ::gettimeofday(&now, NULL);
-      if (now.tv_sec > finishTime.tv_sec) 
-        return FALSE;
-      else if ((now.tv_sec == finishTime.tv_sec) && (now.tv_usec >= finishTime.tv_usec))
-        return FALSE;
-  }
   return FALSE;
 
 #else
 
   struct timespec absTime;
-  absTime.tv_sec  = finishTime.tv_sec;
-  absTime.tv_nsec = finishTime.tv_usec * 1000;
+  absTime.tv_sec  = finishTime.GetTimeInSeconds();
+  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
 
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
-  PThread::Current()->PXSetWaitingSemaphore(this);
+  PThread * thread = PThread::Current();
+  thread->PXSetWaitingSemaphore(this);
   queuedLocks++;
 
   BOOL ok = TRUE;
@@ -1128,7 +1114,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
       PAssert(err == 0 || err == EINTR, psprintf("timed wait error = %i", err));
   }
 
-  PThread::Current()->PXSetWaitingSemaphore(NULL);
+  thread->PXSetWaitingSemaphore(NULL);
   queuedLocks--;
 
   if (ok)
@@ -1212,17 +1198,18 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   pthread_t currentThreadId = pthread_self();
   PAssert(ownerThreadId != currentThreadId, "Nested mutex deadlock");
 
-  PTimeInterval sleepTime = waitTime/100;
-  if (sleepTime > 1000)
-    sleepTime = 1000;
-  int subdivision = waitTime.GetMilliSeconds()/sleepTime.GetMilliSeconds();
-  for (int count = 0; count < subdivision; count++) {
+  // create absolute finish time 
+  PTime finishTime;
+  finishTime += waitTime;
+
+  do {
     if (pthread_mutex_trylock(&mutex) == 0) {
       ownerThreadId = currentThreadId;
       return TRUE;
     }
-    PThread::Current()->Sleep(sleepTime);
-  }
+
+    usleep(1); // One time slice
+  } while (PTime() < finishTime);
 
   return FALSE;
 }
