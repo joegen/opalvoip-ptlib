@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.56  2000/10/23 09:17:26  robertj
+ * Fixed bug un Linux version where HTML macros didn't work correctly.
+ *
  * Revision 1.55  2000/08/04 12:48:25  robertj
  * Added mechanism by which a service can get at new HTTP connections, eg to add SSL.
  *
@@ -1120,7 +1123,12 @@ PServiceMacro::PServiceMacro(const PCaselessString & name)
 PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PServiceMacro::Class()), PInvalidCast);
-  return (Comparison)strcasecmp(macroName, ((const PServiceMacro &)obj).macroName);
+  int cmp = strcasecmp(macroName, ((const PServiceMacro &)obj).macroName);
+  if (cmp < 0)
+    return LessThan;
+  if (cmp > 0)
+    return GreaterThan;
+  return EqualTo;
 }
 
 
