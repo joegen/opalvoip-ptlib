@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.61 1997/10/03 13:33:22 robertj Exp $
+ * $Id: sockets.cxx,v 1.62 1997/12/11 10:30:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.62  1997/12/11 10:30:35  robertj
+ * Added operators for IP address to DWORD conversions.
+ *
  * Revision 1.61  1997/10/03 13:33:22  robertj
  * Added workaround for NT winsock bug with RAS and DNS lookups.
  *
@@ -1063,9 +1066,7 @@ PIPSocket::Address::Address(const Address & addr)
 
 PIPSocket::Address::Address(const PString & dotNotation)
 {
-  s_addr = inet_addr((const char *)dotNotation);
-  if (s_addr == INADDR_NONE)
-    s_addr = 0;
+  operator=(dotNotation);
 }
 
 
@@ -1079,6 +1080,15 @@ PIPSocket::Address & PIPSocket::Address::operator=(const in_addr & addr)
 PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 {
   s_addr = addr.s_addr;
+  return *this;
+}
+
+
+PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
+{
+  s_addr = inet_addr((const char *)dotNotation);
+  if (s_addr == INADDR_NONE)
+    s_addr = 0;
   return *this;
 }
 
