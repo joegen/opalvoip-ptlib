@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.66  2004/02/11 05:09:14  csoutheren
+ * Fixed problems with regex libraries on Solaris, and with host OS numbering
+ * being a quoted string rather than a number. Thanks to Chad Attermann
+ * Fixed problems SSL detection problems thanks to Michal Zygmuntowicz
+ *
  * Revision 1.65  2004/02/08 11:13:11  rjongbloed
  * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
  *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
@@ -2810,17 +2815,11 @@ PDECLARE_STRING_DICTIONARY(PStringToString, PString);
 };
 
 
-extern "C" {
-// Mac OS X has a perfectly good implementation of Henry Spencer's regex
-// package, which it would prefer not to see replaced.  Alas, thanks to
-// Apple's habit of using "typedef struct {} type", there is no clean way
-// to properly forward-declare the type regex_t to the C++ compiler.  So,
-// contain.cxx has to include <regex.h> before <ptlib.h>, and uses the
-// real declaration.  Thankfully, "all pointers smell alike" in C...
-#if !defined(P_MACOS) || !defined(_REGEX_H_)
+// there used to be some really weird stuff here, but this has all
+// been replaced with a simple typedef. ./configure will ensure that
+// the symbol re_pattern_buffer exists, either by using a system library
+// or by including a local copy of the regex libraries
 typedef struct re_pattern_buffer regex_t;
-#endif
-};
 
 
 /**A class representing a regular expression that may be used for locating

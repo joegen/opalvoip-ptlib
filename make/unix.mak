@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.182  2004/02/11 05:09:14  csoutheren
+# Fixed problems with regex libraries on Solaris, and with host OS numbering
+# being a quoted string rather than a number. Thanks to Chad Attermann
+# Fixed problems SSL detection problems thanks to Michal Zygmuntowicz
+#
 # Revision 1.181  2004/02/09 06:24:37  csoutheren
 # Allowed CXX environment variable to define C++ compiler to use
 # as required by configure
@@ -386,12 +391,6 @@ STDCCFLAGS	+= -mcpu=$(CPUTYPE)
 endif
 endif
 
-ifndef OSRELEASE
-OSRELEASE	:= $(shell sysctl -n kern.osreldate)
-endif
-
-STDCCFLAGS	+= -DP_FREEBSD=$(OSRELEASE)
-
 P_USE_RANLIB		:= 1
 #STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
@@ -409,12 +408,6 @@ endif
 
 LDLIBS		+= -lossaudio
 
-ifndef OSRELASE
-OSRELEASE	:= $(shell sysctl -n kern.osrevision)
-endif
- 
-STDCCFLAGS	+= -DP_OPENBSD=$(OSRELEASE)
-
 P_USE_RANLIB		:= 1
 #STDCCFLAGS      += -DP_USE_PRAGMA		# migrated to configure
 
@@ -430,11 +423,6 @@ ifeq ($(MACHTYPE),x86)
 STDCCFLAGS	+= -m486
 endif
 
-ifndef OSRELASE
-OSRELEASE   := $(shell /sbin/sysctl -n kern.osrevision)
-endif
-
-STDCCFLAGS	+= -DP_NETBSD=$(OSRELEASE)
 LDLIBS		+= -lossaudio
 
 STDCCFLAGS += -I$(UNIX_INC_DIR) -I$(PWLIBDIR)/include
@@ -642,10 +630,6 @@ ifeq ($(OSTYPE),Darwin)
  
 # MacOS X or later / Darwin
 
-ifndef OSRELEASE
-OSRELEASE	:= $(shell uname -r | sed "s/\.//g")
-endif
-
 CFLAGS		+= -fno-common -dynamic
 LDFLAGS		+= -multiply_defined suppress
 ifeq ($(OSRELEASE), 700)
@@ -686,9 +670,6 @@ MEMORY_CHECK    := 0
 # currently available architecture is PPC.
 P_MAC_MPTHREADS := 1
 STDCCFLAGS	+= -DP_MAC_MPTHREADS
-# stupid Projct Builder compiler
-STDCCFLAGS	+= -DNO_LONG_DOUBLE
-# 
 LDLIBS		+= -prebind -framework CoreServices -framework QuickTime -framework Carbon
   
 P_SHAREDLIB	:= 0 
