@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.21  2000/03/06 03:59:22  robertj
+ * Fixed warning about handle types, thanks Steve Bennett
+ *
  * Revision 1.20  1999/10/29 03:34:19  robertj
  * Fixed possible crash accessing IP addresses from SNMP tables.
  *
@@ -1052,7 +1055,7 @@ PWin32PacketSYS::PWin32PacketSYS()
   // Start the packet driver service
   SC_HANDLE hManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
   if (hManager != NULL) {
-    HANDLE hService = OpenService(hManager, PACKET_SERVICE_NAME, SERVICE_START);
+    SC_HANDLE hService = OpenService(hManager, PACKET_SERVICE_NAME, SERVICE_START);
     if (hService != NULL) {
       StartService(hService, 0, NULL);
       dwError = ::GetLastError();
