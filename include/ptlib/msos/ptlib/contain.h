@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.50  2004/10/30 19:23:45  ykiryanov
+ * Ifdefd strcasecmp for WinCE port
+ *
  * Revision 1.49  2004/10/23 11:34:14  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -349,8 +352,10 @@ istream & operator>>(istream & s, PUInt64 & v);
 
 #endif
 
+#ifndef _WIN32_WCE
 #define strcasecmp(s1,s2) stricmp(s1,s2)
 #define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
+#endif
 
 class PWin32Overlapped : public OVERLAPPED
 {
@@ -394,6 +399,7 @@ class RegistryKey
 #else
   extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
   #include <ptlib/wince/time.h>
+
 #endif
 
 // used by various modules to disable the winsock2 include to avoid header file problems
