@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.40  1999/05/01 03:52:20  robertj
+ * Fixed various egcs warnings.
+ *
  * Revision 1.39  1999/03/02 05:41:59  robertj
  * More BeOS changes
  *
@@ -635,7 +638,7 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
   if (idx == 0)
     strcpy(ifr.ifr_name, channelName);
   else
-    sprintf(ifr.ifr_name, "%s:%u", (const char *)channelName, idx-1);
+    sprintf(ifr.ifr_name, "%s:%u", (const char *)channelName, (int)(idx-1));
   if (!ConvertOSError(ioctl(os_handle, SIOCGIFADDR, &ifr)))
     return FALSE;
 
