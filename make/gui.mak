@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.11  2000/02/24 11:02:11  craigs
+# Fixed problems with PW make
+#
 # Revision 1.10  2000/02/04 19:33:25  craigs
 # Added ability to create non-shared versions of programs
 #
@@ -49,41 +52,32 @@
 #
 
 
-ifndef GUI
-GUI = motif
-endif
-
-
+include $(PWLIBDIR)/make/defaultgui.mak
 include $(PWLIBDIR)/make/$(GUI).mak
-
-
-OBJBASE         = obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
 GUI_INC_DIR	= $(PWLIBDIR)/include/pwlib/$(GUI)
 
 PWLIB           = pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 
-ifeq	($(P_SHAREDLIB),0)
-PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).a
-else
-PWLIB_FILE      = $(PW_LIBDIR)/lib$(PWLIB).so
+#
+# add GUI directory to include path
+#
+STDCCFLAGS      += -I$(GUI_INC_DIR)
+
+#
+# add GUI library
+#
+LDLIBS          += -l$(PWLIB_BASE)$(LIB_TYPE) 
+ifdef	GUILIB
+LDLIBS          += $(GUILIB)
 endif
-
-#
-# add OS directory to include path
-#
-STDCCFLAGS      := $(STDCCFLAGS) -I$(GUI_INC_DIR)
-
-#
-# add OS library
-#
-LDLIBS	:= -l$(PWLIB) $(GUILIB) $(LDLIBS)
-
 
 #
 #  rules for resource compilation
 #
-PWRC		= $(PWLIBDIR)/tools/pwrc/obj_$(PLATFORM_TYPE)_r/pwrc -a $(GUI)
+PWRC_DIR	= $(PWLIBDIR)/tools/pwrc
+PWRC		= $(PWRC_DIR)/obj_$(GUI)_$(PLATFORM_TYPE)_r/pwrc
+PWRC_CMD	= $(PWRC) -a $(GUI)
 
 #
 # if we are using a resource file, then define the required files

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.42  2000/02/24 11:02:11  craigs
+# Fixed problems with PW make
+#
 # Revision 1.41  2000/02/16 11:30:25  craigs
 # Added rule to force library build for applications
 #
@@ -100,7 +103,11 @@
 ######################################################################
 
 ifndef OBJDIR
-OBJDIR	=	./$(OBJBASE)
+ifneq   (,$(GUI))
+OBJDIR	=	./$(PW_OBJBASE)
+else
+OBJDIR	=	./$(PT_OBJBASE)
+endif
 endif
 
 vpath %.cxx $(VPATH_CXX)
@@ -177,7 +184,6 @@ ifndef TARGET
 ifeq	($(P_SHAREDLIB),0)
 TARGET = $(OBJDIR)/$(PROG)
 else
-#TARGET = $(OBJDIR)/$(PROG)_dll
 TARGET = $(OBJDIR)/$(PROG)
 endif
 endif
@@ -186,35 +192,30 @@ ifdef BUILDFILES
 OBJS += $(OBJDIR)/buildnum.o
 endif
 
-ifndef STATIC
+TARGET_LIBS	= $(PW_LIBDIR)/$(PTLIB_FILE)
+ifneq (,$(GUI))
+TARGET_LIBS	:= $(TARGET_LIBS) $(PW_LIBDIR)/$(PWLIB_FILE)
+endif
 
-$(TARGET):	$(OBJS) $(PW_LIBDIR)/$(PTLIB_FILE)
+$(TARGET):	$(OBJS) $(TARGET_LIBS)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
 
+ifdef DEBUG
+
 $(PW_LIBDIR)/$(PTLIB_FILE):
-	( cd $(PWLIBDIR); $(MAKE) )
+	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
+
+$(PW_LIBDIR)/$(PWLIB_FILE):
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI) debug
 
 else
 
-$(TARGET):	$(OBJS) $(PW_LIBDIR)/$(PTLIB_FILE)
-ifdef STATIC_LIBS
-	for f in $(STATIC_LIBS) ; do \
-	  rm -f $(LIBDIR)/$$f ; \
-          ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
-	done
-endif
-	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
-ifdef STATIC_LIBS
-	for f in $(STATIC_LIBS) ; do \
-	  rm -f $(LIBDIR)/$$f ; \
-	done
-endif
+$(PW_LIBDIR)/$(PTLIB_FILE):
+	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
 
-endif
+$(PW_LIBDIR)/$(PWLIB_FILE):
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI) opt
 
-
-ifdef GUI
-$(TARGET):	$(PWLIB_FILE)
 endif
 
 CLEAN_FILES += $(TARGET)
@@ -394,18 +395,26 @@ endif
 #
 ######################################################################
 
-ifdef GUI
+ifneq (,$(GUI))
 ifdef RESOURCE
+
 $(RESOBJS) : $(RESCXX) $(RESCODE)
 
 $(RESCXX) : $(RESHDR)
 
 TMPRSRC	= resource.tmp
 
-$(RESCXX) $(RESCODE) $(RESHDR): $(RESOURCE)
+$(RESCXX) $(RESCODE): $(RESHDR)
+
+$(RESHDR): $(RESOURCE)
 	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
-	$(PWRC) -v $(RCFLAGS) $(RESOURCE)
+	$(PWRC_CMD) -v $(RCFLAGS) $(RESOURCE)
 	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; then cp $(TMPRSRC) $(RESHDR) ; else rm -f $(TMPRSRC) ;  fi
+
+$(RESOURCE) : $(PWRC)
+
+$(PWRC) :
+	$(MAKE) REALGUI=$(GUI) -C $(PWRC_DIR) opt
 
 endif
 endif
