@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.179  2004/12/14 14:24:20  csoutheren
+ * Added PIPSocket::Address::operator*= to compare IPV4 addresses
+ * to IPV4-compatible IPV6 addresses. More documentation needed
+ * once this is tested as working
+ *
  * Revision 1.178  2004/12/14 06:20:29  csoutheren
  * Added function to get address of network interface
  *
@@ -2254,8 +2259,19 @@ PObject::Comparison PIPSocket::Address::Compare(const PObject & obj) const
   return EqualTo;
 }
 
-
 #if P_HAS_IPV6
+bool PIPSocket::Address::operator*=(const PIPSocket::Address & addr) const
+{
+  if (version == addr.version)
+    return operator==(addr);
+
+  if (this->GetVersion() == 6 && this->IsV4Mapped()) 
+    return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]) == addr;
+
+  else 
+    return *this == PIPSocket::Address(addr[12], addr[13], addr[14], addr[15]);
+}
+
 bool PIPSocket::Address::operator==(in6_addr & addr) const
 {
   PIPSocket::Address a(addr);
