@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.46  2001/10/11 02:20:54  robertj
+ * Added IRIX support (no audio/video), thanks Andre Schulze.
+ *
  * Revision 1.45  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -441,6 +444,34 @@ typedef int socklen_t;
 #include <strings.h>
 
 #define HAS_IFREQ
+
+#define PSETPGRP()  setpgrp()
+
+///////////////////////////////////////////////////////////////////////////////
+#elif defined (P_IRIX)
+
+#include <errno.h>
+#include <sys/sockio.h>
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/termios.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <sys/filio.h>
+#include <sys/wait.h>
+#include <sys/uio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <dlfcn.h>
+#include <net/if.h>
+#include <sys/sockio.h>
+
+typedef int socklen_t;
 
 #define PSETPGRP()  setpgrp()
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.58  2001/10/11 02:20:54  robertj
+ * Added IRIX support (no audio/video), thanks Andre Schulze.
+ *
  * Revision 1.57  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -213,7 +216,7 @@
 #include <sys/mman.h>
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined (P_AIX) || defined(__BEOS__) || defined(P_IRIX)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
@@ -308,7 +311,7 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX)
+#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX)
   ::getpwuid_r(geteuid(), &pwd,
                buffer, 1024,
                &pw);
@@ -345,7 +348,7 @@ PString PProcess::GetUserName() const
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#if defined (P_LINUX) || defined (P_AIX)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX)
   ::getpwuid_r(getuid(), &pwd,
                buffer, 1024,
                &pw);

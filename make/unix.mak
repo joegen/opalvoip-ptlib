@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.104  2001/10/11 02:20:54  robertj
+# Added IRIX support (no audio/video), thanks Andre Schulze.
+#
 # Revision 1.103  2001/10/09 08:58:33  robertj
 # Added "make help" target for displaying the usual build targets, is default
 #   target unless overridden by applications Makefile
@@ -336,6 +339,10 @@ ifneq (,$(findstring $(OSTYPE),Solaris SunOS))
 OSTYPE := solaris
 endif
 
+ifneq (,$(findstring $(OSTYPE),IRIX))
+OSTYPE := irix
+endif
+
 #Convert bash shell OSTYPE of 'freebsd3.4' to 'FreeBSD'
 ifneq (,$(findstring freebsd,$(OSTYPE)))
 OSTYPE := FreeBSD
@@ -397,6 +404,9 @@ ifneq (,$(findstring powerpc, $(MACHTYPE)))
 MACHTYPE := ppc
 endif
 
+ifneq (,$(findstring mips, $(MACHTYPE)))
+MACHTYPE := mips
+endif
 
 ifndef CPUTYPE
 CPUTYPE := $(POSSIBLE_CPUTYPE)
@@ -698,6 +708,36 @@ STDCCFLAGS	+= -D_REENTRANT
 endif
 
 endif # solaris
+
+####################################################
+
+ifeq ($(OSTYPE),irix)
+
+#  should work whith Irix 6.5
+
+P_PTHREADS	:= 1
+
+ifeq ($(MACHTYPE),mips)
+ENDIAN		:= PBIG_ENDIAN
+endif
+
+# IRIX using a gcc
+CC		:= gcc
+STDCCFLAGS	+= -DP_IRIX
+LDLIBS		+= -lsocket -lnsl -ldl
+
+ifdef P_PTHREADS
+ENDLDLIBS	+= -lpthread
+STDCCFLAGS	+= -D_REENTRANT
+endif
+
+#ifndef DEBUG
+#ifndef P_SHAREDLIB
+#P_SHAREDLIB=1
+#endif
+#endif
+
+endif # irix
 
 
 ####################################################
