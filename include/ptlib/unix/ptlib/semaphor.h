@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.20  2004/02/23 18:08:10  ykiryanov
+ * Added a parameter to semaphore constructor call to made constructor unambiguous. Suggested by Craig Southeren
+ *
  * Revision 1.19  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -125,7 +128,7 @@
 #elif defined(BE_THREADS)
 
   public:
-    PSemaphore( sem_id anId, int32 benaphoreCount);
+    PSemaphore(sem_id anId, int32 benaphoreCount, int32 param);
   protected:
     sem_id semId;
     volatile int32 benaphoreCount;
