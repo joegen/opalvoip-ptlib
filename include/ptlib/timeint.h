@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.24  2001/07/10 02:55:16  robertj
+ * Added unary minus operator
+ *
  * Revision 1.23  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -254,6 +257,13 @@ class PTimeInterval : public PObject
 
   /**@name Operations */
   //@{
+    /** Unary minus, get negative of time interval.
+    
+       @return
+       difference of the time intervals.
+     */
+    PTimeInterval operator-() const;
+
     /** Add the two time intervals yielding a third time interval.
     
        @return

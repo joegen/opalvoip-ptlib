@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.79  2001/07/10 02:55:16  robertj
+ * Added unary minus operator
+ *
  * Revision 1.78  2001/04/23 00:34:29  robertj
  * Added ability for PWaitAndSignal to not wait on semaphore.
  *
@@ -304,6 +307,9 @@ PINLINE int PTimeInterval::GetHours() const
 PINLINE int PTimeInterval::GetDays() const
   { return (int)(milliseconds/86400000); }
 
+
+PINLINE PTimeInterval PTimeInterval::operator-() const
+  { return PTimeInterval(-milliseconds); }
 
 PINLINE PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
   { return PTimeInterval(milliseconds + t.milliseconds); }
