@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.39  2003/06/06 15:04:17  dsandras
+ * Fixed compilation warning with gcc 3.3 by removing the PINLINE
+ *
  * Revision 1.38  2002/11/20 00:13:43  robertj
  * Fixed some documentation
  *
@@ -453,7 +456,7 @@ class PDirectory : public PFilePathString
        @return
        TRUE if directory was deleted.
      */
-    PINLINE static BOOL Remove(
+    static BOOL Remove(
       const PString & path   /// Directory file path.
     );
   //@}
