@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
+ * $Id: filepath.h,v 1.6 1994/10/24 00:06:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
- * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Revision 1.6  1994/10/24 00:06:58  robertj
+ * Changed PFilePath and PDirectory so descends from either PString or
+ *     PCaselessString depending on the platform.
+ *
+ * Revision 1.5  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.4  1994/08/22  00:46:48  robertj
@@ -36,7 +40,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File Specification
 
-PDECLARE_CLASS(PFilePath, PString)
+PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
 
   public:
     PFilePath();
