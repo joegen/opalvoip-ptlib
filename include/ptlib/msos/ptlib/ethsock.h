@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.h,v 1.1 1998/08/20 06:04:29 robertj Exp $
+ * $Id: ethsock.h,v 1.2 1998/08/21 05:27:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ethsock.h,v $
+ * Revision 1.2  1998/08/21 05:27:01  robertj
+ * Fine tuning of interface.
+ *
  * Revision 1.1  1998/08/20 06:04:29  robertj
  * Initial revision
  *
@@ -22,12 +25,8 @@ class PWin32PacketBuffer;
 
 #include "../../common/ptlib/ethsock.h"
   public:
-    ~PEthSocket();
-      // close a socket
-
-    virtual BOOL Read(void * buf, PINDEX len);
-    virtual BOOL Write(const void * buf, PINDEX len);
-    virtual BOOL Close();
+  // Overrides from class PChannel
+    virtual PString GetName() const;
 
   protected:
     PWin32PacketDriver * driver;
