@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.38  2003/03/17 07:52:52  robertj
+ * Removed canCaptureVideo variable as this is really a virtual function to
+ *   distinguish PVideoOutputDevice from PVideoInputDevice, it is not dynamic.
+ *
  * Revision 1.37  2003/03/06 02:43:43  dereks
  * Make error messages slightly more descriptive.
  *
@@ -318,7 +322,12 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     return FALSE;
   }
   
-  SetCanCaptureVideo(videoCapability.type & VID_TYPE_CAPTURE);
+  if ((videoCapability.type & VID_TYPE_CAPTURE) != 0) {
+    PTRACE(1,"PVideoInputDevice:: device capablilities reports cannot capture");
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
+  }
 
   hint_index = PARRAYSIZE(driver_hints) - 1;
   PString driver_name(videoCapability.name);  
