@@ -24,9 +24,12 @@
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
  *
- * Contributor(s): ______________________________________.
+ * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.7  1999/08/17 09:28:47  robertj
+ * Added audio loopback psuedo-device (thanks Philip Edelbrock)
+ *
  * Revision 1.6  1999/07/19 01:31:49  craigs
  * Major rewrite to assure ioctls are all done in the correct order as OSS seems
  *    to be incredibly sensitive to this.
@@ -60,6 +63,14 @@
 
 PSoundHandleDict PSoundChannel::handleDict;
 PMutex           PSoundChannel::dictMutex;
+
+
+#define LOOPBACK_BUFFER_SIZE 5000
+#define BYTESINBUF ((startptr<endptr)?(endptr-startptr):(LOOPBACK_BUFFER_SIZE+endptr-startptr))
+
+char buffer[LOOPBACK_BUFFER_SIZE];
+int  startptr, endptr;
+
 
 PSound::PSound(unsigned channels,
                unsigned samplesPerSecond,
@@ -158,13 +169,14 @@ PSoundChannel::~PSoundChannel()
 
 PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
-  PStringArray array;
+  static const char * const devices[] = {
+    "/dev/audio",
+    "/dev/dsp",
+    "/dev/dspW",
+    "loopback"
+  };
 
-  array[0] = "/dev/audio";
-  array[1] = "/dev/dsp";
-  array[2] = "/dev/dspW";
-
-  return array;
+  return PStringArray(PARRAYSIZE(devices), devices);
 }
 
 
@@ -207,14 +219,18 @@ BOOL PSoundChannel::Open(const PString & _device,
 
     // this is the first time this device has been used
     // open the device in read/write mode always
-    if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
+    if (_device == "loopback") {
+      startptr = endptr = 0;
+      os_handle = 0; // Use os_handle value 0 to indicate loopback, cannot ever be stdin!
+    }
+    else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
       dictMutex.Signal();
       return TRUE;
     }
 
     // add the device to the dictionary
     PSoundHandleEntry * entry = PNEW PSoundHandleEntry;
-    handleDict.SetAt(_device, entry);
+    handleDict.SetAt(_device, entry); 
 
     // save the information into the dictionary entry
     entry->handle        = os_handle;
@@ -225,7 +241,8 @@ BOOL PSoundChannel::Open(const PString & _device,
     entry->isInitialised = FALSE;
     entry->fragmentValue = 0x7fff0008;
   }
-    
+   
+   
   // unlock the dictionary
   dictMutex.Signal();
 
@@ -258,7 +275,9 @@ BOOL PSoundChannel::Setup()
   if (entry.isInitialised)  {
     isInitialised = TRUE;
     stat          = TRUE;
-  } else {
+  } else if (device == "loopback")
+    stat = TRUE;
+  else {
 
   // must always set paramaters in the following order:
   //   buffer paramaters
@@ -330,7 +349,21 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
   if (!Setup())
     return FALSE;
 
-  return ConvertOSError(::write(os_handle, buf, len));
+  if (os_handle > 0)
+   return ConvertOSError(::write(os_handle, buf, len));
+
+  int index = 0;
+
+  while (len > 0) {
+    len--;
+    buffer[endptr++] = ((char *)buf)[index++];
+    if (endptr == LOOPBACK_BUFFER_SIZE)
+      endptr = 0;
+    while (((startptr - 1) == endptr) || ((endptr==LOOPBACK_BUFFER_SIZE - 1) && (startptr==0))) {
+      usleep(5000);
+    }
+  }
+  return TRUE;
 }
 
 BOOL PSoundChannel::Read(void * buf, PINDEX len)
@@ -338,7 +371,20 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
   if (!Setup())
     return FALSE;
 
-  return ConvertOSError(::read(os_handle, (void *)buf, len));
+  if (os_handle > 0)
+    return ConvertOSError(::read(os_handle, (void *)buf, len));
+
+  int index = 0;
+
+  while (len > 0) {
+    while (startptr == endptr)
+      usleep(5000);
+    len--;
+    ((char *)buf)[index++]=buffer[startptr++];
+    if (startptr == LOOPBACK_BUFFER_SIZE)
+      startptr = 0;
+  } 
+  return TRUE;
 }
 
 
@@ -481,6 +527,9 @@ BOOL PSoundChannel::HasPlayCompleted()
     return FALSE;
   }
 
+  if (os_handle == 0)
+    return BYTESINBUF <= 0;
+
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info)))
     return FALSE;
@@ -494,6 +543,12 @@ BOOL PSoundChannel::WaitForPlayCompletion()
   if (os_handle < 0) {
     lastError = NotOpen;
     return FALSE;
+  }
+
+  if (os_handle == 0) {
+    while (BYTESINBUF > 0)
+      usleep(1000);
+    return TRUE;
   }
 
   return ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_SYNC, NULL));
@@ -529,6 +584,9 @@ BOOL PSoundChannel::StartRecording()
     return FALSE;
   }
 
+  if (os_handle == 0)
+    return TRUE;
+
   fd_set fds;
   FD_ZERO(&fds);
   FD_SET(os_handle, &fds);
@@ -547,6 +605,9 @@ BOOL PSoundChannel::IsRecordBufferFull()
     return FALSE;
   }
 
+  if (os_handle == 0)
+    return (BYTESINBUF > 0);
+
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
     return FALSE;
@@ -561,6 +622,9 @@ BOOL PSoundChannel::AreAllRecordBuffersFull()
     lastError = NotOpen;
     return FALSE;
   }
+
+  if (os_handle == 0)
+    return (BYTESINBUF == LOOPBACK_BUFFER_SIZE);
 
   audio_buf_info info;
   if (!ConvertOSError(::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info)))
@@ -589,9 +653,13 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannel::Abort()
 {
+  if (os_handle == 0) {
+    startptr = endptr = 0;
+    return TRUE;
+  }
+
   return ConvertOSError(ioctl(os_handle, SNDCTL_DSP_RESET, NULL));
 }
 
 
 // End of file
-
