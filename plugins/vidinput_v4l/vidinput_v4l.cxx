@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.12  2004/09/05 19:30:23  dsandras
+ * Updated hint for buggy Quickcam camera.
+ *
  * Revision 1.11  2004/08/20 01:46:45  dereksmithies
  * Patch from Srinivas.Kandagatla so that a video device can be opened with
  * either a)human friendly name,  or with b) the linux device name ("ov511++" or "/dev/video0").
@@ -258,7 +261,7 @@ static struct {
       VIDEO_PALETTE_YUV420P },
 
   /** Quickcam Express (qc-usb driver) */
-  { "Logitech USB Camera",
+  { "Logitech [USB Camera|QuickCam USB]",
     "Quickcam Express (qc-usb driver)",
     NULL,
     HINT_FORCE_DBLBUF,
