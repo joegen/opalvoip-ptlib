@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.20  2002/10/08 12:41:52  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.19  2002/09/23 07:17:23  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -99,13 +102,26 @@
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 
-#ifdef P_WINSOCK1
+#if P_WINSOCKv1
+
 #include <winsock.h>
-#else
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#define P_HAS_IPV6
+
+#else // P_WINSOCKv1
+
+///IPv6 support
+// Needed for for IPv6 socket API. Must be included before "windows.h"
+#include <winsock2.h> // Version 2 of windows socket
+#include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
+
+#if P_HAS_IPV6
+#pragma warning(push)
+#pragma warning(disable:4127 4706)
+#include "tpipv6.h"  // For IPv6 Tech Preview.
+#pragma warning(pop)
 #endif
+
+#endif // P_WINSOCKv1
+
 
 #define PIPX
 
