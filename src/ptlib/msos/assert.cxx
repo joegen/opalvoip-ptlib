@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.33  2001/08/16 18:38:05  yurik
+ * Fixed assert function
+ *
  * Revision 1.32  2001/04/26 06:07:34  yurik
  * UI improvements
  *
@@ -251,10 +254,10 @@ PImageDLL::PImageDLL()
 #endif
 #endif
 
-
 void PAssertFunc(const char * file, int line, const char * msg)
 {
 #ifndef _WIN32_WCE
+
 #if defined(_WIN32)
   DWORD err = GetLastError();
 #else
@@ -434,8 +437,14 @@ void PAssertFunc(const char * file, int line, const char * msg)
         return;
     }
   }
+
 #else
-#pragma message("assert is yet to be implemented\n")
+    do
+    { 
+		if ( AfxAssertFailedLine(file, line) )
+			AfxDebugBreak(); 
+    } while (0);
+
 #endif // _WIN32_WCE
 }
 
