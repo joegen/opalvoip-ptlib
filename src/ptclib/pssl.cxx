@@ -26,8 +26,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.37 2004/02/22 01:57:37 ykiryanov Exp $
+ * $Id: pssl.cxx,v 1.38 2004/02/23 23:52:20 csoutheren Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.38  2004/02/23 23:52:20  csoutheren
+ * Added pragmas to avoid every Windows application needing to include libs explicitly
+ *
  * Revision 1.37  2004/02/22 01:57:37  ykiryanov
  * Put a fix for a compiler choke on BeOS when calling macro d2i_DHparams_bio in PSSLDiffieHellman::Load. Fast on Monday.
  *
@@ -206,8 +209,13 @@ extern "C" {
 
 
 #ifdef _MSC_VER
+
 #pragma comment(lib, P_SSL_LIB1)
 #pragma comment(lib, P_SSL_LIB2)
+#pragma comment(linker, "/delayload:ssleay32.dll")
+#pragma comment(linker, "/delayload:libeay32.dll")
+#pragma comment(lib, "Delayimp.lib")
+
 #endif
 
 
