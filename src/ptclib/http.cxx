@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.54  1999/01/16 12:45:54  robertj
+ * Added RTSP schemes to URL's
+ *
  * Revision 1.53  1998/11/30 05:38:15  robertj
  * Moved PURL::Open() code to .cxx file to avoid linking unused code.
  *
@@ -238,6 +241,8 @@
 #define DEFAULT_NNTP_PORT	119
 #define DEFAULT_WAIS_PORT	210
 #define DEFAULT_HTTPS_PORT	443
+#define DEFAULT_RTSP_PORT	554
+#define DEFAULT_RTSPU_PORT	554
 #define DEFAULT_PROSPERO_PORT	1525
 
 enum SchemeFormat {
@@ -262,6 +267,8 @@ static schemeStruct const schemeInfo[] = {
   { "wais",      HostPort, TRUE, DEFAULT_WAIS_PORT },
   { "nntp",      HostPort, TRUE, DEFAULT_NNTP_PORT },
   { "prospero",  HostPort, TRUE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      HostPort, TRUE, DEFAULT_RTSP_PORT },
+  { "rtspu",     HostPort, TRUE, DEFAULT_RTSPU_PORT },
 
   { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT },
   { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT },
