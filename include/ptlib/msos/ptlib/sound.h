@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.13  2002/09/23 07:17:23  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.12  2001/10/10 03:28:58  yurik
  * Added open with format other than PCM
  *
@@ -69,6 +72,8 @@
 
 
 #ifndef _PSOUND
+
+#pragma warning(disable:4201)
 
 #include <mmsystem.h>
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.28  2002/09/23 07:17:23  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.27  2002/03/15 05:58:52  robertj
  * Added strncasecmp macro for unix compatibility
  *
@@ -154,6 +157,11 @@
 #ifndef STRICT
 #define STRICT
 #endif
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
 #include <windows.h>
 
 #undef DELETE   // Remove define from NT headers.
