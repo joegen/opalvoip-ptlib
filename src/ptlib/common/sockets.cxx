@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.151  2003/02/11 06:49:12  craigs
+ * Added missing OpenSocket function
+ *
  * Revision 1.150  2003/02/03 11:23:32  robertj
  * Added function to get pointer to IP address data.
  *
@@ -2556,6 +2559,13 @@ void PUDPSocket::GetLastReceiveAddress(Address & address, WORD & port)
 {
   address = lastReceiveAddress;
   port    = lastReceivePort;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+BOOL PICMPSocket::OpenSocket(int)
+{
+  return FALSE;
 }
 
 
