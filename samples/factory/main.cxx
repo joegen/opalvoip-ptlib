@@ -19,15 +19,15 @@ class Factory : public PProcess
 PCREATE_PROCESS(Factory)
 
 
-template <class BaseClass, typename TypeClass = PString>
+template <class BaseClass, class TypeClass = PString>
 class Display
 {
 public:
   static void ConcreteTypes(const char * title)
   {
     cout << "\nConcrete types for " << title << ':' << endl;
-    PFactory<BaseClass, TypeClass>::KeyList_T keys = PFactory<BaseClass, TypeClass>::GetKeyList();
-    PFactory<BaseClass, TypeClass>::KeyList_T::const_iterator r;
+    typename PFactory<BaseClass, TypeClass>::KeyList_T keys = PFactory<BaseClass, TypeClass>::GetKeyList();
+    typename PFactory<BaseClass, TypeClass>::KeyList_T::const_iterator r;
     for (r = keys.begin(); r != keys.end(); ++r)
       cout << "  " << *r << endl;
   
@@ -36,12 +36,12 @@ public:
 
   static void TestFactory()
   {
-    PFactory<BaseClass, TypeClass>::KeyList_T keyList = PFactory<MyAbstractClass, TypeClass>::GetKeyList();
+    typename PFactory<BaseClass, TypeClass>::KeyList_T keyList = PFactory<BaseClass, TypeClass>::GetKeyList();
     unsigned i;
     for (i = 0; i < keyList.size(); i++) {
       for (int j = 0; j < 3; j++)
       {
-        MyAbstractClass * c = PFactory<MyAbstractClass, TypeClass>::CreateInstance(keyList[i]);
+        MyAbstractClass * c = PFactory<BaseClass, TypeClass>::CreateInstance(keyList[i]);
         if (c == NULL) 
           cout << "Cannot instantiate class " << keyList[i] << endl;
         else
