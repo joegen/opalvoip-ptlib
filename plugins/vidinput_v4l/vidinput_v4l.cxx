@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.8  2004/02/12 08:09:51  csoutheren
+ * Patch for ALSA driver, thanks to Julien Puydt
+ *
  * Revision 1.7  2004/02/06 22:21:17  dominance
  * fixed device detection when refreshing the device list. Patch supplied by PUYDT Julien <julien.puydt@laposte.net>. Thanks to Damien Sandras to point out this and for Julien to provide the fix this fast!
  *
@@ -338,6 +341,7 @@ V4LNames::Update()
   PString      entry;
   PStringList  devlist;
   
+  inputDeviceNames.RemoveAll (); // flush the previous run
   if (procvideo.Exists()) {
     if (procvideo.Open(PFileInfo::RegularFile)) {
       do {
@@ -500,8 +504,8 @@ PStringList V4LNames::GetInputDeviceNames()
 {
   PWaitAndSignal m(mutex);
   PStringList result;
-  for (PINDEX i = 0; i < userKey.GetSize(); i++)
-    result += userKey.GetKeyAt(i);
+  for (PINDEX i = 0; i < inputDeviceNames.GetSize(); i++)
+    result += GetUserFriendly (inputDeviceNames[i]);
  
   return result;
 }
