@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.4  2000/07/26 02:54:41  robertj
+ * Fixed platform dependent code changing public functions to protected.
+ *
  * Revision 1.3  2000/07/25 13:38:26  robertj
  * Added frame rate parameter to video frame grabber.
  *
@@ -42,11 +45,12 @@
 
 
 #include "../../videoio.h"
-  protected:
+  public:
     virtual BOOL SetColourFormat(ColourFormat colourFormat);
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
 
+  protected:
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
     static LRESULT CALLBACK VideoHandler(HWND hWnd, LPVIDEOHDR vh);
