@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.61  2000/02/24 11:07:01  craigs
+# Fixed problem with making PW projects
+#
 # Revision 1.60  2000/02/04 19:33:25  craigs
 # Added ability to create non-shared versions of programs
 #
@@ -503,14 +506,19 @@ SHELL		:= /bin/sh
 UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
 UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
 
-OBJBASE		= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PW_LIBDIR	= $(PWLIBDIR)/lib
-PW_OBJDIR	= $(PW_LIBDIR)/$(OBJBASE)
 
 # set name of the PT library
 PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
+PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
 
+# set name of the PW library (may not be used)
+PWLIB_BASE	= pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
+PW_OBJBASE	= obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
 ###############################################################################
 #
@@ -559,6 +567,7 @@ STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 
 # add library directory to library path and include the library
 LDFLAGS		+= -L$(PW_LIBDIR)
+
 LDLIBS		+= -l$(PTLIB_BASE)$(LIB_TYPE)
 
 # End of unix.mak
