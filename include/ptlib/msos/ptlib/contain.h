@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.40  2004/04/13 10:12:21  csoutheren
+ * Fix for MSVC (grrr)
+ *
  * Revision 1.39  2004/04/13 03:13:29  csoutheren
  * VS.net won't compile without "using namespace std"
  *
@@ -447,7 +450,9 @@ extern "C" char ** __argv;
 #pragma warning(pop)
 
 // VS.net won't work without this :(
+#if _MSC_VER>=1300
 using namespace std;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
