@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.71  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.70  2002/08/28 08:06:11  craigs
  * Fixed problem (again) with file:// URLs
  *
@@ -270,6 +273,10 @@
 #include <ptclib/url.h>
 
 #include <ctype.h>
+
+#ifdef WIN32
+#include <shellapi.h>
+#endif
 
 
 // RFC 1738

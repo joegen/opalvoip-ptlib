@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.36  2002/09/23 07:17:24  robertj
+ * Changes to allow winsock2 to be included.
+ *
  * Revision 1.35  2002/06/25 02:25:29  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -141,9 +144,8 @@
 #include <errno.h>
 #ifndef _WIN32_WCE
 #include <strstrea.h>
-#else
-#include <winuser.h>
 #endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
