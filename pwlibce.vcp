@@ -1,0 +1,709 @@
+# Microsoft eMbedded Visual Tools Project File - Name="pwlibce" - Package Owner=<4>
+# Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
+# ** DO NOT EDIT **
+
+# TARGTYPE "Win32 (WCE x86em) Static Library" 0x7f04
+# TARGTYPE "Win32 (WCE ARM) Static Library" 0x8504
+
+CFG=pwlibce - Win32 (WCE ARM) Debug
+!MESSAGE This is not a valid makefile. To build this project using NMAKE,
+!MESSAGE use the Export Makefile command and run
+!MESSAGE 
+!MESSAGE NMAKE /f "pwlibce.vcn".
+!MESSAGE 
+!MESSAGE You can specify a configuration when running NMAKE
+!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE 
+!MESSAGE NMAKE /f "pwlibce.vcn" CFG="pwlibce - Win32 (WCE ARM) Debug"
+!MESSAGE 
+!MESSAGE Possible choices for configuration are:
+!MESSAGE 
+!MESSAGE "pwlibce - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) Static Library")
+!MESSAGE "pwlibce - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Static Library")
+!MESSAGE "pwlibce - Win32 (WCE x86em) Debug" (based on "Win32 (WCE x86em) Static Library")
+!MESSAGE 
+
+# Begin Project
+# PROP AllowPerConfigDependencies 1
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
+# PROP ATL_Project 2
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ARMRel"
+# PROP BASE Intermediate_Dir "ARMRel"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "lib"
+# PROP Intermediate_Dir "lib\ARMRel"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Target_Dir ""
+CPP=clarm.exe
+# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "NDEBUG" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /W3 /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /Oxs /M$(CECrtMT) /c
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "ARMDbg"
+# PROP BASE Intermediate_Dir "ARMDbg"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "lib"
+# PROP Intermediate_Dir "lib\ARMDbg"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Target_Dir ""
+CPP=clarm.exe
+# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_LIB" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo /out:"lib\pwlibced.lib"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "X86EMDbg"
+# PROP BASE Intermediate_Dir "X86EMDbg"
+# PROP BASE CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "X86EMDbg"
+# PROP Intermediate_Dir "X86EMDbg"
+# PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
+# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
+# PROP Target_Dir ""
+CPP=cl.exe
+# ADD BASE CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /W3 /GX- /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "WIN32" /D "STRICT" /D "_WIN32_WCE_EMULATION" /D "INTERNATIONAL" /D "USA" /D "INTLMSG_CODEPAGE" /D "$(CePlatform)" /D "i486" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "PTRACING" /D PMEMORY_CHECK=0 /D P_USE_INLINES=1 /YX /M$(CECrtMTDebug) /c
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo /out:"lib\pwlibced.lib"
+# ADD LIB32 /nologo /out:"lib\pwlibced.lib"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+
+!ENDIF 
+
+# Begin Target
+
+# Name "pwlibce - Win32 (WCE ARM) Release"
+# Name "pwlibce - Win32 (WCE ARM) Debug"
+# Name "pwlibce - Win32 (WCE x86em) Debug"
+# Begin Group "Source Files"
+
+# PROP Default_Filter ""
+# Begin Group "Common SRC"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\assert.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\collect.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\contain.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+DEP_CPP_CONTA=\
+	".\src\ptlib\common\regex.h"\
+	
+NODEP_CPP_CONTA=\
+	".\src\ptlib\common\ptlib\contain.inl"\
+	
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+DEP_CPP_CONTA=\
+	".\src\ptlib\common\regex.h"\
+	
+NODEP_CPP_CONTA=\
+	".\src\ptlib\common\ptlib\contain.inl"\
+	
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\getdate_tab.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\object.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\osutils.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\pchannel.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\pconfig.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\ptime.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\ptlib.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\regex.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+DEP_CPP_REGEX=\
+	".\src\ptlib\common\regex.h"\
+	
+NODEP_CPP_REGEX=\
+	".\src\ptlib\common\config.h"\
+	".\src\ptlib\common\lisp.h"\
+	".\src\ptlib\common\syntax.h"\
+	
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+DEP_CPP_REGEX=\
+	".\src\ptlib\common\regex.h"\
+	
+NODEP_CPP_REGEX=\
+	".\src\ptlib\common\config.h"\
+	".\src\ptlib\common\lisp.h"\
+	".\src\ptlib\common\syntax.h"\
+	
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\common\sockets.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\sound.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\win32.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\wincfg.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\msos\winsock.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+# SUBTRACT BASE CPP /YX /Yc /Yu
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "WinCE SRC"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\ios.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\iostream.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\istream.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\mmsystemx.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\ostream.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\stdlibx.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\streamb.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptlib\wince\ConsoleCE\time.cpp
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# Begin Group "Console Components"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\ptclib\asner.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptclib\pasn.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\ptclib\random.cxx
+
+!IF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Release"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE ARM) Debug"
+
+!ELSEIF  "$(CFG)" == "pwlibce - Win32 (WCE x86em) Debug"
+
+!ENDIF 
+
+# End Source File
+# End Group
+# End Group
+# Begin Group "Header Files"
+
+# PROP Default_Filter ""
+# Begin Group "Common"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Include\PtLib\Contain.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\contain.inl
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\object.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Include\PtLib\Pstring.h
+# End Source File
+# End Group
+# Begin Group "WinCE"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\direct.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\errno.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\io.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\iomanip.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\ios.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\iostream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\istream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\ostream.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\stdlibx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\streamb.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\time.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\include\ptlib\wince\sys\types.h
+# End Source File
+# End Group
+# Begin Group "MSOS"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\include\ptlib\msos\ptlib\contain.h
+# End Source File
+# End Group
+# End Group
+# End Target
+# End Project
