@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.10  1999/08/07 15:22:20  craigs
+ * Changed Success to PingSuccess to avoid namespace collision with X define of the same name
+ *
  * Revision 1.9  1999/03/09 02:59:49  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -86,7 +89,7 @@ class PICMPSocket : public PIPDatagramSocket
   //@{
     /// Results of ICMP operation.
     enum PingStatus {
-      Success,
+      PingSuccess,         // don't use Success - X11 defines this!
       NetworkUnreachable,
       HostUnreachable,
       PacketTooBig,
