@@ -1,5 +1,3 @@
-%expect 10
-
 %{
 /*
 **  Originally written by Steven M. Bellovin <smb@research.att.com> while
@@ -134,10 +132,12 @@ static void SetPossibleDate(struct Variables*, time_t, time_t, time_t);
 }
 
 %token	tAGO tDAY tDAYZONE tID tMERIDIAN tMINUTE_UNIT tMONTH tMONTH_UNIT
-%token	tSEC_UNIT tSNUMBER tUNUMBER tZONE tDST
+%token	tSNUMBER tUNUMBER t4DIGITNUMBER t6DIGITNUMBER
+%token	tSEC_UNIT tZONE tMILZONE tDST
 
 %type	<Number>	tDAY tDAYZONE tMINUTE_UNIT tMONTH tMONTH_UNIT
-%type	<Number>	tSEC_UNIT tSNUMBER tUNUMBER tZONE
+%type	<Number>	tSNUMBER tUNUMBER t4DIGITNUMBER t6DIGITNUMBER unumber
+%type	<Number>	tSEC_UNIT tZONE tMILZONE
 %type	<Meridian>	tMERIDIAN o_merid
 
 %%
@@ -170,26 +170,42 @@ time	: tUNUMBER tMERIDIAN {
 	    VARIABLE->yySeconds = 0;
 	    VARIABLE->yyMeridian = $2;
 	}
-	| tUNUMBER ':' tUNUMBER o_merid {
+        | t4DIGITNUMBER tSNUMBER {
+	    VARIABLE->yyHour = $1/100;
+	    VARIABLE->yyMinutes = $1%100;
+	    VARIABLE->yySeconds = 0;
+	    VARIABLE->yyMeridian = MER24;
+	    VARIABLE->yyDSTmode = DSToff;
+	    VARIABLE->yyTimezone = - ($2 % 100 + ($2 / 100) * 60);
+        }
+        | t6DIGITNUMBER tSNUMBER {
+	    VARIABLE->yyHour = $1/10000;
+	    VARIABLE->yyMinutes = ($1/100)%100;
+	    VARIABLE->yySeconds = $1 % 100;
+	    VARIABLE->yyMeridian = MER24;
+	    VARIABLE->yyDSTmode = DSToff;
+	    VARIABLE->yyTimezone = - ($2 % 100 + ($2 / 100) * 60);
+        }
+	|  unumber ':' unumber o_merid {
 	    VARIABLE->yyHour = $1;
 	    VARIABLE->yyMinutes = $3;
 	    VARIABLE->yySeconds = 0;
 	    VARIABLE->yyMeridian = $4;
 	}
-	| tUNUMBER ':' tUNUMBER tSNUMBER {
+	| unumber ':' unumber tSNUMBER {
 	    VARIABLE->yyHour = $1;
 	    VARIABLE->yyMinutes = $3;
 	    VARIABLE->yyMeridian = MER24;
 	    VARIABLE->yyDSTmode = DSToff;
 	    VARIABLE->yyTimezone = - ($4 % 100 + ($4 / 100) * 60);
 	}
-	| tUNUMBER ':' tUNUMBER ':' tUNUMBER o_merid {
+	| unumber ':' unumber ':' unumber o_merid {
 	    VARIABLE->yyHour = $1;
 	    VARIABLE->yyMinutes = $3;
 	    VARIABLE->yySeconds = $5;
 	    VARIABLE->yyMeridian = $6;
 	}
-	| tUNUMBER ':' tUNUMBER ':' tUNUMBER tSNUMBER {
+	| unumber ':' unumber ':' unumber tSNUMBER {
 	    VARIABLE->yyHour = $1;
 	    VARIABLE->yyMinutes = $3;
 	    VARIABLE->yySeconds = $5;
@@ -212,6 +228,14 @@ zone	: tZONE {
 	    VARIABLE->yyTimezone = $1;
 	    VARIABLE->yyDSTmode = DSTon;
 	}
+        | tMILZONE {
+            if (VARIABLE->yyHaveTime > 0) {
+	      VARIABLE->yyTimezone = $1;
+	      VARIABLE->yyDSTmode = DSToff;
+            }
+            else
+              VARIABLE->yyHaveZone--;
+        }
 	;
 
 day	: tDAY {
@@ -222,19 +246,19 @@ day	: tDAY {
 	    VARIABLE->yyDayOrdinal = 1;
 	    VARIABLE->yyDayNumber = $1;
 	}
-	| tUNUMBER tDAY {
+	| unumber tDAY {
 	    VARIABLE->yyDayOrdinal = $1;
 	    VARIABLE->yyDayNumber = $2;
 	}
 	;
 
-date	: tUNUMBER '/' tUNUMBER {
+date	: unumber '/' unumber {
 	    SetPossibleDate(VARIABLE, $1, $3, VARIABLE->yyYear);
 	}
-	| tUNUMBER '/' tUNUMBER '/' tUNUMBER {
+	| unumber '/' unumber '/' unumber {
 	    SetPossibleDate(VARIABLE, $1, $3, $5);
 	}
-	| tUNUMBER tSNUMBER tSNUMBER {
+	| unumber tSNUMBER tSNUMBER {
 	    /* ISO 8601 format.  yyyy-mm-dd.  */
 	    if ($1 > 31) {
 		VARIABLE->yyYear = $1;
@@ -244,26 +268,26 @@ date	: tUNUMBER '/' tUNUMBER {
 	    else
 		SetPossibleDate(VARIABLE, $1, -$2, -$3);
 	}
-	| tUNUMBER tMONTH tSNUMBER {
+	| unumber tMONTH tSNUMBER {
 	    /* e.g. 17-JUN-1992.  */
 	    VARIABLE->yyDay = $1;
 	    VARIABLE->yyMonth = $2;
 	    VARIABLE->yyYear = -$3;
 	}
-	| tMONTH tUNUMBER {
+	| tMONTH unumber {
 	    VARIABLE->yyMonth = $1;
 	    VARIABLE->yyDay = $2;
 	}
-	| tMONTH tUNUMBER ',' tUNUMBER {
+	| tMONTH unumber ',' unumber {
 	    VARIABLE->yyMonth = $1;
 	    VARIABLE->yyDay = $2;
 	    VARIABLE->yyYear = $4;
 	}
-	| tUNUMBER tMONTH {
+	| unumber tMONTH {
 	    VARIABLE->yyMonth = $2;
 	    VARIABLE->yyDay = $1;
 	}
-	| tUNUMBER tMONTH tUNUMBER {
+	| unumber tMONTH unumber {
 	    VARIABLE->yyMonth = $2;
 	    VARIABLE->yyDay = $1;
 	    VARIABLE->yyYear = $3;
@@ -277,7 +301,7 @@ rel	: relunit tAGO {
 	| relunit
 	;
 
-relunit	: tUNUMBER tMINUTE_UNIT {
+relunit	: unumber tMINUTE_UNIT {
 	    VARIABLE->yyRelSeconds += $1 * $2 * 60L;
 	}
 	| tSNUMBER tMINUTE_UNIT {
@@ -289,7 +313,7 @@ relunit	: tUNUMBER tMINUTE_UNIT {
 	| tSNUMBER tSEC_UNIT {
 	    VARIABLE->yyRelSeconds += $1;
 	}
-	| tUNUMBER tSEC_UNIT {
+	| unumber tSEC_UNIT {
 	    VARIABLE->yyRelSeconds += $1;
 	}
 	| tSEC_UNIT {
@@ -298,7 +322,7 @@ relunit	: tUNUMBER tMINUTE_UNIT {
 	| tSNUMBER tMONTH_UNIT {
 	    VARIABLE->yyRelMonth += $1 * $2;
 	}
-	| tUNUMBER tMONTH_UNIT {
+	| unumber tMONTH_UNIT {
 	    VARIABLE->yyRelMonth += $1 * $2;
 	}
 	| tMONTH_UNIT {
@@ -306,11 +330,22 @@ relunit	: tUNUMBER tMINUTE_UNIT {
 	}
 	;
 
+unumber : tUNUMBER {
+	    $$ = $1;
+	}
+        | t4DIGITNUMBER {
+	    $$ = $1;
+	}
+        | t6DIGITNUMBER {
+	    $$ = $1;
+	}
+        ;
+
 number	: tUNUMBER {
 	    if (VARIABLE->yyHaveTime && VARIABLE->yyHaveDate && !VARIABLE->yyHaveRel)
 		VARIABLE->yyYear = $1;
 	    else {
-		if($1>10000) {
+		if($1>240000) {
 		    VARIABLE->yyHaveDate++;
 		    VARIABLE->yyDay= ($1)%100;
 		    VARIABLE->yyMonth= ($1/100)%100;
@@ -318,19 +353,46 @@ number	: tUNUMBER {
 		}
 		else {
 		    VARIABLE->yyHaveTime++;
-		    if ($1 < 100) {
-			VARIABLE->yyHour = $1;
-			VARIABLE->yyMinutes = 0;
-		    }
-		    else {
+		    if ($1 < 10000) {
 		    	VARIABLE->yyHour = $1 / 100;
 		    	VARIABLE->yyMinutes = $1 % 100;
+		        VARIABLE->yySeconds = 0;
 		    }
-		    VARIABLE->yySeconds = 0;
+		    else {
+	                VARIABLE->yyHour = $1/10000;
+	                VARIABLE->yyMinutes = ($1/100)%100;
+	                VARIABLE->yySeconds = $1 % 100;
+                    }
 		    VARIABLE->yyMeridian = MER24;
 	        }
 	    }
 	}
+        | t4DIGITNUMBER {
+	    if (VARIABLE->yyHaveTime && VARIABLE->yyHaveDate && !VARIABLE->yyHaveRel)
+		VARIABLE->yyYear = $1;
+	    else {
+	        VARIABLE->yyHaveTime++;
+	        VARIABLE->yyHour = $1/100;
+	        VARIABLE->yyMinutes = $1%100;
+	        VARIABLE->yySeconds = 0;
+	        VARIABLE->yyMeridian = MER24;
+            }
+        }
+        | t6DIGITNUMBER {
+	    if (!VARIABLE->yyHaveDate && $1>240000) {
+		VARIABLE->yyHaveDate++;
+		VARIABLE->yyDay= ($1)%100;
+		VARIABLE->yyMonth= ($1/100)%100;
+		VARIABLE->yyYear = $1/10000;
+	    }
+	    else if (!VARIABLE->yyHaveTime) {
+	        VARIABLE->yyHaveTime++;
+	        VARIABLE->yyHour = $1/10000;
+	        VARIABLE->yyMinutes = ($1/100)%100;
+	        VARIABLE->yySeconds = $1 % 100;
+	        VARIABLE->yyMeridian = MER24;
+            }
+        }
 	;
 
 o_merid	: /* NULL */ {
@@ -499,31 +561,31 @@ static TABLE const TimezoneTable[] = {
 
 /* Military timezone table. */
 static TABLE const MilitaryTable[] = {
-    { "a",	tZONE,	HOUR(  1) },
-    { "b",	tZONE,	HOUR(  2) },
-    { "c",	tZONE,	HOUR(  3) },
-    { "d",	tZONE,	HOUR(  4) },
-    { "e",	tZONE,	HOUR(  5) },
-    { "f",	tZONE,	HOUR(  6) },
-    { "g",	tZONE,	HOUR(  7) },
-    { "h",	tZONE,	HOUR(  8) },
-    { "i",	tZONE,	HOUR(  9) },
-    { "k",	tZONE,	HOUR( 10) },
-    { "l",	tZONE,	HOUR( 11) },
-    { "m",	tZONE,	HOUR( 12) },
-    { "n",	tZONE,	HOUR(- 1) },
-    { "o",	tZONE,	HOUR(- 2) },
-    { "p",	tZONE,	HOUR(- 3) },
-    { "q",	tZONE,	HOUR(- 4) },
-    { "r",	tZONE,	HOUR(- 5) },
-    { "s",	tZONE,	HOUR(- 6) },
-    { "t",	tZONE,	HOUR(- 7) },
-    { "u",	tZONE,	HOUR(- 8) },
-    { "v",	tZONE,	HOUR(- 9) },
-    { "w",	tZONE,	HOUR(-10) },
-    { "x",	tZONE,	HOUR(-11) },
-    { "y",	tZONE,	HOUR(-12) },
-    { "z",	tZONE,	HOUR(  0) },
+    { "a",	tMILZONE,	HOUR(  1) },
+    { "b",	tMILZONE,	HOUR(  2) },
+    { "c",	tMILZONE,	HOUR(  3) },
+    { "d",	tMILZONE,	HOUR(  4) },
+    { "e",	tMILZONE,	HOUR(  5) },
+    { "f",	tMILZONE,	HOUR(  6) },
+    { "g",	tMILZONE,	HOUR(  7) },
+    { "h",	tMILZONE,	HOUR(  8) },
+    { "i",	tMILZONE,	HOUR(  9) },
+    { "k",	tMILZONE,	HOUR( 10) },
+    { "l",	tMILZONE,	HOUR( 11) },
+    { "m",	tMILZONE,	HOUR( 12) },
+    { "n",	tMILZONE,	HOUR(- 1) },
+    { "o",	tMILZONE,	HOUR(- 2) },
+    { "p",	tMILZONE,	HOUR(- 3) },
+    { "q",	tMILZONE,	HOUR(- 4) },
+    { "r",	tMILZONE,	HOUR(- 5) },
+    { "s",	tMILZONE,	HOUR(- 6) },
+    { "t",	tMILZONE,	HOUR(- 7) },
+    { "u",	tMILZONE,	HOUR(- 8) },
+    { "v",	tMILZONE,	HOUR(- 9) },
+    { "w",	tMILZONE,	HOUR(-10) },
+    { "x",	tMILZONE,	HOUR(-11) },
+    { "y",	tMILZONE,	HOUR(-12) },
+    { "z",	tZONE,		HOUR(  0) }, // Deliberately tZONE
     { NULL }
 };
 
@@ -674,14 +736,22 @@ int yylex(YYSTYPE * yylval, void * yyInput)
 	    else
 		sign = 0;
 	    yylval->Number = 0;
+            Count = 0; // Count number of digits
 	    while (isdigit(c)) {
 		yylval->Number = 10 * yylval->Number + c - '0';
 		c = PTimeGetChar(yyInput);
+                Count++;
 	    }
 	    PTimeUngetChar(yyInput, c);
 	    if (sign < 0)
 		yylval->Number = -yylval->Number;
-	    return sign ? tSNUMBER : tUNUMBER;
+	    if (sign)
+              return tSNUMBER;
+            if (Count == 4)
+              return t4DIGITNUMBER;
+            if (Count == 6)
+              return t6DIGITNUMBER;
+            return tUNUMBER;
 	}
 
 	if (isalpha(c)) {
