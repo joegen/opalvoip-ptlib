@@ -1,5 +1,5 @@
 /*
- * $Id: html.cxx,v 1.3 1996/02/19 13:31:51 robertj Exp $
+ * $Id: html.cxx,v 1.4 1996/02/25 11:14:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: html.cxx,v $
+ * Revision 1.4  1996/02/25 11:14:22  robertj
+ * Radio button support for forms.
+ *
  * Revision 1.3  1996/02/19 13:31:51  robertj
  * Removed MSC_VER test as now completely removed from WIN16 library.
  *
@@ -1072,19 +1075,50 @@ void PHTML::CheckBox::AddAttr(PHTML & html) const
 
 
 PHTML::RadioButton::RadioButton(const char * fname,
+                                const char * value,
                                 CheckedCodes check,
                                 DisableCodes disabled,
                                 const char * error)
   : CheckBox("radio", fname, check, disabled, error)
 {
+  valueString = value;
 }
 
 PHTML::RadioButton::RadioButton(const PString & fnameStr,
+                                const char * value,
                                 CheckedCodes check,
                                 DisableCodes disabled,
                                 const char * error)
   : CheckBox("radio", fnameStr, check, disabled, error)
 {
+  valueString = value;
+}
+
+PHTML::RadioButton::RadioButton(const char * fname,
+                                const PString & value,
+                                CheckedCodes check,
+                                DisableCodes disabled,
+                                const char * error)
+  : CheckBox("radio", fname, check, disabled, error)
+{
+  valueString = value;
+}
+
+PHTML::RadioButton::RadioButton(const PString & fnameStr,
+                                const PString & value,
+                                CheckedCodes check,
+                                DisableCodes disabled,
+                                const char * error)
+  : CheckBox("radio", fnameStr, check, disabled, error)
+{
+  valueString = value;
+}
+
+void PHTML::RadioButton::AddAttr(PHTML & html) const
+{
+  PAssert(valueString != NULL, PInvalidParameter);
+  CheckBox::AddAttr(html);
+  html << " VALUE=" << valueString;
 }
 
 
