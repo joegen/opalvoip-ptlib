@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: notifier_ext.h,v $
+ * Revision 1.2  2004/04/26 01:34:58  rjongbloed
+ * Change nofier list to be able to used in containers, thanks Federico Pinna, Reitek S.p.A.
+ *
  * Revision 1.1  2004/04/22 12:31:00  rjongbloed
  * Added PNotifier extensions and XMPP (Jabber) support,
  *   thanks to Federico Pinna and Reitek S.p.A.
@@ -96,29 +99,32 @@ class PSmartNotifierFunction : public PNotifierFunction
 #define PCREATE_SMART_NOTIFIER(func) PNotifier(new func##_PSmartNotifier(m_Registrar.GetID()))
 
 
-class PNotifierList
+class PNotifierList : public PObject
 {
+  PCLASSINFO(PNotifierList, PObject);
   private:
     PLIST(_PNotifierList, PNotifier);
 
     _PNotifierList	m_TheList;
 
     // Removes smart pointers to deleted objects
-    void        Cleanup();
+    void   Cleanup();
 
   public:
-    PINDEX      GetSize() const                 { return m_TheList.GetSize(); }
+    PINDEX GetSize() const { return m_TheList.GetSize(); }
+
     void	Add(PNotifier * handler)	{ m_TheList.Append(handler); }
     void	Remove(PNotifier * handler)	{ m_TheList.Remove(handler); }
     BOOL	RemoveTarget(PObject * obj);
     BOOL	Fire(PObject& obj, INT val = 0);
 
     // Moves all the notifiers in "that" to "this"
-    void        Move(PNotifierList& that);
+    void  Move(PNotifierList& that);
 };
+
 
 #endif  // _PNOTIFIER_EXT
 
-
 // End of File ///////////////////////////////////////////////////////////////
+
 
