@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.12  2002/01/16 08:02:06  robertj
+ * MSVC compatibilty changes
+ *
  * Revision 1.11  2002/01/16 03:49:23  dereks
  * Add new test image.
  *
@@ -608,7 +611,7 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
 	   ( (hi%4)<2)                     )
 	frame[(hi*width)+wi] = (u_char) 16;
       else
-	frame[(hi*width)+wi] = (u_char)(((colourNumber+((wi*7)/width))%7)*35) +26;
+	frame[(hi*width)+wi] = (u_char)(((colourNumber+((wi*7)/width))%7)*35+26);
 
   for(hi=1; hi<=height; hi++)                 //fast moving block going downwards.
     for(wi=width/9; wi<(2*width/9); wi++) 
@@ -619,7 +622,7 @@ void PFakeVideoInputDevice::GrabOriginalMovingBlocksFrame(BYTE *frame)
   int halfHeight = height/2;
   for(hi=1; hi<halfHeight; hi++)  
     for(wi=0; wi<halfWidth; wi++)
-      frame[framesize+(hi*halfWidth)+wi] = (BYTE)(((((hi*7)/halfHeight)+colourNumber)%7)*35)+26;
+      frame[framesize+(hi*halfWidth)+wi] = (BYTE)(((((hi*7)/halfHeight)+colourNumber)%7)*35+26);
 }
 
 
