@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.8  1998/11/30 22:06:32  robertj
+ * New directory structure.
+ *
  * Revision 1.7  1998/09/24 04:11:30  robertj
  * Added open software license.
  *
@@ -41,7 +44,7 @@ class PXConfig;
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
 
-#include "../../common/ptlib/config.h"
+#include "../../config.h"
   public:
     PConfig(int, const PString & name);
     ~PConfig();
