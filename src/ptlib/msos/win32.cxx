@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.60 1998/03/20 03:19:49 robertj Exp $
+ * $Id: win32.cxx,v 1.61 1998/03/27 10:52:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.61  1998/03/27 10:52:39  robertj
+ * Fixed crash bug in win95 OSR2 GetVolumeSpace().
+ * Fixed error 87 problem with threads.
+ * Fixed GetVolumeSpace() when UNC used.
+ *
  * Revision 1.60  1998/03/20 03:19:49  robertj
  * Added special classes for specific sepahores, PMutex and PSyncPoint.
  *
@@ -446,11 +451,11 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 }
 
 
-typedef BOOL (*GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
-                                       PULARGE_INTEGER lpFreeBytesAvailableToCaller,
-                                       PULARGE_INTEGER lpTotalNumberOfBytes,
-                                       PULARGE_INTEGER lpTotalNumberOfFreeBytes);
- 
+typedef BOOL (WINAPI *GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
+                                              PULARGE_INTEGER lpFreeBytesAvailableToCaller,
+                                              PULARGE_INTEGER lpTotalNumberOfBytes,
+                                              PULARGE_INTEGER lpTotalNumberOfFreeBytes);
+
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
@@ -487,11 +492,13 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
   if ((*this)[1] == ':')
     root = Left(3);
   else {
-    PINDEX slash = FindOneOf("\\/", 2);
-    if (slash != P_MAX_INDEX)
-      root = Left(slash+1);
-    else
-      root = *this;
+    root = *this;
+    PINDEX slash = Find('\\', 2);
+    if (slash != P_MAX_INDEX) {
+      slash = Find('\\', slash+1);
+      if (slash != P_MAX_INDEX)
+        root = Left(slash+1);
+    }
   }
 
   DWORD sectorsPerCluster;      // address of sectors per cluster 
@@ -2192,8 +2199,11 @@ void PProcess::HouseKeepingThread::Main()
       }
       else {
         handles[numHandles] = thread.GetHandle();
-        if (handles[numHandles] != process.GetHandle())
+        if (handles[numHandles] != process.GetHandle()) {
           numHandles++;
+          if (numHandles >= MAXIMUM_WAIT_OBJECTS)
+            break;
+        }
       }
     }
     process.threadMutex.Signal();
