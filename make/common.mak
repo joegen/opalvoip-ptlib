@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.55  2001/06/29 06:41:03  robertj
+# Fixed make tagbuild for different #defines
+#
 # Revision 1.54  2001/05/29 03:31:48  craigs
 # Removed BROKEN_GCC symbol, now that pwlib is totally gcc friendly
 #
@@ -370,7 +373,7 @@ tagbuild ::
 ifdef VERSION_FILE
 	let BLD=$(BUILD_NUMBER)+1 ; \
 	echo "Incrementing to build number $$BLD"; \
-	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/BUILD_NUMBER $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
+	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9]*/(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Incremented build number after tagging." $(VERSION_FILE)
 endif
