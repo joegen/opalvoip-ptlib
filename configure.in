@@ -235,6 +235,48 @@ if test ${SSLHDR:-unset} != "unset" ; then
   ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
 fi
 
+
+dnl #########################################################################
+dnl  Check for FIREWIRE if available, from GnomeMeeting
+dnl ########################################################################
+AC_CHECK_HEADER(libdc1394/dc1394_control.h, DC1394HDR=1)
+AC_CHECK_HEADER(libavc1394/avc1394.h, AVC1394HDR=1)
+AC_CHECK_HEADER(libdv/dv.h, DVHDR=1)
+
+AC_SUBST(TRY_1394DC, 0)
+AC_SUBST(TRY_1394AVC, 0)
+firewiredc="no"
+firewireavc="no"
+
+AC_ARG_ENABLE(firewiredc, [  --enable-firewiredc     enable Firewire support for DC cameras], firewiredc="yes")
+if test ${DC1394HDR:-unset} != "unset" -a "${firewiredc}" != "no" ; then     
+   AC_DEFINE(TRY_1394DC, 1, "Firewire DC1394 support enabled")
+   AC_SUBST(TRY_1394DC, 1)
+   ENDLDLIBS="$ENDLDLIBS -lraw1394 -ldc1394_control"	     
+   echo "Firewire DC1394 support enabled"
+else
+if test "${firewiredc}" != "no"; then
+AC_MSG_ERROR([***Firewire camera headers (libdc1394, libdv, rom1394) not found.])
+fi
+fi
+
+AC_ARG_ENABLE(firewireavc, [  --enable-firewireavc    enable Firewire support for AVC cameras], firewireavc="yes")
+if test ${AVC1394HDR:-unset} != "unset" -a ${DVHDR:-unset} != "unset" -a "${firewireavc}" != "no" ; then     
+   AC_DEFINE(TRY_1394AVC, 1, "Firewire AVC1394 support enabled")
+   AC_SUBST(TRY_1394AVC, 1)
+   ENDLDLIBS="$ENDLDLIBS -lraw1394 -lavc1394 -lrom1394 -ldv"
+   echo "Firewire AVC1394 support enabled"
+else
+if test "${firewireavc}" != "no"; then
+AC_MSG_ERROR([***Firewire camera headers (libavc1394, libdv) not found.])
+fi
+fi
+
+if test "${firewireavc}" != "no" -a "${firewiredc}" != "no"; then
+AC_MSG_ERROR([***You can currently not compile DC and AVC Firewire camera support at the same time.])
+fi
+
+
 dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
 dnl on some systems, the resolver is in libc
