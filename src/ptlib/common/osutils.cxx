@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.65 1996/05/23 09:56:57 robertj Exp $
+ * $Id: osutils.cxx,v 1.66 1996/05/23 23:05:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.66  1996/05/23 23:05:07  robertj
+ * Fixed process filename on MSOS platforms.
+ *
  * Revision 1.65  1996/05/23 09:56:57  robertj
  * Added mutex to timer list.
  *
@@ -1541,6 +1544,8 @@ void PProcess::PreInitialise(int argc, char ** argv)
   arguments.SetArgs(argc-1, argv+1);
 
   executableFile = PString(argv[0]);
+  if (!PFile::Exists(executableFile))
+    executableFile += ".exe";
 
   if (productName.IsEmpty())
     productName = executableFile.GetTitle().ToLower();
