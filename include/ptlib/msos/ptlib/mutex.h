@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.3  1998/11/30 02:55:19  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/24 03:30:12  robertj
  * Added open software license.
  *
@@ -42,7 +45,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex
 
-#include "../../common/ptlib/mutex.h"
+#include "../../mutex.h"
   public:
     virtual void Signal();
 };
