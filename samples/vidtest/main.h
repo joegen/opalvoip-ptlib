@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.2  2003/04/29 00:57:21  dereks
+ * Add user interface, option setting for format/input/fake. Works on Linux.
+ *
  * Revision 1.1  2003/04/28 08:18:42  craigs
  * Initial version
  *
@@ -33,13 +36,31 @@
 
 
 
-class Vidtest : public PProcess
+class VidTest : public PProcess
 {
-  PCLASSINFO(Vidtest, PProcess)
+  PCLASSINFO(VidTest, PProcess)
 
   public:
-    Vidtest();
+    VidTest();
     virtual void Main();
+    void HandleUserInterface();
+
+ protected:
+    PVideoInputDevice * grabber;
+    PVideoChannel     * channel;
+    PSyncPoint          exitFlag;
+};
+
+class UserInterfaceThread : public PThread
+{
+    PCLASSINFO(UserInterfaceThread, PThread);
+  public:
+    UserInterfaceThread(VidTest & newVidTest)
+      : PThread(1000, NoAutoDeleteThread), vidTest(newVidTest) { Resume(); }
+    void Main()
+      { vidTest.HandleUserInterface(); }
+  protected:
+    VidTest &vidTest;
 };
 
 
