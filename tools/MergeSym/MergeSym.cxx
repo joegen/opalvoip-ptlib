@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.14  2004/05/22 07:41:32  rjongbloed
+ * Added ability to specify command line override of the "dumpbin" program run
+ *   to get library symbols, very useful for debugging.
+ *
  * Revision 1.13  2004/04/09 07:03:23  rjongbloed
  * Added ability to get the output to DUMPBIN sent to a file.
  *
@@ -88,7 +92,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 3, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 4, ReleaseCode, 0)
 {
 }
 
@@ -100,7 +104,7 @@ void MergeSym::Main()
        << " by " << GetManufacturer() << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("vsx:I:");
+  args.Parse("vsd:x:I:");
 
   PFilePath lib_filename, def_filename;
 
@@ -116,7 +120,7 @@ void MergeSym::Main()
       break;
 
     default :
-      PError << "usage: MergeSym [ -v ] [ -s ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
+      PError << "usage: MergeSym [ -v ] [ -s ] [ -d dumpbin ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
       SetTerminationValue(1);
       return;
   }
@@ -240,9 +244,10 @@ void MergeSym::Main()
     cout << "Reading library symbols..." << flush;
   PINDEX linecount = 0;
   SortedSymbolList lib_symbols;
-  PPipeChannel pipe("dumpbin /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
+  PString dumpbin = args.GetOptionString('d', "dumpbin");
+  PPipeChannel pipe(dumpbin + " /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
   if (!pipe.IsOpen()) {
-    PError << "\nMergeSym: could not run \"dumpbin\".\n";
+    PError << "\nMergeSym: could not run \"" << dumpbin << "\".\n";
     SetTerminationValue(2);
     return;
   }
