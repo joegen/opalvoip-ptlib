@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.14 1996/08/08 10:08:58 robertj Exp $
+ * $Id: contain.h,v 1.15 1996/08/17 10:00:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.15  1996/08/17 10:00:33  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.14  1996/08/08 10:08:58  robertj
  * Directory structure changes for common files.
  *
@@ -113,24 +116,24 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 #endif
 
 
-#ifdef _WINDLL
+#ifdef PMAKEDLL
 #ifdef _WIN32
-#define PCLASS class __declspec(dllexport)
+#define PEXPORT __declspec(dllexport)
 #else
-#define PCLASS class __export
+#define PEXPORT extern __export
 #endif
 #else
-#define PCLASS class
+#define PEXPORT
 #endif
 
 
 // Declaration for exported callback functions to OS
 #if defined(_WIN32)
-#define EXPORTED __stdcall
+#define PEXPORTED __stdcall
 #elif defined(_WINDOWS)
-#define EXPORTED WINAPI _export
+#define PEXPORTED WINAPI __export
 #else
-#define EXPORTED __far
+#define PEXPORTED __far __pascal
 #endif
 
 
