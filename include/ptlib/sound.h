@@ -27,6 +27,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.24  2003/11/12 03:29:51  csoutheren
+ * Initial version of plugin code from Snark of GnomeMeeting with changes
+ *    by Craig Southeren of Post Increment
+ *
+ * Revision 1.23.2.2  2003/10/13 02:42:39  dereksmithies
+ * Add additional functions, so plugins work better.
+ *
+ * Revision 1.23.2.1  2003/10/07 03:02:28  csoutheren
+ * Initial checkin of pwlib code to do plugins.
+ * Modified from original code and concept provided by Snark of Gnomemeeting
+ *
  * Revision 1.23  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -105,6 +116,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib/pluginmgr.h>
 
 #ifdef _WIN32
 
@@ -304,8 +317,14 @@ class PSound : public PBYTEArray
 };
 
 
-/**A class representing a sound channel. This class is provided mainly for
-   the playback or recording of sounds on the system.
+/**
+   This class is both an abstract class for a generalised sound channel, 
+   and an implementation of PSoundChannel for old code that is not plugin-aware.
+   When instantiated, it selects the first plugin of the base class "PSoundChannel"
+
+   As an abstract class, this represents a sound schannel. Drivers for real, platform
+   dependent sound hardware will be ancestors of this class and can be found
+   in the plugins section of PWLib.
 
    A sound driver is either playing or recording. If simultaneous playing and
    recording is desired, two instances of PSoundChannel must be created.
@@ -355,22 +374,44 @@ class PSoundChannel : public PChannel
     );
     // 
 
-    ~PSoundChannel();
+    virtual ~PSoundChannel();
     // Destroy and close the sound driver
   //@}
 
   /**@name Open functions */
   //@{
-    /**Get all of the names for sound devices/drivers that are available on
-       this platform. Note that a named device may not necessarily do both
-       playing and recording so the arrays returned with the #dir#
-       parameter in each value is not necessarily the same.
-
-       @return
-       An array of platform dependent strings for each sound player/recorder.
+    /**
+      Return names of all plugins that correspond to sound devices
      */
-    static PStringArray GetDeviceNames(
-      Directions dir    // Sound I/O direction
+    static PStringList GetDriverNames(PPluginManager * pluginMgr = NULL);
+
+    /**
+      Return sound devices that correspond to the specified name
+     */
+    static PStringList GetDeviceNames(
+         const PString &driverName,
+         const PSoundChannel::Directions,
+         PPluginManager * pluginMgr = NULL
+    );
+
+    /**
+      Return sound channel object that correspond to the specified name
+     */
+    static PSoundChannel *CreateChannel (
+      const PString &driverName,
+      PPluginManager * pluginMgr = NULL
+    );
+
+    /**
+      Return opened sound channel object that correspond to the specified name
+     */
+    static PSoundChannel * CreateOpenedChannel(
+      const PString & driverName,
+      const PString & deviceName,
+      const PSoundChannel::Directions,
+      unsigned numChannels = 1,
+      unsigned sampleRate = 8000,
+      unsigned bitsPerSample = 16
     );
 
     /**Get the name for the default sound devices/driver that is on this
@@ -385,14 +426,13 @@ class PSoundChannel : public PChannel
       Directions dir    // Sound I/O direction
     );
 
-
     /**Open the specified device for playing or recording. The device name is
        platform specific and is as returned in the GetDevices() function.
 
        @return
        TRUE if the sound device is valid for playing/recording.
      */
-    BOOL Open(
+    virtual BOOL Open(
       const PString & device,       /// Name of sound driver/device
       Directions dir,               /// Sound I/O direction
       unsigned numChannels = 1,     /// Number of channels eg mono/stereo
@@ -400,12 +440,29 @@ class PSoundChannel : public PChannel
       unsigned bitsPerSample = 16   /// Number of bits per sample
     );
 
+    /**Test if this instance of PSoundChannel is open.
+
+       @return
+       TRUE if this instance is open.
+     */
+    virtual BOOL IsOpen() const
+      { return (baseChannel == NULL) ? FALSE : baseChannel->PChannel::IsOpen(); }
+
+    /**Get the OS specific handle for the PSoundChannel.
+
+       @return
+       integer value of the handle.
+     */
+    virtual int GetHandle() const
+      { return (baseChannel == NULL) ? -1 : baseChannel->PChannel::GetHandle(); }
+
     /**Abort the background playing/recording of the sound channel.
 
        @return
        TRUE if the sound has successfully been aborted.
      */
-    BOOL Abort();
+    virtual BOOL Abort()
+    { return (baseChannel == NULL) ? FALSE : baseChannel->Abort(); }
   //@}
 
   /**@name Channel set up functions */
@@ -419,20 +476,24 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the format is valid.
      */
-    BOOL SetFormat(
+    virtual BOOL SetFormat(
       unsigned numChannels = 1,     /// Number of channels eg mono/stereo
       unsigned sampleRate = 8000,   /// Samples per second
       unsigned bitsPerSample = 16   /// Number of bits per sample
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->SetFormat(numChannels, sampleRate, bitsPerSample); }
 
     /// Get  the number of channels (mono/stereo) in the sound.
-    unsigned GetChannels()   const;
+    virtual unsigned GetChannels()   const
+    { return (baseChannel == NULL) ? 0 : baseChannel->GetChannels(); }
 
     /// Get the sample rate in samples per second.
-    unsigned GetSampleRate() const;
+    virtual unsigned GetSampleRate() const
+    { return (baseChannel == NULL) ? 0 : baseChannel->GetSampleRate(); }
 
     /// Get the sample size in bits per sample.
-    unsigned GetSampleSize() const;
+    virtual unsigned GetSampleSize() const 
+    { return (baseChannel == NULL) ? 0 : baseChannel->GetSampleSize(); }
 
     /**Set the internal buffers for the sound channel I/O.
 
@@ -442,20 +503,22 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound device is valid for playing/recording.
      */
-    BOOL SetBuffers(
+    virtual BOOL SetBuffers(
       PINDEX size,      /// Size of each buffer
       PINDEX count = 2  /// Number of buffers
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->SetBuffers(size, count); }
 
     /**Get the internal buffers for the sound channel I/O. 
 
        @return
        TRUE if the buffer size were obtained.
      */
-    BOOL GetBuffers(
+    virtual BOOL GetBuffers(
       PINDEX & size,    // Size of each buffer
       PINDEX & count    // Number of buffers
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->GetBuffers(size, count); }
 
     enum {
       MaxVolume = 100
@@ -467,9 +530,10 @@ class PSoundChannel : public PChannel
        @return
        TRUE if there were no errors.
     */
-    BOOL SetVolume(
+    virtual BOOL SetVolume(
       unsigned volume   /// New volume level
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->SetVolume(volume); }
 
     /**Get the volume of the play/read process.
        The volume range is 0 == quiet.  100 == LOUD.
@@ -477,13 +541,30 @@ class PSoundChannel : public PChannel
        @return
        TRUE if there were no errors.
     */
-    BOOL GetVolume(
+    virtual BOOL GetVolume(
       unsigned & volume   /// Variable to receive volume level.
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->GetVolume(volume); }
   //@}
 
   /**@name Play functions */
   //@{
+
+    /** Low level write (or play) to the channel. This function will block until the
+       requested number of characters are written or the write timeout is
+       reached. The GetLastWriteCount() function returns the actual number
+       of bytes written.
+                                                                                                                                            
+       The GetErrorCode() function should be consulted after Write() returns
+       FALSE to determine what caused the failure.
+ 
+       @return
+       TRUE if at least len bytes were written to the channel.
+     */
+     virtual BOOL Write(const void * buf, PINDEX len)
+      { return (baseChannel == NULL) ? FALSE : baseChannel->Write(buf, len); }
+
+
     /**Play a sound to the open device. If the #wait# parameter is
        TRUE then the function does not return until the file has been played.
        If FALSE then the sound play is begun asynchronously and the function
@@ -500,10 +581,11 @@ class PSoundChannel : public PChannel
        TRUE if the sound is playing or has played.
      */
 
-    BOOL PlaySound(
+    virtual BOOL PlaySound(
       const PSound & sound,   /// Sound to play.
       BOOL wait = TRUE        /// Flag to play sound synchronously.
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->PlaySound(sound); }
     /**Play a sound file to the open device. If the #wait#
        parameter is TRUE then the function does not return until the file has
        been played. If FALSE then the sound play is begun asynchronously and
@@ -519,10 +601,11 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound is playing or has played.
      */
-    BOOL PlayFile(
+    virtual BOOL PlayFile(
       const PFilePath & file, /// Sound file to play.
       BOOL wait = TRUE        /// Flag to play sound synchronously.
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->PlayFile(file, wait); }
 
     /**Indicate if the sound play begun with PlayBuffer() or PlayFile() has
        completed.
@@ -530,7 +613,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has completed playing.
      */
-    BOOL HasPlayCompleted();
+    virtual BOOL HasPlayCompleted()
+    { return (baseChannel == NULL) ? FALSE : baseChannel->HasPlayCompleted(); }
 
     /**Block the thread until the sound play begun with PlayBuffer() or
        PlayFile() has completed.
@@ -538,7 +622,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has successfully completed playing.
      */
-    BOOL WaitForPlayCompletion();
+    virtual BOOL WaitForPlayCompletion() 
+    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForPlayCompletion(); }
 
   //@}
 
@@ -561,9 +646,10 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has been recorded.
      */
-    BOOL RecordSound(
+    virtual BOOL RecordSound(
       PSound & sound /// Sound recorded
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->RecordSound(sound); }
 
     /**Record into the platform dependent sound file all of the buffer's of
        sound data. Use the SetBuffers() function to determine how long the
@@ -577,9 +663,10 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound has been recorded.
      */
-    BOOL RecordFile(
+    virtual BOOL RecordFile(
       const PFilePath & file /// Sound file recorded
-    );
+    )
+    { return (baseChannel == NULL) ? FALSE : baseChannel->RecordFile(file); }
 
     /**Start filling record buffers. The first call to Read() will also
        initiate the recording.
@@ -587,7 +674,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has successfully started recording.
      */
-    BOOL StartRecording();
+    virtual BOOL StartRecording()
+    { return (baseChannel == NULL) ? FALSE : baseChannel->StartRecording(); }
 
     /**Determine if a record buffer has been filled, so that the next Read()
        call will not block. Provided that the amount of data read is less than
@@ -596,7 +684,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    BOOL IsRecordBufferFull();
+    virtual BOOL IsRecordBufferFull() 
+    { return (baseChannel == NULL) ? FALSE : baseChannel->IsRecordBufferFull(); }
 
     /**Determine if all of the record buffer allocated has been filled. There
        is an implicit Abort() of the recording if this occurs and recording is
@@ -606,7 +695,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    BOOL AreAllRecordBuffersFull();
+    virtual BOOL AreAllRecordBuffersFull() 
+    { return (baseChannel == NULL) ? FALSE : baseChannel->AreAllRecordBuffersFull(); }
 
     /**Block the thread until a record buffer has been filled, so that the
        next Read() call will not block. Provided that the amount of data read
@@ -615,7 +705,8 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    BOOL WaitForRecordBufferFull();
+    virtual BOOL WaitForRecordBufferFull() 
+    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForRecordBufferFull() ; }
 
     /**Block the thread until all of the record buffer allocated has been
        filled. There is an implicit Abort() of the recording if this occurs
@@ -625,21 +716,58 @@ class PSoundChannel : public PChannel
        @return
        TRUE if the sound driver has filled a buffer.
      */
-    BOOL WaitForAllRecordBuffersFull();
+    virtual BOOL WaitForAllRecordBuffersFull() 
+    { return (baseChannel == NULL) ? FALSE : baseChannel->WaitForAllRecordBuffersFull() ; }
   //@}
 
-
-  private:
-    void Construct();
-
-
-// Include platform dependent part of class
-#ifdef _WIN32
-#include "msos/ptlib/sound.h"
-#else
-#include "unix/ptlib/sound.h"
-#endif
+  protected:
+    PSoundChannel * baseChannel;
 };
+
+
+/////////////////////////////////////////////////////////////////////////
+
+// define the sound plugin service descriptor
+
+class PSoundChannelPluginServiceDescriptor : public PPluginServiceDescriptor 
+{
+  public:
+    PSoundChannelPluginServiceDescriptor(
+                     unsigned (*_GetVersion)(),
+               PSoundChannel *(*_CreateInstance)(),
+                 PStringArray (*_GetDeviceNames)(PSoundChannel::Directions)
+     )
+    : PPluginServiceDescriptor(_GetVersion),
+      CreateInstance(_CreateInstance),
+      GetDeviceNames(_GetDeviceNames)
+    { }
+
+    PSoundChannel *(*CreateInstance)();
+    PStringArray (*GetDeviceNames) (PSoundChannel::Directions);
+};
+
+
+#define PCREATE_SOUND_SERVICE_DESCRIPTOR(className, versionFn) \
+PSoundChannel * className##_CreateInstance () \
+{ \
+  return new className; \
+} \
+\
+PStringArray className##_GetDeviceNames (PSoundChannel::Directions dir) \
+{ \
+  return className::GetDeviceNames(dir); \
+} \
+\
+PSoundChannelPluginServiceDescriptor className##_descriptor(\
+   versionFn, \
+   className##_CreateInstance, \
+   className##_GetDeviceNames \
+); \
+
+#define PCREATE_SOUND_PLUGIN(name, className) \
+PCREATE_PLUGIN_VERSION_FN(name, className) \
+PCREATE_SOUND_SERVICE_DESCRIPTOR(className, PPLUGIN_VERSION_FN(name, PSoundChannel)) \
+PCREATE_PLUGIN(name, PSoundChannel, &className##_descriptor)
 
 #endif
 
