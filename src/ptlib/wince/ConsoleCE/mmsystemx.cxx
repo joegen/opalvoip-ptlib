@@ -240,7 +240,7 @@ HMMIO WINAPI mmioOpen(LPSTR pszFileName, LPMMIOINFO pmmioinfo, DWORD fdwOpen)
 		pmmioinfo->wErrorRet = 0L;
   }
 	
-  return hFile;
+  return (HMMIO) hFile;
 }
 
 MMRESULT WINAPI mmioClose(HMMIO hmmio, UINT fuClose)
