@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.15 1996/05/15 10:19:54 robertj Exp $
+ * $Id: http.h,v 1.16 1996/05/23 10:00:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,10 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
- * Revision 1.15  1996/05/15 10:19:54  robertj
- * Fixed persistent connections.
+ * Revision 1.16  1996/05/23 10:00:52  robertj
+ * Added common function for GET and HEAD commands.
+ * Fixed status codes to be the actual status code instead of sequential enum.
+ * This fixed some problems with proxy pass through of status codes.
  *
  * Revision 1.14  1996/03/31 08:46:51  robertj
  * HTTP 1.1 upgrade.
@@ -367,7 +369,7 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
     );
     /* Handle a GET command from a client.
 
-       The default implemetation looks up the URL in the name space declared by
+       The default implementation looks up the URL in the name space declared by
        the <A>PHTTPSpace</A> class tree and despatches to the
        <A>PHTTPResource</A> object contained therein.
 
@@ -376,6 +378,8 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
        If there is no ContentLength field in the response, this value must
        be FALSE for correct operation.
      */
+
+
 
     virtual BOOL OnHEAD(
       const PURL & url,                   // Universal Resource Locator for document.
@@ -443,22 +447,22 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
      */
 
     enum StatusCode {
-      Continue = 1000,             // 100 - Continue
+      Continue = 100,              // 100 - Continue
       SwitchingProtocols,          // 101 - upgrade allowed
-      OK,                          // 200 - request has succeeded
+      OK = 200,                    // 200 - request has succeeded
       Created,                     // 201 - new resource created: entity body contains URL
       Accepted,                    // 202 - request accepted, but not yet completed
       NonAuthoritativeInformation, // 203 - not definitive entity header
       NoContent,                   // 204 - no new information
       ResetContent,                // 205 - contents have been reset
       PartialContent,              // 206 - partial GET succeeded
-      MultipleChoices,             // 300 - requested resource available elsewehere 
+      MultipleChoices = 300,       // 300 - requested resource available elsewehere 
       MovedPermanently,            // 301 - resource moved permanently: location field has new URL
       MovedTemporarily,            // 302 - resource moved temporarily: location field has new URL
       SeeOther,                    // 303 - see other URL
       NotModified,                 // 304 - document has not been modified
       UseProxy,                    // 305 - proxy redirect
-      BadRequest,                  // 400 - request malformed or not understood
+      BadRequest = 400,            // 400 - request malformed or not understood
       UnAuthorised,                // 401 - request requires authentication
       PaymentRequired,             // 402 - reserved 
       Forbidden,                   // 403 - request is refused due to unsufficient authorisation
@@ -471,13 +475,11 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
       Gone,                        // 410 - resource gone away
       LengthRequired,              // 411 - no Content-Length
       UnlessTrue,                  // 412 - no Range header for TRUE Unless
-      InternalServerError,         // 500 - server has encountered an unexpected error
+      InternalServerError = 500,   // 500 - server has encountered an unexpected error
       NotImplemented,              // 501 - server does not implement request
       BadGateway,                  // 502 - error whilst acting as gateway
       ServiceUnavailable,          // 503 - server temporarily unable to service request
-      GatewayTimeout,              // 504 - timeout whilst talking to gateway
-      NumStatusCodes
-
+      GatewayTimeout               // 504 - timeout whilst talking to gateway
     };
 
     void StartResponse(
@@ -767,14 +769,31 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Handle the GET command passed from the HTTP socket.
 
        The default action is to check the authorisation for the resource and
-       call the virtuals <A>LoadHeaders()</A> and <A>LoadData()</A> to get a
-       resource to be sent to the socket.
+       call the virtuals <A>LoadHeaders()</A> and <A>OnGETData()</A> to get
+       a resource to be sent to the socket.
 
        <H2>Returns:</H2>
        TRUE if the connection may persist, FALSE if the connection must close.
        If there is no ContentLength field in the response, this value must
        be FALSE for correct operation.
      */
+
+    virtual BOOL OnGETData(
+      PHTTPSocket & socket,
+      const PURL & url,
+      const PHTTPConnectionInfo & connectInfo,
+      PHTTPRequest & request
+    );
+    /* Load the data associated with a GET command.
+
+       The default action is to call the virtual <A>LoadData()</A> to get a
+       resource to be sent to the socket.
+
+       <H2>Returns:</H2>
+       TRUE if the connection may persist, FALSE if the connection must close.
+       If there is no ContentLength field in the response, this value must
+       be FALSE for correct operation.
+    */
 
     virtual BOOL OnHEAD(
       PHTTPSocket & socket,       // HTTP socket that received the request
@@ -914,6 +933,15 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     );
     /* See if the resource is authorised given the mime info
      */
+
+    virtual BOOL OnGETOrHEAD(
+      PHTTPSocket & socket,       // HTTP socket that received the request
+      const PURL & url,           // Universal Resource Locator for document.
+      const PMIMEInfo & info,     // Extra MIME information in command.
+      const PHTTPConnectionInfo & conInfo,
+      BOOL  IsGet
+    );
+    /* common code for GET and HEAD commands */
 
     PURL             baseURL;
     PString          contentType;
