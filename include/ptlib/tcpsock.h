@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.4 1994/08/22 00:46:48 robertj Exp $
+ * $Id: tcpsock.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
- * Revision 1.4  1994/08/22 00:46:48  robertj
+ * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Oops
+ *
+ * Revision 1.4  1994/08/22  00:46:48  robertj
  * Added pragma fro GNU C++ compiler.
  *
  * Revision 1.3  1994/08/21  23:43:02  robertj
@@ -22,7 +25,7 @@
 
 #define _PTCPSOCKET
 
-#ifdef __GNU__
+#ifdef __GNUC__
 #pragma interface
 #endif
 
