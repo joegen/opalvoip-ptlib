@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.46  2004/07/06 10:12:52  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.45  2004/06/29 12:22:22  rjongbloed
  * Fixed incorrect usage of result (now object rather than scalar), thanks Michal Zygmuntowicz
  *
@@ -173,6 +176,8 @@
 #ifdef __GNUC__
 #pragma implementation "cypher.h"
 #endif
+
+#define P_DISABLE_FACTORY_INSTANCES
 
 #include <ptlib.h>
 #include <ptclib/cypher.h>
