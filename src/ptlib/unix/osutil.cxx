@@ -34,8 +34,6 @@
 #include <localeinfo.h>
 #elif defined(P_HPUX9)
 #include <langinfo.h>
-#else
-#warning No locale info include
 #endif
 
 
@@ -46,6 +44,19 @@
 #ifndef P_USE_INLINES
 #include "../../common/osutil.inl"
 #include "ptlib.inl"
+#endif
+
+#ifdef P_SUN4
+extern "C" {
+int on_exit(void (*f)(void), caddr_t);
+int atexit(void (*f)(void))
+{
+  on_exit(f, 0);
+}
+static int daylight    = 600;
+extern long timezone;
+static char *tzname[2] = { "STD", "DST" };
+};
 #endif
 
 static PString CanonicaliseDirectory (const PString & path)
@@ -581,32 +592,33 @@ PDirectory PFilePath::GetDirectory() const
 
 PString PTime::GetTimeSeparator()
 {
-#ifdef P_HPUX9
-  char * p = nl_langinfo(T_FMT);
-#elif defined(P_SUN4)
-#warning No time separator
-  char * p = ":";
-#else
-  char * p = _time_info->time; 
-#endif
+#if defined(P_LINUX) || defined(P_HPUX9)
+#  if defined(P_HPUX9)
+     char * p = _time_info->time; 
+#  elif defined(P_LINUX)
+     char * p = nl_langinfo(T_FMT);
+#  endif
   char buffer[2];
   while (*p == '%' || isalpha(*p))
     p++;
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
+#else
+
+#warning Using default time separator
+  return PString(":");
+#endif
 }
 
 PTime::DateOrder PTime::GetDateOrder()
 {
-#ifdef P_HPUX9
-  char * p = nl_langinfo(D_FMT);
-#elif defined(P_SUN4)
-#warning No date order
-  char * p = "d";
-#else
-  char * p = _time_info->date; 
-#endif
+#if defined(P_LINUX) || defined(P_HPUX9)
+#  if defined(P_LINUX)
+     char * p = _time_info->date; 
+#  elif defined(P_HPUX9)
+     char * p = nl_langinfo(D_FMT);
+#  endif
 
   while (*p == '%')
     p++;
@@ -620,18 +632,23 @@ PTime::DateOrder PTime::GetDateOrder()
       break;
   }
   return MonthDayYear;
+
+#else
+#warning Using default date order
+  return DayMonthYear;
+#endif
 }
 
 PString PTime::GetDateSeparator()
 {
-#ifdef P_HPUX9
-  char * p = nl_langinfo(D_FMT);
-#elif defined(P_SUN4)
-#warning No date separator
-  char * p = "/";
-#else
-  char * p = _time_info->date; 
-#endif
+#if defined(P_SUN4)
+  return PString("/");
+#elif defined(P_LINUX) || defined(P_HPUX9)
+#  if defined(P_LINUX)
+     char * p = nl_langinfo(D_FMT);
+#  elif defined(P_HPUX9)
+     char * p = _time_info->date; 
+#  endif
 
   char buffer[2];
   while (*p == '%' || isalpha(*p))
@@ -639,22 +656,37 @@ PString PTime::GetDateSeparator()
   buffer[0] = *p;
   buffer[1] = '\0';
   return PString(buffer);
+#else
+#warning No date separator
+  return PString("/");
+#endif
 }
 
 PString PTime::GetDayName(PTime::Weekdays day, NameType type)
 
 {
-#ifdef P_HPUX9
+#if defined(P_HPUX9)
   return PString(
      (type == Abbreviated) ? nl_langinfo(ABDAY_1+(int)day) :
                    nl_langinfo(DAY_1+(int)day)
                 );
-#elif defined(P_SUN4)
-#warning No day name
-  return PString();
-#else
+
+#elif defined(P_LINUX)
   return (type == Abbreviated) ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
+
+#else
+#warning Using default day names
+  static char *defaultNames[] = {
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+    "Saturday"
+  };
+
+  static char *defaultAbbrev[] = {
+    "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+  };
+  return (type == Abbreviated) ? PString(defaultNames[(int)day]) :
+                       PString(defaultAbbrev[(int)day]);
 #endif
 }
 
@@ -665,12 +697,21 @@ PString PTime::GetMonthName(PTime::Months month, NameType type)
      (type == Abbreviated) ? nl_langinfo(ABMON_1+(int)month-1) :
                    nl_langinfo(MON_1+(int)month-1)
                 );
-#elif defined(P_SUN4)
-#warning No month name
-  return PString();
-#else
+#elif defined(P_LINUX)
   return (type == Abbreviated) ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
+#else
+#warning Using default monthnames
+  static char *defaultNames[] = {
+  "January", "February", "March", "April", "May", "June", "July", "August",
+  "September", "October", "November", "December" };
+
+  static char *defaultAbbrev[] = {
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+  "Sep", "Oct", "Nov", "Dec" };
+
+  return (type == Abbreviated) ? PString(defaultNames[(int)month-1]) :
+                       PString(defaultAbbrev[(int)month-1]);
 #endif
 }
 
@@ -682,13 +723,7 @@ BOOL PTime::IsDaylightSavings()
 }
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
-#if defined(P_HPUX9)
-#warning No timezone
-  { return 0; }
-#elif defined(P_SUN4)
-#warning No timezone
-  { return 0; }
-#else
+#if defined(P_LINUX) || defined(P_SUN4)
 {
   long tz = -::timezone/60;
   if (type == StandardTime)
@@ -696,17 +731,17 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
   else
     return tz + ::daylight*60;
 }
+#else
+#warning No timezone information
+  { return 0; }
 #endif
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
-#if defined(P_HPUX9)
-#warning No timezone name
-  { return PString(); }
-#elif defined(P_SUN4)
-#warning No timezone name
-  { return PString(); }
-#else
+#if defined(P_LINUX) || defined(P_SUN4)
   { return PString((type == StandardTime) ? ::tzname[0] : ::tzname[1]); }
+#else
+#warning No timezone name information
+  { return PString(); }
 #endif
 
 
