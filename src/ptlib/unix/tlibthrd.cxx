@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.67  2001/08/07 02:50:03  craigs
+ * Fixed potential race condition in IO blocking
+ *
  * Revision 1.66  2001/07/09 13:23:37  rogerh
  * Fix a subtle bug in semaphore wait which showed up on FreeBSD
  *
@@ -272,6 +275,11 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 int PThread::PXBlockOnIO(int handle, int type, const PTimeInterval & timeout)
 {
   //PTRACE(1,"PThread::PXBlockOnIO(" << handle << ',' << type << ')');
+
+  if ((handle < 0) || (handle >= FD_SETSIZE)) {
+    errno = EINTR;
+    return FALSE;
+  }
 
   // make sure we flush the buffer before doing a write
   fd_set tmp_rfd, tmp_wfd, tmp_efd;
