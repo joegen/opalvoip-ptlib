@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.6  2001/01/24 06:10:04  yurik
+ * Windows CE port-related changes
+ *
  * Revision 1.5  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -44,9 +47,9 @@
 
 
 #ifndef _PVIDEOIO
-
+#ifndef _WIN32_WCE
 #include <vfw.h>
-
+#endif
 
 #include "../../videoio.h"
   public:
@@ -54,6 +57,7 @@
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
 
+#ifndef _WIN32_WCE
   protected:
     static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
     LRESULT HandleError(int id, LPCSTR err);
@@ -71,6 +75,7 @@
     LPBYTE        lastFramePtr;
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
+#endif // _WIN32_WCE
 
   friend class PVideoInputThread;
 };
