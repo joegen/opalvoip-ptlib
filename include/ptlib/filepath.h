@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: filepath.h,v $
+ * Revision 1.21  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.20  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -357,7 +360,7 @@ class PFilePath : public PFilePathString
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/filepath.h"
+#include "msos/ptlib/filepath.h"
 #else
 #include "unix/ptlib/filepath.h"
 #endif

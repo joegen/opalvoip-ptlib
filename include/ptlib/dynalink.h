@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.14  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.13  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -176,7 +179,7 @@ class PDynaLink : public PObject
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/dynalink.h"
+#include "msos/ptlib/dynalink.h"
 #else
 #include "unix/ptlib/dynalink.h"
 #endif

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.57  2003/09/17 05:41:58  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.56  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -776,7 +779,7 @@ class PCollection : public PContainer
 // Fill in all the inline functions
 
 #if P_USE_INLINES
-#include "ptlib/contain.inl"
+#include <ptlib/contain.inl>
 #endif
 
 #endif // _CONTAIN_H
