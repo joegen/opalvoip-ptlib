@@ -2591,7 +2591,7 @@ fi
     fi
   fi
 
-  if test $SSLHDR ; then
+  if test $SSLHDR != 0 ; then
     HAS_OPENSSL=1
 
 cat >>confdefs.h <<\EOF

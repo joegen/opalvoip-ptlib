@@ -168,7 +168,7 @@ if test "${HAVE_LIBSSL:-unset}" != "unset" ; then
     fi
   fi
 
-  if test $SSLHDR ; then
+  if test $SSLHDR != 0 ; then
     AC_SUBST(HAS_OPENSSL, 1)
     AC_DEFINE(P_SSL, 1, "OpenSSL found")
     if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
