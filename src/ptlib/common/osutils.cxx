@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.198  2002/10/08 03:35:15  robertj
+ * Fixed BSD warning
+ *
  * Revision 1.197  2002/10/04 08:21:26  robertj
  * Changed read/write mutex so can be called by same thread without deadlock.
  *
@@ -850,11 +853,7 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
       if (thread == NULL)
         *PTraceStream << "ThreadID=0x"
                       << setfill('0') << hex << setw(8)
-#ifdef _WIN32
-                      << GetCurrentThreadId()
-#elif defined(P_PTHREADS)
-                      << pthread_self()
-#endif
+                      << PThread::GetCurrentThreadId()
                       << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
@@ -2466,21 +2465,21 @@ PReadWriteMutex::PReadWriteMutex()
 PReadWriteMutex::Nest * PReadWriteMutex::GetNest() const
 {
   PWaitAndSignal mutex(nestingMutex);
-  return nestedThreads.GetAt(POrdinalKey(PThread::GetCurrentThreadId()));
+  return nestedThreads.GetAt(POrdinalKey((PINDEX)PThread::GetCurrentThreadId()));
 }
 
 
 void PReadWriteMutex::EndNest()
 {
   nestingMutex.Wait();
-  nestedThreads.RemoveAt(POrdinalKey(PThread::GetCurrentThreadId()));
+  nestedThreads.RemoveAt(POrdinalKey((PINDEX)PThread::GetCurrentThreadId()));
   nestingMutex.Signal();
 }
 
 
 PReadWriteMutex::Nest & PReadWriteMutex::StartNest()
 {
-  POrdinalKey threadId = PThread::GetCurrentThreadId();
+  POrdinalKey threadId = (PINDEX)PThread::GetCurrentThreadId();
 
   nestingMutex.Wait();
 
