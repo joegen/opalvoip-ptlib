@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.15  2002/08/28 05:10:27  craigs
+ * Added ability to load resources via URI
+ * Added cache
+ *
  * Revision 1.14  2002/08/27 02:19:13  craigs
  * Added <break> command in prompt blocks
  * Fixed potential deadlock
@@ -82,12 +86,12 @@
 #include <ptclib/delaychan.h>
 #include <ptclib/pwavfile.h>
 #include <ptclib/ptts.h>
+#include <ptclib/url.h>
 
 class PVXMLSession;
-
-
 class PVXMLDialog;
 class PVXMLSession;
+
 
 class PVXMLElement : public PObject
 {
@@ -257,6 +261,24 @@ class PVXMLDigitsGrammar : public PVXMLGrammar
 
 //////////////////////////////////////////////////////////////////
 
+class PVXMLCacheItem : public PURL
+{
+  PCLASSINFO(PVXMLCacheItem, PURL);
+  public:
+    PVXMLCacheItem(const PURL & url)
+      : PURL(url)
+    { }
+
+    PFilePath fn;
+    PString contentType;
+    PTime loadTime;
+    BOOL ok;
+};
+
+PLIST(PVXMLCache, PVXMLCacheItem);
+
+//////////////////////////////////////////////////////////////////
+
 class PVXMLIncomingChannel;
 class PVXMLOutgoingChannel;
 
@@ -270,7 +292,9 @@ class PVXMLSession : public PIndirectChannel
     // new functions
     void SetTextToSpeech(PTextToSpeech * _tts, BOOL autoDelete = FALSE);
 
-    virtual BOOL Load(const PFilePath & xmlSource);
+    virtual BOOL Load(const PString & xmlSource);
+    virtual BOOL LoadURL(const PURL & url);
+
     virtual BOOL Open(BOOL isPCM);
     virtual BOOL Close();
 
@@ -284,6 +308,7 @@ class PVXMLSession : public PIndirectChannel
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+    virtual BOOL PlayResource(const PURL & url, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlaySilence(PINDEX msecs = 0);
 
     virtual BOOL StartRecording(const PFilePath & fn);
@@ -305,9 +330,13 @@ class PVXMLSession : public PIndirectChannel
     virtual PString GetVar(const PString & str) const;
     virtual void SetVar(const PString & ostr, const PString & val);
 
+    virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType);
+    virtual BOOL RetrieveResource(const PURL & url, PBYTEArray & text, PString & contentType, PFilePath & fn);
+
     PDECLARE_NOTIFIER(PThread, PVXMLSession, DialogExecute);
 
     void AllowClearCall();
+    PURL NormaliseResourceName(const PString & src);
 
   protected:
     BOOL ExecuteWithoutLock();
@@ -328,6 +357,7 @@ class PVXMLSession : public PIndirectChannel
     int recordMaxTime;
     int recordFinalSilence;
     BOOL loaded;
+    PURL rootURL;
 
     PThread * vxmlThread;
     BOOL forceEnd;
@@ -336,6 +366,11 @@ class PVXMLSession : public PIndirectChannel
     PVXMLOutgoingChannel * outgoingChannel;
     PTextToSpeech * textToSpeech;
     BOOL autoDeleteTextToSpeech;
+
+    static PMutex cacheMutex;
+    static PDirectory cacheDir;
+    static PVXMLCache * resourceCache;
+    static PINDEX cacheCount;
 };
 
 //////////////////////////////////////////////////////////////////
@@ -393,6 +428,21 @@ class PVXMLQueueFilenameItem : public PVXMLQueueItem
     BOOL autoDelete;
 };
 
+class PVXMLQueueURLItem : public PVXMLQueueItem
+{
+  PCLASSINFO(PVXMLQueueURLItem, PObject);
+  public:
+    PVXMLQueueURLItem(const PURL & _url, PINDEX repeat = 1, PINDEX delay = 0)
+      : PVXMLQueueItem(repeat, delay), url(_url)
+    { }
+
+    void Play(PVXMLOutgoingChannel & outgoingChannel);
+
+  protected:
+    PURL url;
+};
+
+
 PQUEUE(PVXMLQueue, PVXMLQueueItem);
 
 //////////////////////////////////////////////////////////////////
@@ -437,7 +487,9 @@ class PVXMLOutgoingChannel : public PVXMLChannel
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn);
     virtual BOOL AdjustFrame(void * buffer, PINDEX amount);
     virtual void QueueFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
+    virtual void QueueResource(const PURL & url, PINDEX repeat= 1, PINDEX delay = 0);
     virtual void QueueData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
+
     virtual void PVXMLOutgoingChannel::QueueItem(PVXMLQueueItem * newItem);
     virtual void FlushQueue();
     virtual BOOL IsPlaying() const   { return (playQueue.GetSize() > 0) || playing ; }
