@@ -1,11 +1,5 @@
 
 
-#pragma implementation "socket.h"
-#pragma implementation "ipsock.h"
-#pragma implementation "udpsock.h"
-#pragma implementation "tcpsock.h"
-#pragma implementation "ipdsock.h"
-
 #include <ptlib.h>
 #include <sockets.h>
 
@@ -116,7 +110,7 @@ int PSocket::os_select(int maxHandle,
 
 PIPSocket::Address::operator DWORD() const
 {
-  return PSocket::Net2Host((DWORD)s_addr);
+  return (DWORD)s_addr;
 }
 
 BYTE PIPSocket::Address::Byte1() const
@@ -183,11 +177,12 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 //  PUDPSocket
 //
 
-BOOL PIPDatagramSocket::ReadFrom(
+BOOL PSocket::os_recvfrom(
       void * buf,     // Data to be written as URGENT TCP data.
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
-      Address & addr, // Address from which the datagram was received.
-      WORD & port)     // Port from which the datagram was received.
+      int    flags,
+      sockaddr * addr, // Address from which the datagram was received.
+      int * addrlen)
 {
   if (!PXSetIOBlock(PXReadBlock, readTimeout)) {
     lastError     = Timeout;
@@ -196,18 +191,7 @@ BOOL PIPDatagramSocket::ReadFrom(
   }
 
   // attempt to read data
-  struct sockaddr_in rec_addr;
-  int    addr_len = sizeof(rec_addr);
-
-  if (ConvertOSError(lastReadCount = ::recvfrom(os_handle, buf, len, 0,
-                                       (sockaddr *)&rec_addr, &addr_len))) {
-    addr = rec_addr.sin_addr;
-    port = ntohs(rec_addr.sin_port);
-    return lastReadCount > 0;
-  }
-
-  lastReadCount = 0;
-  return FALSE;
+  return ::recvfrom(os_handle, buf, len, flags, (sockaddr *)addr, addrlen);
 }
 
 
@@ -216,11 +200,12 @@ BOOL PIPDatagramSocket::ReadFrom(
 //  PUDPSocket
 //
 
-BOOL PIPDatagramSocket::WriteTo(
+BOOL PSocket::os_sendto(
       const void * buf,   // Data to be written as URGENT TCP data.
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
-      const Address & addr, // Address to which the datagram is sent.
-      WORD port)          // Port to which the datagram is sent.
+      int flags,
+      sockaddr * addr, // Address to which the datagram is sent.
+      int addrlen)  
 {
   if (!PXSetIOBlock(PXWriteBlock, writeTimeout)) {
     lastError     = Timeout;
@@ -229,19 +214,5 @@ BOOL PIPDatagramSocket::WriteTo(
   }
 
   // attempt to read data
-  struct sockaddr_in rec_addr;
-  int    addr_len = sizeof(rec_addr);
-  memset(&rec_addr, 0, addr_len);
-
-  rec_addr.sin_family = AF_INET;
-  rec_addr.sin_addr   = addr;
-  rec_addr.sin_port   = htons(port);
-
-  if (ConvertOSError(lastWriteCount = ::sendto(os_handle, buf, len, 0,
-                                       (sockaddr *)&rec_addr, addr_len))) {
-    return lastWriteCount > 0;
-  }
-
-  lastWriteCount = 0;
-  return FALSE;
+  return ::sendto(os_handle, buf, len, flags, (sockaddr *)addr, addrlen);
 }
