@@ -24,6 +24,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.9  2004/08/05 12:15:56  rjongbloed
+ * Added classes for auto unlocking read only and read write mutex on
+ *   PSafeObject - similar to PWaitAndSIgnal.
+ * Utilised mutable keyword for mutex and improved the constness of functions.
+ * Added DisallowDeleteObjects to safe collections so can have a PSafeObject in
+ *   multiple collections.
+ * Added a tempalte function to do casting of PSafePtr to a PSafePtr of a derived
+ *   class.
+ * Assured that a PSafeObject present on a collection always increments its
+ *   reference count so while in collection it is not deleted.
+ *
  * Revision 1.8  2004/04/03 08:22:22  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -104,24 +115,22 @@ void PSafeObject::SafeDereference()
 
 BOOL PSafeObject::LockReadOnly() const
 {
-  PSafeObject * non_const_this = (PSafeObject *)this;
-
-  non_const_this->safetyMutex.Wait();
+  safetyMutex.Wait();
 
   if (safelyBeingRemoved) {
-    non_const_this->safetyMutex.Signal();
+    safetyMutex.Signal();
     return FALSE;
   }
 
-  non_const_this->safetyMutex.Signal();
-  non_const_this->safeInUseFlag.StartRead();
+  safetyMutex.Signal();
+  safeInUseFlag.StartRead();
   return TRUE;
 }
 
 
 void PSafeObject::UnlockReadOnly() const
 {
-  ((PSafeObject *)this)->safeInUseFlag.EndRead();
+  safeInUseFlag.EndRead();
 }
 
 
@@ -154,7 +163,7 @@ void PSafeObject::SafeRemove()
 }
 
 
-BOOL PSafeObject::SafelyCanBeDeleted()
+BOOL PSafeObject::SafelyCanBeDeleted() const
 {
   PWaitAndSignal mutex(safetyMutex);
   return safelyBeingRemoved && safeReferenceCount == 0;
@@ -168,6 +177,7 @@ PSafeCollection::PSafeCollection(PCollection * coll)
   collection = coll;
   collection->DisallowDeleteObjects();
   toBeRemoved.DisallowDeleteObjects();
+  deleteObjects = TRUE;
 }
 
 
@@ -188,22 +198,19 @@ BOOL PSafeCollection::SafeRemove(PSafeObject * obj)
   if (obj == NULL)
     return FALSE;
 
-  collectionMutex.Wait();
+  PWaitAndSignal mutex(collectionMutex);
+  if (!collection->Remove(obj))
+    return FALSE;
 
-  BOOL ok = collection->Remove(obj);
-  if (ok)
-    SafeRemoveObject(obj);
-
-  collectionMutex.Signal();
-
-  return ok;
+  SafeRemoveObject(obj);
+  return TRUE;
 }
 
 
 BOOL PSafeCollection::SafeRemoveAt(PINDEX idx)
 {
   PWaitAndSignal mutex(collectionMutex);
-  PSafeObject * obj = (PSafeObject *)collection->RemoveAt(idx);
+  PSafeObject * obj = PDownCast(PSafeObject, collection->RemoveAt(idx));
   if (obj == NULL)
     return FALSE;
 
@@ -217,7 +224,7 @@ void PSafeCollection::RemoveAll()
   collectionMutex.Wait();
 
   while (collection->GetSize() > 0)
-    SafeRemoveObject((PSafeObject *)collection->RemoveAt(0));
+    SafeRemoveObject(PDownCast(PSafeObject, collection->RemoveAt(0)));
 
   collectionMutex.Signal();
 }
@@ -228,33 +235,44 @@ void PSafeCollection::SafeRemoveObject(PSafeObject * obj)
   if (obj == NULL)
     return;
 
+  obj->SafeDereference();
+
+  if (!deleteObjects)
+    return;
+
   obj->SafeRemove();
-  if (obj->SafelyCanBeDeleted())
-    delete obj;
-  else {
-    removalMutex.Wait();
-    toBeRemoved.Append(obj);
-    removalMutex.Signal();
-  }
+
+  removalMutex.Wait();
+  toBeRemoved.Append(obj);
+  removalMutex.Signal();
 }
 
 
-void PSafeCollection::DeleteObjectsToBeRemoved()
+BOOL PSafeCollection::DeleteObjectsToBeRemoved()
 {
-  removalMutex.Wait();
+  PWaitAndSignal lock(removalMutex);
 
-  PAbstractList toBeDeleted;
   PINDEX i = 0;
   while (i < toBeRemoved.GetSize()) {
-    if (((PSafeObject *)toBeRemoved.GetAt(i))->SafelyCanBeDeleted())
-      toBeDeleted.Append(toBeRemoved.RemoveAt(i));
-    else
+    PSafeObject * obj = PDownCast(PSafeObject, toBeRemoved.GetAt(i));
+    if (obj == NULL || !obj->SafelyCanBeDeleted())
       i++;
+    else {
+      removalMutex.Signal();
+      DeleteObject(obj);
+      removalMutex.Wait();
+
+      i = 0; // Restart looking through list
+    }
   }
 
-  removalMutex.Signal();
+  return toBeRemoved.IsEmpty() && collection->IsEmpty();
+}
 
-  // toBeDeleted goes out of scope so deletes the objects
+
+void PSafeCollection::DeleteObject(PObject * object) const
+{
+  delete object;
 }
 
 
@@ -274,6 +292,13 @@ void PSafeCollection::DeleteObjectsTimeout(PTimer &, INT)
 }
 
 
+PINDEX PSafeCollection::GetSize() const
+{
+  PWaitAndSignal lock(collectionMutex);
+  return collection->GetSize();
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 
 PSafePtrBase::PSafePtrBase(PSafeObject * obj, PSafetyMode mode)
@@ -286,7 +311,7 @@ PSafePtrBase::PSafePtrBase(PSafeObject * obj, PSafetyMode mode)
 }
 
 
-PSafePtrBase::PSafePtrBase(PSafeCollection & safeCollection,
+PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
                            PSafetyMode mode,
                            PINDEX idx)
 {
@@ -298,7 +323,7 @@ PSafePtrBase::PSafePtrBase(PSafeCollection & safeCollection,
 }
 
 
-PSafePtrBase::PSafePtrBase(PSafeCollection & safeCollection,
+PSafePtrBase::PSafePtrBase(const PSafeCollection & safeCollection,
                            PSafetyMode mode,
                            PSafeObject * obj)
 {
@@ -328,11 +353,13 @@ PSafePtrBase::~PSafePtrBase()
 
 PObject::Comparison PSafePtrBase::Compare(const PObject & obj) const
 {
-  PAssert(PIsDescendant(&obj, PSafePtrBase), PInvalidCast);
-  PSafeObject * otherObject = ((const PSafePtrBase &)obj).currentObject;
-  if (currentObject < otherObject)
+  const PSafePtrBase * other = PDownCast(const PSafePtrBase, &obj);
+  if (other == NULL)
+    return GreaterThan;
+
+  if (currentObject < other->currentObject)
     return LessThan;
-  if (currentObject > otherObject)
+  if (currentObject > other->currentObject)
     return GreaterThan;
   return EqualTo;
 }
@@ -354,7 +381,7 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
 }
 
 
-void PSafePtrBase::Assign(PSafeCollection & safeCollection)
+void PSafePtrBase::Assign(const PSafeCollection & safeCollection)
 {
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
