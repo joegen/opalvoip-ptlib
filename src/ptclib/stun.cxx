@@ -29,14 +29,14 @@
 #include <cstring>
 #endif
 
-#if !defined(_ERRNO_H)
-#include <errno.h>
-#endif
-
 #ifdef _WIN32_WCE
 #include <winsock.h>
 #define CLOSE closesocket
 #define assert
+
+#if !defined(_ERRNO_H)
+#include <errno.h>
+#endif
 
 #else // !_WIN32_WCE
 #define CLOSE close
