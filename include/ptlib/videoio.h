@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.19  2001/08/06 06:12:45  rogerh
+ * Fix comments
+ *
  * Revision 1.18  2001/08/03 04:21:51  dereks
  * Add colour/size conversion for YUV422->YUV411P
  * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
@@ -349,6 +352,7 @@ class PVideoDevice : public PObject
       */
     int GetLastError() const { return lastError; }
 
+
     /**Get the brightness of the image. 0xffff-Very bright.
      */
     virtual int GetBrightness() { return frameBrightness; }
@@ -358,7 +362,8 @@ class PVideoDevice : public PObject
     virtual BOOL SetBrightness(unsigned newBrightness) 
       { frameBrightness=newBrightness; return TRUE;}
 
-    /**Get the whiteness of the image. 0xffff-Very bright.
+
+    /**Get the whiteness of the image. 0xffff-Very white.
      */
     virtual int GetWhiteness() { return frameWhiteness; }
 
@@ -366,6 +371,7 @@ class PVideoDevice : public PObject
      */
     virtual BOOL SetWhiteness(unsigned newWhiteness) 
       { frameWhiteness=newWhiteness; return TRUE;}
+
 
     /**Get the colour of the image. 0xffff-lots of colour.
      */
@@ -376,6 +382,7 @@ class PVideoDevice : public PObject
     virtual BOOL SetColour(unsigned newColour) 
       { frameColour=newColour; return TRUE; }
 
+
     /**Get the contrast of the image. 0xffff-High contrast.
      */
     virtual int GetContrast() { return frameContrast; }
@@ -384,6 +391,7 @@ class PVideoDevice : public PObject
      */
     virtual BOOL SetContrast(unsigned newContrast) 
       { frameContrast=newContrast; return TRUE; }
+
 
     /**Get the hue of the image. 0xffff-High hue.
      */
