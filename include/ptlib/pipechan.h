@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.6 1995/01/09 12:39:01 robertj Exp $
+ * $Id: pipechan.h,v 1.7 1995/03/14 12:42:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
- * Revision 1.6  1995/01/09 12:39:01  robertj
+ * Revision 1.7  1995/03/14 12:42:02  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.6  1995/01/09  12:39:01  robertj
  * Documentation.
  *
  * Revision 1.5  1994/10/23  04:50:55  robertj
@@ -38,29 +41,30 @@
 
 PDECLARE_CONTAINER(PPipeChannel, PChannel)
 /* A channel that uses a operating system pipe between the current process and
-   a sub-process. On platforms that support $I$multi-processing$I$, the
+   a sub-process. On platforms that support <I>multi-processing</I>, the
    sub-program is executed concurrently with the calling process.
    
-   Where full multi-processing is not supported then the sub-program is run with
-   its input supplied from, or output captured to, a disk file. The current
-   process is then suspended during the execution of the sub-program. In the
-   latter case the semantics of the $B$Execute()$B$ and $B$Close()$B$ functions
-   change from the usual for channels.
+   Where full multi-processing is not supported then the sub-program is run
+   with its input supplied from, or output captured to, a disk file. The
+   current process is then suspended during the execution of the sub-program.
+   In the latter case the semantics of the <A><CODE>Execute()</CODE></A> and
+   <A><CODE>Close()</CODE></A> functions change from the usual for channels.
 
    Note that for platforms that do not support multi-processing, the current
    process is suspended until the sub-program terminates. The input and output
    of the sub-program is transferred via a temporary file. The exact moment of
-   execution of the sub-program depends on the mode. If mode is $B$ReadOnly$B$
-   then it is executed immediately and its output captured. In $B$WriteOnly$B$
-   mode the sub-program is run when the $B$Close()$B$ function is called, or
-   when the pipe channel is destroyed. In $B$ReadWrite$B$ mode the sub-program
-   is run when the $B$Execute()$B$ function is called indicating that the
-   output from the current process to the sub-program has completed and input
-   is now desired.
+   execution of the sub-program depends on the mode. If mode is
+   <A><CODE>ReadOnly</CODE></A> then it is executed immediately and its output
+   captured. In <A><CODE>WriteOnly</CODE></A> mode the sub-program is run when
+   the <A><CODE>Close()</CODE></A> function is called, or when the pipe
+   channel is destroyed. In <A><CODE>ReadWrite</CODE></A> mode the sub-program
+   is run when the <A><CODE>Execute()</CODE></A> function is called indicating
+   that the output from the current process to the sub-program has completed
+   and input is now desired.
    
-   The $B$CanReadAndWrite()$B$ function effectively determines whether full
-   multi-processing is supported by the platform. Note that this is different
-   to whether $I$multi-threading$I$ is supported.
+   The <A><CODE>CanReadAndWrite()</CODE></A> function effectively determines
+   whether full multi-processing is supported by the platform. Note that this
+   is different to whether <I>multi-threading</I> is supported.
  */
 
   public:
@@ -96,26 +100,29 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     /* Create a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout.
        
-       If the mode is $B$ReadOnly$B$ then the stdout of the sub-program is
-       supplied via the $B$Read()$B$ calls of the PPipeChannel. The
-       sub-programs input is set to the platforms NULL device (eg /dev/nul).
+       If the mode is <A><CODE>ReadOnly</CODE></A> then the stdout of the
+       sub-program is supplied via the <A><CODE>Read()</CODE></A> calls of the
+       PPipeChannel. The sub-programs input is set to the platforms NULL
+       device (eg /dev/nul).
 
-       If mode is $B$WriteOnly$B$ then $B$Write()$B$ calls of the PPipeChannel
-       are suppied to the sub-programs stdin and its stdout is sent to the
-       NULL device.
+       If mode is <A><CODE>WriteOnly</CODE></A> then
+       <A><CODE>Write()</CODE></A> calls of the PPipeChannel are suppied to
+       the sub-programs stdin and its stdout is sent to the NULL device.
        
-       If mode is $B$ReadWrite$B$ then both read and write actions can occur.
+       If mode is <A><CODE>ReadWrite</CODE></A> then both read and write
+       actions can occur.
 
-       The $B$subProgram$B$ parameter may contain just the path of the program
-       to be run or a program name and space separated arguments, similar to
-       that provided to the platforms command processing shell. Which use of
-       this parameter is determiend by whether arguments are passed via the
-       $B$argumentPointers$B$ or $B$argumentList$B$ parameters.
+       The <CODE>subProgram</CODE> parameter may contain just the path of the
+       program to be run or a program name and space separated arguments,
+       similar to that provided to the platforms command processing shell.
+       Which use of this parameter is determiend by whether arguments are
+       passed via the <CODE>argumentPointers</CODE> or
+       <CODE>argumentList</CODE> parameters.
 
-       The $B$searchPath$B$ parameter indicates that the system PATH for
-       executables should be searched for the sub-program. If FALSE then only
-       the explicit or implicit path contained in the $B$subProgram$B$
-       parameter is searched for the executable.
+       The <CODE>searchPath</CODE> parameter indicates that the system PATH
+       for executables should be searched for the sub-program. If FALSE then
+       only the explicit or implicit path contained in the
+       <CODE>subProgram</CODE> parameter is searched for the executable.
      */
 
 
@@ -127,7 +134,8 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
        actually compares the sub-program names that are passed into the
        constructor.
 
-       Returns: Comparison value of the sub-program strings.
+       <H2>Returns:</H2>
+       Comparison value of the sub-program strings.
      */
 
 
@@ -135,7 +143,8 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     virtual PString GetName() const;
     /* Get the name of the channel.
     
-       Returns: string for the sub-program that is run.
+       <H2>Returns:</H2>
+       string for the sub-program that is run.
      */
 
     virtual BOOL Read(
@@ -154,9 +163,9 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
        The GetErrorCode() function should be consulted after Read() returns
        FALSE to determine what caused the failure.
 
-       Returns: TRUE indicates that at least one character was read from the
-                channel. FALSE means no bytes were read due to timeout or
-                some other I/O error.
+       <H2>Returns:</H2>
+       TRUE indicates that at least one character was read from the channel.
+       FALSE means no bytes were read due to timeout or some other I/O error.
      */
 
     virtual BOOL Write(
@@ -174,16 +183,18 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
        The GetErrorCode() function should be consulted after Write() returns
        FALSE to determine what caused the failure.
 
-       Returns: TRUE if at least len bytes were written to the channel.
+       <H2>Returns:</H2>
+       TRUE if at least len bytes were written to the channel.
      */
 
     virtual BOOL Close();
     /* Close the channel. This will kill the sub-program's process (on
        platforms where that is relevent).
        
-       For $B$WriteOnly$B$ or $B$ReadWrite$B$ mode pipe channels on platforms
-       that do no support concurrent mult-processing and have not yet called
-       the $B$Execute()$B$ function this will run the sub-program.
+       For <A><CODE>WriteOnly</CODE></A> or <A><CODE>ReadWrite</CODE></A> mode
+       pipe channels on platforms that do no support concurrent
+       mult-processing and have not yet called the
+       <A><CODE>Execute()</CODE></A> function this will run the sub-program.
      */
 
 
@@ -191,7 +202,8 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     const PFilePath & GetSubProgram() const;
     /* Get the full file path for the sub-programs executable file.
 
-       Returns: file path name for sub-program.
+       <H2>Returns:</H2>
+       file path name for sub-program.
      */
 
     BOOL Execute();
@@ -211,7 +223,8 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     /* Determine if the platform can support simultaneous read and writes from
        the PPipeChannel (eg MSDOS returns FALSE, Unix returns TRUE).
        
-       Returns: TRUE if platform supports concurrent multi-processing.
+       <H2>Returns:</H2>
+       TRUE if platform supports concurrent multi-processing.
      */
 
 
