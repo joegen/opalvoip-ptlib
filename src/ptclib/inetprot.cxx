@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.6 1996/01/28 14:11:11 robertj Exp $
+ * $Id: inetprot.cxx,v 1.7 1996/02/03 11:33:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.7  1996/02/03 11:33:17  robertj
+ * Changed RadCmd() so can distinguish between I/O error and unknown command.
+ *
  * Revision 1.6  1996/01/28 14:11:11  robertj
  * Fixed bug in MIME content types for non caseless strings.
  * Added default value in string for service name.
@@ -278,21 +281,21 @@ BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
 }
 
 
-PINDEX PApplicationSocket::ReadCommand(PString & args)
+BOOL PApplicationSocket::ReadCommand(PINDEX & num, PString & args)
 {
   if (!ReadLine(args))
-    return P_MAX_INDEX;
+    return FALSE;
 
   PINDEX endCommand = args.Find(' ');
   if (endCommand == P_MAX_INDEX)
     endCommand = args.GetLength();
   PCaselessString cmd = args.Left(endCommand);
 
-  PINDEX num = commandNames.GetValuesIndex(cmd);
+  num = commandNames.GetValuesIndex(cmd);
   if (num != P_MAX_INDEX)
     args = args.Mid(endCommand+1);
 
-  return num;
+  return TRUE;
 }
 
 
@@ -909,7 +912,11 @@ BOOL PSMTPSocket::EndMessage()
 BOOL PSMTPSocket::ProcessCommand()
 {
   PString args;
-  switch (ReadCommand(args)) {
+  PINDEX num;
+  if (!ReadCommand(num, args))
+    return FALSE;
+
+  switch (num) {
     case HELO :
       OnHELO(args);
       break;
@@ -1481,7 +1488,11 @@ BOOL PPOP3Socket::DeleteMessage(PINDEX messageNumber)
 BOOL PPOP3Socket::ProcessCommand()
 {
   PString args;
-  switch (ReadCommand(args)) {
+  PINDEX num;
+  if (!ReadCommand(num, args))
+    return FALSE;
+
+  switch (num) {
     case USER :
       OnUSER(args);
       break;
