@@ -523,7 +523,7 @@ static int LookupWord(char * buff, YYSTYPE * yylval)
 
     /* Make it lowercase. */
     for (p = buff; *p != '\0'; p++)
-        *p = tolower(*p);
+        *p = (char)tolower(*p);
 
     if (strcmp(buff, "am") == 0 || strcmp(buff, "a.m.") == 0) {
 	yylval->Meridian = MERam;
