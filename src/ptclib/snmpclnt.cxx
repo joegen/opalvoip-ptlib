@@ -1,11 +1,14 @@
 /*
- * $Id: snmpclnt.cxx,v 1.4 1996/11/04 04:00:00 robertj Exp $
+ * $Id: snmpclnt.cxx,v 1.5 1996/11/10 21:06:17 robertj Exp $
  *
  * SNMP Client Interface
  *
  * Copyright 1996 Equivalence
  *
  * $Log: snmpclnt.cxx,v $
+ * Revision 1.5  1996/11/10 21:06:17  robertj
+ * Fixed endless retry bug in SNMP get.
+ *
  * Revision 1.4  1996/11/04 04:00:00  robertj
  * Added support for UDP packet truncation is reading SNMP reply.
  *
@@ -174,7 +177,7 @@ BOOL PSNMPClient::ReadRequest(PBYTEArray & readBuffer)
   }
 
   // length of packet is length of header + length of data
-  len += hdrLen;
+  len = (WORD)(len + hdrLen);
 
   // return TRUE if we have the packet, else return FALSE
   if (len <= maxRxSize) 
@@ -256,7 +259,7 @@ BOOL PSNMPClient::WriteRequest(PASNInt requestCode,
     // receive a packet
     if (ReadRequest(readBuffer))
       break;
-    else if (lastErrorCode != NoResponse)
+    else if ((lastErrorCode != NoResponse) || (retry == 0))
       return FALSE;
     else
       retry--;
