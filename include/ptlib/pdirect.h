@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.36  2002/11/19 10:34:59  robertj
+ * Added function to extract a path as an array of directories components.
+ *
  * Revision 1.35  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -339,6 +342,10 @@ class PDirectory : public PFilePathString
        TRUE if the object is a root directory.
      */
     BOOL IsRoot() const;
+
+    /**Get the directory path as an array of strings.
+      */
+    PStringArray GetPath() const;
 
     /**Determine if the character #ch# is a directory path
        separator.
