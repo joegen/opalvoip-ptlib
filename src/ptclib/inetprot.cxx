@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.31 1997/06/06 08:53:51 robertj Exp $
+ * $Id: inetprot.cxx,v 1.32 1997/06/09 04:30:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.32  1997/06/09 04:30:03  robertj
+ * Fixed multiple MIME field bug.
+ *
  * Revision 1.31  1997/06/06 08:53:51  robertj
  * Fixed bug with multiple cookies (MIME fields) are sent to IE.
  *
@@ -553,8 +556,17 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
-  for (PINDEX i = 0; i < GetSize(); i++)
-    strm << GetKeyAt(i) << ": " << GetDataAt(i) << '\n';
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PString name = GetKeyAt(i) + ": ";
+    PString value = GetDataAt(i);
+    if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
+      PStringArray vals = value.Lines();
+      for (PINDEX j = 0; j < vals.GetSize(); j++)
+        strm << name << vals[j];
+    }
+    else
+      strm << name << value;
+  }
   strm << endl;
 }
 
@@ -572,7 +584,7 @@ void PMIMEInfo::ReadFrom(istream &strm)
       PCaselessString fieldName  = line.Left(colonPos).Trim();
       PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
       if (Contains(fieldName))
-        fieldValue = (*this)[fieldName] + ", " + fieldValue;
+        fieldValue = (*this)[fieldName] + "\n" + fieldValue;
       SetAt(fieldName, fieldValue);
     }
   }
@@ -591,7 +603,7 @@ BOOL PMIMEInfo::Read(PInternetProtocol & socket)
       PCaselessString fieldName  = line.Left(colonPos).Trim();
       PString fieldValue = line(colonPos+1, P_MAX_INDEX).Trim();
       if (Contains(fieldName))
-        fieldValue = (*this)[fieldName] + ", " + fieldValue;
+        fieldValue = (*this)[fieldName] + "\n" + fieldValue;
       SetAt(fieldName, fieldValue);
     }
   }
@@ -605,10 +617,10 @@ BOOL PMIMEInfo::Write(PInternetProtocol & socket) const
   for (PINDEX i = 0; i < GetSize(); i++) {
     PString name = GetKeyAt(i) + ": ";
     PString value = GetDataAt(i);
-    if (value.Find(',') != P_MAX_INDEX) {
-      PStringArray vals = value.Tokenise(',');
+    if (value.FindOneOf("\r\n") != P_MAX_INDEX) {
+      PStringArray vals = value.Lines();
       for (PINDEX j = 0; j < vals.GetSize(); j++) {
-        if (!socket.WriteLine(name + vals[i]))
+        if (!socket.WriteLine(name + vals[j]))
           return FALSE;
       }
     }
