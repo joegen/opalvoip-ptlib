@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.3  2003/02/09 23:31:54  robertj
+ * Added referention PString's for efficiency.
+ *
  * Revision 1.2  2003/02/09 23:22:46  robertj
  * Fixed spelling errors, and setting return values, thanks Andreas Sikkema
  *
@@ -227,7 +230,7 @@ PINDEX stringToFaultCode( PString & faultStr )
   return PSOAPMessage::Server;
 }
 
-BOOL PSOAPMessage::GetParameter( PString name, PString & value )
+BOOL PSOAPMessage::GetParameter( const PString & name, PString & value )
 {
   PXMLElement* pElement = GetParameter( name );
 
@@ -241,7 +244,7 @@ BOOL PSOAPMessage::GetParameter( PString name, PString & value )
   return FALSE;
 }
 
-BOOL PSOAPMessage::GetParameter( PString name, int & value )
+BOOL PSOAPMessage::GetParameter( const PString & name, int & value )
 {
   PXMLElement* pElement = GetParameter( name );
 
@@ -255,7 +258,7 @@ BOOL PSOAPMessage::GetParameter( PString name, int & value )
   return FALSE;
 }
 
-PXMLElement* PSOAPMessage::GetParameter( PString name )
+PXMLElement* PSOAPMessage::GetParameter( const PString & name )
 {
   if ( pSOAPMethod )
   {
