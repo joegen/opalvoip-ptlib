@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.5  2003/12/08 01:28:52  dereksmithies
+ * Compiles now with new video plugins.
+ *
  * Revision 1.4  2003/11/04 03:21:26  dereksmithies
  * Fix compile on windows OS.
  *
@@ -74,22 +77,31 @@ void VidTest::Main()
          PTrace::Blocks | PTrace::Timestamp | PTrace::Thread | PTrace::FileAndLine);
 #endif
 
+  PVideoInputDevice * grabber;
+
+  cout << "Available video input devices:" << endl
+       << "  video type              device name" << endl;
+  PStringList drivers = PVideoInputDevice::GetDriverNames();
+  for (int i = 0; i < drivers.GetSize(); i++) {
+    grabber = PVideoInputDevice::CreateDevice(drivers[i]);
+    PStringList devices = grabber->GetDeviceNames(drivers[i]);
+    for (int j = 0; j < devices.GetSize(); j++) {
+      cout << "   " << drivers[i] << "                    " << devices[j] << endl;
+    }
+    delete grabber;
+  }
   PString videoDevice = args.GetOptionString("videodevice");
   if (videoDevice.IsEmpty()) {
-    cout << "Available video input devices:" << endl;
-    PStringArray devs = PVideoInputDevice().GetDeviceNames() + "fake";
-    PINDEX i;
-    for (i = 0; i < devs.GetSize(); i++)
-      cout << "   " << devs[i] << endl;
+    cout << " No video device specified" << endl;
     return;
   }
 
-  PVideoInputDevice * grabber;
-  if (videoDevice *= "fake")
-    grabber = new PFakeVideoInputDevice();
-  else
-    grabber = new PVideoInputDevice();
-
+  grabber = PVideoInputDevice::CreateDevice(videoDevice);
+  if (grabber == NULL) {
+    PError << "Cannot create video input device " << videoDevice << endl;
+    return;
+  }
+    
   if (!grabber->Open(videoDevice, FALSE)) {
     PError << "Cannot open device " << videoDevice << endl;
     return;
