@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.43  2004/06/30 12:17:06  rjongbloed
+ * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
+ *   of issues with startup orders and Windows DLL multiple instances.
+ *
  * Revision 1.42  2004/06/08 01:19:22  csoutheren
  * Fixed problem with SNMP library not loading under Windows in some cases
  *
@@ -344,11 +348,11 @@ class WinSNMPLoader : public PProcessStartup
 
 PWin32SnmpLibrary * WinSNMPLoader::snmpLibrary = NULL;
 
-static PAbstractSingletonFactory<PProcessStartup, WinSNMPLoader> winSNMPLoadedStartupFactory("WinSNMPLoader");
+static PFactory<PProcessStartup>::Worker<WinSNMPLoader> winSNMPLoadedStartupFactory("WinSNMPLoader", true);
 
 PWin32SnmpLibrary & PWin32SnmpLibrary::Current()
 { 
-  return ((WinSNMPLoader *)PGenericFactory<PProcessStartup>::CreateInstance("WinSNMPLoader"))->Current();
+  return ((WinSNMPLoader *)PFactory<PProcessStartup>::CreateInstance("WinSNMPLoader"))->Current();
 }
 
 PMutex & PWin32SnmpLibrary::GetMutex()
