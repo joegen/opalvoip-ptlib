@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.48  2004/07/26 00:40:41  csoutheren
+ * Fixed thread starvation problem under Linux by splitting channelMutex
+ * into seperate read and write mutexes
+ *
  * Revision 1.47  2004/07/23 00:59:26  csoutheren
  * Check in latest changes
  *
@@ -2314,7 +2318,8 @@ BOOL PVXMLChannel::IsOpen() const
 
 BOOL PVXMLChannel::Close()
 { 
-  PWaitAndSignal m(channelMutex);
+  PWaitAndSignal m1(channelReadMutex);
+  PWaitAndSignal m2(channelWriteMutex);
 
   PDelayChannel::Close(); 
   closed = TRUE; 
@@ -2386,7 +2391,7 @@ PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
 
 BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
 {
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(channelWriteMutex);
 
   if (closed)
     return FALSE;
@@ -2434,7 +2439,7 @@ BOOL PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
   EndRecording();
 
   // insert the new recordable
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(channelWriteMutex);
   recordable = newItem;
   recording = TRUE;
   totalData = 0;
@@ -2447,7 +2452,7 @@ BOOL PVXMLChannel::QueueRecordable(PVXMLRecordable * newItem)
 
 BOOL PVXMLChannel::EndRecording()
 {
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(channelWriteMutex);
 
   if (recordable != NULL) {
     PTRACE(3, "PVXML\tFinished recording " << totalData << " bytes");
@@ -2464,7 +2469,7 @@ BOOL PVXMLChannel::EndRecording()
 
 BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
 {
-  PWaitAndSignal m(channelMutex);
+  PWaitAndSignal m(channelReadMutex);
 
   if (closed)
     return FALSE;
@@ -2496,7 +2501,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
     }
 
     // if nothing in queue, then return silence
-    if (qSize == 0)
+    if (qSize == 0) 
       silenceStuff = TRUE;
 
     // otherwise queue the next data item
@@ -2658,7 +2663,7 @@ BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX dela
 
 void PVXMLChannel::FlushQueue()
 {
-  PWaitAndSignal mutex(channelMutex);
+  PWaitAndSignal mutex(channelReadMutex);
 
   if (GetBaseReadChannel() != NULL)
     PDelayChannel::Close();
