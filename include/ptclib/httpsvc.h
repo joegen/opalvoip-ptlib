@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.20 1998/02/16 00:15:13 robertj Exp $
+ * $Id: httpsvc.h,v 1.21 1998/03/17 10:16:00 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.21  1998/03/17 10:16:00  robertj
+ * Allowed registration page to have HTML override.
+ *
  * Revision 1.20  1998/02/16 00:15:13  robertj
  * Major rewrite of application info passed in PHTTPServiceProcess constructor.
  *
@@ -282,6 +285,7 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
     PString LoadText(
       PHTTPRequest & request        // Information on this request.
     );
+    void OnLoadedText(PHTTPRequest & request, PString & text);
 
     virtual BOOL Post(
       PHTTPRequest & request,       // Information on this request.
