@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.30  2004/04/11 07:58:07  csoutheren
+ * Added configure.in check for recursive mutexes, and changed implementation
+ * without recursive mutexes to use PCriticalSection or atomic word structs
+ *
  * Revision 1.29  2004/04/11 06:15:27  csoutheren
  * Modified to use Atomic_word if available
  *
@@ -427,6 +431,7 @@
 #undef	P_HAS_POSIX_READDIR_R
 #undef  P_HAS_STL_STREAMS
 #undef  P_HAS_ATOMIC_INT
+#undef  P_HAS_RECURSIVE_MUTEX
 
 #endif // _PT_BUILDOPTS_H
 

@@ -401,7 +401,7 @@ if test ${HAS_PTHREADS} = yes ; then
 
   AC_CHECK_LIB(pthread, sem_timedwait, HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
   if test ${HAS_SEMAPHORES_XPG6} = yes ; then
-    AC_MSG_CHECKING(if sem_timedwait will compile)
+    AC_MSG_CHECKING(if sem_timedwait is compilable)
     AC_TRY_COMPILE([#include <semaphore.h>],
                     [sem_t *s; const struct timespec * t; sem_timedwait(s, t);], HAS_SEMAPHORES_XPG6=yes, HAS_SEMAPHORES_XPG6=no)
     if test ${HAS_SEMAPHORES_XPG6} = yes ; then
@@ -412,6 +412,20 @@ if test ${HAS_PTHREADS} = yes ; then
     fi
   fi
 fi
+
+dnl ########################################################################
+dnl check for recursive mutexes
+P_HAS_RECURSIVE_MUTEX=0
+AC_MSG_CHECKING(if recursive mutexes are available)
+AC_TRY_COMPILE([#include <pthread.h>],
+               [pthread_mutexattr_t attr; pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);], P_HAS_RECURSIVE_MUTEX=1)
+if test ${P_HAS_RECURSIVE_MUTEX} = 1 ; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_DEFINE_UNQUOTED(P_HAS_RECURSIVE_MUTEX, ${P_HAS_RECURSIVE_MUTEX})
+
 
 dnl ########################################################################
 dnl check for regex library
