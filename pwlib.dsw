@@ -93,6 +93,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "PacketVxD"=.\Tools\PacketVxD\PacketVxD.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "PhonePatch"=.\Apps\PhonePatch\PhonePatch.dsp - Package Owner=<4>
 
 Package=<5>
@@ -108,7 +120,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Test"=.\Test\Test.dsp - Package Owner=<4>
+Project: "Test"=.\Tools\Test\Test.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -123,7 +135,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "pwrc"=.\pwrc\pwrc.dsp - Package Owner=<4>
+Project: "pwrc"=.\Tools\PWRc\pwrc.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -138,7 +150,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "pwtest"=.\pwtest\pwtest.dsp - Package Owner=<4>
+Project: "pwtest"=.\Tools\pwtest\pwtest.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
