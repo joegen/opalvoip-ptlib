@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.66  2001/03/04 02:24:44  robertj
+ * Removed default OnControl() from http service as cannot get port number.
+ *
  * Revision 1.65  2001/02/21 04:33:46  robertj
  * Fixed GNU warning.
  *
@@ -338,25 +341,6 @@ void PHTTPServiceProcess::OnContinue()
 
   OnStop();
   Terminate();
-}
-
-void PHTTPServiceProcess::OnControl()
-{
-  // This function get called when the Control menu item is selected in the
-  // tray icon mode of the service.
-  PStringStream url;
-  url << "http://";
-
-  PString host = PIPSocket::GetHostName();
-  PIPSocket::Address addr;
-  if (PIPSocket::GetHostAddress(host, addr))
-    url << host;
-  else
-    url << "localhost";
-
-  url << ':' << httpListeningSocket->GetPort();
-
-  PURL::OpenBrowser(url);
 }
 
 
