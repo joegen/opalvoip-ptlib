@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.6 1997/04/12 02:07:26 robertj Exp $
+ * $Id: httpform.cxx,v 1.7 1997/06/08 04:47:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.7  1997/06/08 04:47:27  robertj
+ * Adding new llist based form field.
+ *
  * Revision 1.6  1997/04/12 02:07:26  robertj
  * Fixed boolean check boxes being more flexible on string values.
  *
@@ -75,6 +78,93 @@ BOOL PHTTPField::Validated(const PString &, PStringStream &) const
 }
 
 
+PINDEX PHTTPField::GetListCount() const
+{
+  return 1;
+}
+
+
+PString PHTTPField::GetListValue(PINDEX) const
+{
+  return GetValue();
+}
+
+
+void PHTTPField::SetListValue(const PStringToString & data)
+{
+  SetValue(data(name));
+}
+
+
+BOOL PHTTPField::ValidateList(const PStringToString & data, PStringStream & msg) const
+{
+  return Validated(data(name), msg);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPListField
+
+PHTTPListField::PHTTPListField(PHTTPField * fld)
+  : PHTTPField(*fld), templateField(fld)
+{
+}
+
+
+PHTTPListField::~PHTTPListField()
+{
+  delete templateField;
+}
+
+
+void PHTTPListField::GetHTML(PHTML & html)
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    fields[i].GetHTML(html);
+}
+
+
+PINDEX PHTTPListField::GetListCount() const
+{
+  return fields.GetSize();
+}
+
+
+BOOL PHTTPListField::ValidateList(const PStringToString & data,
+                                  PStringStream & msg) const
+{
+  PString name_n;
+  PINDEX i = 0;
+  for (;;) {
+    name_n = name+psprintf("%u", i+1);
+    if (i >= fields.GetSize())
+      break;
+
+    if (!fields[i].Validated(data(name_n), msg))
+      return FALSE;
+    i++;
+  }
+
+  if (data.Contains(name_n) && !Validated(data[name_n], msg))
+    return FALSE;
+
+  return TRUE;
+}
+
+
+PString PHTTPListField::GetListValue(PINDEX idx) const
+{
+  return fields[idx].GetValue();
+}
+
+
+void PHTTPListField::SetListValue(const PStringToString & data)
+{
+  for (PINDEX i = 0; i < fields.GetSize(); i++)
+    fields[i].SetValue(data(name + psprintf("%u", i+1)));
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPStringField
 
@@ -102,13 +192,12 @@ PHTTPStringField::PHTTPStringField(const char * name,
 void PHTTPStringField::GetHTML(PHTML & html)
 {
   html << PHTML::InputText(name, size, value);
-  notInHTML = FALSE;
 }
 
 
-void PHTTPStringField::SetValue(const PString & val)
+void PHTTPStringField::SetValue(const PString & newVal)
 {
-  value = val;
+  value = newVal;
 }
 
 
@@ -143,7 +232,6 @@ PHTTPPasswordField::PHTTPPasswordField(const char * name,
 void PHTTPPasswordField::GetHTML(PHTML & html)
 {
   html << PHTML::InputPassword(name, size, value);
-  notInHTML = FALSE;
 }
 
 
@@ -176,8 +264,7 @@ PHTTPIntegerField::PHTTPIntegerField(const char * nam,
 }
 
 
-BOOL PHTTPIntegerField::Validated(const PString & newVal,
-                                                     PStringStream & msg) const
+BOOL PHTTPIntegerField::Validated(const PString & newVal, PStringStream & msg) const
 {
   int val = newVal.AsInteger();
   if (val >= low && val <= high)
@@ -192,13 +279,12 @@ BOOL PHTTPIntegerField::Validated(const PString & newVal,
 void PHTTPIntegerField::GetHTML(PHTML & html)
 {
   html << PHTML::InputRange(name, low, high, value) << "  " << units;
-  notInHTML = FALSE;
 }
 
 
-void PHTTPIntegerField::SetValue(const PString & val)
+void PHTTPIntegerField::SetValue(const PString & newVal)
 {
-  value = val.AsInteger();
+  value = newVal.AsInteger();
 }
 
 
@@ -233,7 +319,6 @@ PHTTPBooleanField::PHTTPBooleanField(const char * name,
 void PHTTPBooleanField::GetHTML(PHTML & html)
 {
   html << PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
-  notInHTML = FALSE;
 }
 
 
@@ -367,7 +452,6 @@ void PHTTPRadioField::GetHTML(PHTML & html)
                         values[i] == value ? PHTML::Checked : PHTML::UnChecked)
          << titles[i]
          << PHTML::BreakLine();
-  notInHTML = FALSE;
 }
 
 
@@ -377,9 +461,9 @@ PString PHTTPRadioField::GetValue() const
 }
 
 
-void PHTTPRadioField::SetValue(const PString & val)
+void PHTTPRadioField::SetValue(const PString & newVal)
 {
-  value = val;
+  value = newVal;
 }
 
 
@@ -441,11 +525,9 @@ void PHTTPSelectField::GetHTML(PHTML & html)
 {
   html << PHTML::Select(name);
   for (PINDEX i = 0; i < values.GetSize(); i++)
-    html << PHTML::Option(
-                    values[i] == value ? PHTML::Selected : PHTML::NotSelected)
+    html << PHTML::Option(values[i] == value ? PHTML::Selected : PHTML::NotSelected)
          << values[i];
   html << PHTML::Select();
-  notInHTML = FALSE;
 }
 
 
@@ -455,9 +537,9 @@ PString PHTTPSelectField::GetValue() const
 }
 
 
-void PHTTPSelectField::SetValue(const PString & val)
+void PHTTPSelectField::SetValue(const PString & newVal)
 {
-  value = val;
+  value = newVal;
 }
 
 
@@ -485,6 +567,21 @@ PHTTPForm::PHTTPForm(const PURL & url,
                      const PHTTPAuthority & auth)
   : PHTTPString(url, html, auth)
 {
+}
+
+
+void PHTTPForm::OnLoadedText(PHTTPRequest &, PString & text)
+{
+  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
+    PHTTPField & field = fields[fld];
+    PString arg = "<!--PHTTPForm NAME=" + field.GetName() + "-->";
+    PINDEX pos = text.Find(arg);
+    if (pos != P_MAX_INDEX) {
+      PHTML html = PHTML::InForm;
+      field.GetHTML(html);
+      text.Splice(html, pos, arg.GetLength());
+    }
+  }
 }
 
 
@@ -525,11 +622,10 @@ void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
            << PHTML::TableData("align=right")
            << field.GetTitle()
            << PHTML::TableData("align=left")
-           << "<!--PHTTPForm NAME=" << field.GetName() << "-->";
-      field.GetHTML(html);
-      html << "<!--/PHTTPForm-->"
+           << "<!--PHTTPForm NAME=" << field.GetName() << "-->"
            << PHTML::TableData()
            << field.GetHelp();
+      field.SetInHTML();
     }
   }
   html << PHTML::TableEnd();
@@ -560,9 +656,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   BOOL good = TRUE;
   PINDEX fld;
   for (fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name) && !field.Validated(data[name], msg))
+    if (!fields[fld].ValidateList(data, msg))
       good = FALSE;
   }
 
@@ -572,14 +666,8 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
     return TRUE;
   }
 
-  for (fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name))
-      field.SetValue(data[name]);
-    else
-      field.SetValue("");
-  }
+  for (fld = 0; fld < fields.GetSize(); fld++)
+    fields[fld].SetListValue(data);
 
   msg = "Accepted New Configuration";
   msg << PHTML::Body();
@@ -647,15 +735,9 @@ void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     field.SetValue(cfg.GetString(field.GetName(), field.GetValue()));
-    PINDEX start = text.Find("<!--PHTTPForm NAME=" + field.GetName() + "-->");
-    if (start != P_MAX_INDEX) {
-      PINDEX end = text.Find("<!--/PHTTPForm-->", start);
-      PAssert(end != P_MAX_INDEX, PLogicError);
-      PHTML html = PHTML::InForm;
-      field.GetHTML(html);
-      text.Splice(html, start, end - start + 17);
-    }
   }
+
+  PHTTPForm::OnLoadedText(request, text);
 }
 
 
