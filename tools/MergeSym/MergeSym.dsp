@@ -71,7 +71,7 @@ PostBuild_Cmds=copy Release\mergesym.exe ..\..\lib > nul
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\msos\include" /I "..\..\common" /D "_DEBUG" /D "PTRACING" /YX /FD /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /I "..\..\common" /D "_DEBUG" /D "PTRACING" /YX /FD /c
 # ADD BASE RSC /l 0xc09 /d "_DEBUG"
 # ADD RSC /l 0xc09 /d "_DEBUG"
 BSC32=bscmake.exe
