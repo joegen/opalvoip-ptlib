@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.38  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.37  2003/04/01 06:01:48  robertj
  * Fixed problem with returning correct route table device name if have
  *   2 NIC's under Windows 2000, thanks faa06@tid.es
@@ -196,7 +199,7 @@ typedef enum _NDIS_MEDIUM {
 
 
 #define USE_VPACKET
-#include <ptlib/epacket.h>
+#include <ptlib/msos/ptlib/epacket.h>
 
 #ifdef USE_VPACKET
 #define PACKET_SERVICE_NAME "Packet"

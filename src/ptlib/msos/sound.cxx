@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.36  2003/09/17 05:45:10  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.35  2003/06/05 05:20:35  rjongbloed
  * Fixed WinCE compatibility, thanks Yuri Kiryanov
  *
@@ -139,7 +142,6 @@
 #include <ptlib.h>
 #include <mmsystem.h>
 #include <process.h>
-
 
 class PMultiMediaFile
 {
