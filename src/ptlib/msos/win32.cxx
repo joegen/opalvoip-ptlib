@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.53 1997/08/21 13:27:41 robertj Exp $
+ * $Id: win32.cxx,v 1.54 1997/08/28 12:50:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.54  1997/08/28 12:50:21  robertj
+ * Fixed race condition in cleaning up threads on application termination.
+ *
  * Revision 1.53  1997/08/21 13:27:41  robertj
  * Attempt to fix very slight possibility of endless loop in housekeeping thread.
  *
@@ -1921,8 +1924,13 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (originalStackSize > 0 && !IsTerminated())
+  if (originalStackSize > 0 && !IsTerminated()) {
+    PProcess & process = PProcess::Current();
+    process.threadMutex.Wait();
+    process.activeThreads.SetAt(threadId, NULL);
+    process.threadMutex.Signal();
     Terminate();
+  }
 }
 
 
@@ -2132,6 +2140,10 @@ PProcess::~PProcess()
 {
   Sleep(1000);  // Give threads time to die a natural death
 
+  // Get rid of the house keeper (majordomocide)
+  delete houseKeeper;
+
+  // OK, if there are any left we get really insistent...
   threadMutex.Wait();
   for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
     PThread & thread = activeThreads.GetDataAt(i);
@@ -2140,8 +2152,6 @@ PProcess::~PProcess()
     thread.CleanUpOnTerminated();
   }
   threadMutex.Signal();
-
-  delete houseKeeper;
 
 #ifndef PMEMORY_CHECK
   extern void PWaitOnExitConsoleWindow();
