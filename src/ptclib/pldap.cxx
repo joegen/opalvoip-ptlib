@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.cxx,v $
+ * Revision 1.12  2003/07/15 12:12:11  csoutheren
+ * Added support for multiple values in a single attribute string
+ *    Thanks to Ravelli Rossano
+ *
  * Revision 1.11  2003/07/12 00:10:40  csoutheren
  * Fixed problem where Modify routines were calling Add, thanks to Ravelli Rossano
  *
@@ -326,7 +330,8 @@ static PList<PLDAPSession::ModAttrib> AttribsFromDict(const PStringToString & at
   PList<PLDAPSession::ModAttrib> attrs;
 
   for (PINDEX i = 0; i < attributes.GetSize(); i++)
-    attrs.Append(new PLDAPSession::StringModAttrib(attributes.GetKeyAt(i), attributes.GetDataAt(i)));
+    attrs.Append(new PLDAPSession::StringModAttrib(attributes.GetKeyAt(i),
+                                                   attributes.GetDataAt(i).Lines()));
 
   return attrs;
 }
@@ -340,7 +345,8 @@ static PList<PLDAPSession::ModAttrib> AttribsFromArray(const PStringArray & attr
     PString attr = attributes[i];
     PINDEX equal = attr.Find('=');
     if (equal != P_MAX_INDEX)
-      attrs.Append(new PLDAPSession::StringModAttrib(attr.Left(equal), attr.Mid(equal+1)));
+      attrs.Append(new PLDAPSession::StringModAttrib(attr.Left(equal),
+                                                     attr.Mid(equal+1).Lines()));
   }
 
   return attrs;
