@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.71  2001/03/24 01:11:10  robertj
+ * Added missing PTRACE_IF define in non PTRACING mode.
+ *
  * Revision 1.70  2001/03/23 05:34:09  robertj
  * Added PTRACE_IF to output trace if a conditional is TRUE.
  *
@@ -559,6 +562,7 @@ public:
 #define PTRACE_BLOCK(n)
 #define PTRACE_LINE()
 #define PTRACE(level, arg)
+#define PTRACE_IF(level, cond, args)
 
 #else
 
