@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.23  1998/11/22 10:41:02  craigs
+# New GUI build system - for sure!
+#
 # Revision 1.22  1998/11/22 08:11:31  craigs
 # *** empty log message ***
 #
@@ -248,3 +251,25 @@ endif
 #
 -include $(DEPDIR)/*.dep
 
+
+######################################################################
+#
+# setup the lib directory
+#
+######################################################################
+
+ifdef GUI
+libdir:
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
+	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
+	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
+	ln -sf $(PWLIBDIR)/unix/src/pwlib.mak  $(LIBDIR)/pwlib.mak
+	ln -sf $(PWLIBDIR)/$(GUI)/src/$(GUI).mak  $(LIBDIR)/gui.mak
+else
+libdir:
+	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
+	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
+	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
+	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
+endif
