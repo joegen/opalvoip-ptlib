@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.34  1998/09/24 07:39:49  robertj
+ * Removed file that only had #pragma implmentation for PTextFile and nothing else.
+ *
  * Revision 1.33  1998/09/24 04:12:12  robertj
  * Added open software license.
  *
@@ -37,6 +40,7 @@
 #pragma implementation "timer.h"
 #pragma implementation "pdirect.h"
 #pragma implementation "file.h"
+#pragma implementation "textfile.h"
 #pragma implementation "ptime.h"
 #pragma implementation "timeint.h"
 #pragma implementation "filepath.h"
