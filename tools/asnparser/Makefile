@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.9  2000/04/26 01:03:46  robertj
+# Removed tarfile creation target, this is done differently now.
+#
 # Revision 1.8  2000/04/06 20:18:57  craigs
 # Removed local install target
 #
@@ -41,7 +44,6 @@ endif
 
 PROG		= asnparser
 SOURCES		= asn_grammar.cxx asn_lex.cxx main.cxx
-TAR_SOURCES	= asn_grammar.y   asn_lex.l   main.cxx main.h Makefile
 
 CLEAN_FILES	= asn_grammar.cxx asn_grammar.h asn_grammar.output asn_lex.cxx
 
@@ -56,5 +58,3 @@ asn_grammar.cxx: asn_grammar.y
 asn_lex.cxx: asn_lex.l
 	flex -t $< > $@
 
-tarfiles:
-	@echo $(patsubst %, $(notdir $(shell cd ..;pwd))/$(notdir $(shell pwd))/%, $(TAR_SOURCES))
