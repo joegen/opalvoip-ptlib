@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.5  1999/06/24 14:01:25  robertj
+ * Fixed bug in not returning correct default recorder (waveIn) device.
+ *
  * Revision 1.4  1999/06/07 01:36:28  robertj
  * Fixed incorrect;ly set block alignment in sound structure.
  *
@@ -587,10 +590,20 @@ PString PSoundChannel::GetDefaultDevice(Directions dir)
                        RegistryKey::ReadOnly);
 
   PString str;
-  if (!registry.QueryValue(dir == Player ? "Playback" : "Record", str)) {
-    WAVEOUTCAPS caps;
-    if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
-      str = caps.szPname;
+
+  if (dir == Player) {
+    if (!registry.QueryValue("Playback", str)) {
+      WAVEOUTCAPS caps;
+      if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
+        str = caps.szPname;
+    }
+  }
+  else {
+    if (!registry.QueryValue("Record", str)) {
+      WAVEINCAPS caps;
+      if (waveInGetDevCaps(0, &caps, sizeof(caps)) == 0)
+        str = caps.szPname;
+    }
   }
 
   return str;
