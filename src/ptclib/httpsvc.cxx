@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.20 1997/08/08 11:13:46 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.21 1997/08/21 12:43:19 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.21  1997/08/21 12:43:19  robertj
+ * Fixed bug where HTTP directory was not processed for macros.
+ *
  * Revision 1.20  1997/08/08 11:13:46  robertj
  * Added virtual for substituting random symbols in OEM files.
  *
@@ -922,6 +925,14 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest &, PString & text)
                process.GetPageGraphic(), TRUE);
   text.Replace("<!--Standard_Copyright_Header-->",
                process.GetCopyrightText(), TRUE);
+}
+
+
+///////////////////////////////////////////////////////////////////
+
+void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest &, PString & text)
+{
+  PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), needSignature);
 }
 
 
