@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.24  2003/11/18 06:46:59  csoutheren
+ * Changed to support video input plugins
+ *
  * Revision 1.23  2003/11/05 05:58:10  csoutheren
  * Added #pragma to include required libs
  *
@@ -114,19 +117,136 @@
 
 #define STEP_GRAB_CAPTURE 1
 
+///////////////////////////////////////////////////////////////////////////////
+
+/**This class defines a video input device.
+ */
+class PVideoInputDevice_VideoForWindows : public PVideoInputDevice
+{
+  PCLASSINFO(PVideoInputDevice_VideoForWindows, PVideoInputDevice);
+
+  public:
+    /** Create a new video input device.
+     */
+    PVideoInputDevice_VideoForWindows();
+
+    /**Close the video input device on destruction.
+      */
+    ~PVideoInputDevice_VideoForWindows() { Close(); }
+
+    /** Is the device a camera, and obtain video
+     */
+    static PStringList GetInputDeviceNames();
+
+    /**Open the device given the device name.
+      */
+    virtual BOOL Open(
+      const PString & deviceName,   /// Device name to open
+      BOOL startImmediate = TRUE    /// Immediately start device
+    );
+
+    /**Determine if the device is currently open.
+      */
+    virtual BOOL IsOpen();
+
+    /**Close the device.
+      */
+    virtual BOOL Close();
+
+    /**Start the video device I/O.
+      */
+    virtual BOOL Start();
+
+    /**Stop the video device I/O capture.
+      */
+    virtual BOOL Stop();
+
+    /**Determine if the video device I/O capture is in progress.
+      */
+    virtual BOOL IsCapturing();
+
+    /**Get the maximum frame size in bytes.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    virtual PINDEX GetMaxFrameBytes();
+
+    /**Grab a frame.
+      */
+    virtual BOOL GetFrame(
+      PBYTEArray & frame
+    );
+
+    /**Grab a frame, after a delay as specified by the frame rate.
+      */
+    virtual BOOL GetFrameData(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+    );
+
+    /**Grab a frame. Do not delay according to the current frame rate parameter.
+      */
+    virtual BOOL GetFrameDataNoDelay(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+    );
+
+
+    /**Try all known video formats & see which ones are accepted by the video driver
+     */
+    virtual BOOL TestAllFormats();
+
+  protected:
+
+   /**Check the hardware can do the asked for size.
+
+       Note that not all cameras can provide all frame sizes.
+     */
+    virtual BOOL VerifyHardwareFrameSize(unsigned width, unsigned height);
+
+  public:
+    virtual BOOL SetColourFormat(const PString & colourFormat);
+    virtual BOOL SetFrameRate(unsigned rate);
+    virtual BOOL SetFrameSize(unsigned width, unsigned height);
+
+  protected:
+    static LRESULT CALLBACK ErrorHandler(HWND hWnd, int id, LPCSTR err);
+    LRESULT HandleError(int id, LPCSTR err);
+    static LRESULT CALLBACK VideoHandler(HWND hWnd, LPVIDEOHDR vh);
+    LRESULT HandleVideo(LPVIDEOHDR vh);
+    BOOL InitialiseCapture();
+    void HandleCapture();
+
+    PThread     * captureThread;
+    PSyncPoint    threadStarted;
+
+    HWND          hCaptureWindow;
+
+    PSyncPoint    frameAvailable;
+    LPBYTE        lastFramePtr;
+    unsigned      lastFrameSize;
+    PMutex        lastFrameMutex;
+    BOOL          isCapturingNow;
+
+  friend class PVideoInputThread;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 class PVideoInputThread : public PThread
 {
     PCLASSINFO(PVideoInputThread, PThread);
   public:
-    PVideoInputThread(PVideoInputDevice & dev)
+    PVideoInputThread(PVideoInputDevice_VideoForWindows & dev)
       : PThread(30000, NoAutoDeleteThread, NormalPriority, "PVideoInput:%x"),
         device(dev)
       { Resume(); }
     void Main()
       { device.HandleCapture(); }
   protected:
-    PVideoInputDevice & device;
+    PVideoInputDevice_VideoForWindows & device;
 };
 
 
@@ -139,7 +259,6 @@ class PCapStatus : public CAPSTATUS
     BOOL IsOK()
        { return uiImageWidth != 0; }
 };
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -158,8 +277,6 @@ class PVideoDeviceBitmap : PBYTEArray
     BITMAPINFO * operator->() const 
     { return (BITMAPINFO *)theArray; }
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -285,7 +402,9 @@ PCapStatus::PCapStatus(HWND hWnd)
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoDevice
 
-PVideoInputDevice::PVideoInputDevice()
+PCREATE_VIDINPUT_PLUGIN(VideoForWindows, PVideoInputDevice_VideoForWindows);
+
+PVideoInputDevice_VideoForWindows::PVideoInputDevice_VideoForWindows()
 {
   captureThread = NULL;
   hCaptureWindow = NULL;
@@ -294,7 +413,7 @@ PVideoInputDevice::PVideoInputDevice()
   isCapturingNow = FALSE;
 }
 
-BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
+BOOL PVideoInputDevice_VideoForWindows::Open(const PString & devName, BOOL startImmediate)
 {
   Close();
 
@@ -315,13 +434,13 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
 }
 
 
-BOOL PVideoInputDevice::IsOpen() 
+BOOL PVideoInputDevice_VideoForWindows::IsOpen() 
 {
   return hCaptureWindow != NULL;
 }
 
 
-BOOL PVideoInputDevice::Close()
+BOOL PVideoInputDevice_VideoForWindows::Close()
 {
   if (!IsOpen())
     return FALSE;
@@ -351,7 +470,7 @@ BOOL PVideoInputDevice::Close()
 }
 
 
-BOOL PVideoInputDevice::Start()
+BOOL PVideoInputDevice_VideoForWindows::Start()
 {
   if (IsCapturing())
     return TRUE;
@@ -373,7 +492,7 @@ BOOL PVideoInputDevice::Start()
 }
 
 
-BOOL PVideoInputDevice::Stop()
+BOOL PVideoInputDevice_VideoForWindows::Stop()
 {
   if (!IsCapturing())
     return FALSE;
@@ -391,13 +510,13 @@ BOOL PVideoInputDevice::Stop()
 }
 
 
-BOOL PVideoInputDevice::IsCapturing()
+BOOL PVideoInputDevice_VideoForWindows::IsCapturing()
 {
   return isCapturingNow;
 }
 
 
-BOOL PVideoInputDevice::TestAllFormats() {
+BOOL PVideoInputDevice_VideoForWindows::TestAllFormats() {
   BOOL running = IsCapturing();
   if (running)
     Stop();
@@ -442,7 +561,7 @@ BOOL PVideoInputDevice::TestAllFormats() {
 }
 
 
-BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
+BOOL PVideoInputDevice_VideoForWindows::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
     return FALSE;
@@ -483,7 +602,7 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
 }
 
 
-BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_VideoForWindows::SetFrameSize(unsigned width, unsigned height)
 {
   BOOL running = IsCapturing();
   if (running)
@@ -531,7 +650,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 //return TRUE if absolute value of height reported by driver 
 //  is equal to absolute value of current frame height AND
 //  width reported by driver is equal to current frame width
-BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width, unsigned height)
+BOOL PVideoInputDevice_VideoForWindows::VerifyHardwareFrameSize(unsigned width, unsigned height)
 {
   PCapStatus status(hCaptureWindow);
 
@@ -551,7 +670,7 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
+BOOL PVideoInputDevice_VideoForWindows::SetColourFormat(const PString & colourFmt)
 {
   BOOL running = IsCapturing();
   if (running)
@@ -616,7 +735,7 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
 }
 
 
-PStringList PVideoInputDevice::GetInputDeviceNames()
+PStringList PVideoInputDevice_VideoForWindows::GetInputDeviceNames()
 {
   PStringList list;
 
@@ -631,7 +750,7 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
 }
 
 
-PINDEX PVideoInputDevice::GetMaxFrameBytes()
+PINDEX PVideoInputDevice_VideoForWindows::GetMaxFrameBytes()
 {
   if (!IsOpen())
     return 0;
@@ -643,14 +762,23 @@ PINDEX PVideoInputDevice::GetMaxFrameBytes()
   return size;
 }
 
+BOOL PVideoInputDevice_VideoForWindows::GetFrame(PBYTEArray & frame)
+{
+  PINDEX returned;
+  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
+    return FALSE;
 
-BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
+  frame.SetSize(returned);
+  return TRUE;
+}
+
+BOOL PVideoInputDevice_VideoForWindows::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
 {
   return GetFrameDataNoDelay(buffer, bytesReturned);
 }
 
 
-BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
+BOOL PVideoInputDevice_VideoForWindows::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturned)
 {
   if (!frameAvailable.Wait(1000))
     return FALSE;
@@ -678,16 +806,16 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
 }
 
 
-LRESULT CALLBACK PVideoInputDevice::ErrorHandler(HWND hWnd, int id, LPCSTR err)
+LRESULT CALLBACK PVideoInputDevice_VideoForWindows::ErrorHandler(HWND hWnd, int id, LPCSTR err)
 {
   if (hWnd == NULL)
     return FALSE;
 
-  return ((PVideoInputDevice *)capGetUserData(hWnd))->HandleError(id, err);
+  return ((PVideoInputDevice_VideoForWindows *)capGetUserData(hWnd))->HandleError(id, err);
 }
 
 
-LRESULT PVideoInputDevice::HandleError(int id, LPCSTR err)
+LRESULT PVideoInputDevice_VideoForWindows::HandleError(int id, LPCSTR err)
 {
   if (id != 0) {
     PTRACE(1, "PVidInp\tErrorHandler: [id="<< id << "] " << err);
@@ -697,16 +825,16 @@ LRESULT PVideoInputDevice::HandleError(int id, LPCSTR err)
 }
 
 
-LRESULT CALLBACK PVideoInputDevice::VideoHandler(HWND hWnd, LPVIDEOHDR vh)
+LRESULT CALLBACK PVideoInputDevice_VideoForWindows::VideoHandler(HWND hWnd, LPVIDEOHDR vh)
 {
   if (hWnd == NULL || capGetUserData(hWnd) == NULL)
     return FALSE;
 
-  return ((PVideoInputDevice *)capGetUserData(hWnd))->HandleVideo(vh);
+  return ((PVideoInputDevice_VideoForWindows *)capGetUserData(hWnd))->HandleVideo(vh);
 }
 
 
-LRESULT PVideoInputDevice::HandleVideo(LPVIDEOHDR vh)
+LRESULT PVideoInputDevice_VideoForWindows::HandleVideo(LPVIDEOHDR vh)
 {
   if ((vh->dwFlags&(VHDR_DONE|VHDR_KEYFRAME)) != 0) {
     lastFrameMutex.Wait();
@@ -722,7 +850,7 @@ LRESULT PVideoInputDevice::HandleVideo(LPVIDEOHDR vh)
 }
 
 
-BOOL PVideoInputDevice::InitialiseCapture()
+BOOL PVideoInputDevice_VideoForWindows::InitialiseCapture()
 {
   if ((hCaptureWindow = capCreateCaptureWindow("Capture Window",
                                                WS_POPUP | WS_CAPTION,
@@ -822,7 +950,7 @@ BOOL PVideoInputDevice::InitialiseCapture()
 }
 
 
-void PVideoInputDevice::HandleCapture()
+void PVideoInputDevice_VideoForWindows::HandleCapture()
 {
   BOOL initSucceeded = InitialiseCapture();
 
