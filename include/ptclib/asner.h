@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.8  1999/03/09 09:34:05  robertj
+ * Fixed typo's.
+ *
  * Revision 1.7  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
