@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.19  2004/08/30 21:09:41  dsandras
+ * Added DSNOOP plugin support.
+ *
  * Revision 1.18  2004/05/14 10:15:26  dominance
  * Fixes direct opening of sound output devices. The list of devices does no longer return NULL in that case. Patch provided by Julien Puydt <julien.puydt@laposte.net>.
  *
@@ -217,7 +220,10 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
   
  
   if (dir != Recorder && devices.GetSize () > 0)
-      devices += "DMIX Plugin";
+    devices += "DMIX Plugin";
+
+  if (dir == Recorder && devices.GetSize () > 0)
+    devices += "DSNOOP Plugin";
     
   return devices;
 }
@@ -255,6 +261,10 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
   if (_dir != Recorder && _device == "DMIX Plugin") {
 
     real_device_name = "plug:dmix";
+  }
+  if (_dir == Recorder && _device == "DSNOOP Plugin") {
+
+    real_device_name = "plug:dsnoop";
   }
   else {
 
