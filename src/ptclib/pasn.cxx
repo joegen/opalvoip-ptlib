@@ -1,11 +1,14 @@
 /*
  * ASN Library
  *
- * $Id: pasn.cxx,v 1.1 1996/09/14 13:02:18 robertj Exp $
+ * $Id: pasn.cxx,v 1.2 1996/11/04 03:58:34 robertj Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: pasn.cxx,v $
+ * Revision 1.2  1996/11/04 03:58:34  robertj
+ * Added ASN types to class.
+ *
  * Revision 1.1  1996/09/14 13:02:18  robertj
  * Initial revision
  *
@@ -942,6 +945,26 @@ void PASNSequence::Encode(PBYTEArray & buffer)
   // now encode the sequence itself
   for (PINDEX i = 0; i < sequence.GetSize(); i++)
     sequence[i].Encode(buffer);
+}
+
+BOOL PASNSequence::Encode(PBYTEArray & buffer, PINDEX maxLen) 
+{
+  // calculate the length of the sequence, if it hasn't already been done
+  if (encodedLen == 0)
+    (void)GetEncodedLength();
+
+  // create the header for the sequence. Note that seqLen was calculated
+  // by the call to GetEncodedLength above
+  EncodeASNSequenceStart(buffer, type, seqLen);
+
+  // now encode the sequence itself
+  for (PINDEX i = 0; i < sequence.GetSize(); i++) {
+    sequence[i].Encode(buffer);
+    if (buffer.GetSize() > maxLen)
+      return FALSE;
+  }
+
+  return TRUE;
 }
 
 
