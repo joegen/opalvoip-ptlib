@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.43 1997/01/01 11:17:06 robertj Exp $
+ * $Id: win32.cxx,v 1.44 1997/01/12 04:24:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.44  1997/01/12 04:24:16  robertj
+ * Added function to get disk size and free space.
+ *
  * Revision 1.43  1997/01/01 11:17:06  robertj
  * Added implementation for PPipeChannel::GetReturnCode and PPipeChannel::IsRunning
  *
@@ -382,6 +385,38 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
   while ((pos = fullpath.Find('/', pos)) != P_MAX_INDEX)
     fullpath[pos] = PDIR_SEPARATOR;
   return fullpath;
+}
+
+
+BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free) const
+{
+  PString root;
+  if ((*this)[1] == ':')
+    root = Mid(3);
+  else {
+    PINDEX slash = FindOneOf("\\/", 2);
+    if (slash != P_MAX_INDEX)
+      root = Mid(slash+1);
+    else
+      root = *this;
+  }
+
+  DWORD sectorsPerCluster;      // address of sectors per cluster 
+  DWORD bytesPerSector;         // address of bytes per sector 
+  DWORD numberOfFreeClusters;   // address of number of free clusters  
+  DWORD totalNumberOfClusters;  // address of total number of clusters 
+
+  if (!GetDiskFreeSpace(root,
+                        &sectorsPerCluster,
+                        &bytesPerSector,
+                        &numberOfFreeClusters,
+                        &totalNumberOfClusters))
+    return FALSE;
+
+  PInt64 clusterSize = bytesPerSector*sectorsPerCluster;
+  free = numberOfFreeClusters*clusterSize;
+  total = totalNumberOfClusters*clusterSize;
+  return TRUE;
 }
 
 
