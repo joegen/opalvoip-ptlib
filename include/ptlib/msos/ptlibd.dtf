@@ -56,6 +56,7 @@ EXPORTS
     ??0Address@PIPXSocket@@QAE@ABVPString@@@Z @46 NONAME ;public: __thiscall PIPXSocket::Address::Address(class PString const &)
     ??0Address@PIPXSocket@@QAE@KPBD@Z @47 NONAME ;public: __thiscall PIPXSocket::Address::Address(unsigned long,char const *)
     ??0Address@PIPXSocket@@QAE@XZ @48 NONAME ;public: __thiscall PIPXSocket::Address::Address(void)
+    ??0Buffer@PDebugStream@@QAE@XZ @2501 NONAME ;public: __thiscall PDebugStream::Buffer::Buffer(void)
     ??0Buffer@PStringStream@@QAE@ABV01@@Z @50 NONAME ;public: __thiscall PStringStream::Buffer::Buffer(class Buffer::Buffer const &)
     ??0Buffer@PStringStream@@QAE@PAV1@@Z @51 NONAME ;public: __thiscall PStringStream::Buffer::Buffer(class Buffer *)
     ??0Buffer@PSystemLog@@QAE@XZ @52 NONAME ;public: __thiscall PSystemLog::Buffer::Buffer(void)
@@ -121,6 +122,7 @@ EXPORTS
     ??0PContainer@@IAE@HPBV0@@Z @110 NONAME ;protected: __thiscall PContainer::PContainer(int,class PContainer const *)
     ??0PContainer@@QAE@ABV0@@Z @111 NONAME ;public: __thiscall PContainer::PContainer(class PContainer const &)
     ??0PContainer@@QAE@H@Z @112 NONAME ;public: __thiscall PContainer::PContainer(int)
+    ??0PDebugStream@@QAE@XZ @2502 NONAME ;public: __thiscall PDebugStream::PDebugStream(void)
     ??0PDirectory@@QAE@ABV0@@Z @114 NONAME ;public: __thiscall PDirectory::PDirectory(class PDirectory const &)
     ??0PDirectory@@QAE@ABVPString@@@Z @115 NONAME ;public: __thiscall PDirectory::PDirectory(class PString const &)
     ??0PDirectory@@QAE@PBD@Z @116 NONAME ;public: __thiscall PDirectory::PDirectory(char const *)
@@ -759,6 +761,9 @@ EXPORTS
     ??XPString@@QBEHPBD@Z @693 NONAME ;public: int __thiscall PString::operator*=(char const *)const 
     ??XPTimeInterval@@QAEAAV0@H@Z @694 NONAME ;public: class PTimeInterval & __thiscall PTimeInterval::operator*=(int)
     ??XPWin32AsnOid@@QAE_NABV0@@Z @2341 NONAME ;public: bool __thiscall PWin32AsnOid::operator*=(class PWin32AsnOid const &)
+    ??YPFilePath@@QAEAAV0@ABVPString@@@Z @2509 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(class PString const &)
+    ??YPFilePath@@QAEAAV0@D@Z @2510 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(char)
+    ??YPFilePath@@QAEAAV0@PBD@Z @2511 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(char const *)
     ??YPIntCondMutex@@QAEAAV0@H@Z @695 NONAME ;public: class PIntCondMutex & __thiscall PIntCondMutex::operator+=(int)
     ??YPString@@QAEAAV0@ABV0@@Z @696 NONAME ;public: class PString & __thiscall PString::operator+=(class PString const &)
     ??YPString@@QAEAAV0@D@Z @697 NONAME ;public: class PString & __thiscall PString::operator+=(char)
@@ -793,6 +798,7 @@ EXPORTS
     ??_7?$PSortedList@VPString@@@@6B@ @724 NONAME ;const  PSortedList<class PString>::`vftable'
     ??_7?$PStringDictionary@VPOrdinalKey@@@@6B@ @725 NONAME ;const  PStringDictionary<class POrdinalKey>::`vftable'
     ??_7?$PStringDictionary@VPString@@@@6B@ @726 NONAME ;const  PStringDictionary<class PString>::`vftable'
+    ??_7Buffer@PDebugStream@@6B@ @2503 NONAME ;const  PDebugStream::Buffer::`vftable'
     ??_7Buffer@PStringStream@@6B@ @728 NONAME ;const  PStringStream::Buffer::`vftable'
     ??_7Buffer@PSystemLog@@6B@ @729 NONAME ;const  PSystemLog::Buffer::`vftable'
     ??_7CMCDLL@PMail@@6B@ @730 NONAME ;const  PMail::CMCDLL::`vftable'
@@ -818,6 +824,7 @@ EXPORTS
     ??_7PCondMutex@@6B@ @750 NONAME ;const  PCondMutex::`vftable'
     ??_7PConfig@@6B@ @751 NONAME ;const  PConfig::`vftable'
     ??_7PContainer@@6B@ @752 NONAME ;const  PContainer::`vftable'
+    ??_7PDebugStream@@6B@ @2504 NONAME ;const  PDebugStream::`vftable'
     ??_7PDirectory@@6B@ @754 NONAME ;const  PDirectory::`vftable'
     ??_7PDynaLink@@6B@ @755 NONAME ;const  PDynaLink::`vftable'
     ??_7PEthSocket@@6Biostream@@@ @2342 NONAME ;const  PEthSocket::`vftable'{for `iostream'}
@@ -907,6 +914,7 @@ EXPORTS
     ??_7Win95_ServiceManager@@6B@ @831 NONAME ;const  Win95_ServiceManager::`vftable'
     ??_8PChannel@@7Bistream@@@ @832 NONAME ;const  PChannel::`vbtable'{for `istream'}
     ??_8PChannel@@7Bostream@@@ @833 NONAME ;const  PChannel::`vbtable'{for `ostream'}
+    ??_8PDebugStream@@7B@ @2505 NONAME ;const  PDebugStream::`vbtable'
     ??_8PEthSocket@@7Bistream@@@ @2348 NONAME ;const  PEthSocket::`vbtable'{for `istream'}
     ??_8PEthSocket@@7Bostream@@@ @2349 NONAME ;const  PEthSocket::`vbtable'{for `ostream'}
     ??_8PFile@@7Bistream@@@ @835 NONAME ;const  PFile::`vbtable'{for `istream'}
@@ -2124,6 +2132,7 @@ EXPORTS
     ?os_sendto@PSocket@@IAEHPBXHHPAUsockaddr@@H@Z @1970 NONAME ;protected: int __thiscall PSocket::os_sendto(void const *,int,int,struct sockaddr *,int)
     ?os_socket@PSocket@@IAEHHHH@Z @1971 NONAME ;protected: int __thiscall PSocket::os_socket(int,int,int)
     ?Output@PSystemLog@@SAXW4Level@1@PBD@Z @1972 NONAME ;public: static void __cdecl PSystemLog::Output(enum PSystemLog::Level,char const *)
+    ?overflow@Buffer@PDebugStream@@UAEHH@Z @2506 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::overflow(int)
     ?overflow@Buffer@PStringStream@@UAEHH@Z @1973 NONAME ;public: virtual int __thiscall PStringStream::Buffer::overflow(int)
     ?overflow@Buffer@PSystemLog@@UAEHH@Z @1974 NONAME ;public: virtual int __thiscall PSystemLog::Buffer::overflow(int)
     ?overflow@PChannelStreamBuffer@@MAEHH@Z @1975 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::overflow(int)
@@ -2394,6 +2403,7 @@ EXPORTS
     ?Stop@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @2239 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Stop(class PServiceProcess *)
     ?Successor@Element@PAbstractSortedList@@ABEPAV12@XZ @2241 NONAME ;private: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Successor(void)const 
     ?Suspend@PThread@@UAEXH@Z @2242 NONAME ;public: virtual void __thiscall PThread::Suspend(int)
+    ?sync@Buffer@PDebugStream@@UAEHXZ @2507 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::sync(void)
     ?sync@Buffer@PStringStream@@UAEHXZ @2244 NONAME ;public: virtual int __thiscall PStringStream::Buffer::sync(void)
     ?sync@Buffer@PSystemLog@@UAEHXZ @2245 NONAME ;public: virtual int __thiscall PSystemLog::Buffer::sync(void)
     ?sync@PChannelStreamBuffer@@MAEHXZ @2246 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::sync(void)
@@ -2408,6 +2418,7 @@ EXPORTS
     ?ToPascal@PString@@QBE?AVPBYTEArray@@XZ @2255 NONAME ;public: class PBYTEArray  __thiscall PString::ToPascal(void)const 
     ?ToUpper@PString@@QBE?AV1@XZ @2256 NONAME ;public: class PString  __thiscall PString::ToUpper(void)const 
     ?Trim@PString@@QBE?AV1@XZ @2257 NONAME ;public: class PString  __thiscall PString::Trim(void)const 
+    ?underflow@Buffer@PDebugStream@@UAEHXZ @2508 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::underflow(void)
     ?underflow@Buffer@PStringStream@@UAEHXZ @2258 NONAME ;public: virtual int __thiscall PStringStream::Buffer::underflow(void)
     ?underflow@Buffer@PSystemLog@@UAEHXZ @2259 NONAME ;public: virtual int __thiscall PSystemLog::Buffer::underflow(void)
     ?underflow@PChannelStreamBuffer@@MAEHXZ @2260 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::underflow(void)
@@ -2422,6 +2433,8 @@ EXPORTS
     ?WaitCondition@PCondMutex@@UAEXXZ @2270 NONAME ;public: virtual void __thiscall PCondMutex::WaitCondition(void)
     ?WaitForTermination@PPipeChannel@@QAEHABVPTimeInterval@@@Z @2271 NONAME ;public: int __thiscall PPipeChannel::WaitForTermination(class PTimeInterval const &)
     ?WaitForTermination@PPipeChannel@@QAEHXZ @2272 NONAME ;public: int __thiscall PPipeChannel::WaitForTermination(void)
+    ?WaitForTermination@PThread@@QBEHABVPTimeInterval@@@Z @2512 NONAME ;public: int __thiscall PThread::WaitForTermination(class PTimeInterval const &)const 
+    ?WaitForTermination@PThread@@QBEXXZ @2513 NONAME ;public: void __thiscall PThread::WaitForTermination(void)const 
     ?WillBlock@PSemaphore@@UBEHXZ @2275 NONAME ;public: virtual int __thiscall PSemaphore::WillBlock(void)const 
     ?WndProc@PServiceProcess@@AAEJPAUHWND__@@IIJ@Z @2276 NONAME ;private: long __thiscall PServiceProcess::WndProc(struct HWND__ *,unsigned int,unsigned int,long)
     ?Write@PChannel@@UAEHPBXH@Z @2277 NONAME ;public: virtual int __thiscall PChannel::Write(void const *,int)
@@ -2449,11 +2462,3 @@ EXPORTS
     ?_main@PServiceProcess@@UAEHPAX@Z @2296 NONAME ;public: virtual int __thiscall PServiceProcess::_main(void *)
     ?__setfill@@YAAAVios@@AAV1@H@Z @2297 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @2298 NONAME ;class ios & __cdecl __setw(class ios &,int)
-    ??0Buffer@PDebugStream@@QAE@XZ @2501 NONAME ;public: __thiscall PDebugStream::Buffer::Buffer(void)
-    ??0PDebugStream@@QAE@XZ @2502 NONAME ;public: __thiscall PDebugStream::PDebugStream(void)
-    ??_7Buffer@PDebugStream@@6B@ @2503 NONAME ;const  PDebugStream::Buffer::`vftable'
-    ??_7PDebugStream@@6B@ @2504 NONAME ;const  PDebugStream::`vftable'
-    ??_8PDebugStream@@7B@ @2505 NONAME ;const  PDebugStream::`vbtable'
-    ?overflow@Buffer@PDebugStream@@UAEHH@Z @2506 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::overflow(int)
-    ?sync@Buffer@PDebugStream@@UAEHXZ @2507 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::sync(void)
-    ?underflow@Buffer@PDebugStream@@UAEHXZ @2508 NONAME ;public: virtual int __thiscall PDebugStream::Buffer::underflow(void)
