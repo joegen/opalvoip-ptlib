@@ -1,5 +1,5 @@
 /*
- * $Id: pipechan.h,v 1.4 1994/09/25 10:43:19 robertj Exp $
+ * $Id: pipechan.h,v 1.5 1994/10/23 04:50:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pipechan.h,v $
- * Revision 1.4  1994/09/25 10:43:19  robertj
+ * Revision 1.5  1994/10/23 04:50:55  robertj
+ * Further refinement of semantics after implementation.
+ *
+ * Revision 1.4  1994/09/25  10:43:19  robertj
  * Added more implementation.
  *
  * Revision 1.3  1994/08/23  11:32:52  robertj
@@ -48,12 +51,15 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
     };
 
     PPipeChannel(const PString & subProgram,
-                 const char * const * arguments = NULL,
-                 OpenMode mode = ReadOnly,
+                 OpenMode mode = ReadWrite,
+                 BOOL searchPath = TRUE);
+    PPipeChannel(const PString & subProgram,
+                 const char * const * arguments,
+                 OpenMode mode = ReadWrite,
                  BOOL searchPath = TRUE);
     PPipeChannel(const PString & subProgram,
                  const PStringList & arguments,
-                 OpenMode mode = ReadOnly,
+                 OpenMode mode = ReadWrite,
                  BOOL searchPath = TRUE);
       // Create a new pipe channel allowing the subProgram to be executed and
       // data transferred from its stdin/stdout. If the mode is ReadOnly then
@@ -61,16 +67,19 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
       // PPipeChannel. The sub-programs input is set to the platforms NULL
       // device. If mode is WriteOnly then Write() calls of the PPipeChannel
       // are suppied to the sub-programs stdin and its stdout is sent to the
-      // NULL device. If mode is ReadWrite then both actions occur. The
+      // NULL device. If mode is ReadWrite then both actions can occur. The
       // searchPath parameter indicates that the system PATH for executables
-      // should be searched for the sub-program.
+      // should be searched for the sub-program. The subProgram argument may
+      // contain just the path of the program to be run or be a program name
+      // and space separated arguments.
       //
       // Note that for platforms that do not support multi-processing, the
       // current process is suspended until the sub-program terminates. The
-      // input and output of the sub-program is transferred via a file. The
-      // exact moment of execution of the sub-program depnds on the mode. If
-      // mode is ReadOnly then it is executed immediately. In the other modes
-      // the sub-program is run when the Execute() function is called
+      // input and output of the sub-program is transferred via a temporary
+      // file. The exact moment of execution of the sub-program depends on the
+      // mode. If mode is ReadOnly then it is executed immediately and its
+      // output captured. In the other modes the sub-program is run when the
+      // Execute() function or a call to the Read() function is called
       // indicating that the output from the current process to the sub-program
       // has completed.
 
@@ -87,15 +96,17 @@ PDECLARE_CONTAINER(PPipeChannel, PChannel)
 
     virtual BOOL Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
-      // requested number of characters were read.
+      // requested number of characters were read. If there are no more
+      // characters available as the sub-program has stopped then the number
+      // of characters available is returned.
 
     virtual BOOL Write(const void * buf, PINDEX len);
       // Low level write to the channel. This function will block until the
       // requested number of characters were written.
 
     virtual BOOL Close();
-      // Close the channel. This will kill the sub-program (on platforms where
-      // that is relevent).
+      // Close the channel. This will kill the sub-program's process (on
+      // platforms where that is relevent).
 
 
     // New member functions
