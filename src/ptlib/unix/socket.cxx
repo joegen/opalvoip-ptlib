@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.101  2004/04/18 00:21:35  ykiryanov
+ * Cleaned up BeOS related code. Less ifdefs, more functionality
+ *
  * Revision 1.100  2003/10/27 04:06:14  csoutheren
  * Added code to allow compilation of new QoS code on Unix
  *
@@ -323,6 +326,12 @@
 #include <bsp.h>
 #endif
 
+#ifdef __BEOS__
+#include <posix/sys/ioctl.h> // for FIONBIO
+#include <be/bone/net/if.h> // for ifconf
+#include <be/bone/sys/sockio.h> // for SIOCGI*
+#endif
+
 int PX_NewHandle(const char *, int);
 
 
@@ -358,24 +367,18 @@ int PSocket::os_close()
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
-#if defined(__BEOS__) && !defined(BE_THREADS)
+#ifndef __BEOS__
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(os_handle);
-#endif
+#endif // !__BEOS__
 
-#ifdef BE_BONELESS
-  int retval = ::closesocket(os_handle);
-  os_handle = -1;
-  return retval;
-#else
   return PXClose();
-#endif
 }
 
 
 static int SetNonBlocking(int fd)
 {
-#if defined __BEOS__ || defined(P_VXWORKS)
+#if defined(P_VXWORKS)
   return fd;
 #else
   if (fd < 0)
@@ -388,7 +391,7 @@ static int SetNonBlocking(int fd)
 
   ::close(fd);
   return -1;
-#endif // !__BEOS__ && !P_VXWORKS
+#endif // !P_VXWORKS
 }
 
 
@@ -408,7 +411,6 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   if (!PXSetIOBlock(PXConnectBlock, readTimeout))
     return FALSE;
 
-#ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
@@ -417,7 +419,6 @@ BOOL PSocket::os_connect(struct sockaddr * addr, PINDEX size)
     errno = optval;
     return ConvertOSError(-1);
   }
-#endif //!__BEOS__
 
   return TRUE;
 }
@@ -579,7 +580,6 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   PUDPSocket sock;
 
-#ifndef __BEOS__
   // get number of interfaces
   int ifNum;
 #ifdef SIOCGIFNUM
@@ -614,8 +614,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       }
     }
   }
-#endif //!__BEOS__
-
+  
   return FALSE;
 }
 
@@ -634,13 +633,11 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
   if (!PXSetIOBlock(PXReadBlock, readTimeout))
     return FALSE;
 
-#ifndef __BEOS__
   // attempt to read out of band data
   char buffer[32];
   int ooblen;
   while ((ooblen = ::recv(os_handle, buffer, sizeof(buffer), MSG_OOB)) > 0) 
     OnOutOfBand(buffer, ooblen);
-#endif // !__BEOS__
 
   // attempt to read non-out of band data
   int r = ::recv(os_handle, (char *)buf, maxLen, 0);
@@ -781,7 +778,7 @@ BOOL PEthSocket::Connect(const PString & interfaceName)
   else
     return SetErrorValues(NotFound, ENOENT);
 
-#if defined(SIO_Get_MAC_Address) && !defined(__BEOS__)
+#if defined(SIO_Get_MAC_Address) 
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
@@ -827,7 +824,6 @@ BOOL PEthSocket::Close()
 
 BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
-#ifndef __BEOS__
   PUDPSocket ifsock;
 
   ifreq ifreqs[20]; // Maximum of 20 interfaces
@@ -851,7 +847,6 @@ BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
       }
     }
   }
-#endif //!__BEOS__
 
   return FALSE;
 }
@@ -874,7 +869,6 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
   if (!IsOpen())
     return FALSE;
 
-#ifndef __BEOS__
   PUDPSocket ifsock;
   struct ifreq ifr;
   ifr.ifr_addr.sa_family = AF_INET;
@@ -893,9 +887,6 @@ BOOL PEthSocket::EnumIpAddress(PINDEX idx,
 
   net_mask = sin->sin_addr;
   return TRUE;
-#else
-  return FALSE;
-#endif //!__BEOS__
 }
 
 
@@ -904,7 +895,6 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
   if (!IsOpen())
     return FALSE;
 
-#ifndef __BEOS__
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -919,9 +909,6 @@ BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
   mask = filterMask;
   type = filterType;
   return TRUE;
-#else
-  return FALSE;
-#endif //!__BEOS__
 }
 
 
@@ -937,7 +924,6 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
       return FALSE;
   }
 
-#ifndef __BEOS__
   ifreq ifr;
   memset(&ifr, 0, sizeof(ifr));
   strcpy(ifr.ifr_name, channelName);
@@ -955,9 +941,6 @@ BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
   filterMask = filter;
 
   return TRUE;
-#else
-  return FALSE;
-#endif //!__BEOS__
 }
 
 
@@ -1107,7 +1090,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   }
 }
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_QNX) 
 
 BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
                      unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric);
@@ -1580,7 +1563,6 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 {
   PUDPSocket sock;
-#ifndef __BEOS__
 
   PBYTEArray buffer;
   struct ifconf ifConf;
@@ -1620,7 +1602,12 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
             PIPSocket::Address addr = ((sockaddr_in *)&ifReq.ifr_addr)->sin_addr;
 
             if (ioctl(sock.GetHandle(), SIOCGIFNETMASK, &ifReq) >= 0) {
-              PIPSocket::Address mask = ((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
+              PIPSocket::Address mask = 
+#ifndef __BEOS__
+		((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
+#else
+		((sockaddr_in *)&ifReq.ifr_mask)->sin_addr;
+#endif // !__BEOS__
               PINDEX i;
               for (i = 0; i < list.GetSize(); i++) {
 #ifdef P_TORNADO
@@ -1658,7 +1645,6 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 
     }
   }
-#endif //!__BEOS__
   return TRUE;
 }
 
