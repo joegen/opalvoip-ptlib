@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.23  1998/11/30 02:55:23  robertj
+ * New directory structure
+ *
  * Revision 1.22  1998/09/24 03:30:16  robertj
  * Added open software license.
  *
@@ -99,7 +102,7 @@
 
 #ifndef _PPROCESS
 
-#include <syncpoint.h>
+#include <ptlib/syncpoint.h>
 
 extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 
@@ -107,7 +110,7 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include "../../common/ptlib/pprocess.h"
+#include "../../pprocess.h"
   public:
     ~PProcess();
 
