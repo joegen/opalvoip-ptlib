@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.9 1995/07/31 12:06:21 robertj Exp $
+ * $Id: ptlib.h,v 1.10 1996/05/23 09:57:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
+ * Revision 1.10  1996/05/23 09:57:24  robertj
+ * Changed process.h to pprocess.h to avoid name conflict.
+ *
  * Revision 1.9  1995/07/31 12:06:21  robertj
  * Added semaphore class.
  *
@@ -141,7 +144,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include <process.h>
+#include <pprocess.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
