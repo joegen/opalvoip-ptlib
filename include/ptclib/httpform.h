@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.h,v $
+ * Revision 1.14  2001/10/10 08:07:48  robertj
+ * Fixed large memory leak of strings when doing POST to a form.
+ *
  * Revision 1.13  2000/12/18 07:12:37  robertj
  * Added ability to have fixed length array fields.
  *
@@ -238,7 +241,7 @@ class PHTTPField : public PObject
        @return
        List of strings for each subfield.
      */
-    virtual PStringList GetAllNames() const;
+    virtual void GetAllNames(PStringList & list) const;
 
     /** Set the value of the field in a list of fields.
      */
@@ -318,7 +321,7 @@ class PHTTPCompositeField : public PHTTPField
       PConfig & cfg   // Configuration for value transfer.
     ) const;
 
-    virtual PStringList GetAllNames() const;
+    virtual void GetAllNames(PStringList & list) const;
     virtual void SetAllValues(
       const PStringToString & data   // New value for the field.
     );
