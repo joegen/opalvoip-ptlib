@@ -1508,6 +1508,7 @@ EXPORTS
     ?IsEmpty@PString@@UBEHXZ @1387 NONAME ;public: virtual int __thiscall PString::IsEmpty(void)const 
     ?IsEndOfFile@PFile@@QBEHXZ @1388 NONAME ;public: int __thiscall PFile::IsEndOfFile(void)const 
     ?IsGUIProcess@PProcess@@UBEHXZ @2263 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
+    ?IsInitialised@PProcess@@SAHXZ @2265 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
     ?IsLoaded@PDynaLink@@QBEHXZ @1390 NONAME ;public: int __thiscall PDynaLink::IsLoaded(void)const 
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @1391 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @1392 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
@@ -1968,4 +1969,7 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?IsInitialised@PProcess@@SAHXZ @2265 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
+    ??GPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2266 NONAME ;public: class PTime  __thiscall PTime::operator-(class PTimeInterval const &)const 
+    ??HPTime@@QBE?AV0@ABVPTimeInterval@@@Z @2267 NONAME ;public: class PTime  __thiscall PTime::operator+(class PTimeInterval const &)const 
+    ??YPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2268 NONAME ;public: class PTime & __thiscall PTime::operator+=(class PTimeInterval const &)
+    ??ZPTime@@QAEAAV0@ABVPTimeInterval@@@Z @2269 NONAME ;public: class PTime & __thiscall PTime::operator-=(class PTimeInterval const &)
