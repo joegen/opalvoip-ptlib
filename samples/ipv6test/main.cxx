@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2004/12/14 07:49:49  csoutheren
+ * added some tests
+ *
  * Revision 1.1  2004/12/14 06:50:59  csoutheren
  * Initial version
  *
@@ -78,14 +81,87 @@ void IPV6Test::Main()
   cout << "error: IPV6 not included in PWLib" << endl;
 #else
   {
-      // test #1 - check PIPSocket::IsIpAddressFamilyV6Supported
-      cout << "test #1: PIPSocket::IsIpAddressFamilyV6Supported ";
-      if (PIPSocket::IsIpAddressFamilyV6Supported())
-          cout << "OK";
-      else
-          cout << "failed";
-      cout << endl;
+    // test #1 - check PIPSocket::IsIpAddressFamilyV6Supported
+    cout << "test #1: PIPSocket::IsIpAddressFamilyV6Supported ";
+    if (PIPSocket::IsIpAddressFamilyV6Supported())
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
   }
+
+
+  // this is an IPV6 compatibility address
+  const BYTE ipv6Data[] = { 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0xff, 0xff,
+                            220,  240,  81,   10 };
+  const PIPSocket::Address ipv6Addr1(sizeof(ipv6Data), ipv6Data);
+  {
+    // test #2 - check V6 constructor
+    cout << "test #2: PIPSocket::Address(int, const BYTE *) ";
+    if (ipv6Addr1.GetVersion() == 6) 
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+
+  PIPSocket::Address ipv6Addr2("::ffff:220:244:81:10");
+  {
+    // test #3 - check V6 constructor
+    cout << "test #3: PIPSocket::Address(const PString & str) ";
+    if (ipv6Addr1.GetVersion() == 6) 
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+  
+  {
+    // test #4 - check comparison for equality
+    cout << "test #4: PIPSocket::operator == ";
+    if (ipv6Addr1 == ipv6Addr2)
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+  
+  PIPSocket::Address ipv6Addr3("::ffff:220:244:81:09");
+  {
+    // test #5 - check comparison for non-equality
+    cout << "test #5: PIPSocket::operator != ";
+    if (ipv6Addr1 != ipv6Addr3)
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+
+  PIPSocket::Address ipv4Addr("220.244.81.10");
+  {
+    // test #6 - check IPV6 comparison to IPV4
+    cout << "test #6: PIPSocket::operator == with IPV4 ";
+    if (ipv6Addr1 == ipv4Addr)
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+  {
+    // test #7 - check IPV6 comparison to IPV4
+    cout << "test #7: PIPSocket::operator != with IPV4 ";
+    if (ipv6Addr3 != ipv4Addr)
+        cout << "OK";
+    else
+        cout << "failed";
+    cout << endl;
+  }
+
+  
+
+  
 #endif
 }
 
