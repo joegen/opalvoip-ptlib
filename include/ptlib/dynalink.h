@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.16  2004/07/11 07:56:35  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.15  2004/02/22 02:38:33  ykiryanov
  * Removed ifndef BEOS when declaring PDynalink
  *
@@ -80,7 +83,7 @@
 #ifndef _PDYNALINK
 #define _PDYNALINK
 
-#if !defined(P_VXWORKS) && !defined(P_RTEMS)
+#if !defined(P_RTEMS)
 
 #ifdef P_USE_PRAGMA
 #pragma interface
@@ -188,7 +191,7 @@ class PDynaLink : public PObject
 #endif
 };
 
-#endif // !defined(__BEOS__) && !defined(P_VXWORKS)
+#endif // !defined(P_RTEMS)
 
 #endif
 
