@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.9  2002/08/05 05:40:45  robertj
+ * Fixed missing pragma interface/implementation
+ *
  * Revision 1.8  2001/12/13 09:19:32  robertj
  * Added ability to create HTTP server certificate if one does not exist.
  *
@@ -53,7 +56,14 @@
  */
 
 #include <ptlib.h>
+
+#ifdef __GNUC__
+#pragma implementation "shttpsvc.h"
+#endif
+
 #include <ptclib/shttpsvc.h>
+
+
 
 class HTTP_PSSLChannel : public PSSLChannel
 {
