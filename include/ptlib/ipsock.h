@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.71  2005/01/16 21:27:01  csoutheren
+ * Changed PIPSocket::IsAny to be const
+ *
  * Revision 1.70  2004/12/20 07:59:33  csoutheren
  * Fixed operator *= for IPV6
  *
@@ -420,7 +423,7 @@ class PIPSocket : public PSocket
 
         /// Check address 0.0.0.0 or :: 
         BOOL IsValid() const;
-        BOOL IsAny();
+        BOOL IsAny() const;
 
         /// Check address 127.0.0.1 or ::1
         BOOL IsLoopback() const;
