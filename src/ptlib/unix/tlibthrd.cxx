@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.136  2005/01/16 23:00:37  csoutheren
+ * Fixed problem when calling WaitForTermination from within the same thread
+ *
  * Revision 1.135  2004/12/21 06:30:55  csoutheren
  * Added explicit stack size for pthreads to minimise VM usage, thanks to Diana Cionoiu
  *
@@ -1198,7 +1201,10 @@ BOOL PThread::IsTerminated() const
 
 void PThread::WaitForTermination() const
 {
-  PAssert(Current() != this, "Waiting for self termination!");
+  if (this == Current()) {
+    PTRACE(2, "WaitForTermination short circuited");
+    return TRUE;
+  }
   
   PXAbortBlock();   // this assist in clean shutdowns on some systems
 
@@ -1211,8 +1217,10 @@ void PThread::WaitForTermination() const
 
 BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
 {
-
-  PAssert(Current() != this, "Waiting for self termination!");
+  if (this == Current()) {
+    PTRACE(2, "WaitForTermination(t) short circuited");
+    return TRUE;
+  }
   
   PTRACE(6, "PWLib\tWaitForTermination(" << maxWait << ')');
 
