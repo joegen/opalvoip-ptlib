@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.14 1996/03/31 08:46:51 robertj Exp $
+ * $Id: http.h,v 1.15 1996/05/15 10:19:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.15  1996/05/15 10:19:54  robertj
+ * Fixed persistent connections.
+ *
  * Revision 1.14  1996/03/31 08:46:51  robertj
  * HTTP 1.1 upgrade.
  *
@@ -538,8 +541,13 @@ PDECLARE_CLASS(PHTTPSocket, PApplicationSocket)
      */
 
 
-    int majorVersion;
-    int minorVersion;
+    void ConstructServer();
+
+    PINDEX majorVersion;
+    PINDEX minorVersion;
+    PINDEX transactionCount;
+    PString userAgent;
+    PTimeInterval nextTimeout;
 
     PHTTPSpace urlSpace;
 };
