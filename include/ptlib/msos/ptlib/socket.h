@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.2 1994/10/23 05:36:51 robertj Exp $
+ * $Id: socket.h,v 1.3 1994/10/30 11:24:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.2  1994/10/23 05:36:51  robertj
+ * Revision 1.3  1994/10/30 11:24:22  robertj
+ * Fixed DOS version of header.
+ *
+ * Revision 1.2  1994/10/23  05:36:51  robertj
  * Sockets implementation.
  *
  * Revision 1.1  1994/08/22  00:18:02  robertj
@@ -22,8 +25,10 @@
 #ifndef _PSOCKET
 
 
+#ifdef _WINDOWS
 #include <winsock.h>
 #define P_HAS_BERKELEY_SOCKETS
+#endif
 
 
 #include "../../common/socket.h"
@@ -52,7 +57,9 @@
 
 
   private:
+#ifdef _WINDOWS
     static BOOL WinSockStarted;
+#endif
 };
 
 
