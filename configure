@@ -848,7 +848,7 @@ Optional Features:
   --enable-internalregex  force internal regex library
   --enable-plugins        enable plugins' support in PWLIB
   --disable-resolver      disable DNS resolver support in PWLIB
-  --disable-sasl          disable OpenLDAP support in PWLIB
+  --disable-sasl          disable SASL support in PWLIB
   --disable-openldap      disable OpenLDAP support in PWLIB
   --disable-openssl       disable OpenSSL support in PWLIB
   --disable-expat         disable XML support in PWLIB
