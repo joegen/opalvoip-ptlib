@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.35  1998/12/21 07:22:50  robertj
+ * Virtualised functions for SOCKS support.
+ *
  * Revision 1.34  1998/12/18 04:34:14  robertj
  * PPC Linux GNU C compatibility.
  *
@@ -304,10 +307,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        TRUE if the host is the local machine.
      */
 
-    BOOL GetLocalAddress(
+    virtual BOOL GetLocalAddress(
       Address & addr    // Variable to receive hosts IP address
     );
-    BOOL GetLocalAddress(
+    virtual BOOL GetLocalAddress(
       Address & addr,    // Variable to receive peer hosts IP address
       WORD & port        // Variable to receive peer hosts port number
     );
@@ -317,10 +320,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        TRUE if the IP number was returned.
      */
 
-    BOOL GetPeerAddress(
+    virtual BOOL GetPeerAddress(
       Address & addr    // Variable to receive hosts IP address
     );
-    BOOL GetPeerAddress(
+    virtual BOOL GetPeerAddress(
       Address & addr,    // Variable to receive peer hosts IP address
       WORD & port        // Variable to receive peer hosts port number
     );
