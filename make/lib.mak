@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.24  2002/01/27 08:45:50  rogerh
+# FreeBSD and OpwnBSD use -pthread and not -lpthread
+#
 # Revision 1.23  2002/01/26 23:57:08  craigs
 # Changed for GCC 3.0 compatibility, thanks to manty@manty.net
 #
@@ -112,8 +115,15 @@ else
 LDSOOPTS = -shared
 endif
 
+
+ifneq (,$(findstring $(OSTYPE),FreeBSD OpenBSDs))
+ifdef P_PTHREADS
+EXTLIBS += -pthread
+endif
+else
 ifdef P_PTHREADS
 EXTLIBS += -lpthread
+endif
 endif
 
 ifneq (,$(wildcard /usr/include/openssl))
