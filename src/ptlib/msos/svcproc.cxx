@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.2 1996/05/23 10:03:21 robertj Exp $
+ * $Id: svcproc.cxx,v 1.3 1996/05/30 11:49:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.3  1996/05/30 11:49:10  robertj
+ * Fixed crash on exit bug.
+ *
  * Revision 1.2  1996/05/23 10:03:21  robertj
  * Windows 95 support.
  *
@@ -59,18 +62,15 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 
     HANDLE h1 = GetStdHandle(STD_INPUT_HANDLE);
     int h2 = _open_osfhandle((long)h1, _O_RDONLY|_O_TEXT);
-    static ifstream newcin(h2);
-    cin = newcin;
+    cin = *new ifstream(h2);
 
     h1 = GetStdHandle(STD_OUTPUT_HANDLE);
     h2 = _open_osfhandle((long)h1, _O_APPEND|_O_TEXT);
-    static ofstream newcout(h2);
-    cout = newcout;
+    cout = *new ofstream(h2);
 
     h1 = GetStdHandle(STD_ERROR_HANDLE);
     h2 = _open_osfhandle((long)h1, _O_APPEND|_O_TEXT);
-    static ofstream newcerr(h2);
-    cerr = newcerr;
+    cerr = *new ofstream(h2);
 
     switch (ProcessCommand(argv[1])) {
       case CommandProcessed :
