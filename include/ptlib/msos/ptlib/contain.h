@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.23  1998/11/30 02:55:06  robertj
+ * New directory structure
+ *
  * Revision 1.22  1998/10/13 14:13:16  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -262,7 +265,7 @@ const PINDEX P_MAX_INDEX = 0xffff;
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
 
-#include "../../common/ptlib/contain.h"
+#include "../../contain.h"
 
 
 #endif // _OBJECT_H
