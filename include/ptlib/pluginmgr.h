@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.12  2004/05/18 06:01:06  csoutheren
+ * Deferred plugin loading until after main has executed by using abstract factory classes
+ *
  * Revision 1.11  2004/05/17 06:05:20  csoutheren
  * Changed "make docs" to use doxygen
  * Added new config file and main page
@@ -141,6 +144,8 @@ class PPluginManager : public PObject
 };
 
 
+
+/*
 // helper classes to make sure plugin manager gets declared
 #define PWLIB_PLUGIN_MODULE_LOADER(name) \
 class name##_PluginLoader; \
@@ -159,6 +164,7 @@ mgrclass & mgrclass::GetManager()\
     systemMgr = new mgrclass;\
   return *systemMgr;\
 }\
+*/
 
 class PPluginModuleManager : public PObject
 {
@@ -188,6 +194,7 @@ class PPluginModuleManager : public PObject
     PPluginManager * pluginMgr;
 };
 
+/*
 #define PWLIB_PLUGIN_MANAGER_CLASS(mgr) \
 class mgr : public PPluginModuleManager\
 {\
@@ -197,5 +204,6 @@ class mgr : public PPluginModuleManager\
 #ifdef DOCPLUSPLUS
 }
 #endif
+*/
 
 #endif // ifndef _PLUGINMGR_H

@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.5  2004/05/18 06:01:06  csoutheren
+ * Deferred plugin loading until after main has executed by using abstract factory classes
+ *
  * Revision 1.4  2004/05/18 02:32:08  csoutheren
  * Fixed linking problems with PGenericFactory classes
  *
@@ -93,7 +96,12 @@ class PGenericFactory
 {
   public:
     typedef AbstractType * (*CreatorFunctionType)();
-    typedef std::map<TypeKey, CreatorFunctionType> KeyMap;
+    struct AbstractInfo {
+      CreatorFunctionType creator;
+      BOOL isSingleton;
+    };
+
+    typedef std::map<TypeKey, AbstractInfo> KeyMap;
     typedef std::vector<TypeKey> KeyList;
 
     static PGenericFactory & GetFactory()
@@ -106,15 +114,27 @@ class PGenericFactory
       AbstractType * instance = NULL;
       typename KeyMap::const_iterator entry = keyMap.find(key);
       if (entry != keyMap.end())
-        instance = entry->second();
+        instance = (*(entry->second.creator))();
       return instance;
     }
 
-    static void Register(const TypeKey & key, CreatorFunctionType func)
+    static void Register(const TypeKey & key, CreatorFunctionType func, BOOL isSingleton)
     {
       PWaitAndSignal m(GetMutex());
       KeyMap & keyMap = GetKeyMap();
-      keyMap[key] = func;
+      AbstractInfo info;
+      info.creator     = func;
+      info.isSingleton = isSingleton;
+      keyMap[key] = info;
+    }
+
+    static BOOL IsSingleton(const TypeKey & key)
+    {
+      PWaitAndSignal m(GetMutex());
+      KeyMap & keyMap = GetKeyMap();
+      if (keyMap.find(key) == keyMap.end())
+        return FALSE;
+      return keyMap[key].isSingleton;
     }
 
     static KeyList GetKeyList()
@@ -143,8 +163,21 @@ class PAbstractFactory
     { return new ConcreteType; }
 
     PAbstractFactory(const TypeKey & key)
-    { PGenericFactory<AbstractType>::Register(key, &CreateInstance); }
+    { PGenericFactory<AbstractType>::Register(key, &CreateInstance, FALSE); }
 };
 
+template <class AbstractType, class ConcreteType, typename TypeKey = PString>
+class PAbstractSingletonFactory
+{
+  public:
+    static AbstractType & GetInstance()
+    { static ConcreteType instance; return instance; }
+
+    static AbstractType * CreateInstance()
+    { return &GetInstance(); }
+
+    PAbstractSingletonFactory(const TypeKey & key)
+    { PGenericFactory<AbstractType>::Register(key, &CreateInstance, TRUE); }
+};
 
 #endif // _PFACTORY_H
