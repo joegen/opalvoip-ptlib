@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.18 1995/07/31 12:18:11 robertj Exp $
+ * $Id: ptlib.cxx,v 1.19 1995/10/14 15:12:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.19  1995/10/14 15:12:29  robertj
+ * Added function to get parent directory.
+ *
  * Revision 1.18  1995/07/31 12:18:11  robertj
  * Removed PContainer from PChannel ancestor.
  *
@@ -212,6 +215,15 @@ BOOL PChannel::ConvertOSError(int error)
 
 ///////////////////////////////////////////////////////////////////////////////
 // Directories
+
+PDirectory PDirectory::GetParent() const
+{
+  if (IsRoot())
+    return *this;
+  
+  return *this + "..";
+}
+
 
 void PDirectory::CopyContents(const PDirectory & dir)
 {
