@@ -47,6 +47,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -106,6 +107,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -165,6 +167,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -227,6 +230,7 @@
 	"..\..\..\Include\PtLib\pprocess.h"\
 	"..\..\..\Include\PtLib\Pstring.h"\
 	"..\..\..\Include\PtLib\Ptime.h"\
+	"..\..\..\include\ptlib\pwavfile.h"\
 	"..\..\..\Include\PtLib\semaphor.h"\
 	"..\..\..\Include\PtLib\Sfile.h"\
 	"..\..\..\Include\PtLib\Sound.h"\
@@ -482,10 +486,35 @@
 
 !ENDIF 
 
+!IF  "$(CFG)" == "Console - Win32 Release"
+
 .\mail.cxx : \
 	"..\..\..\Include\PtLib\Mail.h"\
 	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
 	
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+.\mail.cxx : \
+	"..\..\..\Include\PtLib\Mail.h"\
+	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+.\mail.cxx : \
+	"..\..\..\Include\PtLib\Mail.h"\
+	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+.\mail.cxx : \
+	"..\..\..\Include\PtLib\Mail.h"\
+	"..\..\..\include\ptlib\msos\ptlib\mail.h"\
+	
+
+!ENDIF 
 
 ..\common\object.cxx : \
 	"..\..\..\include\ptlib\msos\ptlib\debstrm.h"\

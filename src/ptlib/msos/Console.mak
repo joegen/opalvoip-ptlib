@@ -27,6 +27,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -57,6 +60,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
+	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regerror.obj"
 	-@erase "$(INTDIR)\regexec.obj"
@@ -85,40 +89,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"Lib/PTLib.bsc" 
 BSC32_SBRS= \
@@ -160,7 +131,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj"
+	"$(INTDIR)\regfree.obj" \
+	"$(INTDIR)\pwavfile.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -214,6 +186,8 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
+	-@erase "$(INTDIR)\pwavfile.obj"
+	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regcomp.sbr"
 	-@erase "$(INTDIR)\regerror.obj"
@@ -261,40 +235,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -332,7 +273,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\regcomp.sbr" \
 	"$(INTDIR)\regerror.sbr" \
 	"$(INTDIR)\regexec.sbr" \
-	"$(INTDIR)\regfree.sbr"
+	"$(INTDIR)\regfree.sbr" \
+	"$(INTDIR)\pwavfile.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -376,7 +318,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj"
+	"$(INTDIR)\regfree.obj" \
+	"$(INTDIR)\pwavfile.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -430,6 +373,8 @@ CLEAN :
 	-@erase "$(INTDIR)\ptlib.sbr"
 	-@erase "$(INTDIR)\pvidchan.obj"
 	-@erase "$(INTDIR)\pvidchan.sbr"
+	-@erase "$(INTDIR)\pwavfile.obj"
+	-@erase "$(INTDIR)\pwavfile.sbr"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regcomp.sbr"
 	-@erase "$(INTDIR)\regerror.obj"
@@ -477,40 +422,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\PTLib.bsc" 
 BSC32_SBRS= \
@@ -548,7 +460,8 @@ BSC32_SBRS= \
 	"$(INTDIR)\regcomp.sbr" \
 	"$(INTDIR)\regerror.sbr" \
 	"$(INTDIR)\regexec.sbr" \
-	"$(INTDIR)\regfree.sbr"
+	"$(INTDIR)\regfree.sbr" \
+	"$(INTDIR)\pwavfile.sbr"
 
 "$(OUTDIR)\PTLib.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -592,7 +505,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj"
+	"$(INTDIR)\regfree.obj" \
+	"$(INTDIR)\pwavfile.obj"
 
 "$(OUTDIR)\ptlibsd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -629,6 +543,7 @@ CLEAN :
 	-@erase "$(INTDIR)\ptime.obj"
 	-@erase "$(INTDIR)\ptlib.obj"
 	-@erase "$(INTDIR)\pvidchan.obj"
+	-@erase "$(INTDIR)\pwavfile.obj"
 	-@erase "$(INTDIR)\regcomp.obj"
 	-@erase "$(INTDIR)\regerror.obj"
 	-@erase "$(INTDIR)\regexec.obj"
@@ -657,40 +572,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"Lib/PTLib.bsc" 
 BSC32_SBRS= \
@@ -732,7 +614,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\regcomp.obj" \
 	"$(INTDIR)\regerror.obj" \
 	"$(INTDIR)\regexec.obj" \
-	"$(INTDIR)\regfree.obj"
+	"$(INTDIR)\regfree.obj" \
+	"$(INTDIR)\pwavfile.obj"
 
 "$(OUTDIR)\ptlibs.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -740,6 +623,36 @@ LIB32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -1343,6 +1256,38 @@ SOURCE=..\common\pvidchan.cxx
 
 
 "$(INTDIR)\pvidchan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\common\pwavfile.cxx
+
+!IF  "$(CFG)" == "Console - Win32 Release"
+
+
+"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 Debug"
+
+
+"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
+
+
+"$(INTDIR)\pwavfile.obj"	"$(INTDIR)\pwavfile.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
+
+
+"$(INTDIR)\pwavfile.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
