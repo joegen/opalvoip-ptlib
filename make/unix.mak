@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.134  2002/08/21 00:00:31  dereks
+# Patches from Ryutaroh, to improve firewire (linux only) support. Many thanks.
+#
 # Revision 1.133  2002/07/18 13:18:22  rogerh
 # The patch to set big endian for linux on the sparc (by Kawahara Taro) was
 # incorrectly added in version 1.91 and it made Alpha big endian instead. The
@@ -688,12 +691,12 @@ endif # P_SHAREDLIB
 
 ifdef TRY_1394DC
 ifneq (,$(wildcard $(SYSINCDIR)/libdc1394/dc1394_control.h))
-ifneq (,$(shell grep dma_device_file $(SYSINCDIR)/libdc1394/dc1394_control.h))
+ifneq (,$(shell grep drop_frames $(SYSINCDIR)/libdc1394/dc1394_control.h))
 ENDLDLIBS      += -lraw1394 -ldc1394_control
 STDCCFLAGS     += -DTRY_1394DC
 TRY_1394DC     =  1
 else
-$(warning "Libdc1394 is installed but its version is older than required. The 1394 camera module will not be compiled.")
+$(error "Libdc1394 is installed but its version is older than required. The 1394 camera module will not be compiled.")
 TRY_1394DC     =
 endif
 else
