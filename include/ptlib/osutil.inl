@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.43 1996/03/31 08:48:14 robertj Exp $
+ * $Id: osutil.inl,v 1.44 1996/04/09 03:31:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.44  1996/04/09 03:31:33  robertj
+ * Fixed bug in config GetTime() cannot use PTime(0) in western hemisphere.
+ *
  * Revision 1.43  1996/03/31 08:48:14  robertj
  * Fixed WriteString() so works with sockets.
  *
@@ -610,13 +613,10 @@ PINLINE void PConfig::SetReal(const PString & key, double value)
   { SetReal(defaultSection, key, value); }
 
 PINLINE PTime PConfig::GetTime(const PString & key) const
-  { return GetTime(defaultSection, key, PTime(0)); }
+  { return GetTime(defaultSection, key); }
 
 PINLINE PTime PConfig::GetTime(const PString & key, const PTime & dflt) const
   { return GetTime(defaultSection, key, dflt); }
-
-PINLINE PTime PConfig::GetTime(const PString & section, const PString & key) const
-  { return GetTime(section, key, PTime(0)); }
 
 PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
   { SetTime(defaultSection, key, value); }
