@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.4  1998/11/30 22:06:39  robertj
+ * New directory structure.
+ *
  * Revision 1.3  1998/09/24 04:11:34  robertj
  * Added open software license.
  *
@@ -46,7 +49,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PEthSocket
 
-#include "../../common/ptlib/ethsock.h"
+#include "../../ethsock.h"
   protected:
     Address     macAddress;
     MediumTypes medium;
