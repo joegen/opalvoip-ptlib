@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.6 1995/12/10 11:55:09 robertj Exp $
+ * $Id: assert.cxx,v 1.7 1996/01/28 14:13:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.7  1996/01/28 14:13:04  robertj
+ * Made PServiceProcess special case global not just WIN32.
+ *
  * Revision 1.6  1995/12/10 11:55:09  robertj
  * Numerous fixes for WIN32 service processes.
  *
@@ -83,22 +86,18 @@ void PAssertFunc(const char * file, int line, const char * msg)
   DWORD err = GetLastError();
   static HANDLE mutex = CreateSemaphore(NULL, 1, 1, NULL);
   WaitForSingleObject(mutex, INFINITE);
+#else
+  int err = errno;
+#endif
 
-  if (PProcess::Current()->IsDescendant(PServiceProcess::Class())) {
+  if (PProcess::Current()->IsDescendant(PServiceProcess::Class()) &&
+                              !((PServiceProcess*)PProcess::Current())->debugMode) {
     ((PServiceProcess*)PProcess::Current())->SystemLog(
               PServiceProcess::LogFatal,
               "Assertion fail in file %s, line %u %s - code = %lu",
               file, line, msg != NULL ? msg : "", err);
-    if (((PServiceProcess*)PProcess::Current())->debugMode) {
-      ReleaseSemaphore(mutex, 1, NULL);
-      __asm int 3;
-    }
-    else
-      _exit(100);
+    _exit(100);
   }
-#else
-  int err = errno;
-#endif
 
   for (;;) {
     fprintf(stderr, "Assertion fail: File %s, Line %u\n", file, line);
