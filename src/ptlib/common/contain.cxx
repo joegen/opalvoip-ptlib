@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.143  2004/02/15 03:04:52  rjongbloed
+ * Fixed problem with PSortedList nil variable and assignment between instances,
+ *   pointed out by Ben Lear.
+ *
  * Revision 1.142  2004/02/11 05:09:14  csoutheren
  * Fixed problems with regex libraries on Solaris, and with host OS numbering
  * being a quoted string rather than a number. Thanks to Chad Attermann
@@ -2735,7 +2739,7 @@ PINDEX PSortedStringList::GetNextStringsIndex(const PString & str) const
 
   if (info->lastIndex != 0) {
     Element * prev;
-    while ((prev = Predecessor(info->lastElement)) != &nil &&
+    while ((prev = Predecessor(info->lastElement)) != &info->nil &&
                     ((PString *)prev->data)->NumCompare(str, len) >= EqualTo) {
       info->lastElement = prev;
       info->lastIndex--;
@@ -2750,7 +2754,7 @@ PINDEX PSortedStringList::InternalStringSelect(const char * str,
                                                PINDEX len,
                                                Element * thisElement) const
 {
-  if (thisElement == &nil)
+  if (thisElement == &info->nil)
     return 0;
 
   switch (((PString *)thisElement->data)->NumCompare(str, len)) {
