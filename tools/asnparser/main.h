@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.10  1999/09/18 04:17:40  robertj
+ * Added generation of C++ inlines for some  functions.
+ * Optimised CreateObject() switch statements, collapsing common cases.
+ *
  * Revision 1.9  1999/08/09 13:02:36  robertj
  * Added ASN compiler #defines for backward support of pre GCC 2.9 compilers.
  * Added ASN compiler #defines to reduce its memory footprint.
@@ -1181,10 +1185,13 @@ class ModuleDefinition : public PObject
     int GetIndentLevel() const { return indentLevel; }
     void SetIndentLevel(int delta) { indentLevel += delta; }
 
+    BOOL UsingInlines() const { return usingInlines; }
+
     void GenerateCplusplus(const PFilePath & path,
                            const PString & modName,
                            unsigned numFiles,
                            BOOL useNamespaces,
+                           BOOL useInlines,
                            BOOL verbose);
 
 
@@ -1202,6 +1209,7 @@ class ModuleDefinition : public PObject
     ValuesList      values;
     MibList         mibs;
     int             indentLevel;
+    BOOL            usingInlines;
 };
 
 
