@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.105  1998/10/30 05:25:09  robertj
+ * Allow user to shift past some arguments before parsing for the first time.
+ *
  * Revision 1.104  1998/10/29 05:35:17  robertj
  * Fixed porblem with GetCount() == 0 if do not call Parse() function.
  *
@@ -1538,8 +1541,8 @@ void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 {
   PAssertNULL(spec);
 
-  // Find starting point
-  PINDEX arg = 0;
+  // Find starting point, start at shift if first Parse() call.
+  PINDEX arg = optionLetters.IsEmpty() ? shift : 0;
 
   // If not in parse all mode, have been parsed before, and had some parameters
   // from last time, then start argument parsing somewhere along instead of start.
@@ -1581,6 +1584,7 @@ void PArgList::Parse(const char * spec, BOOL optionsBeforeParams)
 
   // Clear parameter indexes
   parameterIndex.SetSize(0);
+  shift = 0;
 
   // Now work through the arguments and split out the options
   PINDEX param = 0;
