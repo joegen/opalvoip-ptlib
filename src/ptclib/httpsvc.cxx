@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.81  2002/07/30 04:51:26  craigs
+ * Added MonitorInfo macro
+ *
  * Revision 1.80  2002/07/30 03:16:57  craigs
  * Added StartTime macro
  *
@@ -1493,6 +1496,52 @@ PCREATE_SERVICE_MACRO(PeerIP,request,P_EMPTY)
     return request.origin;
   else
     return "N/A";
+}
+
+PCREATE_SERVICE_MACRO(MonitorInfo,request,P_EMPTY)
+{
+  const PTime & compilationDate = PHTTPServiceProcess::Current().GetCompilationDate();
+
+  PString peerHost = "N/A";
+  if (request.origin != 0)
+    peerHost = PIPSocket::GetHostName(request.origin);
+
+  PString peerAddr = "N/A";
+  if (request.origin != 0)
+    peerAddr = request.origin.AsString();
+
+  PString localAddr = "127.0.0.1";
+  if (request.localAddr != 0)
+    localAddr = request.localAddr.AsString();
+
+  WORD localPort = 80;
+  if (request.localPort != 0)
+    localPort = request.localPort;
+
+  PString timeFormat = "yyyyMMdd hhmmss z";
+
+  PTime now;
+  PTimeInterval upTime = now - PProcess::Current().GetStartTime();
+
+  PStringStream monitorText; 
+  monitorText << "Program: "          << PHTTPServiceProcess::Current().GetProductName() << "\n"
+              << "Version: "          << PHTTPServiceProcess::Current().GetVersion(TRUE) << "\n"
+              << "Manufacturer: "     << PHTTPServiceProcess::Current().GetManufacturer() << "\n"
+              << "OS: "               << PHTTPServiceProcess::Current().GetOSClass() << " " << PHTTPServiceProcess::Current().GetOSName() << "\n"
+              << "OS Version: "       << PHTTPServiceProcess::Current().GetOSVersion() << "\n"
+              << "Hardware: "         << PHTTPServiceProcess::Current().GetOSHardware() << "\n"
+              << "Compilation date: " << compilationDate.AsString(timeFormat, PTime::GMT) << "\n"
+              << "Start Date: "       << PProcess::Current().GetStartTime().AsString(timeFormat, PTime::GMT) << "\n"
+              << "Current Date: "     << now.AsString(timeFormat, PTime::GMT) << "\n"
+              << "Up time: "          << upTime << "\n"
+              << "Peer Host: "        << peerHost << "\n"
+              << "Peer Addr: "        << peerAddr << "\n"
+              << "Local Host: "       << PIPSocket::GetHostName() << "\n"
+              << "Local Addr: "       << localAddr << "\n"
+              << "Local Port: "       << localPort << "\n"
+       ;
+
+  return monitorText;
 }
 
 
