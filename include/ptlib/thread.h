@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.30  2002/06/27 06:44:28  robertj
+ * Changed "" to PString::Empty() where assigning to PString.
+ *
  * Revision 1.29  2002/04/24 01:49:22  robertj
  * Fixed error in PTRACE_BLOCk nesting level to now work when no tracing enabled.
  *
@@ -227,7 +230,7 @@ class PThread : public PObject
       AutoDeleteFlag deletion = AutoDeleteThread,
         /// Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
-      const PString & threadName = "" /// The name of the thread (for Debug/Trace)
+      const PString & threadName = PString::Empty() /// The name of the thread (for Debug/Trace)
     );
 
     /** Destroy the thread, this simply calls the #Terminate()# function
@@ -412,7 +415,7 @@ class PThread : public PObject
       AutoDeleteFlag deletion = AutoDeleteThread,
         /// Automatically delete PThread instance on termination of thread.
       Priority priorityLevel = NormalPriority,  /// Initial priority of thread.
-      const PString & threadName = "", /// The name of the thread (for Debug/Trace)
+      const PString & threadName = PString::Empty(), /// The name of the thread (for Debug/Trace)
       PINDEX stackSize = 10000         /// Stack size on some platforms
     );
   //@}
