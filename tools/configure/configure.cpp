@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.12  2004/01/30 02:33:58  csoutheren
+ * More fixups
+ *
  * Revision 1.11  2004/01/30 01:43:41  csoutheren
  * Added excludedir options and environment variable
  *
@@ -272,27 +275,25 @@ bool TreeWalk(const string & directory)
     do {
       string subdir = directory;
       subdir += fileinfo.cFileName;
-
       list<string>::const_iterator r = find(excludeDirList.begin(), excludeDirList.end(), subdir);
-      if (r != excludeDirList.end())
-        continue;
+      if (r == excludeDirList.end()) {
+        if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
+                                         fileinfo.cFileName[0] != '.' &&
+                                         stricmp(fileinfo.cFileName, "RECYCLER") != 0) {
+          subdir += '\\';
 
-      if ((fileinfo.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY) != 0 &&
-                                       fileinfo.cFileName[0] != '.' &&
-                                       stricmp(fileinfo.cFileName, "RECYCLER") != 0) {
-        subdir += '\\';
+          foundAll = true;
+          list<Feature>::iterator feature;
+          for (feature = features.begin(); feature != features.end(); feature++) {
+            if (!feature->Locate(subdir.c_str()))
+              foundAll = false;
+          }
 
-        foundAll = true;
-        list<Feature>::iterator feature;
-        for (feature = features.begin(); feature != features.end(); feature++) {
-          if (!feature->Locate(subdir.c_str()))
-            foundAll = false;
+          if (foundAll)
+            break;
+
+          TreeWalk(subdir);
         }
-
-        if (foundAll)
-          break;
-
-        TreeWalk(subdir);
       }
     } while (FindNextFile(hFindFile, &fileinfo));
 
@@ -404,7 +405,7 @@ int main(int argc, char* argv[])
         r = str.end();
       }
       excludeDirList.push_back(dir);
-      cout << "excluding " << dir << " from feature search" << endl;
+      cout << "Excluding " << dir << " from feature search" << endl;
     }
   }
   
@@ -419,7 +420,7 @@ int main(int argc, char* argv[])
     else if (strnicmp(argv[i], EXCLUDE_DIR, sizeof(EXCLUDE_DIR) - 1) == 0) {
       string dir(argv[i] + sizeof(EXCLUDE_DIR) - 1); 	
       excludeDirList.push_back(dir);
-      cout << "excluding " << dir << " from feature search" << endl;
+      cout << "Excluding " << dir << " from feature search" << endl;
     }
     else if (stricmp(argv[i], "-h") == 0 || stricmp(argv[i], "--help") == 0) {
       cout << "usage: configure args\n"
