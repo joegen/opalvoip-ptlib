@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.71  1998/10/29 11:29:20  robertj
+ * Added ability to set environment in sub-process.
+ *
  * Revision 1.70  1998/10/28 00:59:12  robertj
  * Fixed problem when reading standard error from pipe channel, no terminating null on string.
  *
@@ -746,17 +749,27 @@ BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
 
-void PPipeChannel::Construct(const PString & subProgram,
-                             const char * const * arguments,
-                             OpenMode mode,
-                             BOOL searchPath,
-                             BOOL stderrSeparate)
+PPipeChannel::PPipeChannel()
+{
+  hToChild = hFromChild = hStandardError = INVALID_HANDLE_VALUE;
+}
+
+
+BOOL PPipeChannel::Open(const PString & subProgram,
+                        const char * const * arguments,
+                        OpenMode mode,
+                        BOOL searchPath,
+                        BOOL stderrSeparate,
+                        const char * environment)
 {
   STARTUPINFO startup;
   memset(&startup, 0, sizeof(startup));
   startup.cb = sizeof(startup);
   startup.dwFlags = STARTF_USESHOWWINDOW|STARTF_USESTDHANDLES;
   startup.wShowWindow = SW_HIDE;
+  startup.hStdInput = INVALID_HANDLE_VALUE;
+  startup.hStdOutput = INVALID_HANDLE_VALUE;
+  startup.hStdError = INVALID_HANDLE_VALUE;
 
   SECURITY_ATTRIBUTES security;
   security.nLength = sizeof(security);
@@ -801,16 +814,27 @@ void PPipeChannel::Construct(const PString & subProgram,
   }
 
   if (ConvertOSError(CreateProcess(prog, cmdLine.GetPointer(),
-                     NULL, NULL, TRUE, 0,
-                     NULL, NULL, &startup, &info) ? 0 : -2))
+                                   NULL, NULL, TRUE, 0,
+                                   (void *)(const char *)environment,
+                                   NULL, &startup, &info) ? 0 : -2))
     os_handle = info.dwProcessId;
+  else {
+    if (hToChild != INVALID_HANDLE_VALUE)
+      CloseHandle(hToChild);
+    if (hFromChild != INVALID_HANDLE_VALUE)
+      CloseHandle(hFromChild);
+    if (hStandardError != INVALID_HANDLE_VALUE)
+      CloseHandle(hStandardError);
+  }
 
-  if (startup.hStdInput != NULL)
+  if (startup.hStdInput != INVALID_HANDLE_VALUE)
     CloseHandle(startup.hStdInput);
-  if (startup.hStdOutput != NULL)
+  if (startup.hStdOutput != INVALID_HANDLE_VALUE)
     CloseHandle(startup.hStdOutput);
   if (startup.hStdOutput != startup.hStdError)
     CloseHandle(startup.hStdError);
+
+  return IsOpen();
 }
 
 
