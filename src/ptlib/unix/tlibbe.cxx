@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.25  2004/04/30 16:10:20  ykiryanov
+ * Added PMutex code based on BLocker to support recursive locks
+ *
  * Revision 1.24  2004/04/25 21:51:37  ykiryanov
  * Cleaned up thread termination act. Very cool
  *
@@ -78,12 +81,19 @@
  *
  */
 
+class PThread;
 class PProcess;
 class PSemaphore;
+class PSyncPoint;
+
+class PMutex; 
 
 #include <ptlib.h>
 #include <ptlib/socket.h>
 #include <posix/rlimit.h>
+
+// For class BLocker
+#include <be/support/Locker.h>
 
 int PX_NewHandle(const char *, int);
 
@@ -404,7 +414,7 @@ int PThread::PXBlockOnIO(int maxHandles,
            const PTimeInterval & timeout,
            const PIntArray & ) // osHandles
 {
-  PAssertAlways("Block IO called in error");
+  // Not implemented yet
   return -1;
 }
 
@@ -569,215 +579,189 @@ PProcess::~PProcess()
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
-
-PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
-  : mOwner(::find_thread(NULL)), semId(::create_sem(initial, "PWLS")), mCount(initial)
+PSemaphore::PSemaphore(BOOL fNested) : mfNested(fNested)
 {
-  PAssertOS(semId >= B_NO_ERROR);
-  PAssertOS(mOwner != B_BAD_THREAD_ID);
+}
 
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::create_sem (PSemaphore(i,m)), id: " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count << endl;
-  #endif 
+PSemaphore::PSemaphore(unsigned initial, unsigned)
+{
+  Create(initial);
 }
  
+void PSemaphore::Create(unsigned initial)
+{
+  mOwner = ::find_thread(NULL);
+  PAssertOS(mOwner != B_BAD_THREAD_ID);
+  if(!mfNested)
+  {
+    mCount = initial;
+    semId = ::create_sem(initial, "PWLS"); 
+
+    PAssertOS(semId >= B_NO_ERROR);
+
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::create_sem (PSemaphore()), id: " << semId << ", this: " << this << ", count:" << info.count << endl;
+    #endif
+  }
+  else // Use BLocker
+  {
+    semId = (sem_id) new BLocker("PWLN", true); // PWLib use recursive locks. true for benaphore style
+    PAssertOS(semId);
+  }
+}
 
 PSemaphore::~PSemaphore()
 {
-  status_t result = B_NO_ERROR;
-  PAssertOS(semId >= B_NO_ERROR);
-  
-  // Transmit ownership of the semaphore to our thread
-  thread_id curThread = ::find_thread(NULL);
-  if(mOwner != curThread)
+  if(!mfNested)
   {
+    status_t result = B_NO_ERROR;
+    PAssertOS(semId >= B_NO_ERROR);
+  
+    // Transmit ownership of the semaphore to our thread
+    thread_id curThread = ::find_thread(NULL);
+    if(mOwner != curThread)
+    {
      thread_info tinfo;
      ::get_thread_info(curThread, &tinfo);
      ::set_sem_owner(semId, tinfo.team);
       mOwner = curThread; 
-  } 
+    } 
  
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::delete_sem, id: " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count;
-  #endif 
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::delete_sem, id: " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count;
+    #endif 
 
-  // Deleting the semaphore id
-  result = ::delete_sem(semId);
+    // Deleting the semaphore id
+    result = ::delete_sem(semId);
 
-  #ifdef DEBUG_SEMAPHORES
-  if( result != B_NO_ERROR )
-    PError << "...delete_sem failed, error: " << strerror(result) << endl;
-  #endif 
+    #ifdef DEBUG_SEMAPHORES
+    if( result != B_NO_ERROR )
+      PError << "...delete_sem failed, error: " << strerror(result) << endl;
+    #endif
+  }
+  else // Use BLocker
+  {
+    PAssertOS(semId);
+    delete (BLocker*) semId; // Thanks!
+  }
 }
 
 void PSemaphore::Wait()
 {
-  PAssertOS(semId >= B_NO_ERROR);
- 
-  status_t result = B_NO_ERROR;
-
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::acquire_sem_etc, id: " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count;
-  #endif 
-
-  while ((B_BAD_THREAD_ID != mOwner) 
-    && ((result = ::acquire_sem(semId)) == B_INTERRUPTED))
+  if(!mfNested)
   {
+    PAssertOS(semId >= B_NO_ERROR);
+ 
+    status_t result = B_NO_ERROR;
+
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::acquire_sem, id: " << semId << ", name: " << info.name << ", count:" << info.count << endl;
+    #endif 
+
+    while((B_BAD_THREAD_ID != mOwner) 
+      && ((result = ::acquire_sem(semId)) == B_INTERRUPTED))
+    {
+    }
   }
-
-  #ifdef DEBUG_SEMAPHORES
-  if( result != B_NO_ERROR )
-    PError << "... failed, error: " << strerror(result);
-
-  PError << endl;
-  #endif 
+  else
+  {
+   ((BLocker*)semId)->Lock(); // Using class to support recursive locks 
+  }
 }
 
 BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
-  PAssertOS(semId >= B_NO_ERROR);
- 
+  PInt64 ms = timeout.GetMilliSeconds();
+  bigtime_t microseconds = 0;
+
   status_t result = B_NO_ERROR;
    
-  PInt64 ms = timeout.GetMilliSeconds();
-  bigtime_t microseconds = 
-   ms? timeout == PMaxTimeInterval ? B_INFINITE_TIMEOUT : ( ms * 1000 ) : 0;
- 
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::acquire_sem_etc " << semId << ",this: " << this << ", name: " << info.name << ", count:" << info.count << ", timeout:";
-
-  if( microseconds == B_INFINITE_TIMEOUT ) 
-    PError << "infinite";
-  else
-    PError << microseconds << " ms";
-  #endif 
-	
-  while((B_BAD_THREAD_ID != mOwner) 
-    && ((result = ::acquire_sem_etc(semId, 1, 
-      B_RELATIVE_TIMEOUT, microseconds)) == B_INTERRUPTED))
+  if(!mfNested)
   {
+    PAssertOS(semId >= B_NO_ERROR);
+    PAssertOS(timeout < PMaxTimeInterval);
+
+    if(ms > 0)
+       microseconds = ms * 1000;
+ 
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::acquire_sem_etc " << semId << ",this: " << this << ", name: " << info.name << ", count:" << info.count 
+      << ", ms: " << microseconds << endl;
+    #endif
+ 
+    while((B_BAD_THREAD_ID != mOwner) 
+      && ((result = ::acquire_sem_etc(semId, 1, 
+        B_RELATIVE_TIMEOUT, microseconds)) == B_INTERRUPTED))
+    {
+    }
+
+    if(ms == 0)
+     return (result != B_TIMED_OUT); // Not timed out - check Wait(0) passed
+
+    return (result == B_OK);
   }
-
-  #ifdef DEBUG_SEMAPHORES
-  if( result != B_NO_ERROR ) 
-   PError << " ... failed! error: " << strerror(result);	  
-
-  PError << " " << endl;
-  #endif
-	
-  return result == B_TIMED_OUT;
+  else
+  {
+   result = ((BLocker*)semId)->LockWithTimeout(microseconds); // Using BLocker class to support recursive locks 
+   return result == B_OK;  
+  }
 }
 
 void PSemaphore::Signal()
 {
-  PAssertOS(semId >= B_NO_ERROR);
+  if(!mfNested)
+  {
+    PAssertOS(semId >= B_NO_ERROR);
  
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::release_sem " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count;
-
-  status_t result = 
-  #endif 
-    ::release_sem(semId);
-		
-  #ifdef DEBUG_SEMAPHORES
-  if( result != B_NO_ERROR ) 
-    PError << "... failed, error: " << strerror(result);
-
-  PError << endl;
-  #endif 
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::release_sem " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count << endl;
+    #endif 
+      ::release_sem(semId);
+   }
+   else
+   {
+    ((BLocker*)semId)->Unlock(); // Using BLocker class to support recursive locks 
+   }		
 }
 
 BOOL PSemaphore::WillBlock() const
 {
-  PAssertOS(semId >= B_NO_ERROR);
- 
-  status_t result = B_NO_ERROR;
+  if(!mfNested)
+  {
+    PAssertOS(semId >= B_NO_ERROR);
 
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::acquire_sem_etc (WillBlock) " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count;
-  #endif
+    #ifdef DEBUG_SEMAPHORES
+    sem_info info;
+    get_sem_info(semId, &info);
+    PError << "::acquire_sem_etc (WillBlock) " << semId << ", this: " << this << ", name: " << info.name << ", count:" << info.count << endl;
+    #endif
 	
-  result = ::acquire_sem_etc(semId, 0, B_RELATIVE_TIMEOUT, 0);
-	
-  #ifdef DEBUG_SEMAPHORES
-  if( result != B_NO_ERROR ) 
-    PError << "... failed, error: " << strerror(result);
-
-  PError << endl;
-  #endif 
-
-  return result == B_WOULD_BLOCK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// PMutex  
-
-PMutex::PMutex() 
-  : PSemaphore(1, 1)
-{
-  PAssertOS(semId >= B_NO_ERROR);
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::create_sem (PMutex()), id: " << semId << " " << ", this: " << this << ", " << info.name << ", count:" << info.count << endl;
-  #endif  
-}
-
-PMutex::PMutex(const PMutex& m) 
-  : PSemaphore(1, 1)
-{
-  PAssertOS(semId >= B_NO_ERROR);
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::create_sem (PMutex(PMutex)), id: " << semId << " " << ", this: " << this << ", " << info.name << ", count:" << info.count << endl;
-  #endif 
-} 
-
-void PMutex::Wait()
-{
-  PSemaphore::Wait();
-}
-
-BOOL PMutex::Wait(const PTimeInterval & timeout)
-{
-  return PSemaphore::Wait(timeout);
-}
-
-void PMutex::Signal()
-{
-  PSemaphore::Signal();
-}
-
-BOOL PMutex::WillBlock() const 
-{
-  return PSemaphore::WillBlock();
+    status_t result = ::acquire_sem_etc(semId, 0, B_RELATIVE_TIMEOUT, 0);
+    return result == B_WOULD_BLOCK;
+  }
+  else
+  {
+    return mOwner == find_thread(NULL); // If we are in our own thread, we won't lock
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore(0, 1)
+ : PSemaphore(FALSE)
 {
-  PAssertOS(semId >= B_NO_ERROR);
-  #ifdef DEBUG_SEMAPHORES
-  sem_info info;
-  get_sem_info(semId, &info);
-  PError << "::create_sem (PSyncPoint()), id: " << semId << " " << ", this: " << this << info.name << ", count:" << info.count << endl;
-  #endif 
+   PSemaphore::Create(0);
 }
 
 void PSyncPoint::Signal()
@@ -801,6 +785,41 @@ BOOL PSyncPoint::WillBlock() const
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// PMutex, derived from BLightNestedLocker  
+
+PMutex::PMutex() 
+  : PSemaphore(TRUE) 
+{
+  PSemaphore::Create(0);
+}
+
+PMutex::PMutex(const PMutex&) 
+ : PSemaphore(TRUE)
+{
+  PAssertAlways("PMutex copy constructor not supported");
+} 
+
+void PMutex::Signal()
+{
+  PSemaphore::Signal();
+}
+                                                                                                      
+void PMutex::Wait()
+{
+  PSemaphore::Wait();
+}
+                                                                                                      
+BOOL PMutex::Wait(const PTimeInterval & timeout)
+{
+  return PSemaphore::Wait(timeout);
+}
+                                                                                                      
+BOOL PMutex::WillBlock() const
+{
+  return PSemaphore::WillBlock();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // Extra functionality not found in BeOS
 
 int seteuid(uid_t uid) { return 0; }
