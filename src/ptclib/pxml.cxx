@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.27  2003/01/13 02:14:02  robertj
+ * Improved error logging for auto-loaded XML
+ *
  * Revision 1.26  2002/12/16 06:38:59  robertj
  * Added ability to specify certain elemets (by name) that are exempt from
  *   the indent formatting. Useful for XML/RPC where leading white space is
@@ -197,6 +200,8 @@ PCaselessString PXML::GetDocumentType() const
 
 BOOL PXML::LoadFile(const PFilePath & fn, int _options)
 {
+  PTRACE(4, "XML\tLoading file " << fn);
+
   PWaitAndSignal m(rootMutex);
 
   if (_options >= 0)
@@ -206,13 +211,17 @@ BOOL PXML::LoadFile(const PFilePath & fn, int _options)
   loadFromFile = TRUE;
 
   PFile file;
-  if (!file.Open(fn, PFile::ReadOnly)) 
+  if (!file.Open(fn, PFile::ReadOnly)) {
+    errorString = "File open error" & file.GetErrorText();
     return FALSE;
+  }
 
   off_t len = file.GetLength();
   PString data;
-  if (!file.Read(data.GetPointer(len + 1), len))
+  if (!file.Read(data.GetPointer(len + 1), len)) {
+    errorString = "File read error" & file.GetErrorText();
     return FALSE;
+  }
 
   data[(PINDEX)len] = '\0';
 
@@ -232,6 +241,8 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
     errorCol = errorLine = 0;
     return FALSE;
   }
+
+  PTRACE(4, "XML\tLoading URL " << url);
 
   PString data;
   if (url.GetScheme() == "file") 
@@ -317,6 +328,11 @@ void PXML::AutoReloadThread(PThread &, INT)
   autoLoadTimer.Reset();
 }
 
+void PXML::OnAutoLoad(BOOL ok)
+{
+  PTRACE_IF(3, !ok, "XML\tFailed to load XML: " << GetErrorString());
+}
+
 BOOL PXML::AutoLoadURL()
 {
   BOOL stat = LoadURL(autoloadURL, autoLoadWaitTime);
@@ -363,13 +379,18 @@ BOOL PXML::Load(const PString & data, int _options)
   XML_ParserFree(parser);
 
   if (stat) {
-    {
-    PWaitAndSignal m(rootMutex);
+    if (loadingRootElement == NULL) {
+      errorString = "XML\tFailed to create root node in XML!";
+      return FALSE;
+    }
+    else {
+      PWaitAndSignal m(rootMutex);
       if (rootElement != NULL) {
         delete rootElement;
         rootElement = NULL;
       }
       rootElement = loadingRootElement;
+      PTRACE(4, "XML\tLoaded XML " << rootElement->GetName());
     }
     OnLoaded();
   }
