@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.h,v 1.2 1995/06/17 00:39:53 robertj Exp $
+ * $Id: inetprot.h,v 1.3 1995/06/17 11:12:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: inetprot.h,v $
+ * Revision 1.3  1995/06/17 11:12:15  robertj
+ * Documentation update.
+ *
  * Revision 1.2  1995/06/17 00:39:53  robertj
  * More implementation.
  *
@@ -551,7 +554,7 @@ PDECLARE_CLASS(PPOP3Socket, PApplicationSocket)
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
