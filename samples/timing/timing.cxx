@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: timing.cxx,v $
+ * Revision 1.3  2004/05/18 12:47:38  rjongbloed
+ * Added time, time interval and timer test/demonstration code
+ *
  * Revision 1.2  2004/05/18 12:25:18  rjongbloed
  * Added time, time interval and timer test/demonstration code
  *
@@ -132,7 +135,8 @@ void TimingTest::Main()
 
   cout << "\nTesting sleep function" << endl;
   PTime start_time1;
-  for(PINDEX loop = 0; loop<10; loop++) {
+  PINDEX loop;
+  for(loop = 0; loop<10; loop++) {
     Sleep(10000);
     PTime now1;
     cout << now1-start_time1 << endl;
@@ -146,7 +150,7 @@ void TimingTest::Main()
   PAdaptiveDelay delay;
 
   PTime start_time2;
-  for(PINDEX loop = 0; loop<10; loop++) {
+  for(loop = 0; loop<10; loop++) {
     delay.Delay(10);
     PTime now2;
     cout << now2-start_time2 << endl;

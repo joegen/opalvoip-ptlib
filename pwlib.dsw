@@ -294,6 +294,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "timing"=.\samples\timing\timing.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "vidtest"=.\samples\vidtest\vidtest.dsp - Package Owner=<4>
 
 Package=<5>
