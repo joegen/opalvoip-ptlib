@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.19  1999/07/22 06:48:55  robertj
+ * Added comparison operation to base ASN classes and compiled ASN code.
+ * Added support for ANY type in ASN parser.
+ *
  * Revision 1.18  1999/07/06 05:00:26  robertj
  * Incremented release number
  *
@@ -232,7 +236,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 1, AlphaCode, 3)
+  : PProcess("Equivalence", "ASNParse", 1, 2, AlphaCode, 1)
 {
 }
 
@@ -1790,6 +1794,8 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "#ifndef PASN_NOPRINTON\n"
          "    void PrintOn(ostream & strm) const;\n"
          "#endif\n";
+  if (numFields > 0)
+    hdr << "    Comparison Compare(const PObject & obj) const;\n";
 
   cxx << "\n"
          "{\n";
@@ -1819,8 +1825,32 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "}\n"
          "#endif\n"
          "\n"
-         "\n"
-      << GetTemplatePrefix()
+         "\n";
+
+  if (numFields > 0) {
+    cxx << GetTemplatePrefix()
+        << "PObject::Comparison " << GetClassNameString() << "::Compare(const PObject & obj) const\n"
+           "{\n"
+           "  PAssert(IsDescendant(" << GetClassNameString() << "::Class()), PInvalidCast);\n"
+           "  const " << GetClassNameString() << " & other = (const " << GetClassNameString() << " &)obj;\n"
+           "\n"
+           "  Comparison result;\n"
+           "\n";
+
+    for (i = 0; i < numFields; i++) {
+      PString identifier = fields[i].GetIdentifier();
+      cxx << "  if ((result = m_" << identifier << ".Compare(other.m_" << identifier << ")) != EqualTo)\n"
+             "    return result;\n";
+    }
+
+    cxx << "\n"
+           "  return PASN_Sequence::Compare(other);\n"
+           "}\n"
+           "\n"
+           "\n";
+  }
+
+  cxx << GetTemplatePrefix()
       << "PINDEX " << GetClassNameString() << "::GetDataLength() const\n"
          "{\n"
          "  return ";
@@ -2273,7 +2303,7 @@ EmbeddedPDVType::EmbeddedPDVType()
 
 const char * EmbeddedPDVType::GetAncestorClass() const
 {
-  return "PASN_EmbeddedPDV";
+  return "PASN_OctetString";
 }
 
 
@@ -2287,7 +2317,34 @@ ExternalType::ExternalType()
 
 const char * ExternalType::GetAncestorClass() const
 {
-  return "PASN_External";
+  return "PASN_OctetString";
+}
+
+
+/////////////////////////////////////////////////////////
+
+AnyType::AnyType(PString * ident)
+  : TypeBase(Tag::UniversalExternalType)
+{
+  if (ident != NULL) {
+    identifier = *ident;
+    delete ident;
+  }
+}
+
+
+void AnyType::PrintOn(ostream & strm) const
+{
+  PrintStart(strm);
+  if (!identifier)
+    strm << "Defined by " << identifier;
+  PrintFinish(strm);
+}
+
+
+const char * AnyType::GetAncestorClass() const
+{
+  return "PASN_OctetString";
 }
 
 
