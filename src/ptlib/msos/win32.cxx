@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.27 1996/05/23 10:05:36 robertj Exp $
+ * $Id: win32.cxx,v 1.28 1996/05/30 11:48:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.28  1996/05/30 11:48:51  robertj
+ * Fixed error on socket timeout to return "Timed Out".
+ *
  * Revision 1.27  1996/05/23 10:05:36  robertj
  * Fixed bug in PConfig::GetBoolean().
  * Changed PTimeInterval millisecond access function so can get int64.
@@ -412,8 +415,9 @@ BOOL PChannel::ConvertOSError(int error)
         break;
       case WSAEWOULDBLOCK :
       case WSAETIMEDOUT :
-        osError = EAGAIN;
-        break;
+        osError |= 0x40000000;
+        lastError = Timeout;
+        return FALSE;
       default :
         osError |= 0x40000000;
     }
