@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.16 1997/02/05 11:49:37 robertj Exp $
+ * $Id: pprocess.h,v 1.17 1997/04/27 05:50:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.17  1997/04/27 05:50:25  robertj
+ * DLL support.
+ *
  * Revision 1.16  1997/02/05 11:49:37  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -100,19 +103,6 @@
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #endif
 };
-
-
-#ifdef PMAKEDLL
-extern __declspec(dllexport) PProcess * PProcessInstance;
-#elif PUSEDLL
-extern __declspec(dllimport) PProcess * PProcessInstance;
-#else
-extern PProcess * PProcessInstance;
-#endif
-
-
-inline PProcess & PProcess::Current()
-  { return *PProcessInstance; }
 
 
 #endif
