@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.14  2001/08/06 06:56:16  rogerh
+ * Add scaling for new methods to match BSD's Meteor API
+ *
  * Revision 1.13  2001/08/06 06:19:33  rogerh
  * Implement Brightness, Contract and Hue methods.
  *
@@ -391,10 +394,10 @@ int PVideoInputDevice::GetBrightness()
   if (!IsOpen())
     return -1;
 
-  int data;
+  unsigned char data;
   if (::ioctl(videoFd, METEORGBRIG, &data) < 0)
     return -1;
-  frameBrightness = data;
+  frameBrightness = (data << 8);
 
   return frameBrightness;
 }
@@ -404,10 +407,10 @@ int PVideoInputDevice::GetContrast()
   if (!IsOpen())
     return -1;
 
-  int data;
+  unsigned char data;
   if (::ioctl(videoFd, METEORGCONT, &data) < 0)
     return -1;
-  frameContrast = data;
+  frameContrast = (data << 8);
 
  return frameContrast;
 }
@@ -417,10 +420,10 @@ int PVideoInputDevice::GetHue()
   if (!IsOpen())
     return -1;
 
-  int data;
+  char data;
   if (::ioctl(videoFd, METEORGHUE, &data) < 0)
     return -1;
-  frameHue = data;
+  frameHue = ((data + 128) << 8);
 
   return frameHue;
 }
@@ -430,7 +433,8 @@ BOOL PVideoInputDevice::SetBrightness(unsigned newBrightness)
   if (!IsOpen())
     return FALSE;
 
-  if (::ioctl(videoFd, METEORSBRIG, &newBrightness) < 0)
+  unsigned char data = (newBrightness >> 8); // rescale for the ioctl
+  if (::ioctl(videoFd, METEORSBRIG, &data) < 0)
     return FALSE;
 
   frameBrightness=newBrightness;
@@ -442,7 +446,8 @@ BOOL PVideoInputDevice::SetContrast(unsigned newContrast)
   if (!IsOpen())
     return FALSE;
 
-  if (::ioctl(videoFd, METEORSCONT, &newContrast) < 0)
+  unsigned char data = (newContrast >> 8); // rescale for the ioctl
+  if (::ioctl(videoFd, METEORSCONT, &data) < 0)
     return FALSE;
 
   frameContrast = newContrast;
@@ -454,7 +459,8 @@ BOOL PVideoInputDevice::SetHue(unsigned newHue)
   if (!IsOpen())
     return FALSE;
 
-  if (::ioctl(videoFd, METEORSHUE, &newHue) < 0)
+  char data = (newHue >> 8) - 128; // ioctl takes a signed char
+  if (::ioctl(videoFd, METEORSHUE, &data) < 0)
     return FALSE;
 
   frameHue=newHue;
