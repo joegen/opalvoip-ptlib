@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.2 1993/08/21 01:50:33 robertj Exp $
+ * $Id: contain.cxx,v 1.3 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.2  1993/08/21 01:50:33  robertj
+ * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Fixed bugs in PAbstractSortedList (including some formatting).
+ *
+ * Revision 1.2  1993/08/21  01:50:33  robertj
  * Made Clone() function optional, default will assert if called.
  *
  * Revision 1.8  1993/08/01  14:05:27  robertj
@@ -877,6 +880,10 @@ void PAbstractList::DestroyContents()
 
 
 PAbstractList::PAbstractList(const PAbstractList * list)
+  : head(NULL),
+    tail(NULL),
+    lastElement(NULL),
+    lastIndex(0)
 {
   for (PListElement * element = list->head;
                                       element != NULL; element = element->next)
@@ -1079,6 +1086,21 @@ BOOL PAbstractList::SetCurrent(PINDEX index)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
+  : root(NULL),
+    lastElement(NULL),
+    lastIndex(0)
+{
+  PSortedListElement * element = list->root;
+  while (element->left != NULL)
+    element = element->left;
+  while (element != NULL) {
+    Append(element->data->Clone());
+    element = element->Successor();
+  }
+}
+
+
 PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList & list)
   : PCollection(list),
     root(list.root),
@@ -1102,6 +1124,32 @@ PAbstractSortedList &
 BOOL PAbstractSortedList::SetSize(PINDEX)
 {
   return TRUE;
+}
+
+
+PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
+{
+  PSortedListElement * elmt1 = root;
+  while (elmt1->left != NULL)
+    elmt1 = elmt1->left;
+
+  PSortedListElement * elmt2 = ((const PAbstractSortedList &)obj).root;
+  while (elmt2->left != NULL)
+    elmt2 = elmt2->left;
+
+  while (elmt1 != NULL && elmt2 != NULL) {
+    if (elmt1 == NULL)
+      return LessThan;
+    if (elmt2 == NULL)
+      return GreaterThan;
+    if (*elmt1->data < *elmt2->data)
+      return LessThan;
+    if (*elmt1->data > *elmt2->data)
+      return GreaterThan;
+    elmt1 = elmt1->Successor();
+    elmt2 = elmt2->Successor();
+  }
+  return EqualTo;
 }
 
 
@@ -1213,7 +1261,7 @@ PINDEX PAbstractSortedList::GetIndex(const PObject *)
 PObject * PAbstractSortedList::GetAt(PINDEX index)
 {
   if (index >= size)
-    index = size-1;
+    return NULL;
 
   if (index == lastIndex-1) {
     lastIndex--;
@@ -1262,13 +1310,14 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
           node->left == NULL || node->right == NULL ? node : node->Successor();
   PSortedListElement * x = y->left != NULL ? y->left : y->right;
 
-  x->parent = y->parent;
   if (y->parent == NULL)
     root = x;
   else if (y == y->parent->left)
     y->parent->left = x;
   else
     y->parent->right = x;
+  if (x != NULL)
+    x->parent = y->parent;
 
   if (y != node)
     *y = *node;
@@ -1279,61 +1328,61 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
     t= t->parent;
   }
 
-  if (y->IsBlack()) {
+  if (x != NULL && y->IsBlack()) {
     while (x != root && x->IsBlack()) {
       if (x == x->parent->left) {
-  y = x->parent->right;
-  if (!y->IsBlack()) {
-    y->MakeBlack();
-    x->parent->MakeRed();
-    LeftRotate(x->parent);
-    y = x->parent->right;
-  }
-  if (y->IsLeftBlack() && y->IsRightBlack()) {
-    y->MakeRed();
-    x = x->parent;
-  }
-  else {
-    if (y->IsRightBlack()) {
-      y->left->MakeBlack();
-      y->MakeRed();
-      RightRotate(y);
-      y = x->parent->right;
-    }
-    y->colour = x->parent->colour;
-    x->parent->MakeBlack();
-    if (y->right != NULL)
-      y->right->MakeBlack();
-    LeftRotate(x->parent);
-    x = root;
-  }
+        y = x->parent->right;
+        if (!y->IsBlack()) {
+          y->MakeBlack();
+          x->parent->MakeRed();
+          LeftRotate(x->parent);
+          y = x->parent->right;
+        }
+        if (y->IsLeftBlack() && y->IsRightBlack()) {
+          y->MakeRed();
+          x = x->parent;
+        }
+        else {
+          if (y->IsRightBlack()) {
+            y->left->MakeBlack();
+            y->MakeRed();
+            RightRotate(y);
+            y = x->parent->right;
+          }
+          y->colour = x->parent->colour;
+          x->parent->MakeBlack();
+          if (y->right != NULL)
+            y->right->MakeBlack();
+          LeftRotate(x->parent);
+          x = root;
+        }
       }
       else {
-  y = x->parent->left;
-  if (!y->IsBlack()) {
-    y->MakeBlack();
-    x->parent->MakeRed();
-    RightRotate(x->parent);
-    y = x->parent->left;
-  }
-  if (y->IsRightBlack() && y->IsLeftBlack()) {
-    y->MakeRed();
-    x = x->parent;
-  }
-  else {
-    if (y->IsLeftBlack()) {
-      y->right->MakeBlack();
-      y->MakeRed();
-      LeftRotate(y);
-      y = x->parent->left;
-    }
-    y->colour = x->parent->colour;
-    x->parent->MakeBlack();
-    if (y->left != NULL)
-      y->left->MakeBlack();
-    RightRotate(x->parent);
-    x = root;
-  }
+        y = x->parent->left;
+        if (!y->IsBlack()) {
+          y->MakeBlack();
+          x->parent->MakeRed();
+          RightRotate(x->parent);
+          y = x->parent->left;
+        }
+        if (y->IsRightBlack() && y->IsLeftBlack()) {
+          y->MakeRed();
+          x = x->parent;
+        }
+        else {
+          if (y->IsLeftBlack()) {
+            y->right->MakeBlack();
+            y->MakeRed();
+            LeftRotate(y);
+            y = x->parent->left;
+          }
+          y->colour = x->parent->colour;
+          x->parent->MakeBlack();
+          if (y->left != NULL)
+            y->left->MakeBlack();
+          RightRotate(x->parent);
+          x = root;
+        }
       }
     }
     x->MakeBlack();
