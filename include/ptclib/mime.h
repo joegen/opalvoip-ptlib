@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mime.h,v $
+ * Revision 1.14  2000/11/09 00:18:26  robertj
+ * Cosmetic change: removed blank lines.
+ *
  * Revision 1.13  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -87,6 +90,7 @@
 /** This class contains the Multipurpose Internet Mail Extensions parameters
    and variables.
  */
+
 #ifdef DOC_PLUS_PLUS
 class PMIMEInfo : public PStringToString {
 #endif
@@ -181,6 +185,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
 
        The default values placed in this dictionary are:
 \begin{verbatim}
+
           ".txt", "text/plain"
           ".text", "text/plain"
           ".html", "text/html"
@@ -203,6 +208,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
           ".qt", "video/quicktime"
           ".mov", "video/quicktime"
 \end{verbatim}
+
 
        The default content type will be "application/octet-stream".
      */
@@ -244,17 +250,20 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString);
       }
       out << base.CompleteEncoding();
 \end{verbatim}
+
     if smaller blocks that fit easily in memory are to be encoded the
     #Encode()# functions can be used to everything in one go.
 
     To decode a large block of data use the following sequence:
 \begin{verbatim}
+
       PBase64 base;
       base.StartDecoding();
       while (Read(str) && ProcessDecoding(str))
         Write(base.GetDecodedData());
       Write(base.GetDecodedData());
 \end{verbatim}
+
     if smaller blocks that fit easily in memory are to be decoded the
     #Decode()# functions can be used to everything in one go.
  */
