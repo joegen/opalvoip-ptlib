@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.4  2002/07/05 06:28:07  craigs
+ * Added OnEmptyAction callback
+ *
  * Revision 1.3  2002/07/02 06:24:53  craigs
  * Added recording functions
  *
@@ -115,8 +118,10 @@ BOOL PVXMLSession::ExecuteWithoutLock()
   }
 
   // if all forms defined, nothing playing, and nothing recording, then end of call
-  if ((activeGrammar == NULL) && !IsPlaying() && !IsRecording())
-    ClearCall();
+  if ((activeGrammar == NULL) && !IsPlaying() && !IsRecording()) {
+    if (OnEmptyAction())
+      ClearCall();
+  }
 
   return FALSE;
 }
