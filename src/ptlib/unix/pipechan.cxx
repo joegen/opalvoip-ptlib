@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.38  2002/12/18 01:12:09  craigs
+ * Remove erroneous WUNTRACED and added support for EINTR from waitpid
+ *
  * Revision 1.37  2002/12/05 05:11:16  craigs
  * Fixed IsRunning and WaitForTermination to provide the correct return
  * codes from subprograms
@@ -401,14 +404,17 @@ int PPipeChannel::WaitForTermination()
 
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   int status;
-  if ((err = waitpid(childPid, &status, WUNTRACED)) == childPid) {
-    childPid = 0;
-    if (WIFEXITED(status) != 0)
-      retVal = WEXITSTATUS(status);
-    else
-      retVal = -1;
-    return retVal;
-  }
+  do {
+    err = waitpid(childPid, &status, 0);
+    if (err == childPid) {
+      childPid = 0;
+      if (WIFEXITED(status) != 0)
+        retVal = WEXITSTATUS(status);
+      else
+        retVal = -1;
+      return retVal;
+    }
+  } while (err == EINTR);
 #else
   if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
@@ -428,14 +434,17 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
   int status;
-  if ((err = waitpid(childPid, &status, WUNTRACED)) == childPid) {
-    childPid = 0;
-    if (WIFEXITED(status) != 0)
-      retVal = WEXITSTATUS(status);
-    else
-      retVal = -1;
-    return retVal;
-  }
+  do {
+    err = waitpid(childPid, &status, 0);
+    if (err == childPid) {
+      childPid = 0;
+      if (WIFEXITED(status) != 0)
+        retVal = WEXITSTATUS(status);
+      else
+        retVal = -1;
+      return retVal;
+    }
+  } while (err == EINTR);
 #else
   if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
