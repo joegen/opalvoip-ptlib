@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.56  2001/07/03 04:41:25  yurik
+ * Corrections to Jac's submission from 6/28
+ *
  * Revision 1.55  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -702,7 +705,11 @@ void PServiceProcess::PXOnAsyncSignal(int sig)
   }
 
   if (systemLogFile.IsEmpty()) {
-    syslog(LOG_CRIT, (char*) msg);
+    syslog(LOG_CRIT, 
+#ifdef __BEOS__ // (Some?) BeOS versions of syslog.h have syslog() (wrongly) declared without const 
+    (char *) 
+#endif 
+    msg); 
     closelog();
   }
   else {
