@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: timing.cxx,v $
+ * Revision 1.2  2004/05/18 12:25:18  rjongbloed
+ * Added time, time interval and timer test/demonstration code
+ *
  * Revision 1.1  2003/02/19 14:10:11  rogerh
  * Add a program to test PAdaptiveDelay
  *
@@ -44,22 +47,102 @@ class TimingTest : public PProcess
 
 PCREATE_PROCESS(TimingTest);
 
+#define TEST_TIME(t) cout << t << " => " << PTime(t) << '\n'
+
 // The main program
 void TimingTest::Main()
 {
-  cout << "Timing Test Program" << endl;
+  cout << "Timing Test Program\n" << endl;
 
+  PTime now;
+  cout << "Time is now " << now.AsString("h:m:s.u d/M/y") << "\n"
+          "Time is now " << now.AsString("yyyy/MM/dd h:m:s.uuuu") << "\n"
+          "Time is now " << now.AsString("MMM/d/yyyyy w h:m:sa") << "\n"
+          "Time is now " << now.AsString("wwww d/M/yyy h:m:s.uu") << "\n"
+          "Time is now " << now.AsString("www d/MMMM/yy h:m:s.uuu") << endl;
+
+  cout << "\nTesting time string conversion" << endl;
+  TEST_TIME("20010203T1234Z");
+  TEST_TIME("20010203T1234");
+  TEST_TIME("20010203T0034");
+  TEST_TIME("20010203T10034");
+  TEST_TIME("20010203T123456+1100");
+  TEST_TIME("20010203T000056");
+  TEST_TIME("20010203T123456");
+  TEST_TIME("2001-02-03 T 12:34:56");
+  TEST_TIME("5/03/1999 12:34:56");
+  TEST_TIME("15/06/1999 12:34:56");
+  TEST_TIME("15/06/01 12:34:56 PST");
+  TEST_TIME("5/06/02 12:34:56");
+  TEST_TIME("5/23/1999 12:34am");
+  TEST_TIME("5/23/00 12:34am");
+  TEST_TIME("1999/23/04 12:34:56");
+  TEST_TIME("Mar 3, 1999 12:34pm");
+  TEST_TIME("3 Jul 2004 12:34pm");
+  TEST_TIME("12:34:56 5 December 1999");
+  TEST_TIME("10 minutes ago");
+  TEST_TIME("2 weeks");
+
+  cout << "\nTesting time interval arithmetic" << endl;
+  PTime then("1 month ago");
+  PTimeInterval elapsed = now - then;
+  cout << "Now=" << now << "\n"
+          "Then=" << then << "\n"
+          "Elapsed=" << elapsed << "\n"
+          "Milliseconds=" << elapsed.GetMilliSeconds() << "\n"
+          "Seconds=" << elapsed.GetSeconds() << "\n"
+          "Minutes=" << elapsed.GetMinutes() << "\n"
+          "Hours=" << elapsed.GetHours() << "\n"
+          "Days=" << elapsed.GetDays() << endl;
+
+  then += PTimeInterval(0,0,0,0,30);
+  cout << "Then plus 30 days=" << then << endl;
+
+  cout << "\nTesting timer resolution, reported as " << PTimer::Resolution() << "ms" << endl;
+  time_t oldSec = time(NULL);   // Wait for second boundary
+  while (oldSec == time(NULL))
+    ;
+
+  oldSec++;
+  PTimeInterval newTick = PTimer::Tick();
+  PTimeInterval oldTick = newTick;
+  unsigned count = 0;
+
+  while (oldSec == time(NULL)) {  // For one full second
+    while (newTick == oldTick)
+      newTick = PTimer::Tick();
+    oldTick = newTick;
+    count++;                      // Count the changes in tick
+  } ;
+
+  cout << "Actual resolution is " << 1000000/count << "us" << endl;
+
+  oldTick = 123456;
+  cout << "TimeInterval output: \"" << setw(15) << newTick << '"' << endl;
+  cout << "TimeInterval output: \"" << setw(15) << oldTick << '"' << endl;
+  int p;
+  for (p = 3; p < 10; p++)
+    cout << "TimeInterval output: " << p << " \""
+           << setiosflags(ios::scientific)
+           << setw(p) << setprecision(2) << oldTick
+           << resetiosflags(ios::scientific) << '"' << endl;
+  for (p = 3; p < 20; p++)
+    cout << "TimeInterval output: " << p << " \""
+           << setw(p) << setprecision(2) << oldTick << '"' << endl;
+
+  cout << "\nTesting sleep function" << endl;
   PTime start_time1;
   for(PINDEX loop = 0; loop<10; loop++) {
-    usleep(10*1000);
+    Sleep(10000);
     PTime now1;
     cout << now1-start_time1 << endl;
   }
   PTime end_time1;
 
-  cout << "the first loop took "<< end_time1-start_time1 << " milliseconds." << endl;
+  cout << "The first loop took "<< end_time1-start_time1 << " milliseconds." << endl;
 
 
+  cout << "\nTesting adaptive delay function" << endl;
   PAdaptiveDelay delay;
 
   PTime start_time2;
@@ -70,6 +153,6 @@ void TimingTest::Main()
   }
   PTime end_time2;
 
-  cout << "the first loop took "<< end_time2-start_time2 << " milliseconds." << endl;
+  cout << "The second loop took "<< end_time2-start_time2 << " milliseconds." << endl;
 }
 
