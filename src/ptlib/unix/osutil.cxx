@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.41  1998/11/30 21:51:43  robertj
+ * New directory structure.
+ *
  * Revision 1.40  1998/11/26 11:54:16  robertj
  * Fixed error return on PFile::GetInfo
  *
@@ -76,7 +79,6 @@
 #endif
 
 #include <ptlib.h>
-#include <url.h>
 
 
 #include <fcntl.h>
@@ -127,8 +129,8 @@
 #define	DEFAULT_FILE_MODE	(S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP)
 
 #ifndef P_USE_INLINES
-#include "../../common/ptlib/osutil.inl"
-#include "ptlib.inl"
+#include <ptlib/osutil.inl>
+#include <ptlib/ptlib.inl>
 #endif
 
 #ifdef P_SUN4
@@ -1177,14 +1179,4 @@ struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
 }
 
 
-//////////
-
-BOOL PURL::OpenBrowser(const PString & url)
-{
-  return FALSE;
-}
-
-
 // End Of File ///////////////////////////////////////////////////////////////
-
-
