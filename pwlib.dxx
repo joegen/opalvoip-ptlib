@@ -4,7 +4,7 @@
 	application development.
 
 @memo	A Portable Text and GUI C/C++ Class Libarary.
-@version	1.12
+@version	1.14
 @author	Equivalence Pty. Ltd.
 */
  
@@ -198,6 +198,7 @@ window as a descendent off the \Ref{PMainWindow} class.
 	    //@{
 		//@Include: include/ptclib/modem.h
 		//@Include: include/ptclib/ipacl.h
+		//@Include: include/ptclib/random.h
 		//@Include: include/ptclib/cypher.h
 		//@Include: include/ptclib/pssl.h
 	    //@}
