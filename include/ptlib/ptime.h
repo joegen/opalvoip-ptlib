@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.18 1996/02/13 12:58:43 robertj Exp $
+ * $Id: ptime.h,v 1.19 1996/02/15 14:47:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
+ * Revision 1.19  1996/02/15 14:47:34  robertj
+ * Fixed bugs in time zone compensation (some in the C library).
+ *
  * Revision 1.18  1996/02/13 12:58:43  robertj
  * Changed GetTimeZone() so can specify standard/daylight time.
  *
@@ -90,15 +93,15 @@ PDECLARE_CLASS(PTime, PObject)
     enum {
       UTC   = 0,
       GMT   = UTC,
-      Local                = 9999,
+      Local = 9999,
     };
 
+    PTime();
     PTime(
-      time_t t = time(NULL),  // Time in seconds since 1 January 1970.
-      int tz = Local          // local time or UTC
-    );
+      time_t tsecs          // Time in seconds since 00:00:00 1/1/70 UTC
+    ) { theTime = tsecs; }
     PTime(
-      const PString & str     // local time or UTC
+      const PString & str   // Time and data as a string
     );
     PTime(
       int second,           // Second from 0 to 59.
@@ -248,9 +251,9 @@ PDECLARE_CLASS(PTime, PObject)
       DaylightSavings
     };
 
-    static long GetTimeZone();
-    static long GetTimeZone(
-       TimeZoneType type	// Daylight saving or standard time.
+    static int GetTimeZone();
+    static int GetTimeZone(
+       TimeZoneType type  // Daylight saving or standard time.
     );
     /* Get the number of minutes to add to UTC (previously known as GMT) to
        get the local time. The first form automatically adjusts for daylight
@@ -261,7 +264,7 @@ PDECLARE_CLASS(PTime, PObject)
      */
 
     static PString GetTimeZoneString(
-       TimeZoneType type = StandardTime	// Daylight saving or standard time.
+       TimeZoneType type = StandardTime // Daylight saving or standard time.
     );
     /* Get the text identifier for the local time zone .
 
