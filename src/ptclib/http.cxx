@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.19 1996/04/05 01:46:30 robertj Exp $
+ * $Id: http.cxx,v 1.20 1996/04/10 12:10:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.20  1996/04/10 12:10:27  robertj
+ * Fixed support for HTTPS via proxy.
+ *
  * Revision 1.19  1996/04/05 01:46:30  robertj
  * Assured PSocket::Write always writes the number of bytes specified, no longer need write loops.
  * Added workaraound for NT Netscape Navigator bug with persistent connections.
@@ -718,22 +721,21 @@ BOOL PHTTPSocket::ProcessCommand()
     int count = 0;
     if (contentLength > 0) {
       entityBody = ReadString((PINDEX)contentLength);
-    } else if (contentLength < 0) {
+    } else if (contentLength < 0 && cmd != CONNECT) {
       while (Read(entityBody.GetPointer(count+1000)+count, 1000))
         count += GetLastReadCount();
       entityBody.SetSize(count+1);
     }
   }
 
-  // always shutdown the incoming stream after we have read it
-  if (!connectInfo.IsPersistant())
-    Shutdown(ShutdownRead);
-
   // the URL that comes with Connect requests is not quite kosher, so 
   // mangle it into a proper URL
   PURL url = tokens[0];
-  if (cmd == CONNECT) 
+  if (cmd == CONNECT)
     url = "https://" + tokens[0];
+  else if (!connectInfo.IsPersistant())
+    Shutdown(ShutdownRead);  // shutdown the incoming after we have read
+
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -830,13 +832,14 @@ BOOL PHTTPSocket::OnPOST(const PURL & url,
 }
 
 
-BOOL PHTTPSocket::OnProxy(Commands,
+BOOL PHTTPSocket::OnProxy(Commands cmd,
                           const PURL &,
                           const PMIMEInfo &,
                           const PString &, 
                           const PHTTPConnectionInfo & connectInfo)
 {
-  return OnError(BadGateway, "Proxy not implemented.", connectInfo);
+  return OnError(BadGateway, "Proxy not implemented.", connectInfo)
+                                                          && cmd != CONNECT;
 }
 
 static struct httpStatusCodeStruct {
