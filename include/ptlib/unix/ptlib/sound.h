@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.20  2004/04/02 03:49:49  ykiryanov
+ * Removed BeOS dependent code in major effort to clean the code
+ *
  * Revision 1.19  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -90,17 +93,6 @@
 #include <ptclib/delaychan.h>
 #endif
 
-#ifdef __BEOS__
-#include <media/MediaFormats.h>
- 
-class BSoundPlayer;
-class BMediaRecorder;
- 
-class P_CircularBuffer;
-template <class ISample, class IntSample, class OSample> class BaseResampler;
-typedef class BaseResampler<short, long, short> Resampler;
-#endif // __BEOS__
-
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
@@ -116,45 +108,6 @@ class JRingBuffer;
     BOOL Write(const void * buf, PINDEX len);
     BOOL Read(void * buf, PINDEX len);
   
-#ifdef __BEOS__
-
-  public:
-    virtual BOOL IsOpen() const;
-    
-  private:
-  	// Only one of the following pointers can be non-NULL at a time.
-	BMediaRecorder		   *mRecorder;
-	BSoundPlayer		   *mPlayer;
-
-	// Raw media format specifier used for sound player.
-	// It also stores the parameters (number of channels, sample rate etc) so
-	// no need to store them separately here.
-	// For the recorder, a media_format struct is created temporarily with
-	// the data from this raw format spec.
-	media_raw_audio_format	mFormat;
-
-	// The class holds a circular buffer whose size is set with SetBuffers.
-	// We only need one buffer for BeOS. The number of buffers that was set
-	// is only kept for reference.
-	friend class P_CircularBuffer;
-	P_CircularBuffer	   *mBuffer;			// The internal buffer
-	PINDEX					mNumBuffers;		// for reference only!
-	
-	// Just some helpers so that the Open function doesn't get too big
-	BOOL OpenPlayer(void);
-	BOOL OpenRecorder(const PString &dev);
-
-	// internal buffer setting function so we can disable the SetBuffers
-	// function for debug purposes
-	// size is the total size, threshold is the fill/drain threshold on
-	// the buffer
-	BOOL InternalSetBuffers(PINDEX size, PINDEX threshold);
-
-	// Input resampler
-	Resampler			   *mResampler;
-
-#else // !__BEOS__
-
   protected:
     BOOL  Setup();
 
@@ -192,8 +145,6 @@ class JRingBuffer;
     void *caConverterRef;      // sample rate converter reference
     pthread_mutex_t caMutex;
     pthread_cond_t caCond;
-#endif
-
 #endif
 
 // End Of File ////////////////////////////////////////////////////////////////
