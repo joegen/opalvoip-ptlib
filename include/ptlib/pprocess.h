@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.66  2004/05/21 00:28:39  csoutheren
+ * Moved PProcessStartup creation to PProcess::Initialise
+ * Added PreShutdown function and called it from ~PProcess to handle PProcessStartup removal
+ *
  * Revision 1.65  2004/05/19 22:27:19  csoutheren
  * Added fix for gcc 2.95
  *
@@ -723,6 +727,11 @@ class PProcess : public PThread
       char ** envp  // Array of string for the system environment
     );
     /* Internal initialisation function called directly from
+       #_main()#. The user should never call this function.
+     */
+
+    static void PreShutdown();
+    /* Internal shutdown function called directly from the ~PProcess
        #_main()#. The user should never call this function.
      */
 
