@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.5 1996/02/25 02:53:05 robertj Exp $
+ * $Id: cypher.cxx,v 1.6 1996/02/25 11:22:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.6  1996/02/25 11:22:42  robertj
+ * Added assertion if try and SetValidation when not pending.
+ *
  * Revision 1.5  1996/02/25 02:53:05  robertj
  * Further secure config development.
  *
@@ -603,9 +606,11 @@ BOOL PSecureConfig::SetValidation()
 
 BOOL PSecureConfig::SetValidation(const PString & validationKey)
 {
+  PAssert(GetBoolean(PendingPrefix + validationKey), "Validation not pending");
+
   PString vkey = GetString(validationKey);
   if (vkey.IsEmpty())
-    return FALSE;
+    return TRUE;
 
   if (vkey != CalculateValidation(PendingKeys))
     return FALSE;
