@@ -30,6 +30,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.16  1999/06/30 08:57:19  robertj
+ * Fixed bug in encodeing sequence of constrained primitive type. Constraint not set.
+ * Fixed bug in not emitting namespace use clause.
+ * Added "normalisation" of separate sequence of <base type> to be single class.
+ *
  * Revision 1.15  1999/06/14 13:00:15  robertj
  * Fixed bug in code generation for string constraints.
  *
@@ -221,7 +226,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 1, AlphaCode, 1)
+  : PProcess("Equivalence", "ASNParse", 1, 1, AlphaCode, 2)
 {
 }
 
@@ -954,12 +959,6 @@ BOOL TypeBase::IsChoice() const
 }
 
 
-BOOL TypeBase::IsDefinedType() const
-{
-  return FALSE;
-}
-
-
 BOOL TypeBase::IsParameterizedType() const
 {
   return FALSE;
@@ -1198,12 +1197,6 @@ BOOL DefinedType::IsChoice() const
   if (baseType != NULL)
     return baseType->IsChoice();
   return FALSE;
-}
-
-
-BOOL DefinedType::IsDefinedType() const
-{
-  return TRUE;
 }
 
 
@@ -1948,7 +1941,7 @@ void SequenceOfType::FlattenUsedTypes()
 
 TypeBase * SequenceOfType::FlattenThisType(const TypeBase & parent)
 {
-  if (!baseType->IsDefinedType())
+  if (!baseType->IsPrimitiveType() || baseType->HasConstraints())
     return new DefinedType(this, parent);
 
   // Search for an existing sequence of type
@@ -1987,9 +1980,17 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // Generate implementation for functions
   cxx << GetTemplatePrefix()
       << "PASN_Object * " << GetClassNameString() << "::CreateObject() const\n"
-         "{\n"
-         "  return new " << baseTypeName << ";\n"
-         "}\n"
+         "{\n";
+
+  if (baseType->HasConstraints()) {
+    cxx << "  " << baseTypeName << " * obj = new " << baseTypeName << ";\n";
+    baseType->GenerateCplusplusConstraints("obj->", hdr, cxx);
+    cxx << "  return obj;\n";
+  }
+  else
+    cxx << "  return new " << baseTypeName << ";\n";
+
+  cxx << "}\n"
          "\n"
          "\n"
       << GetTemplatePrefix()
@@ -3280,9 +3281,12 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
   }
 
 
-  if (useNamespaces)
+  if (useNamespaces) {
     hdrFile << "namespace " << moduleName << " {\n"
                "\n";
+    cxxFile << "using namespace " << moduleName << ";\n"
+               "\n";
+  }
 
 
   PINDEX classesPerFile = (types.GetSize()+numFiles-1)/numFiles;
