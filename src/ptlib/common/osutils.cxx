@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.176  2001/12/18 23:22:54  robertj
+ * Fixed problem for if excecutable is "renamed" using unix exec() and the
+ *   argv0 does not point to executable file.
+ *
  * Revision 1.175  2001/12/15 04:49:17  robertj
  * Added stream I/O functions for argument list.
  *
@@ -1590,8 +1594,11 @@ PProcess::PProcess(const char * manuf, const char * name,
     arguments.SetArgs(p_argc-1, p_argv+1);
 
     executableFile = PString(p_argv[0]);
-    if (!PFile::Exists(executableFile))
-      executableFile += ".exe";
+    if (!PFile::Exists(executableFile)) {
+      PString execFile = executableFile + ".exe";
+      if (PFile::Exists(execFile))
+        executableFile = execFile;
+    }
 
     if (productName.IsEmpty())
       productName = executableFile.GetTitle().ToLower();
