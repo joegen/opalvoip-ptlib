@@ -2402,6 +2402,8 @@ EXPORTS
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @1991 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
     ?Ping@PICMPSocket@@QAEHABVPString@@AAVPingInfo@1@@Z @1992 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &,class PICMPSocket::PingInfo &)
     ?PlatformOpen@PPipeChannel@@AAEHABVPString@@ABVPStringArray@@W4OpenMode@1@HHPBVPStringToString@@@Z @1993 NONAME ;private: int __thiscall PPipeChannel::PlatformOpen(class PString const &,class PStringArray const &,enum PPipeChannel::OpenMode,int,int,class PStringToString const *)
+    ?Play@PSound@@QAEHXZ @3104 NONAME ;public: int __thiscall PSound::Play(void)
+    ?PlayFile@PSound@@SAHABVPFilePath@@H@Z @3105 NONAME ;public: static int __cdecl PSound::PlayFile(class PFilePath const &,int)
     ?PlayFile@PSoundChannel@@QAEHABVPFilePath@@H@Z @2913 NONAME ;public: int __thiscall PSoundChannel::PlayFile(class PFilePath const &,int)
     ?PlaySoundA@PSoundChannel@@QAEHABVPSound@@H@Z @2702 NONAME ;public: int __thiscall PSoundChannel::PlaySoundA(class PSound const &,int)
     ?Predecessor@Element@PAbstractSortedList@@ABEPAV12@XZ @1996 NONAME ;private: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Predecessor(void)const 
@@ -2759,3 +2761,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
+    ?IsGUIProcess@PProcess@@UBEHXZ @3106 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
