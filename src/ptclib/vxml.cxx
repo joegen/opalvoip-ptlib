@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.27  2002/09/24 13:47:41  robertj
+ * Added support for more vxml commands, thanks Alexander Kovatch
+ *
  * Revision 1.26  2002/09/18 06:37:40  robertj
  * Added functions to load vxml directly, via file or URL. Old function
  *   intelligently picks which one to use.
@@ -321,6 +324,7 @@ BOOL PVXMLSession::LoadVXML(const PString & xmlText)
   rootURL = PString::Empty();
 
   // parse the XML
+  xmlFile.RemoveAll();
   if (!xmlFile.Load(xmlText)) {
     PTRACE(1, "PVXML\tCannot parse root document: " << GetXMLError());
     return FALSE;
@@ -658,8 +662,10 @@ void PVXMLSession::DialogExecute(PThread &, INT)
       LoadGrammar(NULL);
       listening = FALSE;
 
-        // Stop any playback
-   // *** CRAIG: how do we do this? ***
+      // Stop any playback
+      if (outgoingChannel != NULL) {
+        outgoingChannel->FlushQueue();
+      }
 
       // Figure out what happened
       PString eventname;
@@ -697,7 +703,7 @@ void PVXMLSession::DialogExecute(PThread &, INT)
     else {
       PXMLElement * element = (PXMLElement*)currentNode;
       PCaselessString nodeType = element->GetName();
-      PTRACE(3, "PVXML\tProcessing element: " << nodeType);
+      PTRACE(3, "PVXML\t**** Processing VoiceXML element: <" << nodeType << "> ***");
 
       if (nodeType *= "audio") {
         TraverseAudio();
@@ -740,8 +746,18 @@ void PVXMLSession::DialogExecute(PThread &, INT)
         // LATER:
         // check 'cond' attribute to see if the children of this node should be processed
         // check 'count' attribute to see if this node should be processed
-        // update timeout of current recognition (if 'timeout' attribute is set)
         // flush all prompts if 'bargein' attribute is set to false
+
+        // Update timeout of current recognition (if 'timeout' attribute is set)
+        if (element->HasAttribute("timeout")) {
+          PString str = element->GetAttribute("timeout");
+          long msecs = str.AsInteger();
+          if (str.Find("ms"))
+            ;
+          else if (str.Find("s"))
+            msecs = msecs * 1000;
+          timeout = msecs;
+        }
 
         // go on to process the children
       }
@@ -1043,7 +1059,7 @@ BOOL PVXMLSession::TraverseAudio()
         long msecs = str.AsInteger();
         if (str.Find("ms"))
           ;
-        else 
+        else if (str.Find("s"))
           msecs = msecs * 1000;
         PlaySilence(msecs);
       }
@@ -1148,10 +1164,14 @@ BOOL PVXMLSession::TraverseGoto()		// <goto>
 	// LATER: fixup filename to prepend path
 	if (!next.IsEmpty())
 	{
-		Load(next);
-		// LATER: handle '#' for picking the correct form
-		if (currentForm == NULL)
-		{
+    PURL url = NormaliseResourceName(next);
+    if (!LoadURL(url)) {
+			// LATER: throw 'error.badfetch'
+			return FALSE;
+    }
+
+		// LATER: handle '#' for picking the correct form (inside of the document)
+		if (currentForm == NULL) {
 			// LATER: throw 'error.badfetch'
 			return FALSE;
 		}
@@ -1240,7 +1260,11 @@ PXMLElement * PVXMLSession::FindHandler(const PString & event)
       return handler;
 
     // Check for a <catch>
-    // LATER: add code to support <catch>
+    if ((handler = tmp->GetElement("catch")) != NULL) {
+      PString strCond = handler->GetAttribute("cond");
+      if (strCond.Find(event))
+        return handler;
+    }
 
     tmp = tmp->GetParent();
   }
