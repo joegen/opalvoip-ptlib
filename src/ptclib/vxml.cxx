@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42.2.7  2004/07/13 08:13:05  csoutheren
+ * Lots of implementation of factory-based PWAVFile
+ *
  * Revision 1.42.2.6  2004/07/12 08:30:17  csoutheren
  * More fixes for abstract factory implementation of PWAVFile
  *
@@ -230,14 +233,14 @@ static PString GetContentType(const PFilePath & fn)
 
 ///////////////////////////////////////////////////////////////
 
-BOOL PVXMLPlayableFilename::Open(const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+BOOL PVXMLPlayableFilename::Open(PVXMLChannel & chan, const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
 { 
   fn = _fn; 
   arg = _fn;
-  if (!PFile::Exists(fn))
+  if (!PFile::Exists(chan.AdjustWavFilename(fn)))
     return FALSE;
 
-  return PVXMLPlayable::Open(_delay, _repeat, _autoDelete); 
+  return PVXMLPlayable::Open(chan, _delay, _repeat, _autoDelete); 
 }
 
 void PVXMLPlayableFilename::Play(PVXMLChannel & outgoingChannel)
@@ -313,9 +316,9 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableCommand> vxmlPlayableCommandFactory
 
 ///////////////////////////////////////////////////////////////
 
-BOOL PVXMLPlayableData::Open(const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v)
+BOOL PVXMLPlayableData::Open(PVXMLChannel & chan, const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v)
 { 
-  return PVXMLPlayable::Open(_delay, _repeat, v); 
+  return PVXMLPlayable::Open(chan, _delay, _repeat, v); 
 }
 
 void PVXMLPlayableData::SetData(const PBYTEArray & _data)
@@ -334,10 +337,10 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM 
 
 ///////////////////////////////////////////////////////////////
 
-BOOL PVXMLPlayableURL::Open(const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL autoDelete)
+BOOL PVXMLPlayableURL::Open(PVXMLChannel & chan, const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL autoDelete)
 { 
   url = arg = _url; 
-  return PVXMLPlayable::Open(_delay, _repeat, autoDelete); 
+  return PVXMLPlayable::Open(chan, _delay, _repeat, autoDelete); 
 }
 
 void PVXMLPlayableURL::Play(PVXMLChannel & outgoingChannel)
@@ -387,6 +390,7 @@ void PVXMLRecordableFilename::Record(PVXMLChannel & outgoingChannel)
     outgoingChannel.SetWriteChannel(chan, TRUE);
   }
 
+  recordStart  = PTime();
   silenceStart = PTime();
   consecutiveSilence = 0;
 }
@@ -398,7 +402,12 @@ BOOL PVXMLRecordableFilename::OnFrame(BOOL isSilence)
     consecutiveSilence = 0;
   } else {
     consecutiveSilence++;
-    if ((consecutiveSilence % 20) == 0 && ((PTime() - silenceStart).GetMilliSeconds() >= finalSilence))
+    if ( ((consecutiveSilence % 20) == 0) &&
+        (
+          ((finalSilence > 0) && ((PTime() - silenceStart).GetMilliSeconds() >= finalSilence)) || 
+          ((maxDuration  > 0) && ((PTime() - recordStart).GetMilliSeconds() >= maxDuration))
+          )
+       )
       return TRUE;
   }
 
@@ -501,7 +510,6 @@ PFilePath PVXMLCache::GetRandomFilename(const PString & prefix, const PString & 
   PFilePath fn;
 
   // create a random temporary filename
-
   PRandom r;
   for (;;) {
     fn = directory + psprintf("%s_%i.%s", (const char *)prefix, r.Generate() % 1000000, (const char *)fileType);
@@ -604,7 +612,7 @@ BOOL PVXMLSession::LoadURL(const PURL & url)
   // retreive the document (may be a HTTP get)
   PFilePath fn;
   PString contentType;
-  if (!RetreiveResource(url, contentType, fn)) {
+  if (!RetreiveResource(url, contentType, fn, FALSE)) {
     PTRACE(1, "PVXML\tCannot load document " << url);
     return FALSE;
   }
@@ -692,7 +700,8 @@ PURL PVXMLSession::NormaliseResourceName(const PString & src)
 
 BOOL PVXMLSession::RetreiveResource(const PURL & url, 
                                        PString & contentType, 
-                                     PFilePath & dataFn)
+                                     PFilePath & dataFn,
+                                            BOOL useCache)
 {
   BOOL stat = FALSE;
 
@@ -710,8 +719,9 @@ BOOL PVXMLSession::RetreiveResource(const PURL & url,
     PFilePath fn;
     PString fileType = url.AsFilePath().GetType();
 
-    // see if the URL is in the cache
-    BOOL inCache = PVXMLCache::GetResourceCache().Get("url", url.AsString(), fileType, contentType, dataFn);
+    BOOL inCache = FALSE;
+    if (useCache)
+      inCache = PVXMLCache::GetResourceCache().Get("url", url.AsString(), fileType, contentType, dataFn);
 
     if (!inCache) {
 
@@ -731,14 +741,15 @@ BOOL PVXMLSession::RetreiveResource(const PURL & url,
         // Get the body of the response in a PBYTEArray (might be binary data)
         PBYTEArray incomingData;
         client.ReadContentBody(replyMIME, incomingData);
+        contentType = replyMIME(PHTTPClient::ContentTypeTag);
 
         // write the data in the file
         PFile cacheFile(fn, PFile::WriteOnly);
         cacheFile.Write(incomingData.GetPointer(), incomingData.GetSize() );
-        contentType = replyMIME(PHTTPClient::ContentTypeTag);
 
-        // if we have a cache, then put the data into the cache
-        PVXMLCache::GetResourceCache().Put("url", url.AsString(), fileType, contentType, fn, dataFn);
+        // if we have a cache and we are using it, then save the data
+        if (useCache) 
+          PVXMLCache::GetResourceCache().Put("url", url.AsString(), fileType, contentType, fn, dataFn);
 
         // data is loaded
         stat = TRUE;
@@ -1139,6 +1150,9 @@ void PVXMLSession::ProcessNode()
 
     else if (nodeType *= "submit")
       TraverseSubmit();
+
+    else if (nodeType *= "property")
+      TraverseProperty();
   }
 }
 
@@ -1387,13 +1401,15 @@ BOOL PVXMLSession::PlayText(const PString & _text,
     BOOL spoken = FALSE;
     PFilePath dataFn;
 
+    BOOL useCache = !(GetVar("caching") *= "safe");
+
     // see if we have converted this text before
     PString contentType;
-    spoken = PVXMLCache::GetResourceCache().Get(prefix, text, "wav", contentType, dataFn);
+    if (useCache)
+      spoken = PVXMLCache::GetResourceCache().Get(prefix, text, "wav", contentType, dataFn);
 
+    // if not cached, then use the text to speech converter
     if (!spoken) {
-
-      // we need a text speech converter
       PFilePath tmpfname;
       if (textToSpeech != NULL) {
         tmpfname = PVXMLCache::GetResourceCache().GetRandomFilename("tts", "wav");
@@ -1405,7 +1421,11 @@ BOOL PVXMLSession::PlayText(const PString & _text,
             PTRACE(2, "PVXML\tcannot close TTS engine");
           }
         }
-        PVXMLCache::GetResourceCache().Put(prefix, text, "wav", contentType, tmpfname, dataFn);
+        textToSpeech->Close();
+        if (useCache)
+          PVXMLCache::GetResourceCache().Put(prefix, text, "wav", contentType, tmpfname, dataFn);
+        else
+          PFile::Remove(tmpfname);
       }
     }
 
@@ -1567,7 +1587,8 @@ BOOL PVXMLSession::TraverseAudio()
 
           // load the resource from the cache
           PString contentType;
-          if (RetreiveResource(url, contentType, fn)) {
+          BOOL useCache = !(GetVar("caching") *= "safe") && !(element->GetAttribute("caching") *= "safe");
+          if (RetreiveResource(url, contentType, fn, useCache)) {
             PWAVFile * wavFile = vxmlChannel->CreateWAVFile(fn);
             if (wavFile == NULL)
               PTRACE(3, "PVXML\tCannot create audio file " + fn);
@@ -1575,7 +1596,7 @@ BOOL PVXMLSession::TraverseAudio()
               delete wavFile;
             else {
               loaded = TRUE;
-              PlayFile(fn);
+              PlayFile(fn, 0, 0, !useCache);   // make sure we delete the file if not cacheing
             }
           }
         }
@@ -2035,6 +2056,16 @@ BOOL PVXMLSession::TraverseSubmit()
   return result;
 }
 
+BOOL PVXMLSession::TraverseProperty()
+{
+  PXMLElement* element = (PXMLElement *) currentNode;
+  if (element->HasAttribute("name"))
+    SetVar(element->GetAttribute("name"), element->GetAttribute("value"));
+
+  return TRUE;
+}
+
+
 BOOL PVXMLSession::TraverseMenu()
 {
   BOOL result = FALSE;
@@ -2172,10 +2203,6 @@ void PVXMLDigitsGrammar::Stop()
 
 //////////////////////////////////////////////////////////////////
 
-#endif   // P_EXPAT
-
-///////////////////////////////////////////////////////////////
-
 PVXMLChannel::PVXMLChannel(unsigned frameDelay, PINDEX frameSize)
   : PDelayChannel(DelayReadsAndWrites, frameDelay, frameSize)
 {
@@ -2224,7 +2251,7 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 
   PString fn = ofn;
 
-  // add in _g7231 prefix, if not there already
+  // add in suffix required for channel format, if any
   PINDEX pos = ofn.FindLast('.');
   if (pos == P_MAX_INDEX) {
     if (fn.Right(wavFilePrefix.GetLength()) != wavFilePrefix)
@@ -2242,38 +2269,37 @@ PString PVXMLChannel::AdjustWavFilename(const PString & ofn)
 
 PWAVFile * PVXMLChannel::CreateWAVFile(const PFilePath & fn, BOOL recording)
 { 
-  PWAVFile * wav = vxmlInterface->CreateWAVFile(AdjustWavFilename(fn),
-                                       recording ? PFile::WriteOnly : PFile::ReadOnly,
-                                       PFile::ModeDefault,
-                                       wavFileType);
+  PWAVFile * wav = PWAVFile::format(mediaFormat);
+  if (wav == NULL) {
+    PTRACE(1, "VXML\tWAV file format " << mediaFormat << " not known");
+    return NULL;
+  }
 
-  if (!wav->IsOpen())
+  wav->SetAutoconvert();
+  if (!wav->Open(AdjustWavFilename(fn), 
+                 recording ? PFile::WriteOnly : PFile::ReadOnly,
+                 PFile::ModeDefault))
     PTRACE(1, "VXML\tCould not open WAV file " << wav->GetName());
+
+  else if (recording) {
+    wav->SetChannels(1);
+    wav->SetSampleRate(8000);
+    wav->SetSampleSize(16);
+  } 
+  
+  else if (!wav->IsValid())
+    PTRACE(1, "VXML\tWAV file header invalid for " << wav->GetName());
+
+  else if (wav->GetSampleRate() != sampleFrequency)
+    PTRACE(1, "VXML\tWAV file has unsupported sample frequency " << wav->GetSampleRate());
+
+  else if (wav->GetChannels() != 1)
+    PTRACE(1, "VXML\tWAV file has unsupported channel count " << wav->GetChannels());
+
   else {
-    // Check the wave file header
-    if (!recording && !wav->IsValid())
-      PTRACE(1, "VXML\tWAV file header invalid for " << wav->GetName());
-    else {
-      if (wav->GetFormat() != wavFileType)
-        PTRACE(1, "VXML\tIncorrect codec (is " << wav->GetFormat()
-               << " should be " << GetWavFileType()
-               << ") in WAV file " << wav->GetName());
-      else {
-        if (wav->GetFormat() == PWAVFile::fmt_PCM &&
-            (wav->GetSampleRate() != 8000 ||
-             wav->GetChannels() != 1 ||
-             wav->GetSampleSize() != 16))
-          PTRACE(1, "VXML\tIncorrect format for PCM WAV file" << wav->GetName() << "\n"
-                    "Is " <<  wav->GetSampleSize() << " bits, "
-                          << (wav->GetChannels()==1 ? "mono " : "stereo ")
-                          <<  wav->GetSampleRate() << " Hz"
-                    " and should be a 16 Bit, Mono, 8000 Hz (8Khz)");
-        else {
-          PTRACE(4, "VXML\tOpened WAV file " << wav->GetName());
-          return wav;
-        }
-      }
-    }
+    wav->SetAutoconvert();   /// enable autoconvert
+    PTRACE(4, "VXML\tOpened WAV file " << wav->GetName());
+    return wav;
   }
 
   delete wav;
@@ -2295,7 +2321,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   }
 
   // if nothing is capturing incoming data, then fake the timing and return
-  if (recordable == NULL || GetBaseWriteChannel() == NULL) {
+  if (recordable == NULL && GetBaseWriteChannel() == NULL) {
     PDelayChannel::Wait(len, nextWriteTick);
     return TRUE;
   }
@@ -2309,7 +2335,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   return TRUE;
 }
 
-BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence)
+BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence, unsigned _maxDuration)
 {
   PVXMLRecordableFilename * recordable = new PVXMLRecordableFilename();
   if (!recordable->Open(fn)) {
@@ -2318,6 +2344,7 @@ BOOL PVXMLChannel::StartRecording(const PFilePath & fn, unsigned _finalSilence)
   }
 
   recordable->SetFinalSilence(_finalSilence);
+  recordable->SetMaxDuration(_maxDuration);
   return QueueRecordable(recordable);
 }
 
@@ -2352,6 +2379,7 @@ BOOL PVXMLChannel::EndRecording()
     recordable = NULL;
     PTRACE(3, "PVXML\tRecording finished");
   }
+
   return TRUE;
 }
 
@@ -2495,7 +2523,7 @@ BOOL PVXMLChannel::QueuePlayable(const PString & type,
     return FALSE;
   }
 
-  if (!item->Open(arg, delay, repeat, autoDelete)) {
+  if (!item->Open(*this, arg, delay, repeat, autoDelete)) {
     PTRACE(1, "VXML\tCannot open playable of type " << type << " with arg " << arg);
     delete item;
     return FALSE;
@@ -2534,7 +2562,7 @@ BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX dela
     return FALSE;
   }
 
-  if (!item->Open("", delay, repeat, TRUE)) {
+  if (!item->Open(*this, "", delay, repeat, TRUE)) {
     PTRACE(1, "VXML\tCannot open playable of type 'PCM Data'");
     delete item;
     return FALSE;
@@ -2583,8 +2611,7 @@ PFactory<PVXMLChannel>::Worker<PVXMLChannelPCM> pcmVXMLChannelFactory(VXML_PCM16
 PVXMLChannelPCM::PVXMLChannelPCM()
   : PVXMLChannel(30, 480)
 {
-  formatName     = VXML_PCM16;
-  wavFileType    = PWAVFile::PCM_WavFile;
+  mediaFormat    = VXML_PCM16;
   wavFilePrefix  = PString::Empty();
 }
 
@@ -2666,8 +2693,7 @@ PFactory<PVXMLChannel>::Worker<PVXMLChannelG7231> g7231VXMLChannelFactory(VXML_G
 PVXMLChannelG7231::PVXMLChannelG7231()
   : PVXMLChannel(30, 0)
 {
-  formatName     = VXML_G7231;
-  wavFileType    = PWAVFile::fmt_VivoG7231;
+  mediaFormat     = VXML_G7231;
   wavFilePrefix  = "_g7231";
 }
 
@@ -2735,8 +2761,7 @@ PFactory<PVXMLChannel>::Worker<PVXMLChannelG729> g729VXMLChannelFactory(VXML_G72
 PVXMLChannelG729::PVXMLChannelG729()
   : PVXMLChannel(10, 0)
 {
-  formatName     = VXML_G729;
-  wavFileType    = PWAVFile::fmt_G729;
+  mediaFormat    = VXML_G729;
   wavFilePrefix  = "_g729";
 }
 
@@ -2761,5 +2786,7 @@ BOOL PVXMLChannelG729::IsSilenceFrame(const void * /*buf*/, PINDEX /*len*/) cons
   return FALSE;
 }
 
+
+#endif   // P_EXPAT
 
 ///////////////////////////////////////////////////////////////
