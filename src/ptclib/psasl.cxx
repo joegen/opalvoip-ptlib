@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.cxx,v $
+ * Revision 1.2  2004/04/18 12:34:22  csoutheren
+ * Modified to compile under Unix
+ *
  * Revision 1.1  2004/04/18 12:02:31  csoutheren
  * Added classes for SASL authentication
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -142,7 +145,7 @@ static int PSASL_ClientLog(void *, int priority, const char *message)
 }
 
 
-static psasl_Initialise()
+static void psasl_Initialise()
 {
     sasl_callback_t * cbs = new sasl_callback_t[4];
 
@@ -170,7 +173,9 @@ PString PSASLClient::s_Realm;
 PString PSASLClient::s_Path;
 
 PSASLClient::PSASLClient(const PString& service, const PString& uid, const PString& auth, const PString& pwd) :
-    m_CallBacks(0), m_ConnState(0), m_Service(service),
+    m_CallBacks(NULL),
+    m_ConnState(NULL),
+    m_Service(service),
     m_UserID(uid.IsEmpty() ? auth : uid),
     m_AuthID(auth.IsEmpty() ? uid : auth),
     m_Password(pwd)
@@ -185,7 +190,7 @@ PSASLClient::~PSASLClient()
     if (m_ConnState)
         End();
 
-    delete m_CallBacks;
+    delete (sasl_callback_t *)m_CallBacks;
 }
 
 
