@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.32 1998/02/03 06:16:31 robertj Exp $
+ * $Id: svcproc.cxx,v 1.33 1998/02/16 00:12:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.33  1998/02/16 00:12:22  robertj
+ * Added tray icon support.
+ * Fixed problem with services and directory paths with spaces in them.
+ *
  * Revision 1.32  1998/02/03 06:16:31  robertj
  * Added extra log levels.
  * Fixed bug where window disappears after debug service termination.
@@ -120,6 +124,7 @@
 
 #include <winuser.h>
 #include <winnls.h>
+#include <shellapi.h>
 
 #include <process.h>
 #include <fstream.h>
@@ -129,10 +134,16 @@
 #include <crtdbg.h>
 
 
+#define UWM_SYSTRAY (WM_USER + 1)
+#define ICON_RESID 1
+#define SYSTRAY_ICON_ID 1
+
 static HINSTANCE hInstance;
 
 enum {
   SvcCmdDebug,
+  SvcCmdTray,
+  SvcCmdNoTray,
   SvcCmdVersion,
   SvcCmdInstall,
   SvcCmdRemove,
@@ -145,8 +156,80 @@ enum {
 };
 
 static const char * const ServiceCommandNames[NumSvcCmds] = {
-  "debug", "version", "install", "remove", "start", "stop", "pause", "resume", "deinstall"
+  "Debug",
+  "Tray",
+  "NoTray",
+  "Version",
+  "Install",
+  "Remove",
+  "Start",
+  "Stop",
+  "Pause",
+  "Resume",
+  "Deinstall"
 };
+
+
+class PNotifyIconData : public NOTIFYICONDATA {
+  public:
+    PNotifyIconData(HWND hWnd, UINT flags, const char * tip = NULL);
+    void Add()    { Shell_NotifyIcon(NIM_ADD,    this); }
+    void Delete() { Shell_NotifyIcon(NIM_DELETE, this); }
+    void Modify() { Shell_NotifyIcon(NIM_MODIFY, this); }
+};
+
+
+PNotifyIconData::PNotifyIconData(HWND window, UINT flags, const char * tip)
+{
+  cbSize = sizeof(NOTIFYICONDATA);
+  hWnd   = window;
+  uID    = SYSTRAY_ICON_ID;
+  uFlags = flags;
+  if (tip != NULL) {
+    strncpy(szTip, tip, sizeof(szTip)-1);
+    szTip[sizeof(szTip)-1] = '\0';
+    uFlags |= NIF_TIP;
+  }
+}
+
+
+enum TrayIconRegistryCommand {
+  AddTrayIcon,
+  DelTrayIcon,
+  CheckTrayIcon
+};
+
+static BOOL TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
+{
+  HKEY key;
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                   "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run",
+                   0, KEY_ALL_ACCESS, &key) != ERROR_SUCCESS)
+    return FALSE;
+
+  DWORD err = 1;
+  DWORD type;
+  DWORD len;
+  PString str;
+  switch (cmd) {
+    case CheckTrayIcon :
+      err = RegQueryValueEx(key, svc->GetName(), 0, &type, NULL, &len);
+      break;
+
+    case AddTrayIcon :
+      str = "\"" + svc->GetFile() + "\" Tray";
+      err = RegSetValueEx(key, svc->GetName(), 0, REG_SZ,
+                         (LPBYTE)(const char *)str, str.GetLength() + 1);
+      break;
+
+    case DelTrayIcon :
+      err = RegDeleteValue(key, (char *)(const char *)svc->GetName());
+  }
+
+  RegCloseKey(key);
+  return err == ERROR_SUCCESS;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,7 +248,7 @@ void PSystemLog::Output(Level level, const char * msg)
   if (level > process.GetLogLevel())
     return;
 
-  DWORD err = GetLastError();
+  DWORD err = ::GetLastError();
 
   if (process.isWin95 || process.debugWindow != NULL) {
     static HANDLE mutex = CreateMutex(NULL, FALSE, NULL);
@@ -212,7 +295,7 @@ void PSystemLog::Output(Level level, const char * msg)
       return;
 
     char errbuf[25];
-    if (level < Info && err != 0)
+    if (level > StdError && level < Info && err != 0)
       ::sprintf(errbuf, "\nError code = %d", err);
     else
       errbuf[0] = '\0';
@@ -300,12 +383,24 @@ PServiceProcess & PServiceProcess::Current()
 }
 
 
-int PServiceProcess::_main(int argc, char ** argv, char **)
+static BOOL IsServiceRunning(PServiceProcess * svc)
+{
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, svc->GetName());
+  if (hEvent == NULL)
+    return ::GetLastError() == ERROR_ACCESS_DENIED;
+
+  CloseHandle(hEvent);
+  return TRUE;
+}
+
+
+int PServiceProcess::_main(int argc, char ** argv, char ** hInst)
 {
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
+  hInstance = (HINSTANCE)hInst;
   PreInitialise(1, argv);
 
   debugMode = FALSE;
@@ -313,16 +408,20 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 
   BOOL processedCommand = FALSE;
   while (--argc > 0) {
-    if (!CreateControlWindow(TRUE))
-      return 1;
     if (ProcessCommand(*++argv))
       processedCommand = TRUE;
   }
 
   if (processedCommand) {
+    if (debugWindow != NULL && debugWindow != (HWND)-1) {
+      ::SetLastError(0);
+      PError << "Close window or select another command from the Control menu.\n" << endl;
+    }
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0) != 0)
+    while (GetMessage(&msg, NULL, 0, 0) != 0) {
+      TranslateMessage(&msg);
       DispatchMessage(&msg);
+    }
     return GetTerminationValue();
   }
 
@@ -339,18 +438,15 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
       return GetTerminationValue();
 
     PSystemLog::Output(PSystemLog::Fatal, "StartServiceCtrlDispatcher failed.");
-    MessageBox(NULL, "Not run as a service!", GetName(), MB_OK);
+    MessageBox(NULL, "Not run as a service!", GetName(), MB_TASKMODAL);
     return 1;
   }
 
   if (!CreateControlWindow(debugMode))
     return 1;
 
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, GetName());
-  if (hEvent != NULL || ::GetLastError() == ERROR_ACCESS_DENIED) {
-    if (hEvent != NULL)
-      CloseHandle(hEvent);
-    MessageBox(NULL, "Service already running", GetName(), MB_OK);
+  if (IsServiceRunning(this)) {
+    MessageBox(NULL, "Service already running", GetName(), MB_TASKMODAL);
     return 3;
   }
 
@@ -374,14 +470,16 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
                                       FALSE, INFINITE, QS_ALLINPUT)) {
       case WAIT_OBJECT_0+1 :
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-          if (msg.message != WM_QUIT)
+          if (msg.message != WM_QUIT) {
+            TranslateMessage(&msg);
             DispatchMessage(&msg);
+          }
         }
         break;
 
       default :
         // This is a work around for '95 coming up with an erroneous error
-        if (GetLastError() == ERROR_INVALID_HANDLE &&
+        if (::GetLastError() == ERROR_INVALID_HANDLE &&
                           WaitForSingleObject(terminationEvent, 0) == WAIT_TIMEOUT)
           break;
         // Else fall into next case
@@ -416,6 +514,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
 enum {
   ExitMenuID = 100,
   HideMenuID,
+  ControlMenuID,
   CopyMenuID,
   CutMenuID,
   DeleteMenuID,
@@ -426,68 +525,70 @@ enum {
 
 BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 {
-  if (controlWindow == NULL) {
-    WNDCLASS wclass;
-    wclass.style = CS_HREDRAW|CS_VREDRAW;
-    wclass.lpfnWndProc = (WNDPROC)StaticWndProc;
-    wclass.cbClsExtra = 0;
-    wclass.cbWndExtra = 0;
-    wclass.hInstance = hInstance;
-    wclass.hIcon = NULL;
-    wclass.hCursor = NULL;
-    wclass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wclass.lpszMenuName = NULL;
-    wclass.lpszClassName = GetName();
-    if (RegisterClass(&wclass) == 0)
-      return FALSE;
+  if (controlWindow != NULL)
+    return TRUE;
 
-    HMENU menubar = CreateMenu();
-    HMENU menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
-    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
-    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
+  WNDCLASS wclass;
+  wclass.style = CS_HREDRAW|CS_VREDRAW;
+  wclass.lpfnWndProc = (WNDPROC)StaticWndProc;
+  wclass.cbClsExtra = 0;
+  wclass.cbWndExtra = 0;
+  wclass.hInstance = hInstance;
+  wclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(ICON_RESID));
+  wclass.hCursor = NULL;
+  wclass.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+  wclass.lpszMenuName = NULL;
+  wclass.lpszClassName = GetName();
+  if (RegisterClass(&wclass) == 0)
+    return FALSE;
 
-    menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, CopyMenuID, "&Copy");
-    AppendMenu(menu, MF_STRING, CutMenuID, "C&ut");
-    AppendMenu(menu, MF_STRING, DeleteMenuID, "&Delete");
-    AppendMenu(menu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(menu, MF_STRING, SelectAllMenuID, "&Select All");
-    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Edit");
+  HMENU menubar = CreateMenu();
+  HMENU menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, ControlMenuID, "&Control");
+  AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+  AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
 
-    menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdRemove, "&Remove");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdDeinstall, "&Deinstall");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStart, "&Start");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "S&top");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdPause, "&Pause");
-    AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdResume, "R&esume");
-    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
+  menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, CopyMenuID, "&Copy");
+  AppendMenu(menu, MF_STRING, CutMenuID, "C&ut");
+  AppendMenu(menu, MF_STRING, DeleteMenuID, "&Delete");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+  AppendMenu(menu, MF_STRING, SelectAllMenuID, "&Select All");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Edit");
 
-    menu = CreatePopupMenu();
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal,   "&Fatal Error");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Error,   "&Error");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Warning, "&Warning");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Info,    "&Information");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug,   "&Debug");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug2,  "Debug &2");
-    AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug3,  "Debug &3");
-    AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+  menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdInstall, "&Install");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdRemove, "&Remove");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdDeinstall, "&Deinstall");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStart, "&Start");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "S&top");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdPause, "&Pause");
+  AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdResume, "R&esume");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Control");
 
-    if (CreateWindow(GetName(),
-                     GetName(),
-                     WS_OVERLAPPEDWINDOW,
-                     CW_USEDEFAULT, CW_USEDEFAULT,
-                     CW_USEDEFAULT, CW_USEDEFAULT, 
-                     NULL,
-                     menubar,
-                     hInstance,
-                     NULL) == NULL)
-      return FALSE;
-  }
+  menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Fatal,   "&Fatal Error");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Error,   "&Error");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Warning, "&Warning");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Info,    "&Information");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug,   "&Debug");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug2,  "Debug &2");
+  AppendMenu(menu, MF_STRING, LogLevelBaseMenuID+PSystemLog::Debug3,  "Debug &3");
+  AppendMenu(menubar, MF_POPUP, (UINT)menu, "&Log Level");
+
+  if (CreateWindow(GetName(),
+                   GetName(),
+                   WS_OVERLAPPEDWINDOW,
+                   CW_USEDEFAULT, CW_USEDEFAULT,
+                   CW_USEDEFAULT, CW_USEDEFAULT, 
+                   NULL,
+                   menubar,
+                   hInstance,
+                   NULL) == NULL)
+    return FALSE;
 
   if (createDebugWindow && debugWindow == NULL) {
     debugWindow = CreateWindow("edit",
@@ -520,12 +621,23 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       break;
 
     case WM_DESTROY :
+    {
+      PNotifyIconData nid(hWnd, NIF_TIP);
+      nid.Delete(); // This removes the systray icon
+
       controlWindow = debugWindow = NULL;
+
       PostQuitMessage(0);
       break;
+    }
+
+    case WM_ENDSESSION :
+      if (wParam)
+        PostQuitMessage(0);
+      return 0;
 
     case WM_SIZE :
-      if (debugWindow != NULL)
+      if (debugWindow != NULL && debugWindow != (HWND)-1)
         MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
       break;
 
@@ -545,7 +657,7 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       EnableMenuItem((HMENU)wParam, SvcCmdBaseMenuID+SvcCmdResume, enableItems);
 
       DWORD start, finish;
-      if (debugWindow != NULL)
+      if (debugWindow != NULL && debugWindow != (HWND)-1)
         SendMessage(debugWindow, EM_GETSEL, (WPARAM)&start, (LPARAM)&finish);
       else
         start = finish = 0;
@@ -562,27 +674,31 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
           DestroyWindow(hWnd);
           break;
 
+        case ControlMenuID :
+          OnControl();
+          break;
+
         case HideMenuID :
           ShowWindow(hWnd, SW_HIDE);
           break;
 
         case CopyMenuID :
-          if (debugWindow != NULL)
+          if (debugWindow != NULL && debugWindow != (HWND)-1)
             SendMessage(debugWindow, WM_COPY, 0, 0);
           break;
 
         case CutMenuID :
-          if (debugWindow != NULL)
+          if (debugWindow != NULL && debugWindow != (HWND)-1)
             SendMessage(debugWindow, WM_CUT, 0, 0);
           break;
 
         case DeleteMenuID :
-          if (debugWindow != NULL)
+          if (debugWindow != NULL && debugWindow != (HWND)-1)
             SendMessage(debugWindow, WM_CLEAR, 0, 0);
           break;
 
         case SelectAllMenuID :
-          if (debugWindow != NULL)
+          if (debugWindow != NULL && debugWindow != (HWND)-1)
             SendMessage(debugWindow, EM_SETSEL, 0, -1);
           break;
 
@@ -594,10 +710,79 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
       }
       break;
 
-    case WM_ENDSESSION :
-      if (wParam)
-        PostQuitMessage(0);
-      return 0;
+    // Notification of event over sysTray icon
+    case UWM_SYSTRAY :
+      switch (lParam) {
+        case WM_MOUSEMOVE :
+          // update status of process for tool tips if no buttons down
+          if (wParam == SYSTRAY_ICON_ID) {
+            PNotifyIconData nid(hWnd, NIF_TIP,
+                          GetName() & (IsServiceRunning(this) ? "is" : "not") & "running.");
+            nid.Modify(); // Modify tooltip
+          }
+          break;
+
+        // Click on icon - display message
+        case WM_LBUTTONDBLCLK :
+          if (IsServiceRunning(this))
+            OnControl();
+          else {
+            SetForegroundWindow(hWnd); // Our MessageBox pops up in front
+            MessageBox(hWnd, "Service is not running!", GetName(), MB_TASKMODAL);
+          }
+          break;
+
+        // Popup menu
+        case WM_RBUTTONUP :
+          POINT pt;
+          GetCursorPos(&pt);
+
+          HMENU menu = CreatePopupMenu();
+          AppendMenu(menu, MF_STRING, ControlMenuID, "&Open Properties");
+          AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+          AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
+          if (IsServiceRunning(this)) {
+            MENUITEMINFO inf;
+            inf.cbSize = sizeof(inf);
+            inf.fMask = MIIM_STATE;
+            inf.fState = MFS_DEFAULT;
+            SetMenuItemInfo(menu, ControlMenuID, FALSE, &inf);
+            AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStop, "&Stop Service");
+          }
+          else {
+            EnableMenuItem(menu, ControlMenuID, MF_GRAYED);
+            AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdStart, "&Start Service");
+          }
+          AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdNoTray, "&Tray Icon");
+          CheckMenuItem(menu, SvcCmdBaseMenuID+SvcCmdNoTray,
+                        TrayIconRegistry(this, CheckTrayIcon) ? MF_CHECKED : MF_UNCHECKED);
+          AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+          AppendMenu(menu, MF_STRING, ExitMenuID, "&Close");
+
+          /* SetForegroundWindow and the ensuing null PostMessage is a
+             workaround for a Windows 95 bug (see MSKB article Q135788,
+             http://www.microsoft.com/kb/articles/q135/7/88.htm, I think).
+             In typical Microsoft style this bug is listed as "by design".
+             SetForegroundWindow also causes our MessageBox to pop up in front
+             of any other application's windows. */
+          SetForegroundWindow(hWnd);
+
+          /* We specifiy TPM_RETURNCMD, so TrackPopupMenu returns the menu
+             selection instead of returning immediately and our getting a
+             WM_COMMAND with the selection. You don't have to do it this way.
+          */
+          WndProc(hWnd, WM_COMMAND, TrackPopupMenu(menu,            // Popup menu to track
+                                                   TPM_RETURNCMD |  // Return menu code
+                                                   TPM_RIGHTBUTTON, // Track right mouse button?
+                                                   pt.x, pt.y,      // screen coordinates
+                                                   0,               // reserved
+                                                   hWnd,            // owner
+                                                   NULL),           // LPRECT user can click in without dismissing menu
+                                                   0);
+          PostMessage(hWnd, 0, 0, 0); // see above
+          DestroyMenu(menu); // Delete loaded menu and reclaim its resources
+          break;
+      }
   }
 
   return DefWindowProc(hWnd, msg, wParam, lParam);
@@ -606,8 +791,14 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 void PServiceProcess::DebugOutput(const char * out)
 {
-  if (controlWindow == NULL || debugWindow == NULL)
+  if (controlWindow == NULL)
     return;
+
+  if (debugWindow == (HWND)-1) {
+    MessageBox(controlWindow, out, GetName(), MB_TASKMODAL);
+    return;
+  }
+
 
   if (!IsWindowVisible(controlWindow))
     ShowWindow(controlWindow, SW_SHOWDEFAULT);
@@ -810,6 +1001,11 @@ void PServiceProcess::OnContinue()
 }
 
 
+void PServiceProcess::OnControl()
+{
+}
+
+
 
 class ServiceManager
 {
@@ -857,8 +1053,9 @@ BOOL Win95_ServiceManager::Create(PServiceProcess * svc)
                             &key)) != ERROR_SUCCESS)
     return FALSE;
 
+  PString cmd = "\"" + svc->GetFile() + "\"";
   error = RegSetValueEx(key, svc->GetName(), 0, REG_SZ,
-         (LPBYTE)(const char *)svc->GetFile(), svc->GetFile().GetLength() + 1);
+                        (LPBYTE)(const char *)cmd, cmd.GetLength() + 1);
 
   RegCloseKey(key);
 
@@ -889,17 +1086,15 @@ BOOL Win95_ServiceManager::Delete(PServiceProcess * svc)
 }
 
 
-BOOL Win95_ServiceManager::Start(PServiceProcess * svc)
+BOOL Win95_ServiceManager::Start(PServiceProcess * service)
 {
-  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, svc->GetName());
-  if (hEvent != NULL) {
-    CloseHandle(hEvent);
+  if (IsServiceRunning(service)) {
     PError << "Service already running" << endl;
     error = 1;
     return FALSE;
   }
 
-  BOOL ok = _spawnl(_P_DETACH, svc->GetFile(), svc->GetFile(), NULL) >= 0;
+  BOOL ok = _spawnl(_P_DETACH, service->GetFile(), service->GetFile(), NULL) >= 0;
   error = errno;
   return ok;
 }
@@ -909,7 +1104,7 @@ BOOL Win95_ServiceManager::Stop(PServiceProcess * service)
 {
   HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, service->GetName());
   if (hEvent == NULL) {
-    error = GetLastError();
+    error = ::GetLastError();
     PError << "Service is not running" << endl;
     return FALSE;
   }
@@ -947,18 +1142,18 @@ class NT_ServiceManager : public ServiceManager
     BOOL Delete(PServiceProcess * svc);
     BOOL Start(PServiceProcess * svc);
     BOOL Stop(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_STOP); }
+      { return ControlService(svc, SERVICE_CONTROL_STOP); }
     BOOL Pause(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_PAUSE); }
+      { return ControlService(svc, SERVICE_CONTROL_PAUSE); }
     BOOL Resume(PServiceProcess * svc)
-      { return Control(svc, SERVICE_CONTROL_CONTINUE); }
+      { return ControlService(svc, SERVICE_CONTROL_CONTINUE); }
 
     DWORD GetError() const { return error; }
 
   private:
     BOOL OpenManager();
     BOOL Open(PServiceProcess * svc);
-    BOOL Control(PServiceProcess * svc, DWORD command);
+    BOOL ControlService(PServiceProcess * svc, DWORD command);
 
     SC_HANDLE schSCManager, schService;
 };
@@ -979,7 +1174,7 @@ BOOL NT_ServiceManager::OpenManager()
   if (schSCManager != NULL)
     return TRUE;
 
-  error = GetLastError();
+  error = ::GetLastError();
   PError << "Could not open Service Manager." << endl;
   return FALSE;
 }
@@ -994,7 +1189,7 @@ BOOL NT_ServiceManager::Open(PServiceProcess * svc)
   if (schService != NULL)
     return TRUE;
 
-  error = GetLastError();
+  error = ::GetLastError();
   PError << "Service is not installed." << endl;
   return FALSE;
 }
@@ -1011,6 +1206,8 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
     return FALSE;
   }
 
+  PString binaryFilename;
+  GetShortPathName(svc->GetFile(), binaryFilename.GetPointer(_MAX_PATH), _MAX_PATH);
   schService = CreateService(
                     schSCManager,                   // SCManager database
                     svc->GetName(),                 // name of service
@@ -1019,14 +1216,14 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
                     SERVICE_WIN32_OWN_PROCESS,      // service type
                     SERVICE_AUTO_START,             // start type
                     SERVICE_ERROR_NORMAL,           // error control type
-                    svc->GetFile(),                 // service's binary
+                    binaryFilename,                 // service's binary
                     NULL,                           // no load ordering group
                     NULL,                           // no tag identifier
                     svc->GetServiceDependencies(),  // no dependencies
                     NULL,                           // LocalSystem account
                     NULL);                          // no password
   if (schService == NULL) {
-    error = GetLastError();
+    error = ::GetLastError();
     return FALSE;
   }
 
@@ -1036,8 +1233,8 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
                                        svc->GetName(), &key)) != ERROR_SUCCESS)
     return FALSE;
 
-  LPBYTE fn = (LPBYTE)(const char *)svc->GetFile();
-  PINDEX fnlen = svc->GetFile().GetLength()+1;
+  LPBYTE fn = (LPBYTE)(const char *)binaryFilename;
+  PINDEX fnlen = binaryFilename.GetLength()+1;
   if ((error = RegSetValueEx(key, "EventMessageFile",
                              0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS &&
       (error = RegSetValueEx(key, "CategoryMessageFile",
@@ -1061,12 +1258,11 @@ BOOL NT_ServiceManager::Delete(PServiceProcess * svc)
   if (!Open(svc))
     return FALSE;
 
-  PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\"
-                                                              + svc->GetName();
-  error = RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
+  PString name = "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" + svc->GetName();
+  error = ::RegDeleteKey(HKEY_LOCAL_MACHINE, (char *)(const char *)name);
 
-  if (!DeleteService(schService))
-    error = GetLastError();
+  if (!::DeleteService(schService))
+    error = ::GetLastError();
 
   return error == ERROR_SUCCESS;
 }
@@ -1077,20 +1273,20 @@ BOOL NT_ServiceManager::Start(PServiceProcess * svc)
   if (!Open(svc))
     return FALSE;
 
-  BOOL ok = StartService(schService, 0, NULL);
-  error = GetLastError();
+  BOOL ok = ::StartService(schService, 0, NULL);
+  error = ::GetLastError();
   return ok;
 }
 
 
-BOOL NT_ServiceManager::Control(PServiceProcess * svc, DWORD command)
+BOOL NT_ServiceManager::ControlService(PServiceProcess * svc, DWORD command)
 {
   if (!Open(svc))
     return FALSE;
 
   SERVICE_STATUS status;
-  BOOL ok = ControlService(schService, command, &status);
-  error = GetLastError();
+  BOOL ok = ::ControlService(schService, command, &status);
+  error = ::GetLastError();
   return ok;
 }
 
@@ -1100,6 +1296,8 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
   PINDEX cmdNum = 0;
   while (stricmp(cmd, ServiceCommandNames[cmdNum]) != 0) {
     if (++cmdNum >= NumSvcCmds) {
+      if (!CreateControlWindow(TRUE))
+        return TRUE;
       if (*cmd != '\0')
         PError << "Unknown command \"" << cmd << "\".\n";
       else
@@ -1112,6 +1310,9 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
     }
   }
 
+  if (!CreateControlWindow(cmdNum != SvcCmdTray))
+    return TRUE;
+
   NT_ServiceManager nt;
   Win95_ServiceManager win95;
   ServiceManager * svcManager =
@@ -1122,6 +1323,28 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
       debugMode = TRUE;
       return FALSE;
 
+    case SvcCmdTray :
+    {
+      PNotifyIconData nid(controlWindow, NIF_MESSAGE|NIF_ICON, GetName());
+      nid.hIcon = (HICON)LoadImage(hInstance, MAKEINTRESOURCE(ICON_RESID), IMAGE_ICON, // 16x16 icon
+                             GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+      nid.uCallbackMessage = UWM_SYSTRAY; // message sent to nid.hWnd
+      nid.Add();    // This adds the icon
+      debugWindow = (HWND)-1;
+      return TRUE;
+    }
+
+    case SvcCmdNoTray :
+      if (TrayIconRegistry(this, CheckTrayIcon)) {
+        TrayIconRegistry(this, DelTrayIcon);
+        PError << "Tray icon removed.";
+      }
+      else {
+        TrayIconRegistry(this, AddTrayIcon);
+        PError << "Tray icon installed.";
+      }
+      return TRUE;
+
     case SvcCmdVersion : // Version command
       ::SetLastError(0);
       PError << GetName() << ' '
@@ -1131,10 +1354,12 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
 
     case SvcCmdInstall : // install
       good = svcManager->Create(this);
+      TrayIconRegistry(this, AddTrayIcon);
       break;
 
     case SvcCmdRemove : // remove
       good = svcManager->Delete(this);
+      TrayIconRegistry(this, DelTrayIcon);
       break;
 
     case SvcCmdStart : // start
@@ -1155,6 +1380,7 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
 
     case SvcCmdDeinstall : // deinstall
       svcManager->Delete(this);
+      TrayIconRegistry(this, DelTrayIcon);
       PConfig cfg;
       PStringList sections = cfg.GetSections();
       PINDEX i;
@@ -1168,9 +1394,19 @@ BOOL PServiceProcess::ProcessCommand(const char * cmd)
 
   PError << "Service command \"" << ServiceCommandNames[cmdNum] << "\" ";
   if (good)
-    PError << "successful." << endl;
-  else
-    PError << "failed - error code = " << svcManager->GetError() << endl;
+    PError << "successful.";
+  else {
+    PError << "failed - ";
+    switch (svcManager->GetError()) {
+      case ERROR_ACCESS_DENIED :
+        PError << "Access denied";
+        break;
+      default :
+        PError << "error code = " << svcManager->GetError();
+    }
+  }
+  PError << endl;
+
   return TRUE;
 }
 
