@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.19 1996/05/09 12:19:29 robertj Exp $
+ * $Id: object.cxx,v 1.20 1996/06/17 11:35:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.20  1996/06/17 11:35:47  robertj
+ * Fixed display of memory leak info, needed flush and use of cin as getchar() does not work with services.
+ *
  * Revision 1.19  1996/05/09 12:19:29  robertj
  * Fixed up 64 bit integer class for Mac platform.
  * Fixed incorrect use of memcmp/strcmp return value.
@@ -161,8 +164,9 @@ static void DumpMemoryLeaks()
     if (*entry != NULL) {
       if (firstLeak) {
         firstLeak = FALSE;
-        PError << "Press Enter to show memory leaks...";
-        getchar();
+        PError << "\nMemory leaks detected, press Enter to display . . .";
+        PError.flush();
+        cin.get();
       }
       PointerArenaStruct * arena = ((PointerArenaStruct *)*entry)-1;
       PError << "Pointer @" << (void *)(*entry)
@@ -176,7 +180,7 @@ static void DumpMemoryLeaks()
     }
   }
 
-  PError << "Peak memory usage: " << PeakMemory << " bytes";
+  PError << "\nPeak memory usage: " << PeakMemory << " bytes";
   if (PeakMemory > 2048)
     PError << ", " << (PeakMemory+1023)/1024 << "kb";
   if (PeakMemory > 2097152)
