@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.11  2000/03/21 21:23:24  robertj
+ * Added option to rename imported module names, allows include filename matching.
+ *
  * Revision 1.10  1999/09/18 04:17:40  robertj
  * Added generation of C++ inlines for some  functions.
  * Optimised CreateObject() switch statements, collapsing common cases.
@@ -1182,6 +1185,8 @@ class ModuleDefinition : public PObject
     const PString & GetModuleName() const { return moduleName; }
     const PString & GetPrefix()     const { return classNamePrefix; }
 
+    PString GetImportModuleName(const PString & moduleName);
+
     int GetIndentLevel() const { return indentLevel; }
     void SetIndentLevel(int delta) { indentLevel += delta; }
 
@@ -1204,6 +1209,7 @@ class ModuleDefinition : public PObject
     TypesList       exports;
     BOOL            exportAll;
     ImportsList     imports;
+    PStringToString importNames;
     TypesList       types;
     SortedTypesList sortedTypes;
     ValuesList      values;
