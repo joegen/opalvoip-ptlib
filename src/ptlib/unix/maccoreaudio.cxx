@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: maccoreaudio.cxx,v $
+ * Revision 1.5  2003/03/05 09:23:51  rogerh
+ * Fixes from Shawn Pai-Hsiang Hsiao
+ *
  * Revision 1.4  2003/03/03 09:04:23  rogerh
  * Add changes from Shawn. Plus I added some os_handle fixes.
  *
@@ -134,7 +137,7 @@ void PSoundChannel::Construct()
   caConverterRef = NULL;
 
   os_handle = -1; // set channel closed.
-0;  // set to a non negative value so IsOpen() returns true
+  // set to a non negative value so IsOpen() returns true
 }
 
 
@@ -751,7 +754,8 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
    */
 
   int totalSamples = len/(mBitsPerSample/8);
-  int chunkSamples = ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
+  float c = (float)ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
+  int chunkSamples = (int)ceilf(c);
   UInt32 chunkLen = chunkSamples*sizeof(short);
   void *chunkBuffer = (void *)calloc(chunkSamples, sizeof(short));
   if (!chunkBuffer) {
@@ -868,7 +872,8 @@ BOOL PSoundChannel::Read(void * buf, PINDEX len)
    */
 
   int totalSamples = len/(mBitsPerSample/8);
-  int chunkSamples = ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
+  float c = (float)ChunkSize*mSampleRate/(44100*caNumChannels*sizeof(float));
+  int chunkSamples = (int)ceilf(c);
   int chunkLen = chunkSamples*sizeof(short);
   void *chunkBuffer = (void *)calloc(chunkSamples, sizeof(short));
   if (!chunkBuffer) {
