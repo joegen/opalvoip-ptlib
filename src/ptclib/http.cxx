@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.112  2004/12/08 00:51:12  csoutheren
+ * Move PURLLegacyScheme to header file to allow external usage
+ *
  * Revision 1.111  2004/10/23 11:27:24  ykiryanov
  * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
  *
@@ -436,34 +439,6 @@
 #define	DEFAULT_H323RAS_PORT    1719
 #define	DEFAULT_SIP_PORT        5060
 
-class PURLLegacyScheme : public PURLScheme
-{
-  public:
-    PURLLegacyScheme(const char * _scheme)
-      : scheme(_scheme) { }
-
-    BOOL Parse(const PString & url, PURL & purl) const
-    { return purl.LegacyParse(url, this); }
-
-    PString AsString(PURL::UrlFormat fmt, const PURL & purl) const
-    { return purl.LegacyAsString(fmt, this); }
-
-    PString GetName() const     
-    { return scheme; }
-
-    PString scheme;
-    BOOL hasUsername;
-    BOOL hasPassword;
-    BOOL hasHostPort;
-    BOOL defaultToUserIfNoAt;
-    BOOL defaultHostToLocal;
-    BOOL hasQuery;
-    BOOL hasParameters;
-    BOOL hasFragments;
-    BOOL hasPath;
-    BOOL relativeImpliesScheme;
-    WORD defaultPort;
-};
 
 
 #define DEFINE_LEGACY_URL_SCHEME(schemeName, user, pass, host, def, defhost, query, params, frags, path, rel, port) \
