@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.23  2004/02/08 11:13:10  rjongbloed
+ * Fixed crash in heavily loaded multi-threaded systems using simultaneous sorted
+ *   lists, Thanks Federico Pinna, Fabrizio Ammollo and the gang at Reitek S.p.A.
+ *
  * Revision 1.22  2003/08/31 22:11:29  dereksmithies
  * Fix from Diego Tartara for the SetAt function. Many thanks.
  *
@@ -988,39 +992,30 @@ class PAbstractSortedList : public PCollection
     friend class Element;
 
   protected:
-    class Element {
-      public:
-        Element(PObject * theData);
+    struct Element {
+      Element * parent;
+      Element * left;
+      Element * right;
+      PObject * data;
+      PINDEX subTreeSize;
+      enum { Red, Black } colour;
+    } nil;
 
-        void DeleteSubTrees(BOOL deleteObject);
-        Element * Successor() const;
-        Element * Predecessor() const;
-        Element * OrderSelect(PINDEX index);
-        PINDEX ValueSelect(const PObject & obj, Element * & lastElement);
-
-        Element * parent;
-        Element * left;
-        Element * right;
-        PObject * data;
-        PINDEX subTreeSize;
-        enum { Red, Black } colour;
-        static Element nil;
-    };
-    friend class Element;
-
-    class Info {
-      public:
-        Info();
-        Element * root;
-        Element * lastElement;
-        PINDEX    lastIndex;
+    struct Info {
+      Element * root;
+      Element * lastElement;
+      PINDEX    lastIndex;
     } * info;
-    friend class Info;
 
     // New functions for class
     void RemoveElement(Element * node);
     void LeftRotate(Element * node);
     void RightRotate(Element * node);
+    void DeleteSubTrees(Element * node, BOOL deleteObject);
+    Element * Successor(const Element * node) const;
+    Element * Predecessor(const Element * node) const;
+    Element * OrderSelect(Element * node, PINDEX index) const;
+    PINDEX ValueSelect(const Element * node, const PObject & obj, const Element * & lastElement) const;
 };
 
 
