@@ -128,41 +128,6 @@ dnl look for compile flags
 AC_LANG(C++)
 AC_LANG(C)
 
-GCSECTIONS=0
-
-AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CC $CFLAGS -ffunction-sections -c conftest.c > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
-  GCSECTIONS=1
-else
-  AC_MSG_RESULT(no)
-fi
-
-AC_MSG_CHECKING(if compiler accepts -fdata-sections)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CC $CFLAGS -fdata-sections -c conftest.c > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -fdata-sections"
-  GCSECTIONS=1
-else
-  AC_MSG_RESULT(no)
-fi
-
-AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
-AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
-$CPLUSPLUS $CFLAGS -fvtable-gc -c conftest.c > /dev/null 2>&1
-if test $? = 0 ; then
-  AC_MSG_RESULT(yes)
-  STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
-  GCSECTIONS=1
-else
-  AC_MSG_RESULT(no)
-fi
-
 AC_MSG_CHECKING(if compiler accepts -fno-rtti)
 AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
 $CC $CFLAGS -fno-rtti -c conftest.c > /dev/null 2>&1
@@ -173,10 +138,89 @@ else
   AC_MSG_RESULT(no)
 fi
 
-if test $GCSECTIONS = 1; then
-  if test "${OSTYPE}" != "Darwin" ; then
-    LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+GCSECTIONS=0
+
+AC_MSG_CHECKING(if linker accepts --gc-sections)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CC $CFLAGS -Wl,--gc-sections conftest.c > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+
+  AC_MSG_CHECKING(if compiler accepts -ffunction-sections)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CC $CFLAGS -ffunction-sections -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -ffunction-sections"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
   fi
+
+  AC_MSG_CHECKING(if compiler accepts -fdata-sections)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CC $CFLAGS -fdata-sections -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -fdata-sections"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
+  fi
+
+  AC_MSG_CHECKING(if compiler accepts -fvtable-gc)
+  AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+  $CPLUSPLUS $CFLAGS -fvtable-gc -c conftest.c > /dev/null 2>&1
+  if test $? = 0 ; then
+    AC_MSG_RESULT(yes)
+    STDCCFLAGS="$STDCCFLAGS -fvtable-gc"
+    GCSECTIONS=1
+  else
+    AC_MSG_RESULT(no)
+  fi
+
+  if test $GCSECTIONS = 1; then
+    if test "${OSTYPE}" != "Darwin" ; then
+      LDFLAGS="$LDFLAGS -Wl,--gc-sections"
+    fi
+  fi
+
+else
+  AC_MSG_RESULT(no)
+fi
+
+dnl ########################################################################
+dnl check for pthreads library
+
+dnl MSWIN Semaphore Support,,P_HAS_SEMAPHORES
+
+dnl Linux, Mac OS X use libpthread and -lpthread
+dnl FreeBSD uses the -pthread compiler option and uses libc_r
+
+AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+if test ${HAS_PTHREADS} = yes ; then
+  ENDLDLIBS="$ENDLDLIBS -lpthread"
+  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
+else
+  dnl FreeBSD checks
+  AC_CHECK_LIB(c_r, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
+  if test ${HAS_PTHREADS} = yes ; then
+    ENDLDLIBS="$ENDLDLIBS -pthread"
+    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
+  fi
+fi
+
+
+if test ${HAS_PTHREADS} != yes ; then
+  AC_MSG_FAILURE(must have pthreads!)
+fi
+
+AC_DEFINE(P_PTHREADS, 1, "PThreads found")
+dnl
+dnl posix semaphore support in darwin/macosx is broken
+dnl 
+if test ${OSTYPE} != Darwin ; then
+  AC_DEFINE(P_HAS_SEMAPHORES, 1, "using semaphores")
 fi
 
 dnl #########################################################################
@@ -416,38 +460,6 @@ dnl Speech
 
 dnl MSWIN Speech API,sapi,P_SAPI,1,,include\sphelper.h,,\Program Files\Microsoft Speech SDK 5.1\
 
-
-dnl ########################################################################
-dnl check for pthreads library
-
-dnl MSWIN Semaphore Support,,P_HAS_SEMAPHORES
-
-dnl Linux, Mac OS X use libpthread and -lpthread
-dnl FreeBSD uses the -pthread compiler option and uses libc_r
-
-AC_CHECK_LIB(pthread, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
-if test ${HAS_PTHREADS} = yes ; then
-  ENDLDLIBS="$ENDLDLIBS -lpthread"
-  STDCCFLAGS="$STDCCFLAGS -D_REENTRANT"
-else
-  dnl FreeBSD checks
-  AC_CHECK_LIB(c_r, pthread_create, HAS_PTHREADS=yes, HAS_PTHREADS=no)
-  if test ${HAS_PTHREADS} = yes ; then
-    ENDLDLIBS="$ENDLDLIBS -pthread"
-    STDCCFLAGS="$STDCCFLAGS -D_REENTRANT -pthread"
-  fi
-fi
-
-
-if test ${HAS_PTHREADS} = yes ; then
-  AC_DEFINE(P_PTHREADS, 1, "PThreads found")
-  dnl
-  dnl posix semaphore support in darwin/macosx is broken
-  dnl 
-  if test ${OSTYPE} != Darwin ; then
-    AC_DEFINE(P_HAS_SEMAPHORES, 1, "PThreads found")
-  fi
-fi
 
 dnl ########################################################################
 dnl look for SDL, but only if we have pthreads
