@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.52  2000/07/09 14:05:46  robertj
+ * Added file share options.
+ *
  * Revision 1.51  2000/04/29 06:44:17  robertj
  * Added some stuff to make sure symbols included in library.
  *
@@ -198,6 +201,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <share.h>
 #include <sys\stat.h>
 #include <crtdbg.h>
 
@@ -753,7 +757,15 @@ BOOL PFile::Open(OpenMode mode, int opts)
   if ((opts&Temporary) != 0)
     removeOnClose = TRUE;
 
-  return ConvertOSError(os_handle = _open(path, oflags, S_IREAD|S_IWRITE));
+  int sflags = _SH_DENYNO;
+  if ((opts&DenySharedRead) == DenySharedRead)
+    sflags = _SH_DENYRD;
+  else if ((opts&DenySharedWrite) == DenySharedWrite)
+    sflags = _SH_DENYWR;
+  else if ((opts&(DenySharedRead|DenySharedWrite)) != 0)
+    sflags = _SH_DENYWR;
+
+  return ConvertOSError(os_handle = _sopen(path, oflags, sflags, S_IREAD|S_IWRITE));
 }
 
 
