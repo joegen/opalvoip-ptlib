@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.57  2003/03/26 05:36:37  robertj
+ * More IPv6 support (INADDR_ANY handling), thanks Sébastien Josset
+ *
  * Revision 1.56  2003/02/03 11:23:32  robertj
  * Added function to get pointer to IP address data.
  *
@@ -239,6 +242,7 @@ class PIPSocket : public PSocket
      */
     class Address : public PObject {
       public:
+
         /**@name Address constructors */
         //@{
         /// Create an IPv4 address with the default address: 127.0.0.1 (loopback)
@@ -361,6 +365,7 @@ class PIPSocket : public PSocket
 
         /// Check address 0.0.0.0 or :: 
         BOOL IsValid() const;
+        BOOL IsAny();
 
         /// Check address 127.0.0.1 or ::1
         BOOL IsLoopback() const;
@@ -371,6 +376,7 @@ class PIPSocket : public PSocket
         static const Address & GetLoopback();
 #if P_HAS_IPV6
         static const Address & GetLoopback6();
+        static const Address & GetAny6();
 #endif
         static const Address & GetBroadcast();
 
@@ -401,7 +407,17 @@ class PIPSocket : public PSocket
      */
     virtual PString GetName() const;
 
-	
+    // Set the default IP address familly.
+    // Needed as lot of IPv6 stack are not able to receive IPv4 packets in IPv6 sockets
+    // They are not RFC 2553, chapter 7.3, compliant.
+    // As a concequence, when opening a socket to listen to port 1720 (for exemple) from any remot host
+    // one must decide whether this an IPv4 or an IPv6 socket...
+    static const void SetDefaultIpAddressFamily(int ipAdressFamily); // PF_INET, PF_INET6
+    static const void SetDefaultIpAddressFamilyV4(); // PF_INET
+    static const void SetDefaultIpAddressFamilyV6(); // PF_INET6
+    static const int  GetDefaultIpAddressFamily();
+    static const PIPSocket::Address GetDefaultIpAny();
+
     // Open an IPv4 or IPv6 socket
     virtual BOOL OpenSocket(
       int ipAdressFamily=PF_INET
