@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.9  2004/05/16 23:31:07  csoutheren
+ * Updated API documentation
+ *
  * Revision 1.8  2004/05/12 04:36:13  csoutheren
  * Fixed problems with using sem_wait and friends on systems that do not
  * support atomic integers
@@ -66,6 +69,8 @@
 
 /** This class implements critical section mutexes using the most
   * efficient mechanism available on the host platform.
+  * For Windows, CriticalSection is used.
+  * On other platforms, the sem_wait call is used.
   */
 
 class PCriticalSection : public PObject
@@ -133,20 +138,54 @@ class PEnterAndLeave {
 };
 
 
-/** This class implements ain integer that can be atomically 
-  * incremented and decremented
+/** This class implements an integer that can be atomically 
+  * incremented and decremented in a thread-safe manner.
+  * On Windows, the integer is of type long and this class is implemented using InterlockedIncrement
+  * and InterlockedDecrement integer is of type long.
+  * On Unix systems with GNU std++ support for EXCHANGE_AND_ADD, the integer is of type _Atomic_word (normally int)
+  * On all other systems, this class is implemented using PCriticalSection and the integer is of type int.
   */
 
 class PAtomicInteger 
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(DOC_PLUS_PLUS)
     public:
+      /** Create a PAtomicInteger with the specified initial value
+        */
       inline PAtomicInteger(long v = 0)
         : value(v) { }
+
+      /**
+        * Test if an atomic integer has a zero value. Note that this
+        * is a non-atomic test - use the return value of the operator++() or
+        * operator--() tests to perform atomic operations
+        *
+        * @return TRUE if the integer has a value of zero
+        */
       BOOL IsZero() const                 { return value == 0; }
+
+      /**
+        * atomically increment the integer value
+        *
+        * @return Returns the value of the integer after the increment
+        */
       inline long operator++()            { return InterlockedIncrement(&value); }
+
+      /**
+        * atomically decrement the integer value
+        *
+        * @return Returns the value of the integer after the decrement
+        */
       inline long operator--()            { return InterlockedDecrement(&value); }
+
+      /**
+        * @return Returns the value of the integer
+        */
       inline operator long () const       { return value; }
+
+      /**
+        * Set the value of the integer
+        */
       inline void SetValue(long v)        { value = v; }
     protected:
       long value;
