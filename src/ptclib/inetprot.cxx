@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.40  1998/11/03 01:03:09  robertj
+ * Fixed problem with multiline response that is non-numeric.
+ *
  * Revision 1.39  1998/10/16 02:05:55  robertj
  * Tried to make ReadLine more forgiving of CR CR LF combination.
  *
@@ -545,7 +548,8 @@ BOOL PInternetProtocol::ReadResponse()
 
   PString prefix = line.Left(continuePos);
   char continueChar = line[continuePos];
-  while (!isdigit(line[0]) || line[continuePos] == continueChar) {
+  while (line[continuePos] == continueChar ||
+         (!isdigit(line[0]) && strncmp(line, prefix, continuePos) != 0)) {
     lastResponseInfo += '\n';
     if (!ReadLine(line)) {
       lastResponseInfo += GetErrorText();
