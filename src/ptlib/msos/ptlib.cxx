@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.43  1998/11/26 10:34:19  robertj
+ * Fixed problem with PFileInfo::GetVolume() on UNC paths.
+ *
  * Revision 1.42  1998/11/14 23:37:08  robertj
  * Fixed file path directory extraction, not able to return root directory
  *
@@ -440,14 +443,19 @@ PFilePath & PFilePath::operator=(const PString & str)
 
 PCaselessString PFilePath::GetVolume() const
 {
-  PINDEX colon = Find(':');
-  if (colon != P_MAX_INDEX)
-    return Left(colon+1);
+  if ((*this)[1] == ':')
+    return Left(2);
 
-  if (theArray[0] != '\\' || theArray[1] != '\\')
-    return PCaselessString();
+  if (theArray[0] == '\\' && theArray[1] == '\\') {
+    PINDEX backslash = Find('\\', 2);
+    if (backslash != P_MAX_INDEX) {
+      backslash = Find('\\', backslash+1);
+      if (backslash != P_MAX_INDEX)
+        return Left(backslash);
+    }
+  }
 
-  PINDEX backslash = Find('\\', 2);
+  PINDEX backslash = Find('\\');
   if (backslash != P_MAX_INDEX)
     return Left(backslash);
 
@@ -467,17 +475,7 @@ PDirectory PFilePath::GetDirectory() const
 
 PCaselessString PFilePath::GetPath() const
 {
-  PINDEX backslash = FindLast('\\', GetLength()-2);
-  if (backslash == P_MAX_INDEX)
-    return PCaselessString();
-
-  PINDEX colon = Find(':');
-  if (colon == P_MAX_INDEX)
-    colon = 0;
-  else
-    colon++;
-
-  return operator()(colon, backslash);
+  return operator()(Find('\\'), FindLast('\\', GetLength()-2));
 }
 
 
