@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.h,v 1.3 1994/07/21 12:17:41 robertj Exp $
+ * $Id: ptlib.h,v 1.4 1994/07/25 03:36:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.h,v $
- * Revision 1.3  1994/07/21 12:17:41  robertj
+ * Revision 1.4  1994/07/25 03:36:03  robertj
+ * Added sockets to common, normalising to same comment standard.
+ *
+ * Revision 1.3  1994/07/21  12:17:41  robertj
  * Sockets.
  *
  * Revision 1.2  1994/06/25  12:27:39  robertj
@@ -60,30 +63,6 @@
 // PSerialChannel
 
 #include <serchan.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PSocket
-
-#include <socket.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PIPSocket
-
-#include <ipsock.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PUDPocket
-
-#include <udpsock.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PTCPocket
-
-#include <tcpsock.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,6 +124,7 @@
 
 #if defined(P_USE_INLINES)
 #include <ptlib.inl>
+#include <osutil.inl>
 #endif
 
 

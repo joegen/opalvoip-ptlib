@@ -1,8 +1,17 @@
-////////////////////////////////////////////////////////
-//
-//  PTelnetSocket
-//
-////////////////////////////////////////////////////////
+/*
+ * $Id: telnet.h,v 1.2 1994/07/25 03:36:03 robertj Exp $
+ *
+ * Portable Windows Library
+ *
+ * Telnet Socket Class Declarations
+ *
+ * Copyright 1993 Equivalence
+ *
+ * $Log: telnet.h,v $
+ * Revision 1.2  1994/07/25 03:36:03  robertj
+ * Added sockets to common, normalising to same comment standard.
+ *
+ */
 
 #ifndef _PTELNETSOCKET
 
@@ -59,22 +68,22 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
   protected:
     // defined telnet commands
     enum Command {
-      SE   	= 240,		// subnegotiation end
-      NOP  	= 241,		// no operation
-      DataMark 	= 242,		// data stream portion of a Synch
-      Break	= 243,		// NVT character break
-      Interrupt = 244,          // The function IP
-      Abort     = 245,          // The function AO
-      AreYouThere = 246,        // The function AYT
-      EraseChar = 247,          // The function EC
-      EraseLine = 248,		// The function EL
-      GoAhead   = 249,          // The function GA
-      SB        = 250,          // subnegotiation start
-      WILL      = 251,          // begin option
-      WONT      = 252,          // refuse option
-      DO        = 253,          // request option
-      DONT      = 254,		// stop option
-      IAC       = 255           // Escape
+      SE        = 240,    // subnegotiation end
+      NOP       = 241,    // no operation
+      DataMark  = 242,    // data stream portion of a Synch
+      Break     = 243,    // NVT character break
+      Interrupt = 244,    // The function IP
+      Abort     = 245,    // The function AO
+      AreYouThere = 246,  // The function AYT
+      EraseChar = 247,    // The function EC
+      EraseLine = 248,    // The function EL
+      GoAhead   = 249,    // The function GA
+      SB        = 250,    // subnegotiation start
+      WILL      = 251,    // begin option
+      WONT      = 252,    // refuse option
+      DO        = 253,    // request option
+      DONT      = 254,    // stop option
+      IAC       = 255     // Escape
     };
 
     // internal states for the Telnet decoder
@@ -97,3 +106,5 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 };
 
 #endif
+
+// End Of File ///////////////////////////////////////////////////////////////
