@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.7  2001/03/03 23:25:07  robertj
+ * Fixed use of video conversion function, returning bytes in destination frame.
+ *
  * Revision 1.6  2001/03/03 06:13:01  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -317,6 +320,9 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   // Copy a snapshot of the image from the mmap buffer
   // Really there should be some synchronisation here to avoid tearing
   // in the image, but we will worry about that later
+
+  if (converter != NULL)
+    return converter->Convert(videoBuffer, buffer, bytesReturned)
 
   memcpy(buffer, videoBuffer, frameBytes);
 
