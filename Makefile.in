@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.19  2004/04/13 11:48:36  csoutheren
+# asnparser no longer built by default
+#
 # Revision 1.18  2004/02/26 12:04:10  csoutheren
 # Added changes to increase portability to 64bit platforms, thanks to Klaus Kaempf
 #
@@ -184,7 +187,6 @@ TARGETDIR=@TARGETDIR@
 include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
-SUBDIRS += tools/asnparser
 ifeq (1, $(HAS_PLUGINS))
 SUBDIRS += plugins
 endif
