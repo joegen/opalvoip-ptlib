@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.16  2000/11/01 04:39:20  robertj
+# Made sure opt is first so frech build works
+#
 # Revision 1.15  2000/11/01 02:42:46  robertj
 # Added optnoshared to build all default target.
 #
@@ -91,7 +94,7 @@ ifdef GUI_TYPE
 SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
 
-all : bothdepend both optnoshared
+all : opt optnoshared bothdepend both
 
 
 opt :
