@@ -27,6 +27,11 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.6  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.5  2001/10/23 02:11:00  dereks
  * Extend video channel so it can display raw data, using attached video devices.
  *
@@ -104,18 +109,22 @@ PString PVideoChannel::GetDefaultDevice(Directions /*dir*/)
 BOOL PVideoChannel::Open(const PString & dev,
                          Directions dir   )
 {
-    Close();
+  PWaitAndSignal m(accessMutex);
+
+  Close();
 	
-	deviceName = dev;
-	direction = dir;
-	
-   	return TRUE;
+  deviceName = dev;
+  direction = dir;
+  
+  return TRUE;
 }
 
 
 
 BOOL PVideoChannel::Read( void * buf, PINDEX  len)
 {
+  PWaitAndSignal m(accessMutex);
+
   if( mpInput == NULL)  
     return FALSE;
 
@@ -131,30 +140,30 @@ BOOL PVideoChannel::Read( void * buf, PINDEX  len)
 BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
                           PINDEX      /* len */)
 {
-   if( mpOutput == NULL)
-      return FALSE;
-   
-   return mpOutput->Redraw (buf);
+  PWaitAndSignal m(accessMutex);
+
+  if( mpOutput == NULL)
+    return FALSE;
+  
+  return mpOutput->Redraw (buf);
 }
 
 BOOL PVideoChannel::Close()
 {
-  if (mpInput) 
-    delete mpInput;
-  
-  if (mpOutput)
-    delete mpOutput;
-  
-  mpInput = NULL;
-  mpOutput = NULL;
+  PWaitAndSignal m(accessMutex);
+
+  CloseVideoReader();
+  CloseVideoPlayer();
 
   return TRUE;
 }
 
 /*returns true if either input or output is open */
-BOOL PVideoChannel::IsOpen() const
+BOOL PVideoChannel::IsOpen() const 
 {
-  return ((mpInput != NULL) || (mpOutput != NULL) );
+   PWaitAndSignal m(accessMutex);
+
+   return (mpInput != NULL) || (mpOutput != NULL) ;
 }
 
 
@@ -163,41 +172,74 @@ PString PVideoChannel::GetName() const
   return deviceName;
 }
 
-void PVideoChannel::AttachVideoPlayer(PVideoOutputDevice * device)
+void PVideoChannel::AttachVideoPlayer(PVideoOutputDevice * device, BOOL keepCurrent)
 {
-  if (mpOutput)
+  PWaitAndSignal m(accessMutex);
+
+  if (mpOutput && keepCurrent)
     PAssertAlways("Error: Attempt to add video player while one is already defined");
-  else 
-    mpOutput = device;
+  
+  CloseVideoPlayer();
+   
+  mpOutput = device;
 }
 
-void PVideoChannel::AttachVideoReader(PVideoInputDevice * device)
+void PVideoChannel::AttachVideoReader(PVideoInputDevice * device, BOOL keepCurrent)
 {
-  if (mpInput)
+  PWaitAndSignal m(accessMutex);
+
+  if (mpInput && keepCurrent)
     PAssertAlways("Error: Attempt to add video reader while one is already defined");
-  else 
-    mpInput = device;
+  
+  CloseVideoReader();
+  
+  mpInput = device;
+}
+
+void PVideoChannel::CloseVideoPlayer()
+{
+  PWaitAndSignal m(accessMutex);
+
+  if (mpOutput)
+    delete mpOutput;
+  
+  mpOutput = NULL;
+}
+
+void PVideoChannel::CloseVideoReader()
+{
+  PWaitAndSignal m(accessMutex);
+
+  if (mpInput)
+    delete mpInput;
+  
+  mpInput = NULL;
 }
 
 PINDEX  PVideoChannel::GetGrabHeight() 
 {
-  if (mpInput)
-    return mpInput->GetFrameHeight() ;
-  else
-    return 0;
+   PWaitAndSignal m(accessMutex);
+   if (mpInput)
+     return mpInput->GetFrameHeight() ;
+   else
+     return 0;
 }
 
 
 PINDEX  PVideoChannel::GetGrabWidth()
 {
-  if (mpInput)
-    return  mpInput->GetFrameWidth() ;
-  else
-    return 0;
+   PWaitAndSignal m(accessMutex);
+
+   if (mpInput)
+     return  mpInput->GetFrameWidth() ;
+   else
+     return 0;
 }
 
 BOOL PVideoChannel::IsGrabberOpen()
 {
+  PWaitAndSignal m(accessMutex);
+
   if (mpInput)
     return mpInput->IsOpen();
   else
@@ -206,6 +248,8 @@ BOOL PVideoChannel::IsGrabberOpen()
 
 BOOL PVideoChannel::IsRenderOpen()      
 {
+  PWaitAndSignal m(accessMutex);
+
   if (mpOutput)
     return mpOutput->IsOpen();
   else
@@ -214,22 +258,95 @@ BOOL PVideoChannel::IsRenderOpen()
 
 BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 {
+  PWaitAndSignal m(accessMutex);
+
   if( (mpOutput==NULL)  ||  (mpInput==NULL) )
     return FALSE;
-
+  
   PINDEX length=0;
 
   int frameWidth  = GetGrabWidth();
   int frameHeight = GetGrabHeight();
   PTRACE(3,"Video\t data direct:: camera-->render, size "
 	 << frameWidth << "x" << frameHeight );
-      
+  
   SetRenderFrameSize( frameWidth, frameHeight);
   Read( videoBuffer, length);
   Write((const void *)videoBuffer, length);
-
+  
   return TRUE;      
 }
+
+void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)     
+{ 
+  PWaitAndSignal m(accessMutex);
+
+  if(mpInput != NULL)
+    mpInput->SetFrameSize((unsigned)_width, (unsigned)_height); 
+}
+
+void  PVideoChannel::SetRenderFrameSize(int _width, int _height) 
+{ 
+  PWaitAndSignal m(accessMutex);
+
+  if(mpOutput != NULL)
+    mpOutput->SetFrameSize(_width, _height); 
+}
+
+PVideoInputDevice *PVideoChannel::GetVideoReader()
+{
+  return mpInput;
+}
+
+BOOL  PVideoChannel::Redraw(const void * frame) 
+{ 
+  PWaitAndSignal m(accessMutex);
+
+  if(mpOutput != NULL)
+    return mpOutput->Redraw (frame);
+
+  return FALSE;
+}
+
+void  PVideoChannel::SetRenderNow(int _now)  
+{
+  PWaitAndSignal m(accessMutex);
+
+  if(mpOutput != NULL)
+    mpOutput->SetNow(_now); 
+}
+
+PINDEX   PVideoChannel::GetRenderWidth()
+{ 
+  PWaitAndSignal m(accessMutex);
+
+  if(mpOutput != NULL)
+    return mpOutput->GetFrameWidth(); 
+
+  return 0;
+}
+
+PINDEX  PVideoChannel::GetRenderHeight()
+{
+  PWaitAndSignal m(accessMutex);
+
+ if (mpOutput != NULL)
+  return mpOutput->GetFrameHeight(); 
+
+ return 0;
+}
+
+
+void PVideoChannel::RestrictAccess()
+{
+  accessMutex.Wait();
+}
+
+void PVideoChannel::EnableAccess()
+{
+  accessMutex.Signal();
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 // End of file

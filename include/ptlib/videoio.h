@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.20  2001/11/28 00:07:32  dereks
+ * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
+ * Enabled adjustment of the video frame rate
+ * New fictitous image, a blank grey area
+ *
  * Revision 1.19  2001/08/06 06:12:45  rogerh
  * Fix comments
  *
@@ -125,6 +130,7 @@ class PColourConverter;
      "YUV410P"  YUV 4:1:0 planar
      "MJPEG"    Motion JPEG
  */
+
 
 class PVideoDevice : public PObject
 {
@@ -257,7 +263,7 @@ class PVideoDevice : public PObject
        returns TRUE.
     */
     virtual BOOL SetFrameRate(
-      unsigned rate  /// Frames per 100 seconds
+      unsigned rate  /// Frames  per second
     );
 
     /**Get the video frame rate used on the device.
@@ -408,6 +414,12 @@ class PVideoDevice : public PObject
     virtual BOOL CanCaptureVideo(void)
       { return deviceCanCaptureVideo; }
  
+
+    /**Return whiteness, brightness, colour, contrast and hue in one call.
+     */
+    virtual BOOL GetParameters (int *whiteness, int *brightness, 
+				int *colour, int *contrast, int *hue);
+
   protected:
     /**Set variable which states this device can capture
        video. Default value for this variable is False.
@@ -415,7 +427,7 @@ class PVideoDevice : public PObject
     virtual void SetCanCaptureVideo(BOOL newState)
       { deviceCanCaptureVideo = newState; }
 
-   PString      deviceName;
+    PString      deviceName;
     int          lastError;
     VideoFormat  videoFormat;
     int          channelNumber;
@@ -433,6 +445,11 @@ class PVideoDevice : public PObject
     unsigned     frameHue;
 
     BOOL         deviceCanCaptureVideo; ///device can grab video from a port. (camera)
+    
+    
+    PTime        previousFrameTime; // Time of the last frame.
+    int          msBetweenFrames;// msBetween subsequent frames. 
+    int          frameTimeError; // determines  when this frame should happen.
 };
 
 
@@ -536,9 +553,16 @@ class PVideoInputDevice : public PVideoDevice
       PBYTEArray & frame
     );
 
-    /**Grab a frame.
+    /**Grab a frame, after a delay as specified by the frame rate.
       */
     virtual BOOL GetFrameData(
+      BYTE * buffer,                 /// Buffer to receive frame
+      PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
+    );
+
+    /**Grab a frame. Do not delay according to the current frame rate parameter.
+      */
+    virtual BOOL GetFrameDataNoDelay(
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
