@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.30  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.29  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -257,7 +260,7 @@ BOOL PChannel::PXClose()
   os_handle = -1;
   PX_iostreamMutex.Signal();
 
-#if !defined(P_PTHREADS) && !defined(BE_THREADS)
+#if !defined(P_PTHREADS) && !defined(BE_THREADS) && !defined(P_MAC_MPTHREADS)
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 
