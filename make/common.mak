@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.73  2002/02/19 06:26:29  rogerh
+# Move $$BLD outside quotes so it gets expanded correctly
+#
 # Revision 1.72  2002/02/18 07:39:04  robertj
 # Changed version number increment to more portable expr function.
 #
@@ -605,7 +608,7 @@ tagbuild ::
 	cvs commit -m "Pre-tagging check in for $(CVS_TAG)." $(VERSION_FILE)
 	cvs tag -c $(CVS_TAG)
 	BLD=`expr $(BUILD_NUMBER) + 1` ; \
-	echo "Incrementing to build number $$BLD"; \
+	echo "Incrementing to build number " $$BLD; \
 	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Incremented build number after tagging to $(CVS_TAG)." $(VERSION_FILE)
