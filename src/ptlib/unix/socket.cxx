@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.75  2001/10/03 19:31:56  rogerh
+ * Add MAC OS X support to GetInterfaceTable
+ *
  * Revision 1.74  2001/10/03 10:18:15  rogerh
  * Make Mac OS X (Darwin) use the new GetRouteTable() function.
  *
@@ -1307,7 +1310,7 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
         }
       }
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
       // move the ifName pointer along to the next ifreq entry
       ifName = (struct ifreq *)((char *)ifName + _SIZEOF_ADDR_IFREQ(*ifName));
 #else
