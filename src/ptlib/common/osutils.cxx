@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.51 1996/02/25 11:15:27 robertj Exp $
+ * $Id: osutils.cxx,v 1.52 1996/03/02 03:24:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.52  1996/03/02 03:24:48  robertj
+ * Changed timer thread to update timers periodically, this allows timers to be
+ *    views dynamically by other threads.
+ * Added automatic deletion of thread object instances on thread completion.
+ *
  * Revision 1.51  1996/02/25 11:15:27  robertj
  * Added platform dependent Construct function to PProcess.
  *
@@ -364,15 +369,19 @@ PTimeInterval PTimerList::Process()
 #if defined(P_PLATFORM_HAS_THREADS)
 
 PProcess::TimerThread::TimerThread()
-  : PThread(1000, FALSE, LowPriority)
+  : PThread(1000, NoAutoDeleteThread, StartImmediate, LowPriority)
 {
 }
 
 
 void PProcess::TimerThread::Main()
 {
-  for (;;)
-    semaphore.Wait(PProcess::Current()->GetTimerList()->Process());
+  for (;;) {
+    if (PProcess::Current()->GetTimerList()->Process() == PMaxTimeInterval)
+      semaphore.Wait();
+    else
+      semaphore.Wait(5000);
+  }
 }
 
 
@@ -1795,6 +1804,10 @@ void PThread::Yield()
       case Terminating :
         prev->link = thread->link;   // Unlink it from the list
         thread->status = Terminated;
+        if (thread == current)
+          process->currentThread = current = prev;
+        if (thread->autoDelete)
+          delete thread;
         break;
 
       default :
