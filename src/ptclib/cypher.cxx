@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.cxx,v 1.14 1996/06/18 12:35:49 robertj Exp $
+ * $Id: cypher.cxx,v 1.15 1996/07/15 10:33:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.cxx,v $
+ * Revision 1.15  1996/07/15 10:33:42  robertj
+ * Changed memory block base64 conversion functions to be void *.
+ * Changed memory block cypher conversion functions to be void *.
+ * Changed endian classes to be memory mapped.
+ *
  * Revision 1.14  1996/06/18 12:35:49  robertj
  * Fixed bug in registration when language is not English.
  *
@@ -129,7 +134,7 @@ void PMessageDigest5::Transform(const BYTE * block)
 
   DWORD x[16];
   for (PINDEX i = 0; i < 16; i++)
-    x[i] = PUInt32l(&block);
+    x[i] = ((PUInt32l*)block)[i];
 
   /* Round 1 */
   FF(a, b, c, d, x[ 0], S11, 0xd76aa478); /* 1 */
@@ -233,7 +238,7 @@ void PMessageDigest5::Process(const PString & str)
 
 void PMessageDigest5::Process(const char * cstr)
 {
-  Process((const BYTE *)cstr, strlen(cstr));
+  Process(cstr, strlen(cstr));
 }
 
 
@@ -243,8 +248,10 @@ void PMessageDigest5::Process(const PBYTEArray & data)
 }
 
 
-void PMessageDigest5::Process(const BYTE * data, PINDEX length)
+void PMessageDigest5::Process(const void * dataPtr, PINDEX length)
 {
+  const BYTE * data = (const BYTE *)dataPtr;
+
   // Compute number of bytes mod 64
   PINDEX index = (PINDEX)((count >> 3) & 0x3F);
   PINDEX partLen = 64 - index;
@@ -274,16 +281,14 @@ PString PMessageDigest5::Complete()
 {
   Code result;
   Complete(result);
-  return PBase64::Encode(result, sizeof(result));
+  return PBase64::Encode(&result, sizeof(result));
 }
 
 
-void PMessageDigest5::Complete(Code result)
+void PMessageDigest5::Complete(Code & result)
 {
   // Put the count into bytes platform independently
-  BYTE countBytes[sizeof(count)];
-  BYTE * bufptr = countBytes;
-  PUInt64l(count).Put(&bufptr);
+  PUInt64l countBytes = count;
 
   // Pad out to 56 mod 64.
   PINDEX index = (PINDEX)((count >> 3) & 0x3f);
@@ -296,13 +301,11 @@ void PMessageDigest5::Complete(Code result)
   Process(padding, padLen);
 
   // Append length
-  Process(countBytes, sizeof(countBytes));
+  Process(&countBytes, sizeof(countBytes));
 
   // Store state in digest
-  for (PINDEX i = 0; i < PARRAYSIZE(state); i++) {
-    PUInt32l l = state[i];
-    l.Put(&result);
-  }
+  for (PINDEX i = 0; i < PARRAYSIZE(state); i++)
+    result.value[i] = state[i];
 
   // Zeroize sensitive information.
   memset(this, 0, sizeof(*this));
@@ -315,7 +318,7 @@ PString PMessageDigest5::Encode(const PString & str)
 }
 
 
-void PMessageDigest5::Encode(const PString & str, Code result)
+void PMessageDigest5::Encode(const PString & str, Code & result)
 {
   Encode((const char *)str, result);
 }
@@ -327,7 +330,7 @@ PString PMessageDigest5::Encode(const char * cstr)
 }
 
 
-void PMessageDigest5::Encode(const char * cstr, Code result)
+void PMessageDigest5::Encode(const char * cstr, Code & result)
 {
   Encode((const BYTE *)cstr, strlen(cstr), result);
 }
@@ -339,21 +342,21 @@ PString PMessageDigest5::Encode(const PBYTEArray & data)
 }
 
 
-void PMessageDigest5::Encode(const PBYTEArray & data, Code result)
+void PMessageDigest5::Encode(const PBYTEArray & data, Code & result)
 {
   Encode(data, data.GetSize(), result);
 }
 
 
-PString PMessageDigest5::Encode(const BYTE * data, PINDEX length)
+PString PMessageDigest5::Encode(const void * data, PINDEX length)
 {
   Code result;
   Encode(data, length, result);
-  return PBase64::Encode(result, sizeof(result));
+  return PBase64::Encode(&result, sizeof(result));
 }
 
 
-void PMessageDigest5::Encode(const BYTE * data, PINDEX len, Code result)
+void PMessageDigest5::Encode(const void * data, PINDEX len, Code & result)
 {
   PMessageDigest5 stomach;
   stomach.Process(data, len);
@@ -365,14 +368,18 @@ void PMessageDigest5::Encode(const BYTE * data, PINDEX len, Code result)
 ///////////////////////////////////////////////////////////////////////////////
 // PCypher
 
-PCypher::PCypher(PINDEX blkSize)
-  : blockSize(blkSize)
+PCypher::PCypher(PINDEX blkSize, BlockChainMode mode)
+  : blockSize(blkSize),
+    chainMode(mode)
 {
 }
 
 
-PCypher::PCypher(PINDEX blkSize, const BYTE * keyData, PINDEX keyLength)
-  : key(keyData, keyLength), blockSize(blkSize)
+PCypher::PCypher(const void * keyData, PINDEX keyLength,
+                 PINDEX blkSize, BlockChainMode mode)
+  : key((const BYTE *)keyData, keyLength),
+    blockSize(blkSize),
+    chainMode(mode)
 {
 }
 
@@ -499,34 +506,32 @@ BOOL PCypher::Decode(const PBYTEArray & coded, PBYTEArray & clear)
 ///////////////////////////////////////////////////////////////////////////////
 // PTEACypher
 
-PTEACypher::PTEACypher()
-  : PCypher(8)
+PTEACypher::PTEACypher(BlockChainMode chainMode)
+  : PCypher(8, chainMode)
 {
-  Key k;
-  GenerateKey(k);
-  SetKey(k);
+  GenerateKey(*(Key*)key.GetPointer(sizeof(Key)));
 }
 
 
-PTEACypher::PTEACypher(const BYTE * keyData)
-  : PCypher(8, keyData, sizeof(Key))
+PTEACypher::PTEACypher(const Key & keyData, BlockChainMode chainMode)
+  : PCypher(&keyData, sizeof(Key), 8, chainMode)
 {
 }
 
 
-void PTEACypher::SetKey(const BYTE * newKey)
+void PTEACypher::SetKey(const Key & newKey)
 {
-  memcpy(key.GetPointer(sizeof(Key)), newKey, sizeof(Key));
+  memcpy(key.GetPointer(sizeof(Key)), &newKey, sizeof(Key));
 }
 
 
-void PTEACypher::GetKey(Key newKey) const
+void PTEACypher::GetKey(Key & newKey) const
 {
-  memcpy(newKey, key, sizeof(Key));
+  memcpy(&newKey, key, sizeof(Key));
 }
 
 
-void PTEACypher::GenerateKey(Key newKey)
+void PTEACypher::GenerateKey(Key & newKey)
 {
 #ifdef _DEBUG
   srand(0);
@@ -534,7 +539,7 @@ void PTEACypher::GenerateKey(Key newKey)
   srand((unsigned)(time(NULL)+clock()));
 #endif
   for (PINDEX i = 0; i < sizeof(Key); i++)
-    newKey[i] = (BYTE)rand();
+    newKey.value[i] = (BYTE)rand();
 }
 
 
@@ -549,41 +554,33 @@ void PTEACypher::Initialise(BOOL)
 }
 
 
-void PTEACypher::EncodeBlock(const BYTE * in, BYTE * out)
+void PTEACypher::EncodeBlock(const void * in, void * out)
 {
-  PUInt32b low(&in);
-  PUInt32b high(&in);
-  DWORD y = low;
-  DWORD z = high;
+  DWORD y = ((PUInt32b*)in)[0];
+  DWORD z = ((PUInt32b*)in)[1];
   DWORD sum = 0;
   for (PINDEX count = 32; count > 0; count--) {
     sum += TEADelta;    // Magic number for key schedule
     y += (z<<4)+k0 ^ z+sum ^ (z>>5)+k1;
     z += (y<<4)+k2 ^ y+sum ^ (y>>5)+k3;   /* end cycle */
   }
-  (DWORD &)low = y;
-  (DWORD &)high = z;
-  low.Put(&out);
-  high.Put(&out);
+  ((PUInt32b*)out)[0] = y;
+  ((PUInt32b*)out)[1] = z;
 }
 
 
-void PTEACypher::DecodeBlock(const BYTE * in, BYTE * out)
+void PTEACypher::DecodeBlock(const void * in, void * out)
 {
-  PUInt32b low(&in);
-  PUInt32b high(&in);
-  DWORD y = low;
-  DWORD z = high;
+  DWORD y = ((PUInt32b*)in)[0];
+  DWORD z = ((PUInt32b*)in)[1];
   DWORD sum = TEADelta<<5;
   for (PINDEX count = 32; count > 0; count--) {
     z -= (y<<4)+k2 ^ y+sum ^ (y>>5)+k3; 
     y -= (z<<4)+k0 ^ z+sum ^ (z>>5)+k1;
     sum -= TEADelta;    // Magic number for key schedule
   }
-  (DWORD &)low = y;
-  (DWORD &)high = z;
-  low.Put(&out);
-  high.Put(&out);
+  ((PUInt32b*)out)[0] = y;
+  ((PUInt32b*)out)[1] = z;
 }
 
 
@@ -596,7 +593,7 @@ static const char DefaultExpiryDateKey[] = "Expiry Date";
 static const char DefaultOptionBitsKey[] = "Option Bits";
 static const char DefaultPendingPrefix[] = "Pending:";
 
-PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
+PSecureConfig::PSecureConfig(const PTEACypher::Key & prodKey,
                              const PStringArray & secKeys,
                              Source src)
   : PConfig(DefaultSecuredOptions, src),
@@ -606,11 +603,11 @@ PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
     optionBitsKey(DefaultOptionBitsKey),
     pendingPrefix(DefaultPendingPrefix)
 {
-  memcpy(productKey, prodKey, sizeof(productKey));
+  productKey = prodKey;
 }
 
 
-PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
+PSecureConfig::PSecureConfig(const PTEACypher::Key & prodKey,
                              const char * const * secKeys,
                              PINDEX count,
                              Source src)
@@ -621,13 +618,13 @@ PSecureConfig::PSecureConfig(const PTEACypher::Key prodKey,
     optionBitsKey(DefaultOptionBitsKey),
     pendingPrefix(DefaultPendingPrefix)
 {
-  memcpy(productKey, prodKey, sizeof(productKey));
+  productKey = prodKey;
 }
 
 
-void PSecureConfig::GetProductKey(PTEACypher::Key prodKey) const
+void PSecureConfig::GetProductKey(PTEACypher::Key & prodKey) const
 {
-  memcpy(prodKey, productKey, sizeof(productKey));
+  prodKey = productKey;
 }
 
 
@@ -669,7 +666,7 @@ PSecureConfig::ValidationState PSecureConfig::GetValidation() const
   if (crypt.Decode(vkey, info, sizeof(info)) != sizeof(info))
     return Invalid;
 
-  if (memcmp(info, code, sizeof(code)) != 0)
+  if (memcmp(info, &code, sizeof(code)) != 0)
     return Invalid;
 
   PTime now;
@@ -699,9 +696,7 @@ BOOL PSecureConfig::ValidatePending()
             1, info[sizeof(code)]&15, (info[sizeof(code)]>>4)+1996, PTime::GMT);
   PString expiry = expiryDate.AsString("d MMME yyyy", PTime::GMT);
 
-  const BYTE * infoptr = &info[sizeof(code)+1];
-  PUInt32b optionBits(&infoptr);
-  PString options(PString::Unsigned, (DWORD)optionBits);
+  PString options(PString::Unsigned, (DWORD)*(PUInt32b*)&info[sizeof(code)+1]);
 
   PMessageDigest5 digestor;
   PINDEX i;
@@ -711,7 +706,7 @@ BOOL PSecureConfig::ValidatePending()
   digestor.Process(options);
   digestor.Complete(code);
 
-  if (memcmp(info, code, sizeof(code)) != 0)
+  if (memcmp(info, &code, sizeof(code)) != 0)
     return FALSE;
 
   SetString(expiryDateKey, expiry);
