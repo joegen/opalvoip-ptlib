@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.63  2001/04/20 09:27:25  robertj
+ * Fixed previous change for auto delete threads, must have thread ID zeroed.
+ *
  * Revision 1.62  2001/04/20 09:09:05  craigs
  * Removed possible race condition whilst shutting down threads
  *
@@ -641,11 +644,14 @@ void PThread::PX_ThreadEnd(void * arg)
     process.threadMutex.Signal();
   }
 
-  // delete the thread if required
-  if (thread->autoDelete)
-    delete thread;
-  else
+  // delete the thread if required, note this is done this way to avoid
+  // a race condition, the thread ID cannot be zeroed before the if!
+  if (thread->autoDelete) {
     thread->PX_threadId = 0;  // Prevent terminating terminated thread
+    delete thread;
+  }
+  else
+    thread->PX_threadId = 0;
 }
 
 
