@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.56  2000/01/22 00:51:18  craigs
+# Added ability to compile in any directory, and to create shared libs
+#
 # Revision 1.55  2000/01/16 12:39:10  craigs
 # Added detection of all known ix86 MACHTYPE variants
 #
@@ -296,9 +299,11 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
+SHAREDLIB=1
+
 ifdef SHAREDLIB
+LDLIBS		+= -ldl
 ifndef PROG
-OSTYPE		+=_pic
 STDCCFLAGS	+= -fPIC
 endif # PROG
 endif # SHAREDLIB
@@ -444,6 +449,12 @@ OBJ_SUFFIX	:= r
 endif # DEBUG
 endif # OBJ_SUFFIX
 
+ifndef SHAREDLIB
+LIB_SUFFIX	= a
+else
+LIB_SUFFIX	= so
+endif
+
 
 ###############################################################################
 #
@@ -461,19 +472,13 @@ SHELL		:= /bin/sh
 UNIX_INC_DIR	= $(PWLIBDIR)/include/ptlib/unix
 UNIX_SRC_DIR	= $(PWLIBDIR)/src/ptlib/unix
 
-OBJDIR		= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-LIBDIR		= $(PWLIBDIR)/lib
-
+OBJBASE		= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PW_OBJDIR	= $(PWLIBDIR)/$(OBJBASE)
+PW_LIBDIR	= $(PWLIBDIR)/lib
 
 # set name of the PT library
-
-PTLIB		= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
-
-ifndef SHAREDLIB
-PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).a
-else
-PTLIB_FILE	= $(LIBDIR)/lib$(PTLIB).so
-endif
+PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PTLIB_FILE	= lib$(PTLIB_BASE).$(LIB_SUFFIX)
 
 
 ###############################################################################
@@ -522,8 +527,7 @@ STDCCFLAGS	+= -I$(UNIX_INC_DIR)
 
 
 # add library directory to library path and include the library
-LDFLAGS		+= -L$(LIBDIR)
-LDLIBS		+= -l$(PTLIB) 
-
+LDFLAGS		+= -L$(PW_LIBDIR)
+LDLIBS		+= -l$(PTLIB_BASE) 
 
 # End of unix.mak
