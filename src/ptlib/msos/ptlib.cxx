@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.40  1998/10/18 14:27:10  robertj
+ * Improved tracing functions.
+ *
  * Revision 1.39  1998/10/13 14:13:17  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -181,6 +184,20 @@ ostream & PGetErrorStream()
 void PSetErrorStream(ostream * s)
 {
   PErrorStream = s;
+}
+
+
+static ostream * PTraceStream = &cerr;
+
+ostream & PGetTraceStream()
+{
+  return *PTraceStream;
+}
+
+
+void PSetTraceStream(ostream * s)
+{
+  PTraceStream = s;
 }
 
 
