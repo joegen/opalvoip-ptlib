@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.46  1999/11/18 13:45:21  craigs
+ * Removed obsolete declaration of iostream semaphore
+ *
  * Revision 1.45  1999/10/30 13:43:01  craigs
  * Added correct method of aborting socket operations asynchronously
  *
@@ -122,8 +125,6 @@
 #define SIO_Get_MAC_Address SIOCGIFHWADDR
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
-
-extern PSemaphore PX_iostreamMutex;
 
 PSocket::~PSocket()
 {
