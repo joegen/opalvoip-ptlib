@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.16 1994/04/01 14:05:46 robertj Exp $
+ * $Id: contain.inl,v 1.17 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.16  1994/04/01 14:05:46  robertj
+ * Revision 1.17  1994/04/20 12:17:44  robertj
+ * assert stuff
+ *
+ * Revision 1.16  1994/04/01  14:05:46  robertj
  * Added PString specific containers.
  *
  * Revision 1.15  1994/03/07  07:45:40  robertj
@@ -57,7 +60,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-BOOL PObject::IsClass(const char * clsName) const
+PINLINE BOOL PObject::IsClass(const char * clsName) const
   { return strcmp(clsName, GetClassName()) == 0; }
 
 PINLINE BOOL PObject::operator==(const PObject & obj) const
@@ -91,14 +94,20 @@ PINLINE istream & operator>>(istream &strm, PObject & obj)
 PINLINE PContainer::~PContainer()
   { Destruct(); }
 
-PINLINE BOOL PContainer::IsUnique() const
-  { return PAssertNULL(reference)->count <= 1; }
-
 PINLINE void PContainer::CloneContents(const PContainer *)
   { }
 
 PINLINE void PContainer::CopyContents(const PContainer &)
   { }
+
+PINLINE PINDEX PContainer::GetSize() const
+  { return PAssertNULL(reference)->size; }
+
+PINLINE BOOL PContainer::IsEmpty() const
+  { return GetSize() == 0; }
+
+PINLINE BOOL PContainer::IsUnique() const
+  { return PAssertNULL(reference)->count <= 1; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
