@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.20 1996/04/10 12:10:27 robertj Exp $
+ * $Id: http.cxx,v 1.21 1996/04/16 12:47:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,7 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
- * Revision 1.20  1996/04/10 12:10:27  robertj
+ * Revision 1.21  1996/04/16 12:47:22  robertj
  * Fixed support for HTTPS via proxy.
  *
  * Revision 1.19  1996/04/05 01:46:30  robertj
@@ -103,7 +103,6 @@
 #define DEFAULT_WAIS_PORT	210
 #define DEFAULT_HTTPS_PORT	443
 #define DEFAULT_PROSPERO_PORT	1525
-
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL
@@ -451,6 +450,7 @@ BOOL PHTTPSpace::AddResource(PHTTPResource * res, AddOptions overwrite)
 
   delete node->resource;
   node->resource = res;
+
   return TRUE;
 }
 
@@ -491,6 +491,7 @@ static const char * const HTMLIndexFiles[] = {
 PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 {
   const PStringArray & path = url.GetPath();
+
   PHTTPSpace * node = this;
   for (PINDEX i = 0; i < path.GetSize(); i++) {
     PINDEX pos = node->children.GetValuesIndex(PHTTPSpace(path[i]));
@@ -635,7 +636,9 @@ BOOL PHTTPSocket::PostData(const PURL & url,
 PINDEX PHTTPSocket::ParseResponse(const PString & line)
 {
   PINDEX endVer = line.Find(' ');
-  if (endVer == P_MAX_INDEX || line.Left(endVer) != "HTTP/1.0") {
+  if (endVer == P_MAX_INDEX ||
+      endVer < 8 ||
+      line.Left(5) != "HTTP/") {
     UnRead(line);
     lastResponseCode = 200;
     lastResponseInfo = "HTTP/0.9";
@@ -664,7 +667,6 @@ BOOL PHTTPSocket::ProcessCommand()
     OnError(BadRequest, args, PHTTPConnectionInfo());
     return FALSE;
   }
-
 
   // if only one argument, then it must be a version 0.9 simple request
   if (tokens.GetSize() == 1) {
@@ -728,14 +730,15 @@ BOOL PHTTPSocket::ProcessCommand()
     }
   }
 
+
   // the URL that comes with Connect requests is not quite kosher, so 
-  // mangle it into a proper URL
+  // mangle it into a proper URL and do NOT close the connection.
+  // for all other commands, close the read connection if not persistant
   PURL url = tokens[0];
-  if (cmd == CONNECT)
+  if (cmd == CONNECT) 
     url = "https://" + tokens[0];
   else if (!connectInfo.IsPersistant())
-    Shutdown(ShutdownRead);  // shutdown the incoming after we have read
-
+    Shutdown(ShutdownRead);
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -770,10 +773,8 @@ BOOL PHTTPSocket::ProcessCommand()
 
     case P_MAX_INDEX:
     default:
-      OnUnknown(args, connectInfo);
-      return connectInfo.IsPersistant();
+      persist = OnUnknown(args, connectInfo);
   }
-
 
   // if the function just indicated that the connection is to persist,
   // and so did the client, then return TRUE. Note that all of the OnXXXX
@@ -838,8 +839,7 @@ BOOL PHTTPSocket::OnProxy(Commands cmd,
                           const PString &, 
                           const PHTTPConnectionInfo & connectInfo)
 {
-  return OnError(BadGateway, "Proxy not implemented.", connectInfo)
-                                                          && cmd != CONNECT;
+  return OnError(BadGateway, "Proxy not implemented.", connectInfo) && cmd != CONNECT;
 }
 
 static struct httpStatusCodeStruct {
@@ -888,7 +888,7 @@ void PHTTPSocket::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
-  if (majorVersion < 1)
+  if (majorVersion < 1) 
     return;
 
   // make sure the error code is valid for the protocol version
@@ -914,8 +914,7 @@ void PHTTPSocket::SetDefaultMIMEInfo(PMIMEInfo & info,
 {
   PTime now;
   info.SetAt(DateStr, now.AsString(PTime::RFC1123, PTime::GMT));
-  info.SetAt(MIMEVersionStr, psprintf("%i.%i",
-             connectInfo.GetMajorVersion(), connectInfo.GetMinorVersion()));
+  info.SetAt(MIMEVersionStr, "1.0");
   info.SetAt(ServerStr, GetServerName());
   if (connectInfo.IsPersistant()) {
     if (connectInfo.IsProxyConnection())
@@ -954,7 +953,7 @@ BOOL PHTTPSocket::OnError(StatusCode code,
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
-    return TRUE;
+    return statusInfo->code == 200;
   }
 
   PHTML reply;
@@ -974,7 +973,7 @@ BOOL PHTTPSocket::OnError(StatusCode code,
   headers.SetAt(ContentTypeStr, "text/html");
   StartResponse(code, headers, reply.GetLength());
   WriteString(reply);
-  return TRUE;
+  return statusInfo->code == 200;
 }
 
 
@@ -2195,7 +2194,7 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
 
   // get any connection options
   if (!str.IsEmpty()) {
-    PStringArray tokens = str.Tokenise(",", TRUE);
+    PStringArray tokens = str.Tokenise(", ", FALSE);
     isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
   }
 }
