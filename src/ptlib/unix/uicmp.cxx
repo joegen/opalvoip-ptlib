@@ -5,4 +5,4 @@
 
 #include <icmpsock.h>
 
-#include "../../common/src/icmp.cxx"
+#include "../../common/ptlib/src/icmp.cxx"
