@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.9  2002/01/22 03:55:07  craigs
+ * Added #define guards when file moved to PTCLib
+ *
  * Revision 1.8  2002/01/13 21:00:41  rogerh
  * The type of new .WAV files must now be specified in the class constructor.
  * Take out Open() function from the last commit and create a new Open()
@@ -65,6 +68,7 @@
  *
  */
 
+#ifndef _PWAVFILE
 #define _PWAVFILE
 
 //#ifdef __GNUC__
@@ -279,5 +283,6 @@ class PWAVFile : public PFile
 
 };
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
