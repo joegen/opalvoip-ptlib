@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.22  2003/01/11 05:10:51  robertj
+ * Fixed Win CE compatibility issues, thanks Joerg Schoemer
+ *
  * Revision 1.21  2002/10/11 08:24:10  robertj
  * Added test for not needing tpipv6.h  with later winsock2.h, thanks Ted Szoczei
  *
@@ -105,7 +108,7 @@
 
 #if (defined(_WINDOWS) && defined(PHAS_WINSOCK)) || defined(_WIN32)
 
-#if P_WINSOCKv1
+#if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
 
 #include <winsock.h>
 

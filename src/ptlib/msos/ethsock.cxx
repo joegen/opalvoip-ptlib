@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.36  2003/01/11 05:10:51  robertj
+ * Fixed Win CE compatibility issues, thanks Joerg Schoemer
+ *
  * Revision 1.35  2002/11/12 02:22:16  robertj
  * Fixed problem where if SNMP not correctly installed on some flavours of
  *   windows (eg ME) the system cannot find any interfaces. Added fail safe
@@ -247,15 +250,16 @@ class PWin32AsnOid : public AsnObjectIdentifier
 
 class PWin32SnmpLibrary
 #ifndef _WIN32_WCE
- : public PDynaLink
+                        : public PDynaLink
 {
-  PCLASSINFO(PWin32SnmpLibrary, PDynaLink)
+    PCLASSINFO(PWin32SnmpLibrary, PDynaLink)
+  public:
 #else
 {
+  public:
     void Close();
     BOOL IsLoaded() { return TRUE; }
 #endif
-  public:
     PWin32SnmpLibrary();
 
     BOOL GetOid(AsnObjectIdentifier & oid, AsnInteger & value);
