@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.15  2000/10/26 11:09:07  robertj
+ * More bullet proofing of PER decoder, changed bit type to be unsigned.
+ *
  * Revision 1.14  2000/10/25 04:05:44  robertj
  * More bullet proofing of PER decoder.
  *
@@ -997,10 +1000,10 @@ class PPER_Stream : public PASN_Stream
     BOOL SingleBitDecode();
     void SingleBitEncode(BOOL value);
 
-    BOOL MultiBitDecode(unsigned nBits, int & value);
-    void MultiBitEncode(int value, unsigned nBits);
+    BOOL MultiBitDecode(unsigned nBits, unsigned & value);
+    void MultiBitEncode(unsigned value, unsigned nBits);
 
-    BOOL SmallUnsignedDecode(int & value);
+    BOOL SmallUnsignedDecode(unsigned & value);
     void SmallUnsignedEncode(unsigned value);
 
     int LengthDecode(unsigned lower, unsigned upper, unsigned & len);
