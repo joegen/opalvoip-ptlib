@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.12  2002/08/07 13:38:14  craigs
+ * Fixed bug in calculating lengths of G.723.1 packets
+ *
  * Revision 1.11  2002/08/06 07:45:28  craigs
  * Added lots of stuff from OpalVXML
  *
@@ -1098,7 +1101,7 @@ static BOOL CheckWAVFileValid(PWAVFile & chan, BOOL mustBePCM)
 static int GetG7231FrameLen(BYTE firstByte)
 {
   static int g7231Lens[] = { 24, 20, 4, 1 };
-  return g7231Lens[firstByte & 4];
+  return g7231Lens[firstByte & 3];
 }
 
 ///////////////////////////////////////////////////////////////
