@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.17  2003/11/19 04:28:21  csoutheren
+ * Changed to support video output plugins
+ *
  * Revision 1.16  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -95,13 +98,6 @@
 #endif
 
 #include <ptlib/videoio.h>
-#include <ptlib/vfakeio.h>
-#ifdef TRY_1394DC
-#include <ptlib/videoio1394dc.h>
-#endif
-#ifdef TRY_1394AVC
-#include <ptlib/videoio1394avc.h>
-#endif
 
 /**A class representing a video channel. This class is provided mainly for
    the playback or recording of video on the system.
