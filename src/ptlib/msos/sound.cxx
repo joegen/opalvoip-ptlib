@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.26  2001/09/22 03:36:56  yurik
+ * Put code to prevent audio channel disconnection
+ *
  * Revision 1.25  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -1172,6 +1175,11 @@ BOOL PSoundChannel::Read(void * data, PINDEX size)
 
   if (!WaitForRecordBufferFull())
     return FALSE;
+
+#ifdef _WIN32_WCE
+  if( bufferByteOffset == P_MAX_INDEX )
+	  return TRUE;
+#endif
 
   PWaitAndSignal mutex(bufferMutex);
 
