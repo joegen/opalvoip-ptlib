@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pils.h,v $
+ * Revision 1.3  2003/04/11 00:07:46  robertj
+ * More for Microsoft IP address specification wierdness (registration side).
+ *
  * Revision 1.2  2003/04/07 13:05:09  robertj
  * Workaround for Microsoft IP address specification wierdness.
  *
@@ -77,6 +80,7 @@ class PILSSession : public PLDAPSession
         MSIPAddress & operator=(const PString & dotNotation)  { Address::operator=(dotNotation); return *this; }
 
       friend istream & operator>>(istream & s, MSIPAddress & a);
+      friend ostream & operator<<(ostream & s, MSIPAddress & a);
     };
 
     PLDAP_STRUCT_BEGIN(RTPerson)
