@@ -1998,6 +1998,7 @@ EXPORTS
     ?FindOneOf@PString@@QBEHPBDH@Z @1297 NONAME ;public: int __thiscall PString::FindOneOf(char const *,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@AAH1HH@Z @1298 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int &,int &,int,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@H@Z @1299 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int)const 
+    ?FromString@Address@PIPSocket@@QAEHABVPString@@@Z @4307 NONAME ;public: int __thiscall PIPSocket::Address::FromString(class PString const &)
     ?GenerateHeader@PWAVFile@@IAEHXZ @3817 NONAME ;protected: int __thiscall PWAVFile::GenerateHeader(void)
     ?GetAddress@PEthSocket@@QAEHAATAddress@1@@Z @2372 NONAME ;public: int __thiscall PEthSocket::GetAddress(PEthSocket::dress * &)
     ?GetAddress@PRemoteConnection@@QAE?AVPString@@XZ @1302 NONAME ;public: class PString  __thiscall PRemoteConnection::GetAddress(void)
