@@ -1,6 +1,6 @@
 %{
 /*
- * $Id: asn_lex.l,v 1.4 1999/01/29 12:18:51 robertj Exp $
+ * $Id: asn_lex.l,v 1.5 1999/02/09 01:26:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1997 by Equivalence
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.5  1999/02/09 01:26:50  robertj
+ * Fixed warning problems with #define for identifier "comment"
+ *
  * Revision 1.4  1999/01/29 12:18:51  robertj
  * Fixed warning in standard header file, caused by macro defined in flex.skel.
  *
@@ -24,12 +27,8 @@
  *
  */
 
-#undef comment   // Get rid of warning in useoldio.h
-
 #include <ptlib.h>
 #include "main.h"
-
-#define comment 1
 
 #include "asn_grammar.h"
 
@@ -56,7 +55,7 @@ static int TokenSelect(int context, int token1, int token2)
 
 %}
 
-%x comment
+%x comment_line
 
 %%
 
@@ -164,19 +163,19 @@ static int TokenSelect(int context, int token1, int token2)
                                                                  
 
 "--" {
-    BEGIN(comment);
+    BEGIN(comment_line);
   }
 
-<comment>"--"  {
+<comment_line>"--"  {
     BEGIN(INITIAL);
   }
 
-<comment>\n  {
+<comment_line>\n  {
     lineNumber++;
     BEGIN(INITIAL);
   }
 
-<comment>. {
+<comment_line>. {
 }
 
 
