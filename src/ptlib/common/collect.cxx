@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.38 1998/05/17 02:29:46 robertj Exp $
+ * $Id: collect.cxx,v 1.39 1998/08/20 05:48:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.39  1998/08/20 05:48:51  robertj
+ * Fixed bug on removing entries by index from a PSet().
+ *
  * Revision 1.38  1998/05/17 02:29:46  robertj
  * Fixed GetObjectsIndex()/GetValuesIndex() finding elements that have a hash clash.
  *
@@ -1198,7 +1201,7 @@ BOOL PHashTable::Table::SetLastElementAt(PINDEX index)
   if (index == 0 || lastElement == NULL || lastIndex == P_MAX_INDEX) {
     lastIndex = 0;
     lastBucket = 0;
-    while ((lastElement = operator[](lastBucket)) == NULL) {
+    while ((lastElement = GetAt(lastBucket)) == NULL) {
       if (lastBucket >= GetSize())
         return FALSE;
       lastBucket++;
@@ -1400,19 +1403,26 @@ PINDEX PAbstractSet::InsertAt(PINDEX, PObject * obj)
 
 BOOL PAbstractSet::Remove(const PObject * obj)
 {
-  hashTable->deleteKeys =
-                hashTable->reference->deleteObjects = reference->deleteObjects;
-  if (!hashTable->RemoveElement(*obj))
+  if (hashTable->GetElementAt(*PAssertNULL(obj)) == NULL)
     return FALSE;
+
+  hashTable->deleteKeys = hashTable->reference->deleteObjects = reference->deleteObjects;
+  hashTable->RemoveElement(*obj);
   reference->size--;
   return TRUE;
 }
 
 
-PObject * PAbstractSet::RemoveAt(PINDEX)
+PObject * PAbstractSet::RemoveAt(PINDEX index)
 {
-  PAssertAlways(PUnimplementedFunction);
-  return NULL;
+  if (!hashTable->SetLastElementAt(index))
+    return NULL;
+
+  PObject * obj = hashTable->lastElement->key;
+  hashTable->deleteKeys = hashTable->reference->deleteObjects = reference->deleteObjects;
+  hashTable->RemoveElement(*obj);
+  reference->size--;
+  return obj;
 }
 
 
