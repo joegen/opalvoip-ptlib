@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.3  1999/05/28 14:14:29  robertj
+ * Added function to get default audio device.
+ *
  * Revision 1.2  1999/05/22 12:49:05  craigs
  * Finished implementation for Linux OSS interface
  *
@@ -141,6 +144,12 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
   array[1] = "/dev/dsp";
 
   return array;
+}
+
+
+PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
+{
+  return "/dev/audio";
 }
 
 
