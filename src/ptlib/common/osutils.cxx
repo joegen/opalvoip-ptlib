@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.58 1996/03/31 09:06:14 robertj Exp $
+ * $Id: osutils.cxx,v 1.59 1996/04/02 11:29:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.59  1996/04/02 11:29:19  robertj
+ * Eliminated printing of patch level in version when there isn't one.
+ *
  * Revision 1.58  1996/03/31 09:06:14  robertj
  * Fixed WriteString() so works with sockets.
  * Changed PPipeSokcet argument string list to array.
@@ -1941,7 +1944,7 @@ PString PProcess::GetVersion(BOOL full) const
 {
   const char * const statusLetter[NumCodeStatuses] =
     { "alpha", "beta", "pl" };
-  return psprintf(full ? "%u.%u%s%u" : "%u.%u",
+  return psprintf(full && buildNumber != 0 ? "%u.%u%s%u" : "%u.%u",
                 majorVersion, minorVersion, statusLetter[status], buildNumber);
 }
 
