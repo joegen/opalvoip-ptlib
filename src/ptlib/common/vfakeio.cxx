@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.19  2003/06/10 03:45:11  dereksmithies
+ * Change so box on left moves all the way down left side of image.
+ *
  * Revision 1.18  2003/06/10 00:36:57  dereksmithies
  * Formatting changes. Remove rounding errors.
  *
@@ -543,13 +546,13 @@ void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
     
     //Draw a black box rapidly moving down the left of the window.
     boxSize= height / 10;
-    hi = hi & 0xfe;//Make certain hi is even.
+    hi = ((3 * colourIndex) % (height-boxSize)) & 0xfe; //Make certain hi is even.
     FillRect(resFrame, width, height, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
     
     //Draw four parallel black lines, which move up the middle of the window.
     colourIndex = colourIndex / 3;     //Every three seconds, lines move.
     
-    for(wi = 0;wi < 2; wi++) 
+    for(wi = 0; wi < 2; wi++) 
       columns[wi]= (((wi + 1)  * width) / 3) & 0xfe;// Force columns to be even.
     
     hi = colourIndex % ((height - 16) / 2);
