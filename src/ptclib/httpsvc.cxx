@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.14 1997/02/05 11:54:54 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.15 1997/03/02 03:40:59 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.15  1997/03/02 03:40:59  robertj
+ * Added error logging to standard HTTP Service HTTP Server.
+ *
  * Revision 1.14  1997/02/05 11:54:54  robertj
  * Added support for order form page overridiing.
  *
@@ -56,6 +59,7 @@
 
 #include <ptlib.h>
 #include <httpsvc.h>
+#include <sockets.h>
 
 #define HOME_PAGE 	"http://www.ozemail.com.au/~equival"
 #define EMAIL     	"equival@ozemail.com.au"
@@ -191,12 +195,32 @@ void PHTTPServiceProcess::CompleteRestartSystem()
 
 //////////////////////////////////////////////////////////////
 
+PHTTPServiceThread::PHTTPServiceThread(PHTTPServiceProcess & app,
+                                       PSocket & listeningSocket,
+                                       PHTTPSpace & http)
+  : PThread(10000, AutoDeleteThread),
+    process(app),
+    listener(listeningSocket),
+    httpSpace(http)
+{
+  Resume();
+}
+
+
 void PHTTPServiceThread::Main()
 {
+  if (!listener.IsOpen())
+    return;
+
   // get a socket when a client connects
   PHTTPServer server(httpSpace);
-  if (!server.Accept(listener))
+  if (!server.Accept(listener)) {
+    if (server.GetErrorCode() == PChannel::Interrupted)
+      PNEW PHTTPServiceThread(process, listener, httpSpace);
+    else
+      PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
     return;
+  }
 
   PNEW PHTTPServiceThread(process, listener, httpSpace);
 
@@ -375,6 +399,9 @@ BOOL PRegisterPage::Post(PHTTPRequest & request,
                          const PStringToString & data,
                          PHTML & reply)
 {
+  if (fields.IsEmpty())
+    LoadText(request);
+
   if (!PConfigPage::Post(request, data, reply))
     return FALSE;
 
