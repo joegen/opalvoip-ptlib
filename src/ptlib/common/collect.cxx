@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.61  2003/09/24 22:13:58  dereksmithies
+ * Add fix for deleting an object, then readding it. Thanks Fabrizio Ammollo
+ *
  * Revision 1.60  2003/08/31 22:11:30  dereksmithies
  * Fix from Diego Tartara for the SetAt function. Many thanks.
  *
@@ -1687,8 +1690,8 @@ BOOL PAbstractDictionary::AbstractSetAt(const PObject & key, PObject * obj)
       reference->size++;
     }
     else {
-      if (reference->deleteObjects)
-        delete hashTable->lastElement->data;
+      if ((reference->deleteObjects) && (hashTable->lastElement->data != obj)) 
+	delete hashTable->lastElement->data;
       hashTable->lastElement->data = obj;
     }
   }
