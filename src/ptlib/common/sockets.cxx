@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.138  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.137  2002/11/01 23:56:11  robertj
  * Fixed GNu compatibility isse with IPv6
  *
@@ -783,9 +786,6 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
       ::gethostbyname_r(name,
                         &host_info,
                         &ht_data);		    
-#elif defined P_VXWORKS
-      struct hostent hostEnt;
-      host_info = Vx_gethostbyname((char *)name, &hostEnt);
 #elif defined P_RTEMS
       host_info = *::gethostbyname(name);
 #else
@@ -794,6 +794,9 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 			 &localErrNo);
 #endif
 
+#elif defined P_VXWORKS
+      struct hostent hostEnt;
+      host_info = Vx_gethostbyname((char *)name, &hostEnt);
 #else
       host_info = ::gethostbyname(name);
 #endif
@@ -910,9 +913,6 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                         PF_INET, 
                         &host_info,
                         &ht_data );
-#elif defined P_VXWORKS
-      struct hostent hostEnt;
-      host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
 #elif defined P_RTEMS
       host_info = *::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #else
@@ -920,6 +920,9 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
                                     &hostEnt, buffer, REENTRANT_BUFFER_LEN, &localErrNo);
 #endif
 
+#elif defined P_VXWORKS
+      struct hostent hostEnt;
+      host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
 #else
       host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
@@ -1238,7 +1241,7 @@ int PSocket::Select(PSocket & sock1,
   allfds[1] = 1;
   allfds[2] = h2;
   allfds[3] = 1;
-  int rval = os_select(PMAX(h1, h2)+1, readfds, NULL, NULL, allfds, timeout);
+  int rval = os_select(PMAX(h1, h2)+1, (fd_set*)readfds, NULL, NULL, allfds, timeout);
 
   Errors lastError;
   int osError;
@@ -1342,7 +1345,7 @@ PChannel::Errors PSocket::Select(SelectList & read,
 #pragma warning(default:4018 4127)
 #endif
 
-  int retval = os_select(maxfds+1,readfds,writefds,exceptfds,allfds,timeout);
+  int retval = os_select(maxfds+1,(fd_set*)readfds,(fd_set*)writefds,(fd_set*)exceptfds,allfds,timeout);
 
   Errors lastError;
   int osError;

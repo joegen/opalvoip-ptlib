@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.31  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.30  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -147,11 +150,16 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
+#ifndef VX_TASKS
 typedef pthread_t PThreadIdentifer;
+#else
+typedef long PThreadIdentifer;
+#endif // !VX_TASKS
 
 #define _PTHREAD_PLATFORM_INCLUDE
 #include "../../thread.h"
 #undef _PTHREAD_PLATFORM_INCLUDE
+
 
 #endif
 #ifdef _PTHREAD_PLATFORM_INCLUDE
@@ -165,9 +173,9 @@ typedef pthread_t PThreadIdentifer;
                    const PTimeInterval & timeout);
 
     int PXBlockOnIO(int maxHandle,
-               fd_set & readBits,
-               fd_set & writeBits,
-               fd_set & execptionBits,
+               fd_set * readBits,
+               fd_set * writeBits,
+               fd_set * execptionBits,
                const PTimeInterval & timeout,
                const PIntArray & osHandles);
 
@@ -235,7 +243,7 @@ typedef pthread_t PThreadIdentifer;
 
   private:
     static int ThreadFunction(void * threadPtr);
-    long threadId;
+    long PX_threadId;
     int priority;
     PINDEX originalStackSize;
 
@@ -267,8 +275,13 @@ typedef pthread_t PThreadIdentifer;
 inline PThreadIdentifer PThread::GetThreadId() const
   { return PX_threadId; }
 
+#ifndef VX_TASKS
 inline PThreadIdentifer PThread::GetCurrentThreadId()
   { return ::pthread_self(); }
+#else
+inline PThreadIdentifer PThread::GetCurrentThreadId()
+  { return ::taskIdSelf(); }
+#endif // !VX_TASKS
 
 
 #endif

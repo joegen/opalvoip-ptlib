@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.53  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.52  2002/10/29 07:59:45  robertj
  * Changed in_addr6 to more universally used in6_addr.
  *
@@ -285,6 +288,10 @@ class PIPSocket : public PSocket
         BOOL operator!=(in_addr & addr) const { return !operator==(addr); }
         BOOL operator==(DWORD dw) const;
         BOOL operator!=(DWORD dw) const   { return !operator==(dw); }
+#ifdef P_TORNADO 
+        BOOL operator==(long unsigned int u) const { return  operator==((DWORD)u); }
+        BOOL operator!=(long unsigned int u) const { return !operator==((DWORD)u); }
+#endif
 #ifdef _WIN32
         BOOL operator==(unsigned u) const { return  operator==((DWORD)u); }
         BOOL operator!=(unsigned u) const { return !operator==((DWORD)u); }

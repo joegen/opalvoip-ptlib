@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.97  2002/11/02 00:32:21  robertj
+ * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
+ *
  * Revision 1.96  2002/10/22 10:25:07  rogerh
  * Fix process_rtentry() following Thomas's patch.
  *
@@ -1557,7 +1560,6 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 {
   PUDPSocket sock;
-
 #ifndef __BEOS__
 
   PBYTEArray buffer;
@@ -1601,9 +1603,15 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
               PIPSocket::Address mask = ((sockaddr_in *)&ifReq.ifr_netmask)->sin_addr;
               PINDEX i;
               for (i = 0; i < list.GetSize(); i++) {
+#ifdef P_TORNADO
+                if (list[i].GetName() == name &&
+                    list[i].GetAddress() == addr)
+                    if(list[i].GetNetMask() == mask)
+#else
                 if (list[i].GetName() == name &&
                     list[i].GetAddress() == addr &&
                     list[i].GetNetMask() == mask)
+#endif
                   break;
               }
               if (i >= list.GetSize())
@@ -1614,7 +1622,6 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
       }
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_VXWORKS) || defined(P_RTEMS)
-
 // Define _SIZEOF_IFREQ for platforms (eg OpenBSD) which do not have it.
 #ifndef _SIZEOF_ADDR_IFREQ
 #define _SIZEOF_ADDR_IFREQ(ifr) \
@@ -1628,10 +1635,10 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #else
       ifName++;
 #endif
+
     }
   }
 #endif //!__BEOS__
-
   return TRUE;
 }
 

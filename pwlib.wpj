@@ -4425,7 +4425,6 @@ $(WIND_BASE)/target/proj/pwlib/include/ptlib/pstring.h \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib/args.h \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib/unix/ptlib/../../timeint.h \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib/indchan.h \
-	$(WIND_BASE)/target/proj/pwlib/src/ptlib/unix/tlibcoop.cxx \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib/unix/ptlib/dynalink.h \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib/syncthrd.h \
 	$(WIND_BASE)/target/proj/pwlib/include/ptlib.h \
