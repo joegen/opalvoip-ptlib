@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.31.4.2  2004/07/12 08:30:16  csoutheren
+ * More fixes for abstract factory implementation of PWAVFile
+ *
  * Revision 1.31.4.1  2004/07/07 07:07:42  csoutheren
  * Changed PWAVFile to use abstract factories (extensively)
  * Removed redundant blocking/unblocking when using G.723.1
@@ -154,20 +157,20 @@
 const char WAVLabelRIFF[4] = { 'R', 'I', 'F', 'F' };
 const char WAVLabelWAVE[4] = { 'W', 'A', 'V', 'E' };
 const char WAVLabelFMT_[4] = { 'f', 'm', 't', ' ' };
-const char WAVLabelFACT[4] = { 'f', 'a', 'c', 't' };
+const char WAVLabelFACT[4] = { 'F', 'A', 'C', 'T' };
 const char WAVLabelDATA[4] = { 'd', 'a', 't', 'a' };
 
 PINSTANTIATE_FACTORY(PWAVFileFormat, unsigned)
 PINSTANTIATE_FACTORY(PWAVFileConverter, unsigned)
 
-inline BOOL ReadAndCheck(PFile & file, void * buf, PINDEX len)
+inline BOOL ReadAndCheck(PWAVFile & file, void * buf, PINDEX len)
 {
-  return file.PFile::Read(buf, len) && (file.PFile::GetLastReadCount() == len);
+  return file.FileRead(buf, len) && (file.PFile::GetLastReadCount() == len);
 }
 
-inline BOOL WriteAndCheck(PFile & file, void * buf, PINDEX len)
+inline BOOL WriteAndCheck(PWAVFile & file, void * buf, PINDEX len)
 {
-  return file.Write(buf, len) && (file.GetLastWriteCount() == len);
+  return file.FileWrite(buf, len) && (file.GetLastWriteCount() == len);
 }
 
 #if PBYTE_ORDER==PBIG_ENDIAN
@@ -191,19 +194,20 @@ static void SWAB(const void * void_from, void * void_to, register size_t len)
 #  define	SWAB(a,b,c)	{}
 #endif
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // PWAVFile
 
 PWAVFile::PWAVFile(unsigned fmt)
   : PFile()
 {
+  Construct();
   SelectFormat(fmt);
 }
 
 PWAVFile * PWAVFile::PWAVFile_format(const PString & format)
 {
   PWAVFile * file = new PWAVFile;
+  file->Construct();
   file->SelectFormat(format);
   return file;
 }
@@ -211,6 +215,7 @@ PWAVFile * PWAVFile::PWAVFile_format(const PString & format)
 PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
   : PFile(mode, opts)
 {
+  Construct();
   SelectFormat(fmt);
 }
 
@@ -221,48 +226,59 @@ PWAVFile * PWAVFile::PWAVFile_format(
 )
 {
   PWAVFile * file = new PWAVFile(mode, opts);
+  file->Construct();
   file->SelectFormat(format);
   return file;
 }
 
 PWAVFile::PWAVFile(const PFilePath & name, OpenMode mode, int opts, unsigned fmt)
 {
+  Construct();
   SelectFormat(fmt);
   Open(name, mode, opts);
 }
 
-PWAVFile * PWAVFile::PWAVFile_format(
-      const PString & format,  
-      const PFilePath & name,  
-      OpenMode mode,
-      int opts 
+PWAVFile::PWAVFile(
+  const PString & format,  
+  const PFilePath & name,  
+  OpenMode mode,
+  int opts 
 )
 {
-  PWAVFile * file = new PWAVFile(mode, opts);
-  file->SelectFormat(format);
-  file->Open(name);
-  return file;
+  Construct();
+  SelectFormat(format);
+  Open(name, mode, opts);
+}
+
+void PWAVFile::Construct()
+{
+  lenData                 = 0;
+  lenHeader               = 0;
+  isValidWAV              = FALSE;
+  header_needs_updating   = FALSE;
+  autoConvert             = FALSE;
+  autoConverter           = NULL;
+  wavFmtChunk.hdr.len     = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);
 }
 
 void PWAVFile::SelectFormat(unsigned fmt)
 {
-  isValidWAV            = FALSE;
-  header_needs_updating = FALSE;
-
-  autoConvert           = FALSE;
-  autoConverter         = NULL;
-  formatHandler         = PWAVFileFormatByIDFactory::CreateInstance(fmt);
+  if (fmt == fmt_NotKnown)
+    formatHandler = NULL;
+  else {
+    formatHandler       = PWAVFileFormatByIDFactory::CreateInstance(fmt);
+    wavFmtChunk.format  = (WORD)fmt;
+  }
 }
 
 void PWAVFile::SelectFormat(const PString & format)
 {
-  // see if the format is known
-  isValidWAV            = FALSE;
-  header_needs_updating = FALSE;
-  autoConvert           = FALSE;
-  autoConverter         = NULL;
-
-  formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
+  if (format.IsEmpty())
+    formatHandler = NULL;
+  else
+    formatHandler = PWAVFileFormatByFormatFactory::CreateInstance(format);
+  if (formatHandler != NULL)
+    wavFmtChunk.format = (WORD)formatHandler->GetFormat();
 }
 
 BOOL PWAVFile::Open(OpenMode  mode, int opts)
@@ -298,13 +314,20 @@ BOOL PWAVFile::Open(OpenMode  mode, int opts)
     }
   }
 
+  // if we did not know the format when we opened, then we had better know it now
+  if (formatHandler == NULL) {
+    Close();
+    return FALSE;
+  }
+
   return TRUE;
 }
 
 
 BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 {
-  Close();
+  if (IsOpen())
+    Close();
   SetFilePath(name);
   return Open(mode, opts);
 }
@@ -336,22 +359,19 @@ BOOL PWAVFile::RawRead(void * buf, PINDEX len)
   PINDEX readlen = len;
   if ((off_t)(PFile::GetPosition() + len - lenHeader) > lenData) {
     PTRACE(1, "WAV\tRead: Detected non audio data after the sound samples");
-    readlen = lenData-PWAVFile::GetPosition(); 
+    readlen = lenData - PWAVFile::GetPosition(); 
   }
 
-  if (!PFile::Read(buf, readlen))
-    return FALSE;
+  if (formatHandler != NULL)
+    return formatHandler->Read(*this, buf, readlen);
 
-  // WAV files are little-endian. So swap the bytes if this is
-  // a big endian machine and we have 16 bit samples
-  // Note: swab only works on even length buffers.
-  if (wavHeader.bitsPerSample == 16) {
-    SWAB(buf, buf, PFile::GetLastReadCount());
-  }
-
-  return TRUE;
+  return FileRead(buf, readlen);
 }
 
+BOOL PWAVFile::FileRead(void * buf, PINDEX len)
+{
+  return PFile::Read(buf, len);
+}
 
 // Performs necessary byte-order swapping on for big-endian platforms.
 BOOL PWAVFile::Write(const void * buf, PINDEX len)
@@ -370,40 +390,16 @@ BOOL PWAVFile::RawWrite(const void * buf, PINDEX len)
   // Needs to update header on close.
   header_needs_updating = TRUE;
 
-  // WAV files are little-endian. So swap the bytes if this is
-  // a big endian machine and we have 16 bit samples
-  // Note: swab only works on even length buffers.
-  if (wavHeader.bitsPerSample == 16) {
-    SWAB(buf, (void *)buf, len);
-  }
+  if (formatHandler != NULL)
+    return formatHandler->Write(*this, buf, len);
 
-  if (wavHeader.format != fmt_VivoG7231 && wavHeader.format != fmt_MSG7231)
-    return PFile::Write(buf, len);
-
-  // The Microsoft && VivoActive G.2723.1 codec cannot do SID frames
-  const BYTE * frame = (const BYTE *)buf;
-  while (len > 0) {
-    static PINDEX FrameSize[4] = { 24, 20, 4, 1 };
-    PINDEX frameSize = FrameSize[*frame&3];
-
-    if (len < frameSize)
-      return SetErrorValues(Miscellaneous, EINVAL, LastWriteError);
-
-    BYTE writebuf[24];
-    memset(writebuf, 0, sizeof(writebuf));
-    if (frameSize >= 20)
-      memcpy(writebuf, frame, frameSize);
-
-    if (!PFile::Write(writebuf, sizeof(writebuf)))
-      return FALSE;
-
-    frame += frameSize;
-    len -= frameSize;
-  }
-
-  return TRUE;
+  return FileWrite(buf, len);
 }
 
+BOOL PWAVFile::FileWrite(const void * buf, PINDEX len)
+{
+  return PFile::Write(buf, len);
+}
 
 // Both SetPosition() and GetPosition() are offset by lenHeader.
 BOOL PWAVFile::SetPosition(off_t pos, FilePositionOrigin origin)
@@ -452,7 +448,7 @@ off_t PWAVFile::RawGetPosition() const
 unsigned PWAVFile::GetFormat() const
 {
   if (isValidWAV)
-    return wavHeader.format;
+    return wavFmtChunk.format;
   else
     return 0;
 }
@@ -468,7 +464,7 @@ PString PWAVFile::GetFormatAsString() const
 unsigned PWAVFile::GetChannels() const
 {
   if (isValidWAV)
-    return wavHeader.numChannels;
+    return wavFmtChunk.numChannels;
   else
     return 0;
 }
@@ -477,7 +473,7 @@ unsigned PWAVFile::GetChannels() const
 unsigned PWAVFile::GetSampleRate() const
 {
   if (isValidWAV)
-    return wavHeader.sampleRate;
+    return wavFmtChunk.sampleRate;
   else
     return 0;
 }
@@ -486,7 +482,7 @@ unsigned PWAVFile::GetSampleRate() const
 unsigned PWAVFile::GetSampleSize() const
 {
   if (isValidWAV)
-    return wavHeader.bitsPerSample;
+    return wavFmtChunk.bitsPerSample;
   else
     return 0;
 }
@@ -541,6 +537,12 @@ BOOL PWAVFile::SetFormat(const PString & format)
   return TRUE;
 }
 
+static inline BOOL NeedsConverter(const PWAV::FMTChunk & fmtChunk)
+{
+  return (fmtChunk.format != PWAVFile::fmt_PCM) || (fmtChunk.bitsPerSample != 16);
+}
+
+
 BOOL PWAVFile::ProcessHeader() {
 
   // Process the header information
@@ -559,94 +561,75 @@ BOOL PWAVFile::ProcessHeader() {
   }
 
   // Read the RIFF chunk.
-  struct PWAV::WAVHeader riffChunk;
+  struct PWAV::RIFFChunkHeader riffChunk;
   if (!ReadAndCheck(*this, &riffChunk, sizeof(riffChunk)))
     return FALSE;
 
-  // check if labels are correct
-  if (strncmp(riffChunk.hdr.tag, WAVLabelRIFF, sizeof(WAVLabelRIFF))) {
+  // check if tags are correct
+  if (strncmp(riffChunk.hdr.tag, WAVLabelRIFF, sizeof(WAVLabelRIFF)) != 0) {
     PTRACE(1,"WAV\tProcessHeader: Not RIFF");
     return (FALSE);
   }
 
-  if (strncmp(riffChunk.tag, WAVLabelWAVE, sizeof(WAVLabelWAVE))) {
+  if (strncmp(riffChunk.tag, WAVLabelWAVE, sizeof(WAVLabelWAVE)) != 0) {
     PTRACE(1,"WAV\tProcessHeader: Not WAVE");
     return (FALSE);
   }
 
-  // Read the FORMAT chunk.
-  if (!ReadAndCheck(*this, &wavHeader, sizeof(wavHeader)))
+  // Read the known part of the FORMAT chunk.
+  if (!ReadAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)))
     return FALSE;
 
   // check if labels are correct
-  if (strncmp(wavHeader.hdr.tag, WAVLabelFMT_, sizeof(WAVLabelFMT_)) ) {
+  if (strncmp(wavFmtChunk.hdr.tag, WAVLabelFMT_, sizeof(WAVLabelFMT_)) != 0) {
     PTRACE(1,"WAV\tProcessHeader: Not FMT");
     return (FALSE);
   }
 
-  // get the format handler
-  formatHandler = PWAVFileFormatByIDFactory::CreateInstance(wavHeader.format);
+  // if we opened the file without knowing the format, then try and set the format now
   if (formatHandler == NULL) {
-    PTRACE(1, "PWAVFILE\tUnknown WAV format " << wavHeader.format);
-    return FALSE;
-  }
-
-  unsigned formatChunkLen = sizeof(wavHeader.hdr) + wavHeader.hdr.len;
-
-  // move to the end of the FORMAT chunk
-  if (!PFile::SetPosition(sizeof(riffChunk) + formatChunkLen)) {
-    PTRACE(1,"WAV\tProcessHeader: Cannot reset position");
-    return (FALSE);
-  }
-
-  // Peek at the title of the next chunk and then restore the file pointer.
-  int position = PFile::GetPosition();
-  char chunkTitle[4];
-  if (!ReadAndCheck(*this, chunkTitle, sizeof(chunkTitle)))
-    return FALSE;
-  PFile::SetPosition(position);
-
-  // Read the FACT chunk (optional)
-  int factChunkLen = 0;
-
-  if (strncmp(chunkTitle, WAVLabelFACT, sizeof(WAVLabelFACT)) == 0) {
-
-    PWAV::RIFFHeader factChunk;
-    if (!ReadAndCheck(*this, &factChunk, sizeof(factChunk)))
+    SelectFormat(wavFmtChunk.format);
+    if (formatHandler == NULL) {
+      Close();
       return FALSE;
-
-    factChunkLen = sizeof(factChunk) + factChunk.len;
-
-    // The spec allows for extra bytes in the FACT chunk which contain
-    // information relating to the format of the audio. This is mainly
-    // used when the WAV file contains compressed audio instead of PCM audio.
-    // Use the len_fact field from FACT to determine where to move to
-    // in the file to find the start of the next chunk.
-    if (!PFile::SetPosition(sizeof(riffChunk) + formatChunkLen + factChunkLen)) {
-      PTRACE(1,"WAV\tProcessHeader: Cannot reset position");
-      return (FALSE);
     }
   }
 
-  // get the size of the data chunk
-  PWAV::RIFFHeader dataChunk;
-  if (!ReadAndCheck(*this, &dataChunk, sizeof(dataChunk)))
+  // read the extended format chunk (if any)
+  extendedHeader.SetSize(0);
+  if (wavFmtChunk.hdr.len > (sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr))) {
+    extendedHeader.SetSize(wavFmtChunk.hdr.len - (sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr)));
+    if (!ReadAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
+      return FALSE;
+  }
+
+  // give format handler a chance to read extra chunks
+  if (!formatHandler->ReadExtraChunks(*this))
     return FALSE;
 
-  if (strncmp(dataChunk.tag, WAVLabelDATA, sizeof(WAVLabelDATA))) {
-    PTRACE(1,"WAV\tProcessHeader: Not DATA");
-    return (FALSE);
+  PWAV::ChunkHeader chunkHeader;
+
+  // ignore chunks until we see a DATA chunk
+  for (;;) {
+    if (!ReadAndCheck(*this, &chunkHeader, sizeof(chunkHeader)))
+      return FALSE;
+    if (strncmp(chunkHeader.tag, WAVLabelDATA, sizeof(WAVLabelDATA)) == 0) 
+      break;
+    if (!PFile::SetPosition(PFile::GetPosition() + + chunkHeader.len)) {
+      PTRACE(1,"WAV\tProcessHeader: Cannot set new position");
+      return FALSE;
+    }
   }
 
   // calculate the size of header and data for accessing the WAV data.
-  lenHeader  = sizeof(riffChunk) + formatChunkLen + factChunkLen + sizeof(dataChunk);
-  lenData    = dataChunk.len;
+  lenHeader  = PFile::GetPosition(); 
+  lenData    = chunkHeader.len;
 
   // get ptr to data handler if in autoconvert mode
-  if (autoConvert) {
-    autoConverter = PWAVFileConverterFactory::CreateInstance(wavHeader.format);
+  if (autoConvert && NeedsConverter(wavFmtChunk)) {
+    autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
     if (autoConverter == NULL) {
-      PTRACE(1, "PWAVFile\tNo format converter for type " << wavHeader.format);
+      PTRACE(1, "PWAVFile\tNo format converter for type " << wavFmtChunk.format);
       return FALSE;
     }
   }
@@ -670,11 +653,15 @@ BOOL PWAVFile::GenerateHeader()
     return (FALSE);
   }
 
-  // get the format handler
-  formatHandler = PWAVFileFormatByIDFactory::CreateInstance(wavHeader.format);
-  if (formatHandler == NULL) {
-    PTRACE(1, "PWAVFILE\tUnknown WAV format " << wavHeader.format);
-    return FALSE;
+  // length of audio data is set to a large value if lenData does not
+  // contain a valid (non negative) number. We must then write out real values
+  // when we close the wav file.
+  int audioDataLen;
+  if (lenData < 0) {
+    audioDataLen = LONG_MAX - wavFmtChunk.hdr.len;
+    header_needs_updating = TRUE;
+  } else {
+    audioDataLen = lenData;
   }
 
   // go to the beginning of the file
@@ -683,41 +670,35 @@ BOOL PWAVFile::GenerateHeader()
     return (FALSE);
   }
 
-  // length of audio data is set to a large value if lenData does not
-  // contain a valid (non negative) number. We must then write out real values
-  // when we close the wav file.
-  int audioDataLen;
-  if (lenData < 0) {
-    audioDataLen = LONG_MAX - wavHeader.hdr.len;
-    header_needs_updating = TRUE;
-  } else {
-    audioDataLen = lenData;
-  }
+  // write the WAV file header
+  PWAV::RIFFChunkHeader riffChunk;
+  memcpy(riffChunk.hdr.tag, WAVLabelRIFF, sizeof(WAVLabelRIFF));
+  memcpy(riffChunk.tag,     WAVLabelWAVE, sizeof(WAVLabelWAVE));
+  riffChunk.hdr.len = lenHeader + audioDataLen - sizeof(riffChunk.hdr);
 
-  // write the RIFF header
-  PWAV::RIFFHeader riffHeader;
-  memcpy(riffHeader.tag, WAVLabelRIFF, sizeof(WAVLabelRIFF));
-  riffHeader.len = lenHeader + audioDataLen - 8;
-  memcpy(riffHeader.tag, WAVLabelWAVE, sizeof(WAVLabelWAVE));
-  if (!WriteAndCheck(*this, &riffHeader, sizeof(riffHeader)))
+  if (!WriteAndCheck(*this, &riffChunk, sizeof(riffChunk)))
     return FALSE;
 
   // populate and write the WAV header with the default data
-  formatHandler->CreateHeader(wavHeader, extendedHeader);
+  memcpy(wavFmtChunk.hdr.tag,  WAVLabelFMT_, sizeof(WAVLabelFMT_));
+  wavFmtChunk.hdr.len = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);  // set default length assuming no extra bytes
+
+  // allow the format handler to modify the header and extra bytes
+  formatHandler->CreateHeader(wavFmtChunk, extendedHeader);
 
   // write the basic WAV header
   if (
-      !WriteAndCheck(*this, &wavHeader, sizeof(wavHeader)) ||
-      !WriteAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize())
+      !WriteAndCheck(*this, &wavFmtChunk, sizeof(wavFmtChunk)) ||
+      ((extendedHeader.GetSize() > 0) && !WriteAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
      )
     return FALSE;
 
-  // write extended headers (if required)
-  if (!formatHandler->WriteExtraHeaders(*this, wavHeader))
+  // allow the format handler to write additional chunks
+  if (!formatHandler->WriteExtraChunks(*this))
     return FALSE;
 
   // Write the DATA chunk.
-  PWAV::RIFFHeader dataChunk;
+  PWAV::ChunkHeader dataChunk;
   memcpy(dataChunk.tag, WAVLabelDATA, sizeof(WAVLabelDATA));
   dataChunk.len = audioDataLen;
   if (!WriteAndCheck(*this, &dataChunk, sizeof(dataChunk)))
@@ -725,11 +706,16 @@ BOOL PWAVFile::GenerateHeader()
 
   isValidWAV = TRUE;
 
+  // get the length of the header
+  lenHeader = PFile::GetPosition();
+
   // get pointer to auto converter 
-  autoConverter = PWAVFileConverterFactory::CreateInstance(wavHeader.format);
-  if (autoConverter == NULL) {
-    PTRACE(1, "PWAVFile\tNo format converter for type " << wavHeader.format);
-    return FALSE;
+  if (autoConvert && NeedsConverter(wavFmtChunk)) {
+    autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
+    if (autoConverter == NULL) {
+      PTRACE(1, "PWAVFile\tNo format converter for type " << wavFmtChunk.format);
+      return FALSE;
+    }
   }
 
   return (TRUE);
@@ -753,61 +739,148 @@ BOOL PWAVFile::UpdateHeader()
   // Find out the length of the audio data
   lenData = PFile::GetLength() - lenHeader;
 
-  // Write out the 'len_after' field
+  // rewrite the length in the RIFF chunk
+  PInt32l riffChunkLen = (lenHeader - 8) + lenData; // size does not include first 8 bytes
   PFile::SetPosition(4);
-  PInt32l hdr_len_after = (lenHeader - 8) + lenData; // size does not include
-						     // first 8 bytes
-  if (!PFile::Write(&hdr_len_after,4))
-    return (FALSE);
+  if (!WriteAndCheck(*this, &riffChunkLen, sizeof(riffChunkLen)))
+    return FALSE;
 
-  // Write out the 'data_len' field
+  // rewrite the data length field in the data chunk
+  PInt32l dataChunkLen;
+  dataChunkLen = lenData;
   PFile::SetPosition(lenHeader - 4);
-  PInt32l hdr_data_len = lenData;
-  if (!PFile::Write(&hdr_data_len,4))
-    return (FALSE);
+  if (!WriteAndCheck(*this, &dataChunkLen, sizeof(dataChunkLen)))
+    return FALSE;
 
   header_needs_updating = FALSE;
 
-  return (TRUE);
+  return TRUE;
 }
 
+
+//////////////////////////////////////////////////////////////////
+
+BOOL PWAVFileFormat::Read(PWAVFile & file, void * buf, PINDEX & len)
+{ 
+  if (!file.RawRead(buf, len))
+    return FALSE;
+
+  len = file.GetLastReadCount();
+  return TRUE;
+}
+
+BOOL PWAVFileFormat::Write(PWAVFile & file, const void * buf, PINDEX & len)
+{ 
+  if (!file.RawWrite(buf, len))
+    return FALSE;
+
+  len = file.GetLastWriteCount();
+  return TRUE;
+}
 
 //////////////////////////////////////////////////////////////////
 
 class PWAVFileFormatPCM : public PWAVFileFormat
 {
   public:
-    void CreateHeader(PWAV::WAVFormatHeader & header, PBYTEArray & extendedHeader);
+    void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
     PString GetDescription() const;
-    PString GetFormat() const;
+    unsigned GetFormat() const;
+    PString GetFormatString() const;
+
+    BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
+    BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
 };
 
 PWAVFileFormatByIDFactory::Worker<PWAVFileFormatPCM> pcmIDWAVFormat(PWAVFile::fmt_PCM);
 PWAVFileFormatByFormatFactory::Worker<PWAVFileFormatPCM> pcmFormatWAVFormat("PCM-16");
+
+unsigned PWAVFileFormatPCM::GetFormat() const
+{
+  return PWAVFile::fmt_PCM;
+}
 
 PString PWAVFileFormatPCM::GetDescription() const
 {
   return "PCM";
 }
 
-PString PWAVFileFormatPCM::GetFormat() const
+PString PWAVFileFormatPCM::GetFormatString() const
 {
   return "PCM-16";
 }
 
-void PWAVFileFormatPCM::CreateHeader(PWAV::WAVFormatHeader & header, 
+void PWAVFileFormatPCM::CreateHeader(PWAV::FMTChunk & wavFmtChunk, 
                                      PBYTEArray & /*extendedHeader*/)
 {
-  header.hdr.len         = 44;
-  header.format          = PWAVFile::fmt_PCM;
-  header.numChannels     = 1;
-  header.sampleRate      = 8000;
-  header.bytesPerSample  = 2;
-  header.bitsPerSample   = 16;
-  header.bytesPerSec     = header.sampleRate * header.bytesPerSample;
+  wavFmtChunk.hdr.len         = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr);  // no extended information
+  wavFmtChunk.format          = PWAVFile::fmt_PCM;
+  wavFmtChunk.numChannels     = 1;
+  wavFmtChunk.sampleRate      = 8000;
+  wavFmtChunk.bytesPerSample  = 2;
+  wavFmtChunk.bitsPerSample   = 16;
+  wavFmtChunk.bytesPerSec     = wavFmtChunk.sampleRate * wavFmtChunk.bytesPerSample;
+}
+
+BOOL PWAVFileFormatPCM::Read(PWAVFile & file, void * buf, PINDEX & len)
+{
+  if (!file.FileRead(buf, len))
+    return FALSE;
+
+  len = file.GetLastReadCount();
+
+  // WAV files are little-endian. So swap the bytes if this is
+  // a big endian machine and we have 16 bit samples
+  // Note: swab only works on even length buffers.
+  if (file.wavFmtChunk.bitsPerSample == 16) {
+    SWAB(buf, buf, len);
+  }
+
+  return TRUE;
+}
+
+BOOL PWAVFileFormatPCM::Write(PWAVFile & file, const void * buf, PINDEX & len)
+{
+  // WAV files are little-endian. So swap the bytes if this is
+  // a big endian machine and we have 16 bit samples
+  // Note: swab only works on even length buffers.
+  if (file.wavFmtChunk.bitsPerSample == 16) {
+    SWAB(buf, (void *)buf, len);
+  }
+
+  if (!file.FileWrite(buf, len))
+    return FALSE;
+
+  len = file.GetLastWriteCount();
+  return TRUE;
 }
 
 //////////////////////////////////////////////////////////////////
+
+
+#ifdef __GNUC__
+#define P_PACKED    __attribute__ ((packed));
+#else
+#define P_PACKED
+#pragma pack(1)
+#endif
+
+struct G7231ExtendedInfo {
+  PInt16l data1      P_PACKED;      // 1
+  PInt16l data2      P_PACKED;      // 480
+};
+
+struct G7231FACTChunk {
+  PWAV::ChunkHeader hdr;
+  PInt32l data1      P_PACKED;      // 0   Should be number of samples.
+};
+
+#ifdef __GNUC__
+#undef P_PACKED
+#else
+#pragma pack()
+#endif
+
 
 class PWAVFileFormatG7231 : public PWAVFileFormat
 {
@@ -815,59 +888,134 @@ class PWAVFileFormatG7231 : public PWAVFileFormat
     PWAVFileFormatG7231(unsigned short _g7231)
       : g7231(_g7231) { }
 
-    void CreateHeader(PWAV::WAVFormatHeader & header, PBYTEArray & extendedHeader);
-    BOOL WriteExtraHeaders(PFile & file, const PWAV::WAVFormatHeader & header);
-    PString GetFormat() const
+    void CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader);
+    BOOL WriteExtraChunks(PWAVFile & file);
+
+    PString GetFormatString() const
     { return "G.723.1"; }   // must match string in mediafmt.h
+
+    BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
+    BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
 
   protected:
     unsigned short g7231;
 };
 
-void PWAVFileFormatG7231::CreateHeader(PWAV::WAVFormatHeader & header, PBYTEArray & extendedHeader)
+void PWAVFileFormatG7231::CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader)
 {
-  header.hdr.len         = 60;
-  header.format          = g7231;
-  header.numChannels     = 1;
-  header.sampleRate      = 8000;
-  header.bytesPerSample  = 24;
-  header.bitsPerSample   = 0;
-  header.bytesPerSec     = 800;
+  wavFmtChunk.hdr.len         = sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr) + sizeof(sizeof(G7231ExtendedInfo));
+  wavFmtChunk.format          = g7231;
+  wavFmtChunk.numChannels     = 1;
+  wavFmtChunk.sampleRate      = 8000;
+  wavFmtChunk.bytesPerSample  = 24;
+  wavFmtChunk.bitsPerSample   = 0;
+  wavFmtChunk.bytesPerSec     = 800;
 
-  extendedHeader.SetSize(4);
+  extendedHeader.SetSize(sizeof(G7231ExtendedInfo));
+  G7231ExtendedInfo * g7231Info = (G7231ExtendedInfo *)extendedHeader.GetPointer(sizeof(G7231ExtendedInfo));
+
+  g7231Info->data1 = 1;
+  g7231Info->data2 = 480;
 }
 
-BOOL PWAVFileFormatG7231::WriteExtraHeaders(PFile & /*file*/, const PWAV::WAVFormatHeader & /*header*/)
+BOOL PWAVFileFormatG7231::WriteExtraChunks(PWAVFile & file)
 {
-/*
-  // The format chunk then has extra data for G.723.1 files
-  if ((wavHeader.hdr.format == fmt_VivoG7231) || (format == fmt_MSG7231)) {
-    PInt16l hdr_format_data1 = 1;
-    PInt16l hdr_format_data2 = 480;
-    if (!PFile::Write(&hdr_format_data1,2) ||
-        !PFile::Write(&hdr_format_data2,2))
+  // write the fact chunk
+  G7231FACTChunk factChunk;
+  memcpy(factChunk.hdr.tag, "FACT", 4);
+  factChunk.hdr.len = sizeof(factChunk) - sizeof(factChunk.hdr);
+  factChunk.data1 = 0;
+  return file.FileWrite(&factChunk, sizeof(factChunk));
+}
+
+static PINDEX G7231FrameSizes[4] = { 24, 20, 4, 1 };
+
+BOOL PWAVFileFormatG7231::Read(PWAVFile & file, void * origData, PINDEX & origLen)
+{
+  // Note that Microsoft && VivoActive G.2723.1 codec cannot do SID frames, so
+  // we must parse the data and remove SID frames
+  // also note that frames are always written as 24 byte frames, so each frame must be unpadded
+  BYTE frameBuffer[24];
+
+  PINDEX readLen = 0;
+
+  while (readLen+24 <= origLen) {
+    if (!file.FileRead(frameBuffer, 24))
       return FALSE;
 
-    // Write the FACT chunk. (only for G.723.1 files)
-    PInt32l hdr_fact_len  = 4; // length is 4, exclude label_fact and fact_len
-    PInt32l hdr_fact_data = 0; // fact chunk data. Should be number of samples.
-    if (!PFile::Write(WAV_LABEL_FACT,4) ||
-        !PFile::Write(&hdr_fact_len,4) ||
-        !PFile::Write(&hdr_fact_data,4))
-      return FALSE;
+    // calculate actual length of frame
+    PINDEX frameLen = G7231FrameSizes[frameBuffer[0] & 3];
+
+    // we can copy 24 byte frames direct to the data
+    // 20 byte frames need to be reblocked
+    // we ignore any other frames
+    if (frameLen == 20 || frameLen == 24) {
+      memcpy(origData, frameBuffer, frameLen);
+      origData = (char *)origData + frameLen;
+      readLen  += frameLen;
+    }
   }
-*/
+
+  origLen = readLen;
+
   return TRUE;
 }
 
+BOOL PWAVFileFormatG7231::Write(PWAVFile & file, const void * origData, PINDEX & len)
+{
+  // Note that Microsoft && VivoActive G.2723.1 codec cannot do SID frames, so
+  // we must parse the data and remove SID frames
+  // also note that frames are always written as 24 byte frames, so each frame must be padded
+  PINDEX written = 0;
+
+  BYTE frameBuffer[24];
+  while (len > 0) {
+
+    // calculate actual length of frame
+    PINDEX frameLen = G7231FrameSizes[(*(char *)origData) & 3];
+    if (len < frameLen)
+      return FALSE;
+
+    // we can write 24 byte frame straight out, 
+    // 20 byte frames need to be reblocked
+    // we ignore any other frames
+
+    const void * buf = NULL;
+    switch (frameLen) {
+      case 24:
+        buf = origData;
+        break;
+      case 20:
+        memcpy(frameBuffer, origData, 20);
+        buf = frameBuffer;
+        break;
+      default:
+        break;
+    }
+
+    if (buf != NULL && !file.FileWrite(buf, 24))
+      return FALSE;
+    else
+      written += 24;
+
+    origData = (char *)origData + frameLen;
+    len -= frameLen;
+  }
+
+  len = written;
+
+  return TRUE;
+}
 
 class PWAVFileFormatG7231_vivo : public PWAVFileFormatG7231
 {
   public:
     PWAVFileFormatG7231_vivo()
       : PWAVFileFormatG7231(PWAVFile::fmt_VivoG7231) { }
+    unsigned GetFormat() const
+    { return PWAVFile::fmt_VivoG7231; }
     PString GetDescription() const
-    { return GetFormat() & "Vivo"; }
+    { return GetFormatString() & "Vivo"; }
 };
 
 PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_vivo> g7231VivoWAVFormat(PWAVFile::fmt_VivoG7231);
@@ -878,8 +1026,10 @@ class PWAVFileFormatG7231_ms : public PWAVFileFormatG7231
   public:
     PWAVFileFormatG7231_ms()
       : PWAVFileFormatG7231(PWAVFile::fmt_MSG7231) { }
+    unsigned GetFormat() const
+    { return PWAVFile::fmt_MSG7231; }
     PString GetDescription() const
-    { return GetFormat() & "MS"; }
+    { return GetFormatString() & "MS"; }
 };
 
 PWAVFileFormatByIDFactory::Worker<PWAVFileFormatG7231_ms> g7231MSWAVFormat(PWAVFile::fmt_MSG7231);
@@ -927,18 +1077,18 @@ off_t PWAVFileConverterPCM::GetDataLength(PWAVFile & file)
 
 BOOL PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 {
-  if (file.wavHeader.bitsPerSample == 16)
-    return file.RawRead(buf, len);
+  if (file.wavFmtChunk.bitsPerSample == 16)
+    return file.PWAVFile::RawRead(buf, len);
 
-  if (file.wavHeader.bitsPerSample != 8) {
-    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << file.wavHeader.bitsPerSample);
+  if (file.wavFmtChunk.bitsPerSample != 8) {
+    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << file.wavFmtChunk.bitsPerSample);
     return FALSE;
   }
 
   // read the PCM data with 8 bits per sample
   PINDEX samples = (len / 2);
   PBYTEArray pcm8;
-  if (!file.PFile::Read(pcm8.GetPointer(samples), samples))
+  if (!file.PWAVFile::RawRead(pcm8.GetPointer(samples), samples))
     return FALSE;
 
   // convert to PCM-16
@@ -956,10 +1106,10 @@ BOOL PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
 
 BOOL PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX len)
 {
-  if (file.wavHeader.bitsPerSample == 16)
-    return file.RawWrite(buf, len);
+  if (file.wavFmtChunk.bitsPerSample == 16)
+    return file.PWAVFile::RawWrite(buf, len);
 
-  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << file.wavHeader.bitsPerSample);
+  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << file.wavFmtChunk.bitsPerSample);
   return FALSE;
 }
 
