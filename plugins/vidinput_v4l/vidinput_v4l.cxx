@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vidinput_v4l.cxx,v $
+ * Revision 1.4  2003/12/07 21:03:32  dominance
+ * bttv of 2.4.23 doesn't seem to need anymore the hinting workaround.
+ *
  * Revision 1.3  2003/11/25 22:55:13  dsandras
  * Added fallback using major and minor numbers for detection of devices when /proc/video doesn't exist (some 2.4 kernels and all 2.6 kernels).
  *
@@ -218,11 +221,11 @@ static struct {
 
      The current bttv driver doesn't fail CSPICT calls with unsupported
      palettes.  It also doesn't return a useful value from CGPICT calls
-     to readback the palette. Not needed anymore from 2.6.0
+     to readback the palette. Not needed anymore from 2.4.23
    */
     { "^BT8(4|7)(8|9)",
       "Brooktree BT848 and BT878 based capture boards",
-      "2.6.0",
+      "2.4.23",
       HINT_CSWIN_ZERO_FLAGS |
       HINT_CSPICT_ALWAYS_WORKS |
       HINT_CGPICT_DOESNT_SET_PALETTE |
