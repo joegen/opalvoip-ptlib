@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.181  2004/02/09 06:24:37  csoutheren
+# Allowed CXX environment variable to define C++ compiler to use
+# as required by configure
+#
 # Revision 1.180  2004/01/29 13:43:59  csoutheren
 # Moved some preprocessor symbols from the command line to include files
 # Modified to set P_HAS_SEMAPHORES to 0 for Linux kernels >= 2.6
@@ -817,7 +821,11 @@ CC := gcc
 endif
 
 ifndef CPLUS
+ifndef CXX
 CPLUS := g++
+else
+CPLUS := $(CXX)
+endif
 endif
 
 ifndef INSTALL
