@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.23  2001/12/06 22:14:45  dereks
+ * Improve YUV 422 resize routine so it now subsamples as required.
+ *
  * Revision 1.22  2001/12/03 02:21:50  dereks
  * Add YUV420P to RGB24F, RGB32F converters.
  *
@@ -197,19 +200,19 @@ PColourConverter * PColourConverter::Create(const PString & srcColourFormat,
                                             unsigned height)
 {
   PString converterName = srcColourFormat + '\t' + destColourFormat;
-  PTRACE(3,"PColourConverter\t Create Require "<<converterName);
+  PTRACE(3,"PColourConverter\t Create(). Require "<<converterName);
 
   PColourConverterRegistration * find = RegisteredColourConvertersListHead;
   while (find != NULL) {
-    PTRACE(3,"PColourConverter\tCreate test for "<< *find);
+    PTRACE(3,"PColourConverter\tCreate(). Test for "<< *find);
     if (*find == converterName) {
-      PTRACE(3,"PColourConverter\t converter exists for "<<*find);
+      PTRACE(3,"PColourConverter\t Create(). Converter exists for "<<*find);
       return find->Create(width, height);
     }
     find = find->link;
   }
 
-  PTRACE(3,"PColourConverter::\t Create Error. Did not find "<<converterName);
+  PTRACE(3,"PColourConverter::\t Create(). Error. Did not find "<<converterName);
   return NULL;
 }
 
@@ -493,26 +496,26 @@ PSTANDARD_COLOUR_CONVERTER(RGB32F,YUV420P)
 //
 // A plane of V values    1 . 2 . 3 . 4 .
 //                        5 . 6 . 7 . 8 .
+// 
+// YUV422 is stored as Y U Y V 
+//   thus, a 4x4 image requires 32 bytes of storage.
 //
-// Simple crop/pad version.  
-// Image cropped / padded with black borders as required.
-//
+// Image has two possible transformations.
+//        padded                 (src smaller than dst)      
+//        subsampled and padded  (src bigger than dst)  
+
 void PStandardColourConverter::ResizeYUV422(const BYTE * src, BYTE * dest) const
 {
-  if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
-    //     destination is bigger than source. ADD border.
-    unsigned maxIndex = 2*dstFrameWidth*dstFrameHeight;
-    for (unsigned i = 0; i < maxIndex; i+=2) {
-      dest[i]  = BLACK_Y;
-      dest[i+1]= BLACK_U;
-    }
+  unsigned int *result = (unsigned int *)dest;
+  unsigned int black   = (BLACK_U<<24) + (BLACK_Y<<16) + (BLACK_U<<8) + BLACK_Y;
+  unsigned maxIndex    = dstFrameWidth*dstFrameHeight/2;
 
-    if (dstFrameHeight < srcFrameHeight || dstFrameWidth < srcFrameWidth) {
-      PTRACE(1,"YUV422 to YUV422. Err. dest src size mismatch");
-      memset(dest, 64, (dstFrameWidth*dstFrameHeight*2));
-      return;
-    }
-    
+  for (unsigned i = 0; i < maxIndex; i++) 
+    *result++ = black;
+
+  if ( (dstFrameWidth*dstFrameHeight) > (srcFrameWidth*srcFrameHeight) ) { 
+    //dest is bigger than the source. No subsampling.
+    //Place the src in the middle of the destination.
     unsigned yOffset = dstFrameHeight - srcFrameHeight;
     unsigned xOffset = dstFrameWidth - srcFrameWidth;
 
@@ -525,24 +528,26 @@ void PStandardColourConverter::ResizeYUV422(const BYTE * src, BYTE * dest) const
       s_ptr += 2*srcFrameWidth;
     }
   } else {  
-    // source is bigger than the destination. Remove the
-    // appropriate border from the source.
-    if (srcFrameHeight < dstFrameHeight || srcFrameWidth < dstFrameWidth) {
-      PTRACE(1,"YUV422 to YUV422. Err. srce dest size mismatch");
-      memset(dest,64,(dstFrameWidth*dstFrameHeight*2));
-      return;
-    }
+    // source is bigger than the destination.
+    //
+    unsigned subSample  = 1 + (srcFrameHeight/dstFrameHeight) ;
+    unsigned yOffset    = dstFrameHeight - (srcFrameHeight/subSample);
+    unsigned xOffset    = dstFrameWidth - (srcFrameWidth/subSample);
+    unsigned subSample2 = subSample*2;
 
-    unsigned yOffset = srcFrameHeight - dstFrameHeight;
-    unsigned xOffset = srcFrameWidth - dstFrameWidth;
+    unsigned int *s_ptr = (unsigned int * )src;
+    unsigned int *d_ptr = (unsigned int *) dest + ((yOffset * dstFrameWidth) + xOffset)/4 ;
+    unsigned int *sl_ptr, *dl_ptr;
 
-    BYTE *s_ptr,*d_ptr;
-    d_ptr = dest;
-    s_ptr = (yOffset * srcFrameWidth) + xOffset + (BYTE *)src;
-    for (unsigned y = 0; y < dstFrameHeight; y++) {
-      memcpy(d_ptr,s_ptr, dstFrameWidth*2);
-      d_ptr += dstFrameWidth*2;
-      s_ptr += srcFrameWidth*2;
+    for (unsigned y = 0; y < srcFrameHeight; y+= subSample) {
+      sl_ptr = s_ptr;
+      dl_ptr = d_ptr;
+      for (unsigned x = 0; x < srcFrameWidth; x+= subSample2) {
+	*dl_ptr++ = *sl_ptr;
+	sl_ptr += subSample;
+      }	
+      d_ptr += dstFrameWidth/2;
+      s_ptr += srcFrameWidth*subSample/2;
     }
   }
 }
