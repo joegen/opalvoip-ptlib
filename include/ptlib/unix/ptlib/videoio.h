@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.5  2001/01/05 10:50:04  rogerh
+ * More BSD Unix support for PVideoInputDevice
+ *
  * Revision 1.4  2001/01/03 10:34:18  rogerh
  * Put Linux specific parts in P_LINUX sections and start adding some FreeBSD
  * and OpenBSD code.
@@ -80,9 +83,22 @@
     struct video_mmap frameBuffer[2];
 #endif
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+    struct video_capability
+    {
+        int channels;   /* Num channels */
+        int maxwidth;   /* Supported width */
+        int maxheight;  /* And height */
+        int minwidth;   /* Supported width */
+        int minheight;  /* And height */
+    };
+
     int    videoFd;
+    struct video_capability videoCapability;
+    int    canMap;  // -1 = don't know, 0 = no, 1 = yes
     BYTE * videoBuffer;
+    PINDEX videoFrameSize;
+    int    mmap_size;
 #endif
 };
 
