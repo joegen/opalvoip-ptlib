@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.8  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.7  2001/12/03 03:44:52  dereks
  * Add method to retrive pointer to the attached video display class.
  *
@@ -355,7 +358,15 @@ void PVideoChannel::EnableAccess()
   accessMutex.Signal();
 }
 
+BOOL PVideoChannel::ToggleVFlipInput() 
+{
+  PWaitAndSignal m(accessMutex);
 
+  if ( mpInput == NULL ) 
+    return FALSE;
+
+  return mpInput->ToggleVFlipState();
+}
 ///////////////////////////////////////////////////////////////////////////
 // End of file
 

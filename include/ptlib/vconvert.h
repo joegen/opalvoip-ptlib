@@ -26,6 +26,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.11  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.10  2001/11/28 04:41:28  robertj
  * Added synonym colour class for equivalent colour format strings.
  * Allowed for setting ancestor classes in PCOLOUR_CONVERTER() macro.
@@ -118,6 +121,21 @@ class PColourConverter : public PObject
       unsigned width,   /// Width of frame
       unsigned height   /// Height of frame
     );
+
+    /**Get the video conversion vertical flip state
+     */
+    BOOL GetVFlipState() 
+      { return doVFlip; }
+    
+    /**Set the video conversion vertical flip state
+     */
+    void SetVFlipState(BOOL vFlipState) 
+      { doVFlip = vFlipState; }
+    
+    /**Toggle the video conversion vertical flip state
+     */
+    void ToggleVFlipState() 
+      {doVFlip = !doVFlip; }
 
     /**Set the frame size to be used.
 
@@ -250,6 +268,8 @@ class PColourConverter : public PObject
     unsigned dstFrameWidth;
     unsigned dstFrameHeight;
     BOOL     scaleNotCrop;
+     
+    BOOL     doVFlip;
 
     PBYTEArray intermediateFrameStore;
 

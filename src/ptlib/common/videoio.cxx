@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.23  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.22  2001/12/10 22:23:43  dereks
  * Enable resize of CIF source image into QCIF size.
  *
@@ -529,5 +532,29 @@ BOOL PVideoInputDevice::GetFrame(PBYTEArray & frame)
   return TRUE;
 }
 
+
+BOOL PVideoInputDevice::GetVFlipState() 
+{
+  if ( converter == NULL )
+    return FALSE;
+
+  return converter->GetVFlipState();
+} 
+
+BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip) 
+{
+  if ( converter == NULL )
+    return FALSE;
+  converter->SetVFlipState(newVFlip);
+  return TRUE;
+} 
+
+BOOL PVideoInputDevice::ToggleVFlipState() 
+{
+  if ( converter == NULL )
+    return FALSE;
+  converter->ToggleVFlipState();
+  return TRUE;
+} 
 
 // End Of File ///////////////////////////////////////////////////////////////
