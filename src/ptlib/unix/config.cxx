@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.23  2000/08/16 04:21:27  robertj
+ * Fixed subtle difference between UNix and Win32 section names (ignore trailing backslash)
+ *
  * Revision 1.22  2000/05/25 12:10:06  robertj
  * Added PConfig::HasKey() function to determine if value actually set.
  *
@@ -122,6 +125,8 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
 
     BOOL      AddInstance();
     BOOL      RemoveInstance(const PFilePath & filename);
+
+    PINDEX    GetSectionsIndex(const PString & theSection) const;
 
   protected:
     int       instanceCount;
@@ -367,6 +372,15 @@ void PXConfig::ReadFromEnvironment (char **envp)
   saveOnExit = FALSE;
 }
 
+PINDEX PXConfig::GetSectionsIndex(const PString & theSection) const
+{
+  PINDEX len = theSection.GetLength()-1;
+  if (theSection[len] != '\\')
+    return GetValuesIndex(theSection);
+  else
+    return GetValuesIndex(theSection.Left(len));
+}
+
 
 static BOOL LocateFile(const PString & baseName,
                        PFilePath & readFilename,
@@ -572,7 +586,7 @@ PStringList PConfig::GetKeys(const PString & theSection) const
   PINDEX index;
   PStringList list;
 
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();
     for (PINDEX i = 0; i < section.GetSize(); i++)
       list.AppendString(section[i]);
@@ -602,7 +616,7 @@ void PConfig::DeleteSection(const PString & theSection)
   PStringList list;
 
   PINDEX index;
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     config->RemoveAt(index);
     config->SetDirty();
   }
@@ -625,7 +639,7 @@ void PConfig::DeleteKey(const PString & theSection, const PString & theKey)
   config->Wait();
 
   PINDEX index;
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();
     PINDEX index_2;
     if ((index_2 = section.GetValuesIndex(theKey)) != P_MAX_INDEX) {
@@ -654,7 +668,7 @@ BOOL PConfig::HasKey(const PString & theSection, const PString & theKey) const
 
   BOOL present = FALSE;
   PINDEX index;
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
     PXConfigSectionList & section = (*config)[index].GetList();
     present = section.GetValuesIndex(theKey) != P_MAX_INDEX;
   }
@@ -681,7 +695,7 @@ PString PConfig::GetString(const PString & theSection,
 
   PString value = dflt;
   PINDEX index;
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) {
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) {
 
     PXConfigSectionList & section = (*config)[index].GetList();
     if ((index = section.GetValuesIndex(theKey)) != P_MAX_INDEX) 
@@ -712,7 +726,7 @@ void PConfig::SetString(const PString & theSection,
   PXConfigSection * section;
   PXConfigValue   * value;
 
-  if ((index = config->GetValuesIndex(theSection)) != P_MAX_INDEX) 
+  if ((index = config->GetSectionsIndex(theSection)) != P_MAX_INDEX) 
     section = &(*config)[index];
   else {
     section = new PXConfigSection(theSection);
