@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.174  2003/06/18 13:19:01  csoutheren
+# Default debug builds now shared
+#
 # Revision 1.173  2003/06/17 12:05:01  csoutheren
 # Changed compiler flags for optimised build
 #
@@ -276,11 +279,9 @@ endif
 # Set default for shared library usage
 
 ifndef P_SHAREDLIB
-ifndef DEBUG
 P_SHAREDLIB=1
 else
 P_SHAREDLIB=0
-endif
 endif
 
 # -Wall must be at the start of the options otherwise
