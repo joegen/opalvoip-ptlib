@@ -1422,6 +1422,7 @@ EXPORTS
     ?GetDefaultDevice@PSoundChannel@@SA?AVPString@@W4Directions@1@@Z @2152 NONAME ;public: static class PString  __cdecl PSoundChannel::GetDefaultDevice(enum PSoundChannel::Directions)
     ?GetDefaultDevice@PVideoChannel@@SA?AVPString@@W4Directions@1@@Z @2519 NONAME ;public: static class PString  __cdecl PVideoChannel::GetDefaultDevice(enum PVideoChannel::Directions)
     ?GetDefaultSection@PConfig@@QBE?AVPString@@XZ @2415 NONAME ;public: class PString  __thiscall PConfig::GetDefaultSection(void)const 
+    ?GetDeviceID@PSoundChannel@@AAEHABVPString@@W4Directions@1@AAI@Z @3038 NONAME ;private: int __thiscall PSoundChannel::GetDeviceID(class PString const &,enum PSoundChannel::Directions,unsigned int &)
     ?GetDeviceNames@PFakeVideoInputDevice@@UBE?AVPStringList@@XZ @2554 NONAME ;public: virtual class PStringList  __thiscall PFakeVideoInputDevice::GetDeviceNames(void)const 
     ?GetDeviceNames@PSoundChannel@@SA?AVPStringArray@@W4Directions@1@@Z @2053 NONAME ;public: static class PStringArray  __cdecl PSoundChannel::GetDeviceNames(enum PSoundChannel::Directions)
     ?GetDeviceNames@PVideoChannel@@SA?AVPStringList@@W4Directions@1@@Z @2520 NONAME ;public: static class PStringList  __cdecl PVideoChannel::GetDeviceNames(enum PVideoChannel::Directions)
@@ -2033,6 +2034,7 @@ EXPORTS
     ?Open@PRemoteConnection@@QAEHH@Z @1466 NONAME ;public: int __thiscall PRemoteConnection::Open(int)
     ?Open@PSerialChannel@@UAEHAAVPConfig@@@Z @1970 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PConfig &)
     ?Open@PSerialChannel@@UAEHABVPString@@KEW4Parity@1@EW4FlowControl@1@2@Z @1467 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PString const &,unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
+    ?Open@PSoundChannel@@QAEHABVPString@@W4Directions@1@ABVPWaveFormat@@@Z @3039 NONAME ;public: int __thiscall PSoundChannel::Open(class PString const &,enum PSoundChannel::Directions,class PWaveFormat const &)
     ?Open@PSoundChannel@@QAEHABVPString@@W4Directions@1@III@Z @2063 NONAME ;public: int __thiscall PSoundChannel::Open(class PString const &,enum PSoundChannel::Directions,unsigned int,unsigned int,unsigned int)
     ?Open@PVideoChannel@@QAEHABVPString@@W4Directions@1@@Z @2537 NONAME ;public: int __thiscall PVideoChannel::Open(class PString const &,enum PVideoChannel::Directions)
     ?Open@PVideoInputDevice@@UAEHABVPString@@H@Z @2459 NONAME ;public: virtual int __thiscall PVideoInputDevice::Open(class PString const &,int)
