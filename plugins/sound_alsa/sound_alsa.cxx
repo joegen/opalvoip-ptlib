@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.15  2004/03/04 13:36:13  dsandras
+ * Added check so that ALSA doesn't assert on broken installations.
+ *
  * Revision 1.14  2004/02/12 09:07:57  csoutheren
  * Fixed typo in ALSA driver, thanks to Julien Puydt
  *
@@ -150,38 +153,39 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
 
     snprintf (card_id, 32, "hw:%d", card);
     
-    snd_ctl_open (&handle, card_id, 0);
-    snd_ctl_card_info (handle, info);
+    if (snd_ctl_open (&handle, card_id, 0) == 0) {
 
-    while (1) {
+      snd_ctl_card_info (handle, info);
 
-      snd_ctl_pcm_next_device (handle, &dev);
+      while (1) {
 
-      if (dev < 0)
-        break;
+        snd_ctl_pcm_next_device (handle, &dev);
 
-      snd_pcm_info_set_device (pcminfo, dev);
-      snd_pcm_info_set_subdevice (pcminfo, 0);
-      snd_pcm_info_set_stream (pcminfo, stream);
+        if (dev < 0)
+          break;
 
-      if (snd_ctl_pcm_info (handle, pcminfo) >= 0) {
-    
-	snd_card_get_name (card, &name);
-	if (dir == Recorder) {
+        snd_pcm_info_set_device (pcminfo, dev);
+        snd_pcm_info_set_subdevice (pcminfo, 0);
+        snd_pcm_info_set_stream (pcminfo, stream);
 
-	  if (capture_devices.GetStringsIndex (name) == P_MAX_INDEX)
-	    capture_devices.AppendString (name);
-	}
-	else {
+        if (snd_ctl_pcm_info (handle, pcminfo) >= 0) {
 
-	  if (playback_devices.GetStringsIndex (name) == P_MAX_INDEX)
-	    playback_devices.AppendString (name);
-	}
-	    
-	free (name);
+          snd_card_get_name (card, &name);
+          if (dir == Recorder) {
+
+            if (capture_devices.GetStringsIndex (name) == P_MAX_INDEX)
+              capture_devices.AppendString (name);
+          }
+          else {
+
+            if (playback_devices.GetStringsIndex (name) == P_MAX_INDEX)
+              playback_devices.AppendString (name);
+          }
+
+          free (name);
+        }
       }
     }
-
 
     snd_ctl_close(handle);
     snd_card_next (&card);
