@@ -89,69 +89,68 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
 //
 // a dictionary of configurations, keyed by filename
 //
-PDECLARE_DICTIONARY(ConfigDictionary, PFilePath, PXConfig)
+PDECLARE_DICTIONARY(PXConfigDictionary, PFilePath, PXConfig)
   public:
-    ConfigDictionary(int i = 0);
+    PXConfigDictionary(int dummy);
+    ~PXConfigDictionary();
     PXConfig * GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey);
     PXConfig * GetEnvironmentInstance();
     void RemoveInstance(PXConfig * instance);
     void WriteChangedInstances(BOOL force);
 
   protected:
-    PMutex     mutex;
-    PXConfig * environmentInstance;
+    PMutex        mutex;
+    PXConfig    * environmentInstance;
+    PThread     * writeThread;
+    PSyncPointAck stopConfigWriteThread;
 };
 
 
-PDECLARE_CLASS(ConfigWriteThread, PThread)
+PDECLARE_CLASS(PXConfigWriteThread, PThread)
   public:
-    ConfigWriteThread();
-    ~ConfigWriteThread();
+    PXConfigWriteThread(PSyncPointAck & stop);
+    ~PXConfigWriteThread();
     void Main();
+  private:
+    PSyncPointAck & stop;
 };
 
-static ConfigDictionary    configDict(0);
-static ConfigWriteThread * writeThread = NULL;
-static PSyncPoint          writeStopMutex;
-static PSyncPoint          writeWaitMutex;
-static BOOL                writeStopped = FALSE;
 
-void PXStopConfigWriteThread()
-{
-  if (writeThread != NULL) {
-    writeStopMutex.Signal();
-    writeWaitMutex.Wait();
-  }
-}
-
-ConfigWriteThread::ConfigWriteThread()
-  : PThread(10000, AutoDeleteThread, StartImmediate)
-{
-}
-
-void ConfigWriteThread::Main()
-{
-  while (1) {
-    // if this returns TRUE, we are shutting down
-    if (writeStopMutex.Wait(PTimeInterval(30000))) {
-      configDict.WriteChangedInstances(TRUE);
-      writeStopped = TRUE;
-      return;
-    }
-
-    // check dictionary for items that need writing
-    configDict.WriteChangedInstances(FALSE);
-  }
-}
-
-ConfigWriteThread::~ConfigWriteThread()
-{
-  writeWaitMutex.Signal();
-}
+PXConfigDictionary * configDict;
+static BOOL writeStopped;
 
 #define	new PNEW
 
 //////////////////////////////////////////////////////
+
+void PProcess::CreateConfigFilesDictionary()
+{
+  configFiles = new PXConfigDictionary(0);
+}
+
+
+PXConfigWriteThread::PXConfigWriteThread(PSyncPointAck & s)
+  : PThread(10000, AutoDeleteThread),
+    stop(s)
+{
+  Resume();
+}
+
+PXConfigWriteThread::~PXConfigWriteThread()
+{
+  stop.Acknowledge();
+}
+
+void PXConfigWriteThread::Main()
+{
+  while (!stop.Wait(30000))  // if stop.Wait() returns TRUE, we are shutting down
+    configDict->WriteChangedInstances(FALSE);   // check dictionary for items that need writing
+
+  configDict->WriteChangedInstances(TRUE);
+  writeStopped = TRUE;
+}
+
+
 
 PXConfig::PXConfig(int)
 {
@@ -343,15 +342,24 @@ static BOOL LocateFile(const PString & baseName,
 
 ////////////////////////////////////////////////////////////
 //
-// ConfigDictionary
+// PXConfigDictionary
 //
 
-ConfigDictionary::ConfigDictionary(int)
+PXConfigDictionary::PXConfigDictionary(int)
 {
   environmentInstance = NULL;
+  writeThread = NULL;
+  configDict = this;
 }
 
-PXConfig * ConfigDictionary::GetEnvironmentInstance()
+
+PXConfigDictionary::~PXConfigDictionary()
+{
+  stopConfigWriteThread.Signal();
+}
+
+
+PXConfig * PXConfigDictionary::GetEnvironmentInstance()
 {
   mutex.Wait();
   if (environmentInstance == NULL) {
@@ -363,7 +371,7 @@ PXConfig * ConfigDictionary::GetEnvironmentInstance()
 }
 
 
-PXConfig * ConfigDictionary::GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey)
+PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey)
 {
   mutex.Wait();
 
@@ -381,15 +389,14 @@ PXConfig * ConfigDictionary::GetFileConfigInstance(const PFilePath & key, const 
   }
 
   // start write thread, if not already started
-  if (writeThread == NULL) {
-    writeThread = new ConfigWriteThread();
-  }
+  if (writeThread == NULL)
+    writeThread = new PXConfigWriteThread(stopConfigWriteThread);
 
   mutex.Signal();
   return config;
 }
 
-void ConfigDictionary::RemoveInstance(PXConfig * instance)
+void PXConfigDictionary::RemoveInstance(PXConfig * instance)
 {
   mutex.Wait();
 
@@ -405,7 +412,7 @@ void ConfigDictionary::RemoveInstance(PXConfig * instance)
   mutex.Signal();
 }
 
-void ConfigDictionary::WriteChangedInstances(BOOL force)
+void PXConfigDictionary::WriteChangedInstances(BOOL force)
 {
   mutex.Wait();
 
@@ -435,7 +442,7 @@ void PConfig::Construct(Source src,
 
   // handle cnvironment configs differently
   if (src == PConfig::Environment) 
-    config = configDict.GetEnvironmentInstance();
+    config = configDict->GetEnvironmentInstance();
 
   // look up file name to read, and write
   if (src == PConfig::System)
@@ -452,7 +459,7 @@ void PConfig::Construct(Source src,
   }
 
   // get, or create, the configuration
-  config = configDict.GetFileConfigInstance(filename, readFilename);
+  config = configDict->GetFileConfigInstance(filename, readFilename);
 }
 
 PConfig::PConfig(int, const PString & name)
@@ -460,20 +467,20 @@ PConfig::PConfig(int, const PString & name)
 {
   PFilePath readFilename, filename;
   LocateFile(name, readFilename, filename);
-  config = configDict.GetFileConfigInstance(filename, readFilename);
+  config = configDict->GetFileConfigInstance(filename, readFilename);
 }
 
 void PConfig::Construct(const PFilePath & theFilename)
 
 {
   PFilePath filename;
-  config = configDict.GetFileConfigInstance(filename, theFilename);
+  config = configDict->GetFileConfigInstance(filename, theFilename);
 }
 
 PConfig::~PConfig()
 
 {
-  configDict.RemoveInstance(config);
+  configDict->RemoveInstance(config);
 }
 
 ////////////////////////////////////////////////////////////
@@ -654,6 +661,7 @@ void PConfig::SetString(const PString & theSection,
 
   config->Signal();
 }
+
 
 #undef NEW
 
