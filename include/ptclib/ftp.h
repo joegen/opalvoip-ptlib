@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.4 1996/03/31 08:45:57 robertj Exp $
+ * $Id: ftp.h,v 1.5 1996/05/23 09:56:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.5  1996/05/23 09:56:24  robertj
+ * Changed FTP so can do passive/active mode on all data transfers.
+ *
  * Revision 1.4  1996/03/31 08:45:57  robertj
  * Added QUIT command sent on FTP socket close.
  *
@@ -133,16 +136,22 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
        String for the directory path, or empty string if an error occurred.
      */
 
+    enum DataChannelType {
+      NormalPort,
+      Passive
+    };
     enum NameTypes {
       ShortNames,
       DetailedNames
     };
     PStringArray GetDirectoryNames(
-      NameTypes type = ShortNames    // Detail level on a directory entry.
+      NameTypes type = ShortNames,        // Detail level on a directory entry.
+      DataChannelType channel = Passive   // Data channel type.
     );
     PStringArray GetDirectoryNames(
-      const PString & path,          // Name to get details for.
-      NameTypes type = ShortNames    // Detail level on a directory entry.
+      const PString & path,               // Name to get details for.
+      NameTypes type = ShortNames,        // Detail level on a directory entry.
+      DataChannelType channel = Passive   // Data channel type.
     );
     /* Get a list of files from the current working directory on the remote
        FTP host.
@@ -152,7 +161,8 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
      */
 
     PString GetFileStatus(
-      const PString & path   // Path to get status for.
+      const PString & path,                // Path to get status for.
+      DataChannelType channel = Passive    // Data channel type.
     );
     /* Get status information for the file path specified.
 
@@ -160,12 +170,8 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
        String giving file status.
      */
 
-    enum DataChannelType {
-      NormalPort,
-      Passive
-    };
     PTCPSocket * GetFile(
-      const PString & filename,   // Name of file to get
+      const PString & filename,            // Name of file to get
       DataChannelType channel = NormalPort // Data channel type.
     );
     /* Begin retreiving a file from the remote FTP server. The second
@@ -339,12 +345,6 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
     BOOL SendPORT(
       const PIPSocket::Address & addr,  // Address for PORT connection.
       WORD port                         // Port number for PORT connection.
-    );
-    BOOL SendPORT(
-      const PIPSocket::Address & addr,  // Address for PORT connection.
-      WORD port,                        // Port number for PORT connection.
-      int & code,                       // Return code for PORT command.
-      PString & info                    // Return info for PORT command.
     );
     // Send the PORT command for a transfer.
 
