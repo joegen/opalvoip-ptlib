@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.12  2001/06/30 06:59:06  yurik
+# Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+#
 # Revision 1.11  2001/03/23 03:18:01  robertj
 # Fixed addition of trailing dot at end of release versions of so libraries
 #   caused to removal of the "pl" build type, changing it to a dot.
@@ -56,6 +59,17 @@ ifndef BUILD_NUMBER
 BUILD_NUMBER	:= 0
 endif
 
+ifeq ($(OSTYPE),beos)
+# BeOS requires different options when building shared libraries
+# Also, when building a shared library x that references symbols in libraries y,
+# the y libraries need to be added to the linker command
+LDSOOPTS = -nostdlib -nostart
+EXTLIBS = $(SYSLIBS) -lstdc++.r4
+else
+LDSOOPTS = -shared
+EXTLIBS =
+endif
+
 LIBNAME_MAJ		= $(LIB_BASENAME).$(MAJOR_VERSION)
 LIBNAME_MIN		= $(LIBNAME_MAJ).$(MINOR_VERSION)
 LIBNAME_PAT		= $(LIBNAME_MIN).$(BUILD_NUMBER)$(BUILD_TYPE)
@@ -68,6 +82,7 @@ $(LIBDIR)/$(LIB_BASENAME): $(LIBDIR)/$(LIBNAME_PAT)
 $(LIBDIR)/$(LIBNAME_PAT): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
 	gcc -shared -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(OBJS)
+	gcc $(LDSOOPTS) -Wl,-soname,$(LIB_BASENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 CLEAN_FILES += $(LIBDIR)/$(LIBNAME_PAT) $(LIBDIR)/$(LIB_BASENAME) $(LIBDIR)/$(LIBNAME_MAJ) $(LIBDIR)/$(LIBNAME_MIN)
 
