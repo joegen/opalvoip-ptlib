@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.28 1996/11/10 21:04:56 robertj Exp $
+ * $Id: winsock.cxx,v 1.29 1996/12/05 11:51:50 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.29  1996/12/05 11:51:50  craigs
+ * Fixed Win95 recvfrom timeout problem
+ *
  * Revision 1.28  1996/11/10 21:04:56  robertj
  * Fixed bug in not flushing stream on close of socket.
  *
@@ -162,46 +165,7 @@ BOOL PSocket::Read(void * buf, PINDEX len)
     return FALSE;
   }
 
-  if (readTimeout != PMaxTimeInterval) {
-    DWORD available;
-    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
-      return FALSE;
-
-    if (available == 0) {
-      fd_set readfds;
-#ifdef _MSC_VER
-#pragma warning(disable:4127)
-#endif
-      FD_ZERO(&readfds);
-      FD_SET(os_handle, &readfds);
-#ifdef _MSC_VER
-#pragma warning(default:4127)
-#endif
-      struct timeval tv;
-      tv.tv_usec = (long)(readTimeout.GetMilliSeconds()%1000)*1000;
-      tv.tv_sec = readTimeout.GetSeconds();
-      int selval = select(0, &readfds, NULL, NULL, &tv);
-      if (!ConvertOSError(selval))
-        return FALSE;
-
-      if (selval == 0) {
-        lastError = Timeout;
-        osError = EAGAIN;
-        return FALSE;
-      }
-
-      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
-        return FALSE;
-    }
-
-    if (available > 0 && len > (PINDEX)available)
-      len = available;
-  }
-
-  int recvResult = ::recv(os_handle, (char *)buf, len, 0);
-  if (ConvertOSError(recvResult))
-    lastReadCount = recvResult;
-
+  os_recvfrom((char *)buf, len, 0, NULL, NULL);
   return lastReadCount > 0;
 }
 
@@ -297,17 +261,48 @@ BOOL PSocket::os_recvfrom(void * buf,
                           struct sockaddr * from,
                           int * fromlen)
 {
-  int timeout;
-  if (readTimeout == PMaxTimeInterval)
-    timeout = 0;
-  else if (readTimeout == 0)
-    timeout = 1;
-  else
-    timeout = readTimeout.GetInterval();
-  if (!SetOption(SO_RCVTIMEO, timeout))
+  if (readTimeout != PMaxTimeInterval) {
+    DWORD available;
+    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+      return FALSE;
+
+    if (available == 0) {
+      fd_set readfds;
+#ifdef _MSC_VER
+#pragma warning(disable:4127)
+#endif
+      FD_ZERO(&readfds);
+      FD_SET(os_handle, &readfds);
+#ifdef _MSC_VER
+#pragma warning(default:4127)
+#endif
+      struct timeval tv;
+      tv.tv_usec = (long)(readTimeout.GetMilliSeconds()%1000)*1000;
+      tv.tv_sec = readTimeout.GetSeconds();
+      int selval = select(0, &readfds, NULL, NULL, &tv);
+      if (!ConvertOSError(selval))
+        return FALSE;
+
+      if (selval == 0) {
+        lastError = Timeout;
+        osError = EAGAIN;
+        return FALSE;
+      }
+
+      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+        return FALSE;
+    }
+
+    if (available > 0 && len > (PINDEX)available)
+      len = available;
+  }
+
+  int recvResult = ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
+  if (!ConvertOSError(recvResult))
     return FALSE;
 
-  return ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
+  lastReadCount = recvResult;
+  return TRUE;
 }
 
 
@@ -562,7 +557,7 @@ PString PIPXSocket::GetHostName(const Address & addr)
 }
 
 
-BOOL PIPXSocket::GetHostAddress(Address & addr)
+BOOL PIPXSocket::GetHostAddress(Address &)
 {
   return FALSE;
 }
@@ -737,12 +732,9 @@ BOOL PIPXSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
 
   sockaddr_ipx sip;
   int addrLen = sizeof(sip);
-  int recvResult = os_recvfrom(buf, len, 0, (struct sockaddr *)&sip, &addrLen);
-  if (ConvertOSError(recvResult)) {
+  if (os_recvfrom(buf, len, 0, (struct sockaddr *)&sip, &addrLen)) {
     AssignAddress(addr, sip);
     port = Net2Host(sip.sa_socket);
-
-    lastReadCount = recvResult;
   }
 
   return lastReadCount > 0;
