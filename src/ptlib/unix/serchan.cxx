@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.30  2005/01/03 02:52:52  csoutheren
+ * Fixed problem with default speed of serial ports
+ * Fixed problem with using obsolete lock directory for serial ports
+ *
  * Revision 1.29  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -135,7 +139,8 @@ extern "C" int ioctl(int, int, void *);
 #endif
 
 //#define BINARY_LOCK	1
-#define	LOCK_PREFIX	"/var/spool/uucp/LCK.."
+//#define	LOCK_PREFIX	"/var/spool/uucp/LCK.."
+#define	LOCK_PREFIX	"/var/lock/LCK.."
 #define	DEV_PREFIX	"/dev/"
 
 #define	PORTLISTENV	"PWLIB_SERIALPORTS"
@@ -382,6 +387,7 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
 #endif
 #ifdef B9600
     case 9600:
+    case 0:          // default
       baud = B9600;
       break;
 #endif
