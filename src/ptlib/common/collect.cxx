@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.69  2004/04/24 07:01:04  rjongbloed
+ * Fixed breaking of all lists with PAssertNULL chane. Oops.
+ *
  * Revision 1.68  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -527,7 +530,7 @@ BOOL PAbstractList::SetSize(PINDEX)
 
 PINDEX PAbstractList::Append(PObject * obj)
 {
-  if (PAssertNULL(obj))
+  if (PAssertNULL(obj) == NULL)
     return P_MAX_INDEX;
 
   Element * element = new Element(obj);
