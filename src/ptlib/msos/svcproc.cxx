@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.27 1997/10/03 15:14:17 robertj Exp $
+ * $Id: svcproc.cxx,v 1.28 1997/10/30 10:17:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.28  1997/10/30 10:17:10  robertj
+ * Fixed bug in detection of running service.
+ *
  * Revision 1.27  1997/10/03 15:14:17  robertj
  * Fixed crash on exit.
  *
@@ -285,16 +288,21 @@ static BOOL IsServiceRunning(DWORD pid)
   if (pid == 0)
     return FALSE;
 
-  HANDLE h = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
-  if (h == NULL)
+  HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+  if (hProcess == NULL)
     return FALSE;
 
   DWORD exitCode;
-  GetExitCodeProcess(h, &exitCode);
-  CloseHandle(h);
+  GetExitCodeProcess(hProcess, &exitCode);
+  CloseHandle(hProcess);
   if (exitCode != STILL_ACTIVE)
     return FALSE;
 
+  HANDLE hEvent = OpenEvent(EVENT_MODIFY_STATE, FALSE, PProcess::Current().GetName());
+  if (hEvent == NULL)
+    return FALSE;
+
+  CloseHandle(hEvent);
   return TRUE;
 }
 
@@ -602,15 +610,9 @@ void PServiceProcess::MainEntry(DWORD argc, LPTSTR * argv)
   if (!ReportStatus(SERVICE_START_PENDING, NO_ERROR, 1, 20000))
     return;
 
-  // create the start event object. The control handler function signals
-  // this event when it conpletes initialisation.
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-  if (terminationEvent == NULL)
-    return;
-
   // create the stop event object. The control handler function signals
   // this event when it receives the "stop" control code.
-  terminationEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  terminationEvent = CreateEvent(NULL, TRUE, FALSE, (const char *)GetName());
   if (terminationEvent == NULL)
     return;
 
