@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.9 1995/01/09 12:28:00 robertj Exp $
+ * $Id: mswin.cxx,v 1.10 1995/03/12 05:00:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
- * Revision 1.9  1995/01/09 12:28:00  robertj
+ * Revision 1.10  1995/03/12 05:00:06  robertj
+ * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
+ * Used built-in equate for WIN32 API (_WIN32).
+ *
+ * Revision 1.9  1995/01/09  12:28:00  robertj
  * Added implementation for PConfig::Environment
  *
  * Revision 1.8  1994/10/23  05:41:29  robertj
@@ -47,6 +51,7 @@
 
 
 extern "C" HINSTANCE _hInstance;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
@@ -809,6 +814,77 @@ void PThread::SwitchContext(PThread * from)
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDynaLink
+
+PDynaLink::PDynaLink()
+{
+  _hDLL = NULL;
+}
+
+
+PDynaLink::PDynaLink(const PString & name)
+{
+  Open(name);
+}
+
+
+PDynaLink::~PDynaLink()
+{
+  Close();
+}
+
+
+BOOL PDynaLink::Open(const PString & name)
+{
+  if ((_hDLL = LoadLibrary(name)) < HINSTANCE_ERROR)
+    _hDLL = NULL;
+  return _hDLL != NULL;
+}
+
+
+void PDynaLink::Close()
+{
+  if (_hDLL != NULL)
+    FreeLibrary(_hDLL);
+}
+
+
+BOOL PDynaLink::IsLoaded() const
+{
+  return _hDLL != NULL;
+}
+
+
+BOOL PDynaLink::GetFunction(PINDEX index, Function & func)
+{
+  if (_hDLL == NULL)
+    return FALSE;
+
+  FARPROC p = GetProcAddress(_hDLL, (LPSTR)(DWORD)LOWORD(index));
+  if (p == NULL)
+    return FALSE;
+
+  func = (Function)p;
+  return TRUE;
+}
+
+
+BOOL PDynaLink::GetFunction(const PString & name, Function & func)
+{
+  if (_hDLL == NULL)
+    return FALSE;
+
+  FARPROC p = GetProcAddress(_hDLL, name);
+  if (p == NULL)
+    return FALSE;
+
+  func = (Function)p;
+  return TRUE;
+}
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
