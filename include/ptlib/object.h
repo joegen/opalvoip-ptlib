@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.56  1999/11/30 00:22:54  robertj
+ * Updated documentation for doc++
+ *
  * Revision 1.55  1999/11/01 00:10:27  robertj
  * Added override of new functions for MSVC memory check code.
  *
@@ -891,6 +894,9 @@ The use of this macro is no longer recommended for reasons of compatibility
 with documentation systems.
 */
 #define PDECLARE_CLASS(cls, par) class cls : public par { PCLASSINFO(cls, par)
+#ifdef DOC_PLUS_PLUS
+} Match previous opening brace in doc++
+#endif
 
 
 class PSerialiser;
