@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.3  1999/05/28 14:04:51  robertj
+ * Added function to get default audio device.
+ *
  * Revision 1.2  1999/02/22 10:15:15  robertj
  * Sound driver interface implementation to Linux OSS specification.
  *
@@ -569,6 +572,22 @@ PStringArray PSoundChannel::GetDeviceNames(Directions dir)
   }
 
   return array;
+}
+
+
+PString PSoundChannel::GetDefaultDevice(Directions dir)
+{
+  RegistryKey registry("HKEY_CURRENT_USER\\Software\\Microsoft\\Multimedia\\Sound Mapper",
+                       RegistryKey::ReadOnly);
+
+  PString str;
+  if (!registry.QueryValue(dir == Player ? "Playback" : "Record", str)) {
+    WAVEOUTCAPS caps;
+    if (waveOutGetDevCaps(0, &caps, sizeof(caps)) == 0)
+      str = caps.szPname;
+  }
+
+  return str;
 }
 
 
