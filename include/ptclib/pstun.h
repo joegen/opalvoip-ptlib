@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.5  2003/10/05 00:56:25  rjongbloed
+ * Rewrite of STUN to not to use imported code with undesirable license.
+ *
  * Revision 1.4  2003/02/05 06:26:49  robertj
  * More work in making the STUN usable for Symmetric NAT systems.
  *
@@ -55,11 +58,7 @@ class PSTUNUDPSocket : public PUDPSocket
 {
   PCLASSINFO(PSTUNUDPSocket, PUDPSocket);
   public:
-    PSTUNUDPSocket(
-      int fd,
-      const PIPSocket::Address & externalIP,
-      WORD externalPort
-    );
+    PSTUNUDPSocket();
 
     virtual BOOL GetLocalAddress(
       Address & addr    /// Variable to receive hosts IP address
@@ -70,8 +69,9 @@ class PSTUNUDPSocket : public PUDPSocket
     );
 
   protected:
-    BOOL OpenSocket();
     PIPSocket::Address externalIP;
+
+  friend class PSTUNClient;
 };
 
 
@@ -147,18 +147,22 @@ class PSTUNClient : public PObject
     );
 
   protected:
+    void Construct();
+
     PIPSocket::Address serverAddress;
     WORD               serverPort;
 
-    WORD basePort;
-    WORD maxPort;
-    WORD basePortPair;
-    WORD maxPortPair;
+    struct PortInfo {
+      PMutex mutex;
+      WORD   basePort;
+      WORD   maxPort;
+      WORD   currentPort;
+    } singlePortInfo, pairedPortInfo;
+    bool OpenSocket(PUDPSocket & socket, PortInfo & portInfo) const;
+
+    int  numSocketsForPairing;
 
     NatTypes natType;
-    WORD     currentPort;
-    WORD     currentPortPair;
-    PMutex   mutex;
 };
 
 
