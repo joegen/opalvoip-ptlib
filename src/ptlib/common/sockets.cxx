@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.136  2002/11/01 03:32:08  robertj
+ * More IPv6 fixes, thanks Sébastien Josset.
+ *
  * Revision 1.135  2002/10/31 07:55:33  robertj
  * Put sizeof ipv6 structure back as magic number 28 is explained by
  *   mismatched header file and running implementation.
@@ -491,6 +494,8 @@ Psockaddr::Psockaddr(const PIPSocket::Address & ip, WORD port)
     addr6->sin6_family = AF_INET6;
     addr6->sin6_addr = ip;
     addr6->sin6_port = htons(port);
+    addr6->sin6_flowinfo = 0;
+    addr6->sin6_scope_id = 0; // Should be set to the right interface....
   }
   else {
     sockaddr_in * addr4 = (sockaddr_in *)&storage;
@@ -507,6 +512,8 @@ socklen_t Psockaddr::GetSize() const
     case AF_INET :
       return sizeof(sockaddr_in);
     case AF_INET6 :
+      // RFC 2133 (Old IPv6 spec) size is 24
+      // RFC 2553 (New IPv6 spec) size is 28
       return sizeof(sockaddr_in6);
     default :
       return sizeof(storage);
@@ -2014,6 +2021,9 @@ PString PIPSocket::Address::AsString() const
     PString str;
     Psockaddr sa(*this, 0);
     PAssertOS(getnameinfo(sa, sa.GetSize(), str.GetPointer(1024), 1024, NULL, 0, NI_NUMERICHOST) == 0);
+    PINDEX percent = str.Find('%'); // used for scoped address e.g. fe80::1%ne0, (ne0=network interface 0)
+    if (percent != P_MAX_INDEX)
+      str[percent] = '\0';
     str.MakeMinimumSize();
     return str;
   }
