@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.24 1996/09/14 13:09:24 robertj Exp $
+ * $Id: socket.h,v 1.25 1998/01/26 00:35:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.25  1998/01/26 00:35:21  robertj
+ * Fixed documentation of PSocket::Select().
+ *
  * Revision 1.24  1996/09/14 13:09:24  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -367,8 +370,9 @@ PDECLARE_CLASS(PSocket, PChannel)
        occurred. If a timeout occurred then the lists returned will be empty.
 
        For the versions taking sockets directly instead of lists the integer
-       returned is -1 for an error, 0 for a timeout, 1 for the first socket
-       having read data, 2 for the second socket and 3 for both.
+       returned is >0 for an error being a value from the PChannel::Errors
+       enum, 0 for a timeout, -1 for the first socket having read data,
+       -2 for the second socket and -3 for both.
      */
 
 
