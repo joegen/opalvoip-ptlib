@@ -48,6 +48,10 @@ void FindIP::Main()
   if (get_ip("http://www.whatismyipaddress.com/",ip)) {
     cout << ip << endl;
   }
+
+  if (get_ip("http://tools.onedown.net/ipaddress",ip)) {
+    cout << ip << endl;
+  }
 }
 
 BOOL FindIP::get_ip(PString server_url, PString &ip_address){
@@ -57,10 +61,9 @@ BOOL FindIP::get_ip(PString server_url, PString &ip_address){
   BOOL result = FALSE;
 
   PHTTPClient web("webserver");
-  PINDEX len;
 
-  if (web.GetDocument(server_url,len)) {
-    PString html = web.ReadString(len);
+  PString html;
+  if (web.GetTextDocument(server_url,html)) {
     if (!html.IsEmpty()) {
       // cout << "The web server returned the data" << endl << html << endl;
       // Now parse the HTML and pull out the IP address. Just look
