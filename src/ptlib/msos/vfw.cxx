@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.21  2003/03/17 07:52:15  robertj
+ * Fixed return value if starting capture and already have it started.
+ *
  * Revision 1.20  2002/10/24 20:01:53  dereks
  * Improve  closure of windows capture device, with fix from Diego Tartara. Thanks!
  *
@@ -344,7 +347,8 @@ BOOL PVideoInputDevice::Close()
 BOOL PVideoInputDevice::Start()
 {
   if (IsCapturing())
-    return FALSE;
+    return TRUE;
+
 #if STEP_GRAB_CAPTURE
   isCapturingNow = TRUE;
   return capGrabFrameNoStop(hCaptureWindow);
