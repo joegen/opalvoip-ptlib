@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.30 1998/06/16 03:33:33 robertj Exp $
+ * $Id: http.h,v 1.31 1998/07/24 06:58:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.31  1998/07/24 06:58:42  robertj
+ * Changed PostData function so just has string for data instead of dictionary.
+ *
  * Revision 1.30  1998/06/16 03:33:33  robertj
  * Changed TCP connection shutdown to be parameterised.
  * Propagated persistence and proxy flags in new connection info instances.
@@ -432,10 +435,10 @@ PDECLARE_CLASS(PHTTPClient, PHTTP)
 
 
     BOOL PostData(
-      const PURL & url,             // Universal Resource Locator for document.
-      PMIMEInfo & outMIME,          // MIME info in request
-      const PStringToString & data, // Information posted to the HTTP server.
-      PMIMEInfo & replyMIME,        // MIME info in response
+      const PURL & url,       // Universal Resource Locator for document.
+      PMIMEInfo & outMIME,    // MIME info in request
+      const PString & data,   // Information posted to the HTTP server.
+      PMIMEInfo & replyMIME,  // MIME info in response
       BOOL persist = TRUE
     );
     /* Post the data specified to the URL.
