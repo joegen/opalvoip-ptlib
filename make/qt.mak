@@ -1,2 +1,2 @@
-GUILIB	= -L$(QTDIR)/lib -lqt
-STDCCFLAGS := $(STDCCFLAGS) -I$(QTDIR)/include 
+GUILIB	= -L$(PWLIB_GUIDIR)/lib -lqt
+STDCCFLAGS := $(STDCCFLAGS) -I$(PWLIB_GUIDIR)/include 

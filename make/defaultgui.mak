@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: defaultgui.mak,v $
+# Revision 1.7  2000/03/20 22:43:10  craigs
+# Added totally new mechanism for detecting GUI
+#
 # Revision 1.6  2000/03/14 02:17:21  craigs
 # Added autodetect of Motif/Lestif directory
 # Added detection of Lestif directory when using default install
@@ -32,22 +35,103 @@
 # Added copyright header comment.
 #
 
-ifeq (,$(GUI_TYPE))
-  ifneq (,$(wildcard $(PWLIBDIR)/include/pwlib))
-    ifneq (,$(GUI))
-      GUI_TYPE = $(GUI)
+# this construct looks in the following directories
+#
+#  /usr/local/qt		Qt 
+#  /usr/X11R6/include/Xm	Motif
+#  /usr/openwin/include/Xm	Motif
+#  /usr/local/include/Xm	Motif (Lesstif default)
+#  /usr/X11R6			Xlib
+#  /usr/openwin			Xlib
+
+ifdef GUI_TYPE
+PWLIB_GUI	= $(GUI_TYPE)
+endif
+
+
+#############################################
+## check for QT
+
+ifdef	PWLIB_GUI
+TRIAL_GUI	= $(PWLIB_GUI)
+else
+TRIAL_GUI	= qt
+endif
+
+ifeq (qt,$(TRIAL_GUI))
+  ifndef PWLIB_GUIDIR
+    ifneq (,$(wildcard /usr/local/qt/include))
+      PWLIB_GUIDIR = /usr/local/qt
+    endif
+  endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=qt
+  endif
+endif
+
+#############################################
+## check for Motif
+
+ifdef	PWLIB_GUI
+TRIAL_GUI	= $(PWLIB_GUI)
+else
+TRIAL_GUI	= motif
+endif
+
+ifeq (motif,$(TRIAL_GUI))
+  ifndef PWLIB_GUIDIR
+    ifneq (,$(wildcard /usr/X11R6/include/Xm/ComboBox.h))
+      PWLIB_GUIDIR = /usr/X11R6
     else
-      ifneq (,$(wildcard /usr/local/qt))
-        GUI_TYPE = qt
+      ifneq (,$(wildcard /usr/openwin/include/Xm/ComboBox.h))
+        PWLIB_GUIDIR  = /usr/openwin
       else
-        ifneq (,$(wildcard /usr/local/include/Xm)$(wildcard /usr/X11R6/include/Xm)$(wildcard /usr/openwin/include/Xm))
-          GUI_TYPE = motif
+        ifneq (,$(wildcard /usr/local/include/Xm/ComboBox.h))
+          PWLIB_GUIDIR  = /usr/local
         else
-          ifneq (,$(wildcard /usr/X11R6)$(wildcard /usr/openwin))
-            GUI_TYPE = xlib
+          ifneq (,$(wildcard /usr/X11R6/LessTif/Motif2.0/include/Xm))
+            PWLIB_GUIDIR  = /usr/X11R6/LessTif/Motif2.0
+          else
+            ifneq (,$(wildcard /usr/local/LessTif/Motif2.0/include/Xm))
+              PWLIB_GUIDIR  = /usr/local/LessTif/Motif2.0
+            endif
           endif
         endif
       endif
     endif
   endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=motif
+  endif
+endif
+
+#############################################
+## check for X
+
+ifdef	PWLIB_GUI
+TRIAL_GUI	= $(PWLIB_GUI)
+else
+TRIAL_GUI	= xlib
+endif
+
+ifeq (xlib,$(TRIAL_GUI))
+  ifndef PWLIB_GUIDIR
+    ifneq (,$(wildcard /usr/X11R6/include))
+      PWLIB_GUIDIR = /usr/X11R6
+    else
+      ifneq (,$(wildcard /usr/openwin/include))
+        PWLIB_GUIDIR = /usr/openwin
+      endif
+    endif
+  endif
+  ifdef PWLIB_GUIDIR
+    PWLIB_GUI=xlib
+  endif
+endif
+
+#############################################
+## clean up
+
+ifndef	GUI_TYPE
+GUI_TYPE	= $(PWLIB_GUI)
 endif
