@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.7 1994/08/23 11:32:52 robertj Exp $
+ * $Id: thread.h,v 1.8 1994/09/25 10:45:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,8 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
- * Revision 1.7  1994/08/23 11:32:52  robertj
- * Oops
+ * Revision 1.8  1994/09/25 10:45:22  robertj
+ * Virtualised IsNoLongerBlocked for unix platform.
  *
  * Revision 1.6  1994/08/22  00:46:48  robertj
  * Added pragma fro GNU C++ compiler.
@@ -125,6 +125,10 @@ PDECLARE_CLASS(PThread, PObject)
     void InitialiseProcessThread();
       // Initialialise the primordial thread (the one in the PProcess)
 
+#ifndef P_PLATFORM_HAS_THREADS
+    virtual BOOL IsNoLongerBlocked();
+      // Check if the thread is no longer blocked.
+#endif
 
   private:
     PThread(const PThread &) { }
@@ -136,9 +140,6 @@ PDECLARE_CLASS(PThread, PObject)
 
     void ClearBlock();
       // Clear the blocked thread.
-
-    BOOL IsNoLongerBlocked();
-      // Check if the thread is no longer blocked.
 
     void BeginThread();
       // Function to start Main() and exit when completed.
