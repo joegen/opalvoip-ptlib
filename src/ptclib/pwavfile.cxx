@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.31.4.4  2004/07/13 08:13:05  csoutheren
+ * Lots of implementation of factory-based PWAVFile
+ *
  * Revision 1.31.4.3  2004/07/12 09:17:20  csoutheren
  * Fixed warnings and errors under Linux
  *
@@ -211,7 +214,7 @@ PWAVFile::PWAVFile(unsigned fmt)
   SelectFormat(fmt);
 }
 
-PWAVFile * PWAVFile::PWAVFile_format(const PString & format)
+PWAVFile * PWAVFile::format(const PString & format)
 {
   PWAVFile * file = new PWAVFile;
   file->Construct();
@@ -226,7 +229,7 @@ PWAVFile::PWAVFile(OpenMode mode, int opts, unsigned fmt)
   SelectFormat(fmt);
 }
 
-PWAVFile * PWAVFile::PWAVFile_format(
+PWAVFile * PWAVFile::format(
   const PString & format,
   PFile::OpenMode mode,
   int opts
@@ -288,7 +291,7 @@ void PWAVFile::SelectFormat(const PString & format)
     wavFmtChunk.format = (WORD)formatHandler->GetFormat();
 }
 
-BOOL PWAVFile::Open(OpenMode  mode, int opts)
+BOOL PWAVFile::Open(OpenMode mode, int opts)
 {
   if (!(PFile::Open(mode, opts)))
     return FALSE;
@@ -342,10 +345,17 @@ BOOL PWAVFile::Open(const PFilePath & name, OpenMode  mode, int opts)
 
 BOOL PWAVFile::Close()
 {
+  formatHandler->OnStop();
+
   if (header_needs_updating)
     UpdateHeader();
 
   return (PFile::Close());
+}
+
+void PWAVFile::SetAutoconvert()
+{ 
+  autoConvert = TRUE; 
 }
 
 
@@ -366,7 +376,7 @@ BOOL PWAVFile::RawRead(void * buf, PINDEX len)
   PINDEX readlen = len;
   if ((off_t)(PFile::GetPosition() + len - lenHeader) > lenData) {
     PTRACE(1, "WAV\tRead: Detected non audio data after the sound samples");
-    readlen = lenData - PWAVFile::GetPosition(); 
+    return FALSE;
   }
 
   if (formatHandler != NULL)
@@ -476,6 +486,11 @@ unsigned PWAVFile::GetChannels() const
     return 0;
 }
 
+void PWAVFile::SetChannels(unsigned v) 
+{
+  wavFmtChunk.numChannels = (WORD)v;
+  header_needs_updating = TRUE;
+}
 
 unsigned PWAVFile::GetSampleRate() const
 {
@@ -485,6 +500,11 @@ unsigned PWAVFile::GetSampleRate() const
     return 0;
 }
 
+void PWAVFile::SetSampleRate(unsigned v) 
+{
+  wavFmtChunk.sampleRate = (WORD)v;
+  header_needs_updating = TRUE;
+}
 
 unsigned PWAVFile::GetSampleSize() const
 {
@@ -494,6 +514,11 @@ unsigned PWAVFile::GetSampleSize() const
     return 0;
 }
 
+void PWAVFile::SetSampleSize(unsigned v) 
+{
+  wavFmtChunk.bitsPerSample = (WORD)v;
+  header_needs_updating = TRUE;
+}
 
 off_t PWAVFile::GetHeaderLength() const
 {
@@ -637,9 +662,10 @@ BOOL PWAVFile::ProcessHeader() {
     autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
     if (autoConverter == NULL) {
       PTRACE(1, "PWAVFile\tNo format converter for type " << wavFmtChunk.format);
-      return FALSE;
     }
   }
+
+  formatHandler->OnStart();
 
   return TRUE;
 }
@@ -901,11 +927,15 @@ class PWAVFileFormatG7231 : public PWAVFileFormat
     PString GetFormatString() const
     { return "G.723.1"; }   // must match string in mediafmt.h
 
+    void OnStart();
     BOOL Read(PWAVFile & file, void * buf, PINDEX & len);
     BOOL Write(PWAVFile & file, const void * buf, PINDEX & len);
 
   protected:
     unsigned short g7231;
+    BYTE cacheBuffer[24];
+    PINDEX cacheLen;
+    PINDEX cachePos;
 };
 
 void PWAVFileFormatG7231::CreateHeader(PWAV::FMTChunk & wavFmtChunk, PBYTEArray & extendedHeader)
@@ -937,33 +967,42 @@ BOOL PWAVFileFormatG7231::WriteExtraChunks(PWAVFile & file)
 
 static PINDEX G7231FrameSizes[4] = { 24, 20, 4, 1 };
 
+void PWAVFileFormatG7231::OnStart()
+{
+  cacheLen = cachePos = 0;
+}
+
 BOOL PWAVFileFormatG7231::Read(PWAVFile & file, void * origData, PINDEX & origLen)
 {
   // Note that Microsoft && VivoActive G.2723.1 codec cannot do SID frames, so
   // we must parse the data and remove SID frames
   // also note that frames are always written as 24 byte frames, so each frame must be unpadded
-  BYTE frameBuffer[24];
 
-  PINDEX readLen = 0;
+  PINDEX bytesRead = 0;
+  while (bytesRead < origLen) {
 
-  while (readLen+24 <= origLen) {
-    if (!file.FileRead(frameBuffer, 24))
-      return FALSE;
+    // keep reading until we find a 20 or 24 byte frame
+    while (cachePos == cacheLen) {
+      if (!file.FileRead(cacheBuffer, 24))
+        return FALSE;
 
-    // calculate actual length of frame
-    PINDEX frameLen = G7231FrameSizes[frameBuffer[0] & 3];
-
-    // we can copy 24 byte frames direct to the data
-    // 20 byte frames need to be reblocked
-    // we ignore any other frames
-    if (frameLen == 20 || frameLen == 24) {
-      memcpy(origData, frameBuffer, frameLen);
-      origData = (char *)origData + frameLen;
-      readLen  += frameLen;
+      // calculate actual length of frame
+      PINDEX frameLen = G7231FrameSizes[cacheBuffer[0] & 3];
+      if (frameLen == 20 || frameLen == 24) {
+        cacheLen = frameLen;
+        cachePos = 0;
+      }
     }
+
+    // copy data to requested buffer
+    PINDEX copyLen = PMIN(origLen-bytesRead, cacheLen-cachePos);
+    memcpy(origData, cacheBuffer+cachePos, copyLen);
+    origData = copyLen + (char *)origData;
+    cachePos += copyLen;
+    bytesRead += copyLen;
   }
 
-  origLen = readLen;
+  origLen = bytesRead;
 
   return TRUE;
 }

@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.30.2.7  2004/07/13 08:13:05  csoutheren
+ * Lots of implementation of factory-based PWAVFile
+ *
  * Revision 1.30.2.6  2004/07/12 08:30:16  csoutheren
  * More fixes for abstract factory implementation of PWAVFile
  *
@@ -339,7 +342,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     virtual void SetVar(const PString & ostr, const PString & val);
     virtual PString PVXMLSession::EvaluateExpr(const PString & oexpr);
 
-    virtual BOOL RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn);
+    virtual BOOL RetreiveResource(const PURL & url, PString & contentType, PFilePath & fn, BOOL useCache = TRUE);
 
     PDECLARE_NOTIFIER(PThread, PVXMLSession, VXMLExecute);
 
@@ -375,6 +378,7 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     BOOL TraverseSubmit();
     BOOL TraverseMenu();
     BOOL TraverseChoice(const PString & grammarResult);
+    BOOL TraverseProperty();
 
     void SayAs(const PString & className, const PString & text);
     static PTimeInterval StringToTime(const PString & str);
@@ -449,7 +453,7 @@ class PVXMLRecordable : public PObject
   PCLASSINFO(PVXMLRecordable, PObject);
   public:
     PVXMLRecordable()
-    { consecutiveSilence = 0; finalSilence = 3000; }
+    { consecutiveSilence = 0; finalSilence = 3000; maxDuration = 30000; }
 
     virtual BOOL Open(const PString & _arg) = 0;
 
@@ -467,9 +471,17 @@ class PVXMLRecordable : public PObject
     unsigned GetFinalSilence()
     { return finalSilence; }
 
+    void SetMaxDuration(unsigned v)
+    { maxDuration = v; }
+
+    unsigned GetMaxDuration()
+    { return maxDuration; }
+
   protected:
     PTime silenceStart;
+    PTime recordStart;
     unsigned finalSilence;
+    unsigned maxDuration;
     unsigned consecutiveSilence;
 };
 
@@ -482,11 +494,11 @@ class PVXMLPlayable : public PObject
     PVXMLPlayable()
     { repeat = 1; delay = 0; sampleFrequency = 8000; autoDelete = FALSE; }
 
-    virtual BOOL Open(PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+    virtual BOOL Open(PVXMLChannel & /*chan*/, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
     { delay = _delay; repeat = _repeat; autoDelete = _autoDelete; return TRUE; }
 
-    virtual BOOL Open(const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
-    { arg = _arg; return Open(_delay, _repeat, v); }
+    virtual BOOL Open(PVXMLChannel & chan, const PString & _arg, PINDEX _delay, PINDEX _repeat, BOOL v)
+    { arg = _arg; return Open(chan, _delay, _repeat, v); }
 
     virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
@@ -524,7 +536,7 @@ class PVXMLPlayableURL : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableURL, PVXMLPlayable);
   public:
-    BOOL Open(const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL v);
+    BOOL Open(PVXMLChannel & chan, const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL v);
     void Play(PVXMLChannel & outgoingChannel);
   protected:
     PURL url;
@@ -536,7 +548,7 @@ class PVXMLPlayableData : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableData, PVXMLPlayable);
   public:
-    BOOL Open(const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v);
+    BOOL Open(PVXMLChannel & chan, const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v);
     void SetData(const PBYTEArray & _data);
     void Play(PVXMLChannel & outgoingChannel);
   protected:
@@ -563,7 +575,7 @@ class PVXMLPlayableFilename : public PVXMLPlayable
 {
   PCLASSINFO(PVXMLPlayableFilename, PVXMLPlayable);
   public:
-    BOOL Open(const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
+    BOOL Open(PVXMLChannel & chan, const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
     void Play(PVXMLChannel & outgoingChannel);
     void OnStop();
   protected:
@@ -608,9 +620,8 @@ class PVXMLChannel : public PDelayChannel
     // new functions
     virtual PWAVFile * CreateWAVFile(const PFilePath & fn, BOOL recording = FALSE);
 
-    const PString & GetFormatName() const { return formatName; }
-    BOOL IsMediaPCM() const { return formatName == "PCM-16"; }
-    unsigned GetWavFileType() const { return wavFileType; }
+    const PString & GetMediaFormat() const { return mediaFormat; }
+    BOOL IsMediaPCM() const { return mediaFormat == "PCM-16"; }
     virtual PString AdjustWavFilename(const PString & fn);
 
     // Incoming channel functions
@@ -619,7 +630,7 @@ class PVXMLChannel : public PDelayChannel
 
     virtual BOOL QueueRecordable(PVXMLRecordable * newItem);
 
-    BOOL StartRecording(const PFilePath & fn, unsigned finalSilence = 2000);
+    BOOL StartRecording(const PFilePath & fn, unsigned finalSilence = 3000, unsigned maxDuration = 30000);
     BOOL EndRecording();
     BOOL IsRecording() const { return recording; }
 
@@ -651,8 +662,7 @@ class PVXMLChannel : public PDelayChannel
     PVXMLChannelInterface * vxmlInterface;
 
     unsigned sampleFrequency;
-    PString formatName;
-    unsigned wavFileType;
+    PString mediaFormat;
     PString wavFilePrefix;
 
     PMutex channelMutex;
