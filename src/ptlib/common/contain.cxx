@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.163  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.162  2004/06/08 01:31:07  csoutheren
  * Make the test sense correct for the init(NULL)
  *
@@ -2433,7 +2436,7 @@ PString & PString::sprintf(const char * fmt, ...)
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
   PINDEX len = theArray != NULL ? GetLength() : 0;
-#ifdef P_TORNADO
+#ifdef P_VXWORKS
   // The library provided with tornado 2.0 does not have the implementation
   // for vsnprintf
   // as workaround, just use a array size of 2000
@@ -2445,7 +2448,7 @@ PString & PString::vsprintf(const char * fmt, va_list arg)
     size += 1000;
     PAssert(SetSize(size), POutOfMemory);
   } while (_vsnprintf(theArray+len, size-len, fmt, arg) == -1);
-#endif // P_TORNADO
+#endif // P_VXWORKS
 
   PAssert(MakeMinimumSize(), POutOfMemory);
   return *this;

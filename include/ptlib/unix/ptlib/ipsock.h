@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.12  2004/07/11 07:56:36  csoutheren
+ * Applied jumbo VxWorks patch, thanks to Eize Slange
+ *
  * Revision 1.11  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -65,7 +68,9 @@
  *
  */
 
-
+#ifdef P_VXWORKS
+#define NETDB_SUCCESS 0
+#endif // P_VXWORKS
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
