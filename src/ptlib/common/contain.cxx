@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.38 1995/03/12 04:46:02 robertj Exp $
+ * $Id: contain.cxx,v 1.39 1995/04/02 09:27:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.39  1995/04/02 09:27:27  robertj
+ * Added "balloon" help.
+ *
  * Revision 1.38  1995/03/12 04:46:02  robertj
  * Fixed use of PCaselessString as dictionary key.
  *
@@ -397,10 +400,41 @@ PString::PString(const char * cstr)
 }
 
 
+PString::PString(const WORD * ustr)
+{
+  const WORD * ptr = PAssertNULL(ustr);
+  PINDEX len = 0;
+  while (*ptr++ != 0)
+    len++;
+  SetSize(len+1);
+#ifdef PHAS_UNICODE
+  memcpy(theArray, ustr, len*sizeof(WORD))
+#else
+  char * cstr = theArray;
+  while (len-- > 0)
+    *cstr++ = (char)*ustr++;
+#endif
+}
+
+
 PString::PString(const char * cstr, PINDEX len)
   : PSTRING_ANCESTOR_CLASS(len+1)
 {
   PSTRING_COPY(theArray, PAssertNULL(cstr), len);
+}
+
+
+PString::PString(const WORD * ustr, PINDEX len)
+  : PSTRING_ANCESTOR_CLASS(len+1)
+{
+  PAssertNULL(ustr);
+#ifdef PHAS_UNICODE
+  memcpy(theArray, ustr, len*sizeof(WORD))
+#else
+  char * cstr = theArray;
+  while (len-- > 0)
+    *cstr++ = (char)*ustr++;
+#endif
 }
 
 
