@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.12 1996/07/27 04:08:34 robertj Exp $
+ * $Id: thread.h,v 1.13 1996/08/08 10:09:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.13  1996/08/08 10:09:19  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.12  1996/07/27 04:08:34  robertj
  * Changed thread creation to use C library function instead of direct WIN32.
  *
@@ -75,7 +78,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
 
-#include "../../common/thread.h"
+#include "../../common/ptlib/thread.h"
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
