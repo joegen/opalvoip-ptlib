@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.110  2002/02/15 04:30:39  robertj
+ * Added PString::Empty() to return the primordial empty string. Saves on a
+ *   couple of memory allocations for every empty string ever used.
+ * Changed every place where a const char * is used with PString so that a
+ *   NULL pointer is treated like an empty string instead of asserting.
+ *
  * Revision 1.109  2002/01/26 23:57:45  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -903,6 +909,13 @@ long PDWORDArray::GetNumberValueAt(PINDEX idx) const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const PString & PString::Empty()
+{
+  static PString emptyString((const char *)NULL);
+  return emptyString;
+}
+
+
 #ifdef PHAS_UNICODE
 #define PSTRING_COPY(d, s, l) UnicodeCopy((WORD *)(d), (s), (l))
 #define PSTRING_MOVE(d, doff, s, soff, l) \
@@ -919,26 +932,31 @@ static void UnicodeCopy(WORD * theArray, char * src, size_t len)
 
 
 PString::PString(const char * cstr)
-  : PSTRING_ANCESTOR_CLASS(strlen(PAssertNULL(cstr))+1)
+  : PSTRING_ANCESTOR_CLASS(cstr != NULL ? strlen(cstr)+1 : 1)
 {
-  PSTRING_COPY(theArray, cstr, GetSize());
+  if (cstr != NULL)
+    PSTRING_COPY(theArray, cstr, GetSize());
 }
 
 
 PString::PString(const WORD * ustr)
 {
-  const WORD * ptr = PAssertNULL(ustr);
-  PINDEX len = 0;
-  while (*ptr++ != 0)
-    len++;
-  SetSize(len+1);
+  if (ustr == NULL)
+    SetSize(1);
+  else {
+    const WORD * ptr = ustr;
+    PINDEX len = 0;
+    while (*ptr++ != 0)
+      len++;
+    SetSize(len+1);
 #ifdef PHAS_UNICODE
-  memcpy(theArray, ustr, len*sizeof(WORD))
+    memcpy(theArray, ustr, len*sizeof(WORD))
 #else
-  char * cstr = theArray;
-  while (len-- > 0)
-    *cstr++ = (char)*ustr++;
+    char * cstr = theArray;
+    while (len-- > 0)
+      *cstr++ = (char)*ustr++;
 #endif
+  }
 }
 
 
@@ -1368,8 +1386,11 @@ PINDEX PString::GetLength() const
 
 PString PString::operator+(const char * cstr) const
 {
+  if (cstr == NULL)
+    return *this;
+
   PINDEX olen = GetLength();
-  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  PINDEX alen = strlen(cstr)+1;
   PString str;
   str.SetSize(olen+alen);
   PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
@@ -1391,8 +1412,11 @@ PString PString::operator+(char c) const
 
 PString & PString::operator+=(const char * cstr)
 {
+  if (cstr == NULL)
+    return *this;
+
   PINDEX olen = GetLength();
-  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  PINDEX alen = strlen(cstr)+1;
   SetSize(olen+alen);
   PSTRING_COPY(theArray+olen, cstr, alen);
   return *this;
@@ -1410,9 +1434,13 @@ PString & PString::operator+=(char ch)
 
 PString PString::operator&(const char * cstr) const
 {
-  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  if (cstr == NULL)
+    return *this;
+
+  PINDEX alen = strlen(cstr)+1;
   if (alen == 1)
     return *this;
+
   PINDEX olen = GetLength();
   PString str;
   PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
@@ -1441,7 +1469,10 @@ PString PString::operator&(char c) const
 
 PString & PString::operator&=(const char * cstr)
 {
-  PINDEX alen = strlen(PAssertNULL(cstr))+1;
+  if (cstr == NULL)
+    return *this;
+
+  PINDEX alen = strlen(cstr)+1;
   if (alen == 1)
     return *this;
   PINDEX olen = GetLength();
@@ -1485,11 +1516,11 @@ void PString::Delete(PINDEX start, PINDEX len)
 PString PString::operator()(PINDEX start, PINDEX end) const
 {
   if (end < start)
-    return PString();
+    return Empty();
 
   register PINDEX len = GetLength();
   if (start > len)
-    return PString();
+    return Empty();
 
   if (end >= len) {
     if (start == 0)
@@ -1505,7 +1536,7 @@ PString PString::operator()(PINDEX start, PINDEX end) const
 PString PString::Left(PINDEX len) const
 {
   if (len == 0)
-    return PString();
+    return Empty();
 
   if (len >= GetLength())
     return *this;
@@ -1517,7 +1548,7 @@ PString PString::Left(PINDEX len) const
 PString PString::Right(PINDEX len) const
 {
   if (len == 0)
-    return PString();
+    return Empty();
 
   PINDEX srclen = GetLength();
   if (len >= srclen)
@@ -1530,7 +1561,7 @@ PString PString::Right(PINDEX len) const
 PString PString::Mid(PINDEX start, PINDEX len) const
 {
   if (len == 0)
-    return PString();
+    return Empty();
 
   if (start+len < start) // Beware of wraparound
     return operator()(start, P_MAX_INDEX);
@@ -1541,7 +1572,9 @@ PString PString::Mid(PINDEX start, PINDEX len) const
 
 BOOL PString::operator*=(const char * cstr) const
 {
-  PAssertNULL(cstr);
+  if (cstr == NULL)
+    return IsEmpty();
+
   const char * pstr = theArray;
   while (*pstr != '\0' && *cstr != '\0') {
     if (toupper(*pstr) != toupper(*cstr))
@@ -1570,11 +1603,14 @@ PObject::Comparison PString::InternalCompare(
   if (offset == 0 && theArray == cstr)
     return EqualTo;
 
+  if (cstr == NULL)
+    return IsEmpty() ? EqualTo : LessThan;
+
   int retval;
   if (length == P_MAX_INDEX)
-    retval = strcmp(theArray+offset, PAssertNULL(cstr));
+    retval = strcmp(theArray+offset, cstr);
   else
-    retval = strncmp(theArray+offset, PAssertNULL(cstr), length);
+    retval = strncmp(theArray+offset, cstr, length);
 
   if (retval < 0)
     return LessThan;
@@ -1600,8 +1636,8 @@ PINDEX PString::Find(char ch, PINDEX offset) const
 
 PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
-  PAssertNULL(cstr);
-  PAssert(*cstr != '\0', PInvalidParameter);
+  if (cstr == NULL || *cstr == '\0')
+    return P_MAX_INDEX;
 
   PINDEX len = GetLength();
   PINDEX clen = strlen(cstr);
@@ -1659,8 +1695,8 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
 
 PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
-  PAssertNULL(cstr);
-  PAssert(*cstr != '\0', PInvalidParameter);
+  if (cstr == NULL || *cstr == '\0')
+    return P_MAX_INDEX;
 
   PINDEX len = GetLength();
   PINDEX clen = strlen(cstr);
@@ -1694,7 +1730,9 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 
 PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 {
-  PAssertNULL(cset);
+  if (cset == NULL || *cset == '\0')
+    return P_MAX_INDEX;
+
   PINDEX len = GetLength();
   while (offset < len) {
     const char * p = cset;
@@ -1765,13 +1803,14 @@ void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
     operator+=(cstr);
   else {
     MakeUnique();
-    PINDEX clen = strlen(PAssertNULL(cstr));
+    PINDEX clen = cstr != NULL ? strlen(cstr) : 0;
     PINDEX newlen = slen-len+clen;
     if (clen > len)
       SetSize(newlen+1);
     if (pos+len < slen)
       PSTRING_MOVE(theArray, pos+clen, theArray, pos+len, slen-pos-len+1);
-    PSTRING_COPY(theArray+pos, cstr, clen);
+    if (clen > 0)
+      PSTRING_COPY(theArray+pos, cstr, clen);
     theArray[newlen] = '\0';
   }
 }
@@ -1782,7 +1821,7 @@ PStringArray
 {
   PStringArray tokens;
   
-  if (IsEmpty())  // No tokens
+  if (separators == NULL || IsEmpty())  // No tokens
     return tokens;
     
   PINDEX token = 0;
@@ -1791,7 +1830,7 @@ PStringArray
 
   if (p2 == 0) {
     if (onePerSeparator) { // first character is a token separator
-      tokens[token] = PString();
+      tokens[token] = Empty();
       token++;                        // make first string in array empty
       p1 = 1;
       p2 = FindOneOf(separators, 1);
@@ -1807,7 +1846,7 @@ PStringArray
     if (p2 > p1)
       tokens[token] = operator()(p1, p2-1);
     else
-      tokens[token] = PString();
+      tokens[token] = Empty();
     token++;
 
     // Get next separator. If not one token per separator then continue
@@ -1870,7 +1909,7 @@ PString PString::RightTrim() const
 
   while (isspace(*rpos)) {
     if (rpos == theArray)
-      return PString();
+      return Empty();
     rpos--;
   }
 
@@ -1889,7 +1928,7 @@ PString PString::Trim() const
   while (isspace(*lpos))
     lpos++;
   if (*lpos == '\0')
-    return PString();
+    return Empty();
 
   const char * rpos = theArray+GetLength()-1;
   if (!isspace(*rpos))
@@ -2058,7 +2097,9 @@ PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) cons
 PObject::Comparison PCaselessString::InternalCompare(
                          PINDEX offset, PINDEX length, const char * cstr) const
 {
-  PAssertNULL(cstr);
+  if (cstr == NULL)
+    return IsEmpty() ? EqualTo : LessThan;
+
   while (length-- > 0 && (theArray[offset] != '\0' || *cstr != '\0')) {
     Comparison c = PCaselessString::InternalCompare(offset++, *cstr++);
     if (c != EqualTo)
