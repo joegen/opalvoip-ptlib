@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.17  1998/12/15 12:43:43  robertj
+ * Fixed signal handling so can now ^C a pthread version.
+ *
  * Revision 1.16  1998/11/30 22:06:59  robertj
  * New directory structure.
  *
@@ -109,6 +112,7 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     friend void PXSigHandler(int);
     virtual void PXOnSignal(int);
     virtual void PXOnAsyncSignal(int);
+    void         PXCheckSignals();
 
     static void PXShowSystemWarning(PINDEX code);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
@@ -117,7 +121,6 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     void         CommonConstruct();
     void         CommonDestruct();
 
-    void         PXCheckSignals();
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
     int pxSignals;
 
