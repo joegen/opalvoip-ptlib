@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.25  2002/01/22 03:54:41  craigs
+ * Removed pwavfile.h, as this has moved to PTCLib
+ *
  * Revision 1.24  2001/07/19 09:53:29  rogerh
  * Add the PWAVFile class to read and write .wav files
  *
@@ -236,12 +239,6 @@ using namespace std;
 // PStructuredFile
 
 #include <ptlib/sfile.h>
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PWAVFile
-
-#include <ptlib/pwavfile.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
