@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.31  2005/03/10 03:27:30  dereksmithies
+ * Fix an address typo.
+ *
  * Revision 1.30  2005/01/03 02:52:52  csoutheren
  * Fixed problem with default speed of serial ports
  * Fixed problem with using obsolete lock directory for serial ports
@@ -251,7 +254,7 @@ BOOL PSerialChannel::Open(const PString & port,
     lockfile.Read(&lock_pid, sizeof(lock_pid));
 #else
     char lock_pid_str[20];
-    lockfile.Read(&lock_pid_str, 20);
+    lockfile.Read(lock_pid_str, 20);
     lock_pid = atoi(lock_pid_str);
 #endif
     
