@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.27 1995/01/27 11:11:19 robertj Exp $
+ * $Id: osutil.inl,v 1.28 1995/03/12 04:41:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.27  1995/01/27 11:11:19  robertj
+ * Revision 1.28  1995/03/12 04:41:16  robertj
+ * Moved GetHandle() function from PFile to PChannel.
+ *
+ * Revision 1.27  1995/01/27  11:11:19  robertj
  * Changed single string default constructor to be section name not file name.
  *
  * Revision 1.26  1995/01/18  09:00:40  robertj
@@ -283,6 +286,9 @@ PINLINE PINDEX PChannel::GetLastWriteCount() const
 PINLINE BOOL PChannel::WriteString(const PString & str)
   { return Write((const char *)str, str.GetLength()); }
 
+PINLINE int PChannel::GetHandle() const
+  { PAssert(os_handle >= 0, PChannelNotOpen); return os_handle; }
+
 PINLINE PChannel::Errors PChannel::GetErrorCode() const
   { return lastError; }
 
@@ -370,9 +376,6 @@ PINLINE const PFilePath & PFile::GetFilePath() const
 
 PINLINE PString PFile::GetName() const
   { return path; }
-
-PINLINE int PFile::GetHandle() const
-  { PAssert(os_handle >= 0, PFileNotOpen); return os_handle; }
 
 PINLINE off_t PFile::GetPosition() const
   { return _lseek(GetHandle(), 0, SEEK_CUR); }
