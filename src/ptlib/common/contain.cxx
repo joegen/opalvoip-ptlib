@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.140  2004/01/17 17:28:25  csoutheren
+ * Changed PString::Empty to be inline in header file
+ *
  * Revision 1.139  2004/01/16 13:24:38  csoutheren
  * Changed PString::Empty to be thread-safe
  * Fixed PContainer::SetMinSize and PAbstractArray::SetSize, thanks to 123@call2ua.com
@@ -1057,12 +1060,6 @@ BOOL PBitArray::Concatenate(const PBitArray & array)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PString PString::Empty()
-{
-  return PString((const char *)NULL);
-}
-
 
 PString::PString(const char * cstr)
   : PCharArray(cstr != NULL ? strlen(cstr)+1 : 1)
