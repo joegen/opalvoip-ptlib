@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.10  2000/11/14 08:33:16  robertj
+ * Added certificate and private key classes.
+ *
  * Revision 1.9  2000/08/25 08:11:02  robertj
  * Fixed OpenSSL support so can operate as a server channel.
  *
@@ -65,6 +68,125 @@
 
 struct ssl_st;
 struct ssl_ctx_st;
+struct x509_st;
+struct evp_pkey_st;
+
+
+/**Certificate for SSL.
+   This class embodies a common environment for all certificates used by the
+   PSSLContext and PSSLChannel classes.
+  */
+class PSSLCertificate : public PObject
+{
+  PCLASSINFO(PSSLCertificate, PObject);
+  public:
+    /**Create an empty certificate.
+      */
+    PSSLCertificate();
+
+    /**Create a new certificate given the file.
+       The type of the certificate (eg SSL_FILETYPE_PEM) can be specified
+       explicitly, or if -1 it will be determined from the file extension.
+      */
+    PSSLCertificate(
+      const PFilePath & certFile, /// Certificate file
+      int fileType = -1
+    );
+
+    /**Create certificate from the binary data specified.
+       If the xorSeed is non-zero then it is used in a simple XOR encryption
+       of the static data allowing it to be hidden in the binary executable.
+       This does not need to be cryptographically strong as it is only
+       intended to prevent simple scanning for the key in a binary file.
+      */
+    PSSLCertificate(
+      const BYTE * certData,  /// Certificate data
+      PINDEX certSize,        /// Size of certificate data
+      BYTE xorSeed = 0        /// XOR seed value for data hiding
+    );
+
+    /**Create a copy of the certificate.
+      */
+    PSSLCertificate(
+      const PSSLCertificate & cert
+    );
+
+    /**Create a copy of the certificate.
+      */
+    PSSLCertificate & operator=(
+      const PSSLCertificate & cert
+    );
+
+    /**Destroy and release storage for certificate.
+      */
+    ~PSSLCertificate();
+
+    /**Get internal OpenSSL X509 structure.
+      */
+    operator x509_st *() const { return certificate; }
+
+
+  protected:
+    x509_st * certificate;
+};
+
+
+/**Private key for SSL.
+   This class embodies a common environment for all private keys used by the
+   PSSLContext and PSSLChannel classes.
+  */
+class PSSLPrivateKey : public PObject
+{
+  PCLASSINFO(PSSLPrivateKey, PObject);
+  public:
+    /**Create an empty private key.
+      */
+    PSSLPrivateKey();
+
+    /**Create a new private key given the file.
+       The type of the private key (eg SSL_FILETYPE_PEM) can be specified
+       explicitly, or if -1 it will be determined from the file extension.
+      */
+    PSSLPrivateKey(
+      const PFilePath & keyFile  /// Private key file
+    );
+
+    /**Create private key from the binary data specified.
+       If the xorSeed is non-zero then it is used in a simple XOR encryption
+       of the static data allowing it to be hidden in the binary executable.
+       This does not need to be cryptographically strong as it is only
+       intended to prevent simple scanning for the key in a binary file.
+      */
+    PSSLPrivateKey(
+      const BYTE * keyData,   /// Private key data
+      PINDEX keySize,         /// Size of private key data
+      BYTE xorSeed = 0        /// XOR seed value for data hiding
+    );
+
+    /**Create a copy of the private key.
+      */
+    PSSLPrivateKey(
+      const PSSLPrivateKey & privKay
+    );
+
+    /**Create a copy of the private key.
+      */
+    PSSLPrivateKey & operator=(
+      const PSSLPrivateKey & privKay
+    );
+
+    /**Destroy and release storage for private key.
+      */
+    ~PSSLPrivateKey();
+
+    /**Get internal OpenSSL private key structure.
+      */
+    operator evp_pkey_st *() const { return key; }
+
+
+  protected:
+    evp_pkey_st * key;
+};
 
 
 /**Context for SSL channels.
@@ -107,21 +229,15 @@ class PSSLContext {
     );
 
     /**Use the certificate specified.
-       The type of the certificate (eg SSL_FILETYPE_PEM) can be specified
-       explicitly, or if -1 it will be determined from the file extension.
       */
     BOOL UseCertificate(
-      const PFilePath & certFile, /// Certificate file
-      int fileType = -1           /// Type of certificate file
+      const PSSLCertificate & certificate
     );
 
     /**Use the private key file specified.
-       The type of the key file (eg SSL_FILETYPE_PEM) can be specified
-       explicitly, or if -1 it will be determined from the file extension.
       */
     BOOL UsePrivateKey(
-      const PFilePath & keyFile,  /// Key file
-      int fileType = -1           /// Type of key file
+      const PSSLPrivateKey & key
     );
 
     /**Set the available ciphers to those listed.
@@ -204,15 +320,17 @@ class PSSLChannel : public PIndirectChannel
       BOOL autoDelete = TRUE  /// Flag for if channel should be automatically deleted.
     );
 
-    enum CertificateStatus {
-      CertificateOK,
-      UnknownCertificate,
-      UnknownPrivateKey,
-      PrivateKeyMismatch,
-    };
+    /**Use the certificate specified.
+      */
+    BOOL UseCertificate(
+      const PSSLCertificate & certificate
+    );
 
-    CertificateStatus SetClientCertificate(const PString & certFile);
-    CertificateStatus SetClientCertificate(const PString & certFile, const PString & keyFile);
+    /**Use the private key file specified.
+      */
+    BOOL UsePrivateKey(
+      const PSSLPrivateKey & key
+    );
 
     enum VerifyMode {
       VerifyNone,
@@ -220,7 +338,11 @@ class PSSLChannel : public PIndirectChannel
       VerifyPeerMandatory,
     };
 
-    void SetVerifyMode(VerifyMode mode);
+    void SetVerifyMode(
+      VerifyMode mode
+    );
+
+    PSSLContext * GetContext() const { return context; }
 
 
   protected:
