@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.31 1998/03/09 07:17:48 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.32 1998/03/17 10:14:39 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.32  1998/03/17 10:14:39  robertj
+ * Rewrite of registration page to allow for HTML file override.
+ *
  * Revision 1.31  1998/03/09 07:17:48  robertj
  * Added IP peer/local number macros.
  * Set GetPageGraphic reference to GIF file to be at lop level directory.
@@ -479,101 +482,236 @@ PRegisterPage::PRegisterPage(PHTTPServiceProcess & app,
 }
 
 
-static void AddDisclaimer(PHTML & regPage, const PString & manuf)
+PString PRegisterPage::LoadText(PHTTPRequest & request)
 {
-  regPage << PHTML::HRule()
+  if (fields.GetSize() > 0)
+    return PConfigPage::LoadText(request);
+
+  PString mailURL = "mailto:" + process.GetEMailAddress();
+  PString orderURL = mailURL;
+  PString tempURL = mailURL;
+  if (process.GetHomePage() == HOME_PAGE) {
+    orderURL = "https://home.equival.com.au/purchase.html";
+    tempURL = "http://www.equival.com/" + process.GetName() + "/register.html";
+  }
+
+  PServiceHTML regPage(process.GetName() & "Registration", NULL);
+  regPage << "<!--#registration start Permanent-->"
+             "Your registration key is permanent.<p>"
+             "Do not change your registration details or your key will not "
+             "operate correctly.<p>"
+             "If you need to "
+          << PHTML::HotLink(orderURL)
+          << "upgrade"
+          << PHTML::HotLink()
+          << " or "
+          << PHTML::HotLink(mailURL)
+          << "change"
+          << PHTML::HotLink()
+          << " your registration, then you may enter the new values sent "
+          << " to you from "
+          << process.GetManufacturer()
+          << " into the fields "
+             "below, and then press the Accept button.<p>"
+          << PHTML::HRule()
+          << "<!--#registration end Permanent-->"
+             "<!--#registration start Temporary-->"
+             "Your registration key is temporary and will expire on "
+             "<!--#registration ExpiryDate-->.<p>"
+             "Do not change your registration details or your key will not "
+             "operate correctly.<p>"
+             "You may "
+          << PHTML::HotLink(orderURL)
+          << "order a permanent key"
+          << PHTML::HotLink()
+          << " and enter the new values sent to you from "
+          << process.GetManufacturer()
+          << " into the fields below, and then press the Accept button.<p>"
+          << PHTML::HRule()
+          << "<!--#registration end Temporary-->"
+             "<!--#registration start Expired-->"
+             "Your temporary registration key has expired.<p>"
+             "You may "
+          << PHTML::HotLink(orderURL)
+          << "order a permanent key"
+          << PHTML::HotLink()
+          << " and enter the new values sent to you from "
+          << process.GetManufacturer()
+          << " into the fields below, and then press the Accept button.<P>"
+          << PHTML::HRule()
+          << "<!--#registration end Expired-->";
+
+  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
+  PString prefix;
+  if (securedConf.GetValidation() != PSecureConfig::IsValid) 
+    prefix = securedConf.GetPendingPrefix();
+
+  AddFields(prefix);
+  Add(new PHTTPStringField("Validation", 40));
+  BuildHTML(regPage, InsertIntoHTML);
+
+  regPage << "<!--#registration start Invalid-->"
+             "You have entered the values sent to you from "
+          << process.GetManufacturer()
+          << " incorrectly. Please enter them again. Note, "
+          << PHTML::Emphasis() << PHTML::Strong() << "all" << PHTML::Strong() << PHTML::Emphasis()
+          << "the fields must be entered "
+          << PHTML::Emphasis() << PHTML::Strong() << "exactly" << PHTML::Strong() << PHTML::Emphasis()
+          << " as they appear in the e-mail from "
+          << process.GetManufacturer()
+          << ". We strongly recommend using copy and paste of all the fields, and then "
+             "press the Accept button."
+             "<!--#registration end Invalid-->"
+             "<!--#registration start Default-->"
+             "You may "
+          << PHTML::HotLink(orderURL)
+          << "order a permanent key"
+          << PHTML::HotLink()
+          << " or "
+          << PHTML::HotLink(tempURL)
+          << "obtain a temporary key"
+          << PHTML::HotLink()
+          << " and enter the values sent to you from "
+          << process.GetManufacturer()
+          << " into the fields above, and then press the Accept button.<p>"
+             "<!--#registration end Default-->"
+          << PHTML::HRule()
           << PHTML::Heading(3) << "Disclaimer" << PHTML::Heading(3)
           << PHTML::Paragraph() << PHTML::Bold()
           << "The information and code herein is provided \"as is\" "
              "without warranty of any kind, either expressed or implied, "
              "including but not limited to the implied warrenties of "
              "merchantability and fitness for a particular purpose. In "
-             "no event shall " << manuf << " be liable for any damages "
-             "whatsoever including direct, indirect, incidental, "
-             "consequential, loss of business profits or special "
-             "damages, even if " << manuf << " has been advised of the "
-             "possibility of such damages."
-          << PHTML::Bold() << PHTML::Paragraph();
-}
-
-
-PString PRegisterPage::LoadText(PHTTPRequest & request)
-{
-  if (fields.GetSize() > 0)
-    return PConfigPage::LoadText(request);
-
-  PServiceHTML regPage(process.GetName() & "Registration", "reghelp.html");
-
-  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
-  PSecureConfig::ValidationState state = securedConf.GetValidation();
-
-  PString prefix;
-
-  if (state != PSecureConfig::IsValid) 
-    prefix = securedConf.GetPendingPrefix();
-
-  AddFields(prefix);
-
-  Add(new PHTTPStringField("Validation", 40));
-
-  if (state == PSecureConfig::Defaults) {
-    AddDisclaimer(regPage, process.GetManufacturer());
-    BuildHTML(regPage, InsertIntoHTML);
-  }
-  else {
-    BuildHTML(regPage, InsertIntoHTML);
-
-    BOOL doReorder = FALSE;
-
-    regPage << "Your registration key ";
-    if (state == PSecureConfig::IsValid) {
-      PTime expiry = securedConf.GetTime(securedConf.GetExpiryDateKey());
-      if (expiry.GetYear() < 2011)
-        regPage << "is temporary, and will expire on "
-                << expiry.AsString(PTime::LongDate);
-      else
-        regPage << "is permanent.";
-      doReorder = TRUE;
-
-    } else if (state == PSecureConfig::Pending) {
-      regPage << "has not yet arrived from "
-              << process.GetManufacturer() << '.';
-      doReorder = TRUE;
-
-    } else {
-      if (state == PSecureConfig::Expired)
-        regPage << "is no longer valid.";
-      else
-        regPage << "has been changed or is not valid.";
-      regPage << PHTML::Paragraph()
-              << "You will have to enter valid registration information, or "
-                 "remove the contents of the Validation entry field, and then"
-                 "press the Accept button";
-    } 
-
-    if (doReorder) {
-      regPage << PHTML::Paragraph()
-              << PHTML::Form("GET", "/order.html")
-              << "Do not change your registration details or "
-                 "your key will not operate correctly."
-              << PHTML::Paragraph()
-              << "If you need to upgrade or change your registration, "
-                 " then enter the new values into the fields above, and "
-                 "then press the Accept button. Then return to this screen and "
-                 " press the Order Form button below"
-              << PHTML::Paragraph()
-              << PHTML::SubmitButton("Order Form")
-              << PHTML::Form();
-    }
-
-    AddDisclaimer(regPage, process.GetManufacturer());
-  }
-
-  regPage << process.GetCopyrightText()
+             "no event shall " << process.GetManufacturer() << " be liable "
+             "for any damages whatsoever including direct, indirect, "
+             "incidental, consequential, loss of business profits or special "
+             "damages, even if " << process.GetManufacturer() << " has been "
+             "advised of the possibility of such damages."
+          << PHTML::Bold() << PHTML::Paragraph()
+          << process.GetCopyrightText()
           << PHTML::Body();
 
   SetString(regPage);
   return PConfigPage::LoadText(request);
+}
+
+
+static BOOL FindSpliceBlock(const PRegularExpression & regex,
+                            const PString & text,
+                            PINDEX & pos,
+                            PINDEX & len,
+                            PINDEX & start,
+                            PINDEX & finish)
+{
+  if (!text.FindRegEx(regex, pos, len, 0))
+    return FALSE;
+
+  PINDEX endpos, endlen;
+  static PRegularExpression EndBlock("<?!--#registration[ \t\n]*end[ \t\n]*[a-z]*[ \t\n]*-->?",
+                                     PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  if (text.FindRegEx(EndBlock, endpos, endlen, pos)) {
+    start = pos+len;
+    finish = endpos-1;
+    len = endpos - pos + endlen;
+  }
+
+  return TRUE;
+}
+
+
+void PRegisterPage::OnLoadedText(PHTTPRequest & request, PString & text)
+{
+  PConfigPage::OnLoadedText(request, text);
+
+  static PRegularExpression Default("<?!--#registration[ \t\n]*start[ \t\n]*Default[ \t\n]*-->?",
+                                    PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression Permanent("<?!--#registration[ \t\n]*start[ \t\n]*Permanent[ \t\n]*-->?",
+                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression Temporary("<?!--#registration[ \t\n]*start[ \t\n]*Temporary[ \t\n]*-->?",
+                                      PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression Expired("<?!--#registration[ \t\n]*start[ \t\n]*Expired[ \t\n]*-->?",
+                                    PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  static PRegularExpression Invalid("<?!--#registration[ \t\n]*start[ \t\n]*Invalid[ \t\n]*-->?",
+                                    PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+
+  PString block;
+  PINDEX pos, len, start, finish;
+  PSecureConfig securedConf(process.GetProductKey(), process.GetSecuredKeys());
+  PTime expiry = securedConf.GetTime(securedConf.GetExpiryDateKey());
+
+  switch (securedConf.GetValidation()) {
+    case PSecureConfig::Defaults :
+      while (FindSpliceBlock(Default, text, pos, len, start, finish))
+        text.Splice(text(start, finish), pos, len);
+      while (FindSpliceBlock(Permanent, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Temporary, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Expired, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Invalid, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      break;
+
+    case PSecureConfig::Pending :
+      while (FindSpliceBlock(Default, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Permanent, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Temporary, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Expired, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Invalid, text, pos, len, start, finish))
+        text.Splice(text(start, finish), pos, len);
+      break;
+
+    case PSecureConfig::Expired :
+      while (FindSpliceBlock(Default, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Permanent, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Temporary, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      while (FindSpliceBlock(Expired, text, pos, len, start, finish))
+        text.Splice(text(start, finish), pos, len);
+      while (FindSpliceBlock(Invalid, text, pos, len, start, finish))
+        text.Delete(pos, len);
+      break;
+
+    case PSecureConfig::IsValid :
+      if (expiry.GetYear() < 2011) {
+        while (FindSpliceBlock(Default, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Permanent, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Temporary, text, pos, len, start, finish))
+          text.Splice(text(start, finish), pos, len);
+        while (FindSpliceBlock(Expired, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Invalid, text, pos, len, start, finish))
+          text.Delete(pos, len);
+      }
+      else {
+        while (FindSpliceBlock(Default, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Permanent, text, pos, len, start, finish))
+          text.Splice(text(start, finish), pos, len);
+        while (FindSpliceBlock(Temporary, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Expired, text, pos, len, start, finish))
+          text.Delete(pos, len);
+        while (FindSpliceBlock(Invalid, text, pos, len, start, finish))
+          text.Delete(pos, len);
+      }
+  }
+
+  static PRegularExpression ExpiryDate("<?!--#registration[ \t\n]*ExpiryDate[ \t\n]*-->?",
+                                       PRegularExpression::Extended|PRegularExpression::IgnoreCase);
+  while (text.FindRegEx(ExpiryDate, pos, len, 0))
+    text.Splice(expiry.AsString(PTime::LongDate), pos, len);
+
+  PServiceHTML::ProcessMacros(request, text, "", PServiceHTML::NoOptions);
 }
 
 
@@ -668,11 +806,10 @@ PServiceHTML::PServiceHTML(const char * title, const char * help, const char * h
 {
   PHTTPServiceProcess::Current().GetPageHeader(*this, title);
 
-  *this << PHTML::Heading(1);
+  *this << PHTML::Heading(1) << title;
   
   if (help != NULL)
-    *this << title
-          << ' '
+    *this << "&nbsp;"
           << PHTML::HotLink(help)
           << PHTML::Image(helpGif, "Help", 48, 23, "align=absmiddle")
           << PHTML::HotLink();
