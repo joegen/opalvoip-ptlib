@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.13 1996/05/18 09:18:37 robertj Exp $
+ * $Id: timer.h,v 1.14 1996/12/21 07:57:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
+ * Revision 1.14  1996/12/21 07:57:22  robertj
+ * Fixed possible deadlock in timers.
+ *
  * Revision 1.13  1996/05/18 09:18:37  robertj
  * Added mutex to timer list.
  *
@@ -56,6 +59,10 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
+
+
+class PThread;
+
 
 PDECLARE_CLASS(PTimer, PTimeInterval)
 /* A class representing a system timer. The time interval ancestor value is
@@ -239,7 +246,7 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
     enum { Stopped, Running, Paused } state;
     // Timer state.
 
-    BOOL inTimeout;
+    PThread * timeoutThread;
     /* Timer is currently executing its OnTimeout() function. This is to
        prevent recursive calls when timer is in free running mode.
      */
