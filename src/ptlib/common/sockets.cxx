@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.12 1995/03/18 06:27:49 robertj Exp $
+ * $Id: sockets.cxx,v 1.13 1995/04/01 08:31:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.13  1995/04/01 08:31:54  robertj
+ * Finally got a working TELNET.
+ *
  * Revision 1.12  1995/03/18 06:27:49  robertj
  * Rewrite of telnet socket protocol according to RFC1143.
  *
@@ -377,7 +380,7 @@ void PTelnetSocket::Construct()
   SetOurOption(StatusOption);
   SetOurOption(TimingMark);
   SetOurOption(TerminalSpeed);
-  SetOurOption(TerminalType);
+//  SetOurOption(TerminalType);
   SetTheirOption(TransmitBinary);
   SetTheirOption(SuppressGoAhead);
   SetTheirOption(StatusOption);
@@ -405,7 +408,9 @@ BOOL PTelnetSocket::Open(const PString & host, WORD newPort)
   SendDo(SuppressGoAhead);
   SendDo(StatusOption);
   SendWill(TerminalSpeed);
-  SendWill(TerminalType);
+//  SendWill(TerminalType);
+//  if (option[WindowSize].weCan)
+//    SendWill(WindowSize);
   return TRUE;
 }
 
@@ -429,9 +434,9 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
     count += lastWriteCount;
 
     // send the IAC (if required)
-    if (bufptr != NULL) {
+    if (iacptr != NULL) {
       // Note: cannot use WriteChar(), so send the IAC found again
-      if (!PTCPSocket::Write(bufptr, 1))
+      if (!PTCPSocket::Write(iacptr, 1))
         return FALSE;
       count += lastWriteCount;
     }
@@ -445,7 +450,7 @@ BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
 }
 
 
-void PTelnetSocket::SendCommand(Command cmd, int opt)
+BOOL PTelnetSocket::SendCommand(Command cmd, int opt)
 {
   BYTE buffer[3];
   buffer[0] = IAC;
@@ -457,8 +462,7 @@ void PTelnetSocket::SendCommand(Command cmd, int opt)
     case WILL :
     case WONT :
       buffer[2] = (BYTE)opt;
-      PTCPSocket::Write(buffer, 3);
-      break;
+      return PTCPSocket::Write(buffer, 3);
 
     case InterruptProcess :
     case Break :
@@ -467,16 +471,20 @@ void PTelnetSocket::SendCommand(Command cmd, int opt)
     case AbortOutput :
       if (opt) {
         // Send the command
-        PTCPSocket::Write(buffer, 2);
+        if (!PTCPSocket::Write(buffer, 2))
+          return FALSE;
         // Send a TimingMark for output flush.
         buffer[1] = TimingMark;
-        PTCPSocket::Write(buffer, 2);
+        if (!PTCPSocket::Write(buffer, 2))
+          return FALSE;
         // Send a DataMark for synchronisation.
         if (cmd != AbortOutput) {
           buffer[1] = DataMark;
-          PTCPSocket::Write(buffer, 2);
+          if (!PTCPSocket::Write(buffer, 2))
+            return FALSE;
           // Send the datamark character as the only out of band data byte.
-          WriteOutOfBand(&buffer[1], 1);
+          if (!WriteOutOfBand(&buffer[1], 1))
+            return FALSE;
         }
         // Then flush any waiting input data.
         PTimeInterval oldTimeout = readTimeout;
@@ -488,8 +496,10 @@ void PTelnetSocket::SendCommand(Command cmd, int opt)
       break;
 
     default :
-      PTCPSocket::Write(buffer, 2);
+      return PTCPSocket::Write(buffer, 2);
   }
+
+  return TRUE;
 }
 
 
@@ -545,9 +555,23 @@ static PString GetTELNETOptionName(int code)
 }
 
 
+BOOL PTelnetSocket::StartSend(const char * which, BYTE code)
+{
+  PTelnetError << which << ' ' << GetTELNETOptionName(code) << ' ';
+  if (IsOpen())
+    return TRUE;
+
+  PDebugError << "not open yet." << endl;
+  osError = EBADF;
+  lastError = NotOpen;
+  return FALSE;
+}
+
+
 BOOL PTelnetSocket::SendDo(BYTE code)
 {
-  PTelnetError << "SendDo " << GetTELNETOptionName(code) << ' ';
+  if (!StartSend("SendDo", code))
+    return FALSE;
 
   OptionInfo & opt = option[code];
 
@@ -590,7 +614,8 @@ BOOL PTelnetSocket::SendDo(BYTE code)
 
 BOOL PTelnetSocket::SendDont(BYTE code)
 {
-  PTelnetError << "SendDont " << GetTELNETOptionName(code) << ' ';
+  if (!StartSend("SendDont", code))
+    return FALSE;
 
   OptionInfo & opt = option[code];
 
@@ -633,14 +658,18 @@ BOOL PTelnetSocket::SendDont(BYTE code)
 
 BOOL PTelnetSocket::SendWill(BYTE code)
 {
-  PTelnetError << "SendWill " << GetTELNETOptionName(code) << ' ';
+  if (!StartSend("SendWill", code))
+    return FALSE;
+
+  if (!IsOpen())
+    return FALSE;
 
   OptionInfo & opt = option[code];
 
   switch (opt.ourState) {
     case OptionInfo::IsNo :
       PDebugError << "initiated.";
-      SendCommand(DO, code);
+      SendCommand(WILL, code);
       opt.ourState = OptionInfo::WantYes;
       break;
 
@@ -676,7 +705,8 @@ BOOL PTelnetSocket::SendWill(BYTE code)
 
 BOOL PTelnetSocket::SendWont(BYTE code)
 {
-  PTelnetError << "SendWont " << GetTELNETOptionName(code) << ' ';
+  if (!StartSend("SendWont", code))
+    return FALSE;
 
   OptionInfo & opt = option[code];
 
@@ -687,7 +717,7 @@ BOOL PTelnetSocket::SendWont(BYTE code)
 
     case OptionInfo::IsYes :
       PDebugError << "initiated.";
-      SendCommand(DONT, code);
+      SendCommand(WONT, code);
       opt.ourState = OptionInfo::WantNo;
       break;
 
@@ -717,33 +747,36 @@ BOOL PTelnetSocket::SendWont(BYTE code)
 }
 
 
-void PTelnetSocket::SendSubOption(BYTE code, const BYTE * info, PINDEX len)
+BOOL PTelnetSocket::SendSubOption(BYTE code,
+                                    const BYTE * info, PINDEX len, int subCode)
 {
-  PTelnetError << "SendSubOption " << GetTELNETOptionName(code) << endl;
+  if (!StartSend("SendSubOption", code))
+    return FALSE;
+
+  PDebugError << "with " << len << " bytes." << endl;
 
   PBYTEArray buffer(len + 6);
   buffer[0] = IAC;
   buffer[1] = SB;
   buffer[2] = code;
-  buffer[3] = SubOptionIs;
-  PINDEX i = 4;
+  PINDEX i = 3;
+  if (subCode >= 0)
+    buffer[i++] = (BYTE)subCode;
   while (len-- > 0) {
     if (*info == IAC)
       buffer[i++] = IAC;
     buffer[i++] = *info++;
   }
   buffer[i++] = IAC;
-  buffer[i] = SE;
+  buffer[i++] = SE;
 
-  PTCPSocket::Write((const BYTE *)buffer, i);
+  return PTCPSocket::Write((const BYTE *)buffer, i);
 }
 
 
 void PTelnetSocket::SetTerminalType(const PString & newType)
 {
   terminalType = newType;
-  if (IsOurOption(TerminalType))
-    SendSubOption(TerminalType, terminalType, terminalType.GetLength());
 }
 
 
@@ -1000,6 +1033,25 @@ void PTelnetSocket::OnDo(BYTE code)
   }
 
   PDebugError << endl;
+
+  if (IsOurOption(code)) {
+    switch (code) {
+      case TerminalSpeed : {
+          static BYTE defSpeed[] = "38400,38400";
+          SendSubOption(TerminalSpeed,defSpeed,sizeof(defSpeed)-1,SubOptionIs);
+        }
+        break;
+
+      case TerminalType :
+        SendSubOption(TerminalType,
+                          terminalType, terminalType.GetLength(), SubOptionIs);
+        break;
+
+      case WindowSize :
+        SetWindowSize(windowWidth, windowHeight);
+        break;
+    }
+  }
 }
 
 
@@ -1138,19 +1190,21 @@ void PTelnetSocket::OnWont(BYTE code)
 }
 
 
-void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX)
+void PTelnetSocket::OnSubOption(BYTE code, const BYTE * info, PINDEX len)
 {
-  PTelnetError << "OnSubOption " << GetTELNETOptionName(code) << endl;
+  PTelnetError << "OnSubOption " << GetTELNETOptionName(code)
+               << " of " << len << " bytes." << endl;
   switch (code) {
     case TerminalType :
       if (*info == SubOptionSend)
-        SendSubOption(TerminalType, terminalType, terminalType.GetLength());
+        SendSubOption(TerminalType,
+                          terminalType, terminalType.GetLength(), SubOptionIs);
       break;
 
     case TerminalSpeed :
       if (*info == SubOptionSend) {
         static BYTE defSpeed[] = "38400,38400";
-        SendSubOption(TerminalType, defSpeed, sizeof(defSpeed)-1);
+        SendSubOption(TerminalSpeed,defSpeed,sizeof(defSpeed)-1,SubOptionIs);
       }
       break;
   }
