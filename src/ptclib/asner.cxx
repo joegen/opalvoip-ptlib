@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.48  2001/08/06 09:35:25  robertj
+ * Fixed GNU compatibility.
+ *
  * Revision 1.47  2001/08/06 09:31:48  robertj
  * Added conversion of BMPString to PString without losing special characters.
  *
@@ -2276,8 +2279,9 @@ PASN_BMPString & PASN_BMPString::operator=(const char * str)
       const char * semicolon = strchr(str, ';');
       if (semicolon != NULL) {
         unsigned bigChar = 0;
-        for (const char * p = str+1; isdigit(*p); p++)
-          bigChar = bigChar*10 + *p - '0';
+        const char * p = str+1;
+        while (isdigit(*p))
+          bigChar = bigChar*10 + *p++ - '0';
         if (p == semicolon && bigChar < 65536) {
           c = (WORD)bigChar;
           str = semicolon + 1;
