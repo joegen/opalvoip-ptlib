@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.77 1996/11/10 21:05:43 robertj Exp $
+ * $Id: osutils.cxx,v 1.78 1996/11/30 12:08:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.78  1996/11/30 12:08:42  robertj
+ * Removed extraneous compiler warning.
+ *
  * Revision 1.77  1996/11/10 21:05:43  robertj
  * Fixed bug of missing flush in close of indirect channel.
  *
@@ -1038,13 +1041,13 @@ BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
 
 PChannel * PIndirectChannel::GetBaseReadChannel() const
 {
-  return readChannel != NULL ? readChannel->GetBaseReadChannel() : NULL;
+  return readChannel != NULL ? readChannel->GetBaseReadChannel() : 0;
 }
 
 
 PChannel * PIndirectChannel::GetBaseWriteChannel() const
 {
-  return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : NULL;
+  return writeChannel != NULL ? writeChannel->GetBaseWriteChannel() : 0;
 }
 
 
