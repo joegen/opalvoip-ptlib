@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.72  2003/02/11 07:58:40  robertj
+ * Added ignore allocations so don't get meaningless memory leak at end of run
+ *   cause by system log stream not being deleted, thanks Sebastian Meyer
+ *
  * Revision 1.71  2002/11/01 05:16:41  robertj
  * Fixed additional debug levels in PSystemLog to text file.
  *
@@ -502,15 +506,24 @@ void PSystemLog::Output(Level level, const char * msg)
 int PSystemLog::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
+#if PMEMORY_CHECK
+    BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+
     int ppos = pptr() - pbase();
     char * newptr = string.GetPointer(string.GetSize() + 10);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
+
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
+#endif
   }
   if (c != EOF) {
     *pptr() = (char)c;
     pbump(1);
   }
+
   return 0;
 }
 
@@ -525,10 +538,19 @@ int PSystemLog::Buffer::sync()
 {
   PSystemLog::Output(log->logLevel, string);
 
+#if PMEMORY_CHECK
+  BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+
   string.SetSize(10);
   char * base = string.GetPointer();
   *base = '\0';
   setp(base, base + string.GetSize() - 1);
+
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
+#endif
+
   return 0;
 }
 
