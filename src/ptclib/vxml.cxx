@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.8  2002/07/29 14:16:05  craigs
+ * Added asynchronous VXML execution
+ *
  * Revision 1.7  2002/07/17 08:34:25  craigs
  * Fixed deadlock problems
  *
@@ -62,6 +65,7 @@ PVXMLSession::PVXMLSession()
 {
   activeGrammar = NULL;
   recording     = FALSE;
+  vxmlThread    = NULL;
 }
 
 BOOL PVXMLSession::Load(const PFilePath & filename)
@@ -70,7 +74,7 @@ BOOL PVXMLSession::Load(const PFilePath & filename)
 
   if (!xmlFile.LoadFile(filename)) {
     PString err = "Cannot open root document " + filename + " - " + GetXMLError();
-    PTRACE(2, "PVXML\t" << err);
+    PTRACE(1, "PVXML\t" << err);
     return FALSE;
   }
 
@@ -109,10 +113,25 @@ BOOL PVXMLSession::Execute()
 
 BOOL PVXMLSession::ExecuteWithoutLock()
 {
-  // if there is a grammar defined or we are recording, then no need to look for fields
-  if ((activeGrammar != NULL) || recording)
+  // check to see if a vxml thread has stopped since last we looked
+  if ((vxmlThread != NULL) && (vxmlThread->IsTerminated())) {
+    delete vxmlThread;
+    vxmlThread = NULL;
+    return vxmlStatus;
+  }
+
+  // if there is already a thread running, a grammar defined or we are recording,
+  // then no need to exec the script
+  if ((vxmlThread != NULL) || (activeGrammar != NULL) || recording)
     return TRUE;
 
+  // throw a thread to execute the VXML, because this can take some time
+  vxmlThread = PThread::Create(PCREATE_NOTIFIER(DialogExecute), 0, PThread::NoAutoDeleteThread);
+  return TRUE;
+}
+
+void PVXMLSession::DialogExecute(PThread &, INT)
+{
   // find the first dialog that has an undefined form variable
   PINDEX i;
   for (i = 0; i < dialogArray.GetSize(); i++) {
@@ -133,7 +152,7 @@ BOOL PVXMLSession::ExecuteWithoutLock()
       ClearCall();
   }
 
-  return FALSE;
+  vxmlStatus = FALSE;
 }
 
 
@@ -757,7 +776,7 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
     else if (GetBaseReadChannel() != NULL)
       doSilence = FALSE;
 
-    // if no queued data, then re-evaluate the VXML
+    // check play queue
     else {
       PINDEX qSize;
       {
@@ -765,6 +784,7 @@ BOOL PVXMLOutgoingChannel::Read(void * buffer, PINDEX amount)
         qSize = playQueue.GetSize();
       }
 
+      // if nothing in queue, then re-execute VXML
       if (qSize == 0)
         vxml.Execute();
 
