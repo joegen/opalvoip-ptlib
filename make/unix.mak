@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.100  2001/08/06 03:18:44  robertj
+# Added better checking for openssl usage.
+#
 # Revision 1.99  2001/08/03 04:17:27  dereks
 # Add options for "CPUTYPE=crusoe", which is helpful for sony vaio notebook
 #
@@ -950,7 +953,7 @@ LDFLAGS		+= $(DEBLDFLAGS)
 
 else
 
-OPTCCFLAGS	+= -O2 -DNDEBUG
+OPTCCFLAGS	+= -O3 -DNDEBUG
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
 ifneq ($(OSTYPE),Darwin)
@@ -962,14 +965,24 @@ endif # DEBUG
 
 
 # define OpenSSL variables if installed
+ifndef OPENSSLDIR
+
+ifneq (,$(wildcard /usr/include/openssl))
+OPENSSLDIR := /usr/include
+export OPENSSLDIR
+endif
+
+ifneq (,$(wildcard /usr/local/ssl))
+OPENSSLDIR := /usr/local/ssl
+export OPENSSLDIR
+endif
+
+endif
+
 ifdef  OPENSSLDIR
+ifneq (,$(wildcard $(OPENSSLDIR)))
 STDCCFLAGS	+= -DP_SSL -I$(OPENSSLDIR)/include -I$(OPENSSLDIR)/crypto
 LDFLAGS		+= -L$(OPENSSLDIR)/lib
-ENDLDLIBS	+= -lssl -lcrypto
-HAS_OPENSSL	= 1
-else
-ifneq (,$(wildcard /usr/include/openssl))
-STDCCFLAGS	+= -DP_SSL -I/usr/include/openssl 
 ENDLDLIBS	+= -lssl -lcrypto
 HAS_OPENSSL	= 1
 endif
