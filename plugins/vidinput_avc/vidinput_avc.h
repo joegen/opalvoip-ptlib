@@ -24,6 +24,9 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: vidinput_avc.h,v $
+ * Revision 1.2  2003/11/23 22:11:04  dsandras
+ * Added missing variable in the .h.
+ *
  * Revision 1.1  2003/11/14 06:16:13  csoutheren
  * Initial version thanks to Damien and Snark
  *
@@ -238,6 +241,7 @@ class PVideoInput1394AvcDevice : public PVideoInputDevice
     BOOL UseDMA;
     dv_decoder_t * dv_decoder;
     PString      desiredColourFormat;
+    PINDEX frameBytes;
     unsigned     desiredFrameWidth;
     unsigned     desiredFrameHeight;
     int port;
