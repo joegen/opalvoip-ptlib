@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.9 1996/07/30 12:23:44 robertj Exp $
+ * $Id: svcproc.h,v 1.10 1996/08/08 10:09:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.10  1996/08/08 10:09:16  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.9  1996/07/30 12:23:44  robertj
  * Changed SIGINTR handler to just set termination event.
  *
@@ -44,7 +47,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PServiceProcess
 
-#include "../../common/svcproc.h"
+#include "../../common/ptlib/svcproc.h"
 #ifdef _WIN32
   public:
     virtual const char * GetServiceDependencies() const { return NULL; }
