@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.103  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.102  2004/04/11 13:26:25  csoutheren
  * Removed namespace problems and removed warnings for Windows <string>
  *
@@ -979,7 +983,7 @@ class PObject {
        @return
        TRUE if objects are equal.
      */
-    BOOL operator==(
+    bool operator==(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == EqualTo; }
 
@@ -988,7 +992,7 @@ class PObject {
        @return
        TRUE if objects are not equal.
      */
-    BOOL operator!=(
+    bool operator!=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != EqualTo; }
 
@@ -997,7 +1001,7 @@ class PObject {
        @return
        TRUE if objects are less than.
      */
-    BOOL operator<(
+    bool operator<(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == LessThan; }
 
@@ -1006,7 +1010,7 @@ class PObject {
        @return
        TRUE if objects are greater than.
      */
-    BOOL operator>(
+    bool operator>(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) == GreaterThan; }
 
@@ -1015,7 +1019,7 @@ class PObject {
        @return
        TRUE if objects are less than or equal.
      */
-    BOOL operator<=(
+    bool operator<=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != GreaterThan; }
 
@@ -1024,7 +1028,7 @@ class PObject {
        @return
        TRUE if objects are greater than or equal.
      */
-    BOOL operator>=(
+    bool operator>=(
       const PObject & obj   // Object to compare against.
     ) const { return Compare(obj) != LessThan; }
   //@}

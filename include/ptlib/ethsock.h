@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.h,v $
+ * Revision 1.17  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.16  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -140,10 +144,10 @@ class PEthSocket : public PSocket
       Address & operator=(const Address & addr);
       Address & operator=(const PString & str);
 
-      BOOL operator==(const BYTE * eth) const;
-      BOOL operator!=(const BYTE * eth) const;
-      BOOL operator==(const Address & eth) const { return ls.l == eth.ls.l && ls.s == eth.ls.s; }
-      BOOL operator!=(const Address & eth) const { return ls.l != eth.ls.l || ls.s != eth.ls.s; }
+      bool operator==(const BYTE * eth) const;
+      bool operator!=(const BYTE * eth) const;
+      bool operator==(const Address & eth) const { return ls.l == eth.ls.l && ls.s == eth.ls.s; }
+      bool operator!=(const Address & eth) const { return ls.l != eth.ls.l || ls.s != eth.ls.s; }
 
       operator PString() const;
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.89  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.88  2003/12/19 04:30:24  csoutheren
  * Changed GetLastReadCount and GetLastWriteCount to be virtual
  *
@@ -363,40 +367,40 @@ PINLINE PTimeInterval & PTimeInterval::operator/=(int f)
   { milliseconds /= f; return *this; }
 
 
-PINLINE BOOL PTimeInterval::operator==(const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator==(const PTimeInterval & t) const
   { return milliseconds == t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator!=(const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator!=(const PTimeInterval & t) const
   { return milliseconds != t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator> (const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator> (const PTimeInterval & t) const
   { return milliseconds > t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator>=(const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator>=(const PTimeInterval & t) const
   { return milliseconds >= t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator< (const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator< (const PTimeInterval & t) const
   { return milliseconds < t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator<=(const PTimeInterval & t) const
+PINLINE bool PTimeInterval::operator<=(const PTimeInterval & t) const
   { return milliseconds <= t.milliseconds; }
 
-PINLINE BOOL PTimeInterval::operator==(long msecs) const
+PINLINE bool PTimeInterval::operator==(long msecs) const
   { return (long)milliseconds == msecs; }
 
-PINLINE BOOL PTimeInterval::operator!=(long msecs) const
+PINLINE bool PTimeInterval::operator!=(long msecs) const
   { return (long)milliseconds != msecs; }
 
-PINLINE BOOL PTimeInterval::operator> (long msecs) const
+PINLINE bool PTimeInterval::operator> (long msecs) const
   { return (long)milliseconds > msecs; }
 
-PINLINE BOOL PTimeInterval::operator>=(long msecs) const
+PINLINE bool PTimeInterval::operator>=(long msecs) const
   { return (long)milliseconds >= msecs; }
 
-PINLINE BOOL PTimeInterval::operator< (long msecs) const
+PINLINE bool PTimeInterval::operator< (long msecs) const
   { return (long)milliseconds < msecs; }
 
-PINLINE BOOL PTimeInterval::operator<=(long msecs) const
+PINLINE bool PTimeInterval::operator<=(long msecs) const
   { return (long)milliseconds <= msecs; }
 
 
