@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.6 1994/08/01 03:42:23 robertj Exp $
+ * $Id: pprocess.h,v 1.7 1994/08/04 11:51:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.6  1994/08/01 03:42:23  robertj
+ * Revision 1.7  1994/08/04 11:51:04  robertj
+ * Moved OperatingSystemYield() to protected for Unix.
+ *
+ * Revision 1.6  1994/08/01  03:42:23  robertj
  * Destructor needed for heap debugging.
  *
  * Revision 1.5  1994/07/27  05:58:07  robertj
@@ -74,6 +77,15 @@ PDECLARE_CLASS(PProcess, PThread)
       // Get the list of timers handled by the application.
 
 
+#ifndef P_PLATFORM_HAS_THREADS
+
+  protected:
+    virtual void OperatingSystemYield();
+      // Yield to the platforms operating system.
+
+#endif
+
+
   private:
     friend int main(int argc, char ** argv);
       // The main() system entry point to programme. Calls PreInitialise then
@@ -100,9 +112,6 @@ PDECLARE_CLASS(PProcess, PThread)
       // List of active timers in system
 
 #ifndef P_PLATFORM_HAS_THREADS
-
-    virtual void OperatingSystemYield();
-      // Yield to the platforms operating system.
 
     PThread * currentThread;
       // Currently running thread in the process
