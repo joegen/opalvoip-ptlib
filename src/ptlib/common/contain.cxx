@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.113  2002/06/14 13:22:52  robertj
+ * Added PBitArray class.
+ *
  * Revision 1.112  2002/06/05 12:29:15  craigs
  * Changes for gcc 3.1
  *
@@ -910,6 +913,81 @@ void PDWORDArray::PrintOn(ostream & strm) const
 long PDWORDArray::GetNumberValueAt(PINDEX idx) const
 {
   return ((DWORD *)theArray)[idx];
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PBitArray::PBitArray(PINDEX initialSize)
+  : PBYTEArray((initialSize+7)>>3)
+{
+}
+
+
+PBitArray::PBitArray(const void * buffer,
+                     PINDEX length,
+                     BOOL dynamic)
+  : PBYTEArray((const BYTE *)buffer, (length+7)>>3, dynamic)
+{
+}
+
+
+PObject * PBitArray::Clone() const
+{
+  return new PBitArray(*this);
+}
+
+
+PINDEX PBitArray::GetSize() const
+{
+  return PBYTEArray::GetSize()<<3;
+}
+
+
+BOOL PBitArray::SetSize(PINDEX newSize)
+{
+  return PBYTEArray::SetSize((newSize+7)>>3);
+}
+
+
+BOOL PBitArray::SetAt(PINDEX index, BOOL val)
+{
+  if (!SetMinSize(index+1))
+    return FALSE;
+
+  if (val)
+    theArray[(index+7)>>3] |= (1 << (index&7));
+  else
+    theArray[(index+7)>>3] &= ~(1 << (index&7));
+  return TRUE;
+}
+
+
+BOOL PBitArray::GetAt(PINDEX index) const
+{
+  PASSERTINDEX(index);
+  if (index >= GetSize())
+    return FALSE;
+
+  return (theArray[(index+7)>>3]&(1 << (index&7))) != 0;
+}
+
+
+void PBitArray::Attach(const void * buffer, PINDEX bufferSize)
+{
+  PBYTEArray::Attach((const BYTE *)buffer, (bufferSize+7)>>3);
+}
+
+
+BYTE * PBitArray::GetPointer(PINDEX minSize)
+{
+  return PBYTEArray::GetPointer((minSize+7)>>3);
+}
+
+
+BOOL PBitArray::Concatenate(const PBitArray & array)
+{
+  return PAbstractArray::Concatenate(array);
 }
 
 
