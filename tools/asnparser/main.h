@@ -277,7 +277,7 @@ class TypeBase : public PObject
     virtual TypeBase * FlattenThisType(const TypeBase & parent, TypesList & types);
     virtual BOOL IsChoice() const;
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const = 0;
     virtual PString GetTypeName() const;
     virtual BOOL References(const TypeBase & type) const;
@@ -315,7 +315,7 @@ class DefinedType : public TypeBase
     virtual void FlattenUsedTypes(TypesList & types);
     virtual TypeBase * FlattenThisType(const TypeBase & parent, TypesList & types);
     virtual BOOL IsChoice() const;
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const;
     virtual PString GetTypeName() const;
     virtual BOOL References(const TypeBase & type) const;
@@ -351,7 +351,7 @@ class BooleanType : public TypeBase
     PCLASSINFO(BooleanType, TypeBase)
   public:
     BooleanType();
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const;
 };
 
@@ -362,7 +362,7 @@ class IntegerType : public TypeBase
   public:
     IntegerType();
     IntegerType(NamedNumberList *);
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const;
   protected:
     NamedNumberList allowedValues;
@@ -377,7 +377,7 @@ class EnumeratedType : public TypeBase
     void PrintOn(ostream &) const;
     virtual TypeBase * FlattenThisType(const TypeBase & parent, TypesList & types);
     virtual void GenerateCplusplus(ostream & hdr, ostream & cxx);
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const;
   protected:
     NamedNumberList enumerations;
@@ -413,7 +413,7 @@ class OctetStringType : public TypeBase
     PCLASSINFO(OctetStringType, TypeBase)
   public:
     OctetStringType();
-    virtual void GenerateOperators(ostream & hdr, ostream & cxx);
+    virtual void GenerateOperators(ostream & hdr, ostream & cxx, const PString & className);
     virtual const char * GetAncestorClass() const;
 };
 
