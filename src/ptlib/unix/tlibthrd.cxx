@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.103  2002/10/24 00:40:56  robertj
+ * Put back ability to terminate a thread from that threads context (removed
+ *   in revision 1.101) but requires that destructor not do so.
+ * Changed pipe close to allow for possible EINTR, and retry close.
+ *
  * Revision 1.102  2002/10/24 00:25:13  robertj
  * Changed high load thread problem fix from the termination function to start
  *   function to finally, once and for all (I hope!) fix the race condition.
@@ -599,11 +604,11 @@ PThread::PThread(PINDEX stackSize,
 
 PThread::~PThread()
 {
-  if (!IsTerminated()) 
+  if (PX_threadId != 0 && PX_threadId != pthread_self())
     Terminate();
 
-  PAssertOS(::close(unblockPipe[0]) == 0);
-  PAssertOS(::close(unblockPipe[1]) == 0);
+  PAssertPTHREAD(::close, (unblockPipe[0]));
+  PAssertPTHREAD(::close, (unblockPipe[1]));
 
 #ifndef P_HAS_SEMAPHORES
   pthread_mutex_destroy(&PX_WaitSemMutex);
@@ -846,8 +851,10 @@ void PThread::Terminate()
 
   // don't use PThread::Current, as the thread may already not be in the
   // active threads list
-  if (PX_threadId == pthread_self())
+  if (PX_threadId == pthread_self()) {
+    pthread_exit(0);
     return;
+  }
 
   if (IsTerminated())
     return;
