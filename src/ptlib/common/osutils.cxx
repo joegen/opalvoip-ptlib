@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.85 1997/08/28 12:49:00 robertj Exp $
+ * $Id: osutils.cxx,v 1.86 1997/10/10 10:41:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.86  1997/10/10 10:41:22  robertj
+ * Fixed problem with cooperative threading and Sleep() function returning immediately.
+ *
  * Revision 1.85  1997/08/28 12:49:00  robertj
  * Fixed possible assert on exit of application.
  *
@@ -1602,7 +1605,7 @@ void PThread::Sleep(const PTimeInterval & time)
 {
   sleepTimer = time;
   if (time == PMaxTimeInterval)
-    sleepTimer.Stop();
+    sleepTimer.Pause();
 
   switch (status) {
     case Running : // Suspending itself, yield to next thread
