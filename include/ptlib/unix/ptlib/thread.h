@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.17  2000/03/17 03:46:32  craigs
+ * Removed spurious stuff for PThread implementation
+ *
  * Revision 1.16  1999/10/30 13:45:02  craigs
  * Added pipe to thread to allow asynchronous abort of socket operations
  *
@@ -126,8 +129,10 @@ class PSemaphore;
     pthread_t       PX_threadId;
     pthread_mutex_t PX_suspendMutex;
 
+#ifndef P_HAS_SEMAPHORES
     PSemaphore * PX_waitingSemaphore;
     pthread_mutex_t PX_WaitSemMutex;
+#endif
 
     int termPipe[2];
     friend class PSocket;
