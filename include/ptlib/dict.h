@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.17 1997/06/08 04:49:11 robertj Exp $
+ * $Id: dict.h,v 1.18 1997/07/08 13:15:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
+ * Revision 1.18  1997/07/08 13:15:05  robertj
+ * DLL support.
+ *
  * Revision 1.17  1997/06/08 04:49:11  robertj
  * Fixed non-template class descendent order.
  *
@@ -223,7 +226,7 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
 
 
     // Member variables
-    class PEXPORT Element {
+    class Element {
       public:
         PObject * key;
         PObject * data;
