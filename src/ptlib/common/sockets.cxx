@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.116  2002/01/07 05:37:32  robertj
+ * Changed to allow for a service name that starts with a number.
+ *
  * Revision 1.115  2002/01/02 04:55:31  craigs
  * Fixed problem when PSocket::GetPortByService called with a number
  * that is a substring of a valid service name
@@ -894,8 +897,8 @@ WORD PSocket::GetPortByService(const char * protocol, const PString & service)
   // if the string is a valid integer, then use integer value
   // this avoids stupid problems like operating systems that match service
   // names to substrings (like "2000" to "taskmaster2000")
-  if (service.AsInteger() > 0) 
-    return (WORD) service.AsInteger();
+  if (strspn(service, "0123456789") == strlen(service))
+    return (WORD)service.AsUnsigned();
 
 #if defined( __NUCLEUS_PLUS__ )
   PAssertAlways("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
