@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.6  2001/03/09 00:12:40  robertj
+ * Fixed incorrect number of channels returned on fake video.
+ *
  * Revision 1.5  2001/03/08 22:56:25  robertj
  * Fixed compatibility with new meaning of channelNumber variable, cannot be negative.
  *
@@ -50,6 +53,8 @@
 #include <ptlib.h>
 #include <ptlib/videoio.h>
 
+
+#define NUM_PATTERNS 4
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,7 +123,7 @@ BOOL PFakeVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
 
 int PFakeVideoInputDevice::GetNumChannels() 
 {
-  return 1;  
+  return NUM_PATTERNS;  
 }
 
 
@@ -200,6 +205,8 @@ void PFakeVideoInputDevice::FillFrameWithData(BYTE *destFrame)
      WaitFinishPreviousFrame();
      
      grabCount++;
+
+     // Make sure are NUM_PATTERNS cases here.
      switch(channelNumber){       
          case 0: 
              GrabMovingBlocksTestFrame(destFrame);
