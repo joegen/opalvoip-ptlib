@@ -1,11 +1,32 @@
 /*
  * socks.h
  *
- * PWLib application header file for GetCyberPatrol
+ * SOCKS protocol
  *
- * Copyright 98 Equivalence
+ * Portable Windows Library
+ *
+ * Copyright (c) 1993-2001 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: socks.h,v $
+ * Revision 1.7  2002/11/06 22:47:24  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.6  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
