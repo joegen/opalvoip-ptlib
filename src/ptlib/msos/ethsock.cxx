@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.15  1998/11/30 04:48:38  robertj
+ * New directory structure
+ *
  * Revision 1.14  1998/11/22 11:30:10  robertj
  * Check route table function to get a list
  *
@@ -75,10 +78,10 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 #define USE_VPACKET
-#include <epacket.h>
+#include <ptlib/epacket.h>
 
 #include <snmp.h>
 
