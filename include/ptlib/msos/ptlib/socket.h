@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.15  1998/11/30 02:55:31  robertj
+ * New directory structure
+ *
  * Revision 1.14  1998/09/24 03:30:25  robertj
  * Added open software license.
  *
@@ -90,7 +93,7 @@
 #endif
 
 
-#include "../../common/ptlib/socket.h"
+#include "../../socket.h"
   public:
     ~PSocket();
       // close a socket
