@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.71 1998/09/14 12:36:29 robertj Exp $
+ * $Id: contain.cxx,v 1.72 1998/09/15 08:26:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.72  1998/09/15 08:26:42  robertj
+ * Fixed a number of warnings at maximum optimisation.
+ *
  * Revision 1.71  1998/09/14 12:36:29  robertj
  * Fixed bug causing memory leak due to uninitialised member variable for dynamic allocation of arrays.
  *
@@ -1388,7 +1391,8 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 
 PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
 {
-  PINDEX pos, len;
+  PINDEX pos = 0;
+  PINDEX len = 0;
   if (FindRegEx(regex, pos, len, offset))
     return pos;
 
