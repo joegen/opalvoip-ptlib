@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.63 1996/10/08 13:13:25 robertj Exp $
+ * $Id: contain.cxx,v 1.64 1997/03/02 03:41:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.64  1997/03/02 03:41:42  robertj
+ * Fixed bug in not being able to construct a zero length PStringArray.
+ *
  * Revision 1.63  1996/10/08 13:13:25  robertj
  * Added operator += and &= for char so no implicit PString construction.
  *
@@ -1553,6 +1556,9 @@ PStringStream::~PStringStream()
 PStringArray::PStringArray(PINDEX count,
                                     char const * const * strarr, BOOL caseless)
 {
+  if (count == 0)
+    return;
+
   PAssertNULL(strarr);
   SetSize(count);
   for (PINDEX i = 0; i < count; i++) {
