@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.1 1995/06/17 00:50:37 robertj Exp $
+ * $Id: inetprot.cxx,v 1.2 1995/11/09 12:19:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.2  1995/11/09 12:19:29  robertj
+ * Fixed missing state assertion in state machine.
+ *
  * Revision 1.1  1995/06/17 00:50:37  robertj
  * Initial revision
  *
@@ -847,6 +850,9 @@ BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
         buffer[count++] = '\r';
         buffer[count++] = (char)c;
         unstuffingState = StuffIdle;
+
+      default :
+        PAssertAlways("Illegal SMTP state");
     }
     if (count > messageBufferSize) {
       buffer.SetSize(messageBufferSize);
