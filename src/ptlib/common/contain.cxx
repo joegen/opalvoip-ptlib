@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.15 1994/04/03 08:34:18 robertj Exp $
+ * $Id: contain.cxx,v 1.16 1994/04/11 12:08:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.15  1994/04/03 08:34:18  robertj
+ * Revision 1.16  1994/04/11 12:08:37  robertj
+ * Fixed bug in memory leak hash table hash function, cant have negative numbers.
+ *
+ * Revision 1.15  1994/04/03  08:34:18  robertj
  * Added help and focus functionality.
  *
  * Revision 1.14  1994/04/01  14:01:11  robertj
@@ -95,7 +98,8 @@ static struct {
   const char * className;
 } PointerHashTable[PointerHashTableSize];
 
-static inline int PointerHashFunction(void * ptr) { return (int)((((long)ptr)/5)%PointerHashTableSize); }
+static inline int PointerHashFunction(void * ptr)
+  { return (int)(((((long)ptr)&0x7fffffff)>>3)%PointerHashTableSize); }
 
 void * PObject::AllocateObjectMemory(size_t nSize, const char * className)
 {
