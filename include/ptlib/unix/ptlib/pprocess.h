@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.16  1998/11/30 22:06:59  robertj
+ * New directory structure.
+ *
  * Revision 1.15  1998/10/18 14:29:42  robertj
  * Renamed argv/argc to eliminate accidental usage.
  *
@@ -81,7 +84,7 @@
 
 #pragma interface
 
-#include <syncpoint.h>
+#include <ptlib/syncpoint.h>
 
 PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 
@@ -89,7 +92,7 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
 ///////////////////////////////////////////////////////////////////////////////
 // PProcess
 
-#include "../../common/ptlib/pprocess.h"
+#include "../../pprocess.h"
   public:
     friend class PApplication;
     friend class PServiceProcess;
