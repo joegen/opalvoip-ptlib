@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.20  2001/04/26 08:15:58  robertj
+ * Fixed problem with ASN compile of single constraints on enumerations.
+ *
  * Revision 1.19  2001/04/23 04:40:14  robertj
  * Added ASN standard types GeneralizedTime and UTCTime
  *
@@ -172,10 +175,18 @@ class PASN_Object : public PObject
 
     enum MinimumValueTag { MinimumValue = INT_MIN };
     enum MaximumValueTag { MaximumValue = INT_MAX };
-    void SetConstraints(ConstraintType type, int lower, MaximumValueTag upper);
-    void SetConstraints(ConstraintType type, MinimumValueTag lower, unsigned upper);
-    void SetConstraints(ConstraintType type, MinimumValueTag lower, MaximumValueTag upper);
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    void SetConstraints(ConstraintType type, int value)
+      { SetConstraintBounds(type, value, value); }
+    void SetConstraints(ConstraintType, int lower, MaximumValueTag upper)
+      { SetConstraintBounds(PartiallyConstrained, (int)lower, (unsigned)upper); }
+    void SetConstraints(ConstraintType, MinimumValueTag lower, unsigned upper)
+      { SetConstraintBounds(PartiallyConstrained, (int)lower, (unsigned)upper); }
+    void SetConstraints(ConstraintType, MinimumValueTag lower, MaximumValueTag upper)
+      { SetConstraintBounds(PartiallyConstrained, (int)lower, (unsigned)upper); }
+    void SetConstraints(ConstraintType type, int lower, unsigned upper)
+      { SetConstraintBounds(type, lower, upper); }
+
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual void SetCharacterSet(ConstraintType ctype, const char * charSet);
     virtual void SetCharacterSet(ConstraintType ctype, unsigned firstChar, unsigned lastChar);
 
@@ -197,7 +208,6 @@ class PASN_ConstrainedObject : public PASN_Object
 {
     PCLASSINFO(PASN_ConstrainedObject, PASN_Object);
   public:
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
     BOOL IsConstrained() const { return constraint != Unconstrained; }
     int GetLowerLimit() const { return lowerLimit; }
     unsigned GetUpperLimit() const { return upperLimit; }
@@ -208,6 +218,7 @@ class PASN_ConstrainedObject : public PASN_Object
     BOOL ConstraintEncode(PPER_Stream & strm, unsigned value) const;
 
   protected:
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     PASN_ConstrainedObject(unsigned tag, TagClass tagClass);
 
     ConstraintType constraint;
@@ -282,7 +293,7 @@ class PASN_Integer : public PASN_ConstrainedObject
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -439,7 +450,7 @@ class PASN_BitString : public PASN_ConstrainedObject
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -489,7 +500,7 @@ class PASN_OctetString : public PASN_ConstrainedObject
     virtual PObject * Clone() const;
     virtual void PrintOn(ostream & strm) const;
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
@@ -524,7 +535,7 @@ class PASN_ConstrainedString : public PASN_ConstrainedObject
     virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual PINDEX GetDataLength() const;
     virtual BOOL Decode(PASN_Stream &);
     virtual void Encode(PASN_Stream &) const;
@@ -848,7 +859,7 @@ class PASN_Array : public PASN_ConstrainedObject
     virtual Comparison Compare(const PObject & obj) const;
     virtual void PrintOn(ostream & strm) const;
 
-    virtual void SetConstraints(ConstraintType type, int lower = 0, unsigned upper = UINT_MAX);
+    virtual void SetConstraintBounds(ConstraintType type, int lower, unsigned upper);
     virtual PString GetTypeAsString() const;
     virtual PINDEX GetDataLength() const;
     virtual BOOL IsPrimitive() const;
