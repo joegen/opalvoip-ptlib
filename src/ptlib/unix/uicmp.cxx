@@ -1,6 +1,6 @@
 
 /*
- * $Id: uicmp.cxx,v 1.3 1996/10/31 10:20:07 craigs Exp $
+ * $Id: uicmp.cxx,v 1.4 1996/11/16 11:12:56 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.4  1996/11/16 11:12:56  craigs
+ * Fixed problem with work misaligns under SOlaris
+ *
  * Revision 1.3  1996/10/31 10:20:07  craigs
  * Moved ICMP implementation into here, as it is now platform dependent
  *
@@ -182,7 +185,7 @@ BOOL PICMPSocket::ReadPing(PingInfo & info)
 
   // calc round trip time. Be careful, as unaligned "long long" ints
   // can cause problems on some platforms
-#ifdef P_SUN4
+#if defined(P_SUN4) || defined(P_SOLARIS)
   PInt64 then;
   BYTE * pthen = (BYTE *)&then;
   BYTE * psendtime = (BYTE *)&icmpPacket->sendtime;
