@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.35  2004/04/11 02:55:18  csoutheren
+ * Added PCriticalSection for Windows
+ * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
+ *
  * Revision 1.34  2004/04/09 06:40:48  rjongbloed
  * Removed warning in VC++2003 version about wspapi.h
  *
@@ -408,6 +412,8 @@ extern "C" char ** __argv;
 
 #define   P_HAS_TYPEINFO  1
 #define   PCLASSNAME(cls) (6+typeid(cls).name())
+
+#define   PCONTAINER_USES_CRITSEC   1
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
