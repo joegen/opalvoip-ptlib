@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.25  2002/12/04 19:35:47  rogerh
+# Remove un-needed / at the end of PREFIX
+#
 # Revision 1.24  2002/11/13 23:45:19  robertj
 # Added install and uninstall targets, thanks Damien Sandras
 #
@@ -128,7 +131,7 @@ endif
 
 
 ifndef PREFIX
-PREFIX=/usr/local/
+PREFIX=/usr/local
 endif
  
 
