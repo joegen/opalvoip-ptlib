@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.3 1994/07/17 11:01:04 robertj Exp $
+ * $Id: msdos.cxx,v 1.4 1994/07/27 06:00:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.3  1994/07/17 11:01:04  robertj
+ * Revision 1.4  1994/07/27 06:00:10  robertj
+ * Backup
+ *
+ * Revision 1.3  1994/07/17  11:01:04  robertj
  * Ehancements, implementation, bug fixes etc.
  *
  * Revision 1.2  1994/07/02  03:18:09  robertj
@@ -24,7 +27,7 @@
 
 #include "ptlib.h"
 
-#include <dos.h>
+#include <bios.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -98,21 +101,20 @@ PTime::DateOrder PTime::GetDateOrder()
 
 void PSerialChannel::Construct()
 {
-  commsId = -1;
   biosParm = 0xe3; // 9600 baud, no parity, 1 stop bit, 8 data bits
 }
 
 
 void PSerialChannel::CopyContents(const PSerialChannel & chan)
 {
-  commsId = chan.commsId;
+  biosParm = chan.biosParm;
 }
 
 
 PString PSerialChannel::GetName() const
 {
   if (IsOpen())
-    return psprintf("COM%i", commsId+1);
+    return psprintf("COM%i", os_handle+1);
 
   return PString();
 }
@@ -148,7 +150,7 @@ BOOL PSerialChannel::Close()
   if (!IsOpen())
     return FALSE;
 
-  commsId = -1;
+  os_handle = -1;
   return TRUE;
 }
 
@@ -156,44 +158,39 @@ BOOL PSerialChannel::Close()
 BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
-  union _REGS reg;
-
-  reg.h.ah = 0;
-  reg.h.al = biosParm;
-
   switch (speed) {
     case 0 :
       break;
     case 110 :
-      reg.h.al &= 0x1f;
+      biosParm &= 0x1f;
       break;
     case 150 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0x20;
+      biosParm &= 0x1f;
+      biosParm |= 0x20;
       break;
     case 300 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0x40;
+      biosParm &= 0x1f;
+      biosParm |= 0x40;
       break;
     case 600 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0x60;
+      biosParm &= 0x1f;
+      biosParm |= 0x60;
       break;
     case 1200 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0x80;
+      biosParm &= 0x1f;
+      biosParm |= 0x80;
       break;
     case 2400 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0xa0;
+      biosParm &= 0x1f;
+      biosParm |= 0xa0;
       break;
     case 4800 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0xc0;
+      biosParm &= 0x1f;
+      biosParm |= 0xc0;
       break;
     case 9600 :
-      reg.h.al &= 0x1f;
-      reg.h.al |= 0xe0;
+      biosParm &= 0x1f;
+      biosParm |= 0xe0;
       break;
     default :
       return FALSE;
@@ -203,19 +200,19 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     case 0 :
       break;
     case 5 :
-      reg.h.al &= 0xfc;
+      biosParm &= 0xfc;
       break;
     case 6 :
-      reg.h.al &= 0xfc;
-      reg.h.al |= 1;
+      biosParm &= 0xfc;
+      biosParm |= 1;
       break;
     case 7 :
-      reg.h.al &= 0xfc;
-      reg.h.al |= 2;
+      biosParm &= 0xfc;
+      biosParm |= 2;
       break;
     case 8 :
-      reg.h.al &= 0xfc;
-      reg.h.al |= 3;
+      biosParm &= 0xfc;
+      biosParm |= 3;
       break;
     default :
       return FALSE;
@@ -225,15 +222,15 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     case DefaultParity :
       break;
     case NoParity :
-      reg.h.al &= 0xe7;
+      biosParm &= 0xe7;
       break;
     case OddParity :
-      reg.h.al &= 0xe7;
-      reg.h.al |= 8;
+      biosParm &= 0xe7;
+      biosParm |= 8;
       break;
     case EvenParity :
-      reg.h.al &= 0xe7;
-      reg.h.al |= 0x10;
+      biosParm &= 0xe7;
+      biosParm |= 0x10;
       break;
     default :
       return FALSE;
@@ -243,10 +240,10 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
     case 0 :
       break;
     case 1 :
-      reg.h.al &= ~4;
+      biosParm &= ~4;
       break;
     case 2 :
-      reg.h.al |= 4;
+      biosParm |= 4;
       break;
     default :
       return FALSE;
@@ -255,9 +252,7 @@ BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
   if (outputFlow != DefaultFlowControl || inputFlow != DefaultFlowControl)
     return FALSE;
 
-  reg.x.dx = commsId;
-  _int86(0x14, &reg, &reg);
-  biosParm = reg.h.al;
+  _bios_serialcom(_COM_INIT, os_handle, biosParm);
   return TRUE;
 }
 
@@ -266,11 +261,11 @@ BOOL PSerialChannel::Open(const PString & port, DWORD speed, BYTE data,
 {
   Close();
 
-  commsId = -1;
+  os_handle = -1;
   if (PCaselessString("COM") != port.Left(3) &&
                                               port[3] >= '1' && port[3] <= '4')
     return FALSE;
-  commsId = port[3] - '1';
+  os_handle = port[3] - '1';
   return SetCommsParam(speed, data, parity, stop, inputFlow, outputFlow);
 }
 
@@ -357,19 +352,14 @@ void PSerialChannel::SetDTR(BOOL state)
   if (!IsOpen())
     return;
 
-  union _REGS reg;
-  reg.h.ah = 5;
-  reg.h.al = 0;
-  reg.x.dx = commsId;
-  _int86(0x14, &reg, &reg);
-  if (state)
-    reg.h.bl |= 1;
-  else
-    reg.h.bl &= ~1;
-  reg.h.ah = 5;
-  reg.h.al = 1;
-  reg.x.dx = commsId;
-  _int86(0x14, &reg, &reg);
+}
+
+
+void PSerialChannel::SetRTS(BOOL state)
+{
+  if (!IsOpen())
+    return;
+
 }
 
 
@@ -387,10 +377,7 @@ BOOL PSerialChannel::GetCTS()
   if (!IsOpen())
     return FALSE;
 
-  union _REGS reg;
-  reg.h.ah = 3;
-  reg.x.dx = commsId;
-  return (_int86(0x14, &reg, &reg)&0x8010) == 0x10;
+  return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8010) == 0x10;
 }
 
 
@@ -399,10 +386,7 @@ BOOL PSerialChannel::GetDSR()
   if (!IsOpen())
     return FALSE;
 
-  union _REGS reg;
-  reg.h.ah = 3;
-  reg.x.dx = commsId;
-  return (_int86(0x14, &reg, &reg)&0x8020) == 0x20;
+  return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8020) == 0x20;
 }
 
 
@@ -411,10 +395,7 @@ BOOL PSerialChannel::GetDCD()
   if (!IsOpen())
     return FALSE;
 
-  union _REGS reg;
-  reg.h.ah = 3;
-  reg.x.dx = commsId;
-  return (_int86(0x14, &reg, &reg)&0x8080) == 0x80;
+  return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8080) == 0x80;
 }
 
 
@@ -423,10 +404,7 @@ BOOL PSerialChannel::GetRing()
   if (!IsOpen())
     return FALSE;
 
-  union _REGS reg;
-  reg.h.ah = 3;
-  reg.x.dx = commsId;
-  return (_int86(0x14, &reg, &reg)&0x8040) == 0x40;
+  return (_bios_serialcom(_COM_STATUS, os_handle, 0)&0x8040) == 0x40;
 }
 
 
@@ -482,7 +460,7 @@ PStringList PConfig::GetSections()
 }
 
 
-PStringList PConfig::GetKeys(const char * section) const
+PStringList PConfig::GetKeys(const PString &) const
 {
   PStringList keys;
 
@@ -494,8 +472,6 @@ PStringList PConfig::GetKeys(const char * section) const
     }
   }
   else {
-    if (section == NULL)
-      section = defaultSection;
     PAssertAlways(PUnimplementedFunction);
   }
 
@@ -503,43 +479,33 @@ PStringList PConfig::GetKeys(const char * section) const
 }
 
 
-void PConfig::DeleteSection(const char * section)
+void PConfig::DeleteSection(const PString &)
 {
   if (configFile.IsEmpty())
     return;
-
-  if (section == NULL)
-    section = defaultSection;
 
   PAssertAlways(PUnimplementedFunction);
 }
 
 
-void PConfig::DeleteKey(const char * section, const char * key)
+void PConfig::DeleteKey(const PString &, const PString & key)
 {
-  PAssert(section != NULL && *section != '\0', PInvalidParameter);
-  PAssert(key != NULL && *key != '\0', PInvalidParameter);
-
   if (configFile.IsEmpty()) {
-    PString str = key;
-    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    _putenv(str + "=");
+    PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+    _putenv(key + "=");
   }
   else
     PAssertAlways(PUnimplementedFunction);
 }
 
 
-PString PConfig::GetString(const char * section,
-                                          const char * key, const char * dflt)
+PString PConfig::GetString(const PString &,
+                                          const PString & key, const PString & dflt)
 {
   PString str;
 
-  PAssert(section != NULL && *section != '\0', PInvalidParameter);
-  PAssert(key != NULL && *key != '\0', PInvalidParameter);
-
   if (configFile.IsEmpty()) {
-    PAssert(strchr(key, '=') == NULL, PInvalidParameter);
+    PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
     char * env = getenv(key);
     if (env != NULL)
       str = env;
@@ -553,17 +519,11 @@ PString PConfig::GetString(const char * section,
 }
 
 
-void PConfig::SetString(const char * section,
-                                         const char * key, const char * value)
+void PConfig::SetString(const PString &, const PString & key, const PString & value)
 {
-  PAssert(section != NULL && *section != '\0', PInvalidParameter);
-  PAssert(key != NULL && *key != '\0', PInvalidParameter);
-  PAssert(value != NULL, PInvalidParameter);
-
   if (configFile.IsEmpty()) {
-    PString str = key;
-    PAssert(str.Find('=') == P_MAX_INDEX, PInvalidParameter);
-    _putenv(str + "=" + value);
+    PAssert(key.Find('=') == P_MAX_INDEX, PInvalidParameter);
+    _putenv(key + "=" + value);
   }
   else
     PAssertAlways(PUnimplementedFunction);
