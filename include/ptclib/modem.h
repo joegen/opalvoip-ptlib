@@ -1,5 +1,5 @@
 /*
- * $Id: modem.h,v 1.2 1994/07/25 03:32:29 robertj Exp $
+ * $Id: modem.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: modem.h,v $
- * Revision 1.2  1994/07/25 03:32:29  robertj
+ * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Moved meta-string transmitter from PModem to PChannel.
+ *
+ * Revision 1.2  1994/07/25  03:32:29  robertj
  * Fixed bug in GCC with enums.
  *
  * Revision 1.1  1994/06/25  11:55:15  robertj
@@ -205,38 +208,10 @@ PDECLARE_CLASS(PModem, PSerialChannel)
 
 
   protected:
-    BOOL SendString(const PString & command);
-      // Send the specified meta-string.
-
     // Member variables
     PString initCmd, deinitCmd, preDialCmd, postDialCmd,
             busyReply, noCarrierReply, connectReply, hangUpCmd;
-      // Modem command meta-strings. A meta-string is a string of characters
-      // that may contain escaped commands. The escape command is the \ as in
-      // the C language. The escape commands are:
-      //    \a    alert (ascii value 7)
-      //    \b    backspace (ascii value 8)
-      //    \f    formfeed (ascii value 12)
-      //    \n    newline (ascii value 10)
-      //    \r    return (ascii value 13)
-      //    \t    horizontal tab (ascii value 9)
-      //    \v    vertical tab (ascii value 11)
-      //    \\    backslash
-      //    \ooo  where ooo is octal number (ascii value ooo)
-      //    \xhh  where hh is hex number (ascii value 0xhh)
-      //    \0    null character (ascii zero)
-      //    \dns  delay for n seconds
-      //    \dnm  delay for n milliseconds
-      //    \s    characters following this, up to a \w command or the end of
-      //          string, are to be sent to modem
-      //    \wns  characters following this, up to a \s, \d or another \w or
-      //          the end of the string are expected back from the modem. If
-      //          the string is not received within n seconds, a failed command
-      //          is registered. The exception to this is if the command is at
-      //          the end of the string or the next character in the string is
-      //          the \s, \d or \w in which case all characters are ignored
-      //          from the modem until n seconds of no data.
-      //    \wnm  as for above but timeout is in milliseconds
+      // Modem command meta-strings.
 
     Status status;
       // Current modem status
