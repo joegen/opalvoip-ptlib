@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.19  2001/09/06 02:06:36  robertj
+ * Fixed bug in detecting size mismatch, thanks Vjacheslav Andrejev
+ *
  * Revision 1.18  2001/08/22 02:14:08  robertj
  * Fixed MSVC compatibility.
  *
@@ -417,14 +420,15 @@ static void Yuv422ToYuv422WithResize(unsigned swidth, unsigned sheight, const BY
       dest[i+1]= BLACK_U;
     }
 
-    unsigned yOffset = dheight - sheight;
-    unsigned xOffset = dwidth - swidth;
-    if ( (yOffset<0) || (xOffset<0) ) {
+    if (dheight < sheight || dwidth < swidth) {
       PTRACE(1,"YUV422 to YUV422. Err. dest src size mismatch");
-      memset(dest,64,(dwidth*dheight*2));
+      memset(dest, 64, (dwidth*dheight*2));
       return;
     }
     
+    unsigned yOffset = dheight - sheight;
+    unsigned xOffset = dwidth - swidth;
+
     BYTE *s_ptr,*d_ptr;
     d_ptr = (yOffset * dwidth) + xOffset + dest;
     s_ptr = (BYTE *)src;
@@ -436,13 +440,14 @@ static void Yuv422ToYuv422WithResize(unsigned swidth, unsigned sheight, const BY
   } else {  
     // source is bigger than the destination. Remove the
     // appropriate border from the source.
-    unsigned yOffset = sheight - dheight;
-    unsigned xOffset = swidth - dwidth;
-    if ( (yOffset<0) || (xOffset<0) ) {
+    if (sheight < dheight || swidth < dwidth) {
       PTRACE(1,"YUV422 to YUV422. Err. srce dest size mismatch");
       memset(dest,64,(dwidth*dheight*2));
       return;
     }
+
+    unsigned yOffset = sheight - dheight;
+    unsigned xOffset = swidth - dwidth;
 
     BYTE *s_ptr,*d_ptr;
     d_ptr = dest;
