@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.88  2002/06/05 12:29:16  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.87  2002/04/18 06:16:06  robertj
  * Fixed Net BSD problem with RTF_CLONED flag, thanks Motoyuki OHMORI
  * Fixed operator precedence problem with bit mask tests in RTF_CLONE code.
@@ -903,7 +906,7 @@ BOOL PEthSocket::Read(void * buf, PINDEX len)
   BYTE * bufptr = (BYTE *)buf;
 
   if (fakeMacHeader) {
-    if (len <= sizeof(macHeader)) {
+    if (len <= (PINDEX)sizeof(macHeader)) {
       memcpy(bufptr, macHeader, len);
       lastReadCount = len;
       return TRUE;

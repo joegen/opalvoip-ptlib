@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.67  2002/06/05 12:29:16  craigs
+ * Changes for gcc 3.1
+ *
  * Revision 1.66  2002/04/17 03:31:48  robertj
  * Renamed system log file member variable to be common with Windows version.
  *
@@ -579,7 +582,7 @@ int PServiceProcess::InitialiseService()
     if (gidstr.IsEmpty())
       gidstr = "nobody";
     int gid;
-    if (strspn(gidstr, "0123456789") == gidstr.GetLength())
+    if ((PINDEX)strspn(gidstr, "0123456789") == gidstr.GetLength())
       gid = gidstr.AsInteger();
     else {
       struct group * gr = getgrnam(gidstr);
@@ -602,7 +605,7 @@ int PServiceProcess::InitialiseService()
     if (uidstr.IsEmpty())
       uidstr = "nobody";
     int uid;
-    if (strspn(uidstr, "0123456789") == uidstr.GetLength())
+    if ((PINDEX)strspn(uidstr, "0123456789") == uidstr.GetLength())
       uid = uidstr.AsInteger();
     else {
       struct passwd * pw = getpwnam(uidstr);
