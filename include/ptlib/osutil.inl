@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.24 1995/01/11 09:45:02 robertj Exp $
+ * $Id: osutil.inl,v 1.25 1995/01/15 04:51:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.24  1995/01/11 09:45:02  robertj
+ * Revision 1.25  1995/01/15 04:51:09  robertj
+ * Mac compatibility.
+ * Added structure function to structured files.
+ *
+ * Revision 1.24  1995/01/11  09:45:02  robertj
  * Documentation and normalisation.
  *
  * Revision 1.23  1995/01/09  12:34:25  robertj
@@ -237,7 +241,7 @@ PINLINE BOOL PTimer::IsPaused() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PChannelStreamBuffer::PChannelStreamBuffer(const PChannelStreamBuffer & sbuf)
-  : channel(sbuf.channel) { setb(buffer, &buffer[sizeof(buffer)-1]); }
+  : channel(sbuf.channel) { }
 
 PINLINE PChannelStreamBuffer &
           PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
@@ -361,9 +365,6 @@ PINLINE int PFile::GetHandle() const
 PINLINE off_t PFile::GetPosition() const
   { return _lseek(GetHandle(), 0, SEEK_CUR); }
 
-PINLINE BOOL PFile::IsEndOfFile() const
-  { rdbuf()->sync(); return GetPosition() >= GetLength(); }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -403,8 +404,8 @@ PINLINE PStructuredFile::PStructuredFile(const PFilePath & name,
 PINLINE size_t PStructuredFile::GetStructureSize()
   { return structureSize; }
 
-PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
-  { structureSize = newSize; }
+PINLINE void PStructuredFile::SetStructure(Element * struc, PINDEX num)
+  { structure = struc; numElements = num; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
