@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.15 1995/06/17 11:12:47 robertj Exp $
+ * $Id: object.h,v 1.16 1995/11/09 12:17:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.16  1995/11/09 12:17:10  robertj
+ * Added platform independent base type access classes.
+ *
  * Revision 1.15  1995/06/17 11:12:47  robertj
  * Documentation update.
  *
@@ -203,6 +206,421 @@ class PTrace {
    program blocks.
  */
 #define PTRACE(n) PTrace __trace_instance(n)
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Really big integer class for architectures without
+
+#ifndef P_HAS_INT64
+
+class PInt64__ {
+  public:
+    operator long()  { return (long)low; }
+    operator int()   { return (int)low; }
+    operator short() { return (short)low; }
+    operator char()  { return (char)low; }
+
+    operator unsigned long()  { return (unsigned long)low; }
+    operator unsigned int()   { return (unsigned int)low; }
+    operator unsigned short() { return (unsigned short)low; }
+    operator unsigned char()  { return (unsigned char)low; }
+
+  protected:
+    PInt64__() { }
+    PInt64__(unsigned long l) : low(l), high(0) { }
+    PInt64__(unsigned long l, unsigned long h) : low(l), high(h) { }
+
+    void Inc() { if (++low == 0) ++high; }
+    void Dec() { if (--low == 0) --high; }
+
+    void Add(long v) { Add(v); }
+    void Sub(long v) { Sub(v); }
+    void Mul(long v) { Mul(v); }
+    void Div(long v) { Div(v); }
+    void Mod(long v) { Mod(v); }
+    void Or (long v) { low |= v; }
+    void And(long v) { low &= v; }
+    void Xor(long v) { low ^= v; }
+
+    void Add(const PInt64__ & v);
+    void Sub(const PInt64__ & v);
+    void Mul(const PInt64__ & v);
+    void Div(const PInt64__ & v);
+    void Mod(const PInt64__ & v);
+    void Or (const PInt64__ & v) { low |= v.low; high |= v.high; }
+    void And(const PInt64__ & v) { low &= v.low; high &= v.high; }
+    void Xor(const PInt64__ & v) { low ^= v.low; high ^= v.high; }
+
+    BOOL Eq(unsigned long v) const { return low == v && high == 0; }
+    BOOL Ne(unsigned long v) const { return low != v || high != 0; }
+
+    BOOL Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
+    BOOL Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
+
+
+    unsigned long low, high;
+};
+
+
+#define DECL_OPS(cls, type) \
+    const cls & operator=(type v) { PInt64__::operator=(cls(v)); return *this; } \
+    cls operator+(type v) const { cls t = *this; t.Add(v); return t; } \
+    cls operator-(type v) const { cls t = *this; t.Sub(v); return t; } \
+    cls operator*(type v) const { cls t = *this; t.Mul(v); return t; } \
+    cls operator/(type v) const { cls t = *this; t.Div(v); return t; } \
+    cls operator%(type v) const { cls t = *this; t.Mod(v); return t; } \
+    cls operator|(type v) const { cls t = *this; t.Or (v); return t; } \
+    cls operator&(type v) const { cls t = *this; t.And(v); return t; } \
+    cls operator^(type v) const { cls t = *this; t.Xor(v); return t; } \
+    const cls & operator+=(type v) { Add(v); return *this; } \
+    const cls & operator-=(type v) { Sub(v); return *this; } \
+    const cls & operator*=(type v) { Mul(v); return *this; } \
+    const cls & operator/=(type v) { Div(v); return *this; } \
+    const cls & operator|=(type v) { Or (v); return *this; } \
+    const cls & operator&=(type v) { And(v); return *this; } \
+    const cls & operator^=(type v) { Xor(v); return *this; } \
+    BOOL operator==(type v) const { return Eq(v); } \
+    BOOL operator!=(type v) const { return Ne(v); } \
+    BOOL operator< (type v) const { return Lt(v); } \
+    BOOL operator> (type v) const { return Gt(v); } \
+    BOOL operator>=(type v) const { return !Gt(v); } \
+    BOOL operator<=(type v) const { return !Lt(v); } \
+
+
+class PInt64 : public PInt64__ {
+  public:
+    PInt64() { }
+    PInt64(long l) : PInt64__(l, l < 0 ? -1 : 0) { }
+    PInt64(unsigned long l, long h) : PInt64__(l, h) { }
+    PInt64(const PInt64__ & v) : PInt64__(v) { }
+
+    PInt64 operator~() const { return PInt64(~low, ~high); }
+    PInt64 operator-() const { return operator~()+1; }
+
+    PInt64 operator++() { Inc(); return *this; }
+    PInt64 operator--() { Dec(); return *this; }
+
+    PInt64 operator++(int) { PInt64 t = *this; Inc(); return t; }
+    PInt64 operator--(int) { PInt64 t = *this; Dec(); return t; }
+
+    DECL_OPS(PInt64, char)
+    DECL_OPS(PInt64, unsigned char)
+    DECL_OPS(PInt64, short)
+    DECL_OPS(PInt64, unsigned short)
+    DECL_OPS(PInt64, int)
+    DECL_OPS(PInt64, unsigned int)
+    DECL_OPS(PInt64, long)
+    DECL_OPS(PInt64, unsigned long)
+    DECL_OPS(PInt64, const PInt64 &)
+
+    friend ostream & operator<<(ostream &, const PInt64 &);
+    friend istream & operator>>(istream &, PInt64 &);
+
+  protected:
+    BOOL Lt(long v) const { return Lt(v); }
+    BOOL Gt(long v) const { return Gt(v); }
+    BOOL Lt(const PInt64 &) const;
+    BOOL Gt(const PInt64 &) const;
+};
+
+
+class PUInt64 : public PInt64__ {
+  public:
+    PUInt64() { }
+    PUInt64(unsigned long l) : PInt64__(l, 0) { }
+    PUInt64(unsigned long l, unsigned long h) : PInt64__(l, h) { }
+    PUInt64(const PInt64__ & v) : PInt64__(v) { }
+
+    PUInt64 operator~() const { return PUInt64(~low, ~high); }
+
+    const PUInt64 & operator++() { Inc(); return *this; }
+    const PUInt64 & operator--() { Dec(); return *this; }
+
+    PUInt64 operator++(int) { PUInt64 t = *this; Inc(); return t; }
+    PUInt64 operator--(int) { PUInt64 t = *this; Dec(); return t; }
+
+    DECL_OPS(PUInt64, char)
+    DECL_OPS(PUInt64, unsigned char)
+    DECL_OPS(PUInt64, short)
+    DECL_OPS(PUInt64, unsigned short)
+    DECL_OPS(PUInt64, int)
+    DECL_OPS(PUInt64, unsigned int)
+    DECL_OPS(PUInt64, long)
+    DECL_OPS(PUInt64, unsigned long)
+    DECL_OPS(PUInt64, const PUInt64 &)
+
+    friend ostream & operator<<(ostream &, const PUInt64 &);
+    friend istream & operator>>(istream &, PUInt64 &);
+
+  protected:
+    BOOL Lt(const PUInt64 &) const;
+    BOOL Gt(const PUInt64 &) const;
+};
+
+#undef DECL_OPS
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Platform independent types
+
+// All these classes encapsulate primitive types such that they may be
+// transfered in a platform independent manner. In particular it is used to
+// do byte swapping for little endien and big endien processor architectures
+// as well as accommodating structure packing rules for memory structures.
+
+#define PANSI_CHAR 1
+#define PLITTLE_ENDIAN 2
+#define PBIG_ENDIAN 3
+
+
+#if 0
+class PStandardType
+/* Encapsulate a standard 8 bit character into a portable format. This would
+   rarely need to do translation, only if the target platform uses EBCDIC
+   would it do anything.
+
+   The platform independent form here is always 8 bit ANSI.
+ */
+{
+  public:
+    PStandardType(
+      char c = '\0'   // Value to initialise data in platform dependent form.
+    ) : data(c) { }
+    PStandardType(
+      istream & stream // Stream to get data in platform independent form.
+    ) { Get(stream); }
+    PStandardType(
+      PMemoryPointer & mem // Memory to get data in platform independent form.
+    ) { Get(mem); }
+    /* Create a new instance of the platform independent type using platform
+       dependent data, or platform independent streams.
+     */
+
+    operator type() { return data; }
+    /* Get the platform dependent value for the type.
+
+       <H2>Returns:</H2>
+       data for instance.
+     */
+
+    BOOL Get(
+      istream & stream // Stream to get data in platform independent form.
+    );
+    void Get(
+      PMemoryPointer & mem // Memory to get data in platform independent form.
+    );
+    /* Get the platform dependent value from the platform independent value
+       next in the stream or pointed to in memory. The stream or memory pointer
+       is automatically moved the correct platform independent amount to assure
+       correct structure packing.
+
+       <H2>Returns:</H2>
+       TRUE if data was successfully translated.
+     */
+
+    BOOL Put(
+      ostream & stream // Stream to put data in platform independent form.
+    ) const;
+    void Put(
+      PMemoryPointer & mem // Memory to put data in platform independent form.
+    ) const;
+    /* Put the platform dependent value to the platform independent value
+       next in the stream or pointed to in memory. The stream or memory pointer
+       is automatically moved the correct platform independent amount to assure
+       correct structure packing.
+
+       <H2>Returns:</H2>
+       TRUE if data was successfully translated.
+     */
+
+  private:
+    type data;
+};
+#endif
+
+
+#define PI_TYPE(name, type) \
+  struct name { \
+    name() { } \
+    name(istream & stream) { Get(stream); } \
+    name(PMemoryPointer & mem) { Get(mem); } \
+    operator type() const { return data; } \
+    operator type &() { return data; } \
+    void Get(istream & stream); \
+    void Get(PMemoryPointer & mem); \
+    void Put(ostream & stream) const; \
+    void Put(PMemoryPointer & mem) const; \
+    friend ostream & operator<<(ostream & s, const name & v) { v.Put(s); return s; } \
+    friend istream & operator>>(istream & s, name & v) { v.Get(s); return s; } \
+    private: type data; \
+  }
+
+#define PI_SAME(name, type) \
+  inline void name::Get(istream & stream) \
+    { stream.read((char *)&data, sizeof(type)); } \
+  inline void name::Get(PMemoryPointer & mem) \
+    { data = *(type *)mem; mem += sizeof(type); } \
+  inline void name::Put(ostream & stream) const \
+    { stream.write((char *)&data, sizeof(type)); } \
+  inline void name::Put(PMemoryPointer & mem) const \
+    { *(type *)mem = data; mem += sizeof(type); }
+
+#define PI_LOOP(type) \
+    char * bytes = ((char *)&data)+sizeof(type); while (bytes != (char*)&data)
+
+#define PI_DIFF(name, type) \
+  inline void name::Get(istream & stream) \
+    { PI_LOOP(type) stream.get(*--bytes); } \
+  inline void name::Get(PMemoryPointer & mem) \
+    { PI_LOOP(type) *--bytes = *mem++; } \
+  inline void name::Put(ostream & stream) const \
+    { PI_LOOP(type) stream.put(*--bytes); } \
+  inline void name::Put(PMemoryPointer & mem) const \
+    { PI_LOOP(type) *mem++ = *--bytes; }
+
+
+PI_TYPE(PChar8, char);
+#if PCHAR8==PANSI_CHAR
+PI_SAME(PChar8, char)
+#endif
+
+PI_TYPE(PInt8, signed char);
+PI_SAME(PInt8, signed char)
+
+PI_TYPE(PUInt8, unsigned char);
+PI_SAME(PUInt8, unsigned char)
+
+PI_TYPE(PInt16l, PInt16);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt16l, PInt16)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt16l, PInt16)
+#endif
+
+PI_TYPE(PInt16b, PInt16);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt16b, PInt16)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt16b, PInt16)
+#endif
+
+PI_TYPE(PUInt16l, WORD);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt16l, WORD)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt16l, WORD)
+#endif
+
+PI_TYPE(PUInt16b, WORD);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt16b, WORD)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt16b, WORD)
+#endif
+
+PI_TYPE(PInt32l, PInt32);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt32l, PInt32)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt32l, PInt32)
+#endif
+
+PI_TYPE(PInt32b, PInt32);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt32b, PInt32)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt32b, PInt32)
+#endif
+
+PI_TYPE(PUInt32l, DWORD);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt32l, DWORD)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt32l, DWORD)
+#endif
+
+PI_TYPE(PUInt32b, DWORD);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt32b, DWORD)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt32b, DWORD)
+#endif
+
+PI_TYPE(PInt64l, PInt64);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt64l, PInt64)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt64l, PInt64)
+#endif
+
+PI_TYPE(PInt64b, PInt64);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt64b, PInt64)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt64b, PInt64)
+#endif
+
+PI_TYPE(PUInt64l, PUInt64);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt64l, PUInt64)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt64l, PUInt64)
+#endif
+
+PI_TYPE(PUInt64b, PUInt64);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt64b, PUInt64)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt64b, PUInt64)
+#endif
+
+PI_TYPE(PFloat32l, float);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat32l, float)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat32l, float)
+#endif
+
+PI_TYPE(PFloat32b, float);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat32b, float)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat32b, float)
+#endif
+
+PI_TYPE(PFloat64l, double);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat64l, double)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat64l, double)
+#endif
+
+PI_TYPE(PFloat64b, double);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat64b, double)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat64b, double)
+#endif
+
+PI_TYPE(PFloat80l, long double);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat80l, long double)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat80l, long double)
+#endif
+
+PI_TYPE(PFloat80b, long double);
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat80b, long double)
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat80b, long double)
+#endif
+
+#undef PI_TYPE
+#undef PI_SAME
+#undef PI_DIFF
 
 
 ///////////////////////////////////////////////////////////////////////////////
