@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.18  1998/11/24 09:38:22  robertj
+ * FreeBSD port.
+ *
  * Revision 1.17  1998/11/10 12:59:18  robertj
  * Fixed strange problems with readdir_r usage.
  *
@@ -75,41 +78,6 @@ PINLINE PTime::PTime()
   theTime = time(NULL);
 }
 
-PINLINE BOOL PTime::GetTimeAMPM()
-#if defined(P_USE_LANGINFO)
-  { return strstr(nl_langinfo(T_FMT), "%p") != NULL; }
-#elif defined(P_LINUX)
-  { return strchr(_time_info->time, 'H') == NULL; }
-#elif defined(P_SUN4)
-  { return FALSE; }
-#else
-#warning No AMPM flag
-  { return FALSE; }
-#endif
-
-PINLINE PString PTime::GetTimeAM()
-#if defined(P_USE_LANGINFO)
-  { return PString(nl_langinfo(AM_STR)); }
-#elif defined(P_LINUX)
-  { return PString(_time_info->ampm[0]); }
-#elif defined(P_SUN4)
-  { return "am"; }
-#else
-#warning No AM string
-  { return "am"; }
-#endif
-
-PINLINE PString PTime::GetTimePM()
-#if defined(P_USE_LANGINFO)
-  { return PString(nl_langinfo(PM_STR)); }
-#elif defined(P_LINUX)
-  { return PString(_time_info->ampm[1]); }
-#elif defined(P_SUN4)
-  { return "pm"; }
-#else
-#warning No PM string
-  { return "pm"; }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
