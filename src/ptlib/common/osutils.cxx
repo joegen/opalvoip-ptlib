@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.163  2001/04/27 01:05:26  yurik
+ * Exit crash removal try
+ *
  * Revision 1.162  2001/04/15 03:39:24  yurik
  * Removed shutdown flag. Use IsTerminated() instead
  *
@@ -565,6 +568,11 @@ class PSimpleThread : public PThread
     INT parameter;
 };
 
+#if defined(_WIN32_WCE)
+#pragma init_seg(lib)
+
+static PMutex gTraceMutex;
+#endif
 
 #ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
@@ -587,8 +595,7 @@ void PSetErrorStream(ostream * s)
 #endif
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 
 #if !defined(__NUCLEUS_PLUS__) && !defined(_WIN32_WCE)
 static ostream * PTraceStream = &cerr;
@@ -628,10 +635,6 @@ void PTrace::SetStream(ostream * s)
 void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
   PProcess & process = PProcess::Current();
-#ifdef _WIN32_WCE
-  if( process.IsTerminated() )
-    return ;
-#endif
 
   // If we have a tracing version, then open trace file and set modes
   PTrace::SetOptions(options);
@@ -698,18 +701,16 @@ BOOL PTrace::CanTrace(unsigned level)
 
 static PMutex & PTraceMutex()
 {
+#if !defined(_WIN32_WCE)
   static PMutex mutex;
   return mutex;
+#else
+  return gTraceMutex;
+#endif
 }
-
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
-#ifdef _WIN32_WCE
-  if( PProcess::Current().IsTerminated() )
-    return *PTraceStream;
-#endif
-
   PTraceMutex().Wait();
 
   if (level == UINT_MAX)
@@ -782,11 +783,6 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 ostream & PTrace::End(ostream & s)
 {
-#ifdef _WIN32_WCE
-  if( PProcess::Current().IsTerminated() )
-    return *PTraceStream;
-#endif
-
   /* Only output if there is something to output, this prevents some blank trace
      entries from appearing under some patholgical conditions. Unfortunately if
      stderr is used the unitbuf flag causes the out_waiting() not to work so we 
