@@ -666,11 +666,11 @@ stunOpenSocket( StunAddress& dest, StunAddress* sAddr, int port )
    StunAddress changedAddr;
    UInt32 id;
    stunParseResponse( msg, msgLen, &id, false, &mappedAddr, &changedAddr);
-   
-   clog << "--- stunOpenSocket --- " << endl;
-   clog << "\treq  id=" << req.id << endl;
-   clog << "\tresp id=" << id << endl;
-   clog << "\tmappedAddr=" << mappedAddr << endl;
+
+   //clog << "--- stunOpenSocket --- " << endl;
+   //clog << "\treq  id=" << req.id << endl;
+   //clog << "\tresp id=" << id << endl;
+   //clog << "\tmappedAddr=" << mappedAddr << endl;
 
    *sAddr = mappedAddr;
    
@@ -698,6 +698,11 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, i
    for( i=0; i<NUM; i++)
    {
      fd[i] = openPort((port == 0) ? port : (port + i));
+     if (fd[i] < 0) {
+       while (i > 0)
+         close(fd[--i]);
+       return false;
+     }
    }
    
    for( i=0; i<NUM; i++)
@@ -731,12 +736,12 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, i
                          &changedAddr);
    }
   
-   clog << "--- stunOpenSocketPair --- " << endl;
+   //clog << "--- stunOpenSocketPair --- " << endl;
 
-   for( i=0; i<NUM; i++)
-   {
-      clog << "\tmappedAddr=" << mappedAddr[i] << endl;
-   }
+   //for( i=0; i<NUM; i++)
+   //{
+      //clog << "\tmappedAddr=" << mappedAddr[i] << endl;
+   //}
    
    if ( mappedAddr[0].addrHdr.port %2 == 0 )
    {
@@ -801,7 +806,7 @@ sendTest( int myFd, StunAddress& dest, int testNum )
          discard=true;
          break;
       default:
-         cerr << "Test " << testNum <<" is unkown\n";
+         //cerr << "Test " << testNum <<" is unkown\n";
          assert(0);
    }
    
@@ -838,7 +843,7 @@ stunTest( StunAddress& dest, int testNum, bool verbose )
                &msgLen,
                &from.addr.v4addr,
                &from.addrHdr.port );
-   clog << "Got a response" << endl;
+   //clog << "Got a response" << endl;
 
    StunAddress mappedAddr;
    StunAddress changedAddr;
@@ -850,9 +855,9 @@ stunTest( StunAddress& dest, int testNum, bool verbose )
                       &mappedAddr, 
                       &changedAddr);
    
-   clog << "\t id=" << id << endl;
-   clog << "\t mappedAddr=" << mappedAddr << endl;
-   clog << "\t changedAddr=" << changedAddr << endl;
+   //clog << "\t id=" << id << endl;
+   //clog << "\t mappedAddr=" << mappedAddr << endl;
+   //clog << "\t changedAddr=" << changedAddr << endl;
 }
 
 
@@ -926,7 +931,7 @@ stunType( StunAddress& dest, bool verbose, int portBase)
       if ( err == SOCKET_ERROR )
       {
          // error occured
-         cerr << "Error " << e << " " << strerror(e) << " in select" << endl;
+         //cerr << "Error " << e << " " << strerror(e) << " in select" << endl;
       }
       else if ( err == 0 )
       {

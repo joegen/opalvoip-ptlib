@@ -136,7 +136,7 @@ openPort( unsigned short port, unsigned int interfaceIp )
    if ( fd == INVALID_SOCKET )
    {
       int err = errno;
-      cerr << "Could not create a UDP socket:" << err << endl;
+      //cerr << "Could not create a UDP socket:" << err << endl;
       return INVALID_SOCKET;
    }
     
@@ -168,19 +168,19 @@ openPort( unsigned short port, unsigned int interfaceIp )
       {
          case EADDRINUSE:
          {
-            cerr << "Port " << port << " for receiving UDP is in use" << endl;
+            //cerr << "Port " << port << " for receiving UDP is in use" << endl;
             return INVALID_SOCKET;
          }
          break;
          case EADDRNOTAVAIL:
          {
-            cerr << "Cannot assign requested address" << endl;
+            //cerr << "Cannot assign requested address" << endl;
             return INVALID_SOCKET;
          }
          break;
          default:
          {
-            cerr << "Could not bind UDP receive port. Error=" << e << endl;
+            //cerr << "Could not bind UDP receive port. Error=" << e << endl;
             return INVALID_SOCKET;
          }
          break;
@@ -219,10 +219,10 @@ getMessage( Socket fd, char* buf, int* len,
         switch (err)
         {
         case ENOTSOCK:
-                cerr << "Error fd not a socket" <<   endl;
+                //cerr << "Error fd not a socket" <<   endl;
                 break;
         default:
-            cerr << "Error=" << err << endl;
+            ;//cerr << "Error=" << err << endl;
         }
 
         return false;
@@ -230,13 +230,13 @@ getMessage( Socket fd, char* buf, int* len,
 
    if ( *len < 0 )
    {
-     clog << "socket closed?" << endl;
+     //clog << "socket closed?" << endl;
      return false;
    }
     
    if ( *len == 0 )
    {
-       clog << "socket closed?" << endl;
+      //clog << "socket closed?" << endl;
       return false;
    }
     
@@ -245,7 +245,7 @@ getMessage( Socket fd, char* buf, int* len,
 
    if ( (*len)+1 >= originalSize )
    {
-      cerr << "Received a message that was too large" << endl;
+      //cerr << "Received a message that was too large" << endl;
       return false;
    }
    buf[*len]=0;
@@ -298,12 +298,12 @@ sendMessage( Socket fd, char* buf, int l,
          break;
          case EAFNOSUPPORT:
          {
-            cerr << "err EAFNOSUPPORT in send" << endl;
+            //cerr << "err EAFNOSUPPORT in send" << endl;
          }
          break;
          default:
          {
-            cerr << "err " << e << " "  << strerror(e) << " in send" << endl;
+            //cerr << "err " << e << " "  << strerror(e) << " in send" << endl;
          }
       }
       return false;
@@ -311,13 +311,13 @@ sendMessage( Socket fd, char* buf, int l,
     
    if ( s == 0 )
    {
-      cerr << "no data sent in send" << endl;
+      //cerr << "no data sent in send" << endl;
       return false;
    }
     
    if ( s != l )
    {
-      cerr << "only " << s << " out of " << l << " bytes sent" << endl;
+      //cerr << "only " << s << " out of " << l << " bytes sent" << endl;
       return false;
    }
     
@@ -337,7 +337,7 @@ initNetwork()
    if ( err != 0 ) 
    {
       // could not find a usable WinSock DLL
-      cerr << "Could not load winsock" << endl;
+      //cerr << "Could not load winsock" << endl;
       assert(0); // is this is failing, try a different version that 2.2, 1.0 or later will likely work 
       exit(1);
    }
@@ -354,7 +354,7 @@ initNetwork()
       /* Tell the user that we could not find a usable */
       /* WinSock DLL.                                  */
       WSACleanup( );
-      cerr << "Bad winsock verion" << endl;
+      //cerr << "Bad winsock verion" << endl;
       assert(0); // is this is failing, try a different version that 2.2, 1.0 or later will likely work 
       exit(1);
    }    
