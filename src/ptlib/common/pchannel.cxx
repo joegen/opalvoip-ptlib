@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.17  2002/01/26 23:57:45  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.16  2001/11/13 04:13:22  robertj
  * Added ability to adjust size of ios buffer on PChannels.
  *
@@ -163,7 +166,7 @@ int PChannelStreamBuffer::sync()
 
 
 streampos PChannelStreamBuffer::seekoff(streamoff off,
-#ifdef __MWERKS__
+#if defined(__MWERKS__) || defined(GCC3)
                                         ios::seekdir dir, ios::openmode)
 #else
                                         ios::seek_dir dir, int)
@@ -178,7 +181,8 @@ streampos PChannelStreamBuffer::seekoff(streamoff off,
 
 
 PChannel::PChannel()
-  : readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
+  : iostream(cout.rdbuf()),
+    readTimeout(PMaxTimeInterval), writeTimeout(PMaxTimeInterval)
 {
   os_handle = -1;
   memset(lastErrorCode, 0, sizeof(lastErrorCode));
