@@ -194,6 +194,9 @@ SOURCE=.\winsock.cxx
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl;fi;fd"
+# Begin Group "Common"
+
+# PROP Default_Filter ""
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtLib\Args.h
@@ -359,9 +362,162 @@ SOURCE=..\..\..\Include\PtLib\Timer.h
 SOURCE=..\..\..\Include\PtLib\Udpsock.h
 # End Source File
 # End Group
-# Begin Group "Resource Files"
+# Begin Group "MSOS"
 
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;cnt;rtf;gif;jpg;jpeg;jpe"
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\channel.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\config.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\contain.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\debstrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\dynalink.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\epacket.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ethsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\file.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\filepath.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\icmpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ipdsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ipsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ipxsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\mail.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\mutex.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\pdirect.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\pipechan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\pprocess.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ptime.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\remconn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\semaphor.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\serchan.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\sfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\socket.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\spxsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\svcproc.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\syncpoint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\tcpsock.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\textfile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\thread.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\timeint.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\timer.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\udpsock.h
+# End Source File
+# End Group
+# End Group
+# Begin Group "Inlines"
+
+# PROP Default_Filter ".inl"
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\contain.inl
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\osutil.inl
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptlib\msos\ptlib\ptlib.inl
+# End Source File
 # End Group
 # End Target
 # End Project
