@@ -155,7 +155,7 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
     OnOutOfBand(buffer, ooblen);
 
     // attempt to read non-out of band data
-  if (ConvertOSError(lastReadCount = ::read(os_handle, buf, maxLen)))
+  if (ConvertOSError(lastReadCount = ::read(os_handle, (char *)buf, maxLen)))
     return lastReadCount > 0;
 
   lastReadCount = 0;
@@ -180,8 +180,13 @@ BOOL PSocket::os_recvfrom(
     return FALSE;
   }
 
-  // attempt to read data
-  return ::recvfrom(os_handle, buf, len, flags, (sockaddr *)addr, addrlen);
+  // attempt to read non-out of band data
+  if (ConvertOSError(lastReadCount =
+        ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)))
+    return lastReadCount > 0;
+
+  lastReadCount = 0;
+  return FALSE;
 }
 
 
