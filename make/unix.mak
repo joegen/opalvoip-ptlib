@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.91  2001/04/02 00:09:44  robertj
+# Added big endian flag for Linux on sparc, thanks Kawahara Taro.
+#
 # Revision 1.90  2001/03/29 04:50:41  robertj
 # Added STANDARD_TARGETS macro for all standard targets such as opt debug etc
 # Changed "all" target for first target to be "default_target" so use makefile
@@ -438,6 +441,10 @@ STDCCFLAGS	+= -DP_64BIT
 endif
 
 ifeq ($(MACHTYPE),ppc)
+ENDIAN		:= PBIG_ENDIAN
+endif
+
+ifeq ($(MACHTYPE),alpha)
 ENDIAN		:= PBIG_ENDIAN
 endif
 
