@@ -26,6 +26,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.136  2005/02/03 01:25:44  csoutheren
+# Make sure code still links when plugins not enabled
+#
 # Revision 1.135  2005/01/31 08:05:41  csoutheren
 # More patches for MacOSX, thanks to Hannes Friederich
 #
@@ -665,10 +668,6 @@ SOURCES += $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif #HAS_OPENSSL
 endif #HAS_HTTPSVC
 
-ifdef HAS_PLUGINS
-SOURCES += $(COMMON_SRC_DIR)/pluginmgr.cxx 
-endif
-
 ifdef HAS_CONFIG_FILE
 SOURCES += config.cxx 
 endif
@@ -693,6 +692,7 @@ SOURCES	+= \
 	tlib.cxx \
 	switch.cxx \
 	assert.cxx \
+        $(COMMON_SRC_DIR)/pluginmgr.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
 	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/ptime.cxx \
