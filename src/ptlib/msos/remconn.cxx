@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.25  1999/02/16 08:08:07  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.24  1998/11/30 04:50:16  robertj
  * New directory structure
  *
@@ -97,7 +100,9 @@ namespace winver400 {
 }
 
 
-PDECLARE_CLASS(PRASDLL, PDynaLink)
+class PRASDLL : public PDynaLink
+{
+  PCLASSINFO(PRASDLL, PDynaLink)
   public:
     PRASDLL();
 
@@ -458,7 +463,7 @@ static DWORD MyRasGetEntryProperties(const char * name, PBYTEArray & entrybuf)
   DWORD error = Ras.GetEntryProperties(NULL, (char *)name, entry, &entrySize, NULL, 0);
   if (error == ERROR_BUFFER_TOO_SMALL) {
     entry = (LPRASENTRY)entrybuf.GetPointer(entrySize);
-    error == Ras.GetEntryProperties(NULL, (char *)name, entry, &entrySize, NULL, 0);
+    error = Ras.GetEntryProperties(NULL, (char *)name, entry, &entrySize, NULL, 0);
   }
 
   return error;
