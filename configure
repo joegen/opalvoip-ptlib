@@ -2015,12 +2015,6 @@ case "$target_os" in
                    SHAREDLIBEXT="dylib";
 		   STDCCFLAGS="$STDCCFLAGS -DP_USE_PRAGMA"
 		   ;;
-  
-  beos*)	   OSTYPE=beos ;
-		   OS_TAG="P_BEOS" ;
-		   OSRELEASE=`uname -r` ;
-		   STDCCFLAGS="$STDCCGLAGS -D__BEOS__"
-		   ;;  
 
   * )		   OSTYPE="$target_os" ;
 		   OS_TAG="P_UNKNOWN_OS" ;
@@ -2050,15 +2044,15 @@ case "$target_cpu" in
    powerpc )       MACHTYPE=ppc ;
 		   ;;
 
-   powerpc64 )     MACHTYPE=ppc ;
-		   P_64BIT=1 ;
-		   ;;
-
-   ppc64 )         MACHTYPE=ppc ;
-		   P_64BIT=1 ;
-		   ;;
-
    ppc )           MACHTYPE=ppc ;
+		   ;;
+
+   powerpc64 )     MACHTYPE=ppc64 ;
+		   P_64BIT=1 ;
+		   ;;
+
+   ppc64 )         MACHTYPE=ppc64 ;
+		   P_64BIT=1 ;
 		   ;;
 
    ia64)	   MACHTYPE=ia64 ;
@@ -2107,13 +2101,10 @@ _ACEOF
 
 fi
 
-if test ${OSTYPE} != beos ; then
 
 cat >>confdefs.h <<\_ACEOF
 #define P_PTHREADS 1
 _ACEOF
-
-fi
 
 if test ${OSTYPE} != Darwin ; then
 
@@ -3344,57 +3335,13 @@ if test $ac_cv_func_regcomp = yes; then
 fi
 
     if test "$HAS_REGEX" = "yes" ; then
-      echo "$as_me:$LINENO: checking if <regex.h> defines re_pattern_buffer" >&5
-echo $ECHO_N "checking if <regex.h> defines re_pattern_buffer... $ECHO_C" >&6
-      cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <regex.h>
-int
-main ()
-{
-typedef struct re_pattern_buffer regex_t;
-  ;
-  return 0;
-}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  HAS_REGEX=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-      if test "$HAS_REGEX" = "yes" ; then
-        echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-        HAS_REGEX=1
+      HAS_REGEX=1
 
 
 cat >>confdefs.h <<\_ACEOF
 #define P_REGEX 1
 _ACEOF
 
-      else
-        echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-      fi
     fi
   fi
 fi
