@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.4 1996/08/11 07:03:45 robertj Exp $
+ * $Id: remconn.h,v 1.5 1996/11/04 03:40:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.5  1996/11/04 03:40:43  robertj
+ * Added more debugging for remote drop outs.
+ *
  * Revision 1.4  1996/08/11 07:03:45  robertj
  * Changed remote connection to late bind DLL.
  *
@@ -65,6 +68,7 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       PortInUse,
       NoNameOrNumber,
       GeneralFailure,
+      ConnectionLost,
       NotInstalled,
       NumStatuses
     };
