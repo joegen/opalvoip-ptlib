@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.29 1997/06/10 11:36:32 craigs Exp $
+ * $Id: pstring.h,v 1.30 1997/07/08 13:13:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.30  1997/07/08 13:13:47  robertj
+ * DLL support.
+ *
  * Revision 1.29  1997/06/10 11:36:32  craigs
  * Added inline statements to allow compilation uder Unix
  *
@@ -439,7 +442,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        new string with concatenation of the object and parameter.
      */
 
-    friend PString PEXPORT operator+(
+    friend PString operator+(
       const char * cstr,    // C string to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -454,7 +457,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        new string with concatenation of the object and parameter.
      */
 
-    friend PString PEXPORT operator+(
+    friend PString operator+(
       char  c,              // Character to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -551,7 +554,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        new string with concatenation of the object and parameter.
      */
 
-    friend PString PEXPORT operator&(
+    friend PString operator&(
       const char * cstr,    // C string to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -571,7 +574,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        new string with concatenation of the object and parameter.
      */
 
-    friend PString PEXPORT operator&(
+    friend PString operator&(
       char  c,              // Character to be concatenated to.
       const PString & str   // String to concatenate.
     );
@@ -1095,7 +1098,7 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        reference to the current string object.
      */
 
-    friend PString PEXPORT psprintf(
+    friend PString psprintf(
       const char * cfmt,    // C string for output format.
       ...                  // Extra parameters for <CODE>sprintf()</CODE> call.
     );
@@ -1137,11 +1140,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        reference to the current string object.
      */
 
-    friend PString PEXPORT pvsprintf(
+    friend PString pvsprintf(
       const char * cfmt,   // C string for output format.
       va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
-    friend PString PEXPORT pvsprintf(
+    friend PString pvsprintf(
       const PString & fmt, // String for output format.
       va_list args         // Extra parameters for <CODE>sprintf()</CODE> call.
     );
@@ -1376,7 +1379,7 @@ PDECLARE_CLASS(PCaselessString, PString)
 
 class PStringStream;
 
-class PEXPORT PStringStream : public PString, public iostream {
+class PStringStream : public PString, public iostream {
 /* This class is a standard C++ stream class descendent for reading or writing
    streamed data to or from a <A>PString</A> class.
    
@@ -1452,7 +1455,7 @@ class PEXPORT PStringStream : public PString, public iostream {
     PStringStream(int, const PStringStream &) { }
     PStringStream & operator=(const PStringStream &) { return *this; }
 
-    class PEXPORT Buffer : public streambuf {
+    class Buffer : public streambuf {
       public:
         Buffer(PStringStream * str);
         Buffer(const Buffer & sbuf);
