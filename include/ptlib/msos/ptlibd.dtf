@@ -1459,6 +1459,7 @@ EXPORTS
     ?Compile@PRegularExpression@@QAEHABVPString@@H@Z @1190 NONAME ;public: int __thiscall PRegularExpression::Compile(class PString const &,int)
     ?Compile@PRegularExpression@@QAEHPBDH@Z @1191 NONAME ;public: int __thiscall PRegularExpression::Compile(char const *,int)
     ?CompleteIO@PWin32PacketDriver@@QAEHAAKAAVPWin32Overlapped@@@Z @2363 NONAME ;public: int __thiscall PWin32PacketDriver::CompleteIO(unsigned long &,class PWin32Overlapped &)
+    ?Concatenate@PAbstractArray@@QAEHABV1@@Z @3051 NONAME ;public: int __thiscall PAbstractArray::Concatenate(class PAbstractArray const &)
     ?Condition@PIntCondMutex@@UAEHXZ @1192 NONAME ;public: virtual int __thiscall PIntCondMutex::Condition(void)
     ?Connect@PEthSocket@@UAEHABVPString@@@Z @2364 NONAME ;public: virtual int __thiscall PEthSocket::Connect(class PString const &)
     ?Connect@PIPSocket@@UAEHABVAddress@1@@Z @1193 NONAME ;public: virtual int __thiscall PIPSocket::Connect(class PIPSocket::Address const &)
@@ -1923,6 +1924,7 @@ EXPORTS
     ?GetSecond@PTime@@QBEHXZ @1592 NONAME ;public: int __thiscall PTime::GetSecond(void)const 
     ?GetSeconds@PTimeInterval@@QBEJXZ @1593 NONAME ;public: long __thiscall PTimeInterval::GetSeconds(void)const 
     ?GetSections@PConfig@@QBE?AVPStringList@@XZ @1594 NONAME ;public: class PStringList  __thiscall PConfig::GetSections(void)const 
+    ?GetSendAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @3052 NONAME ;public: void __thiscall PUDPSocket::GetSendAddress(class PIPSocket::Address &,unsigned short &)
     ?GetService@PSocket@@QBE?AVPString@@XZ @1595 NONAME ;public: class PString  __thiscall PSocket::GetService(void)const 
     ?GetServiceByPort@PSocket@@SA?AVPString@@PBDG@Z @1596 NONAME ;public: static class PString  __cdecl PSocket::GetServiceByPort(char const *,unsigned short)
     ?GetServiceByPort@PSocket@@UBE?AVPString@@G@Z @1597 NONAME ;public: virtual class PString  __thiscall PSocket::GetServiceByPort(unsigned short)const 
@@ -2723,4 +2725,5 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?Concatenate@PAbstractArray@@QAEHABV1@@Z @3051 NONAME ;public: int __thiscall PAbstractArray::Concatenate(class PAbstractArray const &)
+    ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @3053 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
+    ?Read@PUDPSocket@@UAEHPAXH@Z @3054 NONAME ;public: virtual int __thiscall PUDPSocket::Read(void *,int)

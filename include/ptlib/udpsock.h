@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.16  1999/08/27 08:18:52  robertj
+ * Added ability to get the host/port of the the last packet read/written to UDP socket.
+ *
  * Revision 1.15  1999/03/09 02:59:51  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -111,6 +114,13 @@ class PUDPSocket : public PIPDatagramSocket
 
   /**@name Overrides from class PSocket */
   //@{
+    /** Override of PChannel functions to allow connectionless reads
+     */
+    BOOL Read(
+      void * buf,   /// Pointer to a block of memory to read.
+      PINDEX len    /// Number of bytes to read.
+    );
+
     /** Override of PChannel functions to allow connectionless writes
      */
     BOOL Write(
@@ -133,6 +143,22 @@ class PUDPSocket : public PIPDatagramSocket
       const Address & address,    /// IP address to send packets.
       WORD port                   /// Port to send packets.
     );
+
+    /** Get the address to use for connectionless Write().
+     */
+    void GetSendAddress(
+      Address & address,    /// IP address to send packets.
+      WORD & port           /// Port to send packets.
+    );
+
+    /** Get the address of the sender in the last connectionless Read().
+        Note that thsi only applies to the Read() and not the ReadFrom()
+        function.
+     */
+    void GetLastReceiveAddress(
+      Address & address,    /// IP address to send packets.
+      WORD & port           /// Port to send packets.
+    );
   //@}
 
   protected:
@@ -140,7 +166,10 @@ class PUDPSocket : public PIPDatagramSocket
     virtual const char * GetProtocolName() const;
 
     Address sendAddress;
-    WORD sendPort;
+    WORD    sendPort;
+
+    Address lastReceiveAddress;
+    WORD    lastReceivePort;
 
 #ifdef DOC_PLUS_PLUS
 };
