@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.8 1996/03/17 05:43:42 robertj Exp $
+ * $Id: ptime.cxx,v 1.9 1996/05/09 12:18:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.9  1996/05/09 12:18:16  robertj
+ * Fixed syntax error found by Mac platform.
+ * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
+ *
  * Revision 1.8  1996/03/17 05:43:42  robertj
  * Changed PTimeInterval to 64 bit integer.
  *
@@ -43,14 +47,17 @@
 
 #if defined(_PTIMEINTERVAL)
 
-PTimeInterval::PTimeInterval(PInt64 millisecs,
+PTimeInterval::PTimeInterval(long millisecs,
                              long seconds,
                              long minutes,
                              long hours,
                              int days)
 {
-  milliseconds =
-      millisecs + 1000*(seconds + 60*(minutes + 60*(hours + 24*(PInt64)days)));
+  milliseconds = millisecs;
+  milliseconds += seconds*1000;
+  milliseconds += minutes*60000L;
+  milliseconds += hours*3600000L;
+  milliseconds += PInt64(86400000L)*days;
 }
 
 
@@ -96,7 +103,7 @@ void PTimeInterval::PrintOn(ostream & strm) const
 
   if (hadPrevious)
     strm.width(2);
-  strm << (int)(milliseconds%60000)/1000;
+  strm << (long)(milliseconds%60000)/1000;
 
   if (decs > 0)
     strm << '.' << setw(decs) << (int)(milliseconds%1000);
@@ -128,8 +135,11 @@ void PTimeInterval::SetInterval(PInt64 millisecs,
                                 long hours,
                                 int days)
 {
-  milliseconds =
-      millisecs + 1000*(seconds + 60*(minutes + 60*(hours + 24*(PInt64)days)));
+  milliseconds = millisecs;
+  milliseconds += seconds*1000;
+  milliseconds += minutes*60000L;
+  milliseconds += hours*3600000L;
+  milliseconds += PInt64(86400000L)*days;
 }
 
 
@@ -411,7 +421,7 @@ enum {
   DAY,
   AM,
   PM,
-  ZONE,
+  ZONE
 };
 
 typedef struct {
