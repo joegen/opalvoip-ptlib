@@ -29,9 +29,7 @@
  * as the filename of video input device. For example "ohphone
  * --videoinput /dev/raw1394" should use your 1394 camera as video input.
  * 
- * "/dev/video1394" uses faster DMA transfer for video input but one of
- * my two cameras fails to send video via /dev/video1394. It is safe to
- * start with /dev/raw1394.
+ * "/dev/video1394" uses faster DMA transfer for video input.
  * 
  * If you use DEVFS, the filename for DMA transfer may be /dev/video1394/0.
  * 
@@ -76,20 +74,19 @@
  * ------------------------------------------------------------
  *
  * Test Environment:
- * This module was tested on February 2002 against:
+ * This module was tested against:
  *
  * Pentium III  
- * Linux 2.4.17
+ * Linux 2.4.18
  * libraw1394 0.9.0
- * libdc1394 CVS version (Feb. 15, 2002)
+ * libdc1394 CVS version (Mar. 2, 2002)
  * pwlib 1.2.12
  * openh323 1.8.0
  * ohphone 1.2.0
  * GnomeMeeting 0.12.2
  *
  * Irez StealthFire Camera (http://www.irez.com)
- * OrangeMicro iBot Camera (with which DMA transfer does not work,
- *			    http://www.orangemicro.com)
+ * OrangeMicro iBot Camera (http://www.orangemicro.com)
  *
  *
  * Internal Structure:
@@ -102,9 +99,10 @@
  * them, this module uses:
  *	160x120 YUV(4:4:4)  for  176x144 PTlib resolution, and
  *	320x240 YUV(4:2:2)  for  352x288 PTlib resolution.
- * The bus speed is always set to 400 Mbps, and the frame rate is
- * always 30 fps. If these modes are not supported by your camera,
- * this module does not capture images from yours.
+ * The bus speed is always set to P_DC1394_DEFAULT_SPEED (400 Mbps).
+ * If transfer at P_DC1394_DEFAULT_SPEED is not supported by your
+ * camera, this module does not capture images from yours. In such
+ * a case please set P_DC1394_DEFAULT_SPEED to appropriate value.
  *
  * Conversion routines from above formats to YUV420P were added to
  * src/ptlib/common/vconvert.cxx
@@ -122,9 +120,10 @@
  *
  * PVideoInput1394DcDevice does not allow creation of two or more instances.
  *
- * The bus speed is always set to 400 Mbps and the frame rate is
- * always 30 fps. If these modes are not supported, you don't get
- * video picture from your camera.
+ * The bus speed is always set to P_DC1394_DEFAULT_SPEED (400 Mbps).
+ * If transfer at P_DC1394_DEFAULT_SPEED is not supported by your
+ * camera, this module does not capture images from yours. In such
+ * a case please set P_DC1394_DEFAULT_SPEED to appropriate value.
  *
  * Copyright:
  * Copyright (c) 2002 Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>
@@ -142,6 +141,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.6  2002/03/04 01:21:31  dereks
+ * Add frame rate support to Firewire camera. Thanks Ryutaroh Matsumoto.
+ *
  * Revision 1.5  2002/02/28 19:44:03  dereks
  * Add complete readme on Firewire usage. Thanks to Ryutaroh Matsumoto.
  *
@@ -171,6 +173,9 @@
 #include <ptlib/vconvert.h>
 #include <ptlib/file.h>
 
+#ifndef P_DC1394_DEFAULT_SPEED
+#define P_DC1394_DEFAULT_SPEED  SPEED_400
+#endif
 
 //#define ESTIMATE_CAPTURE_PERFORMANCE
 
@@ -250,8 +255,9 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
    *  and
    *  http://sourceforge.net/tracker/index.php?func=detail&aid=435107&group_id=8157&atid=108157
    *-----------------------------------------------------------------------*/
-  if( camera_nodes[0] == numNodes-1) {
-    PTRACE(0,"Sorry, your camera is the highest numbered node\n"
+  for (int i=0; i<numCameras; i++) {
+    if( camera_nodes[i] == numNodes-1) {
+      PTRACE(0,"Sorry, your camera is the highest numbered node\n"
              "of the bus, and has therefore become the root node.\n"
              "The root node is responsible for maintaining \n"
              "the timing of isochronous transactions on the IEEE \n"
@@ -270,9 +276,10 @@ BOOL PVideoInput1394DcDevice::Open(const PString & devName, BOOL startImmediate)
              "for more information see the FAQ at \n"
              "http://linux1394.sourceforge.net/faq.html#DCbusmgmt\n"
              "\n");
-    raw1394_destroy_handle(handle);
-    handle = NULL;
-    return FALSE;
+      raw1394_destroy_handle(handle);
+      handle = NULL;
+      return FALSE;
+    }
   }
 
   SetCanCaptureVideo(TRUE);
@@ -320,7 +327,6 @@ BOOL PVideoInput1394DcDevice::Close()
     return FALSE;
 }
 
-
 BOOL PVideoInput1394DcDevice::Start()
 {
   int dc1394_mode;
@@ -340,19 +346,47 @@ BOOL PVideoInput1394DcDevice::Start()
   // In order to compile the following line, you need libdc1394 later than Feb. 1, 2002.
   camera.dma_device_file = deviceName.GetPointer();
 
+  quadlet_t supported_framerates;
+  if (dc1394_query_supported_framerates(handle, camera_nodes[channelNumber],
+					FORMAT_VGA_NONCOMPRESSED, dc1394_mode,
+					&supported_framerates) != DC1394_SUCCESS) {
+    PTRACE(1, "dc1394_query_supported_framerates() failed.");
+    return FALSE;
+  }
+
+  int framerate;
+
+  // supported_framerates seems always in the network byte order.
+  if (supported_framerates & (1U << (31-5)))
+    framerate = FRAMERATE_60;
+  else if (supported_framerates & (1U << (31-4)))
+    framerate = FRAMERATE_30;
+  else if (supported_framerates & (1U << (31-3)))
+    framerate = FRAMERATE_15;
+  else if (supported_framerates & (1U << (31-2)))
+    framerate = FRAMERATE_7_5;
+  else if (supported_framerates & (1U << (31-1)))
+    framerate = FRAMERATE_3_75;
+  else if (supported_framerates & (1U << (31-0)))
+    framerate = FRAMERATE_1_875;
+  else {
+    PTRACE(1, "No supported frame rate??!!" << supported_framerates);
+    return FALSE;
+  }  
+
   if ((UseDMA &&dc1394_dma_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
                            FORMAT_VGA_NONCOMPRESSED,
                            dc1394_mode,
-                           SPEED_400,
-                           FRAMERATE_30, 4,
+                           P_DC1394_DEFAULT_SPEED,
+                           framerate, 4,
 			 &camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
                            FORMAT_VGA_NONCOMPRESSED,
                            dc1394_mode,
-                           SPEED_400,
-                           FRAMERATE_30,
+                           P_DC1394_DEFAULT_SPEED,
+                           framerate,
 		       &camera)!=DC1394_SUCCESS))
   {
     PTRACE(0,"unable to setup camera-\n"
