@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.53  2004/05/04 11:10:36  rjongbloed
+ * Fixed usage of MakeEmpty() with PStringStream.
+ *
  * Revision 1.52  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -236,9 +239,6 @@ PINLINE PString::PString(char c)
 
 PINLINE PString PString::Empty()
   { return PString(); }
-
-PINLINE PString & PString::MakeEmpty()
-  { SetSize(1); *theArray = '\0'; return *this; }
 
 PINLINE PString & PString::operator=(const PString & str)
   { AssignContents(str); return *this; }
