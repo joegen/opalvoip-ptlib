@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.100  2001/03/03 00:55:02  yurik
+ * Proper fix for filetime routines used in guid calc done for WinCE
+ *
  * Revision 1.99  2001/02/13 06:55:21  robertj
  * Fixed problem with operator= in PDirectory class, part of larger change previously made.
  *
@@ -381,22 +384,22 @@
 
 PTime::PTime()
 {
-#ifdef _WIN32_WCE
-	SYSTEMTIME SystemTime;
-	GetSystemTime(&SystemTime);
-	theTime = SystemTimeToTime(&SystemTime);
-	microseconds=1000*SystemTime.wMilliseconds;
-#else	
   // Magic constant to convert epoch from 1601 to 1970
   static const PInt64 delta = ((PInt64)369*365+(369/4)-3)*24*60*60U;
   static const PInt64 scale = 10000000;
 
   PInt64 timestamp;
+
+#ifndef _WIN32_WCE
   GetSystemTimeAsFileTime((LPFILETIME)&timestamp);
+#else
+  SYSTEMTIME SystemTime;
+  GetSystemTime(&SystemTime);
+  SystemTimeToFileTime(&SystemTime, (LPFILETIME)&timestamp);
+#endif	
+
   theTime = (time_t)(timestamp/scale - delta);
   microseconds = (long)(timestamp%scale/10);
-#endif  
-  
 }
 
 #ifdef UNICODE
