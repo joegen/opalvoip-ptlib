@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.25 1995/04/22 00:43:57 robertj Exp $
+ * $Id: file.h,v 1.26 1995/06/17 11:12:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
+ * Revision 1.26  1995/06/17 11:12:33  robertj
+ * Documentation update.
+ *
  * Revision 1.25  1995/04/22 00:43:57  robertj
  * Added Move() function and changed semantics of Rename().
  * Changed all file name strings to PFilePath objects.
@@ -114,8 +117,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
     PFile();
     /* Create a file object but do not open it. It does not initially have a
        valid file name. However, an attempt to open the file using the
-       <A><CODE>Open()</CODE></A> function will generate a unique temporary
-       file.
+       <A>Open()</A> function will generate a unique temporary file.
      */
 
     enum OpenMode {
@@ -125,7 +127,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
     };
     /* When a file is opened, it may restrict the access available to
        operations on the object instance. A value from this enum is passed to
-       the <A><CODE>Open()</CODE></A> function to set the mode.
+       the <A>Open()</A> function to set the mode.
      */
 
     enum OpenOptions {
@@ -139,7 +141,7 @@ PDECLARE_CONTAINER(PFile, PChannel)
     /* When a file is opened, a number of options may be associated with the
        open file. These describe what action to take on opening the file and
        what to do on closure. A value from this enum is passed to the
-       <A><CODE>Open()</CODE></A> function to set the options.
+       <A>Open()</A> function to set the options.
 
        The <CODE>ModeDefault</CODE> option will use the following values:
        <PRE>
@@ -152,26 +154,26 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
     PFile(
       OpenMode mode,          // Mode in which to open the file.
-      int opts = ModeDefault  // <A>OpenOptions</A> for open operation.
+      int opts = ModeDefault  // <A>OpenOptions enum</A> for open operation.
     );
     /* Create a unique temporary file name, and open the file in the specified
        mode and using the specified options. Note that opening a new, unique,
        temporary file name in ReadOnly mode will always fail. This would only
        be usefull in a mode and options that will create the file.
 
-       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       The <A>PChannel::IsOpen()</A> function may be used after object
        construction to determine if the file was successfully opened.
      */
 
     PFile(
-      const PFilePath & name,     // Name of file to open.
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault     // <A>OpenOptions enum</A> for open operation.
     );
     /* Create a file object with the specified name and open it in the
        specified mode and with the specified options.
 
-       The <A><CODE>IsOpen()</CODE></A> function may be used after object
+       The <A>PChannel::IsOpen()</A> function may be used after object
        construction to determine if the file was successfully opened.
      */
 
@@ -319,8 +321,8 @@ PDECLARE_CONTAINER(PFile, PChannel)
        directory hierarchy, it only changes the name of the directory entry.
 
        The <CODE>newname</CODE> parameter must consist only of the file name
-       part, as returned by the <A><CODE>PFilePath::GetFileName()</CODE></A>
-       function. Any other file path parts will cause an error.
+       part, as returned by the <A>PFilePath::GetFileName()</A> function. Any
+       other file path parts will cause an error.
 
        The first form uses the file path specification associated with the
        instance of the object. The name within the instance is changed to the
@@ -385,17 +387,17 @@ PDECLARE_CONTAINER(PFile, PChannel)
       int opts = ModeDefault      // Options for open operation.
     );
     BOOL Open(
-      const PFilePath & name,     // Name of file to open.
-      OpenMode mode = ReadWrite,  // Mode in which to open the file.
-      int opts = ModeDefault      // <A>OpenOptions</A> for open operation.
+      const PFilePath & name,    // Name of file to open.
+      OpenMode mode = ReadWrite, // Mode in which to open the file.
+      int opts = ModeDefault     // <A>OpenOptions enum</A> for open operation.
     );
     /* Open the given file name (if specified) in the specified mode and with
        the specified options. If the file object already has an open file then
        it is closed.
        
        If there has not been a filename attached to the file object (via
-       <CODE>SetFilePath()</CODE>, the <A><CODE>name</CODE></A> parameter or a
-       previous open) then a new unique temporary filename is generated.
+       <A>SetFilePath()</A>, the <CODE>name</CODE> parameter or a previous
+       open) then a new unique temporary filename is generated.
 
        <H2>Returns:</H2>
        TRUE if the file was successfully opened.
