@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.27  2002/01/16 03:43:01  dereks
+ * Match every VIDIOCMCAPTURE with a VIDIOCSYNC.
+ *
  * Revision 1.26  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -211,8 +214,11 @@ static struct {
 PVideoInputDevice::PVideoInputDevice()
 {
   videoFd       = -1;
-  canMap        = -1;
   hint_index    = PARRAYSIZE(driver_hints) - 1;
+
+  canMap           = -1;
+  for (int i=0; i<2; i++)
+    pendingSync[i] = FALSE;
 }
 
 
@@ -340,6 +346,7 @@ BOOL PVideoInputDevice::Close()
 
   ClearMapping();
   ::close(videoFd);
+
   videoFd = -1;
   canMap  = -1;
   
@@ -388,7 +395,7 @@ PStringList PVideoInputDevice::GetInputDeviceNames()
           }
         }
       } while (procvideo.Next());
-    }
+    }   
   }
   else {
     // Fallback (no proc file system support or whatever)
@@ -640,12 +647,14 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
     //When canMap is < 0, it is the first use of GetFrameData. Check for memory mapping.
     if (::ioctl(videoFd, VIDIOCGMBUF, &frame) < 0) {
       canMap=0;
+      PTRACE(3, "VideoGrabber " << deviceName << " cannot do memory mapping - GMBUF failed.");
       //This video device cannot do memory mapping.
     } else {
       videoBuffer = (BYTE *)::mmap(0, frame.size, PROT_READ|PROT_WRITE, MAP_SHARED, videoFd, 0);
       
       if (videoBuffer < 0) {
         canMap = 0;
+	PTRACE(3, "VideoGrabber " << deviceName << " cannot do memory mapping - ::mmap failed.");
 	//This video device cannot do memory mapping.
       } else {
         canMap = 1;
@@ -664,34 +673,40 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
 	int ret;
         ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]);
 	if (ret < 0) {
-	  PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (A)");
+	  PTRACE(1,"PVideoInputDevice::GetFrameData mcapture1 failed : " << ::strerror(errno));
+	  ClearMapping();	  
 	  canMap = 0;
-	  ::munmap(videoBuffer, frame.size);
-	  videoBuffer = NULL;
 	  //This video device cannot do memory mapping.
-	}	
+	}
+	pendingSync[currentFrame] = TRUE;
       }
     }
   }
 
-  if (canMap == 0) {
+  if (canMap == 0) 
     return NormalReadProcess(buffer, bytesReturned);
-  }
 
   /*****************************
-   * According to Gerd Knorr, in the xawtv package Programming-FAQ, 
-   * http://bytesex.org/xawtv/index.html, for streaming video with 
-   * video4linux at the full frame rate (25 hz PAL, 30 hz NTSC),
-   * you need to 
+   * The xawtv package from http://bytesex.org/xawtv/index.html
+   * contains a programming-FAQ by Gerd Knorr.
+   * For streaming video with video4linux at the full frame rate 
+   * (25 hz PAL, 30 hz NTSC) you need to, 
    *
    *   videoiomcapture frame 0                         (setup)
    *
+   * loop:
    *   videoiomcapture frame 1   (returns immediately)
    *   videoiocsync    frame 0   (waits on the data)
+   *  goto loop:
    *
+   * the loop body could also have been:
    *   videoiomcapture frame 0   (returns immediately)
    *   videoiocsync    frame 1   (waits on the data)
+   *  
+   * The driver requires each mcapture has a corresponding sync. 
+   * Thus, you use the pendingSync array.
    *
+   * After the loop is finished, you need a videoiocsync 0.
    */
 
   // trigger capture of next frame in this buffer.
@@ -700,25 +715,23 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
   
   ret = ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[ 1 - currentFrame ]);
   if ( ret < 0 ) {
-    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (MCAPTURE failed)");
+    PTRACE(1,"PVideoInputDevice::GetFrameData mcapture2 failed : " << ::strerror(errno));
+    ClearMapping();
     canMap = 0;
-    ::munmap(videoBuffer, frame.size);
-    videoBuffer = NULL;
     
     return NormalReadProcess(buffer, bytesReturned);
- }
-
+  }
+  pendingSync[ 1 - currentFrame ] = TRUE;
   
   // device does support memory mapping, get data
 
   // wait for the frame to load. 
   ret = ::ioctl(videoFd, VIDIOCSYNC, &currentFrame);
-    
+  pendingSync[currentFrame] = FALSE;    
   if (ret < 0) {
-    PTRACE(1,"PVideoInputDevice::GetFrameData fallback to read() (CSYNC failed)");
+    PTRACE(1,"PVideoInputDevice::GetFrameData csync failed : " << ::strerror(errno));
+    ClearMapping();
     canMap = 0;
-    ::munmap(videoBuffer, frame.size);
-    videoBuffer = NULL;
  
     return NormalReadProcess(buffer, bytesReturned);
   }
@@ -754,8 +767,7 @@ BOOL PVideoInputDevice::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesRetur
       if (ret < 0) {
 	PTRACE(1,"PVideoInputDevice::NormalReadProcess() failed");
 	return FALSE;
-      }
-      
+      }      
     }
 
     if ((unsigned) ret != frameBytes) {
@@ -776,14 +788,21 @@ BOOL PVideoInputDevice::NormalReadProcess(BYTE *resultBuffer, PINDEX *bytesRetur
 
 void PVideoInputDevice::ClearMapping()
 {
-  if (canMap == 1) {
-    if (videoBuffer != NULL)
-      ::munmap(videoBuffer, frame.size);
+  if ((canMap == 1) && (videoBuffer != NULL)) {
+    for (int i=0; i<2; i++)
+      if (pendingSync[i]) {
+	int res = ::ioctl(videoFd, VIDIOCSYNC, &i);
+	if (res < 0) 
+	  PTRACE(1,"PVideoInputDevice::GetFrameData csync failed : " << ::strerror(errno));
+	pendingSync[i] = FALSE;    
+      }
+    ::munmap(videoBuffer, frame.size);
   }
   
-  canMap = -1;
+  canMap = -1;   
   videoBuffer = NULL;
 }
+
 
 
 BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
