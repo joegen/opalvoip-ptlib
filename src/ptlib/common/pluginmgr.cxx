@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.19  2004/06/01 05:44:57  csoutheren
+ * Added OnShutdown to allow cleanup on exit
+ *
  * Revision 1.18  2004/05/18 06:01:13  csoutheren
  * Deferred plugin loading until after main has executed by using abstract factory classes
  *
@@ -305,9 +308,9 @@ class PluginLoaderStartup : public PProcessStartup
       for (i = 0; i < dirs.GetSize(); i++) 
         mgr.LoadPluginDirectory(dirs[i]);
 
-      // now load the plugin modules
-      PGenericFactory<PPluginModuleManager>::KeyList keyList = PGenericFactory<PPluginModuleManager>::GetKeyList();
-      PGenericFactory<PPluginModuleManager>::KeyList::const_iterator r;
+      // now load the plugin module managers
+      PGenericFactory<PPluginModuleManager>::KeyList_T keyList = PGenericFactory<PPluginModuleManager>::GetKeyList();
+      PGenericFactory<PPluginModuleManager>::KeyList_T::const_iterator r;
       for (r = keyList.begin(); r != keyList.end(); ++r) {
         PPluginModuleManager * mgr = PGenericFactory<PPluginModuleManager>::CreateInstance(*r);
         if (mgr == NULL) {
@@ -316,6 +319,16 @@ class PluginLoaderStartup : public PProcessStartup
           PTRACE(1, "PLUGIN\tCreated manager for plugins of type " << *r);
           managers.push_back(mgr);
         }
+      }
+    }
+
+    void OnShutdown()
+    {
+      while (managers.begin() != managers.end()) {
+        std::vector<PPluginModuleManager *>::iterator r = managers.begin();
+        PPluginModuleManager * mgr = *r;
+        managers.erase(r);
+        mgr->OnShutdown();
       }
     }
 

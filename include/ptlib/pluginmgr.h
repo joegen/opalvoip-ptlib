@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.14  2004/06/01 05:44:57  csoutheren
+ * Added OnShutdown to allow cleanup on exit
+ *
  * Revision 1.13  2004/05/19 06:54:11  csoutheren
  * Removed unused code
  *
@@ -169,6 +172,9 @@ class PPluginModuleManager : public PObject
 
     virtual PluginListType GetPluginList() const
     { return pluginList; }
+
+    virtual void OnShutdown()
+    { }
 
   protected:
     PluginListType pluginList;
