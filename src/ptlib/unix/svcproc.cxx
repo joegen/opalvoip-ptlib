@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.46  2001/03/24 00:49:02  robertj
+ * Added status indication command for services
+ *
  * Revision 1.45  2001/03/23 01:05:32  robertj
  * Added check that log file is writable after setuid but before fork.
  *
@@ -295,6 +298,7 @@ int PServiceProcess::InitialiseService()
              "i-ini-file:"
              "k-kill."
              "t-terminate."
+             "s-status."
              "l-log-file:"
              "u-uid:"
              "g-gid:");
@@ -321,7 +325,7 @@ int PServiceProcess::InitialiseService()
   if (!pidfilename && PDirectory::Exists(pidfilename))
     pidfilename = PDirectory(pidfilename) + PProcess::Current().GetFile().GetFileName() + ".pid";
 
-  if (args.HasOption('k') || args.HasOption('t')) {
+  if (args.HasOption('k') || args.HasOption('t') || args.HasOption('s')) {
     ifstream pidfile(pidfilename);
     if (!pidfile.is_open()) {
       PError << "Could not open pid file: \"" << pidfilename << "\""
@@ -334,6 +338,14 @@ int PServiceProcess::InitialiseService()
     if (pid == 0) {
       PError << "Illegal format pid file \"" << pidfilename << '"' << endl;
       return 1;
+    }
+
+    if (args.HasOption('s')) {
+      cout << "Process at " << pid << " is ";
+      if (kill(pid, 0) != 0)
+        cout << "not ";
+      cout << "running." << endl;
+      return 0;
     }
 
     int sig = args.HasOption('t') ? SIGTERM : SIGKILL;
