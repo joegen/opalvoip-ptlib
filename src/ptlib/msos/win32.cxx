@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.81  1999/02/12 01:01:57  craigs
+ * Fixed problem with linking static versions of libraries
+ *
  * Revision 1.80  1999/01/30 14:28:25  robertj
  * Added GetOSConfigDir() function.
  *
@@ -312,6 +315,7 @@
 #include <ptlib.h>
 
 #include <process.h>
+#include <ptlib/debstrm.h>
 
 #define new PNEW
 
@@ -1396,5 +1400,53 @@ BOOL PDynaLink::GetFunction(const PString & name, Function & func)
   return TRUE;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// PDebugStream
+
+PDebugStream::PDebugStream()
+  : ostream(&buffer)
+{
+}
+
+
+PDebugStream::Buffer::Buffer()
+{
+  setb(buffer, &buffer[sizeof(buffer)-2]);
+  unbuffered(FALSE);
+  setp(base(), ebuf());
+}
+
+
+int PDebugStream::Buffer::overflow(int c)
+{
+  int bufSize = out_waiting();
+
+  if (c != EOF) {
+    *pptr() = (char)c;
+    bufSize++;
+  }
+
+  if (bufSize != 0) {
+    char * p = pbase();
+    setp(p, epptr());
+    p[bufSize] = '\0';
+    OutputDebugString(p);
+  }
+
+  return 0;
+}
+
+
+int PDebugStream::Buffer::underflow()
+{
+  return EOF;
+}
+
+
+int PDebugStream::Buffer::sync()
+{
+  return overflow(EOF);
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
