@@ -5,6 +5,8 @@ asn_grammar.output
 asn_grammar.out
 asn_grammar.h
 asn_grammar.cxx
+asn_grammar_tab.c
+asn_grammar_tab.h
 asnparser.ncb
 asnparser.opt
 asnparser.plg
