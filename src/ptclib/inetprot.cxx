@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.20 1996/05/26 03:46:22 robertj Exp $
+ * $Id: inetprot.cxx,v 1.21 1996/06/03 11:58:43 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.21  1996/06/03 11:58:43  robertj
+ * Fixed bug in reading successive UnRead() calls getting save in wrong order.
+ *
  * Revision 1.20  1996/05/26 03:46:22  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -313,7 +316,7 @@ BOOL PApplicationSocket::ReadLine(PString & str, BOOL allowContinuation)
 
 void PApplicationSocket::UnRead(int ch)
 {
-  unReadBuffer.SetSize((unReadCount+256)&-256);
+  unReadBuffer.SetSize((unReadCount+256)&~255);
   unReadBuffer[unReadCount++] = (char)ch;
 }
 
@@ -326,7 +329,8 @@ void PApplicationSocket::UnRead(const PString & str)
 
 void PApplicationSocket::UnRead(const void * buffer, PINDEX len)
 {
-  char * unreadptr = unReadBuffer.GetPointer((unReadCount+len+255)&-256);
+  char * unreadptr =
+               unReadBuffer.GetPointer((unReadCount+len+255)&~255)+unReadCount;
   const char * bufptr = ((const char *)buffer)+len;
   unReadCount += len;
   while (len-- > 0)
@@ -650,7 +654,7 @@ static const char Binary2Base64[65] =
 
 void PBase64::OutputBase64(const BYTE * data)
 {
-  char * out = encodedString.GetPointer((encodeLength&-256) + 256);
+  char * out = encodedString.GetPointer((encodeLength&~255) + 256);
 
   out[encodeLength++] = Binary2Base64[data[0] >> 2];
   out[encodeLength++] = Binary2Base64[((data[0]&3)<<4) | (data[1]>>4)];
@@ -806,7 +810,7 @@ BOOL PBase64::ProcessDecoding(const char * cstr)
         break;
 
       default : // legal value from 0 to 63
-        BYTE * out = decodedData.GetPointer(((decodeSize+1)&-256) + 256);
+        BYTE * out = decodedData.GetPointer(((decodeSize+1)&~255) + 256);
         switch (quadPosition) {
           case 0 :
             out[decodeSize] = (BYTE)(value << 2);
