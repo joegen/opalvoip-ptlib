@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.5  2000/02/18 01:49:18  craigs
+ * Added VxWorks code
+ *
  * Revision 1.4  1999/06/23 14:19:46  robertj
  * Fixed core dump problem with SIGINT/SIGTERM terminating process.
  *
@@ -52,6 +55,8 @@ void PAssertFunc (const char * file, int line, const char * msg)
   PError << "Assertion fail: File " << file << ", Line " << line << endl;
   if (msg != NULL)
     PError << msg << endl;
+
+#ifndef P_VXWORKS
   for(;;) {
     PError << "\n<A>bort, <C>ore dump, <I>gnore? " << flush;
     int c = getchar();
@@ -73,6 +78,10 @@ void PAssertFunc (const char * file, int line, const char * msg)
         return;
     }
   }
+#else
+  exit(1);
+  kill(taskIdSelf(), SIGABRT);
+#endif
 }
 
 // End Of File ///////////////////////////////////////////////////////////////
