@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: enum.cxx,v $
+ * Revision 1.5  2004/08/03 13:37:45  csoutheren
+ * Added ability to set ENUM search path from environment variable
+ *
  * Revision 1.4  2004/07/19 13:55:41  csoutheren
  * Work-around for crash on gcc 3.5-20040704
  *
@@ -45,6 +48,14 @@
 #include <ptclib/enum.h>
 
 #if P_DNS
+
+#ifdef  _WIN32
+#define PATH_SEP   ";"
+#else
+#define PATH_SEP   ":"
+#endif
+
+static const char * PWLIB_ENUM_PATH = "PWLIB_ENUM_PATH";
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -242,7 +253,7 @@ static PString ApplyRegex(const PString & orig, const PString & regexStr)
   PString value = strings[1];
   for (pos = 0; pos < value.GetLength(); pos++) {
     if (value[pos] == '\\' && pos < value.GetLength()-1) {
-      int var = value[pos+1]-'1'+1;   // not sure if the extra -1 is correct
+      int var = value[pos+1]-'1'+1;   
       PString str;
       if (var >= 0 && var < starts.GetSize() && var < ends.GetSize())
         str = orig(starts[var], ends[var]);
@@ -260,8 +271,16 @@ BOOL PDNS::ENUMLookup(
          PString & dn
 )
 {
-  const char * domains[] = { "e164.voxgratia.org", "e164.org", "e164.arpa" };
-  return PDNS::ENUMLookup(e164, service, PStringArray(sizeof(domains)/sizeof(domains[0]), domains), dn);
+  static const char * defaultDomains[] = { "e164.voxgratia.net", "e164.org", "e164.arpa" };
+
+  PStringArray domains;
+  char * env = ::getenv(PWLIB_ENUM_PATH);
+  if (env == NULL)
+    domains += PStringArray(sizeof(domains)/sizeof(defaultDomains[0]), defaultDomains);
+  else
+    domains += PString(env).Tokenise(PATH_SEP);
+
+  return PDNS::ENUMLookup(e164, service, domains, dn);
 }
 
 static BOOL InternalENUMLookup(const PString & e164, const PString & service, PDNS::NAPTRRecordList & records, PString & returnStr)
