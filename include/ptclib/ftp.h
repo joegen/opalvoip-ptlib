@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.h,v 1.3 1996/03/26 00:50:28 robertj Exp $
+ * $Id: ftp.h,v 1.4 1996/03/31 08:45:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ftp.h,v $
+ * Revision 1.4  1996/03/31 08:45:57  robertj
+ * Added QUIT command sent on FTP socket close.
+ *
  * Revision 1.3  1996/03/26 00:50:28  robertj
  * FTP Client Implementation.
  *
@@ -59,6 +62,15 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
 
     ~PFTPSocket();
     // Delete and close the socket.
+
+
+  // Overrides from class PSocket.
+    virtual BOOL Close();
+    /* Close the socket, and if connected as a client, QUITs from server.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was closed and the QUIT accepted by the server.
+     */
 
 
     //
@@ -349,7 +361,13 @@ PDECLARE_CLASS(PFTPSocket, PApplicationSocket)
       const PString & args
     );
 
-    enum { NotConnected, NeedUser, NeedPassword, Connected } state;
+    enum {
+      NotConnected,
+      NeedUser,
+      NeedPassword,
+      Connected,
+      ClientConnect
+    } state;
 
     PIPSocket::Address remoteHost;
     WORD remotePort;
