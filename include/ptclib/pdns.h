@@ -1,11 +1,32 @@
 /*
- * pdns.cxx
+ * pdns.h
  *
  * PWLib library for DNS lookup services
  *
- * Copyright 2003 Equivalence
+ * Portable Windows Library
+ *
+ * Copyright (c) 2003 Equivalence Pty. Ltd.
+ *
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: pdns.h,v $
+ * Revision 1.4  2003/04/16 07:02:55  robertj
+ * Cleaned up source.
+ *
  * Revision 1.3  2003/04/15 08:14:06  craigs
  * Added single string form of GetSRVRecords
  *
@@ -17,16 +38,16 @@
  *
  */
 
-#ifndef _PDNS
-
-#define _PDNS
+#ifndef _PDNS_H
+#define _PDNS_H
 
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
 
-#include <ptlib.h>
+
 #include <ptlib/sockets.h>
+
 
 // implement DNS lookup for MX and SRV records
 
@@ -35,18 +56,18 @@ class PDNS : public PObject
   public:
     class Record : public PObject
     {
+        PCLASSINFO(Record, PObject);
       public:
         Record();
-        Comparison Compare(const PObject & obj) const = 0;
-        void PrintOn(ostream & strm) const = 0;
 
-        PString hostName;
+        PString            hostName;
         PIPSocket::Address hostAddress;
-        BOOL used;
+        BOOL               used;
     };
 
     class SRVRecord : public Record
     {
+        PCLASSINFO(SRVRecord, Record);
       public:
         Comparison Compare(const PObject & obj) const;
         void PrintOn(ostream & strm) const;
@@ -58,6 +79,7 @@ class PDNS : public PObject
 
     class MXRecord : public Record
     {
+        PCLASSINFO(MXRecord, Record);
       public:
         Comparison Compare(const PObject & obj) const;
         void PrintOn(ostream & strm) const;
@@ -68,34 +90,46 @@ class PDNS : public PObject
     PDECLARE_SORTED_LIST(SRVRecordList, SRVRecord)
       public:
         void PrintOn(ostream & strm) const;
+
         SRVRecord * GetFirst();
         SRVRecord * GetNext();
 
       protected:
-        PINDEX priPos;
+        PINDEX     priPos;
         PWORDArray priList;
     };
 
     PDECLARE_SORTED_LIST(MXRecordList, MXRecord)
       public:
         void PrintOn(ostream & strm) const;
+
         MXRecord * GetFirst();
         MXRecord * GetNext();
+
       protected:
         PINDEX lastIndex;
     };
 
-    static BOOL GetSRVRecords(const PString & _service,
-                              const PString & type,
-		                          const PString & domain,
-		                    PDNS::SRVRecordList & serviceList);
+    static BOOL GetSRVRecords(
+      const PString & service,
+      const PString & type,
+      const PString & domain,
+      SRVRecordList & serviceList
+    );
 
-    static BOOL GetSRVRecords(const PString & service,
-		                    PDNS::SRVRecordList & serviceList);
+    static BOOL GetSRVRecords(
+      const PString & service,
+      SRVRecordList & serviceList
+    );
 
-
-    static BOOL GetMXRecords(const PString & domain,
-		                    PDNS::MXRecordList & serviceList);
+    static BOOL GetMXRecords(
+      const PString & domain,
+      MXRecordList & serviceList
+    );
 };
 
-#endif
+
+#endif // _PDNS_H
+
+
+// End Of File ///////////////////////////////////////////////////////////////
