@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.30  2004/04/11 13:26:25  csoutheren
+ * Removed namespace problems and removed warnings for Windows <string>
+ *
  * Revision 1.29  2003/09/17 05:40:25  csoutheren
  * Removed recursive includes
  *
@@ -139,7 +142,7 @@
 #endif
 
 #ifdef __USE_STD__
-using namespace std;
+//using namespace std;
 #endif
 
 #include "ptbuildopts.h"
