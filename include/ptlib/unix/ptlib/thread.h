@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.36  2004/05/02 17:49:15  ykiryanov
+ * Changed name of unblock pipe for BeOS to make compatible with socket code
+ *
  * Revision 1.35  2004/04/18 00:27:32  ykiryanov
  * Added variable to count thread suspends. Removed thread name
  *
@@ -191,7 +194,7 @@
     friend class PSocket;
     friend void PX_SuspendSignalHandler(int);
 
-#elif defined(BE_THREADS)
+#elif defined(__BEOS__)
 
   private:
     static int32 ThreadFunction(void * threadPtr);
@@ -199,7 +202,7 @@
     int32 mPriority;
     PINDEX mStackSize;
     int32 mSuspendCount;
-    int mUnblockPipe[2];
+    int unblockPipe[2];
 
 #elif defined(P_MAC_MPTHREADS)
   public:
