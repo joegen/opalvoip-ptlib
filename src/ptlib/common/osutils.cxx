@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.83 1997/04/27 05:50:15 robertj Exp $
+ * $Id: osutils.cxx,v 1.84 1997/07/08 13:08:12 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.84  1997/07/08 13:08:12  robertj
+ * DLL support.
+ *
  * Revision 1.83  1997/04/27 05:50:15  robertj
  * DLL support.
  *
@@ -1766,6 +1769,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 
 PProcess & PProcess::Current()
 {
+  PAssertNULL(PProcessInstance);
   return *PProcessInstance;
 }
 
