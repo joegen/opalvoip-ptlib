@@ -4572,6 +4572,8 @@ EXPORTS
     ?PAssertFunc@@YAXPBD@Z @3042 NONAME
     ?PAssertFunc@@YAXPBDH00@Z @3043 NONAME
     ?PAssertFunc@@YAXPBDH0W4PStandardAssertMessage@@@Z @3044 NONAME
+    ?PAssertFuncInline@@YA_N_NPBDH11@Z @7065 NONAME
+    ?PAssertFuncInline@@YA_N_NPBDH1W4PStandardAssertMessage@@@Z @7066 NONAME
     ?Pause@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @3045 NONAME
     ?Pause@PTimer@@QAEXXZ @3046 NONAME
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @3047 NONAME
