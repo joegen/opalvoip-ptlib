@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.52 1996/09/14 13:09:23 robertj Exp $
+ * $Id: osutil.inl,v 1.53 1997/01/12 04:21:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.53  1997/01/12 04:21:39  robertj
+ * Added IsPast() and IsFuture() functions for time comparison.
+ *
  * Revision 1.52  1996/09/14 13:09:23  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -289,6 +292,12 @@ PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
 
 PINLINE int PTime::GetDayOfYear() const
   { return localtime(&theTime)->tm_yday; }
+
+PINLINE BOOL PTime::IsPast() const
+  { return theTime < time(NULL); }
+
+PINLINE BOOL PTime::IsFuture() const
+  { return theTime > time(NULL); }
 
 
 PINLINE PTime PTime::operator+(const PTimeInterval & t) const
