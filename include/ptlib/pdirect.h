@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.8 1994/03/07 07:38:19 robertj Exp $
+ * $Id: pdirect.h,v 1.9 1994/04/01 14:14:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,8 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
- * Revision 1.8  1994/03/07 07:38:19  robertj
- * Major enhancementsacross the board.
+ * Revision 1.9  1994/04/01 14:14:57  robertj
+ * Put platform independent file permissions and type codes back.
  *
  * Revision 1.7  1994/01/13  03:17:55  robertj
  * Added functions to get the name of the volume the directory is contained in
@@ -37,19 +37,39 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File System
 
+enum PFileTypes {
+  PRegularFile = 1,
+  PSymbolicLink = 2,
+  PSubDirectory = 4,
+  PCharDevice = 8,
+  PBlockDevice = 16,
+  PFifo = 32,
+  PSocketDevice = 64,
+  PUnknownFileType = 256,
+  PAllFiles = PRegularFile|PSymbolicLink|PSubDirectory|
+                       PCharDevice|PBlockDevice|PFifo|PSocketDevice|PUnknownFileType
+};
 
-#define PAllFiles (PRegularFile|PSymbolicLink|PSubDirectory| \
-                       PCharDevice|PBlockDevice|PFifo|PSocket|PUnknownFileType)
 
-#define PAllPermissions (PUserRead|PUserWrite|PUserExecute|PGroupRead| \
-                PGroupWrite|PGroupExecute|PWorldRead|PWorldWrite|PWorldExecute)
-
-#define PDefaultPerms (PUserRead|PUserWrite|PUserExecute| \
-                             PGroupRead|PGroupExecute|PWorldRead|PWorldExecute)
+enum PPermissions {
+  PWorldExecute = 1,
+  PWorldWrite = 2,
+  PWorldRead = 4,
+  PGroupExecute = 8,
+  PGroupWrite = 16,
+  PGroupRead = 32,
+  PUserExecute = 64,
+  PUserWrite = 128,
+  PUserRead = 256,
+  PAllPermissions = PUserRead|PUserWrite|PUserExecute|PGroupRead|
+                PGroupWrite|PGroupExecute|PWorldRead|PWorldWrite|PWorldExecute,
+  PDefaultPerms = PUserRead|PUserWrite|PGroupRead|PWorldRead
+};
 
 
 
 PDECLARE_CONTAINER(PDirectory, PContainer)
+
   public:
     PDirectory();
       // Create a directory object of the current directory
@@ -81,8 +101,8 @@ PDECLARE_CONTAINER(PDirectory, PContainer)
     BOOL Create(int perm = PDefaultPerms) const;
     PINLINE static BOOL Create(const PString & p, int perm = PDefaultPerms);
       // Create a new directory with the specified permissions
-      
-    BOOL Remove() const;
+
+    BOOL Remove();
     PINLINE static BOOL Remove(const PString & p);
       // Delete the specified directory.
       
