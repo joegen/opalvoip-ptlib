@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.68  2003/06/29 01:40:50  ykiryanov
+ * Added include <ptlib/wince/time.h> as in PPC2003 we have also another time.h now
+ *
  * Revision 1.67  2003/06/23 16:31:03  ykiryanov
  * Excluded PFile::SetPermissions function from WinCE build
  *
@@ -262,6 +265,9 @@
 #include <ptlib/ptlib.inl>
 #endif
 
+#ifdef _WIN32_WCE
+#include <ptlib/wince/time.h>
+#endif
 
 ostream & operator<<(ostream & s, PInt64 v)
 {
