@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.62  2001/10/31 01:33:07  robertj
+ * Added extra const for constant HTTP tag name strings.
+ *
  * Revision 1.61  2001/10/03 00:26:34  robertj
  * Upgraded client to HTTP/1.1 and for chunked mode entity bodies.
  *
@@ -702,34 +705,34 @@ static char const * const HTTPCommands[PHTTP::NumCommands] = {
 };
 
 
-const char * PHTTP::AllowTag           = "Allow";
-const char * PHTTP::AuthorizationTag   = "Authorization";
-const char * PHTTP::ContentEncodingTag = "Content-Encoding";
-const char * PHTTP::ContentLengthTag   = "Content-Length";
-const char * PHTTP::ContentTypeTag     = "Content-Type";
-const char * PHTTP::DateTag            = "Date";
-const char * PHTTP::ExpiresTag         = "Expires";
-const char * PHTTP::FromTag            = "From";
-const char * PHTTP::IfModifiedSinceTag = "If-Modified-Since";
-const char * PHTTP::LastModifiedTag    = "Last-Modified";
-const char * PHTTP::LocationTag        = "Location";
-const char * PHTTP::PragmaTag          = "Pragma";
-const char * PHTTP::PragmaNoCacheTag   = "no-cache";
-const char * PHTTP::RefererTag         = "Referer";
-const char * PHTTP::ServerTag          = "Server";
-const char * PHTTP::UserAgentTag       = "User-Agent";
-const char * PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
-const char * PHTTP::MIMEVersionTag     = "MIME-Version";
-const char * PHTTP::ConnectionTag      = "Connection";
-const char * PHTTP::KeepAliveTag       = "Keep-Alive";
-const char * PHTTP::TransferEncodingTag= "Transfer-Encoding";
-const char * PHTTP::ChunkedTag         = "chunked";
-const char * PHTTP::ProxyConnectionTag = "Proxy-Connection";
-const char * PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
-const char * PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
-const char * PHTTP::ForwardedTag       = "Forwarded";
-const char * PHTTP::SetCookieTag       = "Set-Cookie";
-const char * PHTTP::CookieTag          = "Cookie";
+const char * const PHTTP::AllowTag           = "Allow";
+const char * const PHTTP::AuthorizationTag   = "Authorization";
+const char * const PHTTP::ContentEncodingTag = "Content-Encoding";
+const char * const PHTTP::ContentLengthTag   = "Content-Length";
+const char * const PHTTP::ContentTypeTag     = "Content-Type";
+const char * const PHTTP::DateTag            = "Date";
+const char * const PHTTP::ExpiresTag         = "Expires";
+const char * const PHTTP::FromTag            = "From";
+const char * const PHTTP::IfModifiedSinceTag = "If-Modified-Since";
+const char * const PHTTP::LastModifiedTag    = "Last-Modified";
+const char * const PHTTP::LocationTag        = "Location";
+const char * const PHTTP::PragmaTag          = "Pragma";
+const char * const PHTTP::PragmaNoCacheTag   = "no-cache";
+const char * const PHTTP::RefererTag         = "Referer";
+const char * const PHTTP::ServerTag          = "Server";
+const char * const PHTTP::UserAgentTag       = "User-Agent";
+const char * const PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
+const char * const PHTTP::MIMEVersionTag     = "MIME-Version";
+const char * const PHTTP::ConnectionTag      = "Connection";
+const char * const PHTTP::KeepAliveTag       = "Keep-Alive";
+const char * const PHTTP::TransferEncodingTag= "Transfer-Encoding";
+const char * const PHTTP::ChunkedTag         = "chunked";
+const char * const PHTTP::ProxyConnectionTag = "Proxy-Connection";
+const char * const PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
+const char * const PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
+const char * const PHTTP::ForwardedTag       = "Forwarded";
+const char * const PHTTP::SetCookieTag       = "Set-Cookie";
+const char * const PHTTP::CookieTag          = "Cookie";
 
 
 
