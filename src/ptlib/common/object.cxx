@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.37  1999/03/09 10:30:17  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
  * Revision 1.36  1999/02/22 10:48:14  robertj
  * Fixed delete operator prototypes for MSVC6 and GNU compatibility.
  *
@@ -183,7 +186,7 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 
 
 
-#ifdef _DEBUG
+#if PMEMORY_CHECK
 
 #undef malloc
 #undef realloc

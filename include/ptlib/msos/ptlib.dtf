@@ -442,6 +442,7 @@ EXPORTS
     ??A?$PArray@VPWaveBuffer@@@@QBEAAVPWaveBuffer@@H@Z @2090 NONAME ;public: class PWaveBuffer & __thiscall PArray<class PWaveBuffer>::operator[](int)const 
     ??A?$PBaseArray@J@@QAEAAJH@Z @1839 NONAME ;public: long & __thiscall PBaseArray<long>::operator[](int)
     ??A?$PBaseArray@PAVPObject@@@@QAEAAPAVPObject@@H@Z @2038 NONAME ;public: class PObject * & __thiscall PBaseArray<class PObject *>::operator[](int)
+    ??AAddress@PIPSocket@@QBEEH@Z @2122 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
     ??APArgList@@QBE?AVPString@@H@Z @374 NONAME ;public: class PString  __thiscall PArgList::operator[](int)const 
     ??APStringArray@@QAEAAVPString@@H@Z @375 NONAME ;public: class PString & __thiscall PStringArray::operator[](int)
     ??BAddress@PEthSocket@@QBE?AVPString@@XZ @1840 NONAME ;public: __thiscall PEthSocket::Address::operator class PString(void)const 
@@ -1386,7 +1387,6 @@ EXPORTS
     ?InsertAt@PAbstractSet@@UAEHHPAVPObject@@@Z @1202 NONAME ;public: virtual int __thiscall PAbstractSet::InsertAt(int,class PObject *)
     ?InsertAt@PAbstractSortedList@@UAEHHPAVPObject@@@Z @1203 NONAME ;public: virtual int __thiscall PAbstractSortedList::InsertAt(int,class PObject *)
     ?InsertAt@PArrayObjects@@UAEHHPAVPObject@@@Z @1204 NONAME ;public: virtual int __thiscall PArrayObjects::InsertAt(int,class PObject *)
-    ?InsertString@PSortedStringList@@QAEHABVPString@@0@Z @1205 NONAME ;public: int __thiscall PSortedStringList::InsertString(class PString const &,class PString const &)
     ?InsertString@PStringList@@QAEHABVPString@@0@Z @1206 NONAME ;public: int __thiscall PStringList::InsertString(class PString const &,class PString const &)
     ?InternalCompare@PCaselessString@@MBE?AW4Comparison@PObject@@HD@Z @1207 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PCaselessString::InternalCompare(int,char)const 
     ?InternalCompare@PCaselessString@@MBE?AW4Comparison@PObject@@HHPBD@Z @1208 NONAME ;protected: virtual enum PObject::Comparison  __thiscall PCaselessString::InternalCompare(int,int,char const *)const 
@@ -1665,7 +1665,6 @@ EXPORTS
     ?OnPause@PServiceProcess@@UAEHXZ @1450 NONAME ;public: virtual int __thiscall PServiceProcess::OnPause(void)
     ?OnReadComplete@PChannel@@UAEXPAXH@Z @1451 NONAME ;public: virtual void __thiscall PChannel::OnReadComplete(void *,int)
     ?OnStop@PServiceProcess@@UAEXXZ @1452 NONAME ;public: virtual void __thiscall PServiceProcess::OnStop(void)
-    ?OnTimeout@PTimer@@MAEXXZ @1453 NONAME ;protected: virtual void __thiscall PTimer::OnTimeout(void)
     ?OnWait@PCondMutex@@UAEXXZ @1454 NONAME ;public: virtual void __thiscall PCondMutex::OnWait(void)
     ?OnWriteComplete@PChannel@@UAEXPBXH@Z @1455 NONAME ;public: virtual void __thiscall PChannel::OnWriteComplete(void const *,int)
     ?Open@NT_ServiceManager@@AAEHPAVPServiceProcess@@@Z @1456 NONAME ;private: int __thiscall NT_ServiceManager::Open(class PServiceProcess *)
@@ -1722,6 +1721,7 @@ EXPORTS
     ?Pause@PTimer@@QAEXXZ @1495 NONAME ;public: void __thiscall PTimer::Pause(void)
     ?Pause@Win95_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1496 NONAME ;public: virtual int __thiscall Win95_ServiceManager::Pause(class PServiceProcess *)
     ?PBeginTrace@@YAAAVostream@@PBDH@Z @2116 NONAME ;class ostream & __cdecl PBeginTrace(char const *,int)
+    ?PCanTrace@@YAHI@Z @2123 NONAME ;int __cdecl PCanTrace(unsigned int)
     ?PEndTrace@@YAAAVostream@@AAV1@@Z @2117 NONAME ;class ostream & __cdecl PEndTrace(class ostream &)
     ?PGetErrorStream@@YAAAVostream@@XZ @1497 NONAME ;class ostream & __cdecl PGetErrorStream(void)
     ?pHostByAddr@@3VPHostByAddr@@A @1499 NONAME ;class PHostByAddr  pHostByAddr
@@ -2040,7 +2040,6 @@ EXPORTS
     ?Write@PSocket@@UAEHPBXH@Z @1771 NONAME ;public: virtual int __thiscall PSocket::Write(void const *,int)
     ?Write@PSoundChannel@@UAEHPBXH@Z @2079 NONAME ;public: virtual int __thiscall PSoundChannel::Write(void const *,int)
     ?Write@PStructuredFile@@EAEHPBXH@Z @1772 NONAME ;private: virtual int __thiscall PStructuredFile::Write(void const *,int)
-    ?Write@PStructuredFile@@QAEHPAX@Z @1773 NONAME ;public: int __thiscall PStructuredFile::Write(void *)
     ?Write@PTCPSocket@@UAEHPBXH@Z @1774 NONAME ;public: virtual int __thiscall PTCPSocket::Write(void const *,int)
     ?Write@PUDPSocket@@UAEHPBXH@Z @1775 NONAME ;public: virtual int __thiscall PUDPSocket::Write(void const *,int)
     ?WriteAsync@PChannel@@UAEHPBXH@Z @1776 NONAME ;public: virtual int __thiscall PChannel::WriteAsync(void const *,int)
@@ -2058,5 +2057,5 @@ EXPORTS
     ?__setfill@@YAAAVios@@AAV1@H@Z @1786 NONAME ;class ios & __cdecl __setfill(class ios &,int)
     ?__setw@@YAAAVios@@AAV1@H@Z @1787 NONAME ;class ios & __cdecl __setw(class ios &,int)
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??AAddress@PIPSocket@@QBEEH@Z @2122 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
-    ?PCanTrace@@YAHI@Z @2123 NONAME ;int __cdecl PCanTrace(unsigned int)
+    ?OnTimeout@PTimer@@UAEXXZ @2124 NONAME ;public: virtual void __thiscall PTimer::OnTimeout(void)
+    ?Write@PStructuredFile@@QAEHPBX@Z @2125 NONAME ;public: int __thiscall PStructuredFile::Write(void const *)
