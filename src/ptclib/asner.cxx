@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.10 1998/05/21 04:26:54 robertj Exp $
+ * $Id: asner.cxx,v 1.11 1998/05/21 04:58:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.11  1998/05/21 04:58:54  robertj
+ * GCC comptaibility.
+ *
  * Revision 1.10  1998/05/21 04:26:54  robertj
  * Fixed numerous PER problems.
  *
@@ -1092,6 +1095,7 @@ void PASN_BitString::Invert(unsigned bit)
 
 void PASN_BitString::SetConstraints(ConstraintType type, int lower, unsigned upper)
 {
+  PAssert(lower >= 0, PInvalidParameter);
   PASN_ConstrainedObject::SetConstraints(type, lower, upper);
   if (constraint != Unconstrained) {
     if (totalBits < (unsigned)lowerLimit)
@@ -1314,9 +1318,10 @@ PString PASN_OctetString::AsString() const
 
 void PASN_OctetString::SetConstraints(ConstraintType type, int lower, unsigned upper)
 {
+  PAssert(lower >= 0, PInvalidParameter);
   PASN_ConstrainedObject::SetConstraints(type, lower, upper);
   if (constraint != Unconstrained) {
-    if (value.GetSize() < lowerLimit)
+    if (value.GetSize() < (PINDEX)lowerLimit)
       value.SetSize(lowerLimit);
     else if ((unsigned)value.GetSize() > upperLimit)
       value.SetSize(upperLimit);
@@ -3106,7 +3111,7 @@ void PASN_Stream::BeginEncoding()
 {
   bitOffset = 8;
   byteOffset = 0;
-  *this = PBYTEArray(20);
+  PBYTEArray::operator=(PBYTEArray(20));
 }
 
 
@@ -3203,7 +3208,7 @@ PBER_Stream::PBER_Stream(const BYTE * buf, PINDEX size)
 
 PBER_Stream & PBER_Stream::operator=(const PBYTEArray & bytes)
 {
-  PASN_Stream::operator=(bytes);
+  PBYTEArray::operator=(bytes);
   ResetDecoder();
   return *this;
 }
@@ -3447,7 +3452,7 @@ PPER_Stream::PPER_Stream(const BYTE * buf, PINDEX size, BOOL alignment)
 
 PPER_Stream & PPER_Stream::operator=(const PBYTEArray & bytes)
 {
-  PASN_Stream::operator=(bytes);
+  PBYTEArray::operator=(bytes);
   ResetDecoder();
   aligned = TRUE;
   return *this;
