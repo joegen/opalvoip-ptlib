@@ -62,14 +62,14 @@ static BOOL ReadConfigFile (PFilePath & filename, PXConfig & config)
 
   // read lines in the file
   while (file.ReadLine(line)) {
-    line.Trim();
+    line = line.Trim();
     if ((len = line.GetLength()) > 0) {
 
       // ignore comments and blank lines 
       char ch = line[0];
       if ((len > 0) && (ch != ';') && (ch != '#')) {
         if (ch == '[') {
-          PCaselessString sectionName = line.Mid(1,len-(line[len-1]==']'?2:1));
+          PCaselessString sectionName = (line.Mid(1,len-(line[len-1]==']'?2:1))).Trim();
           PINDEX  index;
           if ((index = config.GetValuesIndex(sectionName)) != P_MAX_INDEX)
             currentSection = &config[index];
@@ -80,7 +80,9 @@ static BOOL ReadConfigFile (PFilePath & filename, PXConfig & config)
         } else if (currentSection != NULL) {
           PINDEX equals = line.Find('=');
           if (equals > 0) {
-            PXConfigValue * value = new PXConfigValue(line.Left(equals), line.Right(len - equals - 1));
+            PString keyStr = line.Left(equals).Trim();
+            PString valStr = line.Right(len - equals - 1).Trim();
+            PXConfigValue * value = new PXConfigValue(keyStr, valStr);
             currentSection->GetList().Append(value);
           }
         }
@@ -130,7 +132,7 @@ void PConfig::Construct(Source src)
   
   switch (src) {
     case PConfig::Environment:
-      GetEnvironment(PProcess::Current()->GetEnvironment(), *config);
+      GetEnvironment(PProcess::Current()->GetEnvp(), *config);
       saveOnExit = FALSE;
       return;
 
@@ -148,7 +150,7 @@ void PConfig::Construct(Source src)
       if (!PFile::Exists(filename)) {
         filename = PProcess::Current()->GetHomeDir() +
                    APP_CONFIG_DIR + 
-                   PProcess::Current()->GetName() + EXTENSION;
+                   PProcess::Current()->GetFile().GetTitle() + EXTENSION;
         if (!PFile::Exists(filename))
           return;
       }
@@ -201,7 +203,7 @@ PStringList PConfig::GetSections()
 {
   PStringList list;
 
-  for (PINDEX i = 0; i < list.GetSize(); i++)
+  for (PINDEX i = 0; i < (*config).GetSize(); i++)
     list.AppendString((*config)[i]);
 
   return list;
