@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.21  2001/12/06 22:15:09  dereks
+ * Additional debugging lines
+ *
  * Revision 1.20  2001/11/28 04:45:14  robertj
  * Added Win32 flipped RGB colour formats.
  *
@@ -328,7 +331,7 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   }
   
   PTRACE(1,"PVideoDevice::SetFrameSizeConverter Colour converter creation has succeeded");
-
+  
   PINDEX prefResizeIdx = 0;
   while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
     
@@ -339,13 +342,16 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
                        prefResizeTable[prefResizeIdx].device_height)) {
 	BOOL converterOK= converter->SetDstFrameSize(width, height, bScaleNotCrop);
 	if (converterOK){
-  	  PTRACE(3,"PVideoDevice\t SetFrameSizeConverter succceded");
+  	  PTRACE(3,"PVideoDevice\t SetFrameSizeConverter succceded for " <<
+		 prefResizeTable[prefResizeIdx].device_width << "x" <<
+		 prefResizeTable[prefResizeIdx].device_height << " ---> " <<
+		 width<<"x"<<height);	       
+
 	  return TRUE;
 	}
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for src framesize " <<
+	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter FAILED for " <<
 	       prefResizeTable[prefResizeIdx].device_width << "x" <<
-	       prefResizeTable[prefResizeIdx].device_height);
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for dst framesize " <<
+	       prefResizeTable[prefResizeIdx].device_height << " ---> " <<
 	       width<<"x"<<height);	       
       }
     }
