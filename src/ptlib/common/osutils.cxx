@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.201  2002/12/11 03:23:27  robertj
+ * Fixed deadlock in read/write mutex, at price of not having seemless upgrading
+ *   of read lock to write lock. There is now a window in which some other
+ *   thread may gain write lock from the thread that was trying to upgrade.
+ *
  * Revision 1.200  2002/12/10 02:39:07  robertj
  * Avoid odd trace output to stderr before trace file is set.
  *
@@ -2609,18 +2614,17 @@ void PReadWriteMutex::StartWrite()
   if (nest.writerCount > 1)
     return;
 
-  // Make sure multiple threads wanting write access can't do the following
-  // logic about unlocking readers in the same thread and wating for readers
-  // in other threads to stop reading.
-  writerMutex.Wait();
-
   // If have a read lock already in this thread then do the "real" unlock code
   // but do not change the lock count, calls to EndRead() will now just
   // decrement the count instead of doing the unlock (its already done!)
   if (nest.readerCount > 0)
     InternalEndRead();
 
-  // Do do the rest of the text book write lock
+  // Note in this gap another thread could grab the write lock, thus
+
+  // Now do the text book write lock
+  writerMutex.Wait();
+
   writerCount++;
   if (writerCount == 1)
     readerSemaphore.Wait();
@@ -2661,17 +2665,16 @@ void PReadWriteMutex::EndWrite()
   if (writerCount == 0)
     readerSemaphore.Signal();
 
-  // Before we release the writerMutex so another thread can grab the object in
-  // write only mode, check to see if there are any read lock present, if so then
-  // reacquire the read lock (not changing the count) otherwise clean up the
+  writerMutex.Signal();
+  // End of text book write unlock
+
+  // Now check to see if there was a read lock present for this thread, if so
+  // then reacquire the read lock (not changing the count) otherwise clean up the
   // memory for the nested thread info structure
   if (nest->readerCount > 0)
     InternalStartRead();
   else
     EndNest();
-
-  // Complete text book unlock
-  writerMutex.Signal();
 }
 
 
