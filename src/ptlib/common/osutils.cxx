@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.56 1996/03/12 11:30:50 robertj Exp $
+ * $Id: osutils.cxx,v 1.57 1996/03/16 04:51:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.57  1996/03/16 04:51:50  robertj
+ * Fixed yet another bug in the scheduler.
+ *
  * Revision 1.56  1996/03/12 11:30:50  robertj
  * Moved PProcess destructor to platform dependent code.
  *
@@ -1828,8 +1831,10 @@ void PThread::Yield()
         thread->status = Terminated;
         if (thread == start)         // If unlinking the "start" thread
           start = prev;      //    then we better make it still in list
-        if (thread != current && thread->autoDelete)
+        if (thread != current && thread->autoDelete) {
           delete thread;
+          thread = prev;
+        }
         break;
 
       default :
