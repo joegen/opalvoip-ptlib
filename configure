@@ -2503,6 +2503,103 @@ _ACEOF
 
 fi
 
+echo "$as_me:$LINENO: checking if readdir_r has 2 parms" >&5
+echo $ECHO_N "checking if readdir_r has 2 parms... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+DIR *s; struct dirent * e; readdir_r(s, e);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  P_HAS_POSIX_READDIR_R=2
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+P_HAS_POSIX_READDIR_R=0
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+if test ${P_HAS_POSIX_READDIR_R} = 2 ; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+  echo "$as_me:$LINENO: checking if readdir_r has 3 parms" >&5
+echo $ECHO_N "checking if readdir_r has 3 parms... $ECHO_C" >&6
+  cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <dirent.h>
+int
+main ()
+{
+DIR *s; struct dirent * e; struct dirent * p; readdir_r(s, e, &p);
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  P_HAS_POSIX_READDIR_R=3
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+P_HAS_POSIX_READDIR_R=0
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+  if test ${P_HAS_POSIX_READDIR_R} = 3 ; then
+    echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+  else
+    echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6
+  fi
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define P_HAS_POSIX_READDIR_R ${P_HAS_POSIX_READDIR_R}
+_ACEOF
+
+
+
 
 
 
