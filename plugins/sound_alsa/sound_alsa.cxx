@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.1.2.2  2003/10/28 21:34:45  dereksmithies
+ * Remove use of os_handle variable. Thanks Damien Sandras.
+ *
  * Revision 1.1.2.1  2003/10/28 02:55:53  dereksmithies
  * Initial release of alsa code. Thanks to Damien Sandras
  *
@@ -65,7 +68,6 @@ void PSoundChannelALSA::Construct()
   period_size = 0;
   periods = 0;
   card_nr = 0;
-  os_handle = NULL;
   alsa_os_handle = NULL;
 }
 
@@ -165,7 +167,6 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
   Close();
 
   alsa_os_handle = NULL;
-  os_handle = NULL;
 
   if (_dir == Recorder)
     stream = SND_PCM_STREAM_CAPTURE;
