@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.139  2000/05/25 13:47:51  robertj
+ * Fixed warning with GNU.
+ *
  * Revision 1.138  2000/05/25 11:05:55  robertj
  * Added PConfigArgs class so can save program arguments to config files.
  *
@@ -1202,8 +1205,8 @@ void PArgList::MissingArgument(const PString & option) const
 
 PConfigArgs::PConfigArgs(const PArgList & args)
   : PArgList(args),
-    negationPrefix("no-"),
-    sectionName(config.GetDefaultSection())
+    sectionName(config.GetDefaultSection()),
+    negationPrefix("no-")
 {
 }
 
