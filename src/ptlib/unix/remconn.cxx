@@ -21,7 +21,7 @@
 #define HAS_IFREQ
 #endif
 
-#if defined(P_SUN4)
+#if defined(P_SUN4) || defined(P_SOLARIS)
 #include <net/if.h>
 #include <sys/sockio.h>
 #define HAS_IFREQ

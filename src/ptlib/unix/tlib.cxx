@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.11  1996/05/03 13:15:27  craigs
+ * More Sun4 & Solaris fixes
+ *
  * Revision 1.10  1996/05/03 13:11:35  craigs
  * More Sun4 fixes
  *
@@ -49,7 +52,7 @@
 #define VIRTUAL_STACK_SIZE (stackSize*5)
 #endif
 
-#if defined(P_LINUX) || defined(P_SUN4)
+#if defined(P_LINUX) || defined(P_SUN4) || defined(P_SOLARIS)
 #include <sys/utsname.h>
 #define  HAS_UNAME
 #endif
@@ -118,7 +121,9 @@ PString PProcess::GetOSName()
 #elif defined(P_HPUX9)
   return PString("HP/UX");
 #elif defined(P_SUN4)
-  return PString("SUNOS");
+  return PString("SunOS");
+#elif defined(P_SOLARIS)
+  return PString("Solaris");
 #else
   return PString("Unknown");
 #endif
