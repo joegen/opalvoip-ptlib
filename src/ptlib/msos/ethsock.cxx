@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.cxx,v 1.3 1998/08/25 11:03:15 robertj Exp $
+ * $Id: ethsock.cxx,v 1.4 1998/09/08 15:14:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.4  1998/09/08 15:14:36  robertj
+ * Fixed packet type based filtering in Read() function.
+ *
  * Revision 1.3  1998/08/25 11:03:15  robertj
  * Fixed proble with NT get of OID.
  * Fixed bug with not setting channel name when interface opened.
@@ -222,6 +225,7 @@ class PWin32PacketBuffer
 
     BOOL InProgress() const { return status == Progressing; }
     BOOL IsCompleted() const { return status == Completed; }
+    BOOL IsType(WORD type) const;
 
   protected:
     Statuses         status;
@@ -627,10 +631,17 @@ BOOL PWin32PacketVxD::BindInterface(const PString & interfaceName)
     }
   }
 
+  PString devName;
+  PINDEX colon = interfaceName.Find(':');
+  if (colon != P_MAX_INDEX)
+    devName = interfaceName.Left(colon);
+  else
+    devName = interfaceName;
+  
   BYTE rxbuf[20];
   DWORD rxsize;
   if (!IoControl(IOCTL_PROTOCOL_BIND,
-                 (const char *)interfaceName, interfaceName.GetLength()+1,
+                 (const char *)devName, devName.GetLength()+1,
                  rxbuf, sizeof(rxbuf), rxsize)) {
     dwError = ::GetLastError();
     return FALSE;
@@ -859,8 +870,10 @@ BOOL PEthSocket::Connect(const PString & newName)
 {
   Close();
 
-  if (!driver->BindInterface(newName))
+  if (!driver->BindInterface(newName)) {
+    osError = driver->GetLastError();
     return FALSE;
+  }
 
   Address myAddr;
   if (!GetAddress(myAddr))
@@ -1042,32 +1055,39 @@ BOOL PEthSocket::ResetAdaptor()
 
 BOOL PEthSocket::Read(void * data, PINDEX length)
 {
-  HANDLE handles[MAXIMUM_WAIT_OBJECTS];
-
   PINDEX idx;
-  for (idx = 0; idx < numBuffers; idx++) {
-    PWin32PacketBuffer & buffer = buffers[idx];
-    if (!buffer.InProgress()) {
-      if (!buffer.ReadAsync(*driver))
-        return FALSE;
+
+  do {
+    HANDLE handles[MAXIMUM_WAIT_OBJECTS];
+
+    for (idx = 0; idx < numBuffers; idx++) {
+      PWin32PacketBuffer & buffer = buffers[idx];
+      if (buffer.InProgress()) {
+        if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
+          if (!buffer.ReadComplete(*driver))
+            return ConvertOSError(-1);
+      }
+      else {
+        if (!buffer.ReadAsync(*driver))
+          return ConvertOSError(-1);
+      }
+
+      if (buffer.IsCompleted() && buffer.IsType(filterType)) {
+        lastReadCount = buffer.GetData(data, length);
+        return TRUE;
+      }
+
+      handles[idx] = buffer.GetEvent();
     }
 
-    if (buffer.IsCompleted()) {
-      lastReadCount = buffer.GetData(data, length);
-      return TRUE;
-    }
-    handles[idx] = buffer.GetEvent();
-  }
+    DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
+    if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers)
+      return ConvertOSError(-1);
 
-  DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
-  if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers) {
-    DWORD dwError = ::GetLastError();
-    return FALSE;
-  }
-
-  idx = result - WAIT_OBJECT_0;
-  if (!buffers[idx].ReadComplete(*driver))
-    return FALSE;
+    idx = result - WAIT_OBJECT_0;
+    if (!buffers[idx].ReadComplete(*driver))
+      return ConvertOSError(-1);
+  } while (!buffers[idx].IsType(filterType));
 
   lastReadCount = buffers[idx].GetData(data, length);
   return TRUE;
@@ -1083,27 +1103,28 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
     PWin32PacketBuffer & buffer = buffers[idx];
     if (buffer.InProgress()) {
       if (WaitForSingleObject(buffer.GetEvent(), 0) == WAIT_OBJECT_0)
-        buffer.WriteComplete(*driver);
+        if (!buffer.WriteComplete(*driver))
+          return ConvertOSError(-1);
     }
+
     if (!buffer.InProgress()) {
       lastWriteCount = buffer.PutData(data, length);
-      return buffer.WriteAsync(*driver);
+      return ConvertOSError(buffer.WriteAsync(*driver) ? 0 : -1);
     }
+
     handles[idx] = buffer.GetEvent();
   }
 
   DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
-  if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers) {
-    DWORD dwError = ::GetLastError();
-    return FALSE;
-  }
+  if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers)
+    return ConvertOSError(-1);
 
   idx = result - WAIT_OBJECT_0;
   if (!buffers[idx].WriteComplete(*driver))
-    return FALSE;
+    return ConvertOSError(-1);
 
   lastWriteCount = buffers[idx].PutData(data, length);
-  return buffers[idx].WriteAsync(*driver);
+  return ConvertOSError(buffers[idx].WriteAsync(*driver) ? 0 : -1);
 }
 
 
@@ -1206,6 +1227,30 @@ BOOL PWin32PacketBuffer::WriteComplete(PWin32PacketDriver & pkt)
 
   status = Uninitialised;
   return FALSE;
+}
+
+
+BOOL PWin32PacketBuffer::IsType(WORD filterType) const
+{
+  if (filterType == PEthSocket::TypeAll)
+    return TRUE;
+
+  const PEthSocket::Frame * frame = (const PEthSocket::Frame *)(const BYTE *)data;
+
+  WORD len_or_type = ntohs(frame->snap.length);
+  if (len_or_type > sizeof(*frame))
+    return len_or_type == filterType;
+
+  if (frame->snap.dsap == 0xaa && frame->snap.ssap == 0xaa)
+    return ntohs(frame->snap.type) == filterType;   // SNAP header
+
+  if (frame->snap.dsap == 0xff && frame->snap.ssap == 0xff)
+    return PEthSocket::TypeIPX == filterType;   // Special case for Novell netware's stuffed up 802.3
+
+  if (frame->snap.dsap == 0xe0 && frame->snap.ssap == 0xe0)
+    return PEthSocket::TypeIPX == filterType;   // Special case for Novell netware's 802.2
+
+  return frame->snap.dsap == filterType;    // A pure 802.2 protocol id
 }
 
 
