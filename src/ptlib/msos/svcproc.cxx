@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.78  2004/06/01 05:22:44  csoutheren
+ * Restored memory check functionality
+ *
  * Revision 1.77  2004/04/03 08:22:22  csoutheren
  * Remove pseudo-RTTI and replaced with real RTTI
  *
@@ -527,10 +530,16 @@ void PSystemLog::Output(Level level, const char * msg)
 int PSystemLog::Buffer::overflow(int c)
 {
   if (pptr() >= epptr()) {
+#if PMEMORY_CHECK
+    BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
     int ppos = pptr() - pbase();
     char * newptr = string.GetPointer(string.GetSize() + 10);
     setp(newptr, newptr + string.GetSize() - 1);
     pbump(ppos);
+#if PMEMORY_CHECK
+    PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
+#endif
   }
   if (c != EOF) {
     *pptr() = (char)c;
@@ -564,10 +573,18 @@ int PSystemLog::Buffer::sync()
   }
   PSystemLog::Output(logLevel, string);
 
+#if PMEMORY_CHECK
+  BOOL previousIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
+
   string.SetSize(10);
   char * base = string.GetPointer();
   *base = '\0';
   setp(base, base + string.GetSize() - 1);
+ 
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(previousIgnoreAllocations);
+#endif
 
   return 0;
 }
@@ -619,11 +636,17 @@ static BOOL IsServiceRunning(PServiceProcess * svc)
 
 int PServiceProcess::_main(void * arg)
 {
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(TRUE);
+#endif
   PSetErrorStream(new PSystemLog(PSystemLog::StdError));
   PTrace::SetStream(new PSystemLog(PSystemLog::Debug3));
   PTrace::ClearOptions(PTrace::FileAndLine);
   PTrace::SetOptions(PTrace::SystemLogStream);
   PTrace::SetLevel(4);
+#if PMEMORY_CHECK
+  PMemoryHeap::SetIgnoreAllocations(FALSE);
+#endif
 
   hInstance = (HINSTANCE)arg;
 
@@ -759,6 +782,12 @@ enum {
   CutMenuID,
   DeleteMenuID,
   SelectAllMenuID,
+#if PMEMORY_CHECK
+  MarkMenuID,
+  DumpMenuID,
+  StatsMenuID,
+  ValidateMenuID,
+#endif
   OutputToMenuID,
   WindowOutputMenuID,
   SvcCmdBaseMenuID = 1000,
@@ -801,6 +830,13 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
   AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
   AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+#if PMEMORY_CHECK
+  AppendMenu(menu, MF_STRING, MarkMenuID, "&Mark Memory");
+  AppendMenu(menu, MF_STRING, DumpMenuID, "&Dump Memory");
+  AppendMenu(menu, MF_STRING, StatsMenuID, "&Statistics");
+  AppendMenu(menu, MF_STRING, ValidateMenuID, "&Validate Heap");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
+#endif
   AppendMenu(menu, MF_STRING, ExitMenuID, "E&xit");
   AppendMenu(menubar, MF_POPUP, (UINT)menu, "&File");
 
@@ -984,6 +1020,23 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         case HideMenuID :
           ShowWindow(hWnd, SW_HIDE);
           break;
+
+#if PMEMORY_CHECK
+        case MarkMenuID :
+          allocationNumber = PMemoryHeap::GetAllocationRequest();
+          break;
+
+        case DumpMenuID :
+          PMemoryHeap::DumpObjectsSince(allocationNumber);
+          break;
+
+        case StatsMenuID :
+          PMemoryHeap::DumpStatistics();
+          break;
+        case ValidateMenuID :
+          PMemoryHeap::ValidateHeap();
+          break;
+#endif
 
         case CopyMenuID :
           if (debugWindow != NULL && debugWindow != (HWND)-1)
