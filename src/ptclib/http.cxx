@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.92  2003/06/23 15:31:40  ykiryanov
+ * Slightly changed call to ShellExecuteEx to make compatible with Win32
+ *
  * Revision 1.91  2003/06/23 14:31:33  ykiryanov
  * Modified for WinCE - used ShellExecuteEx instead of ShellExecute
  *
@@ -1082,7 +1085,7 @@ BOOL PURL::OpenBrowser(const PString & url)
   SHELLEXECUTEINFO sei;
   ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
   sei.cbSize = sizeof(SHELLEXECUTEINFO);
-  sei.lpVerb = "open";
+  sei.lpVerb = TEXT("open");
 
   if ((int) ShellExecuteEx(&sei) > 32)
     return TRUE;
