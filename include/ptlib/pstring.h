@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.32 1997/12/11 13:32:47 robertj Exp $
+ * $Id: pstring.h,v 1.33 1998/01/05 10:39:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.33  1998/01/05 10:39:35  robertj
+ * Fixed "typesafe" templates/macros for dictionaries, especially on GNU.
+ *
  * Revision 1.32  1997/12/11 13:32:47  robertj
  * Added AsUnsigned() function to convert string to DWORD.
  *
@@ -1682,8 +1685,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
     virtual PString * RemoveAt(
       const K & key   // Key for position in dictionary to get object.
-    ) { PObject * obj = GetAt(key);
-               PAbstractDictionary::SetAt(key,NULL); return (PString*)obj; }
+    ) { PString * s = GetAt(key); AbstractSetAt(key, NULL); return s; }
     /* Remove an object at the specified key. The returned pointer is then
        removed using the <A>SetAt()</A> function to set that key value to
        NULL. If the <CODE>AllowDeleteObjects</CODE> option is set then the
@@ -1695,7 +1697,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
     virtual PString * GetAt(
       const K & key   // Key for position in dictionary to get object.
-    ) const { return (PString *)PAbstractDictionary::GetAt(key); }
+    ) const { return (PString *)AbstractGetAt(key); }
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
@@ -1719,7 +1721,7 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
     virtual BOOL SetAt(
       const K & key,       // Key for position in dictionary to add object.
       const PString & str  // New string value to put into the dictionary.
-    ) { return PAbstractDictionary::SetAt(key, PNEW PString(str)); }
+    ) { return AbstractSetAt(key, PNEW PString(str)); }
     /* Add a new object to the collection. If the objects value is already in
        the dictionary then the object is overrides the previous value. If the
        AllowDeleteObjects option is set then the old object is also deleted.
@@ -1764,13 +1766,6 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
   protected:
     PStringDictionary(int dummy, const PStringDictionary * c)
       : PAbstractDictionary(dummy, c) { }
-
-  private:
-    PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); }
-    PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); }
-    BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); }
-    BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); }
-    BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); }
 };
 
 
@@ -1820,12 +1815,6 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 #define PSTRING_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
-  private: \
-    inline PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); } \
-    inline PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); } \
-    inline BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); } \
-    inline BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); } \
-    inline BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
@@ -1841,13 +1830,13 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
     virtual BOOL Contains(const K & key) const \
       { return AbstractContains(key); } \
     virtual PString * RemoveAt(const K & key) \
-      { PObject * obj = GetAt(key); PAbstractDictionary::SetAt(key,NULL); return (PString*)obj;}\
+      { PString * s = GetAt(key); AbstractSetAt(key, NULL); return s; } \
     inline virtual PString * GetAt(const K & key) const \
-      { return (PString *)PAbstractDictionary::GetAt(key); } \
+      { return (PString *)AbstractGetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, const PString & str) \
      {return PAbstractDictionary::SetDataAt(index,PNEW PString(str));} \
     inline virtual BOOL SetAt(const K & key, const PString & str) \
-      { return PAbstractDictionary::SetAt(key, PNEW PString(str)); } \
+      { return AbstractSetAt(key, PNEW PString(str)); } \
     inline const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
     inline PString & GetDataAt(PINDEX index) const \
