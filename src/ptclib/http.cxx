@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.113  2005/01/04 08:09:41  csoutheren
+ * Fixed Linux configure problems
+ *
  * Revision 1.112  2004/12/08 00:51:12  csoutheren
  * Move PURLLegacyScheme to header file to allow external usage
  *
@@ -482,11 +485,7 @@ DEFINE_LEGACY_URL_SCHEME(tel,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, T
 DEFINE_LEGACY_URL_SCHEME(fax,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 
-#ifdef _WIN32
-
 PINSTANTIATE_FACTORY(PURLScheme, PString)
-
-#endif
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"
