@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.cxx,v $
+ * Revision 1.3  2004/04/26 04:17:19  rjongbloed
+ * Fixed GNU warnings
+ *
  * Revision 1.2  2004/04/26 01:51:58  rjongbloed
  * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
  *
@@ -561,6 +564,8 @@ void XMPP::Message::SetType(MessageType type)
   case XMPP::Message::HeadLine:
     SetType("headline");
     break;
+  default :
+    break;
   }
 }
 
@@ -783,6 +788,8 @@ void XMPP::Presence::SetType(PresenceType type)
   case XMPP::Presence::Error:
     SetType("error");
     break;
+  default :
+    break;
   }
 }
 
@@ -814,6 +821,8 @@ void XMPP::Presence::SetShow(ShowType show)
     break;
   case XMPP::Presence::XA:
     SetType("xa");
+    break;
+  default :
     break;
   }
 }
@@ -970,6 +979,8 @@ void XMPP::IQ::SetType(XMPP::IQ::IQType type)
     break;
   case XMPP::IQ::Error:
     SetType("error");
+    break;
+  default :
     break;
   }
 }
