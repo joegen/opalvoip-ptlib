@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.123  2002/10/31 07:33:59  robertj
+ * Changed UTF-8 to UCS-2 conversion function to not include trailing null.
+ *
  * Revision 1.122  2002/10/31 05:55:55  robertj
  * Now comprehensively stated that a PString is ALWAYS an 8 bit string as
  *   there are far too many inheerent assumptions every to make it 16 bit.
@@ -2091,7 +2094,7 @@ PWORDArray PString::AsUCS2() const
 #ifdef P_HAS_G_CONVERT
 
   gsize g_len = 0;
-  gchar * g_ucs2 = g_convert(theArray, GetLength(), "UCS-2", "UTF-8", 0, &g_len, 0);
+  gchar * g_ucs2 = g_convert(theArray, GetSize()-1, "UCS-2", "UTF-8", 0, &g_len, 0);
   if (g_ucs2 == NULL)
     return PWORDArray();
 
@@ -2105,7 +2108,7 @@ PWORDArray PString::AsUCS2() const
 
   PINDEX count = 0;
   PINDEX i = 0;
-  while (i < GetSize()) {
+  while (i < GetSize()-1) {
     if ((theArray[i]&0x80) == 0)
       ucs2[count++] = (BYTE)theArray[i++];
     else if ((theArray[i]&0xe0) == 0xc0) {
