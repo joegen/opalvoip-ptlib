@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.13  1998/11/05 09:04:16  craigs
+ * Changed free to runtime_free
+ *
  * Revision 1.12  1998/09/24 04:12:21  robertj
  * Added open software license.
  *
@@ -149,9 +152,10 @@ void PThread::FreeStack()
 #if defined(USE_MMAP)
     munmap(stackBase, stackTop-stackBase+1);
 #else
-    free(stackBase);
+    runtime_free(stackBase);
 #endif
 }
 
 #endif  // P_PTHREADS
+
 
