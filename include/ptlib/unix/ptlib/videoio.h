@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.12  2001/08/08 06:46:44  rogerh
+ * Only implement the Whiteness and Colour methods on Linux.
+ *
  * Revision 1.11  2001/08/06 19:35:27  rogerh
  * Include the relevent header file based on the version of OpenBSD.
  * Submitted by Marius Aamodt Eriksen <marius@umich.edu>
@@ -104,14 +107,17 @@
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
     virtual int GetBrightness();
     virtual BOOL SetBrightness(unsigned newBrightness) ;
-    virtual int GetWhiteness();
-    virtual BOOL SetWhiteness(unsigned newWhiteness); 
-    virtual int GetColour();
-    virtual BOOL SetColour(unsigned newColour); 
     virtual int GetContrast();
     virtual BOOL SetContrast(unsigned newContrast); 
     virtual int GetHue();
     virtual BOOL SetHue(unsigned newHue); 
+#if defined(P_LINUX)		// only override these methods in Linux
+								// FreeBSD will use the default methods in PVideoDevice
+    virtual int GetWhiteness();
+    virtual BOOL SetWhiteness(unsigned newWhiteness); 
+    virtual int GetColour();
+    virtual BOOL SetColour(unsigned newColour); 
+#endif
   protected:
     void ClearMapping();
 
