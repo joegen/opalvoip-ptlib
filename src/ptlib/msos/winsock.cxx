@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.5 1995/06/17 00:59:49 robertj Exp $
+ * $Id: winsock.cxx,v 1.6 1995/12/10 12:06:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.6  1995/12/10 12:06:00  robertj
+ * Numerous fixes for sockets.
+ *
  * Revision 1.5  1995/06/17 00:59:49  robertj
  * Fixed bug with stream being flushed on read/write.
  *
@@ -54,29 +57,48 @@ PSocket::PSocket()
 }
 
 
-BOOL PSocket::Read(void * buf, PINDEX len)
+PSocket::~PSocket()
+{
+  Close();
+}
+
+
+BOOL PSocket::_WaitForData(BOOL reading)
 {
   flush();
 
-  lastReadCount = 0;
+  PTimeInterval & timeout = reading ? readTimeout : writeTimeout;
 
-  u_long state = readTimeout == PMaxTimeInterval ? 0 : 1;
+  u_long state = timeout == PMaxTimeInterval ? 0 : 1;
   if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &state)))
     return FALSE;
 
-  if (readTimeout != PMaxTimeInterval) {
-    fd_set read_fds;
-    FD_ZERO(&read_fds);
+  if (timeout == PMaxTimeInterval)
+    return TRUE;
+
+  fd_set fds;
+  FD_ZERO(&fds);
 #pragma warning(disable:4127)
-    FD_SET(os_handle, &read_fds);
+  FD_SET(os_handle, &fds);
 #pragma warning(default:4127)
-    struct timeval tval;
-    tval.tv_sec = readTimeout.GetSeconds();
-    tval.tv_usec = (readTimeout.GetMilliseconds()%1000)*1000;
-    int selectResult = ::select(os_handle+1, &read_fds, NULL, NULL, &tval);
-    if (!ConvertOSError(selectResult) || selectResult == 0)
-      return FALSE;
-  }
+  struct timeval tval;
+  tval.tv_sec = timeout.GetSeconds();
+  tval.tv_usec = (timeout.GetMilliseconds()%1000)*1000;
+  int selectResult = ::select(os_handle+1,
+                              reading ? &fds : NULL,
+                              reading ? NULL : &fds,
+                              NULL,
+                              &tval);
+  return ConvertOSError(selectResult);
+}
+
+
+BOOL PSocket::Read(void * buf, PINDEX len)
+{
+  lastReadCount = 0;
+
+  if (!_WaitForData(TRUE))
+    return FALSE;
 
   int recvResult = ::recv(os_handle, (char *)buf, len, 0);
   if (!ConvertOSError(recvResult))
@@ -89,27 +111,10 @@ BOOL PSocket::Read(void * buf, PINDEX len)
 
 BOOL PSocket::Write(const void * buf, PINDEX len)
 {
-  flush();
-
   lastWriteCount = 0;
 
-  u_long state = writeTimeout == PMaxTimeInterval ? 0 : 1;
-  if (!ConvertOSError(::ioctlsocket(os_handle, FIONBIO, &state)))
+  if (!_WaitForData(FALSE))
     return FALSE;
-
-  if (writeTimeout != PMaxTimeInterval) {
-    fd_set write_fds;
-    FD_ZERO(&write_fds);
-#pragma warning(disable:4127)
-    FD_SET(os_handle, &write_fds);
-#pragma warning(default:4127)
-    struct timeval tval;
-    tval.tv_sec = writeTimeout.GetSeconds();
-    tval.tv_usec = (writeTimeout.GetMilliseconds()%1000)*1000;
-    int selectResult = ::select(os_handle+1, NULL, &write_fds, NULL, &tval);
-    if (!ConvertOSError(selectResult) || selectResult == 0)
-      return FALSE;
-  }
 
   int sendResult = ::send(os_handle, (const char *)buf, len, 0);
   if (!ConvertOSError(sendResult))
@@ -139,15 +144,64 @@ BOOL PSocket::ConvertOSError(int error)
   }
 
   osError = WSAGetLastError();
+#ifdef _WIN32
+  SetLastError(osError);
+#endif
   switch (osError) {
     case 0 :
       lastError = NoError;
       return TRUE;
+    case WSAEWOULDBLOCK :
+      lastError = Timeout;
+      break;
     default :
       lastError = Miscellaneous;
-      osError |= 0x20000000;
   }
   return FALSE;
+}
+
+
+BOOL PUDPSocket::ReadFrom(void * buf, PINDEX len, Address & addr, WORD & port)
+{
+  lastReadCount = 0;
+
+  if (!_WaitForData(TRUE))
+    return FALSE;
+
+  sockaddr_in sockAddr;
+  int addrLen = sizeof(sockAddr);
+  int recvResult = recvfrom(os_handle,
+                  (char *)buf, len, 0, (struct sockaddr *)&sockAddr, &addrLen);
+  if (!ConvertOSError(recvResult))
+    return FALSE;
+
+  addr = sockAddr.sin_addr;
+  port = ntohs(sockAddr.sin_port);
+
+  lastReadCount = recvResult;
+  return lastReadCount > 0;
+}
+
+
+BOOL PUDPSocket::WriteTo(const void * buf, PINDEX len,
+                                               const Address & addr, WORD port)
+{
+  lastWriteCount = 0;
+
+  if (!_WaitForData(FALSE))
+    return FALSE;
+
+  sockaddr_in sockAddr;
+  sockAddr.sin_family = AF_INET;
+  sockAddr.sin_addr = addr;
+  sockAddr.sin_port = htons(port);
+  int sendResult = ::sendto(os_handle, (const char *)buf, len, 0,
+                               (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+  if (!ConvertOSError(sendResult))
+    return FALSE;
+
+  lastWriteCount = sendResult;
+  return lastWriteCount >= len;
 }
 
 
