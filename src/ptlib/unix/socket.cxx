@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.68  2001/08/12 07:12:40  rogerh
+ * More Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.67  2001/08/12 06:34:33  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -232,7 +235,7 @@ int PSocket::os_socket(int af, int type, int protocol)
   if ((handle = ::socket(af, type, protocol)) >= 0) {
 
 #ifndef __BEOS__
-#ifndef P_PTHREADS
+#if !defined(P_PTHREADS) && !defined(P_MACOS)
 // non PThread unixes need non-blocking sockets
     DWORD cmd = 1;
     if ((::ioctl(handle, FIONBIO, &cmd) != 0) ||
@@ -258,7 +261,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   // need to use non-blocking form of connect, so we can abort it if it fails
   // but only if not in PThreads, as non-PThreads versions are already non-blocking
 
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) || defined(P_MACOS)
   DWORD cmd = 1;
   if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
@@ -266,7 +269,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
   int val = ::connect(os_handle, addr, size);
 
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) || defined(P_MACOS)
   cmd = 0;
   if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
@@ -320,7 +323,7 @@ int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size
 }
 
 
-#ifndef P_PTHREADS
+#if !defined(P_PTHREADS) && !defined(P_MACOS)
 
 int PSocket::os_select(int maxHandle,
                    fd_set & readBits,
@@ -574,7 +577,7 @@ BOOL PSocket::os_sendto(
   else
     writeResult = ::send(os_handle, (char *)buf, len, flags);
   if (writeResult > 0) {
-#ifndef P_PTHREADS
+#if !defined(P_PTHREADS) && !defined(P_MACOS)
     PThread::Yield();
 #endif
     lastWriteCount = writeResult;
