@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.7  1998/11/30 04:52:11  robertj
+ * New directory structure
+ *
  * Revision 1.6  1998/09/23 06:22:47  robertj
  * Added open source copyright license.
  *
@@ -52,8 +55,8 @@
 #endif
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <telnet.h>
+#include <ptlib/sockets.h>
+#include <ptclib/telnet.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
