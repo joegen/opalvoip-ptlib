@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.9  2001/07/23 02:57:42  robertj
+ * Fixed swab definition for Linux alpha.
+ *
  * Revision 1.8  2001/07/23 01:20:20  rogerh
  * Add updates from Shawn - ensure isvalidWAV is false for zero length files.
  * GetDataLength uses actual file size to support file updates as well as appends.
@@ -65,7 +68,7 @@
 
 
 #if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__))
-void swab(void * void_from, void * void_to, register size_t len)
+void swab(const void * void_from, void * void_to, register size_t len)
 {
   register const char * from = (const char *)void_from;
   register char * to = (char *)void_to;
