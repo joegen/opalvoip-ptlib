@@ -44,6 +44,7 @@
 	"..\..\Include\PtLib\pprocess.h"\
 	"..\..\Include\PtLib\Pstring.h"\
 	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\include\ptlib\pwavfile.h"\
 	"..\..\Include\PtLib\semaphor.h"\
 	"..\..\Include\PtLib\Sfile.h"\
 	"..\..\Include\PtLib\Sound.h"\
@@ -114,6 +115,7 @@
 	"..\..\Include\PtLib\pprocess.h"\
 	"..\..\Include\PtLib\Pstring.h"\
 	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\include\ptlib\pwavfile.h"\
 	"..\..\Include\PtLib\semaphor.h"\
 	"..\..\Include\PtLib\Sfile.h"\
 	"..\..\Include\PtLib\Sound.h"\
@@ -184,6 +186,7 @@
 	"..\..\Include\PtLib\pprocess.h"\
 	"..\..\Include\PtLib\Pstring.h"\
 	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\include\ptlib\pwavfile.h"\
 	"..\..\Include\PtLib\semaphor.h"\
 	"..\..\Include\PtLib\Sfile.h"\
 	"..\..\Include\PtLib\Sound.h"\
@@ -244,6 +247,7 @@
 	"..\..\Include\PtLib\pprocess.h"\
 	"..\..\Include\PtLib\Pstring.h"\
 	"..\..\Include\PtLib\Ptime.h"\
+	"..\..\include\ptlib\pwavfile.h"\
 	"..\..\Include\PtLib\semaphor.h"\
 	"..\..\Include\PtLib\Sfile.h"\
 	"..\..\Include\PtLib\Sound.h"\
