@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.37 1996/09/14 12:54:18 robertj Exp $
+ * $Id: contain.inl,v 1.38 1997/02/14 13:53:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.38  1997/02/14 13:53:58  robertj
+ * Major rewrite of sorted list to use sentinel record instead of NULL pointers.
+ *
  * Revision 1.37  1996/09/14 12:54:18  robertj
  * Added operator! for !IsEmpty().
  *
@@ -349,36 +352,6 @@ PINLINE PINDEX PStringList::InsertString(
 
 PINLINE PINDEX PStringList::GetStringsIndex(const PString & str) const
   { return GetValuesIndex(str); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-PINLINE PAbstractSortedList::PAbstractSortedList()
-  : info(new Info) { PAssertNULL(info); }
-
-PINLINE void PAbstractSortedList::Element::MakeBlack()
-  { colour = Black; }
-
-PINLINE void PAbstractSortedList::Element::MakeRed()
-  { colour = Red; }
-
-PINLINE BOOL PAbstractSortedList::Element::IsBlack()
-  { return colour == Black; }
-
-PINLINE BOOL PAbstractSortedList::Element::IsRed()
-  { return colour != Black; }
-
-PINLINE BOOL PAbstractSortedList::Element::IsLeftBlack()
-  { return left == NULL || left->colour == Black; }
-
-PINLINE BOOL PAbstractSortedList::Element::IsRightBlack()
-  { return right == NULL || right->colour == Black; }
-
-PINLINE BOOL PAbstractSortedList::Element::LeftTreeSize()
-  { return left != NULL ? left->subTreeSize : 0; }
-
-PINLINE BOOL PAbstractSortedList::Element::RightTreeSize()
-  { return right != NULL ? right->subTreeSize : 0; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
