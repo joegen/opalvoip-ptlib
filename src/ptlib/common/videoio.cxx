@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.10  2001/03/07 01:41:03  dereks
+ * Fix memory leak, on destroying PVideoDevice
+ * Ensure converter class is resized correctly.
+ *
  * Revision 1.9  2001/03/06 23:34:20  robertj
  * Added static function to get input device names.
  * Moved some inline virtuals to non-inline.
@@ -76,6 +80,12 @@ PVideoDevice::PVideoDevice()
   frameHeight = CIFHeight;
 
   converter = NULL;
+}
+
+PVideoDevice::~PVideoDevice()
+{
+  if (converter)
+    delete converter;
 }
 
 
@@ -137,9 +147,11 @@ static struct {
 
 BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
 {
-  delete converter;
-  converter = NULL;
-
+  if (converter) {    
+    delete converter;
+    converter = NULL;
+  }
+  
   if (SetColourFormat(colourFmt))
     return TRUE; // Can do it native
 
@@ -223,6 +235,9 @@ BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
     frameHeight = maxHeight;
   else
     frameHeight = height;
+
+  if (converter)
+    converter->SetFrameSize(width,height);
 
   return IsOpen();
 }
