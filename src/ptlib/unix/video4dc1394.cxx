@@ -1,35 +1,82 @@
- /*
- * What is it?:
- * This is a PTLib video capture module for IEEE 1394 Digital Cameras.
- * Note that there are two kinds of 1394 Digital Cameras. This module
- * supports cameras conforming to the IIDC 1394-based Digital Camera
- * Specification. A list of supported cameras can be found at "Digital
- * Camera" section of
- * http://linux1394.sourceforge.net/hcl.php.
- *
- *
- * Requirements:
- * You need libraw1394 and libdc1394 for compiling this module. They
- * are available from:
- *	http://sourceforge.net/projects/libraw1394/
- *	http://sourceforge.net/projects/libdc1394/
- * Libdc1394 must be a version later than February 2002.
- * Kernel version must be 2.4.17 or higher.
- *
- *
- * Device names:
- * The device files for 1394 cameras are /dev/raw1394 and /dev/video1394.
- * If you use the DEVFS, /dev/video1394/{0,1,...} appear instead of
- * /dev/video1394.
- *
- * If you choose /dev/video1394 as an argument of Open(), this module
- * uses DMA video transfer, which is much faster than non-DMA transfer
- * via /dev/raw1394. But DMA transfer does not work with one of my two
- * cameras. So it is safe to start with /dev/raw1394.
- *
+/*
+ * README for IEEE 1394 digital camera support routine in PWLib
+ * ------------------------------------------------------------
+ * 
+ * PWLib now contains preliminary support for the IEEE 1394 digital
+ * cameras under Linux.
+ * 
+ * 
+ * Supported cameras:
+ * 
+ * There are two kind of the specifications of IEEE 1394 digital video
+ * cameras, one is called "digital camera" and another is "AV/C camera".
+ * A digital camera sends uncompressed video data while an AV/C camera
+ * sends compressed data. Currently PWLib only supports digital
+ * cameras. We can find a list of supported digital cameras by the Linux
+ * device driver at:
+ * http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/cameras/
+ * 
+ * AV/C cameras seem able to be used for video phone. You are welcome to
+ * write supporting codes for AV/C cameras!
+ * 
+ * 
+ * Installation and Use:
+ * 
+ * To enable 1394 camera support, you have to define the "TRY_1394DC"
+ * shell environment variable at compilation time of PWLib, OpenH323, and
+ * ohphone. To select your 1394 camera for video input device instead of
+ * usual Video4Linux devices, specify "/dev/raw1394" or "/dev/video1394"
+ * as the filename of video input device. For example "ohphone
+ * --videoinput /dev/raw1394" should use your 1394 camera as video input.
+ * 
+ * "/dev/video1394" uses faster DMA transfer for video input but one of
+ * my two cameras fails to send video via /dev/video1394. It is safe to
+ * start with /dev/raw1394.
+ * 
+ * If you use DEVFS, the filename for DMA transfer may be /dev/video1394/0.
+ * 
+ * Requirements for Installation:
+ * 
+ * You needs the following softwares to compile the 1394 camera support
+ * module in PWLib.
+ * 
+ * - libdc1394 later than Feb. 1, 2002
+ * - Linux 2.4.17 or later, which is required by the above version of
+ *   libdc1394
+ * - libraw1394 0.9.0 or later
+ * 
+ * You cannot compile it with older versions of libdc1394.
+ * 
+ * Troubleshooting:
+ * 
+ * If this module does not work for you, please verify the following
+ * items before sending email:
+ * 
+ * 1) Can you view image of your camera by other programs? A sample
+ *    program called "grab_gray_image" is included in the example
+ *    directory of libdc1394. Please run grab_gray_image and see what
+ *    happens. You can also use Coriander instead.
+ *    (http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/coriander/).
+ * 2) If you have make sure other programs can use the camera, but
+ *    this module still does not work, please run the debbuging version
+ *    of ohphone with option "-tttt -o log.txt". Examine the file "log.txt"
+ *    and you may see what is wrong.
+ * 
+ * 
+ * Problem Reports:
+ * They should be send to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+ * 
+ * 
+ * Acknowledgment:
+ * R. Matsumoto thanks Dr. Derek Smithies for his kind support for making
+ * this module.
+ * 
+ * 
+ * Technical Notes for Programmers
+ * ------------------------------------------------------------
  *
  * Test Environment:
- * This module is tested on February 2002 against:
+ * This module was tested on February 2002 against:
  *
  * Pentium III  
  * Linux 2.4.17
@@ -43,21 +90,6 @@
  * Irez StealthFire Camera (http://www.irez.com)
  * OrangeMicro iBot Camera (with which DMA transfer does not work,
  *			    http://www.orangemicro.com)
- *
- *
- * Troubleshooting:
- * If this module does not work for you, please verify the following
- * items before sending email:
- *
- * 1) Can you view image of your camera by other programs? A sample
- * program called "grab_gray_image" is included in the example
- * directory of libdc1394. Please run grab_gray_image and see what
- * happens. You can also use Coriander instead
- * (http://www.tele.ucl.ac.be/PEOPLE/DOUXCHAMPS/ieee1394/coriander/).
- * 2) If you have make sure other programs can use the camera, but
- * this module still does not work, please run the debbuging version
- * of ohphone with option "-t -t -t -t". It should produce a verbose
- * output, and you may see what is wrong.
  *
  *
  * Internal Structure:
@@ -74,7 +106,7 @@
  * always 30 fps. If these modes are not supported by your camera,
  * this module does not capture images from yours.
  *
- * Conversion routines for from above formats to YUV420P were added to
+ * Conversion routines from above formats to YUV420P were added to
  * src/ptlib/common/vconvert.cxx
  *
  * ToDo or Bugs:
@@ -90,10 +122,9 @@
  *
  * PVideoInput1394DcDevice does not allow creation of two or more instances.
  *
- *
- * Acknowledgment:
- * R. Matsumoto thanks Dr. Derek Smithies for helpful discussion on
- * the structure of PWLib. 
+ * The bus speed is always set to 400 Mbps and the frame rate is
+ * always 30 fps. If these modes are not supported, you don't get
+ * video picture from your camera.
  *
  * Copyright:
  * Copyright (c) 2002 Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>
@@ -111,6 +142,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.5  2002/02/28 19:44:03  dereks
+ * Add complete readme on Firewire usage. Thanks to Ryutaroh Matsumoto.
+ *
  * Revision 1.4  2002/02/21 20:00:21  dereks
  * Fix memory leak. Thanks Ryutaroh Matsumoto.
  *
@@ -128,7 +162,6 @@
  *
  *
  */
-
 
 #pragma implementation "videoio1394dc.h"
 
