@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.21 1996/03/16 04:41:30 robertj Exp $
+ * $Id: ipsock.h,v 1.22 1996/03/26 00:51:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.22  1996/03/26 00:51:13  robertj
+ * Added GetLocalAddress() variant that returns port number as well.
+ *
  * Revision 1.21  1996/03/16 04:41:30  robertj
- * FireDoorV10
+ * Changed all the get host name and get host address functions to be more consistent.
  *
  * Revision 1.20  1996/03/03 07:37:56  robertj
  * Added Reusability clause to the Listen() function on sockets.
@@ -206,6 +209,10 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
     BOOL GetLocalAddress(
       Address & addr    // Variable to receive hosts IP address
+    );
+    BOOL GetLocalAddress(
+      Address & addr,    // Variable to receive peer hosts IP address
+      WORD & port        // Variable to receive peer hosts port number
     );
     /* Get the Internet Protocol address for the local host.
 
