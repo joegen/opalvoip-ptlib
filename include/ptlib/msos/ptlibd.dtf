@@ -328,6 +328,7 @@ EXPORTS
     ??0PVideoChannel@@QAE@XZ @3420 NONAME ;public: __thiscall PVideoChannel::PVideoChannel(void)
     ??0PVideoDevice@@IAE@XZ @3658 NONAME ;protected: __thiscall PVideoDevice::PVideoDevice(void)
     ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@@Z @3383 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *)
+    ??0PVideoDeviceBitmap@@QAE@PAUHWND__@@G@Z @4324 NONAME ;public: __thiscall PVideoDeviceBitmap::PVideoDeviceBitmap(struct HWND__ *,unsigned short)
     ??0PVideoInputDevice@@QAE@XZ @3659 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(void)
     ??0PVideoInputThread@@QAE@AAVPVideoInputDevice@@@Z @3366 NONAME ;public: __thiscall PVideoInputThread::PVideoInputThread(class PVideoInputDevice &)
     ??0PVideoOutputDevice@@QAE@XZ @3660 NONAME ;public: __thiscall PVideoOutputDevice::PVideoOutputDevice(void)
