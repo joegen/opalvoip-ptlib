@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.12  1998/10/26 11:09:56  robertj
+ * added separation of stdout and stderr.
+ *
  * Revision 1.11  1998/09/24 04:12:14  robertj
  * Added open software license.
  *
@@ -52,9 +55,10 @@
 //
 
 void PPipeChannel::Construct(const PString & subProgram,
-               const char * const * arguments,
-                                OpenMode mode,
-                                    BOOL searchPath)
+                             const char * const * arguments,
+                             OpenMode mode,
+                             BOOL searchPath,
+                             BOOL stderrSeparate)
 
 {
   // setup the pipe to the child
@@ -68,6 +72,11 @@ void PPipeChannel::Construct(const PString & subProgram,
     fromChildPipe[0] = fromChildPipe[1] = -1;
   else
     PAssert(pipe(fromChildPipe) == 0, POperatingSystemError);
+
+  if (stderrSeparate)
+    PAssert(pipe(stderrChildPipe) == 0, POperatingSystemError);
+  else
+    stderrChildPipe[0] = stderrChildPipe[1] = -1;
 
   // setup the arguments
   const char * cmd;
@@ -125,7 +134,8 @@ void PPipeChannel::Construct(const PString & subProgram,
       ::close(STDOUT_FILENO);
       ::dup(fromChildPipe[1]);
       ::close(STDERR_FILENO);
-      ::dup(fromChildPipe[1]);
+      if (!stderrSeparate)
+        ::dup(fromChildPipe[1]);
       ::close(fromChildPipe[1]);
       ::close(fromChildPipe[0]); 
     } else {
@@ -134,8 +144,15 @@ void PPipeChannel::Construct(const PString & subProgram,
       ::close(STDOUT_FILENO);
       ::dup(fd);
       ::close(STDERR_FILENO);
-      ::dup(fd);
+      if (!stderrSeparate)
+        ::dup(fd);
       ::close(fd);
+    }
+
+    if (stderrSeparate) {
+      ::dup(stderrChildPipe[1]);
+      ::close(stderrChildPipe[1]);
+      ::close(stderrChildPipe[0]); 
     }
 
     // set the SIGINT and SIGQUIT to ignore so the child process doesn't
@@ -165,6 +182,9 @@ void PPipeChannel::Construct(const PString & subProgram,
   if (fromChildPipe[1] != -1)
     ::close(fromChildPipe[1]);
  
+  if (stderrChildPipe[1] != -1)
+    ::close(stderrChildPipe[1]);
+ 
   if (args != NULL)
     delete args;
 
@@ -178,16 +198,20 @@ BOOL PPipeChannel::Close()
 
   // close pipe from child
   if (fromChildPipe[0] != -1) {
-    if (!ConvertOSError(::close(fromChildPipe[0])))
-      return FALSE;
+    ::close(fromChildPipe[0]);
     fromChildPipe[0] = -1;
   }
 
   // close pipe to child
   if (toChildPipe[1] != -1) {
-    if (!ConvertOSError(::close(toChildPipe[1])))
-      return FALSE;
+    ::close(toChildPipe[1]);
     toChildPipe[1] = -1;
+  }
+
+  // close pipe to child
+  if (stderrChildPipe[0] != -1) {
+    ::close(stderrChildPipe[0]);
+    stderrChildPipe[0] = -1;
   }
 
   // kill the child process
