@@ -1,5 +1,5 @@
 /*
- * $Id: httpclnt.cxx,v 1.14 1998/06/16 03:32:56 robertj Exp $
+ * $Id: httpclnt.cxx,v 1.15 1998/07/24 06:57:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.15  1998/07/24 06:57:21  robertj
+ * Fixed error returned on illegal URL passed to unopened socket.
+ * Changed PostData function so just has string for data instead of dictionary.
+ *
  * Revision 1.14  1998/06/16 03:32:56  robertj
  * Changed TCP connection shutdown to be parameterised.
  *
@@ -299,16 +303,14 @@ BOOL PHTTPClient::GetHeader(const PURL & url,
 
 BOOL PHTTPClient::PostData(const PURL & url,
                            PMIMEInfo & outMIME,
-                           const PStringToString & data,
+                           const PString & data,
                            PMIMEInfo & replyMIME,
                            BOOL persist)
 {
   if (!AssureConnect(url, outMIME))
     return FALSE;
 
-  PStringStream body;
-  body << data;
-  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, body, replyMIME, persist) == OK;
+  return ExecuteCommand(POST, url.AsString(PURL::URIOnly), outMIME, data, replyMIME, persist) == OK;
 }
 
 
@@ -317,10 +319,11 @@ BOOL PHTTPClient::AssureConnect(const PURL & url, PMIMEInfo & outMIME)
   PString host = url.GetHostName();
 
   if (!IsOpen()) {
-    lastResponseCode = BadRequest;
-    lastResponseInfo = PString();
-    if (host.IsEmpty())
+    if (host.IsEmpty()) {
+      lastResponseCode = BadRequest;
+      lastResponseInfo = "No host specified";
       return FALSE;
+    }
 
     if (!Connect(host, url.GetPort())) {
       lastResponseCode = -2;
