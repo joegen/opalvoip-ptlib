@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.24  1998/11/30 04:50:16  robertj
+ * New directory structure
+ *
  * Revision 1.23  1998/10/15 05:41:51  robertj
  * New memory leak check code.
  *
@@ -81,7 +84,7 @@
  */
 
 #include <ptlib.h>
-#include <remconn.h>
+#include <ptlib/remconn.h>
 
 namespace winver400 {
 #undef WINVER
