@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.98  2002/10/21 13:01:33  rogerh
+# bison 1.5 and above need -o to specify the output filename
+#
 # Revision 1.97  2002/10/10 04:43:44  robertj
 # VxWorks port, thanks Martijn Roest
 #
@@ -561,7 +564,7 @@ $(DEPDIR)/getdate.tab.dep: $(GETDATE_SOURCE)
 	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 $(GETDATE_SOURCE): $(COMMON_SRC_DIR)/getdate.y
-	bison $(COMMON_SRC_DIR)/getdate.y
+	bison $(COMMON_SRC_DIR)/getdate.y -o $(COMMON_SRC_DIR)/getdate.tab.c
 
 #######################################################
 
