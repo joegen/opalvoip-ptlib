@@ -24,13 +24,14 @@ class PSmartObject : public PObject
     /** Construct a new smart object, subject to a #PSmartPointer# instance
        referencing it.
      */
-    PSmartObject() { referenceCount = 1; }
+    PSmartObject()
+      :referenceCount(1) { }
 
   protected:
     /** Count of number of instances of #PSmartPointer# that currently
        reference the object instance.
      */
-    unsigned referenceCount;
+    PAtomicInteger referenceCount;
 
 
   friend class PSmartPointer;
