@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.13  2004/04/09 07:03:23  rjongbloed
+ * Added ability to get the output to DUMPBIN sent to a file.
+ *
  * Revision 1.12  2004/04/03 06:54:32  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -85,7 +88,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 3)
+  : PProcess("Equivalence", "MergeSym", 1, 3, ReleaseCode, 0)
 {
 }
 
@@ -97,7 +100,7 @@ void MergeSym::Main()
        << " by " << GetManufacturer() << endl;
 
   PArgList & args = GetArguments();
-  args.Parse("vx:I:");
+  args.Parse("vsx:I:");
 
   PFilePath lib_filename, def_filename;
 
@@ -113,7 +116,7 @@ void MergeSym::Main()
       break;
 
     default :
-      PError << "usage: MergeSym [ -v ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
+      PError << "usage: MergeSym [ -v ] [ -s ] [ -x deffile[.def] ] [-I deffilepath ] libfile[.lib] [ deffile[.def] ]";
       SetTerminationValue(1);
       return;
   }
@@ -244,9 +247,19 @@ void MergeSym::Main()
     return;
   }
 
+  PTextFile symfile;
+  if (args.HasOption('s')) {
+    PFilePath sym_filename = def_filename;
+    sym_filename.SetType(".sym");
+    if (!symfile.Open(sym_filename, PFile::WriteOnly))
+      cerr << "Could not open symbol file " << sym_filename << endl;
+  }
+
   while (!pipe.eof()) {
     char line[5000];
     pipe.getline(line, sizeof(line));
+    symfile << line;
+
     char * namepos = strchr(line, '|');
     if (namepos != NULL) {
       *namepos = '\0';
