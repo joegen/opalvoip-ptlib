@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.45  1999/05/06 06:11:50  robertj
+ * Fixed date to be forgiving of rubbish at end of date string.
+ * Fixed PTime::GetHour() etc to not crash on time=-1.
+ *
  * Revision 1.44  1998/11/30 07:30:31  robertj
  * Fixed problems with PFilePath parsing functions.
  *
@@ -288,15 +292,25 @@ PUInt64 PString::AsUnsigned64(unsigned base) const
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-struct tm * PTime::os_localtime(const time_t * clock, struct tm *)
+struct tm * PTime::os_localtime(const time_t * clock, struct tm * tb)
 {
-  return ::localtime(clock);
+  struct tm * tp = ::localtime(clock);
+  if (tp != NULL)
+    return tp;
+
+  memset(tb, 0, sizeof(*tb));
+  return tb;
 }
 
 
-struct tm * PTime::os_gmtime(const time_t * clock, struct tm *)
+struct tm * PTime::os_gmtime(const time_t * clock, struct tm * tb)
 {
-  return ::gmtime(clock);
+  struct tm * tp = ::gmtime(clock);
+  if (tp != NULL)
+    return tp;
+
+  memset(tb, 0, sizeof(*tb));
+  return tb;
 }
 
 
