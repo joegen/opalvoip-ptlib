@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.76  1998/11/26 10:35:08  robertj
+ * Improved support of FAT32 and large NTFS volumes in GetFreeSpace().
+ *
  * Revision 1.75  1998/11/20 03:17:19  robertj
  * Added thread WaitForTermination() function.
  *
@@ -479,9 +482,7 @@ BOOL PDirectory::IsSubDir() const
 PCaselessString PDirectory::GetVolume() const
 {
   char volName[100];
-  DWORD maxFilenameLen, fileSystemFlags;
-  PAssertOS(GetVolumeInformation(NULL, volName, sizeof(volName), NULL,
-                                 &maxFilenameLen, &fileSystemFlags, NULL, 0));
+  PAssertOS(GetVolumeInformation(NULL, volName, sizeof(volName), NULL, NULL, NULL, NULL, 0));
   return PCaselessString(volName);
 }
 
@@ -522,45 +523,49 @@ typedef BOOL (WINAPI *GetDiskFreeSpaceExType)(LPCTSTR lpDirectoryName,
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-  OSVERSIONINFO os;
-  os.dwOSVersionInfoSize = sizeof(os);
-  if (GetVersionEx(&os) &&
-      os.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS &&
-      os.dwBuildNumber > 1000) {
-    HMODULE hLib = LoadLibrary("KERNEL32.DLL");
-    if (hLib == NULL)
-      return FALSE;
-    GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
-                            (GetDiskFreeSpaceExType)GetProcAddress(hLib, "GetDiskFreeSpaceExA");
-    if (GetDiskFreeSpaceEx != NULL) {
-      ULARGE_INTEGER freeBytesAvailableToCaller;
-      ULARGE_INTEGER totalNumberOfBytes; 
-      ULARGE_INTEGER totalNumberOfFreeBytes;
-      if (GetDiskFreeSpaceEx(*this,
-                             &freeBytesAvailableToCaller,
-                             &totalNumberOfBytes,
-                             &totalNumberOfFreeBytes)) {
-        total = totalNumberOfBytes.QuadPart;
-        free = totalNumberOfFreeBytes.QuadPart;
-        clusterSize = 4096;
-        FreeLibrary(hLib);
-        return TRUE;
-      }
-    }
-    FreeLibrary(hLib);
-    return FALSE;
-  }
+  clusterSize = 512;
+  total = free = ULONG_MAX;
 
   PString root;
   if ((*this)[1] == ':')
     root = Left(3);
-  else {
-    root = *this;
-    PINDEX slash = Find('\\', 2);
-    if (slash != P_MAX_INDEX) {
-      slash = Find('\\', slash+1);
-      if (slash != P_MAX_INDEX)
-        root = Left(slash+1);
+  else if (theArray[0] == '\\' && theArray[1] == '\\') {
+    PINDEX backslash = Find('\\', 2);
+    if (backslash != P_MAX_INDEX) {
+      backslash = Find('\\', backslash+1);
+      if (backslash != P_MAX_INDEX)
+        root = Left(backslash+1);
+    }
+  }
+
+  if (root.IsEmpty())
+    return FALSE;
+
+  BOOL needTotalAndFree = TRUE;
+
+  static GetDiskFreeSpaceExType GetDiskFreeSpaceEx =
+        (GetDiskFreeSpaceExType)GetProcAddress(LoadLibrary("KERNEL32.DLL"), "GetDiskFreeSpaceExA");
+  if (GetDiskFreeSpaceEx != NULL) {
+    ULARGE_INTEGER freeBytesAvailableToCaller;
+    ULARGE_INTEGER totalNumberOfBytes; 
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+    if (GetDiskFreeSpaceEx(root,
+                           &freeBytesAvailableToCaller,
+                           &totalNumberOfBytes,
+                           &totalNumberOfFreeBytes)) {
+      total = totalNumberOfBytes.QuadPart;
+      free = totalNumberOfFreeBytes.QuadPart;
+      needTotalAndFree = FALSE;
+    }
+  }
+
+  clusterSize = 0;
+  char fsName[100];
+  if (GetVolumeInformation(root, NULL, 0, NULL, NULL, NULL, fsName, sizeof(fsName))) {
+    if (stricmp(fsName, "FAT32") == 0) {
+      clusterSize = 4096; // Cannot use GetDiskFreeSpace() results for FAT32
+      if (!needTotalAndFree)
+        return TRUE;
     }
   }
 
@@ -573,14 +578,34 @@ BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSi
                         &sectorsPerCluster,
                         &bytesPerSector,
                         &numberOfFreeClusters,
-                        &totalNumberOfClusters))
-    return FALSE;
+                        &totalNumberOfClusters)) {
+    if (root[0] != '\\' || ::GetLastError() != ERROR_NOT_SUPPORTED)
+      return FALSE;
 
-  free = numberOfFreeClusters;
-  total = totalNumberOfClusters;
-  clusterSize = bytesPerSector*sectorsPerCluster;
-  free *= clusterSize;
-  total *= clusterSize;
+    PString drive = "A:";
+    while (WNetAddConnection(root, NULL, drive) != NO_ERROR) {
+      if (GetLastError() != ERROR_ALREADY_ASSIGNED)
+        return FALSE;
+      drive[0]++;
+    }
+    BOOL ok = GetDiskFreeSpace(drive+'\\',
+                               &sectorsPerCluster,
+                               &bytesPerSector,
+                               &numberOfFreeClusters,
+                               &totalNumberOfClusters);
+    WNetCancelConnection(drive, TRUE);
+    if (!ok)
+      return FALSE;
+  }
+
+  if (needTotalAndFree) {
+    free = numberOfFreeClusters*sectorsPerCluster*bytesPerSector;
+    total = totalNumberOfClusters*sectorsPerCluster*bytesPerSector;
+  }
+
+  if (clusterSize == 0)
+    clusterSize = bytesPerSector*sectorsPerCluster;
+
   return TRUE;
 }
 
