@@ -1,5 +1,5 @@
 /*
- * $Id: textfile.h,v 1.5 1994/04/01 14:17:26 robertj Exp $
+ * $Id: textfile.h,v 1.6 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: textfile.h,v $
- * Revision 1.5  1994/04/01 14:17:26  robertj
+ * Revision 1.6  1994/04/20 12:17:44  robertj
+ * PFilePath addition
+ *
+ * Revision 1.5  1994/04/01  14:17:26  robertj
  * Fixed container for text file.
  *
  * Revision 1.4  1994/01/03  04:42:23  robertj
@@ -32,14 +35,15 @@ PDECLARE_CONTAINER(PTextFile, PFile)
 
   public:
     PTextFile();
-      // Create a unique temporary file name for the text file object. Do not
-      // open or create it.
-      
-    PTextFile(const PString & name);
-      // Create a new text file object with the specified name but do not open
-      // or create it.
+      // Create a text file object but do not open it. It does not initially
+      // have a valid file name.
 
-    PTextFile(const PString & name, OpenMode mode, int opts = Normal);
+    PTextFile(OpenMode mode, int opts = ModeDefault);
+      // Create a unique temporary file name for the text file object, then
+      // open it for reading and writing. It is initially empty.
+      
+    PTextFile(const PFilePath & name,
+                           OpenMode mode = ReadWrite, int opts = ModeDefault);
       // Create a new text file object with the specified name and open
       // or create it according to the specified options.
 

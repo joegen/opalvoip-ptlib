@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.1 1994/04/01 14:25:36 robertj Exp $
+ * $Id: pprocess.h,v 1.2 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.1  1994/04/01 14:25:36  robertj
+ * Revision 1.2  1994/04/20 12:17:44  robertj
+ * PFilePath addition
+ *
+ * Revision 1.1  1994/04/01  14:25:36  robertj
  * Initial revision
  *
  */
@@ -58,8 +61,8 @@ PDECLARE_CLASS(PTextApplication, PObject)
     PString GetAppName() const;
       // Return the root name of the applications executable image.
 
-    const PFile & GetAppFile() const;
-      // Return the applications executable image file.
+    const PFilePath & GetAppFile() const;
+      // Return the applications executable image file path.
 
     PString GetEnvironment(const PString & varName) const;
       // Return the environment variable.
@@ -87,7 +90,7 @@ PDECLARE_CLASS(PTextApplication, PObject)
     PString applicationName;
       // Application executable base name from argv[0]
 
-    PFile applicationFile;
+    PFilePath applicationFile;
       // Application executable file from argv[0] (not open)
 
     PArgList arguments;
