@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.82  2002/08/06 02:27:58  robertj
+ * GNU C++ v3 compatibility.
+ *
  * Revision 1.81  2002/06/25 02:22:47  robertj
  * Improved assertion system to allow C++ class name to be displayed if
  *   desired, especially relevant to container classes.
@@ -321,6 +324,8 @@
 
 #if (__GNUC__ >= 3)
 using namespace std;
+#else
+typedef long _Ios_Fmtflags;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
