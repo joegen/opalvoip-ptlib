@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.21  2000/03/06 04:09:23  robertj
+ * Added constructor to do PString conversion to PTimeInterval
+ *
  * Revision 1.20  1999/07/06 04:46:00  robertj
  * Fixed being able to case an unsigned to a PTimeInterval.
  * Improved resolution of PTimer::Tick() to be millisecond accurate.
@@ -142,6 +145,9 @@ class PTimeInterval : public PObject
       long minutes = 0,     /// Number of minutes for interval.
       long hours = 0,       /// Number of hours for interval.
       int days = 0          /// Number of days for interval.
+    );
+    PTimeInterval(
+      const PString & str   /// String representation of time interval.
     );
   //@}
 

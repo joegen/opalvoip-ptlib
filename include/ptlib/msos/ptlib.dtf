@@ -1506,6 +1506,7 @@ EXPORTS
     ?IsEmpty@PContainer@@UBEHXZ @1386 NONAME ;public: virtual int __thiscall PContainer::IsEmpty(void)const 
     ?IsEmpty@PString@@UBEHXZ @1387 NONAME ;public: virtual int __thiscall PString::IsEmpty(void)const 
     ?IsEndOfFile@PFile@@QBEHXZ @1388 NONAME ;public: int __thiscall PFile::IsEndOfFile(void)const 
+    ?IsGUIProcess@PProcess@@UBEHXZ @2263 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
     ?IsLoaded@PDynaLink@@QBEHXZ @1390 NONAME ;public: int __thiscall PDynaLink::IsLoaded(void)const 
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @1391 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @1392 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
@@ -1966,4 +1967,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ?IsGUIProcess@PProcess@@UBEHXZ @2263 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
+    ??0PTimeInterval@@QAE@ABVPString@@@Z @2264 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.29  2000/03/06 04:09:23  robertj
+ * Added constructor to do PString conversion to PTimeInterval
+ *
  * Revision 1.28  1999/10/14 08:23:20  robertj
  * Fixed display of decimals in milliseconds when precision other than 3.
  *
@@ -130,6 +133,13 @@ PTimeInterval::PTimeInterval(long millisecs,
                              int days)
 {
   SetInterval(millisecs, seconds, minutes, hours, days);
+}
+
+
+PTimeInterval::PTimeInterval(const PString & str)
+{
+  PStringStream strm = str;
+  ReadFrom(strm);
 }
 
 
