@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.39 1998/08/20 05:48:51 robertj Exp $
+ * $Id: collect.cxx,v 1.40 1998/09/14 12:32:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.40  1998/09/14 12:32:45  robertj
+ * Fixed bug in ordinal dictionary GetAt() and SetAt() for scalar integer types.
+ *
  * Revision 1.39  1998/08/20 05:48:51  robertj
  * Fixed bug on removing entries by index from a PSet().
  *
@@ -1502,13 +1505,13 @@ PINDEX PAbstractDictionary::GetValuesIndex(const PObject & obj) const
 
 BOOL PAbstractDictionary::SetAt(PINDEX index, PObject * val)
 {
-  return SetAt(POrdinalKey(index), val);
+  return AbstractSetAt(POrdinalKey(index), val);
 }
 
 
 PObject * PAbstractDictionary::GetAt(PINDEX index) const
 {
-  return GetAt(POrdinalKey(index));
+  return AbstractGetAt(POrdinalKey(index));
 }
  
  
