@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.19 1996/05/15 10:15:15 robertj Exp $
+ * $Id: inetprot.cxx,v 1.20 1996/05/26 03:46:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.20  1996/05/26 03:46:22  robertj
+ * Compatibility to GNU 2.7.x
+ *
  * Revision 1.19  1996/05/15 10:15:15  robertj
  * Added access function to set intercharacter line read timeout.
  *
@@ -382,7 +385,8 @@ BOOL PApplicationSocket::WriteResponse(const PString & code,
     return WriteString(code & info + CRLF);
 
   PStringArray lines = info.Lines();
-  for (PINDEX i = 0; i < lines.GetSize()-1; i++)
+  PINDEX i;
+  for (i = 0; i < lines.GetSize()-1; i++)
     if (!WriteString(code + '-' + lines[i] + CRLF))
       return FALSE;
 
@@ -672,7 +676,8 @@ void PBase64::ProcessEncoding(const BYTE * data, PINDEX length)
 
   OutputBase64(saveTriple);
 
-  for (PINDEX i = 0; i+2 < length; i += 3)
+  PINDEX i;
+  for (i = 0; i+2 < length; i += 3)
     OutputBase64(data+i);
 
   saveCount = length - i;
