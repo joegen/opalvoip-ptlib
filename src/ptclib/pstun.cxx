@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.2  2003/02/04 05:06:24  craigs
+ * Added new functions
+ *
  * Revision 1.1  2003/02/04 03:31:04  robertj
  * Added STUN
  *
@@ -36,17 +39,22 @@
 
 #include <ptlib.h>
 #include <ptclib/pstun.h>
+#include <ptclib/random.h>
 
 #include "stun.h"
 
 
 ///////////////////////////////////////////////////////////////////////
 
-PSTUNClient::PSTUNClient(const PString & server)
+PSTUNClient::PSTUNClient(const PString & server, WORD _portBase, WORD _portEnd)
   : serverAddress(0),
-    serverPort(3487)
+    serverPort(3478),
+    portBase(_portBase),
+    portEnd(_portEnd)
 {
   SetServer(server);
+  natType      = UnknownNat;
+  stunPossible = FALSE;
 }
 
 
@@ -79,9 +87,10 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType()
 {
   StunAddress stunServerAddr;
   stunServerAddr.addrHdr.family = PF_INET;
-  stunServerAddr.addrHdr.port = serverPort;
-  stunServerAddr.addr.v4addr = ntohl(serverAddress);
-  StunNatType stype = stunType(stunServerAddr, FALSE);
+  stunServerAddr.addrHdr.port   = serverPort;
+  stunServerAddr.addr.v4addr    = ntohl(serverAddress);
+
+  StunNatType stype = stunType(stunServerAddr, FALSE, portBase);
   static const NatTypes TranslationTable[] = {
     UnknownNat,
     OpenNat,
@@ -92,9 +101,23 @@ PSTUNClient::NatTypes PSTUNClient::GetNatType()
     SymmetricFirewall,
     BlockedNat
   };
+  static const BOOL StunPossibleTable[] = {
+    FALSE, // UnknownNat,
+    TRUE,  // OpenNat,
+    TRUE,  // ConeNat,
+    TRUE,  // RestrictedNat,
+    TRUE,  // PortRestrictedNat,
+    FALSE, // SymmetricNat,
+    FALSE, // SymmetricFirewall,
+    FALSE, // BlockedNat
+  };
 
-  if (stype < PARRAYSIZE(TranslationTable))
-    return TranslationTable[stype];
+
+  if (stype < PARRAYSIZE(TranslationTable)) {
+    natType      = TranslationTable[stype];
+    stunPossible = StunPossibleTable[stype];
+    return natType;
+  }
 
   return UnknownNat;
 }
@@ -113,25 +136,79 @@ PString PSTUNClient::GetNatTypeName()
     "Blocked"
   };
 
-  return Names[GetNatType()];
+  if (natType == UnknownNat)
+    GetNatType();
+  return Names[natType];
 }
 
 
-BOOL PSTUNClient::CreateSocket(PIPSocket::Address remoteAddress,
-                               WORD remotePort,
-                               PUDPSocket * & socket)
+BOOL PSTUNClient::CreateSocket(PUDPSocket * & socket)
 {
-  return FALSE;
+  if (natType == UnknownNat) 
+    GetNatType();
+
+  if (!stunPossible)
+    return FALSE;
+
+  StunAddress vStunAddr;
+  vStunAddr.addrHdr.family = PF_INET;
+  vStunAddr.addrHdr.port   = serverPort; 
+  vStunAddr.addr.v4addr    = ntohl(serverAddress);
+
+  int port = 0;
+  if (portBase != 0 && portEnd != 0)
+    port = portBase + (PRandom::Number() % (portEnd - portBase));
+
+  StunAddress vSockAddr;
+  int fd = stunOpenSocket(vStunAddr, &vSockAddr);
+
+  if (fd < 0)
+    return FALSE;
+
+  socket = new PSTUNUDPSocket(fd, 
+                              PIPSocket::Address(htonl(vSockAddr.addr.v4addr)),
+                              vSockAddr.addrHdr.port);
+
+  return TRUE;
 }
 
 
-BOOL PSTUNClient::CreateSocketPair(PIPSocket::Address remoteAddress,
-                                   WORD remotePort,
-                                   PUDPSocket * & socket1,
+BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
                                    PUDPSocket * & socket2)
 {
  return FALSE;
 }
 
+////////////////////////////////////////////////////////////////
+
+
+PSTUNUDPSocket::PSTUNUDPSocket(int fd, 
+                               const PIPSocket::Address & _externalIP, 
+                               WORD _externalPort)
+  : externalIP(_externalIP), externalPort(_externalPort)
+{
+  os_handle = fd;
+}
+
+BOOL PSTUNUDPSocket::OpenSocket()
+{
+  return TRUE;
+}
+
+BOOL PSTUNUDPSocket::GetLocalAddress(Address & addr)
+{
+  addr = externalIP;
+  return TRUE;
+}
+
+BOOL PSTUNUDPSocket::GetLocalAddress(
+      Address & addr,    /// Variable to receive peer hosts IP address
+      WORD & port        /// Variable to receive peer hosts port number
+    )
+{
+  addr = externalIP;
+  port = externalPort;
+  return TRUE;
+}
 
 // End of File ////////////////////////////////////////////////////////////////

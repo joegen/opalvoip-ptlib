@@ -86,7 +86,7 @@ bool stunOpenSocketPair( StunAddress& stunServerAddr, StunAddress* sAddr, int* f
 
 /// gets a UDP socket for use and returns it's public address
 int
-stunOpenSocket( StunAddress& stunServerAddr, StunAddress* sAddr );
+stunOpenSocket( StunAddress& stunServerAddr, StunAddress* sAddr, int port = 0 );
 
 
 /// find the IP address of a the specified stun server - 
@@ -96,7 +96,7 @@ stunParseServerName( char* serverName, StunAddress* stunServerAddr);
 
 /// find out what type of NAT you are behind - takes a second or so
 StunNatType
-stunType( StunAddress& dest,bool verbose );
+stunType( StunAddress& dest,bool verbose, int portBase = 0);
 
 
 /// run a specific type of test 
