@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.173  2001/12/13 09:21:43  robertj
+ * Changed trace so shows thread id if current thread not created by PWLib.
+ *
  * Revision 1.172  2001/11/30 04:19:26  robertj
  * Fixed correct setting of option bits in PTrace::Initialise()
  * Added date and time to first message in PTrace::Initialise()
@@ -768,7 +771,10 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
     if ((PTraceOptions&Thread) != 0) {
       PThread * thread = PThread::Current();
       if (thread == NULL)
-        *PTraceStream << setw(23) << "<<unknown>>";
+        *PTraceStream << "ThreadID=0x"
+                      << setfill('0') << hex
+                      << setw(8) << GetCurrentThreadId()
+                      << setfill(' ') << dec;
       else {
         PString name = thread->GetThreadName();
         if (name.GetLength() <= 23)
