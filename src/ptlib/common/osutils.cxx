@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.92 1998/03/29 06:16:45 robertj Exp $
+ * $Id: osutils.cxx,v 1.93 1998/04/07 13:33:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.93  1998/04/07 13:33:33  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.92  1998/03/29 06:16:45  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -1851,7 +1854,7 @@ PProcess::PProcess(const char * manuf, const char * name,
 }
 
 
-int PProcess::_main()
+int PProcess::_main(void *)
 {
   Main();
   return terminationValue;
