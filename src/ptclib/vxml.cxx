@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.46  2004/07/17 09:44:12  rjongbloed
+ * Fixed missing set of last write count if not actually writing frames.
+ *
  * Revision 1.45  2004/07/15 03:12:42  csoutheren
  * Migrated changes from crs_vxnml_devel branch into main trunk
  *
@@ -2326,6 +2329,7 @@ BOOL PVXMLChannel::Write(const void * buf, PINDEX len)
   // if nothing is capturing incoming data, then fake the timing and return
   if (recordable == NULL && GetBaseWriteChannel() == NULL) {
     PDelayChannel::Wait(len, nextWriteTick);
+    lastWriteCount = len;
     return TRUE;
   }
 
