@@ -27,6 +27,9 @@
  * Contributor(s): Yuri Kiryanov, ykiryanov at users.sourceforge.net
  *
  * $Log: tlibbe.cxx,v $
+ * Revision 1.20  2004/02/23 23:40:42  ykiryanov
+ * Added missing constructor for PMutex
+ *
  * Revision 1.19  2004/02/23 21:23:09  ykiryanov
  * Removed assert line to enable semaphore constructor
  *
@@ -801,6 +804,11 @@ PMutex::PMutex()
   PError << "::create_sem(PMutex) " << semId << endl;
   PAssertOS( semId >= B_NO_ERROR );
   #endif 
+}
+
+PMutex::PMutex(const PMutex& m) 
+  : PSemaphore(m.semId, m.benaphoreCount, 0)
+{
 }
 
 void PMutex::Wait()
