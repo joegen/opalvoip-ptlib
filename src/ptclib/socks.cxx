@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * $Log: socks.cxx,v $
+ * Revision 1.8  2003/09/08 01:42:48  dereksmithies
+ * Add patch from Diego Tartara <dtartara@mens2.hq.novamens.com>. Many Thanks!
+ *
  * Revision 1.7  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -192,7 +195,7 @@ BOOL PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
       if (!socket.ReadBlock(auth_pdu, sizeof(auth_pdu)))  // Should get 2 byte reply
         return FALSE;
 
-      if (auth_pdu[0] != SOCKS_VERSION_5 || auth_pdu[1] != 0) {
+      if (/*auth_pdu[0] != SOCKS_VERSION_5 ||*/ auth_pdu[1] != 0) {
         socket.Close();
         SetErrorCodes(PChannel::AccessDenied, EACCES);
         return FALSE;
@@ -205,9 +208,21 @@ BOOL PSocksProtocol::SendSocksCommand(PTCPSocket & socket,
          << '\000'; // Reserved
   if (hostname != NULL)
     socket << SOCKS_ADDR_DOMAINNAME << (BYTE)strlen(hostname) << hostname;
+#if P_HAS_IPV6
+  else if ( addr.GetVersion() == 6 )
+  {
+    socket << SOCKS_ADDR_IPV6;
+    /* Should be 16 bytes */
+    for ( PINDEX i = 0; i < addr.GetSize(); i++ )    
+    {
+        socket << addr[i];
+    }
+  }
+#endif 
   else
     socket << SOCKS_ADDR_IPV4
            << addr.Byte1() << addr.Byte2() << addr.Byte3() << addr.Byte4();
+
   socket << (BYTE)(remotePort >> 8) << (BYTE)remotePort
          << ::flush;
 
@@ -275,9 +290,24 @@ BOOL PSocksProtocol::ReceiveSocksResponse(PTCPSocket & socket,
       break;
 
     case SOCKS_ADDR_IPV4 :
-      if (!socket.ReadBlock(&addr, sizeof(addr)))
-        return FALSE;
+      {
+          in_addr add;
+          if (!socket.ReadBlock(&add, sizeof(add)))
+              return FALSE;
+          addr = add;
+      }
       break;
+
+#if P_HAS_IPV6    
+    case SOCKS_ADDR_IPV6 :
+      {
+        in6_addr add;
+        if (!socket.ReadBlock(&add, sizeof(add)))
+            return FALSE;
+        addr = add;
+      }
+      break;
+#endif
 
     default :
       SetErrorCodes(PChannel::Miscellaneous, EINVAL);
@@ -463,9 +493,9 @@ BOOL PSocks4Socket::SendSocksCommand(PTCPSocket & socket,
   PString user = PProcess::Current().GetUserName();
   socket << SOCKS_VERSION_4
          << command
-         << (BYTE)user.GetLength() << user
          << (BYTE)(remotePort >> 8) << (BYTE)remotePort
          << addr.Byte1() << addr.Byte2() << addr.Byte3() << addr.Byte4()
+         << user << ((BYTE)0)
          << ::flush;
 
   return ReceiveSocksResponse(socket, localAddress, localPort);
@@ -480,7 +510,7 @@ BOOL PSocks4Socket::ReceiveSocksResponse(PTCPSocket & socket,
   if ((reply = socket.ReadChar()) < 0)
     return FALSE;
 
-  if (reply != SOCKS_VERSION_4) {
+  if (reply != 0 /*!= SOCKS_VERSION_4*/) {
     SetErrorCodes(PChannel::Miscellaneous, EINVAL);
     return FALSE;
   }
@@ -511,7 +541,14 @@ BOOL PSocks4Socket::ReceiveSocksResponse(PTCPSocket & socket,
 
   port = PSocket::Net2Host(rxPort);
 
-  return socket.ReadBlock(&addr, sizeof(addr));
+  in_addr add;
+  if ( socket.ReadBlock(&add, sizeof(add)) )
+  {
+    addr = add;
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 
