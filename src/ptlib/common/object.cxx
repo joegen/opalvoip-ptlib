@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.60  2002/09/06 05:29:42  craigs
+ * Reversed order of memory block check on delete to improve performance in
+ * Linux debug mode
+ *
  * Revision 1.59  2002/09/04 05:23:53  robertj
  * Fixed crashable way of checking pointer is in PWLib heap check.
  *
@@ -623,9 +627,9 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
 
   Header * obj = ((Header *)ptr)-1;
 
-  Header * link = listHead;
-  while (link != NULL && link != obj)
-    link = link->next;
+  Header * link = listTail;  
+  while (link != NULL && link != obj) 
+    link = link->prev;  
 
   if (link == NULL) {
     if (error != NULL)
