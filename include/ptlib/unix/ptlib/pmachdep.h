@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.18  1998/11/24 09:38:19  robertj
+ * FreeBSD port.
+ *
  * Revision 1.17  1998/11/14 01:08:25  robertj
  * PPC linux GNU compatibility.
  *
@@ -66,6 +69,23 @@ typedef int socklen_t;
 #ifdef PPC
 typedef size_t socklen_t;
 #endif
+
+#elif defined(P_FREEBSD)
+
+#include <errno.h>
+#include <dlfcn.h>
+#include <termios.h>
+#include <sys/fcntl.h>
+#include <sys/filio.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <net/if.h>
+
+#define HAS_IFREQ
+
+#define PSETPGRP()  setpgrp(0, 0)
+
+typedef int socklen_t;
 
 #elif defined(P_SOLARIS)
 
