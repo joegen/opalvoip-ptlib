@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.109  2001/05/23 19:48:55  yurik
+ * Fix submitted by Dave Cassel, dcassel@cyberfone.com,
+ * allowing a connection between a client and a gatekeeper.
+ *
  * Revision 1.108  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -861,10 +865,16 @@ WORD PSocket::GetPortByService(const PString & serviceName) const
 
 WORD PSocket::GetPortByService(const char * protocol, const PString & service)
 {
-#if defined( __NUCLEUS_PLUS__ ) || defined( _WIN32_WCE )
+#if defined( __NUCLEUS_PLUS__ )
   if(!strcmp(protocol,"tcp") && service.AsInteger()>0) return service.AsInteger();
   PAssertAlways
   ("PSocket::GetPortByService: problem as no ::getservbyname in Nucleus NET");
+  return 0;
+#elif defined(_WIN32_WCE)
+  if( service.AsInteger() > 0 ) 
+    return (WORD) service.AsInteger();
+ 
+  PAssertAlways("PSocket::GetPortByService: problem for WindowsCE as no port given.");
   return 0;
 #else
   PINDEX space = service.FindOneOf(" \t\r\n");
