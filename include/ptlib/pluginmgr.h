@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.h,v $
+ * Revision 1.10  2004/04/22 11:43:47  csoutheren
+ * Factored out functions useful for loading dynamic libraries
+ *
  * Revision 1.9  2004/04/22 07:55:30  csoutheren
  * Fix problem with generic plugin manager having pure virtual. Thanks to Ben Lear
  *
@@ -44,12 +47,28 @@
 
 #include <ptlib/plugin.h>
 
+template <class C>
+void PLoadPluginDirectory(C & obj, const PDirectory & directory)
+{
+  PDirectory dir = directory;
+  if (!dir.Open()) {
+    PTRACE(4, "Cannot open plugin directory " << dir);
+    return;
+  }
+  PTRACE(4, "Enumerating plugin directory " << dir);
+  do {
+    PString entry = dir + dir.GetEntryName();
+    if (dir.IsSubDir())
+      PLoadPluginDirectory<C>(obj, entry);
+    else if (PFilePath(entry).GetType() *= PDynaLink::GetExtension()) 
+      obj.LoadPlugin(entry);
+  } while (dir.Next());
+}
+
 //////////////////////////////////////////////////////
 //
 //  Manager for plugins
 //
-
-#define PPluginDynamic  PDynaLink
 
 class PPluginManager : public PObject
 {
@@ -61,8 +80,9 @@ class PPluginManager : public PObject
 
     // functions to load/unload a dynamic plugin 
     BOOL LoadPlugin (const PString & fileName);
-    void LoadPluginDirectory (const PDirectory &directory);
-
+    void LoadPluginDirectory (const PDirectory & dir)
+    { PLoadPluginDirectory<PPluginManager>(*this, dir); }
+  
     // functions to access the plugins' services 
     PStringList GetPluginTypes() const;
     PStringList GetPluginsProviding (const PString & serviceType) const;
@@ -70,6 +90,9 @@ class PPluginManager : public PObject
 
     // function to register a service (used by the plugins themselves)
     BOOL RegisterService (const PString & serviceName, const PString & serviceType, PPluginServiceDescriptor * descriptor);
+
+    // Get the list of plugin directories
+    static PStringArray GetPluginDirs();
 
     // static functions for accessing global instances of plugin managers
     static PPluginManager & GetPluginManager();
@@ -104,7 +127,7 @@ class PPluginManager : public PObject
     void CallNotifier(PDynaLink & dll, INT code);
 
     PMutex pluginListMutex;
-    PList<PPluginDynamic> pluginList;
+    PList<PDynaLink> pluginList;
     
     PMutex serviceListMutex;
     PList<PPluginService> serviceList;
