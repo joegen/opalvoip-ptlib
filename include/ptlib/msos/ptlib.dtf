@@ -1119,12 +1119,6 @@ EXPORTS
     ?CompareObjectMemoryDirect@?$PList@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2209 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPThread@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @695 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PThread>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PList@VPTimer@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @696 NONAME ;public: virtual enum PObject::Comparison  __thiscall PList<class PTimer>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@F@@UBE?AW4Comparison@PObject@@ABV3@@Z @3517 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<short>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@G@@UBE?AW4Comparison@PObject@@ABV3@@Z @3518 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned short>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@H@@UBE?AW4Comparison@PObject@@ABV3@@Z @3519 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<int>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@I@@UBE?AW4Comparison@PObject@@ABV3@@Z @3520 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned int>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@J@@UBE?AW4Comparison@PObject@@ABV3@@Z @3521 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<long>::CompareObjectMemoryDirect(class PObject const &)const 
-    ?CompareObjectMemoryDirect@?$PScalarArray@K@@UBE?AW4Comparison@PObject@@ABV3@@Z @3522 NONAME ;public: virtual enum PObject::Comparison  __thiscall PScalarArray<unsigned long>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@?$PSet@VPString@@@@UBE?AW4Comparison@PObject@@ABV3@@Z @2143 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSet<class PString>::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@CMCDLL@PMail@@UBE?AW4Comparison@PObject@@ABV4@@Z @697 NONAME ;public: virtual enum PObject::Comparison  __thiscall PMail::CMCDLL::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@HouseKeepingThread@PProcess@@UBE?AW4Comparison@PObject@@ABV4@@Z @698 NONAME ;public: virtual enum PObject::Comparison  __thiscall PProcess::HouseKeepingThread::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1441,12 +1435,6 @@ EXPORTS
     ?GetClass@?$PList@VPString@@@@UBEPBDI@Z @2211 NONAME ;public: virtual char const * __thiscall PList<class PString>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPThread@@@@UBEPBDI@Z @901 NONAME ;public: virtual char const * __thiscall PList<class PThread>::GetClass(unsigned int)const 
     ?GetClass@?$PList@VPTimer@@@@UBEPBDI@Z @902 NONAME ;public: virtual char const * __thiscall PList<class PTimer>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@F@@UBEPBDI@Z @3528 NONAME ;public: virtual char const * __thiscall PScalarArray<short>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@G@@UBEPBDI@Z @3529 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned short>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@H@@UBEPBDI@Z @3530 NONAME ;public: virtual char const * __thiscall PScalarArray<int>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@I@@UBEPBDI@Z @3531 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned int>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@J@@UBEPBDI@Z @3532 NONAME ;public: virtual char const * __thiscall PScalarArray<long>::GetClass(unsigned int)const 
-    ?GetClass@?$PScalarArray@K@@UBEPBDI@Z @3533 NONAME ;public: virtual char const * __thiscall PScalarArray<unsigned long>::GetClass(unsigned int)const 
     ?GetClass@?$PSet@VPString@@@@UBEPBDI@Z @2145 NONAME ;public: virtual char const * __thiscall PSet<class PString>::GetClass(unsigned int)const 
     ?GetClass@CMCDLL@PMail@@UBEPBDI@Z @903 NONAME ;public: virtual char const * __thiscall PMail::CMCDLL::GetClass(unsigned int)const 
     ?GetClass@HouseKeepingThread@PProcess@@UBEPBDI@Z @904 NONAME ;public: virtual char const * __thiscall PProcess::HouseKeepingThread::GetClass(unsigned int)const 
@@ -1882,12 +1870,6 @@ EXPORTS
     ?IsClass@?$PList@VPString@@@@UBEHPBD@Z @2213 NONAME ;public: virtual int __thiscall PList<class PString>::IsClass(char const *)const 
     ?IsClass@?$PList@VPThread@@@@UBEHPBD@Z @1219 NONAME ;public: virtual int __thiscall PList<class PThread>::IsClass(char const *)const 
     ?IsClass@?$PList@VPTimer@@@@UBEHPBD@Z @1220 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@F@@UBEHPBD@Z @3535 NONAME ;public: virtual int __thiscall PScalarArray<short>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@G@@UBEHPBD@Z @3536 NONAME ;public: virtual int __thiscall PScalarArray<unsigned short>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@H@@UBEHPBD@Z @3537 NONAME ;public: virtual int __thiscall PScalarArray<int>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@I@@UBEHPBD@Z @3538 NONAME ;public: virtual int __thiscall PScalarArray<unsigned int>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@J@@UBEHPBD@Z @3539 NONAME ;public: virtual int __thiscall PScalarArray<long>::IsClass(char const *)const 
-    ?IsClass@?$PScalarArray@K@@UBEHPBD@Z @3540 NONAME ;public: virtual int __thiscall PScalarArray<unsigned long>::IsClass(char const *)const 
     ?IsClass@?$PSet@VPString@@@@UBEHPBD@Z @2148 NONAME ;public: virtual int __thiscall PSet<class PString>::IsClass(char const *)const 
     ?IsClass@CMCDLL@PMail@@UBEHPBD@Z @1221 NONAME ;public: virtual int __thiscall PMail::CMCDLL::IsClass(char const *)const 
     ?IsClass@HouseKeepingThread@PProcess@@UBEHPBD@Z @1222 NONAME ;public: virtual int __thiscall PProcess::HouseKeepingThread::IsClass(char const *)const 
@@ -2019,12 +2001,6 @@ EXPORTS
     ?IsDescendant@?$PList@VPString@@@@UBEHPBD@Z @2215 NONAME ;public: virtual int __thiscall PList<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPThread@@@@UBEHPBD@Z @1307 NONAME ;public: virtual int __thiscall PList<class PThread>::IsDescendant(char const *)const 
     ?IsDescendant@?$PList@VPTimer@@@@UBEHPBD@Z @1308 NONAME ;public: virtual int __thiscall PList<class PTimer>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@F@@UBEHPBD@Z @3542 NONAME ;public: virtual int __thiscall PScalarArray<short>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@G@@UBEHPBD@Z @3543 NONAME ;public: virtual int __thiscall PScalarArray<unsigned short>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@H@@UBEHPBD@Z @3544 NONAME ;public: virtual int __thiscall PScalarArray<int>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@I@@UBEHPBD@Z @3545 NONAME ;public: virtual int __thiscall PScalarArray<unsigned int>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@J@@UBEHPBD@Z @3546 NONAME ;public: virtual int __thiscall PScalarArray<long>::IsDescendant(char const *)const 
-    ?IsDescendant@?$PScalarArray@K@@UBEHPBD@Z @3547 NONAME ;public: virtual int __thiscall PScalarArray<unsigned long>::IsDescendant(char const *)const 
     ?IsDescendant@?$PSet@VPString@@@@UBEHPBD@Z @2150 NONAME ;public: virtual int __thiscall PSet<class PString>::IsDescendant(char const *)const 
     ?IsDescendant@CMCDLL@PMail@@UBEHPBD@Z @1309 NONAME ;public: virtual int __thiscall PMail::CMCDLL::IsDescendant(char const *)const 
     ?IsDescendant@HouseKeepingThread@PProcess@@UBEHPBD@Z @1310 NONAME ;public: virtual int __thiscall PProcess::HouseKeepingThread::IsDescendant(char const *)const 
