@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.124  2004/04/18 12:37:41  csoutheren
+# Modified to detect sem_wait etc on Linux systems
+#
 # Revision 1.123  2004/04/02 03:59:46  ykiryanov
 # Uncommented beaudio code
 #
@@ -430,10 +433,12 @@ PLUGIN_DIR		= ../../../plugins
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-
+ifeq (1,$(HAS_SASL))
+SASL_SOURCE := $(COMPONENT_SRC_DIR)/psasl.cxx 
 ifeq (1,$(HAS_OPENLDAP))
 LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx \
                $(COMPONENT_SRC_DIR)/pils.cxx
+endif
 endif
 
 ifeq (1,$(HAS_OPENSSL))
@@ -630,6 +635,7 @@ SOURCES	= \
         $(SDL_SOURCE) \
 	$(SSL_SOURCE) \
 	$(LDAP_SOURCE) \
+	$(SASL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(GETDATE_SOURCE) \
 	$(PXML_SOURCE) \
