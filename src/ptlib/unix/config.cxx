@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.34  2003/01/30 23:46:05  dereks
+ * Fix compile error on gcc 3.2
+ *
  * Revision 1.33  2003/01/26 03:57:12  robertj
  * Fixed problem with last change so can still operate if do not have write
  *   access to the directory config file is in.
@@ -326,7 +329,7 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
   file.Close();
 
   if (file.GetFilePath() != filename) {
-    if (!file.Rename(filename, TRUE)) {
+    if (!file.Rename(file.GetFilePath(), filename.GetFileName(), TRUE)) {
       PProcess::PXShowSystemWarning(2001, "Cannot rename config file: " + file.GetErrorText());
       return FALSE;
     }
