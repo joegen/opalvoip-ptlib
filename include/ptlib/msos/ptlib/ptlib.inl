@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.22  2004/04/11 02:55:18  csoutheren
+ * Added PCriticalSection for Windows
+ * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
+ *
  * Revision 1.21  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -166,5 +170,28 @@ PINLINE PThreadIdentifier PThread::GetThreadId() const
 
 PINLINE PThreadIdentifier PThread::GetCurrentThreadId()
   { return ::GetCurrentThreadId(); }
+
+///////////////////////////////////////////////////////////////////////////////
+// PCriticalSection
+
+PINLINE PCriticalSection::PCriticalSection()
+{
+  ::InitializeCriticalSection(&criticalSection);
+}
+
+PINLINE PCriticalSection::~PCriticalSection()
+{
+  ::DeleteCriticalSection(&criticalSection);
+}
+
+PINLINE void PCriticalSection::Enter()
+{
+  ::EnterCriticalSection(&criticalSection);
+}
+
+PINLINE void PCriticalSection::Leave()
+{
+  ::LeaveCriticalSection(&criticalSection);
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
