@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.61  1998/10/28 00:59:48  robertj
+ * New improved argument parsing.
+ *
  * Revision 1.60  1998/09/24 07:24:00  robertj
  * Moved structured fiel into separate module so don't need silly implementation file for GNU C.
  *
@@ -644,8 +647,8 @@ PINLINE void PConfig::SetTime(const PString & key, const PTime & value)
 ///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
-PINLINE void PArgList::Parse(const PString & theArgumentSpec)
-  { Parse((const char *)theArgumentSpec); }
+PINLINE BOOL PArgList::Parse(const PString & theArgumentSpec)
+  { return Parse((const char *)theArgumentSpec); }
 
 PINLINE BOOL PArgList::HasOption(char option) const
   { return GetOptionCount(option) != 0; }
@@ -653,8 +656,11 @@ PINLINE BOOL PArgList::HasOption(char option) const
 PINLINE BOOL PArgList::HasOption(const char * option) const
   { return GetOptionCount(option) != 0; }
 
+PINLINE BOOL PArgList::HasOption(const PString & option) const
+  { return GetOptionCount(option) != 0; }
+
 PINLINE PINDEX PArgList::GetCount() const
-  { return arg_count-shift; }
+  { return parameterIndex.GetSize()-shift; }
 
 PINLINE PString PArgList::operator[](PINDEX num) const
   { return GetParameter(num); }
