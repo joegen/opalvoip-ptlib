@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.10  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.9  2001/11/28 04:39:25  robertj
  * Fixed MSVC warning
  *
@@ -75,6 +78,7 @@ PFakeVideoInputDevice::PFakeVideoInputDevice()
 {
   grabCount = 0;
   SetFrameRate(10);
+  doVFlip = FALSE;
 }
 
 
@@ -247,14 +251,22 @@ BOOL PFakeVideoInputDevice::GetFrameDataNoDelay(BYTE *destFrame, PINDEX * /*byte
 
 
 void PFakeVideoInputDevice::FillRect(BYTE * frame, unsigned width, unsigned height,
-								 int xPos, int yPos,
-                                 int rectWidth, int rectHeight,
-                                 int r, int g,  int b)
+				     int xPos, int initialYPos,
+				     int rectWidth, int rectHeight,
+				     int r, int g,  int b)
 {
 // PTRACE(0,"x,y is"<<xPos<<" "<<yPos<<" and size is "<<rectWidth<<" "<<rectHeight);
 	//This routine fills a region of the video image with data. It is used as the central
 	//point because one only has to add other image formats here.
-  int offset       = ( yPos * width) + xPos;
+  int yPos;
+  if ( doVFlip ) {
+    yPos = height - ( initialYPos + rectHeight );
+    yPos = ( yPos >> 2 ) * 4;
+  }
+  else
+    yPos = initialYPos;
+
+  int offset       = ( yPos * width ) + xPos;
   int colourOffset = ( (yPos * width) >> 2) + (xPos >> 1);
 
   int Y  =  (int)( (0.257 * r) + (0.504 * g) + (0.098 * b) + 16);
@@ -565,4 +577,23 @@ void PFakeVideoInputDevice::GrabBlankImage(BYTE *resFrame)
 }
 
  
+BOOL PFakeVideoInputDevice::GetVFlipState() 
+{
+  return doVFlip;
+} 
+
+BOOL PFakeVideoInputDevice::SetVFlipState(BOOL newVFlip) 
+{
+  doVFlip = newVFlip;
+
+  return TRUE;
+} 
+
+BOOL PFakeVideoInputDevice::ToggleVFlipState() 
+{
+  doVFlip = !doVFlip;
+
+  return TRUE;
+} 
+
 // End Of File ///////////////////////////////////////////////////////////////

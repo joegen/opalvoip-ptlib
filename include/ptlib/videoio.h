@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.21  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.20  2001/11/28 00:07:32  dereks
  * Locking added to PVideoChannel, allowing reader/writer to be changed mid call
  * Enabled adjustment of the video frame rate
@@ -566,6 +569,24 @@ class PVideoInputDevice : public PVideoDevice
       BYTE * buffer,                 /// Buffer to receive frame
       PINDEX * bytesReturned = NULL  /// OPtional bytes returned.
     );
+
+
+    /**Get the video conversion vertical flip state
+     */
+    virtual BOOL GetVFlipState();
+
+    /**Set the video conversion vertical flip state
+     */
+    virtual BOOL SetVFlipState(BOOL newVFlipState);
+
+    /**Toggle the video conversion vertical flip state
+     */
+    virtual BOOL ToggleVFlipState();
+        
+    /**Try all known video formats & see which ones are accepted by the video driver
+     */
+    virtual BOOL TestAllFormats();
+
 
  protected:
     /**Check the hardware can do the asked for size.

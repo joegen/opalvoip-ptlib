@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.25  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.24  2001/12/08 00:33:11  robertj
  * Changed some (unsigned int *) to (DWORD *) as the latter is assured to be a
  *   pointer to a 32 bit integer and the former is not.
@@ -152,7 +155,8 @@ class PStandardColourConverter : public PColourConverter
     void RGBtoYUV420PWithResize(
       const BYTE * rgb,
       BYTE * yuv,
-      unsigned rgbIncrement
+      unsigned rgbIncrement,
+      BOOL flipVertical
     ) const;
     BOOL RGBtoYUV420P(
       const BYTE * rgb,
@@ -387,7 +391,8 @@ void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
 // and cropped / padded with black borders as required.
 void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
                                                       BYTE * yuv,
-                                                      unsigned rgbIncrement) const
+                                                      unsigned rgbIncrement,
+						      BOOL   flip) const
 {
   int planeSize = dstFrameWidth*dstFrameHeight;
   const int halfWidth = dstFrameWidth >> 1;
@@ -400,6 +405,7 @@ void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
   BYTE * yplane  = yuv;
   BYTE * uplane  = yuv + planeSize;
   BYTE * vplane  = yuv + planeSize + (planeSize >> 2);
+  const BYTE * rgbIndex = rgb;
 
   for (unsigned y = 0; y < min_height; y++) 
   {
@@ -407,13 +413,16 @@ void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
     BYTE * uline  = uplane + ((y >> 1) * halfWidth);
     BYTE * vline  = vplane + ((y >> 1) * halfWidth);
 
+    if (flip)
+      rgbIndex = rgb + (srcFrameWidth*(min_height-1-y)*rgbIncrement); 
+
     for (unsigned x = 0; x < min_width; x+=2) 
     {
-     rgbtoyuv(rgb[0], rgb[1], rgb[2],*yline, *uline, *vline);
-     rgb += rgbIncrement;
+     rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+     rgbIndex += rgbIncrement;
      yline++;
-     rgbtoyuv(rgb[0], rgb[1], rgb[2],*yline, *uline, *vline);
-     rgb += rgbIncrement;
+     rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+     rgbIndex += rgbIncrement;
      yline++;
      uline++;
      vline++;
@@ -421,7 +430,7 @@ void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
 
     // Crop if source width > dest width
     if (srcFrameWidth > dstFrameWidth)
-      rgb += rgbIncrement * (srcFrameWidth - dstFrameWidth);
+      rgbIndex += rgbIncrement * (srcFrameWidth - dstFrameWidth);
 
     // Pad if dest width < source width
     if (dstFrameWidth > srcFrameWidth) {
@@ -457,7 +466,7 @@ BOOL PStandardColourConverter::RGBtoYUV420P(const BYTE * rgb,
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
     RGBtoYUV420PSameSize(rgb, yuv, rgbIncrement, flip);
   else
-    RGBtoYUV420PWithResize(rgb, yuv, rgbIncrement);
+    RGBtoYUV420PWithResize(rgb, yuv, rgbIncrement, flip);
   
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
@@ -468,25 +477,25 @@ BOOL PStandardColourConverter::RGBtoYUV420P(const BYTE * rgb,
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, FALSE);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3,  doVFlip);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, FALSE);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB24F,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, TRUE);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB32F,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, TRUE);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
 }
 
 

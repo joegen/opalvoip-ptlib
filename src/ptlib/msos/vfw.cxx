@@ -22,8 +22,12 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): ______________________________________.
+ *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.14  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.13  2001/11/28 04:37:46  robertj
  * Added "flipped" colour formats, thanks Telefonica Spain.
  * Added support for grabbing at a frame rate (from Linux).
@@ -99,7 +103,8 @@ class PCapStatus : public CAPSTATUS
 {
   public:
     PCapStatus(HWND hWnd);
-    BOOL IsOK() { return uiImageWidth != 0; }
+    BOOL IsOK()
+       { return uiImageWidth != 0; }
 };
 
 
@@ -110,95 +115,97 @@ class PVideoDeviceBitmap : PBYTEArray
   public:
     PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
     PVideoDeviceBitmap(HWND hWnd);
-    BOOL ApplyFormat(HWND hWnd) { return capSetVideoFormat(hWnd, theArray, GetSize()); }
+    BOOL ApplyFormat(HWND hWnd) 
+      { 
+        PTRACE(6, "setting frame size and colour format with capSetVideoFormat()");
+	return capSetVideoFormat(hWnd, theArray, GetSize()); 
+      }
 
-    BITMAPINFO * operator->() const { return (BITMAPINFO *)theArray; }
+    BITMAPINFO * operator->() const 
+     { return (BITMAPINFO *)theArray; }
 };
 
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#define INVALID_COMP 0xffffffff
 
-static struct {
-  const char * colourFormat;
-  BOOL  flipped;
+static struct vfwComp {// MS standard RGB DIB formats scan from bottom up, 
+	// however standard YUV formats scan from top down
+  DWORD compression; // values for .biCompression field that *might* be accepted
+  BOOL  askForVFlip; // is it likely to need vertical flipping during conversion?
+} vfwCompTable[] = {
+	{ BI_RGB,                       TRUE, }, //[0]
+	{ BI_BITFIELDS,                 TRUE, }, //[1]
+// http://support.microsoft.com/support/kb/articles/q294/8/80.asp
+	{ mmioFOURCC('I','Y','U','V'), FALSE, }, //[2]
+	{ mmioFOURCC('Y','V','1','2'), FALSE, }, //[3], same as IYUV/I420 except that  U and V planes are switched
+	{ mmioFOURCC('Y','U','Y','2'), FALSE, }, //[4]
+	{ mmioFOURCC('U','Y','V','Y'), FALSE, }, //[5], Like YUY2 except for ordering
+	{ mmioFOURCC('Y','V','Y','U'), FALSE, }, //[7], Like YUY2 except for ordering
+	{ mmioFOURCC('Y','V','U','9'), FALSE, }, //[8]
+	{ mmioFOURCC('M','J','P','G'), FALSE, }, //[9]
+// the following compression formats are repeats of earlier formats
+	{ mmioFOURCC('I','4','2','0'), FALSE, }, // [10] same as IYUV
+	{ INVALID_COMP, }, 
+};
+
+static struct { 
+  const char * colourFormat; 
   WORD  bitCount;
-  DWORD compression;
+  BOOL negHeight; // MS documentation suggests that negative height will request
+                  // top down scan direction from video driver
+                  // HOWEVER, not all drivers honor this request
+  vfwComp *vfwComp; 
 } FormatTable[] = {
-  { "Grey",    FALSE, 8,  BI_RGB,       },
-  { "Gray",    FALSE, 8,  BI_RGB,       },
-  { "GreyF",   TRUE,  8,  BI_RGB,       },
-  { "GrayF",   TRUE,  8,  BI_RGB,       },
-  { "RGB32",   FALSE, 32, BI_RGB,       },
-  { "RGB32F",  TRUE,  32, BI_RGB,       },
-  { "RGB24",   FALSE, 24, BI_RGB,       },
-  { "RGB24F",  TRUE,  24, BI_RGB,       },
-  { "RGB565",  FALSE, 16, BI_BITFIELDS, },
-  { "RGB565F", TRUE,  16, BI_BITFIELDS, },
-  { "RGB555",  FALSE, 15, BI_BITFIELDS, },
-  { "RGB555F", TRUE,  15, BI_BITFIELDS, },
-
-  // http://support.microsoft.com/support/kb/articles/q294/8/80.asp
-  { "YUV420P", FALSE, 12, mmioFOURCC('I','Y','U','V') },
-  { "IYUV",    FALSE, 12, mmioFOURCC('I','Y','U','V') },
-  { "I420",    FALSE, 12, mmioFOURCC('I','4','2','0') }, // Like YVUV
-  { "YV12",    FALSE, 12, mmioFOURCC('Y','V','1','2') }, // Like YVUV except planes switched
-
-  { "YUV422",  FALSE, 16, mmioFOURCC('Y','U','Y','2') },
-  { "YUY2",    FALSE, 16, mmioFOURCC('Y','U','Y','2') },
-  { "UYVY",    FALSE, 16, mmioFOURCC('U','Y','V','Y') }, // Like YUY2 except for ordering
-  { "YVYU",    FALSE, 16, mmioFOURCC('Y','V','Y','U') }, // Like YUY2 except for ordering
-
-  { "MJPEG",   FALSE, 0,  mmioFOURCC('M','J','P','G') },
-  { NULL },
+  { "RGB24",   24, TRUE,  &vfwCompTable[0], },
+  { "RGB24F",  24, FALSE, &vfwCompTable[0], },
+  { "RGB32",   32, TRUE,  &vfwCompTable[0], },
+  { "RGB32F",  32, FALSE, &vfwCompTable[0], },
+  { "Grey",     8, TRUE,  &vfwCompTable[0], },
+  { "Gray",     8, TRUE,  &vfwCompTable[0], },
+  { "GreyF",    8, FALSE, &vfwCompTable[0], },
+  { "GrayF",    8, FALSE, &vfwCompTable[0], },
+  { "RGB565",  16, TRUE,  &vfwCompTable[1], },
+  { "RGB565F", 16, FALSE, &vfwCompTable[1], },
+  { "RGB555",  15, TRUE,  &vfwCompTable[1], },
+  { "RGB555F", 15, FALSE, &vfwCompTable[1], },
+  //{  NULL,      0, FALSE, NULL, }, // uncomment to prevent YUV420P from camera which can't be resized
+  { "YUV420P", 12, FALSE, &vfwCompTable[2], },
+  { "IYUV",    12, FALSE, &vfwCompTable[2], },
+  { "I420",    12, FALSE, &vfwCompTable[10], },
+  { "YV12",    12, FALSE, &vfwCompTable[3], },
+  { "YUV422",  16, FALSE, &vfwCompTable[4], },
+  { "YUY2",    16, FALSE, &vfwCompTable[4], },
+  { "UYVY",    16, FALSE, &vfwCompTable[5], },
+  { "YVYU",    16, FALSE, &vfwCompTable[6], },
+  { "MJPEG",   12, FALSE, &vfwCompTable[9], },
+  { NULL,},
 };
 
 
-PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned width, unsigned height,
-                                       const PString & fmt)
-  : PBYTEArray(sizeof(BITMAPINFO))
-{
-  PINDEX i = 0;
-  while (FormatTable[i].colourFormat != NULL && !(fmt *= FormatTable[i].colourFormat))
-    i++;
-
-  BITMAPINFO * bi = (BITMAPINFO *)theArray;
-
-  bi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-  bi->bmiHeader.biWidth = width;
-  bi->bmiHeader.biHeight = FormatTable[i].flipped ? height : -(int)height;
-  bi->bmiHeader.biPlanes = 1;
-  bi->bmiHeader.biBitCount = FormatTable[i].bitCount;
-
-  if (FormatTable[i].colourFormat != NULL)
-    bi->bmiHeader.biCompression = FormatTable[i].compression;
-  else if (fmt.GetLength() == 4)
-    bi->bmiHeader.biCompression = mmioFOURCC(fmt[0],fmt[1],fmt[2],fmt[3]);
-  else {
-    bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
-    return;
-  }
-
-  bi->bmiHeader.biSizeImage = height*((bi->bmiHeader.biBitCount*width + 31)/32)*4;
-
-  if (bi->bmiHeader.biCompression == BI_RGB && bi->bmiHeader.biBitCount == 8) {
-    SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
-    for (i = 0; i < 256; i++)
-      bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
-    bi->bmiHeader.biHeight = -bi->bmiHeader.biHeight;
-  }
-}
-
+static struct {
+    unsigned device_width, device_height;
+} winTestResTable[] = {
+    { 176, 144 },
+    { 352, 288 },
+	{ 320, 240 },
+	{ 160, 120 },
+    { 640, 480 },
+    { 704, 576 },
+    {1024, 768 },
+};
 
 PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow)
 {
   PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
   SetSize(sz);
-  if (capGetVideoFormat(hCaptureWindow, theArray, sz))
+  if (capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
     return;
+  }
 
-  PTRACE(1, "capGetVideoFormat: failed - " << ::GetLastError());
+  PTRACE(1, "capGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
   SetSize(0);
 }
 
@@ -315,6 +322,59 @@ BOOL PVideoInputDevice::IsCapturing()
 }
 
 
+BOOL PVideoInputDevice::TestAllFormats() {
+  BOOL running = IsCapturing();
+  if (running)
+    Stop();
+
+  PVideoDeviceBitmap bi(hCaptureWindow); 
+  for (PINDEX prefFormatIdx = 0;
+       prefFormatIdx < PARRAYSIZE(FormatTable);
+	   prefFormatIdx++) {
+    for (PINDEX prefResizeIdx = 0;
+	     prefResizeIdx < PARRAYSIZE(winTestResTable);
+		 prefResizeIdx++) {
+      bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
+      bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
+      // set .biHeight according to .negHeight value
+      if ( (FormatTable[prefFormatIdx].negHeight) && (0 < (int)bi->bmiHeader.biHeight) )
+        bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
+      else  if (!(FormatTable[prefFormatIdx].negHeight) && !(0 < (int)bi->bmiHeader.biHeight) )
+        bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
+
+	  if (FormatTable[prefFormatIdx].colourFormat != NULL)
+        bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].vfwComp->compression;
+      else
+        continue;
+
+      bi->bmiHeader.biPlanes = 1;
+      bi->bmiHeader.biBitCount = FormatTable[prefFormatIdx].bitCount;
+      bi->bmiHeader.biSizeImage = 
+		  (bi->bmiHeader.biHeight<0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight)
+		  *((bi->bmiHeader.biBitCount * (bi->bmiHeader.biWidth) + 31)/32)*4;
+
+      if (bi.ApplyFormat(hCaptureWindow)) {
+        PTRACE(1, "capSetVideoFormat(" << FormatTable[prefFormatIdx].colourFormat
+		  << ") succeeded using frame resolution "
+		  << bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight
+		  << " size " << bi->bmiHeader.biSizeImage);
+      }
+      else {
+        PTRACE(1, "capSetVideoFormat(" << FormatTable[prefFormatIdx].colourFormat
+		  << ") failed using frame resolution "
+		  << bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight 
+		  << " size " << bi->bmiHeader.biSizeImage
+		  << "  - lastError = " << lastError);
+	  }
+	} // for prefResizeIdx
+  } // for prefFormatIdx
+
+  if (running)
+    return Start();
+  return TRUE;
+}
+
+
 BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
 {
   if (!PVideoDevice::SetFrameRate(rate))
@@ -332,8 +392,8 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
     PTRACE(1, "capCaptureGetSetup: failed - " << lastError);
     return FALSE;
   }
-
-  parms.dwRequestMicroSecPerFrame = 100000000 / frameRate;
+  // keep current (default) framerate if 0==frameRate   
+  if (0 != frameRate) parms.dwRequestMicroSecPerFrame = 1000000 / frameRate;
   parms.fMakeUserHitOKToCapture = FALSE;
   parms.wPercentDropForError = 100;
   parms.fCaptureAudio = FALSE;
@@ -346,7 +406,7 @@ BOOL PVideoInputDevice::SetFrameRate(unsigned rate)
     PTRACE(1, "capCaptureSetSetup: failed - " << lastError);
     return FALSE;
   }
-
+    
   if (running)
     return Start();
 
@@ -360,16 +420,34 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   if (running)
     Stop();
 
-  ::SetWindowPos(hCaptureWindow, NULL, 0, 0,
-                 width + GetSystemMetrics(SM_CXFIXEDFRAME),
-                 height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME),
-                 SWP_NOMOVE|SWP_NOACTIVATE);
+  PVideoDeviceBitmap bi(hCaptureWindow); 
+  PTRACE(6, "read current biHeight from driver as " << bi->bmiHeader.biHeight); 
+  bi->bmiHeader.biWidth = width;
+  bi->bmiHeader.biHeight = height; 
+  // NB it is necessary to set the biSizeImage value appropriate to frame size
+  // assume bmiHeader.biBitCount has already been set appropriatly for format
+  bi->bmiHeader.biSizeImage = 
+	(bi->bmiHeader.biHeight<0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight)
+	*((bi->bmiHeader.biBitCount * (bi->bmiHeader.biWidth) + 31)/32)*4;
 
-  PCapStatus status(hCaptureWindow);
-  if (status.IsOK()) {
-    frameWidth = status.uiImageWidth;
-    frameHeight = status.uiImageHeight;
+  if (!bi.ApplyFormat(hCaptureWindow)) {
+    lastError = ::GetLastError();
+    PTRACE(1, "SetFrameSize(" << width << ", " << bi->bmiHeader.biHeight << ") using capSetVideoFormat: failed - " << lastError);
+    return FALSE;
   }
+
+  PTRACE(6, "SetFrameSize(" << width << ", " << height << ") using capSetVideoFormat: succeeded");
+  
+  // verify that the driver really took the frame size
+  if (!VerifyHardwareFrameSize(width, height)) 
+    return FALSE; 
+
+  frameWidth = width; 
+
+  // frameHeight must be positive regardlesss of what the driver says
+  if (0 > (int)height) 
+    height = (unsigned)-(int)height; 
+  frameHeight = height;
 
   if (running)
     return Start();
@@ -377,10 +455,18 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   return TRUE;
 }
 
-
+//return TRUE if absolute value of height reported by driver 
+//  is equal to absolute value of current frame height AND
+//  width reported by driver is equal to current frame width
 BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width, unsigned height)
 {
-  return TRUE;
+  PCapStatus status(hCaptureWindow);
+
+  if (!status.IsOK()) return FALSE;
+  if (width != status.uiImageWidth) return FALSE;
+  if (0 > (int)height) height = (unsigned)-(int)height; 
+  if (0 > (int)status.uiImageHeight) status.uiImageHeight = (unsigned)-(int)status.uiImageHeight; 
+  return (height == status.uiImageHeight);
 }
 
 
@@ -392,20 +478,72 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
 
   PString oldFormat = colourFormat;
 
-  if (!PVideoDevice::SetColourFormat(colourFmt))
+  if (!PVideoDevice::SetColourFormat(colourFmt)) {
     return FALSE;
+  }
 
-  PVideoDeviceBitmap bitmapInfo(frameWidth, frameHeight, colourFmt);
-  if (!bitmapInfo.ApplyFormat(hCaptureWindow)) {
+  PVideoDeviceBitmap bi(hCaptureWindow);
+
+  PINDEX i = 0;
+  while (FormatTable[i].colourFormat != NULL && !(colourFmt *= FormatTable[i].colourFormat))
+    i++;
+  
+  // set frame width and height
+  bi->bmiHeader.biHeight = frameHeight;
+  bi->bmiHeader.biWidth = frameWidth;
+  // set .biHeight according to .negHeight value
+  if ( (FormatTable[i].negHeight) && (0 < (int)bi->bmiHeader.biHeight) )
+    bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
+  else  if (!(FormatTable[i].negHeight) && !(0 < (int)bi->bmiHeader.biHeight) )
+    bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
+
+  bi->bmiHeader.biPlanes = 1;
+  bi->bmiHeader.biBitCount = FormatTable[i].bitCount;
+
+  if (FormatTable[i].colourFormat != NULL)
+    bi->bmiHeader.biCompression = FormatTable[i].vfwComp->compression;
+  else if (colourFmt.GetLength() == 4)
+    bi->bmiHeader.biCompression = mmioFOURCC(colourFmt[0],colourFmt[1],colourFmt[2],colourFmt[3]);
+  else {
+    bi->bmiHeader.biCompression = INVALID_COMP; // Indicate invalid colour format
+    return FALSE;
+  }
+  bi->bmiHeader.biSizeImage = frameHeight*((bi->bmiHeader.biBitCount*frameWidth + 31)/32)*4;
+
+  // the following code is probably unnecessary but was present in earlier versions
+  //if (bi->bmiHeader.biCompression == BI_RGB && bi->bmiHeader.biBitCount == 8) {
+  //  bi->SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
+  //  for (i = 0; i < 256; i++)
+  //    bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
+  //  bi->bmiHeader.biHeight = -bi->bmiHeader.biHeight;
+  //}
+  //##
+  
+  // try to apply new colourFmt using current frame resolution
+  if (!bi.ApplyFormat(hCaptureWindow)) {
     lastError = ::GetLastError();
-    PTRACE(1, "capSetVideoFormat: failed - " << lastError);
+    PTRACE(1, "capSetVideoFormat(" << colourFmt << ") failed using default frame resolution"
+		<< bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight
+		<< " size " << bi->bmiHeader.biSizeImage
+		<< "  - lastError = " << lastError);
     PVideoDevice::SetColourFormat(oldFormat);
     return FALSE;
   }
 
-  if (running)
-    return Start();
+  PTRACE(6, "capSetVideoFormat(" << colourFmt << ") succeeded using test frame resolution "
+		<< bi->bmiHeader.biWidth << "x" << bi->bmiHeader.biHeight
+		<< " size " << bi->bmiHeader.biSizeImage);
 
+  if (converter) {
+      converter->SetVFlipState(FormatTable[i].vfwComp->askForVFlip); 
+      PTRACE(6, "SetColourFormat(): converter.doVFlip set to " << converter->GetVFlipState());
+  }
+  else
+      PTRACE(6, "SetColourFormat(): cannot set converter.doVFlip because no converter is present");
+	  
+  if (running) {
+    return Start();
+  }
   return TRUE;
 }
 
@@ -452,13 +590,14 @@ BOOL PVideoInputDevice::GetFrameDataNoDelay(BYTE * buffer, PINDEX * bytesReturne
   lastFrameMutex.Wait();
 
   if (lastFramePtr != NULL) {
-    if (converter != NULL)
+    if (NULL != converter) {
       converter->Convert(lastFramePtr, buffer, bytesReturned);
+	}
     else {
       memcpy(buffer, lastFramePtr, lastFrameSize);
       if (bytesReturned != NULL)
         *bytesReturned = lastFrameSize;
-    }
+	}
   }
 
   lastFrameMutex.Signal();
@@ -533,7 +672,7 @@ BOOL PVideoInputDevice::InitialiseCapture()
   capSetCallbackOnError(hCaptureWindow, ErrorHandler);
 
 #if STEP_GRAB_CAPTURE
-  if (!capSetCallbackOnFrame(hCaptureWindow, VideoHandler)) {
+  if (!capSetCallbackOnFrame(hCaptureWindow, VideoHandler)) { //} balance braces
 #else
   if (!capSetCallbackOnVideoStream(hCaptureWindow, VideoHandler)) {
 #endif
@@ -543,6 +682,15 @@ BOOL PVideoInputDevice::InitialiseCapture()
   }
 
   WORD devId;
+  if (PTrace::CanTrace(6)) { // list available video capture drivers
+	PTRACE(6, "Enumerating available video capture drivers");
+    for (devId = 0; devId < 10; devId++) { 
+      char name[100];
+      char version[200];
+      if (capGetDriverDescription(devId, name, sizeof(name), version, sizeof(version)) ) 
+        PTRACE(6, "device[" << devId << "] = " << name << ", " << version);
+    }
+  }
   if (deviceName.GetLength() == 1 && isdigit(deviceName[0]))
     devId = (WORD)(deviceName[0] - '0');
   else {
@@ -571,7 +719,17 @@ BOOL PVideoInputDevice::InitialiseCapture()
     PTRACE(1, "capGetDriverCaps: failed - " << lastError);
     return FALSE;
   }
-
+  if (PTrace::CanTrace(6)) { // list capabilities of selected video capture driver
+	PTRACE(6, "Enumerating CAPDRIVERCAPS values");
+    PTRACE(6, "driverCaps.wDeviceIndex  = " << driverCaps.wDeviceIndex );
+    PTRACE(6, "driverCaps.fHasOverlay   = " << driverCaps.fHasOverlay  );
+    PTRACE(6, "driverCaps.fHasDlgVideoSource   = " << driverCaps.fHasDlgVideoSource  );
+    PTRACE(6, "driverCaps.fHasDlgVideoFormat   = " << driverCaps.fHasDlgVideoFormat  );
+    PTRACE(6, "driverCaps.fHasDlgVideoDisplay   = " << driverCaps.fHasDlgVideoDisplay  );
+    PTRACE(6, "driverCaps.fCaptureInitialized   = " << driverCaps.fCaptureInitialized  );
+    PTRACE(6, "driverCaps.fDriverSuppliesPalettes   = " << driverCaps.fDriverSuppliesPalettes  );
+  }
+  
 /*
   if (driverCaps.fHasOverlay)
     capOverlay(hCaptureWindow, TRUE);
@@ -580,8 +738,14 @@ BOOL PVideoInputDevice::InitialiseCapture()
     capPreview(hCaptureWindow, TRUE);
   }
 */
+   
   capPreview(hCaptureWindow, FALSE);
 
+  if (PTrace::CanTrace(6)) { 
+	// list acceptable formats and frame resolutions for video capture driver
+	TestAllFormats();
+  }
+  
   if (!SetFrameRate(frameRate))
     return FALSE;
 

@@ -25,6 +25,9 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.26  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.25  2001/12/10 22:22:48  dereks
  * Add hint so Logitech USB Camera will only grab in large video size.
  *
@@ -1035,4 +1038,8 @@ BOOL PVideoInputDevice::GetParameters (int *whiteness, int *brightness,
   return TRUE;
 }
 
+BOOL PVideoInputDevice::TestAllFormats()
+{
+  return TRUE;
+}
 // End Of File ///////////////////////////////////////////////////////////////
