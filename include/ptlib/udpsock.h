@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udpsock.h,v $
+ * Revision 1.23  2003/10/27 04:06:13  csoutheren
+ * Added code to allow compilation of new QoS code on Unix
+ *
  * Revision 1.22  2003/10/27 03:22:44  csoutheren
  * Added handling for QoS
  *   Thanks to Henry Harrison of AliceStreet
@@ -122,14 +125,11 @@ class PUDPSocket : public PIPDatagramSocket
        a "listening" socket is specified then the channel is also opened.
      */
     PUDPSocket(
-      WORD port                 /// Port number to use for the connection.
+      WORD port = 0             /// Port number to use for the connection.
     );
     PUDPSocket(
        PQoS * qos,              /// Pointer to a QOS structure for the connection
       WORD port = 0             /// Port number to use for the connection.
-    );
-    PUDPSocket(
-      const PString & service   /// Service name to use for the connection.
     );
     PUDPSocket(
       const PString & service,   /// Service name to use for the connection.

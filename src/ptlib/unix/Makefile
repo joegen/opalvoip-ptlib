@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.117  2003/10/27 04:06:13  csoutheren
+# Added code to allow compilation of new QoS code on Unix
+#
 # Revision 1.116  2003/10/06 02:30:06  dereksmithies
 # Remove Stun.cxx as it is not in the repositary.
 #
@@ -586,6 +589,7 @@ SOURCES	= \
 	$(PXML_SOURCE) \
 	uicmp.cxx \
 	$(COMMON_SRC_DIR)/sockets.cxx \
+	$(COMMON_SRC_DIR)/qos.cxx \
 	$(COMMON_SRC_DIR)/pvidchan.cxx \
 	socket.cxx \
 	svcproc.cxx \
