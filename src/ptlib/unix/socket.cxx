@@ -1,7 +1,30 @@
+/*
+ * $Id: socket.cxx,v 1.22 1998/08/21 05:30:59 robertj Exp $
+ *
+ * Portable Windows Library
+ *
+ * Operating System Classes Implementation
+ *
+ * Copyright 1994-1996 Equivalence Pty. Ltd.
+ *
+ * $Log: socket.cxx,v $
+ * Revision 1.22  1998/08/21 05:30:59  robertj
+ * Ethernet socket implementation.
+ *
+ */
+
+#pragma implementation "socket.h"
+#pragma implementation "ipsock.h"
+#pragma implementation "udpsock.h"
+#pragma implementation "tcpsock.h"
+#pragma implementation "ipdsock.h"
+#pragma implementation "ethsock.h"
 
 
 #include <ptlib.h>
 #include <sockets.h>
+#include <linux/if_ether.h>
+
 
 extern PSemaphore PX_iostreamMutex;
 
@@ -261,10 +284,6 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
   return FALSE;
 }
 
-////////////////////////////////////////////////////////////////
-//
-//  PUDPSocket
-//
 
 BOOL PSocket::os_recvfrom(
       void * buf,     // Data to be written as URGENT TCP data.
@@ -289,11 +308,6 @@ BOOL PSocket::os_recvfrom(
 }
 
 
-////////////////////////////////////////////////////////////////
-//
-//  PUDPSocket
-//
-
 BOOL PSocket::os_sendto(
       const void * buf,   // Data to be written as URGENT TCP data.
       PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
@@ -301,6 +315,12 @@ BOOL PSocket::os_sendto(
       sockaddr * addr, // Address to which the datagram is sent.
       int addrlen)  
 {
+  if (!IsOpen()) {
+    lastError     = NotOpen;
+    lastWriteCount = 0;
+    return FALSE;
+  }
+
   if (!PXSetIOBlock(PXWriteBlock, writeTimeout)) {
     lastError     = Timeout;
     lastWriteCount = 0;
@@ -308,8 +328,14 @@ BOOL PSocket::os_sendto(
   }
 
   // attempt to read data
-  return ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen);
+  if (ConvertOSError(lastWriteCount =
+         ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)))
+    return lastWriteCount >= len;
+
+  lastWriteCount = 0;
+  return FALSE;
 }
+
 
 BOOL PSocket::Read(void * buf, PINDEX len)
 {
@@ -327,3 +353,311 @@ BOOL PSocket::Read(void * buf, PINDEX len)
   lastReadCount = 0;
   return FALSE;
 }
+
+
+
+//////////////////////////////////////////////////////////////////
+//
+//  PEthSocket
+//
+
+PEthSocket::PEthSocket(PINDEX, PINDEX)
+{
+  medium = MediumUnknown;
+  filterMask = FilterDirected|FilterBroadcast;
+  filterType = TypeAll;
+  padBytes = skipBytes = 0;
+}
+
+
+PEthSocket::~PEthSocket()
+{
+  Close();
+}
+
+
+BOOL PEthSocket::Connect(const PString & interfaceName)
+{
+  Close();
+
+  padBytes = skipBytes = 0;
+
+  if (strncmp("eth", interfaceName, 3) == 0)
+    medium = Medium802_3;
+  else if (strncmp("ippp", interfaceName, 4) == 0) {
+    medium = MediumWan;
+  }
+  else if (strncmp("ppp", interfaceName, 3) == 0) {
+    medium = MediumWan;
+    padBytes = 4;
+  }
+  else if (strncmp("sl", interfaceName, 2) == 0) {
+    medium = MediumWan;
+    padBytes = 16;
+  }
+  else if (strncmp("lo", interfaceName, 2) == 0) {
+    medium = MediumLoop;
+    padBytes = 2;
+    skipBytes = 12;
+  }
+  else {
+    lastError = NotFound;
+    osError = ENOENT;
+    return FALSE;
+  }
+
+  PUDPSocket ifsock;
+  struct ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  strcpy(ifr.ifr_name, interfaceName);
+  if (!ConvertOSError(ioctl(ifsock.GetHandle(), SIOCGIFHWADDR, &ifr)))
+    return FALSE;
+
+  memcpy(&macAddress, ifr.ifr_hwaddr.sa_data, sizeof(macAddress));
+
+  channelName = interfaceName;
+  return OpenSocket();
+}
+
+
+BOOL PEthSocket::OpenSocket()
+{
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_PACKET, htons(filterType))))
+    return FALSE;
+
+  struct sockaddr addr;
+  memset(&addr, 0, sizeof(addr));
+  addr.sa_family = AF_INET;
+  strcpy(addr.sa_data, channelName);
+  if (!ConvertOSError(bind(os_handle, &addr, sizeof(addr)))) {
+    os_close();
+    os_handle = -1;
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+
+BOOL PEthSocket::Close()
+{
+  SetFilter(FilterDirected, filterType);  // Turn off promiscuous mode
+  return PSocket::Close();
+}
+
+
+BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
+{
+  PUDPSocket ifsock;
+
+  ifreq ifreqs[20]; // Maximum of 20 interfaces
+  ifconf ifc;
+  ifc.ifc_len = sizeof(ifreqs);
+  ifc.ifc_buf = (caddr_t)ifreqs;
+  if (!ConvertOSError(ioctl(ifsock.GetHandle(), SIOCGIFCONF, &ifc)))
+    return FALSE;
+
+  int ifcount = ifc.ifc_len/sizeof(ifreq);
+  int ifidx;
+  for (ifidx = 0; ifidx < ifcount; ifidx++) {
+    if (strchr(ifreqs[ifidx].ifr_name, ':') == NULL) {
+      ifreq ifr;
+      strcpy(ifr.ifr_name, ifreqs[ifidx].ifr_name);
+      if (ioctl(ifsock.GetHandle(), SIOCGIFFLAGS, &ifr) == 0 &&
+          (ifr.ifr_flags & IFF_UP) != 0 &&
+           idx-- == 0) {
+        name = ifreqs[ifidx].ifr_name;
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+
+}
+
+
+PString PEthSocket::GetGatewayInterface() const
+{
+  PTextFile procfile;
+  if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
+    return PString();
+
+  char iface[20];
+  long net_addr, dest_addr, net_mask;
+  int flags, refcnt, use, metric;
+
+  do {
+    // Ignore heading line or remainder of route line
+    procfile.ignore(1000, '\n');
+    procfile >> iface >> ::hex >> net_addr >> dest_addr >> flags 
+                      >> ::dec >> refcnt >> use >> metric 
+                      >> ::hex >> net_mask;
+    if (procfile.fail())
+      return PString();
+  } while (net_addr != 0 || net_mask != 0);
+
+  return iface;
+}
+
+
+BOOL PEthSocket::GetAddress(Address & addr)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  addr = macAddress;
+  return TRUE;
+}
+
+
+BOOL PEthSocket::EnumIpAddress(PINDEX idx,
+                               PIPSocket::Address & addr,
+                               PIPSocket::Address & net_mask)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  PUDPSocket ifsock;
+  struct ifreq ifr;
+  ifr.ifr_addr.sa_family = AF_INET;
+  if (idx == 0)
+    strcpy(ifr.ifr_name, channelName);
+  else
+    sprintf(ifr.ifr_name, "%s:%u", (const char *)channelName, idx-1);
+  if (!ConvertOSError(ioctl(os_handle, SIOCGIFADDR, &ifr)))
+    return FALSE;
+
+  sockaddr_in *sin = (struct sockaddr_in *)&ifr.ifr_addr;
+  addr = sin->sin_addr;
+
+  if (!ConvertOSError(ioctl(os_handle, SIOCGIFNETMASK, &ifr)))
+    return FALSE;
+
+  net_mask = sin->sin_addr;
+  return TRUE;
+}
+
+
+BOOL PEthSocket::GetFilter(unsigned & mask, WORD & type)
+{
+  if (!IsOpen())
+    return 0;
+
+  ifreq ifr;
+  memset(&ifr, 0, sizeof(ifr));
+  strcpy(ifr.ifr_name, channelName);
+  if (!ConvertOSError(ioctl(os_handle, SIOCGIFFLAGS, &ifr)))
+    return FALSE;
+
+  if ((ifr.ifr_flags&IFF_PROMISC) != 0)
+    filterMask |= FilterPromiscuous;
+  else
+    filterMask &= ~FilterPromiscuous;
+
+  mask = filterMask;
+  type = filterType;
+  return TRUE;
+}
+
+
+BOOL PEthSocket::SetFilter(unsigned filter, WORD type)
+{
+  if (!IsOpen())
+    return FALSE;
+
+  if (filterType != type) {
+    os_close();
+    filterType = type;
+    if (!OpenSocket())
+      return FALSE;
+  }
+
+  ifreq ifr;
+  memset(&ifr, 0, sizeof(ifr));
+  strcpy(ifr.ifr_name, channelName);
+  if (!ConvertOSError(ioctl(os_handle, SIOCGIFFLAGS, &ifr)))
+    return FALSE;
+
+  if ((filter&FilterPromiscuous) != 0)
+    ifr.ifr_flags |= IFF_PROMISC;
+  else
+    ifr.ifr_flags &= ~IFF_PROMISC;
+
+  if (!ConvertOSError(ioctl(os_handle, SIOCSIFFLAGS, &ifr)))
+    return FALSE;
+
+  filterMask = filter;
+
+  return TRUE;
+}
+
+
+PEthSocket::MediumTypes PEthSocket::GetMedium()
+{
+  return medium;
+}
+
+
+BOOL PEthSocket::ResetAdaptor()
+{
+  // No implementation
+  return TRUE;
+}
+
+
+BOOL PEthSocket::Read(void * buf, PINDEX len)
+{
+  BYTE * bufptr = (BYTE *)buf;
+
+  if (padBytes > 0) {
+    memset(bufptr, 0, padBytes);
+    bufptr += padBytes;
+    if (len <= padBytes) {
+      lastReadCount = len;
+      return TRUE;
+    }
+    len -= padBytes;
+  }
+
+  for (;;) {
+    sockaddr from;
+    int fromlen = sizeof(from);
+    if (!os_recvfrom(bufptr, len, 0, &from, &fromlen))
+      return FALSE;
+
+    if (channelName != from.sa_data)
+      continue;
+
+    if (skipBytes > 0) {
+      if (lastReadCount <= skipBytes)
+        lastReadCount = 0;
+      else
+        memmove(bufptr, bufptr+skipBytes, lastReadCount-skipBytes);
+    }
+
+    if ((filterMask&FilterPromiscuous) != 0)
+      break;
+
+    if ((filterMask&FilterDirected) != 0 && macAddress == bufptr)
+      break;
+
+    static const Address broadcast;
+    if ((filterMask&FilterBroadcast) != 0 && broadcast == bufptr)
+      break;
+  }
+
+  return lastReadCount > 0;
+}
+
+
+BOOL PEthSocket::Write(const void * buf, PINDEX len)
+{
+  sockaddr to;
+  strcpy(to.sa_data, channelName);
+  return os_sendto(buf, len, 0, &to, sizeof(to));
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
