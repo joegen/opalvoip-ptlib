@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.5  1999/07/11 13:42:13  craigs
+ * pthreads support for Linux
+ *
  * Revision 1.4  1999/06/30 13:49:26  craigs
  * Added code to allow full duplex audio
  *
@@ -207,7 +210,7 @@ BOOL PSoundChannel::Open(const PString & _device,
   } 
 
   // open the device in read/write mode always
-  if (!ConvertOSError(os_handle = ::open(device, O_RDWR)))
+  if (!ConvertOSError(os_handle = ::open((const char *)device, O_RDWR)))
     return FALSE;
 
   // always open in full duplex mode always
