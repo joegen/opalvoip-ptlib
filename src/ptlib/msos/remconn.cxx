@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.9 1996/11/04 09:45:26 robertj Exp $
+ * $Id: remconn.cxx,v 1.10 1996/11/10 21:02:46 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.10  1996/11/10 21:02:46  robertj
+ * Try doing double sample before flagging a RAS connection disconnected.
+ *
  * Revision 1.9  1996/11/04 09:45:26  robertj
  * Yet more debugging.
  *
@@ -189,6 +192,29 @@ void PRemoteConnection::Close()
 }
 
 
+static int GetRasStatus(HRASCONN rasConnection, DWORD & rasError)
+{
+  RASCONNSTATUS status;
+  status.dwSize = sizeof(status);
+
+  rasError = Ras.GetConnectStatus(rasConnection, &status);
+  SetLastError(rasError);
+  if (rasError == ERROR_INVALID_HANDLE) {
+    PAssertAlways("RAS Connection Status failed");
+    rasError = Ras.GetConnectStatus(rasConnection, &status);
+    SetLastError(rasError);
+  }
+
+  if (rasError == 0)
+    return status.rasconnstate;
+
+  PAssertAlways("RAS Connection Lost");
+  rasError = Ras.GetConnectStatus(rasConnection, &status);
+
+  return -1;
+}
+
+
 PRemoteConnection::Status PRemoteConnection::GetStatus() const
 {
   if (!Ras.IsLoaded())
@@ -214,21 +240,24 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
     return GeneralFailure;
   }
 
-  RASCONNSTATUS status;
-  status.dwSize = sizeof(status);
-  ((PRemoteConnection*)this)->rasError = Ras.GetConnectStatus(rasConnection, &status);
-  if (rasError != 0) {
-    char msg[100];
-    sprintf(msg, "RAS Connection Lost: error %ld", rasError);
-    PAssertAlways(msg);
-    return ConnectionLost;
+  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
+    case RASCS_Connected :
+      return Connected;
+    case RASCS_Disconnected :
+      break;
+    case -1 :
+      return ConnectionLost;
+    default :
+      return InProgress;
   }
 
-  switch (status.rasconnstate) {
+  switch (GetRasStatus(rasConnection, ((PRemoteConnection*)this)->rasError)) {
     case RASCS_Connected :
       return Connected;
     case RASCS_Disconnected :
       return Idle;
+    case -1 :
+      return ConnectionLost;
   }
   return InProgress;
 }
