@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.23 1996/05/09 12:25:02 robertj Exp $
+ * $Id: http.cxx,v 1.24 1996/05/15 10:18:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,13 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
- * Revision 1.23  1996/05/09 12:25:02  robertj
- * Fixed URL so is difference between path with and without trailing slash.
- * Removed warnings in persistent connection stuff (still disabled though).
- *
- * Revision 1.22  1996/04/29 12:25:45  robertj
- * Fixed check boxes in HTML forms.
- * Removed persistence (temporarily).
+ * Revision 1.24  1996/05/15 10:18:11  robertj
+ * Fixed persistent connections.
+ * Fixed bug crashing when no elements in HTTPSelection list field array.
  *
  * Revision 1.19.1.1  1996/04/17 11:08:22  craigs
  * New version by craig pending confirmation by robert
@@ -103,7 +99,21 @@
 #include <http.h>
 #include <ctype.h>
 
-//#define STRANGE_NT_BUG
+// undefine to remove support for persistant connections
+#define HAS_PERSISTANCE
+
+// define to enable work-around for Netscape persistant connection bug
+// set to lifetime of suspect sockets (in seconds)
+#define STRANGE_NETSCAPE_BUG	3
+
+// maximum lifetime (in seconds) of persistant connections
+#define	MAX_LIFETIME		30
+
+// maximum lifetime (in transactions) of persistant connections
+#define MAX_TRANSACTIONS	10
+
+// maximum delay between characters whilst reading a line of text
+#define	READLINE_TIMEOUT	30
 
 #define DEFAULT_FTP_PORT	21
 #define DEFAULT_TELNET_PORT	23
@@ -555,6 +565,7 @@ static const PCaselessString IfModifiedSinceStr = "If-Modified-Since";
 static const PCaselessString ConnectionStr      = "Connection";
 static const PCaselessString KeepAliveStr       = "Keep-Alive";
 static const PCaselessString ProxyConnectionStr = "Proxy-Connection";
+static const PCaselessString UserAgentStr       = "User-Agent";
 
 PHTTPSocket::PHTTPSocket(WORD port)
   : PApplicationSocket(NumCommands, HTTPCommands, port)
@@ -576,6 +587,7 @@ PHTTPSocket::PHTTPSocket(const PString & address, const PString & service)
 PHTTPSocket::PHTTPSocket(PSocket & socket)
   : PApplicationSocket(NumCommands, HTTPCommands, socket)
 {
+  ConstructServer();
 }
 
 
@@ -583,8 +595,14 @@ PHTTPSocket::PHTTPSocket(PSocket & socket, const PHTTPSpace & space)
   : PApplicationSocket(NumCommands, HTTPCommands, socket),
     urlSpace(space)
 {
+  ConstructServer();
 }
 
+void PHTTPSocket::ConstructServer()
+{
+  transactionCount = 0;
+  SetReadLineTimeout(PTimeInterval(0, READLINE_TIMEOUT));
+}
 
 int PHTTPSocket::ExecuteCommand(Commands cmd,
                                 const PString & url,
@@ -674,6 +692,13 @@ BOOL PHTTPSocket::ProcessCommand()
 {
   PString args;
   PINDEX cmd;
+
+  // if this is not the first command received by this socket, then set
+  // the read timeout appropriately.
+  if (transactionCount > 0) 
+    SetReadTimeout(nextTimeout);
+
+  // this will only return false upon timeout or completely invalid command
   if (!ReadCommand(cmd, args))
     return FALSE;
 
@@ -705,6 +730,11 @@ BOOL PHTTPSocket::ProcessCommand()
     majorVersion = (int)verStr(5, dotPos-1).AsInteger();
     minorVersion = (int)verStr(dotPos+1, P_MAX_INDEX).AsInteger();
   }
+
+  // now that we've decided we did receive a HTTP request, increment the
+  // count of transactions
+  transactionCount++;
+  nextTimeout.SetInterval(MAX_LIFETIME*1000);
 
   // If the protocol is version 1.0 or greater, there is MIME info, and the
   // prescence of a an entity body is signalled by the inclusion of
@@ -754,6 +784,8 @@ BOOL PHTTPSocket::ProcessCommand()
     }
   }
 
+  // get the user agent for various foul purposes...
+  userAgent = mimeInfo(UserAgentStr);
 
   // the URL that comes with Connect requests is not quite kosher, so 
   // mangle it into a proper URL and do NOT close the connection.
@@ -805,14 +837,15 @@ BOOL PHTTPSocket::ProcessCommand()
   // routines above must make sure that their return value is FALSE if
   // if there was no ContentLength field in the response. This ensures that
   // we always close the socket so the client will get the correct end of file
-  if (persist && connectInfo.IsPersistant())
+  if (persist &&
+      connectInfo.IsPersistant() &&
+      transactionCount < MAX_TRANSACTIONS)
     return TRUE;
 
   // close the output stream now and return FALSE
   Shutdown(ShutdownWrite);
   return FALSE;
 }
-
 
 PString PHTTPSocket::GetServerName() const
 {
@@ -927,9 +960,18 @@ void PHTTPSocket::StartResponse(StatusCode code,
   *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
         << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
+  // output the headers
   if (bodySize >= 0 && !headers.Contains(ContentLengthStr))
     headers.SetAt(ContentLengthStr, PString(PString::Unsigned, (PINDEX)bodySize));
   headers.Write(*this);
+
+#ifdef STRANGE_NETSCAPE_BUG
+  // The following is a work around for a strange bug in Netscape where it
+  // locks up when a persistent connection is made and data less than 1k
+  // (including MIME headers) is sent. Go figure....
+  if (bodySize < 1024 && userAgent.Find("Mozilla/2.0") != P_MAX_INDEX)
+    nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
+#endif
 }
 
 
@@ -1140,19 +1182,6 @@ BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
   socket.Write(data, data.GetSize());
 
   BOOL retval = request->outMIME.Contains(ContentLengthStr);
-
-#ifdef STRANGE_NT_BUG
-
-  // The following is a work around for a strange bug in the NT version of
-  // Netscape where it locks up when a persistent connection is made and data
-  // less than 1k (including MIME headers) is sent. Go figure....
-  if (retval && data.GetSize() < 1024 &&
-                         request->outMIME[ContentTypeStr].Left(5) != "text/") {
-    PString agent = info("User-Agent");
-    if (agent.Find("Mozilla") != P_MAX_INDEX)
-      retval = agent.Find("WinNT") == P_MAX_INDEX;
-  }
-#endif
 
   delete request;
   return retval;
@@ -1931,9 +1960,10 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    PINDEX initVal,
                                    const char * help)
   : PHTTPField(name, NULL, help),
-    values(valueArray),
-    value(valueArray[initVal])
+    values(valueArray)
 {
+  if (initVal < valueArray.GetSize())
+    value = valueArray[initVal];
 }
 
 
@@ -1943,9 +1973,10 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    PINDEX initVal,
                                    const char * help)
   : PHTTPField(name, NULL, help),
-    values(count, valueStrings),
-    value(valueStrings[initVal])
+    values(count, valueStrings)
 {
+  if (initVal < count)
+    value = valueStrings[initVal];
 }
 
 
@@ -1955,9 +1986,10 @@ PHTTPSelectField::PHTTPSelectField(const char * name,
                                    PINDEX initVal,
                                    const char * help)
   : PHTTPField(name, title, help),
-    values(valueArray),
-    value(valueArray[initVal])
+    values(valueArray)
 {
+  if (initVal < valueArray.GetSize())
+    value = valueArray[initVal];
 }
 
 
@@ -2214,28 +2246,32 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
 
   isPersistant      = FALSE;
 
+#ifndef HAS_PERSISTANCE
+  isProxyConnection = FALSE;
+#else
+  PString str;
   // check for Proxy-Connection and Connection strings
-  if (major >= 1 && minor >= 1) {
-    PString str;
-    isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
-    if (isProxyConnection)
-      str = mimeInfo[ProxyConnectionStr];
-    else if (mimeInfo.HasKey(ConnectionStr))
-      str = mimeInfo[ConnectionStr];
+  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
+  if (isProxyConnection)
+    str = mimeInfo[ProxyConnectionStr];
+  else if (mimeInfo.HasKey(ConnectionStr))
+    str = mimeInfo[ConnectionStr];
 
-    // get any connection options
-    if (!str.IsEmpty()) {
-      PStringArray tokens = str.Tokenise(", ", FALSE);
-      isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
-    }
+  // get any connection options
+  if (!str.IsEmpty()) {
+    PStringArray tokens = str.Tokenise(", ", FALSE);
+    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
   }
-  else
-    isProxyConnection = FALSE;
+#endif
 }
 
 void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
 {
+#ifdef HAS_PERSISTANCE
   isPersistant = newPersist;
+#else
+  isPersistant = FALSE;
+#endif
 }
 
 BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
