@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.73  2004/04/14 06:58:05  csoutheren
+ * Fixed PAtomicInteger and PSmartPointer to use real atomic operations
+ *
  * Revision 1.72  2004/04/13 11:47:52  csoutheren
  * Changed PSmartPtr to use PAtomicInteger
  *
@@ -405,11 +408,8 @@ PSmartPointer & PSmartPointer::operator=(const PSmartPointer & ptr)
   if (object == ptr.object)
     return *this;
 
-  if (object != NULL) {
-    --object->referenceCount;
-    if (object->referenceCount.IsZero())
+  if ((object != NULL) && (--object->referenceCount == 0))
       delete object;
-  }
 
   object = ptr.object;
   if (object != NULL)
@@ -421,11 +421,8 @@ PSmartPointer & PSmartPointer::operator=(const PSmartPointer & ptr)
 
 PSmartPointer::~PSmartPointer()
 {
-  if (object != NULL) {
-    --object->referenceCount;
-    if (object->referenceCount.IsZero())
-      delete object;
-  }
+  if ((object != NULL) && (--object->referenceCount == 0))
+    delete object;
 }
 
 
