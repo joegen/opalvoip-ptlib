@@ -1,0 +1,17 @@
+////////////////////////////////////////////////////////
+//
+//  PInternetSocket
+//
+////////////////////////////////////////////////////////
+
+#define	_PIPSOCKET
+
+#ifndef _PSOCKET
+#include <socket.h>
+#endif
+
+PDECLARE_CLASS(PIPSocket, PSocket)
+  public:
+
+// Platform specific declarations follow
+
