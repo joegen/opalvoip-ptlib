@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.11 1995/01/11 09:45:09 robertj Exp $
+ * $Id: pprocess.h,v 1.12 1995/03/12 04:43:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.11  1995/01/11 09:45:09  robertj
+ * Revision 1.12  1995/03/12 04:43:26  robertj
+ * Remvoed redundent destructor.
+ *
+ * Revision 1.11  1995/01/11  09:45:09  robertj
  * Documentation and normalisation.
  *
  * Revision 1.10  1994/08/23  11:32:52  robertj
@@ -64,9 +67,6 @@ PDECLARE_CLASS(PProcess, PThread)
   public:
     PProcess();
     // Create a new process instance.
-
-    ~PProcess();
-    // Destroy the process instance.
 
 
   // Overrides from class PObject
