@@ -18,32 +18,32 @@ EXPATLIBS=expat.lib
 
 all:
 	cd src\ptlib\msos
-	nmake /nologo /f "Console.mak" CFG="Console - Win32 Release" RECURSE=0
+	msdev Console.dsp /MAKE "Console - Win32 Release" /USEENV
 	cd ..\..\..\tools\mergesym
-	nmake /nologo /f "MergeSym.mak" CFG="MergeSym - Win32 Release" RECURSE=0
+	msdev MergeSym.dsp /MAKE "MergeSym - Win32 Release" /USEENV
 	cd ..\..\src\ptlib\msos
-	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Release" RECURSE=0
-	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Release" RECURSE=0
+	msdev PTLib.dsp /MAKE "PTLib - Win32 Release" /USEENV
+	msdev "Console Components.dsp" /MAKE "Console Components - Win32 Release" /USEENV
 	cd ..\..\pwlib\mswin
-	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Release" RECURSE=0
-	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Release" RECURSE=0
-	nmake /nologo /f "GUI Components.mak" CFG="GUI Components - Win32 Release" RECURSE=0
+	msdev GUI.dsp /MAKE "GUI - Win32 Release" /USEENV
+	msdev PWLib.dsp /MAKE "PWLib - Win32 Release" /USEENV
+	msdev "GUI Components.dsp" /MAKE "GUI Components - Win32 Release" /USEENV
 	cd ..\..\..\tools\asnparser
-	nmake /nologo /f "ASNParser.mak" CFG="ASNParser - Win32 Release" RECURSE=0
+	msdev ASNParser.dsp /MAKE "ASNParser - Win32 Release" /USEENV
 	cd ..\pwrc
-	nmake /nologo /f "pwrc.mak" CFG="pwrc - Win32 Release" RECURSE=0
+	msdev pwrc.dsp /MAKE "pwrc - Win32 Release" /USEENV
 	cd ..\pwtest
-	nmake /nologo /f "PWTest.mak" CFG="pwtest - Win32 Release" RECURSE=0
+	msdev PWTest.dsp /MAKE "pwtest - Win32 Release" /USEENV
 
 
 debug: all
 	cd src\ptlib\msos
-	nmake /nologo /f "Console.mak" CFG="Console - Win32 Debug" RECURSE=0
-	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Debug" RECURSE=0
-	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Debug" RECURSE=0
+	msdev Console.dsp /MAKE "Console - Win32 Debug" /USEENV
+	msdev PTLib.dsp /MAKE "PTLib - Win32 Debug" /USEENV
+	msdev "Console Components.dsp" /MAKE "Console Components - Win32 Debug" /USEENV
 	cd ..\..\pwlib\mswin
-	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Debug" RECURSE=0
-	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Debug" RECURSE=0
-	nmake /nologo /f "GUI Components.mak" CFG="GUI Components - Win32 Debug" RECURSE=0
+	msdev GUI.dsp /MAKE "GUI - Win32 Debug" /USEENV
+	msdev PWLib.dsp /MAKE "PWLib - Win32 Debug" /USEENV
+	msdev "GUI Components.dsp" /MAKE "GUI Components - Win32 Debug" /USEENV
 	cd ..\..\..\tools\pwtest
-	nmake /nologo /f "PWTest.mak" CFG="pwtest - Win32 Debug" RECURSE=0
+	msdev PWTest.dsp /MAKE "pwtest - Win32 Debug" /USEENV
