@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.168  2001/08/20 06:56:47  robertj
+ * Fixed memory leak report which isn't a memory leak.
+ *
  * Revision 1.167  2001/07/20 04:14:19  robertj
  * Removed GNU warning.
  *
@@ -656,11 +659,11 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 #if PMEMORY_CHECK
     BOOL ignoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
 #endif
-    PTextFile * traceOutput = new PTextFile;
+    PTextFile * traceOutput = new PTextFile(filename, PFile::WriteOnly);
 #if PMEMORY_CHECK
     PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
 #endif
-    if (traceOutput->Open(filename, PFile::WriteOnly))
+    if (traceOutput->IsOpen())
       PTrace::SetStream(traceOutput);
     else {
       PTRACE(0, process.GetName() << "Could not open trace output file \"" << filename << '"');
