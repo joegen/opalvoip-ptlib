@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.17  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.16  2003/09/17 05:43:49  csoutheren
  * Removed recursive includes
  *
@@ -87,7 +90,7 @@
 #endif
 
 #include <ptclib/inetprot.h>
-#include "ptlib/sockets.h"
+#include <ptlib/sockets.h>
 
 
 /**

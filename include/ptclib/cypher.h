@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: cypher.h,v $
+ * Revision 1.21  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.20  2004/03/23 05:59:17  csoutheren
  * Moved the Base64 routines into cypher.cxx, which is a more sensible
  * place and reduces the inclusion of unrelated code
@@ -97,6 +100,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
 
 /** This class is used to encode/decode data using the MIME standard base64
    encoding mechanism as defined in RFC1521.

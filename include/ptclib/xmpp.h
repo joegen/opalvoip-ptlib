@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.h,v $
+ * Revision 1.4  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.3  2004/05/09 07:23:46  rjongbloed
  * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
  *
@@ -44,7 +47,7 @@
 #pragma interface
 #endif
 
-#include <ptbuildopts.h>
+#include <ptlib.h>
 
 #if P_EXPAT
 

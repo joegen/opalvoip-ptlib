@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.h,v $
+ * Revision 1.3  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.2  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -41,6 +44,7 @@
 #pragma interface
 #endif
 
+#include <ptlib.h>
 
 /** Class for implementing a serial queue channel in memory.
     This implements a simple memory based First In First Out queue. Data
