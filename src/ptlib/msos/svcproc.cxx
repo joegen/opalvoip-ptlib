@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.69  2002/03/10 15:37:35  robertj
+ * Added milliseconds to timestamp output
+ *
  * Revision 1.68  2001/12/13 09:20:57  robertj
  * Fixed system log so does not crash if current thread not created by PWLib.
  *
@@ -401,7 +404,7 @@ void PSystemLog::Output(Level level, const char * msg)
       "Debug3"
     };
     PTime now;
-    *out << now.AsString("yyyy/MM/dd hh:mm:ss\t");
+    *out << now.AsString("yyyy/MM/dd hh:mm:ss.uuu\t");
     PThread * thread = PThread::Current();
     if (thread == NULL)
       *out << "ThreadID=0x"
