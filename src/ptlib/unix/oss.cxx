@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.10  2000/01/08 06:41:08  craigs
+ * Fixed problem whereby failure to open sound device returns TRUE
+ *
  * Revision 1.9  1999/08/24 13:40:26  craigs
  * Fixed problem with EINTR causing sound channel reads and write to fail
  * Thanks to phil@netroedge.com!
@@ -232,7 +235,7 @@ BOOL PSoundChannel::Open(const PString & _device,
     }
     else if (!ConvertOSError(os_handle = ::open((const char *)_device, O_RDWR))) {
       dictMutex.Signal();
-      return TRUE;
+      return FALSE;
     }
 
     // add the device to the dictionary
