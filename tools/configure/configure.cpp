@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.23  2004/12/09 02:05:52  csoutheren
+ * Added IF_FEATURE option to allow features dependent on existence/non-existence of
+ *  other features
+ *
  * Revision 1.22  2004/12/01 11:59:19  csoutheren
  * Incremented version number
  *
@@ -110,9 +114,9 @@
 #include <algorithm>
 #include <stdlib.h>
 #include <windows.h>
+#include <vector>
 
-
-#define VERSION "1.3.4"
+#define VERSION "1.4"
 
 
 using namespace std;
@@ -147,13 +151,15 @@ class Feature
     };
     list<CheckFileInfo> checkFiles;
     list<string> checkDirectories;
+    list<string> ifFeature;
+    list<string> ifNotFeature;
 
     string directory;
     bool   enabled;
 };
 
 
-list<Feature> features;
+vector<Feature> features;
 list<string> excludeDirList;
 
 ///////////////////////////////////////////////////////////////////////
@@ -172,6 +178,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
 {
   if (optionName == "DISPLAY")
     displayName = optionValue;
+
   else if (optionName == "DEFINE") {
     int equal = optionValue.find('=');
     if (equal == string::npos)
@@ -181,6 +188,7 @@ void Feature::Parse(const string & optionName, const string & optionValue)
       simpleDefineValue.assign(optionValue, equal+1, INT_MAX);
     }
   }
+
   else if (optionName == "CHECK_FILE") {
     int comma = optionValue.find(',');
     if (comma == string::npos)
@@ -205,10 +213,27 @@ void Feature::Parse(const string & optionName, const string & optionValue)
 
     checkFiles.push_back(check);
   }
+
   else if (optionName == "DIR_SYMBOL")
     directorySymbol = '@' + optionValue + '@';
+
   else if (optionName == "CHECK_DIR")
     checkDirectories.push_back(optionValue);
+
+  else if (optionName == "IF_FEATURE") {
+    const char * delimiters = " ,";
+    string::size_type lastPos = optionValue.find_first_not_of(delimiters, 0);
+    string::size_type pos = optionValue.find_first_of(delimiters, lastPos);
+    while (string::npos != pos || string::npos != lastPos) {
+      string str = optionValue.substr(lastPos, pos - lastPos);
+      if (str[0] == '!')
+        ifNotFeature.push_back(str.substr(1));
+      else
+        ifFeature.push_back(str);
+      lastPos = optionValue.find_first_not_of(delimiters, pos);
+      pos = optionValue.find_first_of(delimiters, lastPos);
+    }
+  }
 }
 
 
@@ -333,7 +358,7 @@ bool TreeWalk(const string & directory)
           subdir += '\\';
 
           foundAll = true;
-          list<Feature>::iterator feature;
+          vector<Feature>::iterator feature;
           for (feature = features.begin(); feature != features.end(); feature++) {
             if (!feature->Locate(subdir.c_str()))
               foundAll = false;
@@ -374,7 +399,7 @@ bool ProcessHeader(const string & headerFilename)
     string line;
     getline(in, line);
 
-    list<Feature>::iterator feature;
+    vector<Feature>::iterator feature;
     for (feature = features.begin(); feature != features.end(); feature++)
       feature->Adjust(line);
 
@@ -384,6 +409,16 @@ bool ProcessHeader(const string & headerFilename)
   return !in.bad() && !out.bad();
 }
 
+BOOL FeatureEnabled(const string & name)
+{
+  vector<Feature>::iterator feature;
+  for (feature = features.begin(); feature != features.end(); feature++) {
+    Feature & f = *feature;
+    if (f.featureName == name && f.enabled)
+      return TRUE;
+  }
+  return FALSE;
+}
 
 int main(int argc, char* argv[])
 {
@@ -402,7 +437,7 @@ int main(int argc, char* argv[])
   }
 
   list<string> headers;
-  list<Feature>::iterator feature;
+  vector<Feature>::iterator feature;
 
   while (conf.good()) {
     string line;
@@ -575,7 +610,31 @@ int main(int argc, char* argv[])
 
   for (feature = features.begin(); feature != features.end(); feature++) {
     cout << "  " << feature->displayName << ' ';
-    if (feature->checkFiles.empty() && !feature->simpleDefineValue.empty())
+    BOOL output = FALSE;
+    list<string>::const_iterator r;
+    if (feature->enabled) {
+      for (r = feature->ifFeature.begin(); r != feature->ifFeature.end(); ++r) {
+        if (!FeatureEnabled(*r)) {
+          feature->enabled = FALSE;
+          cout << " disabled due to absence of feature " << *r;
+          output = TRUE;
+          break;
+        }
+      }
+    }
+    if (feature->enabled) {
+      for (r = feature->ifNotFeature.begin(); r != feature->ifNotFeature.end(); ++r) {
+        if (FeatureEnabled(*r)) {
+          feature->enabled = FALSE;
+          cout << " disabled due to presence of feature " << *r;
+          output = TRUE;
+          break;
+        }
+      }
+    }
+    if (output)
+      ;
+    else if (feature->checkFiles.empty() && !feature->simpleDefineValue.empty())
       cout << "set to " << feature->simpleDefineValue;
     else if (feature->enabled && (feature->checkFiles.empty() || feature->checkFiles.begin()->found))
       cout << "enabled";
