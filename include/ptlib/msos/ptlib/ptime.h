@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.6  2003/06/29 03:48:24  ykiryanov
+ * Added include <ptlib/wince/time.h>
+ *
  * Revision 1.5  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -52,6 +55,10 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
+
+#ifdef _WIN32_WCE
+#include <ptlib/wince/time.h>
+#endif
 
 #include "../../ptime.h"
 
