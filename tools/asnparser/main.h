@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.8  1999/07/22 06:48:56  robertj
+ * Added comparison operation to base ASN classes and compiled ASN code.
+ * Added support for ANY type in ASN parser.
+ *
  * Revision 1.7  1999/06/30 08:57:20  robertj
  * Fixed bug in encodeing sequence of constrained primitive type. Constraint not set.
  * Fixed bug in not emitting namespace use clause.
@@ -673,6 +677,18 @@ class ExternalType : public TypeBase
   public:
     ExternalType();
     virtual const char * GetAncestorClass() const;
+};
+
+
+class AnyType : public TypeBase
+{
+    PCLASSINFO(AnyType, TypeBase);
+  public:
+    AnyType(PString * ident);
+    void PrintOn(ostream & strm) const;
+    virtual const char * GetAncestorClass() const;
+  protected:
+    PString identifier;
 };
 
 
