@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.34  2001/09/11 03:27:46  robertj
+ * Improved error processing on high level protocol failures, usually
+ *   caused by unexpected shut down of a socket.
+ *
  * Revision 1.33  2001/09/10 02:51:22  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -611,7 +615,10 @@ class PChannel : public PObject, public iostream {
       /// Operations buffer was too small for data.
       BufferTooSmall, 
       /// Miscellaneous error.
-      Miscellaneous
+      Miscellaneous,
+      /// High level protocol failure
+      ProtocolFailure,
+      NumNormalisedErrors
     };
 
     /**Error groups.
