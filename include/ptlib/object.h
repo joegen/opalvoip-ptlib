@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.25 1997/02/05 11:54:10 robertj Exp $
+ * $Id: object.h,v 1.26 1997/04/27 05:50:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.26  1997/04/27 05:50:11  robertj
+ * DLL support.
+ *
  * Revision 1.25  1997/02/05 11:54:10  robertj
  * Fixed problems with memory check and leak detection.
  *
@@ -189,14 +192,8 @@ PEXPORT void PAssertFunc(const char * file, int line, const char * msg);
 
 
 // Declaration for standard error output
-#ifdef PMAKEDLL
-extern __declspec(dllexport) ostream * PErrorStream;
-#elif PUSEDLL
-extern __declspec(dllimport) ostream * PErrorStream;
-#else
-extern ostream * PSTATIC PErrorStream;
-#endif
-
+PEXPORT ostream & PGetErrorStream();
+PEXPORT void PSetErrorStream(ostream *);
 
 /*$MACRO PError
    This macro is used to access the platform specific error output stream. This
@@ -215,7 +212,7 @@ extern ostream * PSTATIC PErrorStream;
    application could change this pointer to a <CODE>ofstream</CODE> variable
    of <CODE>PError</CODE> output is wished to be redirected to a file.
  */
-#define PError (*PErrorStream)
+#define PError (PGetErrorStream())
 
 
 
