@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.42.2.5  2004/07/08 04:58:11  csoutheren
+ * Exposed VXML playable classes to allow descendants
+ *
  * Revision 1.42.2.4  2004/07/07 07:07:43  csoutheren
  * Changed PWAVFile to use abstract factories (extensively)
  * Removed redundant blocking/unblocking when using G.723.1
@@ -224,19 +227,12 @@ static PString GetContentType(const PFilePath & fn)
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLPlayableFilename : public PVXMLPlayable
-{
-  PCLASSINFO(PVXMLPlayableFilename, PVXMLPlayable);
-  public:
-    BOOL Open(const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
-    { fn = _fn; return PVXMLPlayable::Open(_delay, _repeat, _autoDelete); }
-
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
-
-  protected:
-    PFilePath fn;
-};
+BOOL PVXMLPlayableFilename::Open(const PString & _fn, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete)
+{ 
+  fn = _fn; 
+  arg = _fn;
+  return PVXMLPlayable::Open(_delay, _repeat, _autoDelete); 
+}
 
 void PVXMLPlayableFilename::Play(PVXMLChannel & outgoingChannel)
 {
@@ -271,19 +267,10 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableFilename> vxmlPlayableFilenameFacto
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLPlayableCommand : public PVXMLPlayable
-{
-  PCLASSINFO(PVXMLPlayableCommand, PVXMLPlayable);
-  public:
-    PVXMLPlayableCommand()
-    { pipeCmd = NULL; }
-
-    void Play(PVXMLChannel & outgoingChannel);
-    void OnStop();
-
-  protected:
-    PPipeChannel * pipeCmd;
-};
+PVXMLPlayableCommand::PVXMLPlayableCommand()
+{ 
+  pipeCmd = NULL; 
+}
 
 void PVXMLPlayableCommand::Play(PVXMLChannel & outgoingChannel)
 {
@@ -319,21 +306,15 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableCommand> vxmlPlayableCommandFactory
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLPlayableData : public PVXMLPlayable
-{
-  PCLASSINFO(PVXMLPlayableData, PVXMLPlayable);
-  public:
-    BOOL Open(const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v)
-    { return PVXMLPlayable::Open(_delay, _repeat, v); }
+BOOL PVXMLPlayableData::Open(const PString & /*_fn*/, PINDEX _delay, PINDEX _repeat, BOOL v)
+{ 
+  return PVXMLPlayable::Open(_delay, _repeat, v); 
+}
 
-    void SetData(const PBYTEArray & _data)
-    { data = _data; }
-
-    void Play(PVXMLChannel & outgoingChannel);
-
-  protected:
-    PBYTEArray data;
-};
+void PVXMLPlayableData::SetData(const PBYTEArray & _data)
+{ 
+  data = _data; 
+}
 
 void PVXMLPlayableData::Play(PVXMLChannel & outgoingChannel)
 {
@@ -346,18 +327,11 @@ PFactory<PVXMLPlayable>::Worker<PVXMLPlayableData> vxmlPlayableDataFactory("PCM 
 
 ///////////////////////////////////////////////////////////////
 
-class PVXMLPlayableURL : public PVXMLPlayable
-{
-  PCLASSINFO(PVXMLPlayableURL, PVXMLPlayable);
-  public:
-    BOOL Open(const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL v)
-    { url = _url; return PVXMLPlayable::Open(_delay, _repeat, v); }
-
-    void Play(PVXMLChannel & outgoingChannel);
-
-  protected:
-    PURL url;
-};
+BOOL PVXMLPlayableURL::Open(const PString & _url, PINDEX _delay, PINDEX _repeat, BOOL autoDelete)
+{ 
+  url = arg = _url; 
+  return PVXMLPlayable::Open(_delay, _repeat, autoDelete); 
+}
 
 void PVXMLPlayableURL::Play(PVXMLChannel & outgoingChannel)
 {
@@ -864,7 +838,7 @@ void PVXMLSession::VXMLExecute(PThread &, INT)
 
   OnEndSession();
 
-  PWaitAndSignal m(sessionMutex);
+  //PWaitAndSignal m(sessionMutex);
   if (outgoingChannel != NULL)
     outgoingChannel->Close();
 
@@ -1280,30 +1254,30 @@ void PVXMLSession::SetVar(const PString & ostr, const PString & val)
 
 BOOL PVXMLSession::PlayFile(const PString & fn, PINDEX repeat, PINDEX delay, BOOL autoDelete)
 {
-  if (outgoingChannel != NULL) {
-    outgoingChannel->QueueFile(fn, repeat, delay, autoDelete);
-    AllowClearCall();
-  }
+  if (outgoingChannel == NULL || !outgoingChannel->QueueFile(fn, repeat, delay, autoDelete))
+    return FALSE;
+
+  AllowClearCall();
 
   return TRUE;
 }
 
 BOOL PVXMLSession::PlayCommand(const PString & cmd, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel != NULL) {
-    outgoingChannel->QueueCommand(cmd, repeat, delay);
-    AllowClearCall();
-  }
+  if (outgoingChannel == NULL || !outgoingChannel->QueueCommand(cmd, repeat, delay))
+    return FALSE;
+
+  AllowClearCall();
 
   return TRUE;
 }
 
 BOOL PVXMLSession::PlayData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel != NULL) {
-    outgoingChannel->QueueData(data, repeat, delay);
-    AllowClearCall();
-  }
+  if (outgoingChannel == NULL || !outgoingChannel->QueueData(data, repeat, delay))
+    return FALSE;
+
+  AllowClearCall();
 
   return TRUE;
 }
@@ -1315,7 +1289,6 @@ void PVXMLSession::GetBeepData(PBYTEArray & data, unsigned ms)
     outgoingChannel->GetBeepData(data, ms);
 }
 
-
 BOOL PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 {
   return PlaySilence((PINDEX)timeout.GetMilliSeconds());
@@ -1323,21 +1296,21 @@ BOOL PVXMLSession::PlaySilence(const PTimeInterval & timeout)
 
 BOOL PVXMLSession::PlaySilence(PINDEX msecs)
 {
-  if (outgoingChannel != NULL) {
-    PBYTEArray nothing;
-    outgoingChannel->QueueData(nothing, 1, msecs);
-    AllowClearCall();
-  }
+  PBYTEArray nothing;
+  if (outgoingChannel == NULL || !outgoingChannel->QueueData(nothing, 1, msecs))
+    return FALSE;
+
+  AllowClearCall();
 
   return TRUE;
 }
 
 BOOL PVXMLSession::PlayResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  if (outgoingChannel != NULL) {
-    outgoingChannel->QueueResource(url, repeat, delay);
-    AllowClearCall();
-  }
+  if (outgoingChannel == NULL || !outgoingChannel->QueueResource(url, repeat, delay))
+    return FALSE;
+
+  AllowClearCall();
 
   return TRUE;
 }
@@ -2473,7 +2446,7 @@ BOOL PVXMLChannel::Read(void * buffer, PINDEX amount)
   return TRUE;
 }
 
-void PVXMLChannel::QueuePlayable(const PString & type,
+BOOL PVXMLChannel::QueuePlayable(const PString & type,
                                  const PString & arg, 
                                  PINDEX repeat, 
                                  PINDEX delay, 
@@ -2481,42 +2454,62 @@ void PVXMLChannel::QueuePlayable(const PString & type,
 {
   PTRACE(3, "PVXML\tEnqueueing playable " << type << " with arg " << arg << " for playing");
   PVXMLPlayable * item = PFactory<PVXMLPlayable>::CreateInstance(type);
-  if (item == NULL) 
+  if (item == NULL) {
     PTRACE(1, "VXML\tCannot find playable of type " << type);
-  else if (item->Open(arg, delay, repeat, autoDelete))
-    QueuePlayable(item);
-  else {
-    PTRACE(1, "VXML\tCannot open playable of type " << type << " with arg " << arg);
-    if (autoDelete)
-      delete item;
+    delete item;
+    return FALSE;
   }
+
+  if (!item->Open(arg, delay, repeat, autoDelete)) {
+    PTRACE(1, "VXML\tCannot open playable of type " << type << " with arg " << arg);
+    delete item;
+    return FALSE;
+  }
+
+  if (QueuePlayable(item))
+    return TRUE;
+
+  delete item;
+  return FALSE;
 }
 
-void PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
+BOOL PVXMLChannel::QueuePlayable(PVXMLPlayable * newItem)
 {
   newItem->SetSampleFrequency(sampleFrequency);
   PWaitAndSignal mutex(queueMutex);
   playQueue.Enqueue(newItem);
+  return TRUE;
 }
 
-void PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
+BOOL PVXMLChannel::QueueResource(const PURL & url, PINDEX repeat, PINDEX delay)
 {
-  if (url.GetScheme() *= "File")
-    QueuePlayable("File", url.AsFilePath(), repeat, delay, FALSE);
+  if (url.GetScheme() *= "file")
+    return QueuePlayable("File", url.AsFilePath(), repeat, delay, FALSE);
   else
-    QueuePlayable("URL", url.AsFilePath(), repeat, delay);
+    return QueuePlayable("URL", url.AsString(), repeat, delay);
 }
 
-void PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
+BOOL PVXMLChannel::QueueData(const PBYTEArray & data, PINDEX repeat, PINDEX delay)
 {
   PTRACE(3, "PVXML\tEnqueueing " << data.GetSize() << " bytes for playing");
   PVXMLPlayableData * item = dynamic_cast<PVXMLPlayableData *>(PFactory<PVXMLPlayable>::CreateInstance("PCM Data"));
-  if (item != NULL) 
+  if (item != NULL) {
     PTRACE(1, "VXML\tCannot find playable of type 'PCM Data'");
-  else if (!item->Open("", delay, repeat, TRUE)) 
+    delete item;
+    return FALSE;
+  }
+
+  if (!item->Open("", delay, repeat, TRUE)) {
     PTRACE(1, "VXML\tCannot open playable of type 'PCM Data'");
-  else 
-    QueuePlayable(item);
+    delete item;
+    return FALSE;
+  }
+
+  if (QueuePlayable(item))
+    return TRUE;
+
+  delete item;
+  return FALSE;
 }
 
 void PVXMLChannel::FlushQueue()
