@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.38  2001/04/02 01:44:15  robertj
+ * Fixed PTime::operator-, was adding usecs instead of subtracting.
+ *
  * Revision 1.37  2001/03/19 05:37:29  robertj
  * Fixed problem with reading a time if there is leading white space.
  *
@@ -716,7 +719,7 @@ PTimeInterval PTime::operator-(const PTime & t) const
 PTime PTime::operator-(const PTimeInterval & t) const
 {
   time_t secs = theTime - t.GetSeconds();
-  long usecs = (long)(microseconds + (t.GetMilliSeconds()%1000)*1000);
+  long usecs = (long)(microseconds - (t.GetMilliSeconds()%1000)*1000);
   if (usecs < 0) {
     usecs += 1000000;
     secs--;
