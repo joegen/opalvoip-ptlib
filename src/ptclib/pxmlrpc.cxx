@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.18  2002/12/09 04:06:44  robertj
+ * Added macros for defining multi-argument functions
+ *
  * Revision 1.17  2002/12/04 00:31:13  robertj
  * Fixed GNU compatibility
  *
@@ -114,6 +117,24 @@ PXMLRPCBlock::PXMLRPCBlock(const PString & method)
   rootElement->AddChild(new PXMLElement(rootElement, "methodName", method));
   params = NULL;
 }
+
+PXMLRPCBlock::PXMLRPCBlock(const PString & method, const PXMLRPCStructBase & data)
+{
+  faultCode = P_MAX_INDEX;
+  SetRootElement("methodCall");
+  rootElement->AddChild(new PXMLElement(rootElement, "methodName", method));
+  params = NULL;
+
+  for (PINDEX i = 0; i < data.GetNumVariables(); i++) {
+    PXMLRPCVariableBase & variable = data.GetVariable(i);
+    PXMLRPCStructBase * structVar = variable.GetStruct();
+    if (structVar != NULL)
+      AddParam(*structVar);
+    else
+      AddParam(CreateValueElement(new PXMLElement(NULL, variable.GetType(), variable.ToString())));
+  }
+}
+
 
 BOOL PXMLRPCBlock::Load(const PString & str)
 {
@@ -499,6 +520,37 @@ PXMLElement * PXMLRPCBlock::GetParam(PINDEX idx) const
 }
 
 
+BOOL PXMLRPCBlock::GetParams(PXMLRPCStructBase & data)
+{
+  if (params == NULL) 
+    return FALSE;
+  
+  if (GetParamCount() == 1) {
+    PString type, value;
+    if (ParseScalar(GetParam(0), type, value) && type == "struct")
+      return GetParam(0, data);
+  }
+
+  for (PINDEX i = 0; i < data.GetNumVariables(); i++) {
+    PXMLRPCVariableBase & variable = data.GetVariable(i);
+    PXMLRPCStructBase * structVar = variable.GetStruct();
+    if (structVar != NULL) {
+      if (!GetParam(i, *structVar))
+        return FALSE;
+    }
+    else {
+      PString value;
+      if (!GetExpectedParam(i, variable.GetType(), value))
+        return FALSE;
+
+      variable.FromString(value);
+    }
+  }
+
+  return TRUE;
+}
+
+
 BOOL PXMLRPCBlock::GetParam(PINDEX idx, PString & type, PString & value)
 {
   // get the parameter
@@ -654,6 +706,18 @@ BOOL PXMLRPC::MakeRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
   return FALSE;
 }
 
+BOOL PXMLRPC::MakeRequest(const PString & method, const PXMLRPCStructBase & args, PXMLRPCStructBase & reply)
+{
+  PXMLRPCBlock request(method, args);
+  PXMLRPCBlock response;
+
+  if (!MakeRequest(request, response))
+    return FALSE;
+
+  return response.GetParams(reply);
+}
+
+
 BOOL PXMLRPC::PerformRequest(PXMLRPCBlock & request, PXMLRPCBlock & response)
 {
   // create XML version of request
@@ -807,7 +871,8 @@ PXMLRPCStructBase * PXMLRPCStructBase::initialiserInstance = NULL;
 
 PXMLRPCStructBase::PXMLRPCStructBase()
 {
-  variables.DisallowDeleteObjects();
+  variablesByOrder.DisallowDeleteObjects();
+  variablesByName.DisallowDeleteObjects();
 
   initialiserMutex.Wait();
   initialiserStack = initialiserInstance;
@@ -824,7 +889,14 @@ void PXMLRPCStructBase::EndConstructor()
 
 void PXMLRPCStructBase::PrintOn(ostream & strm) const
 {
-  strm << variables;
+  strm << variablesByOrder;
+}
+
+
+void PXMLRPCStructBase::AddVariable(PXMLRPCVariableBase * var)
+{
+  variablesByOrder.Append(var);
+  variablesByName.SetAt(var->GetName(), var);
 }
 
 
