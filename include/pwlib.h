@@ -1579,6 +1579,8 @@ extern "C" char **__argv;
 #include "../../common/pwlib.inl"
 #include "pwlib.inl"
 
+#include "../../common/graphics.inl"
+
 
 #endif // _PWLIB_H
 
