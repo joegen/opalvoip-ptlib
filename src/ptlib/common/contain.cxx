@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.54 1996/03/16 04:56:59 robertj Exp $
+ * $Id: contain.cxx,v 1.55 1996/03/31 08:58:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.55  1996/03/31 08:58:49  robertj
+ * Fixed hash function for strings to work for caseless strings.
+ *
  * Revision 1.54  1996/03/16 04:56:59  robertj
  * Fixed bug in PStringStream assignment oeprator getting pointers wrong.
  *
@@ -676,7 +679,9 @@ PINDEX PString::HashFunction() const
 #ifdef PHAS_UNICODE
   return (((WORD*)theArray)[0]+((WORD*)theArray)[1]+((WORD*)theArray)[2])%23;
 #else
-  return ((BYTE)theArray[0]+(BYTE)theArray[1]+(BYTE)theArray[2])%23;
+  return ((BYTE)toupper(theArray[0]) +
+          (BYTE)toupper(theArray[1]) +
+          (BYTE)toupper(theArray[2]))%23;
 #endif
 }
 
