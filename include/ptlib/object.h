@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.51  1999/08/24 06:54:36  robertj
+ * Cleaned up the smart pointer code (macros).
+ *
  * Revision 1.50  1999/08/22 13:38:39  robertj
  * Fixed termination hang up problem with memory check code under unix pthreads.
  *
@@ -1797,20 +1800,14 @@ class PSmartPointer : public PObject
 };
 
 
-/** This macro is used to declare a smart pointer class.
-The class is not closed off allowing customisation of the new class being
-declared.
+/** This macro is used to declare a smart pointer class members.
+The class #cls# is the smart pointer, descended from the #par# class, to the
+#type# class.
 
-The class #cls# is declared as a smart pointer, descended from
-the #par# class, to the #type# class.
-
-If no customisations for the clase are required use the
-#PDECLARE_POINTER_CLASS# macro instead.
-
-The class declares the following functions:
+The macro declares in the class the following functions:
 \begin{verbatim}
-      cls(type * obj);
-        Constructor creating the smart pointer given the memory pointer.
+      PCLASSINFO(cls, par);
+        Standard class info.
 
       type * operator->() const;
         Access to the members of the smart object in the smart pointer.
@@ -1818,74 +1815,15 @@ The class declares the following functions:
       type & operator*() const;
         Access to the value of the smart object in the smart pointer.
 \end{verbatim}
-
-Note if this macro is used then the #PIMPLEMENT_POINTER# macro must be
-used to implement some inline functions that the pointer class declares.
-The separate declaration and definition is sometimes required due to the
-order in which the #PSmartPointer# class and the #PSmartObject#
-class are declared. They may require a circular reference under some
-circumstances.
 */
-#define PDECLARE_POINTER_CLASS(cls, par, type) \
-  PDECLARE_CLASS(cls, par) \
-    public: \
-      cls(type * obj); \
-      type * operator->() const; \
-      type & operator*() const; \
+#define PSMART_POINTER_INFO(cls, par, type) \
+  PCLASSINFO(cls, par) \
+  public: \
+    type * operator->() const \
+      { return (type *)PAssertNULL(object); } \
+    type & operator*() const \
+      { return *(type *)PAssertNULL(object); } \
 
-
-/** This macro is used to declare a smart pointer.
-Unlike the #PDECLARE_POINTER_CLASS# macro this closes off the class declaration.
-
-One additional constructor is created in this class declaration which
-will create a NULL smart pointer when no parameters are provided to the
-constructor.
-
-The class #cls# is declared as a smart pointer, descended from
-the #par# class, to the #type# class.
-
-Note if this macro is used then the #PIMPLEMENT_POINTER# macro must be
-used to implement some inline functions that the pointer class declares.
-The separate declaration and definition is sometimes required due to the
-order in which the #PSmartPointer# class and the #PSmartObject#
-class are declared. They may require a circular reference under some
-circumstances.
-*/
-#define PDECLARE_POINTER(cls, par, type) \
-  PDECLARE_POINTER_CLASS(cls, par, type) \
-    public: \
-      cls() { } \
-  }
-
-/**This macro is used to implement a smart pointer.
-  This macro implements the optionally inline functions, using the
-  #PINLINE# macro.
- */
-#define PIMPLEMENT_POINTER(cls, par, type) \
-  PINLINE cls::cls(type * obj) : par(obj) { } \
-  PINLINE type * cls::operator->() const \
-    { return (type *)PAssertNULL(object); } \
-  PINLINE type & cls::operator*() const \
-    { return *(type *)PAssertNULL(object); }
-
-
-/** This macro is used to declare a smart pointer.
-Unlike the #PDECLARE_POINTER_CLASS# macro this closes off the class declaration
-and assumes that it is descended directly off the PSmartPointer class. Also
-the member functions are implemented as inlines directly in the declaration.
-
-If the order in which the #PSmartPointer# and the #PSmartObject#
-classes are declared causes problems, use the separate
-#PDECLARE_POINTER_CLASS# and #PIMPLEMENT_POINTER# macros.
-*/
-#define PSMART_POINTER(cls, type) \
-  PDECLARE_CLASS(cls, par) \
-    public: \
-      cls(type * obj = NULL) : par(obj) { } \
-      type * operator->() const \
-        { return (type *)PAssertNULL(object); } \
-      type & operator*() const \
-        { return *(type *)PAssertNULL(object); } \
 
 
 ///////////////////////////////////////////////////////////////////////////////
