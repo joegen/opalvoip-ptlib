@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.3  2000/07/25 13:38:25  robertj
+ * Added frame rate parameter to video frame grabber.
+ *
  * Revision 1.2  2000/07/25 13:14:05  robertj
  * Got the video capture stuff going!
  *
@@ -171,6 +174,21 @@ class PVideoDevice : public PObject
     */
     ColourFormat GetColourFormat() const;
 
+    /**Set the video frame rate to be used on the device.
+
+       Default behaviour sets the value of the frameRate variable and then
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetFrameRate(
+      unsigned rate  /// Frames per 100 seconds
+    );
+
+    /**Get the video frame rate used on the device.
+
+       Default behaviour returns the value of the frameRate variable.
+    */
+    virtual unsigned GetFrameRate() const;
+
     /**Get the maximum size of a frame on the device.
 
        Default behaviour returns the value UINT_MAX for both and returns
@@ -223,6 +241,7 @@ class PVideoDevice : public PObject
     VideoFormat  videoFormat;
     unsigned     channelNumber;
     ColourFormat colourFormat;
+    unsigned     frameRate;
     unsigned     frameWidth;
     unsigned     frameHeight;
 };

@@ -111,6 +111,7 @@ EXPORTS
     ??0PBinaryUnSerialiser@@QAE@AAVistream@@@Z @84 NONAME ;public: __thiscall PBinaryUnSerialiser::PBinaryUnSerialiser(class istream &)
     ??0PBYTEArray@@QAE@H@Z @85 NONAME ;public: __thiscall PBYTEArray::PBYTEArray(int)
     ??0PBYTEArray@@QAE@PBEHH@Z @86 NONAME ;public: __thiscall PBYTEArray::PBYTEArray(unsigned char const *,int,int)
+    ??0PCapStatus@@QAE@PAUHWND__@@@Z @3390 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
     ??0PCaselessString@@IAE@HPBV0@@Z @87 NONAME ;protected: __thiscall PCaselessString::PCaselessString(int,class PCaselessString const *)
     ??0PCaselessString@@QAE@ABV0@@Z @88 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PCaselessString const &)
     ??0PCaselessString@@QAE@ABVPString@@@Z @89 NONAME ;public: __thiscall PCaselessString::PCaselessString(class PString const &)
@@ -1957,6 +1958,7 @@ EXPORTS
     ?GetFormatInfoSize@PSound@@QBEHXZ @2688 NONAME ;public: int __thiscall PSound::GetFormatInfoSize(void)const 
     ?GetFrame@PVideoInputDevice@@UAEHAAVPBYTEArray@@@Z @3363 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrame(class PBYTEArray &)
     ?GetFrameData@PVideoInputDevice@@UAEHPAEPAH@Z @3364 NONAME ;public: virtual int __thiscall PVideoInputDevice::GetFrameData(unsigned char *,int *)
+    ?GetFrameRate@PVideoDevice@@UBEIXZ @3392 NONAME ;public: virtual unsigned int __thiscall PVideoDevice::GetFrameRate(void)const 
     ?GetFrameSize@PVideoDevice@@UBEHAAI0@Z @3331 NONAME ;public: virtual int __thiscall PVideoDevice::GetFrameSize(unsigned int &,unsigned int &)const 
     ?GetFunction@PDynaLink@@QAEHABVPString@@AAP6AXXZ@Z @1459 NONAME ;public: int __thiscall PDynaLink::GetFunction(class PString const &,void (__cdecl*&)(void))
     ?GetFunction@PDynaLink@@QAEHHAAP6AXXZ@Z @1460 NONAME ;public: int __thiscall PDynaLink::GetFunction(int,void (__cdecl*&)(void))
@@ -2503,6 +2505,7 @@ EXPORTS
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @1872 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @1873 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
     ?IsNULL@PSmartPointer@@QBEHXZ @1874 NONAME ;public: int __thiscall PSmartPointer::IsNULL(void)const 
+    ?IsOK@PCapStatus@@QAEHXZ @3391 NONAME ;public: int __thiscall PCapStatus::IsOK(void)
     ?IsOpen@PChannel@@UBEHXZ @1875 NONAME ;public: virtual int __thiscall PChannel::IsOpen(void)const 
     ?IsOpen@PICMPSocket@@UBEHXZ @1876 NONAME ;public: virtual int __thiscall PICMPSocket::IsOpen(void)const 
     ?IsOpen@PIndirectChannel@@UBEHXZ @1877 NONAME ;public: virtual int __thiscall PIndirectChannel::IsOpen(void)const 
@@ -2850,6 +2853,7 @@ EXPORTS
     ?SetFormat@PSoundChannel@@QAEHIII@Z @2710 NONAME ;public: int __thiscall PSoundChannel::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXIII@Z @2711 NONAME ;public: void __thiscall PWaveFormat::SetFormat(unsigned int,unsigned int,unsigned int)
     ?SetFormat@PWaveFormat@@QAEXPBXH@Z @2916 NONAME ;public: void __thiscall PWaveFormat::SetFormat(void const *,int)
+    ?SetFrameRate@PVideoDevice@@UAEHI@Z @3393 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameRate(unsigned int)
     ?SetFrameSize@PVideoDevice@@UAEHII@Z @3340 NONAME ;public: virtual int __thiscall PVideoDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetFrameSize@PVideoInputDevice@@MAEHII@Z @3381 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameSize(unsigned int,unsigned int)
     ?SetIgnoreAllocations@PMemoryHeap@@SAXH@Z @2163 NONAME ;public: static void __cdecl PMemoryHeap::SetIgnoreAllocations(int)
@@ -3018,5 +3022,4 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ??0PCapStatus@@QAE@PAUHWND__@@@Z @3390 NONAME ;public: __thiscall PCapStatus::PCapStatus(struct HWND__ *)
-    ?IsOK@PCapStatus@@QAEHXZ @3391 NONAME ;public: int __thiscall PCapStatus::IsOK(void)
+    ?SetFrameRate@PVideoInputDevice@@MAEHI@Z @3394 NONAME ;protected: virtual int __thiscall PVideoInputDevice::SetFrameRate(unsigned int)
