@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.141  2002/11/24 23:47:01  robertj
+ * Fixed MSVC v5 compatibility
+ *
  * Revision 1.140  2002/11/13 02:15:25  craigs
  * Fixed problem with GetLocalHostName
  *
@@ -1470,13 +1473,13 @@ PString PIPSocket::GetHostName(const PString & hostname)
 PString PIPSocket::GetHostName(const Address & addr)
 {
   if (addr == 0)
-    return addr;
+    return addr.AsString();
 
   PString hostname;
   if (pHostByAddr().GetHostName(addr, hostname))
     return hostname;
 
-  return addr;
+  return addr.AsString();
 }
 
 
