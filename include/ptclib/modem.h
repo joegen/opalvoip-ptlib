@@ -1,5 +1,5 @@
 /*
- * $Id: modem.h,v 1.1 1994/06/25 11:55:15 robertj Exp $
+ * $Id: modem.h,v 1.2 1994/07/25 03:32:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: modem.h,v $
- * Revision 1.1  1994/06/25 11:55:15  robertj
+ * Revision 1.2  1994/07/25 03:32:29  robertj
+ * Fixed bug in GCC with enums.
+ *
+ * Revision 1.1  1994/06/25  11:55:15  robertj
  * Initial revision
  *
  */
@@ -196,7 +199,8 @@ PDECLARE_CLASS(PModem, PSerialChannel)
       DeinitialiseFailed, // The de-initialisation failed
       SendingUserCommand, // Is currently sending a user command
       NumStatuses
-    } GetStatus() const;
+    };
+    Status GetStatus() const;
       // Return the modem status
 
 
