@@ -15,6 +15,7 @@
 
 YWinCEOStream cerr;
 YWinCEOStream cout;
+YWinCEOStream clog;
 #else
 #include "../../../include/ptlib/wince/ceostream.h"
 #endif
