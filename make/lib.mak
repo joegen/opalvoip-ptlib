@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.19  2001/12/17 23:33:50  robertj
+# Solaris 8 porting changes, thanks James Dugal
+#
 # Revision 1.18  2001/12/05 08:32:06  rogerh
 # ln -sf complains if the file already exists on Solaris. So do rm -f first
 #
@@ -98,6 +101,16 @@ LDSOOPTS = -shared
 EXTLIBS =
 endif
 
+# Solaris loader doesn't grok -soname  (sees it as -s -oname)
+# We could use -Wl,-h,$(LIB_BASENAME).1 but then we find that the arglist
+# to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
+# directly and passing it the equivalent arguments...jpd@louisiana.edu
+ifeq ($(OSTYPE),solaris)
+LDSOOPTS = ld -Bdynamic -G -h $(LIB_FILENAME).1
+else
+LDSOOPTS += $(CPLUS) -Wl,-soname,$(LIB_FILENAME).1
+endif
+
 $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 	cd $(LIBDIR) ; rm -f $(LIB_FILENAME) ; ln -sf $(LIBNAME_PAT) $(LIB_FILENAME)
 	cd $(LIBDIR) ; rm -f $(LIBNAME_MAJ) ;  ln -sf $(LIBNAME_PAT) $(LIBNAME_MAJ)
@@ -105,7 +118,7 @@ $(LIBDIR)/$(LIB_FILENAME): $(LIBDIR)/$(LIBNAME_PAT)
 
 $(LIBDIR)/$(LIBNAME_PAT): $(STATIC_LIB_FILE)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	$(CPLUS) $(LDSOOPTS) -Wl,-soname,$(LIB_FILENAME).1 -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
+	$(LDSOOPTS)  -o $(LIBDIR)/$(LIBNAME_PAT) $(EXTLIBS) $(OBJS)
 
 install: $(LIBDIR)/$(LIBNAME_PAT)
 	$(INSTALL) $(LIBDIR)/$(LIBNAME_PAT) $(INSTALLLIB_DIR)/$(LIBNAME_PAT)
