@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.45 1996/01/28 14:09:39 robertj Exp $
+ * $Id: osutils.cxx,v 1.46 1996/02/03 11:06:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.46  1996/02/03 11:06:49  robertj
+ * Added string constructor for times, parses date/time from string.
+ *
  * Revision 1.45  1996/01/28 14:09:39  robertj
  * Fixed bug in time reading function for dates before 1980.
  * Fixed bug in time reading, was out by one month.
@@ -215,6 +218,15 @@ PTime::PTime(time_t t, PTime::TimeZone zone)
 { 
   if (zone == GMT)
     t -= GetTimeZone();
+}
+
+
+PTime::PTime(const PString & str)
+{
+  PStringStream s = str;
+  PTime t;
+  s >> t;
+  operator=(t);
 }
 
 
