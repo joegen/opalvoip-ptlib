@@ -6,6 +6,9 @@
  *  Copyright 1997 by Equivalence Pty Ltd
  *
  *  $Log: uninstall.c,v $
+ *  Revision 1.4  2001/03/29 23:33:00  robertj
+ *  Added missing structure initialisation, thanks Victor H.
+ *
  *  Revision 1.3  1999/08/20 05:56:22  robertj
  *  Fixed display of error on removing directory already removed.
  *
@@ -362,6 +365,7 @@ char APIENTRY InstallFunc(HWND hwnd,
   else {
     FILE * file;
     OSVERSIONINFO  osInfo;
+    osInfo.dwOSVersionInfoSize = sizeof(osInfo);
     GetVersionEx(&osInfo);
 
     GetWindowsDirectory(str, sizeof(str));
