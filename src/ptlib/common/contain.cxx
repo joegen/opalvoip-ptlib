@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.78  1999/04/18 09:36:31  robertj
+ * Get date grammar build.
+ *
  * Revision 1.77  1999/04/16 14:38:37  craigs
  * Changes to make getdate.y compile under Linux
  *
@@ -769,18 +772,6 @@ static void UnicodeCopy(WORD * theArray, char * src, size_t len)
 #define PSTRING_MOVE(d, doff, s, soff, l) memmove((d)+(doff), (s)+(soff), (l))
 #endif
 
-#ifndef PSTRLWR
-extern "C" {
-char * PSTRLWR(char * s)
-{
-  char * str = s;
-  while (*str) {
-    *str = tolower(*str);
-  }
-  return s;
-}
-};
-#endif
 
 PString::PString(const char * cstr)
   : PSTRING_ANCESTOR_CLASS(strlen(PAssertNULL(cstr))+1)
