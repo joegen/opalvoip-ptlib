@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.143  2000/06/26 09:27:16  robertj
+ * Added ability to get at the PTraceStream without timestamps etc, use UINT_MAX trace level.
+ *
  * Revision 1.142  2000/06/02 01:38:07  craigs
  * Fixed typos
  *
@@ -556,6 +559,9 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
   PTraceMutex.Wait();
 
+  if (level == UINT_MAX)
+    return *PTraceStream;
+
   if ((PTraceOptions&SystemLogStream) != 0) {
     unsigned lvl = level+PSystemLog::Warning;
     if (lvl >= PSystemLog::NumLogLevels)
@@ -623,10 +629,12 @@ ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 
 ostream & PTrace::End(ostream & s)
 {
-  if ((PTraceOptions&SystemLogStream) != 0)
-    s.flush();
-  else
-    s << endl;
+  if (s.rdbuf()->out_waiting() > 0) {
+    if ((PTraceOptions&SystemLogStream) != 0)
+      s.flush();
+    else
+      s << endl;
+  }
 
   PTraceMutex.Signal();
 
