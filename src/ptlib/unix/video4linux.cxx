@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.31  2002/04/13 07:54:38  rogerh
+ * Add CPiA camera hint to work around driver bug.
+ * From Damien Sandras and Keith Packard.
+ *
  * Revision 1.30  2002/04/08 21:18:24  rogerh
  * Emulate original behaviour of pwlib when Open and then SetVideoFormat
  * are called. Tested by Mark Cooke.
@@ -158,6 +162,7 @@
 #define HINT_ONLY_WORKS_PREF_PALETTE        0x0040  /// Camera always (and only) opens at pref palette.
 #define HINT_CGWIN_FAILS                    0x0080  /// ioctl VIDIOCGWIN always fails.
 #define HINT_FORCE_LARGE_SIZE               0x0100  /// driver does not work in small video size.
+#define HINT_FORCE_DEPTH_16                 0x0200  /// CPiA cameras return a wrong value for the depth, and if you try to use that wrong value, it fails.
 
 static struct {
   char     *name_regexp;        // String used to match the driver name
@@ -215,6 +220,7 @@ static struct {
    */
   {"CPiA Camera",
    "CPIA which works with cpia and cpia_usb driver modules",
+   HINT_FORCE_DEPTH_16 |
    HINT_ONLY_WORKS_PREF_PALETTE   |
    HINT_HAS_PREF_PALETTE,
    VIDEO_PALETTE_YUV422
@@ -550,7 +556,8 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
   // set colour format
   colourFormatCode = colourFormatTab[colourFormatIndex].code;
   pictureInfo.palette = colourFormatCode;
-
+  if (HINT (HINT_FORCE_DEPTH_16))
+    pictureInfo.depth = 16;
 
   // set the information
   if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0) {
