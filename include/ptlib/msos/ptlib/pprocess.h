@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.11 1996/06/13 13:32:09 robertj Exp $
+ * $Id: pprocess.h,v 1.12 1996/07/27 04:09:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.12  1996/07/27 04:09:23  robertj
+ * Changed thread creation to use C library function instead of direct WIN32.
+ *
  * Revision 1.11  1996/06/13 13:32:09  robertj
  * Rewrite of auto-delete threads, fixes Windows95 total crash.
  *
@@ -76,7 +79,7 @@
 
   friend PThread * PThread::Current();
   friend void HouseKeepingThread::Main();
-  friend DWORD EXPORTED PThread::MainFunction(LPVOID thread);
+  friend UINT __stdcall PThread::MainFunction(void * thread);
 
 #endif
 
