@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.34  2003/05/06 07:55:25  craigs
+ * Fixed problem with initialising XML parser for namespaces
+ *
  * Revision 1.33  2003/04/27 23:53:30  craigs
  * Removed deprecated options
  *
@@ -146,7 +149,7 @@ PXMLParser::PXMLParser(int _options)
   if (_options == WithNS) {
     useNS = TRUE;
     options = -1;
-  } else if ((options > 0) && ((options & WithNS) != 0)) {
+  } else if ((_options > 0) && ((_options & WithNS) != 0)) {
     useNS = TRUE;
     options = _options & (!WithNS);
   } 
