@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.10  2002/07/16 08:00:49  robertj
+ * Fixed correct endian-ness of mask when specifed in bits.
+ *
  * Revision 1.9  2002/06/19 04:03:21  robertj
  * Added default allowance boolean if ACL empty.
  * Added ability to override the creation of ACL entry objects with descendents
@@ -224,13 +227,9 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
   else {
     unsigned bits = postSlash.AsUnsigned();
     if (bits >= 32)
-      mask = bits;
+      mask = ::htonl(bits);
     else
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-      mask = 0xffffffff >> (32 - bits);
-#else
-      mask = 0xffffffff << (32 - bits);
-#endif
+      mask = ::htonl(0xffffffff << (32 - bits));
   }
 
   if (mask == 0)
