@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.34 1998/03/23 03:21:40 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.35 1998/04/01 01:55:41 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.35  1998/04/01 01:55:41  robertj
+ * Fixed bug for automatically including GIF file in HTTP name space.
+ *
  * Revision 1.34  1998/03/23 03:21:40  robertj
  * Fixed missing invalid case in register page.
  *
@@ -150,7 +153,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   }
 
   if (inf.gifFilename != NULL)
-    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename));
+    httpNameSpace.AddResource(new PServiceHTTPFile(inf.gifFilename, GetFile().GetDirectory()+inf.gifFilename));
 
   restartThread = NULL;
   httpListeningSocket = NULL;
