@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.6 1996/11/04 03:55:20 robertj Exp $
+ * $Id: httpsvc.h,v 1.7 1997/01/27 10:22:33 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.7  1997/01/27 10:22:33  robertj
+ * Numerous changes to support OEM versions of products.
+ *
  * Revision 1.6  1996/11/04 03:55:20  robertj
  * Changed to accept separate copyright and manufacturer strings.
  *
@@ -57,7 +60,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
       WORD buildNumber,     // Build number of the product
 
       const char * homePage = NULL,  // WWW address of manufacturers home page
-      const char * email = NULL      // contact email for manufacturer
+      const char * email = NULL,     // contact email for manufacturer
+      const PTEACypher::Key * sigKey = NULL // Signature key for encryption of HTML files
     );
 
     virtual void OnConfigChanged() = 0;
@@ -72,8 +76,13 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     virtual PString GetCopyrightText();
 
+    const PString & GetEMailAddress() const { return email; }
+    const PString & GetHomePage() const { return homePage; }
+    const PTEACypher::Key GetSignatureKey() const { return signatureKey; }
+
     static PHTTPServiceProcess * Current() 
       { return (PHTTPServiceProcess *)PServiceProcess::Current(); }
+
 
   protected:
     PString    gifText;
@@ -81,6 +90,8 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
     PString    email;
     PString    homePage;
+
+    PTEACypher::Key signatureKey;
 
   private:
     PThread *  restartThread;
@@ -197,6 +208,22 @@ PDECLARE_CLASS(POrderPage, PHTTPString)
 PDECLARE_CLASS(PServiceHTML, PHTML)
   public:
     PServiceHTML(const char * title, const char * help = NULL);
+
+    PString ExtractSignature(PString & out);
+    static PString ExtractSignature(const PString & html,
+                                    PString & out,
+                                    const char * keyword = "#equival");
+
+    PString CalculateSignature();
+    static PString CalculateSignature(const PString & out);
+    static PString CalculateSignature(const PString & out, const PTEACypher::Key & sig);
+
+    BOOL CheckSignature();
+    static BOOL CheckSignature(const PString & html);
+
+    static BOOL ProcessMacros(PString & text,
+                              const PString & filename,
+                              BOOL needSignature);
 };
 
 
@@ -204,9 +231,13 @@ PDECLARE_CLASS(PServiceHTML, PHTML)
 
 PDECLARE_CLASS(PServiceHTTPFile, PHTTPFile)
   public:
-    PServiceHTTPFile(const PString & filename)
-      : PHTTPFile(filename) { }
+    PServiceHTTPFile(const PString & filename, BOOL needSig = FALSE)
+      : PHTTPFile(filename) { needSignature = needSig; }
+
     void OnLoadedText(PHTTPRequest &, PString & text);
+
+  protected:
+    BOOL needSignature;
 };
 
 
