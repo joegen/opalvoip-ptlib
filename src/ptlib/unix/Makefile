@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.103  2003/02/04 07:41:10  craigs
+# Added stun elements
+#
 # Revision 1.102  2003/01/11 05:30:13  robertj
 # Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
 #
@@ -516,6 +519,9 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/pwavfile.cxx \
 	$(COMPONENT_SRC_DIR)/dtmf.cxx \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
+	$(COMPONENT_SRC_DIR)/stun.cxx \
+	$(COMPONENT_SRC_DIR)/pstun.cxx \
+	$(COMPONENT_SRC_DIR)/udp.cxx \
 	$(SSL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(SOUND_SOURCE) \
