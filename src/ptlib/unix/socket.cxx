@@ -12,39 +12,13 @@ PSocket::~PSocket()
 
 int PSocket::os_close()
 {
-//PError << "Close requested for socket " << os_handle << endl;
-  if (os_handle < 0) {
-//PError << "Close requested for closed socket " << os_handle << endl;
-    lastError = NotOpen;
-    return FALSE;
-  }
-
-  // make sure we don't have any problems
-  PX_iostreamMutex.Wait();
-  int handle = os_handle;
-  os_handle = -1;
-  flush();
-  PX_iostreamMutex.Signal();
+  if (os_handle < 0)
+    return -1;
 
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
-#ifndef P_PTHREADS
-  // abort any I/O block using this os_handle
-  PProcess::Current().PXAbortIOBlock(os_handle);
-
-  DWORD cmd = 0;
-  ::ioctl(os_handle, FIONBIO, &cmd);
-#endif
-
-  int stat;
-  while (1) {
-    stat = ::close(handle);
-    if (stat != EINTR)
-      break;
-  }
-
-  return ConvertOSError(stat);
+  return PXClose();
 }
 
 int PSocket::os_socket(int af, int type, int protocol)

@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.16 1998/03/26 05:01:12 robertj Exp $
+ * $Id: channel.cxx,v 1.17 1998/05/25 10:03:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.17  1998/05/25 10:03:26  robertj
+ * Fixed problem with socket/channel close and blocked threads.
+ *
  * Revision 1.16  1998/03/26 05:01:12  robertj
  * Added PMutex and PSyncPoint classes.
  *
@@ -158,30 +161,36 @@ BOOL PChannel::Close()
     lastError = NotOpen;
     return FALSE;
   }
+  
+  return ConvertOSError(PXClose());
+}
+
+BOOL PChannel::PXClose()
+{
+  if (os_handle < 0)
+    return -1;
 
   // make sure we don't have any problems
   PX_iostreamMutex.Wait();
+  flush();
   int handle = os_handle;
   os_handle = -1;
-  flush();
   PX_iostreamMutex.Signal();
 
 #ifndef P_PTHREADS
   // abort any I/O block using this os_handle
-  PProcess::Current().PXAbortIOBlock(os_handle);
+  PProcess::Current().PXAbortIOBlock(handle);
 
   DWORD cmd = 0;
-  ::ioctl(os_handle, FIONBIO, &cmd);
+  ::ioctl(handle, FIONBIO, &cmd);
 #endif
 
   int stat;
-  while (1) {
+  do {
     stat = ::close(handle);
-    if (stat != EINTR)
-      break;
-  }
+  } while (stat == -1 && errno == EINTR);
 
-  return ConvertOSError(stat);
+  return stat;
 }
 
 PString PChannel::GetErrorText(Errors, int osError = 0)
