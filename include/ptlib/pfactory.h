@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.18  2004/07/12 09:17:20  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.17  2004/07/06 10:12:52  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -393,11 +396,15 @@ class PFactory : PFactoryBase
     PFactory(const PFactory &) {}
     void operator=(const PFactory &) {}
 
+#ifdef _WIN32
   public:
     static int factoryLoader;
+#endif
 };
 
-namespace PWLibFactoryLoader { \
+#ifdef _WIN32
+
+namespace PWLibFactoryLoader { 
 
 template <class AbstractType, typename KeyType>
 class Loader
@@ -408,14 +415,14 @@ class Loader
 };
 };
 
+
 //
 //  this macro is used to declare the static member variable used to force factories to instantiate
 //
 #define PLOAD_FACTORY(AbstractType, KeyType) \
 namespace PWLibFactoryLoader { \
 static Loader<AbstractType, KeyType> AbstractType##_##KeyType##; \
-}; \
-
+}; 
 
 //
 //  this macro is used to instantiate a static variable that accesses the static member variable 
@@ -423,5 +430,7 @@ static Loader<AbstractType, KeyType> AbstractType##_##KeyType##; \
 //
 #define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
 int PFactory<AbstractType, KeyType>::factoryLoader;
+
+#endif // _WIN32
 
 #endif // _PFACTORY_H
