@@ -1,5 +1,5 @@
 /*
- * $Id: asner.h,v 1.2 1997/12/11 10:35:42 robertj Exp $
+ * $Id: asner.h,v 1.3 1997/12/18 05:08:13 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.h,v $
+ * Revision 1.3  1997/12/18 05:08:13  robertj
+ * Added function to get choice discriminator name.
+ *
  * Revision 1.2  1997/12/11 10:35:42  robertj
  * Support for new ASN file parser.
  *
@@ -516,6 +519,7 @@ class PASN_Choice : public PASN_Object
     PASN_Choice & operator=(const PASN_Choice & other);
 
     virtual void SetTag(unsigned newTag, TagClass tagClass = DefaultTagClass);
+    PString GetTagName() const;
     PASN_Object & GetObject() const;
     BOOL IsValid() const { return choice != NULL; }
 
