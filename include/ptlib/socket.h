@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.17 1996/02/25 03:02:14 robertj Exp $
+ * $Id: socket.h,v 1.18 1996/03/02 03:10:18 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.18  1996/03/02 03:10:18  robertj
+ * Added Apability to get and set Berkeley socket options.
+ *
  * Revision 1.17  1996/02/25 03:02:14  robertj
  * Moved some socket functions to platform dependent code.
  * Added array of fds to os_select for unix threading support.
@@ -134,6 +137,40 @@ PDECLARE_CLASS(PSocket, PChannel)
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
      */
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+    BOOL SetOption(
+      int option,
+      int value
+    );
+    BOOL SetOption(
+      int option,
+      const void * valuePtr,
+      PINDEX valueSize
+    );
+    /* Set options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       <H2>Returns:</H2>
+       TRUE if the option was successfully set.
+     */
+
+    BOOL GetOption(
+      int option,
+      int & value
+    );
+    BOOL GetOption(
+      int option,
+      void * valuePtr,
+      PINDEX valueSize
+    );
+    /* Get options on the socket. These options are defined as Berkeley socket
+       options of the class SOL_SOCKET.
+
+       <H2>Returns:</H2>
+       TRUE if the option was successfully retreived.
+     */
+#endif
 
     PDECLARE_CLASS(SelectList, PSocketList)
       public:
