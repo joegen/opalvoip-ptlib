@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.167  2004/01/23 07:07:35  csoutheren
+ * Fixed compile warning under Linux
+ *
  * Revision 1.166  2003/11/12 05:16:48  csoutheren
  * Fixed compiling problem on systems without QoS or IPV6
  *
@@ -2223,7 +2226,7 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
   switch (ai_family) {
 #if P_HAS_IPV6
     case AF_INET6:
-      if (ai_addrlen < sizeof(sockaddr_in6))
+      if (ai_addrlen < (int)sizeof(sockaddr_in6))
         break;
 
       version = 6;
@@ -2232,7 +2235,7 @@ PIPSocket::Address::Address(const int ai_family, const int ai_addrlen, struct so
       return;
 #endif
     case AF_INET: 
-      if (ai_addrlen < sizeof(sockaddr_in))
+      if (ai_addrlen < (int)sizeof(sockaddr_in))
         break;
 
       version = 4;
