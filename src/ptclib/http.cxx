@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.75  2002/11/20 00:49:37  robertj
+ * Fixed correct interpretation of url re double slashes as per latest RFC,
+ *   including file: mapping and relative paths. Probably still more to do.
+ *
  * Revision 1.74  2002/11/19 22:45:03  robertj
  * Fixed support for file: scheme under unix
  *
@@ -313,19 +317,13 @@
 #define	DEFAULT_H323_PORT       1720
 #define	DEFAULT_SIP_PORT        5060
 
-enum SchemeFormat {
-  HostPort = 1,
-  UserPasswordHostPort = 2,
-  HostOnly = 3,
-  Other = 4,
-  NoHost = 5
-};
 
 class schemeStruct {
   public:
     const char * name;
-    int  type;
-    BOOL hasDoubleSlash;
+    BOOL hasUserPassword;
+    BOOL hasHostPort;
+    BOOL hasPath;
     WORD defaultPort;
 };
 
@@ -333,34 +331,33 @@ class schemeStruct {
 #define FILE_SCHEME    1
 
 static schemeStruct const schemeInfo[] = {
-  { "http",      UserPasswordHostPort, TRUE, DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      NoHost,               TRUE                        }, // Must be second
-  { "https",     HostPort,             TRUE, DEFAULT_HTTPS_PORT    },
-  { "gopher",    HostPort,             TRUE, DEFAULT_GOPHER_PORT   },
-  { "wais",      HostPort,             TRUE, DEFAULT_WAIS_PORT     },
-  { "nntp",      HostPort,             TRUE, DEFAULT_NNTP_PORT     },
-  { "prospero",  HostPort,             TRUE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      HostPort,             TRUE, DEFAULT_RTSP_PORT     },
-  { "rtspu",     HostPort,             TRUE, DEFAULT_RTSPU_PORT    },
+  { "http",      TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      FALSE, TRUE,  TRUE,  0                     }, // Must be second
+  { "https",     FALSE, TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
+  { "gopher",    FALSE, TRUE,  TRUE,  DEFAULT_GOPHER_PORT   },
+  { "wais",      FALSE, TRUE,  TRUE,  DEFAULT_WAIS_PORT     },
+  { "nntp",      FALSE, TRUE,  TRUE,  DEFAULT_NNTP_PORT     },
+  { "prospero",  FALSE, TRUE,  TRUE,  DEFAULT_PROSPERO_PORT },
+  { "rtsp",      FALSE, TRUE,  TRUE,  DEFAULT_RTSP_PORT     },
+  { "rtspu",     FALSE, TRUE,  TRUE,  DEFAULT_RTSPU_PORT    },
 
-  { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT      },
-  { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT   },
-  { "mailto",    Other,                FALSE                       },
-  { "news",      Other,                FALSE                       },
-  { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT    },
-  { "sip",       UserPasswordHostPort, FALSE, DEFAULT_SIP_PORT     },
-  { NULL }
+  { "ftp",       TRUE,  TRUE,  TRUE,  DEFAULT_FTP_PORT      },
+  { "telnet",    TRUE,  TRUE,  FALSE, DEFAULT_TELNET_PORT   },
+  { "mailto",    FALSE, FALSE, FALSE, 0                     },
+  { "news",      FALSE, FALSE, FALSE, 0                     },
+  { "h323",      TRUE,  TRUE,  FALSE, DEFAULT_H323_PORT     },
+  { "sip",       TRUE,  TRUE,  FALSE, DEFAULT_SIP_PORT      },
+  { NULL,        FALSE, FALSE, FALSE, 0                     }
 };
 
-static schemeStruct const defaultSchemeInfo = { "other", Other, FALSE};
-
-static const schemeStruct & GetSchemeInfo(const PString & scheme)
+static const schemeStruct & GetSchemeInfo(const PCaselessString & scheme)
 {
   PINDEX i;
-  for (i = 0; schemeInfo[i].name != NULL; i++)
-    if (scheme *= schemeInfo[i].name)
+  for (i = 0; schemeInfo[i].name != NULL; i++) {
+    if (scheme == schemeInfo[i].name)
       return schemeInfo[i];
-  return defaultSchemeInfo;
+  }
+  return schemeInfo[i];
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -368,7 +365,8 @@ static const schemeStruct & GetSchemeInfo(const PString & scheme)
 
 PURL::PURL()
   : scheme(schemeInfo[DEFAULT_SCHEME].name),
-    port(0)
+    port(0),
+    relativePath(FALSE)
 {
 }
 
@@ -385,11 +383,19 @@ PURL::PURL(const PString & str)
 }
 
 
-PURL::PURL(const PFilePath & path)
+PURL::PURL(const PFilePath & filePath)
   : scheme(schemeInfo[FILE_SCHEME].name),
-    port(0)
+    port(0),
+    relativePath(FALSE)
 {
-  SetPathStr(path);
+  PStringArray pathArray = filePath.GetDirectory().GetPath();
+  hostname = pathArray[0];
+
+  for (PINDEX i = 1; i < pathArray.GetSize(); i++)
+    pathArray[i-1] = pathArray[i];
+  pathArray[i-1] = filePath.GetFileName();
+
+  SetPath(pathArray);
 }
 
 
@@ -521,6 +527,7 @@ void PURL::Parse(const char * cstr)
   path.SetSize(0);
   queryVars.RemoveAll();
   port = 0;
+  relativePath = TRUE;
 
   // copy the string so we can take bits off it
   while (isspace(*cstr))
@@ -553,25 +560,21 @@ void PURL::Parse(const char * cstr)
   // particular scheme
   const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
     
-  BOOL hadDoubleSlash = FALSE;
-
   // if the URL should have leading slash, then remove it if it has one
-  if (schemeInfo.hasDoubleSlash &&
+  if (schemeInfo.hasHostPort &&
              url.GetLength() > 2 && url[0] == '/' && url[1] == '/') {
     url.Delete(0, 2);
-    hadDoubleSlash = TRUE;
+    relativePath = FALSE;
   }
 
   // if the rest of the URL isn't a path, then we are finished!
-  if (schemeInfo.type == Other) {
+  if (!schemeInfo.hasPath) {
     pathStr = url;
     return;
   }
 
   // parse user/password/host/port
-  if (schemeInfo.type == HostPort ||
-      schemeInfo.type == UserPasswordHostPort ||
-      schemeInfo.type == HostOnly) {
+  if (!relativePath && schemeInfo.hasHostPort) {
     pos = url.FindOneOf("/;?#");
     PString uphp = url.Left(pos);
     if (pos != P_MAX_INDEX)
@@ -580,16 +583,15 @@ void PURL::Parse(const char * cstr)
       url = PString();
 
     // if the URL is of type HostOnly, then this is the hostname
-    if (schemeInfo.type == HostOnly)
+    if (schemeInfo.defaultPort == 0)
       hostname = UntranslateString(uphp, LoginTranslation);
 
     // if the URL is of type UserPasswordHostPort, then parse it
-    if (schemeInfo.type == UserPasswordHostPort) {
-
+    if (schemeInfo.hasUserPassword) {
       // extract username and password
       PINDEX pos2 = uphp.Find('@');
       if (pos2 != P_MAX_INDEX && pos2 > 0) {
-        PINDEX pos3 = uphp.Find(":");
+        PINDEX pos3 = uphp.Find(':');
         // if no password...
         if (pos3 > pos2)
           username = UntranslateString(uphp(0, pos2-1), LoginTranslation);
@@ -602,16 +604,17 @@ void PURL::Parse(const char * cstr)
     }
 
     // determine if the URL has a port number
-    if (schemeInfo.type == HostPort ||
-        schemeInfo.type == UserPasswordHostPort) {
-      pos = uphp.Find(":");
+    if (schemeInfo.defaultPort != 0) {
+      pos = uphp.Find(':');
       if (pos == P_MAX_INDEX) {
         hostname = UntranslateString(uphp, LoginTranslation);
         port = schemeInfo.defaultPort;
-      } else {
+      }
+      else {
         hostname = UntranslateString(uphp.Left(pos), LoginTranslation);
         port = (WORD)uphp(pos+1, P_MAX_INDEX).AsInteger();
       }
+
       if (hostname.IsEmpty())
         hostname = PIPSocket::GetHostName();
     }
@@ -639,10 +642,7 @@ void PURL::Parse(const char * cstr)
   }
 
   // the hierarchy is what is left
-  if (schemeInfo.type == NoHost && hadDoubleSlash)
-    SetPathStr('/' + url);
-  else
-    SetPathStr(url);
+  SetPathStr(url);
 }
 
 
@@ -653,10 +653,18 @@ PFilePath PURL::AsFilePath() const
 
   PStringStream str;
 
-  for (PINDEX i = 0; i < path.GetSize(); i++) {
-    if (i > 0)
-      str << PDIR_SEPARATOR;
-    str << path[i];
+  if (relativePath) {
+    for (PINDEX i = 0; i < path.GetSize(); i++) {
+      if (i > 0)
+        str << PDIR_SEPARATOR;
+      str << path[i];
+    }
+  }
+  else {
+    if (hostname != "localhost")
+      str << hostname;
+    for (PINDEX i = 0; i < path.GetSize(); i++)
+      str << PDIR_SEPARATOR << path[i];
   }
 
   return str;
@@ -678,19 +686,13 @@ PString PURL::AsString(UrlFormat fmt) const
     str << scheme << ':';
     const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
-    if (schemeInfo.hasDoubleSlash) {
-      str << '/';
-      if (schemeInfo.type != NoHost)
-        str << '/';
-    }
+    if (schemeInfo.hasHostPort)
+      str << "//";
 
-    if (schemeInfo.type == Other)
+    if (!schemeInfo.hasPath)
       str << pathStr;
     else {
-      if (schemeInfo.type == HostOnly)
-        str << hostname;
-
-      if (schemeInfo.type == UserPasswordHostPort) {
+      if (schemeInfo.hasUserPassword) {
         if (!username) {
           str << TranslateString(username, LoginTranslation);
           if (!password)
@@ -699,24 +701,20 @@ PString PURL::AsString(UrlFormat fmt) const
         }
       }
 
-      if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
-        if (hostname.IsEmpty())
-          str = PString();
-        else {
-          str << hostname;
-          if (port != schemeInfo.defaultPort)
-            str << ':' << port;
-        }
+      if (schemeInfo.hasHostPort)
+        str << hostname;
+
+      if (schemeInfo.defaultPort != 0) {
+        if (port != schemeInfo.defaultPort)
+          str << ':' << port;
       }
     }
     return str;
   }
 
   // URIOnly and PathOnly
-  for (i = 0; i < path.GetSize(); i++) {
-    if (i > 0 || !path[i])
-      str << '/' << TranslateString(path[i], PathTranslation);
-  }
+  for (i = 0; i < path.GetSize(); i++)
+    str << '/' << TranslateString(path[i], PathTranslation);
 
   if (fmt == URIOnly) {
     if (!fragment)
@@ -774,41 +772,22 @@ void PURL::SetPort(WORD newPort)
 
 void PURL::SetPathStr(const PString & p)
 {
-  if (scheme == schemeInfo[FILE_SCHEME].name)
-    SetPathStr(PFilePath(p));
-  else {
-    pathStr = p;
+  pathStr = p;
 
-    path = pathStr.Tokenise("/", TRUE);
+  path = pathStr.Tokenise("/", TRUE);
 
-    if (path.GetSize() > 0 && path[0].IsEmpty()) 
-      path.RemoveAt(0);
+  if (path.GetSize() > 0 && path[0].IsEmpty()) 
+    path.RemoveAt(0);
 
-    for (PINDEX i = 0; i < path.GetSize(); i++) {
-      path[i] = UntranslateString(path[i], PathTranslation);
-      if (i > 0 && path[i] == ".." && path[i-1] != "..") {
-        path.RemoveAt(i--);
-        path.RemoveAt(i--);
-      }
+  for (PINDEX i = 0; i < path.GetSize(); i++) {
+    path[i] = UntranslateString(path[i], PathTranslation);
+    if (i > 0 && path[i] == ".." && path[i-1] != "..") {
+      path.RemoveAt(i--);
+      path.RemoveAt(i--);
     }
-
-    Recalculate();
   }
-}
 
-
-void PURL::SetPathStr(const PFilePath & p)
-{
-  if (scheme != schemeInfo[FILE_SCHEME].name)
-    SetPathStr((PString)p);
-  else {
-    PStringArray pathArray = p.GetDirectory().GetPath();
-    PINDEX sz = pathArray.GetSize();
-    pathArray.SetSize(sz+1);
-    pathArray[sz] = p.GetFileName();
-
-    SetPath(pathArray);
-  }
+  Recalculate();
 }
 
 
