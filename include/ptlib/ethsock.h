@@ -1,5 +1,5 @@
 /*
- * $Id: ethsock.h,v 1.3 1998/08/22 04:07:42 robertj Exp $
+ * $Id: ethsock.h,v 1.4 1998/08/25 11:06:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ethsock.h,v $
+ * Revision 1.4  1998/08/25 11:06:34  robertj
+ * Fixed output of PEthSocket::Address variables to streams.
+ *
  * Revision 1.3  1998/08/22 04:07:42  robertj
  * Fixed GNU problem with structure packing
  *
@@ -64,12 +67,15 @@ PDECLARE_CLASS(PEthSocket, PSocket)
       Address(const PString & str);
       Address & operator=(const Address & addr);
       Address & operator=(const PString & str);
-      operator PString() const;
+
       BOOL operator==(const BYTE * eth) const    { return memcmp(b, eth, sizeof(b)) == 0; }
       BOOL operator!=(const BYTE * eth) const    { return memcmp(b, eth, sizeof(b)) != 0; }
       BOOL operator==(const Address & eth) const { return ls.l == eth.ls.l && ls.s == eth.ls.s; }
       BOOL operator!=(const Address & eth) const { return ls.l != eth.ls.l || ls.s != eth.ls.s; }
-      friend ostream & operator<<(ostream & s, Address & a)
+
+      operator PString() const;
+
+      friend ostream & operator<<(ostream & s, const Address & a)
         { return s << (PString)a; }
     };
 
@@ -231,7 +237,7 @@ PDECLARE_CLASS(PEthSocket, PSocket)
      */
 
     enum EthTypes {
-      TypeAll = 3,          // All frames
+      TypeAll = 3,          // All frames (3 is value for Linux)
       TypeIP  = 0x800,      // Internet Protocol
       TypeX25 = 0x805,      // X.25
       TypeARP = 0x806,      // Address Resolution Protocol
