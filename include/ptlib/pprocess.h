@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.13 1995/03/14 12:42:14 robertj Exp $
+ * $Id: pprocess.h,v 1.14 1995/06/17 00:43:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.14  1995/06/17 00:43:10  robertj
+ * Made PreInitialise virtual for NT service support
+ *
  * Revision 1.13  1995/03/14 12:42:14  robertj
  * Updated documentation to use HTML codes.
  *
@@ -161,9 +164,17 @@ PDECLARE_CLASS(PProcess, PThread)
      */
 
 
+  protected:
+    virtual void PreInitialise(
+      int argc,     // Number of program arguments.
+      char ** argv  // Array of strings for program arguments.
+    );
+    /* Internal initialisation function called directly from
+       <CODE>main()</CODE>. The user should never call this function.
+     */
+
 #ifndef P_PLATFORM_HAS_THREADS
 
-  protected:
     virtual void OperatingSystemYield();
     /* Yield to the platforms operating system. This is an internal function
        and should never be called by the user. It is provided on platforms
@@ -174,24 +185,6 @@ PDECLARE_CLASS(PProcess, PThread)
 
 
   private:
-    friend int main(
-      int argc,     // Number of program arguments.
-      char ** argv  // Array of strings for program arguments.
-    );
-    /* The main() system entry point to programme. This does platform dependent
-       initialisation and then calls the <A><CODE>PreInitialise()</CODE></A>
-       function, then the <A><CODE>Main()</CODE></A> function.
-     */
-
-    void PreInitialise(
-      int argc,     // Number of program arguments.
-      char ** argv  // Array of strings for program arguments.
-    );
-    /* Internal initialisation function called directly from
-       <CODE>main()</CODE>. The user should never call this function.
-     */
-
-
   // Member variables
     int terminationValue;
     // Application return value
@@ -216,6 +209,16 @@ PDECLARE_CLASS(PProcess, PThread)
   friend class PThread;
 
 #endif
+
+
+    friend int main(
+      int argc,     // Number of program arguments.
+      char ** argv  // Array of strings for program arguments.
+    );
+    /* The main() system entry point to programme. This does platform dependent
+       initialisation and then calls the <A><CODE>PreInitialise()</CODE></A>
+       function, then the <A><CODE>Main()</CODE></A> function.
+     */
 
 
 // Class declaration continued in platform specific header file ///////////////
