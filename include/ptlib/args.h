@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: args.h,v $
+ * Revision 1.13  1998/10/28 03:26:41  robertj
+ * Added multi character arguments (-abc style) and options precede parameters mode.
+ *
  * Revision 1.12  1998/10/28 00:59:46  robertj
  * New improved argument parsing.
  *
@@ -85,26 +88,29 @@ PDECLARE_CLASS(PArgList, PObject)
   public:
     PArgList(
       const char * theArgStr = NULL,   // A string constituting the arguments
-      const char * argumentSpecPtr = NULL
+      const char * argumentSpecPtr = NULL,
       /* The specification C string for argument options. See description for
          details.
        */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
     PArgList(
       int theArgc,     // Count of argument strings in theArgv
       char ** theArgv, // An array of strings constituting the arguments
-      const char * argumentSpecPtr = NULL
+      const char * argumentSpecPtr = NULL,
       /* The specification C string for argument options. See description for
          details.
        */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
     PArgList(
       int theArgc,     // Count of argument strings in theArgv
       char ** theArgv, // An array of strings constituting the arguments
-      const PString & argumentSpecStr
+      const PString & argumentSpecStr,
       /* The specification string for argument options. See description for
          details.
        */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
     /* Create an argument list object given the standard arguments and a
        specification for options. The program arguments are parsed from this
@@ -125,30 +131,38 @@ PDECLARE_CLASS(PArgList, PObject)
     );
       // Set the internal copy of the program arguments.
 
-    BOOL Parse(
-      const char * theArgumentSpec
+    void Parse(
+      const char * theArgumentSpec,
       /* The specification string for argument options. See description for
          details.
        */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
-    BOOL Parse(
-      const PString & theArgumentStr
+    void Parse(
+      const PString & theArgumentStr,
       /* The specification string for argument options. See description for
          details.
        */
+      BOOL optionsBeforeParams = TRUE  // Parse options only before parameters
     );
     /* Parse the standard C program arguments into an argument of options and
-       parameters.
+       parameters. Consecutive calls with <CODE>optionsBeforeParams</CODE> set
+       to TRUE will parse out different options and parameters. If SetArgs()
+       function is called then the Parse() function will restart from the
+       beginning of the argument list.
        
        The specification string consists of case significant letters for each
        option. If the letter is followed by a '-' character then a long name
-       version of the option is present. This is terminated either by a ';' or
+       version of the option is present. This is terminated either by a '.' or
        a ':' character. If the single letter or long name is followed by the
        ':' character then the option has may have an associated string. This
-       string must be within the argument or in the next argument.
+       string must be within the argument or in the next argument. If a single
+       letter option is followed by a ';' character, then the option may have
+       an associated string but this MUST follow the letter immediately, if
+       it is present at all.
 
        For example, "ab:c" allows for "-a -b arg -barg -c" and
-       "a-an-arg;b-option:c" allows for "-a --an-arg --option arg -c".
+       "a-an-arg.b-option:c;" allows for "-a --an-arg --option arg -c -copt".
      */
 
     PINDEX GetOptionCount(
@@ -303,6 +317,7 @@ PDECLARE_CLASS(PArgList, PObject)
     // Shift count for the parameters in the argument list.
 
   private:
+    BOOL ParseOption(PINDEX idx, PINDEX offset, PINDEX & arg, const PIntArray & canHaveOptionString);
     PINDEX GetOptionCountByIndex(PINDEX idx) const;
     PString GetOptionStringByIndex(PINDEX idx, const char * dflt) const;
 };
