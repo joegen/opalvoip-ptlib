@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.41  1999/09/17 01:11:14  robertj
+ * Fixed some documentation typos.
+ *
  * Revision 1.40  1999/05/13 04:04:04  robertj
  * Fixed problem of initialised commandName in ConnectionInfo.
  *
@@ -211,8 +214,8 @@ class PHTTPSpace : public PContainer
        the path to another resource then the function will fail.
 
        The <CODE>overwrite</CODE> flag can be used to replace an existing
-       resource. TH function will still fail if the resource is on a partial
-       path to antoher resource but not if it is a leaf node.
+       resource. The function will still fail if the resource is on a partial
+       path to another resource but not if it is a leaf node.
 
        @return
        TRUE if resource added, FALSE if failed.
