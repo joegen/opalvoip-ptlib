@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.40  1998/10/13 14:06:24  robertj
+ * Complete rewrite of memory leak detection code.
+ *
  * Revision 1.39  1998/09/23 06:22:15  robertj
  * Added open source copyright license.
  *
@@ -159,6 +162,9 @@
 #include <ptlib.h>
 #include <httpsvc.h>
 #include <sockets.h>
+
+#define new PNEW
+
 
 #define HOME_PAGE 	"http://www.equival.com"
 #define EMAIL     	"equival@equival.com.au"
@@ -367,13 +373,13 @@ void PHTTPServiceThread::Main()
     if (server.GetErrorCode() != PChannel::Interrupted)
       PSYSTEMLOG(Error, "Accept failed for HTTP: " << server.GetErrorText());
     if (listener.IsOpen())
-      PNEW PHTTPServiceThread(process, listener, httpNameSpace);
+      new PHTTPServiceThread(process, listener, httpNameSpace);
     else
       process.httpThreadClosed.Signal();
     return;
   }
 
-  PNEW PHTTPServiceThread(process, listener, httpNameSpace);
+  new PHTTPServiceThread(process, listener, httpNameSpace);
 
   // process requests
   while (server.ProcessCommand())
