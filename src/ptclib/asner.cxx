@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.19  1999/06/07 00:31:25  robertj
+ * Fixed signed/unsigned problem with number of unknown extensions check.
+ *
  * Revision 1.18  1999/04/26 05:58:48  craigs
  * Fixed problems with encoding of extensions
  *
@@ -2804,6 +2807,9 @@ BOOL PASN_Sequence::UnknownExtensionsDecodePER(PPER_Stream & strm)
 {
   if (NoExtensionsToDecode(strm))
     return TRUE;
+
+  if (totalExtensions <= knownExtensions)
+    return TRUE;  // Already read them
 
   PINDEX unknownCount = totalExtensions - knownExtensions;
   if (fields.GetSize() >= unknownCount)
