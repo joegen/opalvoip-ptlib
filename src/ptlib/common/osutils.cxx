@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.113  1998/11/03 10:52:19  robertj
+ * Fixed bug in semaphores with timeout saying timed out when really signalled.
+ *
  * Revision 1.112  1998/11/03 03:44:05  robertj
  * Fixed missng strings on multiple parameters of same letter.
  *
@@ -2251,6 +2254,8 @@ void PSemaphore::Signal()
         PAssertAlways("Semaphore unblock of thread that is not blocked");
     }
     thread->sleepTimer = 0;
+    timeout = PMaxTimeInterval;
+    timeout.Pause();
   }
   else if (currentCount < maximumCount)
     currentCount++;
