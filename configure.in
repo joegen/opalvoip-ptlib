@@ -550,10 +550,6 @@ AC_CHECK_HEADERS(SDL/SDL.h, HAS_SDL=1)
 if test "${HAS_SDL:-unset}" != "unset" ; then
   AC_CHECK_LIB(SDL, SDL_CreateYUVOverlay, HAS_SDL=1, HAS_SDL=, -lpthread)
 fi
-dnl freeBSD SDL check
-if test "${HAS_SDL:-unset}" = "unset" ; then
-  AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
-fi
 if test "${HAS_SDL:-unset}" != "unset" ; then
   AC_SUBST(HAS_SDL, 1)
   AC_DEFINE(P_SDL, 1, "SDL found")
@@ -564,6 +560,13 @@ if test "${HAS_SDL:-unset}" != "unset" ; then
     LDFLAGS="$LDFLAGS -L${SDLLIBDIR}"
   fi
   ENDLDLIBS="$ENDLDLIBS -lSDL"
+fi
+dnl freeBSD SDL check
+if test "${HAS_SDL:-unset}" = "unset" ; then
+  AC_CHECK_FILE(/usr/local/include/SDL11/SDL.h, HAS_SDL=1)
+  if test "${HAS_SDL:-unset}" != "unset" ; then
+    ENDLDLIBS="$ENDLDLIBS -lSDL-1.1"
+  fi
 fi
 
 
