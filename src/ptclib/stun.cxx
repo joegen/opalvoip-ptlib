@@ -679,7 +679,7 @@ stunOpenSocket( StunAddress& dest, StunAddress* sAddr, int port )
 
 
 bool
-stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2 )
+stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2, int port )
 {
    assert( dest.addr.v4addr != 0 );
    assert( dest.addrHdr.port != 0 );
@@ -697,7 +697,7 @@ stunOpenSocketPair( StunAddress& dest, StunAddress* sAddr, int* fd1, int* fd2 )
 
    for( i=0; i<NUM; i++)
    {
-      fd[i] = openPort();
+     fd[i] = openPort((port == 0) ? port : (port + i));
    }
    
    for( i=0; i<NUM; i++)
