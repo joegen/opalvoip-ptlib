@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.58  2000/12/14 08:09:41  robertj
+ * Fixed missing immediate expiry date on string and file service HTTP resourcer.
+ *
  * Revision 1.57  2000/12/11 13:15:17  robertj
  * Added macro to include signed or unsigned chunks of HTML.
  * Added flag to globally ignore HTML signatures (useful for develeopment).
@@ -224,6 +227,11 @@
 #define EMAIL     	"equival@equival.com.au"
 #define	EQUIVALENCE	"Equivalence Pty. Ltd."
 
+
+static const PTime ImmediateExpiryTime(0, 0, 0, 1, 1, 1980);
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   : PServiceProcess(inf.manufacturerName, inf.productName,
@@ -535,7 +543,7 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
 BOOL PConfigPage::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
-  when = PTime(0, 0, 0, 1, 1, 1980);
+  when = ImmediateExpiryTime;
   return TRUE;
 }
 
@@ -592,7 +600,7 @@ BOOL PConfigSectionsPage::Post(PHTTPRequest & request,
 BOOL PConfigSectionsPage::GetExpirationDate(PTime & when)
 {
   // Well and truly before now....
-  when = PTime(0, 0, 0, 1, 1, 1980);
+  when = ImmediateExpiryTime;
   return TRUE;
 }
 
@@ -1601,6 +1609,7 @@ static void ServiceOnLoadedText(PString & text)
     text.Replace(copy, process.GetCopyrightText(), TRUE);
 }
 
+
 PString PServiceHTTPString::LoadText(PHTTPRequest & request)
 {
   PString text = PHTTPString::LoadText(request);
@@ -1610,6 +1619,14 @@ PString PServiceHTTPString::LoadText(PHTTPRequest & request)
   return text;
 }
 
+BOOL PServiceHTTPString::GetExpirationDate(PTime & when)
+{
+  // Well and truly before now....
+  when = ImmediateExpiryTime;
+  return TRUE;
+}
+
+
 void PServiceHTTPFile::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
@@ -1617,11 +1634,27 @@ void PServiceHTTPFile::OnLoadedText(PHTTPRequest & request, PString & text)
           needSignature ? PServiceHTML::NeedSignature : PServiceHTML::NoOptions);
 }
 
+BOOL PServiceHTTPFile::GetExpirationDate(PTime & when)
+{
+  // Well and truly before now....
+  when = ImmediateExpiryTime;
+  return TRUE;
+}
+
+
 void PServiceHTTPDirectory::OnLoadedText(PHTTPRequest & request, PString & text)
 {
   ServiceOnLoadedText(text);
   PServiceHTML::ProcessMacros(request, text, baseURL.AsString(PURL::PathOnly),
           needSignature ? PServiceHTML::NeedSignature : PServiceHTML::NoOptions);
+}
+
+
+BOOL PServiceHTTPDirectory::GetExpirationDate(PTime & when)
+{
+  // Well and truly before now....
+  when = ImmediateExpiryTime;
+  return TRUE;
 }
 
 
