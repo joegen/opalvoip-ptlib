@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.50 1996/02/25 03:09:46 robertj Exp $
+ * $Id: osutils.cxx,v 1.51 1996/02/25 11:15:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.51  1996/02/25 11:15:27  robertj
+ * Added platform dependent Construct function to PProcess.
+ *
  * Revision 1.50  1996/02/25 03:09:46  robertj
  * Added consts to all GetXxxx functions in PConfig.
  *
@@ -1831,13 +1834,11 @@ PProcess::PProcess(const char * manuf, const char * name,
   : manufacturer(manuf), productName(name)
 {
   PProcessInstance = this;
-#if defined(P_PLATFORM_HAS_THREADS)
-  timerThread = NULL;
-#endif
   majorVersion = major;
   minorVersion = minor;
   status = stat;
   buildNumber = build;
+  Construct();
 }
 
 
