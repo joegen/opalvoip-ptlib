@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.70  2003/09/26 13:46:18  rjongbloed
+ * Fixed problem in Win32 NTFS security support, crashes if file has no security at all.
+ *
  * Revision 1.69  2003/09/17 05:45:10  csoutheren
  * Removed recursive includes
  *
@@ -903,8 +906,9 @@ static int FileSecurityPermissions(const PFilePath & filename, int newPermission
   if (!GetSecurityDescriptorDacl(descriptor, &daclPresent, &dacl, &daclDefaulted))
     return -1;
 
-  if (!daclPresent || daclDefaulted)
+  if (!daclPresent || daclDefaulted || dacl == NULL)
     return -1;
+
 
   ACL_SIZE_INFORMATION aclSize;
   if (!GetAclInformation(dacl, &aclSize, sizeof(aclSize), AclSizeInformation))
