@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.33 1996/07/20 05:34:05 robertj Exp $
+ * $Id: win32.cxx,v 1.34 1996/07/27 04:05:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.34  1996/07/27 04:05:31  robertj
+ * Created static version of ConvertOSError().
+ * Created static version of GetErrorText().
+ * Changed thread creation to use C library function instead of direct WIN32.
+ * Fixed bug in auto-deleting the housekeeping thread.
+ *
  * Revision 1.33  1996/07/20 05:34:05  robertj
  * Fixed order of registry section tree traversal so can delete whole trees.
  *
@@ -136,6 +142,7 @@
 #include <winuser.h>
 #include <winnls.h>
 
+#include <process.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <sys\stat.h>
@@ -357,8 +364,18 @@ PString PDirectory::CreateFullPath(const PString & path, BOOL isDirectory)
 
 PString PChannel::GetErrorText() const
 {
-  if (osError == 0)
-    return PString();
+  return GetErrorText(lastError, osError);
+}
+
+PString PChannel::GetErrorText(Errors lastError, int osError)
+{
+  if (osError == 0) {
+    static int errors[Miscellaneous+1] = {
+      0, ENOENT, EEXIST, ENOSPC, EACCES, 1000, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR, 1001
+    };
+    if (osError == 0)
+      return PString();
+  }
 
   if (osError > 0 && osError < _sys_nerr && _sys_errlist[osError][0] != '\0')
     return _sys_errlist[osError];
@@ -401,6 +418,12 @@ PString PChannel::GetErrorText() const
 
 
 BOOL PChannel::ConvertOSError(int error)
+{
+  return ConvertOSError(error, lastError, osError);
+}
+
+
+BOOL PChannel::ConvertOSError(int error, Errors & lastError, int & osError)
 {
   if (error >= 0) {
     lastError = NoError;
@@ -1522,7 +1545,7 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
 
-DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
+UINT __stdcall PThread::MainFunction(void * threadPtr)
 {
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
@@ -1549,16 +1572,12 @@ PThread::PThread(PINDEX stackSize,
                  Priority priorityLevel)
 {
   PAssert(stackSize > 0, PInvalidParameter);
+  autoDelete = deletion == AutoDeleteThread;
   originalStackSize = stackSize;
-  threadHandle = CreateThread(NULL,
-                              stackSize,
-                              MainFunction,
-                              (LPVOID)this,
-                              start == StartSuspended ? CREATE_SUSPENDED : 0,
-                              &threadId);
+  threadHandle = (HANDLE)_beginthreadex(NULL, stackSize, MainFunction, this,
+                   start == StartSuspended ? CREATE_SUSPENDED : 0, &threadId);
   PAssertOS(threadHandle != NULL);
   SetPriority(priorityLevel);
-  autoDelete = deletion == AutoDeleteThread;
 }
 
 
@@ -1571,10 +1590,10 @@ PThread::~PThread()
 
 void PThread::Restart()
 {
-  Terminate();
+  PAssert(IsTerminated(), "Cannot restart running thread");
 
-  threadHandle = CreateThread(NULL,
-                  originalStackSize, MainFunction, (LPVOID)this, 0, &threadId);
+  threadHandle = (HANDLE)_beginthreadex(NULL,
+                         originalStackSize, MainFunction, this, 0, &threadId);
   PAssertOS(threadHandle != NULL);
 }
 
@@ -1707,7 +1726,7 @@ DWORD PThread::CleanUpOnTerminated()
 // PProcess::TimerThread
 
 PProcess::HouseKeepingThread::HouseKeepingThread()
-  : PThread(1000, AutoDeleteThread, StartSuspended, LowPriority)
+  : PThread(1000, NoAutoDeleteThread, StartSuspended, LowPriority)
 {
   Resume();
 }
@@ -1775,11 +1794,13 @@ void PProcess::Construct()
 
 PProcess::~PProcess()
 {
+  Sleep(1000);  // Give threads time to die a natural death
+
   threadMutex.Wait();
   for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
     PThread & thread = activeThreads.GetDataAt(i);
     if (this != &thread && !thread.IsTerminated())
-      TerminateThread(thread.GetHandle(), 1);
+      TerminateThread(thread.GetHandle(), 1);  // With extreme prejudice
     thread.CleanUpOnTerminated();
   }
   threadMutex.Signal();
