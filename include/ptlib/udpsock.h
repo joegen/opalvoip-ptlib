@@ -1,5 +1,5 @@
 /*
- * $Id: udpsock.h,v 1.11 1996/09/14 13:09:43 robertj Exp $
+ * $Id: udpsock.h,v 1.12 1997/06/06 10:54:11 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: udpsock.h,v $
+ * Revision 1.12  1997/06/06 10:54:11  craigs
+ * Added overrides and new functions for connectionless Writes
+ *
  * Revision 1.11  1996/09/14 13:09:43  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -73,10 +76,28 @@ PDECLARE_CLASS(PUDPSocket, PIPDatagramSocket)
        a "listening" socket is specified then the channel is also opened.
      */
 
+    BOOL Write(
+      const void * buf, // Pointer to a block of memory to write.
+      PINDEX len        // Number of bytes to write.
+    );
+    /* Override of PChannel functions to allow connectionless writes
+     */
+
+    BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
+    );
+    /* Override of PSocket functions to allow connectionless writes
+     */
+
+    void SetSendAddress(const Address & address, WORD port);
+    /* Set the address to use for connectionless Write
+     */
 
   protected:
     virtual BOOL OpenSocket();
     virtual const char * GetProtocolName() const;
 
+    Address sendAddress;
+    WORD sendPort;
 
 // Class declaration continued in platform specific header file ///////////////
