@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.100  1998/10/18 14:28:45  robertj
+ * Renamed argv/argc to eliminate accidental usage.
+ *
  * Revision 1.99  1998/10/13 14:06:28  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -1570,9 +1573,9 @@ void PArgList::MissingArgument(char option) const
 #if defined(_PPROCESS)
 
 static PProcess * PProcessInstance;
-int PProcess::argc;
-char ** PProcess::argv;
-char ** PProcess::envp;
+int PProcess::p_argc;
+char ** PProcess::p_argv;
+char ** PProcess::p_envp;
 
 PProcess::PProcess(const char * manuf, const char * name,
                            WORD major, WORD minor, CodeStatus stat, WORD build)
@@ -1586,14 +1589,16 @@ PProcess::PProcess(const char * manuf, const char * name,
   status = stat;
   buildNumber = build;
 
-  arguments.SetArgs(argc-1, argv+1);
+  if (p_argv != 0 && p_argc > 0) {
+    arguments.SetArgs(p_argc-1, p_argv+1);
 
-  executableFile = PString(argv[0]);
-  if (!PFile::Exists(executableFile))
-    executableFile += ".exe";
+    executableFile = PString(p_argv[0]);
+    if (!PFile::Exists(executableFile))
+      executableFile += ".exe";
 
-  if (productName.IsEmpty())
-    productName = executableFile.GetTitle().ToLower();
+    if (productName.IsEmpty())
+      productName = executableFile.GetTitle().ToLower();
+  }
 
   InitialiseProcessThread();
 
@@ -1610,9 +1615,9 @@ int PProcess::_main(void *)
 
 void PProcess::PreInitialise(int c, char ** v, char ** e)
 {
-  argc = c;
-  argv = v;
-  envp = e;
+  p_argc = c;
+  p_argv = v;
+  p_envp = e;
 }
 
 
