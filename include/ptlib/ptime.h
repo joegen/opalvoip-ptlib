@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.h,v $
+ * Revision 1.27  2000/04/29 04:49:00  robertj
+ * Added microseconds to string output.
+ *
  * Revision 1.26  2000/04/05 02:50:16  robertj
  * Added microseconds to PTime class.
  *
@@ -473,6 +476,10 @@ class PTime : public PObject
        \item[mm]        minute with leading zero
        \item[s]         second without leading zero
        \item[ss]        second with leading zero
+       \item[u]         tenths of second
+       \item[uu]        hundedths of second with leading zero
+       \item[uuu]       millisecond with leading zeros
+       \item[uuuu]      microsecond with leading zeros
        \item[a]         the am/pm string
        \item[w/ww/www]  abbreviated day of week name
        \item[wwww]      full day of week name
