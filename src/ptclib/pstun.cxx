@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.cxx,v $
+ * Revision 1.14  2004/08/18 13:16:07  rjongbloed
+ * Fixed STUN CreateSocketPair so first socket is always even.
+ *
  * Revision 1.13  2004/03/14 05:47:52  rjongbloed
  * Fixed incorrect detection of symmetric NAT (eg Linux masquerading) and also
  *   some NAT systems which are partially blocked due to firewall rules.
@@ -112,7 +115,7 @@ void PSTUNClient::Construct()
   pairedPortInfo.basePort = 0;
   pairedPortInfo.maxPort = 0;
   pairedPortInfo.currentPort = 0;
-  numSocketsForPairing = 3;
+  numSocketsForPairing = 4;
   natType = UnknownNat;
 }
 
@@ -723,7 +726,7 @@ BOOL PSTUNClient::CreateSocketPair(PUDPSocket * & socket1,
   {
     for (int j = 0; j < numSocketsForPairing; j++)
     {
-      if (stunSocket[i].port+1 == stunSocket[j].port)
+      if ((stunSocket[i].port&1) == 0 && (stunSocket[i].port+1) == stunSocket[j].port)
       {
 	stunSocket[i].SetSendAddress(0, 0);
 	stunSocket[i].SetReadTimeout(PMaxTimeInterval);
