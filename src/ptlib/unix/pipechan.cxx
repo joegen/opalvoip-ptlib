@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.37  2002/12/05 05:11:16  craigs
+ * Fixed IsRunning and WaitForTermination to provide the correct return
+ * codes from subprograms
+ *
  * Revision 1.36  2002/12/02 03:57:18  robertj
  * More RTEMS support patches, thank you Vladimir Nesic.
  *
@@ -362,43 +366,82 @@ int PPipeChannel::GetReturnCode() const
 
 BOOL PPipeChannel::IsRunning() const
 {
-  PAssert(childPid > 0, "IsRunning called for closed PPipeChannel");
+  if (childPid == 0)
+    return FALSE;
+
+#if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
+
+  int err;
+  int status;
+  if ((err = waitpid(childPid, &status, WNOHANG)) == 0)
+    return TRUE;
+
+  if (err != childPid)
+    return FALSE;
+
+  PPipeChannel * thisW = (PPipeChannel *)this;
+  thisW->childPid = 0;
+
+  if (WIFEXITED(status) != 0)
+    thisW->retVal = WEXITSTATUS(status);
+
+  return FALSE;
+
+#else
   return kill(childPid, 0) == 0;
+#endif
 }
 
 int PPipeChannel::WaitForTermination()
 {
-  int status;
+  if (childPid == 0)
+    return retVal;
+
+  int err;
+
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
-  if (kill (childPid, 0) == 0) {
-    while (wait3(&status, WUNTRACED, NULL) != childPid)
-      ;
+  int status;
+  if ((err = waitpid(childPid, &status, WUNTRACED)) == childPid) {
+    childPid = 0;
     if (WIFEXITED(status) != 0)
-      return retVal = WEXITSTATUS(status);
+      retVal = WEXITSTATUS(status);
+    else
+      retVal = -1;
+    return retVal;
   }
 #else
-  if (kill (childPid, 0) == 0)
+  if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, PMaxTimeInterval);
 #endif
 
-  ConvertOSError(-1);
-  return status;
+  ConvertOSError(err);
+  return -1;
 }
 
 int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
 {
+  if (childPid == 0)
+    return retVal;
+
+  int err;
+
 #if defined(P_PTHREADS) || defined(P_MAC_MPTHREADS)
   PAssert(timeout == PMaxTimeInterval, PUnimplementedFunction);
-  if (kill (childPid, 0) == 0) {
-    while (wait3(NULL, WUNTRACED, NULL) != childPid)
-      ;
+  int status;
+  if ((err = waitpid(childPid, &status, WUNTRACED)) == childPid) {
+    childPid = 0;
+    if (WIFEXITED(status) != 0)
+      retVal = WEXITSTATUS(status);
+    else
+      retVal = -1;
+    return retVal;
   }
 #else
-  if (kill (childPid, 0) == 0)
+  if ((err = kill (childPid, 0)) == 0)
     return retVal = PThread::Current()->PXBlockOnChildTerminate(childPid, timeout);
 #endif
 
-  ConvertOSError(-1);
+  ConvertOSError(err);
   return -1;
 }
 
