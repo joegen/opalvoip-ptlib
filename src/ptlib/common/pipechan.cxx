@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.7  1998/11/30 04:59:04  robertj
+ * New directory structure
+ *
  * Revision 1.6  1998/10/30 10:42:32  robertj
  * Better function arrangement for multi platforming.
  *
@@ -48,15 +51,13 @@
  */
 
 #include <ptlib.h>
+#include <ptlib/pipechan.h>
 
 #include <ctype.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PPipeChannel
-
-#if defined(_PPIPECHANNEL)
-
 
 static BOOL SplitArgs(const PString & cmdline,
                       PString & progName,
@@ -181,9 +182,6 @@ BOOL PPipeChannel::Open(const PString & subProgram,
 {
   return PlatformOpen(subProgram, arguments, mode, searchPath, stderrSeparate, &environment);
 }
-
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////
