@@ -53,8 +53,6 @@ void PPipeChannel::Construct(const PString & subProgram,
                                     BOOL searchPath)
 
 {
-  pid_t pid;
-
   // setup the pipe to the child
   if (mode == ReadOnly)
     toChildPipe[0] = toChildPipe[1] = -1;
