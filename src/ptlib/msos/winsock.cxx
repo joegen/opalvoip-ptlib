@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.37 1998/08/21 05:27:31 robertj Exp $
+ * $Id: winsock.cxx,v 1.38 1998/08/28 14:09:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.38  1998/08/28 14:09:45  robertj
+ * Fixed bug in Write() that caused endlesss loops, introduced in previous version.
+ *
  * Revision 1.37  1998/08/21 05:27:31  robertj
  * Fixed bug where write streams out to non-stream socket.
  *
@@ -375,7 +378,7 @@ BOOL PSocket::os_sendto(const void * buf,
 {
   lastWriteCount = 0;
 
-  if (readTimeout != PMaxTimeInterval) {
+  if (writeTimeout != PMaxTimeInterval) {
     fd_set_class writefds = os_handle;
     timeval_class tv = writeTimeout;
     int selval = ::select(0, NULL, &writefds, NULL, &tv);
@@ -392,7 +395,7 @@ BOOL PSocket::os_sendto(const void * buf,
   if (!ConvertOSError(sendResult))
     return FALSE;
 
-  lastReadCount = sendResult;
+  lastWriteCount = sendResult;
   return TRUE;
 }
 
