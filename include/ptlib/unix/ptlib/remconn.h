@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.6  1998/11/30 22:07:03  robertj
+ * New directory structure.
+ *
  * Revision 1.5  1998/09/24 04:11:50  robertj
  * Added open software license.
  *
@@ -50,7 +53,7 @@
 
 class PXRemoteThread;
 
-#include "../../common/ptlib/remconn.h"
+#include "../../remconn.h"
   protected:
     PString        pppDeviceName;
     PPipeChannel * pipeChannel;
