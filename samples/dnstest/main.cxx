@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.4  2003/09/26 13:42:16  rjongbloed
+ * Added special test to give more indicative error if try to compile without DNS support.
+ *
  * Revision 1.3  2003/04/22 23:25:13  craigs
  * Changed help message for SRV records
  *
@@ -22,6 +25,11 @@
 #include <ptlib.h>
 #include <ptclib/pdns.h>
 #include "main.h"
+
+
+#if !P_DNS
+#error Must have DNS support for this application
+#endif
 
 
 PCREATE_PROCESS(DNSTest);
