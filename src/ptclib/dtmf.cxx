@@ -61,8 +61,7 @@ PDTMFDecoder::PDTMFDecoder() {
 
 static int join(int a,int b)
 {
-  short t = (b << 8) | a; 
-  return (int)t;
+  return (b << 8) | a;
 }
 
 PString PDTMFDecoder::Decode(const void *buf, PINDEX bytes) {
