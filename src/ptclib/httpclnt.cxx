@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.19  1999/05/11 12:23:52  robertj
+ * Fixed bug introduced in last revision to have arbitrary HTTP commands, missing CRLF.
+ *
  * Revision 1.18  1999/05/04 15:26:01  robertj
  * Improved HTTP/1.1 compatibility (pass through user commands).
  * Fixed problems with quicktime installer.
@@ -272,7 +275,7 @@ BOOL PHTTPClient::WriteCommand(const PString & cmdName,
                                const PMIMEInfo & outMIME,
                                const PString & dataBody)
 {
-  if (!WriteString(cmdName & url & "HTTP/1.0"))
+  if (!WriteString(cmdName & url & "HTTP/1.0\r\n"))
     return FALSE;
 
   if (!outMIME.Write(*this))
