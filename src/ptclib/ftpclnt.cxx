@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpclnt.cxx,v $
+ * Revision 1.6  1998/12/22 10:29:42  robertj
+ * Added support for SOCKS based channels.
+ *
  * Revision 1.5  1998/12/18 03:48:32  robertj
  * Fixed wanring on PPC linux compile
  *
@@ -208,16 +211,22 @@ PString PFTPClient::GetFileStatus(const PString & path, DataChannelType ctype)
 PTCPSocket * PFTPClient::NormalClientTransfer(Commands cmd,
                                               const PString & args)
 {
+  PIPSocket * socket = GetSocket();
+  if (socket == NULL)
+    return NULL;
+
   // setup a socket so we can tell the host where to connect to
-  PTCPSocket listenSocket;
-  listenSocket.Listen();
+  PTCPSocket * listenSocket = (PTCPSocket *)socket->Clone();
+  listenSocket->Listen();
+
+  // The following is just used to automatically delete listenSocket
+  PIndirectChannel autoDeleteSocket;
+  autoDeleteSocket.Open(listenSocket);
 
   // get host address and port to send to other end
-  WORD localPort = listenSocket.GetPort();
+  WORD localPort = listenSocket->GetPort();
   PIPSocket::Address localAddr;
-  PIPSocket * socket = GetSocket();
-  if (socket != NULL)
-    socket->GetLocalAddress(localAddr);
+  socket->GetLocalAddress(localAddr);
 
   // send PORT command to host
   if (!SendPORT(localAddr, localPort))
@@ -226,8 +235,8 @@ PTCPSocket * PFTPClient::NormalClientTransfer(Commands cmd,
   if (ExecuteCommand(cmd, args)/100 != 1)
     return NULL;
 
-  PTCPSocket * dataSocket = new PTCPSocket(listenSocket);
-  if (dataSocket->IsOpen())
+  PTCPSocket * dataSocket = (PTCPSocket *)socket->Clone();
+  if (dataSocket->Accept(*listenSocket))
     return dataSocket;
 
   delete dataSocket;
