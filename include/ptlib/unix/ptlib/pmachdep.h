@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.17  1998/11/14 01:08:25  robertj
+ * PPC linux GNU compatibility.
+ *
  * Revision 1.16  1998/09/24 04:11:45  robertj
  * Added open software license.
  *
@@ -58,6 +61,10 @@
 #if __GNU_LIBRARY__ < 6
 #define	P_LINUX_LIB_OLD
 typedef int socklen_t;
+#endif
+
+#ifdef PPC
+typedef size_t socklen_t;
 #endif
 
 #elif defined(P_SOLARIS)
