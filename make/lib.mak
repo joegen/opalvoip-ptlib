@@ -24,6 +24,10 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.36  2003/09/08 22:07:41  dereksmithies
+# Add patch from Zygmuntowicz Michal <m.zygmuntowicz@onet.pl> for Solaris.
+# Many thanks!!!
+#
 # Revision 1.35  2003/07/29 12:33:34  csoutheren
 # Changed to ensure dynamic libraries using pwlib always dynamically link pwlib
 #
@@ -178,7 +182,6 @@ ifeq ($(P_SHAREDLIB),1)
   # to gcc is 2900+ bytes long and it will barf.  I fix this by invoking ld
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
-    LDSOOPTS = -Bdynamic -G -h $(LIB_SONAMEN)
     LD = ld
   else
     ifneq ($(OSTYPE),Darwin)
