@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.15  2001/08/16 23:17:29  robertj
+ * Added 420P to 411P converter, thanks Mark Cooke.
+ *
  * Revision 1.14  2001/08/03 10:13:56  robertj
  * Changes to previous check in to support MSVC.
  *
@@ -625,6 +628,14 @@ PSTANDARD_COLOUR_CONVERTER(RGB32,RGB24)
   return TRUE;
 }
 
+// 420P is just about the same as 411P.  If someone wants to do clever
+// U/V filtering / interpolation to reposition the U/V samples with respect
+// to the Y samples, feel free.  Image quality seems prefectly fine without
+// needing that level of accuracy.
+PSTANDARD_COLOUR_CONVERTER(YUV420P,YUV411P)
+{
+  return SimpleConvert(srcFrameBuffer, dstFrameBuffer, bytesReturned);
+}
 
 PSTANDARD_COLOUR_CONVERTER(YUV411P,YUV411P)
 {
