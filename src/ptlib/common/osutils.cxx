@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.59 1996/04/02 11:29:19 robertj Exp $
+ * $Id: osutils.cxx,v 1.60 1996/04/09 03:32:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.60  1996/04/09 03:32:58  robertj
+ * Fixed bug in config GetTime() cannot use PTime(0) in western hemisphere.
+ *
  * Revision 1.59  1996/04/02 11:29:19  robertj
  * Eliminated printing of patch level in version when there isn't one.
  *
@@ -1438,6 +1441,12 @@ void PConfig::SetReal(const PString & section, const PString & key, double value
 {
   PString str(PString::Printf, "%g", value);
   SetString(section, key, str);
+}
+
+
+PTime PConfig::GetTime(const PString & section, const PString & key) const
+{
+  return GetString(section, key, "1 Jan 1996");
 }
 
 
