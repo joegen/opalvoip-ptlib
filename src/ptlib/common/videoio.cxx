@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.18  2001/09/25 04:25:38  dereks
+ * Add fix from Stelian Pop to improve the field of view  for
+ * the  small image with a  Sony Vaio Motion Eye. Many thanks.
+ *
  * Revision 1.17  2001/08/03 04:21:51  dereks
  * Add colour/size conversion for YUV422->YUV411P
  * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
@@ -278,9 +282,8 @@ static struct {
 } prefResizeTable[] = {
     
     { 352, 288,    320, 240 },
-    { 320, 240,    352, 288 },
     { 176, 144,    160, 120 },
-    { 160, 120,    176, 144 }
+    { 176, 144,    320, 240 }
 };
 
 BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
@@ -302,8 +305,8 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   PINDEX prefResizeIdx = 0;
   while (prefResizeIdx < PARRAYSIZE(prefResizeTable)) {
     
-    if ((prefResizeTable[prefResizeIdx].dest_width == frameWidth) &&
-        (prefResizeTable[prefResizeIdx].dest_height == frameHeight)) {
+    if ((prefResizeTable[prefResizeIdx].dest_width == width) &&
+        (prefResizeTable[prefResizeIdx].dest_height == height)) {
 
       if (SetFrameSize(prefResizeTable[prefResizeIdx].device_width,
                        prefResizeTable[prefResizeIdx].device_height)) {
@@ -312,10 +315,11 @@ BOOL PVideoDevice::SetFrameSizeConverter(unsigned width, unsigned height,
   	  PTRACE(3,"PVideoDevice\t SetFrameSizeConverter succceded");
 	  return TRUE;
 	}
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for src "<<frameWidth<<"x"<<frameHeight);
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for src "<<prefResizeTable[prefResizeIdx].device_width<<"x"<<
+	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for src framesize " <<
+	       prefResizeTable[prefResizeIdx].device_width << "x" <<
 	       prefResizeTable[prefResizeIdx].device_height);
-	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for dst "<<width<<"x"<<height);	       
+	PTRACE(3,"PVideoDevice\t SetFrameSizeConverter Failed for dst framesize " <<
+	       width<<"x"<<height);	       
       }
     }
     
