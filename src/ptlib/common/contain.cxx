@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.153  2004/04/12 00:36:05  csoutheren
+ * Added new class PAtomicInteger and added Windows implementation
+ *
  * Revision 1.152  2004/04/11 06:15:36  csoutheren
  * Modified to use Atomic_word if available
  *
@@ -620,11 +623,8 @@ PContainer::PContainer(const PContainer & cont)
   PEnterAndLeave m(cont.reference->critSec);
 #endif
 
-#if P_HAS_ATOMIC_INT
-  __atomic_add(&cont.reference->count, 1);
-#else
-  cont.reference->count++;
-#endif
+  ++cont.reference->count;
+
   reference = cont.reference;
 }
 
@@ -648,11 +648,7 @@ void PContainer::AssignContents(const PContainer & cont)
   }
 
   if (!IsUnique()) {
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&reference->count, -1);
-#else
-    reference->count--;
-#endif
+  --reference->count;
 
 #if PCONTAINER_USES_CRITSEC
     reference->critSec.Leave();
@@ -666,11 +662,7 @@ void PContainer::AssignContents(const PContainer & cont)
     reference = NULL;
   }
 
-#if P_HAS_ATOMIC_INT
-  __atomic_add(&cont.reference->count, 1);
-#else
-  cont.reference->count++;
-#endif
+  ++cont.reference->count;
   reference = cont.reference;
 
 #if PCONTAINER_USES_CRITSEC
@@ -688,11 +680,7 @@ void PContainer::Destruct()
     ref->critSec.Enter();
 #endif
 
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&reference->count, -1);
-#else
-    reference->count--;
-#endif
+    --reference->count;
 
     if (reference->count > 0) {
       reference = NULL;
@@ -733,11 +721,7 @@ BOOL PContainer::MakeUnique()
   if (IsUnique())
     return TRUE;
 
-#if P_HAS_ATOMIC_INT
-  __atomic_add(&reference->count, -1);
-#else
-  reference->count--;
-#endif
+  --reference->count;
 
   reference = new Reference(*reference);
   return FALSE;
@@ -908,11 +892,7 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
         memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
     }
 
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&reference->count, -1);
-#else
-    reference->count--;
-#endif
+    --reference->count;
     reference = new Reference(newSize);
 
   } else {
@@ -1592,11 +1572,7 @@ BOOL PString::SetSize(PINDEX newSize)
       memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
   }
 
-#if P_HAS_ATOMIC_INT
-    __atomic_add(&reference->count, -1);
-#else
   reference->count--;
-#endif
   reference = new Reference(newSize);
 
   if (newsizebytes > oldsizebytes)
