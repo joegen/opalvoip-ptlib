@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.60  2001/03/23 05:35:34  robertj
+ * Added ability for a service to output trace/system log to file while in debug mode.
+ * Added saving of debug window position.
+ *
  * Revision 1.59  2001/02/15 01:12:15  robertj
  * Moved some often repeated HTTP service code into PHTTPServiceProcess.
  *
@@ -339,13 +343,6 @@ static BOOL TrayIconRegistry(PServiceProcess * svc, TrayIconRegistryCommand cmd)
 ///////////////////////////////////////////////////////////////////////////////
 // PSystemLog
 
-static PString CreateLogFileName(const PString & processName)
-{
-  PString dir;
-  GetWindowsDirectory(dir.GetPointer(256), 255);
-  return dir + "\\" + processName + " Log.TXT";
-}
-
 void PSystemLog::Output(Level level, const char * msg)
 {
   PServiceProcess & process = PServiceProcess::Current();
@@ -359,12 +356,10 @@ void PSystemLog::Output(Level level, const char * msg)
     WaitForSingleObject(mutex, INFINITE);
 
     ostream * out;
-    if (process.debugWindow != NULL)
+    if (!process.systemLogFileName)
+      out = new ofstream(process.systemLogFileName, ios::app);
+    else
       out = new PStringStream;
-    else {
-      static PString logFileName = CreateLogFileName(process.GetName());
-      out = new ofstream(logFileName, ios::app);
-    }
 
     static const char * const levelName[NumLogLevels+1] = {
       "Message",
@@ -390,7 +385,8 @@ void PSystemLog::Output(Level level, const char * msg)
     else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
       *out << endl;
 
-    process.DebugOutput(*(PStringStream*)out);
+    if (process.systemLogFileName.IsEmpty())
+      process.DebugOutput(*(PStringStream*)out);
 
     delete out;
     ReleaseMutex(mutex);
@@ -480,6 +476,10 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
 {
   controlWindow = debugWindow = NULL;
   currentLogLevel = PSystemLog::Warning;
+
+  PString dir;
+  GetWindowsDirectory(dir.GetPointer(256), 255);
+  systemLogFileName = PDirectory(dir) + GetName() + " Log.TXT";
 }
 
 
@@ -587,7 +587,7 @@ int PServiceProcess::_main(void * arg)
 
   if (debugMode) {
     ::SetLastError(0);
-    PError << "Service simulation started for \"" << GetName() << "\".\n"
+    PError << "Service simulation started for \"" << GetName() << "\" version " << GetVersion(TRUE) << "\n"
               "Close window to terminate.\n" << endl;
   }
 
@@ -661,9 +661,19 @@ enum {
   StatsMenuID,
   ValidateMenuID,
 #endif
+  OutputToMenuID,
+  WindowOutputMenuID,
   SvcCmdBaseMenuID = 1000,
   LogLevelBaseMenuID = 2000
 };
+
+static const char ServiceSimulationSectionName[] = "Service Simulation Parameters";
+static const char WindowLeftKey[] = "Window Left";
+static const char WindowTopKey[] = "Window Top";
+static const char WindowRightKey[] = "Window Right";
+static const char WindowBottomKey[] = "Window Bottom";
+static const char SystemLogFileNameKey[] = "System Log File Name";
+
 
 BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 {
@@ -686,6 +696,9 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 
   HMENU menubar = CreateMenu();
   HMENU menu = CreatePopupMenu();
+  AppendMenu(menu, MF_STRING, OutputToMenuID, "&Output To...");
+  AppendMenu(menu, MF_STRING, WindowOutputMenuID, "&Output To Window");
+  AppendMenu(menu, MF_SEPARATOR, 0, NULL);
   AppendMenu(menu, MF_STRING, ControlMenuID, "&Control");
   AppendMenu(menu, MF_STRING, HideMenuID, "&Hide");
   AppendMenu(menu, MF_STRING, SvcCmdBaseMenuID+SvcCmdVersion, "&Version");
@@ -740,6 +753,14 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
     return FALSE;
 
   if (createDebugWindow && debugWindow == NULL) {
+    PConfig cfg(ServiceSimulationSectionName);
+    int l = cfg.GetInteger(WindowLeftKey, -1);
+    int t = cfg.GetInteger(WindowTopKey, -1);
+    int r = cfg.GetInteger(WindowRightKey, -1);
+    int b = cfg.GetInteger(WindowBottomKey, -1);
+    if (l > 0 && t > 0 && r > 0 && b > 0)
+      SetWindowPos(controlWindow, NULL, l, t, r-l, b-t, 0);
+
     debugWindow = CreateWindow("edit",
                                "",
                                WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
@@ -759,6 +780,12 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
       DATE_WIDTH+THREAD_WIDTH+LEVEL_WIDTH+PROTO_WIDTH+ACTION_WIDTH+32  // Standard tab width
     };
     SendMessage(debugWindow, EM_SETTABSTOPS, PARRAYSIZE(TabStops), (LPARAM)(LPDWORD)TabStops);
+
+    systemLogFileName = cfg.GetString(SystemLogFileNameKey);
+    if (!systemLogFileName) {
+      PFile::Remove(systemLogFileName);
+      DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
+    }
   }
 
   return TRUE;
@@ -768,6 +795,18 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 LPARAM WINAPI PServiceProcess::StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   return Current().WndProc(hWnd, msg, wParam, lParam);
+}
+
+
+static void SaveWindowPosition(HWND hWnd)
+{
+  RECT r;
+  GetWindowRect(hWnd, &r);
+  PConfig cfg(ServiceSimulationSectionName);
+  cfg.SetInteger(WindowLeftKey, r.left);
+  cfg.SetInteger(WindowTopKey, r.top);
+  cfg.SetInteger(WindowRightKey, r.right);
+  cfg.SetInteger(WindowBottomKey, r.bottom);
 }
 
 
@@ -798,9 +837,16 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         OnStop();
       return 0;
 
+    case WM_MOVE :
+      if (debugWindow != NULL)
+        SaveWindowPosition(hWnd);
+      break;
+
     case WM_SIZE :
-      if (debugWindow != NULL && debugWindow != (HWND)-1)
+      if (debugWindow != NULL && debugWindow != (HWND)-1) {
+        SaveWindowPosition(hWnd);
         MoveWindow(debugWindow, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+      }
       break;
 
     case WM_INITMENUPOPUP :
@@ -883,6 +929,47 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
         case SelectAllMenuID :
           if (debugWindow != NULL && debugWindow != (HWND)-1)
             SendMessage(debugWindow, EM_SETSEL, 0, -1);
+          break;
+
+        case OutputToMenuID :
+          if (debugWindow != NULL && debugWindow != (HWND)-1) {
+            char fileBuffer[_MAX_PATH];
+            OPENFILENAME fileDlgInfo;
+            memset(&fileDlgInfo, 0, sizeof(fileDlgInfo));
+            fileDlgInfo.lStructSize = sizeof(fileDlgInfo);
+            fileDlgInfo.hwndOwner = hWnd;
+            fileDlgInfo.hInstance = hInstance;
+            fileBuffer[0] = '\0';
+            fileDlgInfo.lpstrFile = fileBuffer;
+            char customFilter[100];
+            strcpy(customFilter, "All Files");
+            memcpy(&customFilter[strlen(customFilter)+1], "*.*\0", 5);
+            fileDlgInfo.lpstrCustomFilter = customFilter;
+            fileDlgInfo.nMaxCustFilter = sizeof(customFilter);
+            fileDlgInfo.nMaxFile = sizeof(fileBuffer);
+            fileDlgInfo.Flags = OFN_ENABLEHOOK|OFN_HIDEREADONLY|OFN_NOVALIDATE|OFN_EXPLORER|OFN_CREATEPROMPT;
+            fileDlgInfo.lCustData = (DWORD)this;
+            if (GetSaveFileName(&fileDlgInfo)) {
+              if (systemLogFileName != fileBuffer) {
+                systemLogFileName = fileBuffer;
+                PFile::Remove(systemLogFileName);
+                PConfig cfg(ServiceSimulationSectionName);
+                cfg.SetString(SystemLogFileNameKey, systemLogFileName);
+                DebugOutput("Sending all system log output to \"" + systemLogFileName + "\".\n");
+                PError << "Logging started for \"" << GetName() << "\" version " << GetVersion(TRUE) << endl;
+              }
+            }
+          }
+          break;
+
+        case WindowOutputMenuID :
+          if (!systemLogFileName) {
+            PError << "Logging stopped." << endl;
+            DebugOutput("System log output to \"" + systemLogFileName + "\" stopped.\n");
+            systemLogFileName = PString();
+            PConfig cfg(ServiceSimulationSectionName);
+            cfg.SetString(SystemLogFileNameKey, "");
+          }
           break;
 
         default :
