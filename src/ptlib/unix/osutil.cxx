@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.73  2002/10/22 07:42:52  robertj
+ * Added extra debugging for file handle and thread leak detection.
+ *
  * Revision 1.72  2002/10/17 13:44:27  robertj
  * Port to RTEMS, thanks Vladimir Nesic.
  *
@@ -276,6 +279,33 @@ static char *tzname[2] = { "STD", "DST" };
 #endif
 
 #define new PNEW
+
+
+int PX_NewHandle(const char * clsName, int fd)
+{
+  if (fd < 0)
+    return fd;
+
+  static int lowWaterMark = INT_MAX;
+  static int highWaterMark = 0;
+  if (fd > highWaterMark) {
+    highWaterMark = fd;
+    lowWaterMark = fd;
+
+    int maxHandles = PProcess::Current().GetMaxHandles();
+    if (fd < (maxHandles-maxHandles/20))
+      PTRACE(4, "PWLib\tFile handle high water mark set: " << fd << ' ' << clsName);
+    else
+      PTRACE(1, "PWLib\tFile handle high water mark within 5% of maximum: " << fd << ' ' << clsName);
+  }
+
+  if (fd < lowWaterMark) {
+    lowWaterMark = fd;
+    PTRACE(4, "PWLib\tFile handle low water mark set: " << fd << ' ' << clsName);
+  }
+
+  return fd;
+}
 
 
 static PString CanonicaliseDirectory (const PString & path)
@@ -768,7 +798,7 @@ BOOL PFile::Open(OpenMode mode, int opt)
       oflags |= O_TRUNC;
 
 
-    if (!ConvertOSError(os_handle = ::open(path, oflags, DEFAULT_FILE_MODE)))
+    if (!ConvertOSError(os_handle = PX_NewHandle(GetClass(), ::open(path, oflags, DEFAULT_FILE_MODE))))
       return FALSE;
   }
 
