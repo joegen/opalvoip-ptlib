@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.27  2002/03/15 05:58:52  robertj
+ * Added strncasecmp macro for unix compatibility
+ *
  * Revision 1.26  2000/05/02 02:58:09  robertj
  * Added strcasecmp macro, BSDish version of stricmp
  *
@@ -255,6 +258,7 @@ const PINDEX P_MAX_INDEX = 0xffff;
 #endif
 
 #define strcasecmp(s1,s2) stricmp(s1,s2)
+#define strncasecmp(s1,s2,n) strnicmp(s1,s2,n)
 
 
 ///////////////////////////////////////////////////////////////////////////////
