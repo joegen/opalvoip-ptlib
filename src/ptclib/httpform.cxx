@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.29  1998/11/30 04:51:57  robertj
+ * New directory structure
+ *
  * Revision 1.28  1998/11/14 11:11:06  robertj
  * PPC GNU compiler compatibility.
  *
@@ -125,8 +128,8 @@
 #endif
 
 #include <ptlib.h>
-#include <httpform.h>
-#include <cypher.h>
+#include <ptclib/httpform.h>
+#include <ptclib/cypher.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
