@@ -24,6 +24,9 @@
 # Contributor(s): ______________________________________.
 #       
 # $Log: lib.mak,v $
+# Revision 1.39  2004/06/17 06:33:07  csoutheren
+# Changed Solaris linker to g++. It should never have been using ld
+#
 # Revision 1.38  2004/04/25 10:30:08  rjongbloed
 # Fixed correct SONAME when using beta versions.
 #
@@ -189,7 +192,7 @@ ifeq ($(P_SHAREDLIB),1)
   # directly and passing it the equivalent arguments...jpd@louisiana.edu
   ifeq ($(OSTYPE),solaris)
      LDSOOPTS = -Bdynamic -G -h $(LIB_SONAME)
-     LD = ld
+     LD = $(CPLUS)
   else
     ifneq ($(OSTYPE),Darwin)
       LDSOOPTS += -Wl,-soname,$(LIB_SONAME)
