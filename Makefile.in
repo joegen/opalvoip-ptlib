@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.28  2004/06/24 12:46:48  csoutheren
+# Fixed path in plugin install
+#
 # Revision 1.27  2004/06/17 23:17:16  csoutheren
 # Fixed permissions on install directories as suggested by Al Piszcz
 #
@@ -267,7 +270,8 @@ install:
 ifeq (1, $(HAS_PLUGINS))
 	cd plugins/pwlib/device/ ; \
 	( for dir in ./* ;\
-		do mkdir -p $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; chmod 755 $(DESTDIR)$(LIBDIR)/pwlib/$$dir ; \
+		do mkdir -p $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; \
+		chmod 755 $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; \
 		(for fn in ./$$dir/*.so ; \
 			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir; \
 		done ); \
