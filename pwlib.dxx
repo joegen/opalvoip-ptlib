@@ -160,7 +160,6 @@ window as a descendent off the \Ref{PMainWindow} class.
                 //@Include: include/ptlib/videoio.h
 		//@Include: include/ptlib/remconn.h
 		//@Include: include/ptlib/mail.h
-		//@Include: include/ptlib/pwavfile.h
 	    //@}
     //@}
 
@@ -206,6 +205,8 @@ window as a descendent off the \Ref{PMainWindow} class.
 		//@Include: include/ptclib/random.h
 		//@Include: include/ptclib/cypher.h
 		//@Include: include/ptclib/pssl.h
+		//@Include: include/ptclib/pwavfile.h
+		//@Include: include/ptclib/dtmf.h
 	    //@}
     //@}
 
