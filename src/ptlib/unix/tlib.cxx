@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.25  1997/05/10 08:04:15  craigs
+ * Added new routines for access to PErrorStream
+ *
  * Revision 1.24  1997/04/22 10:57:53  craigs
  * Removed DLL functions and added call the FreeStack
  *
@@ -111,8 +114,17 @@ extern "C" int select(int width,
 			struct timeval *timeout);
 #endif
 
-PProcess * PProcessInstance;
 ostream  * PErrorStream = &cerr;
+
+ostream & PGetErrorStream()
+{
+  return *PErrorStream;
+}
+
+void PSetErrorStream(ostream * s)
+{
+  PErrorStream = s;
+}
 
 void PProcess::Construct()
 {
@@ -598,39 +610,48 @@ void PProcess::PXCheckSignals()
   pxSignals = 0;
 }
 
+#define HANDLER(h)  (h!=NULL?h:SIG_IGN)
+
+void SetSignals(void (*handler)(int))
+{
+#ifdef SIGHUP
+  signal(SIGHUP, HANDLER(handler));
+#endif
+#ifdef SIGINT
+  signal(SIGINT, HANDLER(handler));
+#endif
+#ifdef SIGQUIT
+  signal(SIGQUIT, HANDLER(handler));
+#endif
+#ifdef SIGUSR1
+  signal(SIGUSR1, HANDLER(handler));
+#endif
+#ifdef SIGUSR2
+  signal(SIGUSR2, HANDLER(handler));
+#endif
+#ifdef SIGPIPE
+  signal(SIGPIPE, HANDLER(handler));
+#endif
+#ifdef SIGTERM
+  signal(SIGTERM, HANDLER(handler));
+#endif
+//#ifdef SIGCHLD		
+//  signal(SIGCHLD, HANDLER(handler));
+//#endif
+}
+
 void PProcess::PXSetupProcess()
 {
   // Setup signal handlers
   pxSignals = 0;
 
-#ifdef SIGHUP
-  signal(SIGHUP, &PXSignalHandler);
-#endif
-#ifdef SIGINT
-  signal(SIGINT, &PXSignalHandler);
-#endif
-#ifdef SIGQUIT
-  signal(SIGQUIT, &PXSignalHandler);
-#endif
-#ifdef SIGUSR1
-  signal(SIGUSR1, &PXSignalHandler);
-#endif
-#ifdef SIGUSR2
-  signal(SIGUSR2, &PXSignalHandler);
-#endif
-#ifdef SIGPIPE
-  signal(SIGPIPE, &PXSignalHandler);
-#endif
-#ifdef SIGTERM
-  signal(SIGTERM, &PXSignalHandler);
-#endif
-#ifdef SIGCHLD		
-  signal(SIGCHLD, &PXSignalHandler);
-#endif
+  SetSignals(&PXSignalHandler);
 
   // initialise the timezone information
   tzset();
 }
+
+
 
 int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
 {
@@ -647,6 +668,8 @@ int PProcess::_main (int parmArgc, char *parmArgv[], char *parmEnvp[])
 
   // call the main program
   Main();
+
+  SetSignals(NULL);
 
   return terminationValue;
 }
