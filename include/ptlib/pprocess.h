@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.26 1996/06/28 13:17:08 robertj Exp $
+ * $Id: pprocess.h,v 1.27 1997/02/05 11:51:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.27  1997/02/05 11:51:56  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.26  1996/06/28 13:17:08  robertj
  * Fixed incorrect declaration of internal timer list.
  *
@@ -211,7 +214,7 @@ PDECLARE_CLASS(PProcess, PThread)
 
 
   // New functions for class
-    static PProcess * Current();
+    static PProcess & Current();
     /* Get the current processes object instance. The <I>current process</I>
        is the one the application is running in.
        
