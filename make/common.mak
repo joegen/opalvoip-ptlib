@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.82  2003/02/03 06:08:52  robertj
+# Changed tagbuild so leaves a cvs sticky version of sources to that tag.
+#
 # Revision 1.81  2002/11/15 06:36:59  robertj
 # Changed so library build only occurs if source is present.
 #
@@ -648,6 +651,7 @@ tagbuild ::
 	sed "s/$(BUILD_NUMBER_DEFINE)[ ]*[0-9][0-9]*/$(BUILD_NUMBER_DEFINE) $$BLD/" $(VERSION_FILE) > $(VERSION_FILE).new
 	mv -f $(VERSION_FILE).new $(VERSION_FILE)
 	cvs commit -m "Incremented build number after tagging to $(CVS_TAG)." $(VERSION_FILE)
+	cvs -q update -r $(CVS_TAG)
 
 endif # else ifndef CVS_TAG
 
