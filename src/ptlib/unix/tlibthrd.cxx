@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.14  1999/03/16 10:54:16  robertj
+ * Added parameterless version of WaitForTermination.
+ *
  * Revision 1.13  1999/03/16 10:30:37  robertj
  * Added missing PThread::WaitForTermination function.
  *
@@ -472,6 +475,13 @@ void PThread::Sleep(const PTimeInterval & timeout)
   }
   while (::select(0, NULL, NULL, NULL, tptr) != 0)
     PProcess::Current().PXCheckSignals();
+}
+
+
+void PThread::WaitForTermination() const
+{
+  while (!IsTerminated())
+    ::sleep(1);
 }
 
 
