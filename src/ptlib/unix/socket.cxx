@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.47  2000/01/20 08:20:57  robertj
+ * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
+ *
  * Revision 1.46  1999/11/18 13:45:21  craigs
  * Removed obsolete declaration of iostream semaphore
  *
@@ -121,7 +124,9 @@
 #ifdef SIOCGENADDR
 #define SIO_Get_MAC_Address SIOCGENADDR
 #define	ifr_macaddr         ifr_ifru.ifru_enaddr
-#else
+#endif
+
+#ifdef SIOCGENADDR
 #define SIO_Get_MAC_Address SIOCGIFHWADDR
 #define	ifr_macaddr         ifr_hwaddr.sa_data
 #endif
