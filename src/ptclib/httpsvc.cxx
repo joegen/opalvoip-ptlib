@@ -1,11 +1,15 @@
 /*
- * $Id: httpsvc.cxx,v 1.30 1998/02/16 00:14:09 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.31 1998/03/09 07:17:48 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.31  1998/03/09 07:17:48  robertj
+ * Added IP peer/local number macros.
+ * Set GetPageGraphic reference to GIF file to be at lop level directory.
+ *
  * Revision 1.30  1998/02/16 00:14:09  robertj
  * Added ProductName and BuildDate macros.
  * Major rewrite of application info passed in PHTTPServiceProcess constructor.
@@ -131,7 +135,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
   if (inf.gifHTML != NULL)
     gifHTML = inf.gifHTML;
   else {
-    gifHTML = psprintf("<img src=\"%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
+    gifHTML = psprintf("<img src=\"/%s\" alt=\"%s!\"", inf.gifFilename, inf.productName);
     if (inf.gifWidth != 0 && inf.gifHeight != 0)
       gifHTML += psprintf(" width=%i height=%i", inf.gifWidth, inf.gifHeight);
     gifHTML += " align=absmiddle>";
@@ -964,6 +968,15 @@ CREATE_MACRO(LocalHost,request,EMPTY)
 }
 
 
+CREATE_MACRO(LocalIP,request,EMPTY)
+{
+  if (request.localAddr != 0)
+    return request.localAddr;
+  else
+    return "127.0.0.1";
+}
+
+
 CREATE_MACRO(LocalPort,request,EMPTY)
 {
   if (request.localPort != 0)
@@ -977,6 +990,15 @@ CREATE_MACRO(PeerHost,request,EMPTY)
 {
   if (request.origin != 0)
     return PIPSocket::GetHostName(request.origin);
+  else
+    return "N/A";
+}
+
+
+CREATE_MACRO(PeerIP,request,EMPTY)
+{
+  if (request.origin != 0)
+    return request.origin;
   else
     return "N/A";
 }
