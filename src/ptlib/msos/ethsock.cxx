@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.12  1998/11/19 05:18:48  robertj
+ * Added route table manipulation functions to PIPSocket class.
+ *
  * Revision 1.11  1998/11/14 06:31:41  robertj
  * Changed semantics of os_sendto to return TRUE if ANY bytes are sent.
  * Added support for MSDUN1.3 DHCP registry entries.
@@ -139,6 +142,8 @@ class PWin32SnmpLibrary : public PDynaLink
 
     BOOL GetNextOid(AsnObjectIdentifier & oid, AsnAny & value);
 
+    PString GetInterfaceName(int ifNum);
+
   private:
     PFNSNMPEXTENSIONINIT Init;
     PFNSNMPEXTENSIONQUERY Query;
@@ -173,6 +178,8 @@ class PWin32OidBuffer
 class PWin32PacketDriver
 {
   public:
+    static PWin32PacketDriver * Create();
+
     virtual ~PWin32PacketDriver();
 
     BOOL IsOpen() const;
@@ -292,9 +299,8 @@ class PWin32PacketBuffer
 };
 
 
-/////////////////////////////////////////////////////////////////////////////
-
 #define new PNEW
+
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -505,6 +511,56 @@ BOOL PWin32SnmpLibrary::GetNextOid(AsnObjectIdentifier & oid, AsnAny & value)
 }
 
 
+PString PWin32SnmpLibrary::GetInterfaceName(int ifNum)
+{
+  PIPSocket::Address gwAddr = 0;
+  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
+  PWin32AsnOid oid = baseOid;
+  PWin32AsnAny value;
+  while (GetNextOid(oid, value)) {
+    if (!(baseOid *= oid))
+      break;
+    if (value.asnType != ASN_IPADDRESS)
+      break;
+
+    oid[9] = 2;
+    AsnInteger ifIndex = -1;
+    if (!GetOid(oid, ifIndex) || ifIndex < 0)
+      break;
+
+    if (ifIndex == ifNum) {
+      memcpy(&gwAddr, value.asnValue.address.stream, sizeof(gwAddr));
+      break;
+    }
+
+    oid[9] = 1;
+  }
+
+  if (gwAddr == 0)
+    return PString();
+
+  PWin32PacketDriver * tempDriver = PWin32PacketDriver::Create();
+
+  PString gatewayInterface, anInterface;
+
+  PINDEX ifIdx = 0;
+  while (gatewayInterface.IsEmpty() && tempDriver->EnumInterfaces(ifIdx++, anInterface)) {
+    if (tempDriver->BindInterface(anInterface)) {
+      PIPSocket::Address ifAddr, ifMask;
+      PINDEX ipIdx = 0;
+      if (tempDriver->EnumIpAddress(ipIdx++, ifAddr, ifMask) && ifAddr == gwAddr) {
+        gatewayInterface = anInterface;
+        break;
+      }
+    }
+  }
+
+  delete tempDriver;
+
+  return gatewayInterface;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PWin32OidBuffer::PWin32OidBuffer(UINT oid, UINT len, const BYTE * data)
@@ -526,6 +582,18 @@ void PWin32OidBuffer::Move(BYTE * data, DWORD received)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+PWin32PacketDriver * PWin32PacketDriver::Create()
+{
+  OSVERSIONINFO info;
+  info.dwOSVersionInfoSize = sizeof(info);
+  GetVersionEx(&info);
+  if (info.dwPlatformId == VER_PLATFORM_WIN32_NT)
+    return new PWin32PacketSYS;
+  else
+    return new PWin32PacketVxD;
+}
+
 
 PWin32PacketDriver::PWin32PacketDriver()
 {
@@ -1022,21 +1090,9 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static PWin32PacketDriver * CreatePacketDriver()
-{
-  OSVERSIONINFO info;
-  info.dwOSVersionInfoSize = sizeof(info);
-  GetVersionEx(&info);
-  if (info.dwPlatformId == VER_PLATFORM_WIN32_NT)
-    return new PWin32PacketSYS;
-  else
-    return new PWin32PacketVxD;
-}
-
-
 PEthSocket::PEthSocket(PINDEX nBuffers, PINDEX size)
 {
-  driver = CreatePacketDriver();
+  driver = PWin32PacketDriver::Create();
   snmp = new PWin32SnmpLibrary;
 
   numBuffers = min(nBuffers, MAXIMUM_WAIT_OBJECTS);
@@ -1097,75 +1153,6 @@ BOOL PEthSocket::Connect(const PString & newName)
 BOOL PEthSocket::EnumInterfaces(PINDEX idx, PString & name)
 {
   return driver->EnumInterfaces(idx, name);
-}
-
-
-BOOL PEthSocket::GetGatewayAddress(PIPSocket::Address & addr) const
-{
-  AsnInteger ifNum = -1;
-  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
-  if (!snmp->GetOid(gatewayOid, addr))
-    return FALSE;
-
-  gatewayOid.Free();
-  return TRUE;
-}
-
-
-PString PEthSocket::GetGatewayInterface() const
-{
-  AsnInteger ifNum = -1;
-  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
-  if (!snmp->GetOid(gatewayOid, ifNum) && ifNum >= 0)
-    return PString();
-
-  gatewayOid.Free();
-
-  PIPSocket::Address gwAddr = 0;
-  PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
-  PWin32AsnOid oid = baseOid;
-  PWin32AsnAny value;
-  while (snmp->GetNextOid(oid, value)) {
-    if (!(baseOid *= oid))
-      break;
-    if (value.asnType != ASN_IPADDRESS)
-      break;
-
-    oid[9] = 2;
-    AsnInteger ifIndex = -1;
-    if (!snmp->GetOid(oid, ifIndex) || ifIndex < 0)
-      break;
-
-    if (ifIndex == ifNum) {
-      memcpy(&gwAddr, value.asnValue.address.stream, sizeof(gwAddr));
-      break;
-    }
-
-    oid[9] = 1;
-  }
-
-  if (gwAddr == 0)
-    return PString();
-
-  PWin32PacketDriver * tempDriver = CreatePacketDriver();
-
-  PString gatewayInterface, anInterface;
-
-  PINDEX ifIdx = 0;
-  while (gatewayInterface.IsEmpty() && tempDriver->EnumInterfaces(ifIdx++, anInterface)) {
-    if (tempDriver->BindInterface(anInterface)) {
-      PIPSocket::Address ifAddr, ifMask;
-      PINDEX ipIdx = 0;
-      if (tempDriver->EnumIpAddress(ipIdx++, ifAddr, ifMask) && ifAddr == gwAddr) {
-        gatewayInterface = anInterface;
-        break;
-      }
-    }
-  }
-
-  delete tempDriver;
-
-  return gatewayInterface;
 }
 
 
@@ -1271,8 +1258,8 @@ PEthSocket::MediumTypes PEthSocket::GetMedium()
     return NumMediumTypes;
   }
 
-  DWORD medium = 0;
-  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0) {
+  DWORD medium = 0xffffffff;
+  if (!driver->QueryOid(OID_GEN_MEDIA_SUPPORTED, medium) || medium == 0xffffffff) {
     osError = driver->GetLastError()|0x40000000;
     return NumMediumTypes;
   }
@@ -1510,6 +1497,86 @@ BOOL PWin32PacketBuffer::IsType(WORD filterType) const
     return PEthSocket::TypeIPX == filterType;   // Special case for Novell netware's 802.2
 
   return frame->snap.dsap == filterType;    // A pure 802.2 protocol id
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+BOOL PIPSocket::GetGatewayAddress(Address & addr)
+{
+  PWin32SnmpLibrary snmp;
+
+  AsnInteger ifNum = -1;
+  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.7.0.0.0.0";
+  if (!snmp.GetOid(gatewayOid, addr))
+    return FALSE;
+
+  gatewayOid.Free();
+  return TRUE;
+}
+
+
+PString PIPSocket::GetGatewayInterface()
+{
+  PWin32SnmpLibrary snmp;
+
+  AsnInteger ifNum = -1;
+  PWin32AsnOid gatewayOid = "1.3.6.1.2.1.4.21.1.2.0.0.0.0";
+  if (!snmp.GetOid(gatewayOid, ifNum) && ifNum >= 0)
+    return PString();
+
+  gatewayOid.Free();
+
+  return snmp.GetInterfaceName(ifNum);
+}
+
+
+BOOL PIPSocket::EnumRouteTable(Address & network,
+                               Address & mask,
+                               Address & destination,
+                               PString & ifName,
+                               BOOL begin)
+{
+  PWin32SnmpLibrary snmp;
+  PWin32AsnOid oid = "1.3.6.1.2.1.4.21.1.1.0.0.0.0";
+
+  if (begin)
+    oid[9] = 0;
+  else {
+    oid[10] = network.S_un.S_un_b.s_b1;
+    oid[11] = network.S_un.S_un_b.s_b2;
+    oid[12] = network.S_un.S_un_b.s_b3;
+    oid[13] = network.S_un.S_un_b.s_b4;
+  }
+
+  PWin32AsnAny value;
+  if (!snmp.GetNextOid(oid, value))
+    return FALSE;
+
+  if (value.asnType != ASN_IPADDRESS) {
+    oid.Free();
+    return FALSE;
+  }
+
+  memcpy(&network, value.asnValue.address.stream, sizeof(network));
+
+  oid[9] = 11;
+  if (!snmp.GetOid(oid, mask))
+    return FALSE;
+
+  oid[9] = 7;
+  if (!snmp.GetOid(oid, destination))
+    return FALSE;
+
+  oid[9] = 2;
+  AsnInteger ifNumber;
+  if (!snmp.GetOid(oid, ifNumber))
+    return FALSE;
+
+  oid.Free();
+
+  ifName = snmp.GetInterfaceName(ifNumber);
+  return TRUE;
 }
 
 
