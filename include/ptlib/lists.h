@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.2 1994/12/21 11:53:12 robertj Exp $
+ * $Id: lists.h,v 1.3 1995/01/15 04:49:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
- * Revision 1.2  1994/12/21 11:53:12  robertj
+ * Revision 1.3  1995/01/15 04:49:23  robertj
+ * Fixed errors in template version.
+ *
+ * Revision 1.2  1994/12/21  11:53:12  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.1  1994/12/12  09:59:35  robertj
@@ -313,7 +316,7 @@ PDECLARE_CLASS(PList, PAbstractList)
 
    See the $H$PList class and $H$PDECLARE_LIST macro for more information.
  */
-#define PLIST(cls, T) typedef PList<T> cls;
+#define PLIST(cls, T) typedef PList<T> cls
 
 
 template <class T>
