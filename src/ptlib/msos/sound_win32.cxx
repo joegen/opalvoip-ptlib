@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.2  2003/11/18 10:50:44  csoutheren
+ * Changed name of Windows sound device
+ *
  * Revision 1.1  2003/11/12 04:39:56  csoutheren
  * Changed to work with new plugin system
  *
@@ -286,7 +289,7 @@ class PSoundChannelWin32: public PSoundChannel
 	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
 };
 
-PCREATE_SOUND_PLUGIN(Win32, PSoundChannelWin32);
+PCREATE_SOUND_PLUGIN(WindowsMultimedia, PSoundChannelWin32);
 
 class PMultiMediaFile
 {
