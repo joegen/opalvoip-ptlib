@@ -13,6 +13,7 @@
 #pragma implementation "config.h"
 
 #include "ptlib.h"
+#include "pprocess.h"
 
 
 #define SYS_CONFIG_NAME		"pwlib"
@@ -70,9 +71,12 @@ PDECLARE_LIST(PXConfig, PXConfigSection)
     BOOL ReadFromFile (const PFilePath & filename);
     void ReadFromEnvironment (char **envp);
 
+    BOOL WriteToFile(const PFilePath & filename);
+    BOOL Flush(const PFilePath & filename, BOOL force);
+
     void SetDirty()   { dirty = TRUE; }
 
-    void      AddInstance();
+    BOOL      AddInstance();
     BOOL      RemoveInstance(const PFilePath & filename);
 
   protected:
@@ -91,13 +95,59 @@ PDECLARE_DICTIONARY(ConfigDictionary, PFilePath, PXConfig)
     PXConfig * GetFileConfigInstance(const PFilePath & key, const PFilePath & readKey);
     PXConfig * GetEnvironmentInstance();
     void RemoveInstance(PXConfig * instance);
+    void WriteChangedInstances(BOOL force);
 
   protected:
     PMutex     mutex;
     PXConfig * environmentInstance;
 };
 
-static ConfigDictionary configDict(0);
+
+PDECLARE_CLASS(ConfigWriteThread, PThread)
+  public:
+    ConfigWriteThread();
+    ~ConfigWriteThread();
+    void Main();
+};
+
+static ConfigDictionary    configDict(0);
+static ConfigWriteThread * writeThread = NULL;
+static PSyncPoint          writeStopMutex;
+static PSyncPoint          writeWaitMutex;
+static BOOL                writeStopped = FALSE;
+
+void PXStopConfigWriteThread()
+{
+  if (writeThread != NULL) {
+    writeStopMutex.Signal();
+    writeWaitMutex.Wait();
+  }
+}
+
+ConfigWriteThread::ConfigWriteThread()
+  : PThread(10000, AutoDeleteThread, StartImmediate)
+{
+}
+
+void ConfigWriteThread::Main()
+{
+  while (1) {
+    // if this returns TRUE, we are shutting down
+    if (writeStopMutex.Wait(PTimeInterval(30000))) {
+      configDict.WriteChangedInstances(TRUE);
+      writeStopped = TRUE;
+      return;
+    }
+
+    // check dictionary for items that need writing
+    configDict.WriteChangedInstances(FALSE);
+  }
+}
+
+ConfigWriteThread::~ConfigWriteThread()
+{
+  writeWaitMutex.Signal();
+}
 
 #define	new PNEW
 
@@ -118,61 +168,90 @@ PXConfig::PXConfig(int)
   saveOnExit = TRUE;
 }
 
-void PXConfig::AddInstance()
+BOOL PXConfig::AddInstance()
 {
   mutex.Wait();
-  instanceCount++;
-  mutex.Signal();
-}
-
-BOOL PXConfig::RemoveInstance(const PFilePath & filename)
-{
-  mutex.Wait();
-  PAssert(instanceCount != 0, "PConfig instance count dec past zero");
-  BOOL stat = --instanceCount == 0;
-
-  // save the data if this is the last instance
-  if (!stat)
-    PError << "Closed instance of " << filename << endl;
-  else if (!saveOnExit || !dirty) 
-    PError << "Closed unchanged final instance of " << filename << endl;
-  else {
-    PError << "Closing changed final instance of " << filename << endl;
-
-    // make sure the directory that the file is to be written into exists
-    PDirectory dir = filename.GetDirectory();
-    if (!dir.Exists() && !dir.Create( 
-                                     PFileInfo::UserExecute |
-                                     PFileInfo::UserWrite |
-                                     PFileInfo::UserRead))
-      PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
-    else {
-      PTextFile file;
-      if (!file.Open(filename, PFile::WriteOnly))
-        PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
-      else {
-        for (PINDEX i = 0; i < GetSize(); i++) {
-          PXConfigSectionList & section = (*this)[i].GetList();
-          file << "[" << (*this)[i] << "]" << endl;
-          for (PINDEX j = 0; j < section.GetSize(); j++) {
-            PXConfigValue & value = section[j];
-            file << value << "=" << value.GetValue() << endl;
-          }
-          file << endl;
-        }
-        file.Close();
-      }
-    }
-  }
+  BOOL stat = instanceCount++ == 0;
   mutex.Signal();
 
   return stat;
 }
 
+BOOL PXConfig::RemoveInstance(const PFilePath & /*filename*/)
+{
+  mutex.Wait();
+
+  PAssert(instanceCount != 0, "PConfig instance count dec past zero");
+
+  BOOL stat = --instanceCount == 0;
+
+/*
+  this code required if no write thread used
+
+
+  if (stat && saveOnExit && dirty) {
+    WriteToFile(filename);
+    dirty = FALSE;
+  }
+*/
+
+  mutex.Signal();
+
+  return stat;
+}
+
+BOOL PXConfig::Flush(const PFilePath & filename, BOOL force)
+{
+  mutex.Wait();
+
+  BOOL stat = instanceCount == 0;
+
+  if ((force || (instanceCount == 0)) && saveOnExit && dirty) {
+    if (instanceCount != 0) 
+      PProcess::PXShowSystemWarning(2000, "Flush of config with non-zero instance");
+    WriteToFile(filename);
+    dirty = FALSE;
+  }
+
+  mutex.Signal();
+
+  return stat;
+}
+
+BOOL PXConfig::WriteToFile(const PFilePath & filename)
+{
+  // make sure the directory that the file is to be written into exists
+  PDirectory dir = filename.GetDirectory();
+  if (!dir.Exists() && !dir.Create( 
+                                   PFileInfo::UserExecute |
+                                   PFileInfo::UserWrite |
+                                   PFileInfo::UserRead)) {
+    PProcess::PXShowSystemWarning(2000, "Cannot create PWLIB config dir");
+    return FALSE;
+  } else {
+    PTextFile file;
+    if (!file.Open(filename, PFile::WriteOnly)) {
+      PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
+      return FALSE;
+    } else {
+      for (PINDEX i = 0; i < GetSize(); i++) {
+        PXConfigSectionList & section = (*this)[i].GetList();
+        file << "[" << (*this)[i] << "]" << endl;
+        for (PINDEX j = 0; j < section.GetSize(); j++) {
+          PXConfigValue & value = section[j];
+          file << value << "=" << value.GetValue() << endl;
+        }
+        file << endl;
+      }
+      file.Close();
+    }
+  }
+  return TRUE;
+}
+
+
 BOOL PXConfig::ReadFromFile (const PFilePath & filename)
 {
-PError << "Reading config file " << filename << endl;
-
   PINDEX len;
   PString line;
 
@@ -288,16 +367,22 @@ PXConfig * ConfigDictionary::GetFileConfigInstance(const PFilePath & key, const 
 {
   mutex.Wait();
 
+  // if we have already stopped the write thread, then assert
+  PAssert(!writeStopped, "Attempt to open file config after write thread stopped");
+
   PXConfig * config = GetAt(key);
-  if (config != NULL) {
-    PError << "Opening another instance of config file " << key << endl;
+  if (config != NULL) 
     config->AddInstance();
-  } else {
-    PError << "Opening first instance of config file " << key << endl;
+  else {
     config = new PXConfig(0);
     config->ReadFromFile(readKey);
     config->AddInstance();
     SetAt(key, config);
+  }
+
+  // start write thread, if not already started
+  if (writeThread == NULL) {
+    writeThread = new ConfigWriteThread();
   }
 
   mutex.Signal();
@@ -311,8 +396,23 @@ void ConfigDictionary::RemoveInstance(PXConfig * instance)
   if (instance != environmentInstance) {
     PINDEX index = GetObjectsIndex(instance);
     PAssert(index != P_MAX_INDEX, "Cannot find PXConfig instance to remove");
-    if (instance->RemoveInstance(GetKeyAt(index))) 
-      SetDataAt(index, NULL);
+
+    // decrement the instance count, but don't remove it yet
+    PFilePath key = GetKeyAt(index);
+    instance->RemoveInstance(key);
+  }
+
+  mutex.Signal();
+}
+
+void ConfigDictionary::WriteChangedInstances(BOOL force)
+{
+  mutex.Wait();
+
+  PINDEX i;
+  for (i = 0; i < GetSize(); i++) {
+    PFilePath key = GetKeyAt(i);
+    GetAt(key)->Flush(key, force);
   }
 
   mutex.Signal();
