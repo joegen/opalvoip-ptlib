@@ -106,6 +106,7 @@ class PSoundChannelOSS: public PSoundChannel
     BOOL Abort();
     BOOL SetVolume(unsigned newVal);
     BOOL GetVolume(unsigned &devVol);
+
   protected:
     unsigned mNumChannels;
     unsigned mSampleRate;
