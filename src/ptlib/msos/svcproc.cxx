@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.23 1997/07/08 13:00:30 robertj Exp $
+ * $Id: svcproc.cxx,v 1.24 1997/07/14 11:47:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.24  1997/07/14 11:47:20  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.23  1997/07/08 13:00:30  robertj
  * DLL support.
  * Fixed '95 support so service runs without logging in.
@@ -116,7 +119,7 @@ enum {
   NumSvcCmds
 };
 
-static const char * ServiceCommandNames[NumSvcCmds] = {
+static const char * const ServiceCommandNames[NumSvcCmds] = {
   "debug", "version", "install", "remove", "start", "stop", "pause", "resume", "deinstall"
 };
 
@@ -151,7 +154,7 @@ void PSystemLog::Output(Level level, const char * msg)
       out = new ofstream(logFileName, ios::app);
     }
 
-    static const char * levelName[NumLogLevels+1] = {
+    static const char * const levelName[NumLogLevels+1] = {
       "Fatal error",
       "Error",
       "Warning",
@@ -442,7 +445,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
       return FALSE;
   }
 
-  if (createDebugWindow) {
+  if (createDebugWindow && debugWindow == NULL) {
     debugWindow = CreateWindow("edit",
                                "",
                                WS_CHILD|WS_HSCROLL|WS_VSCROLL|WS_VISIBLE|WS_BORDER|
