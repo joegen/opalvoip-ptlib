@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.45 1996/08/17 10:00:20 robertj Exp $
+ * $Id: contain.h,v 1.46 1997/07/08 13:15:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.46  1997/07/08 13:15:04  robertj
+ * DLL support.
+ *
  * Revision 1.45  1996/08/17 10:00:20  robertj
  * Changes for Windows DLL support.
  *
@@ -434,7 +437,7 @@ PDECLARE_CLASS(PContainer, PObject)
    See the <A>PCONTAINERINFO</A> macro for more information.
  */
 #define PDECLARE_CONTAINER(cls, par) \
-                             class PEXPORT cls : public par { PCONTAINERINFO(cls, par)
+                             class cls : public par { PCONTAINERINFO(cls, par)
 
 
 ///////////////////////////////////////////////////////////////////////////////
