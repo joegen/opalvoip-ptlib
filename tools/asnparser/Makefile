@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.11  2003/07/28 18:29:41  dsandras
+# Patch to help with make -jN thanks to Alexander Larsson <alexl@redhat.com>.
+#
 # Revision 1.10  2002/01/27 00:07:10  craigs
 # Added rule to create asnparser.txt file
 #
@@ -57,6 +60,8 @@ asn_grammar.cxx: asn_grammar.y
 	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
 	bison -t -v -d -o $* $<
 	mv $* $*.cxx
+
+main.cxx: asn_grammar.cxx
 
 asn_lex.cxx: asn_lex.l
 	flex -t $< > $@
