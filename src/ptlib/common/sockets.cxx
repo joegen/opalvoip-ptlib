@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.4 1995/01/01 01:06:58 robertj Exp $
+ * $Id: sockets.cxx,v 1.5 1995/01/02 12:28:25 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.4  1995/01/01 01:06:58  robertj
+ * Revision 1.5  1995/01/02 12:28:25  robertj
+ * Documentation.
+ * Added more socket functions.
+ *
+ * Revision 1.4  1995/01/01  01:06:58  robertj
  * More implementation.
  *
  * Revision 1.3  1994/11/28  12:38:49  robertj
@@ -48,28 +52,57 @@ BOOL PSocket::Accept (const PString &)
 
 #ifdef P_HAS_BERKELEY_SOCKETS
 
-BOOL PIPSocket::LookupHost(const PString & host_address, sockaddr_in * address)
+BOOL PIPSocket::GetAddress(Address & addr)
 {
-  struct hostent *host_info;
+  return ConvertOSError(GetAddress(GetName(), addr) ? -1 : 0);
+}
 
+
+BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
+{
   // lookup the host address using inet_addr, assuming it is a "." address
-  if ((address->sin_addr.s_addr = inet_addr((const char *)host_address)) != -1)
-    address->sin_family = AF_INET;
-
-  // otherwise lookup the name as a host name
-  else if ((host_info = gethostbyname ((const char *)host_address)) != 0) {
-    address->sin_family = host_info->h_addrtype;
-    memcpy(&address->sin_addr, host_info->h_addr, host_info->h_length);
-  }
-
-  // otherwise we don't know about the host at all!
+  long temp;
+  if ((temp = inet_addr(hostname)) != -1)
+    memcpy(addr, &temp, sizeof(addr));
   else {
-    lastError = NotFound;
-    return FALSE;
+    // otherwise lookup the name as a host name
+    struct hostent * host_info;
+    if ((host_info = gethostbyname(hostname)) != 0)
+      memcpy(addr, host_info->h_addr, sizeof(addr));
+    else
+      return FALSE;
   }
 
   return TRUE;
 }
+
+
+PStringArray PIPSocket::GetHostAliases() const
+{
+  return GetHostAliases(GetName());
+}
+
+PStringArray PIPSocket::GetHostAliases(const PString & hostname)
+{
+  PStringArray aliases;
+  struct hostent * host_info;
+
+  // lookup the host address using inet_addr, assuming it is a "." address
+  long temp;
+  if ((temp = inet_addr(hostname)) != -1)
+    host_info = gethostbyaddr((const char *)&temp, 4, PF_INET);
+  else
+    host_info = gethostbyname(hostname);
+
+  if (host_info != NULL) {
+    int i = 0;
+    while (host_info->h_aliases[i] != NULL)
+      aliases[i] = host_info->h_aliases[i];
+  }
+
+  return aliases;
+}
+
 
 #endif
 
@@ -84,10 +117,8 @@ PTCPSocket::PTCPSocket(WORD newPort)
   port = newPort;
 }
 
-BOOL PTCPSocket::Open (const PString & host_address, u_short newPort)
+BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 {
-  sockaddr_in address;
-
   // close the port if it is already open
   if (IsOpen())
     Close();
@@ -98,30 +129,34 @@ BOOL PTCPSocket::Open (const PString & host_address, u_short newPort)
   PAssert(port != 0, "Cannot open socket without setting port");
 
   // attempt to lookup the host name
-  if (!LookupHost(host_address, &address))
+  Address ipnum;
+  if (!GetAddress(host, ipnum))
     return FALSE;
 
-  // set the port
-  address.sin_port = ::htons(port);
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  address.sin_port = ::htons(port);  // set the port
+  memcpy(&address.sin_addr, ipnum, sizeof(address.sin_addr));
 
   // attempt to create a socket
   if (!ConvertOSError(os_handle = ::socket(AF_INET, SOCK_STREAM, 0)))
     return FALSE;
 
   // attempt to connect
-  if (!ConvertOSError(::connect(os_handle, (struct sockaddr *)&address, sizeof(address)))) {
+  if (!ConvertOSError(::connect(os_handle,
+                              (struct sockaddr *)&address, sizeof(address)))) {
     Close();
     return FALSE;
   }
 
   // make the socket non-blocking
+#ifndef WIN32
   long cmd = 1;
-#ifdef _WINDOWS
-# ifndef WIN32
+#ifdef WINDOWS
   ::ioctlsocket (os_handle, FIONBIO, &cmd);
-# endif
 #else
   ::ioctl (os_handle, FIONBIO, &cmd);
+#endif
 #endif
 
   return TRUE;
@@ -130,18 +165,19 @@ BOOL PTCPSocket::Open (const PString & host_address, u_short newPort)
 
 #endif
 
-void PTCPSocket::OnOutOfBand(const void * buf, PINDEX len)
+void PTCPSocket::OnOutOfBand(const void *, PINDEX)
 {
 }
 
 
 BOOL PTCPSocket::WriteOutOfBand(void const * buf, PINDEX len)
 {
-  int count = ::send(os_handle, buf, len, MSG_OOB);
+  int count = ::send(os_handle, (const char *)buf, len, MSG_OOB);
   if (count < 0) {
     lastWriteCount = 0;
     return ConvertOSError(count);
-  } else {
+  }
+  else {
     lastWriteCount = count;
     return TRUE;
   }
@@ -165,12 +201,14 @@ WORD PTCPSocket::GetPort() const
   return port;
 }
 
+
 PString PTCPSocket::GetService() const
 {
   return GetService(port);
 }
 
-WORD    PTCPSocket::GetPort(const PString & serviceName) const
+
+WORD PTCPSocket::GetPort(const PString & serviceName) const
 {
   struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
   if (service != NULL)
@@ -178,6 +216,7 @@ WORD    PTCPSocket::GetPort(const PString & serviceName) const
   else
     return 0;
 }
+
 
 PString PTCPSocket::GetService(WORD port) const
 {
@@ -187,6 +226,7 @@ PString PTCPSocket::GetService(WORD port) const
   else
     return PString();
 }
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PTelnetSocket
@@ -300,7 +340,7 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
             if (doOptions[TransmitBinary])
               *dst++ = *src;
             else
-              *dst++ = 0x7f&*src;
+              *dst++ = (BYTE)(0x7f&*src);
             charsLeft--;
           }
           break;
@@ -313,42 +353,37 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
   return TRUE;
 }
 
-BOOL PTelnetSocket::Write(void const * buf, PINDEX len)
+BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
 {
-  void * ptr;
-  int l;
+  const char * bufptr = (const char *)buffer;
   int count = 0;
 
-  while (len > 0) {
+  while (length > 0) {
 
     // get ptr to first IAC character
-    ptr = memchr(buf, IAC, len);
+    const char * iacptr = (const char *)memchr(bufptr, IAC, length);
 
-    // calculate number of bytes to send with or without
-    // the trailing IAC
-    if (ptr != NULL)
-      l = ptr-buf;
-    else
-      l = len;
+    // calculate number of bytes to send with or without the trailing IAC
+    PINDEX iaclen = iacptr != NULL ? iacptr - bufptr : length;
 
     // send the characters
-    if (!PTCPSocket::Write(buf, l))
+    if (!PTCPSocket::Write(bufptr, iaclen))
       return FALSE;
     count += lastWriteCount;
 
     // send the IAC (if required)
-    if (ptr != NULL) {
-      BYTE iac = IAC;
-      if (!PTCPSocket::Write(&iac, 1))
+    if (bufptr != NULL) {
+      // Note: cannot use WriteChar(), so send the IAC found again
+      if (!PTCPSocket::Write(bufptr, 1))
         return FALSE;
       count += lastWriteCount;
     }
 
-    len -= l;
-    buf += l;
+    length -= iaclen;
+    bufptr += iaclen;
   }
 
-  lastWriteCount = lastWriteCount;
+  lastWriteCount = count;
   return TRUE;
 }
 
@@ -435,9 +470,9 @@ BOOL PTelnetSocket::OnUnknownCommand(BYTE code)
   return TRUE;
 }
 
-void PTelnetSocket::OnOutOfBand(const void * buf, PINDEX len)
+void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)
 {
-  PError << "Out of band data received of len " << len << endl;
+  PError << "Out of band data received of length " << length << endl;
 }
 
 
@@ -453,5 +488,6 @@ void PTelnetSocket::SendDataMark(Command ch)
   dataMark[1] = ch;
   PTCPSocket::Write(dataMark, 2);
 }
+
 
 // End Of File ///////////////////////////////////////////////////////////////
