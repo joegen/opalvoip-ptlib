@@ -1,13 +1,35 @@
 /*
- * $Id: contain.inl,v 1.39 1997/12/11 10:27:15 robertj Exp $
+ * contain.inl
+ *
+ * Container Class Inline Function Definitions
  *
  * Portable Windows Library
  *
- * PContainer Inline Function Definitions
+ * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
  *
- * Copyright 1993 Equivalence
+ * The contents of this file are subject to the Mozilla Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
+ * the License for the specific language governing rights and limitations
+ * under the License.
+ *
+ * The Original Code is Portable Windows Library.
+ *
+ * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
+ *
+ * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
+ * All Rights Reserved.
+ *
+ * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.40  1998/09/23 06:20:25  robertj
+ * Added open source copyright license.
+ *
  * Revision 1.39  1997/12/11 10:27:15  robertj
  * Added type correct Contains() function to dictionaries.
  *
