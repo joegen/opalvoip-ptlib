@@ -84,6 +84,16 @@ static const PString InitStr = "Init";
 
 BOOL PRemoteConnection::Open(const PString & name)
 {
+  return Open(name, "", "");
+}
+
+BOOL PRemoteConnection::Open(const PString & name,
+                             const PString & user,
+                             const PString & pword)
+{
+  userName = user;
+  password = pword;
+
   // cannot open remote connection with an empty name
   if (name.IsEmpty()) {
     status = NoNameOrNumber;
