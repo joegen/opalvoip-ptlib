@@ -34,6 +34,8 @@
 #include <localeinfo.h>
 #elif defined(P_HPUX9)
 #include <langinfo.h>
+#elif defined(P_SUN4)
+#include <sys/timeb.h>
 #endif
 
 
@@ -51,10 +53,8 @@ extern "C" {
 int on_exit(void (*f)(void), caddr_t);
 int atexit(void (*f)(void))
 {
-  on_exit(f, 0);
+  return on_exit(f, 0);
 }
-static int daylight    = 600;
-extern long timezone;
 static char *tzname[2] = { "STD", "DST" };
 };
 #endif
@@ -594,9 +594,9 @@ PString PTime::GetTimeSeparator()
 {
 #if defined(P_LINUX) || defined(P_HPUX9)
 #  if defined(P_HPUX9)
-     char * p = nl_langinfo(T_FMT);
-#  elif defined(P_LINUX)
      char * p = _time_info->time; 
+#  elif defined(P_LINUX)
+     char * p = nl_langinfo(T_FMT);
 #  endif
   char buffer[2];
   while (*p == '%' || isalpha(*p))
@@ -645,9 +645,9 @@ PString PTime::GetDateSeparator()
   return PString("/");
 #elif defined(P_LINUX) || defined(P_HPUX9)
 #  if defined(P_LINUX)
-     char * p = _time_info->date; 
-#  elif defined(P_HPUX9)
      char * p = nl_langinfo(D_FMT);
+#  elif defined(P_HPUX9)
+     char * p = _time_info->date; 
 #  endif
 
   char buffer[2];
@@ -723,26 +723,40 @@ BOOL PTime::IsDaylightSavings()
 }
 
 int PTime::GetTimeZone(PTime::TimeZoneType type) 
-#if defined(P_LINUX) || defined(P_SUN4)
 {
+#if defined(P_LINUX)
   long tz = -::timezone/60;
   if (type == StandardTime)
     return tz;
   else
     return tz + ::daylight*60;
-}
+#elif defined(P_SUN4)
+  struct timeb tb;
+  ftime(&tb);
+  if (type == StandardTime || tb.dstflag == 0)
+    return -tb.timezone;
+  else
+    return -tb.timezone + 60;
 #else
 #warning No timezone information
-  { return 0; }
+  return 0; 
 #endif
+}
 
 PString PTime::GetTimeZoneString(PTime::TimeZoneType type) 
+{
 #if defined(P_LINUX) || defined(P_SUN4)
-  { return PString((type == StandardTime) ? ::tzname[0] : ::tzname[1]); }
+  return PString((type == StandardTime) ? ::tzname[0] : ::tzname[1]); 
+#elif defined(P_SUN4)
+  char buffer[10];
+  struct tm * timestruct = localtime(time(NULL)); 
+  strftime(buffer, 20, "%Z", &tm);
+  return PString(buffer);
 #else
 #warning No timezone name information
-  { return PString(); }
+  return PString(); 
 #endif
+}
 
 
 // End Of File ///////////////////////////////////////////////////////////////
