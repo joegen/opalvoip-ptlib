@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.22  2002/10/22 07:42:52  robertj
+ * Added extra debugging for file handle and thread leak detection.
+ *
  * Revision 1.21  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -140,6 +143,12 @@ class PSystemLog : public PObject, public iostream {
       Debug2,   
       /// Log even more debugging information
       Debug3,   
+      /// Log a lot of debugging information
+      Debug4,   
+      /// Log a real lot of debugging information
+      Debug5,   
+      /// Log a bucket load of debugging information
+      Debug6,   
 
       NumLogLevels
     };
