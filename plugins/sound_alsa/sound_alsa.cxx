@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.22  2004/11/06 16:31:12  dsandras
+ * Removed dictionnary copy.
+ *
  * Revision 1.21  2004/10/18 11:43:39  dsandras
  * Use Capture instead of Mic when changing the volume. Use the correct mixer when using the Default device.
  *
@@ -136,7 +139,6 @@ PSoundChannelALSA::~PSoundChannelALSA()
 
 void PSoundChannelALSA::UpdateDictionary (Directions dir)
 {
-  
   int card = -1, dev = -1;
   
   snd_ctl_t *handle = NULL;
@@ -167,7 +169,6 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
     return;
   }
 
-
   while (card >= 0) {
 
     snprintf (card_id, 32, "hw:%d", card);
@@ -189,16 +190,12 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
 
         if (snd_ctl_pcm_info (handle, pcminfo) >= 0) {
 
-          snd_card_get_name (card, &name);
-          if (dir == Recorder) {
+	  snd_card_get_name (card, &name);
+	  if (dir == Recorder) 
+	    capture_devices.SetAt (name, card);
 
-              capture_devices.SetAt (name, card);
-          }
-          else {
-
-              playback_devices.SetAt (name, card);
-          }
-
+	  else 
+	    playback_devices.SetAt (name, card);
           free (name);
         }
       }
@@ -209,24 +206,28 @@ void PSoundChannelALSA::UpdateDictionary (Directions dir)
   }
 }
 
+
 PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
 {
   PStringArray devices;
-  PStringToOrdinal devices_dict;
  
-  if (dir == Recorder)
-    devices_dict = capture_devices;
-  else
-    devices_dict = playback_devices;
-
   UpdateDictionary (dir);
   
-  if (devices_dict.GetSize () > 0)
+  if (dir == Recorder) {
+    
+    for (PINDEX j = 0 ; j < capture_devices.GetSize () ; j++) 
+      devices += capture_devices.GetKeyAt (j);
+  }
+  else {
+
+    for (PINDEX j = 0 ; j < playback_devices.GetSize () ; j++) 
+      devices += playback_devices.GetKeyAt (j);
+  }
+
+
+  if (devices.GetSize () > 0)
     devices += "Default";
   
-  for (PINDEX j = 0 ; j < devices_dict.GetSize () ; j++) 
-    devices += devices_dict.GetKeyAt (j);
-    
   return devices;
 }
 
