@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.8 1998/01/03 23:06:32 craigs Exp $
+ * $Id: pprocess.h,v 1.9 1998/01/04 08:13:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.9  1998/01/04 08:13:32  craigs
+ * Removed extern reference to PProcessInstance
+ *
  * Revision 1.8  1998/01/03 23:06:32  craigs
  * Added PThread support
  *
@@ -79,8 +82,9 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     int  argc;
 
 #ifndef P_PTHREADS
-  protected:
+  public:
     void PXAbortIOBlock(int fd);
+  protected:
     PXFdDict     ioBlocks[3];
 #else
   friend void * PXHouseKeepingThread(void *);
@@ -96,7 +100,5 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     PThread * housekeepingThread;
 #endif
 };
-
-extern PProcess * PProcessInstance;
 
 #endif
