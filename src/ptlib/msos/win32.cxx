@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.79  1999/01/16 02:00:29  robertj
+ * Added hardware description funtion.
+ *
  * Revision 1.78  1998/12/04 10:10:47  robertj
  * Added virtual for determining if process is a service. Fixes linkage problem.
  *
@@ -1129,6 +1132,35 @@ PString PProcess::GetOSName()
       return "95";
     case VER_PLATFORM_WIN32_NT :
       return "NT";
+  }
+  return "?";
+}
+
+
+PString PProcess::GetOSHardware()
+{
+  SYSTEM_INFO info;
+  GetSystemInfo(&info);
+  switch (info.wProcessorArchitecture) {
+    case PROCESSOR_ARCHITECTURE_INTEL :
+      switch (info.dwProcessorType) {
+        case PROCESSOR_INTEL_386 :
+          return "i386";
+        case PROCESSOR_INTEL_486 :
+          return "i486";
+        case PROCESSOR_INTEL_PENTIUM :
+          return "i586";
+      }
+      return "iX86";
+
+    case PROCESSOR_ARCHITECTURE_MIPS :
+      return "mips";
+
+    case PROCESSOR_ARCHITECTURE_ALPHA :
+      return "alpha";
+
+    case PROCESSOR_ARCHITECTURE_PPC :
+      return "ppc";
   }
   return "?";
 }
