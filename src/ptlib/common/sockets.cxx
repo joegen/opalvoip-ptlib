@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.60 1997/09/27 00:58:39 robertj Exp $
+ * $Id: sockets.cxx,v 1.61 1997/10/03 13:33:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.61  1997/10/03 13:33:22  robertj
+ * Added workaround for NT winsock bug with RAS and DNS lookups.
+ *
  * Revision 1.60  1997/09/27 00:58:39  robertj
  * Fixed race condition on socket close in Select() function.
  *
@@ -707,7 +710,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
   if (host == NULL || host->HasAged()) {
     mutex.Signal();
     struct hostent * host_info = ::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
-#if defined(_WIN32) || defined(WINDOWS)
+#if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug
     if (host_info != NULL && host_info->h_addr_list[0] != NULL)
       host_info->h_addr_list[1] = NULL;
 #endif
@@ -732,10 +735,13 @@ PIPSocket::PIPSocket()
 void PIPSocket::ClearNameCache()
 {
   pHostByName.mutex.Wait();
-  pHostByName.RemoveAll();
-  pHostByName.mutex.Signal();
   pHostByAddr.mutex.Wait();
+  pHostByName.RemoveAll();
   pHostByAddr.RemoveAll();
+#if defined(_WIN32) || defined(WINDOWS) // Kludge to avoid strange NT bug
+  ::gethostbyname("www.microsoft.com");
+#endif
+  pHostByName.mutex.Signal();
   pHostByAddr.mutex.Signal();
 }
 
