@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.91  2004/01/17 17:44:54  csoutheren
+ * Changed to use PString::MakeEmpty
+ *
  * Revision 1.90  2003/09/17 09:02:13  csoutheren
  * Removed memory leak detection code
  *
@@ -1843,7 +1846,7 @@ static void SplitCmdAndArgs(const PString & text, PINDEX pos, PCaselessString & 
   PINDEX endCmd = macro.FindOneOf(whitespace);
   if (endCmd == P_MAX_INDEX) {
     cmd = macro;
-    args = PString::Empty();
+    args.MakeEmpty();
   }
   else {
     cmd = macro.Left(endCmd);
