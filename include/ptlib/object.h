@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.73  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.72  2001/05/03 06:27:29  robertj
  * Added return value to PMemoryCheck::SetIgnoreAllocations() so get previous state.
  *
@@ -610,7 +613,8 @@ trace level is sufficient.
 #ifndef _DEBUG
 #define PMEMORY_CHECK 0
 #else
-#define PMEMORY_CHECK 1
+// #define PMEMORY_CHECK 1
+#define PMEMORY_CHECK 0
 #endif
 #endif
 
@@ -841,6 +845,8 @@ class PMemoryHeap {
 
 #if defined(_WIN32)
     CRITICAL_SECTION mutex;
+#elif defined(P_MAC_MPTHREADS)
+    MPSemaphoreID mutex;
 #elif defined(P_PTHREADS)
     pthread_mutex_t mutex;
 #endif
@@ -1481,8 +1487,10 @@ class PSerialiser : public PObject
     virtual PSerialiser & operator<<(float) = 0;
     /// Output double to serial stream.
     virtual PSerialiser & operator<<(double) = 0;
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Output long double to serial stream.
     virtual PSerialiser & operator<<(long double) = 0;
+#endif
     /// Output C string to serial stream.
     virtual PSerialiser & operator<<(const char *) = 0;
     /// Output C string to serial stream.
@@ -1550,8 +1558,10 @@ class PUnSerialiser : public PObject
     virtual PUnSerialiser & operator>>(float &) = 0;
     /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(double &) = 0;
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(long double &) = 0;
+#endif
     /// Input primitive from stream.
     virtual PUnSerialiser & operator>>(char *) = 0;
     /// Input primitive from stream.
@@ -1638,8 +1648,10 @@ class PTextSerialiser : public PSerialiser
     PSerialiser & operator<<(float);
     /// Output primitive to stream.
     PSerialiser & operator<<(double);
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Output primitive to stream.
     PSerialiser & operator<<(long double);
+#endif
     /// Output primitive to stream.
     PSerialiser & operator<<(const char *);
     /// Output primitive to stream.
@@ -1702,8 +1714,10 @@ class PBinarySerialiser : public PSerialiser
     PSerialiser & operator<<(float);
     /// Output primitive to stream.
     PSerialiser & operator<<(double);
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Output primitive to stream.
     PSerialiser & operator<<(long double);
+#endif
     /// Output primitive to stream.
     PSerialiser & operator<<(const char *);
     /// Output primitive to stream.
@@ -1758,8 +1772,10 @@ class PTextUnSerialiser : public PUnSerialiser
     PUnSerialiser & operator>>(float &);
     /// Input primitive from stream.
     PUnSerialiser & operator>>(double &);
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Input primitive from stream.
     PUnSerialiser & operator>>(long double &);
+#endif
     /// Input primitive from stream.
     PUnSerialiser & operator>>(char *);
     /// Input primitive from stream.
@@ -1819,8 +1835,10 @@ class PBinaryUnSerialiser : public PUnSerialiser
     PUnSerialiser & operator>>(float &);
     /// Input primitive from stream.
     PUnSerialiser & operator>>(double &);
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
     /// Input primitive from stream.
     PUnSerialiser & operator>>(long double &);
+#endif
     /// Input primitive from stream.
     PUnSerialiser & operator>>(char *);
     /// Input primitive from stream.
@@ -2512,6 +2530,7 @@ PI_DIFF(PFloat64b, double);
 PI_SAME(PFloat64b, double);
 #endif
 
+#ifndef NO_LONG_DOUBLE // stupid OSX compiler
 #if PBYTE_ORDER==PLITTLE_ENDIAN
 PI_SAME(PFloat80l, long double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
@@ -2522,6 +2541,7 @@ PI_DIFF(PFloat80l, long double);
 PI_DIFF(PFloat80b, long double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
 PI_SAME(PFloat80b, long double);
+#endif
 #endif
 
 #undef PI_LOOP

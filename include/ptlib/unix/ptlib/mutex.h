@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.13  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.12  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -83,7 +86,7 @@
 #ifdef _PMUTEX_PLATFORM_INCLUDE
 #undef _PMUTEX_PLATFORM_INCLUDE
 
-#if defined(P_PTHREADS) || defined(BE_THREADS)
+#if defined(P_PTHREADS) || defined(BE_THREADS) || defined(P_MAC_MPTHREADS)
     ~PMutex();
     virtual void Wait();
     virtual BOOL Wait(const PTimeInterval & timeout);

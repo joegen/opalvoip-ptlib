@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.12  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.11  2001/07/09 06:16:15  yurik
  * Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
  *
@@ -74,6 +77,14 @@ typedef class BaseResampler<short, long, short> Resampler;
 #endif // __BEOS__
  
 #pragma interface
+
+
+///////////////////////////////////////////////////////////////////////////////
+// declare type for sound handle dictionary
+
+#if defined(P_MAC_MPTHREADS)
+class JRingBuffer;
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
@@ -137,6 +148,10 @@ typedef class BaseResampler<short, long, short> Resampler;
     Directions direction;
     PString device;
     BOOL isInitialised;
+
+#if defined(P_MAC_MPTHREADS)
+    JRingBuffer *mpInput;
+#endif
 
     unsigned mNumChannels;
     unsigned mSampleRate;

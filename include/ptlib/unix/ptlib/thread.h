@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.24  2001/08/11 07:57:30  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.23  2001/07/09 04:26:08  yurik
  * Fixed lack of pthread_self function on BeOS
  *
@@ -183,6 +186,29 @@ thread_id pthread_self(void) { return find_thread(NULL); }
 	thread_id threadId;
 	int32 priority;
 	PINDEX originalStackSize;
+
+#elif defined(P_MAC_MPTHREADS)
+  public:
+    void PXSetWaitingSemaphore(PSemaphore * sem);
+    //void InitialiseProcessThread();
+    static long PX_ThreadStart(void *);
+    static void PX_ThreadEnd(void *);
+    MPTaskID    PX_GetThreadId() const;
+
+  protected:
+    void PX_NewThread(BOOL startSuspended);
+
+    PINDEX     PX_origStackSize;
+    int        PX_suspendCount;
+    PSemaphore *suspend_semaphore;
+    long       PX_signature;
+    enum { kMPThreadSig = 'THRD', kMPDeadSig = 'DEAD'};
+
+    MPTaskID   PX_threadId;
+    MPSemaphoreID PX_suspendMutex;
+
+    int unblockPipe[2];
+    friend class PSocket;
 #else
 
   protected:
