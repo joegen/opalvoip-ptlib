@@ -1,5 +1,5 @@
 /*
- * $Id: miscellaneous.cxx,v 1.1 1996/01/02 13:11:52 robertj Exp $
+ * $Id: miscellaneous.cxx,v 1.2 2003/11/25 08:28:14 rjongbloed Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: miscellaneous.cxx,v $
+ * Revision 1.2  2003/11/25 08:28:14  rjongbloed
+ * Removed ability to have platform without threads, win16 finally deprecated
+ *
  * Revision 1.1  1996/01/02 13:11:52  robertj
  * Initial revision
  *
@@ -409,16 +412,6 @@ void PApplication::Main()
   }
 }
   
-
-#ifndef P_PLATFORM_HAS_THREADS
-
-void PApplication::OperatingSystemYield()
-{
-  SystemTask();
-}
-
-#endif
-
 
 void PApplication::HandleEvent(EventRecord & event)
 {
