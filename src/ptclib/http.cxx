@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.64  2001/11/09 05:46:14  robertj
+ * Removed double slash on sip URL.
+ * Fixed extra : if have username but no password.
+ * Added h323: scheme
+ *
  * Revision 1.63  2001/11/08 00:32:49  robertj
  * Added parsing of ';' based parameter fields into string dictionary if there are multiple parameters, with '=' values.
  *
@@ -272,7 +277,8 @@
 #define DEFAULT_RTSP_PORT	554
 #define DEFAULT_RTSPU_PORT	554
 #define DEFAULT_PROSPERO_PORT	1525
-#define	DEFAULT_SIP_PORT		5060
+#define	DEFAULT_H323_PORT       1720
+#define	DEFAULT_SIP_PORT        5060
 
 enum SchemeFormat {
   HostPort = 1,
@@ -304,7 +310,8 @@ static schemeStruct const schemeInfo[] = {
   { "file",      HostOnly,             TRUE },
   { "mailto",    Other, FALSE},
   { "news",      Other, FALSE},
-  { "sip",       UserPasswordHostPort, TRUE, DEFAULT_SIP_PORT },
+  { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT },
+  { "sip",       UserPasswordHostPort, FALSE, DEFAULT_SIP_PORT },
   { NULL }
 };
 
@@ -655,11 +662,12 @@ PString PURL::AsString(UrlFormat fmt) const
           str << hostname;
 
         if (schemeInfo.type == UserPasswordHostPort) {
-          if (!username || !password)
-            str << TranslateString(username, LoginTranslation)
-                << ':'
-                << TranslateString(password, LoginTranslation)
-                << '@';
+          if (!username) {
+            str << TranslateString(username, LoginTranslation);
+            if (!password)
+              str << ':' << TranslateString(password, LoginTranslation);
+            str << '@';
+          }
         }
 
         if (schemeInfo.type == HostPort || schemeInfo.type == UserPasswordHostPort) {
