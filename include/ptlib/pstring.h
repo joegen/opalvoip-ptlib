@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.50  2002/04/09 02:30:18  robertj
+ * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+ *
  * Revision 1.49  2002/02/15 04:29:31  robertj
  * Added PString::Empty() to return the primordial empty string. Saves on a
  *   couple of memory allocations for every empty string ever used.
@@ -1885,7 +1888,7 @@ class PStringStream : public PString, public iostream
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-#if defined(__MWERKS__) || defined(GCC3)
+#if defined(__MWERKS__) || __GNUC__ >= 3
         virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
 #else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);

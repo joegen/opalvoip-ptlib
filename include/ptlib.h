@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.26  2002/04/09 02:30:18  robertj
+ * Removed GCC3 variable as __GNUC__ can be used instead, thanks jason Spence
+ *
  * Revision 1.25  2002/01/22 03:54:41  craigs
  * Removed pwavfile.h, as this has moved to PTCLib
  *
@@ -112,7 +115,13 @@
 #define _PTLIB_H
 
 #ifdef __GNUC__
+
 #pragma interface
+
+#if !defined(__USE_STD__) && __GNUC__ >= 3
+#define __USE_STD__
+#endif
+
 #endif
 
 #ifdef __NUCLEUS_PLUS__
