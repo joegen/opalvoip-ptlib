@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.81  2002/12/12 00:54:29  robertj
+ * Fixed issue with setting max file handles causing a log file to be created
+ *   as root (real uid) rather than as the user determined by the -u arg.
+ * Utilised new PProcess functions for setting user and group.
+ *
  * Revision 1.80  2002/12/02 08:27:43  robertj
  * Fixed incorrectly set #if statement from RTEMS patch.
  *
@@ -598,6 +603,24 @@ int PServiceProcess::InitialiseService()
     return 1;
   }
 
+  // Set the gid we are running under
+  if (args.HasOption('g')) {
+    PString gidstr = args.GetOptionString('g');
+    if (!SetGroupName(gidstr)) {
+      cout << "Could not set GID to \"" << gidstr << "\" - " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
+  // Set the uid we are running under
+  if (args.HasOption('u')) {
+    PString uidstr = args.GetOptionString('u');
+    if (!SetUserName(uidstr)) {
+      cout << "Could not set UID to \"" << uidstr << "\" - " << strerror(errno) << endl;
+      return 1;
+    }
+  }
+
   BOOL helpAndExit = FALSE;
 
   // if displaying help, then do it
@@ -650,77 +673,6 @@ int PServiceProcess::InitialiseService()
     return 0;
   }
 
-  if (args.HasOption('i'))
-    SetConfigurationPath(args.GetOptionString('i'));
-
-  if (args.HasOption('H'))
-    SetMaxHandles(args.GetOptionString('H').AsInteger());
-
-  // Set the gid we are running under
-  if (args.HasOption('g')) {
-    PString gidstr = args.GetOptionString('g');
-    if (gidstr.IsEmpty())
-      gidstr = "nobody";
-    int gid;
-    if ((PINDEX)strspn(gidstr, "0123456789") == gidstr.GetLength())
-      gid = gidstr.AsInteger();
-    else {
-      struct group * gr = getgrnam(gidstr);
-      if (gr == NULL) {
-        cout << "Could not find group \"" << gidstr << '"' << endl;
-        return 1;
-      }
-      gid = gr->gr_gid;
-    }
-    if (setgid(gid) != 0) {
-      cout << "Could not set GID to \"" << gidstr << "\" (" << gid << ")"
-              " - " << strerror(errno) << endl;
-      return 1;
-    }
-  }
-
-  // Set the uid we are running under
-  if (args.HasOption('u')) {
-    PString uidstr = args.GetOptionString('u');
-    if (uidstr.IsEmpty())
-      uidstr = "nobody";
-    int uid;
-    if ((PINDEX)strspn(uidstr, "0123456789") == uidstr.GetLength())
-      uid = uidstr.AsInteger();
-    else {
-      struct passwd * pw = getpwnam(uidstr);
-      if (pw == NULL) {
-        cout << "Could not find user \"" << uidstr << '"' << endl;
-        return 1;
-      }
-      uid = pw->pw_uid;
-    }
-    if (setuid(uid) != 0) {
-      cout << "Could not set UID to \"" << uidstr << "\" (" << uid << ")"
-              " - " << strerror(errno) << endl;
-      return 1;
-    }
-  }
-
-  // set the core file size
-  if (args.HasOption('C')) {
-#ifdef P_LINUX
-    struct rlimit rlim;
-    if (getrlimit(RLIMIT_CORE, &rlim) != 0) 
-      cout << "Could not get current core file size : error = " << errno << endl;
-    else {
-      int v = args.GetOptionString('C').AsInteger();
-      rlim.rlim_cur = v;
-      if (setrlimit(RLIMIT_CORE, &rlim) != 0) 
-        cout << "Could not set current core file size to " << v << " : error = " << errno << endl;
-      else {
-        getrlimit(RLIMIT_CORE, &rlim);
-        cout << "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max << endl;
-      }
-    }
-#endif
-  }
-
   // open the system logger for this program
   if (systemLogFileName.IsEmpty())
     openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
@@ -733,6 +685,39 @@ int PServiceProcess::InitialiseService()
               " - " << strerror(errno) << endl;
       return 1;
     }
+  }
+  PSYSTEMLOG(StdError, "Starting service process \"" << GetName() << "\" v" << GetVersion(TRUE));
+
+  if (args.HasOption('i'))
+    SetConfigurationPath(args.GetOptionString('i'));
+
+  if (args.HasOption('H')) {
+    int uid = geteuid();
+    seteuid(getuid()); // Switch back to starting uid for next call
+    SetMaxHandles(args.GetOptionString('H').AsInteger());
+    seteuid(uid);
+  }
+
+  // set the core file size
+  if (args.HasOption('C')) {
+#ifdef P_LINUX
+    struct rlimit rlim;
+    if (getrlimit(RLIMIT_CORE, &rlim) != 0) 
+      cout << "Could not get current core file size : error = " << errno << endl;
+    else {
+      int uid = geteuid();
+      seteuid(getuid()); // Switch back to starting uid for next call
+      int v = args.GetOptionString('C').AsInteger();
+      rlim.rlim_cur = v;
+      if (setrlimit(RLIMIT_CORE, &rlim) != 0) 
+        cout << "Could not set current core file size to " << v << " : error = " << errno << endl;
+      else {
+        getrlimit(RLIMIT_CORE, &rlim);
+        cout << "Core file size set to " << rlim.rlim_cur << "/" << rlim.rlim_max << endl;
+      }
+      seteuid(uid);
+    }
+#endif
   }
 
 #if !defined(BE_THREADS) && !defined(P_RTEMS)
@@ -805,8 +790,6 @@ int PServiceProcess::InitialiseService()
 int PServiceProcess::_main(void *)
 {
   if ((terminationValue = InitialiseService()) < 0) {
-    PSYSTEMLOG(Warning, "Starting service process \"" << GetName() << "\" v" << GetVersion(TRUE));
-
     // Make sure housekeeping thread is going so signals are handled.
     SignalTimerChange();
 
