@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.13  2004/11/07 12:55:38  rjongbloed
+ * Fixed safe ptr casting so keeps associated collection for use in for loops.
+ *
  * Revision 1.12  2004/10/28 12:19:44  rjongbloed
  * Added oeprator! to assure test for NULL that some people use is correct for PSafePtr
  *
@@ -548,6 +551,10 @@ class PSafePtrBase : public PObject
     BOOL SetSafetyMode(
       PSafetyMode mode  /// New locking mode
     );
+
+    /**Get the associated collection this pointer may be contained in.
+      */
+    const PSafeCollection * GetCollection() const { return collection; }
   //@}
 
   protected:
@@ -765,20 +772,31 @@ template <class T> class PSafePtr : public PSafePtrBase
         return (T *)currentObject;
       }
   //@}
+
+  /**Cast the pointer to a different type. The pointer being cast to MUST
+     be a derived class or NULL is returned.
+    */
+  template <class Base>
+  static PSafePtr<T> DownCast(const PSafePtr<Base> & oldPtr)
+  {
+    PSafePtr<T> newPtr;
+    Base * realPtr = oldPtr;
+    if (realPtr != NULL && PIsDescendant(realPtr, T))
+      newPtr.Assign(oldPtr);
+    return newPtr;
+  }
 };
 
 
+/**Cast the pointer to a different type. The pointer being cast to MUST
+    be a derived class or NULL is returned.
+  */
 template <class Base, class Derived>
 PSafePtr<Derived> PSafePtrCast(const PSafePtr<Base> & oldPtr)
 {
-  PSafePtr<Derived> newPtr;
-  Base * realPtr = oldPtr;
-  if (realPtr != NULL && PIsDescendant(realPtr, Derived)) {
-    newPtr = (Derived *)(Base *)oldPtr;
-    newPtr.SetSafetyMode(oldPtr.GetSafetyMode());
-  }
-  return newPtr;
+  return PSafePtr<Derived>::DownCast<Base>(oldPtr);
 }
+
 
 /** This class defines a thread-safe collection of objects.
 
