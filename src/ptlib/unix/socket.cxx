@@ -26,8 +26,8 @@ BOOL PTCPSocket::Read(void * buf, PINDEX len)
 
 {
   if (!SetIOBlock(TRUE)) {
-    lastError      = Timeout;
-    lastWriteCount = 0;
+    lastError     = Timeout;
+    lastReadCount = 0;
     return FALSE;
   }
 
@@ -44,3 +44,71 @@ BOOL PTCPSocket::Read(void * buf, PINDEX len)
   lastReadCount = 0;
   return FALSE;
 }
+
+////////////////////////////////////////////////////////////////
+//
+//  PUDPSocket
+//
+
+BOOL PUDPSocket::ReadFrom(
+      void * buf,     // Data to be written as URGENT TCP data.
+      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
+      Address & addr, // Address from which the datagram was received.
+      WORD & port)     // Port from which the datagram was received.
+{
+  if (!SetIOBlock(TRUE)) {
+    lastError     = Timeout;
+    lastReadCount = 0;
+    return FALSE;
+  }
+
+  // attempt to read data
+  struct sockaddr_in rec_addr;
+  int    addr_len;
+  if (ConvertOSError(lastReadCount = ::recvfrom(os_handle, buf, len, 0,
+                                       (sockaddr *)&rec_addr, &addr_len))) {
+    addr = rec_addr.sin_addr;
+    port = rec_addr.sin_port;
+    return lastReadCount > 0;
+  }
+
+  lastReadCount = 0;
+  return FALSE;
+}
+
+
+////////////////////////////////////////////////////////////////
+//
+//  PUDPSocket
+//
+
+virtual BOOL PUDPSocket::WriteTo(
+      const void * buf,   // Data to be written as URGENT TCP data.
+      PINDEX len,         // Number of bytes pointed to by <CODE>buf</CODE>.
+      const Address & addr, // Address to which the datagram is sent.
+      WORD port)          // Port to which the datagram is sent.
+{
+  if (!SetIOBlock(FALSE)) {
+    lastError     = Timeout;
+    lastWriteCount = 0;
+    return FALSE;
+  }
+
+  // attempt to read data
+  struct sockaddr_in rec_addr;
+  int    addr_len;
+
+  rec_addr.sin_addr = addr;
+  rec_addr.sin_port = port;
+
+  if (ConvertOSError(lastWriteCount = ::sendto(os_handle, buf, len, 0,
+                                       (sockaddr *)&rec_addr, &addr_len))) {
+    return lastWriteCount > 0;
+  }
+
+  lastWriteCount = 0;
+  return FALSE;
+}
+
+
+
