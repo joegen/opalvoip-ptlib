@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.49  2001/05/03 06:27:29  robertj
+ * Added return value to PMemoryCheck::SetIgnoreAllocations() so get previous state.
+ *
  * Revision 1.48  2001/02/18 23:16:02  robertj
  * Fixed possible NULL pointer reference in memory check validation
  *   function, thanks Peter Ehlin.
@@ -606,14 +609,18 @@ BOOL PMemoryHeap::ValidateHeap(ostream * error)
 }
 
 
-void PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
 {
   Wrapper mem;
+
+  BOOL ignoreAllocations = (mem->flags&NoLeakPrint) != 0;
 
   if (ignore)
     mem->flags |= NoLeakPrint;
   else
     mem->flags &= ~NoLeakPrint;
+
+  return ignoreAllocations;
 }
 
 
