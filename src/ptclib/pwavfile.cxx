@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.31.4.3  2004/07/12 09:17:20  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.31.4.2  2004/07/12 08:30:16  csoutheren
  * More fixes for abstract factory implementation of PWAVFile
  *
@@ -160,8 +163,12 @@ const char WAVLabelFMT_[4] = { 'f', 'm', 't', ' ' };
 const char WAVLabelFACT[4] = { 'F', 'A', 'C', 'T' };
 const char WAVLabelDATA[4] = { 'd', 'a', 't', 'a' };
 
+#ifdef _WIN32
+
 PINSTANTIATE_FACTORY(PWAVFileFormat, unsigned)
 PINSTANTIATE_FACTORY(PWAVFileConverter, unsigned)
+
+#endif
 
 inline BOOL ReadAndCheck(PWAVFile & file, void * buf, PINDEX len)
 {
@@ -597,7 +604,7 @@ BOOL PWAVFile::ProcessHeader() {
 
   // read the extended format chunk (if any)
   extendedHeader.SetSize(0);
-  if (wavFmtChunk.hdr.len > (sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr))) {
+  if ((unsigned)wavFmtChunk.hdr.len > (sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr))) {
     extendedHeader.SetSize(wavFmtChunk.hdr.len - (sizeof(wavFmtChunk) - sizeof(wavFmtChunk.hdr)));
     if (!ReadAndCheck(*this, extendedHeader.GetPointer(), extendedHeader.GetSize()))
       return FALSE;
