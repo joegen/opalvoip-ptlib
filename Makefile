@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.14  2000/10/30 05:49:25  robertj
+# Made make all do bothdepend both
+#
 # Revision 1.13  2000/06/26 11:17:19  robertj
 # Nucleus++ port (incomplete).
 #
@@ -84,6 +87,9 @@ endif
 ifdef GUI_TYPE
 SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
+
+all : bothdepend both
+
 
 opt :
 	$(foreach dir,$(SUBDIRS),$(MAKE) -C $(dir) opt ;)
