@@ -164,7 +164,15 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\pssl.cxx
-# PROP Exclude_From_Build 1
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+# ADD CPP /W4
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
