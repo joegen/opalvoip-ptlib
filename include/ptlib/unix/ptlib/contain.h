@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.10  1998/11/03 10:56:33  robertj
+ * Removed unused extern for PErrorStream
+ *
  * Revision 1.9  1998/09/24 04:11:31  robertj
  * Added open software license.
  *
@@ -58,12 +61,6 @@
 #define	PEXPORT
 #define	PSTATIC
 
-///////////////////////////////////////////
-//
-//  declare PErrorStream 
-//
-class ostream;
-extern ostream * PErrorStream;
 
 ///////////////////////////////////////////
 //
