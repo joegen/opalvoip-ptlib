@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.h,v $
+ * Revision 1.11  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -43,24 +47,8 @@
  *
  */
 
-#ifndef _PCONFIG
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-class PXConfig;
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PConfiguration
-
-#define _PCONFIG_PLATFORM_INCLUDE
-#include "../../config.h"
-
-#endif
-#ifdef _PCONFIG_PLATFORM_INCLUDE
-#undef _PCONFIG_PLATFORM_INCLUDE
 
   public:
     PConfig(int, const PString & name);
@@ -68,8 +56,5 @@ class PXConfig;
 
   protected:
     PXConfig * config;
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

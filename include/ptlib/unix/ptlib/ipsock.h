@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.11  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.10  2002/10/08 14:31:17  robertj
  * Fixed GNU compiler compatibility
  *
@@ -61,29 +65,11 @@
  *
  */
 
-#ifndef _PIPSOCKET
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#ifndef __BEOS__
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-#define _PIPSOCKET_PLATFORM_INCLUDE
-#include "../../ipsock.h"
-
-#endif
-#ifdef _PIPSOCKET_PLATFORM_INCLUDE
-#undef _PIPSOCKET_PLATFORM_INCLUDE
-
-#endif
-
+// nothing to do
 
 // End Of File ////////////////////////////////////////////////////////////////
