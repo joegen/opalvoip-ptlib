@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.92  2004/04/24 06:26:03  rjongbloed
+# Fixed very bizarre problem with GNU GCC 3.4.0 and generating dependencies,
+#   cannot have -g and -M on the command line at the same time!
+#
 # Revision 1.91  2004/04/21 12:05:04  csoutheren
 # Added target to create gcc compiled header for ptlib.h, but not used
 # because it does not seem to be able to compile some files
@@ -332,12 +336,12 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
+	$(CPLUS) $(STDCCFLAGS:-g=) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
-	$(CC) $(STDCCFLAGS) -M $< >> $@
+	$(CC) $(STDCCFLAGS:-g=) -M $< >> $@
 
 #
 # add in good files to delete
