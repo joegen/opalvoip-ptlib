@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.32  1998/11/22 11:30:08  robertj
+ * Check route table function to get a list
+ *
  * Revision 1.31  1998/11/19 05:18:22  robertj
  * Added route table manipulation functions to PIPSocket class.
  *
@@ -368,21 +371,30 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        String name of the gateway device, or empty string if there is none.
      */
 
-    static BOOL EnumRouteTable(
-      Address & network,      // Network address for route
-      Address & mask,         // Mask for network address
-      Address & destination,  // Host packets are routed to
-      PString & ifName,       // Interface name for route
-      BOOL begin              // Flag for first enumeration
+    PDECLARE_CLASS(RouteEntry, PObject)
+      public:
+        RouteEntry(const Address & addr) : network(addr) { }
+        Address GetNetwork() const { return network; }
+        Address GetNetMask() const { return net_mask; }
+        Address GetDestination() const { return destination; }
+        const PString & GetInterface() const { return interfaceName; }
+        long GetMetric() const { return metric; }
+      protected:
+        Address network;
+        Address net_mask;
+        Address destination;
+        PString interfaceName;
+        long    metric;
+      friend class PIPSocket;
+    };
+    PLIST(RouteTable, RouteEntry);
+    static BOOL GetRouteTable(
+      RouteTable & table      // Route table
     );
-    /* Enumerate the entries in the route table. The first time the function
-       is called the <CODE>begin</CODE> variable is set to TRUE and the first
-       route is returned. Thereafter, the <CODE>begin</CODE> variable is FALSE
-       and the <CODE>network</CODE> variable is the previously returned value.
+    /* Get the systems route table.
 
        <H2>Returns:</H2>
-       TRUE if the data returned is a valid enumeration, FALSE if at end or an
-       error occurs.
+       TRUE if the route table is returned, FALSE if an error occurs.
      */
 
 
