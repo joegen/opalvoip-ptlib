@@ -8,7 +8,6 @@
 	"..\..\include\ptlib\conchan.h"\
 	"..\..\Include\PtLib\Config.h"\
 	"..\..\Include\PtLib\Contain.h"\
-	"..\..\include\ptlib\contain.inl"\
 	"..\..\Include\PtLib\Dict.h"\
 	"..\..\Include\PtLib\Dynalink.h"\
 	"..\..\Include\PtLib\File.h"\
@@ -27,7 +26,6 @@
 	"..\..\include\ptlib\msos\ptlib\pipechan.h"\
 	"..\..\include\ptlib\msos\ptlib\pprocess.h"\
 	"..\..\include\ptlib\msos\ptlib\ptime.h"\
-	"..\..\include\ptlib\msos\ptlib\ptlib.inl"\
 	"..\..\include\ptlib\msos\ptlib\semaphor.h"\
 	"..\..\include\ptlib\msos\ptlib\sfile.h"\
 	"..\..\include\ptlib\msos\ptlib\sound.h"\
@@ -40,7 +38,6 @@
 	"..\..\include\ptlib\msos\ptlib\videoio.h"\
 	"..\..\Include\PtLib\mutex.h"\
 	"..\..\Include\PtLib\object.h"\
-	"..\..\include\ptlib\osutil.inl"\
 	"..\..\Include\PtLib\Pdirect.h"\
 	"..\..\Include\PtLib\Pipechan.h"\
 	"..\..\Include\PtLib\pprocess.h"\
