@@ -25,6 +25,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp_c2s.h,v $
+ * Revision 1.3  2004/04/26 01:51:57  rjongbloed
+ * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
+ *
  * Revision 1.2  2004/04/23 06:07:24  csoutheren
  * Added #if P_SASL to allow operation without SASL
  *
@@ -35,7 +38,6 @@
  *
  */
 
-#if P_EXPAT
 #ifndef _XMPP_C2S
 #define _XMPP_C2S
 
@@ -44,112 +46,165 @@
 #endif
 
 #include <ptclib/xmpp.h>
+
+#if P_EXPAT
+
+#include <ptclib/psasl.h>
 #include <ptlib/sockets.h>
 
+
 ///////////////////////////////////////////////////////
 
-/** XMPP client to server TCP transport
- */
-class XMPP_C2S_TCPTransport : public XMPPTransport
+namespace XMPP
 {
-    PCLASSINFO(XMPP_C2S_TCPTransport, XMPPTransport);
+  namespace C2S
+  {
 
-  public:
-    XMPP_C2S_TCPTransport(const PString& hostname, WORD port = 5222);
-    ~XMPP_C2S_TCPTransport();
+    /** XMPP client to server TCP transport
+     */
+    class TCPTransport : public Transport
+    {
+      PCLASSINFO(TCPTransport, Transport);
 
-    const PString&  GetServerHost() const   { return m_Hostname; }
-    WORD            GetServerPort() const   { return m_Port; }
+    public:
+      TCPTransport(const PString& hostname);
+      TCPTransport(const PString& hostname, WORD port);
+      ~TCPTransport();
 
-    virtual BOOL Open();
-    virtual BOOL Close();
+      const PString&  GetServerHost() const   { return m_Hostname; }
+      WORD            GetServerPort() const   { return m_Port; }
 
-  protected:
-    const PString&  m_Hostname;
-    const WORD      m_Port;
-    PTCPSocket *    m_Socket;
-};
+      virtual BOOL Open();
+      virtual BOOL Close();
 
-///////////////////////////////////////////////////////
+    protected:
+      PString         m_Hostname;
+      WORD            m_Port;
+      PTCPSocket *    m_Socket;
+    };
+  
 
 /** This class handles the client side of a C2S (Client to Server)
     XMPP stream.
  */
-class XMPP_C2S : public XMPPStreamHandler
-{
-    PCLASSINFO(XMPP_C2S, XMPPStreamHandler);
-
-  public:
-    XMPP_C2S(const PString& uid,
-      const PString& server,
-      const PString& resource,
-      const PString& pwd);
-
-    ~XMPP_C2S();
-
-    /** These notifier lists are fired when a XMPP stanza or a
-    stream error is received. For the notifier lists to be fired
-    the stream must be already in the established state (i.e.
-    after the bind and the session state)
-    */
-    PNotifierList&  ErrorHandlers()     { return m_ErrorHandlers; }
-    PNotifierList&  MessageHandlers()   { return m_MessageHandlers; }
-    PNotifierList&  PresenceHandlers()  { return m_PresenceHandlers; }
-    PNotifierList&  IQHandlers()        { return m_IQHandlers; }
-
-  protected:
-    const PString       m_UserID;
-    const PString       m_Server;
-    PString             m_Resource; // the resource can change: the server can force one
-    const PString       m_Password;
-#if P_SASL
-    PSASLClient         m_SASL;
-#endif
-    PString             m_Mechanism;
-    BOOL                m_HasBind;
-    BOOL                m_HasSession;
-
-    PNotifierList       m_ErrorHandlers;
-    PNotifierList       m_MessageHandlers;
-    PNotifierList       m_PresenceHandlers;
-    PNotifierList       m_IQHandlers;
-
-    enum C2S_StreamState
+    class StreamHandler : public BaseStreamHandler
     {
-      Null,
-      TLSStarted,
-      SASLStarted,
-      StreamSent,
-      BindSent,
-      SessionSent,
-      Established
+      PCLASSINFO(StreamHandler, BaseStreamHandler);
+
+    public:
+      StreamHandler(const JID& jid, const PString& pwd);
+      ~StreamHandler();
+
+      virtual BOOL Start(Transport * transport = 0);
+
+      /** Request the delivery of the specified stanza
+      NOTE: the StreamHandler takes ownership of the stanza
+      and will take care of deleting it.
+      BIG NOTE: use this method and not Write() if you want to
+      get a notification when an answer to an iq arrives
+      */
+      BOOL    Send(Stanza * stanza);
+
+      void    SetVersion(WORD major, WORD minor);
+      void    GetVersion(WORD& major, WORD& minor) const;
+
+      /** These notifier lists after when a client session is
+      established (i.e. after the handshake and authentication
+      steps are completed) or is released. The parameter passed
+      to the notifiers is a reference to the stream handler
+      */
+      PNotifierList&  SessionEstablishedHandlers()  { return m_SessionEstablishedHandlers; }
+      PNotifierList&  SessionReleasedHandlers()     { return m_SessionReleasedHandlers; }
+
+      /** These notifier lists are fired when a XMPP stanza or a
+      stream error is received. For the notifier lists to be fired
+      the stream must be already in the established state (i.e.
+      after the bind and the session state). The parameter passed
+      to the notifiers is a reference to the received pdu
+      */
+      PNotifierList&  ErrorHandlers()     { return m_ErrorHandlers; }
+      PNotifierList&  MessageHandlers()   { return m_MessageHandlers; }
+      PNotifierList&  PresenceHandlers()  { return m_PresenceHandlers; }
+      PNotifierList&  IQHandlers()        { return m_IQHandlers; }
+
+      /** A notifier list for a specific namespace. The list will
+      be fired only upon receiving an IQ with a child element
+      of type "query" (just like a lot of JEPs) and the specified 
+      namespace
+      */
+      PNotifierList&  IQQueryHandlers(const PString& xml_namespace);
+
+    protected:
+      virtual void    OnOpen(Stream& stream, INT);
+      virtual void    OnClose(Stream& stream, INT);
+      virtual void    StartAuthNegotiation();
+
+      virtual void    OnSessionEstablished();
+      virtual void    OnSessionReleased();
+      virtual void    OnElement(PXML& pdu);
+      virtual void    OnError(PXML& pdu);
+
+      virtual void    OnMessage(XMPP::Message& pdu);
+      virtual void    OnPresence(XMPP::Presence& pdu);
+      virtual void    OnIQ(XMPP::IQ& pdu);
+
+      // State handlers
+      virtual void    HandleNullState(PXML& pdu);
+      virtual void    HandleTLSStartedState(PXML& pdu);
+      virtual void    HandleSASLStartedState(PXML& pdu);
+      virtual void    HandleNonSASLStartedState(PXML& pdu);
+      virtual void    HandleStreamSentState(PXML& pdu);
+      virtual void    HandleBindSentState(PXML& pdu);
+      virtual void    HandleSessionSentState(PXML& pdu);
+      virtual void    HandleEstablishedState(PXML& pdu);
+
+      WORD                m_VersionMajor;
+      WORD                m_VersionMinor;
+      JID                 m_JID;
+      const PString       m_Password;
+#if P_SASL
+      PSASLClient         m_SASL;
+      PString             m_Mechanism;
+#endif
+      BOOL                m_HasBind;
+      BOOL                m_HasSession;
+
+      PNotifierList       m_SessionEstablishedHandlers;
+      PNotifierList       m_SessionReleasedHandlers;
+      PNotifierList       m_ErrorHandlers;
+      PNotifierList       m_MessageHandlers;
+      PNotifierList       m_PresenceHandlers;
+      PNotifierList       m_IQHandlers;
+      PDictionary<PString, PNotifierList> m_IQQueryHandlers;
+
+      PMutex              m_PendingIQsLock;
+      StanzaList          m_PendingIQs;
+
+      enum StreamState
+      {
+        Null,
+        TLSStarted,
+        SASLStarted,
+        NonSASLStarted, // non SASL authentication (JEP-0078)
+        StreamSent,
+        BindSent,
+        SessionSent,
+        Established
+      };
+
+      virtual void SetState(StreamState s);
+
+      StreamState m_State;
     };
 
-    C2S_StreamState m_State;
+  }  // namespace C2S
+} // namespace XMPP
 
-    virtual void    OnOpen(XMPPStream& stream, INT);
-    virtual void    OnClose(XMPPStream& stream, INT);
 
-    virtual void    OnElement(PXML& pdu);
-    virtual void    OnError(PXML& pdu);
-    virtual void    OnMessage(PXML& pdu);
-    virtual void    OnPresence(PXML& pdu);
-    virtual void    OnIQ(PXML& pdu);
-
-    // State handlers
-    virtual void    HandleNullState(PXML& pdu);
-    virtual void    HandleTLSStartedState(PXML& pdu);
-#if P_SASL
-    virtual void    HandleSASLStartedState(PXML& pdu);
-#endif
-    virtual void    HandleStreamSentState(PXML& pdu);
-    virtual void    HandleBindSentState(PXML& pdu);
-    virtual void    HandleSessionSentState(PXML& pdu);
-    virtual void    HandleEstablishedState(PXML& pdu);
-  };
-
-  #endif  // _XMPP_C2S
 #endif  // P_EXPAT
 
+#endif  // _XMPP_C2S
+
 // End of File ///////////////////////////////////////////////////////////////
+
 
