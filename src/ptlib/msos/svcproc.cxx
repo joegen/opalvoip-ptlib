@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.25 1997/07/17 12:43:29 robertj Exp $
+ * $Id: svcproc.cxx,v 1.26 1997/08/28 12:50:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.26  1997/08/28 12:50:32  robertj
+ * Fixed race condition in cleaning up threads on application termination.
+ *
  * Revision 1.25  1997/07/17 12:43:29  robertj
  * Fixed bug for auto-start of service under '95.
  *
@@ -386,6 +389,10 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   if (controlWindow != NULL)
     DestroyWindow(controlWindow);
 
+  // Set thread ID for process to this thread
+  activeThreads.SetAt(threadId, NULL);
+  threadId = GetCurrentThreadId();
+  activeThreads.SetAt(threadId, this);
   OnStop();
 
   cfg.SetInteger("Pid", 0);
