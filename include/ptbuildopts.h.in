@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.35  2004/08/24 07:08:13  csoutheren
+ * Added use of recvmsg to determine which interface UDP packets arrive on
+ *
  * Revision 1.34  2004/06/01 07:42:19  csoutheren
  * Restored memory allocation checking
  * Added configure flag to enable, thanks to Derek Smithies
@@ -468,6 +471,7 @@
 #undef  P_HAS_RECURSIVE_MUTEX
 #undef  P_NEEDS_GNU_CXX_NAMESPACE
 #undef  PMEMORY_CHECK
+#undef  P_HAS_RECVMSG
 
 #endif // _PT_BUILDOPTS_H
 

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.48  2004/08/24 07:08:13  csoutheren
+ * Added use of recvmsg to determine which interface UDP packets arrive on
+ *
  * Revision 1.47  2004/05/06 11:28:30  rjongbloed
  * Changed P_fd_set to use malloc/free isntead of new/delete due to pedantry about [].
  *
@@ -590,6 +593,12 @@ class PSocket : public PChannel
   // Member variables
     /// Port to be used by the socket when opening the channel.
     WORD port;
+
+#if P_HAS_RECVMSG
+    BOOL catchReceiveToAddr;
+    virtual void SetLastReceiveAddr(void * /*addr*/, int /*addrLen*/)
+    { }
+#endif
 
 // Include platform dependent part of class
 #ifdef _WIN32
