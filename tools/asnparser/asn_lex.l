@@ -1,6 +1,6 @@
 %{
 /*
- * $Id: asn_lex.l,v 1.1 1997/12/13 09:17:49 robertj Exp $
+ * $Id: asn_lex.l,v 1.2 1998/05/21 04:21:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -9,6 +9,9 @@
  * Copyright 1997 by Equivalence
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.2  1998/05/21 04:21:47  robertj
+ * Implementing more of the ASN spec.
+ *
  * Revision 1.1  1997/12/13 09:17:49  robertj
  * Initial revision
  *
@@ -26,6 +29,7 @@ extern FILE * yyin;
 
 extern unsigned lineNumber;
 int IdentifierTokenContext = IDENTIFIER;
+int BraceTokenContext = '{';
 int InMacroContext = FALSE;
 int HasObjectTypeMacro = FALSE;
 int InMIBContext = FALSE;
@@ -168,7 +172,7 @@ static int TokenSelect(int context, int token1, int token2)
 
 "@"  { return '@'; }
 
-"{"  { return '{'; }
+"{"  { return BraceTokenContext; }
 
 "}"  { return '}'; }
 
