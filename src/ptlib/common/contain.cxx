@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.102  2001/04/26 03:45:19  robertj
+ * Changed PString has function again, use a prime number for modulus.
+ *
  * Revision 1.101  2001/04/24 02:39:18  robertj
  * Fixed problem with new string hash function giving negative indexes.
  *
@@ -1120,7 +1123,7 @@ PINDEX PString::HashFunction() const
   PINDEX hash = 0;
   while (i < 8 && theArray[i] != 0)
     hash = (hash << 5) ^ theArray[i++] ^ hash;
-  return PABSINDEX(hash)%123;
+  return PABSINDEX(hash)%127;
 }
 
 
