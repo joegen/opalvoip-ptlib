@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.1 1996/01/02 13:10:31 robertj Exp $
+ * $Id: ptlib.inl,v 1.2 1996/05/09 12:23:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.2  1996/05/09 12:23:02  robertj
+ * Further implementation.
+ *
  * Revision 1.1  1996/01/02 13:10:31  robertj
  * Initial revision
  *
@@ -18,7 +21,7 @@
 // PTimer
 
 PINLINE PTimeInterval PTimer::Tick()
-  { return clock()*CLOCKS_PER_SEC/1000; }
+  { return (long)(clock()*CLOCKS_PER_SEC/1000); }
 
 PINLINE unsigned PTimer::Resolution()
   { return 1000/CLOCKS_PER_SEC; }
