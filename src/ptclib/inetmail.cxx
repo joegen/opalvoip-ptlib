@@ -24,6 +24,9 @@
  * Contributor(s): Federico Pinna and Reitek S.p.A. (SASL authentication)
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.27  2004/04/26 01:33:20  rjongbloed
+ * Fixed minor problem with SASL authentication, thanks Federico Pinna, Reitek S.p.A.
+ *
  * Revision 1.26  2004/04/21 00:29:56  csoutheren
  * Added SASL authentication to PPOP3Client and PSMTPClient
  * Thanks to Federico Pinna and Reitek S.p.A.
@@ -187,9 +190,11 @@ BOOL PSMTPClient::LogIn(const PString & username,
     localHost = socket->GetLocalHostName();
   }
 
-  if ((!haveHello && ExecuteCommand(EHLO, localHost)/100 != 2) ||
-      (haveHello && !extendedHello))
-      return TRUE; // EHLO not supported, therefore AUTH not supported
+  if (haveHello)
+    return FALSE; // Wrong state
+
+  if (ExecuteCommand(EHLO, localHost)/100 != 2)
+    return TRUE; // EHLO not supported, therefore AUTH not supported
 
   haveHello = extendedHello = TRUE;
 
@@ -1577,3 +1582,4 @@ BOOL PRFC822Channel::SendWithSMTP(PSMTPClient * smtp)
 
 
 // End Of File ///////////////////////////////////////////////////////////////
+
