@@ -359,7 +359,6 @@ EXPORTS
     ??1MAPIDLL@PMail@@UAE@XZ @305 NONAME ;public: virtual __thiscall PMail::MAPIDLL::~MAPIDLL(void)
     ??1Nest@PReadWriteMutex@@UAE@XZ @306 NONAME ;public: virtual __thiscall PReadWriteMutex::Nest::~Nest(void)
     ??1NT_ServiceManager@@QAE@XZ @307 NONAME ;public: __thiscall NT_ServiceManager::~NT_ServiceManager(void)
-    ??1OnLoadModule_PNotifier@PPluginModuleManager@@UAE@XZ @4724 NONAME ;public: virtual __thiscall PPluginModuleManager::OnLoadModule_PNotifier::~OnLoadModule_PNotifier(void)
     ??1PAbstractArray@@UAE@XZ @308 NONAME ;public: virtual __thiscall PAbstractArray::~PAbstractArray(void)
     ??1PAbstractDictionary@@UAE@XZ @309 NONAME ;public: virtual __thiscall PAbstractDictionary::~PAbstractDictionary(void)
     ??1PAbstractList@@UAE@XZ @310 NONAME ;public: virtual __thiscall PAbstractList::~PAbstractList(void)
@@ -748,7 +747,6 @@ EXPORTS
     ??_7MAPIDLL@PMail@@6B@ @646 NONAME ;const  PMail::MAPIDLL::`vftable'
     ??_7Nest@PReadWriteMutex@@6B@ @647 NONAME ;const  PReadWriteMutex::Nest::`vftable'
     ??_7NT_ServiceManager@@6B@ @648 NONAME ;const  NT_ServiceManager::`vftable'
-    ??_7OnLoadModule_PNotifier@PPluginModuleManager@@6B@ @4727 NONAME ;const  PPluginModuleManager::OnLoadModule_PNotifier::`vftable'
     ??_7PAbstractArray@@6B@ @649 NONAME ;const  PAbstractArray::`vftable'
     ??_7PAbstractDictionary@@6B@ @650 NONAME ;const  PAbstractDictionary::`vftable'
     ??_7PAbstractList@@6B@ @651 NONAME ;const  PAbstractList::`vftable'
@@ -1036,7 +1034,6 @@ EXPORTS
     ??_R0?AVNest@PReadWriteMutex@@@8 @3097 NONAME ;class PReadWriteMutex::Nest `RTTI Type Descriptor'
     ??_R0?AVNT_ServiceManager@@@8 @3098 NONAME ;class NT_ServiceManager `RTTI Type Descriptor'
     ??_R0?AVofstream@@@8 @3099 NONAME ;class ofstream `RTTI Type Descriptor'
-    ??_R0?AVOnLoadModule_PNotifier@PPluginModuleManager@@@8 @4730 NONAME ;class PPluginModuleManager::OnLoadModule_PNotifier `RTTI Type Descriptor'
     ??_R0?AVostream@@@8 @3100 NONAME ;class ostream `RTTI Type Descriptor'
     ??_R0?AVPAbstractArray@@@8 @3101 NONAME ;class PAbstractArray `RTTI Type Descriptor'
     ??_R0?AVPAbstractDictionary@@@8 @3102 NONAME ;class PAbstractDictionary `RTTI Type Descriptor'
@@ -1270,7 +1267,6 @@ EXPORTS
     ??_R1A@?0A@A@Nest@PReadWriteMutex@@8 @3323 NONAME ;PReadWriteMutex::Nest::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@NT_ServiceManager@@8 @3324 NONAME ;NT_ServiceManager::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@ofstream@@8 @3325 NONAME ;ofstream::`RTTI Base Class Descriptor at (0,-1,0,0)'
-    ??_R1A@?0A@A@OnLoadModule_PNotifier@PPluginModuleManager@@8 @4733 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@ostream@@8 @3326 NONAME ;ostream::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PAbstractArray@@8 @3327 NONAME ;PAbstractArray::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PAbstractDictionary@@8 @3328 NONAME ;PAbstractDictionary::`RTTI Base Class Descriptor at (0,-1,0,0)'
@@ -1488,7 +1484,6 @@ EXPORTS
     ??_R2Nest@PReadWriteMutex@@8 @3536 NONAME ;PReadWriteMutex::Nest::`RTTI Base Class Array'
     ??_R2NT_ServiceManager@@8 @3537 NONAME ;NT_ServiceManager::`RTTI Base Class Array'
     ??_R2ofstream@@8 @3538 NONAME ;ofstream::`RTTI Base Class Array'
-    ??_R2OnLoadModule_PNotifier@PPluginModuleManager@@8 @4736 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Base Class Array'
     ??_R2PAbstractArray@@8 @3539 NONAME ;PAbstractArray::`RTTI Base Class Array'
     ??_R2PAbstractDictionary@@8 @3540 NONAME ;PAbstractDictionary::`RTTI Base Class Array'
     ??_R2PAbstractList@@8 @3541 NONAME ;PAbstractList::`RTTI Base Class Array'
@@ -1694,7 +1689,6 @@ EXPORTS
     ??_R3Nest@PReadWriteMutex@@8 @3737 NONAME ;PReadWriteMutex::Nest::`RTTI Class Hierarchy Descriptor'
     ??_R3NT_ServiceManager@@8 @3738 NONAME ;NT_ServiceManager::`RTTI Class Hierarchy Descriptor'
     ??_R3ofstream@@8 @3739 NONAME ;ofstream::`RTTI Class Hierarchy Descriptor'
-    ??_R3OnLoadModule_PNotifier@PPluginModuleManager@@8 @4739 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Class Hierarchy Descriptor'
     ??_R3PAbstractArray@@8 @3740 NONAME ;PAbstractArray::`RTTI Class Hierarchy Descriptor'
     ??_R3PAbstractDictionary@@8 @3741 NONAME ;PAbstractDictionary::`RTTI Class Hierarchy Descriptor'
     ??_R3PAbstractList@@8 @3742 NONAME ;PAbstractList::`RTTI Class Hierarchy Descriptor'
@@ -1900,7 +1894,6 @@ EXPORTS
     ??_R4Nest@PReadWriteMutex@@6B@ @3938 NONAME ;const  PReadWriteMutex::Nest::`RTTI Complete Object Locator'
     ??_R4NT_ServiceManager@@6B@ @3939 NONAME ;const  NT_ServiceManager::`RTTI Complete Object Locator'
     ??_R4ofstream@@6B@ @3940 NONAME ;const  ofstream::`RTTI Complete Object Locator'
-    ??_R4OnLoadModule_PNotifier@PPluginModuleManager@@6B@ @4742 NONAME ;const  PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Complete Object Locator'
     ??_R4PAbstractArray@@6B@ @3941 NONAME ;const  PAbstractArray::`RTTI Complete Object Locator'
     ??_R4PAbstractDictionary@@6B@ @3942 NONAME ;const  PAbstractDictionary::`RTTI Complete Object Locator'
     ??_R4PAbstractList@@6B@ @3943 NONAME ;const  PAbstractList::`RTTI Complete Object Locator'
@@ -2162,7 +2155,6 @@ EXPORTS
     ?Byte4@Address@PIPSocket@@QBEEXZ @928 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte4(void)const 
     ?CalculateFrameBytes@PVideoDevice@@SAIIIABVPString@@@Z @929 NONAME ;public: static unsigned int __cdecl PVideoDevice::CalculateFrameBytes(unsigned int,unsigned int,class PString const &)
     ?Call@DeleteObjectsTimeout_PNotifier@PSafeCollection@@UBEXAAVPObject@@H@Z @930 NONAME ;public: virtual void __thiscall PSafeCollection::DeleteObjectsTimeout_PNotifier::Call(class PObject &,int)const 
-    ?Call@OnLoadModule_PNotifier@PPluginModuleManager@@UBEXAAVPObject@@H@Z @4744 NONAME ;public: virtual void __thiscall PPluginModuleManager::OnLoadModule_PNotifier::Call(class PObject &,int)const 
     ?CallNotifier@PPluginManager@@IAEXAAVPDynaLink@@H@Z @3038 NONAME ;protected: void __thiscall PPluginManager::CallNotifier(class PDynaLink &,int)
     ?CanCaptureVideo@PVideoInputDevice@@UBEHXZ @931 NONAME ;public: virtual int __thiscall PVideoInputDevice::CanCaptureVideo(void)const 
     ?CanCaptureVideo@PVideoOutputDevice@@UBEHXZ @932 NONAME ;public: virtual int __thiscall PVideoOutputDevice::CanCaptureVideo(void)const 
