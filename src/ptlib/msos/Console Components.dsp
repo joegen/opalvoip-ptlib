@@ -244,19 +244,7 @@ SOURCE=..\..\Ptclib\socks.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\ptclib\stun.cxx
-# ADD CPP /D "WIN32"
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Ptclib\Telnet.cxx
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\ptclib\udp.cxx
-# ADD CPP /D "WIN32"
-# SUBTRACT CPP /YX /Yc /Yu
 # End Source File
 # Begin Source File
 
