@@ -24,6 +24,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.9  2001/08/03 04:21:51  dereks
+ * Add colour/size conversion for YUV422->YUV411P
+ * Add Get/Set Brightness,Contrast,Hue,Colour for PVideoDevice,  and
+ * Linux PVideoInputDevice.
+ * Add lots of PTRACE statement for debugging colour conversion.
+ * Add support for Sony Vaio laptop under linux. Requires 2.4.7 kernel.
+ *
  * Revision 1.8  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -84,6 +91,16 @@
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL GetFrameSizeLimits(unsigned & minWidth, unsigned & minHeight, unsigned & maxWidth, unsigned & maxHeight) ;
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
+    virtual int GetBrightness();
+    virtual BOOL SetBrightness(unsigned newBrightness) ;
+    virtual int GetWhiteness();
+    virtual BOOL SetWhiteness(unsigned newWhiteness); 
+    virtual int GetColour();
+    virtual BOOL SetColour(unsigned newColour); 
+    virtual int GetContrast();
+    virtual BOOL SetContrast(unsigned newContrast); 
+    virtual int GetHue();
+    virtual BOOL SetHue(unsigned newHue); 
   protected:
     void ClearMapping();
 
