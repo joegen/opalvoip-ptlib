@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.51 1996/02/19 13:34:53 robertj Exp $
+ * $Id: contain.cxx,v 1.52 1996/02/22 10:23:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.52  1996/02/22 10:23:54  robertj
+ * Fixed buf in *= operator only comparing up to shortest string.
+ * Fixed bug in & operator for if left string is empty.
+ *
  * Revision 1.51  1996/02/19 13:34:53  robertj
  * Removed PCaselessString hash function to fix dictionary match failure.
  * Fixed *= operator yet again.
@@ -770,7 +774,7 @@ PString PString::operator&(const char * cstr) const
   PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
   PString str;
-  PINDEX space = theArray[olen-1] != ' ' && *cstr != ' ' ? 1 : 0;
+  PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
   str.SetSize(olen+alen+space);
   PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
   if (space != 0)
@@ -784,7 +788,7 @@ PString PString::operator&(char c) const
 {
   PINDEX olen = GetLength();
   PString str;
-  PINDEX space = theArray[olen-1] != ' ' && c != ' ' ? 1 : 0;
+  PINDEX space = olen > 0 && theArray[olen-1] != ' ' && c != ' ' ? 1 : 0;
   str.SetSize(olen+2+space);
   PSTRING_MOVE(str.theArray, 0, theArray, 0, olen);
   if (space != 0)
@@ -798,7 +802,7 @@ PString & PString::operator&=(const char * cstr)
 {
   PINDEX olen = GetLength();
   PINDEX alen = strlen(PAssertNULL(cstr))+1;
-  PINDEX space = theArray[olen-1] != ' ' && *cstr != ' ' ? 1 : 0;
+  PINDEX space = olen > 0 && theArray[olen-1]!=' ' && *cstr!=' ' ? 1 : 0;
   SetSize(olen+alen+space);
   if (space != 0)
     theArray[olen] = ' ';
@@ -887,7 +891,7 @@ BOOL PString::operator*=(const char * cstr) const
     pstr++;
     cstr++;
   }
-  return TRUE;
+  return *pstr == *cstr;
 }
 
 
