@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.77  2004/08/16 06:40:59  csoutheren
+ * Added adapters template to make device plugins available via the abstract factory interface
+ *
  * Revision 1.76  2004/06/01 05:54:18  csoutheren
  * Added <vector> and <string>
  *
@@ -2139,6 +2142,21 @@ class PStringArray : public PArray {
       for (std::vector<std::string>::const_iterator r = vec.begin(); r != vec.end(); ++r)
         AppendString(PString(*r));
     }
+
+    /**
+      * Create a PStringArray from an STL container
+      */
+    template <class stlContainer>
+    static PStringArray container(
+      const stlContainer & vec
+    )
+    {
+      PStringArray list;
+      for (stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
+        list.AppendString(PString(*r));
+      return list;
+    }
+
   //@}
 
   /**@name Overrides from class PObject */
@@ -2313,6 +2331,19 @@ PDECLARE_LIST(PStringList, PString);
     PStringList operator + (const PStringList & array);
     PStringList operator + (const PString & str);
 
+    /**
+      * Create a PStringArray from an STL container
+      */
+    template <class stlContainer>
+    static PStringList container(
+      const stlContainer & vec
+    )
+    {
+      PStringList list;
+      for (stlContainer::const_iterator r = vec.begin(); r != vec.end(); ++r)
+        list.AppendString(PString(*r));
+      return list;
+    }
   //@}
 };
 
