@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.21  1999/01/07 03:37:15  robertj
+ * dded default for pthreads, shortens command line in compile.
+ *
  * Revision 1.20  1998/12/21 06:47:20  robertj
  * Solaris 5.7 support.
  *
@@ -50,6 +53,7 @@
 #include <netdb.h>
 
 #if defined(P_PTHREADS)
+#define P_PLATFORM_HAS_THREADS
 #include <pthread.h>
 #endif
 
@@ -78,6 +82,10 @@ typedef size_t socklen_t;
 #endif
 
 #elif defined(P_FREEBSD)
+
+#if defined(P_PTHREADS)
+#define _THREAD_SAFE
+#endif
 
 #include <errno.h>
 #include <dlfcn.h>
