@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.99  2001/02/13 06:55:21  robertj
+ * Fixed problem with operator= in PDirectory class, part of larger change previously made.
+ *
  * Revision 1.98  2001/01/30 06:37:52  yurik
  * Modification submitted by Dave Cassel, dcassel@cyberfone.com
  * DC: ARM, x86em were content without this change, but SH4 insisted
@@ -567,7 +570,7 @@ void PDirectory::Construct()
 {
   hFindFile = INVALID_HANDLE_VALUE;
   fileinfo.cFileName[0] = '\0';
-  PString::operator=(CreateFullPath(*this, TRUE));
+  PCaselessString::AssignContents(CreateFullPath(*this, TRUE));
 }
 
 
