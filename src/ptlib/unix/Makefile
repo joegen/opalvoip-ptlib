@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.87  2002/02/20 02:37:26  dereks
+# Initial release of Firewire camera support for linux.
+# Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+#
 # Revision 1.86  2002/01/23 12:09:46  rogerh
 # Add dtmf decoder to the compilation
 #
@@ -330,6 +334,10 @@ endif
 
 ifeq ($(OSTYPE),OpenBSD)
 VIDEO_CAPTURE_SOURCE = video4bsd.cxx
+endif
+
+ifdef TRY_1394DC
+VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
 endif
 
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \

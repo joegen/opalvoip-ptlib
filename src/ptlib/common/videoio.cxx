@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.28  2002/02/20 02:37:26  dereks
+ * Initial release of Firewire camera support for linux.
+ * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
+ *
  * Revision 1.27  2002/01/17 20:20:46  dereks
  * Adjust PVideoInputDevice::SetVFlipState to cope better when a converter class is
  * not attached.   Thanks  Walter Whitlock.
@@ -226,7 +230,9 @@ static struct {
   { "YUV410",  10 },
   { "YUV410P", 10 },
   { "Grey",     8 },
-  { "GreyF",    8 }
+  { "GreyF",    8 },
+  { "UYVY422", 16 },
+  { "UYV444",  24 }
 };
 
 
