@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.62  2001/04/20 09:09:05  craigs
+ * Removed possible race condition whilst shutting down threads
+ *
  * Revision 1.61  2001/03/20 06:44:25  robertj
  * Lots of changes to fix the problems with terminating threads that are I/O
  *   blocked, especially when doing orderly shutdown of service via SIGTERM.
@@ -631,7 +634,6 @@ void PThread::PX_ThreadEnd(void * arg)
   
   pthread_t id = thread->PX_GetThreadId();
   if (id != 0) {
-    thread->PX_threadId = 0;  // Prevent terminating terminated thread
 
     // remove this thread from the active thread list
     process.threadMutex.Wait();
@@ -642,6 +644,8 @@ void PThread::PX_ThreadEnd(void * arg)
   // delete the thread if required
   if (thread->autoDelete)
     delete thread;
+  else
+    thread->PX_threadId = 0;  // Prevent terminating terminated thread
 }
 
 
