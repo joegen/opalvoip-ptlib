@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.21 1996/06/01 04:19:34 robertj Exp $
+ * $Id: winsock.cxx,v 1.22 1996/07/27 04:03:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.22  1996/07/27 04:03:29  robertj
+ * Created static version of ConvertOSError().
+ *
  * Revision 1.21  1996/06/01 04:19:34  robertj
  * Added flush to PSocket destructor as needs to use Write() at that level.
  *
@@ -276,6 +279,12 @@ int PSocket::os_select(int maxfds,
 
 BOOL PSocket::ConvertOSError(int error)
 {
+  return ConvertOSError(error, lastError, osError);
+}
+
+
+BOOL PSocket::ConvertOSError(int error, Errors & lastError, int & osError)
+{
   if (error >= 0) {
     lastError = NoError;
     osError = 0;
@@ -284,7 +293,7 @@ BOOL PSocket::ConvertOSError(int error)
 
 #ifdef _WIN32
   SetLastError(WSAGetLastError());
-  return PChannel::ConvertOSError(-2);
+  return PChannel::ConvertOSError(-2, lastError, osError);
 #else
   osError = WSAGetLastError();
   switch (osError) {
