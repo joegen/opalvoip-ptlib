@@ -1,5 +1,5 @@
 /*
- * $Id: timer.h,v 1.10 1995/03/14 12:42:51 robertj Exp $
+ * $Id: timer.h,v 1.11 1995/04/02 09:27:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timer.h,v $
+ * Revision 1.11  1995/04/02 09:27:34  robertj
+ * Added "balloon" help.
+ *
  * Revision 1.10  1995/03/14 12:42:51  robertj
  * Updated documentation to use HTML codes.
  *
@@ -120,6 +123,9 @@ PDECLARE_CLASS(PTimer, PTimeInterval)
        immediately.
      */
 
+    PTimer & operator=(
+      DWORD milliseconds            // New time interval for timer.
+    );
     PTimer & operator=(
       const PTimeInterval & time    // New time interval for timer.
     );
