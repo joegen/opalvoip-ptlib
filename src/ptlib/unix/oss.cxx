@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.13  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.12  2000/03/04 13:02:28  robertj
  * Added simple play functions for sound files.
  *
@@ -81,6 +84,10 @@
 
 #ifdef P_FREEBSD
 #include <machine/soundcard.h>
+#endif
+
+#ifdef P_OPENBSD
+#include <soundcard.h>
 #endif
 
 

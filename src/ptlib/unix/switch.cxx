@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.20  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.19  1999/05/12 02:12:02  robertj
  * Fixed stack size on alpha
  *
@@ -76,7 +79,7 @@
 #endif
 #endif
 
-#ifdef P_FREEBSD
+#if defined(P_FREEBSD) || defined(P_OPENBSD)
 #define	SET_STACK	context[0]._jb[2] = (int)stackTop-16;
 #endif
 

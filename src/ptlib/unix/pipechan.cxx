@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.24  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.23  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
  *
@@ -214,7 +217,7 @@ BOOL PPipeChannel::PlatformOpen(const PString & subProgram,
 
   // Set up new environment if one specified.
   if (environment != NULL) {
-#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(__BEOS__)
+#if defined(P_SOLARIS) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(__BEOS__)
     extern char ** environ;
 #define __environ environ
 #endif

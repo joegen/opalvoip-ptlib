@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.50  2000/03/08 12:17:09  rogerh
+ * Add OpenBSD support
+ *
  * Revision 1.49  2000/02/24 11:03:49  robertj
  * Fixed warning on Linux systems about _REENTRANT
  *
@@ -126,7 +129,7 @@
 #define P_USE_LANGINFO
 #endif
 
-#elif defined(P_FREEBSD) 
+#elif defined(P_FREEBSD) || defined(P_OPENBSD)
 #define P_USE_STRFTIME
 
 #include <sys/param.h>
@@ -459,7 +462,7 @@ PString PDirectory::GetVolume() const
     }
     fclose(fp);
 
-#elif defined(P_FREEBSD)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD)
 
     struct statfs * mnt;
     int count = getmntinfo(&mnt, MNT_NOWAIT);
@@ -483,7 +486,7 @@ PString PDirectory::GetVolume() const
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD)
 
   struct statfs fs;
 
@@ -1192,7 +1195,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD)
+#elif defined(P_FREEBSD) || defined(OPENBSD)
   time_t t;
   time(&t);
   struct tm  * tm = localtime(&t);
