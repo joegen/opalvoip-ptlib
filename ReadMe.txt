@@ -77,10 +77,9 @@ Building PWLib
 
 For Windows.
 
-1.	Start MSVC v5. MSVC v6 should work though we have not confirmed this. If
-	you have another compiler you are on your own!
-	Go into the Tools menu, Options item, Directories tab and add to the
-	Include files path:
+1.	Start MSVC (v5 or v6). If you have another compiler you are on your 
+        own!  Go into the Tools menu, Options item, Directories tab and add 
+	to the Include files path:
 		C:\PWLib\Include\PtLib\MSOS
 		C:\PWLib\Include
 	and add to the Lib Files path and the Executable Files path the
@@ -89,16 +88,16 @@ For Windows.
 2.	Open the pwlib.dsw file in the pwlib top directory. If you have the
 	minimum library it will come up with several requests to find .dsp
 	files, just cancel past these.
-3.	If you have the NT or 95 DDK, find the ndis.h file and put it into the
-	pwlib/include/ptlib/msos directory. If you do not, then delete the files
-	ethsock.cxx and pethsock.cxx from the Console project.
+3.	Note you will need bison and flex to compile the system. You can get 
+	a copy from http://www.openh323.org/bin/flexbison.zip, follow the 
+	instructions included in that package and put the executables 
+	somewhere in your path.
 4.	Build the target MergeSym, in release mode.
-5.	Move the MergeSym.exe file to somewhere in your path, eg c:\pwlib\lib
-6.	Build the target ASNParser, in release mode. Note you will need bison
-	and flex to do this.
-7.	Move the ASNParser.exe file to somewhere in your path, eg c:\pwlib\lib
-8.	Build the pwtest target, if you have the full distribution.
-9.	You are now on your own!
+5.	Build the target ASNParser, in release mode.
+6.	Build the pwtest target, if you have the full distribution. Otherwise
+	just build the targets PTLib and Console Components, in release & 
+	debug modes.
+9.	That it, you are now on your own!
 
 
 For unix.
@@ -110,14 +109,43 @@ For unix.
 		cd ~/pwlib
 		make both
 	This may take some time. Note, you will need bison and flex for this to
-	compile.
+	compile, most unix systems have these. WARNING: there is a bug in most 
+	of the bison.simple files. See below for details.
 
 	If you are getting errors during the compile, then it is likely your
 	platform is not supported, or you have incorrectly set the OSTYPE and
 	MACHTYPE variables.
+3.	That's all there is to it, you are now on your own!
 
-3.	You are now on your own!
 
+Bison problem under Unix
+
+The bison.simple file on many releases will not compile with the options used 
+by the PWLib getdate.y grammar. The options are required to make the date 
+parser thread safe so it is necessary to edit the bison.simple file to fix the 
+problem.
+
+The file is usually at /usr/lib/bison.simple but in the tradition of unix 
+could actually be anywhere. We leave it up to you to find it.
+
+The code:
+
+	/* Prevent warning if -Wstrict-prototypes. */
+	#ifdef __GNUC__
+	int yyparse (void);
+	#endif
+
+should be changed to
+
+	/* Prevent warning if -Wstrict-prototypes. */
+	#ifdef __GNUC__
+	#ifndef YYPARSE_PARAM
+	int yyparse (void);
+	#endif
+	#endif
+
+To prevent the incorrect function prototype from being defined. The getdate.y 
+should then produce a getdate.tab.c file that will actually compile.
 
 
 Using PWLib
