@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.15 1996/01/28 02:55:33 robertj Exp $
+ * $Id: mswin.cxx,v 1.16 1996/02/15 14:55:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.16  1996/02/15 14:55:02  robertj
+ * Win16 compatibility
+ *
  * Revision 1.15  1996/01/28 02:55:33  robertj
  * WIN16 support.
  *
@@ -159,13 +162,19 @@ PTime::DateOrder PTime::GetDateOrder()
 }
 
 
-long PTime::GetTimeZone() const
+BOOL PTime::IsDaylightSavings()
+{
+  return FALSE;
+}
+
+
+int PTime::GetTimeZone(TimeZoneType type)
 {
   return 0;
 }
 
 
-PString PTime::GetTimeZoneString(TimeZoneType type) const
+PString PTime::GetTimeZoneString(TimeZoneType type)
 {
   return "";
 }
