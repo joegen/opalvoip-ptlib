@@ -27,6 +27,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -42,6 +45,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Asner.obj"
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
+	-@erase "$(INTDIR)\delaychan.obj"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
 	-@erase "$(INTDIR)\Ftpsrvr.obj"
@@ -57,6 +61,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -72,40 +77,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -134,7 +106,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\qchannel.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -158,6 +132,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
 	-@erase "$(INTDIR)\Cypher.sbr"
+	-@erase "$(INTDIR)\delaychan.obj"
+	-@erase "$(INTDIR)\delaychan.sbr"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftp.sbr"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
@@ -188,6 +164,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.sbr"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\Psnmp.sbr"
+	-@erase "$(INTDIR)\qchannel.obj"
+	-@erase "$(INTDIR)\qchannel.sbr"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\random.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
@@ -209,40 +187,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -267,7 +212,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\delaychan.sbr" \
+	"$(INTDIR)\qchannel.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -298,7 +245,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\qchannel.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -322,6 +271,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
 	-@erase "$(INTDIR)\Cypher.sbr"
+	-@erase "$(INTDIR)\delaychan.obj"
+	-@erase "$(INTDIR)\delaychan.sbr"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftp.sbr"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
@@ -354,6 +305,8 @@ CLEAN :
 	-@erase "$(INTDIR)\Psnmp.sbr"
 	-@erase "$(INTDIR)\pssl.obj"
 	-@erase "$(INTDIR)\pssl.sbr"
+	-@erase "$(INTDIR)\qchannel.obj"
+	-@erase "$(INTDIR)\qchannel.sbr"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\random.sbr"
 	-@erase "$(INTDIR)\shttpsvc.obj"
@@ -377,40 +330,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -437,7 +357,9 @@ BSC32_SBRS= \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
-	"$(INTDIR)\Telnet.sbr"
+	"$(INTDIR)\Telnet.sbr" \
+	"$(INTDIR)\delaychan.sbr" \
+	"$(INTDIR)\qchannel.sbr"
 
 "$(OUTDIR)\Console Components.bsc" : "$(OUTDIR)" $(BSC32_SBRS)
     $(BSC32) @<<
@@ -470,7 +392,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\qchannel.obj"
 
 "$(OUTDIR)\ptclibd.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -492,6 +416,7 @@ CLEAN :
 	-@erase "$(INTDIR)\Asner.obj"
 	-@erase "$(INTDIR)\Console Components.pch"
 	-@erase "$(INTDIR)\Cypher.obj"
+	-@erase "$(INTDIR)\delaychan.obj"
 	-@erase "$(INTDIR)\Ftp.obj"
 	-@erase "$(INTDIR)\Ftpclnt.obj"
 	-@erase "$(INTDIR)\Ftpsrvr.obj"
@@ -507,6 +432,7 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
+	-@erase "$(INTDIR)\qchannel.obj"
 	-@erase "$(INTDIR)\random.obj"
 	-@erase "$(INTDIR)\shttpsvc.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
@@ -524,40 +450,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -588,7 +481,9 @@ LIB32_OBJS= \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
-	"$(INTDIR)\Telnet.obj"
+	"$(INTDIR)\Telnet.obj" \
+	"$(INTDIR)\delaychan.obj" \
+	"$(INTDIR)\qchannel.obj"
 
 "$(OUTDIR)\ptclib.lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
     $(LIB32) @<<
@@ -596,6 +491,36 @@ LIB32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -692,6 +617,38 @@ CPP_SWITCHES=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /
 	$(CPP) @<<
   $(CPP_SWITCHES) $(SOURCE)
 <<
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\delaychan.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\delaychan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\delaychan.obj"	"$(INTDIR)\delaychan.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\delaychan.obj"	"$(INTDIR)\delaychan.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\delaychan.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
 !ENDIF 
@@ -1193,6 +1150,38 @@ SOURCE=..\..\ptclib\pssl.cxx
 
 
 "..\..\..\Lib\Release\pssl.obj" : $(SOURCE) "..\..\..\Lib\Release\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ENDIF 
+
+SOURCE=..\..\ptclib\qchannel.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+
+"$(INTDIR)\qchannel.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+
+"$(INTDIR)\qchannel.obj"	"$(INTDIR)\qchannel.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
+
+
+"$(INTDIR)\qchannel.obj"	"$(INTDIR)\qchannel.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
+	$(CPP) $(CPP_PROJ) $(SOURCE)
+
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
+
+
+"$(INTDIR)\qchannel.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 
