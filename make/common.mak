@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.67  2001/11/29 03:16:49  robertj
+# Made make noshared completely static
+#
 # Revision 1.66  2001/11/28 02:44:14  robertj
 # Fixed attempt to do static link on debug version, causes crashes.
 #
@@ -204,7 +207,7 @@ endif
 
 ifndef DEBUG
 ifneq ($(P_SHAREDLIB),1)
-ENDLDFLAGS += -Xlinker -Bstatic
+ENDLDFLAGS += -static
 endif
 endif
 
