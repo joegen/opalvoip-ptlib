@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.6 1993/12/14 18:44:56 robertj Exp $
+ * $Id: contain.cxx,v 1.7 1993/12/15 21:10:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.6  1993/12/14 18:44:56  robertj
+ * Revision 1.7  1993/12/15 21:10:10  robertj
+ * Fixed reference system used by container classes.
+ * Plugged memory leaks in PList and PSortedList.
+ *
+ * Revision 1.6  1993/12/14  18:44:56  robertj
  * Added RemoveAll() function to collections.
  * Fixed bug in list processing when being destroyed (removes the item being
  *     deleted from the list before deleting it).
@@ -95,25 +99,24 @@ PINDEX PObject::HashFunction() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PContainer::PContainer(const PContainer & cont)
-  : size(cont.size), referenceCount(cont.referenceCount)
+  : reference(PAssertNULL(cont.reference))
 {                                                            
-  ++*PAssertNULL(referenceCount);
+  reference->count++;
 }
 
 
 PContainer & PContainer::operator=(const PContainer & cont)
 {
-  if (referenceCount != cont.referenceCount) {
-    if (*PAssertNULL(referenceCount) > 1)
-      --*referenceCount;
+  if (reference != cont.reference) {
+    if (!IsUnique())
+      reference->count--;
     else {
       DestroyContents();
-      delete referenceCount;
+      delete reference;
     }
   
-    referenceCount = cont.referenceCount;
-    ++*PAssertNULL(referenceCount);
-    size = cont.size;
+    reference = PAssertNULL(cont.reference);
+    reference->count++;
   }
   return *this;
 }
@@ -121,16 +124,18 @@ PContainer & PContainer::operator=(const PContainer & cont)
 
 PContainer::~PContainer()
 {
-  if (--*PAssertNULL(referenceCount) == 0) {
-    delete referenceCount;
-    referenceCount = NULL;
+  if (!IsUnique())
+    reference->count--;
+  else {
+    delete reference;
+    reference = NULL;
   }
 }
 
 
 PINDEX PContainer::GetSize() const
 {
-  return size;
+  return reference->size;
 }
 
 
@@ -144,26 +149,30 @@ BOOL PContainer::IsEmpty() const
 ///////////////////////////////////////////////////////////////////////////////
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
+  : PContainer(initialSize)
 {
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0);
-  if ((size = initialSize) == 0)
-    size = 1;
-  theArray = new char[elementSize*size];
-  memset(theArray, 0, elementSize*size);
+  if (GetSize() == 0)
+    reference->size = 1;
+  PINDEX sizebytes = elementSize*GetSize();
+  theArray = new char[sizebytes];
+  memset(theArray, 0, sizebytes);
 }
 
 
 PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
                                const void *buffer,
                                PINDEX bufferSizeInElements)
+  : PContainer(bufferSizeInElements)
 {
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0);
-  if ((size = bufferSizeInElements) == 0)
-    size = 1;
-  theArray = new char[elementSize*size];
-  memcpy(theArray, PAssertNULL(buffer), elementSize*size);
+  if (GetSize() == 0)
+    reference->size = 1;
+  PINDEX sizebytes = elementSize*GetSize();
+  theArray = new char[sizebytes];
+  memcpy(theArray, PAssertNULL(buffer), sizebytes);
 }
 
 
@@ -195,7 +204,7 @@ PAbstractArray & PAbstractArray::operator=(const PAbstractArray & array)
 
 void PAbstractArray::DestroyContents()
 {
-  if (theArray != NULL && *PAssertNULL(referenceCount) == 1) {
+  if (theArray != NULL && IsUnique()) {
     delete[] theArray;
     theArray = NULL;
   }
@@ -209,11 +218,11 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
     return LessThan;
   if (elementSize > array.elementSize)
     return GreaterThan;
-  if (size < array.size)
+  if (GetSize() < array.GetSize())
     return LessThan;
-  if (size > array.size)
+  if (GetSize() > array.GetSize())
     return GreaterThan;
-  return (Comparison)memcmp(theArray, array.theArray, elementSize*size);
+  return (Comparison)memcmp(theArray, array.theArray, elementSize*GetSize());
 }
 
 
@@ -227,7 +236,7 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   if (newArray == NULL)
     return FALSE;
 
-  PINDEX oldsizebytes = elementSize*size;
+  PINDEX oldsizebytes = elementSize*GetSize();
   if (newsizebytes <= oldsizebytes)
     memcpy(newArray, theArray, newsizebytes);
   else {
@@ -235,15 +244,16 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
     memset(newArray+oldsizebytes, 0, newsizebytes-oldsizebytes);
   }
 
-  if (*PAssertNULL(referenceCount) <= 1)
+  if (IsUnique()) {
     delete [] theArray;
+    reference->size = newSize;
+  }
   else {
-    --*referenceCount;
-    referenceCount = new unsigned(1);
+    reference->count--;
+    reference = new Reference(newSize);
   }
 
   theArray = newArray;
-  size = newSize;
   return TRUE;
 }
 
@@ -251,7 +261,7 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 BOOL PAbstractArray::SetMinSize(PINDEX minSize)
 {
   PASSERTINDEX(minSize);
-  return minSize <= size ? MakeUnique() : SetSize(minSize);
+  return minSize <= GetSize() ? MakeUnique() : SetSize(minSize);
 }
 
 
@@ -814,9 +824,9 @@ void PCollection::RemoveAll()
 
 void PArrayObjects::DestroyContents()
 {
-  if (deleteObjects && *PAssertNULL(referenceCount) <= 1) {
+  if (deleteObjects && IsUnique()) {
     PAssertNULL(theArray);
-    for (PINDEX i = 0; i < size; i++) {
+    for (PINDEX i = 0; i < theArray.GetSize(); i++) {
       if (theArray[i] != NULL)
         delete theArray[i];
     }
@@ -827,7 +837,7 @@ void PArrayObjects::DestroyContents()
 
 PArrayObjects::PArrayObjects(const PArrayObjects * array)
 {
-  for (PINDEX i = 0; i < array->size; i++) {
+  for (PINDEX i = 0; i < array->GetSize(); i++) {
     PObject * ptr = ((PArrayObjects *)array)->GetAt(i);
     if (ptr != NULL)
       SetAt(i, ptr->Clone());
@@ -837,7 +847,7 @@ PArrayObjects::PArrayObjects(const PArrayObjects * array)
 
 PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
-  for (PINDEX i = 0; i < size; i++) {
+  for (PINDEX i = 0; i < GetSize(); i++) {
     if (*theArray[i] < *((const PArrayObjects &)obj).theArray[i])
       return LessThan;
     if (*theArray[i] > *((const PArrayObjects &)obj).theArray[i])
@@ -902,7 +912,7 @@ BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
 
 PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 {
-  for (PINDEX i = index; i < size; i++)
+  for (PINDEX i = index; i < GetSize(); i++)
     theArray.SetAt(i+1, theArray[i]);
   SetAt(index, obj);
   return index;
@@ -912,9 +922,9 @@ PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 PObject * PArrayObjects::RemoveAt(PINDEX index)
 {
   PObject * obj = theArray[index];
-  for (PINDEX i = index; i < size; i++)
+  for (PINDEX i = index; i < GetSize(); i++)
     theArray[i] = theArray[i+1];
-  SetSize(size-1);
+  SetSize(GetSize()-1);
   if (obj != NULL && deleteObjects)
     delete obj;
   return obj;
@@ -923,7 +933,7 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
 
 PINDEX PArrayObjects::GetIndex(const PObject * obj)
 {
-  for (PINDEX i = 0; i < size; i++) {
+  for (PINDEX i = 0; i < GetSize(); i++) {
     if (theArray[i] == obj)
       return i;
   }
@@ -933,7 +943,7 @@ PINDEX PArrayObjects::GetIndex(const PObject * obj)
 
 BOOL PArrayObjects::Enumerate(PEnumerator func, PObject * info) const
 {
-  for (PINDEX i = 0; i < size; i++) {
+  for (PINDEX i = 0; i < GetSize(); i++) {
     if (!func(*theArray[i], info))
       return FALSE;
   }
@@ -954,50 +964,51 @@ PStringArray::PStringArray(PINDEX count, char **strarr)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PAbstractList::Info::Info()
+{
+  head = tail = lastElement = NULL;
+  lastIndex = 0;
+}
+
+
 PAbstractList::PAbstractList(const PAbstractList & list)
   : PCollection(list),
-    head(list.head),
-    tail(list.tail),
-    lastElement(NULL),
-    lastIndex(0)
+    info(list.info)
 {
+}
+
+
+PAbstractList::PAbstractList(const PAbstractList * list)
+  : info(new Info)
+{
+  for (PListElement * element = list->info->head;
+                                      element != NULL; element = element->next)
+    Append(element->data->Clone());
 }
 
 
 PAbstractList & PAbstractList::operator=(const PAbstractList & list)
 {
   PCollection::operator=(list);
-  head = list.head;
-  tail = list.tail;
-  lastElement = NULL;
-  lastIndex = 0;
+  info = list.info;
   return *this;
 }
 
 
 void PAbstractList::DestroyContents()
 {
-  if (*PAssertNULL(referenceCount) <= 1)
+  if (info != NULL && IsUnique()) {
     RemoveAll();
-}
-
-
-PAbstractList::PAbstractList(const PAbstractList * list)
-  : head(NULL),
-    tail(NULL),
-    lastElement(NULL),
-    lastIndex(0)
-{
-  for (PListElement * element = list->head;
-                                      element != NULL; element = element->next)
-    Append(element->data->Clone());
+    delete info;
+    info = NULL;
+  }
 }
 
 
 PObject::Comparison PAbstractList::Compare(const PObject & obj) const
 {
-  PListElement * elmt1 = head;
-  PListElement * elmt2 = ((const PAbstractList &)obj).head;
+  PListElement * elmt1 = info->head;
+  PListElement * elmt2 = ((const PAbstractList &)obj).info->head;
   while (elmt1 != NULL && elmt2 != NULL) {
     if (elmt1 == NULL)
       return LessThan;
@@ -1023,17 +1034,17 @@ BOOL PAbstractList::SetSize(PINDEX)
 PINDEX PAbstractList::Append(PObject * obj)
 {
   PListElement * element = new PListElement(PAssertNULL(obj));
-  if (tail != NULL)
-    tail->next = element;
-  element->prev = tail;
+  if (info->tail != NULL)
+    info->tail->next = element;
+  element->prev = info->tail;
   element->next = NULL;
-  if (head == NULL)
-    head = element;
-  tail = element;
-  lastElement = element;
-  lastIndex = size;
-  size++;
-  return lastIndex;
+  if (info->head == NULL)
+    info->head = element;
+  info->tail = element;
+  info->lastElement = element;
+  info->lastIndex = GetSize();
+  reference->size++;
+  return info->lastIndex;
 }
 
 
@@ -1051,22 +1062,22 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 {
   PAssertNULL(obj);
 
-  if (index >= size)
+  if (index >= GetSize())
     return Append(obj);
 
   PAssert(SetCurrent(index));
 
   PListElement * newElement = new PListElement(obj);
-  if (lastElement->prev != NULL)
-    lastElement->prev->next = newElement;
+  if (info->lastElement->prev != NULL)
+    info->lastElement->prev->next = newElement;
   else
-    head = newElement;
-  newElement->prev = lastElement->prev;
-  newElement->next = lastElement;
-  lastElement->prev = newElement;
-  lastElement = newElement;
-  lastIndex = 0;
-  size++;
+    info->head = newElement;
+  newElement->prev = info->lastElement->prev;
+  newElement->next = info->lastElement;
+  info->lastElement->prev = newElement;
+  info->lastElement = newElement;
+  info->lastIndex = 0;
+  reference->size++;
   return index;
 }
 
@@ -1081,41 +1092,45 @@ PObject * PAbstractList::RemoveAt(PINDEX index)
 {
   PAssert(SetCurrent(index));
 
-  PObject * obj = lastElement->data;
+  PListElement * elmt = info->lastElement;
 
-  if (lastElement->prev != NULL)
-    lastElement->prev->next = lastElement->next;
+  if (elmt->prev != NULL)
+    elmt->prev->next = elmt->next;
   else {
-    head = lastElement->next;
-    if (head != NULL)
-      head->prev = NULL;
+    info->head = elmt->next;
+    if (info->head != NULL)
+      info->head->prev = NULL;
   }
 
-  if (lastElement->next != NULL)
-    lastElement->next->prev = lastElement->prev;
+  if (elmt->next != NULL)
+    elmt->next->prev = elmt->prev;
   else {
-    tail = lastElement->prev;
-    if (tail != NULL)
-      tail->next = NULL;
+    info->tail = elmt->prev;
+    if (info->tail != NULL)
+      info->tail->next = NULL;
   }
 
-  if (lastElement->next != NULL)
-    lastElement = lastElement->next;
+  if (elmt->next != NULL)
+    info->lastElement = elmt->next;
   else {
-    lastElement = lastElement->prev;
-    lastIndex--;
+    info->lastElement = elmt->prev;
+    info->lastIndex--;
   }
-  size--;
+  reference->size--;
 
-  if (obj != NULL && deleteObjects)
+  PObject * obj = elmt->data;
+  if (obj != NULL && deleteObjects) {
     delete obj;
+    obj = NULL;
+  }
+  delete elmt;
   return obj;
 }
 
 
 PObject * PAbstractList::GetAt(PINDEX index)
 {
-  return SetCurrent(index) ? lastElement->data : NULL;
+  return SetCurrent(index) ? info->lastElement->data : NULL;
 }
 
 
@@ -1123,22 +1138,22 @@ BOOL PAbstractList::SetAt(PINDEX index, PObject * val)
 {
   if (!SetCurrent(index))
     return FALSE;
-  lastElement->data = val;
+  info->lastElement->data = val;
   return TRUE;
 }
 
 
 PINDEX PAbstractList::GetIndex(const PObject * obj)
 {
-  PListElement * element = lastElement;
-  PINDEX index = lastIndex;
+  PListElement * element = info->lastElement;
+  PINDEX index = info->lastIndex;
   while (element != NULL && element->data != obj) {
     element = element->next;
     index++;
   }
   if (element == NULL) {
-    element = lastElement;
-    index = lastIndex;
+    element = info->lastElement;
+    index = info->lastIndex;
     while (element != NULL && element->data != obj) {
       element = element->prev;
       index--;
@@ -1148,16 +1163,17 @@ PINDEX PAbstractList::GetIndex(const PObject * obj)
   if (element == NULL)
     return P_MAX_INDEX;
 
-  lastElement = element;
-  lastIndex = index;
+  info->lastElement = element;
+  info->lastIndex = index;
   return index;
 }
 
 
-BOOL PAbstractList::Enumerate(PEnumerator func, PObject * info) const
+BOOL PAbstractList::Enumerate(PEnumerator func, PObject * inf) const
 {
-  for (PListElement * element = head; element != NULL; element = element->next) {
-    if (!func(*element->data, info))
+  for (PListElement * element = info->head;
+                                    element != NULL; element = element->next) {
+    if (!func(*element->data, inf))
       return FALSE;
   }
   return TRUE;
@@ -1166,43 +1182,55 @@ BOOL PAbstractList::Enumerate(PEnumerator func, PObject * info) const
 
 BOOL PAbstractList::SetCurrent(PINDEX index)
 {
-  if (index >= size)
+  if (index >= GetSize())
     return FALSE;
 
-  if (lastElement == NULL || lastIndex >= size || 
-      index < lastIndex/2 || index > (lastIndex+size)/2) {
-    if (index < size/2) {
-      lastIndex = 0;
-      lastElement = head;
+  if (info->lastElement == NULL || info->lastIndex >= GetSize() || 
+      index < info->lastIndex/2 || index > (info->lastIndex+GetSize())/2) {
+    if (index < GetSize()/2) {
+      info->lastIndex = 0;
+      info->lastElement = info->head;
     }
     else {
-      lastIndex = size-1;
-      lastElement = tail;
+      info->lastIndex = GetSize()-1;
+      info->lastElement = info->tail;
     }
   }
 
-  while (lastIndex < index) {
-    lastElement = lastElement->next;
-    lastIndex++;
+  while (info->lastIndex < index) {
+    info->lastElement = info->lastElement->next;
+    info->lastIndex++;
   }
 
-  while (lastIndex > index) {
-    lastElement = lastElement->prev;
-    lastIndex--;
+  while (info->lastIndex > index) {
+    info->lastElement = info->lastElement->prev;
+    info->lastIndex--;
   }
 
   return TRUE;
 }
 
 
+PListElement::PListElement(PObject * theData)
+{
+  next = prev = NULL;
+  data = theData;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
-PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
-  : root(NULL),
-    lastElement(NULL),
-    lastIndex(0)
+PAbstractSortedList::Info::Info()
 {
-  PSortedListElement * element = list->root;
+  root = lastElement = NULL;
+  lastIndex = 0;
+}
+
+
+PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
+  : info(new Info)
+{
+  PSortedListElement * element = list->info->root;
   while (element->left != NULL)
     element = element->left;
   while (element != NULL) {
@@ -1214,9 +1242,7 @@ PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList * list)
 
 PAbstractSortedList::PAbstractSortedList(const PAbstractSortedList & list)
   : PCollection(list),
-    root(list.root),
-    lastElement(NULL),
-    lastIndex(0)
+    info(list.info)
 {
 }
 
@@ -1225,9 +1251,7 @@ PAbstractSortedList &
               PAbstractSortedList::operator=(const PAbstractSortedList & list)
 {
   PCollection::operator=(list);
-  root = list.root;
-  lastElement = NULL;
-  lastIndex = 0;
+  info = list.info;
   return *this;
 }
 
@@ -1240,11 +1264,11 @@ BOOL PAbstractSortedList::SetSize(PINDEX)
 
 PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 {
-  PSortedListElement * elmt1 = root;
+  PSortedListElement * elmt1 = info->root;
   while (elmt1->left != NULL)
     elmt1 = elmt1->left;
 
-  PSortedListElement * elmt2 = ((const PAbstractSortedList &)obj).root;
+  PSortedListElement * elmt2 = ((const PAbstractSortedList &)obj).info->root;
   while (elmt2->left != NULL)
     elmt2 = elmt2->left;
 
@@ -1267,7 +1291,7 @@ PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 PINDEX PAbstractSortedList::Append(PObject * obj)
 {
   PSortedListElement * element = new PSortedListElement(PAssertNULL(obj));
-  PSortedListElement * child = root, * parent = NULL;
+  PSortedListElement * child = info->root, * parent = NULL;
   while (child != NULL) {
     child->subTreeSize++;
     parent = child;
@@ -1275,14 +1299,14 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
   }
   element->parent = parent;
   if (parent == NULL)
-    root = element;
+    info->root = element;
   else if (*element->data < *parent->data)
     parent->left = element;
   else
     parent->right = element;
 
   element->MakeRed();
-  while (element != root && !element->parent->IsBlack()) {
+  while (element != info->root && !element->parent->IsBlack()) {
     if (element->parent == element->parent->parent->left) {
       child = element->parent->parent->right;
       if (child != NULL && !child->IsBlack()) {
@@ -1319,18 +1343,18 @@ PINDEX PAbstractSortedList::Append(PObject * obj)
     }
   }
 
-  root->MakeBlack();
+  info->root->MakeBlack();
 
-  size++;
-  lastIndex = size+1;
-  lastElement = NULL;
-  return lastIndex;
+  reference->size++;
+  info->lastIndex = P_MAX_INDEX;
+  info->lastElement = NULL;
+  return GetSize();
 }
 
 
 void PAbstractSortedList::Remove(const PObject * obj)
 {
-  PSortedListElement * element = root;
+  PSortedListElement * element = info->root;
   while (element != NULL && element->data != obj)
     element = *obj < *element->data ? element->left : element->right;
   RemoveElement(element);
@@ -1351,7 +1375,7 @@ PINDEX PAbstractSortedList::InsertAt(PINDEX, PObject * obj)
 
 PObject * PAbstractSortedList::RemoveAt(PINDEX index)
 {
-  PSortedListElement * node = root->OrderSelect(index+1);
+  PSortedListElement * node = info->root->OrderSelect(index+1);
   RemoveElement(node);
   return node->data;
 }
@@ -1371,31 +1395,31 @@ PINDEX PAbstractSortedList::GetIndex(const PObject *)
 
 PObject * PAbstractSortedList::GetAt(PINDEX index)
 {
-  if (index >= size)
+  if (index >= GetSize())
     return NULL;
 
-  if (index == lastIndex-1) {
-    lastIndex--;
-    lastElement = lastElement->Predecessor();
+  if (index == info->lastIndex-1) {
+    info->lastIndex--;
+    info->lastElement = info->lastElement->Predecessor();
   }
-  else if (index == lastIndex+1) {
-    lastIndex++;
-    lastElement = lastElement->Successor();
+  else if (index == info->lastIndex+1) {
+    info->lastIndex++;
+    info->lastElement = info->lastElement->Successor();
   }
   else
-    lastElement = root->OrderSelect(index+1);
+    info->lastElement = info->root->OrderSelect(index+1);
 
-  return lastElement->data;
+  return info->lastElement->data;
 }
 
 
-BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * info) const
+BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * inf) const
 {
-  PSortedListElement * element = root;
+  PSortedListElement * element = info->root;
   while (element->left != NULL)
     element = element->left;
   while (element != NULL) {
-    if (!func(*element->data, info))
+    if (!func(*element->data, inf))
       return FALSE;
     element = element->Successor();
   }
@@ -1405,10 +1429,13 @@ BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * info) const
 
 void PAbstractSortedList::DestroyContents()
 {
-  if (root != NULL && *PAssertNULL(referenceCount) <= 1) {
-    root->DeleteSubTrees(deleteObjects);
-    delete root;
-    root = NULL;
+  if (info != NULL && IsUnique()) {
+    if (info->root != NULL) {
+      info->root->DeleteSubTrees(deleteObjects);
+      delete info->root;
+    }
+    delete info;
+    info = NULL;
   }
 }
 
@@ -1422,7 +1449,7 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
   PSortedListElement * x = y->left != NULL ? y->left : y->right;
 
   if (y->parent == NULL)
-    root = x;
+    info->root = x;
   else if (y == y->parent->left)
     y->parent->left = x;
   else
@@ -1440,7 +1467,7 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
   }
 
   if (x != NULL && y->IsBlack()) {
-    while (x != root && x->IsBlack()) {
+    while (x != info->root && x->IsBlack()) {
       if (x == x->parent->left) {
         y = x->parent->right;
         if (!y->IsBlack()) {
@@ -1465,7 +1492,7 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
           if (y->right != NULL)
             y->right->MakeBlack();
           LeftRotate(x->parent);
-          x = root;
+          x = info->root;
         }
       }
       else {
@@ -1492,16 +1519,17 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
           if (y->left != NULL)
             y->left->MakeBlack();
           RightRotate(x->parent);
-          x = root;
+          x = info->root;
         }
       }
     }
     x->MakeBlack();
   }
 
-  size--;
-  lastIndex = size+1;
-  lastElement = NULL;
+  reference->size--;
+  info->lastIndex = P_MAX_INDEX;
+  info->lastElement = NULL;
+  delete node;
 }
 
 
@@ -1513,7 +1541,7 @@ void PAbstractSortedList::LeftRotate(PSortedListElement * node)
     pivot->left->parent = node;
   pivot->parent = node->parent;
   if (node->parent == NULL)
-    root = pivot;
+    info->root = pivot;
   else if (node == node->parent->left)
     node->parent->left = pivot;
   else
@@ -1533,7 +1561,7 @@ void PAbstractSortedList::RightRotate(PSortedListElement * node)
     pivot->right->parent = node;
   pivot->parent = node->parent;
   if (node->parent == NULL)
-    root = pivot;
+    info->root = pivot;
   else if (node == node->parent->right)
     node->parent->right = pivot;
   else
@@ -1542,6 +1570,15 @@ void PAbstractSortedList::RightRotate(PSortedListElement * node)
   node->parent = pivot;
   pivot->subTreeSize = node->subTreeSize;
   node->subTreeSize = node->LeftTreeSize() + node->RightTreeSize() + 1;
+}
+
+
+PSortedListElement::PSortedListElement(PObject * theData)
+{
+  parent = left = right = NULL;
+  colour = Black;
+  subTreeSize = 1;
+  data = theData;
 }
 
 
@@ -1691,7 +1728,7 @@ PHashTable & PHashTable::operator=(const PHashTable & ht)
   
 PObject::Comparison PHashTable::Compare(const PObject & obj) const
 {
-  return referenceCount != ((const PHashTable &)obj).referenceCount
+  return reference != ((const PHashTable &)obj).reference
                                                       ? GreaterThan : EqualTo;
 }
 
@@ -1733,7 +1770,7 @@ void PHashTable::AppendElement(const PObject & key, PObject * data)
   }
   lastElement = element;
   lastIndex = P_MAX_INDEX;
-  size++;
+  reference->size++;
 }
 
 
@@ -1752,7 +1789,7 @@ void PHashTable::RemoveElement(const PObject & key)
     delete lastElement->key;
     delete lastElement;
     lastElement = NULL;
-    size--;
+    reference->size--;
   }
 }
 
