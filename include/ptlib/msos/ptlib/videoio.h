@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.10  2002/03/03 00:13:24  yurik
+ * Added include for cevfw.h
+ *
  * Revision 1.9  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -59,6 +62,8 @@
 
 #ifndef _WIN32_WCE
 #include <vfw.h>
+#else
+#include <cevfw.h>
 #endif
 
 
