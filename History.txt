@@ -57,7 +57,7 @@ Release 1.15
 
 	Add some Mac OS X port changes, still not complete.
 
-	Add some NetBSD port changes, still not complete.
+	Add support for NetBSD.
 
 Release 1.14
 ------------
