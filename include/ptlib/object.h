@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.23 1996/08/17 10:00:23 robertj Exp $
+ * $Id: object.h,v 1.24 1996/09/16 12:57:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.24  1996/09/16 12:57:23  robertj
+ * DLL support
+ *
  * Revision 1.23  1996/08/17 10:00:23  robertj
  * Changes for Windows DLL support.
  *
@@ -183,7 +186,13 @@ PEXPORT void PAssertFunc(const char * file, int line, const char * msg);
 
 
 // Declaration for standard error output
-extern PEXPORT ostream * PSTATIC PErrorStream;
+#ifdef PMAKEDLL
+extern __declspec(dllexport) ostream * PErrorStream;
+#elif PUSEDLL
+extern __declspec(dllimport) ostream * PErrorStream;
+#else
+extern ostream * PSTATIC PErrorStream;
+#endif
 
 
 /*$MACRO PError
