@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2004/09/10 04:31:57  dereksmithies
+ * Add code to calculate the detection rate.
+ *
  * Revision 1.1  2004/09/10 01:59:35  dereksmithies
  * Initial release of program to test Dtmf creation and detection.
  *
@@ -107,7 +110,7 @@ void DtmfTest::Main()
   if (args.HasOption('s'))
     samples = args.GetOptionString('s').AsInteger();
   else
-    samples = 60;
+    samples = 80;
 
   PINDEX noise;
   if (args.HasOption('n'))
@@ -134,6 +137,7 @@ void DtmfTest::Main()
 
   PBYTEArray   result(samples * 8 * 2);
 
+  int nCorrect = 0;
   for (i = 0; i < 16; i++) {
     PDTMFEncoder encoder;
     PString symbol = encoder.DtmfChar(i);
@@ -151,10 +155,19 @@ void DtmfTest::Main()
       tones = " ";
     cout << "Test : " << symbol << " ---> " << tones << "    ";
 
+    if (symbol == tones) {
+      cout << "Good";
+      nCorrect++;
+    } else {
+      cout << "Fail";
+    }
 
     cout << endl;
 
+
   }
+
+  cout << endl << "Test run complete. Correctly interpreted " << (int)((nCorrect / 0.16) + 0.5) << "%" << endl;
 }
 
 // End of File ///////////////////////////////////////////////////////////////
