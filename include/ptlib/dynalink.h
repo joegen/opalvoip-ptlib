@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dynalink.h,v $
+ * Revision 1.15  2004/02/22 02:38:33  ykiryanov
+ * Removed ifndef BEOS when declaring PDynalink
+ *
  * Revision 1.14  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -77,7 +80,7 @@
 #ifndef _PDYNALINK
 #define _PDYNALINK
 
-#if !defined(__BEOS__) && !defined(P_VXWORKS) && !defined(P_RTEMS)
+#if !defined(P_VXWORKS) && !defined(P_RTEMS)
 
 #ifdef P_USE_PRAGMA
 #pragma interface
