@@ -29,6 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.117  2002/01/31 07:25:29  robertj
+# Backed out someones changes which did not include platform in library name
+#   thus making it impossible to have multiple platform builds using the
+#   same NFS mounted directories.
+#
 # Revision 1.116  2002/01/28 00:19:59  craigs
 # Made gcc 3 changes dependent on having gcc 3.0 installed
 #
@@ -1057,16 +1062,7 @@ endif
 PW_LIBDIR	= $(PWLIBDIR)/lib
 
 # set name of the PT library
-ifeq ($(findstring $(OBJ_SUFFIX),d),)
-ifeq ($(LIB_SUFFIX),a)
-PTLIB_BASE	= pt
-else
-PTLIB_BASE	= pt$(LIBPTCOMPAT)
-endif
-LIB_TYPE	=
-else
-PTLIB_BASE	= pt_$(OBJ_SUFFIX)
-endif
+PTLIB_BASE	= pt_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PTLIB_FILE	= lib$(PTLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
 PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJDIR_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
