@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.89  2004/07/12 01:56:10  csoutheren
+ * Fixed incorrect asn decoding check
+ *
  * Revision 1.88  2004/07/11 14:19:07  csoutheren
  * More bulletproofing of ASN routines against random data attacks
  *
@@ -2692,7 +2695,7 @@ void PASN_Stream::ByteEncode(unsigned value)
 
 unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 {
-  if (nBytes == 0 || bufptr == NULL || !CheckByteOffset(byteOffset, nBytes))
+  if (nBytes == 0 || bufptr == NULL || !CheckByteOffset(byteOffset+nBytes))
     return 0;
 
   ByteAlign();
