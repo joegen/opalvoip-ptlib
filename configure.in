@@ -91,6 +91,9 @@ case "$target_cpu" in
 
    powerpc )       MACHTYPE=ppc ;;
 
+   powerpc64 )       MACHTYPE=ppc ;
+	     	     STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
+
    ppc64 )         MACHTYPE=ppc ;
 		   STDCCFLAGS="$STDCCFLAGS -DP_64BIT" ;;
 
@@ -289,10 +292,16 @@ AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
 if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   RESOLVER_LIBS=""
 else
-  LIBS=""
-  AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=1)
+  AC_MSG_CHECKING([for res_search in -lresolv])
+  LIBS="-lresolv"
+  AC_COMPILE_IFELSE([[
+#include <resolv.h>
+int main(int argc,char **argv){
+ res_search (NULL, 0, 0, NULL, 0);
+}]],HAVE_RESOLVER=1)
   if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
-    RESOLVER_LIBS="${LIBS}"
+    AC_MSG_RESULT(yes)
+    RESOLVER_LIBS="-lresolv"
   else
     AC_SEARCH_LIBS(__res_search, resolv, HAVE_RESOLVER=1)
   fi
