@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.5  2001/03/03 06:13:01  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.4  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -52,35 +55,29 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
 
-PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
-                                     int channel,
-                                     ColourFormat colourFmt)
-  : PVideoDevice(videoFmt, channel, colourFmt)
+PVideoInputDevice::PVideoInputDevice()
 {
   videoFd     = -1;
   canMap      = -1;
-  
-  conversion = NULL;
 }
 
 
 static struct {
-  int palette;
-  int bitsPerPixel;
-} colourFormatTab[PVideoInputDevice::NumColourFormats] = {
-  { VIDEO_PALETTE_GREY,    8 },  //Entries in this table correspond
-  { VIDEO_PALETTE_RGB32,   32 }, //(line by line) to those in the 
-  { VIDEO_PALETTE_RGB24,   24 }, // PVideoDevice ColourFormat table.
-  { VIDEO_PALETTE_RGB565,  16 },
-  { VIDEO_PALETTE_RGB555,  16 },
-  { VIDEO_PALETTE_YUV422,  16 },
-  { VIDEO_PALETTE_YUV422P, 16 },
-  { VIDEO_PALETTE_YUV411,  12 },
-  { VIDEO_PALETTE_YUV411P, 12 },
-  { VIDEO_PALETTE_YUV420,  12 },
-  { VIDEO_PALETTE_YUV420P, 12 },
-  { 0,  0 },
-  { VIDEO_PALETTE_YUV410P, 10 }
+  const char * colourFormat;
+  int code;
+} colourFormatTab[] = {
+  { "Grey", VIDEO_PALETTE_GREY },  //Entries in this table correspond
+  { "RGB32", VIDEO_PALETTE_RGB32 }, //(line by line) to those in the 
+  { "RGB24", VIDEO_PALETTE_RGB24 }, // PVideoDevice ColourFormat table.
+  { "RGB565", VIDEO_PALETTE_RGB565 },
+  { "RGB555", VIDEO_PALETTE_RGB555 },
+  { "YUV422", VIDEO_PALETTE_YUV422 },
+  { "YUV422P", VIDEO_PALETTE_YUV422P },
+  { "YUV411", VIDEO_PALETTE_YUV411 },
+  { "YUV411P", VIDEO_PALETTE_YUV411P },
+  { "YUV420", VIDEO_PALETTE_YUV420 },
+  { "YUV420P", VIDEO_PALETTE_YUV420P },
+  { "YUV410P", VIDEO_PALETTE_YUV410P }
 };
 
 
@@ -115,16 +112,6 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
       videoFd = -1;
       return FALSE;
     }
-  
-	  if ( !SetColourFormat(colourFormat)) {
-	    //OK Try some others.
-	    if ( !SetColourFormat(YUV422)) {
-   	    ::close (videoFd);
-	      videoFd = -1;
-	      return FALSE;
-	    }
-	  conversion = new PVideoConvert(YUV422,colourFormat,frameWidth,frameHeight);
-	  }
   }	 
   return TRUE;    
 }
@@ -231,8 +218,15 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
 }
 
 
-BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
+BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
+  PINDEX colourFormatIndex = 0;
+  while (newFormat != colourFormatTab[colourFormatIndex].colourFormat) {
+    colourFormatIndex++;
+    if (colourFormatIndex >= PARRAYSIZE(colourFormatTab))
+      return FALSE;
+  }
+
   if (!PVideoDevice::SetColourFormat(newFormat))
     return FALSE;
 
@@ -244,7 +238,8 @@ BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
     return FALSE;
 
   // set colour format
-  pictureInfo.palette = colourFormatTab[newFormat].palette;
+  colourFormatCode = colourFormatTab[colourFormatIndex].code;
+  pictureInfo.palette = colourFormatCode;
 
   // set the information
   if (::ioctl(videoFd, VIDIOCSPICT, &pictureInfo) < 0)
@@ -288,7 +283,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   
   ClearMapping();
 
-  videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
+  frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
 }
@@ -296,7 +291,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
-  return videoFrameSize;
+  return frameBytes;
 }
 
 
@@ -317,13 +312,13 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
         canMap = 1;
 
         frameBuffer[0].frame  = 0;
-        frameBuffer[0].format = colourFormatTab[colourFormat].palette;
+        frameBuffer[0].format = colourFormatCode;
         frameBuffer[0].width  = frameWidth;
         frameBuffer[0].height = frameHeight;
         ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[0]);
 
         frameBuffer[1].frame  = 1;
-        frameBuffer[1].format = colourFormatTab[colourFormat].palette;
+        frameBuffer[1].format = colourFormatCode;
         frameBuffer[1].width  = frameWidth;
         frameBuffer[1].height = frameHeight;
         ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[1]);
@@ -333,20 +328,32 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     }
   }
 
-  if (bytesReturned != NULL)
-    *bytesReturned = videoFrameSize;
-
   // device does not support memory mapping - use normal read
-  if (canMap == 0)
-    return (PINDEX)::read(videoFd, buffer, videoFrameSize) == videoFrameSize;
+  if (canMap == 0) {
+    if ((PINDEX)::read(videoFd, buffer, frameBytes) != frameBytes)
+      return FALSE;
+    if (converter != NULL)
+      return converter->ConvertInPlace(buffer);
+    if (bytesReturned != NULL)
+      *bytesReturned = frameBytes;
+    return TRUE;
+  }
 
   // device does support memory mapping, get data
 
   // wait for the frame to load
   ::ioctl(videoFd, VIDIOCSYNC, currentFrame);
 
-  // copy the frame to our storage
-  memcpy(buffer, videoBuffer + frame.offsets[currentFrame], videoFrameSize);
+  // If converting on the fly do it from frame store to output buffer, otherwise do
+  // straight copy.
+  if (converter != NULL)
+    converter->Convert(videoBuffer + frame.offsets[currentFrame], buffer, bytesReturned);
+  else {
+    memcpy(buffer, videoBuffer + frame.offsets[currentFrame], frameBytes);
+    if (bytesReturned != NULL)
+      *bytesReturned = frameBytes;
+  }
+
 
   // trigger capture of next frame in this buffer
   ::ioctl(videoFd, VIDIOCMCAPTURE, &frameBuffer[currentFrame]);

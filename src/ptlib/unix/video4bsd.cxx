@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.6  2001/03/03 06:13:01  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.5  2001/01/11 13:26:39  rogerh
  * Add me in the Contributors section
  *
@@ -58,10 +61,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoInputDevice
 
-PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
-                                     int channel,
-                                     ColourFormat colourFmt)
-  : PVideoDevice(videoFmt, channel, colourFmt)
+PVideoInputDevice::PVideoInputDevice()
 {
   videoFd     = -1;
   canMap      = -1;
@@ -217,14 +217,14 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
 }
 
 
-BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
+BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
   if (!PVideoDevice::SetColourFormat(newFormat))
     return FALSE;
 
   ClearMapping();
 
-  videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
+  frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
 
   return TRUE;
 
@@ -264,7 +264,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   
   ClearMapping();
 
-  videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
+  frameBytes = CalculateFrameBytes(frameWidth, frameHeight, colourFormat);
   
   return TRUE;
 }
@@ -272,7 +272,7 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
-  return videoFrameSize;
+  return frameBytes;
 }
 
 
@@ -298,7 +298,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
       return FALSE;
     }
 
-    mmap_size = videoFrameSize;
+    mmap_size = frameBytes;
     videoBuffer = (BYTE *)::mmap(0, mmap_size, PROT_READ, 0, videoFd, 0);
     if (videoBuffer < 0) {
       return FALSE;
@@ -318,10 +318,10 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
   // Really there should be some synchronisation here to avoid tearing
   // in the image, but we will worry about that later
 
-  memcpy(buffer, videoBuffer, videoFrameSize);
+  memcpy(buffer, videoBuffer, frameBytes);
 
   if (bytesReturned != NULL)
-    *bytesReturned = videoFrameSize;
+    *bytesReturned = frameBytes;
 
   
   return TRUE;
