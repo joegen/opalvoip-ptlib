@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.2 1994/11/03 09:25:30 robertj Exp $
+ * $Id: object.h,v 1.3 1994/11/19 00:22:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,12 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
- * Revision 1.2  1994/11/03 09:25:30  robertj
+ * Revision 1.3  1994/11/19 00:22:55  robertj
+ * Changed PInteger to be INT, ie standard type like BOOL/WORD etc.
+ * Moved null object check in notifier to construction rather than use.
+ * Added virtual to the callback function in notifier destination class.
+ *
+ * Revision 1.2  1994/11/03  09:25:30  robertj
  * Made notifier destination object not to be descendent of PObject.
  *
  * Revision 1.1  1994/10/30  12:01:37  robertj
@@ -446,8 +451,8 @@ template <class cls> class Wrap : public Wrapper {
 
 PDECLARE_CLASS(PNotifierFunction, PObject)
   public:
-    PNotifierFunction(void * obj) { object = obj; }
-    virtual void Call(PObject & notifier, PInteger extra) const = 0;
+    PNotifierFunction(void * obj) { object = PAssertNULL(obj); }
+    virtual void Call(PObject & notifier, INT extra) const = 0;
   protected:
     void * object;
 };
@@ -457,20 +462,20 @@ PDECLARE_CLASS(PNotifier, PWrapper)
   public:
     PNotifier(PNotifierFunction * func = NULL)
       : PWrapper(func) { }
-    virtual void operator()(PObject & notifier, PInteger extra) const
+    virtual void operator()(PObject & notifier, INT extra) const
       { ((PNotifierFunction*)PAssertNULL(object))->Call(notifier, extra); }
 };
 
 
 #define PDECLARE_NOTIFIER(notifier, notifiee, func) \
-  PDECLARE_CLASS(func##_PNotifier, PNotifierFunction) \
+  virtual void func(notifier & n, INT extra); \
+  PCLASS func##_PNotifier : public PNotifierFunction { \
     public: \
       func##_PNotifier(notifiee * obj) : PNotifierFunction(obj) { } \
-      virtual void Call(PObject & note, PInteger extra) const \
-        { ((notifiee*)PAssertNULL(object))->func((notifier &)note, extra);  } \
+      virtual void Call(PObject & note, INT extra) const \
+        { ((notifiee*)object)->func((notifier &)note, extra); } \
   }; \
-  friend class func##_PNotifier; \
-  void func(notifier & n, PInteger extra)
+  friend class func##_PNotifier
 
 #define PCREATE_NOTIFIER2(obj, func) PNotifier(new func##_PNotifier(obj))
 
