@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.18  2002/04/10 08:40:36  rogerh
+ * Simplify the SetVideoChannelFormat() code. Use the implementation in the
+ * ancestor class.
+ *
  * Revision 1.17  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -141,18 +145,14 @@
     virtual BOOL SetWhiteness(unsigned newWhiteness); 
     virtual int GetColour();
     virtual BOOL SetColour(unsigned newColour); 
+    virtual BOOL SetVideoChannelFormat(int channelNumber,
+				       VideoFormat videoFormat);
 #endif
 
     /** from one ioctl call, get whiteness, brightness, colour, contrast and hue.
      */
     virtual BOOL GetParameters (int *whiteness, int *brightness, 
 				int *colour, int *contrast, int *hue);
-
-    /** Set VideoFormat and VideoChannel in one ioctl
-     */
-    virtual BOOL SetVideoChannelFormat (int channelNumber, 
-					   VideoFormat videoFormat);
-
 
   protected:
     void ClearMapping();
