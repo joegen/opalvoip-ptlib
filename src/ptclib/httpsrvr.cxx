@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.13 1997/10/30 10:22:04 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.14 1998/01/26 00:42:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.14  1998/01/26 00:42:19  robertj
+ * Added more information to PHTTPConnectionInfo.
+ * Made SetDefaultMIMEFields in HTTP Server not set those fields if already set.
+ *
  * Revision 1.13  1997/10/30 10:22:04  robertj
  * Added multiple user basic authorisation scheme.
  *
@@ -243,9 +247,11 @@ BOOL PHTTPServer::ProcessCommand()
 
   PStringArray tokens = args.Tokenise(" \t", FALSE);
 
+  PHTTPConnectionInfo connectInfo((Commands)cmd);
+
   // if no tokens, error
   if (tokens.IsEmpty()) {
-    OnError(BadRequest, args, PHTTPConnectionInfo());
+    OnError(BadRequest, args, connectInfo);
     return FALSE;
   }
 
@@ -260,7 +266,7 @@ BOOL PHTTPServer::ProcessCommand()
     static const PCaselessString httpId = "HTTP/";
     if (dotPos == P_MAX_INDEX
                       || verStr.GetLength() < 8 || httpId != verStr.Left(5)) {
-      OnError(BadRequest, "Malformed version number " + verStr, PHTTPConnectionInfo());
+      OnError(BadRequest, "Malformed version number " + verStr, connectInfo);
       return FALSE;
     }
 
@@ -280,18 +286,12 @@ BOOL PHTTPServer::ProcessCommand()
   // prescence of a an entity body is signalled by the inclusion of
   // Content-Length header. If the protocol is less than version 1.0, then 
   // there is no entity body!
-  PHTTPConnectionInfo connectInfo;
-  PMIMEInfo mimeInfo;
   long contentLength = 0;
 
   if (majorVersion > 0) {
-
-    // at this stage we should be ready to collect the MIME info
-    // until an empty line is received, or EOF
-    mimeInfo.Read(*this);
-
-    // build our connection info
-    connectInfo.Construct(mimeInfo, majorVersion, minorVersion);
+    // build our connection info reading MIME info until an empty line is
+    // received, or EOF
+    connectInfo.Construct(*this, majorVersion, minorVersion);
 //    if (connectInfo.IsPersistant()) {
 //      if (connectInfo.IsProxyConnection())
 //        PError << "Server: Persistant proxy connection received" << endl;
@@ -299,29 +299,11 @@ BOOL PHTTPServer::ProcessCommand()
 //        PError << "Server: Persistant direct connection received" << endl;
 //    }
 
-    // if the client specified a persistant connection, then use the
-    // ContentLength field. If there is no content length field, then
-    // assume a ContentLength of zero and close the connection.
-    // The spec actually says to read until end of file in this case,
-    // but Netscape hangs if this is done.
-    // If the client didn't specify a persistant connection, then use the
-    // ContentLength if there is one or read until end of file if there isn't
-    if (!connectInfo.IsPersistant()) {
-      contentLength = mimeInfo.GetInteger(ContentLengthTag, (cmd == POST) ? -2 : 0);
-    } else {
-      contentLength = mimeInfo.GetInteger(ContentLengthTag, -1);
-      if (contentLength < 0) {
-//        PError << "Server: persistant connection has no content length" << endl;
-        contentLength = 0;
-        mimeInfo.SetAt(ContentLengthTag, "0");
-      }
-    }
+    contentLength = connectInfo.GetEntityBodyLength();
   }
 
-  connectInfo.SetEntityBodyLength(contentLength);
-
   // get the user agent for various foul purposes...
-  userAgent = mimeInfo(UserAgentTag);
+  userAgent = connectInfo.GetMIME()(UserAgentTag);
 
   PIPSocket * socket = GetSocket();
   WORD myPort = (WORD)(socket != NULL ? socket->GetPort() : 80);
@@ -329,14 +311,10 @@ BOOL PHTTPServer::ProcessCommand()
   // the URL that comes with Connect requests is not quite kosher, so 
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistant
-  PURL url;
   if (cmd == CONNECT) 
-    url = "https://" + tokens[0];
-  else {
-    url = tokens[0];
-    if (url.GetPort() == 0)
-      url.SetPort(myPort);
-  }
+    connectInfo.SetURL("https://" + tokens[0], 0);
+  else
+    connectInfo.SetURL(tokens[0], myPort);
 
   BOOL persist;
 
@@ -346,10 +324,11 @@ BOOL PHTTPServer::ProcessCommand()
   // it anyway even though we are not a proxy. The usage of GetHostName()
   // below are to catch every way of specifying the host (name, alias, any of
   // several IP numbers etc).
+  const PURL & url = connectInfo.GetURL();
   if (url.GetScheme() != "http" ||
       (url.GetPort() != 0 && url.GetPort() != myPort) ||
       !PIPSocket::IsLocalHost(url.GetHostName()))
-    persist = OnProxy((Commands)cmd, url, mimeInfo, connectInfo);
+    persist = OnProxy(connectInfo);
   else {
     PString entityBody = ReadEntityBody(connectInfo);
 
@@ -357,16 +336,16 @@ BOOL PHTTPServer::ProcessCommand()
     PStringToString postData;
     switch (cmd) {
       case GET :
-        persist = OnGET(url, mimeInfo, connectInfo);
+        persist = OnGET(url, connectInfo.GetMIME(), connectInfo);
         break;
 
       case HEAD :
-        persist = OnHEAD(url, mimeInfo, connectInfo);
+        persist = OnHEAD(url, connectInfo.GetMIME(), connectInfo);
         break;
 
       case POST :
         PURL::SplitQueryVars(entityBody, postData);
-        persist = OnPOST(url, mimeInfo, postData, connectInfo);
+        persist = OnPOST(url, connectInfo.GetMIME(), postData, connectInfo);
         break;
 
       case P_MAX_INDEX:
@@ -471,12 +450,10 @@ BOOL PHTTPServer::OnPOST(const PURL & url,
 }
 
 
-BOOL PHTTPServer::OnProxy(Commands cmd,
-                          const PURL &,
-                          const PMIMEInfo &,
-                          const PHTTPConnectionInfo & connectInfo)
+BOOL PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 {
-  return OnError(BadGateway, "Proxy not implemented.", connectInfo) && cmd != CONNECT;
+  return OnError(BadGateway, "Proxy not implemented.", connectInfo) &&
+         connectInfo.GetCommand() != CONNECT;
 }
 
 
@@ -569,9 +546,12 @@ void PHTTPServer::SetDefaultMIMEInfo(PMIMEInfo & info,
                      const PHTTPConnectionInfo & connectInfo)
 {
   PTime now;
-  info.SetAt(DateTag, now.AsString(PTime::RFC1123, PTime::GMT));
-  info.SetAt(MIMEVersionTag, "1.0");
-  info.SetAt(ServerTag, GetServerName());
+  if (!info.Contains(DateTag))
+    info.SetAt(DateTag, now.AsString(PTime::RFC1123, PTime::GMT));
+  if (!info.Contains(MIMEVersionTag))
+    info.SetAt(MIMEVersionTag, "1.0");
+  if (!info.Contains(ServerTag))
+    info.SetAt(ServerTag, GetServerName());
 
   if (connectInfo.IsPersistant()) {
     if (connectInfo.IsProxyConnection())
@@ -774,8 +754,10 @@ PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & s
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
-PHTTPConnectionInfo::PHTTPConnectionInfo()
+PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd)
 {
+  command           = cmd;
+
   majorVersion      = 0;
   minorVersion      = 9;
 
@@ -784,9 +766,21 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
 }
 
 
-void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
-                                    int major, int minor)
+PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & u, const PMIMEInfo & mime)
+  : url(u), mimeInfo(mime)
 {
+  command           = cmd;
+  majorVersion      = 1;
+  minorVersion      = 0;
+  isPersistant      = FALSE;
+  isProxyConnection = FALSE;
+}
+
+
+void PHTTPConnectionInfo::Construct(PHTTPServer & server, int major, int minor)
+{
+  mimeInfo.Read(server);
+
   majorVersion      = major;
   minorVersion      = minor;
 
@@ -810,6 +804,32 @@ void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
 #endif
+
+  // if the client specified a persistant connection, then use the
+  // ContentLength field. If there is no content length field, then
+  // assume a ContentLength of zero and close the connection.
+  // The spec actually says to read until end of file in this case,
+  // but Netscape hangs if this is done.
+  // If the client didn't specify a persistant connection, then use the
+  // ContentLength if there is one or read until end of file if there isn't
+  if (!isPersistant)
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, (command == PHTTP::POST) ? -2 : 0);
+  else {
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
+    if (entityBodyLength < 0) {
+//        PError << "Server: persistant connection has no content length" << endl;
+      entityBodyLength = 0;
+      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
+    }
+  }
+}
+
+
+void PHTTPConnectionInfo::SetURL(const PURL & u, WORD defPort)
+{
+  url = u;
+  if (url.GetPort() == 0)
+    url.SetPort(defPort);
 }
 
 
@@ -884,6 +904,7 @@ BOOL PHTTPResource::OnGET(PHTTPServer & server,
   return OnGETOrHEAD(server, url, info, connectInfo, TRUE);
 }
 
+
 BOOL PHTTPResource::OnHEAD(PHTTPServer & server,
                            const PURL & url,
                       const PMIMEInfo & info,
@@ -891,6 +912,7 @@ BOOL PHTTPResource::OnHEAD(PHTTPServer & server,
 {
   return OnGETOrHEAD(server, url, info, connectInfo, FALSE);
 }
+
 
 BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
                            const PURL & url,
@@ -928,6 +950,7 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPServer & server,
   return retVal;
 }
 
+
 BOOL PHTTPResource::OnGETData(PHTTPServer & server,
                                const PURL & /*url*/,
                 const PHTTPConnectionInfo & /*connectInfo*/,
@@ -951,6 +974,7 @@ BOOL PHTTPResource::OnGETData(PHTTPServer & server,
 
   return request.outMIME.Contains(PHTTP::ContentLengthTag);
 }
+
 
 BOOL PHTTPResource::OnPOST(PHTTPServer & server,
                             const PURL & url,
@@ -992,8 +1016,8 @@ BOOL PHTTPResource::CheckAuthority(PHTTPServer & server,
     return TRUE;
 
   // if this is an authorisation request...
-  if (request.inMIME.Contains(PCaselessString("Authorization")) &&
-      authority->Validate(request, request.inMIME["Authorization"]))
+  if (request.inMIME.Contains(PHTTP::AuthorizationTag) &&
+      authority->Validate(request, request.inMIME[PHTTP::AuthorizationTag]))
     return TRUE;
 
   // it must be a request for authorisation
@@ -1057,8 +1081,8 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 
 
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
-                                       const PMIMEInfo & inMIME,
-									       PHTTPServer & socket)
+                                            const PMIMEInfo & inMIME,
+				            PHTTPServer & socket)
 {
   return PNEW PHTTPRequest(url, inMIME, socket);
 }
@@ -1215,15 +1239,15 @@ PHTTPFile::PHTTPFile(const PURL & url,
 
 PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
                                    const PMIMEInfo & inMIME,
-								   PHTTPServer & server)
+                                   PHTTPServer & server)
   : PHTTPRequest(url, inMIME, server)
 {
 }
 
 
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                   const PMIMEInfo & inMIME,
-								       PHTTPServer & server)
+                                        const PMIMEInfo & inMIME,
+				        PHTTPServer & server)
 {
   return PNEW PHTTPFileRequest(url, inMIME, server);
 }
