@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.17  2005/02/20 21:18:30  dereksmithies
+ * Fix documentation typos.
+ *
  * Revision 1.16  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -140,33 +143,33 @@ class PSerialChannel : public PChannel
        attributes.
      */
     PSerialChannel(
-      const PString & port,
       /**The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
          #GetPortNames()# can be used to find the platforms serial ports.
        */
-      DWORD speed = 0,
+      const PString & port,
       /**Serial port speed or baud rate. The actual values possible here are
          platform dependent, but the standard value of 300, 1200, 2400, 4800,
          9600, 19200, 38400 always be legal.
        */
-      BYTE data = 0,
+      DWORD speed = 0,
       /**Number of data bits for serial port. The actual values possible here
          are platform dependent, but 7 and 8 should always be legal.
        */
-      Parity parity = DefaultParity,
+      BYTE data = 0,
       /**Parity for serial port. The actual values possible here are platform
          dependent, but #NoParity#, #OddParity# and
          #EvenParity# should always be legal.
        */
-      BYTE stop = 0,
+      Parity parity = DefaultParity,
       /**Number of stop bits for serial port. The actual values possible here
          are platform dependent, but 1 and 2 should always be legal.
        */
+      BYTE stop = 0,
+      /**Flow control for data from the remote system into this conputer.*/
       FlowControl inputFlow = DefaultFlowControl,
-      /// Flow control for data from the remote system into this conputer.
-      FlowControl outputFlow = DefaultFlowControl
-      /// Flow control for data from this conputer out to remote system.
+      /**Flow control for data from this conputer out to remote system. */
+      FlowControl outputFlow = DefaultFlowControl      
     );
 
     /**Create a serial channal.
@@ -190,33 +193,33 @@ class PSerialChannel : public PChannel
        attributes.
      */
     virtual BOOL Open(
-      const PString & port,
       /**The name of the serial port to connect to. This is a platform
          dependent string and woiuld rarely be a literal. The static function
          #GetPortNames()# can be used to find the platforms serial ports.
        */
-      DWORD speed = 0,
+      const PString & port,
       /**Serial port speed or baud rate. The actual values possible here are
          platform dependent, but the standard value of 300, 1200, 2400, 4800,
          9600, 19200, 38400 always be legal.
        */
-      BYTE data = 0,
+      DWORD speed = 0,
       /**Number of data bits for serial port. The actual values possible here
          are platform dependent, but 7 and 8 should always be legal.
        */
-      Parity parity = DefaultParity,
+      BYTE data = 0,
       /**Parity for serial port. The actual values possible here are platform
          dependent, but #NoParity#, #OddParity# and
          #EvenParity# should always be legal.
        */
-      BYTE stop = 0,
+      Parity parity = DefaultParity,
       /**Number of stop bits for serial port. The actual values possible here
          are platform dependent, but 1 and 2 should always be legal.
        */
+      BYTE stop = 0,
+      /**Flow control for data from the remote system into this conputer.*/
       FlowControl inputFlow = DefaultFlowControl,
-      /// Flow control for data from the remote system into this conputer.
-      FlowControl outputFlow = DefaultFlowControl
-      /// Flow control for data from this conputer out to remote system.
+      /**Flow control for data from this conputer out to remote system. */
+      FlowControl outputFlow = DefaultFlowControl      
     );
 
     /**Open a serial channal.
