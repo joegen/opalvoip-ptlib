@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.38 1996/09/14 13:09:28 robertj Exp $
+ * $Id: http.cxx,v 1.39 1997/01/12 04:15:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.39  1997/01/12 04:15:21  robertj
+ * Globalised MIME tag strings.
+ *
  * Revision 1.38  1996/09/14 13:09:28  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -259,6 +262,19 @@ PObject::Comparison PURL::Compare(const PObject & obj) const
     }
   }
   return c;
+}
+
+
+PINDEX PURL::HashFunction() const
+{
+  return ((BYTE)toupper(scheme[0]) +
+          (BYTE)toupper(username[0]) +
+          (BYTE)toupper(password[0]) +
+          (BYTE)toupper(hostname[0]) +
+          (BYTE)toupper(pathStr[0]) +
+          (BYTE)toupper(parameters[0]) +
+          (BYTE)toupper(fragment[0]) +
+          (BYTE)toupper(queryStr[0]))%41;
 }
 
 
@@ -560,6 +576,33 @@ static char const * HTTPCommands[PHTTP::NumCommands] = {
   "LINK", "UNLINK", "TRACE", "WRAPPED", "OPTIONS",
   "CONNECT"
 };
+
+
+const PCaselessString PHTTP::AllowTag           = "Allow";
+const PCaselessString PHTTP::AuthorizationTag   = "Authorization";
+const PCaselessString PHTTP::ContentEncodingTag = "Content-Encoding";
+const PCaselessString PHTTP::ContentLengthTag   = "Content-Length";
+const PCaselessString PHTTP::ContentTypeTag     = "Content-Type";
+const PCaselessString PHTTP::DateTag            = "Date";
+const PCaselessString PHTTP::ExpiresTag         = "Expires";
+const PCaselessString PHTTP::FromTag            = "From";
+const PCaselessString PHTTP::IfModifiedSinceTag = "If-Modified-Since";
+const PCaselessString PHTTP::LastModifiedTag    = "Last-Modified";
+const PCaselessString PHTTP::LocationTag        = "Location";
+const PCaselessString PHTTP::PragmaTag          = "Pragma";
+const PCaselessString PHTTP::PragmaNoCacheTag   = "no-cache";
+const PCaselessString PHTTP::RefererTag         = "Referer";
+const PCaselessString PHTTP::ServerTag          = "Server";
+const PCaselessString PHTTP::UserAgentTag       = "User-Agent";
+const PCaselessString PHTTP::WWWAuthenticateTag = "WWW-Authenticate";
+const PCaselessString PHTTP::MIMEVersionTag     = "MIME-Version";
+const PCaselessString PHTTP::ConnectionTag      = "Connection";
+const PCaselessString PHTTP::KeepAliveTag       = "Keep-Alive";
+const PCaselessString PHTTP::ProxyConnectionTag = "Proxy-Connection";
+const PCaselessString PHTTP::ProxyAuthorizationTag = "Proxy-Authorization";
+const PCaselessString PHTTP::ProxyAuthenticateTag = "Proxy-Authenticate";
+const PCaselessString PHTTP::ForwardedTag       = "Forwarded";
+
 
 
 PHTTP::PHTTP()
