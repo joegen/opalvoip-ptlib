@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.13  2001/06/01 04:00:21  yurik
+ * Removed dependency on obsolete function
+ *
  * Revision 1.12  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -211,12 +214,7 @@ class PSemaphore : public PObject
     PQUEUE(BlockedThreadsQueue, PThread);
     BlockedThreadsQueue blockedThreads;
     friend void PThread::Yield();
-#else
-#ifdef _WIN32_WCE
-    unsigned currentCount;
-#endif  
 #endif
-
 
   private:
     PSemaphore(const PSemaphore &) { }
