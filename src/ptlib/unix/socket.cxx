@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.111  2005/02/07 12:12:31  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.110  2004/08/24 07:08:11  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -691,9 +695,40 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
   if (!GetHostAddress(hostname, addr))
     return FALSE;
 
+#ifdef P_HAS_IPV6
+  {
+    FILE * file;
+    int dummy;
+    int addr6[16];
+    char ifaceName[9];
+    BOOL found = FALSE;
+    if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
+      while (!found && (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %02x %02x %02x %02x %8s\n",
+              &addr6[0],  &addr6[1],  &addr6[2],  &addr6[3], 
+              &addr6[4],  &addr6[5],  &addr6[6],  &addr6[7], 
+              &addr6[8],  &addr6[9],  &addr6[10], &addr6[11], 
+              &addr6[12], &addr6[13], &addr6[14], &addr6[15], 
+             &dummy, &dummy, &dummy, &dummy, ifaceName) != EOF)) {
+        Address ip6addr(
+          psprintf("%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
+              addr6[0],  addr6[1],  addr6[2],  addr6[3], 
+              addr6[4],  addr6[5],  addr6[6],  addr6[7], 
+              addr6[8],  addr6[9],  addr6[10], addr6[11], 
+              addr6[12], addr6[13], addr6[14], addr6[15]
+          )
+        );
+        found = (ip6addr *= addr);
+      }
+      fclose(file);
+    }
+    if (found)
+      return TRUE;
+  }
+#endif
+
   PUDPSocket sock;
 
-  // get number of interfaces
+  // check IPV4 addresses
   int ifNum;
 #ifdef SIOCGIFNUM
   PAssert(::ioctl(sock.GetHandle(), SIOCGIFNUM, &ifNum) >= 0, "could not do ioctl for ifNum");
@@ -721,7 +756,7 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
       if (ioctl(sock.GetHandle(), SIOCGIFFLAGS, &ifReq) >= 0) {
         int flags = ifReq.ifr_flags;
         if (ioctl(sock.GetHandle(), SIOCGIFADDR, &ifReq) >= 0) {
-          if ((flags & IFF_UP) && (addr == Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
+          if ((flags & IFF_UP) && (addr *= Address(((sockaddr_in *)&ifReq.ifr_addr)->sin_addr)))
             return TRUE;
         }
       }
@@ -1239,7 +1274,6 @@ PString PIPSocket::GetGatewayInterface()
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
-
   PTextFile procfile;
   if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
     return FALSE;
@@ -1738,8 +1772,43 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 #endif
 
 
+// fe800000000000000202e3fffe1ee330 02 40 20 80     eth0
+// 00000000000000000000000000000001 01 80 10 80       lo
+
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 {
+#ifdef P_HAS_IPV6
+  // build a table of IPV6 interface addresses
+  typedef std::map<PString, PString> IP6ListType;
+  IP6ListType ip6Ifaces;
+  {
+    FILE * file;
+    int dummy;
+    int addr[16];
+    char ifaceName[9];
+    if ((file = fopen("/proc/net/if_inet6", "r")) != NULL) {
+      while (fscanf(file, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x %02x %02x %02x %02x %8s\n",
+              &addr[0],  &addr[1],  &addr[2],  &addr[3], 
+              &addr[4],  &addr[5],  &addr[6],  &addr[7], 
+              &addr[8],  &addr[9],  &addr[10], &addr[11], 
+              &addr[12], &addr[13], &addr[14], &addr[15], 
+             &dummy, &dummy, &dummy, &dummy, ifaceName) != EOF) {
+        PString addrStr(
+          psprintf("%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x",
+              addr[0],  addr[1],  addr[2],  addr[3], 
+              addr[4],  addr[5],  addr[6],  addr[7], 
+              addr[8],  addr[9],  addr[10], addr[11], 
+              addr[12], addr[13], addr[14], addr[15]
+          )
+        );
+        PString iface(ifaceName);
+        ip6Ifaces.insert(IP6ListType::value_type(ifaceName, addrStr));
+      }
+      fclose(file);
+    }
+  }
+#endif
+
   PUDPSocket sock;
 
   PBYTEArray buffer;
@@ -1799,8 +1868,18 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
 #endif
                   break;
               }
+#ifdef P_HAS_IPV6
+              PString ip6Addr;
+              IP6ListType::const_iterator r = ip6Ifaces.find(name);
+              if (r != ip6Ifaces.end())
+                ip6Addr = r->second;
+#endif
               if (i >= list.GetSize())
-                list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr));
+                list.Append(PNEW InterfaceEntry(name, addr, mask, macAddr
+#ifdef P_HAS_IPV6
+                , ip6Addr
+#endif
+                ));
             }
           }
         }
