@@ -28,6 +28,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.4  2001/07/23 01:20:20  rogerh
+ * Add updates from Shawn - ensure isvalidWAV is false for zero length files.
+ * GetDataLength uses actual file size to support file updates as well as appends.
+ * Add updates from Roger - Update Header() just writes to specific fields which
+ * preserves any 'extra' data in an existing header between FORMAT and DATA chunks.
+ *
  * Revision 1.3  2001/07/20 07:06:27  rogerh
  * Fix a typo
  *
@@ -118,6 +124,8 @@ class PWAVFile : public PFile
     );
 
     /** Close the file channel.
+	If a WAV file has been written to, this will update the header
+	to contain the correct size information.
         @return TRUE if close was OK.
       */
     virtual BOOL Close();
@@ -172,7 +180,7 @@ class PWAVFile : public PFile
 
     /**Find out how many bytes of audio data there are.
     */
-    off_t GetDataLength() const;
+    off_t GetDataLength();
 
     /**Determine if the WAV file is a valid wave file.
 
@@ -190,11 +198,14 @@ class PWAVFile : public PFile
     BOOL UpdateHeader();
 
     BOOL     isValidWAV;
+
     unsigned numChannels;
     unsigned sampleRate;
     unsigned bitsPerSample;
+
     off_t    lenHeader;
     off_t    lenData;
+
     BOOL     header_needs_updating;
 
 };
