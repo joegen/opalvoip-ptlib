@@ -589,6 +589,17 @@ typedef int PDIMENSION;
 // PNamedControl
 
 #include "../../common/ncontrol.h"
+  public:
+    // Overrides from class PInteractor
+    HWND GetHWND() const;
+      // Return the MS-Windows handle for the control.
+
+    virtual HWND GetHWND();
+      // Return the MS-Windows handle for the control, call CreateWindow() to
+      // create the window if it has not already been created.
+
+  private:
+    PString initName;
 };
 
 
@@ -638,6 +649,12 @@ typedef int PDIMENSION;
 // PPushButton
 
 #include "../../common/pbutton.h"
+  public:
+    // New functions for class
+    virtual BOOL IsOwnerDraw() const;
+      // Return TRUE if is to handle owner draw messages
+
+
   protected:
     // Overrides from class PInteractor
     virtual const char * GetWinClsName() const;
@@ -650,9 +667,13 @@ typedef int PDIMENSION;
       // Translate the windows notification message code to the PWLib
       // notify function code. This returns -1 if the windows message is to be
       // ignored.
+};
 
 
-    friend class PInteractor;
+///////////////////////////////////////////////////////////////////////////////
+// PTextButton
+
+#include "../../common/tbutton.h"
 };
 
 
@@ -660,9 +681,6 @@ typedef int PDIMENSION;
 // PImageButton
 
 #include "../../common/ibutton.h"
-  protected:
-    virtual DWORD GetStyle() const;
-      // Return the MS-Windows style used in CreateWindow().
 };
 
 
