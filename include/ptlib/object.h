@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.30  1998/10/13 14:23:29  robertj
+ * Complete rewrite of memory leak detection.
+ *
  * Revision 1.29  1998/09/23 06:20:57  robertj
  * Added open source copyright license.
  *
@@ -267,477 +270,185 @@ class PTrace {
 #define PTRACE(n) PTrace __trace_instance(n)
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Really big integer class for architectures without
+#ifdef PMEMORY_CHECK
 
-#ifndef P_HAS_INT64
+class PMemoryHeap {
+  protected:
+    PMemoryHeap();
 
-class PInt64__ {
   public:
-    operator long()  const { return (long)low; }
-    operator int()   const { return (int)low; }
-    operator short() const { return (short)low; }
-    operator char()  const { return (char)low; }
+    ~PMemoryHeap();
 
-    operator unsigned long()  const { return (unsigned long)low; }
-    operator unsigned int()   const { return (unsigned int)low; }
-    operator unsigned short() const { return (unsigned short)low; }
-    operator unsigned char()  const { return (unsigned char)low; }
+    static void * Allocate(
+      size_t nSize,           // Number of bytes to allocate.
+      const char * file,      // Source file name for allocating function.
+      int line,               // Source file line for allocating function.
+      const char * className  // Class name for allocating function.
+    );
+    static void * Allocate(
+      size_t count,       // Number of items to allocate.
+      size_t iSize,       // Size in bytes of each item.
+      const char * file,  // Source file name for allocating function.
+      int line            // Source file line for allocating function.
+    );
+    /* Allocate a memory block.
+    
+       <H2>Returns:</H2>
+       pointer to newly allocated memory block.
+     */
+
+    static void * Reallocate(
+      void * ptr,         // Pointer to memory block to reallocate.
+      size_t nSize,       // New number of bytes to allocate.
+      const char * file,  // Source file name for allocating function.
+      int line            // Source file line for allocating function.
+    );
+    /* Change the size of an allocated memory block.
+    
+       <H2>Returns:</H2>
+       pointer to reallocated memory block. Note this may <EM>not</EM> be the
+       same as the pointer passed into the function.
+     */
+
+    static void Deallocate(
+      void * ptr,             // Pointer to memory block to deallocate.
+      const char * className  // Class name for deallocating function.
+    );
+    /* Free a memory block.
+     */
+
+    enum Validation {
+      Ok, Bad, Trashed
+    };
+    static Validation Validate(
+      void * ptr,             // Pointer to memory block to check
+      const char * className, // Class name it should be.
+      ostream * error         // Stream to receive error message (may be NULL)
+    );
+    /* Validate that the ptr is to a currently allocated heap variable.
+     */
+
+    static void SetIgnoreAllocations(BOOL ignore);
+    /* Set internal flag so that allocations are not included in the memory
+       leak check on program termination.
+     */
+
+    static void DumpStatistics();
+    static void DumpStatistics(ostream & strm);
+    /* Get memory check system statistics.
+     */
+
+    static DWORD GetAllocationRequest();
+    static void DumpObjectsSince(DWORD objectNumber);
+    static void DumpObjectsSince(DWORD objectNumber, ostream & strm);
+    /* Dump ojects allocated and not deallocated since the specified object
+       number. This would be a value returned by the GetAllocationRequest()
+       function.
+     */
 
   protected:
-    PInt64__() { }
-    PInt64__(unsigned long l) : low(l), high(0) { }
-    PInt64__(unsigned long l, unsigned long h) : low(l), high(h) { }
+    void * InternalAllocate(
+      size_t nSize,           // Number of bytes to allocate.
+      const char * file,      // Source file name for allocating function.
+      int line,               // Source file line for allocating function.
+      const char * className  // Class name for allocating function.
+    );
+    Validation InternalValidate(
+      void * ptr,             // Pointer to memory block to check
+      const char * className, // Class name it should be.
+      ostream * error         // Stream to receive error message (may be NULL)
+    );
+    void InternalDumpStatistics(ostream & strm);
+    void InternalDumpObjectsSince(DWORD objectNumber, ostream & strm);
 
-    void operator=(const PInt64__ & v) { low = v.low; high = v.high; }
+    class Wrapper {
+      public:
+        Wrapper();
+        ~Wrapper();
+        PMemoryHeap * operator->() const { return instance; }
+      private:
+        PMemoryHeap * instance;
+    };
+    friend class Wrapper;
 
-    void Inc() { if (++low == 0) ++high; }
-    void Dec() { if (--low == 0) --high; }
+    enum Flags {
+      NoLeakPrint = 1
+    };
 
-    void Or (long v) { low |= v; }
-    void And(long v) { low &= v; }
-    void Xor(long v) { low ^= v; }
+#pragma pack(1)
+    struct Header {
+      Header     * prev;
+      Header     * next;
+      size_t       size;
+      const char * fileName;
+      int          line;
+      const char * className;
+      DWORD        request;
+      BYTE         flags;
+      static const char GuardBytes[7];
+      char         guard[sizeof(GuardBytes)];
+    };
+#pragma pack()
 
-    void Add(const PInt64__ & v);
-    void Sub(const PInt64__ & v);
-    void Mul(const PInt64__ & v);
-    void Div(const PInt64__ & v);
-    void Mod(const PInt64__ & v);
-    void Or (const PInt64__ & v) { low |= v.low; high |= v.high; }
-    void And(const PInt64__ & v) { low &= v.low; high &= v.high; }
-    void Xor(const PInt64__ & v) { low ^= v.low; high ^= v.high; }
-    void ShiftLeft(int bits);
-    void ShiftRight(int bits);
+    Header * listHead;
+    Header * listTail;
 
-    BOOL Eq(unsigned long v) const { return low == v && high == 0; }
-    BOOL Ne(unsigned long v) const { return low != v || high != 0; }
+    DWORD allocationRequest;
+    BYTE  flags;
 
-    BOOL Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
-    BOOL Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
+    char  allocFillChar;
+    char  freeFillChar;
 
-    unsigned long low, high;
+    DWORD currentMemoryUsage;
+    DWORD peakMemoryUsage;
+    DWORD currentObjects;
+    DWORD peakObjects;
+    DWORD totalObjects;
+
+    ostream * leakDumpStream;
+
+#ifdef _WIN32
+    CRITICAL_SECTION mutex;
+#endif
 };
 
 
-#define DECL_OPS(cls, type) \
-    const cls & operator=(type v) { PInt64__::operator=(cls(v)); return *this; } \
-    cls operator+(type v) const { cls t = *this; t.Add(v); return t; } \
-    cls operator-(type v) const { cls t = *this; t.Sub(v); return t; } \
-    cls operator*(type v) const { cls t = *this; t.Mul(v); return t; } \
-    cls operator/(type v) const { cls t = *this; t.Div(v); return t; } \
-    cls operator%(type v) const { cls t = *this; t.Mod(v); return t; } \
-    cls operator|(type v) const { cls t = *this; t.Or (v); return t; } \
-    cls operator&(type v) const { cls t = *this; t.And(v); return t; } \
-    cls operator^(type v) const { cls t = *this; t.Xor(v); return t; } \
-    cls operator<<(type v) const { cls t = *this; t.ShiftLeft((int)v); return t; } \
-    cls operator>>(type v) const { cls t = *this; t.ShiftRight((int)v); return t; } \
-    const cls & operator+=(type v) { Add(v); return *this; } \
-    const cls & operator-=(type v) { Sub(v); return *this; } \
-    const cls & operator*=(type v) { Mul(v); return *this; } \
-    const cls & operator/=(type v) { Div(v); return *this; } \
-    const cls & operator|=(type v) { Or (v); return *this; } \
-    const cls & operator&=(type v) { And(v); return *this; } \
-    const cls & operator^=(type v) { Xor(v); return *this; } \
-    const cls & operator<<=(type v) { ShiftLeft((int)v); return *this; } \
-    const cls & operator>>=(type v) { ShiftRight((int)v); return *this; } \
-    BOOL operator==(type v) const { return Eq(v); } \
-    BOOL operator!=(type v) const { return Ne(v); } \
-    BOOL operator< (type v) const { return Lt(v); } \
-    BOOL operator> (type v) const { return Gt(v); } \
-    BOOL operator>=(type v) const { return !Gt(v); } \
-    BOOL operator<=(type v) const { return !Lt(v); } \
-
-
-class PInt64 : public PInt64__ {
-  public:
-    PInt64() { }
-    PInt64(long l) : PInt64__(l, l < 0 ? -1 : 0) { }
-    PInt64(unsigned long l, long h) : PInt64__(l, h) { }
-    PInt64(const PInt64__ & v) : PInt64__(v) { }
-
-    PInt64 operator~() const { return PInt64(~low, ~high); }
-    PInt64 operator-() const { return operator~()+1; }
-
-    PInt64 operator++() { Inc(); return *this; }
-    PInt64 operator--() { Dec(); return *this; }
-
-    PInt64 operator++(int) { PInt64 t = *this; Inc(); return t; }
-    PInt64 operator--(int) { PInt64 t = *this; Dec(); return t; }
-
-    DECL_OPS(PInt64, char)
-    DECL_OPS(PInt64, unsigned char)
-    DECL_OPS(PInt64, short)
-    DECL_OPS(PInt64, unsigned short)
-    DECL_OPS(PInt64, int)
-    DECL_OPS(PInt64, unsigned int)
-    DECL_OPS(PInt64, long)
-    DECL_OPS(PInt64, unsigned long)
-    DECL_OPS(PInt64, const PInt64 &)
-
-    friend ostream & operator<<(ostream &, const PInt64 &);
-    friend istream & operator>>(istream &, PInt64 &);
-
-  protected:
-    void Add(long v) { Add(PInt64(v)); }
-    void Sub(long v) { Sub(PInt64(v)); }
-    void Mul(long v) { Mul(PInt64(v)); }
-    void Div(long v) { Div(PInt64(v)); }
-    void Mod(long v) { Mod(PInt64(v)); }
-    BOOL Lt(long v) const { return Lt(PInt64(v)); }
-    BOOL Gt(long v) const { return Gt(PInt64(v)); }
-    BOOL Lt(const PInt64 &) const;
-    BOOL Gt(const PInt64 &) const;
-};
-
-
-class PUInt64 : public PInt64__ {
-  public:
-    PUInt64() { }
-    PUInt64(unsigned long l) : PInt64__(l, 0) { }
-    PUInt64(unsigned long l, unsigned long h) : PInt64__(l, h) { }
-    PUInt64(const PInt64__ & v) : PInt64__(v) { }
-
-    PUInt64 operator~() const { return PUInt64(~low, ~high); }
-
-    const PUInt64 & operator++() { Inc(); return *this; }
-    const PUInt64 & operator--() { Dec(); return *this; }
-
-    PUInt64 operator++(int) { PUInt64 t = *this; Inc(); return t; }
-    PUInt64 operator--(int) { PUInt64 t = *this; Dec(); return t; }
-
-    DECL_OPS(PUInt64, char)
-    DECL_OPS(PUInt64, unsigned char)
-    DECL_OPS(PUInt64, short)
-    DECL_OPS(PUInt64, unsigned short)
-    DECL_OPS(PUInt64, int)
-    DECL_OPS(PUInt64, unsigned int)
-    DECL_OPS(PUInt64, long)
-    DECL_OPS(PUInt64, unsigned long)
-    DECL_OPS(PUInt64, const PUInt64 &)
-
-    friend ostream & operator<<(ostream &, const PUInt64 &);
-    friend istream & operator>>(istream &, PUInt64 &);
-
-  protected:
-    void Add(long v) { Add(PUInt64(v)); }
-    void Sub(long v) { Sub(PUInt64(v)); }
-    void Mul(long v) { Mul(PUInt64(v)); }
-    void Div(long v) { Div(PUInt64(v)); }
-    void Mod(long v) { Mod(PUInt64(v)); }
-    BOOL Lt(long v) const { return Lt(PUInt64(v)); }
-    BOOL Gt(long v) const { return Gt(PUInt64(v)); }
-    BOOL Lt(const PUInt64 &) const;
-    BOOL Gt(const PUInt64 &) const;
-};
-
-#undef DECL_OPS
-
-#endif
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Platform independent types
-
-// All these classes encapsulate primitive types such that they may be
-// transfered in a platform independent manner. In particular it is used to
-// do byte swapping for little endien and big endien processor architectures
-// as well as accommodating structure packing rules for memory structures.
-
-#define PANSI_CHAR 1
-#define PLITTLE_ENDIAN 2
-#define PBIG_ENDIAN 3
-
-
-#if 0
-class PStandardType
-/* Encapsulate a standard 8 bit character into a portable format. This would
-   rarely need to do translation, only if the target platform uses EBCDIC
-   would it do anything.
-
-   The platform independent form here is always 8 bit ANSI.
- */
-{
-  public:
-    PStandardType(
-      type newVal   // Value to initialise data in platform dependent form.
-    ) { data = newVal; }
-    /* Create a new instance of the platform independent type using platform
-       dependent data, or platform independent streams.
-     */
-
-    operator type() { return data; }
-    /* Get the platform dependent value for the type.
-
-       <H2>Returns:</H2>
-       data for instance.
-     */
-
-    friend ostream & operator<<(ostream & strm, const PStandardType & val)
-      { return strm << (type)val; }
-    /* Output the platform dependent value for the type to the stream.
-
-       <H2>Returns:</H2>
-       the stream output was made to.
-     */
-
-    friend istream & operator>>(istream & strm, PStandardType & val)
-      { type data; strm >> data; val = PStandardType(data); return strm; }
-    /* Input the platform dependent value for the type from the stream.
-
-       <H2>Returns:</H2>
-       the stream input was made from.
-     */
-
-
-  private:
-    type data;
-};
-#endif
-
-
-#define PI_SAME(name, type) \
-  struct name { \
-    name() { } \
-    name(type value) { data = value; } \
-    name(const name & value) { data = value.data; } \
-    name & operator =(type value) { data = value; return *this; } \
-    name & operator =(const name & value) { data = value.data; return *this; } \
-    operator type() const { return data; } \
-    friend ostream & operator<<(ostream & s, const name & v) { return s << v.data; } \
-    friend istream & operator>>(istream & s, name & v) { return s >> v.data; } \
-    private: type data; \
-  }
-
-#define PI_LOOP(src, dst) \
-    BYTE *s = ((BYTE *)&src)+sizeof(src); BYTE *d = (BYTE *)&dst; \
-    while (s != (BYTE *)&src) *d++ = *--s;
-
-#define PI_DIFF(name, type) \
-  struct name { \
-    name() { } \
-    name(type value) { operator=(value); } \
-    name(const name & value) { data = value.data; } \
-    name & operator =(type value) { PI_LOOP(value, data); return *this; } \
-    name & operator =(const name & value) { data = value.data; return *this; } \
-    operator type() const { type value; PI_LOOP(data, value); return value; } \
-    friend ostream & operator<<(ostream & s, const name & value) { return s << (type)value; } \
-    friend istream & operator>>(istream & s, name & v) { type val; s >> val; v = val; return s; } \
-    private: type data; \
-  }
-
-#if PCHAR8==PANSI_CHAR
-PI_SAME(PChar8, char);
-#endif
-
-PI_SAME(PInt8, signed char);
-
-PI_SAME(PUInt8, unsigned char);
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt16l, PInt16);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt16l, PInt16);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt16b, PInt16);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt16b, PInt16);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt16l, WORD);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt16l, WORD);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt16b, WORD);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt16b, WORD);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt32l, PInt32);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt32l, PInt32);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt32b, PInt32);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt32b, PInt32);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt32l, DWORD);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt32l, DWORD);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt32b, DWORD);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt32b, DWORD);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt64l, PInt64);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt64l, PInt64);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt64b, PInt64);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt64b, PInt64);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt64l, PUInt64);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt64l, PUInt64);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt64b, PUInt64);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt64b, PUInt64);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat32l, float);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat32l, float);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat32b, float);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat32b, float);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat64l, double);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat64l, double);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat64b, double);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat64b, double);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat80l, long double);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat80l, long double);
-#endif
-
-#if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat80b, long double);
-#elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat80b, long double);
-#endif
-
-#undef PI_LOOP
-#undef PI_SAME
-#undef PI_DIFF
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Miscellaneous
-
-/*$MACRO PARRAYSIZE(array)
-   This macro is used to calculate the number of array elements in a static
-   array.
- */
-#define PARRAYSIZE(array) ((PINDEX)(sizeof(array)/sizeof(array[0])))
-
-/*$MACRO PMIN(v1, v2)
-   This macro is used to calculate the minimum of two values. As this is a
-   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
-   twice so extreme care should be made in its use.
- */
-#define PMIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
-
-/*$MACRO PMAX(v1, v2)
-   This macro is used to calculate the maximum of two values. As this is a
-   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
-   twice so extreme care should be made in its use.
- */
-#define PMAX(v1, v2) ((v1) > (v2) ? (v1) : (v2))
-
-/*$MACRO PABS(val)
-   This macro is used to calculate an absolute value. As this is a macro the
-   expression in <CODE>val</CODE> is executed twice so extreme care should be
-   made in its use.
- */
-#define PABS(v) ((v) < 0 ? -(v) : (v))
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// The low level object support, memory checks, run time typing etc.
-
-#if defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
-
-/*$MACRO PMALLOC(s)
+/*$MACRO malloc(s)
    This macro is used to allocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
    
    This macro should be used instead of the system <CODE>malloc()</CODE>
    function.
  */
-#define PMALLOC(s) PObject::MemoryCheckAllocate(s, __FILE__, __LINE__, NULL)
+#define malloc(s) PMemoryHeap::Allocate(s, __FILE__, __LINE__, NULL)
 
-/*$MACRO PCALLOC(n,s)
+/*$MACRO calloc(n,s)
    This macro is used to allocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
    
    This macro should be used instead of the system <CODE>calloc()</CODE>
    function.
  */
-#define PCALLOC(n,s) PObject::MemoryCheckAllocate(n, s, __FILE__, __LINE__)
+#define calloc(n,s) PMemoryHeap::Allocate(n, s, __FILE__, __LINE__)
 
-/*$MACRO PREALLOC(p,s)
+/*$MACRO realloc(p,s)
    This macro is used to allocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
    
    This macro should be used instead of the system <CODE>realloc()</CODE>
    function.
  */
-#define PREALLOC(p,s) PObject::MemoryCheckReallocate(p, s, __FILE__, __LINE__)
+#define realloc(p,s) PMemoryHeap::Reallocate(p, s, __FILE__, __LINE__)
 
-/*$MACRO PFREE(p)
+/*$MACRO free(p)
    This macro is used to deallocate memory via the memory check system selected
    with the PMEMORY_CHECK compile time option.
    
    This macro should be used instead of the system <CODE>free()</CODE>
    function.
  */
-#define PFREE(p) PObject::MemoryCheckDeallocate(p, NULL)
+#define free(p) PMemoryHeap::Deallocate(p, NULL)
 
-#else // !defined(PMEMORY_CHECK) || PMEMORY_CHECK==1
-
-
-#define PMALLOC(s)    malloc(s)
-#define PCALLOC(n,s)  calloc(n, s)
-#ifdef __GNUC__
-inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
-  { return realloc(p, s <= 4 ? 4 : s); }
-#define PREALLOC(p,s) p_realloc(p, s)
-#else
-#define PREALLOC(p,s) realloc(p, s)
-#endif
-#define PFREE(p)      free(p)
-
-
-#endif // defined(PMEMORY_CHECK) && PMEMORY_CHECK>1
-
-
-#if defined(PMEMORY_CHECK) && PMEMORY_CHECK!=0
 
 /*$MACRO PNEW
    This macro is used to allocate memory via the memory check system selected
@@ -747,48 +458,27 @@ inline void * p_realloc(void * p, size_t s) // Bug in Linux GNU realloc()
  */
 #define PNEW new(__FILE__, __LINE__)
 
-
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
-      { return MemoryCheckAllocate(nSize, file, line, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
     void * operator new(size_t nSize) \
-      { return MemoryCheckAllocate(nSize, NULL, 0, Class()); } \
+      { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete(void * ptr) \
-      { MemoryCheckDeallocate(ptr, Class()); }
+      { PMemoryHeap::Deallocate(ptr, Class()); }
 
+inline void * operator new(size_t nSize, const char * file, int line)
+  { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
+inline void * operator new(size_t nSize)
+  { return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL); }
+inline void operator delete(void * ptr)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
 
-#else // !defined(PMEMORY_CHECK) || PMEMORY_CHECK==0
-
-#if defined(_DEBUG) && defined(_MSC_VER)
-
-#include <crtdbg.h>
-
-#define PNEW new(__FILE__, __LINE__)
-#define PNEW_AND_DELETE_FUNCTIONS \
-    void * operator new(size_t nSize, const char * file, int line) \
-      { return _malloc_dbg(nSize, _CLIENT_BLOCK, file, line); } \
-    void * operator new(size_t nSize) \
-      { return _malloc_dbg(nSize, _CLIENT_BLOCK, NULL, 0); } \
-    void operator delete(void * ptr) \
-      { _free_dbg(ptr, _CLIENT_BLOCK); }
-
-class PMemoryState : public _CrtMemState
-{
-  public:
-    PMemoryState(BOOL d = TRUE) { _CrtMemCheckpoint(this); dumpAll = d; }
-    ~PMemoryState()             { if (dumpAll) _CrtMemDumpAllObjectsSince(this); }
-  private:
-    BOOL dumpAll;
-};
-
-#else
+#else // _DEBUG
 
 #define PNEW new
 #define PNEW_AND_DELETE_FUNCTIONS
 
-#endif
-
-#endif // defined(PMEMORY_CHECK)
+#endif // _DEBUG
 
 
 /*$MACRO PCLASSINFO(cls, par)
@@ -832,6 +522,12 @@ class PObject {
    functionality provided to all classes, eg run-time types, default comparison
    operations, simple stream I/O and serialisation support.
  */
+
+  protected:
+    PObject() { }
+    /* Constructor for PObject, make protected so cannot ever allocate one on
+       its own.
+     */
 
   public:
     virtual ~PObject() { }
@@ -1134,92 +830,6 @@ class PObject {
        <A>PUnSerialiser</A> instance, the text and binary version can be made
        identical.
      */
-
-#if defined(PMEMORY_CHECK)
-
-    static void * MemoryCheckAllocate(
-      size_t nSize,           // Number of bytes to allocate.
-      const char * file,      // Source file name for allocating function.
-      int line,               // Source file line for allocating function.
-      const char * className  // Class name for allocating function.
-    );
-    static void * MemoryCheckAllocate(
-      size_t count,       // Number of items to allocate.
-      size_t iSize,       // Size in bytes of each item.
-      const char * file,  // Source file name for allocating function.
-      int line            // Source file line for allocating function.
-    );
-    /* Allocate a memory block.
-    
-       This funtion will only be present if the PMEMORY_CHECK compile time
-       option is specified.
-       
-       <H2>Returns:</H2>
-       pointer to newly allocated memory block.
-     */
-
-    static void * MemoryCheckReallocate(
-      void * ptr,         // Pointer to memory block to reallocate.
-      size_t nSize,       // New number of bytes to allocate.
-      const char * file,  // Source file name for allocating function.
-      int line            // Source file line for allocating function.
-    );
-    /* Change the size of an allocated memory block.
-    
-       This funtion will only be present if the PMEMORY_CHECK compile time
-       option is specified.
-       
-       <H2>Returns:</H2>
-       pointer to reallocated memory block. Note this may <EM>not</EM> be the
-       same as the pointer passed into the function.
-     */
-
-    static void MemoryCheckDeallocate(
-      void * ptr,             // Pointer to memory block to deallocate.
-      const char * className  // Class name for deallocating function.
-    );
-    /* Free a memory block.
-    
-       This funtion will only be present if the PMEMORY_CHECK compile time
-       option is specified.
-     */
-
-    static void MemoryCheckStatistics(
-      long * currentMemory,   // Current memory usage in bytes.
-      long * peakMemory,      // Peak memory usage in bytes.
-      long * currentObjects,  // Current number of memory object.
-      long * peakObjects,     // Peak number of memory objects.
-      long * totalObjects     // Total number of memory objects created.
-    );
-    /* Get memory check system statistics.
-
-       If any parameter is NULL then it is not returned.
-     */
-
-    PNEW_AND_DELETE_FUNCTIONS
-
-#else
-
-    void * operator new(
-      size_t nSize  // Number of bytes to allocate.
-    ) { void*obj=malloc(nSize); PAssert(obj!=NULL,POutOfMemory); return obj; }
-    /* Get a new block of memory using the system standard
-       <CODE>malloc()</CODE> function. This overrides the standard
-       <CODE>new</CODE> operator to put in a NULL pointer check in out of
-       memory conditions.
-
-       <H2>Returns:</H2>
-       pointer to newly allocated block of memory.
-     */
-
-    void operator delete(
-      void * ptr    // Pointer to memory block to deallocate.
-    ) { free(ptr); }
-    /* Free the memory used by the object. This is required to balance the
-       override of the <CODE>new</CODE> operator.
-     */
-
-#endif
 };
 
 
@@ -1951,6 +1561,417 @@ PDECLARE_CLASS(PNotifier, PSmartPointer)
   called is not the current object instance.
  */
 #define PCREATE_NOTIFIER(func) PCREATE_NOTIFIER2(this, func)
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Really big integer class for architectures without
+
+#ifndef P_HAS_INT64
+
+class PInt64__ {
+  public:
+    operator long()  const { return (long)low; }
+    operator int()   const { return (int)low; }
+    operator short() const { return (short)low; }
+    operator char()  const { return (char)low; }
+
+    operator unsigned long()  const { return (unsigned long)low; }
+    operator unsigned int()   const { return (unsigned int)low; }
+    operator unsigned short() const { return (unsigned short)low; }
+    operator unsigned char()  const { return (unsigned char)low; }
+
+  protected:
+    PInt64__() { }
+    PInt64__(unsigned long l) : low(l), high(0) { }
+    PInt64__(unsigned long l, unsigned long h) : low(l), high(h) { }
+
+    void operator=(const PInt64__ & v) { low = v.low; high = v.high; }
+
+    void Inc() { if (++low == 0) ++high; }
+    void Dec() { if (--low == 0) --high; }
+
+    void Or (long v) { low |= v; }
+    void And(long v) { low &= v; }
+    void Xor(long v) { low ^= v; }
+
+    void Add(const PInt64__ & v);
+    void Sub(const PInt64__ & v);
+    void Mul(const PInt64__ & v);
+    void Div(const PInt64__ & v);
+    void Mod(const PInt64__ & v);
+    void Or (const PInt64__ & v) { low |= v.low; high |= v.high; }
+    void And(const PInt64__ & v) { low &= v.low; high &= v.high; }
+    void Xor(const PInt64__ & v) { low ^= v.low; high ^= v.high; }
+    void ShiftLeft(int bits);
+    void ShiftRight(int bits);
+
+    BOOL Eq(unsigned long v) const { return low == v && high == 0; }
+    BOOL Ne(unsigned long v) const { return low != v || high != 0; }
+
+    BOOL Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
+    BOOL Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
+
+    unsigned long low, high;
+};
+
+
+#define DECL_OPS(cls, type) \
+    const cls & operator=(type v) { PInt64__::operator=(cls(v)); return *this; } \
+    cls operator+(type v) const { cls t = *this; t.Add(v); return t; } \
+    cls operator-(type v) const { cls t = *this; t.Sub(v); return t; } \
+    cls operator*(type v) const { cls t = *this; t.Mul(v); return t; } \
+    cls operator/(type v) const { cls t = *this; t.Div(v); return t; } \
+    cls operator%(type v) const { cls t = *this; t.Mod(v); return t; } \
+    cls operator|(type v) const { cls t = *this; t.Or (v); return t; } \
+    cls operator&(type v) const { cls t = *this; t.And(v); return t; } \
+    cls operator^(type v) const { cls t = *this; t.Xor(v); return t; } \
+    cls operator<<(type v) const { cls t = *this; t.ShiftLeft((int)v); return t; } \
+    cls operator>>(type v) const { cls t = *this; t.ShiftRight((int)v); return t; } \
+    const cls & operator+=(type v) { Add(v); return *this; } \
+    const cls & operator-=(type v) { Sub(v); return *this; } \
+    const cls & operator*=(type v) { Mul(v); return *this; } \
+    const cls & operator/=(type v) { Div(v); return *this; } \
+    const cls & operator|=(type v) { Or (v); return *this; } \
+    const cls & operator&=(type v) { And(v); return *this; } \
+    const cls & operator^=(type v) { Xor(v); return *this; } \
+    const cls & operator<<=(type v) { ShiftLeft((int)v); return *this; } \
+    const cls & operator>>=(type v) { ShiftRight((int)v); return *this; } \
+    BOOL operator==(type v) const { return Eq(v); } \
+    BOOL operator!=(type v) const { return Ne(v); } \
+    BOOL operator< (type v) const { return Lt(v); } \
+    BOOL operator> (type v) const { return Gt(v); } \
+    BOOL operator>=(type v) const { return !Gt(v); } \
+    BOOL operator<=(type v) const { return !Lt(v); } \
+
+
+class PInt64 : public PInt64__ {
+  public:
+    PInt64() { }
+    PInt64(long l) : PInt64__(l, l < 0 ? -1 : 0) { }
+    PInt64(unsigned long l, long h) : PInt64__(l, h) { }
+    PInt64(const PInt64__ & v) : PInt64__(v) { }
+
+    PInt64 operator~() const { return PInt64(~low, ~high); }
+    PInt64 operator-() const { return operator~()+1; }
+
+    PInt64 operator++() { Inc(); return *this; }
+    PInt64 operator--() { Dec(); return *this; }
+
+    PInt64 operator++(int) { PInt64 t = *this; Inc(); return t; }
+    PInt64 operator--(int) { PInt64 t = *this; Dec(); return t; }
+
+    DECL_OPS(PInt64, char)
+    DECL_OPS(PInt64, unsigned char)
+    DECL_OPS(PInt64, short)
+    DECL_OPS(PInt64, unsigned short)
+    DECL_OPS(PInt64, int)
+    DECL_OPS(PInt64, unsigned int)
+    DECL_OPS(PInt64, long)
+    DECL_OPS(PInt64, unsigned long)
+    DECL_OPS(PInt64, const PInt64 &)
+
+    friend ostream & operator<<(ostream &, const PInt64 &);
+    friend istream & operator>>(istream &, PInt64 &);
+
+  protected:
+    void Add(long v) { Add(PInt64(v)); }
+    void Sub(long v) { Sub(PInt64(v)); }
+    void Mul(long v) { Mul(PInt64(v)); }
+    void Div(long v) { Div(PInt64(v)); }
+    void Mod(long v) { Mod(PInt64(v)); }
+    BOOL Lt(long v) const { return Lt(PInt64(v)); }
+    BOOL Gt(long v) const { return Gt(PInt64(v)); }
+    BOOL Lt(const PInt64 &) const;
+    BOOL Gt(const PInt64 &) const;
+};
+
+
+class PUInt64 : public PInt64__ {
+  public:
+    PUInt64() { }
+    PUInt64(unsigned long l) : PInt64__(l, 0) { }
+    PUInt64(unsigned long l, unsigned long h) : PInt64__(l, h) { }
+    PUInt64(const PInt64__ & v) : PInt64__(v) { }
+
+    PUInt64 operator~() const { return PUInt64(~low, ~high); }
+
+    const PUInt64 & operator++() { Inc(); return *this; }
+    const PUInt64 & operator--() { Dec(); return *this; }
+
+    PUInt64 operator++(int) { PUInt64 t = *this; Inc(); return t; }
+    PUInt64 operator--(int) { PUInt64 t = *this; Dec(); return t; }
+
+    DECL_OPS(PUInt64, char)
+    DECL_OPS(PUInt64, unsigned char)
+    DECL_OPS(PUInt64, short)
+    DECL_OPS(PUInt64, unsigned short)
+    DECL_OPS(PUInt64, int)
+    DECL_OPS(PUInt64, unsigned int)
+    DECL_OPS(PUInt64, long)
+    DECL_OPS(PUInt64, unsigned long)
+    DECL_OPS(PUInt64, const PUInt64 &)
+
+    friend ostream & operator<<(ostream &, const PUInt64 &);
+    friend istream & operator>>(istream &, PUInt64 &);
+
+  protected:
+    void Add(long v) { Add(PUInt64(v)); }
+    void Sub(long v) { Sub(PUInt64(v)); }
+    void Mul(long v) { Mul(PUInt64(v)); }
+    void Div(long v) { Div(PUInt64(v)); }
+    void Mod(long v) { Mod(PUInt64(v)); }
+    BOOL Lt(long v) const { return Lt(PUInt64(v)); }
+    BOOL Gt(long v) const { return Gt(PUInt64(v)); }
+    BOOL Lt(const PUInt64 &) const;
+    BOOL Gt(const PUInt64 &) const;
+};
+
+#undef DECL_OPS
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Platform independent types
+
+// All these classes encapsulate primitive types such that they may be
+// transfered in a platform independent manner. In particular it is used to
+// do byte swapping for little endien and big endien processor architectures
+// as well as accommodating structure packing rules for memory structures.
+
+#define PANSI_CHAR 1
+#define PLITTLE_ENDIAN 2
+#define PBIG_ENDIAN 3
+
+
+#if 0
+class PStandardType
+/* Encapsulate a standard 8 bit character into a portable format. This would
+   rarely need to do translation, only if the target platform uses EBCDIC
+   would it do anything.
+
+   The platform independent form here is always 8 bit ANSI.
+ */
+{
+  public:
+    PStandardType(
+      type newVal   // Value to initialise data in platform dependent form.
+    ) { data = newVal; }
+    /* Create a new instance of the platform independent type using platform
+       dependent data, or platform independent streams.
+     */
+
+    operator type() { return data; }
+    /* Get the platform dependent value for the type.
+
+       <H2>Returns:</H2>
+       data for instance.
+     */
+
+    friend ostream & operator<<(ostream & strm, const PStandardType & val)
+      { return strm << (type)val; }
+    /* Output the platform dependent value for the type to the stream.
+
+       <H2>Returns:</H2>
+       the stream output was made to.
+     */
+
+    friend istream & operator>>(istream & strm, PStandardType & val)
+      { type data; strm >> data; val = PStandardType(data); return strm; }
+    /* Input the platform dependent value for the type from the stream.
+
+       <H2>Returns:</H2>
+       the stream input was made from.
+     */
+
+
+  private:
+    type data;
+};
+#endif
+
+
+#define PI_SAME(name, type) \
+  struct name { \
+    name() { } \
+    name(type value) { data = value; } \
+    name(const name & value) { data = value.data; } \
+    name & operator =(type value) { data = value; return *this; } \
+    name & operator =(const name & value) { data = value.data; return *this; } \
+    operator type() const { return data; } \
+    friend ostream & operator<<(ostream & s, const name & v) { return s << v.data; } \
+    friend istream & operator>>(istream & s, name & v) { return s >> v.data; } \
+    private: type data; \
+  }
+
+#define PI_LOOP(src, dst) \
+    BYTE *s = ((BYTE *)&src)+sizeof(src); BYTE *d = (BYTE *)&dst; \
+    while (s != (BYTE *)&src) *d++ = *--s;
+
+#define PI_DIFF(name, type) \
+  struct name { \
+    name() { } \
+    name(type value) { operator=(value); } \
+    name(const name & value) { data = value.data; } \
+    name & operator =(type value) { PI_LOOP(value, data); return *this; } \
+    name & operator =(const name & value) { data = value.data; return *this; } \
+    operator type() const { type value; PI_LOOP(data, value); return value; } \
+    friend ostream & operator<<(ostream & s, const name & value) { return s << (type)value; } \
+    friend istream & operator>>(istream & s, name & v) { type val; s >> val; v = val; return s; } \
+    private: type data; \
+  }
+
+#if PCHAR8==PANSI_CHAR
+PI_SAME(PChar8, char);
+#endif
+
+PI_SAME(PInt8, signed char);
+
+PI_SAME(PUInt8, unsigned char);
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt16l, PInt16);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt16l, PInt16);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt16b, PInt16);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt16b, PInt16);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt16l, WORD);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt16l, WORD);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt16b, WORD);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt16b, WORD);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt32l, PInt32);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt32l, PInt32);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt32b, PInt32);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt32b, PInt32);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt32l, DWORD);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt32l, DWORD);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt32b, DWORD);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt32b, DWORD);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PInt64l, PInt64);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PInt64l, PInt64);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PInt64b, PInt64);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PInt64b, PInt64);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PUInt64l, PUInt64);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PUInt64l, PUInt64);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PUInt64b, PUInt64);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PUInt64b, PUInt64);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat32l, float);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat32l, float);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat32b, float);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat32b, float);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat64l, double);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat64l, double);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat64b, double);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat64b, double);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_SAME(PFloat80l, long double);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_DIFF(PFloat80l, long double);
+#endif
+
+#if PBYTE_ORDER==PLITTLE_ENDIAN
+PI_DIFF(PFloat80b, long double);
+#elif PBYTE_ORDER==PBIG_ENDIAN
+PI_SAME(PFloat80b, long double);
+#endif
+
+#undef PI_LOOP
+#undef PI_SAME
+#undef PI_DIFF
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Miscellaneous
+
+/*$MACRO PARRAYSIZE(array)
+   This macro is used to calculate the number of array elements in a static
+   array.
+ */
+#define PARRAYSIZE(array) ((PINDEX)(sizeof(array)/sizeof(array[0])))
+
+/*$MACRO PMIN(v1, v2)
+   This macro is used to calculate the minimum of two values. As this is a
+   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
+   twice so extreme care should be made in its use.
+ */
+#define PMIN(v1, v2) ((v1) < (v2) ? (v1) : (v2))
+
+/*$MACRO PMAX(v1, v2)
+   This macro is used to calculate the maximum of two values. As this is a
+   macro the expression in <CODE>v1</CODE> or <CODE>v2</CODE> is executed
+   twice so extreme care should be made in its use.
+ */
+#define PMAX(v1, v2) ((v1) > (v2) ? (v1) : (v2))
+
+/*$MACRO PABS(val)
+   This macro is used to calculate an absolute value. As this is a macro the
+   expression in <CODE>val</CODE> is executed twice so extreme care should be
+   made in its use.
+ */
+#define PABS(v) ((v) < 0 ? -(v) : (v))
+
 
 
 // End Of File ///////////////////////////////////////////////////////////////
