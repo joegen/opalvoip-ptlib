@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: udll.cxx,v $
+ * Revision 1.16  2003/09/11 00:52:13  dereksmithies
+ * Full dependancy check on dynamically loading a library.
+ * Thanks to Snark on #gnomemeeting for pointing this out...
+ *
  * Revision 1.15  2003/07/09 11:37:13  rjongbloed
  * Fixed corrct closing of DLL (setting handle to NULL) thanks Fabrizio Ammollo
  *
@@ -353,9 +357,9 @@ BOOL PDynaLink::Open(const PString & name)
   Close();
 
 #if defined(P_OPENBSD)
-  dllHandle = dlopen((char *)(const char *)name, RTLD_LAZY);
+  dllHandle = dlopen((char *)(const char *)name, RTLD_NOW);
 #else
-  dllHandle = dlopen((const char *)name, RTLD_LAZY);
+  dllHandle = dlopen((const char *)name, RTLD_NOW);
 #endif
 
   return IsLoaded();
