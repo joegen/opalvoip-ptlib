@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.2  2002/05/01 04:48:05  robertj
+ * GNU compatibility.
+ *
  * Revision 1.1  2002/05/01 04:16:44  robertj
  * Added thread safe collection classes.
  *
@@ -341,7 +344,7 @@ void PSafePtrBase::Assign(PSafeCollection & safeCollection)
   lockThread = NULL;
   lockCount = 0;
 
-  Assign(0);
+  Assign((PINDEX)0);
 }
 
 
