@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.13 1996/03/17 05:52:02 robertj Exp $
+ * $Id: timeint.h,v 1.14 1996/05/09 12:22:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.14  1996/05/09 12:22:09  robertj
+ * Resolved C++ problems with 64 bit PTimeInterval for Mac platform.
+ *
  * Revision 1.13  1996/03/17 05:52:02  robertj
  * Changed PTimeInterval to 64 bit integer.
  *
@@ -72,11 +75,17 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
   public:
     PTimeInterval(
-      PInt64 milliseconds = 0,  // Number of milliseconds for interval.
-      long seconds = 0,         // Number of seconds for interval.
-      long minutes = 0,         // Number of minutes for interval.
-      long hours = 0,           // Number of hours for interval.
-      int days = 0              // Number of days for interval.
+      int milliseconds = 0  // Number of milliseconds for interval.
+    );
+    PTimeInterval(
+      PInt64 mseconds       // Number of milliseconds for interval.
+    );
+    PTimeInterval(
+      long millisecs,       // Number of milliseconds for interval.
+      long seconds = 0,     // Number of seconds for interval.
+      long minutes = 0,     // Number of minutes for interval.
+      long hours = 0,       // Number of hours for interval.
+      int days = 0          // Number of days for interval.
     );
     /* Create a new time interval object. The time interval, in milliseconds,
        is the sum of all of the parameters. For example all of the following
