@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.cxx,v 1.2 1996/05/26 03:47:08 robertj Exp $
+ * $Id: telnet.cxx,v 1.3 1996/08/08 10:08:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.3  1996/08/08 10:08:48  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.2  1996/05/26 03:47:08  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -17,7 +20,7 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <telnet.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
