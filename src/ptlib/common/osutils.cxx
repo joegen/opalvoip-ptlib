@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.115  1998/11/24 01:17:33  robertj
+ * Type discrepency between declaration and definition for PFile::SetPosition
+ *
  * Revision 1.114  1998/11/06 02:37:53  robertj
  * Fixed the fix for semaphore timeout race condition.
  *
@@ -1340,7 +1343,7 @@ BOOL PFile::IsEndOfFile() const
 }
 
 
-BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
+BOOL PFile::SetPosition(off_t pos, FilePositionOrigin origin)
 {
   return _lseek(GetHandle(), pos, origin) == pos;
 }
