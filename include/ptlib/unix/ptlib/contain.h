@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.17  2003/10/27 03:21:43  csoutheren
+ * Added UINT type needed for QoS
+ *
  * Revision 1.16  2003/09/17 01:18:03  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -102,9 +105,11 @@ typedef unsigned long long int PUInt64;	// 64 bit
 
 // Integer type that is same size as a pointer type.
 #ifdef P_64BIT
-typedef long INT;
+typedef long          INT;
+typedef unsigned long UINT;
 #else
-typedef int  INT;
+typedef int           INT;
+typedef unsigned int  UINT;
 #endif
 
 typedef int PINDEX;
