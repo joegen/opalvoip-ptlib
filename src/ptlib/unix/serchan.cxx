@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.9  1998/11/30 21:51:54  robertj
+ * New directory structure.
+ *
  * Revision 1.8  1998/11/24 09:39:14  robertj
  * FreeBSD port.
  *
@@ -60,7 +63,7 @@ extern "C" int ioctl(int, int, void *);
 #define	PORTLISTENV	"PWLIB_SERIALPORTS"
 #define	DEV_PREFIX	"/dev/"
 
-#include "../../common/ptlib/src/serial.cxx"
+#include "../common/serial.cxx"
 
 ////////////////////////////////////////////////////////////////
 //
