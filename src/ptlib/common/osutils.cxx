@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.170  2001/10/15 00:48:02  robertj
+ * Fixed warning on later MSVC compilers.
+ *
  * Revision 1.169  2001/09/03 08:08:31  robertj
  * Added tab so get extra "column" in trace output.
  *
@@ -994,7 +997,7 @@ void PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
       if (milliseconds > 0) {
         if (milliseconds < minTimeLeft.GetMilliSeconds())
-          minTimeLeft = milliseconds;
+          minTimeLeft = *this;
       }
       else {
         if (oneshot) {
