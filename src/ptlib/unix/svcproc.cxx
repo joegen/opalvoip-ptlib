@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.25  1998/12/21 06:37:14  robertj
+ * Fixed GNu warning on solaris x86
+ *
  * Revision 1.24  1998/12/16 12:41:25  robertj
  * Fixed bug where .ini file is not written when service run as a daemon.
  *
@@ -55,6 +58,7 @@
 #include <fstream.h>
 #include <pwd.h>
 #include <grp.h>
+#include <signal.h>
 
 #include "uerror.h"
 
