@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: dict.h,v $
+ * Revision 1.26  2002/02/06 00:53:25  robertj
+ * Fixed missing const on PSet::Contains and operator[], thanks Francisco Olarte Sanz
+ *
  * Revision 1.25  1999/11/30 00:22:54  robertj
  * Updated documentation for doc++
  *
@@ -546,7 +549,7 @@ template <class T> class PSet : public PAbstractSet
      */
     BOOL operator[](
       const T & key  /// Key to look for in the set.
-    ) { return AbstractContains(key); }
+    ) const { return AbstractContains(key); }
 
     /**Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
@@ -558,7 +561,7 @@ template <class T> class PSet : public PAbstractSet
      */
     BOOL Contains(
       const T & key  /// Key to look for in the set.
-    ) { return AbstractContains(key); }
+    ) const { return AbstractContains(key); }
 
     /**Get the key in the set at the ordinal index position.
     
@@ -642,9 +645,9 @@ template <class T> class PSet : public PAbstractSet
       { Append((PObject *)key); } \
     inline void Exclude(const PObject * key) \
       { Remove(key); } \
-    inline BOOL operator[](const K & key) \
+    inline BOOL operator[](const K & key) const \
         { return AbstractContains(key); } \
-    inline BOOL Contains(const K & key) \
+    inline BOOL Contains(const K & key) const \
         { return AbstractContains(key); } \
     virtual const K & GetKeyAt(PINDEX index) const \
       { return (const K &)AbstractGetKeyAt(index); } \
