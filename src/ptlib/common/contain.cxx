@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.160  2004/05/28 23:59:23  csoutheren
+ * Added guards for negative offsets and lengths in various PString functions
+ *
  * Revision 1.159  2004/05/13 14:52:32  csoutheren
  * Allow PString::IsEmpty to return TRUE when theArray is NULL
  *
@@ -1737,6 +1740,9 @@ PString & PString::operator&=(char ch)
 
 void PString::Delete(PINDEX start, PINDEX len)
 {
+  if (start < 0 || len < 0)
+    return;
+
   MakeUnique();
 
   register PINDEX slen = GetLength();
@@ -1753,7 +1759,7 @@ void PString::Delete(PINDEX start, PINDEX len)
 
 PString PString::operator()(PINDEX start, PINDEX end) const
 {
-  if (end < start)
+  if (end < 0 || start < 0 || end < start)
     return Empty();
 
   register PINDEX len = GetLength();
@@ -1773,7 +1779,7 @@ PString PString::operator()(PINDEX start, PINDEX end) const
 
 PString PString::Left(PINDEX len) const
 {
-  if (len == 0)
+  if (len <= 0)
     return Empty();
 
   if (len >= GetLength())
@@ -1785,7 +1791,7 @@ PString PString::Left(PINDEX len) const
 
 PString PString::Right(PINDEX len) const
 {
-  if (len == 0)
+  if (len <= 0)
     return Empty();
 
   PINDEX srclen = GetLength();
@@ -1798,7 +1804,7 @@ PString PString::Right(PINDEX len) const
 
 PString PString::Mid(PINDEX start, PINDEX len) const
 {
-  if (len == 0)
+  if (len <= 0 || start < 0)
     return Empty();
 
   if (start+len < start) // Beware of wraparound
@@ -1826,6 +1832,8 @@ bool PString::operator*=(const char * cstr) const
 
 PObject::Comparison PString::NumCompare(const PString & str, PINDEX count, PINDEX offset) const
 {
+  if (offset < 0 || count < 0)
+    return LessThan;
   PINDEX len = str.GetLength();
   if (count > len)
     count = len;
@@ -1835,6 +1843,8 @@ PObject::Comparison PString::NumCompare(const PString & str, PINDEX count, PINDE
 
 PObject::Comparison PString::NumCompare(const char * cstr, PINDEX count, PINDEX offset) const
 {
+  if (offset < 0 || count < 0)
+    return LessThan;
   PINDEX len = ::strlen(cstr);
   if (count > len)
     count = len;
@@ -1844,6 +1854,8 @@ PObject::Comparison PString::NumCompare(const char * cstr, PINDEX count, PINDEX 
 
 PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 {
+  if (offset < 0)
+    return LessThan;
   char ch = theArray[offset];
   if (ch < c)
     return LessThan;
@@ -1856,10 +1868,13 @@ PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 PObject::Comparison PString::InternalCompare(
                          PINDEX offset, PINDEX length, const char * cstr) const
 {
+  if (offset < 0 || length < 0)
+    return LessThan;
+
   if (offset == 0 && theArray == cstr)
     return EqualTo;
 
-  if (cstr == NULL)
+  if (offset < 0 || cstr == NULL)
     return IsEmpty() ? EqualTo : LessThan;
 
   int retval;
@@ -1880,6 +1895,9 @@ PObject::Comparison PString::InternalCompare(
 
 PINDEX PString::Find(char ch, PINDEX offset) const
 {
+  if (offset < 0)
+    return P_MAX_INDEX;
+
   register PINDEX len = GetLength();
   while (offset < len) {
     if (InternalCompare(offset, ch) == EqualTo)
@@ -1892,7 +1910,7 @@ PINDEX PString::Find(char ch, PINDEX offset) const
 
 PINDEX PString::Find(const char * cstr, PINDEX offset) const
 {
-  if (cstr == NULL || *cstr == '\0')
+  if (cstr == NULL || *cstr == '\0' || offset < 0)
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1935,7 +1953,7 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
 PINDEX PString::FindLast(char ch, PINDEX offset) const
 {
   PINDEX len = GetLength();
-  if (len == 0)
+  if (len == 0 || offset < 0)
     return P_MAX_INDEX;
   if (offset >= len)
     offset = len-1;
@@ -1952,7 +1970,7 @@ PINDEX PString::FindLast(char ch, PINDEX offset) const
 
 PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 {
-  if (cstr == NULL || *cstr == '\0')
+  if (cstr == NULL || *cstr == '\0' || offset < 0)
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -1985,7 +2003,7 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
 
 PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 {
-  if (cset == NULL || *cset == '\0')
+  if (cset == NULL || *cset == '\0' || offset < 0)
     return P_MAX_INDEX;
 
   PINDEX len = GetLength();
@@ -2004,6 +2022,9 @@ PINDEX PString::FindOneOf(const char * cset, PINDEX offset) const
 
 PINDEX PString::FindRegEx(const PRegularExpression & regex, PINDEX offset) const
 {
+  if (offset < 0)
+    return P_MAX_INDEX;
+
   PINDEX pos = 0;
   PINDEX len = 0;
   if (FindRegEx(regex, pos, len, offset))
@@ -2019,7 +2040,7 @@ BOOL PString::FindRegEx(const PRegularExpression & regex,
                         PINDEX offset,
                         PINDEX maxPos) const
 {
-  if (offset >= GetLength())
+  if (offset < 0 || maxPos < 0 || offset >= GetLength())
     return FALSE;
 
   if (!regex.Execute(&theArray[offset], pos, len, 0))
@@ -2037,6 +2058,9 @@ void PString::Replace(const PString & target,
                       const PString & subs,
                       BOOL all, PINDEX offset)
 {
+  if (offset < 0)
+    return;
+    
   MakeUnique();
 
   PINDEX tlen = target.GetLength();
@@ -2053,6 +2077,9 @@ void PString::Replace(const PString & target,
 
 void PString::Splice(const char * cstr, PINDEX pos, PINDEX len)
 {
+  if (len < 0 || pos < 0)
+    return;
+
   register PINDEX slen = GetLength();
   if (pos >= slen)
     operator+=(cstr);
@@ -2299,7 +2326,7 @@ PWORDArray PString::AsUCS2() const
 
 void PString::InternalFromUCS2(const WORD * ptr, PINDEX len)
 {
-  if (ptr == NULL || len == 0) {
+  if (ptr == NULL || len <= 0) {
     *this = Empty();
     return;
   }
@@ -2445,6 +2472,9 @@ PObject * PCaselessString::Clone() const
 
 PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) const
 {
+  if (offset < 0)
+    return LessThan;
+
   int c1 = toupper(theArray[offset]);
   int c2 = toupper(c);
   if (c1 < c2)
@@ -2458,6 +2488,9 @@ PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) cons
 PObject::Comparison PCaselessString::InternalCompare(
                          PINDEX offset, PINDEX length, const char * cstr) const
 {
+  if (offset < 0 || length < 0)
+    return LessThan;
+
   if (cstr == NULL)
     return IsEmpty() ? EqualTo : LessThan;
 
@@ -2477,7 +2510,7 @@ PStringStream::Buffer::Buffer(PStringStream & str, PINDEX size)
   : string(str),
     fixedBufferSize(size != 0)
 {
-  string.SetMinSize(size != 0 ? size : 256);
+  string.SetMinSize(size > 0 ? size : 256);
   sync();
 }
 
