@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: uicmp.cxx,v $
+ * Revision 1.8  1998/11/30 21:52:06  robertj
+ * New directory structure.
+ *
  * Revision 1.7  1998/09/24 04:12:29  robertj
  * Added open software license.
  *
@@ -68,7 +71,7 @@
 #pragma implementation "icmpsock.h"
 
 #include <ptlib.h>
-#include <sockets.h>
+#include <ptlib/sockets.h>
 
 #define	MAX_IP_LEN	60
 #define	MAX_ICMP_LEN	76
