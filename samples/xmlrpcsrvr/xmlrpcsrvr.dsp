@@ -53,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 ptclib.lib ptlib.lib $(EXPATLIBS) $(OPENSSLLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:windows /machine:I386 /libpath:"$(EXPATDIR)\Release" /libpath:"$(OPENSSLDIR)\out23"
+# ADD LINK32 ptclib.lib ptlib.lib $(EXPATLIBS) $(OPENSSLLIBS) comdlg32.lib winspool.lib wsock32.lib mpr.lib kernel32.lib user32.lib gdi32.lib shell32.lib advapi32.lib /nologo /subsystem:windows /machine:I386 /libpath:"$(EXPATDIR)\Release" /libpath:"$(OPENSSLDIR)\out32"
 
 !ELSEIF  "$(CFG)" == "xmlrpcsrvr - Win32 Debug"
 
