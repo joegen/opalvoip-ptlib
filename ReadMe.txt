@@ -1,6 +1,16 @@
 			Portable Windows Libary
 			=======================
 
+Contents
+--------
+
+	1.	Introduction
+	2.	Apologies
+	3.	CVS Access
+	4.	Building PWLib
+	5.	Using PWLib
+
+
 Introduction
 ------------
 
