@@ -25,6 +25,9 @@
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.5  2001/03/03 23:25:07  robertj
+ * Fixed use of video conversion function, returning bytes in destination frame.
+ *
  * Revision 1.4  2001/03/03 06:13:01  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -110,19 +113,24 @@ BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
 }
 
 
-BOOL PColourConverter::ConvertInPlace(BYTE * frameBuffer, BOOL noIntermediateFrame)
+BOOL PColourConverter::ConvertInPlace(BYTE * frameBuffer,
+                                      PINDEX * bytesReturned,
+                                      BOOL noIntermediateFrame)
 {
-  if (Convert(frameBuffer, frameBuffer))
+  if (Convert(frameBuffer, frameBuffer, bytesReturned))
     return TRUE;
 
   if (noIntermediateFrame)
     return FALSE;
 
   BYTE * intermediate = intermediateFrameStore.GetPointer(dstFrameBytes);
-  if (!Convert(frameBuffer, intermediate))
+  PINDEX bytes;
+  if (!Convert(frameBuffer, intermediate, &bytes))
     return FALSE;
 
-  memcpy(frameBuffer, intermediate, dstFrameBytes);
+  memcpy(frameBuffer, intermediate, bytes);
+  if (bytesReturned != NULL)
+    *bytesReturned = bytes;
   return TRUE;
 }
 

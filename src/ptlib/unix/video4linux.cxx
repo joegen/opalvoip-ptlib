@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.6  2001/03/03 23:25:07  robertj
+ * Fixed use of video conversion function, returning bytes in destination frame.
+ *
  * Revision 1.5  2001/03/03 06:13:01  robertj
  * Major upgrade of video conversion and grabbing classes.
  *
@@ -291,6 +294,12 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
 
 PINDEX PVideoInputDevice::GetMaxFrameBytes()
 {
+  if (converter != NULL) {
+    PINDEX bytes = converter->GetMaxDstFrameBytes();
+    if (bytes > frameBytes)
+      return bytes;
+  }
+
   return frameBytes;
 }
 
@@ -333,7 +342,7 @@ BOOL PVideoInputDevice::GetFrameData(BYTE * buffer, PINDEX * bytesReturned)
     if ((PINDEX)::read(videoFd, buffer, frameBytes) != frameBytes)
       return FALSE;
     if (converter != NULL)
-      return converter->ConvertInPlace(buffer);
+      return converter->ConvertInPlace(buffer, bytesReturned);
     if (bytesReturned != NULL)
       *bytesReturned = frameBytes;
     return TRUE;
