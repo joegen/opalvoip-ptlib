@@ -140,7 +140,7 @@ void App::Main()
                    "#pragma interface\n"
                    "#endif\n"
                    "\n"
-                   "#include <asner.h>\n"
+                   "#include <ptclib/asner.h>\n"
                    "\n";
         cxxFile << "//\n"
                    "// " << sourceName << "\n"
