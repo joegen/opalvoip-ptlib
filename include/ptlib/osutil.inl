@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.50 1996/05/18 09:18:25 robertj Exp $
+ * $Id: osutil.inl,v 1.51 1996/05/23 09:59:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.51  1996/05/23 09:59:04  robertj
+ * Added mutex to timer list.
+ *
  * Revision 1.50  1996/05/18 09:18:25  robertj
  * Added mutex to timer list.
  *
@@ -302,13 +305,6 @@ PINLINE PString PTime::AsString(const PString & format, int zone) const
 
 PINLINE int PTime::GetTimeZone() 
   { return GetTimeZone(IsDaylightSavings() ? DaylightSavings : StandardTime); }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PTimerList
-
-PINLINE PTimerList::PTimerList()
-  { DisallowDeleteObjects(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
