@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.96  2002/10/22 10:25:07  rogerh
+ * Fix process_rtentry() following Thomas's patch.
+ *
  * Revision 1.95  2002/10/22 07:42:52  robertj
  * Added extra debugging for file handle and thread leak detection.
  *
@@ -1083,8 +1086,8 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 
 #elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
 
-BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
-                     long *p_net_mask, long *p_dest_addr, int *p_metric);
+BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
+                     unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric);
 BOOL get_ifname(int index, char *name);
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
@@ -1158,8 +1161,8 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
   return TRUE;
 }
 
-BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
-                     long *p_net_mask, long *p_dest_addr, int *p_metric) {
+BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, unsigned long *p_net_addr,
+                     unsigned long *p_net_mask, unsigned long *p_dest_addr, int *p_metric) {
 
   struct sockaddr_in *sa_in;
 
