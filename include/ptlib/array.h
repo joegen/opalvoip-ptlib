@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.27  2003/04/17 07:24:47  robertj
+ * Fixed GNU 3.x problem (why no other compiler?)
+ *
  * Revision 1.26  2003/04/15 07:08:36  robertj
  * Changed read and write from streams for base array classes so operates in
  *   the same way for both PIntArray and PArray<int> etc
@@ -579,8 +582,6 @@ template <class T> class PBaseArray : public PAbstractArray
  */
 template <class T> class PScalarArray : public PBaseArray<T>
 {
-  PCLASSINFO(PScalarArray, PBaseArray<T>);
-
   public:
   /**@name Construction */
   //@{
