@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.24  2004/05/03 12:33:18  csoutheren
+# Fixed install problem with ptlib-config
+#
 # Revision 1.23  2004/05/03 12:01:23  csoutheren
 # Fixed install target
 # Updated configure
@@ -271,7 +274,7 @@ endif
 		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/pwlib/make; \
 	done)
 	$(INSTALL) -m 555 make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
+	(cd $(DESTDIR)$(PREFIX)/bin; rm -f ptlib-config ; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
 
 uninstall:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib \
