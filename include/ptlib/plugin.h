@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: plugin.h,v $
+ * Revision 1.3  2003/11/12 06:58:21  csoutheren
+ * Changes to help in making static plugins autoregister under Windows
+ *
  * Revision 1.2  2003/11/12 03:26:17  csoutheren
  * Initial version of plugin code from Snark of GnomeMeeting with changes
  *    by Craig Southeren os Post Increment
@@ -84,16 +87,28 @@ class PPlugin_##serviceType##_##serviceName##_Registration { \
 }; \
 
 //////////////////////////////////////////////////////
+//
+//  These crazy macros are needed to cause automatic registration of 
+//  static plugins. They are made more complex by the arcane behaviour
+//  of the Windows link system that requires an external reference in the
+//  object module before it will instantiate any globals in in it
+//
 
 #define PCREATE_STATIC_PLUGIN_VERSION_FN(serviceName, serviceType) \
 unsigned PPlugin_##serviceType##_##serviceName##_GetVersion() \
   { return PWLIB_PLUGIN_API_VERSION; } 
 
 #define PCREATE_PLUGIN_STATIC(serviceName, serviceType, descriptor) \
+class PPlugin_##serviceType##_##serviceName##_Registration; \
+extern PPlugin_##serviceType##_##serviceName##_Registration \
+     PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
+static PPlugin_##serviceType##_##serviceName##_Registration * \
+   PPlugin_##serviceType##_##serviceName##_Registration_Loader = \
+       &PPlugin_##serviceType##_##serviceName##_Registration_Instance; \
+\
 PCREATE_PLUGIN_REGISTERER(serviceName, serviceType, descriptor) \
 PPlugin_##serviceType##_##serviceName##_Registration \
-     PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); 
-
+     PPlugin_##serviceType##_##serviceName##_Registration_Instance(&PPluginManager::GetPluginManager()); \
 
 //////////////////////////////////////////////////////
 
