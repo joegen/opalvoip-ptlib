@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.33  2000/11/02 21:55:28  craigs
+ * Added extra constructor
+ *
  * Revision 1.32  2000/09/05 09:52:24  robertj
  * Fixed bug in HTTP form updating SELECT fields from registry.
  *
@@ -609,7 +612,7 @@ void PHTTPCompositeField::GetHTMLHeading(PHTML & html) const
 {
   html << PHTML::TableRow();
   for (PINDEX i = 0; i < fields.GetSize(); i++)
-    html << PHTML::TableData() << fields[i].GetTitle();
+    html << PHTML::TableHeader() << fields[i].GetTitle();
 }
 
 
