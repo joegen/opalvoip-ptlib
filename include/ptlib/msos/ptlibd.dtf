@@ -1810,6 +1810,7 @@ EXPORTS
     ?GetLastError@PMultiMediaFile@@QBEKXZ @2574 NONAME ;public: unsigned long __thiscall PMultiMediaFile::GetLastError(void)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @2380 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
     ?GetLastReadCount@PChannel@@QBEHXZ @1499 NONAME ;public: int __thiscall PChannel::GetLastReadCount(void)const 
+    ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @3053 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
     ?GetLastWriteCount@PChannel@@QBEHXZ @1500 NONAME ;public: int __thiscall PChannel::GetLastWriteCount(void)const 
     ?GetLength@PFile@@QBEJXZ @1501 NONAME ;public: long __thiscall PFile::GetLength(void)const 
     ?GetLength@PString@@QBEHXZ @1502 NONAME ;public: int __thiscall PString::GetLength(void)const 
@@ -2432,6 +2433,7 @@ EXPORTS
     ?Read@PSoundChannel@@UAEHPAXH@Z @2706 NONAME ;public: virtual int __thiscall PSoundChannel::Read(void *,int)
     ?Read@PStructuredFile@@EAEHPAXH@Z @2041 NONAME ;private: virtual int __thiscall PStructuredFile::Read(void *,int)
     ?Read@PStructuredFile@@QAEHPAX@Z @2042 NONAME ;public: int __thiscall PStructuredFile::Read(void *)
+    ?Read@PUDPSocket@@UAEHPAXH@Z @3054 NONAME ;public: virtual int __thiscall PUDPSocket::Read(void *,int)
     ?ReadAsync@PChannel@@UAEHPAXH@Z @2043 NONAME ;public: virtual int __thiscall PChannel::ReadAsync(void *,int)
     ?ReadAsync@PWin32PacketBuffer@@QAEHAAVPWin32PacketDriver@@@Z @2403 NONAME ;public: int __thiscall PWin32PacketBuffer::ReadAsync(class PWin32PacketDriver &)
     ?ReadBlock@PChannel@@QAEHPAXH@Z @2044 NONAME ;public: int __thiscall PChannel::ReadBlock(void *,int)
@@ -2725,5 +2727,5 @@ EXPORTS
     _PTimeParse@12 @2972 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2969 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2963 NONAME ;__real@4@4008fa00000000000000
-    ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @3053 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
-    ?Read@PUDPSocket@@UAEHPAXH@Z @3054 NONAME ;public: virtual int __thiscall PUDPSocket::Read(void *,int)
+    ?Listen@PIPSocket@@UAEHABVAddress@1@IGW4Reusability@PSocket@@@Z @3055 NONAME ;public: virtual int __thiscall PIPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
+    ?Listen@PTCPSocket@@UAEHABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @3056 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
