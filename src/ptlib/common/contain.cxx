@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.95  2001/02/21 03:38:37  robertj
+ * Added ability to copy between various string lists/arrays etc during construction.
+ *
  * Revision 1.94  2001/02/14 22:21:08  robertj
  * Fixed compiler error on some versions of GCC, thanks Klaus Kaempf.
  *
@@ -2005,6 +2008,22 @@ PStringArray::PStringArray(PINDEX count, char const * const * strarr, BOOL casel
 }
 
 
+PStringArray::PStringArray(const PStringList & list)
+{
+  SetSize(list.GetSize());
+  for (PINDEX i = 0; i < list.GetSize(); i++)
+    (*theArray)[i] = new PString(list[i]);
+}
+
+
+PStringArray::PStringArray(const PSortedStringList & list)
+{
+  SetSize(list.GetSize());
+  for (PINDEX i = 0; i < list.GetSize(); i++)
+    (*theArray)[i] = new PString(list[i]);
+}
+
+
 PString & PStringArray::operator[](PINDEX index)
 {
   PASSERTINDEX(index);
@@ -2034,6 +2053,20 @@ PStringList::PStringList(PINDEX count, char const * const * strarr, BOOL caseles
 }
 
 
+PStringList::PStringList(const PStringArray & array)
+{
+  for (PINDEX i = 0; i < array.GetSize(); i++)
+    AppendString(array[i]);
+}
+
+
+PStringList::PStringList(const PSortedStringList & list)
+{
+  for (PINDEX i = 0; i < list.GetSize(); i++)
+    AppendString(list[i]);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 PSortedStringList::PSortedStringList(PINDEX count,
@@ -2052,6 +2085,20 @@ PSortedStringList::PSortedStringList(PINDEX count,
       newString = new PString(strarr[i]);
     Append(newString);
   }
+}
+
+
+PSortedStringList::PSortedStringList(const PStringArray & array)
+{
+  for (PINDEX i = 0; i < array.GetSize(); i++)
+    AppendString(array[i]);
+}
+
+
+PSortedStringList::PSortedStringList(const PStringList & list)
+{
+  for (PINDEX i = 0; i < list.GetSize(); i++)
+    AppendString(list[i]);
 }
 
 

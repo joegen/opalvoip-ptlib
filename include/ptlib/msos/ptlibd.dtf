@@ -226,6 +226,8 @@ EXPORTS
     ??0PSmartPointer@@QAE@PAVPSmartObject@@@Z @174 NONAME ;public: __thiscall PSmartPointer::PSmartPointer(class PSmartObject *)
     ??0PSocket@@IAE@XZ @175 NONAME ;protected: __thiscall PSocket::PSocket(void)
     ??0PSortedStringList@@IAE@HPBV0@@Z @176 NONAME ;protected: __thiscall PSortedStringList::PSortedStringList(int,class PSortedStringList const *)
+    ??0PSortedStringList@@QAE@ABVPStringArray@@@Z @3540 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PStringArray const &)
+    ??0PSortedStringList@@QAE@ABVPStringList@@@Z @3541 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(class PStringList const &)
     ??0PSortedStringList@@QAE@HPBQBDH@Z @2978 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(int,char const * const *,int)
     ??0PSortedStringList@@QAE@XZ @177 NONAME ;public: __thiscall PSortedStringList::PSortedStringList(void)
     ??0PSound@@QAE@ABVPFilePath@@@Z @2598 NONAME ;public: __thiscall PSound::PSound(class PFilePath const &)
@@ -246,10 +248,14 @@ EXPORTS
     ??0PString@@QAE@XZ @189 NONAME ;public: __thiscall PString::PString(void)
     ??0PStringArray@@IAE@HPBV0@@Z @190 NONAME ;protected: __thiscall PStringArray::PStringArray(int,class PStringArray const *)
     ??0PStringArray@@QAE@ABV0@@Z @191 NONAME ;public: __thiscall PStringArray::PStringArray(class PStringArray const &)
+    ??0PStringArray@@QAE@ABVPSortedStringList@@@Z @3542 NONAME ;public: __thiscall PStringArray::PStringArray(class PSortedStringList const &)
+    ??0PStringArray@@QAE@ABVPStringList@@@Z @3543 NONAME ;public: __thiscall PStringArray::PStringArray(class PStringList const &)
     ??0PStringArray@@QAE@H@Z @192 NONAME ;public: __thiscall PStringArray::PStringArray(int)
     ??0PStringArray@@QAE@HPBQBDH@Z @193 NONAME ;public: __thiscall PStringArray::PStringArray(int,char const * const *,int)
     ??0PStringList@@IAE@HPBV0@@Z @194 NONAME ;protected: __thiscall PStringList::PStringList(int,class PStringList const *)
     ??0PStringList@@QAE@ABV0@@Z @195 NONAME ;public: __thiscall PStringList::PStringList(class PStringList const &)
+    ??0PStringList@@QAE@ABVPSortedStringList@@@Z @3544 NONAME ;public: __thiscall PStringList::PStringList(class PSortedStringList const &)
+    ??0PStringList@@QAE@ABVPStringArray@@@Z @3545 NONAME ;public: __thiscall PStringList::PStringList(class PStringArray const &)
     ??0PStringList@@QAE@HPBQBDH@Z @2979 NONAME ;public: __thiscall PStringList::PStringList(int,char const * const *,int)
     ??0PStringList@@QAE@XZ @196 NONAME ;public: __thiscall PStringList::PStringList(void)
     ??0PStringSet@@IAE@HPBV0@@Z @2980 NONAME ;protected: __thiscall PStringSet::PStringSet(int,class PStringSet const *)
@@ -914,6 +920,7 @@ EXPORTS
     ??A?$PList@VPThread@@@@QBEAAVPThread@@H@Z @633 NONAME ;public: class PThread & __thiscall PList<class PThread>::operator[](int)const 
     ??A?$PList@VPTimer@@@@QBEAAVPTimer@@H@Z @634 NONAME ;public: class PTimer & __thiscall PList<class PTimer>::operator[](int)const 
     ??A?$PList@VRouteEntry@PIPSocket@@@@QBEAAVRouteEntry@PIPSocket@@H@Z @2451 NONAME ;public: class PIPSocket::RouteEntry & __thiscall PList<class PIPSocket::RouteEntry>::operator[](int)const 
+    ??A?$PSortedList@VPString@@@@QBEAAVPString@@H@Z @3546 NONAME ;public: class PString & __thiscall PSortedList<class PString>::operator[](int)const 
     ??AAddress@PIPSocket@@QBEEH@Z @2952 NONAME ;public: unsigned char __thiscall PIPSocket::Address::operator[](int)const 
     ??APArgList@@QBE?AVPString@@H@Z @635 NONAME ;public: class PString  __thiscall PArgList::operator[](int)const 
     ??APStringArray@@QAEAAVPString@@H@Z @636 NONAME ;public: class PString & __thiscall PStringArray::operator[](int)
