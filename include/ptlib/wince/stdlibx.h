@@ -138,8 +138,8 @@ double			strtod( const char *nptr, char **endptr );
 char *			_i64toa (__int64 val,char *buf,int radix);
 char *			_ui64toa (unsigned __int64 val,char *buf,int radix);
 
-#if _WIN32_WCE < 300
 __int64			_atoi64(const char *nptr);
+#if _WIN32_WCE < 300
 const char *	strrchr(const char *, int);
 size_t strspn( const char *string, const char *strCharSet );
 #endif
