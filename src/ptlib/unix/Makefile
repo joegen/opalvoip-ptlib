@@ -2,8 +2,11 @@
 #
 # Makefile for pwlib
 #
-# $Id: Makefile,v 1.3 1995/12/08 13:18:13 craigs Exp $
+# $Id: Makefile,v 1.4 1996/01/26 11:09:04 craigs Exp $
 # $Log: Makefile,v $
+# Revision 1.4  1996/01/26 11:09:04  craigs
+# *** empty log message ***
+#
 # Revision 1.3  1995/12/08 13:18:13  craigs
 # Lots of changes
 #
@@ -26,17 +29,20 @@ OS		= unix
 SOURCES		= osutil.cxx \
 		  channel.cxx \
 		  tlib.cxx \
-		  os_main.cxx \
+		  assert.cxx \
 		  config.cxx \
 		  socket.cxx \
 		  pipechan.cxx \
 		  serchan.cxx \
+		  svcproc.cxx \
+		  remconn.cxx \
 		  ../../common/src/object.cxx \
 		  ../../common/src/contain.cxx \
 		  ../../common/src/collect.cxx \
 		  ../../common/src/osutils.cxx \
 		  ../../common/src/sockets.cxx \
-		  ../../common/src/appsock.cxx 
+		  ../../common/src/appsock.cxx \
+		  ../../common/src/pmain.cxx 
 
 DEBUG		= 1
 #P_USE_INLINES	= 1
