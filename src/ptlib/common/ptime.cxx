@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.5 1996/02/25 11:22:13 robertj Exp $
+ * $Id: ptime.cxx,v 1.6 1996/03/04 12:21:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.6  1996/03/04 12:21:42  robertj
+ * Fixed output of leading zeros in PTimeInterval stream output.
+ *
  * Revision 1.5  1996/02/25 11:22:13  robertj
  * Added check for precision field in stream when outputting time interval..
  *
@@ -56,21 +59,36 @@ void PTimeInterval::PrintOn(ostream & strm) const
   if (decs > 3)
     decs = 3;
 
+  strm.fill('0');
+
+  BOOL hadPrevious = FALSE;
   long tmp = milliseconds/86400000;
-  if (tmp > 0)
+  if (tmp > 0) {
     strm << tmp << ':';
+    hadPrevious = TRUE;
+  }
 
   tmp = (milliseconds%86400000)/3600000;
-  if (tmp > 0)
+  if (tmp > 0) {
+    if (hadPrevious)
+      strm.precision(2);
     strm << tmp << ':';
+    hadPrevious = TRUE;
+  }
 
   tmp = (milliseconds%3600000)/60000;
-  if (tmp > 0)
+  if (tmp > 0) {
+    if (hadPrevious)
+      strm.precision(2);
     strm << tmp << ':';
+  }
 
+  if (hadPrevious)
+    strm.precision(2);
   strm << (milliseconds%60000)/1000;
+
   if (decs > 0)
-    strm << '.' << setfill('0') << setw(decs) << (milliseconds%1000);
+    strm << '.' << setw(decs) << (milliseconds%1000);
 }
 
 
