@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.15  2004/04/03 08:22:20  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.14  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -111,7 +114,7 @@ PIpAccessControlEntry & PIpAccessControlEntry::operator=(const char * descriptio
 
 PObject::Comparison PIpAccessControlEntry::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PIpAccessControlEntry), PInvalidCast);
   const PIpAccessControlEntry & other = (const PIpAccessControlEntry &)obj;
 
   // The larger the mask value, th more specific the range, so earlier in list
