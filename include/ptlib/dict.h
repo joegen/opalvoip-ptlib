@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.7 1995/02/22 10:50:29 robertj Exp $
+ * $Id: dict.h,v 1.8 1995/03/14 12:41:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.7  1995/02/22 10:50:29  robertj
+ * Revision 1.8  1995/03/14 12:41:19  robertj
+ * Updated documentation to use HTML codes.
+ *
+ * Revision 1.7  1995/02/22  10:50:29  robertj
  * Changes required for compiling release (optimised) version.
  *
  * Revision 1.6  1995/02/11  04:10:35  robertj
@@ -41,8 +44,8 @@
 // PDictionary classes
 
 PDECLARE_CLASS(POrdinalKey, PObject)
-/* This class is used when an ordinal index value is the key for $H$PSet and
-   $H$PDictionary classes.
+/* This class is used when an ordinal index value is the key for <A>PSet</A>
+   and <A>PDictionary</A> classes.
  */
 
   public:
@@ -59,24 +62,27 @@ PDECLARE_CLASS(POrdinalKey, PObject)
     /* Get the relative rank of the ordinal index. This is a simpel comparison
        of the objects PINDEX values.
 
-       Returns: comparison of the two objects, $B$EqualTo$B$ for same,
-                $B$LessThan$B$ for $B$obj$B$ logically less than the object
-                and $B$GreaterThan$B$ for $B$obj$B$ logically greater than
-                the object.
+       <H2>Returns:</H2>
+       comparison of the two objects, <CODE>EqualTo</CODE> for same,
+       <CODE>LessThan</CODE> for <CODE>obj</CODE> logically less than the
+       object and <CODE>GreaterThan</CODE> for <CODE>obj</CODE> logically
+       greater than the object.
      */
 
     virtual PINDEX HashFunction() const;
     /* This function calculates a hash table index value for the implementation
-       of $H$PSet and $H$PDictionary classes.
+       of <A>PSet</A> and <A>PDictionary</A> classes.
 
-       Returns: hash table bucket number.
+       <H2>Returns:</H2>
+       hash table bucket number.
      */
 
     virtual void PrintOn(ostream & strm) const;
     /* Output the ordinal index to the specified stream. This is identical to
        outputting the PINDEX, ie integer, value.
 
-       Returns: stream that the index was output to.
+       <H2>Returns:</H2>
+       stream that the index was output to.
      */
 
     operator PINDEX() const;
@@ -90,8 +96,8 @@ PDECLARE_CLASS(POrdinalKey, PObject)
 //////////////////////////////////////////////////////////////////////////////
 
 PDECLARE_CONTAINER(PHashTable, PCollection)
-/* The hash table class is the basis for implementing the $H$PSet and
-   $H$PDictionary classes.
+/* The hash table class is the basis for implementing the <A>PSet</A> and
+   <A>PDictionary</A> classes.
 
    The hash table allows for very fast searches for an object based on a "hash
    function". This function yields an index into an array which is directly
@@ -115,8 +121,9 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
        comparison. Equality is only achieved if the two instances reference the
        same hash table.
 
-       Returns: comparison of the two objects, $B$EqualTo$B$ if the same
-                reference and $B$GreaterThan$B$ if not.
+       <H2>Returns:</H2>
+       comparison of the two objects, <CODE>EqualTo</CODE> if the same
+       reference and <CODE>GreaterThan</CODE> if not.
      */
 
 
@@ -129,7 +136,8 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
        is determined by the addition and removal of objects. The size cannot be
        set in any other way.
 
-       Returns: TRUE.
+       <H2>Returns:</H2>
+       Always TRUE.
      */
 
 
@@ -148,7 +156,8 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
        This function is primarily used by the descendent template classes, or
        macro, with the appropriate type conversion.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
     virtual PObject & AbstractGetDataAt(
@@ -165,7 +174,8 @@ PDECLARE_CONTAINER(PHashTable, PCollection)
        This function is primarily used by the descendent template classes, or
        macro, with the appropriate type conversion.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
 
@@ -221,10 +231,12 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
       PObject * obj   // New object to place into the collection.
     );
     /* Add a new object to the collection. If the objects value is already in
-       the set then the object is $U$not$U$ included. If the AllowDeleteObjects
-       option is set then the $B$obj$B$ parameter is also deleted.
+       the set then the object is <EM>not</EM> included. If the
+       AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter
+       is also deleted.
 
-       Returns: hash function value of the newly added object.
+       <H2>Returns:</H2>
+       hash function value of the newly added object.
      */
 
     virtual PINDEX Insert(
@@ -232,14 +244,16 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
       PObject * obj             // New object to place into the collection.
     );
     /* Add a new object to the collection. If the objects value is already in
-       the set then the object is $U$not$U$ included. If the AllowDeleteObjects
-       option is set then the $B$obj$B$ parameter is also deleted.
+       the set then the object is <EM>not</EM> included. If the
+       AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter is
+       also deleted.
        
        The object is always placed in the an ordinal position dependent on its
        hash function. It is not placed at the specified position. The
-       $B$before$B$ parameter is ignored.
+       <CODE>before</CODE> parameter is ignored.
 
-       Returns: hash function value of the newly added object.
+       <H2>Returns:</H2>
+       hash function value of the newly added object.
      */
 
     virtual PINDEX InsertAt(
@@ -247,14 +261,16 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
       PObject * obj   // New object to place into the collection.
     );
     /* Add a new object to the collection. If the objects value is already in
-       the set then the object is $U$not$U$ included. If the AllowDeleteObjects
-       option is set then the $B$obj$B$ parameter is also deleted.
+       the set then the object is <EM>not</EM> included. If the
+       AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter is
+       also deleted.
        
        The object is always placed in the an ordinal position dependent on its
        hash function. It is not placed at the specified position. The
-       $B$index$B$ parameter is ignored.
+       <CODE>index</CODE> parameter is ignored.
 
-       Returns: hash function value of the newly added object.
+       <H2>Returns:</H2>
+       hash function value of the newly added object.
      */
 
     virtual BOOL Remove(
@@ -267,7 +283,8 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       Returns: TRUE if the object was in the collection.
+       <H2>Returns:</H2>
+       TRUE if the object was in the collection.
      */
 
     virtual PObject * RemoveAt(
@@ -275,7 +292,8 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     );
     /* This function is meaningless and will assert if executed.
 
-       Returns: NULL.
+       <H2>Returns:</H2>
+       Always NULL.
      */
 
     virtual BOOL SetAt(
@@ -283,14 +301,16 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
       PObject * val   // New value to place into the collection.
     );
     /* Add a new object to the collection. If the objects value is already in
-       the set then the object is $U$not$U$ included. If the AllowDeleteObjects
-       option is set then the $B$obj$B$ parameter is also deleted.
+       the set then the object is <EM>not</EM> included. If the
+       AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter is
+       also deleted.
        
        The object is always placed in the an ordinal position dependent on its
        hash function. It is not placed at the specified position. The
-       $B$index$B$ parameter is ignored.
+       <CODE>index</CODE> parameter is ignored.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     virtual PObject * GetAt(
@@ -298,7 +318,8 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     ) const;
     /* This function is meaningless.
 
-       Returns: NULL.
+       <H2>Returns:</H2>
+       Always NULL.
      */
 
     virtual PINDEX GetObjectsIndex(
@@ -312,7 +333,8 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
        equivalent entry and then a final check is made with the pointers to
        see if they are the same instance.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
     virtual PINDEX GetValuesIndex(
@@ -320,10 +342,11 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function. The
-       hash table is used to locate the entry.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. The hash table is used to locate the entry.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
 
@@ -333,10 +356,11 @@ PDECLARE_CONTAINER(PAbstractSet, PHashTable)
     );
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function. The
-       hash table is used to locate the entry.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. The hash table is used to locate the entry.
 
-       Returns: TRUE if the object value is in the set.
+       <H2>Returns:</H2>
+       TRUE if the object value is in the set.
      */
 };
 
@@ -348,12 +372,12 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 /* This template class maps the PAbstractSet to a specific object type. The
    functions in this class primarily do all the appropriate casting of types.
 
-   By default, objects placed into the set will $U$not$U$ be deleted when
+   By default, objects placed into the set will <EM>not</EM> be deleted when
    removed or when all references to the set are destroyed. This is different
    from the default on most collection classes.
 
-   Note that if templates are not used the $H$PDECLARE_SET macro will simulate
-   the template instantiation.
+   Note that if templates are not used the <A>PDECLARE_SET</A> macro will
+   simulate the template instantiation.
  */
 
   public:
@@ -362,7 +386,7 @@ PDECLARE_CLASS(PSet, PAbstractSet)
     /* Create a new, empty, dictionary. The parameter indicates whether to
        delete objects that are removed from the set.
 
-       Note that by default, objects placed into the set will $U$not$U$ be
+       Note that by default, objects placed into the set will <EM>not</EM> be
        deleted when removed or when all references to the set are destroyed.
        This is different from the default on most collection classes.
      */
@@ -377,13 +401,14 @@ PDECLARE_CLASS(PSet, PAbstractSet)
       const T * obj   // New object to include in the set.
     ) { Append((PObject *)obj); }
     /* Include the spcified object into the set. If the objects value is
-       already in the set then the object is $U$not$U$ included. If the
-       AllowDeleteObjects option is set then the $B$obj$B$ parameter is also
-       deleted.
+       already in the set then the object is <EM>not</EM> included. If the
+       AllowDeleteObjects option is set then the <CODE>obj</CODE> parameter is
+       also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the $B$Compare()$B$ function.
-       The hash table is used to locate the entry.
+       the collection must correctly implement the
+       <A><CODE>Compare()</CODE></A> function. The hash table is used to
+       locate the entry.
      */
 
     void Exclude(
@@ -393,8 +418,9 @@ PDECLARE_CLASS(PSet, PAbstractSet)
        then the object is also deleted.
 
        The object values are compared, not the pointers.  So the objects in
-       the collection must correctly implement the $B$Compare()$B$ function.
-       The hash table is used to locate the entry.
+       the collection must correctly implement the
+       <A><CODE>Compare()</CODE></A> function. The hash table is used to
+       locate the entry.
      */
 
     BOOL operator[](
@@ -402,10 +428,11 @@ PDECLARE_CLASS(PSet, PAbstractSet)
     ) { return Contains(key); }
     /* Determine if the value of the object is contained in the set. The
        object values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function. The
-       hash table is used to locate the entry.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. The hash table is used to locate the entry.
 
-       Returns: TRUE if the object value is in the set.
+       <H2>Returns:</H2>
+       TRUE if the object value is in the set.
      */
 
     virtual const T & GetKeyAt(PINDEX index) const
@@ -418,7 +445,8 @@ PDECLARE_CLASS(PSet, PAbstractSet)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
   protected:
@@ -430,14 +458,14 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 
 /*$MACRO PDECLARE_SET(cls, T, initDelObj)
    This macro is used to declare a descendent of PAbstractSet class,
-   customised for a particular object type $B$T$B$.
+   customised for a particular object type <B>T</B>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$PSet template class. If templates are not being used then the
+   of the <A>PSet</A> template class. If templates are not being used then the
    macro defines a set of inline functions to do all casting of types. The
    resultant classes have an identical set of functions in either case.
 
-   See the $H$PSet and $H$PAbstractSet classes for more information.
+   See the <A>PSet</A> and <A>PAbstractSet</A> classes for more information.
  */
 #define PDECLARE_SET(cls, T, initDelObj) \
   PDECLARE_CLASS(cls, PSet<T>) \
@@ -453,13 +481,14 @@ PDECLARE_CLASS(PSet, PAbstractSet)
 
 /*$MACRO PSET(cls, T)
    This macro is used to declare a descendent of PAbstractSet class,
-   customised for a particular object type $B$T$B$. This macro closes the
+   customised for a particular object type <B>T</B>. This macro closes the
    class declaration off so no additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$PSet template class.
+   of the <A>PSet</A> template class.
 
-   See the $H$PSet class and $H$PDECLARE_SET macro for more information.
+   See the <A>PSet</A> class and <A>PDECLARE_SET</A> macro for more
+   information.
  */
 #define PSET(cls, T) typedef PSet<T> cls
 
@@ -510,7 +539,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
     );
     /* This function is meaningless and will assert.
 
-       Returns: 0.
+       <H2>Returns:</H2>
+       Always zero.
      */
 
     virtual PINDEX Insert(
@@ -518,11 +548,12 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
       PObject * obj          // New object to place into the collection.
     );
     /* Insert a new object into the dictionary. The semantics of this function
-       is different from that of the $H$PCollection class. This function is
+       is different from that of the <A>PCollection</A> class. This function is
        exactly equivalent to the SetAt() function that sets a data value at
        the key value location.
 
-       Returns: 0.
+       <H2>Returns:</H2>
+       Always zero.
      */
 
     virtual PINDEX InsertAt(
@@ -530,9 +561,11 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
       PObject * obj   // New object to place into the collection.
     );
     /* Insert a new object at the specified index. The index is converted to
-       a $H$POrdinalKey type before being used in the $B$SetAt()$B$ function.
+       a <A>POrdinalKey</A> type before being used in the
+       <A><CODE>SetAt()</CODE></A> function.
 
-       Returns: $B$index$B$ parameter.
+       <H2>Returns:</H2>
+       <CODE>index</CODE> parameter.
      */
 
     virtual BOOL Remove(
@@ -545,19 +578,22 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        made by pointer, not by value. Thus the parameter must point to the
        same instance of the object that is in the collection.
 
-       Returns: TRUE if the object was in the collection.
+       <H2>Returns:</H2>
+       TRUE if the object was in the collection.
      */
 
     virtual PObject * RemoveAt(
       PINDEX index   // Index position in collection to place the object.
     );
     /* Remove an object at the specified index. The index is converted to
-       a $H$POrdinalKey type before being used in the GetAt() function. The
-       returned pointer is then removed using the SetAt() function to set that
-       key value to NULL. If the AllowDeleteObjects option is set then the
-       object is also deleted.
+       a <A>POrdinalKey</A> type before being used in the
+       <A><CODE>GetAt()</CODE></A> function. The returned pointer is then
+       removed using the <A><CODE>SetAt()</CODE></A> function to set that key
+       value to NULL. If the AllowDeleteObjects option is set then the object
+       is also deleted.
 
-       Returns: pointer to the object being removed, or NULL if it was deleted.
+       <H2>Returns:</H2>
+       pointer to the object being removed, or NULL if it was deleted.
      */
 
     virtual BOOL SetAt(
@@ -565,21 +601,23 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
       PObject * val   // New value to place into the collection.
     );
     /* Set the object at the specified index to the new value. The index is
-       converted to a $H$POrdinalKey type before being used.This will overwrite
-       the existing entry. If the AllowDeleteObjects option is set then the
-       old object is also deleted.
+       converted to a <A>POrdinalKey</A> type before being used.This will
+       overwrite the existing entry. If the AllowDeleteObjects option is set
+       then the old object is also deleted.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     virtual PObject * GetAt(
       PINDEX index  // Index position in the collection of the object.
     ) const;
     /* Get the object at the specified index position. The index is converted
-       to a $H$POrdinalKey type before being used. If the index was not in the
-       collection then NULL is returned.
+       to a <A>POrdinalKey</A> type before being used. If the index was not in
+       the collection then NULL is returned.
 
-       Returns: pointer to object at the specified index.
+       <H2>Returns:</H2>
+       pointer to object at the specified index.
      */
 
     virtual PINDEX GetObjectsIndex(
@@ -593,7 +631,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        equivalent entry and then a final check is made with the pointers to
        see if they are the same instance.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
     virtual PINDEX GetValuesIndex(
@@ -601,10 +640,11 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
     ) const;
     /* Search the collection for the specified value of the object. The object
        values are compared, not the pointers.  So the objects in the
-       collection must correctly implement the $B$Compare()$B$ function. The
-       hash table is used to locate the entry.
+       collection must correctly implement the <A><CODE>Compare()</CODE></A>
+       function. The hash table is used to locate the entry.
 
-       Returns: ordinal index position of the object, or P_MAX_INDEX.
+       <H2>Returns:</H2>
+       ordinal index position of the object, or P_MAX_INDEX.
      */
 
 
@@ -618,7 +658,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       Returns: TRUE if the new object could be placed into the dictionary.
+       <H2>Returns:</H2>
+       TRUE if the new object could be placed into the dictionary.
      */
 
     virtual BOOL SetAt(
@@ -633,7 +674,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        hash function. Subsequent searches use the has function to speed access
        to the data item.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     virtual PObject & GetRefAt(
@@ -645,7 +687,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
        This function is primarily for use by the oeprator[] function is
        descendent template classes.
 
-       Returns: reference to object at the specified key.
+       <H2>Returns:</H2>
+       reference to object at the specified key.
      */
 
     virtual PObject * GetAt(
@@ -654,7 +697,8 @@ PDECLARE_CLASS(PAbstractDictionary, PHashTable)
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
-       Returns: pointer to object at the specified key.
+       <H2>Returns:</H2>
+       pointer to object at the specified key.
      */
 
   protected:
@@ -670,8 +714,8 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
    types. The functions in this class primarily do all the appropriate casting
    of types.
 
-   Note that if templates are not used the $H$PDECLARE_DICTIONARY macro will
-   simulate the template instantiation.
+   Note that if templates are not used the <A>PDECLARE_DICTIONARY</A> macro
+   will simulate the template instantiation.
  */
 
   public:
@@ -693,14 +737,15 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
 
     D & operator[](const K & key) const
       { return (D &)GetRefAt(key); }
-    /* Get the object contained in the dictionary at the $B$key$B$ position.
-       The hash table is used to locate the data quickly via the hash function
-       privided by the key.
+    /* Get the object contained in the dictionary at the <CODE>key</CODE>
+       position. The hash table is used to locate the data quickly via the
+       hash function provided by the <CODE>key</CODE>.
 
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to the object indexed by the key.
+       <H2>Returns:</H2>
+       reference to the object indexed by the key.
      */
 
     virtual D * GetAt(
@@ -709,7 +754,8 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
-       Returns: pointer to object at the specified key.
+       <H2>Returns:</H2>
+       pointer to object at the specified key.
      */
 
     const K & GetKeyAt(PINDEX index) const
@@ -722,7 +768,8 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
     D & GetDataAt(PINDEX index) const
@@ -735,7 +782,8 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to data at the index position.
+       <H2>Returns:</H2>
+       reference to data at the index position.
      */
 
 
@@ -747,14 +795,14 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
 
 /*$MACRO PDECLARE_DICTIONARY(cls, K, D)
    This macro is used to declare a descendent of PAbstractDictionary class,
-   customised for a particular key type $B$K$B$ and data object type $B$D$B$.
+   customised for a particular key type <B>K</B> and data object type <B>D</B>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$PDictionary template class. If templates are not being used then
-   the macro defines a set of inline functions to do all casting of types. The
-   resultant classes have an identical set of functions in either case.
+   of the <A>PDictionary</A> template class. If templates are not being used
+   then the macro defines a set of inline functions to do all casting of types.
+   The resultant classes have an identical set of functions in either case.
 
-   See the $H$PDictionary and $H$PAbstractDictionary classes for more
+   See the <A>PDictionary</A> and <A>PAbstractDictionary</A> classes for more
    information.
  */
 #define PDECLARE_DICTIONARY_TEMPLATE_CLASS_INSTANCE(K,D) PDictionary<K,D>
@@ -772,26 +820,26 @@ PDECLARE_CLASS(PDictionary, PAbstractDictionary)
 
 /*$MACRO PDICTIONARY(cls, K, D)
    This macro is used to declare a descendent of PAbstractDictionary class,
-   customised for a particular key type $B$K$B$ and data object type $B$D$B$.
+   customised for a particular key type <B>K</B> and data object type <B>D</B>.
    This macro closes the class declaration off so no additional members can
    be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$PDictionary template class.
+   of the <A>PDictionary</A> template class.
 
-   See the $H$PDictionary class and $H$PDECLARE_DICTIONARY macro for more
-   information.
+   See the <A>PDictionary</A> class and <A>PDECLARE_DICTIONARY</A> macro for
+   more information.
  */
 #define PDICTIONARY(cls, K, D) typedef PDictionary<K, D> cls
 
 
 template <class K>
 PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
-/* This template class maps the $H$PAbstractDictionary to a specific key type
-   and a $H$POrdinalKey data type. The functions in this class primarily do
-   all the appropriate casting of types.
+/* This template class maps the <A>PAbstractDictionary</A> to a specific key
+   type and a <A>POrdinalKey</A> data type. The functions in this class
+   primarily do all the appropriate casting of types.
 
-   Note that if templates are not used the $H$PDECLARE_ORDINAL_DICTIONARY
+   Note that if templates are not used the <A>PDECLARE_ORDINAL_DICTIONARY</A> 
    macro will simulate the template instantiation.
  */
 
@@ -814,14 +862,15 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
     PINDEX operator[](const K & key) const
       { return (POrdinalKey &)GetRefAt(key); }
-    /* Get the object contained in the dictionary at the $B$key$B$ position.
-       The hash table is used to locate the data quickly via the hash function
-       privided by the key.
+    /* Get the object contained in the dictionary at the <CODE>key</CODE>
+       position. The hash table is used to locate the data quickly via the
+       hash function provided by the key.
 
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to the object indexed by the key.
+       <H2>Returns:</H2>
+       reference to the object indexed by the key.
      */
 
     virtual POrdinalKey * GetAt(
@@ -830,19 +879,21 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
     /* Get the object at the specified key position. If the key was not in the
        collection then NULL is returned.
 
-       Returns: pointer to object at the specified key.
+       <H2>Returns:</H2>
+       pointer to object at the specified key.
      */
 
     virtual BOOL SetDataAt(
       PINDEX index,   // Ordinal index in the dictionary.
       PINDEX ordinal  // New ordinal value to put into the dictionary.
-    ) { return PAbstractDictionary::SetDataAt(index, PNEW POrdinalKey(ordinal)); }
+    ) {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}
     /* Set the data at the specified ordinal index position in the dictionary.
 
        The ordinal position in the dictionary is determined by the hash values
        of the keys and the order of insertion.
 
-       Returns: TRUE if the new object could be placed into the dictionary.
+       <H2>Returns:</H2>
+       TRUE if the new object could be placed into the dictionary.
      */
 
     virtual BOOL SetAt(
@@ -857,7 +908,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
        hash function. Subsequent searches use the has function to speed access
        to the data item.
 
-       Returns: TRUE if the object was successfully added.
+       <H2>Returns:</H2>
+       TRUE if the object was successfully added.
      */
 
     const K & GetKeyAt(PINDEX index) const
@@ -870,7 +922,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to key at the index position.
+       <H2>Returns:</H2>
+       reference to key at the index position.
      */
 
     PINDEX GetDataAt(PINDEX index) const
@@ -883,7 +936,8 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
        The last key/data pair is remembered by the class so that subseqent
        access is very fast.
 
-       Returns: reference to data at the index position.
+       <H2>Returns:</H2>
+       reference to data at the index position.
      */
 
 
@@ -895,16 +949,17 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 /*$MACRO PDECLARE_ORDINAL_DICTIONARY(cls, K)
    This macro is used to declare a descendent of PAbstractList class,
-   customised for a particular key type $B$K$B$ and data object type of
-   $H$POrdinalKey.
+   customised for a particular key type <B>K</B> and data object type of
+   <A>POrdinalKey</A>.
 
    If the compilation is using templates then this macro produces a descendent
-   of the $H$POrdinalDictionary template class. If templates are not being used
-   then the macro defines a set of inline functions to do all casting of types.
-   The resultant classes have an identical set of functions in either case.
+   of the <A>POrdinalDictionary</A> template class. If templates are not being
+   used then the macro defines a set of inline functions to do all casting of
+   types. The resultant classes have an identical set of functions in either
+   case.
 
-   See the $H$POrdinalDictionary and $H$PAbstractDictionary classes for more
-   information.
+   See the <A>POrdinalDictionary</A> and <A>PAbstractDictionary</A> classes
+   for more information.
  */
 #define PDECLARE_ORDINAL_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, POrdinalDictionary<K>) \
@@ -920,15 +975,15 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
 
 /*$MACRO PORDINAL_DICTIONARY(cls, K)
    This macro is used to declare a descendent of PAbstractDictionary class,
-   customised for a particular key type $B$K$B$ and data object type of
-   $H$POrdinalKey. This macro closes the class declaration off so no additional
-   members can be added.
+   customised for a particular key type <B>K</B> and data object type of
+   <A>POrdinalKey</A>. This macro closes the class declaration off so no
+   additional members can be added.
 
    If the compilation is using templates then this macro produces a typedef
-   of the $H$POrdinalDictionary template class.
+   of the <A>POrdinalDictionary</A> template class.
 
-   See the $H$POrdinalDictionary class and $H$PDECLARE_ORDINAL_DICTIONARY macro
-   for more information.
+   See the <A>POrdinalDictionary</A> class and
+   <A>PDECLARE_ORDINAL_DICTIONARY</A> macro for more information.
  */
 #define PORDINAL_DICTIONARY(cls, K) typedef POrdinalDictionary<K> cls
 
