@@ -2,6 +2,16 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.05
+------------
+
+	Changed build to allow for 64 bit processors (Alpha port).
+
+	Minor changes to support egcs compiler.
+
+	Added SIGHUP and SIGWINCH handlers to increase and decrease the log
+	level respectively in a service (daemon) application.
+
 Release 1.04
 ------------
 
