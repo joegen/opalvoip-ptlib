@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.2 1995/04/01 08:27:57 robertj Exp $
+ * $Id: mail.h,v 1.3 1995/06/17 00:42:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.3  1995/06/17 00:42:22  robertj
+ * Added mail reading interface.
+ * Changed name to simply PMail
+ *
  * Revision 1.2  1995/04/01 08:27:57  robertj
  * Added GUI support.
  *
@@ -16,24 +20,24 @@
  *
  */
 
-#define _PMAILSESSION
+#define _PMAIL
 
 #ifdef __GNUC__
 #pragma interface
 #endif
 
 
-PDECLARE_CLASS(PMailSession, PObject)
+PDECLARE_CLASS(PMail, PObject)
 /* This class establishes a mail session with the platforms mail system.
 */
 
   public:
-    PMailSession();
-    PMailSession(
+    PMail();
+    PMail(
       const PString & username,  // User withing mail system to use.
       const PString & password   // Password for user in mail system.
     );
-    PMailSession(
+    PMail(
       const PString & username,  // User withing mail system to use.
       const PString & password,  // Password for user in mail system.
       const PString & service
@@ -48,7 +52,7 @@ PDECLARE_CLASS(PMailSession, PObject)
      */
 
 
-    virtual ~PMailSession();
+    virtual ~PMail();
     /* Destroy the mail session, logging off the mail system if necessary.
      */
 
@@ -103,6 +107,79 @@ PDECLARE_CLASS(PMailSession, PObject)
        <H2>Returns:</H2>
        TRUE if the mail message was successfully queued. Note that this does
        <EM>not</EM> mean that it has been delivered.
+     */
+
+
+    PStringArray GetMessageIDs(
+      BOOL unreadOnly = TRUE    // Only get the IDs for unread messages.
+    );
+    /* Get a list of ID strings for all messages in the mail box.
+
+       <H2>Returns:</H2>
+       An array of ID strings.
+     */
+
+    struct Header {
+      PString  subject;           // Subject for message.
+      PString  originatorName;    // Full name of message originator.
+      PString  originatorAddress; // Return address of message originator.
+      PTime    received;          // Time message received.
+      unsigned attachments;       // Number of attachment files.
+    };
+
+    BOOL GetMessageHeader(
+      const PString & id,      // Identifier of message to get header.
+      Header & hdrInfo,        // Header info for the message.
+      BOOL markAsRead = FALSE  // Mark the message as read
+    );
+    /* Get the header information for a message.
+
+       <H2>Returns:</H2>
+       TRUE if header information was successfully obtained.
+     */
+
+    PString GetMessageBody(
+      const PString & id,      // Identifier of message to get body.
+      BOOL markAsRead = FALSE  // Mark the message as read
+    );
+    /* Get the body text for a message.
+
+       Note that to tell between an error getting the message body and simply
+       having an empty message body the <A>GetErrorCode()</A> function must
+       be used.
+
+       <H2>Returns:</H2>
+       The body text was successfully or an empty string if an error occurred.
+     */
+
+    BOOL GetMessageAttachments(
+      const PString & id,       // Identifier of message to get attachments.
+      PStringArray & filenames, // Body text for message.
+      BOOL includeBody = FALSE, // Include the message body as first attachment
+      BOOL markAsRead = FALSE   // Mark the message as read
+    );
+    /* Get all of the attachments for a message as disk files.
+
+       <H2>Returns:</H2>
+       TRUE if attachments were successfully obtained.
+     */
+
+    BOOL MarkMessageRead(
+      const PString & id      // Identifier of message to get header.
+    );
+    /* Mark the message as read.
+
+       <H2>Returns:</H2>
+       TRUE if message was successfully marked as read.
+     */
+
+    BOOL DeleteMessage(
+      const PString & id      // Identifier of message to get header.
+    );
+    /* Delete the message from the system.
+
+       <H2>Returns:</H2>
+       TRUE if message was successfully deleted.
      */
 
 
