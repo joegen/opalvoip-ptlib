@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.59 1998/03/17 10:17:09 robertj Exp $
+ * $Id: win32.cxx,v 1.60 1998/03/20 03:19:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.60  1998/03/20 03:19:49  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.59  1998/03/17 10:17:09  robertj
  * Fixed problem with viewing registry entries where the section ends with a \.
  *
@@ -2178,7 +2181,7 @@ void PProcess::HouseKeepingThread::Main()
     process.threadMutex.Wait();
     HANDLE * handles = new HANDLE[process.activeThreads.GetSize()+1];
     DWORD numHandles = 1;
-    handles[0] = semaphore.GetHandle();
+    handles[0] = breakBlock.GetHandle();
     for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
       PThread & thread = process.activeThreads.GetDataAt(i);
       DWORD id = thread.CleanUpOnTerminated();
@@ -2217,7 +2220,7 @@ void PProcess::SignalTimerChange()
   if (houseKeeper == NULL)
     houseKeeper = PNEW HouseKeepingThread;
   else
-    houseKeeper->semaphore.Signal();
+    houseKeeper->breakBlock.Signal();
 }
 
 
@@ -2305,30 +2308,38 @@ DWORD PProcess::GetProcessID() const
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
+PSemaphore::PSemaphore(HANDLE h)
+{
+  handle = h;
+  PAssertOS(handle != NULL);
+}
+
+
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
   if (initial > maxCount)
     initial = maxCount;
-  hSemaphore = CreateSemaphore(NULL, initial, maxCount, NULL);
-  PAssertOS(hSemaphore != NULL);
+  handle = CreateSemaphore(NULL, initial, maxCount, NULL);
+  PAssertOS(handle != NULL);
 }
 
 
 PSemaphore::~PSemaphore()
 {
-  PAssertOS(CloseHandle(hSemaphore));
+  if (handle != NULL)
+    PAssertOS(CloseHandle(handle));
 }
 
 
 void PSemaphore::Wait()
 {
-  PAssertOS(WaitForSingleObject(hSemaphore, INFINITE) != WAIT_FAILED);
+  PAssertOS(WaitForSingleObject(handle, INFINITE) != WAIT_FAILED);
 }
 
 
 BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 {
-  DWORD result = WaitForSingleObject(hSemaphore, timeout.GetInterval());
+  DWORD result = WaitForSingleObject(handle, timeout.GetInterval());
   PAssertOS(result != WAIT_FAILED);
   return result != WAIT_TIMEOUT;
 }
@@ -2336,7 +2347,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 
 void PSemaphore::Signal()
 {
-  if (!ReleaseSemaphore(hSemaphore, 1, NULL))
+  if (!ReleaseSemaphore(handle, 1, NULL))
     PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
 }
@@ -2344,9 +2355,39 @@ void PSemaphore::Signal()
 
 BOOL PSemaphore::WillBlock() const
 {
-  DWORD result = WaitForSingleObject(hSemaphore, 0);
+  DWORD result = WaitForSingleObject(handle, 0);
   PAssertOS(result != WAIT_FAILED);
   return result == WAIT_TIMEOUT;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PMutex
+
+PMutex::PMutex()
+  : PSemaphore(::CreateMutex(NULL, FALSE, NULL))
+{
+}
+
+
+void PMutex::Signal()
+{
+  ::ReleaseMutex(handle);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSyncPoint
+
+PSyncPoint::PSyncPoint()
+  : PSemaphore(::CreateEvent(NULL, FALSE, FALSE, NULL))
+{
+}
+
+
+void PSyncPoint::Signal()
+{
+  ::SetEvent(handle);
 }
 
 
