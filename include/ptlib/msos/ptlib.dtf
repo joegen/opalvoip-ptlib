@@ -2069,7 +2069,7 @@ EXPORTS
     ?Listen@PTCPSocket@@UAEHABVAddress@PIPSocket@@IGW4Reusability@PSocket@@@Z @2223 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(class PIPSocket::Address const &,unsigned int,unsigned short,enum PSocket::Reusability)
     ?Listen@PTCPSocket@@UAEHIGW4Reusability@PSocket@@@Z @1421 NONAME ;public: virtual int __thiscall PTCPSocket::Listen(unsigned int,unsigned short,enum PSocket::Reusability)
     ?Load@PSound@@QAEHABVPFilePath@@@Z @2062 NONAME ;public: int __thiscall PSound::Load(class PFilePath const &)
-    ?LockReadOnly@PSafeObject@@QAEHXZ @3246 NONAME ;public: int __thiscall PSafeObject::LockReadOnly(void)
+    ?LockReadOnly@PSafeObject@@QBEHXZ @3264 NONAME ;public: int __thiscall PSafeObject::LockReadOnly(void)const 
     ?LockReadWrite@PSafeObject@@QAEHXZ @3247 NONAME ;public: int __thiscall PSafeObject::LockReadWrite(void)
     ?LogOff@PMail@@UAEHXZ @1422 NONAME ;public: virtual int __thiscall PMail::LogOff(void)
     ?LogOn@PMail@@QAEHABVPString@@00@Z @1423 NONAME ;public: int __thiscall PMail::LogOn(class PString const &,class PString const &,class PString const &)
@@ -2516,7 +2516,7 @@ EXPORTS
     ?underflow@Buffer@PSystemLog@@UAEHXZ @1752 NONAME ;public: virtual int __thiscall PSystemLog::Buffer::underflow(void)
     ?underflow@PChannelStreamBuffer@@MAEHXZ @1753 NONAME ;protected: virtual int __thiscall PChannelStreamBuffer::underflow(void)
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @1754 NONAME ;public: virtual void __thiscall PArgList::UnknownOption(class PString const &)const 
-    ?UnlockReadOnly@PSafeObject@@QAEXXZ @3262 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)
+    ?UnlockReadOnly@PSafeObject@@QBEXXZ @3265 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)const 
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @3263 NONAME ;public: void __thiscall PSafeObject::UnlockReadWrite(void)
     ?UnSerialise@PObject@@UAEXAAVPUnSerialiser@@@Z @1755 NONAME ;public: virtual void __thiscall PObject::UnSerialise(class PUnSerialiser &)
     ?ValueSelect@Element@PAbstractSortedList@@AAEHABVPObject@@AAPAV12@@Z @1756 NONAME ;private: int __thiscall PAbstractSortedList::Element::ValueSelect(class PObject const &,class PAbstractSortedList::Element * &)
