@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.188  2004/05/30 04:49:42  ykiryanov
+# Streamlined BeOS section
+#
 # Revision 1.187  2004/04/25 22:11:34  ykiryanov
 # Added posix library to make files
 #
@@ -564,50 +567,11 @@ endif # irix
 
 ifeq ($(OSTYPE),beos)
 
-BE_THREADS := 1
-BE_BONE := 1
-
-# Uncomment the next line if you have the
-# Media Kit Update installed (probably you don't, unless
-# you are a Be Inc. employee or a registered Beta tester).
-# The media kit update has an extended BMediaRecorder
-# implemented in the library. For the OpenH323 project,
-# it just means that it's possible to get a list of
-# recording devices, which is something that's hard to
-# implement with the MediaRecorder class that's included
-# in pwlib.
-#MEDIA_KIT_UPDATE := 1
-
-SYSLIBS     += -lbe -lmedia -lgame -lroot -lposix -ldl
-
-ifdef BE_THREADS
-STDCCFLAGS	+= -DBE_THREADS
-endif
-
-STDCCFLAGS	+= -Wno-multichar -Wno-format
-
-ifdef BE_BONE
-SYSLIBS		+= -lsocket -lbind
-else
-SYSLIBS     += -lnet
-STDCCFLAGS  += -DBE_BONELESS
-endif
-
-ifdef MEDIA_KIT_UPDATE
-STDCCFLAGS  += -DMEDIA_KIT_UPDATE
-endif
-
+SYSLIBS     += -lbe -lmedia -lgame -lroot -lsocket -lbind -ldl 
+STDCCFLAGS	+= -DBE_THREADS -DP_USE_PRAGMA -Wno-multichar -Wno-format
 LDLIBS		+= $(SYSLIBS)
 
 MEMORY_CHECK := 0
-
-ifdef PROFILE
-STDCCFLAGS += -p
-LDFLAGS += -p
-endif
-
-STDCCFLAGS      += -DP_USE_PRAGMA
-
 endif # beos
 
 
