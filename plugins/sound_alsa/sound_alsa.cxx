@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.21  2004/10/18 11:43:39  dsandras
+ * Use Capture instead of Mic when changing the volume. Use the correct mixer when using the Default device.
+ *
  * Revision 1.20  2004/10/14 19:30:16  dsandras
  * Removed DMIX and DSNOOP plugins and added support for DEFAULT as it is the correcti way to do things.
  *
@@ -260,6 +263,7 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
   if (_device == "Default") {
 
     real_device_name = "default";
+    card_nr = -2;
   }
   else {
 
@@ -765,7 +769,7 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
   snd_mixer_elem_t *elem;
   snd_mixer_selem_id_t *sid;
 
-  const char *play_mix_name = (direction == Player) ? "PCM": "Mic";
+  const char *play_mix_name = (direction == Player) ? "PCM": "Capture";
   PString card_name;
 
   long pmin = 0, pmax = 0;
@@ -774,7 +778,10 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
   if (!os_handle)
     return FALSE;
 
-  card_name = "hw:" + PString (card_nr);
+  if (card_nr == -2)
+    card_name = "default";
+  else
+    card_name = "hw:" + PString (card_nr);
 
   //allocate simple id
   snd_mixer_selem_id_alloca (&sid);
@@ -826,23 +833,39 @@ BOOL PSoundChannelALSA::Volume (BOOL set, unsigned set_vol, unsigned &get_vol)
     return FALSE;
   }
 
-  snd_mixer_selem_get_playback_volume_range (elem, &pmin, &pmax);
 
   if (set) {
-
-    vol = (set_vol * (pmax?pmax:31)) / 100;
-    snd_mixer_selem_set_playback_volume (elem, 
-					 SND_MIXER_SCHN_FRONT_LEFT, vol);
-    snd_mixer_selem_set_playback_volume (elem, 
-					 SND_MIXER_SCHN_FRONT_RIGHT, vol);
     
+    if (direction == Player) {
+      
+      snd_mixer_selem_get_playback_volume_range (elem, &pmin, &pmax);
+      vol = (set_vol * (pmax?pmax:31)) / 100;
+      snd_mixer_selem_set_playback_volume_all (elem, vol);
+    }
+    else {
+      
+      snd_mixer_selem_get_capture_volume_range (elem, &pmin, &pmax);
+      vol = (set_vol * (pmax?pmax:31)) / 100;
+      snd_mixer_selem_set_capture_volume_all (elem, vol);
+    }
     PTRACE (4, "Set volume to " << vol);
   }
   else {
 
-    snd_mixer_selem_get_playback_volume (elem, 
-					 SND_MIXER_SCHN_FRONT_LEFT, &vol);
+    if (direction == Player) {
+      
+      snd_mixer_selem_get_playback_volume_range (elem, &pmin, &pmax);
+      snd_mixer_selem_get_playback_volume (elem, SND_MIXER_SCHN_FRONT_LEFT, 
+					   &vol);
+    }
+    else {
+      
+      snd_mixer_selem_get_capture_volume_range (elem, &pmin, &pmax);
+      snd_mixer_selem_get_capture_volume (elem, SND_MIXER_SCHN_FRONT_LEFT,
+					  &vol); 
+    }
     get_vol = (vol * 100) / (pmax?pmax:31);
+
     PTRACE (4, "Got volume " << vol);
   }
 
