@@ -6,6 +6,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.3  2002/07/12 05:51:14  craigs
+ * Added structs to XMLRPC response types
+ *
  * Revision 1.2  2002/03/27 00:50:44  craigs
  * Fixed problems with parsing faults and creating structs
  *
@@ -137,6 +140,7 @@ class PXMLRPCResponse : public PXML
     BOOL GetParam(PINDEX idx, double & result);
     BOOL GetParam(PINDEX idx, PTime & result, int tz = PTime::GMT);
     BOOL GetParam(PINDEX idx, PString & type, PString & result);
+    BOOL GetParam(PINDEX idx, PStringToString & result);
 
     BOOL GetBinaryParam(PINDEX idx, PString & str);
     BOOL GetBinaryParam(PINDEX idx, PBYTEArray & data);
