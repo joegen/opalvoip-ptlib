@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.60  2002/06/27 08:09:06  robertj
+ * GNU GCC 3.1 compatibility under Solaris
+ *
  * Revision 1.59  2001/11/25 23:30:31  robertj
  * Added PProcess::SetUserName() function to set euid
  *
@@ -314,7 +317,7 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX)
+#if defined (P_LINUX) || defined(P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
   ::getpwuid_r(geteuid(), &pwd,
                buffer, 1024,
                &pw);
@@ -351,7 +354,7 @@ PString PProcess::GetUserName() const
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
@@ -382,7 +385,7 @@ BOOL PProcess::SetUserName(const PString & username)
   struct passwd pwd;
   char buffer[1024];
   struct passwd * pw;
-#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX)
+#if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS))
   ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
 #else
   pw = ::getpwnam_r(username, &pwd, buffer, 1024);
