@@ -1,5 +1,5 @@
 /*
- * $Id: mail.h,v 1.2 1995/04/01 08:04:40 robertj Exp $
+ * $Id: mail.h,v 1.3 1995/06/17 00:49:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: mail.h,v $
+ * Revision 1.3  1995/06/17 00:49:16  robertj
+ * Changed name to simply PMail.
+ * Fixed types of MAPI calls.
+ *
  * Revision 1.2  1995/04/01 08:04:40  robertj
  * Added GUI support.
  *
@@ -16,7 +20,7 @@
  *
  */
 
-#ifndef _PMAILSESSION
+#ifndef _PMAIL
 
 
 #if defined(_WIN32)
@@ -26,7 +30,7 @@
 #endif
 
 
-#include "../../common/mailsesn.h"
+#include "../../common/mail.h"
 
   protected:
     DWORD sessionId;
@@ -37,20 +41,21 @@
       public:
         MAPIDLL();
 
-        ULONG (FAR PASCAL *Logon)(HWND, LPSTR, LPSTR, FLAGS, ULONG, LPLHANDLE);
+        ULONG (FAR PASCAL *Logon)(HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPLHANDLE);
         ULONG (FAR PASCAL *Logoff)(LHANDLE, HWND, FLAGS, ULONG);
         ULONG (FAR PASCAL *SendMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG);
         ULONG (FAR PASCAL *SendDocuments)(HWND, LPSTR, LPSTR, LPSTR, ULONG);
-        ULONG (FAR PASCAL *FindNext)(LHANDLE, HWND, LPSTR, LPSTR, FLAGS, ULONG, LPSTR);
-        ULONG (FAR PASCAL *ReadMail)(LHANDLE, HWND, LPSTR, FLAGS, ULONG, lpMapiMessage FAR *);
+        ULONG (FAR PASCAL *FindNext)(LHANDLE, HWND, LPCSTR, LPCSTR, FLAGS, ULONG, LPSTR);
+        ULONG (FAR PASCAL *ReadMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiMessage FAR *);
         ULONG (FAR PASCAL *SaveMail)(LHANDLE, HWND, lpMapiMessage, FLAGS, ULONG, LPSTR);
-        ULONG (FAR PASCAL *DeleteMail)(LHANDLE, HWND, LPSTR, FLAGS, ULONG);
+        ULONG (FAR PASCAL *DeleteMail)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG);
         ULONG (FAR PASCAL *FreeBuffer)(LPVOID);
         ULONG (FAR PASCAL *Address)(LHANDLE, HWND, LPSTR, ULONG, LPSTR, ULONG, lpMapiRecipDesc, FLAGS, ULONG, LPULONG, lpMapiRecipDesc FAR *);
         ULONG (FAR PASCAL *Details)(LHANDLE, HWND,lpMapiRecipDesc, FLAGS, ULONG);
-        ULONG (FAR PASCAL *ResolveName)(LHANDLE, HWND, LPSTR, FLAGS, ULONG, lpMapiRecipDesc FAR *);
+        ULONG (FAR PASCAL *ResolveName)(LHANDLE, HWND, LPCSTR, FLAGS, ULONG, lpMapiRecipDesc FAR *);
     };
     MAPIDLL mapi;
+    HWND uiHWND;
 #else
     PDECLARE_CLASS(CMCDLL, PDynaLink)
       public:
