@@ -5,10 +5,10 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.4 1997/04/16 01:21:58 craigs Exp $
+ * $Id: pssl.cxx,v 1.5 1997/05/04 02:50:54 craigs Exp $
  * $Log: pssl.cxx,v $
- * Revision 1.4  1997/04/16 01:21:58  craigs
- * New version compatible with SSLeay version 0.6.6
+ * Revision 1.5  1997/05/04 02:50:54  craigs
+ * Added support for client and server sertificates
  *
  * Revision 1.1  1996/11/15 07:38:34  craigs
  * Initial revision
@@ -71,15 +71,11 @@
 #include "buffer.h"
 #include "crypto.h"
 
-static PSemaphore initFlag;
+PSemaphore PSSLChannel::initFlag;
 
-static SSL_CTX * context           = NULL;
-static int       globalVerifyFlags = SSL_VERIFY_NONE;
-static BOOL      globalVerifyCerts = FALSE;
+SSL_CTX * PSSLChannel::context = NULL;
 
 typedef int (verifyCallbackType)(void);
-
-__declspec (thread) char * sslAuthName = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +83,7 @@ static PSemaphore semaphores[CRYPTO_NUM_LOCKS];
 
 extern "C" {
 
-void win32_locking_callback(int mode, int type, char * /* file */, int /* line */)
+void locking_callback(int mode, int type, char * /* file */, int /* line */)
 {
 	if (mode & CRYPTO_LOCK) 
 		semaphores[type].Wait();
@@ -99,15 +95,10 @@ void win32_locking_callback(int mode, int type, char * /* file */, int /* line *
 
 static void thread_setup()
 {
-//	int i;
-
-//	for (i=0; i<CRYPTO_NUM_LOCKS; i++)
-//		lock_cs[i] = CreateMutex(NULL,FALSE,NULL);
-
-	CRYPTO_set_locking_callback((void (*)(int,int,char *,int))win32_locking_callback);
+	CRYPTO_set_locking_callback((void (*)(int,int,char *,int))locking_callback);
 }
 
-static void SSLCleanup()
+void PSSLChannel::Cleanup()
 {
 	CRYPTO_set_locking_callback(NULL);
   SSL_CTX_free(context);
@@ -120,24 +111,12 @@ extern "C" {
 
 static int verifyCallBack(int ok, char * xs, char * /*xi*/, int depth, int /*error*/)
 {
-  /*
-   * If the verification fails, then don't remember the name.  However,
-   * if we don't require a certificate, then return success which will
-   * still allow us to set up an encrypted session.
-   *
-   */
-  if (!ok) {
+  // get the subject name, just for verification
+  const char * name = (char *)X509_NAME_oneline(X509_get_subject_name((struct x509_st *)xs));
 
-    /* If we can't verify the issuer, then don't accept the name. */
-    if (depth != 0 && sslAuthName != NULL) {
-      free(sslAuthName);
-      sslAuthName = NULL;
-    }
-    return globalVerifyFlags & SSL_VERIFY_FAIL_IF_NO_PEER_CERT ? 0 : 1;
-  }
+  PError << "Verify callback depth " << depth << " : cert name = " << name << endl;
 
-  if (depth == 0)
-    sslAuthName = (char *)X509_NAME_oneline(X509_get_subject_name((struct x509_st *)xs));
+  Free(name);
 
   return ok;
 }
@@ -157,35 +136,31 @@ PSSLChannel::PSSLChannel()
 
   if (context == NULL) {
 
-    // make sure we don't get any SSL errors to the console
-    //SSL_ERR = SSL_LOG = NULL;
-
     // create the new SSL context
     context  = SSL_CTX_new();
 
-    PAssert (X509_set_default_verify_paths(context->cert),
-            "SSL: Cannot load certificates via X509_set_default_verify_paths");
+    // set default ciphers
+    PConfig config(PConfig::Environment);
+    PString str = config.GetString("SSL_CIPHER");
+    SSL_CTX_set_cipher_list(context, (char *)(const char *)str);
+
+    // set default verify mode
+    SSL_CTX_set_verify(context, SSL_VERIFY_NONE, (verifyCallbackType *)verifyCallBack);
+
+    //PAssert (X509_set_default_verify_paths(context->cert),
+    //        "SSL: Cannot load certificates via X509_set_default_verify_paths");
 
     // set up multithread stuff
     thread_setup();
 
     // and make sure everything gets torn-down correctly
-    atexit(SSLCleanup);
+    atexit(Cleanup);
   }
 
   initFlag.Signal();
 
   // create an SSL context
   ssl = SSL_new(context);
-
-  // set the verify mode
-  SSL_set_verify(ssl, globalVerifyFlags, globalVerifyCerts ? (verifyCallbackType *)verifyCallBack : 0);
-
-  // set the preferred ciphers from the environment
-  PConfig config(PConfig::Environment);
-  PString str = config.GetString("SSL_CIPHER");
-  if (!str.IsEmpty())
-    SSL_set_pref_cipher(ssl, (char *)(const char *)str);
 }
 
 
@@ -195,17 +170,19 @@ PSSLChannel::~PSSLChannel()
   SSL_free(ssl);
 }
 
-int PSSLChannel::SetCertificates(const PString & certFile)
+/////////////////////////////////////////////////
+
+int PSSLChannel::SetClientCertificate(const PString & privateCert)
 {
-  return SetCertificates((const char *)certFile, (const char *)certFile);
+  return SetClientCertificate((const char *)privateCert, (const char *)privateCert);
 }
 
-int  PSSLChannel::SetCertificates(const PString & certFile, const PString & keyFile)
+int PSSLChannel::SetClientCertificate(const PString & privateCert, const PString & privateKey)
 {
-  return SetCertificates((const char *)certFile, (const char *)keyFile);
+  return SetClientCertificate((const char *)privateCert, (const char *)privateKey);
 }
 
-int PSSLChannel::SetCertificates(const char * certFile, const char * keyFile)
+int PSSLChannel::SetClientCertificate(const char * certFile, const char * keyFile)
 {
   // set up certificate and key 
   if (certFile != NULL) {
@@ -217,23 +194,65 @@ int PSSLChannel::SetCertificates(const char * certFile, const char * keyFile)
 
     if (!SSL_use_RSAPrivateKey_file(ssl, (char *)keyFile, X509_FILETYPE_PEM))
       return PSSLChannel::UnknownPrivateKey;
+
+    if (!SSL_check_private_key(ssl))
+      return PSSLChannel::PrivateKeyMismatch;
+
   }
   return PSSLChannel::CertificateOK;
 }
 
-void PSSLChannel::SetVerifyMode(int _verifyFlags, BOOL _verifyCerts)
+/////////////////////////////////////////////////
+
+BOOL PSSLChannel::SetCAPath(const PDirectory & caPath)
 {
-  globalVerifyFlags = _verifyFlags;
-  globalVerifyCerts = _verifyCerts;
+  return SetCAPathAndFile((const char *)caPath, NULL);
 }
 
-PString PSSLChannel::GetAuthenticationName()
+BOOL PSSLChannel::SetCAFile(const PFilePath & caFile)
 {
-  if (sslAuthName == NULL)
-    return PString();
-  else
-    return PString(sslAuthName);
+  return SetCAPathAndFile(NULL, (const char *)caFile);
 }
+
+BOOL PSSLChannel::SetCAPathAndFile(const PDirectory & caPath, const PFilePath & caFile)
+{
+  return SetCAPathAndFile((const char *)caPath, (const char *)caFile);
+}
+
+BOOL PSSLChannel::SetCAPathAndFile(const char * CApath, const char * CAfile)
+{
+  PString path = CApath;
+  if (path.Right(1)[0] == PDIR_SEPARATOR)
+    path = path.Left(path.GetLength()-1);
+
+  return SSL_load_verify_locations   (context, (char *)CAfile, (char *)(const char *)path) &&
+		     SSL_set_default_verify_paths(context);
+}
+
+/////////////////////////////////////////////////
+
+void PSSLChannel::SetVerifyMode(int mode)
+{
+  int verify;
+
+  switch (mode) {
+    case VerifyNone:
+      verify = SSL_VERIFY_NONE;
+      break;
+
+    case VerifyPeer:
+      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
+      break;
+
+    case VerifyPeerMandatory:
+      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+  }
+
+  SSL_set_verify(ssl, verify, (verifyCallbackType *)verifyCallBack);
+}
+
+
+/////////////////////////////////////////////////
 
 BOOL PSSLChannel::Accept(PChannel & channel)
 {
@@ -242,9 +261,6 @@ BOOL PSSLChannel::Accept(PChannel & channel)
 
   // set the "fd" to use with this SSL context
   Set_SSL_Fd();
-
-  // set authentication name to none
-  sslAuthName = NULL;
 
   // connect the SSL layer
   return SSL_accept(ssl) > 0;
@@ -257,9 +273,6 @@ BOOL PSSLChannel::Connect(PChannel & channel)
 
   // set the "fd" to use with this SSL context
   Set_SSL_Fd();
-
-  // set authentication name to none
-  sslAuthName = NULL;
 
   // connect the SSL layer
   return SSL_connect(ssl) > 0;
