@@ -25,6 +25,10 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.30  2002/04/08 21:18:24  rogerh
+ * Emulate original behaviour of pwlib when Open and then SetVideoFormat
+ * are called. Tested by Mark Cooke.
+ *
  * Revision 1.29  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -407,7 +411,16 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
     return FALSE;
   }
 
-  // get channel information (to check if channel is valid)
+  // The channel and format are both set at the same time with one ioctl().
+  // Get the channel information (to check if channel is valid)
+  // Note: If the channel is -1, we need to search for the first valid channel
+  if (channelNumber == -1) {
+    if (!SetChannel(channelNumber)){
+      PTRACE(1,"PVideoDevice::Cannot set default channel in SetVideoFormat");
+      return FALSE;
+    }
+  }
+
   struct video_channel channel;
   channel.channel = channelNumber;
   if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
