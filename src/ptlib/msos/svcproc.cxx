@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.19 1996/12/05 11:53:49 craigs Exp $
+ * $Id: svcproc.cxx,v 1.20 1997/02/05 11:50:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.20  1997/02/05 11:50:40  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ * Changed log file name calculation to occur only once.
+ * Added some MSVC memory debugging functions.
+ *
  * Revision 1.19  1996/12/05 11:53:49  craigs
  * Fixed failure to output PError to debug window if CRLF pairs used
  *
@@ -83,6 +88,7 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <io.h>
+#include <crtdbg.h>
 
 
 static HINSTANCE hInstance;
@@ -108,9 +114,16 @@ static const char * ServiceCommandNames[NumSvcCmds] = {
 ///////////////////////////////////////////////////////////////////////////////
 // PSystemLog
 
+static PString CreateLogFileName(const PString & processName)
+{
+  PString dir;
+  GetWindowsDirectory(dir.GetPointer(256), 255);
+  return dir + "\\" + processName + " Log.TXT";
+}
+
 void PSystemLog::Output(Level level, const char * msg)
 {
-  PServiceProcess & process = *PServiceProcess::Current();
+  PServiceProcess & process = PServiceProcess::Current();
   if (level != NumLogLevels && level > process.GetLogLevel())
     return;
 
@@ -124,9 +137,8 @@ void PSystemLog::Output(Level level, const char * msg)
     if (process.debugWindow != NULL)
       out = new PStringStream;
     else {
-      PString dir;
-      GetWindowsDirectory(dir.GetPointer(256), 255);
-      out = new ofstream(dir+"\\"+process.GetName()+" Log.TXT", ios::app);
+      static PString logFileName = CreateLogFileName(process.GetName());
+      out = new ofstream(logFileName, ios::app);
     }
 
     static const char * levelName[NumLogLevels+1] = {
@@ -238,8 +250,19 @@ PServiceProcess::PServiceProcess(const char * manuf, const char * name,
 }
 
 
+PServiceProcess & PServiceProcess::Current()
+{
+  PServiceProcess & process = (PServiceProcess &)PProcess::Current();
+  PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service!");
+  return process;
+}
+
+
 int PServiceProcess::_main(int argc, char ** argv, char **)
 {
+  _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+  _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
+
   PErrorStream = new PSystemLog(PSystemLog::NumLogLevels);
   PreInitialise(1, argv);
 
@@ -418,7 +441,7 @@ BOOL PServiceProcess::CreateControlWindow(BOOL createDebugWindow)
 
 LPARAM WINAPI PServiceProcess::StaticWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  return PServiceProcess::Current()->WndProc(hWnd, msg, wParam, lParam);
+  return Current().WndProc(hWnd, msg, wParam, lParam);
 }
 
 
@@ -521,7 +544,7 @@ void PServiceProcess::DebugOutput(const char * out)
 
 void PServiceProcess::StaticMainEntry(DWORD argc, LPTSTR * argv)
 {
-  Current()->MainEntry(argc, argv);
+  Current().MainEntry(argc, argv);
 }
 
 
@@ -584,7 +607,7 @@ void PServiceProcess::ThreadEntry()
 
 void PServiceProcess::StaticControlEntry(DWORD code)
 {
-  Current()->ControlEntry(code);
+  Current().ControlEntry(code);
 }
 
 
