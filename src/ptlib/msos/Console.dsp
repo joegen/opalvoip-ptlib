@@ -599,7 +599,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	cd ..\..\.. 
-	.\configure 
+	.\configure --no-search 
 	
 # End Custom Build
 
@@ -611,7 +611,7 @@ InputPath=..\..\..\include\ptbuildopts.h.in
 
 "$(InputDir)\ptbuildopts.h" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	cd ..\..\.. 
-	.\configure 
+	.\configure --no-search 
 	
 # End Custom Build
 
