@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.68  2001/11/29 07:50:42  robertj
+# Removed static, it doesn't work either
+#
 # Revision 1.67  2001/11/29 03:16:49  robertj
 # Made make noshared completely static
 #
@@ -207,7 +210,7 @@ endif
 
 ifndef DEBUG
 ifneq ($(P_SHAREDLIB),1)
-ENDLDFLAGS += -static
+#ENDLDFLAGS += -static
 endif
 endif
 
