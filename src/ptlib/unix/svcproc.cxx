@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.33  2000/04/03 18:36:50  robertj
+ * Fix for BeOS support (stupid prototype in system header files).
+ *
  * Revision 1.32  1999/09/14 13:02:53  robertj
  * Fixed PTRACE to PSYSTEMLOG conversion problem under Unix.
  *
@@ -339,7 +342,7 @@ int PServiceProcess::_main(void *)
 
   // open the system logger for this program
   if (systemLogFile.IsEmpty())
-    openlog((const char *)GetName(), LOG_PID, LOG_DAEMON);
+    openlog((char *)(const char *)GetName(), LOG_PID, LOG_DAEMON);
   else if (systemLogFile == "-")
     PError << "All output for " << GetName() << " is to console." << endl;
 
