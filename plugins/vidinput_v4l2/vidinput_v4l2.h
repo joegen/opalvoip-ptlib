@@ -11,6 +11,9 @@
 
 #include <linux/videodev.h>
 
+#ifndef V4L2_PIX_FMT_SBGGR8
+#define V4L2_PIX_FMT_SBGGR8  v4l2_fourcc('B','A','8','1') /*  8  BGBG.. GRGR.. */
+#endif
 
 class PVideoInputV4l2Device: public PVideoInputDevice
 {
