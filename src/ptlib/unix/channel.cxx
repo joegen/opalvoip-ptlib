@@ -1,5 +1,5 @@
 /*
- * $Id: channel.cxx,v 1.10 1996/05/25 06:06:33 craigs Exp $
+ * $Id: channel.cxx,v 1.11 1996/08/03 12:04:28 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: channel.cxx,v $
+ * Revision 1.11  1996/08/03 12:04:28  craigs
+ * Fixed problem with PChannel::Write terminating early
+ * Changed for new PChannel error reporting functions
+ *
  * Revision 1.10  1996/05/25 06:06:33  craigs
  * Sun4 fixes and updated for gcc 2.7.2
  *
@@ -117,7 +121,7 @@ BOOL PChannel::Write(const void * buf, PINDEX len)
       return FALSE;
 
     int sendResult = ::write(os_handle,
-                  ((const char *)buf)+lastWriteCount, len - lastWriteCount);
+                  ((const char *)buf)+lastWriteCount, len);
 
     if (!ConvertOSError(sendResult))
       return FALSE;
@@ -149,23 +153,22 @@ BOOL PChannel::Close()
   return ConvertOSError(::close(handle));
 }
 
-PString PChannel::GetErrorText() const
+PString PChannel::GetErrorText(Errors, int osError = 0)
 {
   return strerror(osError);
-#if 0
-#ifdef P_HPUX9
-  if (osError > 0 && osError < sys_nerr)
-    return sys_errlist[osError];
-#else
-  if (osError > 0 && osError < _sys_nerr)
-    return _sys_errlist[osError];
-#endif
-  else
-    return PString();
-#endif
+}
+
+PString PChannel::GetErrorText() const
+{
+  return GetErrorText(lastError, osError);
 }
 
 BOOL PChannel::ConvertOSError(int err)
+{
+  return ConvertOSError(err, lastError, osError);
+}
+
+BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
 
 {
   osError = (err >= 0) ? 0 : errno;
