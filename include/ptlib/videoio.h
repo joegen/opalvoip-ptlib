@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.36  2003/12/03 03:47:56  dereksmithies
+ * Add fix so video output devices compile and run correctly.
+ * Thanks to Craig Southeren.
+ *
  * Revision 1.35  2003/11/19 04:29:02  csoutheren
  * Changed to support video output plugins
  *
@@ -593,7 +597,7 @@ class PVideoDevice : public PObject
 };
 
 
-/**This class defines a video output device.
+/**This class defines a video output device.- typically, a window.
  */
 class PVideoOutputDevice : public PVideoDevice
 {
@@ -660,6 +664,14 @@ class PVideoOutputDevice : public PVideoDevice
 
     /**Indicate frame may be displayed.
       */
+
+    /**Start the video device I/O display.
+      */
+    virtual BOOL Start() { return TRUE; }
+
+    /**Stop the video device I/O display.
+      */
+    virtual BOOL Stop() { return TRUE; }
 
   protected:
     // this ensures that this function cannot be called on any PVideoInputDevice unless it has
