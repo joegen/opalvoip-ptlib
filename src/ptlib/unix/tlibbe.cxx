@@ -235,6 +235,13 @@ BOOL PThread::IsSuspended() const
   return info.state == B_THREAD_SUSPENDED;
 }
 
+void PThread::SetAutoDelete(AutoDeleteFlag deletion)
+{
+  PAssert(deletion != AutoDeleteThread || this != &PProcess::Current(),
+  PLogicError);
+  autoDelete = deletion == AutoDeleteThread;
+}
+
 void PThread::SetPriority(Priority priorityLevel)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
