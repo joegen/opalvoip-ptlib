@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.12 1996/03/31 09:07:29 robertj Exp $
+ * $Id: contain.h,v 1.13 1996/07/15 10:26:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.13  1996/07/15 10:26:55  robertj
+ * MSVC 4.1 Support
+ *
  * Revision 1.12  1996/03/31 09:07:29  robertj
  * Removed bad define in NT headers.
  *
@@ -158,9 +161,21 @@ typedef long PInt32;
 
 // Declaration for 64 bit unsigned integer quantity
 #if defined(_MSC_VER) && defined(_WIN32)
+
 #define P_HAS_INT64
+
 typedef signed __int64 PInt64;
 typedef unsigned __int64 PUInt64;
+
+class ostream;
+class istream;
+
+ostream & operator<<(ostream & s, PInt64 v);
+ostream & operator<<(ostream & s, PUInt64 v);
+
+istream & operator>>(istream & s, PInt64 v);
+istream & operator>>(istream & s, PUInt64 v);
+
 #endif
 
 
