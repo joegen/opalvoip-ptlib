@@ -62,6 +62,9 @@ endif
 STDCCFLAGS	:= $(STDCCFLAGS) -fPIC
 # P_SSL		= $(PWLIBDIR)
 
+STATIC_LIBS	= libstdc++.a libg++.a libm.a libc.a
+SYSLIBDIR	= /usr/lib
+
 endif
 
 endif # FreeBSD
@@ -88,6 +91,9 @@ LDLIBS		:= $(LDLIBS) -lsocket -lnsl
 STDCCFLAGS	:= $(STDCCFLAGS) -DP_SOLARIS=$(OSRELEASE)
 LDLIBS		:= $(LDLIBS) -lsocket -lnsl -ldl -lposix4
 OBJ_SUFFIX	= solaris
+LDFLAGS		:= -R/usr/local/gnu/lib
+STATIC_LIBS	= libstdc++.a libg++.a 
+SYSLIBDIR	= /usr/local/gnu/lib
 
 endif
 

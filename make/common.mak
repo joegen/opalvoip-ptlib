@@ -115,6 +115,16 @@ alllibs:
 	make both
 	make bothshared
 
+static:
+	for f in $(STATIC_LIBS) ; do \
+	  rm -f $(LIBDIR)/$$f ; \
+         ln -s $(SYSLIBDIR)/$$f $(LIBDIR)/$$f ; \
+	done
+	make DEBUG=
+	for f in $(STATICLIBS) ; do \
+	  rm -f $(LIBDIR)/$$f ; \
+	done
+
 ######################################################################
 #
 # setup the lib directory
