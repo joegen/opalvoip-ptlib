@@ -27,7 +27,7 @@ case "$target_os" in
 		   OSRELEASE="5.$OSVER" ;
                    STDCCFLAGS="-DP_SOLARIS=$OSRELEASE" ;;
 
-  darwin)	   OSTYPE=Darwin ;
+  darwin* )	   OSTYPE=Darwin ;
 		   OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_MACOSX=$OSRELEASE -DNO_LONG_DOUBLE";;
 
@@ -194,8 +194,9 @@ dnl look for IPV6 functions
 
 AC_CHECK_HEADERS(netinet6/in6.h, HAS_IPV6=1)
 AC_CHECK_FILE(/proc/net/if_inet6, HAS_IPV6=1)
+AC_CHECK_HEADERS(linux/in6.h, HAS_IPV6=1)
 
-if test "${HAVE_IPV6:-unset}" != "unset" ; then
+if test "${HAS_IPV6:-unset}" != "unset" ; then
   AC_DEFINE(P_HAS_IPV6, 1, "IPV6 enabled")
 fi
 
