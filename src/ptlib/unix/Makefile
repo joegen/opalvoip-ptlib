@@ -26,6 +26,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.131  2005/01/03 04:41:39  csoutheren
+# Normalise handling of configure flags
+# Add --enable-minsize option (more to follow)
+#
 # Revision 1.130  2004/10/28 20:07:11  csoutheren
 # Fixes for MacOSX platforms, thanks to Hannes Friederich
 #
@@ -451,24 +455,25 @@ PLUGIN_DIR		= ../../../plugins
 # try and keep the order of modules in reverse order of usage so any
 # global statics will be constructed/destructed in the correct order
 
-ifeq (1,$(HAS_SASL2))
-SASL_SOURCE := $(COMPONENT_SRC_DIR)/psasl.cxx 
+ifdef HAS_SASL2
+SOURCES	+= $(COMPONENT_SRC_DIR)/psasl.cxx 
 endif
 
-ifeq (1,$(HAS_OPENLDAP))
-LDAP_SOURCE := $(COMPONENT_SRC_DIR)/pldap.cxx \
-               $(COMPONENT_SRC_DIR)/pils.cxx
+ifdef HAS_OPENLDAP
+SOURCES	+= \
+	$(COMPONENT_SRC_DIR)/pldap.cxx \
+        $(COMPONENT_SRC_DIR)/pils.cxx
 endif
 
-ifeq (1,$(HAS_OPENSSL))
-SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
-              $(COMPONENT_SRC_DIR)/shttpsvc.cxx
+ifdef HAS_OPENSSL
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/pssl.cxx \
+        $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
-ifeq (1,$(HAS_SDL))
-SDL_SOURCE := $(COMPONENT_SRC_DIR)/vsdl.cxx
+ifdef HAS_SDL
+SOURCES + $(COMPONENT_SRC_DIR)/vsdl.cxx
 endif
-
 
 
 ## VIDEOCAPTURE DRIVERS
@@ -614,23 +619,31 @@ endif  #  HAS_PLUGINS
 
 
 
-ifeq (1,$(HAS_EXPAT))
-PXML_SOURCE	= $(COMPONENT_SRC_DIR)/pxml.cxx \
-		  $(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
-		  $(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
-		  $(COMPONENT_SRC_DIR)/psoap.cxx \
-		  $(COMPONENT_SRC_DIR)/vxml.cxx 
+ifdef HAS_EXPAT
+SOURCES	+= \
+	$(COMPONENT_SRC_DIR)/pxml.cxx \
+	$(COMPONENT_SRC_DIR)/pxmlrpc.cxx \
+	$(COMPONENT_SRC_DIR)/pxmlrpcs.cxx \
+	$(COMPONENT_SRC_DIR)/psoap.cxx \
+	$(COMPONENT_SRC_DIR)/vxml.cxx 
 
-ifeq (1,$(HAS_SASL2))
-PXML_SOURCE    += $(COMPONENT_SRC_DIR)/xmpp.cxx \
-		  $(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
-		  $(COMPONENT_SRC_DIR)/xmpp_roster.cxx
+ifdef HAS_SASL2
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/xmpp.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp_c2s.cxx \
+	$(COMPONENT_SRC_DIR)/xmpp_roster.cxx
 endif
+endif
+
+ifdef HAS_RESOLVER
+SOURCES += \
+	$(COMPONENT_SRC_DIR)/pdns.cxx \
+	$(COMPONENT_SRC_DIR)/enum.cxx 
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c
 
-SOURCES	= \
+SOURCES	+= \
 	$(COMPONENT_SRC_DIR)/asner.cxx \
 	$(COMPONENT_SRC_DIR)/ipacl.cxx \
 	$(COMPONENT_SRC_DIR)/modem.cxx \
@@ -660,39 +673,32 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/dtmf.cxx \
 	$(COMPONENT_SRC_DIR)/ptts.cxx \
 	$(COMPONENT_SRC_DIR)/pstun.cxx \
-	$(COMPONENT_SRC_DIR)/pdns.cxx \
-	$(COMPONENT_SRC_DIR)/enum.cxx \
 	$(COMPONENT_SRC_DIR)/notifier_ext.cxx \
-        $(SDL_SOURCE) \
-	$(SSL_SOURCE) \
-	$(LDAP_SOURCE) \
-	$(SASL_SOURCE) \
 	$(VIDEO_SOURCE) \
 	$(GETDATE_SOURCE) \
-	$(PXML_SOURCE) \
         $(SOUND_SOURCE) \
 	uicmp.cxx \
-	$(COMMON_SRC_DIR)/sound.cxx \
-	$(COMMON_SRC_DIR)/pluginmgr.cxx \
-	$(COMMON_SRC_DIR)/sockets.cxx \
-	$(COMMON_SRC_DIR)/qos.cxx \
-	$(COMMON_SRC_DIR)/pvidchan.cxx \
 	socket.cxx \
 	svcproc.cxx \
 	remconn.cxx \
 	config.cxx \
 	udll.cxx \
-	$(COMMON_SRC_DIR)/ptime.cxx \
 	pipechan.cxx \
 	serchan.cxx \
-	$(COMMON_SRC_DIR)/sfile.cxx \
 	channel.cxx \
 	osutil.cxx \
-	$(COMMON_SRC_DIR)/osutils.cxx \
-	$(COMMON_SRC_DIR)/safecoll.cxx \
 	tlib.cxx \
 	switch.cxx \
 	assert.cxx \
+	$(COMMON_SRC_DIR)/sound.cxx \
+	$(COMMON_SRC_DIR)/pluginmgr.cxx \
+	$(COMMON_SRC_DIR)/sockets.cxx \
+	$(COMMON_SRC_DIR)/qos.cxx \
+	$(COMMON_SRC_DIR)/pvidchan.cxx \
+	$(COMMON_SRC_DIR)/ptime.cxx \
+	$(COMMON_SRC_DIR)/sfile.cxx \
+	$(COMMON_SRC_DIR)/osutils.cxx \
+	$(COMMON_SRC_DIR)/safecoll.cxx \
 	$(COMMON_SRC_DIR)/collect.cxx \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
