@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.47 1996/09/14 13:09:40 robertj Exp $
+ * $Id: sockets.cxx,v 1.48 1996/10/26 01:41:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.48  1996/10/26 01:41:09  robertj
+ * Compensated for Win'95 gethostbyaddr bug.
+ *
  * Revision 1.47  1996/09/14 13:09:40  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -159,6 +162,15 @@
 
 #if defined(_WIN32) || defined(WINDOWS)
 static PWinSock dummyForWinSock; // Assure winsock is initialised
+static struct hostent * fixed_gethostbyaddr(const char * a, int s, int p)
+{
+  struct hostent * ent = gethostbyaddr(a, s, p);
+  if (ent != NULL && ent->h_addr_list[0] != NULL)
+    ent->h_addr_list[1] = NULL;
+  return ent;
+}
+#else
+#define fixed_gethostbyaddr gethostbyaddr
 #endif
 
 
@@ -562,6 +574,7 @@ static void BuildAliases(struct hostent * host_info, PStringArray & aliases)
   PINDEX i;
   for (i = 0; host_info->h_aliases[i] != NULL; i++)
     aliases[count++] = host_info->h_aliases[i];
+
   for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
     PIPSocket::Address temp;
     memcpy(&temp, host_info->h_addr_list[i], sizeof(temp));
@@ -576,8 +589,8 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
-  if (temp != 0)
-    BuildAliases(::gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
+  if (temp != INADDR_NONE)
+    BuildAliases(fixed_gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
                  aliases);
   else
     BuildAliases(::gethostbyname(hostname), aliases);
@@ -589,7 +602,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
   PStringArray aliases;
-  BuildAliases(::gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
+  BuildAliases(fixed_gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
                aliases);
 
   return aliases;
@@ -606,11 +619,17 @@ BOOL PIPSocket::IsLocalHost(const PString & hostname)
 
   // lookup the host address using inet_addr, assuming it is a "." address
   DWORD temp = inet_addr((const char *)hostname);
+  if (temp == 16777343)  // Is 127.0.0.1
+    return TRUE;
+
   struct hostent * ent;
   if (temp != INADDR_NONE)
-    ent = ::gethostbyaddr((const char *)&temp, 4, PF_INET);
-  else
+    ent = fixed_gethostbyaddr((const char *)&temp, 4, PF_INET);
+  else {
+    if (isdigit(hostname[0]))
+      return FALSE;
     ent = ::gethostbyname(hostname);
+  }
   if (ent == NULL)
     return FALSE;
 
