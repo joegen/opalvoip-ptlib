@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.107  2004/07/06 10:12:52  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.106  2004/06/30 12:17:05  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -378,6 +381,9 @@
 #endif
 
 #include <ptlib.h>
+
+#define P_DISABLE_FACTORY_INSTANCES
+
 #include <ptlib/sockets.h>
 #include <ptclib/http.h>
 #include <ptclib/url.h>
@@ -487,6 +493,8 @@ DEFINE_LEGACY_URL_SCHEME(sip,       TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, T
 DEFINE_LEGACY_URL_SCHEME(tel,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 DEFINE_LEGACY_URL_SCHEME(fax,       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
 DEFINE_LEGACY_URL_SCHEME(callto,    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0)
+
+PINSTANTIATE_FACTORY(PURLScheme, PString)
 
 #define DEFAULT_SCHEME "http"
 #define FILE_SCHEME    "file"

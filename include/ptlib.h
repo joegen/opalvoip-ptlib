@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.h,v $
+ * Revision 1.32  2004/07/06 10:12:52  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.31  2004/05/13 14:53:34  csoutheren
  * Add "abstract factory" template classes
  *
@@ -277,9 +280,15 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PluginManager
+
+#include <ptlib/pluginmgr.h>
+
+///////////////////////////////////////////////////////////////////////////////
 // PSound
 
 #include <ptlib/sound.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // PVideoChannel
