@@ -28,6 +28,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.7  2001/07/20 07:32:36  rogerh
+ * Back out previous change. BSD systems already have swab in the C library.
+ * Also use swab in Write()
+ *
  * Revision 1.6  2001/07/20 07:09:12  rogerh
  * We need to byte swap on more then just Linux and BeOS.
  *
@@ -54,7 +58,7 @@
 #include <ptlib.h>
 
 
-#if PBYTE_ORDER==PBIG_ENDIAN
+#if PBYTE_ORDER==PBIG_ENDIAN && (defined(P_LINUX) || defined(__BEOS__))
 void swab(void * void_from, void * void_to, register size_t len)
 {
   register const char * from = (const char *)void_from;
@@ -141,16 +145,9 @@ BOOL PWAVFile::Write(const void * buf, PINDEX len)
   // a big endian machine and we have 16 bit samples
 #if PBYTE_ORDER==PBIG_ENDIAN
   if (bitsPerSample == 16) {
-    PINDEX i;
-    unsigned char tmp, *mybuf;
-    mybuf = (unsigned char *)buf;
-    for (i = 0; (i+1) < len; i+=2) {
-      tmp = mybuf[i];
-      mybuf[i] = mybuf[i+1];
-      mybuf[i+1] = tmp;
-    }
+    // Note: swab only works on even length buffers.
+    swab(buf, (void *)buf, len);
   }
-  // Note: The trailing byte of an odd-length buffer won't get swap correctly. 
 #endif
 
   rval = PFile::Write(buf, len);
