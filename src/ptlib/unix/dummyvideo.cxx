@@ -24,6 +24,12 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.6  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.5  2002/01/14 11:52:44  rogerh
  * Add TestAllFormats
  *
@@ -219,6 +225,10 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 	return TRUE;
 }
 
+BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
+{
+  return TRUE;
+}
 
 BOOL PVideoInputDevice::TestAllFormats()
 {

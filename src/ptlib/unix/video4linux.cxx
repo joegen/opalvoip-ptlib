@@ -25,6 +25,12 @@
  *                 Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: video4linux.cxx,v $
+ * Revision 1.29  2002/04/05 06:41:54  rogerh
+ * Apply video changes from Damien Sandras <dsandras@seconix.com>.
+ * The Video Channel and Format are no longer set in Open(). Instead
+ * call the new SetVideoChannelFormat() method. This makes video capture
+ * and GnomeMeeting more stable with certain Linux video capture devices.
+ *
  * Revision 1.28  2002/01/26 23:58:15  craigs
  * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
  *
@@ -201,6 +207,15 @@ static struct {
     VIDEO_PALETTE_YUV420P 
   },
 
+  /** Creative VideoBlaster Webcam II USB
+   */
+  {"CPiA Camera",
+   "CPIA which works with cpia and cpia_usb driver modules",
+   HINT_ONLY_WORKS_PREF_PALETTE   |
+   HINT_HAS_PREF_PALETTE,
+   VIDEO_PALETTE_YUV422
+  },
+
   /** Default device with no special settings
    */
   { "",
@@ -288,27 +303,6 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   frameHeight = videoCapability.maxheight;
   frameWidth  = videoCapability.maxwidth;
   
-  // select the specified input and video format
-  if (!SetChannel(channelNumber))  
-    goto errorOpenVideoInputDevice;
-  
-  if (!SetVideoFormat(videoFormat)) 
-    goto errorOpenVideoInputDevice;
-
-  if (GetBrightness() < 0) 
-    goto errorOpenVideoInputDevice;
-
-  if (GetWhiteness() < 0) 
-    goto errorOpenVideoInputDevice;
-
-  if (GetColour() < 0) 
-    goto errorOpenVideoInputDevice;
-
-  if (GetContrast() < 0)
-    goto errorOpenVideoInputDevice;
-
-  if (GetHue() < 0)
-    goto errorOpenVideoInputDevice;
 
   // Init audio
   struct video_audio videoAudio;
@@ -317,12 +311,8 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
     videoAudio.flags &= ~VIDEO_AUDIO_MUTE;
     videoAudio.mode = VIDEO_SOUND_MONO;
     ::ioctl(videoFd, VIDIOCSAUDIO, &videoAudio);
-    } return TRUE;
-
- errorOpenVideoInputDevice:
-    ::close (videoFd);
-    videoFd = -1;
-    return FALSE;
+    } 
+  return TRUE;
 }
 
 
@@ -452,7 +442,11 @@ BOOL PVideoInputDevice::SetVideoFormat(VideoFormat newFormat)
 
 int PVideoInputDevice::GetNumChannels() 
 {
-  return videoCapability.channels;
+  /* If Opened, return the capability value, else 1 as in videoio.cxx */
+  if (IsOpen ())
+    return videoCapability.channels;
+  else
+    return 1;
 }
 
 
@@ -481,6 +475,43 @@ BOOL PVideoInputDevice::SetChannel(int newChannel)
   return TRUE;
 }
 
+
+BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat videoFormat) 
+{
+  if (!PVideoDevice::SetChannel(newNumber))
+    return FALSE;
+
+  if (!PVideoDevice::SetVideoFormat(videoFormat)) {
+    PTRACE(1,"PVideoDevice::SetVideoFormat\t failed for format "<<videoFormat);
+    return FALSE;
+  }
+
+  static int fmt[4] = { VIDEO_MODE_PAL, VIDEO_MODE_NTSC, 
+                          VIDEO_MODE_SECAM, VIDEO_MODE_AUTO };
+
+  // select the specified input and video format
+  // get channel information (to check if channel is valid)
+  struct video_channel channel;
+  channel.channel = channelNumber;
+  if (::ioctl(videoFd, VIDIOCGCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice Get Channel info failed : "<< ::strerror(errno));    
+
+    return FALSE;
+  }
+  
+  // set channel information
+  channel.norm = fmt[videoFormat];
+  channel.channel = channelNumber;
+
+  // set the information
+  if (::ioctl(videoFd, VIDIOCSCHAN, &channel) < 0) {
+    PTRACE(1,"VideoInputDevice SetChannel failed : "<< ::strerror(errno));  
+
+    return FALSE;
+  }
+
+  return TRUE;
+}
 
 BOOL PVideoInputDevice::SetColourFormat(const PString & newFormat)
 {
