@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.48  2002/01/26 23:55:55  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.47  2002/01/22 01:03:57  craigs
  * Added operator += and operator + functions to PStringArray and PStringList
  * Added AppendString operator to PStringArray
@@ -1864,7 +1867,7 @@ class PStringStream : public PString, public iostream
     virtual void AssignContents(const PContainer & cont);
 
   private:
-    PStringStream(int, const PStringStream &) { }
+    PStringStream(int, const PStringStream &) : iostream(cout.rdbuf()) { }
 
     class Buffer : public streambuf {
       public:
@@ -1874,7 +1877,7 @@ class PStringStream : public PString, public iostream
         virtual int overflow(int=EOF);
         virtual int underflow();
         virtual int sync();
-#ifdef __MWERKS__
+#if defined(__MWERKS__) || defined(GCC3)
         virtual streampos seekoff(streamoff, ios::seekdir, ios::openmode);
 #else
         virtual streampos seekoff(streamoff, ios::seek_dir, int);

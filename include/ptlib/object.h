@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.76  2002/01/26 23:55:55  craigs
+ * Changed for GCC 3.0 compatibility, thanks to manty@manty.net
+ *
  * Revision 1.75  2001/10/18 19:56:26  yurik
  * Fixed WinCE x86 compilation problems with memory check off
  *
@@ -287,6 +290,10 @@
 
 #ifdef _WIN32_WCE
 #include <stdlibx.h>
+#endif
+
+#if (__GNUC__ >= 3)
+using namespace std;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
