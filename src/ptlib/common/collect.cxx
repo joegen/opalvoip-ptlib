@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.1 1994/04/20 12:17:44 robertj Exp $
+ * $Id: collect.cxx,v 1.2 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,9 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.1  1994/04/20 12:17:44  robertj
- * Initial revision
+ * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
  *
+// Revision 1.1  1994/04/20  12:17:44  robertj
+// Initial revision
+//
  */
 
 #include <contain.h>
@@ -18,6 +21,17 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+ostream & PCollection::PrintOn(ostream &strm) const
+{
+  for (PINDEX  i = 0; i < GetSize(); i++) {
+    PObject * obj = GetAt(i);
+    if (obj != NULL)
+      strm << *obj;
+  }
+  return strm;
+}
+
 
 void PCollection::RemoveAll()
 {
@@ -632,24 +646,20 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
           node->left == NULL || node->right == NULL ? node : node->Successor();
   PSortedListElement * x = y->left != NULL ? y->left : y->right;
 
+  if (x != NULL)
+    x->parent = y->parent;
+
   if (y->parent == NULL)
     info->root = x;
   else if (y == y->parent->left)
     y->parent->left = x;
   else
     y->parent->right = x;
-  if (x != NULL)
-    x->parent = y->parent;
 
   if (y != node) {
     node->data = y->data;
     node->subTreeSize = y->subTreeSize;
   }
-  delete y;
-
-  reference->size--;
-  info->lastIndex = P_MAX_INDEX;
-  info->lastElement = NULL;
 
   PSortedListElement * t = y->parent;
   while (t != NULL) {
@@ -716,6 +726,12 @@ void PAbstractSortedList::RemoveElement(PSortedListElement * node)
     }
     x->MakeBlack();
   }
+
+  delete y;
+
+  reference->size--;
+  info->lastIndex = P_MAX_INDEX;
+  info->lastElement = NULL;
 }
 
 

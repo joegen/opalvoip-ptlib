@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.15 1994/04/20 12:17:44 robertj Exp $
+ * $Id: file.h,v 1.16 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.15  1994/04/20 12:17:44  robertj
+ * Revision 1.16  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.15  1994/04/20  12:17:44  robertj
  * Split name into PFilePath
  *
  * Revision 1.14  1994/04/01  14:11:03  robertj
@@ -101,29 +104,16 @@ PDECLARE_CONTAINER(PFile, PChannel)
     virtual BOOL IsOpen() const;
       // Return TRUE if the channel is currently open.
       
+    virtual PString GetName() const;
+      // Return the name of the channel.
+
     virtual BOOL Read(void * buf, PINDEX len);
       // Low level read from the channel. This function will block until the
       // requested number of characters were read.
 
-    virtual int ReadChar();
-      // Read a single 8 bit byte from the channel. If one was not available
-      // then the function returns immediately with a -1 return value.
-
     virtual BOOL Write(const void * buf, PINDEX len);
       // Low level write to the channel. This function will block until the
       // requested number of characters were written.
-
-    virtual BOOL WriteChar(char c);
-      // Write a single character to the channel. This function does not block
-      // and will return FALSE if it could not write the character.
-
-    virtual PINDEX GetInputAvailable();
-      // Return the number of characters that may be read from the channel
-      // without causing the Read() function to block.
-
-    virtual PINDEX GetOutputAvailable();
-      // Return the number of characters that may be written to the channel
-      // without causing the Write() function to block.
 
     virtual BOOL Close();
       // Close the channel.
@@ -208,22 +198,12 @@ PDECLARE_CONTAINER(PFile, PChannel)
 
 
   protected:
-    // Overrides from class PChannel
-    virtual BOOL FlushStreams();
-      // Flush stream based descendents of PChannel
-
-
     // Member variables
     PFilePath path;
       // The fully qualified path name for the file.
       
     int os_handle;
       // The operating system file handle return by standard open() function.
-
-
-  private:
-    // Overrides from class PContainer
-    virtual BOOL SetSize(PINDEX newSize);
 
 
 // Class declaration continued in platform specific header file ///////////////

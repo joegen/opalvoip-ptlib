@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.13 1994/04/20 12:17:44 robertj Exp $
+ * $Id: osutil.inl,v 1.14 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.13  1994/04/20 12:17:44  robertj
+ * Revision 1.14  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.13  1994/04/20  12:17:44  robertj
  * assert stuff
  *
  * Revision 1.12  1994/04/01  14:06:48  robertj
@@ -58,19 +61,19 @@ PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & ti)
 PINLINE PObject * PTimeInterval::Clone() const
   { return new PTimeInterval(milliseconds); }
 
-PINLINE long PTimeInterval::Milliseconds() const
+PINLINE long PTimeInterval::GetMilliseconds() const
   { return milliseconds; }
 
-PINLINE long PTimeInterval::Seconds() const
+PINLINE long PTimeInterval::GetSeconds() const
   { return milliseconds/1000; }
 
-PINLINE long PTimeInterval::Minutes() const
+PINLINE long PTimeInterval::GetMinutes() const
   { return milliseconds/60000; }
 
-PINLINE int PTimeInterval::Hours() const
+PINLINE int PTimeInterval::GetHours() const
   { return (int)(milliseconds/3600000); }
 
-PINLINE int PTimeInterval::Days() const
+PINLINE int PTimeInterval::GetDays() const
   { return (int)(milliseconds/86400000); }
 
 
@@ -94,14 +97,17 @@ PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
 PINLINE PTime::PTime(time_t t)
   : theTime(t) { }
 
+PINLINE PTime::PTime(const PTime & t)
+  : theTime(t.theTime) { }
+
+PINLINE PTime & PTime::operator=(const PTime & t)
+  { theTime = t.theTime; return *this; }
+
 PINLINE PObject * PTime::Clone() const
   { return new PTime(theTime); }
 
 PINLINE ostream & PTime::PrintOn(ostream & strm) const
   { return strm << AsString(); }
-
-PINLINE PString PTime::AsString() const
-  { return ctime(&theTime); }
 
 PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
@@ -115,14 +121,14 @@ PINLINE int PTime::GetHour() const
 PINLINE int PTime::GetDay() const
   { return localtime(&theTime)->tm_mday; }
 
-PINLINE int PTime::GetMonth() const
-  { return localtime(&theTime)->tm_mon+1; }
+PINLINE PTime::Months PTime::GetMonth() const
+  { return (Months)(localtime(&theTime)->tm_mon+January); }
 
 PINLINE int PTime::GetYear() const
   { return localtime(&theTime)->tm_year+1900; }
 
-PINLINE int PTime::GetDayOfWeek() const
-  { return localtime(&theTime)->tm_wday; }
+PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
+  { return (Weekdays)localtime(&theTime)->tm_wday; }
 
 PINLINE int PTime::GetDayOfYear() const
   { return localtime(&theTime)->tm_yday; }
@@ -132,19 +138,19 @@ PINLINE BOOL PTime::IsDaylightSavings() const
 
 
 PINLINE PTime PTime::operator+(const PTimeInterval & t) const
-  { return PTime(theTime + t.Seconds()); }
+  { return PTime(theTime + t.GetSeconds()); }
 
 PINLINE PTime & PTime::operator+=(const PTimeInterval & t)
-  { theTime += t.Seconds(); return *this; }
+  { theTime += t.GetSeconds(); return *this; }
 
 PINLINE PTimeInterval PTime::operator-(const PTime & t) const
   { return PTimeInterval(0, (int)(theTime - t.theTime)); }
 
 PINLINE PTime PTime::operator-(const PTimeInterval & t) const
-  { return PTime(theTime - t.Seconds()); }
+  { return PTime(theTime - t.GetSeconds()); }
 
 PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
-  { theTime -= t.Seconds(); return *this; }
+  { theTime -= t.GetSeconds(); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,6 +161,16 @@ PINLINE PTimerList::PTimerList()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PTimer
+
+PINLINE BOOL PTimer::IsRunning() const
+  { return state == Running; }
+
+PINLINE BOOL PTimer::IsPaused() const
+  { return state == Paused; }
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PChannelStreamBuffer::PChannelStreamBuffer(const PChannelStreamBuffer & sbuf)
   : channel(sbuf.channel) { setb(buffer, &buffer[sizeof(buffer)-1]); }
@@ -162,6 +178,36 @@ PINLINE PChannelStreamBuffer::PChannelStreamBuffer(const PChannelStreamBuffer & 
 PINLINE PChannelStreamBuffer &
           PChannelStreamBuffer::operator=(const PChannelStreamBuffer & sbuf)
   { channel = sbuf.channel; return *this; }
+
+PINLINE BOOL PChannel::SetSize(PINDEX newSize)
+  { return newSize == 1; }
+
+PINLINE void PChannel::SetReadTimeout(PTimeInterval time)
+  { readTimeout = time; }
+
+PINLINE PTimeInterval PChannel::GetReadTimeout() const
+  { return readTimeout; }
+
+PINLINE PINDEX PChannel::GetLastReadCount() const
+  { return lastReadCount; }
+
+PINLINE void PChannel::SetWriteTimeout(PTimeInterval time)
+  { writeTimeout = time; }
+
+PINLINE PTimeInterval PChannel::GetWriteTimeout() const
+  { return writeTimeout; }
+
+PINLINE PINDEX PChannel::GetLastWriteCount() const
+  { return lastWriteCount; }
+
+PINLINE BOOL PChannel::WriteString(const PString & str)
+  { return Write((const char *)str, str.GetLength()); }
+
+PINLINE PChannel::Errors PChannel::GetErrorCode() const
+  { return lastError; }
+
+PINLINE int PChannel::GetErrorNumber() const
+  { return osError; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -222,9 +268,6 @@ PINLINE PFile::PFile(const PFilePath & name, OpenMode mode, int opts)
 PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
   { return path.Compare(((const PFile &)obj).path); }
 
-PINLINE BOOL PFile::SetSize(PINDEX newSize)
-  { return newSize == 1; }
-
 PINLINE void PFile::DestroyContents()
   { Close(); }
 
@@ -254,17 +297,17 @@ PINLINE const PFilePath & PFile::GetFilePath() const
 PINLINE BOOL PFile::IsOpen() const
   { return os_handle >= 0; }
 
+PINLINE PString PFile::GetName() const
+  { return path; }
+
 PINLINE int PFile::GetHandle() const
   { PAssert(os_handle >= 0, PFileNotOpen); return os_handle; }
 
-PINLINE BOOL PFile::WriteChar(char c)
-  { return Write(&c, 1); }
-
 PINLINE off_t PFile::GetPosition() const
-  { return lseek(GetHandle(), 0, SEEK_CUR); }
+  { return _lseek(GetHandle(), 0, SEEK_CUR); }
 
 PINLINE BOOL PFile::IsEndOfFile() const
-  { return GetPosition() >= GetLength(); }
+  { rdbuf()->sync(); return GetPosition() >= GetLength(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,6 +353,126 @@ PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PSerialChannel
+
+#ifdef _PSERIALCHANNEL
+
+PINLINE void PSerialChannel::ClearDTR()
+  { SetDTR(FALSE); }
+
+PINLINE void PSerialChannel::ClearRTS()
+  { SetRTS(FALSE); }
+
+PINLINE void PSerialChannel::ClearBreak()
+  { SetBreak(FALSE); }
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PModem
+
+#ifdef _PMODEM
+
+PINLINE void PModem::SetInitString(const PString & str)
+  { initCmd = str; }
+
+PINLINE PString PModem::GetInitString() const
+  { return initCmd; }
+
+PINLINE void PModem::SetDeinitString(const PString & str)
+  { deinitCmd = str; }
+
+PINLINE PString PModem::GetDeinitString() const
+  { return deinitCmd; }
+
+PINLINE void PModem::SetPreDialString(const PString & str)
+  { preDialCmd = str; }
+
+PINLINE PString PModem::GetPreDialString() const
+  { return preDialCmd; }
+
+PINLINE void PModem::SetPostDialString(const PString & str)
+  { postDialCmd = str; }
+
+PINLINE PString PModem::GetPostDialString() const
+  { return postDialCmd; }
+
+PINLINE void PModem::SetBusyString(const PString & str)
+  { busyReply = str; }
+
+PINLINE PString PModem::GetBusyString() const
+  { return busyReply; }
+
+PINLINE void PModem::SetNoCarrierString(const PString & str)
+  { noCarrierReply = str; }
+
+PINLINE PString PModem::GetNoCarrierString() const
+  { return noCarrierReply; }
+
+PINLINE void PModem::SetConnectString(const PString & str)
+  { connectReply = str; }
+
+PINLINE PString PModem::GetConnectString() const
+  { return connectReply; }
+
+PINLINE void PModem::SetHangUpString(const PString & str)
+  { hangUpCmd = str; }
+
+PINLINE PString PModem::GetHangUpString() const
+  { return hangUpCmd; }
+
+PINLINE PModem::Status PModem::GetStatus() const
+  { return status; }
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PConfig
+
+#ifdef _PCONFIG
+
+PINLINE void PConfig::SetDefaultSection(const char * section)
+  { defaultSection = section; }
+
+PINLINE PString PConfig::GetDefaultSection() const
+  { return defaultSection; }
+
+PINLINE void PConfig::DeleteKey(const char * key)
+  { DeleteKey(defaultSection, key); }
+
+PINLINE PString PConfig::GetString(const char * key, const char * dflt)
+  { return GetString(defaultSection, key, dflt); }
+
+PINLINE void PConfig::SetString(const char * key, const char * value)
+  { SetString(defaultSection, key, value); }
+
+PINLINE BOOL PConfig::GetBoolean(const char * key, BOOL dflt)
+  { return GetBoolean(defaultSection, key, dflt); }
+
+PINLINE void PConfig::SetBoolean(const char * key, BOOL value)
+  { SetBoolean(defaultSection, key, value); }
+
+PINLINE long PConfig::GetInteger(const char * key, long dflt)
+  { return GetInteger(defaultSection, key, dflt); }
+
+PINLINE void PConfig::SetInteger(const char * key, long value)
+  { SetInteger(defaultSection, key, value); }
+
+PINLINE double PConfig::GetReal(const char * key, double dflt)
+  { return GetReal(defaultSection, key, dflt); }
+
+PINLINE void PConfig::SetReal(const char * key, double value)
+  { SetReal(defaultSection, key, value); }
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PArgList
 
 PINLINE BOOL PArgList::HasOption(char option) const
@@ -332,22 +495,26 @@ PINLINE void PArgList::operator>>(int sh)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextApplication
+// PProcess
 
-PINLINE const PArgList & PTextApplication::GetArguments() const
+PINLINE PThread::~PThread()
+  { Terminate(); }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PProcess
+
+PINLINE PArgList & PProcess::GetArguments()
   { return arguments; }
 
-PINLINE PString PTextApplication::GetAppName() const
-  { return applicationName; }
+PINLINE PString PProcess::GetName() const
+  { return executableName; }
 
-PINLINE const PFilePath & PTextApplication::GetAppFile() const
-  { return applicationFile; }
+PINLINE const PFilePath & PProcess::GetFile() const
+  { return executableFile; }
 
-PINLINE void PTextApplication::AddTimer(PTimer * timer)
-  { timers.Append(timer); }
-
-PINLINE void PTextApplication::RemoveTimer(PTimer * timer)
-  { timers.Remove(timer); }
+PINLINE PTimerList * PProcess::GetTimerList()
+  { return &timers; }
 
 
 // End Of File ///////////////////////////////////////////////////////////////

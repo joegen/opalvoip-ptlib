@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.5 1994/01/03 04:42:23 robertj Exp $
+ * $Id: timeint.h,v 1.6 1994/06/25 11:55:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.5  1994/01/03 04:42:23  robertj
+ * Revision 1.6  1994/06/25 11:55:15  robertj
+ * Unix version synchronisation.
+ *
+ * Revision 1.5  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.4  1993/08/31  03:38:02  robertj
@@ -47,11 +50,11 @@ PDECLARE_CLASS(PTimeInterval, PObject)
     virtual istream & ReadFrom(istream & strm);
 
     // New member functions
-    long Milliseconds() const;
-    long Seconds() const;
-    long Minutes() const;
-    int Hours() const;
-    int Days() const;
+    long GetMilliseconds() const;
+    long GetSeconds() const;
+    long GetMinutes() const;
+    int GetHours() const;
+    int GetDays() const;
 
     void SetInterval(long milliseconds = 0,
                 int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
@@ -64,7 +67,7 @@ PDECLARE_CLASS(PTimeInterval, PObject)
 
   protected:
     // Member variables
-    PMilliseconds milliseconds;
+    long milliseconds;
 
 
 // Class declaration continued in platform specific header file ///////////////
