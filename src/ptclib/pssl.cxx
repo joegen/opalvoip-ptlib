@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.33 2002/04/02 16:59:35 robertj Exp $
+ * $Id: pssl.cxx,v 1.34 2002/06/07 02:55:23 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.34  2002/06/07 02:55:23  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.33  2002/04/02 16:59:35  robertj
  * Fixed GNU warning
  *
@@ -802,8 +805,6 @@ static void PSSLAssert(const char * msg)
 
 PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 {
-  PINDEX i;
-
   static PMutex InitialisationMutex;
   InitialisationMutex.Wait();
 
@@ -814,7 +815,7 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
 
     // Seed the random number generator
     BYTE seed[128];
-    for (i = 0; i < sizeof(seed); i++)
+    for (size_t i = 0; i < sizeof(seed); i++)
       seed[i] = (BYTE)rand();
     RAND_seed(seed, sizeof(seed));
 
