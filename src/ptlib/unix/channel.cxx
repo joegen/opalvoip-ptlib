@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.24  1999/02/22 13:26:53  robertj
+ * BeOS port changes.
+ *
  * Revision 1.23  1998/11/30 21:51:30  robertj
  * New directory structure.
  *
@@ -237,8 +240,10 @@ BOOL PChannel::PXClose()
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(handle);
 
+#ifndef __BEOS__
   DWORD cmd = 0;
   ::ioctl(handle, FIONBIO, &cmd);
+#endif
 #endif
 
   int stat;
@@ -300,9 +305,11 @@ BOOL PChannel::ConvertOSError(int err, Errors & lastError, int & osError)
       lastError = AccessDenied;
       break;
 
+#ifndef __BEOS__
     case ETXTBSY:
       lastError = DeviceInUse;
       break;
+#endif
 
     case EFAULT:
     case ELOOP:
