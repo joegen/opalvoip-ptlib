@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.29 1996/06/05 12:33:04 robertj Exp $
+ * $Id: http.cxx,v 1.30 1996/06/07 13:52:23 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.30  1996/06/07 13:52:23  robertj
+ * Added PUT to HTTP proxy FTP. Necessitating redisign of entity body processing.
+ *
  * Revision 1.29  1996/06/05 12:33:04  robertj
  * Fixed bug in parsing URL with no path, is NOT absolute!
  *
@@ -646,13 +649,18 @@ BOOL PHTTPSocket::WriteCommand(Commands cmd,
 
 BOOL PHTTPSocket::ReadResponse(PMIMEInfo & replyMIME)
 {
-  if (!PApplicationSocket::ReadResponse())
-    return FALSE;
-
-  if (lastResponseInfo.Left(8) == "HTTP/0.9")
+  PString http = ReadString(5);
+  if (http != "HTTP/") {
+    lastResponseCode = PHTTPSocket::OK;
+    lastResponseInfo = "HTTP/0.9";
     return TRUE;
+  }
 
-  return replyMIME.Read(*this);
+  UnRead(http);
+
+  if (PApplicationSocket::ReadResponse())
+    return replyMIME.Read(*this);
+  return FALSE;
 }
 
 
@@ -686,18 +694,17 @@ BOOL PHTTPSocket::PostData(const PURL & url,
 PINDEX PHTTPSocket::ParseResponse(const PString & line)
 {
   PINDEX endVer = line.Find(' ');
-  if (endVer == P_MAX_INDEX ||
-      endVer < 8 ||
-      line.Left(5) != "HTTP/") {
-    UnRead(line);
-    lastResponseCode = 200;
-    lastResponseInfo = "HTTP/0.9";
+  if (endVer == P_MAX_INDEX) {
+    lastResponseInfo = "Bad response";
+    lastResponseCode = PHTTPSocket::InternalServerError;
     return 0;
   }
 
   lastResponseInfo = line.Left(endVer);
   PINDEX endCode = line.Find(' ', endVer+1);
   lastResponseCode = line(endVer+1,endCode-1).AsInteger();
+  if (lastResponseCode == 0)
+    lastResponseCode = PHTTPSocket::InternalServerError;
   lastResponseInfo &= line.Mid(endCode);
   return 0;
 }
@@ -757,7 +764,6 @@ BOOL PHTTPSocket::ProcessCommand()
   // there is no entity body!
   PHTTPConnectionInfo connectInfo;
   PMIMEInfo mimeInfo;
-  PString entityBody;
   long contentLength = 0;
 
   if (majorVersion > 0) {
@@ -785,19 +791,9 @@ BOOL PHTTPSocket::ProcessCommand()
         connectInfo.SetPersistance(FALSE);
       }
     }
-
-    // a content length of > 0 means read explicit length
-    // a content length of < 0 means read until EOF
-    // a content length of 0 means read nothing
-    int count = 0;
-    if (contentLength > 0) {
-      entityBody = ReadString((PINDEX)contentLength);
-    } else if (contentLength < 0 && cmd != CONNECT) {
-      while (Read(entityBody.GetPointer(count+1000)+count, 1000))
-        count += GetLastReadCount();
-      entityBody.SetSize(count+1);
-    }
   }
+
+  connectInfo.SetEntityBodyLength(contentLength);
 
   // get the user agent for various foul purposes...
   userAgent = mimeInfo(UserAgentStr);
@@ -808,8 +804,6 @@ BOOL PHTTPSocket::ProcessCommand()
   PURL url = tokens[0];
   if (cmd == CONNECT) 
     url = "https://" + tokens[0];
-  else if (!connectInfo.IsPersistant())
-    Shutdown(ShutdownRead);
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -822,8 +816,10 @@ BOOL PHTTPSocket::ProcessCommand()
       (url.GetPort() != 0 && url.GetPort() != GetPort()) ||
       (!url.GetHostName().IsEmpty() &&
          PIPSocket::GetHostName(url.GetHostName()) != PIPSocket::GetHostName())) {
-    return OnProxy((Commands)cmd, url, mimeInfo, entityBody, connectInfo) && connectInfo.IsPersistant();
+    return OnProxy((Commands)cmd, url, mimeInfo, connectInfo) && connectInfo.IsPersistant();
   }
+
+  PString entityBody = ReadEntityBody(connectInfo);
 
   // Handle the local request
   PStringToString postData;
@@ -861,6 +857,34 @@ BOOL PHTTPSocket::ProcessCommand()
   Shutdown(ShutdownWrite);
   return FALSE;
 }
+
+
+PString PHTTPSocket::ReadEntityBody(const PHTTPConnectionInfo & connectInfo)
+{
+  if (connectInfo.GetMajorVersion() < 1)
+    return PString();
+
+  PString entityBody;
+  long contentLength = connectInfo.GetEntityBodyLength();
+  // a content length of > 0 means read explicit length
+  // a content length of < 0 means read until EOF
+  // a content length of 0 means read nothing
+  int count = 0;
+  if (contentLength > 0) {
+    entityBody = ReadString((PINDEX)contentLength);
+  } else if (contentLength < 0) {
+    while (Read(entityBody.GetPointer(count+1000)+count, 1000))
+      count += GetLastReadCount();
+    entityBody.SetSize(count+1);
+  }
+
+  // close the connection, if not persistant
+  if (!connectInfo.IsPersistant())
+    Shutdown(ShutdownRead);
+
+  return entityBody;
+}
+
 
 PString PHTTPSocket::GetServerName() const
 {
@@ -908,11 +932,11 @@ BOOL PHTTPSocket::OnPOST(const PURL & url,
 BOOL PHTTPSocket::OnProxy(Commands cmd,
                           const PURL &,
                           const PMIMEInfo &,
-                          const PString &, 
                           const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) && cmd != CONNECT;
 }
+
 
 struct httpStatusCodeStruct {
   const char * text;
@@ -921,7 +945,6 @@ struct httpStatusCodeStruct {
   int  majorVersion;
   int  minorVersion;
 };
-
 
 static const httpStatusCodeStruct * GetStatusCodeStruct(int code)
 {
@@ -981,8 +1004,8 @@ void PHTTPSocket::StartResponse(StatusCode code,
   const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
 
   // output the command line
-  *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
-        << statusInfo->code << ' ' << statusInfo->text << "\r\n";
+  WriteString(psprintf("HTTP/%u.%u %03u %s\r\n",
+              majorVersion, minorVersion, statusInfo->code, statusInfo->text));
 
   // output the headers
   if (bodySize >= 0 && !headers.Contains(ContentLengthStr))
