@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.31  2003/03/31 11:30:14  rogerh
+ * make 'cb' and 'cr' contain the values that their name implies.
+ *
  * Revision 1.30  2002/09/01 23:00:05  dereks
  * Fix noise in flipped RGB image. Thanks Alex Phtahov.
  *
@@ -675,7 +678,6 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
   unsigned int   x, y, p;
 
   long     int   yvalue;
-  long     int   cr, cb, rd, gd, bd;
   long     int   l, r, g, b;
             
   if(flipVertical) {
@@ -693,12 +695,13 @@ BOOL PStandardColourConverter::YUV420PtoRGB(const BYTE * srcFrameBuffer,
     for (x = 0; x < srcFrameWidth; x += 2)
     {
       // The RGB value without luminance
+      long int  cr, cb, rd, gd, bd;
      
-      cr = *uplane-128;
-      cb = *vplane-128;
-      rd = 104635*cb;			// 		  106986*cb
-      gd = -25690*cr-53294*cb;		// -26261*cr  +   -54496*cb 
-      bd = 132278*cr;			// 135221*cr
+      cb = *uplane-128;
+      cr = *vplane-128;
+      rd = 104635*cr;			// 		  106986*cr
+      gd = -25690*cb-53294*cr;		// -26261*cb  +   -54496*cr 
+      bd = 132278*cb;			// 135221*cb
      
       // Add luminance to each of the 4 pixels
       
