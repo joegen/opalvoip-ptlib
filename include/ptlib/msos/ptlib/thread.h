@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.13 1996/08/08 10:09:19 robertj Exp $
+ * $Id: thread.h,v 1.14 1996/08/17 10:00:36 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.14  1996/08/17 10:00:36  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.13  1996/08/08 10:09:19  robertj
  * Directory structure changes for common files.
  *
@@ -121,12 +124,8 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 };
 
 
-#if defined(_WIN32) || !defined(_WINDLL)
-
 inline PThread::PThread()
   { }   // Is mostly initialised by InitialiseProcessThread().
-
-#endif
 
 
 #endif
