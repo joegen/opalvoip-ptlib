@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.10  2003/02/11 07:00:17  robertj
+ * Added copying def file to a backup version before alteration from read only.
+ *
  * Revision 1.9  2002/06/13 05:51:01  robertj
  * Added ignore of some inherently private symbols exported by libraru eg debug
  *   line number info and real number constants.
@@ -76,7 +79,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 0)
+  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 1)
 {
 }
 
@@ -298,6 +301,7 @@ void MergeSym::Main()
       if ((info.permissions&PFileInfo::UserWrite) == 0) {
         PFile::SetPermissions(def_filename, info.permissions|PFileInfo::UserWrite);
         cout << "Setting \"" << def_filename << "\" to read/write mode." << flush;
+        PFile::Copy(def_filename, def_filename+".original");
       }
     }
 
