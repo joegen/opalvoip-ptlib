@@ -32,6 +32,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asn_lex.l,v $
+ * Revision 1.13  2001/01/16 14:00:17  craigs
+ * Changed MIN and MAX tokens to avoid namespace conflicts under BeOS
+ *
  * Revision 1.12  2001/01/16 13:26:32  rogerh
  * Remove warnings by caused by unused default output and yyunput definitions.
  * Submitted by Jac Goudsmit <jac_goudsmit@yahoo.com>
@@ -110,6 +113,8 @@ static int TokenSelect(int context, int token1, int token2)
 
 %}
 
+%option nounput nodefault
+
 %x comment_line
 
 %%
@@ -158,8 +163,8 @@ static int TokenSelect(int context, int token1, int token2)
 "INTERSECTION"                     { return INTERSECTION; }
 "ISO646String"                     { return ISO646String; }
 "MACRO"				   { return MACRO; }
-"MAX"                              { return MAX; }
-"MIN"                              { return MIN; }
+"MAX"                              { return MAX_t; }
+"MIN"                              { return MIN_t; }
 "MINUS-INFINITY"                   { return MINUS_INFINITY; }
 "NOTATION"			   { return NOTATION; }
 "NULL"                             { return NullTokenContext; }
