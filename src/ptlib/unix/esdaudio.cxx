@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: esdaudio.cxx,v $
+ * Revision 1.9  2003/02/19 10:22:22  rogerh
+ * Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
+ *
  * Revision 1.8  2002/10/08 12:39:24  rogerh
  * Rearrange code to stop a type cast warning
  *
@@ -302,21 +305,15 @@ BOOL PSoundChannel::Write(const void * buf, PINDEX len)
   int rval;
 
   if (os_handle > 0) {
-    // see if it is a silence frame
-
-    PINDEX i = 0;
-    PINDEX num_samples = len/sizeof(short);
-    while (1) {
-      if (((short *)buf)[i++] != 0) {
-	break;
-      }
-      if (i >= num_samples)
-	return (TRUE);
-    }
-
+    PTime beforeWrite;
     // Sends data to esd.
     rval = ::write(os_handle, buf, len);
     if (rval > 0) {
+      PTime afterWrite;
+      PTimeInterval elapsed = afterWrite - beforeWrite;
+      // sleeps for frame time (in milliseconds)
+      int shouldSleep = (len/16) - elapsed.GetMilliSeconds();
+      writeDelay.Delay(shouldSleep);
       return (TRUE);
     }
     else {
