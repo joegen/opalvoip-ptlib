@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.47  2001/02/13 03:31:02  robertj
+ * Added function to do heap validation.
+ *
  * Revision 1.46  2001/02/07 04:47:49  robertj
  * Added changes for possible random crashes in multi DLL environment
  *   due to memory allocation wierdness, thanks Milan Dimitrijevic.
@@ -178,6 +181,7 @@
 #ifdef _WIN32
 #include <strstrea.h>
 #include <ptlib/debstrm.h>
+#include <crtdbg.h>
 #elif defined(__NUCLEUS_PLUS__)
 #include <ptlib/NucleusDebstrm.h>
 #else
@@ -555,6 +559,43 @@ PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
   }
 
   return Ok;
+}
+
+
+BOOL PMemoryHeap::ValidateHeap(ostream * error)
+{
+  Wrapper mem;
+
+  if (error == NULL)
+    error = mem->leakDumpStream;
+
+  Header * obj = mem->listHead;
+  while (obj != NULL) {
+    if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+      if (error != NULL)
+        *error << "Underrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
+      return FALSE;
+    }
+  
+    if (memcmp((char *)(obj+1)+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+      if (error != NULL)
+        *error << "Overrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
+      return FALSE;
+    }
+
+    obj = obj->next;
+  }
+
+#if defined(_WIN32) && defined(_DEBUG)
+  if (!_CrtCheckMemory()) {
+    if (error != NULL)
+      *error << "Heap failed MSVCRT validation!" << endl;
+    return FALSE;
+  }
+#endif
+  if (error != NULL)
+    *error << "Heap passed validation." << endl;
+  return TRUE;
 }
 
 
