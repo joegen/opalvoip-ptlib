@@ -1,5 +1,5 @@
 /*
- * $Id: debstrm.h,v 1.2 1994/12/21 11:57:19 robertj Exp $
+ * $Id: debstrm.h,v 1.3 1996/08/17 10:00:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: debstrm.h,v $
+ * Revision 1.3  1996/08/17 10:00:40  robertj
+ * Changes for Windows DLL support.
+ *
  * Revision 1.2  1994/12/21 11:57:19  robertj
  * Fixed debugging stream.
  *
@@ -25,12 +28,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PDebugStream for MS-Windows
 
-PCLASS PDebugStream : public ostream {
+class PEXPORT PDebugStream : public ostream {
   public:
     PDebugStream();
 
   private:
-    class Buffer : public streambuf {
+    class PEXPORT Buffer : public streambuf {
       public:
         Buffer();
         virtual int overflow(int=EOF);
