@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.42  2001/03/20 01:04:46  robertj
+ * Fixed some difficulties with terminating a service process from signals or
+ *   from simply dropping out of Main().
+ *
  * Revision 1.41  2001/03/19 02:41:13  robertj
  * Extra trace output on exiting service.
  *
@@ -224,6 +228,7 @@ PServiceProcess::PServiceProcess(const char * manuf,
   : PProcess(manuf, name, majorVersion, minorVersion, status, buildNumber)
 {
   currentLogLevel = PSystemLog::Warning;
+  isTerminating = FALSE;
 }
 
 
@@ -491,26 +496,21 @@ int PServiceProcess::_main(void *)
     PSETPGRP();
 
     CommonConstruct();
-    SignalTimerChange();
 
     pidFileToRemove = pidfilename;
   }
 #endif
 
+  // Make sure housekeeping thread is going so signals are handled.
+  SignalTimerChange();
+
   // call the main function
   if (OnStart())
     Main();
 
-  // Avoid strange errors caused by threads (and the process itself!) being destoyed 
-  // before they have EVER been scheduled
-  Yield();
+  Terminate();
 
-  // close the system log
-  if (systemLogFile.IsEmpty())
-    closelog();
-
-  // return the return value
-  return GetTerminationValue();
+  return 0; // Should never get here
 }
 
 BOOL PServiceProcess::OnPause()
@@ -524,6 +524,37 @@ void PServiceProcess::OnContinue()
 
 void PServiceProcess::OnStop()
 {
+}
+
+
+void PServiceProcess::Terminate()
+{
+  if (isTerminating) {
+    // If we are the process itself and another thread is terminating us,
+    // just stop and wait forever for us to go away
+    if (PThread::Current() == this)
+      Sleep(PMaxTimeInterval);
+    PSYSTEMLOG(Error, "Nested call to process termination!");
+    return;
+  }
+
+  isTerminating = TRUE;
+
+  PSYSTEMLOG(Warning, "Terminating service process \"" << GetName() << '"');
+
+  // Avoid strange errors caused by threads (and the process itself!) being destoyed 
+  // before they have EVER been scheduled
+  Yield();
+
+  // Do the services stop code
+  OnStop();
+
+  // close the system log
+  if (systemLogFile.IsEmpty())
+    closelog();
+
+  // Now end the program
+  exit(terminationValue);
 }
 
 
@@ -548,11 +579,6 @@ void PServiceProcess::PXOnSignal(int sig)
   switch (sig) {
     case SIGINT :
     case SIGTERM :
-      OnStop();
-      {
-        PSystemLog s(PSystemLog::StdError);
-        s << "Terminating service process \"" << GetName() << '"';
-      }
       Terminate();
       break;
 
