@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.108  2001/11/27 22:42:13  robertj
+# Changed to make system to better support non-shared library building.
+#
 # Revision 1.107  2001/11/25 23:47:05  robertj
 # Changed sense of HAS_VIDEO_CAPTURE to NO_VIDEO_CAPTURE to reduce cmd line.
 #
@@ -469,10 +472,22 @@ default_target : help
 
 endif
 
+####################################################
+
+# Set default for shared library usage
+
+ifndef P_SHAREDLIB
+ifndef DEBUG
+P_SHAREDLIB=1
+else
+P_SHAREDLIB=0
+endif
+endif
 
 # -Wall must be at the start of the options otherwise
 # any -W overrides won't have any effect
 STDCCFLAGS += -Wall
+
 
 ####################################################
 
@@ -524,20 +539,12 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT -DP_HAS_SEMAPHORES
 endif
 
-ifndef DEBUG
-ifndef P_SHAREDLIB
-P_SHAREDLIB=1
-endif
-endif
-
-ifeq ($(P_SHAREDLIB),0)
-LIB_TYPE	= _s
-else
+ifeq ($(P_SHAREDLIB),1)
 LDLIBS		+= -ldl
 ifndef PROG
 STDCCFLAGS	+= -fPIC
 endif # PROG
-endif # SHAREDLIB
+endif # P_SHAREDLIB
 
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
@@ -724,12 +731,6 @@ ENDLDLIBS	+= -lpthread
 STDCCFLAGS	+= -D_REENTRANT
 endif
 
-#ifndef DEBUG
-#ifndef P_SHAREDLIB
-#P_SHAREDLIB=1
-#endif
-#endif
-
 endif # irix
 
 
@@ -899,10 +900,6 @@ RANLIB := ranlib
 endif
 
 
-ifndef P_SHAREDLIB
-P_SHAREDLIB=0
-endif
-
 ifndef ENDIAN
 ENDIAN		:= PLITTLE_ENDIAN
 endif
@@ -929,11 +926,14 @@ ifndef OBJDIR_SUFFIX
 OBJDIR_SUFFIX = $(OBJ_SUFFIX)
 endif
 
-ifeq ($(P_SHAREDLIB),0)
-LIB_SUFFIX	= a
-else
+ifeq ($(P_SHAREDLIB),1)
 LIB_SUFFIX	= so
+else
+LIB_SUFFIX	= a
+ifndef DEBUG
+LIB_TYPE	= _s
 endif
+endif # P_SHAREDLIB
 
 ifndef LIB_TYPE
 LIB_TYPE	=
