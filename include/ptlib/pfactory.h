@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.3  2004/05/13 15:10:51  csoutheren
+ * Removed warnings under Windows
+ *
  * Revision 1.2  2004/05/13 14:59:00  csoutheren
  * Removed warning under gcc
  *
@@ -42,6 +45,10 @@
 #include <ptlib.h>
 #include <string>
 #include <map>
+
+#ifdef _WIN32
+#pragma warning(disable:4786)
+#endif
 
 /*
  * These templates implement an Abstract Factory that allows
