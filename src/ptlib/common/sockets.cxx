@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.14 1995/04/25 11:12:44 robertj Exp $
+ * $Id: sockets.cxx,v 1.15 1995/06/04 12:45:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.15  1995/06/04 12:45:33  robertj
+ * Added application layer protocol sockets.
+ * Slight redesign of port numbers on sockets.
+ *
  * Revision 1.14  1995/04/25 11:12:44  robertj
  * Fixed functions hiding ancestor virtuals.
  *
@@ -60,7 +64,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
 
-BOOL PSocket::Open(const PString &, WORD)
+BOOL PSocket::Open(const PString &)
 {
   PAssertAlways(PLogicError);
   return FALSE;
@@ -191,9 +195,24 @@ PTCPSocket::PTCPSocket(WORD newPort)
   port = newPort;
 }
 
+
+PTCPSocket::PTCPSocket(const PString & service)
+{
+  SetPort(service);
+}
+
+
 PTCPSocket::PTCPSocket(const PString & address, WORD port)
 {
-  Open(address, port);
+  SetPort(port);
+  Open(address);
+}
+
+
+PTCPSocket::PTCPSocket(const PString & address, const PString & service)
+{
+  SetPort(service);
+  Open(address);
 }
 
 
@@ -203,15 +222,13 @@ PTCPSocket::PTCPSocket(PSocket & socket)
 }
 
 
-BOOL PTCPSocket::Open(const PString & host, WORD newPort)
+BOOL PTCPSocket::Open(const PString & host)
 {
   // close the port if it is already open
   if (IsOpen())
     Close();
 
   // make sure we have a port
-  if (newPort != 0)
-    port = newPort;
   PAssert(port != 0, "Cannot open socket without setting port");
 
   // attempt to lookup the host name
@@ -333,10 +350,13 @@ void PTCPSocket::SetPort(WORD newPort)
   port = newPort;
 }
 
+
 void PTCPSocket::SetPort(const PString & service)
 {
   PAssert(!IsOpen(), "Cannot change port number of opened socket");
   port = GetPort(service);
+  if (port == 0)
+    port = (WORD)service.AsInteger();
 }
 
 
@@ -355,15 +375,15 @@ PString PTCPSocket::GetService() const
 //////////////////////////////////////////////////////////////////////////////
 // PTelnetSocket
 
-PTelnetSocket::PTelnetSocket(WORD newPort)
-  : PTCPSocket(newPort)
+PTelnetSocket::PTelnetSocket()
+  : PTCPSocket("telnet")
 {
   Construct();
 }
 
 
-PTelnetSocket::PTelnetSocket(const PString & address, WORD port)
-  : PTCPSocket(port)
+PTelnetSocket::PTelnetSocket(const PString & address)
+  : PTCPSocket("telnet")
 {
   Construct();
   Open(address);
@@ -383,14 +403,12 @@ void PTelnetSocket::Construct()
   SetOurOption(StatusOption);
   SetOurOption(TimingMark);
   SetOurOption(TerminalSpeed);
-//  SetOurOption(TerminalType);
+  SetOurOption(TerminalType);
   SetTheirOption(TransmitBinary);
   SetTheirOption(SuppressGoAhead);
   SetTheirOption(StatusOption);
   SetTheirOption(TimingMark);
-
-  if (port == 0)
-    port = GetPort("telnet");
+  SetTheirOption(EchoOption);
 
 #ifdef _DEBUG
   debug = TRUE;
@@ -401,23 +419,23 @@ void PTelnetSocket::Construct()
 #define PTelnetError if (debug) PError << "PTelnetSocket: "
 #define PDebugError if (debug) PError
 
-BOOL PTelnetSocket::Open(const PString & host, WORD newPort)
+BOOL PTelnetSocket::Open(const PString & host)
 {
-  if (!PTCPSocket::Open(host, newPort))
+  PTelnetError << "open" << endl;
+
+  if (!PTCPSocket::Open(host))
     return FALSE;
 
-  _Open();
+  SendDo(SuppressGoAhead);
+  SendDo(StatusOption);
+  SendWill(TerminalSpeed);
   return TRUE;
 }
 
 
 BOOL PTelnetSocket::Open(WORD newPort)
 {
-  if (!PTCPSocket::Open(newPort))
-    return FALSE;
-
-  _Open();
-  return TRUE;
+  return PTCPSocket::Open(newPort);
 }
 
 
@@ -426,52 +444,50 @@ BOOL PTelnetSocket::Open(PSocket & sock)
   if (!PTCPSocket::Open(sock))
     return FALSE;
 
-  _Open();
-  return TRUE;
-}
-
-
-void PTelnetSocket::_Open()
-{
-  PTelnetError << "open" << endl;
-
   SendDo(SuppressGoAhead);
-  SendDo(StatusOption);
-  SendWill(TerminalSpeed);
-//  SendWill(TerminalType);
-//  if (option[WindowSize].weCan)
-//    SendWill(WindowSize);
+  SendWill(StatusOption);
+  return TRUE;
 }
 
 
 BOOL PTelnetSocket::Write(void const * buffer, PINDEX length)
 {
-  const char * bufptr = (const char *)buffer;
+  const BYTE * base = (const BYTE *)buffer;
+  const BYTE * next = base;
   int count = 0;
 
   while (length > 0) {
-
-    // get ptr to first IAC character
-    const char * iacptr = (const char *)memchr(bufptr, IAC, length);
-
-    // calculate number of bytes to send with or without the trailing IAC
-    PINDEX iaclen = iacptr != NULL ? iacptr - bufptr : length;
-
-    // send the characters
-    if (!PTCPSocket::Write(bufptr, iaclen))
-      return FALSE;
-    count += lastWriteCount;
-
-    // send the IAC (if required)
-    if (iacptr != NULL) {
-      // Note: cannot use WriteChar(), so send the IAC found again
-      if (!PTCPSocket::Write(iacptr, 1))
+    if (*next == '\r' &&
+            !(length > 1 && next[1] == '\n') && !IsOurOption(TransmitBinary)) {
+      // send the characters
+      if (!PTCPSocket::Write(base, (next - base) + 1))
         return FALSE;
       count += lastWriteCount;
+
+      char null = '\0';
+      if (!PTCPSocket::Write(&null, 1))
+        return FALSE;
+      count += lastWriteCount;
+
+      base = next+1;
     }
 
-    length -= iaclen;
-    bufptr += iaclen;
+    if (*next == IAC) {
+      // send the characters
+      if (!PTCPSocket::Write(base, (next - base) + 1))
+        return FALSE;
+      count += lastWriteCount;
+      base = next;
+    }
+
+    next++;
+    length--;
+  }
+
+  if (next > base) {
+    if (!PTCPSocket::Write(base, next - base))
+      return FALSE;
+    count += lastWriteCount;
   }
 
   lastWriteCount = count;
@@ -855,50 +871,15 @@ BOOL PTelnetSocket::Read(void * data, PINDEX bytesToRead)
         case StateCarriageReturn :
           state = StateNormal;
           if (currentByte == '\0')
-            break;  // Ignore \0 after CR
-          if (currentByte == '\n' && !IsOurOption(EchoOption)) {
-            *dst++ = currentByte;
-            charsLeft--;
-            break;
-          }
-          // Else, fall through
+            break; // Ignore \0 after CR
+          // Else, fall through for normal processing
 
         case StateNormal :
           if (currentByte == IAC)
             state = StateIAC;
-          else if (currentByte == '\r' && !IsOurOption(TransmitBinary)) {
-            /* The 'crmod' hack (see following) is needed since we can't set
-               CRMOD on output only. Machines like MULTICS like to send \r
-               without \n; since we must turn off CRMOD to get proper input,
-               the mapping is done here (sigh).
-
-               PS: This is stolen directly from the standard source...
-             */
-            if (lastReadCount > 0) {
-              currentByte = *src;
-              if (currentByte == '\0') { // a "true" CR
-                src++;
-                lastReadCount--;
-                *dst++ = '\r';
-                charsLeft--;
-              }
-              else if (currentByte == '\n' && !IsOurOption(EchoOption)) {
-                src++;
-                lastReadCount--;
-                *dst++ = '\n';
-                charsLeft--;
-              }
-              else {
-                *dst++ = '\r';
-                charsLeft--;
-              }
-            }
-            else {
+          else {
+            if (currentByte == '\r' && !IsTheirOption(TransmitBinary))
               state = StateCarriageReturn;
-              *dst++ = '\r';
-              charsLeft--;
-            }
-          } else {
             *dst++ = currentByte;
             charsLeft--;
           }
@@ -1250,6 +1231,760 @@ void PTelnetSocket::OnOutOfBand(const void *, PINDEX length)
 {
   PTelnetError << "out of band data received of length " << length << endl;
   synchronising++;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PApplicationSocket
+
+PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
+                                       char const * const * cmdNames,
+                                       WORD port)
+  : PTCPSocket(port), commandNames(cmdCount, cmdNames)
+{
+}
+
+
+PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
+                                       char const * const * cmdNames,
+                                       const PString & service)
+  : PTCPSocket(service), commandNames(cmdCount, cmdNames)
+{
+}
+
+
+PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
+                                       char const * const * cmdNames,
+                                       const PString & address,
+                                       WORD port)
+  : PTCPSocket(address, port), commandNames(cmdCount, cmdNames)
+{
+}
+
+
+PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
+                                       char const * const * cmdNames,
+                                       const PString & address,
+                                       const PString & service)
+  : PTCPSocket(address, service), commandNames(cmdCount, cmdNames)
+{
+}
+
+
+PApplicationSocket::PApplicationSocket(PINDEX cmdCount,
+                                       char const * const * cmdNames,
+                                       PSocket & socket)
+  : PTCPSocket(socket), commandNames(cmdCount, cmdNames)
+{
+}
+
+
+BOOL PApplicationSocket::WriteLine(const PString & line)
+{
+  if (line.FindOneOf("\r\n") == P_MAX_INDEX)
+    return WriteString(line + "\r\n");
+
+  PStringArray lines = line.Lines();
+  for (PINDEX i = 0; i < lines.GetSize(); i++)
+    if (!WriteString(lines[i] + "\r\n"))
+      return FALSE;
+
+  return TRUE;
+}
+
+
+BOOL PApplicationSocket::ReadLine(PString & str)
+{
+  PCharArray line(100);
+  PINDEX count = 0;
+  int c;
+  while ((c = ReadChar()) >= 0) {
+    switch (c) {
+      case '\b' :
+      case '\177' :
+        if (count > 0)
+          count--;
+        break;
+
+      case '\r' :
+      case '\n' :
+        if (count > 0) {
+          str = PString(line, count);
+          return TRUE;
+        }
+        break;
+
+      default :
+        if (count >= line.GetSize())
+          line.SetSize(count + 100);
+        line[count++] = (char)c;
+    }
+  }
+
+  if (count > 0)
+    str = PString(line, count);
+  else
+    str = PString();
+
+  return FALSE;
+}
+
+
+BOOL PApplicationSocket::WriteCommand(PINDEX cmdNumber,  const PString & param)
+{
+  if (cmdNumber >= commandNames.GetSize())
+    return FALSE;
+  return WriteLine(commandNames[cmdNumber] + " " + param);
+}
+
+
+PINDEX PApplicationSocket::ReadCommand(PString & args)
+{
+  if (!ReadLine(args))
+    return P_MAX_INDEX;
+
+  PINDEX endCommand = args.Find(' ');
+  if (endCommand == P_MAX_INDEX)
+    endCommand = args.GetLength();
+  PCaselessString cmd = args.Left(endCommand);
+
+  PINDEX num = commandNames.GetValuesIndex(cmd);
+  if (num != P_MAX_INDEX)
+    args = args.Mid(endCommand);
+
+  return num;
+}
+
+
+BOOL PApplicationSocket::WriteResponse(unsigned code, const PString & info)
+{
+  return WriteResponse(psprintf("%03u", code), info);
+}
+
+
+BOOL PApplicationSocket::WriteResponse(const PString & code,
+                                       const PString & info)
+{
+  if (info.FindOneOf("\r\n") == P_MAX_INDEX)
+    return WriteString(code + ' ' + info + "\r\n");
+
+  PStringArray lines = info.Lines();
+  for (PINDEX i = 0; i < lines.GetSize()-1; i++)
+    if (!WriteString(code + '-' + lines[i] + "\r\n"))
+      return FALSE;
+
+  return WriteString(code + ' ' + lines[i] + "\r\n");
+}
+
+
+BOOL PApplicationSocket::ReadResponse()
+{
+  return ReadResponse(lastResponseCode, lastResponseInfo);
+}
+
+
+BOOL PApplicationSocket::ReadResponse(PString & code, PString & info)
+{
+  PString line;
+  if (!ReadLine(line))
+    return FALSE;
+
+  PINDEX endCode = line.FindOneOf(" -", 1);
+  if (endCode == P_MAX_INDEX) {
+    code = line;
+    info = PString();
+    return TRUE;
+  }
+
+  code = line.Left(endCode);
+  info = line.Mid(endCode+1);
+
+  while (line[endCode] == '-') {
+    info += '\n';
+    if (!ReadLine(line))
+      return FALSE;
+    info += line.Mid(endCode+1);
+  }
+
+  return TRUE;
+}
+
+
+char PApplicationSocket::ExecuteCommand(PINDEX cmdNumber,
+                                        const PString & param)
+{
+  if (!WriteCommand(cmdNumber, param))
+    return '\0';
+
+  if (!ReadResponse())
+    return '\0';
+
+  return lastResponseCode[0];
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PSMTPSocket
+
+static char const * SMTPCommands[PSMTPSocket::NumCommands] = {
+  "HELO", "EHLO", "QUIT", "HELP", "NOOP",
+  "TURN", "RSET", "VRFY", "EXPN", "RCPT",
+  "MAIL", "SEND", "SAML", "SOML", "DATA"
+};
+
+
+PSMTPSocket::PSMTPSocket()
+  : PApplicationSocket(NumCommands, SMTPCommands, "smtp")
+{
+  Reset();
+}
+
+
+PSMTPSocket::PSMTPSocket(const PString & address)
+  : PApplicationSocket(NumCommands, SMTPCommands, address, "smtp")
+{
+  Reset();
+}
+
+
+PSMTPSocket::PSMTPSocket(PSocket & socket)
+  : PApplicationSocket(NumCommands, SMTPCommands, socket)
+{
+  Reset();
+}
+
+
+void PSMTPSocket::Reset()
+{
+  haveHello = FALSE;
+  extendedHello = FALSE;
+  sendingData = FALSE;
+  eightBitMIME = FALSE;
+  sendCommand = WasMAIL;
+  fromName = PString();
+  toNames.RemoveAll();
+  messageBufferSize = 30000;
+}
+
+
+BOOL PSMTPSocket::Write(const void * buf, PINDEX len)
+{
+  if (!sendingData)
+    return PApplicationSocket::Write(buf, len);
+
+  const char * base = (const char *)buf;
+  const char * current = base;
+  while (len-- > 0) {
+    switch (stuffingState) {
+      case GotNothing :
+        switch (*current) {
+          case '\r' :
+            stuffingState = GotCR;
+            break;
+          case '\n' :
+            if (!eightBitMIME) {
+              if (current > base)
+                if (!PApplicationSocket::Write(base, current - base))
+                  return FALSE;
+              if (!PApplicationSocket::Write("\r", 1))
+                return FALSE;
+              base = current;
+            }
+        }
+        break;
+
+      case GotCR :
+        stuffingState = *current != '\n' ? GotNothing : GotCRLF;
+        break;
+
+      case GotCRLF :
+        if (*current == '.') {
+          if (current > base)
+            if (!PApplicationSocket::Write(base, current - base))
+              return FALSE;
+          if (!PApplicationSocket::Write(".", 1))
+            return FALSE;
+          base = current;
+        }
+        // Then do default state
+
+      default :
+        stuffingState = GotNothing;
+        break;
+    }
+    current++;
+  }
+  return FALSE;
+}
+
+
+BOOL PSMTPSocket::BeginMessage(const PString & from,
+                               const PString & to,
+                               BOOL useEightBitMIME)
+{
+  fromName = from;
+  toNames.RemoveAll();
+  toNames.AppendString(to);
+  eightBitMIME = useEightBitMIME;
+  return _BeginMessage();
+}
+
+
+BOOL PSMTPSocket::BeginMessage(const PString & from,
+                               const PStringList & toList,
+                               BOOL useEightBitMIME)
+{
+  fromName = from;
+  toNames = toList;
+  eightBitMIME = useEightBitMIME;
+  return _BeginMessage();
+}
+
+
+BOOL PSMTPSocket::_BeginMessage()
+{
+  if (!haveHello) {
+    if (ExecuteCommand(EHLO, GetLocalHostName()) == '2')
+      haveHello = extendedHello = TRUE;
+  }
+
+  if (!haveHello) {
+    extendedHello = FALSE;
+    if (eightBitMIME)
+      return FALSE;
+    if (ExecuteCommand(HELO, GetLocalHostName()) != '2')
+      return FALSE;
+    haveHello = TRUE;
+  }
+
+  for (PINDEX i = 0; i < toNames.GetSize(); i++) {
+    if (toNames[i].Find('@') == P_MAX_INDEX)
+      toNames[i] += GetPeerHostName();
+    if (ExecuteCommand(RCPT, toNames[i]) != '2')
+      return FALSE;
+  }
+
+  if (fromName.Find('@') == P_MAX_INDEX)
+    fromName += GetLocalHostName();
+  if (ExecuteCommand(MAIL, fromName) != '2')
+    return FALSE;
+
+  if (ExecuteCommand(DATA, PString()) != '3')
+    return FALSE;
+
+  sendingData = TRUE;
+  stuffingState = GotNothing;
+  return TRUE;
+}
+
+
+BOOL PSMTPSocket::EndMessage()
+{
+  sendingData = FALSE;
+  return PApplicationSocket::Write("\r\n.\r\n", 5);
+}
+
+
+BOOL PSMTPSocket::ProcessCommand()
+{
+  PString args;
+  switch (ReadCommand(args)) {
+    case HELO :
+      OnHELO(args);
+      break;
+    case EHLO :
+      OnEHLO(args);
+      break;
+    case QUIT :
+      OnQUIT();
+      return FALSE;
+    case NOOP :
+      OnNOOP();
+      break;
+    case TURN :
+      OnTURN();
+      break;
+    case RSET :
+      OnRSET();
+      break;
+    case VRFY :
+      OnVRFY(args);
+      break;
+    case EXPN :
+      OnEXPN(args);
+      break;
+    case RCPT :
+      OnRCPT(args);
+      break;
+    case MAIL :
+      OnMAIL(args);
+      break;
+    case SEND :
+      OnSEND(args);
+      break;
+    case SAML :
+      OnSAML(args);
+      break;
+    case SOML :
+      OnSOML(args);
+      break;
+    case DATA :
+      OnDATA();
+      break;
+    default :
+      return OnUnknown(args);
+  }
+
+  return TRUE;
+}
+
+
+void PSMTPSocket::OnHELO(const PCaselessString & remoteHost)
+{
+  extendedHello = FALSE;
+  Reset();
+
+  PCaselessString peer = GetPeerHostName();
+
+  PString response = GetLocalHostName() + " Hello " + peer + ", ";
+
+  if (remoteHost == peer)
+    response += ", pleased to meet you.";
+  else if (remoteHost.IsEmpty())
+    response += "why do you wish to remain anonymous?";
+  else
+    response += "why do you wish to call yourself \"" + remoteHost + "\"?";
+
+  WriteResponse(250, response);
+}
+
+
+void PSMTPSocket::OnEHLO(const PCaselessString & remoteHost)
+{
+  extendedHello = TRUE;
+  Reset();
+
+  PCaselessString peer = GetPeerHostName();
+
+  PString response = GetLocalHostName() + " Hello " + peer + ", ";
+
+  if (remoteHost == peer)
+    response += ", pleased to meet you.";
+  else if (remoteHost.IsEmpty())
+    response += "why do you wish to remain anonymous?";
+  else
+    response += "why do you wish to call yourself \"" + remoteHost + "\"?";
+
+  WriteResponse(250, response +
+               "\nHELP\nVERB\nONEX\nMULT\nEXPN\nTICK\n8BITMIME\n");
+}
+
+
+void PSMTPSocket::OnQUIT()
+{
+  WriteResponse(221, GetLocalHostName() + " closing connection, goodbye.");
+  Close();
+}
+
+
+void PSMTPSocket::OnHELP()
+{
+  WriteResponse(214, "No help here.");
+}
+
+
+void PSMTPSocket::OnNOOP()
+{
+  WriteResponse(250, "Ok");
+}
+
+
+void PSMTPSocket::OnTURN()
+{
+  WriteResponse(502, "I don't do that yet. Sorry.");
+}
+
+
+void PSMTPSocket::OnRSET()
+{
+  Reset();
+  WriteResponse(250, "Reset state.");
+}
+
+
+void PSMTPSocket::OnVRFY(const PCaselessString & name)
+{
+  PString expandedName;
+  switch (LookUpName(name, expandedName)) {
+    case AmbiguousUser :
+      WriteResponse(553, "User ambiguous.");
+      break;
+
+    case ValidUser :
+      WriteResponse(250, expandedName);
+      break;
+
+    case UnknownUser :
+      WriteResponse(550, "String does not match anything.");
+      break;
+
+    default :
+      WriteResponse(550, "Error verifying user.");
+  }
+}
+
+
+void PSMTPSocket::OnEXPN(const PCaselessString &)
+{
+  WriteResponse(502, "I don't do that. Sorry.");
+}
+
+
+static PINDEX ExtractName(const PCaselessString & args,
+                          const PCaselessString & subCmd,
+                          PString & name)
+{
+  PINDEX colon = args.Find(':');
+  if (colon == P_MAX_INDEX)
+    return 0;
+
+  PCaselessString word = args.Left(colon).Trim();
+  if (subCmd != word)
+    return 0;
+
+  PINDEX leftAngle = args.Find('<', colon);
+  if (leftAngle == P_MAX_INDEX)
+    return 0;
+
+  PINDEX rightAngle = args.Find('>', leftAngle);
+  if (rightAngle == P_MAX_INDEX)
+    return 0;
+
+  name = args(leftAngle+1, rightAngle-1);
+  return rightAngle+1;
+}
+
+
+void PSMTPSocket::OnRCPT(const PCaselessString & recipient)
+{
+  PCaselessString toName;
+  if (ExtractName(recipient, "to", toName) == 0)
+    WriteResponse(501, "Syntax error.");
+  else if (toName.Find(':') != P_MAX_INDEX)
+    WriteResponse(550, "Cannot do forwarding.");
+  else {
+    PString expandedName;
+    switch (LookUpName(toName, expandedName)) {
+      case ValidUser :
+        WriteResponse(553, "Recipient " + toName + " Ok");
+        toNames.AppendString(toName);
+        break;
+
+      case AmbiguousUser :
+        WriteResponse(553, "User ambiguous.");
+        break;
+
+      case UnknownUser :
+        WriteResponse(550, "User unknown.");
+        break;
+
+      default :
+        WriteResponse(550, "Error verifying user.");
+    }
+  }
+}
+
+
+void PSMTPSocket::OnMAIL(const PCaselessString & sender)
+{
+  sendCommand = WasMAIL;
+  OnSendMail(sender);
+}
+
+
+void PSMTPSocket::OnSEND(const PCaselessString & sender)
+{
+  sendCommand = WasSEND;
+  OnSendMail(sender);
+}
+
+
+void PSMTPSocket::OnSAML(const PCaselessString & sender)
+{
+  sendCommand = WasSAML;
+  OnSendMail(sender);
+}
+
+
+void PSMTPSocket::OnSOML(const PCaselessString & sender)
+{
+  sendCommand = WasSOML;
+  OnSendMail(sender);
+}
+
+
+void PSMTPSocket::OnSendMail(const PCaselessString & sender)
+{
+  if (!fromName.IsEmpty()) {
+    WriteResponse(503, "Sender already specified.");
+    return;
+  }
+
+  PINDEX extendedArgPos = ExtractName(sender, "from", fromName);
+  if (extendedArgPos == 0) {
+    WriteResponse(501, "Syntax error.");
+    return;
+  }
+
+  if (extendedHello) {
+    PINDEX equalPos = sender.Find('=', extendedArgPos);
+    PCaselessString body = sender(extendedArgPos, equalPos).Trim();
+    PCaselessString mime = sender.Mid(equalPos+1).Trim();
+    eightBitMIME = (body == "BODY" && mime == "8BITMIME");
+  }
+
+  PString response = "Sender " + fromName;
+  if (eightBitMIME)
+    response += " and 8BITMIME";
+  WriteResponse(250, response + " Ok");
+}
+
+
+void PSMTPSocket::OnDATA()
+{
+  if (fromName.IsEmpty()) {
+    WriteResponse(503, "Need a valid MAIL command.");
+    return;
+  }
+
+  if (toNames.GetSize() == 0) {
+    WriteResponse(503, "Need a valid RCPT command.");
+    return;
+  }
+
+  // Ok, everything is ready to start the message.
+  stuffingState = GotNothing;
+  BOOL ok = TRUE;
+  PCharArray buffer;
+  if (eightBitMIME) {
+    WriteResponse(354,
+                "Enter 8BITMIME message, terminate with '<CR><LF>.<CR><LF>'.");
+    while (ok && OnMimeData(buffer))
+      ok = HandleMessage(buffer, FALSE);
+  }
+  else {
+    WriteResponse(354, "Enter mail, terminate with '.' alone on a line.");
+    while (ok && OnTextData(buffer))
+      ok = HandleMessage(buffer, FALSE);
+  }
+
+  if (ok && HandleMessage(buffer, TRUE))
+    WriteResponse(250, "Message received Ok.");
+  else
+    WriteResponse(554, "Message storage failed.");
+}
+
+
+BOOL PSMTPSocket::OnUnknown(const PCaselessString & command)
+{
+  WriteResponse(500, "Command \"" + command + "\" unrecognised.");
+  return TRUE;
+}
+
+
+PSMTPSocket::LookUpResult PSMTPSocket::LookUpName(
+                               const PCaselessString &, PString & expandedName)
+{
+  expandedName = PString();
+  return LookUpError;
+}
+
+
+BOOL PSMTPSocket::OnTextData(PCharArray & buffer)
+{
+  PString line;
+  while (line != ".") {
+    if (!ReadLine(line))
+      return FALSE;
+    if (line.GetLength() > 1 && line[0] == '.' && line[1] == '.')
+      line.Delete(0, 1);
+    line += '\n';
+    PINDEX size = buffer.GetSize();
+    PINDEX len = line.GetLength();
+    memcpy(buffer.GetPointer(size + len) + size, (const char *)line, len);
+    if (size + len > messageBufferSize)
+      return TRUE;
+  }
+  return FALSE;
+}
+
+
+BOOL PSMTPSocket::OnMimeData(PCharArray & buffer)
+{
+  int count = 0;
+  int c;
+  while ((c = ReadChar()) >= 0) {
+    if (count >= buffer.GetSize())
+      buffer.SetSize(count + 100);
+    switch (stuffingState) {
+      case GotNothing :
+        buffer[count++] = (char)c;
+        break;
+
+      case GotCR :
+        stuffingState = c != '\n' ? GotNothing : GotCRLF;
+        buffer[count++] = (char)c;
+        break;
+
+      case GotCRLF :
+        if (c == '.')
+          stuffingState = GotCRLFdot;
+        else {
+          stuffingState = GotNothing;
+          buffer[count++] = (char)c;
+        }
+        break;
+
+      case GotCRLFdot :
+        switch (c) {
+          case '\r' :
+            stuffingState = GotCRLFdotCR;
+            break;
+
+          case '.' :
+            stuffingState = GotNothing;
+            buffer[count++] = (char)c;
+            break;
+
+          default :
+            stuffingState = GotNothing;
+            buffer[count++] = '.';
+            buffer[count++] = (char)c;
+        }
+        break;
+
+      case GotCRLFdotCR :
+        if (c == '\n')
+          return FALSE;
+        buffer[count++] = '.';
+        buffer[count++] = '\r';
+        buffer[count++] = (char)c;
+        stuffingState = GotNothing;
+    }
+    if (count > messageBufferSize) {
+      buffer.SetSize(messageBufferSize);
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+
+BOOL PSMTPSocket::HandleMessage(PCharArray &, BOOL)
+{
+  return FALSE;
 }
 
 
