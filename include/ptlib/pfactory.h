@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.13  2004/07/01 04:33:57  csoutheren
+ * Updated documentation on PFactory classes
+ *
  * Revision 1.12  2004/06/30 12:17:04  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -91,30 +94,38 @@
  * "concrete" instance that are descended from a abstract base class
  *
  * Given an abstract class A with a descendant concrete class B, the 
- * concrete class is registered by instantiating the PAbstractFactory
- * class as follows:
+ * concrete class is registered by instantiating the PFactory template
+ * as follows:
  *
- *       PAbstractFactory<A, B> aFactory("B");
+ *       PFactory<A>::Worker<B> aFactory("B");
  *
- * To instantiate the an object of type B, use the following
+ * To instantiate an object of type B, use the following:
  *
- *       A * b = PGenericFactory<A>::CreateInstance("B");
+ *       A * b = PFactory<A>::CreateInstance("B");
  *
  * A vector containing the names of all of the concrete classes for an
  * abstract type can be obtained as follows:
  *
- *       std::vector<PString> list = PGenericFactory<A>::GetKeyList()
+ *       PFactory<A>::KeyList_T list = PFactory<A>::GetKeyList()
  *
  * Note that these example assumes that the "key" type for the factory
  * registration is of the default type PString. If a different key type
  * is needed, then it is necessary to specify the key type:
  *
- *       PAbstractFactory<C, D, unsigned> aFactory(42);
- *       C * d = PGenericFactory<C, unsigned>::CreateInstance(42);
- *       std::vector<unsigned> list = PGenericFactory<C, unsigned>::GetKeyList()
+ *       PFactory<C, unsigned>::Worker<D> aFactory(42);
+ *       C * d = PFactory<C, unsigned>::CreateInstance(42);
+ *       PFactory<C, unsigned>::KeyList_T list = PFactory<C, unsigned>::GetKeyList()
  *
  * Finally, note that the factory lists are all thread safe for addition,
  * creation, and obtaining the key lists.
+ *
+ * The following types are defined as part of the PFactory template class:
+ *
+ *     KeyList_T    a vector<> of the key type (usually std::string)
+ *     Worker       an abstract factory for a specified concrete type
+ *     KeyMap_T     a map<> that converts from the key type to the Worker instance
+ *                  for each concrete type registered for a specific abstract type
+ *
  */
 
 /** Base class for generic factories.
