@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.h,v $
+ * Revision 1.13  2000/06/21 01:01:21  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.12  2000/06/19 11:33:53  robertj
  * Fixed incorrect comment documentation
  *
@@ -495,7 +498,7 @@ class PPOP3 : public PInternetProtocol
 
   public:
     enum Commands {
-      USER, PASS, QUIT, RSET, NOOP, STAT,
+      USER, PASS, QUIT, RSET, NOOP, STATcmd,
       LIST, RETR, DELE, APOP, TOP,  UIDL,
       NumCommands
     };

@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftp.h,v $
+ * Revision 1.12  2000/06/21 01:01:21  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.11  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -88,7 +91,7 @@ class PFTP : public PInternetProtocol
     enum Commands { 
       USER, PASS, ACCT, CWD, CDUP, SMNT, QUIT, REIN, PORT, PASV, TYPE,
       STRU, MODE, RETR, STOR, STOU, APPE, ALLO, REST, RNFR, RNTO, ABOR,
-      DELE, RMD, MKD, PWD, LIST, NLST, SITE, SYST, STAT, HELP, NOOP,
+      DELE, RMD, MKD, PWD, LIST, NLST, SITE, SYST, STATcmd, HELP, NOOP,
       NumCommands
     };
 
