@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.6  1999/02/16 06:04:41  robertj
+ * Fixed bug in FTP server for PASV mode, may return incorrect IP address.
+ *
  * Revision 1.5  1998/11/30 04:50:48  robertj
  * New directory structure
  *
@@ -399,7 +402,7 @@ BOOL PFTPServer::OnPASV(const PCaselessString &)
   PIPSocket::Address ourAddr;
   PIPSocket * socket = GetSocket();
   if (socket != NULL)
-    socket->GetHostAddress(ourAddr);
+    socket->GetLocalAddress(ourAddr);
   PString str(PString::Printf,
               "Entering Passive Mode (%i,%i,%i,%i,%i,%i)",
               ourAddr.Byte1(),
