@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.18 1994/08/21 23:43:02 robertj Exp $
+ * $Id: osutils.cxx,v 1.19 1994/09/25 10:51:04 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.18  1994/08/21 23:43:02  robertj
+ * Revision 1.19  1994/09/25 10:51:04  robertj
+ * Fixed error conversion code to use common function.
+ * Added pipe channel.
+ *
+ * Revision 1.18  1994/08/21  23:43:02  robertj
  * Moved meta-string transmitter from PModem to PChannel.
  * Added SuspendBlock state to cooperative multi-threading to fix logic fault.
  * Added "force" option to Remove/Rename etc to override write protection.
@@ -889,6 +893,13 @@ istream & PDirectory::ReadFrom(istream & strm)
 
 #if defined(_PFILE)
 
+void PFile::DestroyContents()
+{
+  Close();
+  PChannel::DestroyContents();
+}
+
+
 BOOL PFile::Rename(const PString & newname, BOOL force)
 {
   Close();
@@ -910,28 +921,7 @@ BOOL PFile::Close()
 
   rdbuf()->sync();
 
-  BOOL ok = _close(os_handle) == 0;
-
-  osError = ok ? 0 : errno;
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      break;
-    case ENOSPC :
-      lastError = DiskFull;
-      break;
-    case EACCES :
-      lastError = AccessDenied;
-      break;
-    case ENOMEM :
-      lastError = NoMemory;
-      break;
-    case EBADF :
-      lastError = NotOpen;
-      break;
-    default :
-      lastError = Miscellaneous;
-  }
+  BOOL ok = ConvertOSError(_close(os_handle));
 
   os_handle = -1;
 
@@ -945,59 +935,16 @@ BOOL PFile::Close()
 BOOL PFile::Read(void * buffer, PINDEX amount)
 {
   rdbuf()->sync();
-
   lastReadCount = _read(GetHandle(), buffer, amount);
-
-  osError = errno;
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      break;
-    case EACCES :
-      lastError = AccessDenied;
-      break;
-    case ENOMEM :
-      lastError = NoMemory;
-      break;
-    case EBADF :
-      lastError = NotOpen;
-      break;
-    default :
-      lastError = Miscellaneous;
-  }
-
-  return lastReadCount > 0;
+  return ConvertOSError(lastReadCount) && lastReadCount > 0;
 }
 
 
 BOOL PFile::Write(const void * buffer, PINDEX amount)
 {
   rdbuf()->sync();
-
   lastWriteCount = _write(GetHandle(), buffer, amount);
-
-  osError = errno;
-  switch (osError) {
-    case 0 :
-      lastError = NoError;
-      break;
-    case ENOSPC :
-      lastError = DiskFull;
-      break;
-    case EACCES :
-      lastError = AccessDenied;
-      break;
-    case ENOMEM :
-      lastError = NoMemory;
-      break;
-    case EBADF :
-      lastError = NotOpen;
-      break;
-    default :
-      lastError = Miscellaneous;
-  }
-
-  return lastWriteCount >= amount;
+  return ConvertOSError(lastWriteCount) && lastWriteCount >= amount;
 }
 
 
@@ -1070,6 +1017,38 @@ BOOL PStructuredFile::Read(void * buffer)
 BOOL PStructuredFile::Write(void * buffer)
 {
   return PFile::Write(buffer, structureSize);
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+#if defined(_PPIPECHANNEL)
+
+PBASEARRAY(PConstCharStarArray, const char *);
+
+PPipeChannel::PPipeChannel(const PString & subProgram,
+                 const PStringList & arguments, OpenMode mode, BOOL searchPath)
+{
+  PConstCharStarArray args(arguments.GetSize());
+  for (PINDEX i = 0; i < arguments.GetSize(); i++)
+    args[i] = arguments[i];
+  Construct(subProgram, args, mode, searchPath);
+}
+
+
+PObject::Comparison PPipeChannel::Compare(const PObject & obj) const
+{
+  return subProgName.Compare(((const PPipeChannel &)obj).subProgName);
+}
+
+
+PString PPipeChannel::GetName() const
+{
+  return subProgName;
 }
 
 
@@ -1207,11 +1186,6 @@ static const char ModemHangUp[] = "ModemHangUp";
 
 BOOL PModem::Open(PConfig & cfg)
 {
-  if (!PSerialChannel::Open(cfg))
-    return FALSE;
-
-  status = Uninitialised;
-
   initCmd = cfg.GetString(ModemInit, "ATZ\\r\\w2sOK\\w100m");
   deinitCmd = cfg.GetString(ModemDeinit, "\\d2s+++\\d2sATH0\\r");
   preDialCmd = cfg.GetString(ModemPreDial, "ATDT");
@@ -1220,6 +1194,11 @@ BOOL PModem::Open(PConfig & cfg)
   noCarrierReply = cfg.GetString(ModemNoCarrier, "NO CARRIER");
   connectReply = cfg.GetString(ModemConnect, "CONNECT");
   hangUpCmd = cfg.GetString(ModemHangUp, "\\d2s+++\\d2sATH0\\r");
+
+  if (!PSerialChannel::Open(cfg))
+    return FALSE;
+
+  status = Uninitialised;
   return TRUE;
 }
 
