@@ -30,6 +30,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.44  2003/02/27 04:05:30  robertj
+ * Added ability to have alternate directories for header file
+ *   includes in generated C++ code.
+ * Added constructors to PASN_OctetString descendant classes to help
+ *   with doing simple assignments.
+ *
  * Revision 1.43  2003/02/26 01:57:44  robertj
  * Added XML encoding rules to ASN system, thanks Federico Pinna
  *
@@ -151,7 +157,7 @@
 #define MAJOR_VERSION 1
 #define MINOR_VERSION 7
 #define BUILD_TYPE    ReleaseCode
-#define BUILD_NUMBER 0
+#define BUILD_NUMBER 1
 
 
 unsigned lineNumber;
@@ -348,6 +354,7 @@ void App::Main()
              "d-debug."
              "c-c++."
              "n-namespace."
+             "h-hdr-prefix:"
              "i-inlines."
              "s-split;"
              "o-output:"
@@ -376,13 +383,19 @@ void App::Main()
               "  -e --echo           Echo input file\n"
               "  -d --debug          Debug output (copious!)\n"
               "  -c --c++            Generate C++ files\n"
+              "  -x --xml            X.693 support (XER)\n"
               "  -n --namespace      Use C++ namespace\n"
+              "  -h --hdr-prefix str Prefix for C++ include of header (eg directory)\n"
               "  -i --inlines        Use C++ inlines\n"
               "  -s[n] --split[n]    Split output into n (default 2) files\n"
               "  -o --output file    Output filename/directory\n"
               "  -m --module name    Module name prefix/namespace\n"
-              "  -r --rename from=to Rename import module\n"
-              "  -x --xml            X.693 support (XER)\n"
+              "  -r --rename arg     Rename import module where arg is:\n"
+              "                        from=name[,prefix]\n"
+              "                          from is module name in ASN file\n"
+              "                          name is target header file name\n"
+              "                          prefix is optional prefix for include\n"
+              "                              (eg header directory)\n"
            << endl;
     return;
   }
@@ -428,6 +441,7 @@ void App::Main()
     if (args.HasOption('c'))
       Module->GenerateCplusplus(args.GetOptionString('o', args[0]),
                                 args.GetOptionString('m'),
+                                args.GetOptionString('h'),
                                 numFiles,
                                 args.HasOption('n'),
                                 args.HasOption('i'),
@@ -1892,52 +1906,45 @@ OctetStringType::OctetStringType()
 
 void OctetStringType::GenerateOperators(ostream & hdr, ostream & cxx, const TypeBase & actualType)
 {
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const char * v)";
-  if (Module->UsingInlines())
-    hdr << " { SetValue(v);  return *this; }\n";
-  else {
-    hdr << ";\n";
-    cxx << actualType.GetTemplatePrefix()
-        << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(const char * v)\n"
-           "{\n"
-           "  SetValue(v);\n"
-           "  return *this;\n"
-           "}\n"
-           "\n"
-           "\n";
+  static const char * const types[] = {
+    "char *", "PString &", "PBYTEArray &"
+  };
+
+  PINDEX i;
+  for (i = 0; i < PARRAYSIZE(types); i++) {
+    hdr << "    " << actualType.GetIdentifier() << "(const " << types[i] << " v)";
+    if (Module->UsingInlines())
+      hdr << " { SetValue(v);  }\n";
+    else {
+      hdr << ";\n";
+      cxx << actualType.GetTemplatePrefix()
+          << actualType.GetIdentifier() << "::" << actualType.GetIdentifier() << "(const " << types[i] << " v)\n"
+             "{\n"
+             "  SetValue(v);\n"
+             "}\n"
+             "\n"
+             "\n";
+    }
   }
 
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PString & v)";
-  if (Module->UsingInlines())
-    hdr << " { SetValue(v);  return *this; }\n";
-  else {
-    hdr << ";\n";
-    cxx << actualType.GetTemplatePrefix()
-        << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(const PString & v)\n"
-           "{\n"
-           "  SetValue(v);\n"
-           "  return *this;\n"
-           "}\n"
-           "\n"
-           "\n";
-  }
+  hdr << '\n';
 
-  hdr << "    " << actualType.GetIdentifier() << " & operator=(const PBYTEArray & v)";
-  if (Module->UsingInlines())
-    hdr << " { SetValue(v);  return *this; }\n";
-  else {
-    hdr << ";\n";
-    cxx << actualType.GetTemplatePrefix()
-        << actualType.GetIdentifier() << " & "
-        << actualType.GetClassNameString() << "::operator=(const PBYTEArray & v)\n"
-           "{\n"
-           "  SetValue(v);\n"
-           "  return *this;\n"
-           "}\n"
-           "\n"
-           "\n";
+  for (i = 0; i < PARRAYSIZE(types); i++) {
+    hdr << "    " << actualType.GetIdentifier() << " & operator=(const " << types[i] << " v)";
+    if (Module->UsingInlines())
+      hdr << " { SetValue(v);  return *this; }\n";
+    else {
+      hdr << ";\n";
+      cxx << actualType.GetTemplatePrefix()
+          << actualType.GetIdentifier() << " & "
+          << actualType.GetClassNameString() << "::operator=(const " << types[i] << " v)\n"
+             "{\n"
+             "  SetValue(v);\n"
+             "  return *this;\n"
+             "}\n"
+             "\n"
+             "\n";
+    }
   }
 }
 
@@ -3607,6 +3614,12 @@ ImportModule::ImportModule(PString * name, TypesList * syms)
   symbols = *syms;
   delete syms;
 
+  PINDEX pos = shortModuleName.Find(',');
+  if (pos != P_MAX_INDEX) {
+    directoryPrefix = shortModuleName.Mid(pos+1);
+    shortModuleName.Delete(pos, P_MAX_INDEX);
+  }
+
   for (PINDEX i = 0; i < symbols.GetSize(); i++) {
     symbols[i].SetImportPrefix(shortModuleName);
     Module->AppendType(&symbols[i]);
@@ -3627,7 +3640,7 @@ void ImportModule::GenerateCplusplus(ostream & hdr, ostream & cxx)
 {
   PString filename = shortModuleName.ToLower();
 
-  hdr << "#include \"" << filename << ".h\"\n";
+  hdr << "#include \"" << directoryPrefix << filename << ".h\"\n";
 
   for (PINDEX i = 0; i < symbols.GetSize(); i++) {
     if (symbols[i].IsParameterisedImport()) {
@@ -3725,6 +3738,7 @@ PString ModuleDefinition::GetImportModuleName(const PString & moduleName)
 
 void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
                                          const PString & modName,
+                                         const PString & headerPrefix,
                                          unsigned numFiles,
                                          BOOL useNamespaces,
                                          BOOL useInlines,
@@ -3862,7 +3876,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
              "#endif\n"
              "\n"
              "#include <ptlib.h>\n"
-             "#include \"" << headerName << "\"\n"
+             "#include \"" << headerPrefix << headerName << "\"\n"
              "\n"
              "#define new PNEW\n"
              "\n"
@@ -3907,7 +3921,7 @@ void ModuleDefinition::GenerateCplusplus(const PFilePath & path,
         return;
 
       cxxFile << "#include <ptlib.h>\n"
-                 "#include \"" << headerName << "\"\n"
+                 "#include \"" << headerPrefix << headerName << "\"\n"
                  "\n";
 
       if (useNamespaces)
