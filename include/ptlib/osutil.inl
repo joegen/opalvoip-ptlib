@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.34 1996/01/03 11:09:33 robertj Exp $
+ * $Id: osutil.inl,v 1.35 1996/01/03 23:15:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
+ * Revision 1.35  1996/01/03 23:15:34  robertj
+ * Fixed some PTime bugs.
+ *
  * Revision 1.34  1996/01/03 11:09:33  robertj
  * Added Universal Time and Time Zones to PTime class.
  *
@@ -193,9 +196,6 @@ PINLINE BOOL PTimeInterval::operator<=(long msecs) const
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-PINLINE PTime::PTime(time_t t, PTime::TimeZone zone)
-  : theTime(t) { if (zone == GMT) t -= GetTimeZone(); }
-
 PINLINE PObject * PTime::Clone() const
   { return PNEW PTime(theTime); }
 
@@ -226,8 +226,10 @@ PINLINE PTime::Weekdays PTime::GetDayOfWeek() const
 PINLINE int PTime::GetDayOfYear() const
   { return localtime(&theTime)->tm_yday; }
 
+#ifndef WIN32
 PINLINE BOOL PTime::IsDaylightSavings() const
-  { return localtime(&theTime)->tm_isdst; }
+  { return localtime(&theTime)->tm_isdst > 0; }
+#endif
 
 
 PINLINE PTime PTime::operator+(const PTimeInterval & t) const
