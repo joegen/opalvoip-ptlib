@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: video4bsd.cxx,v $
+ * Revision 1.3  2001/01/05 14:52:36  rogerh
+ * More work on the FreeBSD video capture code
+ *
  * Revision 1.2  2001/01/04 18:02:16  rogerh
  * remove some old parts refering to linux
  *
@@ -53,8 +56,6 @@ PVideoInputDevice::PVideoInputDevice(VideoFormat videoFmt,
 {
   videoFd     = -1;
   canMap      = -1;
-  
-  conversion = NULL;
 }
 
 
@@ -81,27 +82,32 @@ BOOL PVideoInputDevice::Open(const PString & devName, BOOL startImmediate)
   frameHeight = videoCapability.maxheight;
   frameWidth  = videoCapability.maxwidth;
   
-  // select the specified input and video format
+  // select the specified input
   if (!SetChannel(channelNumber)) {
     ::close (videoFd);
     videoFd = -1;
     return FALSE;
   } 
-    
+  
+  // select the video format (eg PAL, NTSC)
   if (!SetVideoFormat(videoFormat)) {
     ::close (videoFd);
     videoFd = -1;
     return FALSE;
   }
-  
-  if ( !SetColourFormat(colourFormat)) {
-    //OK Try some others.
-    if ( !SetColourFormat(YUV422)) {
-      ::close (videoFd);
-      videoFd = -1;
-      return FALSE;
-    }
-    conversion = new PVideoConvert(YUV422,colourFormat,frameWidth,frameHeight);
+ 
+  // select the colpur format (eg YUV420, or RGB)
+  if (!SetColourFormat(colourFormat)) {
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
+  }
+
+  // select the image size
+  if (!SetFrameSize(frameWidth, frameHeight)) {
+    ::close (videoFd);
+    videoFd = -1;
+    return FALSE;
   }
   return TRUE;    
 }
@@ -126,9 +132,20 @@ BOOL PVideoInputDevice::Close()
   return TRUE;
 }
 
-
 BOOL PVideoInputDevice::Start()
 {
+
+  // If the mmap buffer is not set, then set it
+  if (canMap == -1) {
+    mmap_size = videoFrameSize;
+    videoBuffer = (BYTE *)::mmap(0, mmap_size, PROT_READ, MAP_SHARED, videoFd, 0);
+    if (videoBuffer < 0)
+      return FALSE;
+    else
+      canMap = 1;
+  }
+
+
   // Start continuous capture mode
   int mode = METEOR_CAP_CONTINOUS;
   if (::ioctl(videoFd, METEORCAPTUR, &mode) < 0)
@@ -141,6 +158,7 @@ BOOL PVideoInputDevice::Start()
 BOOL PVideoInputDevice::Stop()
 {
   // Stop capturing
+
   int mode = METEOR_CAP_STOP_CONT;
   if (::ioctl(videoFd, METEORCAPTUR, &mode) < 0)
     return FALSE;
@@ -220,17 +238,23 @@ BOOL PVideoInputDevice::SetColourFormat(ColourFormat newFormat)
   // set the information
   struct meteor_geomet geo;
 
-  geo.rows = frameHeight;
-  geo.columns = frameWidth;
-  geo.frames = 1;
+  // get the current geometry
+  if (ioctl(videoFd, METEORGETGEO, &geo) < 0) {
+    return FALSE;
+  }
+
+  // Set the colour format
   geo.oformat = METEOR_GEO_YUV_422 | METEOR_GEO_YUV_12;
 
+  // set the new geometry
   if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
     return FALSE;
   }
 
-  // set the new VideoFrameSize information
-  return SetFrameSize(frameWidth, frameHeight);
+  videoFrameSize = CalcFrameSize ( frameWidth, frameHeight, (int)colourFormat);
+
+  return TRUE;
+
 }
 
 
@@ -270,11 +294,16 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   // set the information
   struct meteor_geomet geo;
 
+  // get the current geometry
+  if (ioctl(videoFd, METEORGETGEO, &geo) < 0) {
+    return FALSE;
+  }
+
   geo.rows = frameHeight;
   geo.columns = frameWidth;
   geo.frames = 1;
-  geo.oformat = METEOR_GEO_YUV_422 | METEOR_GEO_YUV_12;
 
+  // set the new geometry
   if (ioctl(videoFd, METEORSETGEO, &geo) < 0) {
     return FALSE;
   }
