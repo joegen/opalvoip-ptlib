@@ -25,6 +25,9 @@ NULL=
 NULL=nul
 !ENDIF 
 
+CPP=cl.exe
+RSC=rc.exe
+
 !IF  "$(CFG)" == "Console Components - Win32 Release"
 
 OUTDIR=.\..\..\..\Lib
@@ -55,7 +58,6 @@ CLEAN :
 	-@erase "$(INTDIR)\modem.obj"
 	-@erase "$(INTDIR)\Pasn.obj"
 	-@erase "$(INTDIR)\Psnmp.obj"
-	-@erase "$(INTDIR)\Pssl.obj"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpserv.obj"
 	-@erase "$(INTDIR)\socks.obj"
@@ -70,40 +72,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MD /W4 /GX /Zi /O2 /Ob2 /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "NDEBUG" /D "PTRACING" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -128,7 +97,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
-	"$(INTDIR)\Pssl.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
@@ -186,8 +154,6 @@ CLEAN :
 	-@erase "$(INTDIR)\Pasn.sbr"
 	-@erase "$(INTDIR)\Psnmp.obj"
 	-@erase "$(INTDIR)\Psnmp.sbr"
-	-@erase "$(INTDIR)\Pssl.obj"
-	-@erase "$(INTDIR)\Pssl.sbr"
 	-@erase "$(INTDIR)\Snmpclnt.obj"
 	-@erase "$(INTDIR)\Snmpclnt.sbr"
 	-@erase "$(INTDIR)\Snmpserv.obj"
@@ -207,40 +173,7 @@ CLEAN :
 "$(INTDIR)" :
     if not exist "$(INTDIR)/$(NULL)" mkdir "$(INTDIR)"
 
-CPP=cl.exe
 CPP_PROJ=/nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /D "_DEBUG" /D "PTRACING" /FR"$(INTDIR)\\" /Fp"$(INTDIR)\Console Components.pch" /Yu"ptlib.h" /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c 
-
-.c{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.obj::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.c{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cpp{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-.cxx{$(INTDIR)}.sbr::
-   $(CPP) @<<
-   $(CPP_PROJ) $< 
-<<
-
-RSC=rc.exe
 BSC32=bscmake.exe
 BSC32_FLAGS=/nologo /o"$(OUTDIR)\Console Components.bsc" 
 BSC32_SBRS= \
@@ -261,7 +194,6 @@ BSC32_SBRS= \
 	"$(INTDIR)\modem.sbr" \
 	"$(INTDIR)\Pasn.sbr" \
 	"$(INTDIR)\Psnmp.sbr" \
-	"$(INTDIR)\Pssl.sbr" \
 	"$(INTDIR)\Snmpclnt.sbr" \
 	"$(INTDIR)\Snmpserv.sbr" \
 	"$(INTDIR)\socks.sbr" \
@@ -292,7 +224,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\modem.obj" \
 	"$(INTDIR)\Pasn.obj" \
 	"$(INTDIR)\Psnmp.obj" \
-	"$(INTDIR)\Pssl.obj" \
 	"$(INTDIR)\Snmpclnt.obj" \
 	"$(INTDIR)\Snmpserv.obj" \
 	"$(INTDIR)\socks.obj" \
@@ -304,6 +235,36 @@ LIB32_OBJS= \
 <<
 
 !ENDIF 
+
+.c{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.obj::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.c{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cpp{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
+
+.cxx{$(INTDIR)}.sbr::
+   $(CPP) @<<
+   $(CPP_PROJ) $< 
+<<
 
 
 !IF "$(NO_EXTERNAL_DEPS)" != "1"
@@ -629,24 +590,6 @@ SOURCE=..\..\Ptclib\proto\Psnmp.cxx
 
 
 "$(INTDIR)\Psnmp.obj"	"$(INTDIR)\Psnmp.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ENDIF 
-
-SOURCE=..\..\Ptclib\proto\Pssl.cxx
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
-
-"$(INTDIR)\Pssl.obj" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
-	$(CPP) $(CPP_PROJ) $(SOURCE)
-
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-
-"$(INTDIR)\Pssl.obj"	"$(INTDIR)\Pssl.sbr" : $(SOURCE) "$(INTDIR)" "$(INTDIR)\Console Components.pch"
 	$(CPP) $(CPP_PROJ) $(SOURCE)
 
 

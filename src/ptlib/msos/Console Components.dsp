@@ -163,10 +163,6 @@ SOURCE=..\..\Ptclib\proto\Psnmp.cxx
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\Ptclib\proto\Pssl.cxx
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\Ptclib\proto\Snmpclnt.cxx
 # End Source File
 # Begin Source File
@@ -180,13 +176,6 @@ SOURCE=..\..\Ptclib\socks.cxx
 # Begin Source File
 
 SOURCE=..\..\Ptclib\proto\Telnet.cxx
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-!ENDIF 
-
 # End Source File
 # End Group
 # Begin Group "Header Files"
