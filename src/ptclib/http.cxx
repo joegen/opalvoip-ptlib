@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.17 1996/03/17 05:48:07 robertj Exp $
+ * $Id: http.cxx,v 1.18 1996/03/31 09:05:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,12 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.18  1996/03/31 09:05:07  robertj
+ * HTTP 1.1 upgrade.
+ *
  * Revision 1.17  1996/03/17 05:48:07  robertj
- * FireDoorV10
+ * Fixed host name print out of URLs.
+ * Added hit count to PHTTPResource.
  *
  * Revision 1.16  1996/03/16 05:00:26  robertj
  * Added ParseReponse() for splitting reponse line into code and info.
@@ -84,13 +88,22 @@
 #include <http.h>
 #include <ctype.h>
 
+#define DEFAULT_FTP_PORT	21
+#define DEFAULT_TELNET_PORT	23
+#define DEFAULT_GOPHER_PORT	70
+#define DEFAULT_HTTP_PORT	80
+#define DEFAULT_NNTP_PORT	119
+#define DEFAULT_WAIS_PORT	210
+#define DEFAULT_HTTPS_PORT	443
+#define DEFAULT_PROSPERO_PORT	1525
+
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL
 
 PURL::PURL()
 {
-  port = 80;
+  port = DEFAULT_HTTP_PORT;
 }
 
 
@@ -240,6 +253,10 @@ void PURL::Parse(const char * cstr)
   // determine if the URL is absolute or relative - only absolute
   // URLs can have a username/password string
   if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/') {
+
+    // remove the leading //
+    url.Delete(0, 2);
+
     // extract username and password
     PINDEX pos2 = url.Find('@');
     if (pos2 != P_MAX_INDEX && pos2 > 0) {
@@ -247,9 +264,9 @@ void PURL::Parse(const char * cstr)
 
       // if no password...
       if (pos > pos2)
-        username = url(2, pos2-1);
+        username = url(0, pos2-1);
       else {
-        username = url(2, pos-1);
+        username = url(0, pos-1);
         password = url(pos+1, pos2-1);
       }
       UnmangleString(username);
@@ -335,13 +352,16 @@ PString PURL::AsString(UrlFormat fmt) const
         str << PIPSocket::GetHostName();
       else
         str << hostname;
-      if (!(scheme == "http" && port == 80) &&
-          !(scheme == "ftp" && port == 21) &&
-          !(scheme == "gopher" && port == 70) &&
-          !(scheme == "nntp" && port == 119) &&
-          !(scheme == "telnet" && port == 23) &&
-          !(scheme == "wais" && port == 210) &&
-          !(scheme == "prospero" && port == 1525))
+      // default the port as required
+      if (port != 0 &&
+          !(scheme == "http" &&     port == DEFAULT_HTTP_PORT) &&
+          !(scheme == "https" &&    port == DEFAULT_HTTPS_PORT) &&
+          !(scheme == "ftp" &&      port == DEFAULT_FTP_PORT) &&
+          !(scheme == "gopher" &&   port == DEFAULT_GOPHER_PORT) &&
+          !(scheme == "nntp" &&     port == DEFAULT_NNTP_PORT) &&
+          !(scheme == "telnet" &&   port == DEFAULT_TELNET_PORT) &&
+          !(scheme == "wais" &&     port == DEFAULT_WAIS_PORT) &&
+          !(scheme == "prospero" && port == DEFAULT_PROSPERO_PORT))
         str << ':' << port;
     }
   }
@@ -355,7 +375,7 @@ PString PURL::AsString(UrlFormat fmt) const
       str << '/';
   }
 
-  if (fmt == FullURL) {
+  if (fmt == FullURL || fmt == URIOnly) {
     if (!parameters.IsEmpty())
       str << ";" << parameters;
 
@@ -490,23 +510,31 @@ PHTTPResource * PHTTPSpace::FindResource(const PURL & url)
 // PHTTPSocket
 
 static char const * HTTPCommands[PHTTPSocket::NumCommands] = {
-  "GET", "HEAD", "POST"
+  // HTTP 1.0 commands
+  "GET", "HEAD", "POST",
+
+  // HTTP 1.1 commands
+  "PUT",  "PATCH", "COPY",    "MOVE",   "DELETE",
+  "LINK", "UNLINK", "TRACE", "WRAPPED", "OPTIONS",
+  "CONNECT"
 };
 
-static const PCaselessString ContentLengthStr = "Content-Length";
-static const PCaselessString ContentTypeStr = "Content-Type";
-static const PCaselessString DateStr = "Date";
-static const PCaselessString MIMEVersionStr = "MIME-Version";
-static const PCaselessString ServerStr = "Server";
-static const PCaselessString ExpiresStr = "Expires";
+static const PCaselessString ContentLengthStr   = "Content-Length";
+static const PCaselessString ContentTypeStr     = "Content-Type";
+static const PCaselessString DateStr            = "Date";
+static const PCaselessString MIMEVersionStr     = "MIME-Version";
+static const PCaselessString ServerStr          = "Server";
+static const PCaselessString ExpiresStr         = "Expires";
 static const PCaselessString WWWAuthenticateStr = "WWW-Authenticate";
 static const PCaselessString IfModifiedSinceStr = "If-Modified-Since";
+static const PCaselessString ConnectionStr      = "Connection";
+static const PCaselessString KeepAliveStr       = "Keep-Alive";
+static const PCaselessString ProxyConnectionStr = "Proxy-Connection";
 
 PHTTPSocket::PHTTPSocket(WORD port)
   : PApplicationSocket(NumCommands, HTTPCommands, port)
 {
 }
-
 
 PHTTPSocket::PHTTPSocket(const PString & address, WORD port)
   : PApplicationSocket(NumCommands, HTTPCommands, address, port)
@@ -533,22 +561,34 @@ PHTTPSocket::PHTTPSocket(PSocket & socket, const PHTTPSpace & space)
 }
 
 
-BOOL PHTTPSocket::WriteCommand(Commands cmd,
-                               const PURL & url,
-                               const PMIMEInfo & outMIME,
-                               const PString & dataBody,
-                               PMIMEInfo & replyMIME)
+int PHTTPSocket::ExecuteCommand(Commands cmd,
+                                const PString & url,
+                                const PMIMEInfo & outMIME,
+                                const PString & dataBody,
+                                PMIMEInfo & replyMime)
 {
-  if (!PApplicationSocket::WriteCommand(cmd, url.AsString() & "HTTP/1.0"))
-    return FALSE;
+  if (!WriteCommand(cmd, url, outMIME, dataBody))
+    return -1;
 
-  if (!outMIME.Write(*this))
-    return FALSE;
+  if (!ReadResponse(replyMime))
+    return -1;
 
-  if (!WriteString(dataBody))
-    return FALSE;
+  return lastResponseCode;
+}
 
-  if (!ReadResponse())
+BOOL PHTTPSocket::WriteCommand(Commands cmd,
+                               const PString & url,
+                               const PMIMEInfo & outMIME,
+                               const PString & dataBody)
+{
+  return PApplicationSocket::WriteCommand(cmd, url & "HTTP/1.0") &&
+      outMIME.Write(*this) &&
+      WriteString(dataBody);
+}
+
+BOOL PHTTPSocket::ReadResponse(PMIMEInfo & replyMIME)
+{
+  if (!PApplicationSocket::ReadResponse())
     return FALSE;
 
   if (lastResponseInfo.Left(8) == "HTTP/0.9")
@@ -562,7 +602,7 @@ BOOL PHTTPSocket::GetDocument(const PURL & url,
                               const PMIMEInfo & outMIME,
                               PMIMEInfo & replyMIME)
 {
-  return WriteCommand(GET, url, outMIME, PString(), replyMIME);
+  return ExecuteCommand(GET, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME);
 }
 
 
@@ -570,7 +610,7 @@ BOOL PHTTPSocket::GetHeader(const PURL & url,
                             const PMIMEInfo & outMIME,
                             PMIMEInfo & replyMIME)
 {
-  return WriteCommand(HEAD, url, outMIME, PString(), replyMIME);
+  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, PString(), replyMIME);
 }
 
 
@@ -581,7 +621,7 @@ BOOL PHTTPSocket::PostData(const PURL & url,
 {
   PStringStream body;
   body << data;
-  return WriteCommand(HEAD, url, outMIME, body, replyMIME);
+  return ExecuteCommand(HEAD, url.AsString(PURL::URIOnly), outMIME, body, replyMIME);
 }
 
 
@@ -610,18 +650,14 @@ BOOL PHTTPSocket::ProcessCommand()
   if (!ReadCommand(cmd, args))
     return FALSE;
 
-  if (cmd == P_MAX_INDEX)   // Unknown command
-    return OnUnknown(args);
-
   PStringArray tokens = args.Tokenise(" \t", FALSE);
 
   // if no tokens, error
   if (tokens.IsEmpty()) {
-    OnError(BadRequest, args);
+    OnError(BadRequest, args, PHTTPConnectionInfo());
     return FALSE;
   }
 
-  PURL url = tokens[0];
 
   // if only one argument, then it must be a version 0.9 simple request
   if (tokens.GetSize() == 1) {
@@ -633,7 +669,7 @@ BOOL PHTTPSocket::ProcessCommand()
     PINDEX dotPos = verStr.Find('.');
     if (dotPos == P_MAX_INDEX
                       || verStr.GetLength() < 8 || verStr.Left(5) != "HTTP/") {
-      OnError(BadRequest, "Malformed version number " + verStr);
+      OnError(BadRequest, "Malformed version number " + verStr, PHTTPConnectionInfo());
       return FALSE;
     }
 
@@ -644,38 +680,56 @@ BOOL PHTTPSocket::ProcessCommand()
     minorVersion = (int)verStr(dotPos+1, P_MAX_INDEX).AsInteger();
   }
 
-  // If the protocol is version 1.0 or greater, there is MIME info and the
+  // If the protocol is version 1.0 or greater, there is MIME info, and the
   // prescence of a an entity body is signalled by the inclusion of
-  // Content-Length header. If the protocol is less than version 1.0, then the
-  // entity body is all remaining bytes until EOF
+  // Content-Length header. If the protocol is less than version 1.0, then 
+  // there is no entity body!
+  PHTTPConnectionInfo connectInfo;
   PMIMEInfo mimeInfo;
   PString entityBody;
-  if (majorVersion >= 1) {
+  long contentLength = 0;
+
+  if (majorVersion > 0) {
+
     // at this stage we should be ready to collect the MIME info
     // until an empty line is received, or EOF
     mimeInfo.Read(*this);
 
-    // if there was a Content-Length header, then it gives the exact
-    // length of the entity body. Otherwise, read the entity-body until EOF
-    long contentLength = mimeInfo.GetInteger(ContentLengthStr, 0);
+    // build our connection info
+    connectInfo.Construct(mimeInfo, majorVersion, minorVersion);
+
+    // if the client specified a persistant connection, then use the
+    // ContentLength field. If there is no content length field, then
+    // assume 0. This isn't what the spec says, but it's what Netscape
+    // does so we don't really have a choice
+    // If the client didn't specify a persistant connection, then use the
+    // ContentLength if there is one or read until end of file if there isn't
+    if (connectInfo.IsPersistant())
+      contentLength = mimeInfo.GetInteger(ContentLengthStr, 0);
+    else 
+      contentLength = mimeInfo.GetInteger(ContentLengthStr, -1);
+
+    // a content length of > 0 means read explicit length
+    // a content length of < 0 means read until EOF
+    int count = 0;
     if (contentLength > 0) {
       entityBody = ReadString((PINDEX)contentLength);
-      if (GetLastReadCount() != contentLength) {
-        OnError(BadRequest, "incomplete entity-body received");
-        return FALSE;
-      }
-      SetReadTimeout(0);
-      while (ReadChar() >= 0)
-        ;
-      SetReadTimeout(PMaxTimeInterval);
+    } else if (contentLength < 0) {
+      while (Read(entityBody.GetPointer(count+1000)+count, 1000))
+        count += GetLastReadCount();
+      entityBody.SetSize(count+1);
     }
   }
-  else {
-    int count = 0;
-    while (Read(entityBody.GetPointer(count+1000)+count, 1000))
-      count += GetLastReadCount();
-    entityBody.SetSize(count+1);
-  }
+
+  // always shutdown the incoming stream after we have read it
+  if (!connectInfo.IsPersistant())
+    Shutdown(ShutdownRead);
+
+  // the URL that comes with Connect requests is not quite kosher, so 
+  // mangle it into a proper URL
+  PURL url = tokens[0];
+  if (cmd == CONNECT) 
+    url = "https://" + tokens[0];
 
   // If the incoming URL is of a proxy type then call OnProxy() which will
   // probably just go OnError(). Even if a full URL is provided in the
@@ -683,26 +737,49 @@ BOOL PHTTPSocket::ProcessCommand()
   // it anyway even though we are not a proxy. The usage of GetHostName()
   // below are to catch every way of specifying the host (name, alias, any of
   // several IP numbers etc).
-  if (url.GetScheme() != "http" ||
+  if (connectInfo.IsProxyConnection() ||
+      url.GetScheme() != "http" ||
       (url.GetPort() != 0 && url.GetPort() != GetPort()) ||
       (!url.GetHostName().IsEmpty() &&
-         PIPSocket::GetHostName(url.GetHostName()) != PIPSocket::GetHostName()))
-    return OnProxy((Commands)cmd, url, mimeInfo, entityBody);
-
-
-  // Handle the local request
-  switch (cmd) {
-    case GET :
-      return OnGET(url, mimeInfo);
-
-    case HEAD :
-      return OnHEAD(url, mimeInfo);
+         PIPSocket::GetHostName(url.GetHostName()) != PIPSocket::GetHostName())) {
+    return OnProxy((Commands)cmd, url, mimeInfo, entityBody, connectInfo) && connectInfo.IsPersistant();
   }
 
-  // Must be a POST, break the string into string/value pairs separated by &
+  // Handle the local request
   PStringToString postData;
-  SplitVars(entityBody, postData);
-  return OnPOST(url, mimeInfo, postData);
+  BOOL persist = TRUE;
+  switch (cmd) {
+    case GET :
+      persist = OnGET(url, mimeInfo, connectInfo);
+//      Shutdown(ShutdownWrite);
+      break;
+
+    case HEAD :
+      persist = OnHEAD(url, mimeInfo, connectInfo);
+      break;
+
+    case POST :
+      SplitVars(entityBody, postData);
+      persist = OnPOST(url, mimeInfo, postData, connectInfo);
+      break;
+
+    case P_MAX_INDEX:
+    default:
+      OnUnknown(args, connectInfo);
+      return connectInfo.IsPersistant();
+  }
+
+  // if the function just indicated that the connection is to persist,
+  // and so did the client, then return TRUE. Note that all of the OnXXXX
+  // routines above must make sure that their return value is FALSE if
+  // if there was no ContentLength field in the response. This ensures that
+  // we always close the socket so the client will get the correct end of file
+  if (persist && connectInfo.IsPersistant())
+    return TRUE;
+
+  // close the output stream now and return FALSE
+  Shutdown(ShutdownWrite);
+  return FALSE;
 }
 
 
@@ -712,114 +789,165 @@ PString PHTTPSocket::GetServerName() const
 }
 
 
-BOOL PHTTPSocket::OnGET(const PURL & url, const PMIMEInfo & info)
+BOOL PHTTPSocket::OnGET(const PURL & url,
+                   const PMIMEInfo & info,
+         const PHTTPConnectionInfo & connectInfo)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL)
-    OnError(NotFound, url.AsString());
-  else
-    resource->OnGET(*this, url, info);
-  return FALSE;
+  if (resource == NULL) 
+    return OnError(NotFound, url.AsString(), connectInfo);
+  else 
+    return resource->OnGET(*this, url, info, connectInfo);
 }
 
 
-BOOL PHTTPSocket::OnHEAD(const PURL & url, const PMIMEInfo & info)
+BOOL PHTTPSocket::OnHEAD(const PURL & url,
+                    const PMIMEInfo & info,
+          const PHTTPConnectionInfo & connectInfo)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL)
-    OnError(NotFound, url.AsString());
+  if (resource == NULL) 
+    return OnError(NotFound, url.AsString(), connectInfo);
   else
-    resource->OnHEAD(*this, url, info);
-  return FALSE;
+    return resource->OnHEAD(*this, url, info, connectInfo);
 }
 
 
 BOOL PHTTPSocket::OnPOST(const PURL & url,
-                         const PMIMEInfo & info,
-                         const PStringToString & data)
+                    const PMIMEInfo & info,
+              const PStringToString & data,
+          const PHTTPConnectionInfo & connectInfo)
 {
   PHTTPResource * resource = urlSpace.FindResource(url);
-  if (resource == NULL)
-    OnError(NotFound, url.AsString());
+  if (resource == NULL) 
+    return OnError(NotFound, url.AsString(), connectInfo);
   else
-    resource->OnPOST(*this, url, info, data);
-  return FALSE;
+    return resource->OnPOST(*this, url, info, data, connectInfo);
 }
 
 
 BOOL PHTTPSocket::OnProxy(Commands,
                           const PURL &,
                           const PMIMEInfo &,
-                          const PString &)
+                          const PString &, 
+                          const PHTTPConnectionInfo & connectInfo)
 {
-  return OnError(BadGateway, "Proxy not implemented.");
+  return OnError(BadGateway, "Proxy not implemented.", connectInfo);
 }
-
-
-BOOL PHTTPSocket::OnUnknown(const PCaselessString & command)
-{
-  return OnError(BadRequest, command);
-}
-
 
 static struct httpStatusCodeStruct {
   char *  text;
   int     code;
   BOOL    allowedBody;
-} httpStatusDefn[PHTTPSocket::NumStatusCodes] = {
-  { "Information",           100, 0 },
-  { "OK",                    200, 1 },
-  { "Created",               201, 1 },
-  { "Accepted",              202, 1 },
-  { "No Content",            204, 0 },
-  { "Moved Permanently",     301, 1 },
-  { "Moved Temporarily",     302, 1 },
-  { "Not Modified",          304, 0 },
-  { "Bad Request",           400, 1 },
-  { "Unauthorised",          401, 0 },
-  { "Forbidden",             403, 1 },
-  { "Not Found",             404, 1 },
-  { "Internal Server Error", 500, 1 },
-  { "Not Implemented",       501, 1 },
-  { "Bad Gateway",           502, 1 },
+  int     majorVersion;
+  int     minorVersion;
+} httpStatusDefn[PHTTPSocket::NumStatusCodes-1000] = {
+  { "Continue",                      100, 1, 1, 1 },
+  { "Switching Protocols",           101, 1, 1, 1 },
+  { "OK",                            200, 1 },
+  { "Created",                       201, 1 },
+  { "Accepted",                      202, 1 },
+  { "Non-Authoritative Information", 203, 1, 1, 1 },
+  { "No Content",                    204, 0 },
+  { "Reset Content",                 205, 0, 1, 1 },
+  { "Partial Content",               206, 1, 1, 1 },
+  { "Multiple Choices",              300, 1, 1, 1 },
+  { "Moved Permanently",             301, 1 },
+  { "Moved Temporarily",             302, 1 },
+  { "See Other",                     303, 1, 1, 1 },
+  { "Not Modified",                  304, 0 },
+  { "Use Proxy",                     305, 1, 1, 1 },
+  { "Bad Request",                   400, 1 },
+  { "Unauthorised",                  401, 1 },
+  { "Payment Required",              402, 1, 1, 1 },
+  { "Forbidden",                     403, 1 },
+  { "Not Found",                     404, 1 },
+  { "Method Not Allowed",            405, 1, 1, 1 },
+  { "None Acceptable",               406, 1, 1, 1 },
+  { "Proxy Authetication Required",  407, 1, 1, 1 },
+  { "Request Timeout",               408, 1, 1, 1 },
+  { "Conflict",                      409, 1, 1, 1 },
+  { "Gone",                          410, 1, 1, 1 },
+  { "Length Required",               411, 1, 1, 1 },
+  { "Unless True",                   412, 1, 1, 1 },
+  { "Internal Server Error",         500, 1 },
+  { "Not Implemented",               501, 1 },
+  { "Bad Gateway",                   502, 1 },
+  { "Service Unavailable",           503, 1, 1, 1 },
+  { "Gateway Timeout",               504, 1, 1, 1 }
 };
 
 void PHTTPSocket::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
-                                PINDEX bodySize)
+                                long bodySize)
 {
   if (majorVersion < 1)
     return;
 
-  httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
+  // make sure the error code is valid for the protocol version
+  for (PINDEX i = 0; code < 1000 && i < PHTTPSocket::NumStatusCodes; i++)
+    if (code == httpStatusDefn[i].code)
+      code = (StatusCode)(1000+i);
+  if (code < 1000 || code >= PHTTPSocket::NumStatusCodes+1000)
+    code = InternalServerError;
+  httpStatusCodeStruct * statusInfo = httpStatusDefn+code-1000;
+
+  // output the command line
   *this << "HTTP/" << majorVersion << '.' << minorVersion << ' '
         << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
-  if (bodySize != 0 || !headers.Contains(ContentLengthStr))
-    headers.SetAt(ContentLengthStr, PString(PString::Unsigned, bodySize));
+  if (bodySize >= 0 && !headers.Contains(ContentLengthStr))
+    headers.SetAt(ContentLengthStr, PString(PString::Unsigned, (PINDEX)bodySize));
   headers.Write(*this);
 }
 
 
-void PHTTPSocket::SetDefaultMIMEInfo(PMIMEInfo & info)
+void PHTTPSocket::SetDefaultMIMEInfo(PMIMEInfo & info,
+                     const PHTTPConnectionInfo & connectInfo)
 {
   PTime now;
-  info.SetAt(DateStr, now.AsString(PTime::RFC1123));
-  info.SetAt(MIMEVersionStr, "1.0");
+  info.SetAt(DateStr, now.AsString(PTime::RFC1123, PTime::GMT));
+  info.SetAt(MIMEVersionStr, psprintf("%i.%i",
+             connectInfo.GetMajorVersion(), connectInfo.GetMinorVersion()));
   info.SetAt(ServerStr, GetServerName());
+  if (connectInfo.IsPersistant()) {
+    if (connectInfo.IsProxyConnection())
+      info.SetAt(ProxyConnectionStr, KeepAliveStr);
+    else
+      info.SetAt(ConnectionStr, KeepAliveStr);
+  }
 }
 
 
-BOOL PHTTPSocket::OnError(StatusCode code, const PString & extra)
+
+BOOL PHTTPSocket::OnUnknown(const PCaselessString & cmd, 
+                        const PHTTPConnectionInfo & connectInfo)
 {
-  httpStatusCodeStruct * statusInfo = httpStatusDefn+code;
+  return OnError(NotImplemented, cmd, connectInfo);
+}
+
+static compatibleErrors[] = { PHTTPSocket::Continue,
+                              PHTTPSocket::OK,
+                              PHTTPSocket::MultipleChoices,
+                              PHTTPSocket::BadRequest,
+                              PHTTPSocket::InternalServerError
+                            };
+
+BOOL PHTTPSocket::OnError(StatusCode code,
+                     const PString & extra,
+         const PHTTPConnectionInfo & connectInfo)
+{
+  httpStatusCodeStruct * statusInfo = httpStatusDefn+code-1000;
+
+  if (!connectInfo.IsCompatible(statusInfo->majorVersion, statusInfo->minorVersion)) 
+    statusInfo = httpStatusDefn + compatibleErrors[(statusInfo->code/100)-1] - 1000;
 
   PMIMEInfo headers;
-  SetDefaultMIMEInfo(headers);
+  SetDefaultMIMEInfo(headers, connectInfo);
 
   if (!statusInfo->allowedBody) {
     StartResponse(code, headers, 0);
-    return FALSE;
+    return TRUE;
   }
 
   PHTML reply;
@@ -837,10 +965,9 @@ BOOL PHTTPSocket::OnError(StatusCode code, const PString & extra)
         << PHTML::Body();
 
   headers.SetAt(ContentTypeStr, "text/html");
-  PINDEX len = reply.GetLength();
-  StartResponse(code, headers, len);
-  Write((const char *)reply, len);
-  return FALSE;
+  StartResponse(code, headers, reply.GetLength());
+  WriteString(reply);
+  return TRUE;
 }
 
 
@@ -891,7 +1018,7 @@ BOOL PHTTPSimpleAuth::Validate(const PString & authInfo) const
 PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM)
   : url(u), inMIME(iM)
 {
-  code = PHTTPSocket::OK;
+  code        = PHTTPSocket::OK;
   contentSize = 0;
 }
 
@@ -903,6 +1030,14 @@ PHTTPResource::PHTTPResource(const PURL & url)
   : baseURL(url)
 {
   authority = NULL;
+  hitCount = 0;
+}
+
+
+PHTTPResource::PHTTPResource(const PURL & url, const PHTTPAuthority & auth)
+  : baseURL(url)
+{
+  authority = (PHTTPAuthority *)auth.Clone();
   hitCount = 0;
 }
 
@@ -931,30 +1066,29 @@ PHTTPResource::~PHTTPResource()
 }
 
 
-void PHTTPResource::OnGET(PHTTPSocket & socket,
-                          const PURL & url,
-                          const PMIMEInfo & info)
+BOOL PHTTPResource::OnGET(PHTTPSocket & socket,
+                           const PURL & url,
+                      const PMIMEInfo & info,
+            const PHTTPConnectionInfo & connectInfo)
 {
-  if (!CheckAuthority(socket, info))
-    return;
+  if (!CheckAuthority(socket, info, connectInfo))
+    return TRUE;
 
   if (info.Contains(IfModifiedSinceStr) &&
-                           !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) {
-    socket.OnError(PHTTPSocket::NotModified, url.AsString());
-    return;
-  }
+                           !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) 
+    return socket.OnError(PHTTPSocket::NotModified, url.AsString(), connectInfo);
 
   PHTTPRequest * request = CreateRequest(url, info);
-  socket.SetDefaultMIMEInfo(request->outMIME);
+  socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
   PTime expiryDate;
   if (GetExpirationDate(expiryDate))
-    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123));
+    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
   if (!LoadHeaders(*request)) {
-    socket.OnError(request->code, url.AsString());
+    BOOL stat = socket.OnError(request->code, url.AsString(), connectInfo);
     delete request;
-    return;
+    return stat;
   }
 
   hitCount++;
@@ -963,74 +1097,96 @@ void PHTTPResource::OnGET(PHTTPSocket & socket,
     request->outMIME.SetAt(ContentTypeStr, contentType);
 
   PCharArray data;
+  char * ptr;
+  PINDEX len, slen;
   if (LoadData(*request, data)) {
     socket.StartResponse(request->code,request->outMIME,request->contentSize);
     do {
-      socket.Write(data, data.GetSize());
+      slen = data.GetSize();
+      len = 0;
+      ptr = data.GetPointer();
+      while (len < slen && socket.Write(ptr+len, slen - len))
+        len += socket.GetLastWriteCount();
       data.SetSize(0);
     } while (LoadData(*request, data));
   }
   else
     socket.StartResponse(request->code, request->outMIME, data.GetSize());
 
-  if (data.GetSize() > 0)
-    socket.Write(data, data.GetSize());
+  if (data.GetSize() > 0) {
+    slen = data.GetSize();
+    len = 0;
+    ptr = data.GetPointer();
+    while (len < slen && socket.Write(ptr+len, slen - len))
+      len += socket.GetLastWriteCount();
+  }
 
+  BOOL retVal = request->outMIME.Contains(ContentLengthStr);
   delete request;
+  return retVal;
 }
 
 
-void PHTTPResource::OnHEAD(PHTTPSocket & socket,
-                           const PURL & url,
-                           const PMIMEInfo & info)
+BOOL PHTTPResource::OnHEAD(PHTTPSocket & socket,
+                            const PURL & url,
+                       const PMIMEInfo & info,
+             const PHTTPConnectionInfo & connectInfo)
 {
-  if (!CheckAuthority(socket, info))
-    return;
+  if (!CheckAuthority(socket, info, connectInfo))
+    return TRUE;
 
   PHTTPRequest * request = CreateRequest(url, info);
-  socket.SetDefaultMIMEInfo(request->outMIME);
+  socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
   PTime expiryDate;
   if (GetExpirationDate(expiryDate))
-    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123));
+    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
-  PHTTPSocket::StatusCode code = PHTTPSocket::OK;
   if (LoadHeaders(*request)) {
     if (!request->outMIME.Contains(ContentTypeStr) && !contentType.IsEmpty())
       request->outMIME.SetAt(ContentTypeStr, contentType);
     socket.StartResponse(request->code,request->outMIME,request->contentSize);
   }
   else
-    socket.OnError(request->code, url.AsString());
+    return socket.OnError(request->code, url.AsString(), connectInfo);
 
+  BOOL retVal = request->outMIME.Contains(ContentLengthStr);
   delete request;
+  return retVal;
 }
 
 
-void PHTTPResource::OnPOST(PHTTPSocket & socket,
-                           const PURL & url,
-                           const PMIMEInfo & info,
-                           const PStringToString & data)
+BOOL PHTTPResource::OnPOST(PHTTPSocket & socket,
+                            const PURL & url,
+                       const PMIMEInfo & info,
+                 const PStringToString & data,
+             const PHTTPConnectionInfo & connectInfo)
 {
-  if (CheckAuthority(socket, info)) {
-    PHTTPRequest * request = CreateRequest(url, info);
-    PHTML msg;
-    Post(*request, data, msg);
-    if (msg.IsEmpty())
-      socket.OnError(request->code, "");
-    else {
-      request->outMIME.SetAt(ContentTypeStr, "text/html");
-      PINDEX len = msg.GetLength();
-      socket.StartResponse(request->code, request->outMIME, len);
-      socket.Write((const char *)msg, len);
-    }
-    delete request;
-  }
+  if (!CheckAuthority(socket, info, connectInfo)) 
+    return TRUE;
+
+  PHTTPRequest * request = CreateRequest(url, info);
+  PHTML msg;
+  Post(*request, data, msg);
+  if (msg.IsEmpty())
+    return socket.OnError(request->code, "", connectInfo);
+
+  request->outMIME.SetAt(ContentTypeStr, "text/html");
+  if (msg.Is(PHTML::InBody))
+    msg << PHTML::Body();
+  PINDEX len = msg.GetLength();
+  socket.StartResponse(request->code, request->outMIME, len);
+  socket.Write((const char *)msg, len);
+
+  BOOL persist = request->outMIME.Contains(ContentLengthStr);
+  delete request;
+  return persist;
 }
 
 
 BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
-                                   const PMIMEInfo & info)
+                               const PMIMEInfo & info,
+                     const PHTTPConnectionInfo & connectInfo)
 {
   if (authority == NULL)
     return TRUE;
@@ -1040,12 +1196,12 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     if (authority->Validate(info["Authorization"]))
       return TRUE;
 
-    socket.OnError(PHTTPSocket::Forbidden, "");
+    socket.OnError(PHTTPSocket::Forbidden, "", connectInfo);
   }
   else {
     // it must be a request for authorisation
     PMIMEInfo reply;
-    socket.SetDefaultMIMEInfo(reply);
+    socket.SetDefaultMIMEInfo(reply, connectInfo);
     reply.SetAt(WWWAuthenticateStr,
                               "Basic realm=\"" + authority->GetRealm() + "\"");
     socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
@@ -1081,7 +1237,7 @@ BOOL PHTTPResource::GetExpirationDate(PTime &)
 
 
 PHTTPRequest * PHTTPResource::CreateRequest(const PURL & url,
-                                            const PMIMEInfo & inMIME)
+                                       const PMIMEInfo & inMIME)
 {
   return PNEW PHTTPRequest(url, inMIME);
 }
@@ -1114,10 +1270,10 @@ BOOL PHTTPResource::Post(PHTTPRequest & request,
                          const PStringToString &,
                          PHTML & msg)
 {
-  request.code = PHTTPSocket::NotImplemented;
+  request.code = PHTTPSocket::MethodNotAllowed;
   msg = "Error in POST";
-  msg << "Post to this resource is not implemented!" << PHTML::Body();
-  return FALSE;
+  msg << "Post to this resource is not allowed" << PHTML::Body();
+  return TRUE;
 }
 
 
@@ -1197,6 +1353,12 @@ PHTTPFile::PHTTPFile(const PString & filename)
 }
 
 
+PHTTPFile::PHTTPFile(const PString & filename, const PHTTPAuthority & auth)
+  : PHTTPResource(filename, auth), filePath(filename)
+{
+}
+
+
 PHTTPFile::PHTTPFile(const PURL & url, const PFilePath & path)
   : PHTTPResource(url), filePath(path)
 {
@@ -1238,7 +1400,7 @@ PHTTPFileRequest::PHTTPFileRequest(const PURL & url,
 
 
 PHTTPRequest * PHTTPFile::CreateRequest(const PURL & url,
-                                        const PMIMEInfo & inMIME)
+                                   const PMIMEInfo & inMIME)
 {
   return PNEW PHTTPFileRequest(url, inMIME);
 }
@@ -1317,7 +1479,7 @@ PHTTPDirRequest::PHTTPDirRequest(const PURL & url,
 
 
 PHTTPRequest * PHTTPDirectory::CreateRequest(const PURL & url,
-                                             const PMIMEInfo & inMIME)
+                                        const PMIMEInfo & inMIME)
 {
   return PNEW PHTTPDirRequest(url, inMIME);
 }
@@ -1891,7 +2053,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   if (data.GetSize() == 0) {
     msg << "No parameters changed." << PHTML::Body();
     request.code = PHTTPSocket::NoContent;
-    return FALSE;
+    return TRUE;
   }
 
   BOOL good = TRUE;
@@ -1905,7 +2067,7 @@ BOOL PHTTPForm::Post(PHTTPRequest & request,
   if (!good) {
     msg << PHTML::Body();
     request.code = PHTTPSocket::BadRequest;
-    return FALSE;
+    return TRUE;
   }
 
   for (fld = 0; fld < fields.GetSize(); fld++) {
@@ -1960,8 +2122,9 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
                        const PStringToString & data,
                        PHTML & msg)
 {
-  if (!PHTTPForm::Post(request, data, msg))
-    return FALSE;
+  PHTTPForm::Post(request, data, msg);
+  if (request.code != PHTTPSocket::OK)
+    return TRUE;
 
   PConfig cfg(section);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
@@ -1977,7 +2140,6 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
         cfg.SetString(name, field.GetValue());
     }
   }
-
   return TRUE;
 }
 
@@ -2001,5 +2163,49 @@ void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
   Add(valFld);
 }
 
+PHTTPConnectionInfo::PHTTPConnectionInfo()
+{
+  isPersistant      = FALSE;
+  isProxyConnection = FALSE;
+  majorVersion      = 0;
+  minorVersion      = 9;
+}
+
+void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
+                                    int major, int minor)
+{
+  isPersistant      = FALSE;
+  majorVersion      = major;
+  minorVersion      = minor;
+
+  PString str;
+
+  // check for Proxy-Connection and Connection strings
+  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
+  if (isProxyConnection)
+    str = mimeInfo[ProxyConnectionStr];
+  else if (mimeInfo.HasKey(ConnectionStr))
+    str = mimeInfo[ConnectionStr];
+
+  // get any connection options
+  if (!str.IsEmpty()) {
+    PStringArray tokens = str.Tokenise(",", TRUE);
+    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
+  }
+}
+
+void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
+{
+  isPersistant = newPersist;
+}
+
+BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
+{
+  if (minor == 0 && major == 0)
+    return TRUE;
+  else
+    return (major > majorVersion) ||
+           ((major == majorVersion) && (minor >= minorVersion));
+}
 
 // End Of File ///////////////////////////////////////////////////////////////
