@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.33  1998/11/30 05:33:00  robertj
+ * Fixed duplicate debug stream class, ther can be only one.
+ *
  * Revision 1.32  1998/11/03 03:11:53  robertj
  * Fixed memory leak question so correctly detects leaks and can be ^C'd.
  *
@@ -134,6 +137,7 @@
 #include <ctype.h>
 #ifdef _WIN32
 #include <strstrea.h>
+#include <ptlib/debstrm.h>
 #else
 #include <strstream.h>
 #endif
@@ -186,29 +190,6 @@ void operator delete(void * ptr)
 {
   PMemoryHeap::Deallocate(ptr, NULL);
 }
-
-
-#if defined(_WIN32)
-class PDebugStream : public ostream {
-  public:
-    PDebugStream()  { init(&buffer); }
-    ~PDebugStream() { flush(); }
-
-  private:
-    class Buffer : public strstreambuf {
-      public:
-        Buffer() : strstreambuf(buffer, sizeof(buffer)-1, buffer) { }
-        virtual int sync()
-        {
-          *pptr() = '\0';
-          setp(buffer, &buffer[sizeof(buffer) - 1]);
-          OutputDebugString(buffer);
-          return strstreambuf::sync();
-        }
-        char buffer[250];
-    } buffer;
-};
-#endif
 
 
 DWORD PMemoryHeap::allocationBreakpoint;
