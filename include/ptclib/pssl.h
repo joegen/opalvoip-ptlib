@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.5  1998/12/04 13:01:51  craigs
+ * Changed for SSLeay 0.9
+ *
  * Revision 1.4  1998/09/23 06:19:50  robertj
  * Added open source copyright license.
  *
@@ -104,8 +107,8 @@ PDECLARE_CLASS(PSSLChannel, PIndirectChannel)
 
     SSL * ssl;
     static SSL_CTX * context;
-    static PSemaphore semaphores[CRYPTO_NUM_LOCKS];
-    static PSemaphore initFlag;
+    static PMutex semaphores[CRYPTO_NUM_LOCKS];
+    static PMutex initFlag;
 };
 
 #endif
