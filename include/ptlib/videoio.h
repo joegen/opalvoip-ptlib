@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.9  2001/02/28 01:47:14  robertj
+ * Removed function from ancestor and is not very useful, thanks Thorsten Westheider.
+ *
  * Revision 1.8  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
@@ -138,10 +141,6 @@ class PVideoDevice : public PObject
     /**Stop the video device I/O capture.
       */
     virtual BOOL Stop() = 0;
-
-    /**Determine if the video device I/O capture is in progress.
-      */
-    virtual BOOL IsCapturing() = 0;
 
 
     /**Get the device name of the open device.
