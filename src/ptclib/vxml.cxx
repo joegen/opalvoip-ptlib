@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.39  2004/05/02 05:14:43  rjongbloed
+ * Fixed possible deadlock in shutdown of VXML channel/session.
+ *
  * Revision 1.38  2004/04/24 06:27:56  rjongbloed
  * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
  *   NULL pointer usage in various bits of code.
@@ -585,7 +588,7 @@ BOOL PVXMLSession::Open(PVXMLChannel * in, PVXMLChannel * out)
 
 BOOL PVXMLSession::Close()
 {
-  PWaitAndSignal m(sessionMutex);
+  sessionMutex.Wait();
 
   if (vxmlThread != NULL) {
     vxmlThread->WaitForTermination();
@@ -595,6 +598,9 @@ BOOL PVXMLSession::Close()
 
   outgoingChannel = NULL;
   incomingChannel = NULL;
+
+  sessionMutex.Signal();
+
   return PIndirectChannel::Close();
 }
 
