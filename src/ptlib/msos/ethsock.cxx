@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.30  2001/10/12 19:04:24  yurik
+ * New more robust ip collection routine
+ *
  * Revision 1.29  2001/10/04 05:59:41  robertj
  * Plugged numerous memory leaks.
  *
@@ -1250,35 +1253,88 @@ BOOL PWin32PacketSYS::BeginWrite(const void * buf, DWORD len, PWin32Overlapped &
 #ifdef _WIN32_WCE
 PWin32PacketCe::PWin32PacketCe()
 {
-	PString str, driver, ipAddress, netMask;
+	PString str, driver, nameStr, keyStr, driverStr, 
+		miniportStr, linkageStr, routeStr, tcpipStr;
 
+	static const PString ActiveDrivers = "HKEY_LOCAL_MACHINE\\Drivers\\Active";
 	static const PString CommBase = "HKEY_LOCAL_MACHINE\\Comm";
 
-	// Collecting normal IPs
-	RegistryKey registry(CommBase, RegistryKey::ReadOnly);
+	// Collecting active drivers
+	RegistryKey registry(ActiveDrivers, RegistryKey::ReadOnly);
 	for (PINDEX idx = 0; registry.EnumKey(idx, str); idx++) 
 	{
-		driver = CommBase + "\\" + str + "\\Parms\\TcpIp";
+		driver = ActiveDrivers + "\\" + str;
 		RegistryKey driverKey( driver, RegistryKey::ReadOnly );
-		
-		if( driverKey.QueryValue( "IpAddress", ipAddress ) && (ipAddress != "0.0.0.0") )
+
+		// Filter out non - NDS drivers
+		if( !driverKey.QueryValue( "Name", nameStr ) || 
+			nameStr.Find("NDS") == P_MAX_INDEX )
+				continue;
+
+		// Active network driver found
+		// 
+		// e.g. built-in driver has "Key" = Drivers\BuiltIn\NDIS
+		if( driverKey.QueryValue( "Key", keyStr ) )
 		{
-			interfaces[interfaces.GetSize()] = str;
-			ipAddresses[ipAddresses.GetSize()] = ipAddress;
-			if( driverKey.QueryValue( "Subnetmask", netMask ) )
-				netMasks[netMasks.GetSize()] = netMask;
+			if( P_MAX_INDEX != keyStr.Find("BuiltIn") )
+			{
+				// Built-in driver case
+				continue;
+			}
 			else
-				netMasks[netMasks.GetSize()] = "255.255.255.0";
-		}
-		else
-		if( driverKey.QueryValue( "DhcpIpAddress", ipAddress ) && (ipAddress != "0.0.0.0") )
-		{
-			interfaces[interfaces.GetSize()] = str;
-			ipAddresses[ipAddresses.GetSize()] = ipAddress;
-			if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
-				netMasks[netMasks.GetSize()] = netMask;
-			else
-				netMasks[netMasks.GetSize()] = "255.255.255.0";
+			{
+				driverStr = "HKEY_LOCAL_MACHINE\\"+ keyStr;
+				RegistryKey ActiveDriverKey( driverStr, RegistryKey::ReadOnly );
+				
+				// Get miniport value
+				if( ActiveDriverKey.QueryValue( "Miniport", miniportStr ) )
+				{
+					// Get miniport linkage
+					//
+					// e.g. [HKEY_LOCAL_MACHINE\Comm\SOCKETLPE\Linkage]
+					linkageStr = CommBase + "\\" + miniportStr + "\\Linkage";
+				
+					RegistryKey LinkageKey( linkageStr, RegistryKey::ReadOnly );
+
+					// Get route to real driver
+					if( LinkageKey.QueryValue( "Route", routeStr ) )
+					{
+						tcpipStr = CommBase + "\\" + routeStr + "\\Parms\\TcpIp";
+
+						RegistryKey TcpIpKey( tcpipStr, RegistryKey::ReadOnly );
+
+						DWORD dwDHCPEnabled = FALSE;
+						TcpIpKey.QueryValue( "EnableDHCP", dwDHCPEnabled, TRUE );
+
+						/// Collect IP addresses and net masks
+						PString ipAddress, netMask;
+						if( !dwDHCPEnabled )
+						{
+							if(TcpIpKey.QueryValue( "IpAddress", ipAddress ) 
+								&& (ipAddress != "0.0.0.0") )
+							{
+								interfaces[interfaces.GetSize()] = tcpipStr; // Registry key for the driver
+								ipAddresses[ipAddresses.GetSize()] = ipAddress; // It's IP
+								if( driverKey.QueryValue( "Subnetmask", netMask ) )
+									netMasks[netMasks.GetSize()] = netMask; // It's mask
+								else
+									netMasks[netMasks.GetSize()] = "255.255.255.0";
+							}
+						}
+						else // DHCP enabled
+						if( TcpIpKey.QueryValue( "DhcpIpAddress", ipAddress ) 
+							&& (ipAddress != "0.0.0.0") )
+						{
+							interfaces[interfaces.GetSize()] = str;
+							ipAddresses[ipAddresses.GetSize()] = ipAddress;
+							if( driverKey.QueryValue( "DhcpSubnetMask", netMask ) )
+								netMasks[netMasks.GetSize()] = netMask;
+							else
+								netMasks[netMasks.GetSize()] = "255.255.255.0";
+						}
+					}
+				}
+			}			
 		}
 	}
 }
