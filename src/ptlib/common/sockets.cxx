@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.84  1999/01/08 01:29:47  robertj
+ * Support for pthreads under FreeBSD
+ *
  * Revision 1.83  1999/01/06 10:58:01  robertj
  * Fixed subtle mutex bug in returning string hostname from DNS cache.
  *
@@ -291,7 +294,7 @@
 static PWinSock dummyForWinSock; // Assure winsock is initialised
 #endif
 
-#if defined(P_PTHREADS)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
 #define REENTRANT_BUFFER_LEN 1024
 #endif
 
@@ -462,7 +465,7 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
   if (host == NULL) {
     mutex.Signal();
-#ifdef P_PTHREADS
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
     // this function should really be a static on PIPSocket, but this would
     // require allocating thread-local storage for the data and that's too much
     // of a pain!
@@ -547,7 +550,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
   if (host == NULL) {
     mutex.Signal();
-#if defined(P_PTHREADS)
+#if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
 // this function should really be a static on PIPSocket, but this would
 // require allocating thread-local storage for the data and that's too much
 // of a pain!
