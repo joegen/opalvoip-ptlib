@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.21 1996/03/12 11:31:39 robertj Exp $
+ * $Id: win32.cxx,v 1.22 1996/03/31 09:10:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.22  1996/03/31 09:10:33  robertj
+ * Added use of "CurrentVersion" key in registry.
+ * Added version display to service process.
+ * Added another socket error text message.
+ *
  * Revision 1.21  1996/03/12 11:31:39  robertj
  * Moved PProcess destructor to platform dependent code.
  * Fixed bug in deleting Event Viewer registry entry for service process.
@@ -99,179 +104,6 @@
 #include <sys\stat.h>
 #include <process.h>
 #include <signal.h>
-
-
-class RegistryKey
-{
-  public:
-    RegistryKey(const PString & subkey, BOOL create = FALSE);
-    ~RegistryKey();
-    BOOL EnumKey(PINDEX idx, PString & str);
-    BOOL EnumValue(PINDEX idx, PString & str);
-    BOOL DeleteKey(const PString & subkey);
-    BOOL DeleteValue(const PString & value);
-    BOOL QueryValue(const PString & value, PString & str);
-    BOOL QueryValue(const PString & value, DWORD & num);
-    BOOL SetValue(const PString & value, const PString & str);
-    BOOL SetValue(const PString & value, DWORD num);
-  private:
-    HKEY key;
-};
-
-
-RegistryKey::RegistryKey(const PString & subkey, BOOL create)
-{
-  if (RegOpenKeyEx(HKEY_CURRENT_USER,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
-    return;
-
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
-    return;
-
-  if (create) {
-    HKEY rootKey = HKEY_CURRENT_USER;
-    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
-      rootKey = HKEY_LOCAL_MACHINE;
-    DWORD disposition;
-    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
-                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
-      return;
-  }
-
-  key = NULL;
-}
-
-
-RegistryKey::~RegistryKey()
-{
-  if (key != NULL)
-    RegCloseKey(key);
-}
-
-
-BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
-    return FALSE;
-
-  str.MakeMinimumSize();
-  return TRUE;
-}
-
-
-BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD sizeofname = MAX_PATH;
-  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
-                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
-    return FALSE;
-
-  str.MakeMinimumSize();
-  return TRUE;
-}
-
-
-BOOL RegistryKey::DeleteKey(const PString & subkey)
-{
-  if (key == NULL)
-    return TRUE;
-
-  return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::DeleteValue(const PString & value)
-{
-  if (key == NULL)
-    return TRUE;
-
-  return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
-}
-
-
-BOOL RegistryKey::QueryValue(const PString & value, PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD type, size;
-  if (RegQueryValueEx(key, (char *)(const char *)value,
-                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
-    return FALSE;
-
-  switch (type) {
-    case REG_SZ :
-      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
-
-    case REG_DWORD :
-      DWORD num;
-      size = sizeof(num);
-      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                                &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
-        str = PString(PString::Signed, num);
-        return TRUE;
-      }
-  }
-  return FALSE;
-}
-
-
-BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
-{
-  if (key == NULL)
-    return FALSE;
-
-  DWORD type, size;
-  if (RegQueryValueEx(key, (char *)(const char *)value,
-                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
-    return FALSE;
-
-  switch (type) {
-    case REG_DWORD :
-      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
-
-    case REG_SZ :
-      PString str;
-      DWORD size = 20;
-      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
-                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) {
-        num = str.AsInteger();
-        return TRUE;
-      }
-  }
-
-  return FALSE;
-}
-
-
-BOOL RegistryKey::SetValue(const PString & value, const PString & str)
-{
-  if (key == NULL)
-    return FALSE;
-
-  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
-                (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
-
-}
-
-
-BOOL RegistryKey::SetValue(const PString & value, DWORD num)
-{
-  if (key == NULL)
-    return FALSE;
-
-  return RegSetValueEx(key, (char *)(const char *)value,
-                     0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -513,9 +345,13 @@ PString PChannel::GetErrorText() const
     { WSAENETDOWN,              "Network subsystem failed" },
     { WSAEISCONN,               "Socket is already connected" },
     { WSAENETUNREACH,           "Network unreachable" },
+    { WSAEHOSTUNREACH,          "Host unreachable" },
     { WSAECONNREFUSED,          "Connection refused" },
     { WSAEINVAL,                "Invalid operation" },
     { WSAENOTCONN,              "Socket not connected" },
+    { WSAECONNRESET,            "Connection reset" },
+    { WSAESHUTDOWN,             "Connection shutdown" },
+    { WSAETIMEDOUT,             "Timed out" },
     { WSAEWOULDBLOCK,           "Would block" }
   };
 
@@ -1174,6 +1010,193 @@ PStringList PSerialChannel::GetPortNames()
 ///////////////////////////////////////////////////////////////////////////////
 // Configuration files
 
+class RegistryKey
+{
+  public:
+    RegistryKey(const PString & subkey, BOOL create = FALSE);
+    ~RegistryKey();
+    BOOL EnumKey(PINDEX idx, PString & str);
+    BOOL EnumValue(PINDEX idx, PString & str);
+    BOOL DeleteKey(const PString & subkey);
+    BOOL DeleteValue(const PString & value);
+    BOOL QueryValue(const PString & value, PString & str);
+    BOOL QueryValue(const PString & value, DWORD & num);
+    BOOL SetValue(const PString & value, const PString & str);
+    BOOL SetValue(const PString & value, DWORD num);
+  private:
+    HKEY key;
+};
+
+
+RegistryKey::RegistryKey(const PString & subkey, BOOL create)
+{
+  PProcess * proc = PProcess::Current();
+  if (!proc->GetVersion(FALSE).IsEmpty()) {
+    PString keyname = subkey;
+    keyname.Replace("CurrentVersion", proc->GetVersion(FALSE));
+
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                            keyname, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+      return;
+
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                            keyname, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+      return;
+  }
+
+  if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                             subkey, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    return;
+
+  if (create) {
+    HKEY rootKey = HKEY_CURRENT_USER;
+    if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
+      rootKey = HKEY_LOCAL_MACHINE;
+    DWORD disposition;
+    if (RegCreateKeyEx(rootKey, subkey, 0, "", REG_OPTION_NON_VOLATILE,
+                    KEY_ALL_ACCESS, NULL, &key, &disposition) == ERROR_SUCCESS)
+      return;
+  }
+
+  key = NULL;
+}
+
+
+RegistryKey::~RegistryKey()
+{
+  if (key != NULL)
+    RegCloseKey(key);
+}
+
+
+BOOL RegistryKey::EnumKey(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  if (RegEnumKey(key, idx, str.GetPointer(MAX_PATH),MAX_PATH) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD sizeofname = MAX_PATH;
+  if (RegEnumValue(key, idx, str.GetPointer(sizeofname),
+                         &sizeofname, NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+    return FALSE;
+
+  str.MakeMinimumSize();
+  return TRUE;
+}
+
+
+BOOL RegistryKey::DeleteKey(const PString & subkey)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteKey(key, subkey) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::DeleteValue(const PString & value)
+{
+  if (key == NULL)
+    return TRUE;
+
+  return RegDeleteValue(key, (char *)(const char *)value) == ERROR_SUCCESS;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  switch (type) {
+    case REG_SZ :
+      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                  &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
+
+    case REG_DWORD :
+      DWORD num;
+      size = sizeof(num);
+      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                                &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
+        str = PString(PString::Signed, num);
+        return TRUE;
+      }
+  }
+  return FALSE;
+}
+
+
+BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  DWORD type, size;
+  if (RegQueryValueEx(key, (char *)(const char *)value,
+                                    NULL, &type, NULL, &size) != ERROR_SUCCESS)
+    return FALSE;
+
+  switch (type) {
+    case REG_DWORD :
+      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                                  &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+
+    case REG_SZ :
+      PString str;
+      DWORD size = 20;
+      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) {
+        num = str.AsInteger();
+        return TRUE;
+      }
+  }
+
+  return FALSE;
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, const PString & str)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value, 0, REG_SZ,
+                (LPBYTE)(const char *)str, str.GetLength()+1) == ERROR_SUCCESS;
+
+}
+
+
+BOOL RegistryKey::SetValue(const PString & value, DWORD num)
+{
+  if (key == NULL)
+    return FALSE;
+
+  return RegSetValueEx(key, (char *)(const char *)value,
+                     0, REG_DWORD, (LPBYTE)&num, sizeof(num)) == ERROR_SUCCESS;
+}
+
+
 void PConfig::Construct(Source src)
 {
   source = src;
@@ -1196,9 +1219,7 @@ void PConfig::Construct(Source src)
           location += proc->GetManufacturer() + PDIR_SEPARATOR;
         else
           location += "PWLib\\";
-        location += proc->GetName() + PDIR_SEPARATOR;
-        if (!proc->GetVersion(FALSE).IsEmpty())
-          location += proc->GetVersion(FALSE) + PDIR_SEPARATOR;
+        location += proc->GetName() + "\\CurrentVersion\\";
       }
       break;
   }
@@ -1450,20 +1471,11 @@ void PConfig::SetInteger(const PString & section, const PString & key, long valu
 
 DWORD EXPORTED PThread::MainFunction(LPVOID threadPtr)
 {
-  PProcess * process = PProcess::Current();
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
-  AttachThreadInput(thread->threadId, ((PThread*)process)->threadId, TRUE);
-  process->threads.SetAt(thread->threadId, thread);
-
+  thread->RegisterWithProcess(FALSE);
   thread->Main();
-
-  process->threads.SetAt(thread->threadId, NULL);
-  CloseHandle(thread->threadHandle);
-  thread->threadHandle = NULL;
-
-  if (thread->autoDelete)
-    delete thread;
+  thread->RegisterWithProcess(TRUE);
 
   return 0;
 }
@@ -1511,11 +1523,7 @@ void PThread::Terminate()
       ExitThread(0);
     else
       TerminateThread(threadHandle, 1);
-    PProcess::Current()->threads.SetAt(threadId, NULL);
-    CloseHandle(threadHandle);
-    threadHandle = NULL;
-    if (autoDelete)
-      delete this;
+    RegisterWithProcess(TRUE);
   }
 }
 
@@ -1593,8 +1601,38 @@ void PThread::InitialiseProcessThread()
   originalStackSize = 0;
   threadHandle = GetCurrentThread();
   threadId = GetCurrentThreadId();
-  ((PProcess *)this)->threads.DisallowDeleteObjects();
-  ((PProcess *)this)->threads.SetAt(threadId, this);
+  ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
+  ((PProcess *)this)->activeThreads.SetAt(threadId, this);
+}
+
+
+PThread * PThread::Current()
+{
+  PProcess * process = PProcess::Current();
+  process->threadMutex.Wait();
+  PThread * thread = process->activeThreads.GetAt(GetCurrentThreadId());
+  process->threadMutex.Signal();
+  return thread;
+}
+
+
+void PThread::RegisterWithProcess(BOOL terminating)
+{
+  PProcess * process = PProcess::Current();
+
+  if (!terminating)
+    AttachThreadInput(threadId, ((PThread*)process)->threadId, TRUE);
+
+  process->threadMutex.Wait();
+  process->activeThreads.SetAt(threadId, terminating ? NULL : this);
+  process->threadMutex.Signal();
+
+  if (terminating) {
+    CloseHandle(threadHandle);
+    threadHandle = NULL;
+    if (autoDelete)
+      delete this;
+  }
 }
 
 
@@ -1960,7 +1998,7 @@ PServiceProcess::ProcessCommandResult
                              PServiceProcess::ProcessCommand(const char * cmd)
 {
   static const char * commandNames[] = {
-    "debug", "install", "remove", "start", "stop", "pause", "resume"
+    "debug", "version", "install", "remove", "start", "stop", "pause", "resume"
   };
   
   for (PINDEX cmdNum = 0; cmdNum < PARRAYSIZE(commandNames); cmdNum++)
@@ -1980,6 +2018,13 @@ PServiceProcess::ProcessCommandResult
   if (cmdNum == 0) // Debug mode
     return DebugCommandMode;
 
+  if (cmdNum == 1) {
+    PError << GetName() << ' '
+           << GetOSClass() << '/' << GetOSName()
+           << " Version " << GetVersion(TRUE) << endl;
+    return ProcessCommandError;
+  }
+
   P_SC_HANDLE schSCManager;
   if (schSCManager.IsNULL()) {
     PError << "Could not open Service Manager." << endl;
@@ -1996,7 +2041,7 @@ PServiceProcess::ProcessCommandResult
 
   BOOL good = FALSE;
   switch (cmdNum) {
-    case 1 : // install
+    case 2 : // install
       if (!schService.IsNULL()) {
         PError << "Service is already installed." << endl;
         return ProcessCommandError;
@@ -2035,7 +2080,7 @@ PServiceProcess::ProcessCommandResult
       }
       break;
 
-    case 2 : // remove
+    case 3 : // remove
       good = DeleteService(schService);
       if (good) {
         PString name = "SYSTEM\\CurrentControlSet\\Services\\"
@@ -2044,20 +2089,21 @@ PServiceProcess::ProcessCommandResult
       }
       break;
 
-    case 3 : // start
+    case 4 : // start
       good = StartService(schService, 0, NULL);
       break;
 
-    case 4 : // stop
+    case 5 : // stop
       good = ControlService(schService, SERVICE_CONTROL_STOP, &status);
       break;
 
-    case 5 : // pause
+    case 6 : // pause
       good = ControlService(schService, SERVICE_CONTROL_PAUSE, &status);
       break;
 
-    case 6 : // resume
+    case 7 : // resume
       good = ControlService(schService, SERVICE_CONTROL_CONTINUE, &status);
+      break;
   }
 
   DWORD err = GetLastError();
