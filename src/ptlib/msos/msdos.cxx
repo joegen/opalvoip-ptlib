@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.10 1995/06/17 00:59:21 robertj Exp $
+ * $Id: msdos.cxx,v 1.11 1995/08/24 12:41:00 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
+ * Revision 1.11  1995/08/24 12:41:00  robertj
+ * Changed PChannel so not a PContainer.
+ *
  * Revision 1.10  1995/06/17 00:59:21  robertj
  * Moved PPipeChannel::Execute from common dos/windows to individual files.
  *
@@ -118,12 +121,6 @@ PTime::DateOrder PTime::GetDateOrder()
 void PSerialChannel::Construct()
 {
   biosParm = 0xe3; // 9600 baud, no parity, 1 stop bit, 8 data bits
-}
-
-
-void PSerialChannel::CopyContents(const PSerialChannel & chan)
-{
-  biosParm = chan.biosParm;
 }
 
 
