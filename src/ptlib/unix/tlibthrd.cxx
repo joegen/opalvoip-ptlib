@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.33  2000/02/29 13:18:21  robertj
+ * Added named threads to tracing, thanks to Dave Harvey
+ *
  * Revision 1.32  2000/01/20 08:20:57  robertj
  * FreeBSD v3 compatibility changes, thanks Roger Hardiman & Motonori Shindo
  *
@@ -302,7 +305,9 @@ void PThread::InitialiseProcessThread()
 
 PThread::PThread(PINDEX stackSize,
                  AutoDeleteFlag deletion,
-                 Priority /*priorityLevel*/)
+                 Priority /*priorityLevel*/,
+                 const PString & name)
+  : threadName(name)
 {
   PAssert(stackSize > 0, PInvalidParameter);
 
