@@ -8,8 +8,14 @@
 #include <ptlib.h>
 #include <sockets.h>
 
+#include <sys/ioctl.h>
+#include <sys/fcntl.h>
+#include <netinet/in.h>
+
 #if defined(P_SUN4)
 #include <errno.h>
+#include <sys/socket.h>
+
 extern "C" int socket(int, int, int);
 extern "C" int connect(int, struct sockaddr *, int);
 extern "C" int accept(int, struct sockaddr *, int *);
