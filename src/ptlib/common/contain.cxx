@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.159  2004/05/13 14:52:32  csoutheren
+ * Allow PString::IsEmpty to return TRUE when theArray is NULL
+ *
  * Revision 1.158  2004/05/04 11:10:37  rjongbloed
  * Fixed usage of MakeEmpty() with PStringStream.
  *
@@ -1568,7 +1571,7 @@ PINDEX PString::HashFunction() const
 
 BOOL PString::IsEmpty() const
 {
-  return *theArray == '\0';
+  return (theArray == NULL) || (*theArray == '\0');
 }
 
 
