@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.21 1997/03/18 21:23:27 robertj Exp $
+ * $Id: svcproc.cxx,v 1.22 1997/04/27 05:50:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.22  1997/04/27 05:50:27  robertj
+ * DLL support.
+ *
  * Revision 1.21  1997/03/18 21:23:27  robertj
  * Fix service manager falsely accusing app of crashing if OnStart() is slow.
  *
@@ -266,7 +269,7 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF);
 
-  PErrorStream = new PSystemLog(PSystemLog::NumLogLevels);
+  PSetErrorStream(new PSystemLog(PSystemLog::NumLogLevels));
   PreInitialise(1, argv);
 
   debugMode = FALSE;
