@@ -1298,19 +1298,21 @@ test -n "$target_alias" &&
 OSTYPE=
 
 case "$target_os" in
-  linux\-gnu)          OSTYPE=linux ;
+  linux\-gnu)      OSTYPE=linux ;
                    OSRELEASE=`uname -r` ;
                    STDCCFLAGS="-DP_LINUX=$OSRELEASE" ;;
 
-  freebsd* )        OSTYPE=FreeBSD ;
+  freebsd* )       OSTYPE=FreeBSD ;
                    OSRELEASE=`sysctl -n kern.osreldate` ;
                    STDCCFLAGS="-DP_FREEBSD=$OSRELEASE" ;;
 
-  openbsd)         OSTYPE=OpenBSD ;
+  openbsd* )       OSTYPE=OpenBSD ;
                    OSRELEASE=`sysctl -n kern.osrevision` ;
+		   ENDLDLIBS="-lossaudio" ;
                    STDCCFLAGS="$STDCCFLAGS -DP_OPENBSD=$OSRELEASE" ;;
 
-  netbsd)          OSTYPE=NetBSD ;
+  netbsd* )        OSTYPE=NetBSD ;
+		   ENDLDLIBS="-lossaudio" ;
                    STDCCFLAGS="$STDCCFLAGS -DP_NETBSD" ;;
 
   solaris* | sunos ) OSTYPE=solaris ;
