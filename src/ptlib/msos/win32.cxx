@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.84  1999/07/06 04:46:01  robertj
+ * Fixed being able to case an unsigned to a PTimeInterval.
+ * Improved resolution of PTimer::Tick() to be millisecond accurate.
+ *
  * Revision 1.83  1999/03/09 10:30:19  robertj
  * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
  *
@@ -434,6 +438,50 @@ PString PTime::GetTimeZoneString(TimeZoneType type)
   TIME_ZONE_INFORMATION tz;
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
   return type == StandardTime ? tz.StandardName : tz.DaylightName;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval 
+
+static unsigned GetDivisor()
+{
+  LARGE_INTEGER frequency;
+  if (QueryPerformanceFrequency(&frequency))
+    return (unsigned)frequency.QuadPart/1000;
+
+  return 0;
+}
+
+PTimeInterval PTimer::Tick()
+{
+  static unsigned divisor = GetDivisor();
+
+  if (divisor == 0)
+    return (int)(GetTickCount()&0x7fffffff);
+  
+  LARGE_INTEGER count;
+  QueryPerformanceCounter(&count);
+  return count.QuadPart/divisor;
+}
+
+
+unsigned PTimer::Resolution()
+{
+  LARGE_INTEGER frequency;
+  if (QueryPerformanceFrequency(&frequency) && frequency.QuadPart >= 1000)
+    return 1;
+
+  DWORD err = GetLastError();
+
+  DWORD timeAdjustment;
+  DWORD timeIncrement;
+  BOOL timeAdjustmentDisabled;
+  if (GetSystemTimeAdjustment(&timeAdjustment, &timeIncrement, &timeAdjustmentDisabled))
+    return timeIncrement/10000;
+
+  err = GetLastError();
+  return 55;
 }
 
 
