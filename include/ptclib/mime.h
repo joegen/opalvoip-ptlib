@@ -1,5 +1,5 @@
 /*
- * $Id: mime.h,v 1.7 1996/07/15 10:28:31 robertj Exp $
+ * $Id: mime.h,v 1.8 1996/09/14 13:09:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1995 Equivalence
  *
  * $Log: mime.h,v $
+ * Revision 1.8  1996/09/14 13:09:15  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.7  1996/07/15 10:28:31  robertj
  * Changed memory block base64 conversion functions to be void *.
  *
@@ -38,7 +44,7 @@
 #pragma interface
 #endif
 
-#include <appsock.h>
+#include <inetprot.h>
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -54,7 +60,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
       istream &strm   // Stream to read the objects contents from.
     );
     PMIMEInfo(
-      PApplicationSocket & socket   // Application socket to read MIME info.
+      PInternetProtocol & socket   // Application socket to read MIME info.
     );
     // Construct a MIME infromation dictionary from the specified source.
 
@@ -77,7 +83,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
 
   // New functions for class.
     BOOL Read(
-      PApplicationSocket & socket   // Application socket to read MIME info.
+      PInternetProtocol & socket   // Application socket to read MIME info.
     );
     /* Read MIME information from the socket.
 
@@ -86,7 +92,7 @@ PDECLARE_STRING_DICTIONARY(PMIMEInfo, PCaselessString)
      */
 
     BOOL Write(
-      PApplicationSocket & socket   // Application socket to write MIME info.
+      PInternetProtocol & socket   // Application socket to write MIME info.
     ) const;
     /* Write MIME information to the socket.
 
