@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.61  2004/02/23 20:00:15  ykiryanov
+ * Fixed a typo in declaration of setegid(0
+ *
  * Revision 1.60  2004/02/22 04:33:19  ykiryanov
  * Added missing prototype for setegid for BeOS
  *
@@ -415,7 +418,7 @@ typedef int socklen_t;
 #define wait3(s, o, r) waitpid(-1, s, o)
 #define PSETPGRP()  setpgid(0,0)
 int seteuid(uid_t euid);
-int setegid(gid_t gid)
+int setegid(gid_t gid);
 
 #ifndef BE_BONELESS
 #include <bone/arpa/inet.h>
