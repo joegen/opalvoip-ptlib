@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.85  2002/06/27 02:04:01  robertj
+ * Fixed NetBSD compatibility issue, thanks Motoyuki OHMORI.
+ *
  * Revision 1.84  2002/06/04 00:25:31  robertj
  * Fixed incorrectly initialised trace indent, thanks Artis Kugevics
  *
@@ -521,7 +524,9 @@ void PX_SuspendSignalHandler(int)
   while (notResumed) {
     BYTE ch;
     notResumed = ::read(thread->unblockPipe[0], &ch, 1) < 0 && errno == EINTR;
+#ifndef P_NETBSD
     pthread_testcancel();
+#endif /* P_NETBSD */
   }
 }
 
@@ -681,7 +686,9 @@ void PThread::Sleep(const PTimeInterval & timeout)
     if (select(0, NULL, NULL, NULL, delay.AsTimeVal(tval)) < 0 && errno != EINTR)
       break;
 
+#ifndef P_NETBSD
     pthread_testcancel();
+#endif /* P_NETBSD */
 
     lastTime = PTime();
   } while (lastTime < targetTime);
