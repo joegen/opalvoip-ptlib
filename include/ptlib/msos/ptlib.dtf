@@ -1588,7 +1588,7 @@ EXPORTS
     ?GetKeys@PConfig@@QBE?AVPStringList@@ABVPString@@@Z @1044 NONAME ;public: class PStringList  __thiscall PConfig::GetKeys(class PString const &)const 
     ?GetLastError@PWin32PacketDriver@@QBEKXZ @1904 NONAME ;public: unsigned long __thiscall PWin32PacketDriver::GetLastError(void)const 
     ?GetLastReceiveAddress@PUDPSocket@@QAEXAAVAddress@PIPSocket@@AAG@Z @2220 NONAME ;public: void __thiscall PUDPSocket::GetLastReceiveAddress(class PIPSocket::Address &,unsigned short &)
-    ?GetLength@PFile@@QBEJXZ @1048 NONAME ;public: long __thiscall PFile::GetLength(void)const 
+    ?GetLength@PFile@@UBEJXZ @3299 NONAME ;public: virtual long __thiscall PFile::GetLength(void)const 
     ?GetLevel@PTrace@@SAIXZ @2247 NONAME ;public: static unsigned int __cdecl PTrace::GetLevel(void)
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1975 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &)
     ?GetLocalAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1976 NONAME ;public: virtual int __thiscall PIPSocket::GetLocalAddress(class PIPSocket::Address &,unsigned short &)
@@ -1674,6 +1674,7 @@ EXPORTS
     ?GetPortByService@PSocket@@SAGPBDABVPString@@@Z @1114 NONAME ;public: static unsigned short __cdecl PSocket::GetPortByService(char const *,class PString const &)
     ?GetPortByService@PSocket@@UBEGABVPString@@@Z @1115 NONAME ;public: virtual unsigned short __thiscall PSocket::GetPortByService(class PString const &)const 
     ?GetPortNames@PSerialChannel@@SA?AVPStringList@@XZ @1116 NONAME ;public: static class PStringList  __cdecl PSerialChannel::GetPortNames(void)
+    ?GetPosition@PFile@@UBEJXZ @3300 NONAME ;public: virtual long __thiscall PFile::GetPosition(void)const 
     ?GetPriority@PThread@@UBE?AW4Priority@1@XZ @1118 NONAME ;public: virtual enum PThread::Priority  __thiscall PThread::GetPriority(void)const 
     ?GetProcessID@PProcess@@QBEKXZ @1119 NONAME ;public: unsigned long __thiscall PProcess::GetProcessID(void)const 
     ?GetProtocolByName@PSocket@@SAGABVPString@@@Z @1120 NONAME ;public: static unsigned short __cdecl PSocket::GetProtocolByName(class PString const &)
@@ -2430,7 +2431,7 @@ EXPORTS
     ?SetInterval@PTimeInterval@@UAEX_JJJJH@Z @3266 NONAME ;public: virtual void __thiscall PTimeInterval::SetInterval(__int64,long,long,long,int)
     ?SetInterval@PTimer@@UAEX_JJJJH@Z @3267 NONAME ;public: virtual void __thiscall PTimer::SetInterval(__int64,long,long,long,int)
     ?SetLastElementAt@Table@PHashTable@@QAEHH@Z @1668 NONAME ;public: int __thiscall PHashTable::Table::SetLastElementAt(int)
-    ?SetLength@PFile@@QAEHJ@Z @1669 NONAME ;public: int __thiscall PFile::SetLength(long)
+    ?SetLength@PFile@@UAEHJ@Z @3301 NONAME ;public: virtual int __thiscall PFile::SetLength(long)
     ?SetLevel@PTrace@@SAXI@Z @2178 NONAME ;public: static void __cdecl PTrace::SetLevel(unsigned int)
     ?SetMinSize@PContainer@@QAEHH@Z @1670 NONAME ;public: int __thiscall PContainer::SetMinSize(int)
     ?SetNow@PVideoOutputDevice@@UAEXH@Z @2775 NONAME ;public: virtual void __thiscall PVideoOutputDevice::SetNow(int)
@@ -2445,7 +2446,7 @@ EXPORTS
     ?SetPermissions@PFile@@SAHABVPFilePath@@H@Z @1678 NONAME ;public: static int __cdecl PFile::SetPermissions(class PFilePath const &,int)
     ?SetPortA@PSocket@@QAEXABVPString@@@Z @1679 NONAME ;public: void __thiscall PSocket::SetPortA(class PString const &)
     ?SetPortA@PSocket@@QAEXG@Z @1680 NONAME ;public: void __thiscall PSocket::SetPortA(unsigned short)
-    ?SetPosition@PFile@@QAEHJW4FilePositionOrigin@1@@Z @1681 NONAME ;public: int __thiscall PFile::SetPosition(long,enum PFile::FilePositionOrigin)
+    ?SetPosition@PFile@@UAEHJW4FilePositionOrigin@1@@Z @3302 NONAME ;public: virtual int __thiscall PFile::SetPosition(long,enum PFile::FilePositionOrigin)
     ?SetPriority@PThread@@UAEXW4Priority@1@@Z @1682 NONAME ;public: virtual void __thiscall PThread::SetPriority(enum PThread::Priority)
     ?SetReadChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @1683 NONAME ;public: int __thiscall PIndirectChannel::SetReadChannel(class PChannel *,int)
     ?SetReal@PConfig@@QAEXABVPString@@0N@Z @1685 NONAME ;public: void __thiscall PConfig::SetReal(class PString const &,class PString const &,double)
