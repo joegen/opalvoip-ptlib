@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.47  2002/10/04 01:47:44  robertj
+ * Added various increment and decrement operators to POrdinalKey.
+ *
  * Revision 1.46  2002/08/14 00:43:39  robertj
  * Added ability to have fixed maximum length PStringStream's so does not do
  *   unwanted malloc()'s while outputing data.
@@ -452,8 +455,29 @@ PINLINE PINDEX PSortedStringList::GetStringsIndex(const PString & str) const
 PINLINE POrdinalKey::POrdinalKey(PINDEX newKey)
   : theKey(newKey) { }
 
+PINLINE POrdinalKey & POrdinalKey::operator=(PINDEX newKey)
+  { theKey = newKey; return *this; }
+
 PINLINE POrdinalKey::operator PINDEX() const
   { return theKey; }
+
+PINLINE PINDEX POrdinalKey::operator++()
+  { return ++theKey; }
+
+PINLINE PINDEX POrdinalKey::operator++(int)
+  { return theKey++; }
+
+PINLINE PINDEX POrdinalKey::operator--()
+  { return --theKey; }
+
+PINLINE PINDEX POrdinalKey::operator--(int)
+  { return theKey--; }
+
+PINLINE POrdinalKey & POrdinalKey::operator+=(PINDEX add)
+  { theKey += add; return *this; }
+
+PINLINE POrdinalKey & POrdinalKey::operator-=(PINDEX minus)
+  { theKey -= minus; return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
