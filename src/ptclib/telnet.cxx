@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.9  2002/09/18 06:38:59  robertj
+ * Fixed initialisation of debug flag, thanks wolfboy@netease.com
+ *
  * Revision 1.8  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -103,6 +106,8 @@ void PTelnetSocket::Construct()
 
 #ifdef _DEBUG
   debug = TRUE;
+#else
+  debug = FALSE;
 #endif
 }
 
