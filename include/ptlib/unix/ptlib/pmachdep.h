@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.43  2001/03/07 06:54:56  yurik
+ * Changed email to current one
+ *
  * Revision 1.42  2001/02/23 08:05:19  rogerh
  * Add tcp.h for MACOS_X (Darwin)
  *
@@ -85,7 +88,7 @@
  * BeOS port changes.
  *
  * Revision 1.23  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
  *
  * Revision 1.22  1999/01/08 01:28:16  robertj
  * Added pthreads support for FreeBSD
