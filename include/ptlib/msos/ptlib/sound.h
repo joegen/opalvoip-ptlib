@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.9  2000/05/01 05:59:11  robertj
+ * Added mutex to PSoundChannel buffer structure.
+ *
  * Revision 1.8  1999/09/23 04:28:43  robertj
  * Allowed some Win32 only access to wave format in sound channel
  *
@@ -154,6 +157,7 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
     PWaveBufferArray buffers;
     PINDEX           bufferIndex;
     PINDEX           bufferByteOffset;
+    PMutex           bufferMutex;
 
   private:
     BOOL OpenDevice(unsigned id);
