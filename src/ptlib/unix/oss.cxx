@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.33  2001/12/08 00:58:41  robertj
+ * Added ability to stil work with strange sound card setup, thanks Damian Sandras.
+ *
  * Revision 1.32  2001/09/18 05:56:03  robertj
  * Fixed numerous problems with thread suspend/resume and signals handling.
  *
@@ -423,6 +426,17 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
         if (::ioctl(fd, SOUND_MIXER_READ_DEVMASK, &dummy) >= 0)
           devices.AppendString(dsp[cardnum]);
         ::close(fd);
+      }
+      else {
+        // mixer failed but this could still be a valid dsp...
+        // warning this is just a hack to make this work on strange mixer and dsp configurations
+        // on my machine the first sound card registers 1 mixer and 2 dsp, so when my webcam
+        // registers itself as dsp2 this test would fail...
+        int fd = ::open(dsp[cardnum], O_RDONLY);
+        if (fd >= 0) {
+          devices.AppendString(dsp[cardnum]);
+          ::close(fd);
+        }
       }
     }
     else {
