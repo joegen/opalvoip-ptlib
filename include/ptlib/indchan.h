@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: indchan.h,v $
+ * Revision 1.3  1999/02/16 08:12:00  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.2  1998/09/23 06:20:41  robertj
  * Added open source copyright license.
  *
@@ -43,7 +46,9 @@
 #endif
 
 
-PDECLARE_CLASS(PIndirectChannel, PChannel)
+class PIndirectChannel : public PChannel
+{
+  PCLASSINFO(PIndirectChannel, PChannel)
 /* This is a channel that operates indirectly through another channel(s). This
    allows for a protocol to operate through a "channel" mechanism and for its
    low level byte exchange (Read and Write) to operate via a completely
