@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.91  2002/06/27 03:53:01  robertj
+# Added PMemoryFile class.
+#
 # Revision 1.90  2002/05/01 04:16:43  robertj
 # Added thread safe collection classes.
 #
@@ -432,6 +435,7 @@ SOURCES	= \
 	$(COMPONENT_SRC_DIR)/modem.cxx \
 	$(COMPONENT_SRC_DIR)/qchannel.cxx \
 	$(COMPONENT_SRC_DIR)/delaychan.cxx \
+	$(COMPONENT_SRC_DIR)/memfile.cxx \
 	$(COMPONENT_SRC_DIR)/cypher.cxx \
 	$(COMPONENT_SRC_DIR)/random.cxx \
 	$(COMPONENT_SRC_DIR)/socks.cxx \
