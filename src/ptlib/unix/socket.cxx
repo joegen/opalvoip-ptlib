@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.110  2004/08/24 07:08:11  csoutheren
+ * Added use of recvmsg to determine which interface UDP packets arrive on
+ *
  * Revision 1.109  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -759,6 +762,69 @@ BOOL PTCPSocket::Read(void * buf, PINDEX maxLen)
 }
 
 
+#if P_HAS_RECVMSG
+
+int PSocket::os_recvfrom(
+      void * buf,     // Data to be written as URGENT TCP data.
+      PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
+      int    flags,
+      sockaddr * addr, // Address from which the datagram was received.
+      PINDEX * addrlen)
+{
+  lastReadCount = 0;
+
+  if (!PXSetIOBlock(PXReadBlock, readTimeout))
+    return FALSE;
+
+  // if we don't care what interface the packet arrives on, then don't bother getting the information
+  if (!catchReceiveToAddr) {
+    int r = ::recvfrom(os_handle, (char *)buf, len, flags, (sockaddr *)addr, (socklen_t *)addrlen);
+    if (!ConvertOSError(r, LastReadError))
+      return FALSE;
+
+    lastReadCount = r;
+    return lastReadCount > 0;
+  }
+
+  msghdr readData;
+  memset(&readData, 0, sizeof(readData));
+
+  readData.msg_name       = addr;
+  readData.msg_namelen    = *addrlen;
+
+  iovec readVector;
+  readVector.iov_base     = buf;
+  readVector.iov_len      = len;
+  readData.msg_iov        = &readVector;
+  readData.msg_iovlen     = 1;
+
+  char auxdata[50];
+  readData.msg_control    = auxdata;
+  readData.msg_controllen = sizeof(auxdata);
+
+  // read a packet 
+  int r = ::recvmsg(os_handle, &readData, 0);
+  if (!ConvertOSError(r, LastReadError))
+    return FALSE;
+
+  lastReadCount = r;
+
+  if (r >= 0) {
+    struct cmsghdr * cmsg;
+    for (cmsg = CMSG_FIRSTHDR(&readData); cmsg != NULL; cmsg = CMSG_NXTHDR(&readData,cmsg)) {
+      if (cmsg->cmsg_level == SOL_IP && cmsg->cmsg_type == IP_PKTINFO) {
+        in_pktinfo * info = (in_pktinfo *)CMSG_DATA(cmsg);
+        SetLastReceiveAddr(&info->ipi_spec_dst, sizeof(in_addr));
+        break;
+      }
+    }
+  }
+
+  return lastReadCount > 0;
+}
+
+#else
+
 BOOL PSocket::os_recvfrom(
       void * buf,     // Data to be written as URGENT TCP data.
       PINDEX len,     // Number of bytes pointed to by <CODE>buf</CODE>.
@@ -779,6 +845,8 @@ BOOL PSocket::os_recvfrom(
   lastReadCount = r;
   return lastReadCount > 0;
 }
+
+#endif
 
 
 BOOL PSocket::os_sendto(
