@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.8  1998/11/30 22:07:08  robertj
+ * New directory structure.
+ *
  * Revision 1.7  1998/09/24 04:11:53  robertj
  * Added open software license.
  *
@@ -54,7 +57,7 @@
 
 #pragma interface
 
-#include "../../common/ptlib/serchan.h"
+#include "../../serchan.h"
   public:
     BOOL Close();
 
