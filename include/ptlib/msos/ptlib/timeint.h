@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.4 1995/04/25 11:20:53 robertj Exp $
+ * $Id: timeint.h,v 1.5 1995/12/10 11:49:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.5  1995/12/10 11:49:26  robertj
+ * Fixed bug in time interfval constant variable initialisation. Not guarenteed to work.
+ *
  * Revision 1.4  1995/04/25 11:20:53  robertj
  * Moved const variable to .cxx file to better compiler portability.
  *
@@ -34,7 +37,7 @@
 #include "../../common/timeint.h"
 };
 
-extern const PTimeInterval PMaxTimeInterval;
+#define PMaxTimeInterval PTimeInterval(0x7fffffff)
 
 
 #endif
