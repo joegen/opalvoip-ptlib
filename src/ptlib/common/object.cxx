@@ -1,5 +1,5 @@
 /*
- * $Id: object.cxx,v 1.21 1996/07/15 10:35:11 robertj Exp $
+ * $Id: object.cxx,v 1.22 1996/08/08 10:08:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: object.cxx,v $
+ * Revision 1.22  1996/08/08 10:08:46  robertj
+ * Directory structure changes for common files.
+ *
  * Revision 1.21  1996/07/15 10:35:11  robertj
  * Changed memory leak dump to use static class rather than atexit for better portability.
  *
@@ -77,7 +80,7 @@
 //
  */
 
-#include <contain.h>
+#include <ptlib.h>
 #include <ctype.h>
 
 
