@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.15 1996/02/15 14:54:06 robertj Exp $
+ * $Id: win32.cxx,v 1.16 1996/02/19 13:53:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.16  1996/02/19 13:53:21  robertj
+ * Fixed error reporting for winsock classes.
+ *
  * Revision 1.15  1996/02/15 14:54:06  robertj
  * Compensated for C library bug in time().
  *
@@ -453,14 +456,32 @@ PString PChannel::GetErrorText() const
     return _sys_errlist[osError];
 
   if ((osError & 0x40000000) == 0)
-    return psprintf("OS error %u", osError);
+    return psprintf("C runtime error %u", osError);
 
-  int err = osError & 0x3fffffff;
+  DWORD err = osError & 0x3fffffff;
 
-  static const char * const win32_errlist[] = { "" };
+  static const struct {
+    DWORD id;
+    const char * msg;
+  } win32_errlist[] = {
+    { ERROR_FILE_NOT_FOUND,     "File not found" },
+    { ERROR_PATH_NOT_FOUND,     "Path not found" },
+    { ERROR_ACCESS_DENIED,      "Access denied" },
+    { ERROR_NOT_ENOUGH_MEMORY,  "Not enough memory" },
+    { ERROR_INVALID_FUNCTION,   "Invalid function" },
+    { WSAEADDRINUSE,            "Address in use" },
+    { WSAENETDOWN,              "Network subsystem failed" },
+    { WSAEISCONN,               "Socket is already connected" },
+    { WSAENETUNREACH,           "Network unreachable" },
+    { WSAECONNREFUSED,          "Connection refused" },
+    { WSAEINVAL,                "Invalid operation" },
+    { WSAENOTCONN,              "Socket not connected" },
+    { WSAEWOULDBLOCK,           "Would block" }
+  };
 
-  if (err < PARRAYSIZE(win32_errlist) && win32_errlist[err][0] != '\0')
-    return win32_errlist[err];
+  for (PINDEX i = 0; i < PARRAYSIZE(win32_errlist); i++)
+    if (win32_errlist[i].id == err)
+      return win32_errlist[i].msg;
 
   return psprintf("WIN32 error %u", err);
 }
@@ -491,6 +512,9 @@ BOOL PChannel::ConvertOSError(int error)
       case ERROR_NOT_ENOUGH_MEMORY :
         osError = ENOMEM;
         break;
+      case WSAEINTR :
+        osError = EINTR;
+        break;
       default :
         osError |= 0x40000000;
     }
@@ -520,6 +544,9 @@ BOOL PChannel::ConvertOSError(int error)
       break;
     case EBADF :
       lastError = NotOpen;
+      break;
+    case EINTR :
+      lastError = Interrupted;
       break;
     default :
       lastError = Miscellaneous;
