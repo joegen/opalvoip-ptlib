@@ -8,6 +8,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.2  2003/04/15 08:15:16  craigs
+ * Added single string form of GetSRVRecords
+ *
  * Revision 1.1  2003/04/15 04:12:38  craigs
  * Initial version
  *
@@ -45,22 +48,14 @@ void DNSTest::Main()
 
   PString type = args.GetOptionString('t');
   if (type *= "SRV") {
-    if (args.GetCount() < 3) {
-      Usage();
-      return;
-    }
     PDNS::SRVRecordList srvRecords;
-    if (!PDNS::GetSRVRecords(args[0], args[1], args[2], srvRecords))
+    if (!PDNS::GetSRVRecords(args[0], srvRecords))
       PError << "GetSRVRecords failed" << endl;
     else
       cout << "SRV Returned " << srvRecords << endl;
   }
 
   else if (type *= "MX") {
-    if (args.GetCount() < 1) {
-      Usage();
-      return;
-    }
     PDNS::MXRecordList mxRecords;
     if (!PDNS::GetMXRecords(args[0], mxRecords)) {
       PError << "GetMXRecords failed";
