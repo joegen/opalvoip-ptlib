@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.31 1996/06/10 10:00:00 robertj Exp $
+ * $Id: http.cxx,v 1.32 1996/06/28 13:20:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.32  1996/06/28 13:20:24  robertj
+ * Modified HTTPAuthority so gets PHTTPReqest (mainly for URL) passed in.
+ * Moved HTTP form resource to another compilation module.
+ * Fixed memory leak in POST command.
+ *
  * Revision 1.31  1996/06/10 10:00:00  robertj
  * Added global function for query parameters parsing.
  *
@@ -112,9 +117,9 @@
  */
 
 #include <ptlib.h>
-#include <html.h>
 #include <http.h>
 #include <ctype.h>
+
 
 // undefine to remove support for persistant connections
 #define HAS_PERSISTANCE
@@ -1090,6 +1095,31 @@ BOOL PHTTPSocket::OnError(StatusCode code,
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPSimpleAuth
 
+void PHTTPAuthority::DecodeBasicAuthority(const PString & authInfo,
+                                          PString & username,
+                                          PString & password)
+{
+  PString decoded;
+  if (authInfo(0, 5) *= "Basic ")
+    decoded = PBase64::Decode(authInfo(6, P_MAX_INDEX));
+  else
+    decoded = PBase64::Decode(authInfo);
+
+  PINDEX colonPos = decoded.Find(':');
+  if (colonPos == P_MAX_INDEX) {
+    username = decoded;
+    password = PString();
+  }
+  else {
+    username = decoded.Left(colonPos).Trim();
+    password = decoded.Mid(colonPos+1).Trim();
+  }
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPSimpleAuth
+
 PHTTPSimpleAuth::PHTTPSimpleAuth(const PString & realm_,
                                  const PString & username_,
                                  const PString & password_)
@@ -1105,26 +1135,18 @@ PObject * PHTTPSimpleAuth::Clone() const
 }
 
 
-PString PHTTPSimpleAuth::GetRealm() const
+PString PHTTPSimpleAuth::GetRealm(const PHTTPRequest &) const
 {
   return realm;
 }
 
 
-BOOL PHTTPSimpleAuth::Validate(const PString & authInfo) const
+BOOL PHTTPSimpleAuth::Validate(const PHTTPRequest &,
+                               const PString & authInfo) const
 {
-  PString decoded;
-  if (authInfo(0, 5) *= "Basic ")
-    decoded = PBase64::Decode(authInfo(6, P_MAX_INDEX));
-  else
-    decoded = PBase64::Decode(authInfo);
-
-  PINDEX colonPos = decoded.Find(':');
-  if (colonPos == P_MAX_INDEX) 
-    return FALSE;
-
-  return username == decoded.Left(colonPos).Trim() &&
-         password == decoded(colonPos+1, P_MAX_INDEX).Trim();
+  PString user, pass;
+  DecodeBasicAuthority(authInfo, user, pass);
+  return username == user && password == pass;
 }
 
 
@@ -1136,6 +1158,67 @@ PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM)
 {
   code        = PHTTPSocket::OK;
   contentSize = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPConnectionInfo
+
+PHTTPConnectionInfo::PHTTPConnectionInfo()
+{
+  majorVersion      = 0;
+  minorVersion      = 9;
+
+  isPersistant      = FALSE;
+  isProxyConnection = FALSE;
+}
+
+
+void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
+                                    int major, int minor)
+{
+  majorVersion      = major;
+  minorVersion      = minor;
+
+  isPersistant      = FALSE;
+
+#ifndef HAS_PERSISTANCE
+  isProxyConnection = FALSE;
+#else
+  PString str;
+  // check for Proxy-Connection and Connection strings
+  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
+  if (isProxyConnection)
+    str = mimeInfo[ProxyConnectionStr];
+  else if (mimeInfo.HasKey(ConnectionStr))
+    str = mimeInfo[ConnectionStr];
+
+  // get any connection options
+  if (!str.IsEmpty()) {
+    PStringArray tokens = str.Tokenise(", ", FALSE);
+    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
+  }
+#endif
+}
+
+
+void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
+{
+#ifdef HAS_PERSISTANCE
+  isPersistant = newPersist;
+#else
+  isPersistant = FALSE;
+#endif
+}
+
+
+BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
+{
+  if (minor == 0 && major == 0)
+    return TRUE;
+  else
+    return (majorVersion > major) ||
+           ((majorVersion == major) && (minorVersion >= minor));
 }
 
 
@@ -1204,29 +1287,29 @@ BOOL PHTTPResource::OnGETOrHEAD(PHTTPSocket & socket,
             const PHTTPConnectionInfo & connectInfo,
                                    BOOL isGET)
 {
-  if (!CheckAuthority(socket, info, connectInfo))
-    return TRUE;
-
   if (isGET && info.Contains(IfModifiedSinceStr) &&
                            !IsModifiedSince(PTime(info[IfModifiedSinceStr]))) 
     return socket.OnError(PHTTPSocket::NotModified, url.AsString(), connectInfo);
 
   PHTTPRequest * request = CreateRequest(url, info);
-  socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
-  PTime expiryDate;
-  if (GetExpirationDate(expiryDate))
-    request->outMIME.SetAt(ExpiresStr, expiryDate.AsString(PTime::RFC1123, PTime::GMT));
+  BOOL retVal = FALSE;
+  if (CheckAuthority(socket, *request, connectInfo)) {
+    socket.SetDefaultMIMEInfo(request->outMIME, connectInfo);
 
-  BOOL retVal;
+    PTime expiryDate;
+    if (GetExpirationDate(expiryDate))
+      request->outMIME.SetAt(ExpiresStr,
+                              expiryDate.AsString(PTime::RFC1123, PTime::GMT));
 
-  if (!LoadHeaders(*request)) 
-    retVal = socket.OnError(request->code, url.AsString(), connectInfo);
-  else if (!isGET)
-    retVal = request->outMIME.Contains(ContentLengthStr);
-  else {
-    hitCount++;
-    retVal = OnGETData(socket, url, connectInfo, *request);
+    if (!LoadHeaders(*request)) 
+      retVal = socket.OnError(request->code, url.AsString(), connectInfo);
+    else if (!isGET)
+      retVal = request->outMIME.Contains(ContentLengthStr);
+    else {
+      hitCount++;
+      retVal = OnGETData(socket, url, connectInfo, *request);
+    }
   }
 
   delete request;
@@ -1263,38 +1346,42 @@ BOOL PHTTPResource::OnPOST(PHTTPSocket & socket,
                  const PStringToString & data,
              const PHTTPConnectionInfo & connectInfo)
 {
-  if (!CheckAuthority(socket, info, connectInfo)) 
-    return TRUE;
-
   PHTTPRequest * request = CreateRequest(url, info);
-  PHTML msg;
-  Post(*request, data, msg);
-  if (msg.IsEmpty())
-    return socket.OnError(request->code, "", connectInfo);
 
-  request->outMIME.SetAt(ContentTypeStr, "text/html");
-  if (msg.Is(PHTML::InBody))
-    msg << PHTML::Body();
-  PINDEX len = msg.GetLength();
-  socket.StartResponse(request->code, request->outMIME, len);
-  socket.Write((const char *)msg, len);
+  BOOL persist = TRUE;
+  if (CheckAuthority(socket, *request, connectInfo)) {
+    PHTML msg;
+    persist = Post(*request, data, msg);
 
-  BOOL persist = request->outMIME.Contains(ContentLengthStr);
+    if (msg.IsEmpty())
+      persist = socket.OnError(request->code, "", connectInfo) && persist;
+    else {
+      if (msg.Is(PHTML::InBody))
+        msg << PHTML::Body();
+
+      request->outMIME.SetAt(ContentTypeStr, "text/html");
+
+      PINDEX len = msg.GetLength();
+      socket.StartResponse(request->code, request->outMIME, len);
+      persist = socket.Write((const char *)msg, len) && persist;
+    }
+  }
+
   delete request;
   return persist;
 }
 
 
 BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
-                               const PMIMEInfo & info,
+                            const PHTTPRequest & request,
                      const PHTTPConnectionInfo & connectInfo)
 {
   if (authority == NULL)
     return TRUE;
 
   // if this is an authorisation request...
-  if (info.Contains(PString("Authorization"))) {
-    if (authority->Validate(info["Authorization"]))
+  if (request.inMIME.Contains(PString("Authorization"))) {
+    if (authority->Validate(request, request.inMIME["Authorization"]))
       return TRUE;
 
     socket.OnError(PHTTPSocket::Forbidden, "", connectInfo);
@@ -1304,7 +1391,7 @@ BOOL PHTTPResource::CheckAuthority(PHTTPSocket & socket,
     PMIMEInfo reply;
     socket.SetDefaultMIMEInfo(reply, connectInfo);
     reply.SetAt(WWWAuthenticateStr,
-                              "Basic realm=\"" + authority->GetRealm() + "\"");
+                       "Basic realm=\"" + authority->GetRealm(request) + "\"");
     socket.StartResponse(PHTTPSocket::UnAuthorised, reply, 0);
   }
   return FALSE;
@@ -1663,666 +1750,5 @@ PString PHTTPDirectory::LoadText(PHTTPRequest & request)
   return fakeIndex;
 }
 
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPForm
-
-PHTTPField::PHTTPField(const char * nam, const char * titl, const char * hlp)
-  : name(nam),
-    title(titl != NULL ? titl : nam),
-    help(hlp != NULL ? hlp : "")
-{
-  notInHTML = TRUE;
-}
-
-PObject::Comparison PHTTPField::Compare(const PObject & obj) const
-{
-  PAssert(obj.IsDescendant(PHTTPField::Class()), PInvalidCast);
-  return name.Compare(((const PHTTPField &)obj).name);
-}
-
-
-void PHTTPField::SetHelp(const PString & hotLinkURL,
-                         const PString & linkText)
-{
-  help = "<A HREF=\"" + hotLinkURL + "\">" + linkText + "</A>\r\n";
-}
-
-
-void PHTTPField::SetHelp(const PString & hotLinkURL,
-                         const PString & imageURL,
-                         const PString & imageText)
-{
-  help = "<A HREF=\"" + hotLinkURL + "\"><IMG SRC=\"" +
-             imageURL + "\" ALT=\"" + imageText + "\" ALIGN=absmiddle></A>\r\n";
-}
-
-
-BOOL PHTTPField::Validated(const PString &, PStringStream &) const
-{
-  return TRUE;
-}
-
-
-PHTTPStringField::PHTTPStringField(const char * name,
-                                   PINDEX siz,
-                                   const char * initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help), value(initVal != NULL ? initVal : "")
-{
-  size = siz;
-}
-
-
-PHTTPStringField::PHTTPStringField(const char * name,
-                                   const char * title,
-                                   PINDEX siz,
-                                   const char * initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help), value(initVal != NULL ? initVal : "")
-{
-  size = siz;
-}
-
-
-void PHTTPStringField::GetHTML(PHTML & html)
-{
-  html << PHTML::InputText(name, size, value);
-  notInHTML = FALSE;
-}
-
-
-void PHTTPStringField::SetValue(const PString & val)
-{
-  value = val;
-}
-
-
-PString PHTTPStringField::GetValue() const
-{
-  return value;
-}
-
-
-PHTTPPasswordField::PHTTPPasswordField(const char * name,
-                                       PINDEX siz,
-                                       const char * initVal,
-                                       const char * help)
-  : PHTTPStringField(name, siz, initVal, help)
-{
-}
-
-
-PHTTPPasswordField::PHTTPPasswordField(const char * name,
-                                       const char * title,
-                                       PINDEX siz,
-                                       const char * initVal,
-                                       const char * help)
-  : PHTTPStringField(name, title, siz, initVal, help)
-{
-}
-
-
-void PHTTPPasswordField::GetHTML(PHTML & html)
-{
-  html << PHTML::InputPassword(name, size, value);
-  notInHTML = FALSE;
-}
-
-
-PHTTPIntegerField::PHTTPIntegerField(const char * nam,
-                                     int lo, int hig,
-                                     int initVal,
-                                     const char * unit,
-                                     const char * help)
-  : PHTTPField(nam, NULL, help), units(unit != NULL ? unit : "")
-{
-  low = lo;
-  high = hig;
-  value = initVal;
-}
-
-PHTTPIntegerField::PHTTPIntegerField(const char * nam,
-                                     const char * titl,
-                                     int lo, int hig,
-                                     int initVal,
-                                     const char * unit,
-                                     const char * help)
-  : PHTTPField(nam, titl, help), units(unit != NULL ? unit : "")
-{
-  low = lo;
-  high = hig;
-  value = initVal;
-}
-
-
-BOOL PHTTPIntegerField::Validated(const PString & newVal,
-                                                     PStringStream & msg) const
-{
-  int val = newVal.AsInteger();
-  if (val >= low && val <= high)
-    return TRUE;
-
-  msg << "The field \"" << name << "\" should be between "
-      << low << " and " << high << ".<BR>";
-  return FALSE;
-}
-
-
-void PHTTPIntegerField::GetHTML(PHTML & html)
-{
-  html << PHTML::InputRange(name, low, high, value) << "  " << units;
-  notInHTML = FALSE;
-}
-
-
-void PHTTPIntegerField::SetValue(const PString & val)
-{
-  value = val.AsInteger();
-}
-
-
-PString PHTTPIntegerField::GetValue() const
-{
-  return PString(PString::Signed, value);
-}
-
-
-PHTTPBooleanField::PHTTPBooleanField(const char * name,
-                                     BOOL initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help)
-{
-  value = initVal;
-}
-
-PHTTPBooleanField::PHTTPBooleanField(const char * name,
-                                     const char * title,
-                                     BOOL initVal,
-                                     const char * help)
-  : PHTTPField(name, title, help)
-{
-  value = initVal;
-}
-
-
-void PHTTPBooleanField::GetHTML(PHTML & html)
-{
-  html << PHTML::CheckBox(name, value ? PHTML::Checked : PHTML::UnChecked);
-  notInHTML = FALSE;
-}
-
-
-void PHTTPBooleanField::SetValue(const PString & val)
-{
-  value = val[0] == 'T';
-}
-
-
-PString PHTTPBooleanField::GetValue() const
-{
-  return (value ? "T" : "F");
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const PStringArray & valueArray,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, NULL, help),
-    values(valueArray),
-    titles(valueArray),
-    value(valueArray[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const PStringArray & valueArray,
-                                 const PStringArray & titleArray,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, NULL, help),
-    values(valueArray),
-    titles(titleArray),
-    value(valueArray[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 PINDEX count,
-                                 const char * const * valueStrings,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, NULL, help),
-    values(count, valueStrings),
-    titles(count, valueStrings),
-    value(valueStrings[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 PINDEX count,
-                                 const char * const * valueStrings,
-                                 const char * const * titleStrings,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, NULL, help),
-    values(count, valueStrings),
-    titles(count, titleStrings),
-    value(valueStrings[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const char * groupTitle,
-                                 const PStringArray & valueArray,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, groupTitle, help),
-    values(valueArray),
-    titles(valueArray),
-    value(valueArray[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const char * groupTitle,
-                                 const PStringArray & valueArray,
-                                 const PStringArray & titleArray,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, groupTitle, help),
-    values(valueArray),
-    titles(titleArray),
-    value(valueArray[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const char * groupTitle,
-                                 PINDEX count,
-                                 const char * const * valueStrings,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, groupTitle, help),
-    values(count, valueStrings),
-    titles(count, valueStrings),
-    value(valueStrings[initVal])
-{
-}
-
-
-PHTTPRadioField::PHTTPRadioField(const char * name,
-                                 const char * groupTitle,
-                                 PINDEX count,
-                                 const char * const * valueStrings,
-                                 const char * const * titleStrings,
-                                 PINDEX initVal,
-                                 const char * help)
-  : PHTTPField(name, groupTitle, help),
-    values(count, valueStrings),
-    titles(count, titleStrings),
-    value(valueStrings[initVal])
-{
-}
-
-
-void PHTTPRadioField::GetHTML(PHTML & html)
-{
-  for (PINDEX i = 0; i < values.GetSize(); i++)
-    html << PHTML::RadioButton(name, values[i],
-                        values[i] == value ? PHTML::Checked : PHTML::UnChecked)
-         << titles[i]
-         << PHTML::BreakLine();
-  notInHTML = FALSE;
-}
-
-
-PString PHTTPRadioField::GetValue() const
-{
-  return value;
-}
-
-
-void PHTTPRadioField::SetValue(const PString & val)
-{
-  value = val;
-}
-
-
-PHTTPSelectField::PHTTPSelectField(const char * name,
-                                   const PStringArray & valueArray,
-                                   PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help),
-    values(valueArray)
-{
-  if (initVal < valueArray.GetSize())
-    value = valueArray[initVal];
-}
-
-
-PHTTPSelectField::PHTTPSelectField(const char * name,
-                                   PINDEX count,
-                                   const char * const * valueStrings,
-                                   PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, NULL, help),
-    values(count, valueStrings)
-{
-  if (initVal < count)
-    value = valueStrings[initVal];
-}
-
-
-PHTTPSelectField::PHTTPSelectField(const char * name,
-                                   const char * title,
-                                   const PStringArray & valueArray,
-                                   PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help),
-    values(valueArray)
-{
-  if (initVal < valueArray.GetSize())
-    value = valueArray[initVal];
-}
-
-
-PHTTPSelectField::PHTTPSelectField(const char * name,
-                                   const char * title,
-                                   PINDEX count,
-                                   const char * const * valueStrings,
-                                   PINDEX initVal,
-                                   const char * help)
-  : PHTTPField(name, title, help),
-    values(count, valueStrings),
-    value(valueStrings[initVal])
-{
-}
-
-
-void PHTTPSelectField::GetHTML(PHTML & html)
-{
-  html << PHTML::Select(name);
-  for (PINDEX i = 0; i < values.GetSize(); i++)
-    html << PHTML::Option(
-                    values[i] == value ? PHTML::Selected : PHTML::NotSelected)
-         << values[i];
-  html << PHTML::Select();
-  notInHTML = FALSE;
-}
-
-
-PString PHTTPSelectField::GetValue() const
-{
-  return value;
-}
-
-
-void PHTTPSelectField::SetValue(const PString & val)
-{
-  value = val;
-}
-
-
-
-PHTTPForm::PHTTPForm(const PURL & url)
-  : PHTTPString(url)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url, const PHTTPAuthority & auth)
-  : PHTTPString(url, auth)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url, const PString & html)
-  : PHTTPString(url, html)
-{
-}
-
-PHTTPForm::PHTTPForm(const PURL & url,
-                     const PString & html,
-                     const PHTTPAuthority & auth)
-  : PHTTPString(url, html, auth)
-{
-}
-
-
-PHTTPField * PHTTPForm::Add(PHTTPField * fld)
-{
-  PAssertNULL(fld);
-  PAssert(!fieldNames[fld->GetName()], "Field already on form!");
-  fieldNames += fld->GetName();
-  fields.Append(fld);
-  return fld;
-}
-
-
-void PHTTPForm::BuildHTML(const char * heading)
-{
-  PHTML html = heading;
-  BuildHTML(html);
-}
-
-
-void PHTTPForm::BuildHTML(const PString & heading)
-{
-  PHTML html = heading;
-  BuildHTML(html);
-}
-
-
-void PHTTPForm::BuildHTML(PHTML & html, BuildOptions option)
-{
-  if (!html.Is(PHTML::InForm))
-    html << PHTML::Form("POST");
-
-  html << PHTML::Table();
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    if (fields[fld].NotYetInHTML()) {
-      html << PHTML::TableRow()
-           << PHTML::TableData("align=right")
-           << fields[fld].GetTitle()
-           << PHTML::TableData("align=left");
-      fields[fld].GetHTML(html);
-      html << PHTML::TableData()
-           << fields[fld].GetHelp();
-    }
-  }
-  html << PHTML::Table();
-  if (option != InsertIntoForm)
-    html << PHTML::Paragraph()
-         << ' ' << PHTML::SubmitButton("Accept")
-         << ' ' << PHTML::ResetButton("Reset")
-         << PHTML::Form();
-
-  if (option == CompleteHTML) {
-    html << PHTML::Body();
-    string = html;
-  }
-}
-
-
-BOOL PHTTPForm::Post(PHTTPRequest & request,
-                     const PStringToString & data,
-                     PHTML & msg)
-{
-  msg = "Error in Request";
-  if (data.GetSize() == 0) {
-    msg << "No parameters changed." << PHTML::Body();
-    request.code = PHTTPSocket::NoContent;
-    return TRUE;
-  }
-
-  BOOL good = TRUE;
-  PINDEX fld;
-  for (fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name) && !field.Validated(data[name], msg))
-      good = FALSE;
-  }
-
-  if (!good) {
-    msg << PHTML::Body();
-    request.code = PHTTPSocket::BadRequest;
-    return TRUE;
-  }
-
-  for (fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name))
-      field.SetValue(data[name]);
-    else
-      field.SetValue("");
-  }
-
-  msg = "Accepted New Configuration";
-  msg << PHTML::Body();
-  return TRUE;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPConfig
-
-PHTTPConfig::PHTTPConfig(const PURL & url,
-                         const PString & sect)
-  : PHTTPForm(url), section(sect)
-{
-}
-
-
-PHTTPConfig::PHTTPConfig(const PURL & url,
-                         const PString & sect,
-                         const PHTTPAuthority & auth)
-  : PHTTPForm(url, auth), section(sect)
-{
-}
-
-
-PHTTPConfig::PHTTPConfig(const PURL & url,
-                         const PString & html,
-                         const PString & sect)
-  : PHTTPForm(url, html), section(sect)
-{
-}
-
-
-PHTTPConfig::PHTTPConfig(const PURL & url,
-                         const PString & html,
-                         const PString & sect,
-                         const PHTTPAuthority & auth)
-  : PHTTPForm(url, html, auth), section(sect)
-{
-}
-
-
-BOOL PHTTPConfig::Post(PHTTPRequest & request,
-                       const PStringToString & data,
-                       PHTML & msg)
-{
-  PHTTPForm::Post(request, data, msg);
-  if (request.code != PHTTPSocket::OK)
-    return TRUE;
-
-  PConfig cfg(section);
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    const PCaselessString & name = field.GetName();
-    if (data.Contains(name)) {
-      if (&field == keyField) {
-        PString key = field.GetValue();
-        if (!key.IsEmpty())
-          cfg.SetString(key, valField->GetValue());
-      }
-      else if (&field != valField)
-        cfg.SetString(name, field.GetValue());
-    }
-  }
-  return TRUE;
-}
-
-
-void PHTTPConfig::SetConfigValues()
-{
-  PConfig cfg(section);
-  for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
-    PHTTPField & field = fields[fld];
-    field.SetValue(cfg.GetString(field.GetName(), field.GetValue()));
-  }
-}
-
-
-void PHTTPConfig::AddNewKeyFields(PHTTPField * keyFld,
-                                  PHTTPField * valFld)
-{
-  keyField = PAssertNULL(keyFld);
-  Add(keyFld);
-  valField = PAssertNULL(valFld);
-  Add(valFld);
-}
-
-PHTTPConnectionInfo::PHTTPConnectionInfo()
-{
-  majorVersion      = 0;
-  minorVersion      = 9;
-
-  isPersistant      = FALSE;
-  isProxyConnection = FALSE;
-}
-
-void PHTTPConnectionInfo::Construct(const PMIMEInfo & mimeInfo,
-                                    int major, int minor)
-{
-  majorVersion      = major;
-  minorVersion      = minor;
-
-  isPersistant      = FALSE;
-
-#ifndef HAS_PERSISTANCE
-  isProxyConnection = FALSE;
-#else
-  PString str;
-  // check for Proxy-Connection and Connection strings
-  isProxyConnection = mimeInfo.HasKey(ProxyConnectionStr);
-  if (isProxyConnection)
-    str = mimeInfo[ProxyConnectionStr];
-  else if (mimeInfo.HasKey(ConnectionStr))
-    str = mimeInfo[ConnectionStr];
-
-  // get any connection options
-  if (!str.IsEmpty()) {
-    PStringArray tokens = str.Tokenise(", ", FALSE);
-    isPersistant = tokens.GetStringsIndex(KeepAliveStr) != P_MAX_INDEX;
-  }
-#endif
-}
-
-void PHTTPConnectionInfo::SetPersistance(BOOL newPersist)
-{
-#ifdef HAS_PERSISTANCE
-  isPersistant = newPersist;
-#else
-  isPersistant = FALSE;
-#endif
-}
-
-BOOL PHTTPConnectionInfo::IsCompatible(int major, int minor) const
-{
-  if (minor == 0 && major == 0)
-    return TRUE;
-  else
-    return (majorVersion > major) ||
-           ((majorVersion == major) && (minorVersion >= minor));
-}
 
 // End Of File ///////////////////////////////////////////////////////////////
