@@ -1,5 +1,5 @@
 /*
- * $Id: dict.h,v 1.3 1994/12/21 11:52:51 robertj Exp $
+ * $Id: dict.h,v 1.4 1995/01/09 12:35:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: dict.h,v $
- * Revision 1.3  1994/12/21 11:52:51  robertj
+ * Revision 1.4  1995/01/09 12:35:31  robertj
+ * Removed unnecesary return value from I/O functions.
+ * Changes due to Mac port.
+ *
+ * Revision 1.3  1994/12/21  11:52:51  robertj
  * Documentation and variable normalisation.
  *
  * Revision 1.2  1994/12/17  01:36:57  robertj
@@ -59,7 +63,7 @@ PDECLARE_CLASS(POrdinalKey, PObject)
        Returns: hash table bucket number.
      */
 
-    virtual ostream & PrintOn(ostream & strm) const;
+    virtual void PrintOn(ostream & strm) const;
     /* Output the ordinal index to the specified stream. This is identical to
        outputting the PINDEX, ie integer, value.
 
@@ -959,6 +963,10 @@ PDECLARE_CLASS(POrdinalDictionary, PAbstractDictionary)
       { return (POrdinalKey *)PAbstractDictionary::GetAt(key); } \
     inline virtual BOOL SetDataAt(PINDEX index, PINDEX ordinal) \
      {return PAbstractDictionary::SetDataAt(index,PNEW POrdinalKey(ordinal));}\
+    inline virtual BOOL SetAt(PINDEX idx, PObject * obj) \
+      { return PAbstractDictionary::SetAt(idx, obj); } \
+    inline virtual BOOL SetAt(const PObject & key, PObject * obj) \
+      { return PAbstractDictionary::SetAt(key, obj); } \
     inline virtual BOOL SetAt(const K & key, PINDEX ordinal) \
       { return PAbstractDictionary::SetAt(key, PNEW POrdinalKey(ordinal)); } \
     inline const K & GetKeyAt(PINDEX index) const \
