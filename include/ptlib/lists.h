@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.30  2005/01/09 06:35:03  rjongbloed
+ * Fixed ability to make Clone() or MakeUnique() of a sorted list.
+ *
  * Revision 1.29  2004/04/09 03:42:34  csoutheren
  * Removed all usages of "virtual inline" and "inline virtual"
  *
@@ -1024,10 +1027,16 @@ class PAbstractSortedList : public PCollection
     };
 
     struct Info {
+      Info();
+
       Element * root;
       Element * lastElement;
       PINDEX    lastIndex;
       Element   nil;
+
+      Element * Successor(const Element * node) const;
+      Element * Predecessor(const Element * node) const;
+      Element * OrderSelect(Element * node, PINDEX index) const;
     } * info;
 
     // New functions for class
@@ -1035,9 +1044,6 @@ class PAbstractSortedList : public PCollection
     void LeftRotate(Element * node);
     void RightRotate(Element * node);
     void DeleteSubTrees(Element * node, BOOL deleteObject);
-    Element * Successor(const Element * node) const;
-    Element * Predecessor(const Element * node) const;
-    Element * OrderSelect(Element * node, PINDEX index) const;
     PINDEX ValueSelect(const Element * node, const PObject & obj, const Element ** lastElement) const;
 };
 
