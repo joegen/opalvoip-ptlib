@@ -24,6 +24,10 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.27  2002/01/17 20:20:46  dereks
+ * Adjust PVideoInputDevice::SetVFlipState to cope better when a converter class is
+ * not attached.   Thanks  Walter Whitlock.
+ *
  * Revision 1.26  2002/01/16 07:51:16  robertj
  * MSVC compatibilty changes
  *
@@ -663,7 +667,8 @@ BOOL PVideoInputDevice::GetVFlipState()
 BOOL PVideoInputDevice::SetVFlipState(BOOL newVFlip) 
 {
   if ( converter == NULL )
-    return FALSE;
+    // no converter (yet), any new converter will have doVFlip = FALSE
+    return !newVFlip;
   converter->SetVFlipState(newVFlip);
   return TRUE;
 } 
