@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.13 1995/04/25 11:12:30 robertj Exp $
+ * $Id: telnet.h,v 1.14 1995/06/04 12:46:26 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
+ * Revision 1.14  1995/06/04 12:46:26  robertj
+ * Slight redesign of port numbers on sockets.
+ *
  * Revision 1.13  1995/04/25 11:12:30  robertj
  * Fixed functions hiding ancestor virtuals.
  *
@@ -59,14 +62,11 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
  */
 
   public:
-    PTelnetSocket(
-      WORD port = 0             // Port number to use for the connection.
-    );
+    PTelnetSocket();
     // Create an unopened TELNET socket.
 
     PTelnetSocket(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port = 0             // Port number to use for the connection.
+      const PString & address  // Address of remote machine to connect to.
     );
     // Create an opened TELNET socket.
 
@@ -112,11 +112,10 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
 
     virtual BOOL Open(
-      const PString & address,  // Address of remote machine to connect to.
-      WORD port = 0             // Port number to use for the connection.
+      const PString & address   // Address of remote machine to connect to.
     );
     virtual BOOL Open(
-      WORD port = 0             // Port number to use for the connection.
+      WORD port                 // Port number to use for the connection.
     );
     virtual BOOL Open(
       PSocket & socket          // Listening socket making the connection.
@@ -465,7 +464,6 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
     unsigned synchronising;
 
-    void _Open();
     BOOL StartSend(const char * which, BYTE code);
 };
 
