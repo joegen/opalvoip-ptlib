@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.28  2004/07/06 10:12:51  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.27  2004/06/01 07:32:45  csoutheren
  * Removed warning on Linux
  *
@@ -395,7 +398,14 @@ class PURLScheme : public PObject
     virtual PString AsString(PURL::UrlFormat fmt, const PURL & purl) const = 0;
 };
 
+#ifndef P_DISABLE_FACTORY_INSTANCES
+#  ifndef  P_FACTORY_INSTANCE_PURLScheme
+#    define P_FACTORY_INSTANCE_PURLScheme 1
+#      pragma message("Including PURLScheme factory loader")
+       PLOAD_FACTORY(PURLScheme, PString)
+#  endif
 #endif
 
+#endif
 
 // End Of File ///////////////////////////////////////////////////////////////
