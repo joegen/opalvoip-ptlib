@@ -54,13 +54,15 @@ PThread::PThread()
 
 PThread::~PThread()
 {
+  if (this == (PThread *)&PProcess::Current())
+    return;
+
   // can never destruct ourselves, unless we are the system process
-  PAssert(this == (PThread *)&PProcess::Current() ||
-          this != PThread::Current(),
-          "Thread attempted suicide!");
+  PAssert(this != PThread::Current(), "Thread attempted suicide!");
 
   // call the terminate function so overloads work properly
-  Terminate();
+  if (!IsTerminated())
+    Terminate();
 
   // now we can terminate
   FreeStack();
@@ -97,7 +99,8 @@ static void Copy_Fd_Sets(fd_set & dr, fd_set & dw, fd_set & de,
 BOOL PThread::IsNoLongerBlocked()
 {
   // check signals
-  PProcess::Current().PXCheckSignals();
+  PProcess & process = PProcess::Current();
+  process.PXCheckSignals();
 
   // if are blocked on a child process, see if that child is still going
   if (waitPid > 0) 
@@ -121,7 +124,7 @@ BOOL PThread::IsNoLongerBlocked()
   Copy_Fd_Sets(rfds, wfds, efds, *read_fds, *write_fds, *exception_fds, handleWidth);
 
   // check signals on the way in
-  PProcess::Current().PXCheckSignals();
+  process.PXCheckSignals();
 
   // do the select
   selectReturnVal = SELECT (handleWidth,
@@ -129,7 +132,7 @@ BOOL PThread::IsNoLongerBlocked()
                             &timeout);
 
   // check signals on the way out
-  PProcess::Current().PXCheckSignals();
+  process.PXCheckSignals();
   
   Copy_Fd_Sets(*read_fds, *write_fds, *exception_fds, rfds, wfds, efds, handleWidth);
 
