@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.25  1999/09/02 11:56:35  robertj
+ * Fixed problem with destroying PMutex that is already locked.
+ *
  * Revision 1.24  1999/08/24 13:40:56  craigs
  * Fixed problem with condwait destorys failing on linux
  *
@@ -391,12 +394,11 @@ void PThread::PX_ThreadEnd(void * arg)
   process.activeThreads.SetAt(thread->PX_GetThreadId(), NULL);
   process.threadMutex.Signal();
   
+  thread->PX_threadId = 0;  // Prevent terminating terminated thread
+
   // delete the thread if required
-  if (thread->autoDelete) {
-    thread->PX_threadId = 0;  // Prevent terminating terminated thread
+  if (thread->autoDelete)
     delete thread;
-//    printf("auto deleted thread object\n");
-  }
 }
 
 
@@ -703,6 +705,12 @@ BOOL PSemaphore::WillBlock() const
 PMutex::PMutex()
   : PSemaphore(1, 1)
 {
+}
+
+
+PMutex::~PMutex()
+{
+  pthread_mutex_unlock(&mutex);
 }
 
 
