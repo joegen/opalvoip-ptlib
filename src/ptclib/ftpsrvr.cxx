@@ -1,5 +1,5 @@
 /*
- * $Id: ftpsrvr.cxx,v 1.1 1996/09/14 13:02:35 robertj Exp $
+ * $Id: ftpsrvr.cxx,v 1.2 1996/10/26 01:39:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.2  1996/10/26 01:39:49  robertj
+ * Added check for security breach using 3 way FTP transfer or use of privileged PORT.
+ *
  * Revision 1.1  1996/09/14 13:02:35  robertj
  * Initial revision
  *
@@ -41,6 +44,7 @@ PFTPServer::PFTPServer(const PString & readyStr)
 
 void PFTPServer::Construct()
 {
+  thirdPartyPort = FALSE;
   illegalPasswordCount = 0;
   state     = NotConnected;
   type      = 'A';
@@ -248,17 +252,24 @@ BOOL PFTPServer::OnUnknown(const PCaselessString & command)
 }
 
 
-void PFTPServer::OnNotImplemented(PINDEX cmdNum)
+void PFTPServer::OnError(PINDEX errorCode, PINDEX cmdNum, const char * msg)
 {
   if (cmdNum < commandNames.GetSize())
-    WriteResponse(502, "Command \"" + commandNames[cmdNum] + "\" not implemented");
+    WriteResponse(errorCode, "Command \"" + commandNames[cmdNum] + "\":" + msg);
+  else
+    WriteResponse(errorCode, msg);
+}
+
+
+void PFTPServer::OnNotImplemented(PINDEX cmdNum)
+{
+  OnError(502, cmdNum, "not implemented");
 }
 
 
 void PFTPServer::OnSyntaxError(PINDEX cmdNum)
 {
-  if (cmdNum < commandNames.GetSize())
-    WriteResponse(501, "\"" + commandNames[cmdNum] + "\" : syntax error in parameters or arguments.");
+  OnError(501, cmdNum, "syntax error in parameters or arguments.");
 }
 
 
@@ -323,10 +334,24 @@ BOOL PFTPServer::OnPORT(const PCaselessString & args)
   if (i < 6) 
     OnSyntaxError(PORT);
   else {
-    remoteHost = PIPSocket::Address((BYTE)values[0],
-                            (BYTE)values[1], (BYTE)values[2], (BYTE)values[3]);
-    remotePort = (WORD)(values[4]*256 + values[5]);
-    OnCommandSuccessful(PORT);
+    PIPSocket * socket = GetSocket();
+    if (socket == NULL)
+      OnError(590, PORT, "not available on non-TCP transport.");
+    else {
+      remoteHost = PIPSocket::Address((BYTE)values[0],
+                              (BYTE)values[1], (BYTE)values[2], (BYTE)values[3]);
+      remotePort = (WORD)(values[4]*256 + values[5]);
+      if (remotePort < 1024 && remotePort != socket->GetPort()-1)
+        OnError(590, PORT, "cannot access privileged port number.");
+      else {
+        PIPSocket::Address controlHost;
+        GetSocket()->GetPeerAddress(controlHost);
+        if (thirdPartyPort || remoteHost == controlHost)
+          OnCommandSuccessful(PORT);
+        else
+          OnError(591, PORT, "three way transfer not allowed.");
+      }
+    }
   }
   return TRUE;
 }
