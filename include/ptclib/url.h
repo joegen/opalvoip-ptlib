@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: url.h,v $
+ * Revision 1.30  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.29  2004/07/07 07:18:43  csoutheren
  * Removed warnings on Linux from Windows static global hacks
  *
@@ -122,6 +125,8 @@
 #ifdef P_USE_PRAGMA
 #pragma interface
 #endif
+
+#include <ptlib.h>
 
 //////////////////////////////////////////////////////////////////////////////
 // PURL

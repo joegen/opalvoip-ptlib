@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psasl.h,v $
+ * Revision 1.3  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.2  2004/04/28 11:26:42  csoutheren
  * Hopefully fixed SASL and SASL2 problems
  *
@@ -42,6 +45,7 @@
 #pragma interface
 #endif
 
+#include <ptlib.h>
 
 class PSASLClient : public PObject
 {

@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.h,v $
+ * Revision 1.16  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.15  2004/11/08 04:07:40  csoutheren
  * Fixed crash opportunity under some conditions
  * Fixed incorrect WAV file type display
@@ -113,6 +116,8 @@
 //#ifdef P_USE_PRAGMA
 //#pragma interface
 //#endif
+
+#include <ptlib.h>
 
 class PWAVFile;
 

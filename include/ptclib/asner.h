@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.44  2004/11/11 07:34:50  csoutheren
+ * Added #include <ptlib.h>
+ *
  * Revision 1.43  2004/04/18 04:33:35  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -190,6 +193,7 @@ class PXMLElement;
 #undef      P_INCLUDE_XER
 #endif
 
+#include <ptlib.h>
 
 /////////////////////////////////////////////////////////////////////////////
 
