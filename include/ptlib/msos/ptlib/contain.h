@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.5 1995/01/06 10:47:08 robertj Exp $
+ * $Id: contain.h,v 1.6 1995/01/09 12:28:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
- * Revision 1.5  1995/01/06 10:47:08  robertj
+ * Revision 1.6  1995/01/09 12:28:45  robertj
+ * Moved EXPORTED definition from applicat.h
+ *
+ * Revision 1.5  1995/01/06  10:47:08  robertj
  * Added 64 bit integer.
  *
  * Revision 1.4  1994/11/19  00:18:26  robertj
@@ -36,6 +39,8 @@
 
 #define STRICT
 #include <windows.h>
+
+#define EXPORTED WINAPI _export
 
 #else
 
