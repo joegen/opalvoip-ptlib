@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.9 1996/02/15 14:53:36 robertj Exp $
+ * $Id: winsock.cxx,v 1.10 1996/02/19 13:52:39 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.10  1996/02/19 13:52:39  robertj
+ * Added SO_LINGER option to socket to stop data loss on close.
+ * Fixed error reporting for winsock classes.
+ *
  * Revision 1.9  1996/02/15 14:53:36  robertj
  * Added Select() function to PSocket.
  *
@@ -176,10 +180,11 @@ BOOL PSocket::ConvertOSError(int error)
     return TRUE;
   }
 
-  osError = WSAGetLastError();
 #ifdef _WIN32
-  SetLastError(osError);
-#endif
+  SetLastError(WSAGetLastError());
+  return PChannel::ConvertOSError(-2);
+#else
+  osError = WSAGetLastError();
   switch (osError) {
     case 0 :
       lastError = NoError;
@@ -188,9 +193,11 @@ BOOL PSocket::ConvertOSError(int error)
       lastError = Timeout;
       break;
     default :
+      osError |= 0x40000000;
       lastError = Miscellaneous;
   }
   return FALSE;
+#endif
 }
 
 
@@ -250,7 +257,11 @@ BOOL PTCPSocket::Accept(PSocket & socket)
     return FALSE;
 
   port = ntohs(address.sin_port);
-  return TRUE;
+
+  // Wait 10 seconds for close to flush output
+  static linger ling = { 1, 10 };
+  return ConvertOSError(setsockopt(os_handle,
+                          SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
 }
 
 
