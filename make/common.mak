@@ -1,7 +1,7 @@
 #
 # common.mak
 #
-# Common make rules for pwlib
+# Common make rules included in ptlib.mak and pwlib.mak
 #
 # Portable Windows Library
 #
@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.28  1998/12/02 02:36:57  robertj
+# New directory structure.
+#
 # Revision 1.27  1998/11/26 12:48:20  robertj
 # Support for .c files.
 #
@@ -57,17 +60,14 @@
 ######################################################################
 
 
-VPATH_H		:= $(VPATH_H) $(COMMONDIR) 
-
 vpath %.cxx $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
-vpath %.h   $(VPATH_H)
 vpath %.o   $(OBJDIR)
 
 #
 # add common directory to include path - must be after PW and PT directories
 #
-STDCCFLAGS	:= $(STDCCFLAGS) -I$(COMMONDIR)
+STDCCFLAGS	:= $(STDCCFLAGS) -I$(PWLIBDIR)/include
 
 #
 # add any trailing libraries
@@ -78,11 +78,11 @@ LDLIBS		:= $(LDLIBS) $(ENDLDLIBS)
 # define rule for .cxx and .c files
 #
 $(OBJDIR)/%.o : %.cxx 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJDIR)/%.o : %.c 
-	@if [ ! -d $(OBJDIR) ] ; then mkdir $(OBJDIR) ; fi
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
 	$(CC) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) -c $< -o $@
 
 #
@@ -104,15 +104,14 @@ DEPS	:= $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(DEPS)))
 # define rule for .dep files
 #
 $(DEPDIR)/%.dep : %.cxx 
-	@if [ ! -d $(DEPDIR) ] ; then mkdir $(DEPDIR) ; fi
+	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
 	@printf %s $(OBJDIR)/ > $@
 	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
 
 #
 # add in good files to delete
 #
-CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS) $(DEPS)
-CLEAN_FILES	:= $(CLEAN_FILES) core
+CLEAN_FILES	:= $(CLEAN_FILES) $(OBJS) $(DEPS) core
 
 ######################################################################
 #
@@ -207,7 +206,7 @@ endif
 ######################################################################
 
 both:
-	$(MAKE) DEBUG=; $(MAKE) DEBUG=1
+	$(MAKE) DEBUG=1; $(MAKE) DEBUG=
 
 shared:
 	$(MAKE) SHAREDLIB=1 
@@ -218,10 +217,6 @@ bothshared:
 bothdepend:
 	$(MAKE) DEBUG= depend; $(MAKE) DEBUG=1 depend
 
-alllibs:
-	$(MAKE) both
-	$(MAKE) bothshared
-
 static:
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
@@ -231,6 +226,13 @@ static:
 	for f in $(STATIC_LIBS) ; do \
 	  rm -f $(LIBDIR)/$$f ; \
 	done
+
+libs:
+	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix
+ifdef GUI
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI)
+endif
+
 
 ######################################################################
 #
@@ -250,6 +252,7 @@ buildnum.c:
 
 endif
 
+
 ######################################################################
 #
 # rules for creating PW resources
@@ -266,38 +269,21 @@ TMPRSRC	= resource.tmp
 
 $(RESCXX) $(RESCODE) $(RESHDR): $(RESOURCE)
 	@if test -e $(RESHDR) ; then mv $(RESHDR) $(TMPRSRC) ; fi
-	$(PWRC) -v $(PFLAGS) $(RESOURCE)
-	@if test -e $(TMPRSRC) && diff $(RESHDR) $(TMPRSRC) ; then cp $(TMPRSRC) $(RESHDR) ; else rm -f $(TMPRSRC) ;  fi
+	$(PWRC) -v $(RCFLAGS) $(RESOURCE)
+	@if test -e $(TMPRSRC) && diff -q $(RESHDR) $(TMPRSRC) ; then cp $(TMPRSRC) $(RESHDR) ; else rm -f $(TMPRSRC) ;  fi
 
 endif
 endif
 
 
+######################################################################
 #
 # Include all of the dependencies
 #
+######################################################################
+
 -include $(DEPDIR)/*.dep
 
 
-######################################################################
-#
-# setup the lib directory
-#
-######################################################################
+# End of common.mak
 
-ifdef GUI
-libdir:
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
-	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
-	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
-	ln -sf $(PWLIBDIR)/unix/src/pwlib.mak  $(LIBDIR)/pwlib.mak
-	ln -sf $(PWLIBDIR)/$(GUI)/src/$(GUI).mak  $(LIBDIR)/$(GUI).mak
-	ln -sf $(PWLIBDIR)/$(GUI)/src/pw_$(GUI).mak  $(LIBDIR)/pw_$(GUI).mak
-else
-libdir:
-	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-	ln -sf $(PWLIBDIR)/unix/src/unix.mak   $(LIBDIR)/unix.mak
-	ln -sf $(PWLIBDIR)/unix/src/common.mak $(LIBDIR)/common.mak
-	ln -sf $(PWLIBDIR)/unix/src/ptlib.mak  $(LIBDIR)/ptlib.mak
-endif
