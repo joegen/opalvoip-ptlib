@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.13  2003/03/20 23:40:51  dereks
+ * Fix minor problems with using null pointers.
+ *
  * Revision 1.12  2003/03/17 07:47:42  robertj
  * Removed redundant "render now" function.
  * Made significant enhancements to PVideoOutputDevice class.
@@ -164,10 +167,23 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
 
   if (mpOutput == NULL)
     return FALSE;
-  
+
+
+  if (mpInput == NULL) {
+    PTRACE(6,"PVC\t::Write, frame size is "
+	 << mpOutput->GetFrameWidth() << "x" << mpOutput->GetFrameHeight() << 
+	 " VideoGrabber is unavailabile");
+    return mpOutput->SetFrameData(0, 0,
+				  mpOutput->GetFrameWidth(), mpOutput->GetFrameHeight(),
+				  (const BYTE *)buf, TRUE);
+  }
+
+  PTRACE(6,"PVC\t::Write, frame size is "
+	 << mpInput->GetFrameWidth() << "x" << mpInput->GetFrameHeight() << 
+	 " VideoGrabber is source of size");
   return mpOutput->SetFrameData(0, 0,
-                                mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-                                (const BYTE *)buf, TRUE);
+				mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
+			     (const BYTE *)buf, TRUE);  
 }
 
 BOOL PVideoChannel::Close()
@@ -301,6 +317,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 
 void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)     
 { 
+  PTRACE(6, "PVC\t Set Grabber frame size to " << _width << "x" << _height);
   PWaitAndSignal m(accessMutex);
 
   if (mpInput != NULL)
@@ -309,6 +326,7 @@ void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)
 
 void  PVideoChannel::SetRenderFrameSize(int _width, int _height) 
 { 
+  PTRACE(6, "PVC\t Set Renderer frame size to " << _width << "x" << _height);
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput != NULL)
@@ -327,14 +345,8 @@ PVideoOutputDevice *PVideoChannel::GetVideoPlayer()
 
 BOOL  PVideoChannel::Redraw(const void * frame) 
 { 
-  PWaitAndSignal m(accessMutex);
-
-  if (mpOutput != NULL)
-    return mpOutput->SetFrameData(0, 0,
-                                  mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
-                                  (const BYTE *)frame, TRUE);
-
-  return FALSE;
+  PTRACE(6,"PVC\t::Redraw a frame");
+  return Write(frame, 0);
 }
 
 PINDEX   PVideoChannel::GetRenderWidth()
