@@ -1,5 +1,5 @@
 /*
- * $Id: html.h,v 1.12 1996/04/14 02:52:02 robertj Exp $
+ * $Id: html.h,v 1.13 1996/06/01 04:18:40 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: html.h,v $
+ * Revision 1.13  1996/06/01 04:18:40  robertj
+ * Fixed bug in RadioButton, having 2 VALUE fields
+ *
  * Revision 1.12  1996/04/14 02:52:02  robertj
  * Added hidden fields to HTML.
  *
@@ -731,61 +734,60 @@ PDECLARE_CLASS(PHTML, PStringStream)
       UnChecked,
       Checked
     };
-    class CheckBox : public InputField {
+    class RadioButton : public InputField {
       public:
-        CheckBox(
+        RadioButton(
           const char * fname,
+          const char * value,
           const char * attr = NULL
         );
-        CheckBox(
+        RadioButton(
           const char * fname,
+          const char * value,
           DisableCodes disabled,
           const char * attr = NULL
         );
-        CheckBox(
+        RadioButton(
           const char * fname,
+          const char * value,
           CheckedCodes check,
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
       protected:
-        CheckBox(
+        RadioButton(
           const char * type,
           const char * fname,
+          const char * value,
           CheckedCodes check,
           DisableCodes disabled,
           const char * attr
         );
         virtual void AddAttr(PHTML & html) const;
       private:
+        const char * valueString;
         BOOL checkedFlag;
     };
 
-    class RadioButton : public CheckBox {
+    class CheckBox : public RadioButton {
       public:
-        RadioButton(
+        CheckBox(
           const char * fname,
-          const char * value,
           const char * attr = NULL
         );
-        RadioButton(
+        CheckBox(
           const char * fname,
-          const char * value,
           DisableCodes disabled,
           const char * attr = NULL
         );
-        RadioButton(
+        CheckBox(
           const char * fname,
-          const char * value,
           CheckedCodes check,
           DisableCodes disabled = Enabled,
           const char * attr = NULL
         );
-      protected:
-        virtual void AddAttr(PHTML & html) const;
-      private:
-        const char * valueString;
     };
+
 
     class InputRange : public InputField {
       public:
