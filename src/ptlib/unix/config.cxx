@@ -130,6 +130,7 @@ void PConfig::Construct(Source src)
   config = new PXConfig;
   config->AllowDeleteObjects();
   dirty = FALSE;
+  saveOnExit = FALSE;
   
   switch (src) {
     case PConfig::Environment:
@@ -157,6 +158,7 @@ void PConfig::Construct(Source src)
       break;
   }
   ReadConfigFile(filename, *config);
+  saveOnExit = TRUE;
 }
 
 void PConfig::Construct(const PFilePath & theFilename)
@@ -167,30 +169,27 @@ void PConfig::Construct(const PFilePath & theFilename)
   
   ReadConfigFile(filename = theFilename, *config);
   dirty = FALSE;
+  saveOnExit = TRUE;
 }
 
 PConfig::~PConfig()
 
 {
-  if (dirty) {
-
+  if (saveOnExit && dirty) {
     PTextFile file;
-    if (!file.Open(filename, PFile::WriteOnly, PFile::Create))
-      return;
-
-    for (PINDEX i = 0; i < config->GetSize(); i++) {
-      PXConfigSectionList & section = (*config)[i].GetList();
-      file << "[" << (*config)[i] << "]" << endl;
-      for (PINDEX j = 0; j < section.GetSize(); j++) {
-        PXConfigValue & value = section[j];
-        file << value << "=" << value.GetValue() << endl;
+    if (file.Open(filename, PFile::WriteOnly, PFile::Create)) {
+      for (PINDEX i = 0; i < config->GetSize(); i++) {
+        PXConfigSectionList & section = (*config)[i].GetList();
+        file << "[" << (*config)[i] << "]" << endl;
+        for (PINDEX j = 0; j < section.GetSize(); j++) {
+          PXConfigValue & value = section[j];
+          file << value << "=" << value.GetValue() << endl;
+        }
+        file << endl;
       }
-      file << endl;
+      file.Close();
     }
-
-    file.Close();
   }
-
   delete config;
 }
 
