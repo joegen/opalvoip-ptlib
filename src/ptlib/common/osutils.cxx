@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.32 1995/04/22 00:51:00 robertj Exp $
+ * $Id: osutils.cxx,v 1.33 1995/04/25 11:30:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.33  1995/04/25 11:30:06  robertj
+ * Fixed Borland compiler warnings.
+ *
  * Revision 1.32  1995/04/22 00:51:00  robertj
  * Changed file path strings to use PFilePath object.
  * Changed semantics of Rename().
@@ -115,7 +118,7 @@
  *
  */
 
-#include "ptlib.h"
+#include <ptlib.h>
 
 #include <ctype.h>
 
@@ -749,7 +752,11 @@ void PChannel::CloneContents(const PChannel *)
 
 void PChannel::CopyContents(const PChannel & c)
 {
+#ifdef __BORLANDC__
+  init(((PChannel&)c).rdbuf());
+#else
   init(c.rdbuf());
+#endif
   ((PChannelStreamBuffer*)rdbuf())->channel = this;
   os_handle = c.os_handle;
 }
@@ -960,7 +967,7 @@ BOOL PChannel::SendCommandString(const PString & command)
 {
   abortCommandString = FALSE;
 
-  int nextChar = NextCharSend;
+  int nextChar;
   PINDEX sendPosition = 0;
   PTimeInterval timeout;
   SetWriteTimeout(10000);
@@ -1000,7 +1007,7 @@ BOOL PChannel::SendCommandString(const PString & command)
               return FALSE;
           } while (!ReceiveString(nextChar,
                                      command, receivePosition, sendPosition));
-          nextChar = GetNextChar(command, receivePosition);
+//          nextChar = GetNextChar(command, receivePosition);
           sendPosition = receivePosition;
         }
     }
@@ -2057,7 +2064,7 @@ void PProcess::PreInitialise(int argc, char ** argv)
 void PProcess::Terminate()
 {
 #ifdef _WINDLL
-  FatalExit(Termination());
+  FatalExit(terminationValue);
 #else
   exit(terminationValue);
 #endif
