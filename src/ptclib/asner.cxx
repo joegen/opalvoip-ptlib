@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.18  1999/04/26 05:58:48  craigs
+ * Fixed problems with encoding of extensions
+ *
  * Revision 1.17  1999/03/09 08:12:38  robertj
  * Fixed problem with closing a steam encoding twice.
  *
@@ -2515,8 +2518,9 @@ void PASN_Sequence::IncludeOptionalField(PINDEX opt)
   else {
     PAssert(extendable, "Must be extendable type");
     opt -= optionMap.GetSize();
-    if (opt < (PINDEX)extensionMap.GetSize())
-      extensionMap.Set(opt);
+    if (opt >= (PINDEX)extensionMap.GetSize())
+      extensionMap.SetSize(opt+1);
+    extensionMap.Set(opt);
   }
 }
 
@@ -2756,6 +2760,8 @@ BOOL PASN_Sequence::NoExtensionsToEncode(PPER_Stream & strm)
   if (totalExtensions < 0) {
     totalExtensions = extensionMap.GetSize();
     strm.SmallUnsignedEncode(totalExtensions-1);
+    extensionMap.SetConstraints(PASN_ConstrainedObject::FixedConstraint,
+                                totalExtensions, totalExtensions);
     extensionMap.Encode(strm);
   }
 
