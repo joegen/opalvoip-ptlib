@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.81 1997/02/05 11:51:42 robertj Exp $
+ * $Id: osutils.cxx,v 1.82 1997/02/09 04:05:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.82  1997/02/09 04:05:56  robertj
+ * Changed PProcess::Current() from pointer to reference.
+ *
  * Revision 1.81  1997/02/05 11:51:42  robertj
  * Changed current process function to return reference and validate objects descendancy.
  *
@@ -1628,7 +1631,7 @@ void PThread::BeginThread()
 void PThread::Yield()
 {
   // Determine the next thread to schedule
-  PProcess * process = PProcess::Current();
+  PProcess * process = &PProcess::Current();
 
   // The following is static as the SwitchContext function invalidates all
   // automatic variables in this function call.
