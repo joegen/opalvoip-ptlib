@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.39  2004/01/18 14:23:30  dereksmithies
+ * Add new function to make opening of video input devices easier.
+ *
  * Revision 1.38  2004/01/02 23:30:18  rjongbloed
  * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
  *
@@ -817,10 +820,19 @@ class PVideoInputDevice : public PVideoDevice
                                      );
 
     /**
-       Return the video input device that corresponds to the specified name
+       Return the video input device that corresponds to the specified name.
     */
     static PVideoInputDevice *CreateDevice(
                                           const PString &driverName,
+                                          PPluginManager * pluginMgr = NULL
+                                          );
+
+    /* Return the matching video input device that corresponds to the devicename.
+       So, for "fake" return a device that will generate fake video.
+       For "Phillips 680 webcam" (eg) will return appropriate grabber.
+       Note that Phillips will return the appropriate grabber also.
+     */
+    static PVideoInputDevice *CreateDeviceByName(const PString &deviceName,
                                           PPluginManager * pluginMgr = NULL
                                           );
 
