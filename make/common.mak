@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.66  2001/11/28 02:44:14  robertj
+# Fixed attempt to do static link on debug version, causes crashes.
+#
 # Revision 1.65  2001/11/27 22:42:13  robertj
 # Changed to make system to better support non-shared library building.
 #
@@ -199,8 +202,10 @@ ifdef PWLIB_GUI_FLAG
 STDCCFLAGS	+= -D$(PWLIB_GUI_FLAG)
 endif
 
+ifndef DEBUG
 ifneq ($(P_SHAREDLIB),1)
 ENDLDFLAGS += -Xlinker -Bstatic
+endif
 endif
 
 
