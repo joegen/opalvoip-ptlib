@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.27  1999/07/16 10:21:51  robertj
+ * Added paths header file so _PATH_VARRUN is defined for svcprox.
+ *
  * Revision 1.26  1999/03/02 05:41:58  robertj
  * More BeOS changes
  *
@@ -102,6 +105,7 @@ typedef size_t socklen_t;
 extern "C" int sigwait(sigset_t *set);
 #endif
 
+#include <paths.h>
 #include <errno.h>
 #include <dlfcn.h>
 #include <termios.h>
