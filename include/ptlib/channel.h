@@ -1,5 +1,5 @@
 /*
- * $Id: channel.h,v 1.20 1996/05/26 03:24:40 robertj Exp $
+ * $Id: channel.h,v 1.21 1996/07/27 04:15:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: channel.h,v $
+ * Revision 1.21  1996/07/27 04:15:07  robertj
+ * Created static version of ConvertOSError().
+ * Created static version of GetErrorText().
+ *
  * Revision 1.20  1996/05/26 03:24:40  robertj
  * Compatibility to GNU 2.7.x
  *
@@ -445,6 +449,7 @@ PCLASS PChannel : public PObject, public iostream {
       // operation in this object.
 
     PString GetErrorText() const;
+    static PString GetErrorText(Errors lastError, int osError = 0);
       // Return a string indicating the error message that may be displayed to
       // the user. The error for the last I/O operation in this object is used.
 
@@ -456,6 +461,7 @@ PCLASS PChannel : public PObject, public iostream {
 
 
     BOOL ConvertOSError(int error);
+    static BOOL ConvertOSError(int error, Errors & lastError, int & osError);
     /* Convert an operating system error into platform independent error. This
        will set the lastError and osError member variables for access by
        GetErrorCode() and GetErrorNumber().
