@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.15 1996/01/23 13:18:29 robertj Exp $
+ * $Id: collect.cxx,v 1.16 1996/01/28 02:52:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.16  1996/01/28 02:52:45  robertj
+ * Added assert into all Compare functions to assure comparison between compatible objects.
+ *
  * Revision 1.15  1996/01/23 13:18:29  robertj
  * Fixed bug in sorted list GetObjectsIndex not checking if is same object
  * Fixed bug in sorted list append not returning correct value.
@@ -111,6 +114,7 @@ void PArrayObjects::CloneContents(const PArrayObjects * array)
 
 PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PArrayObjects::Class()), PInvalidCast);
   const PArrayObjects & other = (const PArrayObjects &)obj;
   PINDEX i;
   for (i = 0; i < GetSize(); i++) {
@@ -254,6 +258,7 @@ void PAbstractList::CloneContents(const PAbstractList * list)
 
 PObject::Comparison PAbstractList::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PAbstractList::Class()), PInvalidCast);
   Element * elmt1 = info->head;
   Element * elmt2 = ((const PAbstractList &)obj).info->head;
   while (elmt1 != NULL && elmt2 != NULL) {
@@ -507,6 +512,7 @@ BOOL PAbstractSortedList::SetSize(PINDEX)
 
 PObject::Comparison PAbstractSortedList::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PAbstractSortedList::Class()), PInvalidCast);
   Element * elmt1 = info->root;
   while (elmt1->left != NULL)
     elmt1 = elmt1->left;
@@ -941,6 +947,7 @@ PObject * POrdinalKey::Clone() const
 
 PObject::Comparison POrdinalKey::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(POrdinalKey::Class()), PInvalidCast);
   const POrdinalKey & other = (const POrdinalKey &)obj;
   
   if (theKey < other.theKey)
@@ -1158,6 +1165,7 @@ void PHashTable::CloneContents(const PHashTable * hash)
 
 PObject::Comparison PHashTable::Compare(const PObject & obj) const
 {
+  PAssert(obj.IsDescendant(PHashTable::Class()), PInvalidCast);
   return reference != ((const PHashTable &)obj).reference
                                                       ? GreaterThan : EqualTo;
 }
