@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.44  2002/07/04 05:00:36  robertj
+ * Fixed order of calls for OSS driver setup.
+ *
  * Revision 1.43  2002/06/24 20:01:53  rogerh
  * Add support for linux devfs and /dev/sound. Based on code by Snark.
  *
@@ -651,19 +654,6 @@ BOOL PSoundChannel::Setup()
       arg = val = entry.fragmentValue;
       ::ioctl(os_handle, SNDCTL_DSP_SETFRAGMENT, &arg); 
 
-      audio_buf_info info;
-      ::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info);
-      PTRACE(6, "OSS\tOutput: fragments = " << info.fragments
-                     << ", total frags = " << info.fragstotal
-                     << ", frag size   = " << info.fragsize
-                     << ", bytes       = " << info.bytes);
-
-      ::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info);
-      PTRACE(6, "OSS\tInput: fragments = " << info.fragments
-                     << ", total frags = " << info.fragstotal
-                     << ", frag size   = " << info.fragsize
-                     << ", bytes       = " << info.bytes);
-
       mBitsPerSample = entry.bitsPerSample;
 #if PBYTE_ORDER == PLITTLE_ENDIAN
       arg = val = (entry.bitsPerSample == 16) ? AFMT_S16_LE : AFMT_S8;
@@ -684,6 +674,21 @@ BOOL PSoundChannel::Setup()
           }
         }
       }
+
+#if PTRACING
+      audio_buf_info info;
+      ::ioctl(os_handle, SNDCTL_DSP_GETOSPACE, &info);
+      PTRACE(4, "OSS\tOutput: fragments = " << info.fragments
+                     << ", total frags = " << info.fragstotal
+                     << ", frag size   = " << info.fragsize
+                     << ", bytes       = " << info.bytes);
+
+      ::ioctl(os_handle, SNDCTL_DSP_GETISPACE, &info);
+      PTRACE(4, "OSS\tInput: fragments = " << info.fragments
+                     << ", total frags = " << info.fragstotal
+                     << ", frag size   = " << info.fragsize
+                     << ", bytes       = " << info.bytes);
+#endif
     }
   }
 
