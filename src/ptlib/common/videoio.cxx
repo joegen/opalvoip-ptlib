@@ -24,6 +24,11 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.39  2003/05/14 07:51:23  rjongbloed
+ * Changed SetColourFormatConverter so if converter already in place no
+ *   change is made.
+ * Fixed some trace logs.
+ *
  * Revision 1.38  2003/04/03 23:21:34  robertj
  * Added reversed RGB byte order versions (BGR24), thanks Damien Sandras
  *
@@ -398,7 +403,15 @@ static struct {
 
 BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
 {
-  if (converter) {    
+  if (converter != NULL) {
+    if (CanCaptureVideo()) {
+      if (converter->GetDstColourFormat() == colourFmt)
+        return TRUE;
+    }
+    else {
+      if (converter->GetSrcColourFormat() == colourFmt)
+        return TRUE;
+    }
     delete converter;
     converter = NULL;
   }
@@ -417,7 +430,7 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
       if (converter != NULL) {
         // set converter properties that depend on this color format
         if (SetColourFormat(preferredColourFormat)) {
-          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for converted " << colourFmt << " camera using " << preferredColourFormat);
+          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << preferredColourFormat);
           converter->SetVFlipState(doVFlip);
           return TRUE;
         }
@@ -457,7 +470,7 @@ BOOL PVideoDevice::SetColourFormatConverter(const PString & colourFmt)
       if (converter != NULL) {
         // set converter properties that depend on this color format
         if (SetColourFormat(formatToTry)) {
-          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for converted " << colourFmt << " camera using " << formatToTry);
+          PTRACE(3, "PVidDev\tSetColourFormatConverter succeeded for " << colourFmt << " and device using " << formatToTry);
           converter->SetVFlipState(doVFlip);
           return TRUE;
         }
