@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.81  2002/11/15 06:36:59  robertj
+# Changed so library build only occurs if source is present.
+#
 # Revision 1.80  2002/10/10 04:43:44  robertj
 # VxWorks port, thanks Martijn Roest
 #
@@ -335,19 +338,27 @@ endif
 
 ifdef DEBUG
 
+ifneq (,$(wildcard $(PWLIBDIR)/src/ptlib/unix))
 $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
+endif
 
+ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI)))
 $(PW_LIBDIR)/$(PWLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) debug
+endif
 
 else
 
+ifneq (,$(wildcard $(PWLIBDIR)/src/ptlib/unix))
 $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
+endif
 
+ifneq (,$(wildcard $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI)))
 $(PW_LIBDIR)/$(PWLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) opt
+endif
 
 endif
 
