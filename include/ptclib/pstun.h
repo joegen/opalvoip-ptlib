@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.6  2004/01/17 17:54:02  rjongbloed
+ * Added function to get server name from STUN client.
+ *
  * Revision 1.5  2003/10/05 00:56:25  rjongbloed
  * Rewrite of STUN to not to use imported code with undesirable license.
  *
@@ -101,6 +104,8 @@ class PSTUNClient : public PObject
       WORD portPairMax = 0
     );
 
+
+    PString GetServer() const;
 
     BOOL SetServer(
       const PString & server
