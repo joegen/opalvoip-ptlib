@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.15  1998/11/30 04:50:44  robertj
+ * New directory structure
+ *
  * Revision 1.14  1998/10/22 04:33:11  robertj
  * Fixed bug in constrained strings and PER, incorrect order of character set.
  *
@@ -74,7 +77,7 @@
 #pragma implementation "asner.h"
 #endif
 
-#include <asner.h>
+#include <ptclib/asner.h>
 
 #define new PNEW
 
