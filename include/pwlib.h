@@ -49,6 +49,8 @@ typedef int PDIMENSION;
 
 #ifdef WIN32
 
+typedef UINT PRESOURCE_ID;
+
 #define EXPORTED __stdcall
 #define open  _open
 #define close _close
@@ -57,6 +59,11 @@ typedef int PDIMENSION;
 #define write _write
 
 #else
+
+typedef int PORDINATE;
+typedef int PDIMENSION;
+
+typedef short PRESOURCE_ID;
 
 #define EXPORTED FAR PASCAL _export
 
@@ -1168,7 +1175,7 @@ class PResourceData;
       // this function.
 
     // Member variables
-    short resourceID;
+    PRESOURCE_ID resourceID;
     const PControlCreators * resourceCreators;
     PINDEX numResourceCreators;
       // Resource information needed for delayed creation of MS-Windows dialog.
