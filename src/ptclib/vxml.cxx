@@ -22,6 +22,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.16  2002/08/15 04:11:16  robertj
+ * Fixed shutdown problems with closing vxml session, leaks a thread.
+ * Fixed potential problems with indirect channel Close() function.
+ *
  * Revision 1.15  2002/08/15 02:13:10  craigs
  * Fixed problem with handle leak (maybe) and change tts files back to autodelete
  *
@@ -102,6 +106,8 @@ PVXMLSession::PVXMLSession(PTextToSpeech * _tts, BOOL autoDelete)
 
 PVXMLSession::~PVXMLSession()
 {
+  Close();
+
   if ((textToSpeech != NULL) && autoDeleteTextToSpeech) {
     delete textToSpeech;
   }
@@ -180,23 +186,19 @@ BOOL PVXMLSession::Open(BOOL isPCM)
   return stat;
 }
 
-void PVXMLSession::EndSession()
+BOOL PVXMLSession::Close()
 {
   PWaitAndSignal m(sessionMutex);
-
-  if (outgoingChannel == NULL)
-    return;
 
   if (vxmlThread != NULL) {
     vxmlThread->WaitForTermination();
     delete vxmlThread;
+    vxmlThread = NULL;
   }
 
-  if (outgoingChannel != NULL)
-    outgoingChannel->Close();
-
-  if (outgoingChannel != NULL)
-    incomingChannel->Close();
+  outgoingChannel = NULL;
+  incomingChannel = NULL;
+  return PIndirectChannel::Close();
 }
 
 
@@ -212,7 +214,7 @@ BOOL PVXMLSession::ExecuteWithoutLock()
 {
   if (forceEnd) {
     OnEndSession();
-    EndSession(); 
+    Close(); 
     return TRUE;
   }
 
