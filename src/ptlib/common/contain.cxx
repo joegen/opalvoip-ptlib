@@ -27,8 +27,15 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.163.2.2  2004/08/04 00:58:51  csoutheren
+ * Merged changes from trunk
+ *
  * Revision 1.163.2.1  2004/07/28 06:01:10  csoutheren
  * Merged in patch from CVS trunk
+ *
+ * Revision 1.165  2004/08/04 00:56:16  csoutheren
+ * Added protection against signed chars triggering asserts in VS.net in debug mode
+ * Thanks to Michal Zygmuntowicz
  *
  * Revision 1.164  2004/07/19 13:55:00  csoutheren
  * Fixed typo flagged as warning by gcc 3.5-20040704
@@ -1252,8 +1259,8 @@ static int TranslateHex(char x)
 }
 
 
-static const char PStringEscapeCode[]  = {  'a',  'b',  'f',  'n',  'r',  't',  'v' };
-static const char PStringEscapeValue[] = { '\a', '\b', '\f', '\n', '\r', '\t', '\v' };
+static const unsigned char PStringEscapeCode[]  = {  'a',  'b',  'f',  'n',  'r',  't',  'v' };
+static const unsigned char PStringEscapeValue[] = { '\a', '\b', '\f', '\n', '\r', '\t', '\v' };
 
 static void TranslateEscapes(const char * src, char * dst)
 {
@@ -1261,19 +1268,19 @@ static void TranslateEscapes(const char * src, char * dst)
     src++;
 
   while (*src != '\0') {
-    int c = *src++;
+    int c = *src++ & 0xff;
     if (c == '"' && *src == '\0')
       c  = '\0'; // Trailing '"' is ignored
     else if (c == '\\') {
-      c = *src++;
+      c = *src++ & 0xff;
       for (PINDEX i = 0; i < PARRAYSIZE(PStringEscapeCode); i++) {
         if (c == PStringEscapeCode[i])
           c = PStringEscapeValue[i];
       }
 
-      if (c == 'x' && isxdigit(*src)) {
+      if (c == 'x' && isxdigit(*src & 0xff)) {
         c = TranslateHex(*src++);
-        if (isxdigit(*src))
+        if (isxdigit(*src & 0xff))
           c = (c << 4) + TranslateHex(*src++);
       }
       else if (c >= '0' && c <= '7') {
@@ -1304,7 +1311,7 @@ PString::PString(ConversionType type, const char * str, ...)
 
     case Basic :
       if (str[0] != '\0' && str[1] != '\0') {
-        PINDEX len = str[0] | (str[1] << 8);
+        PINDEX len = (str[0] & 0xff) | ((str[1] & 0xff) << 8);
         PAssert(SetSize(len+1), POutOfMemory);
         memcpy(theArray, str+2, len);
       }
@@ -1582,7 +1589,7 @@ PINDEX PString::HashFunction() const
 
   PINDEX hash = 0;
   for (PINDEX i = 0; i < 8 && theArray[i] != 0; i++)
-    hash = (hash << 5) ^ tolower(theArray[i]) ^ hash;
+    hash = (hash << 5) ^ tolower(theArray[i] & 0xff) ^ hash;
   return PABSINDEX(hash)%127;
 }
 
@@ -1836,7 +1843,7 @@ bool PString::operator*=(const char * cstr) const
 
   const char * pstr = theArray;
   while (*pstr != '\0' && *cstr != '\0') {
-    if (toupper(*pstr) != toupper(*cstr))
+    if (toupper(*pstr & 0xff) != toupper(*cstr & 0xff))
       return FALSE;
     pstr++;
     cstr++;
@@ -1871,10 +1878,10 @@ PObject::Comparison PString::InternalCompare(PINDEX offset, char c) const
 {
   if (offset < 0)
     return LessThan;
-  char ch = theArray[offset];
-  if (ch < c)
+  const int ch = theArray[offset] & 0xff;
+  if (ch < (c & 0xff))
     return LessThan;
-  if (ch > c)
+  if (ch > (c & 0xff))
     return GreaterThan;
   return EqualTo;
 }
@@ -1948,16 +1955,16 @@ PINDEX PString::Find(const char * cstr, PINDEX offset) const
   int strSum = 0;
   int cstrSum = 0;
   for (PINDEX i = 0; i < clen; i++) {
-    strSum += toupper(theArray[offset+i]);
-    cstrSum += toupper(cstr[i]);
+    strSum += toupper(theArray[offset+i] & 0xff);
+    cstrSum += toupper(cstr[i] & 0xff);
   }
 
   // search for a matching substring
   while (offset+clen <= len) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
-    strSum += toupper(theArray[offset+clen]);
-    strSum -= toupper(theArray[offset]);
+    strSum += toupper(theArray[offset+clen] & 0xff);
+    strSum -= toupper(theArray[offset] & 0xff);
     offset++;
   }
 
@@ -1999,8 +2006,8 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
   int strSum = 0;
   int cstrSum = 0;
   for (PINDEX i = 0; i < clen; i++) {
-    strSum += toupper(theArray[offset+i]);
-    cstrSum += toupper(cstr[i]);
+    strSum += toupper(theArray[offset+i] & 0xff);
+    cstrSum += toupper(cstr[i] & 0xff);
   }
 
   // search for a matching substring
@@ -2008,8 +2015,8 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
     if (offset == 0)
       return P_MAX_INDEX;
     --offset;
-    strSum += toupper(theArray[offset]);
-    strSum -= toupper(theArray[offset+clen]);
+    strSum += toupper(theArray[offset] & 0xff);
+    strSum -= toupper(theArray[offset+clen] & 0xff);
   }
 
   return offset;
@@ -2192,7 +2199,7 @@ PStringArray & PStringArray::operator += (const PStringArray & v)
 PString PString::LeftTrim() const
 {
   const char * lpos = theArray;
-  while (isspace(*lpos))
+  while (isspace(*lpos & 0xff))
     lpos++;
   return PString(lpos);
 }
@@ -2201,10 +2208,10 @@ PString PString::LeftTrim() const
 PString PString::RightTrim() const
 {
   char * rpos = theArray+GetLength()-1;
-  if (isspace(*rpos))
+  if (isspace(*rpos & 0xff))
     return *this;
 
-  while (isspace(*rpos)) {
+  while (isspace(*rpos & 0xff)) {
     if (rpos == theArray)
       return Empty();
     rpos--;
@@ -2219,16 +2226,16 @@ PString PString::RightTrim() const
 PString PString::Trim() const
 {
   const char * lpos = theArray;
-  while (isspace(*lpos))
+  while (isspace(*lpos & 0xff))
     lpos++;
   if (*lpos == '\0')
     return Empty();
 
   const char * rpos = theArray+GetLength()-1;
-  if (!isspace(*rpos))
+  if (!isspace(*rpos & 0xff))
     return PString(lpos);
 
-  while (isspace(*rpos))
+  while (isspace(*rpos & 0xff))
     rpos--;
   return PString(lpos, rpos - lpos + 1);
 }
@@ -2238,8 +2245,8 @@ PString PString::ToLower() const
 {
   PString newStr(theArray);
   for (char *cpos = newStr.theArray; *cpos != '\0'; cpos++) {
-    if (isupper(*cpos))
-      *cpos = (char)tolower(*cpos);
+    if (isupper(*cpos & 0xff))
+      *cpos = (char)tolower(*cpos & 0xff);
   }
   return newStr;
 }
@@ -2249,8 +2256,8 @@ PString PString::ToUpper() const
 {
   PString newStr(theArray);
   for (char *cpos = newStr.theArray; *cpos != '\0'; cpos++) {
-    if (islower(*cpos))
-      *cpos = (char)toupper(*cpos);
+    if (islower(*cpos & 0xff))
+      *cpos = (char)toupper(*cpos & 0xff);
   }
   return newStr;
 }
@@ -2410,13 +2417,13 @@ PString PString::ToLiteral() const
   for (char * p = theArray; *p != '\0'; p++) {
     if (*p == '"')
       str += "\\\"";
-    else if (isprint(*p))
+    else if (isprint(*p & 0xff))
       str += *p;
     else {
       PINDEX i;
       for (i = 0; i < PARRAYSIZE(PStringEscapeValue); i++) {
         if (*p == PStringEscapeValue[i]) {
-          str += PString('\\') + PStringEscapeCode[i];
+          str += PString('\\') + (char)PStringEscapeCode[i];
           break;
         }
       }
@@ -2490,8 +2497,8 @@ PObject::Comparison PCaselessString::InternalCompare(PINDEX offset, char c) cons
   if (offset < 0)
     return LessThan;
 
-  int c1 = toupper(theArray[offset]);
-  int c2 = toupper(c);
+  int c1 = toupper(theArray[offset] & 0xff);
+  int c2 = toupper(c & 0xff);
   if (c1 < c2)
     return LessThan;
   if (c1 > c2)
