@@ -33,8 +33,10 @@
 #include <time.h>
 #include <sys/time.h>
 
-#ifdef P_HPUX9
+#if defined(P_HPUX9)
 #include <langinfo.h>
+#elif defined(P_SUN4)
+#warning No locale info include
 #else
 #include <localeinfo.h>
 #endif
@@ -52,6 +54,11 @@
 
 #define	LINE_SIZE_STEP	100
 
+#if defined(P_SUN4)
+extern "C" void gettimeofday(struct timeval * tv, struct timezone * tz);
+extern "C" char *mktemp(char *);
+#endif
+
 
 static PString CanonicaliseDirectory (const PString & path)
 
@@ -63,7 +70,7 @@ static PString CanonicaliseDirectory (const PString & path)
   // if the path does not start with a slash, then the current directory
   // must be prepended
   if (path.IsEmpty() || path[0] != '/') 
-    PAssertOS (getcwd(canonical_path.GetPointer(PATH_MAX), PATH_MAX));
+    PAssertOS (getcwd(canonical_path.GetPointer(P_MAX_PATH), P_MAX_PATH));
 
   // if the path doesn't end in a slash, add one
   if (canonical_path[canonical_path.GetLength()-1] != '/')
@@ -125,6 +132,7 @@ static PString CanonicaliseFilename(const PString & filename)
 ///////////////////////////////////////////////////////////////////////////////
 //
 // timer
+
 
 PTimeInterval PTimer::Tick()
 
@@ -488,6 +496,9 @@ PString PTime::GetTimeSeparator()
 {
 #ifdef P_HPUX9
   char * p = nl_langinfo(T_FMT);
+#elif defined(P_SUN4)
+#warning No time separator
+  char * p = ":";
 #else
   char * p = _time_info->time; 
 #endif
@@ -503,6 +514,9 @@ PTime::DateOrder PTime::GetDateOrder()
 {
 #ifdef P_HPUX9
   char * p = nl_langinfo(D_FMT);
+#elif defined(P_SUN4)
+#warning No date order
+  char * p = "d";
 #else
   char * p = _time_info->date; 
 #endif
@@ -525,6 +539,9 @@ PString PTime::GetDateSeparator()
 {
 #ifdef P_HPUX9
   char * p = nl_langinfo(D_FMT);
+#elif defined(P_SUN4)
+#warning No date separator
+  char * p = "/";
 #else
   char * p = _time_info->date; 
 #endif
@@ -545,6 +562,9 @@ PString PTime::GetDayName(PTime::Weekdays day, BOOL abbreviated)
      abbreviated ? nl_langinfo(ABDAY_1+(int)day) :
                    nl_langinfo(DAY_1+(int)day)
                 );
+#elif defined(P_SUN4)
+#warning No day name
+  return PString();
 #else
   return abbreviated ? PString(_time_info->abbrev_wkday[(int)day]) :
                        PString(_time_info->full_wkday[(int)day]);
@@ -558,6 +578,9 @@ PString PTime::GetMonthName(PTime::Months month, BOOL abbreviated)
      abbreviated ? nl_langinfo(ABMON_1+(int)month-1) :
                    nl_langinfo(MON_1+(int)month-1)
                 );
+#elif defined(P_SUN4)
+#warning No month name
+  return PString();
 #else
   return abbreviated ? PString(_time_info->abbrev_month[(int)month-1]) :
                        PString(_time_info->full_month[(int)month-1]);
