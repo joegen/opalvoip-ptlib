@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.32 1996/06/28 13:20:24 robertj Exp $
+ * $Id: http.cxx,v 1.33 1996/07/15 10:37:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.33  1996/07/15 10:37:20  robertj
+ * Improved proxy "self" detection (especially localhost).
+ *
  * Revision 1.32  1996/06/28 13:20:24  robertj
  * Modified HTTPAuthority so gets PHTTPReqest (mainly for URL) passed in.
  * Moved HTTP form resource to another compilation module.
@@ -819,13 +822,32 @@ BOOL PHTTPSocket::ProcessCommand()
   // it anyway even though we are not a proxy. The usage of GetHostName()
   // below are to catch every way of specifying the host (name, alias, any of
   // several IP numbers etc).
-  if (connectInfo.IsProxyConnection() ||
-      url.GetScheme() != "http" ||
-      (url.GetPort() != 0 && url.GetPort() != GetPort()) ||
-      (!url.GetHostName().IsEmpty() &&
-         PIPSocket::GetHostName(url.GetHostName()) != PIPSocket::GetHostName())) {
-    return OnProxy((Commands)cmd, url, mimeInfo, connectInfo) && connectInfo.IsPersistant();
+  BOOL doProxy;
+  if (connectInfo.IsProxyConnection() || url.GetScheme() != "http")
+    doProxy = TRUE;
+  else if (url.GetPort() != 0 && url.GetPort() != GetPort())
+    doProxy = TRUE;
+  else if (url.GetHostName().IsEmpty())
+    doProxy = FALSE;
+  else {
+    Address urlAddress;
+    if (!PIPSocket::GetHostAddress(url.GetHostName(), urlAddress))
+      doProxy = TRUE;
+    else if (Address(127,0,0,1) == urlAddress)
+      doProxy = FALSE;
+    else {
+      Address myAddress;
+      GetLocalAddress(myAddress);
+      if (myAddress == urlAddress)
+        doProxy = FALSE;
+      else
+        doProxy = PIPSocket::GetHostName() !=
+                                    PIPSocket::GetHostName(url.GetHostName());
+    }
   }
+
+  if (doProxy)
+    return OnProxy((Commands)cmd, url, mimeInfo, connectInfo) && connectInfo.IsPersistant();
 
   PString entityBody = ReadEntityBody(connectInfo);
 
