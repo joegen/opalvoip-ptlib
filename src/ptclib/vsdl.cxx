@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vsdl.cxx,v $
+ * Revision 1.6  2003/05/14 02:34:53  dereksmithies
+ * Make SDL display work if only one of two display areas in use.
+ *
  * Revision 1.5  2003/05/07 02:40:58  dereks
  * Fix to allow it to exit when the ::Terminate method called.
  *
@@ -602,11 +605,13 @@ BOOL PSDLDisplayThread::Redraw(BOOL isEncoding, PSDLVideoFrame *frame)
     PTRACE(6, "PSDL\tRedraw end prematurely, no overlay for window " << dispIndex);
     return TRUE;       //Again, we lost the overlay, exit quickly.
   }
-  
-  if (overlay[1 - dispIndex] == NULL) {
-    PTRACE(6, "PSDL\tRedraw end prematurely, other overlay undefined");
+ 
+#if 0 
+%  if (overlay[1 - dispIndex] == NULL) {
+%    PTRACE(6, "PSDL\tRedraw end prematurely, other overlay undefined");
     return TRUE;       //Again, we lost the overlay, exit quickly.
   }
+#endif
 
   unsigned char * base = frame->GetDataPointer();
   ::SDL_LockYUVOverlay(yuvOverlay);
