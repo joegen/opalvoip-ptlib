@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.176  2004/10/26 18:27:28  ykiryanov
+ * Added another for of SetOption to set SO_REUSEADDR for BeOS
+ *
  * Revision 1.175  2004/08/24 07:08:11  csoutheren
  * Added use of recvmsg to determine which interface UDP packets arrive on
  *
@@ -2001,11 +2004,20 @@ BOOL PIPSocket::Listen(const Address & bindAddr,
 #endif
   }
   
+#ifndef __BEOS__
   // attempt to listen
   if (!SetOption(SO_REUSEADDR, reuse == CanReuseAddress ? 1 : 0)) {
     os_close();
     return FALSE;
   }
+#else
+  // attempt to listen
+  int value = reuse == CanReuseAddress ? 1 : 0;
+  if (!SetOption(SO_REUSEADDR, &value, sizeof(int))) {
+    os_close();
+    return FALSE;
+  }
+#endif // BEOS
 
 #if P_HAS_IPV6
 
