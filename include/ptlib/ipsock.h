@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.22 1996/03/26 00:51:13 robertj Exp $
+ * $Id: ipsock.h,v 1.23 1996/08/25 09:33:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.23  1996/08/25 09:33:55  robertj
+ * Added function to detect "local" host name.
+ *
  * Revision 1.22  1996/03/26 00:51:13  robertj
  * Added GetLocalAddress() variant that returns port number as well.
  *
@@ -205,6 +208,20 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
        <H2>Returns:</H2>
        array of strings for each alias for the host.
+     */
+
+    static BOOL IsLocalHost(
+      const PString & hostname
+      /* Name of host to get address for. This may be either a domain name or
+         an IP number in "dot" format.
+       */
+    );
+    /* Determine if the specified host is actually the local machine. This
+       can be any of the host aliases or multi-homed IP numbers or even
+       the special number 127.0.0.1 for the loopback device.
+
+       <H2>Returns:</H2>
+       TRUE if the host is the local machine.
      */
 
     BOOL GetLocalAddress(
