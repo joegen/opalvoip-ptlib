@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.70  2001/03/23 05:34:09  robertj
+ * Added PTRACE_IF to output trace if a conditional is TRUE.
+ *
  * Revision 1.69  2001/03/01 02:15:16  robertj
  * Fixed PTRACE_LINE() so drops filename and line which may not be in trace otherwise.
  *
@@ -581,6 +584,17 @@ output operators. The output is only made if the trace level set by the
 */
 #define PTRACE(level, args) \
     if (!PTrace::CanTrace(level)) ; else \
+      PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
+
+/** Output trace on condition.
+This macro outputs a trace of any information needed, using standard stream
+output operators. The output is only made if the trace level set by the
+#PSetTraceLevel# function is greater than or equal to the #level# argument
+and the conditional is TRUE. Note the conditional is only evaluated if the
+trace level is sufficient.
+*/
+#define PTRACE_IF(level, cond, args) \
+    if (!(PTrace::CanTrace(level)  && (cond))) ; else \
       PTrace::Begin(level, __FILE__, __LINE__) << args << PTrace::End
 
 #endif
