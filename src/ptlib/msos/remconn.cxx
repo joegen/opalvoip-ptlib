@@ -1,11 +1,14 @@
 /*
- * $Id: remconn.cxx,v 1.20 1998/03/05 12:49:54 robertj Exp $
+ * $Id: remconn.cxx,v 1.21 1998/07/24 06:51:56 robertj Exp $
  *
  * Simple proxy service for internet access under Windows NT.
  *
  * Copyright 1995 Equivalence
  *
  * $Log: remconn.cxx,v $
+ * Revision 1.21  1998/07/24 06:51:56  robertj
+ * Added ability to get IP number of RAS connection.
+ *
  * Revision 1.20  1998/03/05 12:49:54  robertj
  * MemCheck fixes.
  *
@@ -77,6 +80,7 @@ PDECLARE_CLASS(PRASDLL, PDynaLink)
   DWORD (FAR PASCAL *SetEntryProperties)(LPTSTR, LPTSTR, LPRASENTRY, DWORD, LPBYTE, DWORD);
   DWORD (FAR PASCAL *DeleteEntry)(LPTSTR, LPTSTR);
   DWORD (FAR PASCAL *ValidateEntryName)(LPTSTR, LPTSTR);
+  DWORD (FAR PASCAL *GetProjectionInfo)(HRASCONN, RASPROJECTION, LPVOID, LPDWORD);
 } Ras;
 
 PRASDLL::PRASDLL()
@@ -97,6 +101,7 @@ PRASDLL::PRASDLL()
   GetFunction("RasSetEntryPropertiesA", (Function &)SetEntryProperties);
   GetFunction("RasDeleteEntryA", (Function &)DeleteEntry);
   GetFunction("RasValidateEntryNameA", (Function &)ValidateEntryName);
+  GetFunction("RasGetProjectionInfoA", (Function &)GetProjectionInfo);
 }
 
 
@@ -339,6 +344,33 @@ PRemoteConnection::Status PRemoteConnection::GetStatus() const
       return ConnectionLost;
   }
   return InProgress;
+}
+
+
+PString PRemoteConnection::GetAddress()
+{
+  if (Ras.GetProjectionInfo == NULL) {
+    osError = ERROR_CALL_NOT_IMPLEMENTED;
+    return PString();
+  }
+
+  if (rasConnection == NULL) {
+    osError = ERROR_INVALID_HANDLE;
+    return PString();
+  }
+
+  RASPPPIP ip;
+  ip.dwSize = sizeof(ip);
+  DWORD size = sizeof(ip);
+  osError = Ras.GetProjectionInfo(rasConnection, RASP_PppIp, &ip, &size);
+  if (osError != ERROR_SUCCESS)
+    return PString();
+
+  osError = ip.dwError;
+  if (osError != ERROR_SUCCESS)
+    return PString();
+
+  return ip.szIpAddress;
 }
 
 
