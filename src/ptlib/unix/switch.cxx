@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: switch.cxx,v $
+ * Revision 1.15  1998/12/21 06:50:36  robertj
+ * Linux PPC support
+ *
  * Revision 1.14  1998/12/04 12:21:14  robertj
  * FreeBSD support
  *
@@ -44,7 +47,7 @@
 
 #ifdef P_LINUX
 #ifdef PPC
-//#define	SET_STACK	context[0].__jmpbuf[0].__misc[2] = (long int)stackTop-16;
+#define	SET_STACK	context[0].__jmpbuf[0].__misc[0] = (long int)stackTop-16;
 #define	STACK_MULT	4
 #else
 #ifdef JB_SP
