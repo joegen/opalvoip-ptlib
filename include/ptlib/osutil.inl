@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.9 1994/01/03 04:42:23 robertj Exp $
+ * $Id: osutil.inl,v 1.10 1994/01/13 03:14:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.9  1994/01/03 04:42:23  robertj
+ * Revision 1.10  1994/01/13 03:14:51  robertj
+ * Added AsString() function to convert a time to a string.
+ *
+ * Revision 1.9  1994/01/03  04:42:23  robertj
  * Mass changes to common container classes and interactors etc etc etc.
  *
  * Revision 1.8  1993/12/31  06:47:59  robertj
@@ -85,7 +88,10 @@ PINLINE PObject * PTime::Clone() const
   { return new PTime(theTime); }
 
 PINLINE ostream & PTime::PrintOn(ostream & strm) const
-  { return strm << ctime(&theTime); }
+  { return strm << AsString(); }
+
+PINLINE PString PTime::AsString() const
+  { return ctime(&theTime); }
 
 PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
