@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.30  2001/09/14 04:53:04  robertj
+ * Improved the detection of sound cards, thanks Miguel Rodríguez Pérez for the ideas.
+ *
  * Revision 1.29  2001/09/10 03:03:36  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -360,29 +363,70 @@ PSoundChannel::~PSoundChannel()
 }
 
 
-PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
+static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdinalToString & mixer)
 {
-  PStringList devices;
+  if (!devdir.Open())
+    return;
 
-  PDirectory devdir("/dev");
-  if (devdir.Open()) {
-    do {
+  do {
+    PString devname = devdir + devdir.GetEntryName();
+    if (devdir.IsSubDir())
+      CollectSoundDevices(devname, dsp, mixer);
+    else {
       PFileInfo info;
-      if (devdir.GetInfo(info)) {
-        if (info.type == PFileInfo::CharDevice) {
-          struct stat s;
-          if (lstat(devdir + devdir.GetEntryName(), &s) == 0 &&
-                   (s.st_rdev >> 8) == 14 &&  // OSS Audio major device number
-                   (s.st_rdev & 15) == 3) {   // Digital audio monor device number
-            int fd = ::open(devdir + devdir.GetEntryName(), O_RDONLY);
-            if (errno != ENODEV)
-              devices.AppendString(devdir.GetEntryName());
-            if (fd >= 0)
-              ::close(fd);
+      if (devdir.GetInfo(info) &&info.type == PFileInfo::CharDevice) {
+        struct stat s;
+        if (lstat(devname, &s) == 0) {
+          // OSS compatible audio major device numbers (OSS, ALSA, SAM9407, etc)
+          static const unsigned deviceNumbers[] = { 14, 116, 145 };
+          for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
+            if ((s.st_rdev >> 8) == deviceNumbers[i]) {
+              PINDEX cardnum = (s.st_rdev >> 4) & 15;
+              if ((s.st_rdev & 15) == 3)   // Digital audio minor device number
+                dsp.SetAt(cardnum, devname);
+              else if ((s.st_rdev & 15) == 0)   // Digital audio minor device number
+                mixer.SetAt(cardnum, devname);
+            }
           }
         }
       }
-    } while (devdir.Next());
+    }
+  } while (devdir.Next());
+}
+
+
+PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
+{
+  // First scan all of the devices and look for ones with major device
+  // numbers corresponding to OSS compatible drivers.
+  POrdinalToString dsp, mixer;
+  CollectSoundDevices("/dev", dsp, mixer);
+
+  // Now we go through the collected devices and see if any have a phyisical reality
+  PStringList devices;
+
+  for (PINDEX i = 0; i < dsp.GetSize(); i++) {
+    PINDEX cardnum = dsp.GetKeyAt(i);
+    // Try and open mixer if have one as this is unlikely to fail for any
+    // reason other than there not being a physical device
+    if (mixer.Contains(cardnum)) {
+      int fd = ::open(mixer[cardnum], O_RDONLY);
+      if (fd >= 0) {
+        int ver;
+        if (::ioctl(fd, OSS_GETVERSION, &ver) >= 0)
+          devices.AppendString(dsp[cardnum]);
+        ::close(fd);
+      }
+    }
+    else {
+      // No mixer available, try and open it directly, this could fail if
+      // the device happens to be open already
+      int fd = ::open(dsp[cardnum], O_RDONLY);
+      if (fd >= 0) {
+        devices.AppendString(dsp[cardnum]);
+        ::close(fd);
+      }
+    }
   }
 
   devices.AppendString("loopback");
