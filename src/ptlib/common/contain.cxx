@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.94  2001/02/14 22:21:08  robertj
+ * Fixed compiler error on some versions of GCC, thanks Klaus Kaempf.
+ *
  * Revision 1.93  2001/02/14 06:50:01  robertj
  * Fixed bug in doing ::flush on a PStringStream, did not set pointers correctly.
  *
@@ -981,11 +984,12 @@ PString::PString(ConversionType type, const char * str, ...)
       PAssert(MakeMinimumSize(), POutOfMemory);
       break;
 
-    case Printf :
+    case Printf : {
       va_list args;
       va_start(args, str);
       vsprintf(str, args);
       break;
+    }
 
     default :
       PAssertAlways(PInvalidParameter);
