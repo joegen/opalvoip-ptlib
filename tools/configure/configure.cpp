@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.8  2003/10/30 01:17:15  dereksmithies
+ * Add fix from Jose Luis Urien. Many thanks.
+ *
  * Revision 1.7  2003/10/23 21:49:51  dereksmithies
  * Add very sensible fix to limit extent of search. Thanks Ben Lear.
  *
@@ -350,9 +353,10 @@ int main(int argc, char* argv[])
         if (stricmp(argv[i], ("--no-"+feature->cmdLineArgument).c_str()) == 0) {
 	  feature->defineName = "";
           feature->found = false;
-        } else if (stricmp(argv[i], ("--"+feature->cmdLineArgument+"-dir=").c_str()) == 0)
-          if (!feature->Locate(argv[i]))
-            cerr << feature->displayName << " not found in " << argv[i] << endl;
+	} else if (strstr(argv[i], ("--" + feature->cmdLineArgument+"-dir=").c_str()) == argv[i])
+	  if (!feature->Locate(argv[i] + strlen(("--" + feature->cmdLineArgument + "-dir=").c_str())))
+	    cerr << feature->displayName << " not found in "
+		 << argv[i] + strlen(("--" + feature->cmdLineArgument+"-dir=").c_str()) << endl;
       }
     }
   }
