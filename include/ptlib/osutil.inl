@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.76  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.75  2000/10/05 23:36:26  robertj
  * Fixed compiler ambiguities in PTimeInterval constructor.
  *
@@ -524,20 +529,20 @@ PINLINE PFilePath::PFilePath()
 PINLINE PFilePath::PFilePath(const PFilePath & path)
   : PFilePathString(path) { }
 
-PINLINE PFilePath & PFilePath::operator=(const char * cstr)
-  { return operator=(PString(cstr)); }
-
 PINLINE PFilePath & PFilePath::operator=(const PFilePath & path)
-  { PFilePathString::operator=(path); return *this; }
+  { AssignContents(path); return *this; }
+
+PINLINE PFilePath & PFilePath::operator=(const PString & str)
+  { AssignContents(str); return *this; }
+
+PINLINE PFilePath & PFilePath::operator=(const char * cstr)
+  { AssignContents(PString(cstr)); return *this; }
 
 PINLINE PFilePath & PFilePath::operator+=(const PString & str)
-  { operator=(*this + str); return *this; }
+  { AssignContents(*this + str); return *this; }
 
 PINLINE PFilePath & PFilePath::operator+=(const char * cstr)
-  { operator=(*this + cstr); return *this; }
-
-PINLINE PFilePath & PFilePath::operator+=(char ch)
-  { operator=(*this + ch); return *this; }
+  { AssignContents(*this + cstr); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////

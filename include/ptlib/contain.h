@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.53  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.52  1999/11/30 00:22:54  robertj
  * Updated documentation for doc++
  *
@@ -365,6 +370,17 @@ class PContainer : public PObject
     virtual void DestroyContents() = 0;
 
     /**Copy the container contents. This copies the contents from one reference
+       to another.
+
+       No duplication of contents occurs, for instance if the container is an
+       array, the pointer to the array memory is copied, not the array memory
+       block itself.
+
+       This function will get called by the base assignment operator.
+     */
+    virtual void AssignContents(const PContainer & c);
+
+    /**Copy the container contents. This copies the contents from one reference
        to another. It is automatically declared when the #PDECLARE_CONTAINER()#
        macro is used.
        
@@ -434,7 +450,6 @@ class PContainer : public PObject
         cls & operator=(const cls & c)
         {
           par::operator=(c);
-          cls::CopyContents(c);
           return *this;
         }
 
@@ -466,7 +481,7 @@ class PContainer : public PObject
   public: \
     cls(const cls & c) : par(c) { CopyContents(c); } \
     cls & operator=(const cls & c) \
-      { par::operator=(c); cls::CopyContents(c); return *this; } \
+      { AssignContents(c); return *this; } \
     virtual ~cls() { Destruct(); } \
     virtual BOOL MakeUnique() \
       { if(par::MakeUnique())return TRUE; CloneContents(this);return FALSE; } \
@@ -475,21 +490,8 @@ class PContainer : public PObject
     virtual void DestroyContents(); \
     void CloneContents(const cls * c); \
     void CopyContents(const cls & c); \
-
-
-/**Declare a container class.
-   This macro is used to declare a descendent of #PContainer# class. It
-   declares all the functions that should be implemented for a working
-   container class. This is not recommended for use as it is not compatible
-   with automatic documentation systems.
-
-   See the #PCONTAINERINFO# macro for more information.
- */
-#define PDECLARE_CONTAINER(cls, par) \
-                             class cls : public par { PCONTAINERINFO(cls, par)
-#ifdef DOC_PLUS_PLUS
-} Match previous brace in doc++
-#endif
+    virtual void AssignContents(const PContainer & c) \
+      { par::AssignContents(c); CopyContents((const cls &)c); }
 
 
 ///////////////////////////////////////////////////////////////////////////////

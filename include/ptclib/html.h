@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: html.h,v $
+ * Revision 1.21  2001/02/13 04:39:08  robertj
+ * Fixed problem with operator= in container classes. Some containers will
+ *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
+ *   needed to add a new AssignContents() function to all containers.
+ *
  * Revision 1.20  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -181,11 +186,17 @@ class PHTML : public PStringStream
        elements are placed into the HTML.
      */
     PHTML & operator=(
-      const char * cstr    // String for title in restating HTML.
-    );
+      const PHTML & html     // HTML stream to make a copy of.
+    ) { AssignContents(html); return *this; }
     PHTML & operator=(
       const PString & str    // String for title in restating HTML.
-    );
+    ) { AssignContents(str); return *this; }
+    PHTML & operator=(
+      const char * cstr    // String for title in restating HTML.
+    ) { AssignContents(PString(cstr)); return *this; }
+    PHTML & operator=(
+      char ch    // String for title in restating HTML.
+    ) { AssignContents(PString(ch)); return *this; }
 
 
   // New functions for class.
@@ -940,15 +951,13 @@ class PHTML : public PStringStream
     };
 
 
+  protected:
+    virtual void AssignContents(const PContainer & c);
+
   private:
     ElementInSet initialElement;
     BYTE elementSet[NumElementsInSet/8+1];
     PINDEX tableNestLevel;
-
-    PHTML & operator=(
-      const PHTML & html    // HTML to copy
-    );
-    // Cannot do HTML to HTML copy.
 };
 
 
