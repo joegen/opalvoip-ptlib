@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.14 1996/11/04 03:39:13 robertj Exp $
+ * $Id: svcproc.cxx,v 1.15 1996/11/10 21:04:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.15  1996/11/10 21:04:32  robertj
+ * Added category names to event log.
+ * Fixed menu enables for debug and command modes.
+ *
  * Revision 1.14  1996/11/04 03:39:13  robertj
  * Improved detection of running service so debug mode cannot run.
  *
@@ -163,8 +167,8 @@ void PSystemLog::Output(Level level, const char * msg)
     };
     ReportEvent(hEventSource, // handle of event source
                 levelType[level],     // event type
-                level,                // event category
-                1,                    // event ID
+                (WORD)(level+1),      // event category
+                0x1000,               // event ID
                 NULL,                 // current user's SID
                 PARRAYSIZE(strings),  // number of strings
                 0,                    // no bytes of raw data
@@ -411,11 +415,14 @@ LPARAM PServiceProcess::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_INITMENUPOPUP :
     {
-      for (int i = 0; i < PSystemLog::NumLogLevels; i++)
+      int enableItems = MF_BYCOMMAND|(debugMode ? MF_ENABLED : MF_GRAYED);
+      for (int i = 0; i < PSystemLog::NumLogLevels; i++) {
         CheckMenuItem((HMENU)wParam, 2000+i, MF_BYCOMMAND|MF_UNCHECKED);
+        EnableMenuItem((HMENU)wParam, 2000+i, enableItems);
+      }
       CheckMenuItem((HMENU)wParam, 2000+GetLogLevel(), MF_BYCOMMAND|MF_CHECKED);
 
-      int enableItems = MF_BYCOMMAND|(debugMode ? MF_GRAYED : MF_ENABLED);
+      enableItems = MF_BYCOMMAND|(debugMode ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem((HMENU)wParam, 1000+SvcCmdStart, enableItems);
       EnableMenuItem((HMENU)wParam, 1000+SvcCmdStop, enableItems);
       EnableMenuItem((HMENU)wParam, 1000+SvcCmdPause, enableItems);
@@ -840,7 +847,6 @@ class NT_ServiceManager : public ServiceManager
     BOOL Control(PServiceProcess * svc, DWORD command);
 
     SC_HANDLE schSCManager, schService;
-    DWORD error;
 };
 
 
@@ -916,13 +922,18 @@ BOOL NT_ServiceManager::Create(PServiceProcess * svc)
                                        svc->GetName(), &key)) != ERROR_SUCCESS)
     return FALSE;
 
-  PString fn = svc->GetFile();
-  if ((error = RegSetValueEx(key, "EventMessageFile", 0, REG_EXPAND_SZ,
-               (LPBYTE)(const char *)fn, fn.GetLength()+1)) == ERROR_SUCCESS) {
-    DWORD dwData = EVENTLOG_ERROR_TYPE |
-                             EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
-    error = RegSetValueEx(key, "TypesSupported",
-                                 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
+  LPBYTE fn = (LPBYTE)(const char *)svc->GetFile();
+  PINDEX fnlen = svc->GetFile().GetLength()+1;
+  if ((error = RegSetValueEx(key, "EventMessageFile",
+                             0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS &&
+      (error = RegSetValueEx(key, "CategoryMessageFile",
+                             0, REG_EXPAND_SZ, fn, fnlen)) == ERROR_SUCCESS) {
+    DWORD dwData = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
+    if ((error = RegSetValueEx(key, "TypesSupported",
+                               0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD))) == ERROR_SUCCESS) {
+      dwData = PSystemLog::NumLogLevels;
+      error = RegSetValueEx(key, "CategoryCount", 0, REG_DWORD, (LPBYTE)&dwData, sizeof(DWORD));
+    }
   }
 
   RegCloseKey(key);
