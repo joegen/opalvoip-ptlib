@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Roger Hardiman
  *
  * $Log: thread.cxx,v $
+ * Revision 1.6  2003/01/07 10:04:13  rogerh
+ * Revert to 2 seconds per phase
+ *
  * Revision 1.5  2002/11/04 22:46:23  rogerh
  * Implement a Stop() method to make the threads terminate.
  *
@@ -147,10 +150,10 @@ void ThreadTest::Main()
 {
   cout << "Thread Test Program" << endl;
   cout << "This program will display the following:" << endl;
-  cout << "             1 second of 1 1 1 1 1..." << endl;
-  cout << " followed by 1 second of 1 2 1 2 1 2 1 2 1 2..." << endl;
-  cout << " followed by 1 second of 2 2 2 2 2..." << endl;
-  cout << " followed by 1 second of 1 2 1 2 1 2 1 2 1 2..." << endl;
+  cout << "             2 seconds of 1 1 1 1 1..." << endl;
+  cout << " followed by 2 seconds of 1 2 1 2 1 2 1 2 1 2..." << endl;
+  cout << " followed by 2 seconds of 2 2 2 2 2..." << endl;
+  cout << " followed by 2 seconds of 1 2 1 2 1 2 1 2 1 2..." << endl;
   cout << endl;
   cout << "It tests thread creation, suspend and resume functions." << endl;
   cout << endl;
@@ -168,7 +171,7 @@ void ThreadTest::Main()
   // Thread 2 should be suspended.
   // Sleep for three seconds. Only thread 1 will be running.
   // Display will show "1 1 1 1 1 1 1..."
-  sleep(1);
+  sleep(2);
 
 
   // Start the second thread.
@@ -176,21 +179,21 @@ void ThreadTest::Main()
   // Sleep for 3 seconds, allowing the threads to run.
   // Display will show "1 2 1 2 1 2 1 2 1 2..."
   mythread2->Resume();
-  sleep(1);
+  sleep(2);
 
 
   // Suspend thread 1.
   // Sleep for 3 seconds. Only thread 2 should be running.
   // Display will show "2 2 2 2 2 2 2..."
   mythread1->Suspend();
-  sleep(1);
+  sleep(2);
 
 
   // Resume thread 1.
   // Sleep for 3 seconds. Both threads should be running.
   // Display will show "1 2 1 2 1 2 1 2 1 2..."
   mythread1->Resume();
-  sleep(1);
+  sleep(2);
 
 
   // Clean up
