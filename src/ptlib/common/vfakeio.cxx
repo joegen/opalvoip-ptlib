@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.18  2003/06/10 00:36:57  dereksmithies
+ * Formatting changes. Remove rounding errors.
+ *
  * Revision 1.17  2003/06/03 04:21:49  dereksmithies
  * Add PTRACE statement, and tidy up format of one if statement.
  *
@@ -507,57 +510,56 @@ void PFakeVideoInputDevice::GrabMovingBlocksTestFrame(BYTE * resFrame)
       {   0,   0, 255 },   // blue
     };
 
-    width=0;   //Stops compiler warning about unitialized variables.
-    height=0;      
-    GetFrameSize(width,height);
+    width = 0;   //Stops compiler warning about unitialized variables.
+    height = 0;      
+    GetFrameSize(width, height);
       
-	  int columns[8];
-	  int heights[8];
-    for( wi=0; wi<8; wi++) {
-		  columns[wi] = wi*width/14;      //Absolutely guarantee columns is even
-      columns[wi] = columns[wi] * 2;
-	  }
-	  columns[7] = width;
+    int columns[9];
+    int heights[9];
+    int offset;
+    offset = (width >> 3) & 0xfe;
+
+    for(wi = 0; wi < 8; wi++) 
+      columns[wi] = wi * offset;
+    columns[8] = width;
     
-	  for( hi=0; hi<8; hi++) {
-		  heights[hi] = (hi * height) / 14;   //Absolutely guarantee heights is even
-		  heights[hi] = heights[hi] * 2;
-	  }
-	  heights[7] = height;
+    offset = (height >> 3) & 0xfe;
+    for(hi = 0; hi < 9; hi++) 
+      heights[hi] = hi * offset;
+    heights[8] = height;
 
     grabCount++;
     colourIndex = time(NULL);//time in seconds since last epoch.
     // Provides a difference if run on two ohphone sessions.
-    colNo= (colourIndex/10)%7;   //Every 10 seconds, coloured background blocks move.
+    colNo = (colourIndex / 10) % 7;   //Every 10 seconds, coloured background blocks move.
 
-    for(hi=0; hi<7 ;hi++) //Fill the background in.
-      for(wi=0 ; wi<7 ;wi++) {
-        FillRect(resFrame,width, height,   //frame details.
+    for(hi = 0; hi < 8; hi++) //Fill the background in.
+      for(wi = 0 ; wi < 8; wi++) {
+        FillRect(resFrame, width, height,   //frame details.
                  columns[wi], heights[hi],   //X,Y Pos.
-   					     columns[wi+1] - columns[wi], heights[hi+1] - heights[hi],
-                 background[COL(colNo,wi,hi)][0], background[COL(colNo,wi,hi)][1],background[COL(colNo,wi,hi)][2]);
-		  }
-
-	  //Draw a black box rapidly moving down the left of the window.
-	  boxSize= height/10;
-	  hi = (2 * colourIndex) % ( (height-boxSize)/2); //Make certain hi is even.
-	  hi = hi*2;
-	  FillRect(resFrame, width, height, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
-
-	  //Draw four parallel black lines, which move up the middle of the window.
-	  colourIndex = colourIndex/3;     //Every three seconds, lines move.
-    for(wi=0;wi<2; wi++) {
- 	    columns[wi]= ((wi+1)*width)/6;
-      columns[wi] = columns[wi]*2;   //Force columns to be even.
-	  }
-	  hi = colourIndex % ((height - 16) / 2);
-	  hi = (height - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
-
+		 columns[wi + 1] - columns[wi], heights[hi + 1] - heights[hi],
+                 background[COL(colNo, wi, hi)][0], background[COL(colNo, wi, hi)][1], background[COL(colNo, wi, hi)][2]);
+      }
+    
+    //Draw a black box rapidly moving down the left of the window.
+    boxSize= height / 10;
+    hi = hi & 0xfe;//Make certain hi is even.
+    FillRect(resFrame, width, height, 10, hi, boxSize, boxSize, 0, 0, 0); //Black Box.
+    
+    //Draw four parallel black lines, which move up the middle of the window.
+    colourIndex = colourIndex / 3;     //Every three seconds, lines move.
+    
+    for(wi = 0;wi < 2; wi++) 
+      columns[wi]= (((wi + 1)  * width) / 3) & 0xfe;// Force columns to be even.
+    
+    hi = colourIndex % ((height - 16) / 2);
+    hi = (height - 16) - (hi * 2);     //hi is even, Lines move in opp. direction to box.
+    
     unsigned yi;    
-	  for( yi=0; yi<4; yi++) 
-		FillRect(resFrame, width, height, 
-             columns[0],hi+(yi*4),
-             columns[1] - columns[0], 2, 0, 0, 0);
+    for(yi = 0; yi < 4; yi++) 
+      FillRect(resFrame, width, height, 
+	       columns[0], hi+(yi * 4),
+	       columns[1] - columns[0], 2, 0, 0, 0);
 }
 
 
