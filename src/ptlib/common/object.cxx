@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.80  2004/10/23 10:55:40  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.79  2004/07/11 07:56:36  csoutheren
  * Applied jumbo VxWorks patch, thanks to Eize Slange
  *
@@ -281,7 +284,9 @@
 //
  */
 
+#ifndef _WIN32_WCE
 #pragma implementation "pfactory.h"
+#endif // !_WIN32_WCE
 
 #include <ptlib.h>
 #include <ctype.h>
