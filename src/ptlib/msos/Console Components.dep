@@ -4781,8 +4781,10 @@
 ..\..\ptclib\vxml.cxx : \
 	"..\..\..\include\ptclib\delaychan.h"\
 	"..\..\..\include\ptclib\memfile.h"\
+	"..\..\..\include\ptclib\ptts.h"\
 	"..\..\..\include\ptclib\pwavfile.h"\
 	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptclib\random.h"\
 	"..\..\..\include\ptclib\vxml.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
@@ -4846,8 +4848,10 @@
 ..\..\ptclib\vxml.cxx : \
 	"..\..\..\include\ptclib\delaychan.h"\
 	"..\..\..\include\ptclib\memfile.h"\
+	"..\..\..\include\ptclib\ptts.h"\
 	"..\..\..\include\ptclib\pwavfile.h"\
 	"..\..\..\include\ptclib\pxml.h"\
+	"..\..\..\include\ptclib\random.h"\
 	"..\..\..\include\ptclib\vxml.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
