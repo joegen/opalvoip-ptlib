@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.68  2003/09/17 01:18:04  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.67  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -911,8 +915,5 @@ void* POSIX_Init(void*);
 #elif defined(BE_THREADS)
 #include "tlibbe.cxx"
 #elif defined(VX_TASKS)
-// The task based thread created by julian
 #include "tlibvx.cxx"
-#else
-#include "tlibcoop.cxx"
 #endif
