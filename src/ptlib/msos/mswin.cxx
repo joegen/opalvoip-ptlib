@@ -1,5 +1,5 @@
 /*
- * $Id: mswin.cxx,v 1.12 1995/07/02 01:24:45 robertj Exp $
+ * $Id: mswin.cxx,v 1.13 1995/08/24 12:40:52 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: mswin.cxx,v $
+ * Revision 1.13  1995/08/24 12:40:52  robertj
+ * Changed PChannel so not a PContainer.
+ *
  * Revision 1.12  1995/07/02 01:24:45  robertj
  * Added running of hidden VM for DOS program in PPipeChannel.
  *
@@ -163,12 +166,6 @@ void PSerialChannel::Construct()
     osError = EINVAL;
     lastError = BadParameter;
   }
-}
-
-
-void PSerialChannel::CopyContents(const PSerialChannel & chan)
-{
-  os_handle = chan.os_handle;
 }
 
 
