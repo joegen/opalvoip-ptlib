@@ -1951,6 +1951,7 @@ EXPORTS
     ?DumpObjectsSince@PMemoryHeap@@SAXKAAVostream@@@Z @4039 NONAME ;public: static void __cdecl PMemoryHeap::DumpObjectsSince(unsigned long,class ostream &)
     ?DumpStatistics@PMemoryHeap@@SAXAAVostream@@@Z @4040 NONAME ;public: static void __cdecl PMemoryHeap::DumpStatistics(class ostream &)
     ?DumpStatistics@PMemoryHeap@@SAXXZ @4041 NONAME ;public: static void __cdecl PMemoryHeap::DumpStatistics(void)
+    ?Empty@PString@@SAABV1@XZ @4353 NONAME ;public: static class PString const & __cdecl PString::Empty(void)
     ?EnableAccess@PVideoChannel@@QAEXXZ @4280 NONAME ;public: void __thiscall PVideoChannel::EnableAccess(void)
     ?End@PTrace@@SAAAVostream@@AAV2@@Z @3030 NONAME ;public: static class ostream & __cdecl PTrace::End(class ostream &)
     ?EndRead@PReadWriteMutex@@QAEXXZ @1266 NONAME ;public: void __thiscall PReadWriteMutex::EndRead(void)
