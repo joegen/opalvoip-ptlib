@@ -1,5 +1,5 @@
 /*
- * $Id: pdirect.h,v 1.24 1995/12/23 03:45:31 robertj Exp $
+ * $Id: pdirect.h,v 1.25 1997/01/12 04:22:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pdirect.h,v $
+ * Revision 1.25  1997/01/12 04:22:21  robertj
+ * Added function to get disk size and free space.
+ *
  * Revision 1.24  1995/12/23 03:45:31  robertj
  * Added constructor for C string literals.
  *
@@ -245,6 +248,18 @@ PDECLARE_CONTAINER(PDirectory, PFILE_PATH_STRING)
 
        <H2>Returns:</H2>
        TRUE if may be used to separate directories in a path.
+     */
+
+    BOOL GetVolumeSpace(PInt64 & total, PInt64 & free) const;
+    /* Determine the total number of bytes and number of byte free on the
+       volume that this directory is contained on.
+
+       Note that the free space will be the physical limit and if user quotas
+       are in force by the operating system, the use may not actually be able
+       to use all of these bytes.
+
+       <H2>Returns:</H2>
+       TRUE if the information could be determined.
      */
 
 
