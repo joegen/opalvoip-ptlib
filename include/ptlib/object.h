@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.54  1999/10/19 09:21:30  robertj
+ * Added functions to get current trace options and level.
+ *
  * Revision 1.53  1999/09/13 13:15:06  robertj
  * Changed PTRACE so will output to system log in PServiceProcess applications.
  *
@@ -389,6 +392,12 @@ public:
   */
   static void ClearOptions(unsigned options /** New level for trace */ );
 
+  /** Get the current trace options.
+  The PTRACE(), PTRACE_BLOCK() and PTRACE_LINE() macros output trace text that
+  may contain assorted values. These are defined by the Options enum.
+  */
+  static unsigned GetOptions();
+
   /** Set the trace level.
   The PTRACE() macro checks to see if its level is equal to or lower then the
   level set by this function. If so then the trace text is output to the trace
@@ -396,11 +405,18 @@ public:
   */
   static void SetLevel(unsigned level /** New level for trace */ );
 
+  /** Get the trace level.
+  The PTRACE() macro checks to see if its level is equal to or lower then the
+  level set by this function. If so then the trace text is output to the trace
+  stream.
+  */
+  static unsigned GetLevel();
+
   /** Determine if the level may cause trace output.
   This checks against the current global trace level set by #PSetTraceLevel#
   for if the trace output may be emitted. This is used by the PTRACE macro.
   */
-  static BOOL CanTrace(unsigned level /** New level */);
+  static BOOL CanTrace(unsigned level /** Trace level to check */);
 
   /** Begin a trace output.
   If the trace stream output is used outside of the provided macros, it

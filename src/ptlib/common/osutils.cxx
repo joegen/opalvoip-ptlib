@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.127  1999/10/19 09:21:30  robertj
+ * Added functions to get current trace options and level.
+ *
  * Revision 1.126  1999/10/14 08:08:27  robertj
  * Fixed problem, assuring millisecond accuracy in timestamp of trace output.
  *
@@ -478,9 +481,21 @@ void PTrace::ClearOptions(unsigned options)
 }
 
 
+unsigned PTrace::GetOptions()
+{
+  return Options;
+}
+
+
 void PTrace::SetLevel(unsigned level)
 {
   LevelThreshold = level;
+}
+
+
+unsigned PTrace::GetLevel()
+{
+  return LevelThreshold;
 }
 
 
