@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.44  2000/06/26 11:17:20  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.43  2000/01/05 00:29:12  robertj
  * Fixed alignment problems in memory checking debug functions.
  *
@@ -168,6 +171,8 @@
 #ifdef _WIN32
 #include <strstrea.h>
 #include <ptlib/debstrm.h>
+#elif defined(__NUCLEUS_PLUS__)
+#include <ptlib/NucleusDebstrm.h>
 #else
 #include <strstream.h>
 #include <signal.h>

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.144  2000/06/26 11:17:20  robertj
+ * Nucleus++ port (incomplete).
+ *
  * Revision 1.143  2000/06/26 09:27:16  robertj
  * Added ability to get at the PTraceStream without timestamps etc, use UINT_MAX trace level.
  *
@@ -489,7 +492,11 @@
 #include <ctype.h>
 
 
+#ifndef __NUCLEUS_PLUS__
 static ostream * PErrorStream = &cerr;
+#else
+static ostream * PErrorStream = 0L;
+#endif
 
 ostream & PGetErrorStream()
 {
@@ -499,13 +506,21 @@ ostream & PGetErrorStream()
 
 void PSetErrorStream(ostream * s)
 {
+#ifndef __NUCLEUS_PLUS__
   PErrorStream = s != NULL ? s : &cerr;
+#else
+  PErrorStream = s;
+#endif
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifndef __NUCLEUS_PLUS__
 static ostream * PTraceStream = &cerr;
+#else
+static ostream * PTraceStream = 0L;
+#endif
 static unsigned PTraceOptions = PTrace::FileAndLine;
 static unsigned PTraceLevelThreshold = 0;
 static unsigned PTraceBlockIndentLevel = 0;
@@ -513,7 +528,11 @@ static PTimeInterval ApplicationStartTick = PTimer::Tick();
 
 void PTrace::SetStream(ostream * s)
 {
+#ifndef __NUCLEUS_PLUS__
   PTraceStream = s != NULL ? s : &cerr;
+#else
+  PTraceStream = s;
+#endif
 }
 
 
@@ -553,11 +572,16 @@ BOOL PTrace::CanTrace(unsigned level)
 }
 
 
-static PMutex PTraceMutex;
+static PMutex & PTraceMutex()
+{
+  static PMutex mutex;
+  return mutex;
+}
+
 
 ostream & PTrace::Begin(unsigned level, const char * fileName, int lineNum)
 {
-  PTraceMutex.Wait();
+  PTraceMutex().Wait();
 
   if (level == UINT_MAX)
     return *PTraceStream;
@@ -636,7 +660,7 @@ ostream & PTrace::End(ostream & s)
       s << endl;
   }
 
-  PTraceMutex.Signal();
+  PTraceMutex().Signal();
 
   return s;
 }
