@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.9 1998/02/03 06:19:14 robertj Exp $
+ * $Id: svcproc.h,v 1.10 1998/02/16 00:13:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.10  1998/02/16 00:13:16  robertj
+ * Added tray icon support.
+ *
  * Revision 1.9  1998/02/03 06:19:14  robertj
  * Added extra log levels.
  *
@@ -188,6 +191,10 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
     virtual void OnContinue();
     /* Resume after the service was paused.
+     */
+
+    virtual void OnControl() = 0;
+    /* The Control menu option was used in the SysTray menu.
      */
 
 
