@@ -1,0 +1,4 @@
+Debug
+Release
+*.plg *.opt *.ncb *.Tags.WW
+MergeSym.dep
