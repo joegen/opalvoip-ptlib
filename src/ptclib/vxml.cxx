@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.cxx,v $
+ * Revision 1.44  2004/07/13 11:24:04  csoutheren
+ * Moved expat define back to end of file
+ *
  * Revision 1.43  2004/06/30 12:17:05  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -1963,10 +1966,6 @@ void PVXMLDigitsGrammar::Stop()
   // otherwise the state will stay as NOINPUT
 }
 
-//////////////////////////////////////////////////////////////////
-
-#endif   // P_EXPAT
-
 ///////////////////////////////////////////////////////////////
 
 PVXMLChannel::PVXMLChannel(PVXMLChannelInterface & _vxmlInterface,
@@ -2551,3 +2550,6 @@ void PVXMLQueueDataItem::Play(PVXMLChannel & outgoingChannel)
   PTRACE(3, "PVXML\tPlaying " << data.GetSize() << " bytes");
   outgoingChannel.SetReadChannel(chan, TRUE);
 }
+
+#endif   // P_EXPAT
+
