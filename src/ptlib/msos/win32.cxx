@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.62 1998/03/29 06:16:56 robertj Exp $
+ * $Id: win32.cxx,v 1.63 1998/04/01 01:52:42 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.63  1998/04/01 01:52:42  robertj
+ * Fixed problem with NoAutoDelete threads.
+ *
  * Revision 1.62  1998/03/29 06:16:56  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -2002,9 +2005,9 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
   AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
 
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
   process.activeThreads.SetAt(thread->threadId, thread);
-  process.threadMutex.Signal();
+  process.activeThreadMutex.Signal();
 
   process.SignalTimerChange();
 
@@ -2026,18 +2029,30 @@ PThread::PThread(PINDEX stackSize,
                    start == StartSuspended ? CREATE_SUSPENDED : 0, &threadId);
   PAssertOS(threadHandle != NULL);
   SetPriority(priorityLevel);
+  if (autoDelete) {
+    PProcess & process = PProcess::Current();
+    process.deleteThreadMutex.Wait();
+    process.autoDeleteThreads.Append(this);
+    process.deleteThreadMutex.Signal();
+  }
 }
 
 
 PThread::~PThread()
 {
-  if (originalStackSize > 0 && !IsTerminated()) {
-    PProcess & process = PProcess::Current();
-    process.threadMutex.Wait();
-    process.activeThreads.SetAt(threadId, NULL);
-    process.threadMutex.Signal();
+  if (originalStackSize <= 0)
+    return;
+
+  PProcess & process = PProcess::Current();
+  process.activeThreadMutex.Wait();
+  process.activeThreads.SetAt(threadId, NULL);
+  process.activeThreadMutex.Signal();
+
+  if (!IsTerminated())
     Terminate();
-  }
+
+  if (threadHandle != NULL)
+    CloseHandle(threadHandle);
 }
 
 
@@ -2139,6 +2154,7 @@ void PThread::Yield()
 void PThread::InitialiseProcessThread()
 {
   originalStackSize = 0;
+  autoDelete = FALSE;
   threadHandle = GetCurrentThread();
   threadId = GetCurrentThreadId();
   ((PProcess *)this)->activeThreads.DisallowDeleteObjects();
@@ -2149,28 +2165,10 @@ void PThread::InitialiseProcessThread()
 PThread * PThread::Current()
 {
   PProcess & process = PProcess::Current();
-  process.threadMutex.Wait();
+  process.activeThreadMutex.Wait();
   PThread * thread = process.activeThreads.GetAt(GetCurrentThreadId());
-  process.threadMutex.Signal();
+  process.activeThreadMutex.Signal();
   return thread;
-}
-
-
-DWORD PThread::CleanUpOnTerminated()
-{
-  DWORD id = 0;
-  if (IsTerminated()) {
-    id = threadId;
-
-    if (threadHandle != NULL) {
-      CloseHandle(threadHandle);
-      threadHandle = NULL;
-    }
-
-    if (autoDelete)
-      delete this;
-  }
-  return id;
 }
 
 
@@ -2188,18 +2186,14 @@ void PProcess::HouseKeepingThread::Main()
 {
   PProcess & process = PProcess::Current();
   for (;;) {
-    process.threadMutex.Wait();
-    HANDLE * handles = new HANDLE[process.activeThreads.GetSize()+1];
+    process.deleteThreadMutex.Wait();
+    HANDLE * handles = new HANDLE[process.autoDeleteThreads.GetSize()+1];
     DWORD numHandles = 1;
     handles[0] = breakBlock.GetHandle();
-    for (PINDEX i = 0; i < process.activeThreads.GetSize(); i++) {
-      PThread & thread = process.activeThreads.GetDataAt(i);
-      DWORD id = thread.CleanUpOnTerminated();
-      if (id != 0) {
-        process.activeThreads.SetAt(process.activeThreads.GetKeyAt(i), NULL);
-        numHandles = 1;
-        i = -1;
-      }
+    for (PINDEX i = 0; i < process.autoDeleteThreads.GetSize(); i++) {
+      PThread & thread = process.autoDeleteThreads[i];
+      if (thread.IsTerminated())
+        process.autoDeleteThreads.RemoveAt(i--);
       else {
         handles[numHandles] = thread.GetHandle();
         if (handles[numHandles] != process.GetHandle()) {
@@ -2209,7 +2203,7 @@ void PProcess::HouseKeepingThread::Main()
         }
       }
     }
-    process.threadMutex.Signal();
+    process.deleteThreadMutex.Signal();
 
     PTimeInterval nextTimer = process.timers.Process();
     DWORD delay;
@@ -2242,20 +2236,23 @@ void PProcess::SignalTimerChange()
 
 PProcess::~PProcess()
 {
-  Sleep(1000);  // Give threads time to die a natural death
+  Sleep(100);  // Give threads time to die a natural death
 
   // Get rid of the house keeper (majordomocide)
   delete houseKeeper;
 
   // OK, if there are any left we get really insistent...
-  threadMutex.Wait();
+  activeThreadMutex.Wait();
   for (PINDEX i = 0; i < activeThreads.GetSize(); i++) {
     PThread & thread = activeThreads.GetDataAt(i);
     if (this != &thread && !thread.IsTerminated())
       TerminateThread(thread.GetHandle(), 1);  // With extreme prejudice
-    thread.CleanUpOnTerminated();
   }
-  threadMutex.Signal();
+  activeThreadMutex.Signal();
+
+  deleteThreadMutex.Wait();
+  autoDeleteThreads.RemoveAll();
+  deleteThreadMutex.Signal();
 
 #ifndef PMEMORY_CHECK
   extern void PWaitOnExitConsoleWindow();
