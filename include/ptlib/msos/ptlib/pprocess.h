@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.6 1995/04/25 11:17:11 robertj Exp $
+ * $Id: pprocess.h,v 1.7 1995/12/10 11:48:08 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.7  1995/12/10 11:48:08  robertj
+ * Fixed bug in application shutdown of child threads.
+ *
  * Revision 1.6  1995/04/25 11:17:11  robertj
  * Fixes for DLL use in WIN32.
  *
@@ -37,6 +40,12 @@
 // PProcess
 
 #include "../../common/process.h"
+#if defined(P_PLATFORM_HAS_THREADS)
+  private:
+    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
+    ThreadDict threads;
+#endif
+
 #if defined(_WINDOWS) || defined(_WIN32)
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #endif
@@ -50,9 +59,6 @@ extern __declspec(dllexport) PProcess * PProcessInstance;
 #else
 extern PProcess * PSTATIC PProcessInstance;
 #endif
-
-inline PProcess::PProcess()
-  { PProcessInstance = this; }
 
 inline PProcess * PProcess::Current()
   { return PProcessInstance; }
