@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.39  2003/04/23 00:37:04  craigs
+ * More casts to avoid problems on MacOSX thanks to Shawn Hsiao
+ *
  * Revision 1.38  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -328,7 +331,7 @@ static void AbortIO(PThread * & thread, PMutex & mutex)
     PThread::Yield();
 }
 
-BOOL PChannel::PXClose()
+int PChannel::PXClose()
 {
   if (os_handle < 0)
     return -1;

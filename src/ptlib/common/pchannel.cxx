@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.23  2003/04/23 00:37:04  craigs
+ * More casts to avoid problems on MacOSX thanks to Shawn Hsiao
+ *
  * Revision 1.22  2003/03/19 00:10:24  robertj
  * Added ability to use seekoff() in a PChannel streambuf that is not a file.
  *
@@ -784,7 +787,7 @@ PString PIndirectChannel::GetErrorText(ErrorGroup group) const
 
 BOOL PIndirectChannel::Open(PChannel & channel)
 {
-  return Open(&channel, FALSE);
+  return Open(&channel, (BOOL)FALSE);
 }
 
 
