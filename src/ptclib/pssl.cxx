@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.25 2001/09/10 02:51:23 robertj Exp $
+ * $Id: pssl.cxx,v 1.26 2001/09/28 08:50:48 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.26  2001/09/28 08:50:48  robertj
+ * Fixed bug where last count not set to zero if have error on read/write.
+ *
  * Revision 1.25  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -524,6 +527,8 @@ BOOL PSSLChannel::Read(void * buf, PINDEX len)
 
   channelPointerMutex.StartRead();
 
+  lastReadCount = 0;
+
   BOOL returnValue = FALSE;
   if (readChannel == NULL)
     SetErrorValues(NotOpen, EBADF, LastReadError);
@@ -549,6 +554,8 @@ BOOL PSSLChannel::Write(const void * buf, PINDEX len)
   flush();
 
   channelPointerMutex.StartRead();
+
+  lastWriteCount = 0;
 
   BOOL returnValue;
   if (writeChannel == NULL) {
