@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.17  1998/11/03 02:30:38  robertj
+ * Fixed emeory leak of environment.
+ *
  * Revision 1.16  1998/09/24 04:12:11  robertj
  * Added open software license.
  *
@@ -381,6 +384,7 @@ PXConfigDictionary::~PXConfigDictionary()
 {
   if (writeThread != NULL)
     stopConfigWriteThread.Signal();
+  delete environmentInstance;
 }
 
 
