@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.22 1996/01/23 13:23:51 robertj Exp $
+ * $Id: ptlib.cxx,v 1.23 1996/01/28 02:56:16 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.23  1996/01/28 02:56:16  robertj
+ * Fixed bug in PFilePath functions for if path ends in a directory separator.
+ *
  * Revision 1.22  1996/01/23 13:23:51  robertj
  * Fixed bug in PFileInfo for if path ends in directory separator.
  *
@@ -260,7 +263,7 @@ PCaselessString PFilePath::GetVolume() const
 
 PCaselessString PFilePath::GetPath() const
 {
-  PINDEX backslash = FindLast('\\');
+  PINDEX backslash = FindLast('\\', GetLength()-2);
   if (backslash == P_MAX_INDEX)
     return PCaselessString();
 
@@ -276,7 +279,7 @@ PCaselessString PFilePath::GetPath() const
 
 PCaselessString PFilePath::GetFileName() const
 {
-  PINDEX backslash = FindLast('\\');
+  PINDEX backslash = FindLast('\\', GetLength()-2);
   if (backslash == P_MAX_INDEX)
     backslash = 0;
   else
@@ -288,7 +291,7 @@ PCaselessString PFilePath::GetFileName() const
 
 PCaselessString PFilePath::GetTitle() const
 {
-  PINDEX backslash = FindLast('\\');
+  PINDEX backslash = FindLast('\\', GetLength()-2);
   if (backslash == P_MAX_INDEX)
     backslash = 0;
   else
