@@ -10,6 +10,7 @@
 #if defined(P_LINUX)
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
+#include <sys/termios.h>
 #include <unistd.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -21,6 +22,8 @@
 #else
 #define SIOCGIFNUM  0x8938
 #endif
+
+#define PSETPGRP()  setpgrp()
 
 #elif defined(P_SOLARIS)
 
@@ -125,8 +128,6 @@ struct servent * getservbyname(const char *, const char *);
 
 #else
 
-#include <sys/termios.h>
-#define PSETPGRP()  setpgrp()
 
 #endif
 
