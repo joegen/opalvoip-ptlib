@@ -20,11 +20,21 @@
 #include <sys/time.h>
 #include <pwd.h>
 
-#ifdef	P_HPUX9
+#if defined(P_HPUX9)
 #define	SELECT(p1,p2,p3,p4,p5)		select(p1,(int *)(p2),(int *)(p3),(int *)(p4),p5)
 #else
 #define	SELECT(p1,p2,p3,p4,p5)		select(p1,p2,p3,p4,p5)
 #endif
+
+#if defined(P_SUN4)
+extern "C" void bzero(void *, int);
+extern "C" int select(int width,
+			fd_set *readfds,
+			fd_set *writefds,
+			fd_set *exceptfds,
+			struct timeval *timeout);
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -111,16 +121,14 @@ void PThread::SwitchContext(PThread * from)
       Main();
       Terminate(); // Never returns from here
     }
+#if defined(P_LINUX)
     context[0].__sp = (__ptr_t)stackTop-16;  // Change the stack pointer in jmp_buf
+#else
+#warning No lightweight thread context switch mechanism defined
+#endif
   }
-#ifdef P_HPUX9
-#message "WARNING: no lightweight thread context switch mechanism defined for HP/UX 9.x"
-#elif  P_LINUX
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
-#else
-#error "No lightweight thread context switch mechanism defined"
-#endif
 }
 
 
