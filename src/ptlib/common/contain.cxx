@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.43 1995/10/14 15:07:42 robertj Exp $
+ * $Id: contain.cxx,v 1.44 1996/01/02 12:51:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.44  1996/01/02 12:51:05  robertj
+ * Mac OS compatibility changes.
+ * Removed requirement that PArray elements have parameterless constructor..
+ *
  * Revision 1.43  1995/10/14 15:07:42  robertj
  * Changed arrays to not break references, but strings still need to.
  *
@@ -1251,7 +1255,12 @@ int PStringStream::Buffer::sync()
 }
 
 
-streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
+streampos PStringStream::Buffer::seekoff(streamoff off,
+#ifdef __MWERKS__
+                                 ios::seekdir dir, ios::openmode mode)
+#else
+                                 ios::seek_dir dir, int mode)
+#endif
 {
   int len = string->GetLength();
   int gpos = gptr() - eback();
@@ -1358,6 +1367,16 @@ PStringArray::PStringArray(PINDEX count,
       newString = PNEW PString(strarr[i]);
     SetAt(i, newString);
   }
+}
+
+
+PString & PStringArray::operator[](PINDEX index)
+{
+  PASSERTINDEX(index);
+  PAssert(SetMinSize(index+1), POutOfMemory);
+  if ((*theArray)[index] == NULL)
+    (*theArray)[index] = PNEW PString;
+  return *(PString *)(*theArray)[index];
 }
 
 
