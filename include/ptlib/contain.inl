@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.33 1995/12/23 03:48:40 robertj Exp $
+ * $Id: contain.inl,v 1.34 1996/01/23 13:10:45 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.34  1996/01/23 13:10:45  robertj
+ * String searching algorithm rewrite.
+ * Added Replace() function to strings.
+ *
  * Revision 1.33  1995/12/23 03:48:40  robertj
  * Added operators for string set include and exclude.
  *
@@ -148,9 +152,6 @@ PINLINE PString::PString(int, const PString * str)
 PINLINE PString::PString(char c)
   : PCharArray(2) { SetAt(0, c); }
 
-PINLINE PObject::Comparison PString::InternalCompare(const char * cstr) const
-  { return (Comparison)strcmp(theArray,PAssertNULL(cstr)); }
-
 PINLINE BOOL PString::MakeMinimumSize()
   { return SetSize(GetLength()+1); }
 
@@ -193,25 +194,22 @@ PINLINE BOOL PString::operator>=(const PObject & obj) const
   { return PObject::operator>=(obj); }
 
 PINLINE BOOL PString::operator==(const char * cstr) const
-  { return InternalCompare(cstr) == EqualTo; }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) == EqualTo; }
 
 PINLINE BOOL PString::operator!=(const char * cstr) const
-  { return InternalCompare(cstr) != EqualTo; }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) != EqualTo; }
 
 PINLINE BOOL PString::operator<(const char * cstr) const
-  { return InternalCompare(cstr) == LessThan; }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) == LessThan; }
 
 PINLINE BOOL PString::operator>(const char * cstr) const
-  { return InternalCompare(cstr) == GreaterThan; }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) == GreaterThan; }
 
 PINLINE BOOL PString::operator<=(const char * cstr) const
-  { return InternalCompare(cstr) != GreaterThan; }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) != GreaterThan; }
 
 PINLINE BOOL PString::operator>=(const char * cstr) const
-  { return InternalCompare(cstr) != LessThan; }
-
-PINLINE void PString::Insert(const PString & str, PINDEX pos)
-  { Insert((const char *)str, pos); }
+  { return InternalCompare(0, P_MAX_INDEX, cstr) != LessThan; }
 
 PINLINE PINDEX PString::Find(const PString & str, PINDEX offset) const
   { return Find((const char *)str, offset); }
@@ -221,6 +219,9 @@ PINLINE PINDEX PString::FindLast(const PString & str, PINDEX offset) const
 
 PINLINE PINDEX PString::FindOneOf(const PString & str, PINDEX offset) const
   { return FindOneOf((const char *)str, offset); }
+
+PINLINE void PString::Splice(const PString & str, PINDEX pos, PINDEX len)
+  { Splice((const char *)str, pos, len); }
 
 PINLINE PStringArray
       PString::Tokenise(const PString & separators, BOOL onePerSeparator) const
@@ -255,21 +256,6 @@ PINLINE PCaselessString & PCaselessString::operator=(const char * cstr)
 
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
   { PString::operator=(str); return *this; }
-
-PINLINE PINDEX PCaselessString::Find(const PString & str, PINDEX offset) const
-  { return Find((const char *)str, offset); }
-
-PINLINE PINDEX
-           PCaselessString::FindLast(const PString & str, PINDEX offset) const
-  { return PString::FindLast((const char *)str, offset); }
-
-PINLINE PINDEX
-             PCaselessString::FindLast(const char * cstr, PINDEX offset) const
-  { return PString::FindLast(cstr, offset); }
-
-PINLINE PINDEX
-          PCaselessString::FindOneOf(const PString & str, PINDEX offset) const
-  { return FindOneOf((const char *)str, offset); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
