@@ -1669,6 +1669,7 @@ EXPORTS
     ?GetVideoReader@PVideoChannel@@UAEPAVPVideoInputDevice@@XZ @3131 NONAME ;public: virtual class PVideoInputDevice * __thiscall PVideoChannel::GetVideoReader(void)
     ?GetVolume@PDirectory@@QBE?AVPCaselessString@@XZ @1175 NONAME ;public: class PCaselessString  __thiscall PDirectory::GetVolume(void)const 
     ?GetVolume@PFilePath@@QBE?AVPCaselessString@@XZ @1176 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetVolume(void)const 
+    ?GetVolume@PSoundChannel@@QAEHAAI@Z @3182 NONAME ;public: int __thiscall PSoundChannel::GetVolume(unsigned int &)
     ?GetVolumeSpace@PDirectory@@QBEHAA_J0AAK@Z @1177 NONAME ;public: int __thiscall PDirectory::GetVolumeSpace(__int64 &,__int64 &,unsigned long &)const 
     ?GetWhiteness@PVideoDevice@@UAEHXZ @2943 NONAME ;public: virtual int __thiscall PVideoDevice::GetWhiteness(void)
     ?GrabBlankImage@PFakeVideoInputDevice@@QAEXPAE@Z @3132 NONAME ;public: void __thiscall PFakeVideoInputDevice::GrabBlankImage(unsigned char *)
@@ -2377,6 +2378,7 @@ EXPORTS
     ?SetVFlipState@PVideoInputDevice@@UAEHH@Z @3157 NONAME ;public: virtual int __thiscall PVideoInputDevice::SetVFlipState(int)
     ?SetVideoFormat@PFakeVideoInputDevice@@UAEHW4VideoFormat@PVideoDevice@@@Z @2572 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
     ?SetVideoFormat@PVideoDevice@@UAEHW4VideoFormat@1@@Z @2463 NONAME ;public: virtual int __thiscall PVideoDevice::SetVideoFormat(enum PVideoDevice::VideoFormat)
+    ?SetVolume@PSoundChannel@@QAEHI@Z @3183 NONAME ;public: int __thiscall PSoundChannel::SetVolume(unsigned int)
     ?SetWhiteness@PVideoDevice@@UAEHI@Z @2950 NONAME ;public: virtual int __thiscall PVideoDevice::SetWhiteness(unsigned int)
     ?SetWriteChannel@PIndirectChannel@@QAEHPAVPChannel@@H@Z @1706 NONAME ;public: int __thiscall PIndirectChannel::SetWriteChannel(class PChannel *,int)
     ?Shift@PArgList@@QAEXH@Z @1708 NONAME ;public: void __thiscall PArgList::Shift(int)
