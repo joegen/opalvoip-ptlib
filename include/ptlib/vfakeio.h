@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.8  2002/01/16 03:49:23  dereks
+ * Add new test image.
+ *
  * Revision 1.7  2002/01/04 04:11:45  dereks
  * Add video flip code from Walter Whitlock, which flips code at the grabber.
  *
@@ -150,6 +153,11 @@ class PFakeVideoInputDevice : public PVideoInputDevice
     /**Generate a static image, containing a constant field of grey.
      */
     void GrabBlankImage(BYTE *resFrame);
+
+    /**Generate the original form of the moving blocks test frame.
+     */
+    void GrabOriginalMovingBlocksFrame(BYTE *resFrame);
+
 
     /** Fills a region of the image with a constant colour.
      */
