@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.h,v $
+ * Revision 1.11  2003/03/17 07:46:23  robertj
+ * Migrated vflip member variable and functions into PVideoDevice class.
+ *
  * Revision 1.10  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -244,18 +247,6 @@ class PFakeVideoInputDevice : public PVideoInputDevice
          
     void ClearMapping() { return ; }
 
-    /**Get the video conversion vertical flip state
-     */
-    virtual BOOL GetVFlipState();
-
-    /**Set the video conversion vertical flip state
-     */
-    virtual BOOL SetVFlipState(BOOL newVFlipState);
-
-    /**Toggle the video conversion vertical flip state
-     */
-    virtual BOOL ToggleVFlipState();
-
     /**Try all known video formats & see which ones are accepted by the video driver
      */
     virtual BOOL TestAllFormats()
@@ -264,8 +255,6 @@ class PFakeVideoInputDevice : public PVideoInputDevice
  protected:
    PINDEX videoFrameSize;
    int    grabCount;    
-
-   BOOL   doVFlip;
 };
 
 #endif
