@@ -133,10 +133,12 @@ system for all of the various unix systems.
 2.  The build should automatically create a file pwlib/include/ptbuildopts.h
     via the configure.exe program that should be in the pwlib directory. If
     you have any problems try running the program directly from a command
-    line.
+    line. Use ".\configure --help" to get information on options such as
+    forcing a feature or library dependency.
 
     Note there are additional notes in the "Platform Specific Issues" on how
-    to compile OpenLDAP in a manner suitable for use by PWLib under Windows.
+    to compile the various libraries in a manner suitable for use by PWLib
+    under Windows.
 
 3.  In VisualStudio v5/6 open the pwlib.dsw file in the pwlib top directory.
     If you have the minimum library it will come up with several requests to
@@ -1185,7 +1187,27 @@ so OpenH323Proxy will not work.
 
 
 --------------------------------------------------------------------------------
-7.8. OpenLDAP under Windows
+7.8. Build libraries under Windows
+----------------------------------
+
+Unfortunately building libraries that were intended for Unix based systems
+under Windows can sometimes be difficult. Here are some notes on the subsystems
+that PWLib uses.
+
+7.8.1. OpenSSL under Windows
+----------------------------
+The standard build for OpenSSL off http://www.openssl.org does work though it
+is rather tricky and requires things like Perl to be installed on your
+Windows box. However the build does work and is correct for PWlib use. Make
+sure you build the non-DLL Debug and Release versions.
+
+7.8.2. EXPAT under Windows
+---------------------------
+The easiest way is to get the one in the OpenH323 CVS. This is guranteed to
+work. Use "cvs -d :pserver:openh323@cvs.openh323.org:/home/cvsroot co external/expat"
+and then use the expat.dsw file to build the Debug and Release libraries.
+
+7.8.3. OpenLDAP under Windows
 ---------------------------
 To use OpenLDAP with PWLib you have to compile the OpenLDAP library as a DLL.
 Unfortunately, the standard distribution does not do this. So there is a file in
@@ -1195,17 +1217,29 @@ files may not work.
 
 To build the DLL:
 
-   1   Get OpenLDAP v 1.1.12 (STABLE)
+   1   Get OpenLDAP v 2.1.17 via tar file at
+         ftp://ftp.openldap.org/pub/OpenLDAP/openldap-release/openldap-2.1.17.tgz
+       or anonymous CVS using tag at
+         :pserver:anonymous@cvs.OpenLDAP.org:/repo/OpenLDAP
+       using tag OPENLDAP_REL_ENG_2_1_17
    2   Unpack it somewhere, eg c:\work\openldap
-   3   Unzip the openldap-2.1.12-win32.zip file in the directory above, eg c:\work
+   3   Unzip the openldap-2.1.17-win32.zip file that directory
    4   Open openldap/build/main.dsw
-   5   Select the "dll" project and build the "DLL Release" target.
-   6   Put the resulting openldap/DLLRelease/openldap.dll file in your path.
+   5   use Batch build to and select the "dll" project and build the "DLL Debug"
+       and "DLL Release" targets.
+   6   Put the resulting openldap/DLLRelease/openldap.dll and
+       openldap/DLLDebug/openldapd.dll files in your path.
+
+7.8.4 SDL under Windows
+-----------------------
+Version 1.2.5 has support for Windows and MSVC so you just need to download it
+from http://www.libsdl.org/ and follow the build instructions.
 
 
 --------------------------------------------------------------------------------
 7.9. ESD (Esound)
 -----------------
+
 Most targets come with native sound support.
 However there is also support for the ESD (esound) daemon which provides
 full duplex audio via network sockets.

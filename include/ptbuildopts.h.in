@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.8  2003/05/05 06:25:33  robertj
+ * Corrections to external libraries
+ *
  * Revision 1.7  2003/04/28 08:32:01  craigs
  * Added Linux SDL detection
  *
@@ -132,18 +135,19 @@
 #pragma include_alias(<openssl/aes.h>,        <@SSL_DIR@/inc32/openssl/aes.h>)
 #pragma include_alias(<openssl/obj_mac.h>,    <@SSL_DIR@/inc32/openssl/obj_mac.h>)
 #pragma include_alias(<openssl/kssl.h>,       <@SSL_DIR@/inc32/openssl/kssl.h>)
-#endif
 
 #define P_SSL_DIR         "@SSL_DIR@/"
 
 #ifdef _DEBUG
-#define P_SSL_LIBDIR P_SSL_DIR "out32"
-#else
 #define P_SSL_LIBDIR P_SSL_DIR "out32.dbg"
+#else
+#define P_SSL_LIBDIR P_SSL_DIR "out32"
 #endif
 
 #define P_SSL_LIB1 P_SSL_LIBDIR "/ssleay32.lib"
 #define P_SSL_LIB2 P_SSL_LIBDIR "/libeay32.lib"
+
+#endif
 
 
 /////////////////////////////////////////////////
@@ -155,7 +159,6 @@
 
 #if defined(_MSC_VER) && P_EXPAT
 #pragma include_alias(<expat.h>, <@EXPAT_DIR@/lib/expat.h>)
-#endif
 
 #define P_EXPAT_DIR     "@EXPAT_DIR@/"
 
@@ -167,6 +170,8 @@
 
 #define P_EXPAT_LIBRARY P_EXPAT_LIBDIR "/expat.lib"
 
+#endif
+
 
 /////////////////////////////////////////////////
 //
@@ -176,13 +181,23 @@
 #undef P_LDAP 
 
 #if defined(_MSC_VER) && P_LDAP
+
 #pragma include_alias(<ldap.h>,          <@LDAP_DIR@/include/ldap.h>)
 #pragma include_alias(<lber.h>,          <@LDAP_DIR@/include/lber.h>)
 #pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
 #pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
 #pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
-#define P_LDAP_LIBRARY      "@LDAP_DIR@/DLLRelease/openldap.lib"
+
+#define P_LDAP_DIR "@LDAP_DIR@/"
+
+#ifdef _DEBUG
+#define P_LDAP_LIBRARY P_LDAP_DIR "DLLDebug/openldapd.lib"
+#else
+#define P_LDAP_LIBRARY P_LDAP_DIR "DLLRelease/openldap.lib"
 #endif
+
+#endif
+
 
 /////////////////////////////////////////////////
 //
