@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.45  2001/01/25 07:14:39  robertj
+ * Fixed spurios memory leak message. Usual static global problem.
+ *
  * Revision 1.44  2000/06/26 11:17:20  robertj
  * Nucleus++ port (incomplete).
  *
@@ -283,7 +286,7 @@ PMemoryHeap::PMemoryHeap()
 
   allocationRequest = 1;
   firstRealObject = 0;
-  flags = 0;
+  flags = NoLeakPrint;
 
   allocFillChar = '\x5A';
   freeFillChar = '\xA5';
@@ -315,25 +318,8 @@ PMemoryHeap::~PMemoryHeap()
   isDestroyed = TRUE;
 
   if (leakDumpStream != NULL) {
-    DumpStatistics(*leakDumpStream);
-#if !defined(_WIN32)
-    if (listTail != NULL && listTail->request >= firstRealObject) {
-#if defined(P_PTHREADS)
-      sigset_t blockedSignals;
-      sigemptyset(&blockedSignals);
-      sigaddset(&blockedSignals, SIGINT);
-      sigaddset(&blockedSignals, SIGQUIT);
-      sigaddset(&blockedSignals, SIGTERM);
-      pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL);
-#endif
-      ::signal(SIGINT, SIG_DFL);
-      ::signal(SIGQUIT, SIG_DFL);
-      ::signal(SIGTERM, SIG_DFL);
-      *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
-      cin.get();
-    }
-#endif
-    DumpObjectsSince(firstRealObject, *leakDumpStream);
+    InternalDumpStatistics(*leakDumpStream);
+    InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
   }
 
 #if defined(_WIN32)
@@ -379,7 +365,11 @@ void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, 
     return NULL;
   }
 
-  if (firstRealObject == 0 && file != NULL && line > 0)
+  // Ignore all allocations made before main() is called. This is indicated
+  // by PProcess::PreInitialise() clearing the NoLeakPrint flag. Why do we do
+  // this? because the GNU compiler is broken in the way it does static global
+  // C++ object construction and destruction.
+  if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
     firstRealObject = allocationRequest;
 
   PAssert(allocationRequest != allocationBreakpoint, "Break on memory allocation.");
@@ -641,9 +631,29 @@ void PMemoryHeap::DumpObjectsSince(DWORD objectNumber, ostream & strm)
 
 void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
 {
+  BOOL first = TRUE;
   for (Header * obj = listHead; obj != NULL; obj = obj->next) {
     if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
       continue;
+
+    if (first && isDestroyed) {
+      *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
+#if !defined(_WIN32)
+#if defined(P_PTHREADS)
+      sigset_t blockedSignals;
+      sigemptyset(&blockedSignals);
+      sigaddset(&blockedSignals, SIGINT);
+      sigaddset(&blockedSignals, SIGQUIT);
+      sigaddset(&blockedSignals, SIGTERM);
+      pthread_sigmask(SIG_UNBLOCK, &blockedSignals, NULL);
+#endif
+      ::signal(SIGINT, SIG_DFL);
+      ::signal(SIGQUIT, SIG_DFL);
+      ::signal(SIGTERM, SIG_DFL);
+      cin.get();
+#endif
+      first = FALSE;
+    }
 
     BYTE * data = (BYTE *)&obj[1];
 
