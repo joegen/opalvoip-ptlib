@@ -1,5 +1,5 @@
 /*
- * $Id: mail.cxx,v 1.4 1995/08/24 12:41:25 robertj Exp $
+ * $Id: mail.cxx,v 1.5 1996/02/15 14:55:01 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: mail.cxx,v $
+ * Revision 1.5  1996/02/15 14:55:01  robertj
+ * Win16 compatibility
+ *
  * Revision 1.4  1995/08/24 12:41:25  robertj
  * Implementation of mail for GUIs.
  *
@@ -266,15 +269,15 @@ PStringArray PMail::GetMessageIDs(BOOL unreadOnly)
                    NULL, flags, NULL, &count, hUserInterface, &messages, NULL);
     if (lastError == CMC_SUCCESS) {
       msgIDs.SetSize((PINDEX)count);
-      for (CMC_uint32 m = 0; m < count; m++) {
+      for (PINDEX m = 0; m < (PINDEX)count; m++) {
         for (CMC_uint32 c = 0; c < messages[m].message_reference->length; c++)
           if (!isprint(messages[m].message_reference->string[c]))
             break;
         if (c >= messages[m].message_reference->length)
           msgIDs[m] = 'L' + PString(messages[m].message_reference->string,
-                                    messages[m].message_reference->length);
+                                    (PINDEX)messages[m].message_reference->length);
         else {
-          PCharArray buf(messages[m].message_reference->length*2 + 6);
+          PCharArray buf((PINDEX)(messages[m].message_reference->length*2 + 6));
           char * ptr = buf.GetPointer();
           *ptr++ = 'H';
           for (c = 0; c < messages[m].message_reference->length; c++) {
