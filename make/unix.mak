@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.160  2003/03/05 21:13:32  dereks
+# Fix make support for 1394AVC. Thanks Damien Sandras.
+#
 # Revision 1.159  2003/03/01 17:05:05  rogerh
 # Mac OS X updates from Shawn Pai-Hsiang Hsiao
 #
@@ -797,6 +800,22 @@ $(error "TRY_1394DC is defined but $(SYSINCDIR)/libdc1394/dc1394_control.h does 
 endif
 endif
 
+
+ifdef TRY_1394AVC   
+ifneq (,$(wildcard $(SYSINCDIR)/libavc1394/avc1394.h))   
+ifneq (,$(wildcard $(SYSINCDIR)/libdv/dv.h))   
+ENDLDLIBS      += -lraw1394 -lavc1394 -lrom1394 -ldv   
+STDCCFLAGS     += -DTRY_1394AVC   
+TRY_1394AVC    = 1   
+else   
+$(error "You need the libdv headers. Ignoring TRY_1394AVC")   
+TRY_1394AVC     =   
+endif   
+else   
+$(error "You need the libavc1394 headers. Ignoring TRY_1394AVC")   
+TRY_1394AVC     =   
+endif   
+endif
 
 STATIC_LIBS	:= libstdc++.a libg++.a libm.a libc.a
 SYSLIBDIR	:= /usr/lib
