@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: collect.cxx,v $
+ * Revision 1.55  2002/04/26 05:40:21  robertj
+ * Removed assumption that GetAt() on a dictionary will automatically convert
+ *   the index to a POrdinalyKey. This breaks the PCollection semantics for
+ *   GetAt() which is to get based on the ordinal position not the hashed position.
+ *
  * Revision 1.54  2002/04/16 07:58:13  robertj
  * Fixed MakeUnique for lists and sorted lists.
  *
@@ -1570,10 +1575,14 @@ PINDEX PAbstractDictionary::InsertAt(PINDEX index, PObject * obj)
 }
  
  
-BOOL PAbstractDictionary::Remove(const PObject *)
+BOOL PAbstractDictionary::Remove(const PObject * obj)
 {
-  PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  PINDEX idx = GetObjectsIndex(obj);
+  if (idx == P_MAX_INDEX)
+    return FALSE;
+
+  RemoveAt(idx);
+  return TRUE;
 }
 
 
@@ -1599,13 +1608,14 @@ PINDEX PAbstractDictionary::GetValuesIndex(const PObject & obj) const
 
 BOOL PAbstractDictionary::SetAt(PINDEX index, PObject * val)
 {
-  return AbstractSetAt(POrdinalKey(index), val);
+  return AbstractSetAt(AbstractGetKeyAt(index), val);
 }
 
 
 PObject * PAbstractDictionary::GetAt(PINDEX index) const
 {
-  return AbstractGetAt(POrdinalKey(index));
+  PAssert(hashTable->SetLastElementAt(index), PInvalidArrayIndex);
+  return hashTable->lastElement->data;
 }
  
  
