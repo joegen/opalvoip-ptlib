@@ -355,7 +355,8 @@ PXConfigDictionary::PXConfigDictionary(int)
 
 PXConfigDictionary::~PXConfigDictionary()
 {
-  stopConfigWriteThread.Signal();
+  if (writeThread != NULL)
+    stopConfigWriteThread.Signal();
 }
 
 
