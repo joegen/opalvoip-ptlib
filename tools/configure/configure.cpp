@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: configure.cpp,v $
+ * Revision 1.21  2004/12/01 11:57:03  csoutheren
+ * Fixed problem with not finding MSWIN macros with leading spaces and added ability to enable/disable features using --name as as well as --enable-name
+ * Thank to Guilhem Tardy
+ *
  * Revision 1.20  2004/08/13 01:08:09  csoutheren
  * Changed to look for configure.ac, then configure.in
  *
@@ -402,17 +406,16 @@ int main(int argc, char* argv[])
     getline(conf, line);
     int pos;
     if ((pos = line.find("AC_CONFIG_HEADERS")) != string::npos) {
-      pos = line.find('(', pos);
-      if (pos != string::npos) {
+      if ((pos = line.find('(', pos)) != string::npos) {
         int end = line.find(')', pos);
-        if (pos != string::npos)
+        if (end != string::npos)
           headers.push_back(line.substr(pos+1, end-pos-1));
       }
     }
-    else if (line.find("dnl MSWIN_") == 0) {
-      int space = line.find(' ', 10);
+    else if ((pos = line.find("dnl MSWIN_")) != string::npos) {
+      int space = line.find(' ', pos+10);
       if (space != string::npos) {
-        string optionName(line, 10, space-10);
+        string optionName(line, pos+10, space-pos-10);
         while (line[space] == ' ')
           space++;
         int comma = line.find(',', space);
@@ -482,12 +485,18 @@ int main(int argc, char* argv[])
     }
     else {
       for (feature = features.begin(); feature != features.end(); feature++) {
-        if (stricmp(argv[i], ("--no-"     +feature->featureName).c_str()) == 0 ||
-            stricmp(argv[i], ("--disable-"+feature->featureName).c_str()) == 0)
+        if (stricmp(argv[i], ("--no-"     + feature->featureName).c_str()) == 0 ||
+            stricmp(argv[i], ("--disable-"+ feature->featureName).c_str()) == 0) {
           feature->enabled = false;
-	      else if (strstr(argv[i], ("--" + feature->featureName+"-dir=").c_str()) == argv[i])
-	        if (!feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
-	          cerr << feature->displayName << " not found in "
+          break;
+        }
+        else if (stricmp(argv[i], ("--enable-"+ feature->featureName).c_str()) == 0) {
+          feature->enabled = true;
+          break;
+        }
+	    else if (strstr(argv[i], ("--" + feature->featureName + "-dir=").c_str()) == argv[i] &&
+	             !feature->Locate(argv[i] + strlen(("--" + feature->featureName + "-dir=").c_str())))
+	      cerr << feature->displayName << " not found in "
 		       << argv[i] + strlen(("--" + feature->featureName+"-dir=").c_str()) << endl;
       }
     }
