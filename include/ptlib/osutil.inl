@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.5 1993/08/21 04:40:19 robertj Exp $
+ * $Id: osutil.inl,v 1.6 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.5  1993/08/21 04:40:19  robertj
+ * Revision 1.6  1993/08/27 18:17:47  robertj
+ * Moved a lot of code from MS-DOS platform specific to common files.
+ *
+ * Revision 1.5  1993/08/21  04:40:19  robertj
  * Added Copy() function.
  *
  * Revision 1.4  1993/08/21  01:50:33  robertj
@@ -21,6 +24,99 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PTimeInterval
+
+inline PObject * PTimeInterval::Clone() const
+  { return new PTimeInterval(milliseconds); }
+
+inline long PTimeInterval::Milliseconds() const
+  { return milliseconds; }
+
+inline long PTimeInterval::Seconds() const
+  { return milliseconds/1000; }
+
+inline long PTimeInterval::Minutes() const
+  { return milliseconds/60000; }
+
+inline int PTimeInterval::Hours() const
+  { return (int)(milliseconds/3600000); }
+
+inline int PTimeInterval::Days() const
+  { return (int)(milliseconds/86400000); }
+
+
+inline PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
+  { return PTimeInterval(milliseconds + t.milliseconds); }
+
+inline PTimeInterval & PTimeInterval::operator+=(const PTimeInterval & t)
+  { milliseconds += t.milliseconds; return *this; }
+
+inline PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
+  { return PTimeInterval(milliseconds - t.milliseconds); }
+
+inline PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
+  { milliseconds -= t.milliseconds; return *this; }
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PTime
+
+inline PTime::PTime(time_t t)
+  : theTime(t) { }
+
+inline PObject * PTime::Clone() const
+  { return new PTime(theTime); }
+
+inline ostream & PTime::PrintOn(ostream & strm) const
+  { return strm << ctime(&theTime); }
+
+inline int PTime::GetSecond() const
+  { return localtime(&theTime)->tm_sec; }
+
+inline int PTime::GetMinute() const
+  { return localtime(&theTime)->tm_min; }
+
+inline int PTime::GetHour() const
+  { return localtime(&theTime)->tm_hour; }
+
+inline int PTime::GetDay() const
+  { return localtime(&theTime)->tm_mday; }
+
+inline int PTime::GetMonth() const
+  { return localtime(&theTime)->tm_mon+1; }
+
+inline int PTime::GetYear() const
+  { return localtime(&theTime)->tm_year+1900; }
+
+inline int PTime::GetDayOfWeek() const
+  { return localtime(&theTime)->tm_wday; }
+
+inline int PTime::GetDayOfYear() const
+  { return localtime(&theTime)->tm_yday; }
+
+inline BOOL PTime::IsDaylightSavings() const
+  { return localtime(&theTime)->tm_isdst; }
+
+
+inline PTime PTime::operator+(const PTimeInterval & t) const
+  { return PTime(theTime + t.Seconds()); }
+
+inline PTime & PTime::operator+=(const PTimeInterval & t)
+  { theTime += t.Seconds(); return *this; }
+
+inline PTimeInterval PTime::operator-(const PTime & t) const
+  { return PTimeInterval(0, (int)(theTime - t.theTime)); }
+
+inline PTime PTime::operator-(const PTimeInterval & t) const
+  { return PTime(theTime - t.Seconds()); }
+
+inline PTime & PTime::operator-=(const PTimeInterval & t)
+  { theTime -= t.Seconds(); return *this; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PDirectory
 
 inline PDirectory::PDirectory()
   : path(".") { Construct(); }
@@ -34,9 +130,6 @@ inline PObject::Comparison PDirectory::Compare(const PObject & obj) const
 
 inline ostream & PDirectory::PrintOn(ostream & strm) const
   { return strm << path; }
-
-inline istream & PDirectory::ReadFrom(istream & strm)
-  { return strm >> path; }
 
 inline BOOL PDirectory::SetSize(PINDEX newSize)
   { return newSize == 1; }
@@ -67,10 +160,6 @@ inline PDirectory::~PDirectory()
 inline PFile::PFile(const PString & name)
   : fullname(name) { Construct(); }
 
-inline PFile::PFile(const PString & name, OpenMode mode, int opts)
-  : fullname(name) { Construct(); Open(mode, opts); }
-
-
 inline PObject::Comparison PFile::Compare(const PObject & obj) const
   { return fullname.Compare(((const PFile &)obj).fullname); }
 
@@ -93,10 +182,6 @@ inline BOOL PFile::Access(OpenMode mode) const
 inline BOOL PFile::Remove() const
   { return Remove(fullname); }
 
-inline BOOL PFile::Rename(const PString & newname)
-  { if (!Rename(fullname, newname)) return FALSE;
-    fullname = newname; return TRUE; }
-
 inline BOOL PFile::Copy(const PString & newname)
   { return Copy(fullname, newname); }
 
@@ -107,6 +192,19 @@ inline BOOL PFile::GetStatus(Status & status) const
 inline PString PFile::GetFullName() const
   { return fullname; }
       
+
+inline BOOL PFile::IsOpen()
+  { return os_handle >= 0; }
+
+inline int PFile::GetHandle() const
+  { PAssert(os_handle >= 0); return os_handle; }
+
+inline off_t PFile::GetPosition()
+  { return lseek(GetHandle(), 0, SEEK_CUR); }
+
+inline BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
+  { return lseek(GetHandle(), pos, origin) == pos; }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
