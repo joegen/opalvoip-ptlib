@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.16 1995/12/10 11:33:36 robertj Exp $
+ * $Id: pprocess.h,v 1.17 1995/12/23 03:46:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.17  1995/12/23 03:46:02  robertj
+ * Changed version numbers.
+ *
  * Revision 1.16  1995/12/10 11:33:36  robertj
  * Added extra user information to processes and applications.
  * Changes to main() startup mechanism to support Mac.
@@ -64,7 +67,7 @@
 
 
 /*$MACRO PCREATE_PROCESS(cls)
-   This macro is used to declare the components necessary for a user PWLib
+   This macro is used to create the components necessary for a user PWLib
    process. For a PWLib program to work correctly on all platforms the
    <CODE>main()</CODE> function must be defined in the same module as the
    instance of the application.
@@ -72,6 +75,21 @@
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
     { static cls instance; return PProcessInstance->_main(argc, argv, envp); }
+
+/*$MACRO PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build)
+   This macro is used to declare the components necessary for a user PWLib
+   process. This will declare the PProcess descendent class, eg PApplication,
+   and create an instance of the class. See the <A>PCREATE_PROCESS</A> macro
+   for more details.
+ */
+#define PDECLARE_PROCESS(cls,ancestor,manuf,name,major,minor,status,build) \
+  PDECLARE_CLASS(cls, ancestor) \
+    public: \
+      cls() : ancestor(manuf, name, major, minor, status, build) { } \
+    private: \
+      virtual void Main(); \
+  }; \
+  PCREATE_PROCESS(cls)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -92,10 +110,19 @@ PDECLARE_CLASS(PProcess, PThread)
  */
 
   public:
+    enum CodeStatus {
+      AlphaCode,    // Code is still very much under construction.
+      BetaCode,     // Code is largely complete and is under test.
+      ReleaseCode,  // Code has all known bugs removed and is shipping.
+      NumCodeStatuses
+    };
     PProcess(
-      const char * manuf = "",   // Name of manufacturer
-      const char * name = "",    // Name of product
-      const char * ver = ""      // Version of the product
+      const char * manuf = "",         // Name of manufacturer
+      const char * name = "",          // Name of product
+      WORD majorVersion = 1,           // Major version number of the product
+      WORD minorVersion = 0,           // Minor version number of the product
+      CodeStatus status = ReleaseCode, // Development status of the product
+      WORD buildNumber = 1             // Build number of the product
     );
     // Create a new process instance.
 
@@ -179,15 +206,20 @@ PDECLARE_CLASS(PProcess, PThread)
        string for the process name eg ".
      */
 
-    const PString & GetVersion() const;
+    PString GetVersion(BOOL full) const;
     /* Get the version of the software. This is used in the default "About"
        dialog box and for determining the location of the configuration
        information as used by the <A>PConfig<A/> class.
 
-       The default for this information is the empty string.
+       If the <CODE>full</CODE> parameter is TRUE then a version string
+       built from the major, minor, status and build veriosn codes is
+       returned. If FALSE then only the major and minor versions are
+       returned.
+
+       The default for this information is "1.0".
     
        <H2>Returns:</H2>
-       string for the version eg "1.00".
+       string for the version eg "1.0b3".
      */
 
     const PFilePath & GetFile() const;
@@ -263,8 +295,17 @@ PDECLARE_CLASS(PProcess, PThread)
     PString productName;
     // Application executable base name from argv[0]
 
-    PString version;
-    // Application version.
+    WORD majorVersion;
+    // Major version number of the product
+    
+    WORD minorVersion;
+    // Minor version number of the product
+    
+    CodeStatus status;
+    // Development status of the product
+    
+    WORD buildNumber;
+    // Build number of the product
 
     PFilePath executableFile;
     // Application executable file from argv[0] (not open)
