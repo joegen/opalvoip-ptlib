@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.7  2004/04/09 06:52:18  rjongbloed
+ * Removed #pargma linker command for /delayload of DLL as documentations sais that
+ *   you cannot do this.
+ *
  * Revision 1.6  2004/02/23 23:52:20  csoutheren
  * Added pragmas to avoid every Windows application needing to include libs explicitly
  *
@@ -167,9 +171,7 @@
 #include <ptlib/plugin.h>
 #include <ptlib/msos/ptlib/sound_win32.h>
 
-#pragma comment(lib,    "winmm.lib")
-#pragma comment(linker, "/delayload:winmm.dll")
-#pragma comment(lib,    "Delayimp.lib")
+#pragma comment(lib, "winmm.lib")
 
 class PSound;
 
