@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.8 1995/03/12 05:00:05 robertj Exp $
+ * $Id: msdos.cxx,v 1.9 1995/04/01 08:06:03 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
+ * Revision 1.9  1995/04/01 08:06:03  robertj
+ * Fixed yield for straight DOS and QUICKWIN systems.
+ *
  * Revision 1.8  1995/03/12 05:00:05  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -554,15 +557,6 @@ void PThread::SwitchContext(PThread * from)
 
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// PProcess
-
-void PProcess::OperatingSystemYield()
-{
 }
 
 
