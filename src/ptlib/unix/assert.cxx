@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.13  2001/08/30 08:58:09  robertj
+ * Added explicit output to trace file if get assert.
+ *
  * Revision 1.12  2001/07/03 04:41:25  yurik
  * Corrections to Jac's submission from 6/28
  *
@@ -97,9 +100,17 @@ void PAssertFunc (const char * file, int line, const char * msg)
     return;
   inAssert = TRUE;
 
-  PError << "Assertion fail: File " << file << ", Line " << line << endl;
+  ostream & trace = PTrace::Begin(0, file, line);
+  trace << "PWLib\tAssertion fail";
   if (msg != NULL)
-    PError << msg << endl;
+    trace << ": " << msg;
+  trace << PTrace::End;
+
+  if (&trace != &PError) {
+    PError << "Assertion fail: File " << file << ", Line " << line << endl;
+    if (msg != NULL)
+      PError << msg << endl;
+  }
 
 #ifndef P_VXWORKS
 
