@@ -9,8 +9,11 @@
 #define __STDLIBX_H__
 
 #include <stdlib.h>
+
+#ifdef __cplusplus
 #include <winsock.h>
 #include <errno.h>
+
 #include <tchar.h>
 #include <wceatl.h>
 #include <atlconv.h>
@@ -173,5 +176,7 @@ DWORD GetPrivateProfileString( const char* lpAppName, const char* lpKeyName,
 
 BOOL WritePrivateProfileString(const char* lpAppName, const char* lpKeyName,
   const char* lpString, const char* );
+
+#endif // __cplusplus
 
 #endif
