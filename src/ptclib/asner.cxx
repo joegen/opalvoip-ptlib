@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.4 1997/12/18 05:07:56 robertj Exp $
+ * $Id: asner.cxx,v 1.5 1998/01/26 01:51:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.5  1998/01/26 01:51:20  robertj
+ * Removed uninitialised variable warnings.
+ *
  * Revision 1.4  1997/12/18 05:07:56  robertj
  * Fixed bug in choice name display.
  * Added function to get choice discriminator name.
@@ -403,7 +406,7 @@ BOOL PPER_Stream::IntegerDecode(PASN_Integer & value)
   // X.931 Sections 12
 
   unsigned val;
-  unsigned range;
+  unsigned range = 0;
   if (value.ConstraintDecode(*this, &range) == PASN_ConstrainedObject::Unconstrained) { //  12.1
     if (IsAtEnd())
       return FALSE;
@@ -995,7 +998,7 @@ BOOL PASN_BitString::DecodePER(PPER_Stream & strm)
 {
   // X.691 Section 15
 
-  unsigned range;
+  unsigned range = 0;
   if (ConstraintDecode(strm, &range) == PASN_ConstrainedObject::Unconstrained) // 15.5
     totalBits = strm.LengthDecode(0, INT_MAX);
   else if (range == 1)
@@ -1193,7 +1196,7 @@ BOOL PASN_OctetString::DecodePER(PPER_Stream & strm)
   // X.691 Section 16
 
   PINDEX nBytes;
-  unsigned range;
+  unsigned range = 0;
   if (ConstraintDecode(strm, &range) == Unconstrained) // 16.3
     nBytes = strm.LengthDecode(0, INT_MAX);
   else if (range != 1)  // 16.8
