@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.10 1995/02/21 11:25:29 robertj Exp $
+ * $Id: sockets.cxx,v 1.11 1995/03/12 04:46:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
- * Revision 1.10  1995/02/21 11:25:29  robertj
+ * Revision 1.11  1995/03/12 04:46:29  robertj
+ * Added more functionality.
+ *
+ * Revision 1.10  1995/02/21  11:25:29  robertj
  * Further implementation of telnet socket, feature complete now.
  *
  * Revision 1.9  1995/01/27  11:16:16  robertj
@@ -48,14 +51,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // PSocket
 
-BOOL PSocket::Open (const PString &, WORD)
-{
-  PAssertAlways(PLogicError);
-  return FALSE;
-}
-
-
-BOOL PSocket::Accept (const PString &)
+BOOL PSocket::Open(const PString &, WORD)
 {
   PAssertAlways(PLogicError);
   return FALSE;
@@ -67,9 +63,18 @@ BOOL PSocket::Accept (const PString &)
 
 #ifdef P_HAS_BERKELEY_SOCKETS
 
-BOOL PIPSocket::GetAddress(Address & addr)
+PString PIPSocket::GetName() const
 {
-  return ConvertOSError(GetAddress(GetName(), addr) ? -1 : 0);
+  PString name;
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (getpeername(os_handle,(struct sockaddr*)&address,&size) == 0){
+    struct hostent * host_info = gethostbyaddr(
+           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
+    name = host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
+    name += " " + PString(PString::Unsigned, ntohs(address.sin_port));
+  }
+  return name;
 }
 
 
@@ -92,11 +97,6 @@ BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
 }
 
 
-PStringArray PIPSocket::GetHostAliases() const
-{
-  return GetHostAliases(GetName());
-}
-
 PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 {
   PStringArray aliases;
@@ -105,7 +105,7 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   // lookup the host address using inet_addr, assuming it is a "." address
   long temp;
   if ((temp = inet_addr((const char *)hostname)) != -1)
-    host_info = gethostbyaddr((const char *)&temp, 4, PF_INET);
+    host_info = gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
   else
     host_info = gethostbyname(hostname);
 
@@ -116,6 +116,56 @@ PStringArray PIPSocket::GetHostAliases(const PString & hostname)
   }
 
   return aliases;
+}
+
+
+BOOL PIPSocket::GetLocalAddress(Address & addr)
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+    return FALSE;
+
+  memcpy(&addr, &address.sin_addr, sizeof(address.sin_addr));
+  return TRUE;
+}
+
+
+BOOL PIPSocket::GetPeerAddress(Address & addr)
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+    return FALSE;
+
+  memcpy(&addr, &address.sin_addr, sizeof(address.sin_addr));
+  return TRUE;
+}
+
+
+PString PIPSocket::GetLocalHostName()
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getsockname(os_handle,(struct sockaddr*)&address,&size)))
+    return PString();
+
+  struct hostent * host_info = gethostbyaddr(
+           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
+  return host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
+}
+
+
+PString PIPSocket::GetPeerHostName()
+{
+  sockaddr_in address;
+  int size = sizeof(address);
+  if (!ConvertOSError(getpeername(os_handle,(struct sockaddr*)&address,&size)))
+    return PString();
+
+  struct hostent * host_info = gethostbyaddr(
+           (const char *)&address.sin_addr, sizeof(address.sin_addr), PF_INET);
+  return host_info != NULL ? host_info->h_name : inet_ntoa(address.sin_addr);
 }
 
 
@@ -138,6 +188,12 @@ PTCPSocket::PTCPSocket(const PString & address, WORD port)
 }
 
 
+PTCPSocket::PTCPSocket(PSocket & socket)
+{
+  Open(socket);
+}
+
+
 BOOL PTCPSocket::Open(const PString & host, WORD newPort)
 {
   // close the port if it is already open
@@ -154,16 +210,15 @@ BOOL PTCPSocket::Open(const PString & host, WORD newPort)
   if (!GetAddress(host, ipnum))
     return FALSE;
 
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  address.sin_port = htons(port);  // set the port
-  memcpy(&address.sin_addr, ipnum, sizeof(address.sin_addr));
-
   // attempt to create a socket
   if (!ConvertOSError(os_handle = ::socket(AF_INET, SOCK_STREAM, 0)))
     return FALSE;
 
   // attempt to connect
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  address.sin_port = htons(port);  // set the port
+  memcpy(&address.sin_addr, ipnum, sizeof(address.sin_addr));
   if (!ConvertOSError(::connect(os_handle,
                               (struct sockaddr *)&address, sizeof(address)))) {
     Close();
@@ -171,16 +226,53 @@ BOOL PTCPSocket::Open(const PString & host, WORD newPort)
   }
 
   // make the socket non-blocking
-#ifndef WIN32
+#if !defined(_WIN32)
   DWORD cmd = 1;
-#ifdef _WINDOWS
-  ::ioctlsocket (os_handle, FIONBIO, &cmd);
+#if defined(_WINDOWS)
+  ::ioctlsocket(os_handle, FIONBIO, &cmd);
 #else
-  ::ioctl (os_handle, FIONBIO, &cmd);
+  ::ioctl(os_handle, FIONBIO, &cmd);
 #endif
 #endif
 
   return TRUE;
+}
+
+
+BOOL PTCPSocket::Open(WORD newPort)
+{
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
+  // make sure we have a port
+  if (newPort != 0)
+    port = newPort;
+  PAssert(port != 0, "Cannot open socket without setting port");
+
+  // attempt to create a socket
+  if (!ConvertOSError(os_handle = ::socket(AF_INET, SOCK_STREAM, 0)))
+    return FALSE;
+
+  // attempt to listen
+  sockaddr_in sin;
+  sin.sin_family = AF_INET;
+  sin.sin_port = htons(port);  // set the port
+  memset(&sin.sin_addr, 0, sizeof(sin.sin_addr));
+
+  if (ConvertOSError(::bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))) &&
+      ConvertOSError(::listen(os_handle, 5)))
+    return TRUE;
+
+  Close();
+  return FALSE;
+}
+
+
+BOOL PTCPSocket::Open(PSocket & socket)
+{
+  // attempt to create a socket
+  return ConvertOSError(os_handle = ::accept(socket.GetHandle(), NULL, 0));
 }
 
 
@@ -202,7 +294,7 @@ WORD PTCPSocket::GetPort(const PString & serviceName) const
 {
   struct servent * service = ::getservbyname((const char *)serviceName, "tcp");
   if (service != NULL)
-    return service->s_port;
+    return ntohs(service->s_port);
   else
     return 0;
 }
