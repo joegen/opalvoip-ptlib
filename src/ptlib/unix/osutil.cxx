@@ -594,9 +594,9 @@ PString PTime::GetTimeSeparator()
 {
 #if defined(P_LINUX) || defined(P_HPUX9)
 #  if defined(P_HPUX9)
-     char * p = _time_info->time; 
-#  elif defined(P_LINUX)
      char * p = nl_langinfo(T_FMT);
+#  elif defined(P_LINUX)
+     char * p = _time_info->time; 
 #  endif
   char buffer[2];
   while (*p == '%' || isalpha(*p))
