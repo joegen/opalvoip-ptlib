@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: critsec.h,v $
+ * Revision 1.2  2004/04/11 03:20:41  csoutheren
+ * Added Unix implementation of PCriticalSection
+ *
  * Revision 1.1  2004/04/11 02:55:17  csoutheren
  * Added PCriticalSection for Windows
  * Added compile time option for PContainer to use critical sections to provide thread safety under some circumstances
@@ -32,10 +35,6 @@
 
 #ifndef _PCRITICALSECTION
 #define _PCRITICALSECTION
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
 
 /** This class implements critical section mutexes using the most
   * efficient mechanism available on the host platform.
