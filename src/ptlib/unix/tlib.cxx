@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.65  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.64  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -595,13 +598,13 @@ void PProcess::CommonDestruct()
   SetSignals(NULL);
 }
 
-
+// rtems fixes
 #ifdef P_RTEMS
 
 extern "C" {
 #include <netinet/in.h>
 #include <rtems/rtems_bsdnet.h>
-}
+	
 
 int socketpair(int d, int type, int protocol, int sv[2])
 {
@@ -688,7 +691,95 @@ int socketpair(int d, int type, int protocol, int sv[2])
     close(s);
     return 0;
 }
-#endif 
+
+/*
+ * Loopback interface
+ */
+extern int rtems_bsdnet_loopattach(rtems_bsdnet_ifconfig *);
+static struct rtems_bsdnet_ifconfig loopback_config = {
+    "lo0",                          /* name */
+    rtems_bsdnet_loopattach,        /* attach function */
+
+    NULL,                           /* link to next interface */
+
+    "127.0.0.1",                    /* IP address */
+    "255.0.0.0",                    /* IP net mask */
+};
+
+#include <bsp.h>
+#warning Change lines below to match Your system settings
+
+/*
+ * Default network interface
+ */
+static struct rtems_bsdnet_ifconfig netdriver_config = {
+    RTEMS_BSP_NETWORK_DRIVER_NAME,          /* name */
+    RTEMS_BSP_NETWORK_DRIVER_ATTACH,        /* attach function */
+
+    &loopback_config,                       /* link to next interface */
+
+    "10.0.0.2",                             /* IP address */
+    "255.255.255.0",                        /* IP net mask */
+
+    NULL,                                   /* Driver supplies hardware address */
+    0                                       /* Use default driver parameters */
+};
+
+/*
+ * Network configuration
+ */
+struct rtems_bsdnet_config rtems_bsdnet_config = {
+    &netdriver_config,
+
+    NULL,                   /* no bootp function */
+
+    1,                      /* Default network task priority */
+    0,                      /* Default mbuf capacity */
+    0,                      /* Default mbuf cluster capacity */
+
+    "computer.name",        /* Host name */
+    "domain.name",          /* Domain name */
+    "10.0.0.1",             /* Gateway */
+    "10.0.0.1",             /* Log host */
+    {"10.0.0.1" },          /* Name server(s) */
+    {"10.0.0.1" },          /* NTP server(s) */
+
+};
+
+#define CONFIGURE_TEST_NEEDS_CONSOLE_DRIVER
+#define CONFIGURE_TEST_NEEDS_CLOCK_DRIVER
+#define CONFIGURE_TEST_NEEDS_TIMER_DRIVER
+
+#define CONFIGURE_MICROSECONDS_PER_TICK                         1000
+#define CONFIGURE_TICKS_PER_TIMESLICE                             50
+
+#define CONFIGURE_MAXIMUM_TASKS          rtems_resource_unlimited(50)
+#define CONFIGURE_MAXIMUM_TIMERS         rtems_resource_unlimited(50)
+#define CONFIGURE_MAXIMUM_SEMAPHORES     rtems_resource_unlimited(50)
+#define CONFIGURE_MAXIMUM_MESSAGE_QUEUES rtems_resource_unlimited(50)
+#define CONFIGURE_MAXIMUM_MUTEXES        rtems_resource_unlimited(50)
+
+#define CONFIGURE_MAXIMUM_POSIX_THREADS                           50
+#define CONFIGURE_MAXIMUM_POSIX_MUTEXES                           50
+#define CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES               50
+#define CONFIGURE_MAXIMUM_POSIX_KEYS                              50
+#define CONFIGURE_MAXIMUM_POSIX_TIMERS                            50
+#define CONFIGURE_MAXIMUM_POSIX_QUEUED_SIGNALS                    50
+#define CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES                    50
+#define CONFIGURE_MAXIMUM_POSIX_SEMAPHORES                        50
+
+#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS                  50
+#define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
+
+#define CONFIGURE_POSIX_INIT_THREAD_TABLE
+#define CONFIGURE_INIT_TASK_INITIAL_MODES (RTEMS_PREEMPT | RTEMS_TIMESLICE)
+
+void* POSIX_Init(void*);
+#define CONFIGURE_INIT
+#include <confdefs.h>
+}
+
+#endif // P_RTEMS
 
 
 //////////////////////////////////////////////////////////////////
@@ -708,4 +799,3 @@ int socketpair(int d, int type, int protocol, int sv[2])
 #else
 #include "tlibcoop.cxx"
 #endif
-

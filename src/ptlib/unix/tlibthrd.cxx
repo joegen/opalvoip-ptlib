@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.106  2002/12/02 03:57:18  robertj
+ * More RTEMS support patches, thank you Vladimir Nesic.
+ *
  * Revision 1.105  2002/11/22 10:14:07  robertj
  * QNX port, thanks Xiaodan Tang
  *
@@ -488,15 +491,15 @@ void PProcess::SignalTimerChange()
 
 void PProcess::Construct()
 {
+#ifndef P_RTEMS
   // get the file descriptor limit
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
   maxHandles = rl.rlim_cur;
 
-#ifdef P_RTEMS
-  socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
-#else
   ::pipe(timerChangePipe);
+#else
+  socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
 #endif
 
   // initialise the housekeeping thread
@@ -508,6 +511,7 @@ void PProcess::Construct()
 
 BOOL PProcess::SetMaxHandles(int maxHandles)
 {
+#ifndef P_RTEMS
   // get the current process limit
   struct rlimit rl;
   PAssertOS(getrlimit(RLIMIT_NOFILE, &rl) == 0);
@@ -516,6 +520,7 @@ BOOL PProcess::SetMaxHandles(int maxHandles)
   rl.rlim_cur = maxHandles;
   if (setrlimit(RLIMIT_NOFILE, &rl) == 0)
     return TRUE;
+#endif // !P_RTEMS
 
   PTRACE(1, "PWLib\tCannot set per-process file handle limit to "
          << maxHandles << " - check permissions");
