@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.26  1998/11/30 02:50:50  robertj
+ * New directory structure
+ *
  * Revision 1.25  1998/10/29 11:58:51  robertj
  * Added ability to configure the HTTP threads stack size.
  *
@@ -110,9 +113,9 @@
 #ifndef APPCOMM_H
 #define APPCOMM_H
 
-#include <httpform.h>
-#include <svcproc.h>
-#include <cypher.h>
+#include <ptclib/httpform.h>
+#include <ptlib/svcproc.h>
+#include <ptclib/cypher.h>
 
 
 /////////////////////////////////////////////////////////////////////
