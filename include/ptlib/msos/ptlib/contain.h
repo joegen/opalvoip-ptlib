@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.38  2004/04/12 03:04:10  csoutheren
+ * Removed <vector> warnings under Windows
+ *
  * Revision 1.37  2004/04/11 22:47:03  csoutheren
  * Remove unused parameter warnings for Windows <string>
  *
@@ -421,6 +424,7 @@ extern "C" char ** __argv;
 
 #define   PCONTAINER_USES_CRITSEC   1
 
+// preload <string> and kill warnings
 #pragma warning(push)
 #include <yvals.h>    
 #pragma warning(disable:4100)
@@ -429,8 +433,16 @@ extern "C" char ** __argv;
 #pragma warning(disable:4146)
 #pragma warning(disable:4244)
 #include <string>
-//using namespace std;
 #pragma warning(pop)
+
+// preload <vector> and kill warnings
+#pragma warning(push)
+#include <yvals.h>    
+#pragma warning(disable:4018)
+#pragma warning(disable:4663)
+#include <vector>
+#pragma warning(pop)
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Fill in common declarations
