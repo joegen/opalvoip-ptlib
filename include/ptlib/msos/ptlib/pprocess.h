@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.29  2001/04/14 04:47:57  yurik
+ * To prevent trace from being called when process is shutting down, introduced a flag (CE only)
+ *
  * Revision 1.28  2001/01/24 06:58:46  yurik
  * More WinCe related changes
  *
@@ -168,6 +171,8 @@ extern "C" int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPSTR, int);
 #else
   friend int PASCAL WinMain(HINSTANCE, HINSTANCE, LPTSTR, int);
+  public:
+    bool isShuttingDown;
 #endif
 
 #endif
