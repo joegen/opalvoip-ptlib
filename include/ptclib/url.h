@@ -1,5 +1,5 @@
 /*
- * $Id: url.h,v 1.10 1998/02/03 06:18:49 robertj Exp $
+ * $Id: url.h,v 1.11 1998/02/03 10:02:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: url.h,v $
+ * Revision 1.11  1998/02/03 10:02:35  robertj
+ * Added ability to get scheme, host and port from URL as a string.
+ *
  * Revision 1.10  1998/02/03 06:18:49  robertj
  * Fixed URL encoding to be closer to RFC
  *
@@ -116,9 +119,10 @@ PDECLARE_CLASS(PURL, PObject)
      */
 
     enum UrlFormat {
-      FullURL,  // Translate to a string as a full URL
-      PathOnly, // Translate to a string as only path
-      URIOnly   // Translate to a string with no scheme or host
+      FullURL,      // Translate to a string as a full URL
+      PathOnly,     // Translate to a string as only path
+      URIOnly,      // Translate to a string with no scheme or host
+      HostPortOnly  // Translate to a string with scheme and host/port
     };
 
     PString AsString(
