@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstun.h,v $
+ * Revision 1.2  2003/02/04 05:05:55  craigs
+ * Added new functions
+ *
  * Revision 1.1  2003/02/04 03:31:04  robertj
  * Added STUN
  *
@@ -39,17 +42,38 @@
 #include <ptlib.h>
 #include <ptlib/sockets.h>
 
+class PSTUNUDPSocket : public PUDPSocket
+{
+  PCLASSINFO(PSTUNUDPSocket, PUDPSocket);
+  public:
+    PSTUNUDPSocket(int fd, const PIPSocket::Address & externalIP, WORD externalPort);
+
+    virtual BOOL GetLocalAddress(
+      Address & addr    /// Variable to receive hosts IP address
+    );
+    virtual BOOL GetLocalAddress(
+      Address & addr,    /// Variable to receive peer hosts IP address
+      WORD & port        /// Variable to receive peer hosts port number
+    );
+
+  protected:
+    BOOL OpenSocket();
+    PIPSocket::Address externalIP;
+    WORD externalPort;
+};
 
 class PSTUNClient : public PObject
 {
   PCLASSINFO(PSTUNClient, PObject);
   public:
     enum {
-      DefaultPort = 3278
+      DefaultPort = 3478
     };
 
     PSTUNClient(
-      const PString & server
+      const PString & server,
+      WORD portBase = 0,
+      WORD portEnd = 0
     );
 
     BOOL SetServer(
@@ -76,21 +100,21 @@ class PSTUNClient : public PObject
     PString GetNatTypeName();
 
     BOOL CreateSocket(
-      PIPSocket::Address remoteAddress,
-      WORD remotePort,
       PUDPSocket * & socket
     );
 
     BOOL CreateSocketPair(
-      PIPSocket::Address remoteAddress,
-      WORD remotePort,
       PUDPSocket * & socket1,
       PUDPSocket * & socket2
     );
 
   protected:
+    NatTypes natType;
+    BOOL     stunPossible;
     PIPSocket::Address serverAddress;
     WORD               serverPort;
+    WORD portBase;
+    WORD portEnd;
 };
 
 
