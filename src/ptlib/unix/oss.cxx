@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.45  2002/08/15 19:57:38  rogerh
+ * Linux defvs mode is detected with /dev/.devfsd
+ *
  * Revision 1.44  2002/07/04 05:00:36  robertj
  * Fixed order of calls for OSS driver setup.
  *
@@ -469,14 +472,13 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 {
   // First locate sound cards. On Linux with devfs and on the other
   // platforms, we search for filenames with dspN or mixerN.
-  // On linux without defs we scan all of the devices and look for ones
+  // On linux without devfs we scan all of the devices and look for ones
   // with major device numbers corresponding to OSS compatible drivers.
 
   POrdinalToString dsp, mixer;
 
 #ifdef P_LINUX
-  PDirectory devdir = "/dev/soundcard";
-  if (devdir.Open()) {
+  if (PFile::Exists("/dev/.devfsd")) {
     CollectSoundDevices("/dev/sound", dsp, mixer, TRUE); // use names (devfs)
   } else {
     CollectSoundDevices("/dev", dsp, mixer, FALSE); // use major numbers
