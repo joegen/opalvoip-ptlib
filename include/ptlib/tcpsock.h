@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.10 1995/06/04 12:46:25 robertj Exp $
+ * $Id: tcpsock.h,v 1.11 1995/06/17 00:47:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.11  1995/06/17 00:47:31  robertj
+ * Changed overloaded Open() calls to 3 separate function names.
+ * More logical design of port numbers and service names.
+ *
  * Revision 1.10  1995/06/04 12:46:25  robertj
  * Slight redesign of port numbers on sockets.
  *
@@ -73,41 +77,63 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
      */
 
 
-  // New functions for class.
-    virtual BOOL Open(
+  // Overrides from class PSocket.
+    virtual BOOL Connect(
       const PString & address   // Address of remote machine to connect to.
     );
-    virtual BOOL Open(
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
+
+       The port number as defined by the object instance construction or the
+       <A><CODE>SetPort()</CODE></A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
       WORD port = 0             // Port number to use for the connection.
     );
-    virtual BOOL Open(
-      PSocket & socket          // Listening socket making the connection.
-    );
-    /* Open a socket to a remote host on the specified port number.
-    
-       The first form creates a "connecting" socket which is typically the
-       client or initiator of a communications channel. This connects to a
-       "listening" socket at the other end of the communications channel.
-
-       The second form creates a "listening" socket which may be used for
-       server based applications. A "connecting" socket begins a connection by
-       initiating a connection to this socket. An active socket of this type
-       is then used to generate other "accepting" sockets which establish a
-       two way communications channel with the "connecting" socket.
-
-       The third form opens an "accepting" socket. When a "listening" socket
-       has a pending connection to make, this will accept a connection made
-       by the "connecting" socket created to establish a link.
+    /* Listen on a socket for a remote host on the specified port number. This
+       may be used for server based applications. A "connecting" socket begins
+       a connection by initiating a connection to this socket. An active socket
+       of this type is then used to generate other "accepting" sockets which
+       establish a two way communications channel with the "connecting" socket.
 
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function is used.
+       <A><CODE>SetPort()</CODE></A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
      */
 
 
+  // Overrides from class PIPSocket.
+    virtual WORD GetPortByService(
+      const PString & service   // Name of service to get port number for.
+    ) const;
+    /* Get the port number for the specified service.
+    
+       <H2>Returns:</H2>
+       Port number for service name.
+     */
+
+    virtual PString GetServiceByPort(
+      WORD port   // Number for service to find name of.
+    ) const;
+    /* Get the service name from the port number.
+    
+       <H2>Returns:</H2>
+       Service name for port number.
+     */
+
+
+  // New functions for class
     virtual BOOL WriteOutOfBand(
       const void * buf,   // Data to be written as URGENT TCP data.
       PINDEX len          // Number of bytes pointed to by <CODE>buf</CODE>.
@@ -134,54 +160,7 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        The default behaviour is for the out of band data to be ignored.
      */
 
-    void SetPort(
-      WORD port   // New port number for the channel.
-    );
-    void SetPort(
-      const PString & service   // Service name to describe the port number.
-    );
-    /* Set the port number for the channel. This a 16 bit number representing
-       an agreed high level protocol type. The string version looks up a
-       database of names to find the number for the string name.
-
-       The port number may not be changed while the port is open and the
-       function will assert if an attempt is made to do so.
-     */
-
-    virtual WORD GetPort() const;
-    virtual WORD GetPort(
-      const PString & service   // Service name to describe the port number.
-    ) const;
-    /* Get a port number for the service name.
-    
-       The parameterless form gets the port the TCP socket channel object
-       instance is using.
-
-       The second form gets the port number for the specified service name.
-
-       <H2>Returns:</H2>
-       port number.
-     */
-
-    virtual PString GetService() const;
-    virtual PString GetService(
-      WORD port   // Port number to look up service name for.
-    ) const;
-    /* Get a service name for the port number.
-    
-       The parameterless form gets the service name for the port the TCP socket
-       channel object instance is using.
-
-       The second form gets the service name for the specified port number.
-
-       <H2>Returns:</H2>
-       string service name.
-     */
-
 
   protected:
-    WORD port;
-    // Port to be used by the socket when opening the channel.
-
 
 // Class declaration continued in platform specific header file ///////////////
