@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.24  2001/09/14 01:59:59  robertj
+ * Fixed problem with incorrectly initialised PASN_Choice sub-object.
+ *
  * Revision 1.23  2001/08/06 01:39:02  robertj
  * Added assignement operator with RHS of PASN_BMPString to classes
  *   descended from PASN_BMPString.
@@ -768,12 +771,14 @@ class PASN_Choice : public PASN_Object
     virtual void EncodePER(PPER_Stream &) const;
 
   protected:
-    PASN_Choice(unsigned nChoices = UINT_MAX, BOOL extend = FALSE);
+    PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PString & nameSpec);
 
     PASN_Choice(const PASN_Choice & other);
     PASN_Choice & operator=(const PASN_Choice & other);
+
+    BOOL CheckCreate() const;
 
     unsigned numChoices;
     PASN_Object * choice;
