@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.29  1999/02/16 08:11:09  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.28  1998/09/23 06:21:06  robertj
  * Added open source copyright license.
  *
@@ -122,7 +125,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // File System
 
-PDECLARE_CLASS(PFileInfo, PObject)
+class PFileInfo : public PObject
+{
+  PCLASSINFO(PFileInfo, PObject)
 /* Class containing the system information on a file path. Information can be
    obtained on any directory entry event if it is not a "file" in the strictest
    sense. Sub-directories, devices etc may also have information retrieved.

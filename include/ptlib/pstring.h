@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.36  1999/02/16 08:11:09  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.35  1998/09/23 06:21:12  robertj
  * Added open source copyright license.
  *
@@ -159,7 +162,9 @@ class PRegularExpression;
 #define PSTRING_ANCESTOR_CLASS PCharArray
 #endif
 
-PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
+class PString : public PSTRING_ANCESTOR_CLASS
+{
+  PCLASSINFO(PString, PSTRING_ANCESTOR_CLASS)
 /* The character string class. It supports a wealth of additional functions
    for string processing and conversion. Operators are provided so that
    strings can virtually be treated as a basic type.
@@ -1354,7 +1359,9 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
 //////////////////////////////////////////////////////////////////////////////
 
-PDECLARE_CLASS(PCaselessString, PString)
+class PCaselessString : public PString
+{
+  PCLASSINFO(PCaselessString, PString)
 /* This class is a variation of a string that ignores case. Thus in all
    standard comparison (<CODE>==</CODE>, <CODE><</CODE> etc) and search
    (<A>Find()</A> etc) functions the case of the characters and strings is
@@ -1654,8 +1661,9 @@ PDECLARE_SET(PStringSet, PString, TRUE)
 
 #ifdef PHAS_TEMPLATES
 
-template <class K>
-PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
+template <class K> class PStringDictionary : public PAbstractDictionary
+{
+  PCLASSINFO(PStringDictionary, PAbstractDictionary)
 /* This template class maps the PAbstractDictionary to a specific key type and
    a <A>PString</A> data type. The functions in this class primarily do all the
    appropriate casting of types.
@@ -1991,7 +1999,9 @@ typedef struct re_pattern_buffer regex_t;
 };
 
 
-PDECLARE_CLASS(PRegularExpression, PObject)
+class PRegularExpression : public PObject
+{
+  PCLASSINFO(PRegularExpression, PObject)
 /* A class representing a regular expression that may be used for locating
    patterns in strings. The regular expression string is "compiled" into a
    form that is more efficient during the matching. This compiled form
