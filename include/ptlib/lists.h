@@ -1,5 +1,5 @@
 /*
- * $Id: lists.h,v 1.8 1995/08/24 12:35:00 robertj Exp $
+ * $Id: lists.h,v 1.9 1996/01/23 13:13:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: lists.h,v $
+ * Revision 1.9  1996/01/23 13:13:32  robertj
+ * Fixed bug in sorted list GetObjectsIndex not checking if is same object
+ *
  * Revision 1.8  1995/08/24 12:35:00  robertj
  * Added assert for list index out of bounds.
  *
@@ -850,7 +853,7 @@ PDECLARE_CONTAINER(PAbstractSortedList, PCollection)
         Element * Successor() const;
         Element * Predecessor() const;
         Element * OrderSelect(PINDEX index);
-        PINDEX ValueSelect(const PObject & obj);
+        PINDEX ValueSelect(const PObject & obj, BOOL byPointer);
     };
     friend class Element;
 
