@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.36 1998/03/26 11:19:50 robertj Exp $
+ * $Id: collect.cxx,v 1.37 1998/03/26 23:31:50 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.37  1998/03/26 23:31:50  robertj
+ * Fixed bug in RemoveAll() deleting objects twice.
+ *
  * Revision 1.36  1998/03/26 11:19:50  robertj
  * Fix bug with unsigned PINDEX in array SetSize.
  *
@@ -163,12 +166,6 @@ void PArrayObjects::DestroyContents()
 
 void PArrayObjects::RemoveAll()
 {
-  if (reference->deleteObjects) {
-    for (PINDEX i = 0; i < theArray->GetSize(); i++) {
-      if ((*theArray)[i] != NULL)
-        delete (*theArray)[i];
-    }
-  }
   SetSize(0);
 }
 
