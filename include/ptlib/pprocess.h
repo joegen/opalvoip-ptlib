@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pprocess.h,v $
+ * Revision 1.54  2002/10/10 04:43:43  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.53  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -205,12 +208,19 @@
    instance of the application.
  */
 #ifndef P_MAC_MPTHREADS
+#ifdef P_VXWORKS
+#define PCREATE_PROCESS(cls) \
+  PProcess::PreInitialise(0, NULL, NULL); \
+  cls instance; \
+  instance._main();
+#else
 #define PCREATE_PROCESS(cls) \
   int main(int argc, char ** argv, char ** envp) \
     { PProcess::PreInitialise(argc, argv, envp); \
       static cls instance; \
       return instance._main(); \
     }
+#endif // P_VXWORKS
 #else // Mac MP Tasks implementation
 // Alas, a Macintosh main thread has a number of important responsibilities.
 // The goal of this code is to warm up the Toolbox and create an independant
