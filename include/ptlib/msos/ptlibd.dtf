@@ -186,6 +186,9 @@ EXPORTS
     ??0PRemoteConnection@@QAE@XZ @167 NONAME ;public: __thiscall PRemoteConnection::PRemoteConnection(void)
     ??0PSemaphore@@IAE@PAX@Z @168 NONAME ;protected: __thiscall PSemaphore::PSemaphore(void *)
     ??0PSemaphore@@QAE@II@Z @169 NONAME ;public: __thiscall PSemaphore::PSemaphore(unsigned int,unsigned int)
+    ??0PSerialChannel@@QAE@AAVPConfig@@@Z @2514 NONAME ;public: __thiscall PSerialChannel::PSerialChannel(class PConfig &)
+    ??0PSerialChannel@@QAE@ABVPString@@KEW4Parity@0@EW4FlowControl@0@2@Z @2515 NONAME ;public: __thiscall PSerialChannel::PSerialChannel(class PString const &,unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
+    ??0PSerialChannel@@QAE@XZ @2516 NONAME ;public: __thiscall PSerialChannel::PSerialChannel(void)
     ??0PSerialiser@@QAE@AAVostream@@@Z @170 NONAME ;public: __thiscall PSerialiser::PSerialiser(class ostream &)
     ??0PSerialRegistration@@QAE@PBDP6APAVPObject@@PAVPUnSerialiser@@@Z@Z @171 NONAME ;public: __thiscall PSerialRegistration::PSerialRegistration(char const *,class PObject * (__cdecl*)(class PUnSerialiser *))
     ??0PServiceProcess@@QAE@PBD0GGW4CodeStatus@PProcess@@G@Z @172 NONAME ;public: __thiscall PServiceProcess::PServiceProcess(char const *,char const *,unsigned short,unsigned short,enum PProcess::CodeStatus,unsigned short)
@@ -365,6 +368,7 @@ EXPORTS
     ??1PRegularExpression@@UAE@XZ @329 NONAME ;public: virtual __thiscall PRegularExpression::~PRegularExpression(void)
     ??1PRemoteConnection@@UAE@XZ @330 NONAME ;public: virtual __thiscall PRemoteConnection::~PRemoteConnection(void)
     ??1PSemaphore@@UAE@XZ @331 NONAME ;public: virtual __thiscall PSemaphore::~PSemaphore(void)
+    ??1PSerialChannel@@UAE@XZ @2517 NONAME ;public: virtual __thiscall PSerialChannel::~PSerialChannel(void)
     ??1PSerialiser@@UAE@XZ @332 NONAME ;public: virtual __thiscall PSerialiser::~PSerialiser(void)
     ??1PServiceProcess@@UAE@XZ @333 NONAME ;public: virtual __thiscall PServiceProcess::~PServiceProcess(void)
     ??1PSmartPointer@@UAE@XZ @334 NONAME ;public: virtual __thiscall PSmartPointer::~PSmartPointer(void)
@@ -525,6 +529,7 @@ EXPORTS
     ??3PRegularExpression@@SAXPAX@Z @470 NONAME ;public: static void __cdecl PRegularExpression::operator delete(void *)
     ??3PRemoteConnection@@SAXPAX@Z @471 NONAME ;public: static void __cdecl PRemoteConnection::operator delete(void *)
     ??3PSemaphore@@SAXPAX@Z @472 NONAME ;public: static void __cdecl PSemaphore::operator delete(void *)
+    ??3PSerialChannel@@SAXPAX@Z @2518 NONAME ;public: static void __cdecl PSerialChannel::operator delete(void *)
     ??3PSerialiser@@SAXPAX@Z @473 NONAME ;public: static void __cdecl PSerialiser::operator delete(void *)
     ??3PServiceProcess@@SAXPAX@Z @474 NONAME ;public: static void __cdecl PServiceProcess::operator delete(void *)
     ??3PSmartPointer@@SAXPAX@Z @475 NONAME ;public: static void __cdecl PSmartPointer::operator delete(void *)
@@ -866,6 +871,8 @@ EXPORTS
     ??_7PRegularExpression@@6B@ @789 NONAME ;const  PRegularExpression::`vftable'
     ??_7PRemoteConnection@@6B@ @790 NONAME ;const  PRemoteConnection::`vftable'
     ??_7PSemaphore@@6B@ @791 NONAME ;const  PSemaphore::`vftable'
+    ??_7PSerialChannel@@6Biostream@@@ @2519 NONAME ;const  PSerialChannel::`vftable'{for `iostream'}
+    ??_7PSerialChannel@@6BPObject@@@ @2520 NONAME ;const  PSerialChannel::`vftable'{for `PObject'}
     ??_7PSerialiser@@6B@ @792 NONAME ;const  PSerialiser::`vftable'
     ??_7PServiceProcess@@6B@ @793 NONAME ;const  PServiceProcess::`vftable'
     ??_7PSmartPointer@@6B@ @794 NONAME ;const  PSmartPointer::`vftable'
@@ -931,6 +938,8 @@ EXPORTS
     ??_8PIPXSocket@@7Bostream@@@ @846 NONAME ;const  PIPXSocket::`vbtable'{for `ostream'}
     ??_8PPipeChannel@@7Bistream@@@ @847 NONAME ;const  PPipeChannel::`vbtable'{for `istream'}
     ??_8PPipeChannel@@7Bostream@@@ @848 NONAME ;const  PPipeChannel::`vbtable'{for `ostream'}
+    ??_8PSerialChannel@@7Bistream@@@ @2521 NONAME ;const  PSerialChannel::`vbtable'{for `istream'}
+    ??_8PSerialChannel@@7Bostream@@@ @2522 NONAME ;const  PSerialChannel::`vbtable'{for `ostream'}
     ??_8PSocket@@7Bistream@@@ @849 NONAME ;const  PSocket::`vbtable'{for `istream'}
     ??_8PSocket@@7Bostream@@@ @850 NONAME ;const  PSocket::`vbtable'{for `ostream'}
     ??_8PSPXSocket@@7Bistream@@@ @851 NONAME ;const  PSPXSocket::`vbtable'{for `istream'}
@@ -959,6 +968,7 @@ EXPORTS
     ??_DPIPSocket@@QAEXXZ @876 NONAME ;public: void __thiscall PIPSocket::`vbase destructor'(void)
     ??_DPIPXSocket@@QAEXXZ @877 NONAME ;public: void __thiscall PIPXSocket::`vbase destructor'(void)
     ??_DPPipeChannel@@QAEXXZ @878 NONAME ;public: void __thiscall PPipeChannel::`vbase destructor'(void)
+    ??_DPSerialChannel@@QAEXXZ @2523 NONAME ;public: void __thiscall PSerialChannel::`vbase destructor'(void)
     ??_DPSocket@@QAEXXZ @879 NONAME ;public: void __thiscall PSocket::`vbase destructor'(void)
     ??_DPSPXSocket@@QAEXXZ @880 NONAME ;public: void __thiscall PSPXSocket::`vbase destructor'(void)
     ??_DPStringStream@@QAEXXZ @881 NONAME ;public: void __thiscall PStringStream::`vbase destructor'(void)
@@ -1088,6 +1098,7 @@ EXPORTS
     ?Class@PRegularExpression@@SAPBDXZ @994 NONAME ;public: static char const * __cdecl PRegularExpression::Class(void)
     ?Class@PRemoteConnection@@SAPBDXZ @995 NONAME ;public: static char const * __cdecl PRemoteConnection::Class(void)
     ?Class@PSemaphore@@SAPBDXZ @996 NONAME ;public: static char const * __cdecl PSemaphore::Class(void)
+    ?Class@PSerialChannel@@SAPBDXZ @2524 NONAME ;public: static char const * __cdecl PSerialChannel::Class(void)
     ?Class@PSerialiser@@SAPBDXZ @997 NONAME ;public: static char const * __cdecl PSerialiser::Class(void)
     ?Class@PServiceProcess@@SAPBDXZ @998 NONAME ;public: static char const * __cdecl PServiceProcess::Class(void)
     ?Class@PSmartPointer@@SAPBDXZ @999 NONAME ;public: static char const * __cdecl PSmartPointer::Class(void)
@@ -1120,7 +1131,10 @@ EXPORTS
     ?Class@RouteEntry@PIPSocket@@SAPBDXZ @2462 NONAME ;public: static char const * __cdecl PIPSocket::RouteEntry::Class(void)
     ?Class@SelectList@PSocket@@SAPBDXZ @1024 NONAME ;public: static char const * __cdecl PSocket::SelectList::Class(void)
     ?Class@Table@PHashTable@@SAPBDXZ @1025 NONAME ;public: static char const * __cdecl PHashTable::Table::Class(void)
+    ?ClearBreak@PSerialChannel@@QAEXXZ @2525 NONAME ;public: void __thiscall PSerialChannel::ClearBreak(void)
+    ?ClearDTR@PSerialChannel@@QAEXXZ @2526 NONAME ;public: void __thiscall PSerialChannel::ClearDTR(void)
     ?ClearNameCache@PIPSocket@@SAXXZ @1027 NONAME ;public: static void __cdecl PIPSocket::ClearNameCache(void)
+    ?ClearRTS@PSerialChannel@@QAEXXZ @2527 NONAME ;public: void __thiscall PSerialChannel::ClearRTS(void)
     ?Clone@?$PArray@VPString@@@@UBEPAVPObject@@XZ @1028 NONAME ;public: virtual class PObject * __thiscall PArray<class PString>::Clone(void)const 
     ?Clone@?$PArray@VPWin32PacketBuffer@@@@UBEPAVPObject@@XZ @2463 NONAME ;public: virtual class PObject * __thiscall PArray<class PWin32PacketBuffer>::Clone(void)const 
     ?Clone@?$PBaseArray@D@@UBEPAVPObject@@XZ @1029 NONAME ;public: virtual class PObject * __thiscall PBaseArray<char>::Clone(void)const 
@@ -1264,6 +1278,7 @@ EXPORTS
     ?CompareObjectMemoryDirect@PRegularExpression@@UBE?AW4Comparison@PObject@@ABV3@@Z @1158 NONAME ;public: virtual enum PObject::Comparison  __thiscall PRegularExpression::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PRemoteConnection@@UBE?AW4Comparison@PObject@@ABV3@@Z @1159 NONAME ;public: virtual enum PObject::Comparison  __thiscall PRemoteConnection::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSemaphore@@UBE?AW4Comparison@PObject@@ABV3@@Z @1160 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSemaphore::CompareObjectMemoryDirect(class PObject const &)const 
+    ?CompareObjectMemoryDirect@PSerialChannel@@UBE?AW4Comparison@PObject@@ABV3@@Z @2528 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSerialChannel::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSerialiser@@UBE?AW4Comparison@PObject@@ABV3@@Z @1161 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSerialiser::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PServiceProcess@@UBE?AW4Comparison@PObject@@ABV3@@Z @1162 NONAME ;public: virtual enum PObject::Comparison  __thiscall PServiceProcess::CompareObjectMemoryDirect(class PObject const &)const 
     ?CompareObjectMemoryDirect@PSmartPointer@@UBE?AW4Comparison@PObject@@ABV3@@Z @1163 NONAME ;public: virtual enum PObject::Comparison  __thiscall PSmartPointer::CompareObjectMemoryDirect(class PObject const &)const 
@@ -1506,6 +1521,7 @@ EXPORTS
     ?GetClass@PRegularExpression@@UBEPBDI@Z @1392 NONAME ;public: virtual char const * __thiscall PRegularExpression::GetClass(unsigned int)const 
     ?GetClass@PRemoteConnection@@UBEPBDI@Z @1393 NONAME ;public: virtual char const * __thiscall PRemoteConnection::GetClass(unsigned int)const 
     ?GetClass@PSemaphore@@UBEPBDI@Z @1394 NONAME ;public: virtual char const * __thiscall PSemaphore::GetClass(unsigned int)const 
+    ?GetClass@PSerialChannel@@UBEPBDI@Z @2529 NONAME ;public: virtual char const * __thiscall PSerialChannel::GetClass(unsigned int)const 
     ?GetClass@PSerialiser@@UBEPBDI@Z @1395 NONAME ;public: virtual char const * __thiscall PSerialiser::GetClass(unsigned int)const 
     ?GetClass@PServiceProcess@@UBEPBDI@Z @1396 NONAME ;public: virtual char const * __thiscall PServiceProcess::GetClass(unsigned int)const 
     ?GetClass@PSmartPointer@@UBEPBDI@Z @1397 NONAME ;public: virtual char const * __thiscall PSmartPointer::GetClass(unsigned int)const 
@@ -1883,6 +1899,7 @@ EXPORTS
     ?IsClass@PRegularExpression@@UBEHPBD@Z @1739 NONAME ;public: virtual int __thiscall PRegularExpression::IsClass(char const *)const 
     ?IsClass@PRemoteConnection@@UBEHPBD@Z @1740 NONAME ;public: virtual int __thiscall PRemoteConnection::IsClass(char const *)const 
     ?IsClass@PSemaphore@@UBEHPBD@Z @1741 NONAME ;public: virtual int __thiscall PSemaphore::IsClass(char const *)const 
+    ?IsClass@PSerialChannel@@UBEHPBD@Z @2530 NONAME ;public: virtual int __thiscall PSerialChannel::IsClass(char const *)const 
     ?IsClass@PSerialiser@@UBEHPBD@Z @1742 NONAME ;public: virtual int __thiscall PSerialiser::IsClass(char const *)const 
     ?IsClass@PServiceProcess@@UBEHPBD@Z @1743 NONAME ;public: virtual int __thiscall PServiceProcess::IsClass(char const *)const 
     ?IsClass@PSmartPointer@@UBEHPBD@Z @1744 NONAME ;public: virtual int __thiscall PSmartPointer::IsClass(char const *)const 
@@ -1987,6 +2004,7 @@ EXPORTS
     ?IsDescendant@PRegularExpression@@UBEHPBD@Z @1835 NONAME ;public: virtual int __thiscall PRegularExpression::IsDescendant(char const *)const 
     ?IsDescendant@PRemoteConnection@@UBEHPBD@Z @1836 NONAME ;public: virtual int __thiscall PRemoteConnection::IsDescendant(char const *)const 
     ?IsDescendant@PSemaphore@@UBEHPBD@Z @1837 NONAME ;public: virtual int __thiscall PSemaphore::IsDescendant(char const *)const 
+    ?IsDescendant@PSerialChannel@@UBEHPBD@Z @2531 NONAME ;public: virtual int __thiscall PSerialChannel::IsDescendant(char const *)const 
     ?IsDescendant@PSerialiser@@UBEHPBD@Z @1838 NONAME ;public: virtual int __thiscall PSerialiser::IsDescendant(char const *)const 
     ?IsDescendant@PServiceProcess@@UBEHPBD@Z @1839 NONAME ;public: virtual int __thiscall PServiceProcess::IsDescendant(char const *)const 
     ?IsDescendant@PSmartPointer@@UBEHPBD@Z @1840 NONAME ;public: virtual int __thiscall PSmartPointer::IsDescendant(char const *)const 
@@ -2112,6 +2130,7 @@ EXPORTS
     ?Open@PRemoteConnection@@QAEHABVPString@@00H@Z @1951 NONAME ;public: int __thiscall PRemoteConnection::Open(class PString const &,class PString const &,class PString const &,int)
     ?Open@PRemoteConnection@@QAEHABVPString@@H@Z @1952 NONAME ;public: int __thiscall PRemoteConnection::Open(class PString const &,int)
     ?Open@PRemoteConnection@@QAEHH@Z @1953 NONAME ;public: int __thiscall PRemoteConnection::Open(int)
+    ?Open@PSerialChannel@@UAEHAAVPConfig@@@Z @2532 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PConfig &)
     ?Open@PSerialChannel@@UAEHABVPString@@KEW4Parity@1@EW4FlowControl@1@2@Z @1954 NONAME ;public: virtual int __thiscall PSerialChannel::Open(class PString const &,unsigned long,unsigned char,enum PSerialChannel::Parity,unsigned char,enum PSerialChannel::FlowControl,enum PSerialChannel::FlowControl)
     ?OpenManager@NT_ServiceManager@@AAEHXZ @1955 NONAME ;private: int __thiscall NT_ServiceManager::OpenManager(void)
     ?OpenSocket@PEthSocket@@MAEHXZ @2398 NONAME ;protected: virtual int __thiscall PEthSocket::OpenSocket(void)
@@ -2275,6 +2294,7 @@ EXPORTS
     ?RightRotate@PAbstractSortedList@@IAEXPAVElement@1@@Z @2111 NONAME ;protected: void __thiscall PAbstractSortedList::RightRotate(class PAbstractSortedList::Element *)
     ?RightTrim@PString@@QBE?AV1@XZ @2112 NONAME ;public: class PString  __thiscall PString::RightTrim(void)const 
     ?RunContinuous@PTimer@@QAEXABVPTimeInterval@@@Z @2113 NONAME ;public: void __thiscall PTimer::RunContinuous(class PTimeInterval const &)
+    ?SaveSettings@PSerialChannel@@UAEXAAVPConfig@@@Z @2533 NONAME ;public: virtual void __thiscall PSerialChannel::SaveSettings(class PConfig &)
     ?seekoff@Buffer@PStringStream@@UAEJJW4seek_dir@ios@@H@Z @2114 NONAME ;public: virtual long __thiscall PStringStream::Buffer::seekoff(long,enum ios::seek_dir,int)
     ?seekoff@PChannelStreamBuffer@@MAEJJW4seek_dir@ios@@H@Z @2115 NONAME ;protected: virtual long __thiscall PChannelStreamBuffer::seekoff(long,enum ios::seek_dir,int)
     ?Select@PSocket@@SA?AW4Errors@PChannel@@AAVSelectList@1@00@Z @2116 NONAME ;public: static enum PChannel::Errors  __cdecl PSocket::Select(class PSocket::SelectList &,class PSocket::SelectList &,class PSocket::SelectList &)
