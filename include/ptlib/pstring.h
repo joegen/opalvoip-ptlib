@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pstring.h,v $
+ * Revision 1.60  2003/12/10 03:28:50  csoutheren
+ * Removed compile time warning under Linux
+ *
  * Revision 1.59  2003/12/07 05:50:49  csoutheren
  * Blocked operator = for PRegularExpression
  *
@@ -3028,7 +3031,7 @@ class PRegularExpression : public PObject
     PRegularExpression(const PRegularExpression &)
     { }  
     PRegularExpression & operator =(const PRegularExpression &)
-    {  }  
+    { return *this; }  
 };
 
 
