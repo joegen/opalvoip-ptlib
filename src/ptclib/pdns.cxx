@@ -6,6 +6,9 @@
  * Copyright 2003 Equivalence
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.3  2003/04/15 08:14:32  craigs
+ * Added single string form of GetSRVRecords
+ *
  * Revision 1.2  2003/04/15 08:05:19  craigs
  * Added Unix implementation
  *
@@ -444,6 +447,11 @@ BOOL PDNS::GetSRVRecords(const PString & _service,
 
   service += PString("._") + type + "." + domain;
 
+  return GetSRVRecords(service, recordList);
+}
+
+BOOL PDNS::GetSRVRecords(const PString & service, PDNS::SRVRecordList & recordList)
+{
   recordList.RemoveAll();
 
   PDNS_RECORD results = NULL;
