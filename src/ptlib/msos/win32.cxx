@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.28 1996/05/30 11:48:51 robertj Exp $
+ * $Id: win32.cxx,v 1.29 1996/06/10 09:54:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.29  1996/06/10 09:54:35  robertj
+ * Fixed Win95 compatibility for semaphores.
+ *
  * Revision 1.28  1996/05/30 11:48:51  robertj
  * Fixed error on socket timeout to return "Timed Out".
  *
@@ -1771,7 +1774,7 @@ BOOL PSemaphore::Wait(const PTimeInterval & timeout)
 void PSemaphore::Signal()
 {
   if (!ReleaseSemaphore(hSemaphore, 1, NULL))
-    PAssertOS(GetLastError() == ERROR_TOO_MANY_POSTS);
+    PAssertOS(GetLastError() != ERROR_INVALID_HANDLE);
   SetLastError(ERROR_SUCCESS);
 }
 
