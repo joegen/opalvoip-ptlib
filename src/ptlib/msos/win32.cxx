@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.23 1996/04/01 13:33:19 robertj Exp $
+ * $Id: win32.cxx,v 1.24 1996/04/09 03:33:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.24  1996/04/09 03:33:58  robertj
+ * Fixed bug in incorrect report of timeout on socket read.
+ *
  * Revision 1.23  1996/04/01 13:33:19  robertj
  * Fixed bug in install of service, incorrectly required installation before install.
  *
@@ -395,6 +398,7 @@ BOOL PChannel::ConvertOSError(int error)
         osError = EINTR;
         break;
       case WSAEWOULDBLOCK :
+      case WSAETIMEDOUT :
         osError = EAGAIN;
         break;
       default :
