@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.24 1996/04/09 03:33:58 robertj Exp $
+ * $Id: win32.cxx,v 1.25 1996/04/17 12:09:30 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.25  1996/04/17 12:09:30  robertj
+ * Added service dependencies.
+ * Started win95 support.
+ *
  * Revision 1.24  1996/04/09 03:33:58  robertj
  * Fixed bug in incorrect report of timeout on socket read.
  *
@@ -1728,28 +1732,34 @@ int PServiceProcess::_main(int argc, char ** argv, char **)
   PErrorStream = &cerr;
   PreInitialise(1, argv);
 
+  debugMode = FALSE;
+
   if (argc > 1) {
     switch (ProcessCommand(argv[1])) {
       case CommandProcessed :
         return 0;
       case ProcessCommandError :
         return 1;
+      case DebugCommandMode :
+        debugMode = TRUE;
     }
+  }
 
-    debugMode = TRUE;
-    currentLogLevel = LogInfo;
-    PError << "Service simulation started for \"" << GetName() << "\".\n"
-              "Press Ctrl-C to terminate.\n" << endl;
+  currentLogLevel = debugMode ? LogInfo : LogError;
+
+  if (debugMode || GetOSName() == "95") {
+    if (debugMode)
+      PError << "Service simulation started for \"" << GetName() << "\".\n"
+                "Press Ctrl-C to terminate.\n" << endl;
+    else { // Win95
+      PError << "Win95 Service not yet implemented, simulating...\n";
+    }
 
     signal(SIGINT, Control_C);
     if (OnStart())
       Main();
     OnStop();
-    return 0;
   }
-
-  debugMode = FALSE;
-  currentLogLevel = LogError;
 
   // SERVICE_STATUS members that don't change
   status.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
@@ -2065,7 +2075,7 @@ PServiceProcess::ProcessCommandResult
                           GetFile(),                  // service's binary
                           NULL,                       // no load ordering group
                           NULL,                       // no tag identifier
-                          NULL,                       // no dependencies
+                          GetServiceDependencies(),   // no dependencies
                           NULL,                       // LocalSystem account
                           NULL);                      // no password
         good = newService != NULL;
