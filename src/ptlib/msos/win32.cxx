@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.16 1996/02/19 13:53:21 robertj Exp $
+ * $Id: win32.cxx,v 1.17 1996/02/25 03:12:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.17  1996/02/25 03:12:48  robertj
+ * Added consts to all GetXxxx functions in PConfig.
+ * Fixed bug in PTime::GetTimeZone(), incorrect sign!
+ * Fixed problem with PConfig get functions and their WIN32 types should be
+ *    able to interchange strings and numbers.
+ *
  * Revision 1.16  1996/02/19 13:53:21  robertj
  * Fixed error reporting for winsock classes.
  *
@@ -187,11 +193,21 @@ BOOL RegistryKey::QueryValue(const PString & value, PString & str)
                                     NULL, &type, NULL, &size) != ERROR_SUCCESS)
     return FALSE;
 
-  if (type != REG_SZ)
-    return FALSE;
-
-  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+  switch (type) {
+    case REG_SZ :
+      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                   &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS;
+
+    case REG_DWORD :
+      DWORD num;
+      size = sizeof(num);
+      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                                &type, (LPBYTE)&num, &size) == ERROR_SUCCESS) {
+        str = PString(PString::Signed, num);
+        return TRUE;
+      }
+  }
+  return FALSE;
 }
 
 
@@ -205,11 +221,22 @@ BOOL RegistryKey::QueryValue(const PString & value, DWORD & num)
                                     NULL, &type, NULL, &size) != ERROR_SUCCESS)
     return FALSE;
 
-  if (type != REG_DWORD)
-    return FALSE;
-
-  return RegQueryValueEx(key, (char *)(const char *)value, NULL,
+  switch (type) {
+    case REG_DWORD :
+      return RegQueryValueEx(key, (char *)(const char *)value, NULL,
                                   &type, (LPBYTE)&num, &size) == ERROR_SUCCESS;
+
+    case REG_SZ :
+      PString str;
+      DWORD size = 20;
+      if (RegQueryValueEx(key, (char *)(const char *)value, NULL,
+                &type, (LPBYTE)str.GetPointer(size), &size) == ERROR_SUCCESS) {
+        num = str.AsInteger();
+        return TRUE;
+      }
+  }
+
+  return FALSE;
 }
 
 
@@ -343,7 +370,7 @@ int PTime::GetTimeZone(TimeZoneType type)
   PAssertOS(GetTimeZoneInformation(&tz) != 0xffffffff);
   if (type == DaylightSavings)
     tz.Bias += tz.DaylightBias;
-  return tz.Bias;
+  return -tz.Bias;
 }
 
 
@@ -1166,7 +1193,7 @@ void PConfig::Construct(const PFilePath & filename)
 }
 
 
-PStringList PConfig::GetSections()
+PStringList PConfig::GetSections() const
 {
   PStringList sections;
 
@@ -1262,7 +1289,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
     case Application : {
       PAssert(!section.IsEmpty(), PInvalidParameter);
       RegistryKey registry = location + section;
-      PAssertOS(registry.DeleteValue(key));
+      registry.DeleteValue(key);
       break;
     }
 
@@ -1274,7 +1301,7 @@ void PConfig::DeleteKey(const PString & section, const PString & key)
 
 
 PString PConfig::GetString(const PString & section,
-                                     const PString & key, const PString & dflt)
+                               const PString & key, const PString & dflt) const
 {
   PAssert(!key.IsEmpty(), PInvalidParameter);
 
@@ -1335,7 +1362,8 @@ void PConfig::SetString(const PString & section,
 }
 
 
-BOOL PConfig::GetBoolean(const PString & section, const PString & key, BOOL dflt)
+BOOL PConfig::GetBoolean(const PString & section,
+                                          const PString & key, BOOL dflt) const
 {
   if (source != Application) {
     PString str = GetString(section, key, dflt ? "T" : "F").ToUpper();
@@ -1365,7 +1393,8 @@ void PConfig::SetBoolean(const PString & section, const PString & key, BOOL valu
 }
 
 
-long PConfig::GetInteger(const PString & section, const PString & key, long dflt)
+long PConfig::GetInteger(const PString & section,
+                                          const PString & key, long dflt) const
 {
   if (source != Application) {
     PString str(PString::Signed, dflt);
