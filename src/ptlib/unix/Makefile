@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.34  1998/12/04 12:53:14  craigs
+# Fixed problem with regex in wrong directory
+#
 # Revision 1.33  1998/12/02 02:10:19  robertj
 # New directory structure
 #
@@ -199,7 +202,7 @@ endif
 
 CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 
-$(OBJDIR)/regex.o:	../../common/ptlib/src/regex.cxx
+$(OBJDIR)/regex.o:	../../../src/ptlib/common/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
 
