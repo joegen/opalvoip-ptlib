@@ -329,6 +329,20 @@ PARRAY(PPointArray, PPoint);
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PImgIcon
+
+#include "../../common/imgicon.h"
+  public:
+    PImgIcon(HBITMAP hBm);
+    HBITMAP GetHBITMAP() const;
+
+  protected:
+    void Construct(HBITMAP hBm);
+    HBITMAP hBitmap;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PIcon
 
 #include "../../common/icon.h"
@@ -585,8 +599,11 @@ PARRAY(PPointArray, PPoint);
       // Draw a series of lines represented by the array of points.
 
     virtual void DrawPolygon(LPPOINT ptArray, PINDEX numPts);
-      // Draw a closed polygon represented by the array of points. There is an
+      // Draw a closed polygon represented by the array of points.
 
+    void DrawBitmap(PORDINATE x, PORDINATE y,
+                            PDIMENSION width, PDIMENSION height, HBITMAP hBm);
+      // Draw a bitmap in the canvas
 
     // Member variables
     HDC hDC;
@@ -1624,6 +1641,8 @@ extern "C" char **__argv;
 ///////////////////////////////////////////////////////////////////////////////
 
 
+#ifdef P_USE_INLINES
+
 #include "../../common/osutil.inl"
 #include "osutil.inl"
 
@@ -1632,6 +1651,7 @@ extern "C" char **__argv;
 
 #include "../../common/graphics.inl"
 
+#endif
 
 #endif // _PWLIB_H
 
