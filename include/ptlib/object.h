@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.20 1996/02/24 14:19:29 robertj Exp $
+ * $Id: object.h,v 1.21 1996/05/09 12:14:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.21  1996/05/09 12:14:48  robertj
+ * Fixed up 64 bit integer class for Mac platform.
+ *
  * Revision 1.20  1996/02/24 14:19:29  robertj
  * Fixed bug in endian independent integer code for memory transfers.
  *
@@ -230,15 +233,15 @@ class PTrace {
 
 class PInt64__ {
   public:
-    operator long()  { return (long)low; }
-    operator int()   { return (int)low; }
-    operator short() { return (short)low; }
-    operator char()  { return (char)low; }
+    operator long()  const { return (long)low; }
+    operator int()   const { return (int)low; }
+    operator short() const { return (short)low; }
+    operator char()  const { return (char)low; }
 
-    operator unsigned long()  { return (unsigned long)low; }
-    operator unsigned int()   { return (unsigned int)low; }
-    operator unsigned short() { return (unsigned short)low; }
-    operator unsigned char()  { return (unsigned char)low; }
+    operator unsigned long()  const { return (unsigned long)low; }
+    operator unsigned int()   const { return (unsigned int)low; }
+    operator unsigned short() const { return (unsigned short)low; }
+    operator unsigned char()  const { return (unsigned char)low; }
 
   protected:
     PInt64__() { }
@@ -250,11 +253,6 @@ class PInt64__ {
     void Inc() { if (++low == 0) ++high; }
     void Dec() { if (--low == 0) --high; }
 
-    void Add(long v) { Add(v); }
-    void Sub(long v) { Sub(v); }
-    void Mul(long v) { Mul(v); }
-    void Div(long v) { Div(v); }
-    void Mod(long v) { Mod(v); }
     void Or (long v) { low |= v; }
     void And(long v) { low &= v; }
     void Xor(long v) { low ^= v; }
@@ -275,7 +273,6 @@ class PInt64__ {
 
     BOOL Eq(const PInt64__ & v) const { return low == v.low && high == v.high; }
     BOOL Ne(const PInt64__ & v) const { return low != v.low || high != v.high; }
-
 
     unsigned long low, high;
 };
@@ -340,8 +337,13 @@ class PInt64 : public PInt64__ {
     friend istream & operator>>(istream &, PInt64 &);
 
   protected:
-    BOOL Lt(long v) const { return Lt(v); }
-    BOOL Gt(long v) const { return Gt(v); }
+    void Add(long v) { Add(PInt64(v)); }
+    void Sub(long v) { Sub(PInt64(v)); }
+    void Mul(long v) { Mul(PInt64(v)); }
+    void Div(long v) { Div(PInt64(v)); }
+    void Mod(long v) { Mod(PInt64(v)); }
+    BOOL Lt(long v) const { return Lt(PInt64(v)); }
+    BOOL Gt(long v) const { return Gt(PInt64(v)); }
     BOOL Lt(const PInt64 &) const;
     BOOL Gt(const PInt64 &) const;
 };
@@ -376,6 +378,13 @@ class PUInt64 : public PInt64__ {
     friend istream & operator>>(istream &, PUInt64 &);
 
   protected:
+    void Add(long v) { Add(PUInt64(v)); }
+    void Sub(long v) { Sub(PUInt64(v)); }
+    void Mul(long v) { Mul(PUInt64(v)); }
+    void Div(long v) { Div(PUInt64(v)); }
+    void Mod(long v) { Mod(PUInt64(v)); }
+    BOOL Lt(long v) const { return Lt(PUInt64(v)); }
+    BOOL Gt(long v) const { return Gt(PUInt64(v)); }
     BOOL Lt(const PUInt64 &) const;
     BOOL Gt(const PUInt64 &) const;
 };
