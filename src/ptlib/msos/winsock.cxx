@@ -1,5 +1,5 @@
 /*
- * $Id: winsock.cxx,v 1.27 1996/10/31 12:39:30 robertj Exp $
+ * $Id: winsock.cxx,v 1.28 1996/11/10 21:04:56 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.28  1996/11/10 21:04:56  robertj
+ * Fixed bug in not flushing stream on close of socket.
+ *
  * Revision 1.27  1996/10/31 12:39:30  robertj
  * Fixed bug in byte order of port numbers in IPX protocol.
  *
@@ -144,7 +147,6 @@ const char * PWinSock::GetProtocolName() const
 
 PSocket::~PSocket()
 {
-  flush();
   Close();
 }
 
@@ -235,6 +237,7 @@ BOOL PSocket::Close()
 {
   if (!IsOpen())
     return FALSE;
+  flush();
   return ConvertOSError(os_close());
 }
 
