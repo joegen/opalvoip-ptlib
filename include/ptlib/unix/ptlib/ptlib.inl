@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.inl,v $
+ * Revision 1.19  2000/04/05 02:55:11  robertj
+ * Added microseconds to PTime class.
+ *
  * Revision 1.18  1998/11/24 09:38:22  robertj
  * FreeBSD port.
  *
@@ -72,14 +75,6 @@ PINLINE unsigned PTimer::Resolution()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-PINLINE PTime::PTime()
-{
-  theTime = time(NULL);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 
 PINLINE BOOL PDirectory::IsRoot() const
   { return IsSeparator((*this)[0]) && ((*this)[1] == '\0'); }
