@@ -27,6 +27,9 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.31  2001/09/14 05:10:57  robertj
+ * Fixed compatibility issue with FreeBSD versionof OSS.
+ *
  * Revision 1.30  2001/09/14 04:53:04  robertj
  * Improved the detection of sound cards, thanks Miguel Rodríguez Pérez for the ideas.
  *
@@ -412,8 +415,9 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
     if (mixer.Contains(cardnum)) {
       int fd = ::open(mixer[cardnum], O_RDONLY);
       if (fd >= 0) {
-        int ver;
-        if (::ioctl(fd, OSS_GETVERSION, &ver) >= 0)
+        // Do something with the mixer to be sure it is there
+        int dummy;
+        if (::ioctl(fd, SOUND_MIXER_READ_DEVMASK, &dummy) >= 0)
           devices.AppendString(dsp[cardnum]);
         ::close(fd);
       }
