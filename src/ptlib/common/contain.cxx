@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.41 1995/06/04 12:39:59 robertj Exp $
+ * $Id: contain.cxx,v 1.42 1995/06/17 00:46:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.42  1995/06/17 00:46:20  robertj
+ * Added flag for PStringArray constructor to create caseless strings.
+ * Fixed bug in arrays when size set to zero.
+ *
  * Revision 1.41  1995/06/04 12:39:59  robertj
  * Made char * array all const in PStringArray constructor.
  *
@@ -334,30 +338,39 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 
 BOOL PAbstractArray::SetSize(PINDEX newSize)
 {
-  if (newSize == 0)
-    newSize = 1;
-
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
   char * newArray;
 
   if (IsUnique()) {
+    if (newsizebytes == oldsizebytes)
+      return TRUE;
     if (theArray != NULL) {
-      if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
+      if (newsizebytes == 0) {
+        PFREE(theArray);
+        newArray = NULL;
+      }
+      else if ((newArray = (char *)PREALLOC(theArray, newsizebytes)) == NULL)
         return FALSE;
     }
-    else {
+    else if (newsizebytes != 0) {
       if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
         return FALSE;
     }
+    else
+      newArray = NULL;
     reference->size = newSize;
   }
   else {
-    if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
-      return FALSE;
+    if (newsizebytes == 0)
+      newArray = NULL;
+    else {
+      if ((newArray = (char *)PMALLOC(newsizebytes)) == NULL)
+        return FALSE;
 
-    if (theArray != NULL)
-      memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
+      if (theArray != NULL)
+        memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
+    }
 
     reference->count--;
     reference = new Reference(newSize);
@@ -1302,12 +1315,19 @@ PStringStream::~PStringStream()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-PStringArray::PStringArray(PINDEX count, char const * const * strarr)
+PStringArray::PStringArray(PINDEX count,
+                                    char const * const * strarr, BOOL caseless)
 {
   PAssertNULL(strarr);
   SetSize(count);
-  for (PINDEX i = 0; i < count; i++)
-    SetAt(i, PNEW PString(strarr[i]));
+  for (PINDEX i = 0; i < count; i++) {
+    PString * newString;
+    if (caseless)
+      newString = PNEW PCaselessString(strarr[i]);
+    else
+      newString = PNEW PString(strarr[i]);
+    SetAt(i, newString);
+  }
 }
 
 
