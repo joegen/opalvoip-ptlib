@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.58  2001/02/13 06:59:57  robertj
+ * Fixed problem with operator= in PDirectory class, part of larger change previously made.
+ *
  * Revision 1.57  2001/02/13 05:15:31  robertj
  * Fixed problem with operator= in container classes. Some containers will
  *   break unless the copy is virtual (eg PStringStream's buffer pointers) so
@@ -355,7 +358,7 @@ void PDirectory::Construct ()
   entryBuffer = NULL;
   entryInfo   = NULL;
 
-  PString::operator =(CanonicaliseDirectory(*this));
+  PString::AssignContents(CanonicaliseDirectory(*this));
 }
 
 BOOL PDirectory::Open(int ScanMask)
