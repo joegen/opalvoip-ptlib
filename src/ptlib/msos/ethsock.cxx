@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.35  2002/11/12 02:22:16  robertj
+ * Fixed problem where if SNMP not correctly installed on some flavours of
+ *   windows (eg ME) the system cannot find any interfaces. Added fail safe
+ *   that if could not determine one, it uses the ip address of gethostname()
+ *   which should be one of the interfaces on the system.
+ *
  * Revision 1.34  2002/11/08 06:45:23  robertj
  * Fixed problem with very long interface names, pointed out by Kees Klop.
  *
@@ -566,9 +572,15 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
   HANDLE hEvent;
   AsnObjectIdentifier baseOid;
   if (!GetFunction("SnmpExtensionInit", (Function &)Init) ||
-      !GetFunction("SnmpExtensionQuery", (Function &)Query) ||
-      !Init(0, &hEvent, &baseOid))
+      !GetFunction("SnmpExtensionQuery", (Function &)Query)) {
     Close();
+    PTRACE(1, "PWlib\tInvalid DLL: inetmib1.dll");
+  }
+  else if (!Init(0, &hEvent, &baseOid)) {
+    PTRACE(1, "PWlib\tCould not initialise SNMP DLL: error=" << ::GetLastError());
+    Close();
+  }
+
 #else
   Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
   Query = SnmpExtensionQuery;
@@ -1885,6 +1897,18 @@ BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
   PWin32SnmpLibrary & snmp = PWin32SnmpLibrary::Current();
 
   table.RemoveAll();
+
+  if (!snmp.IsLoaded()) {
+    // Error loading the SNMP library, fail safe to using whatever the
+    // address of the local host is.
+    Address ipAddr;
+    if (!GetHostAddress(ipAddr))
+      return FALSE;
+    Address netMask(255,255,255,255);
+    table.Append(new InterfaceEntry("FailSafe Interface", ipAddr, netMask, PString::Empty()));
+    table.Append(new InterfaceEntry("localhost", PIPSocket::Address(), netMask, PString::Empty()));
+    return TRUE;
+  }
 
   PWin32AsnOid baseOid = "1.3.6.1.2.1.4.20.1";
   PWin32AsnOid oid = baseOid;
