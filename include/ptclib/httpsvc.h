@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.2 1996/06/28 13:15:39 robertj Exp $
+ * $Id: httpsvc.h,v 1.3 1996/08/08 13:36:38 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.3  1996/08/08 13:36:38  robertj
+ * Fixed Registation page so no longer has static link, ie can be DLLed.
+ *
  * Revision 1.2  1996/06/28 13:15:39  robertj
  * Moved HTTP form resource to another compilation module.
  *
@@ -124,15 +127,22 @@ PDECLARE_CLASS(PRegisterPage, PConfigPage)
       const PHTTPAuthority & auth
     );
 
+    PString LoadText(
+      PHTTPRequest & request        // Information on this request.
+    );
+
     virtual BOOL Post(
       PHTTPRequest & request,       // Information on this request.
       const PStringToString & data, // Variables in the POST data.
       PHTML & replyMessage          // Reply message for post.
     );
 
-    void AddFields(const PString & prefix);
+    virtual void AddFields(
+      const PString & prefix        // Prefix on field names
+    ) = 0;
 
   protected:
+    PHTTPServiceProcess & process;
     PStringArray    securedKeys;
     PTEACypher::Key productKey;
 };
