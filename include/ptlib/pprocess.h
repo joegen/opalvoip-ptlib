@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.33 1998/04/07 13:33:53 robertj Exp $
+ * $Id: pprocess.h,v 1.34 1998/09/14 12:30:38 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.34  1998/09/14 12:30:38  robertj
+ * Fixed memory leak dump under windows to not include static globals.
+ *
  * Revision 1.33  1998/04/07 13:33:53  robertj
  * Changed startup code to support PApplication class.
  *
@@ -404,6 +407,10 @@ PDECLARE_CLASS(PProcess, PThread)
     static char ** argv;
     static char ** envp;
     // main arguments
+
+#if defined(_DEBUG) && defined(_MSC_VER)
+    PMemoryState memState;
+#endif
 
     int terminationValue;
     // Application return value
