@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.10  2002/05/08 22:38:53  dereks
+ * Adjust formatting to the pwlib standard.
+ *
  * Revision 1.9  2002/02/08 00:57:33  dereks
  * Modify PTRACE level to reduce debug information to reasonable level.
  *
@@ -87,7 +90,7 @@ PVideoChannel::PVideoChannel(const PString & device,
 
 PVideoChannel::~PVideoChannel()
 {
-	Close();
+  Close();
 }
 
 
@@ -116,7 +119,7 @@ PString PVideoChannel::GetDefaultDevice(Directions /*dir*/)
 
 
 BOOL PVideoChannel::Open(const PString & dev,
-                         Directions dir   )
+                         Directions dir)
 {
   PWaitAndSignal m(accessMutex);
 
@@ -130,18 +133,18 @@ BOOL PVideoChannel::Open(const PString & dev,
 
 
 
-BOOL PVideoChannel::Read( void * buf, PINDEX  len)
+BOOL PVideoChannel::Read(void * buf, PINDEX  len)
 {
   PWaitAndSignal m(accessMutex);
 
-  if( mpInput == NULL)  
+  if (mpInput == NULL)  
     return FALSE;
 
   BYTE * dataBuf;
   PINDEX dataLen;
   dataBuf = (BYTE *)buf;
   dataLen = len;
-  mpInput->GetFrameData(dataBuf, &dataLen );
+  mpInput->GetFrameData(dataBuf, &dataLen);
 
   return TRUE;
 }
@@ -151,7 +154,7 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
 {
   PWaitAndSignal m(accessMutex);
 
-  if( mpOutput == NULL)
+  if (mpOutput == NULL)
     return FALSE;
   
   return mpOutput->Redraw (buf);
@@ -172,7 +175,7 @@ BOOL PVideoChannel::IsOpen() const
 {
    PWaitAndSignal m(accessMutex);
 
-   return (mpInput != NULL) || (mpOutput != NULL) ;
+   return (mpInput != NULL) || (mpOutput != NULL);
 }
 
 
@@ -197,7 +200,7 @@ void PVideoChannel::AttachVideoReader(PVideoInputDevice * device, BOOL keepCurre
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpInput && keepCurrent)
+  if ((mpInput != NULL) && keepCurrent)
     PAssertAlways("Error: Attempt to add video reader while one is already defined");
   
   CloseVideoReader();
@@ -209,7 +212,7 @@ void PVideoChannel::CloseVideoPlayer()
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpOutput)
+  if (mpOutput != NULL)
     delete mpOutput;
   
   mpOutput = NULL;
@@ -219,7 +222,7 @@ void PVideoChannel::CloseVideoReader()
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpInput)
+  if (mpInput != NULL)
     delete mpInput;
   
   mpInput = NULL;
@@ -228,8 +231,8 @@ void PVideoChannel::CloseVideoReader()
 PINDEX  PVideoChannel::GetGrabHeight() 
 {
    PWaitAndSignal m(accessMutex);
-   if (mpInput)
-     return mpInput->GetFrameHeight() ;
+   if (mpInput != NULL)
+     return mpInput->GetFrameHeight();
    else
      return 0;
 }
@@ -239,8 +242,8 @@ PINDEX  PVideoChannel::GetGrabWidth()
 {
    PWaitAndSignal m(accessMutex);
 
-   if (mpInput)
-     return  mpInput->GetFrameWidth() ;
+   if (mpInput != NULL)
+     return mpInput->GetFrameWidth();
    else
      return 0;
 }
@@ -249,7 +252,7 @@ BOOL PVideoChannel::IsGrabberOpen()
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpInput)
+  if (mpInput != NULL)
     return mpInput->IsOpen();
   else
     return FALSE; 
@@ -259,7 +262,7 @@ BOOL PVideoChannel::IsRenderOpen()
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpOutput)
+  if (mpOutput != NULL)
     return mpOutput->IsOpen();
   else
     return FALSE; 
@@ -269,7 +272,7 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
 {
   PWaitAndSignal m(accessMutex);
 
-  if( (mpOutput==NULL)  ||  (mpInput==NULL) )
+  if( (mpOutput == NULL) ||  (mpInput == NULL))
     return FALSE;
   
   PINDEX length=0;
@@ -279,8 +282,8 @@ BOOL PVideoChannel::DisplayRawData(void *videoBuffer)
   PTRACE(6,"Video\t data direct:: camera-->render, size "
 	 << frameWidth << "x" << frameHeight );
   
-  SetRenderFrameSize( frameWidth, frameHeight);
-  Read( videoBuffer, length);
+  SetRenderFrameSize(frameWidth, frameHeight);
+  Read(videoBuffer, length);
   Write((const void *)videoBuffer, length);
   
   return TRUE;      
@@ -290,7 +293,7 @@ void  PVideoChannel::SetGrabberFrameSize(int _width, int _height)
 { 
   PWaitAndSignal m(accessMutex);
 
-  if(mpInput != NULL)
+  if (mpInput != NULL)
     mpInput->SetFrameSize((unsigned)_width, (unsigned)_height); 
 }
 
@@ -298,7 +301,7 @@ void  PVideoChannel::SetRenderFrameSize(int _width, int _height)
 { 
   PWaitAndSignal m(accessMutex);
 
-  if(mpOutput != NULL)
+  if (mpOutput != NULL)
     mpOutput->SetFrameSize(_width, _height); 
 }
 
@@ -316,7 +319,7 @@ BOOL  PVideoChannel::Redraw(const void * frame)
 { 
   PWaitAndSignal m(accessMutex);
 
-  if(mpOutput != NULL)
+  if (mpOutput != NULL)
     return mpOutput->Redraw (frame);
 
   return FALSE;
@@ -326,7 +329,7 @@ void  PVideoChannel::SetRenderNow(int _now)
 {
   PWaitAndSignal m(accessMutex);
 
-  if(mpOutput != NULL)
+  if (mpOutput != NULL)
     mpOutput->SetNow(_now); 
 }
 
@@ -334,7 +337,7 @@ PINDEX   PVideoChannel::GetRenderWidth()
 { 
   PWaitAndSignal m(accessMutex);
 
-  if(mpOutput != NULL)
+  if (mpOutput != NULL)
     return mpOutput->GetFrameWidth(); 
 
   return 0;
@@ -365,7 +368,7 @@ BOOL PVideoChannel::ToggleVFlipInput()
 {
   PWaitAndSignal m(accessMutex);
 
-  if ( mpInput == NULL ) 
+  if (mpInput == NULL) 
     return FALSE;
 
   return mpInput->ToggleVFlipState();
