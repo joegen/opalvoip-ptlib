@@ -1,5 +1,5 @@
 /*
- * $Id: semaphor.h,v 1.1 1996/01/26 11:06:31 craigs Exp $
+ * $Id: semaphor.h,v 1.2 1996/08/03 12:08:19 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: semaphor.h,v $
+ * Revision 1.2  1996/08/03 12:08:19  craigs
+ * Changed for new common directories
+ *
  * Revision 1.1  1996/01/26 11:06:31  craigs
  * Initial revision
  *
@@ -17,7 +20,7 @@
 
 #pragma interface
 
-#include "../../common/semaphor.h"
+#include "../../common/ptlib/semaphor.h"
 };
 
 #endif
