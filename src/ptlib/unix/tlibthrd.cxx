@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.30  1999/11/15 01:12:56  craigs
+ * Fixed problem with PSemaphore::Wait consuming 100% CPU
+ *
  * Revision 1.29  1999/10/30 13:44:11  craigs
  * Added correct method of aborting socket operations asynchronously
  *
@@ -685,26 +688,41 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
     return TRUE;
   }
 
-#ifdef P_HAS_SEMAPHORES
-  PTimer timeout = waitTime;
-  while (timeout.IsRunning()) {
-    if (sem_trywait(&semId) == 0)
-      return TRUE;
-  }
-  return FALSE;
-#else
-  struct timeval valTime;
-  ::gettimeofday(&valTime, NULL);
-  valTime.tv_sec += waitTime.GetSeconds();
-  valTime.tv_usec += waitTime.GetMilliSeconds() % 1000L;
-  if (valTime.tv_usec > 1000000) {
-    valTime.tv_usec -= 1000000;
-    valTime.tv_sec++;
+  // create absolute finish time 
+  struct timeval finishTime;
+  ::gettimeofday(&finishTime, NULL);
+  finishTime.tv_sec += waitTime.GetSeconds();
+  finishTime.tv_usec += waitTime.GetMilliSeconds() % 1000L;
+  if (finishTime.tv_usec > 1000000) {
+    finishTime.tv_usec -= 1000000;
+    finishTime.tv_sec++;
   }
 
+#ifdef P_HAS_SEMAPHORES
+
+  // loop until timeout, or semaphore becomes available
+  // don't use a PTimer, as this causes the housekeeping
+  // thread to get very busy
+  for (;;) {
+    if (sem_trywait(&semId) == 0)
+      return TRUE;
+
+      PThread::Current()->Sleep(10);
+
+      struct timeval now;
+      ::gettimeofday(&now, NULL);
+      if (now.tv_sec > finishTime.tv_sec) 
+        return FALSE;
+      else if ((now.tv_sec == finishTime.tv_sec) && (now.tv_usec >= finishTime.tv_usec))
+        return FALSE;
+  }
+  return FALSE;
+
+#else
+
   struct timespec absTime;
-  absTime.tv_sec = valTime.tv_sec;
-  absTime.tv_nsec = valTime.tv_usec * 1000;
+  absTime.tv_sec  = finishTime.tv_sec;
+  absTime.tv_nsec = finishTime.tv_usec * 1000;
 
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
 
