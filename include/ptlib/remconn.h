@@ -1,5 +1,5 @@
 /*
- * $Id: remconn.h,v 1.1 1995/12/10 13:04:46 robertj Exp $
+ * $Id: remconn.h,v 1.2 1996/03/02 03:09:48 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: remconn.h,v $
+ * Revision 1.2  1996/03/02 03:09:48  robertj
+ * Added function to get all possible remote access connection names.
+ *
  * Revision 1.1  1995/12/10 13:04:46  robertj
  * Initial revision
  *
@@ -23,7 +26,11 @@
 PDECLARE_CLASS(PRemoteConnection, PObject)
   public:
     PRemoteConnection();
-    PRemoteConnection(const PString & name);
+    PRemoteConnection(
+      const PString & name
+    );
+    // Create a new remote connection.
+
     ~PRemoteConnection();
 
     virtual Comparison Compare(const PObject & obj) const;
@@ -48,6 +55,16 @@ PDECLARE_CLASS(PRemoteConnection, PObject)
       NumStatuses
     };
     Status GetStatus() const;
+
+
+    static PStringArray GetAvailableNames();
+    /* Get an array of names for all of the available remote connections on
+       this system.
+
+       <H2>Returns:</H2>
+       Array of strings for remote connection names.
+     */
+
     
   protected:
     PString  remoteName;
