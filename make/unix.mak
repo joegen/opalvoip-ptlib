@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.129  2002/06/10 08:37:58  rogerh
+# Add instructions for compiling on FreeBSD 5.x with GCC 3.1
+#
 # Revision 1.128  2002/06/06 09:28:10  robertj
 # Changed default build to use C++ templates, use NO_PWLIB_TEMPLATES to disable.
 #
@@ -667,6 +670,9 @@ CFLAGS	+= -pthread
 endif
 
 P_USE_RANLIB		:= 1
+
+# FreeBSD 5.0-current users with GCC 3.1 must uncomment the folowing line
+#STDCCFLAGS      += -I /usr/include/g++/backward -Wno-deprecated
 
 endif # FreeBSD
 
