@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.15 1998/01/26 10:32:29 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.16 1998/02/03 06:24:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,8 +8,10 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
- * Revision 1.15  1998/01/26 10:32:29  robertj
- * Fixed missing initialisation of entity body length
+ * Revision 1.16  1998/02/03 06:24:10  robertj
+ * Added local address and port to PHTTPRequest.
+ * Fixed bug in default entity length. should be read to EOF.
+ * Fixed OnError() so can detec HTML bosy tag with parameters.
  *
  * Revision 1.14  1998/01/26 00:42:19  robertj
  * Added more information to PHTTPConnectionInfo.
@@ -330,7 +332,7 @@ BOOL PHTTPServer::ProcessCommand()
   const PURL & url = connectInfo.GetURL();
   if (url.GetScheme() != "http" ||
       (url.GetPort() != 0 && url.GetPort() != myPort) ||
-      !PIPSocket::IsLocalHost(url.GetHostName()))
+      (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
     persist = OnProxy(connectInfo);
   else {
     PString entityBody = ReadEntityBody(connectInfo);
@@ -595,7 +597,7 @@ BOOL PHTTPServer::OnError(StatusCode code,
   }
 
   PString reply;
-  if (extra.Find("<BODY>") != P_MAX_INDEX)
+  if (extra.Find("<body") != P_MAX_INDEX)
     reply = extra;
   else {
     PHTML html;
@@ -746,11 +748,15 @@ void PHTTPMultiSimpAuth::AddUser(const PString & username, const PString & passw
 // PHTTPRequest
 
 PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & server)
-  : url(u), inMIME(iM)
+  : url(u), inMIME(iM), origin(0), localAddr(0), localPort(0)
 {
   code        = PHTTP::OK;
   contentSize = 0;
-  server.GetSocket()->GetPeerAddress(origin); 
+  PIPSocket * socket = server.GetSocket();
+  if (socket != NULL) {
+    socket->GetPeerAddress(origin);
+    socket->GetLocalAddress(localAddr, localPort);
+  }
 }
 
 
@@ -767,7 +773,7 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd)
   isPersistant      = FALSE;
   isProxyConnection = FALSE;
 
-  entityBodyLength  = 0;
+  entityBodyLength  = -1;
 }
 
 
