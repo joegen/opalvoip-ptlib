@@ -855,15 +855,13 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="./configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
-"/>
+						CommandLine=""/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="./configure --exclude-env=VSNET_PWLIB_CONFIGURE_EXCLUDE_DIRS
-"/>
+						CommandLine=""/>
 				</FileConfiguration>
 			</File>
 			<File
