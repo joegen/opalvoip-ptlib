@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.128  2002/06/06 09:28:10  robertj
+# Changed default build to use C++ templates, use NO_PWLIB_TEMPLATES to disable.
+#
 # Revision 1.127  2002/05/31 06:37:22  robertj
 # Added PWLIB_TEMPLATES environment variable to compile using GCC templates.
 #
@@ -1205,7 +1208,7 @@ STDCCFLAGS	+= -DP_PTHREADS
 endif
 
 #define templates if available
-ifdef PWLIB_TEMPLATES
+ifndef NO_PWLIB_TEMPLATES
 STDCCFLAGS	+= -DP_HAS_TEMPLATES
 endif
 
