@@ -232,8 +232,6 @@ SOURCE=..\..\ptclib\pssl.cxx
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
 
-# PROP Exclude_From_Build 1
-
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Release"
@@ -264,8 +262,6 @@ SOURCE=..\..\ptclib\shttpsvc.cxx
 # PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-# PROP Exclude_From_Build 1
 
 !ELSEIF  "$(CFG)" == "Console Components - Win32 SSL Debug"
 
