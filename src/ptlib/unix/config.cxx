@@ -50,10 +50,8 @@ PDECLARE_CLASS(PXConfigSection, PCaselessString)
 static BOOL ReadConfigFile (PFilePath & filename, PXConfig & config)
 
 {
-  PINDEX i;
   PINDEX len;
   PString line;
-  PFile::Errors error;
 
   // attempt to open file
   PTextFile file;
@@ -101,8 +99,6 @@ static void GetEnvironment (char **envp, PXConfig & config)
 {
   PXConfigSection * currentSection = new PXConfigSection("Options");
   config.Append(currentSection);
-
-  char *line;
 
   while (*envp != NULL && **envp != '\0') {
     PString line(*envp);
@@ -177,7 +173,7 @@ PConfig::~PConfig()
 {
   if (saveOnExit && dirty) {
     PTextFile file;
-    if (file.Open(filename, PFile::WriteOnly, PFile::Create)) {
+    if (file.Open(filename, PFile::WriteOnly)) {
       for (PINDEX i = 0; i < config->GetSize(); i++) {
         PXConfigSectionList & section = (*config)[i].GetList();
         file << "[" << (*config)[i] << "]" << endl;
