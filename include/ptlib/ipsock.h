@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.50  2002/10/08 12:41:51  robertj
+ * Changed for IPv6 support, thanks Sébastien Josset.
+ *
  * Revision 1.49  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -193,8 +196,14 @@
 #include <ptlib/socket.h>
 #endif
 
+
+
 /** This class describes a type of socket that will communicate using the
    Internet Protocol.
+   If P_USE_IPV6 is not set, IPv4 only is supported.
+   If P_USE_IPV6 is set, both IPv4 and IPv6 adresses are supported, with 
+   IPv4 as default. This allows to transparently use IPv4, IPv6 or Dual 
+   stack operating systems.
  */
 class PIPSocket : public PSocket
 {
@@ -205,43 +214,51 @@ class PIPSocket : public PSocket
      */
     PIPSocket();
 
-
   public:
     /**
       A class describing an IP address
      */
-    class Address : public in_addr {
+    class Address : public PObject {
       public:
         /**@name Address constructors */
         //@{
-        /// Create an IP address with the default address
+        /// Create an IPv4 address with the default address: 127.0.0.1 (loopback)
         Address();
 
-        /// Create an IP address with the default address
+        /** Create an IP address from string notation.
+            eg dot notation x.x.x.x. for IPv4, or colon notation x:x:x::xxx for IPv6
+          */
         Address(const PString & dotNotation);
+
+        /// Create an IPv4 or IPv6 address from 4 or 16 byte values
+        Address(PINDEX len, const BYTE * bytes);
 
         /// Create an IP address from four byte values
         Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
 
-        /// Create an IP address from a four byte value in network byte order
+        /// Create an IPv4 address from a four byte value in network byte order
         Address(DWORD dw);
 
-        /// Create an IP address from an in_addr structure
+        /// Create an IPv4 address from an in_addr structure
         Address(const in_addr & addr);
 
-        /// Copy an address from another Address
-        Address(const Address & addr);
+#if P_HAS_IPV6
+        /// Create an IPv6 address from an in_addr structure
+        Address(const in_addr6 & addr);
+#endif
 
 #ifdef __NUCLEUS_NET__
         Address(const struct id_struct & addr);
         Address & operator=(const struct id_struct & addr);
 #endif
 
-        /// Copy an address from another Address
+        /// Copy an address from another IP v4 address
         Address & operator=(const in_addr & addr);
 
-        /// Copy an address from another Address
-        Address & operator=(const Address & addr);
+#if P_HAS_IPV6
+        /// Copy an address from another IPv6 address
+        Address & operator=(const in_addr6 & addr);
+#endif
 
         /// Copy an address from a string
         Address & operator=(const PString & dotNotation);
@@ -249,6 +266,23 @@ class PIPSocket : public PSocket
         /// Copy an address from a four byte value in network order
         Address & operator=(DWORD dw);
         //@}
+
+        /// Compare two adresses
+        Comparison Compare(const PObject & obj) const;
+        BOOL operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
+        BOOL operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
+#if P_HAS_IPV6
+        BOOL operator==(in_addr6 & addr) const;
+        BOOL operator!=(in_addr6 & addr) const { return !operator==(addr); }
+#endif
+        BOOL operator==(in_addr & addr) const;
+        BOOL operator!=(in_addr & addr) const { return !operator==(addr); }
+        BOOL operator==(DWORD dw) const;
+        BOOL operator!=(DWORD dw) const   { return !operator==(dw); }
+        BOOL operator==(unsigned u) const { return  operator==((DWORD)u); }
+        BOOL operator!=(unsigned u) const { return !operator==((DWORD)u); }
+        BOOL operator==(int i) const      { return  operator==((DWORD)i); }
+        BOOL operator!=(int i) const      { return !operator==((DWORD)i); }
 
         /// Format an address as a string
         PString AsString() const;
@@ -261,31 +295,69 @@ class PIPSocket : public PSocket
         /// Format an address as a string
         operator PString() const;
 
-        /// Return address in network order
+        /// Return IPv4 address in network order
+        operator in_addr() const;
+
+#if P_HAS_IPV6
+        /// Return IPv4 address in network order
+        operator in_addr6() const;
+#endif
+
+        /// Return IPv4 address in network order
         operator DWORD() const;
 
-        /// Return first byte of IP address
+        /// Return first byte of IPv4 address
         BYTE Byte1() const;
 
-        /// Return second byte of IP address
+        /// Return second byte of IPv4 address
         BYTE Byte2() const;
 
-        /// Return third byte of IP address
+        /// Return third byte of IPv4 address
         BYTE Byte3() const;
 
-        /// Return fourth byte of IP address
+        /// Return fourth byte of IPv4 address
         BYTE Byte4() const;
 
-        /// return specified byte of IP address
+        /// return specified byte of IPv4 or IPv6 address
         BYTE operator[](PINDEX idx) const;
 
-        /// output address as a string to the specified string
-        friend ostream & operator<<(ostream & s, const Address & a);
+        /// Get the address length (will be either 4 or 16)
+        PINDEX GetSize() const;
 
-        /// output address as a string to the specified string
-        friend istream & operator>>(istream & s, Address & a);
+        /// Get the version of the IP address being used
+        unsigned GetVersion() const { return version; }
+
+        /// Check address 0.0.0.0 or :: 
+        BOOL IsValid() const;
+
+        /// Check address 127.0.0.1 or ::1
+        BOOL IsLoopback() const;
+
+        /// Check for Broadcast address 255.255.255.255
+        BOOL IsBroadcast() const;
+
+        static const Address & GetLoopback();
+#if P_HAS_IPV6
+        static const Address & GetLoopback6();
+#endif
+        static const Address & GetBroadcast();
+
+      protected:
+        /// Runtime test of IP addresse type
+        unsigned version;
+        union {
+          in_addr four;
+#if P_HAS_IPV6
+          in_addr6 six;
+#endif
+        } v;
+
+      /// output IPv6 & IPv4 address as a string to the specified string
+      friend ostream & operator<<(ostream & s, const Address & a);
+
+      /// input IPv4 (not IPv6 yet!) address as a string from the specified string
+      friend istream & operator>>(istream & s, Address & a);
     };
-
 
   // Overrides from class PChannel
     /** Get the platform and I/O channel type name of the channel. For an IP
@@ -296,6 +368,12 @@ class PIPSocket : public PSocket
        the name of the channel.
      */
     virtual PString GetName() const;
+
+	
+    // Open an IPv4 or IPv6 socket
+    virtual BOOL OpenSocket(
+      int ipAdressFamily=PF_INET
+    ) = 0;
 
 
   // Overrides from class PSocket.

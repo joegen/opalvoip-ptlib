@@ -66,6 +66,7 @@ EXPORTS
     ??0Address@PIPSocket@@QAE@ABV01@@Z @40 NONAME ;public: __thiscall PIPSocket::Address::Address(class Address::Address const &)
     ??0Address@PIPSocket@@QAE@ABVPString@@@Z @41 NONAME ;public: __thiscall PIPSocket::Address::Address(class PString const &)
     ??0Address@PIPSocket@@QAE@EEEE@Z @42 NONAME ;public: __thiscall PIPSocket::Address::Address(unsigned char,unsigned char,unsigned char,unsigned char)
+    ??0Address@PIPSocket@@QAE@HPBE@Z @4557 NONAME ;public: __thiscall PIPSocket::Address::Address(int,unsigned char const *)
     ??0Address@PIPSocket@@QAE@K@Z @43 NONAME ;public: __thiscall PIPSocket::Address::Address(unsigned long)
     ??0Address@PIPSocket@@QAE@XZ @44 NONAME ;public: __thiscall PIPSocket::Address::Address(void)
     ??0Address@PIPXSocket@@QAE@ABV01@@Z @45 NONAME ;public: __thiscall PIPXSocket::Address::Address(class Address::Address const &)
@@ -440,6 +441,7 @@ EXPORTS
     ??1?$PSortedList@VPString@@@@UAE@XZ @269 NONAME ;public: virtual __thiscall PSortedList<class PString>::~PSortedList<class PString>(void)
     ??1?$PStringDictionary@VPOrdinalKey@@@@UAE@XZ @270 NONAME ;public: virtual __thiscall PStringDictionary<class POrdinalKey>::~PStringDictionary<class POrdinalKey>(void)
     ??1?$PStringDictionary@VPString@@@@UAE@XZ @271 NONAME ;public: virtual __thiscall PStringDictionary<class PString>::~PStringDictionary<class PString>(void)
+    ??1Address@PIPSocket@@UAE@XZ @4558 NONAME ;public: virtual __thiscall PIPSocket::Address::~Address(void)
     ??1Block@PTrace@@QAE@XZ @3026 NONAME ;public: __thiscall PTrace::Block::~Block(void)
     ??1Buffer@PDebugStream@@UAE@XZ @2498 NONAME ;public: virtual __thiscall PDebugStream::Buffer::~Buffer(void)
     ??1Buffer@PStringStream@@UAE@XZ @273 NONAME ;public: virtual __thiscall PStringStream::Buffer::~Buffer(void)
@@ -1044,12 +1046,18 @@ EXPORTS
     ??7PString@@QBEHXZ @612 NONAME ;public: int __thiscall PString::operator!(void)const 
     ??8Address@PEthSocket@@QBEHABT01@@Z @2337 NONAME ;public: int __thiscall PEthSocket::Address::operator==( ?? ::Z volatile PEthSocket::* const &, ?? )const  throw( ?? )
     ??8Address@PEthSocket@@QBEHPBE@Z @4146 NONAME ;public: int __thiscall PEthSocket::Address::operator==(unsigned char const *)const 
+    ??8Address@PIPSocket@@QBEHAAUin_addr@@@Z @4559 NONAME ;public: int __thiscall PIPSocket::Address::operator==(struct in_addr &)const 
+    ??8Address@PIPSocket@@QBEHABV01@@Z @4575 NONAME ;public: int __thiscall PIPSocket::Address::operator==(class PIPSocket::Address const &)const 
+    ??8Address@PIPSocket@@QBEHH@Z @4560 NONAME ;public: int __thiscall PIPSocket::Address::operator==(int)const 
+    ??8Address@PIPSocket@@QBEHK@Z @4561 NONAME ;public: int __thiscall PIPSocket::Address::operator==(unsigned long)const 
     ??8PObject@@QBEHABV0@@Z @613 NONAME ;public: int __thiscall PObject::operator==(class PObject const &)const 
     ??8PString@@QBEHABVPObject@@@Z @614 NONAME ;public: int __thiscall PString::operator==(class PObject const &)const 
     ??8PString@@QBEHPBD@Z @615 NONAME ;public: int __thiscall PString::operator==(char const *)const 
     ??8PTimeInterval@@QBEHABV0@@Z @616 NONAME ;public: int __thiscall PTimeInterval::operator==(class PTimeInterval const &)const 
     ??8PTimeInterval@@QBEHJ@Z @617 NONAME ;public: int __thiscall PTimeInterval::operator==(long)const 
     ??9Address@PEthSocket@@QBEHPBE@Z @4147 NONAME ;public: int __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
+    ??9Address@PIPSocket@@QBEHH@Z @4562 NONAME ;public: int __thiscall PIPSocket::Address::operator!=(int)const 
+    ??9Address@PIPSocket@@QBEHK@Z @4563 NONAME ;public: int __thiscall PIPSocket::Address::operator!=(unsigned long)const 
     ??9PObject@@QBEHABV0@@Z @618 NONAME ;public: int __thiscall PObject::operator!=(class PObject const &)const 
     ??9PString@@QBEHABVPObject@@@Z @619 NONAME ;public: int __thiscall PString::operator!=(class PObject const &)const 
     ??9PString@@QBEHPBD@Z @620 NONAME ;public: int __thiscall PString::operator!=(char const *)const 
@@ -1092,6 +1100,7 @@ EXPORTS
     ??B?$PBaseArray@PAVElement@PHashTable@@@@QBEPBQAVElement@PHashTable@@XZ @641 NONAME ;public: __thiscall PBaseArray<class PHashTable::Element *>::operator class PHashTable::Element * const *(void)const 
     ??B?$PBaseArray@PAVPObject@@@@QBEPBQAVPObject@@XZ @642 NONAME ;public: __thiscall PBaseArray<class PObject *>::operator class PObject * const *(void)const 
     ??BAddress@PEthSocket@@QBE?AVPString@@XZ @2418 NONAME ;public: __thiscall PEthSocket::Address::operator class PString(void)const 
+    ??BAddress@PIPSocket@@QBE?AUin_addr@@XZ @4564 NONAME ;public: __thiscall PIPSocket::Address::operator struct in_addr(void)const 
     ??BAddress@PIPSocket@@QBE?AVPString@@XZ @643 NONAME ;public: __thiscall PIPSocket::Address::operator class PString(void)const 
     ??BAddress@PIPSocket@@QBEKXZ @644 NONAME ;public: __thiscall PIPSocket::Address::operator unsigned long(void)const 
     ??BAddress@PIPXSocket@@QBE?AVPString@@XZ @645 NONAME ;public: __thiscall PIPXSocket::Address::operator class PString(void)const 
@@ -1208,6 +1217,7 @@ EXPORTS
     ??_7?$PSortedList@VPString@@@@6B@ @724 NONAME ;const  PSortedList<class PString>::`vftable'
     ??_7?$PStringDictionary@VPOrdinalKey@@@@6B@ @725 NONAME ;const  PStringDictionary<class POrdinalKey>::`vftable'
     ??_7?$PStringDictionary@VPString@@@@6B@ @726 NONAME ;const  PStringDictionary<class PString>::`vftable'
+    ??_7Address@PIPSocket@@6B@ @4565 NONAME ;const  PIPSocket::Address::`vftable'
     ??_7Buffer@PDebugStream@@6B@ @2503 NONAME ;const  PDebugStream::Buffer::`vftable'
     ??_7Buffer@PStringStream@@6B@ @728 NONAME ;const  PStringStream::Buffer::`vftable'
     ??_7Buffer@PSystemLog@@6B@ @729 NONAME ;const  PSystemLog::Buffer::`vftable'
@@ -1775,6 +1785,7 @@ EXPORTS
     ?Close@PWin32PacketDriver@@QAEXXZ @2360 NONAME ;public: void __thiscall PWin32PacketDriver::Close(void)
     ?CloseVideoPlayer@PVideoChannel@@UAEXXZ @4278 NONAME ;public: virtual void __thiscall PVideoChannel::CloseVideoPlayer(void)
     ?CloseVideoReader@PVideoChannel@@UAEXXZ @4279 NONAME ;public: virtual void __thiscall PVideoChannel::CloseVideoReader(void)
+    ?Compare@Address@PIPSocket@@UBE?AW4Comparison@PObject@@ABV4@@Z @4566 NONAME ;public: virtual enum PObject::Comparison  __thiscall PIPSocket::Address::Compare(class PObject const &)const 
     ?Compare@PAbstractArray@@UBE?AW4Comparison@PObject@@ABV3@@Z @1080 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractArray::Compare(class PObject const &)const 
     ?Compare@PAbstractList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1081 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractList::Compare(class PObject const &)const 
     ?Compare@PAbstractSortedList@@UBE?AW4Comparison@PObject@@ABV3@@Z @1082 NONAME ;public: virtual enum PObject::Comparison  __thiscall PAbstractSortedList::Compare(class PObject const &)const 
@@ -2140,6 +2151,7 @@ EXPORTS
     ?GetBoolean@PConfig@@QBEHABVPString@@0H@Z @1327 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,class PString const &,int)const 
     ?GetBoolean@PConfig@@QBEHABVPString@@H@Z @1328 NONAME ;public: int __thiscall PConfig::GetBoolean(class PString const &,int)const 
     ?GetBrightness@PVideoDevice@@UAEHXZ @3852 NONAME ;public: virtual int __thiscall PVideoDevice::GetBrightness(void)
+    ?GetBroadcast@Address@PIPSocket@@SAABV12@XZ @4567 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetBroadcast(void)
     ?GetBuffers@PSoundChannel@@QAEHAAH0@Z @2681 NONAME ;public: int __thiscall PSoundChannel::GetBuffers(int &,int &)
     ?GetChannel@PVideoDevice@@UBEHXZ @3437 NONAME ;public: virtual int __thiscall PVideoDevice::GetChannel(void)const 
     ?GetChannels@PSound@@QBEIXZ @2907 NONAME ;public: unsigned int __thiscall PSound::GetChannels(void)const 
@@ -2421,6 +2433,7 @@ EXPORTS
     ?GetLocalAddress@PIPXSocket@@QAEHAAVAddress@1@AAG@Z @1507 NONAME ;public: int __thiscall PIPXSocket::GetLocalAddress(class PIPXSocket::Address &,unsigned short &)
     ?GetLocalHostName@PIPSocket@@QAE?AVPString@@XZ @1508 NONAME ;public: class PString  __thiscall PIPSocket::GetLocalHostName(void)
     ?GetLogLevel@PServiceProcess@@QBE?AW4Level@PSystemLog@@XZ @1509 NONAME ;public: enum PSystemLog::Level  __thiscall PServiceProcess::GetLogLevel(void)const 
+    ?GetLoopback@Address@PIPSocket@@SAABV12@XZ @4568 NONAME ;public: static class PIPSocket::Address const & __cdecl PIPSocket::Address::GetLoopback(void)
     ?GetManufacturer@PProcess@@UBEABVPString@@XZ @4492 NONAME ;public: virtual class PString const & __thiscall PProcess::GetManufacturer(void)const 
     ?GetMaxCountVal@PSemaphore@@QBEIXZ @4347 NONAME ;public: unsigned int __thiscall PSemaphore::GetMaxCountVal(void)const 
     ?GetMaxDstFrameBytes@PColourConverter@@QAEHXZ @3671 NONAME ;public: int __thiscall PColourConverter::GetMaxDstFrameBytes(void)
@@ -2600,6 +2613,7 @@ EXPORTS
     ?GetValuesIndex@PAbstractSet@@UBEHABVPObject@@@Z @1628 NONAME ;public: virtual int __thiscall PAbstractSet::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PAbstractSortedList@@UBEHABVPObject@@@Z @1629 NONAME ;public: virtual int __thiscall PAbstractSortedList::GetValuesIndex(class PObject const &)const 
     ?GetValuesIndex@PArrayObjects@@UBEHABVPObject@@@Z @1630 NONAME ;public: virtual int __thiscall PArrayObjects::GetValuesIndex(class PObject const &)const 
+    ?GetVersion@Address@PIPSocket@@QBEIXZ @4569 NONAME ;public: unsigned int __thiscall PIPSocket::Address::GetVersion(void)const 
     ?GetVersion@PProcess@@UBE?AVPString@@H@Z @4495 NONAME ;public: virtual class PString  __thiscall PProcess::GetVersion(int)const 
     ?GetVFlipState@PColourConverter@@QAEHXZ @4311 NONAME ;public: int __thiscall PColourConverter::GetVFlipState(void)
     ?GetVFlipState@PFakeVideoInputDevice@@UAEHXZ @4312 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::GetVFlipState(void)
@@ -2670,6 +2684,7 @@ EXPORTS
     ?InternalStartRead@PReadWriteMutex@@IAEXXZ @4554 NONAME ;protected: void __thiscall PReadWriteMutex::InternalStartRead(void)
     ?InternalValidate@PMemoryHeap@@IAE?AW4Validation@1@PAXPBDPAVostream@@@Z @4047 NONAME ;protected: enum PMemoryHeap::Validation  __thiscall PMemoryHeap::InternalValidate(void *,char const *,class ostream *)
     ?IoControl@PWin32PacketDriver@@QAEHIPBXKPAXKAAK@Z @2389 NONAME ;public: int __thiscall PWin32PacketDriver::IoControl(unsigned int,void const *,unsigned long,void *,unsigned long,unsigned long &)
+    ?IsBroadcast@Address@PIPSocket@@QBEHXZ @4570 NONAME ;public: int __thiscall PIPSocket::Address::IsBroadcast(void)const 
     ?IsCapturing@PFakeVideoInputDevice@@UAEHXZ @3484 NONAME ;public: virtual int __thiscall PFakeVideoInputDevice::IsCapturing(void)
     ?IsCapturing@PVideoInputDevice@@UAEHXZ @3380 NONAME ;public: virtual int __thiscall PVideoInputDevice::IsCapturing(void)
     ?IsClass@?$PArray@VPString@@@@UBEHPBD@Z @1676 NONAME ;public: virtual int __thiscall PArray<class PString>::IsClass(char const *)const 
@@ -2964,6 +2979,7 @@ EXPORTS
     ?IsLoaded@PDynaLink@@QBEHXZ @1871 NONAME ;public: int __thiscall PDynaLink::IsLoaded(void)const 
     ?IsLocalHost@PIPSocket@@SAHABVPString@@@Z @1872 NONAME ;public: static int __cdecl PIPSocket::IsLocalHost(class PString const &)
     ?IsLoggedOn@PMail@@QBEHXZ @1873 NONAME ;public: int __thiscall PMail::IsLoggedOn(void)const 
+    ?IsLoopback@Address@PIPSocket@@QBEHXZ @4571 NONAME ;public: int __thiscall PIPSocket::Address::IsLoopback(void)const 
     ?IsNULL@PSmartPointer@@QBEHXZ @1874 NONAME ;public: int __thiscall PSmartPointer::IsNULL(void)const 
     ?IsOK@PCapStatus@@QAEHXZ @3391 NONAME ;public: int __thiscall PCapStatus::IsOK(void)
     ?IsOpen@PChannel@@UBEHXZ @1875 NONAME ;public: virtual int __thiscall PChannel::IsOpen(void)const 
@@ -2992,6 +3008,7 @@ EXPORTS
     ?IsTextFile@PTextFile@@MBEHXZ @1889 NONAME ;protected: virtual int __thiscall PTextFile::IsTextFile(void)const 
     ?IsType@PWin32PacketBuffer@@QBEHG@Z @2396 NONAME ;public: int __thiscall PWin32PacketBuffer::IsType(unsigned short)const 
     ?IsUnique@PContainer@@QBEHXZ @1890 NONAME ;public: int __thiscall PContainer::IsUnique(void)const 
+    ?IsValid@Address@PIPSocket@@QBEHXZ @4572 NONAME ;public: int __thiscall PIPSocket::Address::IsValid(void)const 
     ?IsValid@Address@PIPXSocket@@QBEHXZ @1891 NONAME ;public: int __thiscall PIPXSocket::Address::IsValid(void)const 
     ?IsValid@PFilePath@@SAHABVPString@@@Z @1892 NONAME ;public: static int __cdecl PFilePath::IsValid(class PString const &)
     ?IsValid@PFilePath@@SAHD@Z @1893 NONAME ;public: static int __cdecl PFilePath::IsValid(char)
@@ -3082,7 +3099,9 @@ EXPORTS
     ?OpenSocket@PICMPSocket@@MAEHXZ @1956 NONAME ;protected: virtual int __thiscall PICMPSocket::OpenSocket(void)
     ?OpenSocket@PIPXSocket@@MAEHXZ @1957 NONAME ;protected: virtual int __thiscall PIPXSocket::OpenSocket(void)
     ?OpenSocket@PSPXSocket@@MAEHXZ @1958 NONAME ;protected: virtual int __thiscall PSPXSocket::OpenSocket(void)
+    ?OpenSocket@PTCPSocket@@MAEHH@Z @4573 NONAME ;protected: virtual int __thiscall PTCPSocket::OpenSocket(int)
     ?OpenSocket@PTCPSocket@@MAEHXZ @1959 NONAME ;protected: virtual int __thiscall PTCPSocket::OpenSocket(void)
+    ?OpenSocket@PUDPSocket@@MAEHH@Z @4574 NONAME ;protected: virtual int __thiscall PUDPSocket::OpenSocket(int)
     ?OpenSocket@PUDPSocket@@MAEHXZ @1960 NONAME ;protected: virtual int __thiscall PUDPSocket::OpenSocket(void)
     ?OpenSocket@PWinSock@@EAEHXZ @1961 NONAME ;private: virtual int __thiscall PWinSock::OpenSocket(void)
     ?OpenWaveFile@PMultiMediaFile@@QAEHABVPFilePath@@AAVPWaveFormat@@AAK@Z @2920 NONAME ;public: int __thiscall PMultiMediaFile::OpenWaveFile(class PFilePath const &,class PWaveFormat &,unsigned long &)
