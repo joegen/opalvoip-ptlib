@@ -1,5 +1,5 @@
 /*
- * $Id: icmpsock.h,v 1.1 1996/05/15 21:11:16 robertj Exp $
+ * $Id: icmpsock.h,v 1.2 1996/06/03 10:03:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.2  1996/06/03 10:03:22  robertj
+ * Changed ping to return more parameters.
+ *
  * Revision 1.1  1996/05/15 21:11:16  robertj
  * Initial revision
  *
@@ -32,9 +35,25 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
      */
 
 
+    class PingInfo {
+      public:
+        PingInfo(WORD seqNum = 0,
+                 WORD id = (WORD)PProcess::Current()->GetProcessID())
+          { identifier = id; sequenceNum = seqNum; }
+
+        WORD identifier;         // Arbitrary identifier for the ping.
+        WORD sequenceNum;        // Sequence number for ping packet.
+        PTimeInterval delay;     // Time for packet to make trip.
+        Address remoteAddr;      // Source address of reply packet.
+        Address localAddr;       // Destination address of reply packet.
+    };
+
+    BOOL Ping(
+      const PString & host   // Host to send ping.
+    );
     BOOL Ping(
       const PString & host,   // Host to send ping.
-      PTimeInterval & delay   // Time for packet to make trip.
+      PingInfo & info         // Information on the ping and reply.
     );
     /* Send an ECHO_REPLY message to the specified host and wait for a reply
        to be sent back.
@@ -46,7 +65,7 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
 
     BOOL WritePing(
       const PString & host,   // Host to send ping.
-      WORD sequence = 0       // Sequence number for multiple pinging.
+      PingInfo & info         // Information on the ping and reply.
     );
     /* Send an ECHO_REPLY message to the specified host.
 
@@ -55,9 +74,7 @@ PDECLARE_CLASS(PICMPSocket, PIPDatagramSocket)
      */
 
     BOOL ReadPing(
-      Address & addr,
-      WORD & sequenceNum,
-      PTimeInterval & delay
+      PingInfo & info         // Information on the ping and reply.
     );
     /* Receive an ECHO_REPLY message from the host.
 
