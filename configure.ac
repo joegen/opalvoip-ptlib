@@ -402,6 +402,8 @@ dnl check for minimum sizing
 
 AC_ARG_ENABLE(minsize,
        [  --enable-minsize        minimise the size of the lib by disabling least used options])
+AC_ARG_ENABLE(openh323,
+       [  --enable-openh323       include only options needed with openh323])
 
 dnl these are the default configure settings
 default_resolver=yes
@@ -431,7 +433,34 @@ default_http=yes
 default_httpsvc=yes
 default_soap=yes
 
-if test "${enable_minsize}x" = "yesx" ; then
+if test "${enable_openh323}x" = "yesx" ; then
+  default_resolver=yes
+  default_openldap=yes
+  default_openssl=yes
+  default_expat=no
+  default_sdl=yes
+  default_sasl=yes
+  default_plugins=yes
+  default_tts=yes
+  default_asn=yes
+  default_stun=yes
+  default_pipechan=no
+  default_dtmf=yes
+  default_wavfile=yes
+  default_socks=no
+  default_ftp=no
+  default_snmp=no
+  default_telnet=no
+  default_remconn=no
+  default_serial=no
+  default_pop3smtp=no
+  default_audio=yes
+  default_video=yes
+  default_alsa=yes
+  default_http=yes
+  default_httpsvc=no
+  default_soap=no
+elif test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
   default_openldap=no
   default_openssl=no
