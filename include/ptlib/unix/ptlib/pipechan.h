@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.8  1999/08/17 07:38:02  robertj
+ * Fixed inlines so are inlined in optimised version
+ *
  * Revision 1.7  1998/11/30 22:06:55  robertj
  * New directory structure.
  *
@@ -65,8 +68,5 @@
     int retVal;
 };
 
-#ifdef P_USE_INLINES
-#include "../../common/pipechan.inl"
-#endif
 
 #endif
