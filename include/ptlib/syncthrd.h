@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncthrd.h,v $
+ * Revision 1.9  2002/05/01 03:45:31  robertj
+ * Added initialisation of PreadWriteMutex and changed slightly to agree
+ *   with the text book definition of a semaphore for one of the mutexes.
+ *
  * Revision 1.8  2002/04/30 06:21:54  robertj
  * Fixed PReadWriteMutex class to implement text book algorithm!
  *
@@ -268,12 +272,24 @@ class PIntCondMutex : public PCondMutex
    This is a special type of mutual exclusion, where the excluded area may
    have multiple read threads but only one write thread and the read threads
    are blocked on write as well.
+
+   NOTE: this type of mutex cannot be nested in the same thread. So if you call
+   StartWrite() consecutive in the same thread it will GUARANTEED to deadlock. A
+   nested StartRead() in the same thread can also deadlock if there are pending
+   write locks, so this should not be executed either.
  */
 
 class PReadWriteMutex : public PObject
 {
   PCLASSINFO(PReadWriteMutex, PObject);
   public:
+  /**@name Construction */
+  //@{
+    PReadWriteMutex();
+  //@}
+
+  /**@name Operations */
+  //@{
     /** This function attempts to acquire the mutex for reading.
      */
     void StartRead();
@@ -289,17 +305,17 @@ class PReadWriteMutex : public PObject
     /** This function attempts to release the mutex for writing.
      */
     void EndWrite();
+  //@}
 
   protected:
-    PMutex   readMutex;
-    PMutex   readerCountMutex;
-    unsigned readerCount;
+    PSemaphore readerSemaphore;
+    PMutex     readerMutex;
+    unsigned   readerCount;
+    PMutex     starvationPreventer;
 
-    PMutex   writeMutex;
-    PMutex   writerCountMutex;
-    unsigned writerCount;
-
-    PMutex   starvationPreventer;
+    PSemaphore writerSemaphore;
+    PMutex     writerMutex;
+    unsigned   writerCount;
 };
 
 
