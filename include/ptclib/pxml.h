@@ -24,6 +24,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.18  2002/12/16 06:38:24  robertj
+ * Added ability to specify certain elemets (by name) that are exempt from
+ *   the indent formatting. Useful for XML/RPC where leading white space is
+ *   not ignored by all servers.
+ *
  * Revision 1.17  2002/11/26 05:53:57  craigs
  * Added ability to auto-reload from URL
  *
@@ -68,8 +73,15 @@ class PXML : public PObject
       CloseExtended       = 8,
     };
 
-    PXML(int options = -1);
-    PXML(const PString & data, int options = -1);
+    PXML(
+      int options = -1,
+      const char * noIndentElements = NULL
+    );
+    PXML(
+      const PString & data,
+      int options = -1,
+      const char * noIndentElements = NULL
+    );
 
     PXML(const PXML & xml);
 
@@ -102,6 +114,12 @@ class PXML : public PObject
 
     void SetOptions(int _options)
       { options = _options; }
+
+    int GetOptions() const { return options; }
+
+    BOOL IsNoIndentElement(
+      const PString & elementName
+    ) const;
 
     void PrintOn(ostream & strm) const;
 
@@ -142,7 +160,7 @@ class PXML : public PObject
     static PString CreateTag (const PString & text, const PString & data);
 
   protected:
-    void Construct();
+    void Construct(int options, const char * noIndentElements);
     PXMLElement * rootElement;
     PMutex rootMutex;
 
@@ -166,6 +184,8 @@ class PXML : public PObject
     PString errorString;
     PINDEX errorCol;
     PINDEX errorLine;
+
+    PSortedStringList noIndentElements;
 };
 
 ////////////////////////////////////////////////////////////
@@ -189,7 +209,7 @@ class PXMLObject : public PObject {
       parent = newParent;
     }
 
-    virtual void PrintOn(ostream & strm, int indent, int options) const = 0;
+    virtual void Output(ostream & strm, const PXML & xml, int indent) const = 0;
 
     virtual BOOL IsElement() const = 0;
 
@@ -217,7 +237,7 @@ class PXMLData : public PXMLObject {
 
     PString GetString() const           { return value; }
 
-    void PrintOn(ostream & strm, int indent, int options) const;
+    void Output(ostream & strm, const PXML & xml, int indent) const;
 
     PXMLObject * Clone(PXMLElement * parent) const;
 
@@ -235,7 +255,7 @@ class PXMLElement : public PXMLObject {
 
     BOOL IsElement() const { return TRUE; }
 
-    void PrintOn(ostream & strm, int indent, int options) const;
+    void Output(ostream & strm, const PXML & xml, int indent) const;
 
     PCaselessString GetName() const
       { return name; }
