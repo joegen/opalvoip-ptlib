@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.56  2002/01/30 08:40:55  robertj
+ * Fixed incorrect decode function in BER string decode, thanks ct_dev@sohu.com
+ *
  * Revision 1.55  2001/12/13 09:13:57  robertj
  * Added function get get oid as a string.
  *
@@ -2150,7 +2153,7 @@ BOOL PBER_Stream::ConstrainedStringDecode(PASN_ConstrainedString & value)
 void PBER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 {
   HeaderEncode(value);
-  value.Encode(*this);
+  value.EncodeBER(*this);
 }
 
 
