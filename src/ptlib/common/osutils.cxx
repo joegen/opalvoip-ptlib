@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.8 1994/04/01 14:05:06 robertj Exp $
+ * $Id: osutils.cxx,v 1.9 1994/04/20 12:17:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
- * Revision 1.8  1994/04/01 14:05:06  robertj
+ * Revision 1.9  1994/04/20 12:17:44  robertj
+ * assert changes
+ *
+ * Revision 1.8  1994/04/01  14:05:06  robertj
  * Text file streams
  *
  * Revision 1.7  1994/03/07  07:47:00  robertj
@@ -38,6 +41,7 @@
 
 #include <fcntl.h>
 #include <errno.h>
+#include <io.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -104,20 +108,20 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 PTime::PTime(int second, int minute, int hour, int day, int month, int year)
 {
   struct tm t;
-  PAssert(second >= 0 && second <= 59);
+  PAssert(second >= 0 && second <= 59, PInvalidParameter);
   t.tm_sec = second;
-  PAssert(minute >= 0 && minute <= 59);
+  PAssert(minute >= 0 && minute <= 59, PInvalidParameter);
   t.tm_min = minute;
-  PAssert(hour >= 0 && hour <= 23);
+  PAssert(hour >= 0 && hour <= 23, PInvalidParameter);
   t.tm_hour = hour;
-  PAssert(day >= 1 && day <= 31);
+  PAssert(day >= 1 && day <= 31, PInvalidParameter);
   t.tm_mday = day;
-  PAssert(month >= 1 && month <= 12);
+  PAssert(month >= 1 && month <= 12, PInvalidParameter);
   t.tm_mon = month-1;
-  PAssert(year >= 1900);
+  PAssert(year >= 1900, PInvalidParameter);
   t.tm_year = year-1900;
   theTime = mktime(&t);
-  PAssert(theTime != -1);
+  PAssert(theTime != -1, PInvalidParameter);
 }
 
 
@@ -244,6 +248,111 @@ PMilliseconds PTimerList::Process()
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// PChannel
+
+#if defined(_PCHANNEL)
+
+PChannelStreamBuffer::PChannelStreamBuffer(PChannel * chan)
+  : channel(PAssertNULL(chan))
+{
+  setb(buffer, &buffer[sizeof(buffer)-1]);
+  unbuffered(FALSE);
+}
+
+
+int PChannelStreamBuffer::overflow(int c)
+{
+  int bufSize = out_waiting();
+  if (bufSize != 0) {
+    setp(pbase(), epptr());
+    if (!channel->Write(pbase(), bufSize))
+      return EOF;
+  }
+
+  if (c != EOF)
+    if (!channel->Write(&c, 1))
+      return EOF;
+
+  return 0;
+}
+
+
+int PChannelStreamBuffer::underflow()
+{
+  if (gptr() != egptr())
+    return *gptr();
+
+  PINDEX toRead = egptr() - eback();
+  off_t left = channel->GetInputAvailable();
+  if (left >= toRead)
+    setg(eback(), eback(), egptr());
+  else
+    setg(eback(), egptr()-left, egptr());
+
+  return channel->Read(gptr(), toRead) ? *gptr() : EOF;
+}
+
+
+int PChannelStreamBuffer::sync()
+{
+  if (overflow() == EOF)
+    return EOF;
+
+  int inAvail = in_avail();
+  if (inAvail != 0) {
+    setg(eback(), eback(), egptr());
+    if (channel->IsDescendant(PFile::Class()))
+      ((PFile *)channel)->SetPosition(-inAvail, PFile::Current);
+  }
+
+  return 0;
+}
+
+
+streampos PChannelStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
+{
+  sync();
+  if (!channel->IsDescendant(PFile::Class()))
+    return -1;
+  ((PFile *)channel)->SetPosition(off, (PFile::FilePositionOrigin)dir);
+  return ((PFile *)channel)->GetPosition();
+}
+
+
+PChannel::PChannel()
+{
+  init(new PChannelStreamBuffer(this));
+}
+
+
+void PChannel::DestroyContents()
+{
+  delete rdbuf();
+  init(NULL);
+}
+
+void PChannel::CloneContents(const PChannel *)
+{
+  init(new PChannelStreamBuffer(this));
+}
+
+void PChannel::CopyContents(const PChannel & c)
+{
+  init(c.rdbuf());
+  ((PChannelStreamBuffer*)rdbuf())->channel = this;
+}
+
+
+BOOL PChannel::FlushStreams()
+{
+  return rdbuf()->sync() != EOF;
+}
+
+
+#endif
+
+
+///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
 #if defined(_PDIRECTORY)
@@ -264,19 +373,11 @@ istream & PDirectory::ReadFrom(istream & strm)
 
 #if defined(_PFILE)
 
-PFile::PFile(const PString & name, OpenMode mode, int opts)
-  : fullname(name)
-{
-  Construct();
-  Open(mode, opts);
-}
-
-
 BOOL PFile::Rename(const PString & newname)
 {
-  if (!Rename(fullname, newname))
+  if (!Rename(path, newname))
     return FALSE;
-  fullname = newname;
+  path = newname;
   return TRUE;
 }
 
@@ -294,19 +395,19 @@ BOOL PFile::Close()
 }
 
 
-BOOL PFile::Read(void * buffer, size_t amount)
+BOOL PFile::Read(void * buffer, PINDEX amount)
 {
   FlushStreams();
-  BOOL ok = read(GetHandle(), (char *)buffer, amount) == (int)amount;
+  BOOL ok = _read(GetHandle(), buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
 }
 
 
-BOOL PFile::Write(const void * buffer, size_t amount)
+BOOL PFile::Write(const void * buffer, PINDEX amount)
 {
   FlushStreams();
-  BOOL ok = write(GetHandle(), (char *)buffer, amount) == (int)amount;
+  BOOL ok = _write(GetHandle(), buffer, amount) == (int)amount;
   os_errno = ok ? 0 : errno;
   return ok;
 }
@@ -314,10 +415,17 @@ BOOL PFile::Write(const void * buffer, size_t amount)
 
 int PFile::ReadChar()
 {
-  char c;
+  BYTE c;
   return Read(&c, 1) ? c : -1;
 }
-      
+
+
+BOOL PFile::Open(const PFilePath & name, OpenMode  mode, int opts)
+{
+  SetFilePath(name);
+  return Open(mode, opts);
+}
+
 
 off_t PFile::GetLength() const
 {
@@ -333,6 +441,19 @@ BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
 {
   FlushStreams();
   return lseek(GetHandle(), pos, origin) == pos;
+}
+
+
+PINDEX PFile::GetInputAvailable()
+{
+  off_t left = GetLength() - GetPosition();
+  return left > P_MAX_INDEX ? P_MAX_INDEX : (PINDEX)left;
+}
+
+
+PINDEX PFile::GetOutputAvailable()
+{
+  return P_MAX_INDEX;
 }
 
 
@@ -376,156 +497,19 @@ BOOL PFile::Copy(const PString & oldname, const PString & newname)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextFileStreamBuffer PTextInFile PTextOutFile
+// PStructuredFile
 
-#if defined(_PTEXTFILEIO)
+#if defined(_PSTRUCTUREDFILE)
 
-PTextFileStreamBuffer::PTextFileStreamBuffer(PTextFile * textFile)
-  : file(PAssertNULL(textFile))
+BOOL PStructuredFile::Read(void * buffer)
 {
-  setb(buffer, &buffer[sizeof(buffer)-1]);
-  unbuffered(FALSE);
+  return PFile::Read(buffer, structureSize);
 }
+      
 
-
-int PTextFileStreamBuffer::overflow(int c)
+BOOL PStructuredFile::Write(void * buffer)
 {
-  int bufSize = out_waiting();
-  if (bufSize != 0) {
-    setp(pbase(), epptr());
-    if (!file->Write(pbase(), bufSize))
-      return EOF;
-  }
-
-  if (c != EOF)
-    if (!file->Write(&c, 1))
-      return EOF;
-
-  return 0;
-}
-
-
-int PTextFileStreamBuffer::underflow()
-{
-  if (gptr() != egptr())
-    return *gptr();
-
-  PINDEX toRead = egptr() - eback();
-  off_t left = file->GetLength() - file->GetPosition();
-  if (left >= toRead)
-    setg(eback(), eback(), egptr());
-  else
-    setg(eback(), egptr()-left, egptr());
-
-  return file->Read(gptr(), toRead) ? *gptr() : EOF;
-}
-
-
-int PTextFileStreamBuffer::sync()
-{
-  if (overflow() == EOF)
-    return EOF;
-
-  int inAvail = in_avail();
-  if (inAvail != 0) {
-    setg(eback(), eback(), egptr());
-    file->SetPosition(-inAvail, PFile::Current);
-  }
-
-  return 0;
-}
-
-
-streampos PTextFileStreamBuffer::seekoff(streamoff off, ios::seek_dir dir, int)
-{
-  sync();
-  file->SetPosition(off, (PFile::FilePositionOrigin)dir);
-  return file->GetPosition();
-}
-
-
-PTextInFile::PTextInFile()
-  : PTextFile()
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-
-PTextInFile::PTextInFile(const PString & name)
-  : PTextFile(name)
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-
-void PTextInFile::DestroyContents()
-{
-  PTextFile::DestroyContents();
-  delete rdbuf();
-  init(NULL);
-}
-
-void PTextInFile::CloneContents(const PTextInFile *)
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-void PTextInFile::CopyContents(const PTextInFile & c)
-{
-  init(c.rdbuf());
-  ((PTextFileStreamBuffer*)rdbuf())->file = this;
-}
-
-
-BOOL PTextInFile::FlushStreams()
-{
-  return rdbuf()->sync() != EOF;
-}
-
-
-PTextOutFile::PTextOutFile()
-  : PTextFile()
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-
-PTextOutFile::PTextOutFile(const PString & name)
-  : PTextFile(name)
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-
-PTextOutFile::PTextOutFile(const PString & name, int opts)
-  : PTextFile(name, WriteOnly, opts)
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-
-void PTextOutFile::DestroyContents()
-{
-  PTextFile::DestroyContents();
-  delete rdbuf();
-  init(NULL);
-}
-
-void PTextOutFile::CloneContents(const PTextOutFile *)
-{
-  init(new PTextFileStreamBuffer(this));
-}
-
-void PTextOutFile::CopyContents(const PTextOutFile & c)
-{
-  init(c.rdbuf());
-  ((PTextFileStreamBuffer*)rdbuf())->file = this;
-}
-
-
-BOOL PTextOutFile::FlushStreams()
-{
-  return rdbuf()->sync() != EOF;
+  return PFile::Write(buffer, structureSize);
 }
 
 
@@ -730,7 +714,7 @@ void PTextApplication::PreInitialise(int argc, char ** argv)
 
   arguments.SetArgs(argc-1, argv+1);
 
-  applicationFile = PFile(PString(argv[0]));
+  applicationFile = PString(argv[0]);
   applicationName = applicationFile.GetTitle().ToLower();
 }
 
