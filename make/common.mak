@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.43  2000/03/03 00:37:42  robertj
+# Fixed problem for when have GUI environment variable set, always builds GUI!
+#
 # Revision 1.42  2000/02/24 11:02:11  craigs
 # Fixed problems with PW make
 #
@@ -103,7 +106,7 @@
 ######################################################################
 
 ifndef OBJDIR
-ifneq   (,$(GUI))
+ifneq   (,$(GUI_TYPE))
 OBJDIR	=	./$(PW_OBJBASE)
 else
 OBJDIR	=	./$(PT_OBJBASE)
@@ -193,7 +196,7 @@ OBJS += $(OBJDIR)/buildnum.o
 endif
 
 TARGET_LIBS	= $(PW_LIBDIR)/$(PTLIB_FILE)
-ifneq (,$(GUI))
+ifneq (,$(GUI_TYPE))
 TARGET_LIBS	:= $(TARGET_LIBS) $(PW_LIBDIR)/$(PWLIB_FILE)
 endif
 
@@ -206,7 +209,7 @@ $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
 
 $(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI) debug
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI_TYPE) debug
 
 else
 
@@ -214,7 +217,7 @@ $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
 
 $(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI) opt
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI_TYPE) opt
 
 endif
 
@@ -395,7 +398,7 @@ endif
 #
 ######################################################################
 
-ifneq (,$(GUI))
+ifneq (,$(GUI_TYPE))
 ifdef RESOURCE
 
 $(RESOBJS) : $(RESCXX) $(RESCODE)
@@ -414,7 +417,7 @@ $(RESHDR): $(RESOURCE)
 $(RESOURCE) : $(PWRC)
 
 $(PWRC) :
-	$(MAKE) REALGUI=$(GUI) -C $(PWRC_DIR) opt
+	$(MAKE) REALGUI=$(GUI_TYPE) -C $(PWRC_DIR) opt
 
 endif
 endif

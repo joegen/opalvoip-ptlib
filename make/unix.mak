@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.62  2000/03/03 00:37:42  robertj
+# Fixed problem for when have GUI environment variable set, always builds GUI!
+#
 # Revision 1.61  2000/02/24 11:07:01  craigs
 # Fixed problem with making PW projects
 #
@@ -515,9 +518,9 @@ PT_OBJBASE	= obj_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PT_OBJDIR	= $(PW_LIBDIR)/$(PT_OBJBASE)
 
 # set name of the PW library (may not be used)
-PWLIB_BASE	= pw_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PWLIB_BASE	= pw_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PWLIB_FILE	= lib$(PWLIB_BASE)$(LIB_TYPE).$(LIB_SUFFIX)
-PW_OBJBASE	= obj_$(GUI)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
+PW_OBJBASE	= obj_$(GUI_TYPE)_$(PLATFORM_TYPE)_$(OBJ_SUFFIX)
 PW_OBJDIR	= $(PW_LIBDIR)/$(PW_OBJBASE)
 
 ###############################################################################
