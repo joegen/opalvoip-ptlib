@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.cxx,v $
+ * Revision 1.5  2004/02/15 03:59:20  rjongbloed
+ * Fixed the default number of buffer to be the value determined emprirically in
+ *    OpenH323, thanks Ted Szoczei
+ *
  * Revision 1.4  2003/12/29 03:29:26  csoutheren
  * Allowed access to Windows sound channel declaration, just in case it is required
  *
@@ -716,7 +720,7 @@ void PSoundChannelWin32::Construct()
 
   bufferByteOffset = P_MAX_INDEX;
 
-  SetBuffers(32768, 2);
+  SetBuffers(32768, 3);
 }
 
 
