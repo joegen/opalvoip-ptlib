@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.49  2002/09/29 16:19:28  rogerh
+ * if /dev/dsp does not exist, do not return it as the default audio device.
+ * Instead, return the first dsp device.
+ *
  * Revision 1.48  2002/09/29 15:56:49  rogerh
  * Revert back to checking for the /dev/soundcard directory to detect devfs.
  * If seems that the .devfsd file is not removed when devfs is not being used.
@@ -569,9 +573,18 @@ PStringArray PSoundChannel::GetDeviceNames(Directions /*dir*/)
 }
 
 
-PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
+PString PSoundChannel::GetDefaultDevice(Directions dir)
 {
-  return "/dev/dsp";
+  // Normally /dev/dsp points to the default sound device. If this is not
+  // present, probe /dev for sound devices and return the first detected device.
+  if (PFile::Exists("/dev/dsp")) {
+    return "/dev/dsp";
+  } else {
+    // return the first dsp device detected
+    PStringArray devicenames;
+    devicenames = PSoundChannel::GetDeviceNames(dir);
+    return devicenames[0];
+  }
 }
 
 BOOL PSoundChannel::Open(const PString & _device,
