@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.10  2002/01/27 00:07:10  craigs
+# Added rule to create asnparser.txt file
+#
 # Revision 1.9  2000/04/26 01:03:46  robertj
 # Removed tarfile creation target, this is done differently now.
 #
@@ -45,7 +48,7 @@ endif
 PROG		= asnparser
 SOURCES		= asn_grammar.cxx asn_lex.cxx main.cxx
 
-CLEAN_FILES	= asn_grammar.cxx asn_grammar.h asn_grammar.output asn_lex.cxx
+CLEAN_FILES	= asn_grammar.cxx asn_grammar.h asn_grammar.output asn_lex.cxx asnparser.txt
 
 
 include $(PWLIBDIR)/make/ptlib.mak
@@ -57,4 +60,7 @@ asn_grammar.cxx: asn_grammar.y
 
 asn_lex.cxx: asn_lex.l
 	flex -t $< > $@
+
+asnparser.txt:	asnparser.1
+		nroff -man $< | col -b > $@
 
