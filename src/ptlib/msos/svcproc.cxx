@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.cxx,v 1.18 1996/11/30 12:07:19 robertj Exp $
+ * $Id: svcproc.cxx,v 1.19 1996/12/05 11:53:49 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.19  1996/12/05 11:53:49  craigs
+ * Fixed failure to output PError to debug window if CRLF pairs used
+ *
  * Revision 1.18  1996/11/30 12:07:19  robertj
  * Changed service creation for NT so is auto-start,
  *
@@ -139,8 +142,9 @@ void PSystemLog::Output(Level level, const char * msg)
     if (msg[0] != '\0')
       *out << ": " << msg;
     if (level < Info && err != 0)
-      *out << " - error = " << err;
-    *out << endl;
+      *out << " - error = " << err << endl;
+    else if (msg[0] == '\0' || msg[strlen(msg)-1] != '\n')
+      *out << endl;
 
     if (process.debugWindow != NULL)
       process.DebugOutput(*(PStringStream*)out);
@@ -500,14 +504,15 @@ void PServiceProcess::DebugOutput(const char * out)
 
   SendMessage(debugWindow, EM_SETSEL, max, max);
   char * lf;
-  while ((lf = strchr(out, '\n')) != NULL) {
+  const char * prev = out;
+  while ((lf = strchr(prev, '\n')) != NULL) {
     if (*(lf-1) == '\r')
-      out = lf+1;
+      prev = lf+1;
     else {
       *lf++ = '\0';
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
       SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)"\r\n");
-      out = lf;
+      prev = out = lf;
     }
   }
   SendMessage(debugWindow, EM_REPLACESEL, FALSE, (DWORD)out);
