@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.14  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.13  2002/09/23 07:17:23  robertj
  * Changes to allow winsock2 to be included.
  *
@@ -71,78 +74,8 @@
  */
 
 
-#ifndef _PSOUND
-
-#pragma warning(disable:4201)
-
-#include <mmsystem.h>
-
-
-class PWaveFormat : public PObject
-{
-    PCLASSINFO(PWaveFormat, PObject)
-  public:
-    PWaveFormat();
-    ~PWaveFormat();
-    PWaveFormat(const PWaveFormat & fmt);
-    PWaveFormat & operator=(const PWaveFormat & fmt);
-
-    void PrintOn(ostream &) const;
-    void ReadFrom(istream &);
-
-    void SetFormat(unsigned numChannels, unsigned sampleRate, unsigned bitsPerSample);
-    void SetFormat(const void * data, PINDEX size);
-
-    BOOL           SetSize   (PINDEX sz);
-    PINDEX         GetSize   () const { return  size;       }
-    void         * GetPointer() const { return  waveFormat; }
-    WAVEFORMATEX * operator->() const { return  waveFormat; }
-    WAVEFORMATEX & operator *() const { return *waveFormat; }
-    operator   WAVEFORMATEX *() const { return  waveFormat; }
-
-  protected:
-    PINDEX         size;
-    WAVEFORMATEX * waveFormat;
-};
-
-
-class PSound;
-
-class PWaveBuffer : public PBYTEArray
-{
-  PCLASSINFO(PWaveBuffer, PBYTEArray);
-  private:
-    PWaveBuffer(PINDEX sz = 0);
-    ~PWaveBuffer();
-
-    PWaveBuffer & operator=(const PSound & sound);
-
-    DWORD Prepare(HWAVEOUT hWaveOut, PINDEX & count);
-    DWORD Prepare(HWAVEIN hWaveIn);
-    DWORD Release();
-
-    void PrepareCommon(PINDEX count);
-
-    HWAVEOUT hWaveOut;
-    HWAVEIN  hWaveIn;
-    WAVEHDR  header;
-
-  friend class PSoundChannel;
-};
-
-PARRAY(PWaveBufferArray, PWaveBuffer);
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
-
-#define _PSOUND_PLATFORM_INCLUDE
-#include "../../sound.h"
-
-#endif
-#ifdef _PSOUND_PLATFORM_INCLUDE
-#undef _PSOUND_PLATFORM_INCLUDE
 
   public:
     // Overrides from class PChannel
@@ -187,7 +120,6 @@ PARRAY(PWaveBufferArray, PWaveBuffer);
     BOOL OpenDevice(unsigned id);
 
 	BOOL GetDeviceID(const PString & device, Directions dir, unsigned& id);
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mail.h,v $
+ * Revision 1.12  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.11  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -64,34 +67,8 @@
  *
  */
 
-#ifndef _PMAIL
-
-#ifndef P_HAS_MAPI
-#define P_HAS_MAPI 1
-#endif
-
-#ifndef P_HAS_CMC
-#define P_HAS_CMC 1
-#endif
-
-#if P_HAS_MAPI
-#include <mapi.h>
-#endif
-
-#if P_HAS_CMC
-#include <xcmc.h>
-#endif
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PMail
-
-#define _PMAIL_PLATFORM_INCLUDE
-#include "../../mail.h"
-
-#endif
-#ifdef _PMAIL_PLATFORM_INCLUDE
-#undef _PMAIL_PLATFORM_INCLUDE
 
   protected:
     DWORD    sessionId;
@@ -201,9 +178,5 @@
     };
     MAPIDLL mapi;
 #endif
-
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

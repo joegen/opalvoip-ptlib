@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.22  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.21  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -459,7 +462,7 @@ class PPipeChannel : public PChannel
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/pipechan.h"
+#include "msos/ptlib/pipechan.h"
 #else
 #include "unix/ptlib/pipechan.h"
 #endif

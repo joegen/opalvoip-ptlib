@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.5  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.4  2001/09/10 02:51:23  robertj
  * Major change to fix problem with error codes being corrupted in a
  *   PChannel when have simultaneous reads and writes in threads.
@@ -43,20 +46,8 @@
  * Initial release. Required for PVideoChannel class.
  */
 
-#ifndef _PVIDEO
-
-#include <mmsystem.h>
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PVideo
-
-#define _PVIDEO_PLATFORM_INCLUDE
-#include "../../video.h"
-
-#endif
-#ifdef _PVIDEO_PLATFORM_INCLUDE
-#undef _PVIDEO_PLATFORM_INCLUDE
 
   public:
     // Overrides from class PChannel
@@ -70,8 +61,5 @@
   protected:
 
    static PMutex bufferMutex;
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

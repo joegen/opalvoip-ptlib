@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.11  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.10  2003/02/04 22:28:19  robertj
  * Fixed use of NETDB_SUCCESS symbol in WinCE, thanks Joerg Schoemer
  *
@@ -60,8 +63,6 @@
  * Initial revision
  *
  */
-
-#ifndef _PIPSOCKET
 
 #ifndef _WIN32_WCE
 
@@ -98,10 +99,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PIPSocket
 
-#include "../../ipsock.h"
-
-
-#endif
+// nothing to do
 
 
 // End Of File ///////////////////////////////////////////////////////////////

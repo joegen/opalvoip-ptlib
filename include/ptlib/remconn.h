@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.17  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.16  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -90,6 +93,10 @@
 
 #include <ptlib/pipechan.h>
 
+#ifdef _WIN32
+#include <ras.h>
+#include <raserror.h>
+#endif
 
 /** Remote Access Connection class.
 */
@@ -332,7 +339,7 @@ class PRemoteConnection : public PObject
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/remconn.h"
+#include "msos/ptlib/remconn.h"
 #else
 #include "unix/ptlib/remconn.h"
 #endif

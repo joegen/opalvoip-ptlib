@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: icmpsock.h,v $
+ * Revision 1.7  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -43,17 +46,8 @@
  *
  */
 
-#ifndef _PICMPSOCKET
-
 ///////////////////////////////////////////////////////////////////////////////
 // PICMPSocket
-
-#define _PICMPSOCKET_PLATFORM_INCLUDE
-#include "../../icmpsock.h"
-
-#endif
-#ifdef _PICMPSOCKET_PLATFORM_INCLUDE
-#undef _PICMPSOCKET_PLATFORM_INCLUDE
 
   public:
     BOOL Close();
@@ -61,8 +55,5 @@
 
   protected:
     HANDLE icmpHandle;
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

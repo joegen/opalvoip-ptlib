@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.9  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.8  2002/01/23 04:46:11  craigs
  * Added copy Constructors for PSemaphore, PMutex and PSyncPoint
  *
@@ -54,19 +57,9 @@
  *
  */
 
-#ifndef _PSEMAPHORE
-
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-#define _PSEMAPHORE_PLATFORM_INCLUDE
-#include "../../semaphor.h"
-
-#endif
-#ifdef _PSEMAPHORE_PLATFORM_INCLUDE
-#undef _PSEMAPHORE_PLATFORM_INCLUDE
-
-#if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return handle; }
     unsigned GetInitialVal() const  { return initialVal; }
@@ -77,9 +70,5 @@
     HANDLE handle;
     unsigned initialVal;
     unsigned maxCountVal;
-#endif
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

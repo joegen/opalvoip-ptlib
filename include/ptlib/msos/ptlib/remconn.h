@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.7  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.6  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -48,27 +51,13 @@
  *
  */
 
-#ifndef _PREMOTECONNECTION
-
-#include <ras.h>
-#include <raserror.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRemoteConnection
-
-#define _PREMOTECONNECTION_PLATFORM_INCLUDE
-#include "../../remconn.h"
-
-#endif
-#ifdef _PREMOTECONNECTION_PLATFORM_INCLUDE
-#undef _PREMOTECONNECTION_PLATFORM_INCLUDE
-
   private:
     // Win32 specific stuff
     HRASCONN rasConnection;
-
-#endif
 
 
 // End Of File ///////////////////////////////////////////////////////////////

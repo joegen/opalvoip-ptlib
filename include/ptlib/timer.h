@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timer.h,v $
+ * Revision 1.26  2003/09/17 05:41:59  csoutheren
+ * Removed recursive includes
+ *
  * Revision 1.25  2003/09/17 01:18:02  csoutheren
  * Removed recursive include file system and removed all references
  * to deprecated coooperative threading support
@@ -356,7 +359,7 @@ class PTimer : public PTimeInterval
 
 // Include platform dependent part of class
 #ifdef _WIN32
-#include "win32/ptlib/timer.h"
+#include "msos/ptlib/timer.h"
 #else
 #include "unix/ptlib/timer.h"
 #endif
