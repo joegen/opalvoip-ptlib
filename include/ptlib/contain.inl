@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.35 1996/02/08 11:47:57 robertj Exp $
+ * $Id: contain.inl,v 1.36 1996/07/15 10:32:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
+ * Revision 1.36  1996/07/15 10:32:49  robertj
+ * Fixed bug in sorted list (crash on remove).
+ *
  * Revision 1.35  1996/02/08 11:47:57  robertj
  * Moved Contains function from PSet to PHashTable so available for dictionaries.
  * Added caseless compare operator and spaced concatenation operator.
@@ -355,6 +358,9 @@ PINLINE void PAbstractSortedList::Element::MakeRed()
 
 PINLINE BOOL PAbstractSortedList::Element::IsBlack()
   { return colour == Black; }
+
+PINLINE BOOL PAbstractSortedList::Element::IsRed()
+  { return colour != Black; }
 
 PINLINE BOOL PAbstractSortedList::Element::IsLeftBlack()
   { return left == NULL || left->colour == Black; }
