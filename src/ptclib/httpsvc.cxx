@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.15 1997/03/02 03:40:59 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.16 1997/05/16 12:07:21 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.16  1997/05/16 12:07:21  robertj
+ * Added operating system and version to hidden fields on registration form.
+ *
  * Revision 1.15  1997/03/02 03:40:59  robertj
  * Added error logging to standard HTTP Service HTTP Server.
  *
@@ -509,7 +512,9 @@ PString POrderPage::LoadText(PHTTPRequest &)
        << "If you would like to send your credit card details by email, "
           "please fill out the form below:";
 
-  html << PHTML::HiddenField("product", process.GetName());
+  html << PHTML::HiddenField("product", process.GetName())
+	   << PHTML::HiddenField("os", process.GetOSClass() & process.GetOSName())
+	   << PHTML::HiddenField("version", process.GetVersion(TRUE));
 
   PString reginfo;
   DigestSecuredKeys(process, reginfo, &html);
