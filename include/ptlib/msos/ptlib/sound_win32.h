@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound_win32.h,v $
+ * Revision 1.2.4.1  2004/07/04 02:02:41  csoutheren
+ * Jumbo update patch for Janus to back-port several important changes
+ * from the development tree. See ChangeLog.txt for details
+ * Thanks to Michal Zygmuntowicz
+ *
  * Revision 1.2  2003/12/29 03:28:56  csoutheren
  * Allowed access to Windows sound channel declaration, just in case it is required
  *
@@ -143,6 +148,9 @@ class PSoundChannelWin32: public PSoundChannel
     BOOL GetVolume(unsigned &devVol);
 
   public:
+    BOOL IsRecordBufferDone();
+	BOOL WaitForRecordBufferDone();
+	
     // Overrides from class PChannel
     virtual PString GetName() const;
       // Return the name of the channel.
