@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.94  1999/08/08 09:04:01  robertj
+ * Added operator>> for PIPSocket::Address class.
+ *
  * Revision 1.93  1999/07/11 13:42:13  craigs
  * pthreads support for Linux
  *
@@ -1362,6 +1365,19 @@ BYTE PIPSocket::Address::operator[](PINDEX idx) const
 ostream & operator<<(ostream & s, const PIPSocket::Address & a)
 {
   return s << inet_ntoa(a);
+}
+
+
+istream & operator>>(istream & s, PIPSocket::Address & a)
+{
+  char dot1, dot2, dot3;
+  unsigned b1, b2, b3, b4;
+  s >> b1 >> dot1 >> b2 >> dot2 >> b3 >> dot3 >> b4;
+  if (!s && (dot1 != '.' || dot2 != '.' || dot3 != '.'))
+    s.clear(ios::failbit);
+
+  a = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
+  return s;
 }
 
 
