@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.25  2001/12/13 09:13:28  robertj
+ * Added function get get oid as a string.
+ * Added functions to compare oid to PString.
+ *
  * Revision 1.24  2001/09/14 01:59:59  robertj
  * Fixed problem with incorrectly initialised PASN_Choice sub-object.
  *
@@ -411,12 +415,15 @@ class PASN_ObjectId : public PASN_Object
     void SetValue(const PString & dotstr);
 
     BOOL operator==(const char * dotstr) const;
-    BOOL operator!=(const char * dotstr) const { return !operator==(dotstr); }
+    BOOL operator!=(const char * dotstr) const      { return !operator==(dotstr); }
+    BOOL operator==(const PString & dotstr) const   { return  operator==((const char *)dotstr); }
+    BOOL operator!=(const PString & dotstr) const   { return !operator==((const char *)dotstr); }
     BOOL operator==(const PASN_ObjectId & id) const { return value == id.value; }
 
     PINDEX GetSize() const { return value.GetSize(); }
-    const PUnsignedArray & GetValue() const { return value; }
     unsigned operator[](PINDEX idx) const { return value[idx]; }
+    const PUnsignedArray & GetValue() const { return value; }
+    PString AsString() const;
 
     virtual Comparison Compare(const PObject & obj) const;
     virtual PObject * Clone() const;
