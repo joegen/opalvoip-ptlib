@@ -308,7 +308,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS PWLIBDIR INSTALLPREFIX PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE SHAREDLIBEXT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP HAS_OPENSSL TRY_1394DC TRY_1394AVC HAS_OPENLDAP HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS PWLIBDIR INSTALLPREFIX PWLIB_VERSION build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os MACHTYPE OSTYPE OSRELEASE SHAREDLIBEXT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP EGREP TRY_1394DC TRY_1394AVC HAS_OPENLDAP HAS_OPENSSL HAS_EXPAT HAS_SDL STDCCFLAGS OPTSTDCCFLAGS ENDLDLIBS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -2644,8 +2644,6 @@ if test $GCSECTIONS = 1; then
   LDFLAGS="$LDFLAGS -Wl,--gc-sections"
 fi
 
-
-
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3117,340 +3115,6 @@ _ACEOF
 fi
 
 done
-
-
-if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
-  echo "$as_me:$LINENO: checking for openssl/ssl.h" >&5
-echo $ECHO_N "checking for openssl/ssl.h... $ECHO_C" >&6
-if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-fi
-echo "$as_me:$LINENO: result: $ac_cv_header_openssl_ssl_h" >&5
-echo "${ECHO_T}$ac_cv_header_openssl_ssl_h" >&6
-else
-  # Is the header compilable?
-echo "$as_me:$LINENO: checking openssl/ssl.h usability" >&5
-echo $ECHO_N "checking openssl/ssl.h usability... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-$ac_includes_default
-#include <openssl/ssl.h>
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_header_compiler=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-ac_header_compiler=no
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
-echo "${ECHO_T}$ac_header_compiler" >&6
-
-# Is the header present?
-echo "$as_me:$LINENO: checking openssl/ssl.h presence" >&5
-echo $ECHO_N "checking openssl/ssl.h presence... $ECHO_C" >&6
-cat >conftest.$ac_ext <<_ACEOF
-#line $LINENO "configure"
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <openssl/ssl.h>
-_ACEOF
-if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
-  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
-  ac_status=$?
-  grep -v '^ *+' conftest.er1 >conftest.err
-  rm -f conftest.er1
-  cat conftest.err >&5
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } >/dev/null; then
-  if test -s conftest.err; then
-    ac_cpp_err=$ac_c_preproc_warn_flag
-  else
-    ac_cpp_err=
-  fi
-else
-  ac_cpp_err=yes
-fi
-if test -z "$ac_cpp_err"; then
-  ac_header_preproc=yes
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-  ac_header_preproc=no
-fi
-rm -f conftest.err conftest.$ac_ext
-echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
-echo "${ECHO_T}$ac_header_preproc" >&6
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc in
-  yes:no )
-    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: accepted by the compiler, rejected by the preprocessor!" >&5
-echo "$as_me: WARNING: openssl/ssl.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&2;}
-    (
-      cat <<\_ASBOX
-## ------------------------------------ ##
-## Report this to bug-autoconf@gnu.org. ##
-## ------------------------------------ ##
-_ASBOX
-    ) |
-      sed "s/^/$as_me: WARNING:     /" >&2
-    ;;
-  no:yes )
-    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: present but cannot be compiled" >&5
-echo "$as_me: WARNING: openssl/ssl.h: present but cannot be compiled" >&2;}
-    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: check for missing prerequisite headers?" >&5
-echo "$as_me: WARNING: openssl/ssl.h: check for missing prerequisite headers?" >&2;}
-    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&5
-echo "$as_me: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&2;}
-    (
-      cat <<\_ASBOX
-## ------------------------------------ ##
-## Report this to bug-autoconf@gnu.org. ##
-## ------------------------------------ ##
-_ASBOX
-    ) |
-      sed "s/^/$as_me: WARNING:     /" >&2
-    ;;
-esac
-echo "$as_me:$LINENO: checking for openssl/ssl.h" >&5
-echo $ECHO_N "checking for openssl/ssl.h... $ECHO_C" >&6
-if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  ac_cv_header_openssl_ssl_h=$ac_header_preproc
-fi
-echo "$as_me:$LINENO: result: $ac_cv_header_openssl_ssl_h" >&5
-echo "${ECHO_T}$ac_cv_header_openssl_ssl_h" >&6
-
-fi
-if test $ac_cv_header_openssl_ssl_h = yes; then
-  SSLHDR=1
-fi
-
-
-
-if test ${OPENSSLDIR:-unset} != "unset" ; then
-  echo "Using ${OPENSSLDIR} for SSL"
-  HAVE_LIBSSL=1
-  SSLINCLUDEDIR="${OPENSSLDIR}/include"
-  SSLLIBDIR="${OPENSSLDIR}/lib"
-
-else
-
-
-  if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if openssl/ssl.h works with OPENSSL_NO_KRB5... "
-    cat >conftest.$ac_ext <<_ACEOF
-#define OPENSSL_NO_KRB5
-#include <openssl/ssl.h>
-int main(int argc,char **argv){}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  SSLHDR=1
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-    if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
-      SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-    else
-      echo "no"
-    fi
-  fi
-
-      if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works... "
-    cat >conftest.$ac_ext <<_ACEOF
-#include "/usr/local/openssl/include/openssl/ssl.h"
-int main(int argc,char **argv){}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  SSLHDR=1
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-    if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
-      SSLCCFLAGS=""
-      SSLINCLUDEDIR="/usr/local/openssl/include"
-      SSLLIBDIR="/usr/local/openssl/lib"
-    else
-      echo "no"
-      echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
-      cat >conftest.$ac_ext <<_ACEOF
-#define OPENSSL_NO_KRB5
-#include "/usr/local/openssl/include/openssl/ssl.h>
-int main(int argc,char **argv){}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  SSLHDR=1
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-      if test ${SSLHDR:-unset} != "unset" ; then
-        echo "yes"
-        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        SSLINCLUDEDIR="/usr/local/openssl/include"
-        SSLLIBDIR="/usr/local/openssl/lib"
-      else
-        echo "no"
-      fi
-    fi
-  fi
-
-      if test "${SSLHDR:-unset}" = "unset" ; then
-    echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works... "
-    cat >conftest.$ac_ext <<_ACEOF
-#include "/usr/local/ssl/include/openssl/ssl.h"
-int main(int argc,char **argv){}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  SSLHDR=1
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-    if test ${SSLHDR:-unset} != "unset" ; then
-      echo "yes"
-      SSLCCFLAGS=""
-      SSLINCLUDEDIR="/usr/local/ssl/include"
-      SSLLIBDIR="/usr/local/ssl/lib"
-    else
-      echo "no"
-      echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
-      cat >conftest.$ac_ext <<_ACEOF
-#define OPENSSL_NO_KRB5
-#include "/usr/local/ssl/include/openssl/ssl.h>
-int main(int argc,char **argv){}
-_ACEOF
-rm -f conftest.$ac_objext
-if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } &&
-         { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  SSLHDR=1
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-fi
-rm -f conftest.$ac_objext conftest.$ac_ext
-      if test ${SSLHDR:-unset} != "unset" ; then
-        echo "yes"
-        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
-        SSLINCLUDEDIR="/usr/local/ssl/include"
-        SSLLIBDIR="/usr/local/ssl/lib"
-      else
-        echo "no"
-      fi
-    fi
-  fi
-fi
-
-if test ${SSLHDR:-unset} != "unset" ; then
-  HAS_OPENSSL=1
-
-
-cat >>confdefs.h <<\_ACEOF
-#define P_SSL 1
-_ACEOF
-
-  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
-    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
-  fi
-  if test ${SSLLIBDIR:-unset} != "unset" ; then
-    LDFLAGS="$LDFLAGS $STDCCFLAGS -L${SSLLIBDIR}"
-  fi
-  STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
-  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
-fi
 
 
 if test "${ac_cv_header_libdc1394_dc1394_control_h+set}" = set; then
@@ -4369,6 +4033,340 @@ _ACEOF
   ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
 fi
 
+
+
+if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
+  echo "$as_me:$LINENO: checking for openssl/ssl.h" >&5
+echo $ECHO_N "checking for openssl/ssl.h... $ECHO_C" >&6
+if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_openssl_ssl_h" >&5
+echo "${ECHO_T}$ac_cv_header_openssl_ssl_h" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking openssl/ssl.h usability" >&5
+echo $ECHO_N "checking openssl/ssl.h usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <openssl/ssl.h>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking openssl/ssl.h presence" >&5
+echo $ECHO_N "checking openssl/ssl.h presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <openssl/ssl.h>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc in
+  yes:no )
+    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: openssl/ssl.h: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------ ##
+## Report this to bug-autoconf@gnu.org. ##
+## ------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+  no:yes )
+    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: present but cannot be compiled" >&5
+echo "$as_me: WARNING: openssl/ssl.h: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: openssl/ssl.h: check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: openssl/ssl.h: proceeding with the preprocessor's result" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------ ##
+## Report this to bug-autoconf@gnu.org. ##
+## ------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for openssl/ssl.h" >&5
+echo $ECHO_N "checking for openssl/ssl.h... $ECHO_C" >&6
+if test "${ac_cv_header_openssl_ssl_h+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  ac_cv_header_openssl_ssl_h=$ac_header_preproc
+fi
+echo "$as_me:$LINENO: result: $ac_cv_header_openssl_ssl_h" >&5
+echo "${ECHO_T}$ac_cv_header_openssl_ssl_h" >&6
+
+fi
+if test $ac_cv_header_openssl_ssl_h = yes; then
+  SSLHDR=1
+fi
+
+
+
+if test ${OPENSSLDIR:-unset} != "unset" ; then
+  echo "Using ${OPENSSLDIR} for SSL"
+  HAVE_LIBSSL=1
+  SSLINCLUDEDIR="${OPENSSLDIR}/include"
+  SSLLIBDIR="${OPENSSLDIR}/lib"
+
+else
+
+
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if openssl/ssl.h works with OPENSSL_NO_KRB5... "
+    cat >conftest.$ac_ext <<_ACEOF
+#define OPENSSL_NO_KRB5
+#include <openssl/ssl.h>
+int main(int argc,char **argv){}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  SSLHDR=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+    else
+      echo "no"
+    fi
+  fi
+
+      if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works... "
+    cat >conftest.$ac_ext <<_ACEOF
+#include "/usr/local/openssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  SSLHDR=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/openssl/include"
+      SSLLIBDIR="/usr/local/openssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      cat >conftest.$ac_ext <<_ACEOF
+#define OPENSSL_NO_KRB5
+#include "/usr/local/openssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  SSLHDR=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/openssl/include"
+        SSLLIBDIR="/usr/local/openssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+
+      if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works... "
+    cat >conftest.$ac_ext <<_ACEOF
+#include "/usr/local/ssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  SSLHDR=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/ssl/include"
+      SSLLIBDIR="/usr/local/ssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      cat >conftest.$ac_ext <<_ACEOF
+#define OPENSSL_NO_KRB5
+#include "/usr/local/ssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+         { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  SSLHDR=1
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+fi
+rm -f conftest.$ac_objext conftest.$ac_ext
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/ssl/include"
+        SSLLIBDIR="/usr/local/ssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+fi
+
+if test ${SSLHDR:-unset} != "unset" ; then
+  HAS_OPENSSL=1
+
+
+cat >>confdefs.h <<\_ACEOF
+#define P_SSL 1
+_ACEOF
+
+  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+  fi
+  if test ${SSLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$LDFLAGS $STDCCFLAGS -L${SSLLIBDIR}"
+  fi
+  STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
+  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
+fi
 
 
 
@@ -6493,10 +6491,10 @@ s,@EXEEXT@,$EXEEXT,;t t
 s,@OBJEXT@,$OBJEXT,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
-s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@TRY_1394DC@,$TRY_1394DC,;t t
 s,@TRY_1394AVC@,$TRY_1394AVC,;t t
 s,@HAS_OPENLDAP@,$HAS_OPENLDAP,;t t
+s,@HAS_OPENSSL@,$HAS_OPENSSL,;t t
 s,@HAS_EXPAT@,$HAS_EXPAT,;t t
 s,@HAS_SDL@,$HAS_SDL,;t t
 s,@STDCCFLAGS@,$STDCCFLAGS,;t t
