@@ -354,6 +354,17 @@ BOOL PVideoInput1394AvcDevice::GetFrameSizeLimits(unsigned & minWidth,
   return TRUE;
 }
 
+BOOL PVideoInput1394AvcDevice::GetFrame(PBYTEArray & frame)
+{
+  PINDEX returned;
+  if (!GetFrameData(frame.GetPointer(GetMaxFrameBytes()), &returned))
+    return FALSE;
+
+  frame.SetSize(returned);
+  return TRUE;
+}
+
+
 PINDEX PVideoInput1394AvcDevice::GetMaxFrameBytes()
 {
   
