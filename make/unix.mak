@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.191  2004/08/31 23:52:31  csoutheren
+# Changed check for Mac OS version, thanks to Hannes Friederich
+#
 # Revision 1.190  2004/06/18 00:38:08  csoutheren
 # Added check for FD_SETSIZE as suggested by Joegen E. Baclor
 #
@@ -603,7 +606,7 @@ ifeq ($(OSTYPE),Darwin)
 
 CFLAGS		+= -fno-common -dynamic
 LDFLAGS		+= -multiply_defined suppress
-ifeq ($(OSRELEASE), 700)
+ifeq ($(OSRELEASE), 750)
 ENDLDLIBS	+= -lresolv
 endif
 ENDLDLIBS	+= -framework AudioToolbox -framework CoreAudio
