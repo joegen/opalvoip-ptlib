@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.44  2000/03/20 22:43:09  craigs
+# Added totally new mechanism for detecting GUI
+#
 # Revision 1.43  2000/03/03 00:37:42  robertj
 # Fixed problem for when have GUI environment variable set, always builds GUI!
 #
@@ -209,7 +212,7 @@ $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix debug
 
 $(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI_TYPE) debug
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) debug
 
 else
 
@@ -217,7 +220,7 @@ $(PW_LIBDIR)/$(PTLIB_FILE):
 	$(MAKE) -C $(PWLIBDIR)/src/ptlib/unix opt
 
 $(PW_LIBDIR)/$(PWLIB_FILE):
-	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(GUI_TYPE) opt
+	$(MAKE) -C $(PWLIBDIR)/src/pwlib/$(PWLIB_GUI) opt
 
 endif
 
@@ -417,7 +420,7 @@ $(RESHDR): $(RESOURCE)
 $(RESOURCE) : $(PWRC)
 
 $(PWRC) :
-	$(MAKE) REALGUI=$(GUI_TYPE) -C $(PWRC_DIR) opt
+	$(MAKE) REALGUI=$(PWLIB_GUI) -C $(PWRC_DIR) opt
 
 endif
 endif
