@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.28  1998/03/26 05:01:12  robertj
+ * Added PMutex and PSyncPoint classes.
+ *
  * Revision 1.27  1998/01/04 08:09:23  craigs
  * Added support for PThreads through use of reentrant system calls
  *
@@ -83,6 +86,8 @@
 #pragma implementation "pprocess.h"
 #pragma implementation "thread.h"
 #pragma implementation "semaphor.h"
+#pragma implementation "mutex.h"
+#pragma implementation "syncpoint.h"
 
 #include "ptlib.h"
 
