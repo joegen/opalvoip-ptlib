@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.56  2003/10/27 08:01:52  csoutheren
+ * Removed use of GetAddressByName when using Winsock2
+ *
  * Revision 1.55  2003/10/27 03:29:11  csoutheren
  * Added support for QoS
  *    Thanks to Henry Harrison of AliceStreet
@@ -855,6 +858,9 @@ static void AssignAddress(PIPXSocket::Address & addr, const sockaddr_ipx & sip)
 
 BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
+#ifdef P_HAS_QOS
+  return FALSE;
+#else
   addr = hostname;
   if (addr.IsValid())
     return TRUE;
@@ -878,6 +884,7 @@ BOOL PIPXSocket::GetHostAddress(const PString & hostname, Address & addr)
 
   AssignAddress(addr, *(sockaddr_ipx *)addr_info[0].RemoteAddr.lpSockaddr);
   return TRUE;
+#endif
 }
 
 
