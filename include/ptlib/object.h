@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.43  1999/03/09 10:30:17  robertj
+ * Fixed ability to have PMEMORY_CHECK on/off on both debug/release versions.
+ *
  * Revision 1.42  1999/03/09 02:59:50  robertj
  * Changed comments to doc++ compatible documentation.
  *
@@ -411,8 +414,15 @@ output operators. The output is only made if the trace level set by the
 
 #endif
 
+#ifndef PMEMORY_CHECK
+#ifdef _DEBUG
+#define PMEMORY_CHECK 1
+#else
+#define PMEMORY_CHECK 0
+#endif
+#endif
 
-#ifdef PMEMORY_CHECK
+#if PMEMORY_CHECK
 
 /** Memory heap chacking class.
 This class implements the memory heap checking and validation functions. It
