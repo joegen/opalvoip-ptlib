@@ -520,9 +520,10 @@ LONG RegEnumKey(HKEY hKey, DWORD dwIndex, LPTSTR ptcsName, DWORD cbName)
 LONG RegDeleteKey( HKEY hKey, const char* lpSubKey )
 { USES_CONVERSION; return RegDeleteKey( hKey, A2T(lpSubKey) ); }
 
-LONG RegEnumValue( HKEY hKey, DWORD dwIndex, const char* lpValueName, LPDWORD lpcbValueName, 
+LONG RegEnumValue( HKEY hKey, DWORD dwIndex, LPTSTR ptcsValueName, LPDWORD lpcbValueName, 
 	LPDWORD lpReserved, LPDWORD lpType, LPBYTE lpData, LPDWORD lpcbData )
-{ USES_CONVERSION; return RegEnumValue( hKey, dwIndex, A2T(lpValueName), lpcbValueName, 
+{ 
+	return RegEnumValue( hKey, dwIndex, ptcsValueName, lpcbValueName, 
 	lpReserved, lpType, lpData, lpcbData );
 }
 
