@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.32  2001/06/04 10:13:08  robertj
+ * Added compare function to compare value of os_handle.
+ * Added has function based on os_handle value.
+ *
  * Revision 1.31  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -211,6 +215,37 @@ class PChannel : public PObject, public iostream {
 
       /// Close down the channel.
     ~PChannel();
+  //@}
+
+  /**@name Overrides from class PObject */
+  //@{
+    /**Get the relative rank of the two strings. The system standard function,
+       eg strcmp(), is used.
+
+       @return
+       comparison of the two objects, #EqualTo# for same,
+       #LessThan# for #obj# logically less than the
+       object and #GreaterThan# for #obj# logically
+       greater than the object.
+     */
+    virtual Comparison Compare(
+      const PObject & obj   /// Other PString to compare against.
+    ) const;
+
+    /**Calculate a hash value for use in sets and dictionaries.
+    
+       The hash function for strings will produce a value based on the sum of
+       the first three characters of the string. This is a fairly basic
+       function and make no assumptions about the string contents. A user may
+       descend from PString and override the hash function if they can take
+       advantage of the types of strings being used, eg if all strings start
+       with the letter 'A' followed by 'B or 'C' then the current hash function
+       will not perform very well.
+
+       @return
+       hash value for string.
+     */
+    virtual PINDEX HashFunction() const;
   //@}
 
   /**@name Information functions */
