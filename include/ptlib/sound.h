@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.26  2003/11/12 05:18:04  csoutheren
+ * Added more backwards compatibility functions for PSoundChannel
+ *
  * Revision 1.25  2003/11/12 04:33:32  csoutheren
  * Fixed problem with static linking of sound plugins
  * Fixed problem with Windows sound driver
@@ -370,6 +373,18 @@ class PSoundChannel : public PChannel
        A platform dependent string for the sound player/recorder.
      */
     static PString GetDefaultDevice(
+      Directions dir    // Sound I/O direction
+    );
+
+    /**Get the list of all devices name for the default sound devices/driver that is on this
+       platform. Note that a named device may not necessarily do both
+       playing and recording so the arrays returned with the #dir#
+       parameter in each value is not necessarily the same.
+
+       @return
+       A platform dependent string for the sound player/recorder.
+     */
+    static PStringList GetDeviceNames(
       Directions dir    // Sound I/O direction
     );
 
