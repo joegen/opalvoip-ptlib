@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.inl,v 1.6 1994/08/22 00:18:02 robertj Exp $
+ * $Id: ptlib.inl,v 1.7 1994/10/23 05:38:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993, Equivalence
  *
  * $Log: ptlib.inl,v $
- * Revision 1.6  1994/08/22 00:18:02  robertj
+ * Revision 1.7  1994/10/23 05:38:57  robertj
+ * PipeChannel implementation.
+ * Added directory exists function.
+ *
+ * Revision 1.6  1994/08/22  00:18:02  robertj
  * Renamed CheckBlock() to IsNoLongerBlocked()
  *
  * Revision 1.5  1994/07/27  06:00:10  robertj
@@ -55,6 +59,9 @@ PINLINE unsigned PTimer::Resolution()
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
+PINLINE BOOL PDirectory::Exists(const PString & p)
+  { return _access(p+".", 0) == 0; }
+
 PINLINE BOOL PDirectory::Create(const PString & p, int)
   { return mkdir(p) == 0; }
 
@@ -92,11 +99,12 @@ PINLINE PString PFilePath::GetFileName() const
 PINLINE BOOL PFile::Exists(const PString & name)
   { return _access(name, 0) == 0; }
 
-PINLINE BOOL PFile::Remove(const PString & name)
-  { return unlink(name) == 0; }
 
-PINLINE BOOL PFile::Rename(const PString & oldname, const PString & newname)
-  { return rename(oldname, newname) == 0; }
+///////////////////////////////////////////////////////////////////////////////
+// PPipeChannel
+
+PINLINE BOOL PPipeChannel::CanReadAndWrite()
+  { return FALSE; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
