@@ -1596,7 +1596,6 @@ EXPORTS
     ?HandleError@PVideoInputDevice@@IAEJHPBD@Z @2448 NONAME ;protected: long __thiscall PVideoInputDevice::HandleError(int,char const *)
     ?HandleVideo@PVideoInputDevice@@IAEJPAUvideohdr_tag@@@Z @2449 NONAME ;protected: long __thiscall PVideoInputDevice::HandleVideo(struct videohdr_tag *)
     ?HasAged@PIPCacheData@@QBEHXZ @1181 NONAME ;public: int __thiscall PIPCacheData::HasAged(void)const 
-    ?HashFunction@PCaselessString@@UBEHXZ @2894 NONAME ;public: virtual int __thiscall PCaselessString::HashFunction(void)const 
     ?HashFunction@PIPCacheKey@@UBEHXZ @1182 NONAME ;public: virtual int __thiscall PIPCacheKey::HashFunction(void)const 
     ?HashFunction@PObject@@UBEHXZ @1183 NONAME ;public: virtual int __thiscall PObject::HashFunction(void)const 
     ?HashFunction@POrdinalKey@@UBEHXZ @1184 NONAME ;public: virtual int __thiscall POrdinalKey::HashFunction(void)const 
