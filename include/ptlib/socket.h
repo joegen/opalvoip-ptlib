@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.5 1994/08/23 11:32:52 robertj Exp $
+ * $Id: socket.h,v 1.6 1995/01/02 12:16:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
- * Revision 1.5  1994/08/23 11:32:52  robertj
+ * Revision 1.6  1995/01/02 12:16:17  robertj
+ * Moved constructor to platform dependent code.
+ *
+ * Revision 1.5  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.4  1994/08/22  00:46:48  robertj
@@ -36,9 +39,6 @@
 
 PDECLARE_CLASS(PSocket, PChannel)
   public:
-    PSocket();
-      // create an unattached socket
-
     virtual BOOL Open (const PString & address, WORD portnum);
       // connect to another host 
 
