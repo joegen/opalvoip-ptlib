@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.29  1998/10/15 01:53:35  robertj
+ * GNU compatibility.
+ *
  * Revision 1.28  1998/10/13 14:06:26  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -162,6 +165,18 @@ void PAssertFunc(const char * file, int line, PStandardAssertMessage msg)
 #undef realloc
 #undef free
 
+void * operator new(size_t nSize)
+{
+  return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
+}
+
+
+void operator delete(void * ptr)
+{
+  PMemoryHeap::Deallocate(ptr, NULL);
+}
+
+
 #if defined(_WIN32)
 class PDebugStream : public ostream {
   public:
@@ -195,13 +210,17 @@ PMemoryHeap::Wrapper::Wrapper()
   // guarentee that a static global is contructed before it is used.
   static PMemoryHeap real_instance;
   instance = &real_instance;
+#if defined(_WIN32)
   EnterCriticalSection(&instance->mutex);
+#endif
 }
 
 
 PMemoryHeap::Wrapper::~Wrapper()
 {
+#if defined(_WIN32)
   LeaveCriticalSection(&instance->mutex);
+#endif
 }
 
 
