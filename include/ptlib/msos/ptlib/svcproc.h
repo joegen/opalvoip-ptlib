@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.1 1995/06/17 00:50:54 robertj Exp $
+ * $Id: svcproc.h,v 1.2 1995/07/02 01:23:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.2  1995/07/02 01:23:27  robertj
+ * Set up service process to be in subthread not main thread.
+ *
  * Revision 1.1  1995/06/17 00:50:54  robertj
  * Initial revision
  *
@@ -90,25 +93,41 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
     SERVICE_STATUS        status;
     SERVICE_STATUS_HANDLE statusHandle;
+    HANDLE                terminationEvent;
 
 
   private:
-    static void __stdcall MainEntry(DWORD argc, LPTSTR * argv);
-    /* This function takes care of actually starting the service, informing the
-       service controller at each step along the way. After launching the worker
-       thread, it waits on the event that the worker thread will signal at its
-       termination.
+    void BeginService();
+    /* Internal function function that takes care of actually starting the
+       service, informing the service controller at each step along the way.
+       After launching the worker thread, it waits on the event that the worker
+       thread will signal at its termination.
+
+       The user should never call this function.
     */
 
-    void BoundMainEntry();
-    /* Internal function called directly from <CODE>MainEntry()</CODE>. The
-       user should never call this function.
-     */
+    static void __stdcall MainEntry(DWORD argc, LPTSTR * argv);
+    /* Internal function called from the Service Manager. This simply calls the
+       <A>MainEntry()</A> function on the PServiceProcess instance.
+
+       The user should never call this function.
+    */
+
+    static DWORD EXPORTED ThreadEntry(LPVOID);
+    /* Internal function called to begin the work of the service process. This
+       essentially just calls the <A>Main()</A> function on the
+       PServiceProcess instance.
+
+       The user should never call this function.
+    */
 
     static void __stdcall ControlEntry(DWORD code);
     /* This function is called by the Service Controller whenever someone calls
        ControlService in reference to our service.
      */
+
+    void ProcessCommand(const char * cmd);
+    // Process command line argument for controlling the service.
 };
 
 
