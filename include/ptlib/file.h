@@ -1,5 +1,5 @@
 /*
- * $Id: file.h,v 1.6 1993/08/21 04:40:19 robertj Exp $
+ * $Id: file.h,v 1.7 1993/08/27 18:17:47 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: file.h,v $
- * Revision 1.6  1993/08/21 04:40:19  robertj
+ * Revision 1.7  1993/08/27 18:17:47  robertj
+ * Moved code from MS-DOS platform to common files.
+ *
+ * Revision 1.6  1993/08/21  04:40:19  robertj
  * Added Copy() function.
  *
  * Revision 1.5  1993/08/21  01:50:33  robertj
@@ -185,10 +188,19 @@ DECLARE_CLASS(PFile, PContainer)
     void Construct();
       // Common construction code.
 
+    // New member functions for class
+    int GetHandle() const;
+    
 
     // Member variables
     PString fullname;
       // The fully qualified path name for the file.
       
+    int os_handle;
+      // The operating system file handle return by standard open() function.
+
+    int os_errno;
+      // The oeprating system error number as returned by errno.
+
 
 // Class declaration continued in platform specific header file ///////////////
