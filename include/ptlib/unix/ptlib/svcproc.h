@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.14  2002/04/17 03:31:48  robertj
+ * Renamed system log file member variable to be common with Windows version.
+ *
  * Revision 1.13  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -90,7 +93,7 @@
     void _PXShowSystemWarning(PINDEX num, const PString & str);
     void PXOnSignal(int);
     void PXOnAsyncSignal(int);
-    PString systemLogFile;
+    PString systemLogFileName;
     PString pidFileToRemove;
     BOOL isTerminating;
 
