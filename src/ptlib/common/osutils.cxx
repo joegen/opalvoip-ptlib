@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.119  1999/03/01 13:51:30  craigs
+ * Fixed ugly little bug in the cooperative multithreading that meant that threads blocked
+ * on timers didn't always get rescheduled.
+ *
  * Revision 1.118  1999/02/23 10:13:31  robertj
  * Changed trace to only diplay filename and not whole path.
  *
@@ -696,7 +700,7 @@ PTimeInterval PTimerList::Process()
 
   for (i = 0; i < GetSize(); i++)
     if ((*this)[i].Process(sampleTime, minTimeLeft))
-      timeouts.Append(RemoveAt(i));
+      timeouts.Append(RemoveAt(i--));
   mutex.Signal();
 
   for (i = 0; i < timeouts.GetSize(); i++)
@@ -1345,8 +1349,8 @@ void PThread::Yield()
             if (thread->IsSuspended())
               thread->status = Suspended;
             else {
+              thread->status = Running;
               next = thread;
-              next->status = Running;
             }
           }
           break;
