@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ftpsrvr.cxx,v $
+ * Revision 1.5  1998/11/30 04:50:48  robertj
+ * New directory structure
+ *
  * Revision 1.4  1998/10/13 14:06:21  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -42,8 +45,8 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <ftp.h>
+#include <ptlib/sockets.h>
+#include <ptclib/ftp.h>
 
 #define new PNEW
 
