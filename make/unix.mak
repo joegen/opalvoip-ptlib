@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.190  2004/06/18 00:38:08  csoutheren
+# Added check for FD_SETSIZE as suggested by Joegen E. Baclor
+#
 # Revision 1.189  2004/06/10 01:36:44  csoutheren
 # Fixed problems with static links
 #
@@ -531,12 +534,6 @@ CC		:= gcc
 
 STATIC_LIBS	:= libstdc++.a libg++.a 
 SYSLIBDIR	:= /opt/openh323/lib
-
-ifdef P_PTHREADS
-# extend fd set size to 4096 to allow more connections,
-# from johan.gnosspelius@pipebeach.com
-STDCCFLAGS	+= -DFD_SETSIZE=4096
-endif
 
 # Rest added by jpd@louisiana.edu, to get .so libs created!
 ifndef DEBUG
