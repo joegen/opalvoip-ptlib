@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.h,v $
+ * Revision 1.15  2001/09/26 09:37:04  robertj
+ * Added virtual keyword to a lot of functions so can be overridden.
+ *
  * Revision 1.14  1999/03/09 08:01:46  robertj
  * Changed comments for doc++ support (more to come).
  *
@@ -171,11 +174,11 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the channel was successfully connected to the remote host.
      */
-    BOOL Connect(
+    virtual BOOL Connect(
       const PString & address,    // Address of remote machine to connect to.
       WORD port = 0               // Port number to use for the connection.
     );
-    BOOL Connect(
+    virtual BOOL Connect(
       const PString & address,    // Address of remote machine to connect to.
       const PString & service     // Service name to use for the connection.
     );
@@ -185,7 +188,7 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the channel was successfully connected to the remote host.
      */
-    BOOL Accept(
+    virtual BOOL Accept(
       PSocket & listener    // Address of remote machine to connect to.
     );
 
@@ -214,7 +217,7 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the string and CR/LF were completely written.
      */
-    BOOL WriteLine(
+    virtual BOOL WriteLine(
       const PString & line // String to write as a command line.
     );
 
@@ -234,7 +237,7 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if a CR/LF pair was received, FALSE if a timeout or error occurred.
      */
-    BOOL ReadLine(
+    virtual BOOL ReadLine(
       PString & line,             // String to receive a CR/LF terminated line.
       BOOL allowContinuation = FALSE  // Flag to handle continued lines.
     );
@@ -242,13 +245,13 @@ class PInternetProtocol : public PIndirectChannel
     /** Put back the characters into the data stream so that the next
        <A>Read()</A> function call will return them first.
      */
-    void UnRead(
+    virtual void UnRead(
       int ch                // Individual character to be returned.
     );
-    void UnRead(
+    virtual void UnRead(
       const PString & str   // String to be put back into data stream.
     );
-    void UnRead(
+    virtual void UnRead(
       const void * buffer,  // Characters to be put back into data stream.
       PINDEX len            // Number of characters to be returned.
     );
@@ -266,10 +269,10 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the command was completely written.
      */
-    BOOL WriteCommand(
+    virtual BOOL WriteCommand(
       PINDEX cmdNumber       // Number of command to write.
     );
-    BOOL WriteCommand(
+    virtual BOOL WriteCommand(
       PINDEX cmdNumber,      // Number of command to write.
       const PString & param  // Extra parameters required by the command.
     );
@@ -291,7 +294,7 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if something was read, otherwise an I/O error occurred.
      */
-    BOOL ReadCommand(
+    virtual BOOL ReadCommand(
       PINDEX & num,
        // Number of the command parsed from the command line, or P_MAX_INDEX
        // if no match.
@@ -314,11 +317,11 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the response was completely written.
      */
-    BOOL WriteResponse(
+    virtual BOOL WriteResponse(
       unsigned numericCode, // Response code for command response.
       const PString & info  // Extra information available after response code.
     );
-    BOOL WriteResponse(
+    virtual BOOL WriteResponse(
       const PString & code, // Response code for command response.
       const PString & info  // Extra information available after response code.
     );
@@ -341,8 +344,8 @@ class PInternetProtocol : public PIndirectChannel
        @return
        TRUE if the response was completely read without a socket error.
      */
-    BOOL ReadResponse();
-    BOOL ReadResponse(
+    virtual BOOL ReadResponse();
+    virtual BOOL ReadResponse(
       int & code,      // Response code for command response.
       PString & info   // Extra information available after response code.
     );
@@ -358,10 +361,10 @@ class PInternetProtocol : public PIndirectChannel
        @return
        First character of response string or '\0' if a socket error occurred.
      */
-    int ExecuteCommand(
+    virtual int ExecuteCommand(
       PINDEX cmdNumber       // Number of command to write.
     );
-    int ExecuteCommand(
+    virtual int ExecuteCommand(
       PINDEX cmdNumber,      // Number of command to write.
       const PString & param  // Extra parameters required by the command.
     );
