@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.32 1996/03/04 12:21:00 robertj Exp $
+ * $Id: sockets.cxx,v 1.33 1996/03/16 04:52:20 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.33  1996/03/16 04:52:20  robertj
+ * Changed all the get host name and get host address functions to be more consistent.
+ *
  * Revision 1.32  1996/03/04 12:21:00  robertj
  * Split file into telnet.cxx
  *
@@ -344,7 +347,54 @@ PString PIPSocket::GetName() const
 }
 
 
-BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
+PString PIPSocket::GetHostName()
+{
+  char buf[50];
+  if (gethostname(buf, sizeof(buf)) == 0)
+    return buf;
+  else
+    return "localhost";
+}
+
+
+PString PIPSocket::GetHostName(const PString & hostname)
+{
+  struct hostent * host_info;
+
+  // lookup the host address using inet_addr, assuming it is a "." address
+  Address temp = hostname;
+  if (temp != 0)
+    host_info = gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
+  else
+    host_info = gethostbyname(hostname);
+
+  if (host_info != NULL)
+    return host_info->h_name;
+  else if (temp != 0)
+    return temp;
+  else
+    return hostname;
+}
+
+
+PString PIPSocket::GetHostName(const Address & addr)
+{
+  struct hostent * host_info =
+                  gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET);
+  if (host_info != NULL)
+    return host_info->h_name;
+  else
+    return addr;
+}
+
+
+BOOL PIPSocket::GetHostAddress(Address & addr)
+{
+  return GetHostAddress(GetHostName(), addr);
+}
+
+
+BOOL PIPSocket::GetHostAddress(const PString & hostname, Address & addr)
 {
   if (hostname.IsEmpty())
     return FALSE;
@@ -367,47 +417,44 @@ BOOL PIPSocket::GetAddress(const PString & hostname, Address & addr)
 }
 
 
+static void BuildAliases(struct hostent * host_info, PStringArray & aliases)
+{
+  if (host_info == NULL)
+    return;
+
+  for (PINDEX i = 0; host_info->h_aliases[i] != NULL; i++)
+    aliases[i] = host_info->h_aliases[i];
+  for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
+    PIPSocket::Address temp;
+    memcpy(&temp, host_info->h_addr_list[i], sizeof(temp));
+    aliases[i] = temp;
+  }
+}
+
+
 PStringArray PIPSocket::GetHostAliases(const PString & hostname)
 {
   PStringArray aliases;
-  struct hostent * host_info;
 
   // lookup the host address using inet_addr, assuming it is a "." address
   Address temp = hostname;
   if (temp != 0)
-    host_info = gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET);
+    BuildAliases(gethostbyaddr((const char *)&temp, sizeof(temp), PF_INET),
+                 aliases);
   else
-    host_info = gethostbyname(hostname);
-
-  if (host_info != NULL) {
-    for (int i = 0; host_info->h_aliases[i] != NULL; i++)
-      aliases[i] = host_info->h_aliases[i];
-  }
-
-  if (aliases.GetSize() == 0) {
-    if (temp != 0)
-      aliases[0] = temp;
-    else
-      aliases[0] = hostname;
-  }
+    BuildAliases(gethostbyname(hostname), aliases);
 
   return aliases;
 }
 
 
-BOOL PIPSocket::GetHostAddress(Address & addr)
+PStringArray PIPSocket::GetHostAliases(const Address & addr)
 {
-  return GetAddress(GetHostName(), addr);
-}
+  PStringArray aliases;
+  BuildAliases(gethostbyaddr((const char *)&addr, sizeof(addr), PF_INET),
+               aliases);
 
-
-PString PIPSocket::GetHostName()
-{
-  char buf[50];
-  if (gethostname(buf, sizeof(buf)) == 0)
-    return buf;
-  else
-    return PString();
+  return aliases;
 }
 
 
@@ -534,7 +581,7 @@ BOOL PIPSocket::_Connect(const PString & host)
 
   // attempt to lookup the host name
   Address ipnum;
-  if (!GetAddress(host, ipnum))
+  if (!GetHostAddress(host, ipnum))
     return FALSE;
 
   // attempt to connect
@@ -704,15 +751,10 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort, Reusability reuse)
 
 BOOL PTCPSocket::Accept(PSocket & socket)
 {
-  // attempt to create a socket
-  sockaddr_in address;
-  address.sin_family = AF_INET;
-  int size = sizeof(address);
-  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
-                                          (struct sockaddr *)&address, &size)))
+  port = ((PIPSocket &)socket).GetPort();
+  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(), NULL, NULL)))
     return FALSE;
 
-  port = ntohs(address.sin_port);
 
   static const linger ling = { 1, 10 };
   if (SetOption(SO_LINGER, &ling, sizeof(ling)))
