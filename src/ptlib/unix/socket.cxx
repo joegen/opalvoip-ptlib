@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.79  2001/11/22 12:29:57  rogerh
+ * Take out the cloned flag on OpenBSD so it compiles
+ *
  * Revision 1.78  2001/11/14 10:37:32  rogerh
  * Define _SIZEOF_ADDR_IFREQ as OpenBSD does not have it
  *
@@ -1110,7 +1113,11 @@ BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
     return FALSE;
   }
 
+#ifdef P_OPENBSD // OpenBSD does not have the cloned flag
+  if( ~rtm->rtm_flags&RTF_LLINFO) {
+#else
   if( ~rtm->rtm_flags&RTF_LLINFO && ~rtm->rtm_flags&RTF_WASCLONED) {
+#endif
 
     //strcpy(name, if_table[rtm->rtm_index].GetName);
 
