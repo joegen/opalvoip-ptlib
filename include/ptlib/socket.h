@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.12 1995/06/17 11:13:25 robertj Exp $
+ * $Id: socket.h,v 1.13 1995/10/14 15:05:54 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.13  1995/10/14 15:05:54  robertj
+ * Added functions for changing integer from host to network byte order.
+ *
  * Revision 1.12  1995/06/17 11:13:25  robertj
  * Documentation update.
  *
@@ -114,6 +117,17 @@ PDECLARE_CLASS(PSocket, PChannel)
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
      */
+
+
+#ifdef P_HAS_BERKELEY_SOCKETS
+    inline static WORD  Host2Net(WORD  v) { return htons(v); }
+    inline static DWORD Host2Net(DWORD v) { return htonl(v); }
+      // Convert from host to network byte order
+
+    inline static WORD  Net2Host(WORD  v) { return ntohs(v); }
+    inline static DWORD Net2Host(DWORD v) { return ntohl(v); }
+      // Convert from network to host byte order
+#endif
 
 
 // Class declaration continued in platform specific header file ///////////////
