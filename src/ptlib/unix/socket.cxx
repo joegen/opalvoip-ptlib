@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.73  2001/09/24 15:37:35  rogerh
+ * Add GetRouteTable() for BSD Unix. Based on FreeBSD's own networking code,
+ * and from an implementation by Martin Nilsson <martin@gneto.com>
+ *
  * Revision 1.72  2001/09/19 00:41:20  robertj
  * Fixed GetInterfaceTable so does not add duplicate interfaces into list.
  * Changed the loop condition to allow for BSD variable length records.
@@ -211,8 +215,25 @@
 
 #if defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_SOLARIS) || defined(P_MACOSX) || defined(P_MACOS)
 #define ifr_netmask ifr_addr
-#endif
 
+#include <sys/param.h>
+#include <sys/file.h>
+#include <sys/socket.h>
+#include <sys/sockio.h>
+#include <sys/sysctl.h>
+
+#include <net/if.h>
+#include <net/if_dl.h>
+#include <net/if_types.h>
+#include <net/route.h>
+
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
+
+#define ROUNDUP(a) \
+        ((a) > 0 ? (1 + (((a) - 1) | (sizeof(long) - 1))) : sizeof(long))
+
+#endif
 
 
 PSocket::~PSocket()
@@ -941,10 +962,10 @@ PString PIPSocket::GetGatewayInterface()
   return PString();
 }
 
+#if defined(P_LINUX) || defined (P_AIX)
 
 BOOL PIPSocket::GetRouteTable(RouteTable & table)
 {
-#if defined(P_LINUX) || defined (P_AIX)
 
   PTextFile procfile;
   if (!procfile.Open("/proc/net/route", PFile::ReadOnly))
@@ -972,10 +993,209 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
     entry->metric = metric;
     table.Append(entry);
   }
+}
+
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD)
+
+BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
+                     long *p_net_mask, long *p_dest_addr, int *p_metric);
+BOOL get_ifname(int index, char *name);
+
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
+  int mib[6];
+  size_t space_needed;
+  char *limit, *buf, *ptr;
+  struct rt_msghdr *rtm;
+
+  InterfaceTable if_table;
+
+
+  // Read the Routing Table
+  mib[0] = CTL_NET;
+  mib[1] = PF_ROUTE;
+  mib[2] = 0;
+  mib[3] = 0;
+  mib[4] = NET_RT_DUMP;
+  mib[5] = 0;
+
+  if (sysctl(mib, 6, NULL, &space_needed, NULL, 0) < 0) {
+    printf("sysctl: net.route.0.0.dump estimate");
+    return FALSE;
+  }
+
+  if ((buf = (char *)malloc(space_needed)) == NULL) {
+    printf("malloc(%lu)", (unsigned long)space_needed);
+    return FALSE;
+  }
+
+  // read the routing table data
+  if (sysctl(mib, 6, buf, &space_needed, NULL, 0) < 0) {
+    printf("sysctl: net.route.0.0.dump");
+    free(buf);
+    return FALSE;
+  }
+
+
+  // Read the interface table
+  if (!GetInterfaceTable(if_table)) {
+    printf("Interface Table Invalid\n");
+    return FALSE;
+  }
+
+
+  // Process the Routing Table data
+  limit = buf + space_needed;
+  for (ptr = buf; ptr < limit; ptr += rtm->rtm_msglen) {
+
+    long net_addr, dest_addr, net_mask;
+    int metric;
+    char name[16];
+
+    rtm = (struct rt_msghdr *)ptr;
+
+    if ( process_rtentry(rtm,ptr, &net_addr, &net_mask, &dest_addr, &metric) ){
+
+      RouteEntry * entry = new RouteEntry(net_addr);
+      entry->net_mask = net_mask;
+      entry->destination = dest_addr;
+      if ( get_ifname(rtm->rtm_index,name) )
+        entry->interfaceName = name;
+      entry->metric = metric;
+      table.Append(entry);
+
+    } // end if
+
+  } // end for loop
+
+  free(buf);
+  return TRUE;
+}
+
+BOOL process_rtentry(struct rt_msghdr *rtm, char *ptr, long *p_net_addr,
+                     long *p_net_mask, long *p_dest_addr, int *p_metric) {
+
+  struct sockaddr_in *sa_in;
+
+  long net_addr, dest_addr, net_mask;
+  int metric;
+
+  sa_in = (struct sockaddr_in *)(rtm + 1);
+
+
+  // Check for zero length entry
+  if (rtm->rtm_msglen == 0) {
+    printf("zero length message\n");
+    return FALSE;
+  }
+
+  if( ~rtm->rtm_flags&RTF_LLINFO && ~rtm->rtm_flags&RTF_WASCLONED) {
+
+    //strcpy(name, if_table[rtm->rtm_index].GetName);
+
+    net_addr=dest_addr=net_mask=metric=0;
+
+    // NET_ADDR
+    if(rtm->rtm_addrs&RTA_DST ) {
+      if(sa_in->sin_family == AF_INET)
+        net_addr = sa_in->sin_addr.s_addr;
+
+      sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
+    }
+
+    // DEST_ADDR
+    if(rtm->rtm_addrs&RTA_GATEWAY) {
+      if(sa_in->sin_family == AF_INET)
+        dest_addr = sa_in->sin_addr.s_addr;
+
+      sa_in = (struct sockaddr_in *)((char *)sa_in + ROUNDUP(sa_in->sin_len));
+    }
+
+    // NETMASK
+    if(rtm->rtm_addrs&RTA_NETMASK && sa_in->sin_len)
+      net_mask = sa_in->sin_addr.s_addr;
+
+    if( rtm->rtm_flags&RTF_HOST)
+      net_mask = 0xffffffff;
+
+
+    *p_metric = metric;
+    *p_net_addr = net_addr;
+    *p_dest_addr = dest_addr;
+    *p_net_mask = net_mask;
+
+    return TRUE;
+
+  } else {
+    return FALSE;
+  }
+
+}
+
+BOOL get_ifname(int index, char *name) {
+  int mib[6];
+  size_t needed;
+  char *lim, *buf, *next;
+  struct if_msghdr *ifm;
+  struct  sockaddr_dl *sdl;
+
+  mib[0] = CTL_NET;
+  mib[1] = PF_ROUTE;
+  mib[2] = 0;
+  mib[3] = AF_INET;
+  mib[4] = NET_RT_IFLIST;
+  mib[5] = index;
+
+  if (sysctl(mib, 6, NULL, &needed, NULL, 0) < 0) {
+    printf("ERR route-sysctl-estimate");
+    return FALSE;
+  }
+
+  if ((buf = (char *)malloc(needed)) == NULL) {
+    printf("ERR malloc");
+    return FALSE;
+  }
+
+  if (sysctl(mib, 6, buf, &needed, NULL, 0) < 0) {
+    printf("ERR actual retrieval of routing table");
+    free(buf);
+    return FALSE;
+  }
+
+  lim = buf + needed;
+
+  next = buf;
+  if (next < lim) {
+
+    ifm = (struct if_msghdr *)next;
+
+    if (ifm->ifm_type == RTM_IFINFO) {
+      sdl = (struct sockaddr_dl *)(ifm + 1);
+    } else {
+      printf("out of sync parsing NET_RT_IFLIST\n");
+      return FALSE;
+    }
+    next += ifm->ifm_msglen;
+
+    strncpy(name, sdl->sdl_data, sdl->sdl_nlen);
+    name[sdl->sdl_nlen] = '\0';
+
+    free(buf);
+    return TRUE;
+
+  } else {
+    free(buf);
+    return FALSE;
+  }
+
+}
+
 
 #else
 
 #if 0 
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
         // Most of this code came from the source code for the "route" command 
         // so it should work on other platforms too. 
         // However, it is not complete (the "address-for-interface" function doesn't exist) and not tested! 
@@ -1015,12 +1235,14 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
         free(reqtable.rrtp); 
                 
         return TRUE; 
-#endif // 0  
+#endif // 0
+
+BOOL PIPSocket::GetRouteTable(RouteTable & table)
+{
 #warning Platform requires implemetation of GetRouteTable()
   return FALSE;
-
-#endif
 }
+#endif
 
 
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & list)
