@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.4 1994/07/27 06:00:10 robertj Exp $
+ * $Id: msdos.cxx,v 1.5 1994/08/22 00:18:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.4  1994/07/27 06:00:10  robertj
+ * Revision 1.5  1994/08/22 00:18:02  robertj
+ * Added dummy socket function.
+ *
+ * Revision 1.4  1994/07/27  06:00:10  robertj
  * Backup
  *
  * Revision 1.3  1994/07/17  11:01:04  robertj
@@ -19,10 +22,6 @@
  *
  * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
- *
-// Revision 1.1  1994/04/01  14:39:35  robertj
-// Initial revision
-//
  */
 
 #include "ptlib.h"
@@ -549,6 +548,15 @@ void PThread::SwitchContext(PThread * from)
 
   longjmp(context, TRUE);
   PAssertAlways("longjmp failed"); // Should never get here
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PTCPSocket
+
+BOOL PTCPSocket::Open (const PString &, u_short)
+{
+  return FALSE;
 }
 
 
