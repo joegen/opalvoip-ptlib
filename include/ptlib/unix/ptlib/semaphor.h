@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.14  2001/09/20 05:38:25  robertj
+ * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
+ * Also prevented semaphore from being created if subclass does not use it.
+ *
  * Revision 1.13  2001/08/11 07:57:30  rogerh
  * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
  *
@@ -93,11 +97,13 @@
 #elif defined(P_PTHREADS)
 
   protected:
+    enum PXClass { PXSemaphore, PXMutex, PXSyncPoint } pxClass;
+    PSemaphore(PXClass);
+    pthread_mutex_t mutex;
+    pthread_cond_t  condVar;
 #ifdef P_HAS_SEMAPHORES
     sem_t semId;
 #else
-    pthread_mutex_t mutex;
-    pthread_cond_t  condVar;
     unsigned currentCount;
     unsigned maximumCount;
     unsigned queuedLocks;

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.74  2001/09/20 05:38:25  robertj
+ * Changed PSyncPoint to use pthread cond so timed wait blocks properly.
+ * Also prevented semaphore from being created if subclass does not use it.
+ *
  * Revision 1.73  2001/09/19 17:37:47  craigs
  * Added support for nested mutexes under Linux
  *
@@ -281,6 +285,10 @@ PDECLARE_CLASS(PHouseKeepingThread, PThread)
 };
 
 
+static pthread_mutex_t MutexInitialiser = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t  CondInitialiser  = PTHREAD_COND_INITIALIZER;
+
+
 #define new PNEW
 
 
@@ -374,10 +382,10 @@ void PThread::InitialiseProcessThread()
 
 #ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
-  PAssertOS(pthread_mutex_init(&PX_WaitSemMutex, NULL) == 0);
+  PX_WaitSemMutex = MutexInitialiser;
 #endif
 
-  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
+  PX_suspendMutex = MutexInitialiser;
 
   PAssertOS(::pipe(unblockPipe) == 0);
 
@@ -402,10 +410,10 @@ PThread::PThread(PINDEX stackSize,
 
 #ifndef P_HAS_SEMAPHORES
   PX_waitingSemaphore = NULL;
-  pthread_mutex_init(&PX_WaitSemMutex, NULL);
+  PX_WaitSemMutex = MutexInitialiser;
 #endif
 
-  PAssertOS(pthread_mutex_init(&PX_suspendMutex, NULL) == 0);
+  PX_suspendMutex = MutexInitialiser;
 
   PAssertOS(::pipe(unblockPipe) == 0);
 
@@ -863,8 +871,20 @@ void PThread::PXAbortBlock() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+PSemaphore::PSemaphore(PXClass pxc)
+{
+  pxClass = pxc;
+  mutex = MutexInitialiser;
+  condVar = CondInitialiser;
+}
+
+
 PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
 {
+  pxClass = PXSemaphore;
+  mutex = MutexInitialiser;
+  condVar = CondInitialiser;
+
 #ifdef P_HAS_SEMAPHORES
   PAssertOS(sem_init(&semId, 0, initial) == 0);
 #else
@@ -875,29 +895,23 @@ PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
   currentCount = initial;
   maximumCount = maxCount;
   queuedLocks  = 0;
-
-  //pthread_mutexattr_t mutexAttr;
-  //pthread_mutexattr_init(&mutexAttr);
-  //pthread_mutexattr_setpshared(&mutexAttr, PTHREAD_PROCESS_PRIVATE);
-  pthread_mutex_init(&mutex, NULL);
-
-  //pthread_condattr_t condAttr;
-  //pthread_condattr_init(&condAttr);
-  PAssertOS(pthread_cond_init(&condVar, NULL) == 0);
 #endif
 }
 
 
 PSemaphore::~PSemaphore()
 {
-#ifdef P_HAS_SEMAPHORES
-  PAssertOS(sem_destroy(&semId) == 0);
-#else
-  PAssertOS(pthread_mutex_lock(&mutex) == 0);
-  PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
   pthread_cond_destroy(&condVar);
+  pthread_mutex_lock(&mutex);
   pthread_mutex_destroy(&mutex);
+
+  if (pxClass == PXSemaphore) {
+#ifdef P_HAS_SEMAPHORES
+    PAssertOS(sem_destroy(&semId) == 0);
+#else
+    PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
 #endif
+  }
 }
 
 
@@ -1021,7 +1035,7 @@ BOOL PSemaphore::WillBlock() const
 
 
 PMutex::PMutex()
-  : PSemaphore(1, 1)
+  : PSemaphore(PXMutex)
 {
 #ifdef P_HAS_RECURSIVE_MUTEX
   pthread_mutexattr_t attr;
@@ -1029,20 +1043,8 @@ PMutex::PMutex()
   pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
   pthread_mutex_init(&mutex, &attr);
 #else
-  ownerThreadId = UINT_MAX;
+  ownerThreadId = (pthread_t)-1;
   lockCount = 0;
-#ifdef P_HAS_SEMAPHORES
-  pthread_mutex_init(&mutex, NULL);
-#endif
-#endif
-}
-
-
-PMutex::~PMutex()
-{
-  pthread_mutex_unlock(&mutex);
-#ifdef P_HAS_SEMAPHORES
-  PAssertOS(pthread_mutex_destroy(&mutex) == 0);
 #endif
 }
 
@@ -1065,7 +1067,8 @@ void PMutex::Wait()
 
 #ifndef P_HAS_RECURSIVE_MUTEX
   // set flags
-  PAssert((ownerThreadId == UINT_MAX) && (lockCount == 0), "PMutex acquired whilst locked by another thread");
+  PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
+          "PMutex acquired whilst locked by another thread");
   ownerThreadId = currentThreadId;
 #endif
 }
@@ -1090,14 +1093,15 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
   }
 #endif
 
-  // create absolute finish time 
+  // create absolute finish time
   PTime finishTime;
   finishTime += waitTime;
 
   do {
     if (pthread_mutex_trylock(&mutex) == 0) {
 #ifndef P_HAS_RECURSIVE_MUTEX
-      PAssert((ownerThreadId == UINT_MAX) && (lockCount == 0), "PMutex acquired whilst locked by another thread");
+      PAssert((ownerThreadId == (pthread_t)-1) && (lockCount == 0),
+              "PMutex acquired whilst locked by another thread");
       ownerThreadId = currentThreadId;
 #endif
       return TRUE;
@@ -1113,7 +1117,8 @@ BOOL PMutex::Wait(const PTimeInterval & waitTime)
 void PMutex::Signal()
 {
 #ifndef P_HAS_RECURSIVE_MUTEX
-  PAssert(pthread_equal(ownerThreadId, pthread_self()), "PMutex signal failed - no matching wait or signal by wrong thread");
+  PAssert(pthread_equal(ownerThreadId, pthread_self()),
+          "PMutex signal failed - no matching wait or signal by wrong thread");
 
   // if lock was recursively acquired, then decrement the counter
   if (lockCount > 0) {
@@ -1122,16 +1127,21 @@ void PMutex::Signal()
   }
 
   // otherwise mark mutex as available
-  ownerThreadId = UINT_MAX;
+  ownerThreadId = (pthread_t)-1;
 #endif
 
   // and unlock for sure
-  PAssert(pthread_mutex_unlock(&mutex) == 0, "PMutex signal failed - no matching wait or signal by wrong thread");
+  PAssert(pthread_mutex_unlock(&mutex) == 0,
+          "PMutex signal failed - no matching wait or signal by wrong thread");
 }
 
 
 BOOL PMutex::WillBlock() const
 {
+  pthread_t currentThreadId = pthread_self();
+  if (currentThreadId == ownerThreadId)
+    return FALSE;
+
   pthread_mutex_t * mp = (pthread_mutex_t*)&mutex;
   if (pthread_mutex_trylock(mp) != 0)
     return TRUE;
@@ -1140,6 +1150,64 @@ BOOL PMutex::WillBlock() const
 
 
 PSyncPoint::PSyncPoint()
-  : PSemaphore(0, 1)
+  : PSemaphore(PXSyncPoint)
 {
+  signalCount = 0;
 }
+
+
+void PSyncPoint::Wait()
+{
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
+  while (signalCount == 0)
+    pthread_cond_wait(&condVar, &mutex);
+  signalCount--;
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+}
+
+
+BOOL PSyncPoint::Wait(const PTimeInterval & waitTime)
+{
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
+
+  PTime finishTime;
+  finishTime += waitTime;
+  struct timespec absTime;
+  absTime.tv_sec  = finishTime.GetTimeInSeconds();
+  absTime.tv_nsec = finishTime.GetMicrosecond() * 1000;
+
+  int err;
+  while (signalCount == 0) {
+    err = pthread_cond_timedwait(&condVar, &mutex, &absTime);
+    if (err == 0) {
+      signalCount--;
+      break;
+    }
+
+    if (err == ETIMEDOUT)
+      break;
+
+    PAssertOS(err == EINTR && errno == EINTR);
+  }
+
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+
+  return err == 0;
+}
+
+
+void PSyncPoint::Signal()
+{
+  PAssertOS(pthread_mutex_lock(&mutex) == 0);
+  signalCount++;
+  PAssertOS(pthread_cond_signal(&condVar) == 0);
+  PAssertOS(pthread_mutex_unlock(&mutex) == 0);
+}
+
+
+BOOL PSyncPoint::WillBlock() const
+{
+  return signalCount == 0;
+}
+
+
