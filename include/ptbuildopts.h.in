@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.6  2003/04/28 07:27:38  craigs
+ * Added SDL libs
+ *
  * Revision 1.5  2003/04/28 07:04:45  craigs
  * Added SDL detection
  *
@@ -175,10 +178,8 @@
 #pragma include_alias(<lber_types.h>,    <@LDAP_DIR@/include/lber_types.h>)
 #pragma include_alias(<ldap_features.h>, <@LDAP_DIR@/include/ldap_features.h>)
 #pragma include_alias(<ldap_cdefs.h>,    <@LDAP_DIR@/include/ldap_cdefs.h>)
-#endif
-
 #define P_LDAP_LIBRARY      "@LDAP_DIR@/DLLRelease/openldap.lib"
-
+#endif
 
 /////////////////////////////////////////////////
 //
@@ -189,9 +190,9 @@
 
 #ifdef _MSC_VER
 #pragma include_alias(<windns.h>, <@DNS_DIR@/Include/windns.h>)
+#define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 #endif
 
-#define P_DNS_LIBRARY "@DNS_DIR@/Lib/DnsAPI.Lib"
 
 
 /////////////////////////////////////////////////
@@ -208,7 +209,13 @@
 //
 
 #undef P_SDL
-#pragma include_alias(<SDL.h>,        <@SDL_DIR@/include/SDL.h>)
+
+#ifdef _MSC_VER
+#pragma include_alias(<SDL.h>, <@SDL_DIR@/include/SDL.h>)
+#define P_SDL_LIBRARY1 "@SDL_DIR@/Lib/SDL.lib"
+#define P_SDL_LIBRARY2 "@SDL_DIR@/Lib/SDLmain.lib"
+#endif
+
 
 /////////////////////////////////////////////////
 //
