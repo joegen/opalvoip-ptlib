@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.22  2001/05/23 00:18:55  robertj
+ * Added support for real time threads, thanks Erland Lewin.
+ *
  * Revision 1.21  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -143,6 +146,8 @@ class PSemaphore;
     static void * PX_ThreadStart(void *);
     static void PX_ThreadEnd(void *);
     pthread_t   PX_GetThreadId() const;
+
+    Priority originalPriority;
 
   protected:
     void PX_NewThread(BOOL startSuspended);
