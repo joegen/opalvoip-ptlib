@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.23  2002/11/21 08:08:52  craigs
+ * Changed to not overwrite XML data if load fails
+ *
  * Revision 1.22  2002/11/19 07:37:25  craigs
  * Added locking functions and LoadURL function
  *
@@ -121,7 +124,7 @@ PXML::PXML(const PXML & xml)
   encoding     = xml.encoding;
   standAlone   = xml.standAlone;
 
-  PWaitAndSignal m(rootMutex);
+  PWaitAndSignal m(xml.rootMutex);
 
   PXMLElement * oldRootElement = xml.rootElement;
   if (oldRootElement != NULL)
@@ -213,6 +216,10 @@ BOOL PXML::LoadURL(const PURL & url)
 
 BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options)
 {
+  PString data;
+  if (url.GetScheme() == "file") 
+    return LoadFile(url.AsFilePath());
+
   PHTTPClient client;
   PINDEX contentLength;
   PMIMEInfo outMIME, replyMIME;
@@ -223,6 +230,8 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
   // get the resource header information
   if (!client.GetDocument(url, outMIME, replyMIME)) {
     PTRACE(2, "PVXML\tCannot load resource " << url);
+    errorString = PString("Cannot load URL") & url.AsString();
+    errorCol = errorLine = 0;
     return FALSE;
   }
 
@@ -233,7 +242,6 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
     contentLength = P_MAX_INDEX;
 
   // download the resource into memory
-  PString data;
   PINDEX offs = 0;
   for (;;) {
     PINDEX len;
@@ -258,15 +266,10 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
 
 BOOL PXML::Load(const PString & data, int _options)
 {
-  PWaitAndSignal m(rootMutex);
-
   if (_options >= 0)
     options = _options;
 
-  if (rootElement != NULL) {
-    delete rootElement;
-    rootElement = NULL;
-  }
+  loadingRootElement = NULL;
 
   XML_Parser parser = XML_ParserCreate(NULL);
   XML_SetUserData(parser, this);
@@ -287,6 +290,18 @@ BOOL PXML::Load(const PString & data, int _options)
   }
 
   XML_ParserFree(parser);
+
+  if (stat) {
+    {
+    PWaitAndSignal m(rootMutex);
+      if (rootElement != NULL) {
+        delete rootElement;
+        rootElement = NULL;
+      }
+      rootElement = loadingRootElement;
+    }
+    OnLoaded();
+  }
 
   return stat;
 }
@@ -391,8 +406,8 @@ void PXML::StartElement(const char * name, const char **attrs)
   currentElement = newElement;
   lastElement    = NULL;
 
-  if (rootElement == NULL) 
-    rootElement = currentElement;
+  if (loadingRootElement == NULL) 
+    loadingRootElement = currentElement;
 }
 
 void PXML::EndElement(const char * /*name*/)
