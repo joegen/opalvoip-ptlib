@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.42  2003/12/19 04:29:52  csoutheren
+ * Changed GetLastReadCount and GetLastWriteCount to be virtual
+ *
  * Revision 1.41  2003/09/17 05:41:58  csoutheren
  * Removed recursive includes
  *
@@ -383,7 +386,7 @@ class PChannel : public PObject, public iostream {
        @return
        the number of bytes read.
      */
-    PINDEX GetLastReadCount() const;
+    virtual PINDEX GetLastReadCount() const;
 
     /** Read a single 8 bit byte from the channel. If one was not available
        within the read timeout period, or an I/O error occurred, then the
@@ -492,7 +495,7 @@ class PChannel : public PObject, public iostream {
        @return
        the number of bytes written.
      */
-    PINDEX GetLastWriteCount() const;
+    virtual PINDEX GetLastWriteCount() const;
 
     /** Write a single character to the channel. This function simply uses the
        Write() function so all comments on that function also apply.
