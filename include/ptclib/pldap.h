@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pldap.h,v $
+ * Revision 1.8  2004/02/20 16:28:27  ykiryanov
+ * if'd LDAP code to enable non-LDAP builds
+ *
  * Revision 1.7  2003/06/05 23:17:07  rjongbloed
  * Added functions to get and set LDAP operation timeout.
  *
@@ -55,6 +58,7 @@
 #pragma interface
 #endif
 
+#if P_LDAP
 
 #include <ptlib/sockets.h>
 
@@ -528,6 +532,7 @@ class PLDAPStructBase : public PObject {
 #define PLDAP_STRUCT_END() \
   };
 
+#endif // P_LDAP
 
 #endif // _PLDAP_H
 
