@@ -1,5 +1,5 @@
 /*
- * $Id: osutil.inl,v 1.7 1993/08/31 03:38:02 robertj Exp $
+ * $Id: osutil.inl,v 1.8 1993/12/31 06:47:59 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutil.inl,v $
- * Revision 1.7  1993/08/31 03:38:02  robertj
+ * Revision 1.8  1993/12/31 06:47:59  robertj
+ * Made inlines optional for debugging purposes.
+ *
+ * Revision 1.7  1993/08/31  03:38:02  robertj
  * Changed PFile::Status to PFile::Info due to X-Windows compatibility.
  * Added copy constructor and assignement operator due to G++ wierdness.
  *
@@ -30,41 +33,41 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PTimeInterval
 
-inline PTimeInterval::PTimeInterval(const PTimeInterval & ti)
+PINLINE PTimeInterval::PTimeInterval(const PTimeInterval & ti)
   : milliseconds(ti.milliseconds) { }
 
-inline PTimeInterval & PTimeInterval::operator=(const PTimeInterval & ti)
+PINLINE PTimeInterval & PTimeInterval::operator=(const PTimeInterval & ti)
   { milliseconds = ti.milliseconds; return *this; }
 
-inline PObject * PTimeInterval::Clone() const
+PINLINE PObject * PTimeInterval::Clone() const
   { return new PTimeInterval(milliseconds); }
 
-inline long PTimeInterval::Milliseconds() const
+PINLINE long PTimeInterval::Milliseconds() const
   { return milliseconds; }
 
-inline long PTimeInterval::Seconds() const
+PINLINE long PTimeInterval::Seconds() const
   { return milliseconds/1000; }
 
-inline long PTimeInterval::Minutes() const
+PINLINE long PTimeInterval::Minutes() const
   { return milliseconds/60000; }
 
-inline int PTimeInterval::Hours() const
+PINLINE int PTimeInterval::Hours() const
   { return (int)(milliseconds/3600000); }
 
-inline int PTimeInterval::Days() const
+PINLINE int PTimeInterval::Days() const
   { return (int)(milliseconds/86400000); }
 
 
-inline PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
+PINLINE PTimeInterval PTimeInterval::operator+(const PTimeInterval & t) const
   { return PTimeInterval(milliseconds + t.milliseconds); }
 
-inline PTimeInterval & PTimeInterval::operator+=(const PTimeInterval & t)
+PINLINE PTimeInterval & PTimeInterval::operator+=(const PTimeInterval & t)
   { milliseconds += t.milliseconds; return *this; }
 
-inline PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
+PINLINE PTimeInterval PTimeInterval::operator-(const PTimeInterval & t) const
   { return PTimeInterval(milliseconds - t.milliseconds); }
 
-inline PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
+PINLINE PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
   { milliseconds -= t.milliseconds; return *this; }
 
 
@@ -72,147 +75,147 @@ inline PTimeInterval & PTimeInterval::operator-=(const PTimeInterval & t)
 ///////////////////////////////////////////////////////////////////////////////
 // PTime
 
-inline PTime::PTime(time_t t)
+PINLINE PTime::PTime(time_t t)
   : theTime(t) { }
 
-inline PObject * PTime::Clone() const
+PINLINE PObject * PTime::Clone() const
   { return new PTime(theTime); }
 
-inline ostream & PTime::PrintOn(ostream & strm) const
+PINLINE ostream & PTime::PrintOn(ostream & strm) const
   { return strm << ctime(&theTime); }
 
-inline int PTime::GetSecond() const
+PINLINE int PTime::GetSecond() const
   { return localtime(&theTime)->tm_sec; }
 
-inline int PTime::GetMinute() const
+PINLINE int PTime::GetMinute() const
   { return localtime(&theTime)->tm_min; }
 
-inline int PTime::GetHour() const
+PINLINE int PTime::GetHour() const
   { return localtime(&theTime)->tm_hour; }
 
-inline int PTime::GetDay() const
+PINLINE int PTime::GetDay() const
   { return localtime(&theTime)->tm_mday; }
 
-inline int PTime::GetMonth() const
+PINLINE int PTime::GetMonth() const
   { return localtime(&theTime)->tm_mon+1; }
 
-inline int PTime::GetYear() const
+PINLINE int PTime::GetYear() const
   { return localtime(&theTime)->tm_year+1900; }
 
-inline int PTime::GetDayOfWeek() const
+PINLINE int PTime::GetDayOfWeek() const
   { return localtime(&theTime)->tm_wday; }
 
-inline int PTime::GetDayOfYear() const
+PINLINE int PTime::GetDayOfYear() const
   { return localtime(&theTime)->tm_yday; }
 
-inline BOOL PTime::IsDaylightSavings() const
+PINLINE BOOL PTime::IsDaylightSavings() const
   { return localtime(&theTime)->tm_isdst; }
 
 
-inline PTime PTime::operator+(const PTimeInterval & t) const
+PINLINE PTime PTime::operator+(const PTimeInterval & t) const
   { return PTime(theTime + t.Seconds()); }
 
-inline PTime & PTime::operator+=(const PTimeInterval & t)
+PINLINE PTime & PTime::operator+=(const PTimeInterval & t)
   { theTime += t.Seconds(); return *this; }
 
-inline PTimeInterval PTime::operator-(const PTime & t) const
+PINLINE PTimeInterval PTime::operator-(const PTime & t) const
   { return PTimeInterval(0, (int)(theTime - t.theTime)); }
 
-inline PTime PTime::operator-(const PTimeInterval & t) const
+PINLINE PTime PTime::operator-(const PTimeInterval & t) const
   { return PTime(theTime - t.Seconds()); }
 
-inline PTime & PTime::operator-=(const PTimeInterval & t)
+PINLINE PTime & PTime::operator-=(const PTimeInterval & t)
   { theTime -= t.Seconds(); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PDirectory
 
-inline PDirectory::PDirectory()
+PINLINE PDirectory::PDirectory()
   : path(".") { Construct(); }
   
-inline PDirectory::PDirectory(const PString & pathname)
+PINLINE PDirectory::PDirectory(const PString & pathname)
   : path(pathname) { Construct(); }
   
 
-inline PObject::Comparison PDirectory::Compare(const PObject & obj) const
+PINLINE PObject::Comparison PDirectory::Compare(const PObject & obj) const
   { return path.Compare(((const PDirectory &)obj).path); }
 
-inline ostream & PDirectory::PrintOn(ostream & strm) const
+PINLINE ostream & PDirectory::PrintOn(ostream & strm) const
   { return strm << path; }
 
-inline BOOL PDirectory::SetSize(PINDEX newSize)
+PINLINE BOOL PDirectory::SetSize(PINDEX newSize)
   { return newSize == 1; }
 
-inline void PDirectory::DestroyContents()
+PINLINE void PDirectory::DestroyContents()
   { Close(); }
 
 
-inline PString PDirectory::GetPath() const
+PINLINE PString PDirectory::GetPath() const
   { return path; }
 
-inline BOOL PDirectory::Change() const
+PINLINE BOOL PDirectory::Change() const
   { return Change(path); }
 
-inline BOOL PDirectory::Create(int perm) const
+PINLINE BOOL PDirectory::Create(int perm) const
   { return Create(path, perm); }
 
-inline BOOL PDirectory::Remove() const
+PINLINE BOOL PDirectory::Remove() const
   { return Remove(path); }
 
 
-inline PDirectory::~PDirectory()
+PINLINE PDirectory::~PDirectory()
   { DestroyContents(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
-inline PFile::PFile(const PString & name)
+PINLINE PFile::PFile(const PString & name)
   : fullname(name) { Construct(); }
 
-inline PObject::Comparison PFile::Compare(const PObject & obj) const
+PINLINE PObject::Comparison PFile::Compare(const PObject & obj) const
   { return fullname.Compare(((const PFile &)obj).fullname); }
 
-inline BOOL PFile::SetSize(PINDEX newSize)
+PINLINE BOOL PFile::SetSize(PINDEX newSize)
   { return newSize == 1; }
 
-inline void PFile::DestroyContents()
+PINLINE void PFile::DestroyContents()
   { Close(); }
 
-inline PFile::~PFile()
+PINLINE PFile::~PFile()
   { DestroyContents(); }
 
 
-inline BOOL PFile::Exists() const
+PINLINE BOOL PFile::Exists() const
   { return Exists(fullname); }
 
-inline BOOL PFile::Access(OpenMode mode) const
+PINLINE BOOL PFile::Access(OpenMode mode) const
   { return Access(fullname, mode); }
 
-inline BOOL PFile::Remove() const
+PINLINE BOOL PFile::Remove() const
   { return Remove(fullname); }
 
-inline BOOL PFile::Copy(const PString & newname)
+PINLINE BOOL PFile::Copy(const PString & newname)
   { return Copy(fullname, newname); }
 
-inline BOOL PFile::GetInfo(Info & info) const
+PINLINE BOOL PFile::GetInfo(Info & info) const
   { return GetInfo(fullname, info); }
 
 
-inline PString PFile::GetFullName() const
+PINLINE PString PFile::GetFullName() const
   { return fullname; }
       
 
-inline BOOL PFile::IsOpen()
+PINLINE BOOL PFile::IsOpen()
   { return os_handle >= 0; }
 
-inline int PFile::GetHandle() const
+PINLINE int PFile::GetHandle() const
   { PAssert(os_handle >= 0); return os_handle; }
 
-inline off_t PFile::GetPosition()
+PINLINE off_t PFile::GetPosition()
   { return lseek(GetHandle(), 0, SEEK_CUR); }
 
-inline BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
+PINLINE BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
   { return lseek(GetHandle(), pos, origin) == pos; }
 
 
@@ -220,40 +223,40 @@ inline BOOL PFile::SetPosition(long pos, FilePositionOrigin origin)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline PTextFile::PTextFile()
+PINLINE PTextFile::PTextFile()
   : PFile() { }
 
-inline PTextFile::PTextFile(const PString & name)
+PINLINE PTextFile::PTextFile(const PString & name)
   : PFile(name) { }
 
-inline PTextFile::PTextFile(const PString & name, OpenMode mode, int opts)
+PINLINE PTextFile::PTextFile(const PString & name, OpenMode mode, int opts)
   : PFile(name, mode, opts) { }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline PStructuredFile::PStructuredFile()
+PINLINE PStructuredFile::PStructuredFile()
   : PFile(), structureSize(1) { }
 
-inline PStructuredFile::PStructuredFile(const PString & name)
+PINLINE PStructuredFile::PStructuredFile(const PString & name)
   : PFile(name), structureSize(1) { }
 
-inline PStructuredFile::PStructuredFile(const PString & name,
+PINLINE PStructuredFile::PStructuredFile(const PString & name,
                                                       OpenMode mode, int opts)
   : PFile(name, mode, opts), structureSize(1) { }
 
 
-inline BOOL PStructuredFile::Read(void * buffer)
+PINLINE BOOL PStructuredFile::Read(void * buffer)
   { return PFile::Read(buffer, structureSize); }
       
-inline BOOL PStructuredFile::Write(void * buffer)
+PINLINE BOOL PStructuredFile::Write(void * buffer)
   { return PFile::Write(buffer, structureSize); }
 
-inline size_t PStructuredFile::GetStructureSize()
+PINLINE size_t PStructuredFile::GetStructureSize()
   { return structureSize; }
 
-inline void PStructuredFile::SetStructureSize(size_t newSize)
+PINLINE void PStructuredFile::SetStructureSize(size_t newSize)
   { structureSize = newSize; }
 
 
