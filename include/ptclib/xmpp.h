@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: xmpp.h,v $
+ * Revision 1.3  2004/05/09 07:23:46  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.2  2004/04/26 01:51:57  rjongbloed
  * More implementation of XMPP, thanks a lot to Federico Pinna & Reitek S.p.A.
  *
@@ -64,56 +67,86 @@ namespace XMPP
 
   class JID : public PObject
   {
-      PCLASSINFO(JID, PObject);
+    PCLASSINFO(JID, PObject);
 
-    public:
-      JID(const char * jid = 0);
-      JID(const PString& jid);
-      JID(const PString& user, const PString& server, const PString& resource = PString::Empty());
+  public:
+    JID(const char * jid = 0);
+    JID(const PString& jid);
+    JID(const PString& user, const PString& server, const PString& resource = PString::Empty());
 
-      virtual Comparison Compare(
-        const PObject & obj   // Object to compare against.
-        ) const;
+    virtual Comparison Compare(
+      const PObject & obj   // Object to compare against.
+      ) const;
 
-      PString & operator=(
-        const PString & jid  /// New JID to assign.
-        );
+    JID& operator=(
+      const PString & jid  /// New JID to assign.
+      );
 
-      operator const PString&() const;
+    operator const PString&() const;
 
-      PString   GetUser() const         { return m_User; }
-      PString   GetServer() const       { return m_Server; }
-      PString   GetResource() const     { return m_Resource; }
-      PString   GetShortFormat() const  { return m_User + "@" + m_Server; }
+    virtual PObject * Clone() const { return new JID(m_JID); }
 
-      void      SetUser(const PString& user);
-      void      SetServer(const PString& server);
-      void      SetResource(const PString& resource);
+    PString   GetUser() const         { return m_User; }
+    PString   GetServer() const       { return m_Server; }
 
-    protected:
-      void      ParseJID(const PString& jid);
-      void      BuildJID() const;
+    virtual PString GetResource() const { return m_Resource; }
 
-      PString   m_User;
-      PString   m_Server;
-      PString   m_Resource;
+    virtual void SetUser(const PString& user);
+    virtual void SetServer(const PString& server);
+    virtual void SetResource(const PString& resource);
 
-      mutable PString m_JID;
-      mutable BOOL    m_IsDirty;
-    };
+    virtual BOOL IsBare() const       { return m_Resource.IsEmpty(); }
+    virtual void PrintOn(ostream & strm) const;
 
-    /** This interface is the base class of each XMPP transport class
+  protected:
+    virtual void ParseJID(const PString& jid);
+    virtual void BuildJID() const;
 
-    Derived classes might include an XMPP TCP transport as well as
-    classes to handle XMPP incapsulated in SIP messages.
-    */
-    class Transport : public PIndirectChannel
-    {
-      PCLASSINFO(Transport, PIndirectChannel);
+    PString   m_User;
+    PString   m_Server;
+    PString   m_Resource;
 
-    public:
-      virtual BOOL Open() = 0;
-      virtual BOOL Close() = 0;
+    mutable PString m_JID;
+    mutable BOOL    m_IsDirty;
+  };
+
+  // A bare jid is a jid with no resource
+  class BareJID : public JID
+  {
+    PCLASSINFO(BareJID, JID);
+
+  public:
+    BareJID(const char * jid = 0) : JID(jid) { }
+    BareJID(const PString& jid) : JID(jid) { }
+    BareJID(const PString& user, const PString& server, const PString& resource = PString::Empty())
+      : JID(user, server, resource) { }
+
+    virtual Comparison Compare(
+      const PObject & obj   // Object to compare against.
+      ) const;
+
+    BareJID& operator=(
+      const PString & jid  /// New JID to assign.
+      );
+
+    virtual PObject * Clone() const { return new BareJID(m_JID); }
+    virtual PString GetResource() const { return PString::Empty(); }
+    virtual void SetResource(const PString&) { }
+    virtual BOOL IsBare() const { return TRUE; }
+  };
+
+  /** This interface is the base class of each XMPP transport class
+
+  Derived classes might include an XMPP TCP transport as well as
+  classes to handle XMPP incapsulated in SIP messages.
+  */
+  class Transport : public PIndirectChannel
+  {
+    PCLASSINFO(Transport, PIndirectChannel);
+
+  public:
+    virtual BOOL Open() = 0;
+    virtual BOOL Close() = 0;
   };
 
 
@@ -122,72 +155,72 @@ namespace XMPP
  */
   class Stream : public PIndirectChannel
   {
-      PCLASSINFO(Stream, PIndirectChannel);
+    PCLASSINFO(Stream, PIndirectChannel);
 
-    public:
-      Stream(Transport * transport = 0);
-      ~Stream();
+  public:
+    Stream(Transport * transport = 0);
+    ~Stream();
 
-      virtual BOOL        OnOpen()            { return m_OpenHandlers.Fire(*this); }
-      PNotifierList&      OpenHandlers()      { return m_OpenHandlers; }
+    virtual BOOL        OnOpen()            { return m_OpenHandlers.Fire(*this); }
+    PNotifierList&      OpenHandlers()      { return m_OpenHandlers; }
 
-      virtual BOOL        Close();
-      virtual void        OnClose()           { m_CloseHandlers.Fire(*this); }
-      PNotifierList&      CloseHandlers()     { return m_CloseHandlers; }
+    virtual BOOL        Close();
+    virtual void        OnClose()           { m_CloseHandlers.Fire(*this); }
+    PNotifierList&      CloseHandlers()     { return m_CloseHandlers; }
 
-      virtual BOOL        Write(const void * buf, PINDEX len);
-      virtual BOOL        Write(const PString& data);
-      virtual BOOL        Write(const PXML& pdu);
+    virtual BOOL        Write(const void * buf, PINDEX len);
+    virtual BOOL        Write(const PString& data);
+    virtual BOOL        Write(const PXML& pdu);
 
-      /** Read a XMPP stanza from the stream
-      */
-      virtual PXML *      Read();
+    /** Read a XMPP stanza from the stream
+    */
+    virtual PXML *      Read();
 
-      /** Reset the parser. The will delete and re-instantiate the
-      XML stream parser.
-      */
-      virtual void        Reset();
-      PXMLStreamParser *  GetParser()     { return m_Parser; }
+    /** Reset the parser. The will delete and re-instantiate the
+    XML stream parser.
+    */
+    virtual void        Reset();
+    PXMLStreamParser *  GetParser()     { return m_Parser; }
 
-    protected:
-      PXMLStreamParser *  m_Parser;
-      PNotifierList       m_OpenHandlers;
-      PNotifierList       m_CloseHandlers;
+  protected:
+    PXMLStreamParser *  m_Parser;
+    PNotifierList       m_OpenHandlers;
+    PNotifierList       m_CloseHandlers;
   };
 
 
   class BaseStreamHandler : public PThread
   {
-      PCLASSINFO(BaseStreamHandler, PThread);
+    PCLASSINFO(BaseStreamHandler, PThread);
 
-    public:
-      BaseStreamHandler();
-      ~BaseStreamHandler();
+  public:
+    BaseStreamHandler();
+    ~BaseStreamHandler();
 
-      virtual BOOL        Start(Transport * transport = 0);
-      virtual BOOL        Stop(const PString& error = PString::Empty());
+    virtual BOOL        Start(Transport * transport = 0);
+    virtual BOOL        Stop(const PString& error = PString::Empty());
 
-      void                SetAutoReconnect(BOOL b = TRUE, long timeout = 1000);
+    void                SetAutoReconnect(BOOL b = TRUE, long timeout = 1000);
 
-      PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
-      Stream *            GetStream()         { return m_Stream; }
+    PNotifierList&      ElementHandlers()   { return m_ElementHandlers; }
+    Stream *            GetStream()         { return m_Stream; }
 
-      virtual BOOL        Write(const void * buf, PINDEX len);
-      virtual BOOL        Write(const PString& data);
-      virtual BOOL        Write(const PXML& pdu);
-      virtual void        OnElement(PXML& pdu);
+    virtual BOOL        Write(const void * buf, PINDEX len);
+    virtual BOOL        Write(const PString& data);
+    virtual BOOL        Write(const PXML& pdu);
+    virtual void        OnElement(PXML& pdu);
 
-      virtual void        Main();
+    virtual void        Main();
 
-    protected:
-      PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnOpen);
-      PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnClose);
+  protected:
+    PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnOpen);
+    PDECLARE_NOTIFIER(Stream, BaseStreamHandler, OnClose);
 
-      Stream *        m_Stream;
-      BOOL            m_AutoReconnect;
-      PTimeInterval   m_ReconnectTimeout;
+    Stream *        m_Stream;
+    BOOL            m_AutoReconnect;
+    PTimeInterval   m_ReconnectTimeout;
 
-      PNotifierList   m_ElementHandlers;
+    PNotifierList   m_ElementHandlers;
   };
 
 
@@ -197,24 +230,29 @@ namespace XMPP
 
   class Stanza : public PXML
   {
-      PCLASSINFO(Stanza, PXML)
+    PCLASSINFO(Stanza, PXML)
 
-    public:
-      /** Various constant strings
-      */
-      static const PString ID;
-      static const PString From;
-      static const PString To;
+  public:
+    /** Various constant strings
+    */
+    static const PString ID;
+    static const PString From;
+    static const PString To;
 
-      virtual BOOL IsValid() const = 0;
+    virtual BOOL IsValid() const = 0;
 
-      virtual PString GetID() const;
-      virtual PString GetFrom() const;
-      virtual PString GetTo() const;
+    virtual PString GetID() const;
+    virtual PString GetFrom() const;
+    virtual PString GetTo() const;
 
-      virtual void SetID(const PString& id);
-      virtual void SetFrom(const PString& from);
-      virtual void SetTo(const PString& to);
+    virtual void SetID(const PString& id);
+    virtual void SetFrom(const PString& from);
+    virtual void SetTo(const PString& to);
+
+    virtual PXMLElement * GetElement(const PString& name, PINDEX i = 0);
+    virtual void AddElement(PXMLElement * elem);
+
+    static PString GenerateID();
   };
 
   PLIST(StanzaList, Stanza);
@@ -403,13 +441,79 @@ namespace XMPP
 
     virtual PNotifierList GetResponseHandlers()   { return m_ResponseHandlers; }
 
-    static PString GenerateID();
-
   protected:
     BOOL            m_Processed;
     IQ *            m_OriginalIQ;
     PNotifierList   m_ResponseHandlers;
   };
+  /** JEP-0030 Service Discovery classes
+   */
+  namespace Disco
+  {
+    class Item : public PObject
+    {
+      PCLASSINFO(Item, PObject);
+    public:
+      Item(PXMLElement * item);
+      Item(const PString& jid, const PString& node = PString::Empty());
+
+      const JID&      GetJID() const    { return m_JID; }
+      const PString&  GetNode() const   { return m_Node; }
+
+      PXMLElement *   AsXML(PXMLElement * parent) const;
+
+    protected:
+      const JID     m_JID;
+      const PString m_Node;
+    };
+
+    PDECLARE_LIST(ItemList, Item)
+    public:
+      ItemList(PXMLElement * list);
+      PXMLElement * AsXML(PXMLElement * parent) const;
+    };
+
+    class Identity : public PObject
+    {
+      PCLASSINFO(Identity, PObject);
+    public:
+      Identity(PXMLElement * identity);
+      Identity(const PString& category, const PString& type, const PString& name);
+
+      const PString&  GetCategory() const   { return m_Category; }
+      const PString&  GetType() const       { return m_Type; }
+      const PString&  GetName() const       { return m_Name; }
+
+      PXMLElement *   AsXML(PXMLElement * parent) const;
+
+    protected:
+      const PString m_Category;
+      const PString m_Type;
+      const PString m_Name;
+    };
+
+    PDECLARE_LIST(IdentityList, Identity)
+    public:
+      IdentityList(PXMLElement * list);
+      PXMLElement * AsXML(PXMLElement * parent) const;
+    };
+
+    class Info : public PObject
+    {
+      PCLASSINFO(Info, PObject);
+    public:
+      Info(PXMLElement * info);
+      
+      IdentityList&   GetIdentities() { return m_Identities; }
+      PStringSet&     GetFeatures()   { return m_Features; }
+
+      PXMLElement *   AsXML(PXMLElement * parent) const;
+
+    protected:
+      IdentityList  m_Identities;
+      PStringSet    m_Features;
+    };
+  } // namespace Disco
 
 }; // class XMPP
 
@@ -419,4 +523,5 @@ namespace XMPP
 #endif  // _XMPP
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
