@@ -8,56 +8,70 @@
 #ifndef _SOUNDINPUT_H
 #define _SOUNDINPUT_H
 
-// Media kit bits
-#include <media/MediaDefs.h>
-//#include <media/MediaRoster.h>
-#include <media/TimeSource.h>
-
-// Sound Capture example used
-#include "SoundConsumer.h"
-
-// BlockFIFO example used
+#include "MediaRecorder.h"
 #include "BlockFIFO.h"
 
-class PSoundInput : public SoundConsumer {
+// Format convertors
+#define FORMATFROMBITSPERSAMPLE(bps) (uint32) ( \
+		(bps) == 8*sizeof(unsigned char) ? gs_audio_format::B_GS_U8 : \
+		(bps) == 8*sizeof(short) ? gs_audio_format::B_GS_S16 : \
+		(bps) == 8*sizeof(int) ? gs_audio_format::B_GS_S32 : \
+		(bps) == 0 ? gs_audio_format::B_GS_F : gs_audio_format::B_GS_U8 )
+#define BITSPERSAMPLEFROMFORMAT(fmt) (unsigned) ( (fmt & 0xf)*8 )
+#define DEFAULTSAMPLESIZE BITSPERSAMPLEFROMFORMAT(gs_audio_format::B_GS_U8)
+#define MAX_SOUND_FILE_SIZE (3 * 1024 * 1024)
 
-	// Media kit voodoo
-	BMediaRoster * m_roster;
-	media_node m_audioInputNode;
-	media_output m_audioOutput;
-	media_input m_recInput;
+#define GAMESOUNDFORMAT(ps) (*(gs_audio_format*)(ps)->formatInfo.GetPointer())
 
-	// Err
-	status_t mError;
+class PSoundInput {
 
-	// Recording flag
-	bool mfRecording;
-
-	// FIFO!
-	BBlockFIFO mFIFO;
-	
-	// Resampler stuff
-	int memoryL, memoryR, mp, mt;
-	
-	// Resampler code - donated by Jon Watte
-	int Resample(short * in, int inSize);
-	void Notify(int32 code, ...);
-	void Record(bigtime_t /* time */,
-		const void * data, size_t size,
-		const media_raw_audio_format & fmt );
 public:
-	PSoundInput(const char* name, size_t bufSize = 4096);
-	bool StartRecording();
-	bool StopRecording();
-	bool IsRecording() { return mfRecording; }
-	status_t InitCheck() { return mError; }
-
+	PSoundInput(const char* name,
+		unsigned numChannels,
+	    unsigned sampleRate,
+	    unsigned bitsPerSample);
+    
 	~PSoundInput();
 
+	bool StartRecording();
+	bool StopRecording();
+	bool IsRecording() { return mRecording; }
+	status_t InitCheck() { return mError; }
+
 	bool Read( void * buf, uint32 len );
+private:
+	// Main
+	status_t mError;
+	bool mRecording;
+
+	media_node * mDevice;
+	BMediaRecorder mRecorder;
+	BBlockFIFO mFIFO;
+	uint32 mFrameSize;
+
+	unsigned mNumChannels;
+    unsigned mSampleRate;
+    unsigned mBitsPerSample;
+
+	static void RecordHook(void * cookie, void * data, size_t size, const media_header & header);
+	bool ConnectIt();
 	
-	static PSoundInput* CreateSoundInput(const char* name);
-	static void ReleaseSoundInput(PSoundInput* input);
+	// Resampler code - donated by Jon Watte
+	int memoryL, memoryR, mp, mt;
+	int Resample(short * in, int inSize);
+
+	// Visualiser
+	int mPeakFormat;
+	float mCurMaxL;
+	float mAvgMaxL;
+	float mCurMaxR;
+	float mAvgMaxR;
+	void SetMax(float maxL, float maxR)
+	{
+		if (mCurMaxL < maxL) mCurMaxL = maxL;
+		if (mCurMaxR < maxR) mCurMaxR = maxR;
+	}
+	void CalcPeakData(void *data, size_t size);
 };
 
 #endif // _SOUNDINPUT_H
