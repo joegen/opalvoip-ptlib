@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.102  2004/04/18 07:46:32  rjongbloed
+ * Fixed other unix builds after Yuri's BeOS changes.
+ *
  * Revision 1.101  2004/04/18 00:21:35  ykiryanov
  * Cleaned up BeOS related code. Less ifdefs, more functionality
  *
@@ -366,11 +369,6 @@ int PSocket::os_close()
 
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
-
-#ifndef __BEOS__
-  // abort any I/O block using this os_handle
-  PProcess::Current().PXAbortIOBlock(os_handle);
-#endif // !__BEOS__
 
   return PXClose();
 }
