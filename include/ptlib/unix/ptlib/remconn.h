@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: remconn.h,v $
+ * Revision 1.10  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.9  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -58,31 +62,11 @@
  *
  */
 
-#ifndef _PREMOTECONNECTION
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-class PPipeChannel;
-class PXRemoteThread;
-
-
-#define _PREMOTECONNECTION_PLATFORM_INCLUDE
-#include "../../remconn.h"
-
-#endif
-#ifdef _PREMOTECONNECTION_PLATFORM_INCLUDE
-#undef _PREMOTECONNECTION_PLATFORM_INCLUDE
-
   protected:
     PString        pppDeviceName;
     PPipeChannel * pipeChannel;
     BOOL           wasConnected;
     Status         status;
     PString        deviceStr;
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

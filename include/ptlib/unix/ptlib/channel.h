@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.h,v $
+ * Revision 1.23  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.22  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -97,21 +101,6 @@
  *
  */
 
-#ifndef _PCHANNEL
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <ptlib/mutex.h>
-
-#define _PCHANNEL_PLATFORM_INCLUDE
-#include "../../channel.h"
-
-#endif
-#ifdef _PCHANNEL_PLATFORM_INCLUDE
-#undef _PCHANNEL_PLATFORM_INCLUDE
-
   public:
     enum PXBlockType {
       PXReadBlock,
@@ -130,8 +119,5 @@
     PThread   * px_readThread;
     PThread   * px_writeThread;
     PMutex      px_writeMutex;
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

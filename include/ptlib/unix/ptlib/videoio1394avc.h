@@ -24,19 +24,14 @@
  * Contributor(s): Georgi Georgiev <chutz@gg3.net>
  *
  * $Log: videoio1394avc.h,v $
+ * Revision 1.2  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.1  2003/01/11 05:30:13  robertj
  * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
  *
  */
-
-
-#ifndef _PVIDEOIO1394AVC
-
-#define _PVIDEOIO1394AVC
-
-#ifdef __GNUC__
-#pragma interface
-#endif
 
 #include <libraw1394/raw1394.h>
 #include <libavc1394/avc1394.h>
@@ -236,8 +231,5 @@ class PVideoInput1394AvcDevice : public PVideoInputDevice
 };
 
 int RawISOHandler (raw1394handle_t handle, int channel, size_t length, u_int32_t * data);
-
-#endif
-
 
 // End Of File ///////////////////////////////////////////////////////////////

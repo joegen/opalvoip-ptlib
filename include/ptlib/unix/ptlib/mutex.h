@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: mutex.h,v $
+ * Revision 1.20  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.19  2002/10/10 05:39:51  robertj
  * Fixed VxWorks port breaking other platforms.
  *
@@ -96,19 +100,8 @@
  *
  */
 
-
-#ifndef _PMUTEX
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // PMutex
-
-#define _PMUTEX_PLATFORM_INCLUDE
-#include "../../mutex.h"
-
-#endif
-#ifdef _PMUTEX_PLATFORM_INCLUDE
-#undef _PMUTEX_PLATFORM_INCLUDE
 
 #ifdef VX_TASKS
     virtual ~PMutex();
@@ -122,17 +115,15 @@
 
   protected:
 
-#if defined(P_PTHREADS) && !defined(VX_TASKS)
-#ifndef P_HAS_RECURSIVE_MUTEX
-    pthread_t ownerThreadId;
-    PINDEX lockCount;
-#endif
+#  if defined(P_PTHREADS) && !defined(VX_TASKS)
+#    ifndef P_HAS_RECURSIVE_MUTEX
+        pthread_t ownerThreadId;
+        PINDEX lockCount;
+#    endif
 
-#elif defined(BE_THREADS)
+#  elif defined(BE_THREADS)
     int32 benaphoreCount;
-#endif
-
-#endif
+#  endif
 
 #endif
 

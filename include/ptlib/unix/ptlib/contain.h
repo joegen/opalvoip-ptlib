@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.16  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.15  2002/06/06 09:27:26  robertj
  * Fixed PINDEX macros for being signed no (gcc3 port).
  * iAdded limits.h for Solaris compatibility.
@@ -50,9 +54,6 @@
  * Added open software license.
  *
  */
-
-#ifndef _PCONTAIN
-#define _PCONTAIN
 
 #include "pmachdep.h"
 #include <unistd.h>
@@ -112,11 +113,3 @@ typedef int PINDEX;
 inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX; }
 #define PASSERTINDEX(idx) PAssert((idx) >= 0, PInvalidArrayIndex)
 
-///////////////////////////////////////////
-//
-//  include common declarations
-//
-
-#include "../../contain.h"
-
-#endif

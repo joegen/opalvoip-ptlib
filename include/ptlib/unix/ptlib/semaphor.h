@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.19  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.18  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
@@ -88,26 +92,6 @@
  *
  */
 
-#ifndef _PSEMAPHORE
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <ptlib/thread.h>
-
-#if defined(P_HAS_SEMAPHORES)
-#include <semaphore.h>
-#endif
-
-
-#define _PSEMAPHORE_PLATFORM_INCLUDE
-#include "../../semaphor.h"
-
-#endif
-#ifdef _PSEMAPHORE_PLATFORM_INCLUDE
-#undef _PSEMAPHORE_PLATFORM_INCLUDE
-
   public:
     unsigned GetInitial() const { return initialVar; }
     unsigned GetMaxCount() const     { return maxCountVar; }
@@ -160,8 +144,5 @@
     ThreadQueue waitQueue;
 
 #endif
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////

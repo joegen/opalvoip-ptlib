@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.32  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.31  2002/11/02 00:32:21  robertj
  * Further fixes to VxWorks (Tornado) port, thanks Andreas Sikkema.
  *
@@ -132,42 +136,12 @@
  *
  */
 
-#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
-#include <setjmp.h>
-
-class PProcess;
-class PSemaphore;
-
-#ifdef BE_THREADS
-thread_id pthread_self(void) { return find_thread(NULL); }
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // PThread
-
-#ifndef VX_TASKS
-typedef pthread_t PThreadIdentifer;
-#else
-typedef long PThreadIdentifer;
-#endif // !VX_TASKS
-
-#define _PTHREAD_PLATFORM_INCLUDE
-#include "../../thread.h"
-#undef _PTHREAD_PLATFORM_INCLUDE
-
-
-#endif
-#ifdef _PTHREAD_PLATFORM_INCLUDE
 
   public:
     int PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout);
 
-  public:
     int PXBlockOnIO(int handle,
                     int type,
                    const PTimeInterval & timeout);
@@ -246,43 +220,6 @@ typedef long PThreadIdentifer;
     long PX_threadId;
     int priority;
     PINDEX originalStackSize;
-
-#else
-
-  protected:
-    void FreeStack();
-    void PXSetOSHandleBlock  (int fd, int type);
-    void PXClearOSHandleBlock(int fd, int type);
-
-    PTimer ioTimer;
-    BOOL   hasIOTimer;
-    int    waitPid;
-
-    fd_set * read_fds;
-    fd_set * write_fds;
-    fd_set * exception_fds;
-    int    handleWidth;
-
-    int    selectReturnVal;
-    int    selectErrno;
-#endif
-
-#endif
-
-#if !defined(_PTHREAD) && !defined(_PTHREAD_PLATFORM_INCLUDE)
-#define _PTHREAD
-
-inline PThreadIdentifer PThread::GetThreadId() const
-  { return PX_threadId; }
-
-#ifndef VX_TASKS
-inline PThreadIdentifer PThread::GetCurrentThreadId()
-  { return ::pthread_self(); }
-#else
-inline PThreadIdentifer PThread::GetCurrentThreadId()
-  { return ::taskIdSelf(); }
-#endif // !VX_TASKS
-
 
 #endif
 

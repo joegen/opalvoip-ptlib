@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.19  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.18  2003/05/16 17:49:18  shawn
  * Audio code for CoreAudio of Mac OS X now uses multiple playback buffers.
  *
@@ -82,8 +86,6 @@
  *
  */
 
-#ifndef _PSOUND
-
 #ifdef USE_ESD
 #include <ptclib/delaychan.h>
 #endif
@@ -99,10 +101,6 @@ template <class ISample, class IntSample, class OSample> class BaseResampler;
 typedef class BaseResampler<short, long, short> Resampler;
 #endif // __BEOS__
 
-#ifdef P_USE_PRAGMA 
-#pragma interface
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // declare type for sound handle dictionary
 
@@ -112,13 +110,6 @@ class JRingBuffer;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSound
-
-#define _PSOUND_PLATFORM_INCLUDE
-#include "../../sound.h"
-
-#endif
-#ifdef _PSOUND_PLATFORM_INCLUDE
-#undef _PSOUND_PLATFORM_INCLUDE
 
   public:
     BOOL Close();
@@ -204,7 +195,5 @@ class JRingBuffer;
 #endif
 
 #endif
-
-#endif // _PSOUND_PLATFORM_INCLUDE
 
 // End Of File ////////////////////////////////////////////////////////////////

@@ -31,26 +31,11 @@
 
 #if !defined(__BEOS__) && !defined(P_VXWORKS) && !defined(P_RTEMS)
 
-#ifndef _PDYNALINK
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // PDynaLink
 
-#define _PDYNALINK_PLATFORM_INCLUDE
-#include "../../dynalink.h"
-
-#endif
-#ifdef _PDYNALINK_PLATFORM_INCLUDE
-#undef _PDYNALINK_PLATFORM_INCLUDE
-
   protected:
     void * dllHandle;
-
-#endif
 
 #endif // !__BEOS__ && !P_VXWORKS
 

@@ -29,6 +29,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.177  2003/09/17 01:18:03  csoutheren
+# Removed recursive include file system and removed all references
+# to deprecated coooperative threading support
+#
 # Revision 1.176  2003/09/08 21:11:09  dereksmithies
 # Remove hardcoded path from make file. Thanks Damien Sandras.
 #
@@ -567,7 +571,7 @@ BE_THREADS := 1
 SYSLIBS     += -lbe -lmedia -lgame -lroot
 
 ifdef BE_THREADS
-STDCCFLAGS	+= -DBE_THREADS -DP_PLATFORM_HAS_THREADS
+STDCCFLAGS	+= -DBE_THREADS
 endif
 
 STDCCFLAGS	+= -Wno-multichar -Wno-format
@@ -667,7 +671,7 @@ MEMORY_CHECK    := 0
 # Carbon is only available for full Mac OS X, not pure Darwin, so the only
 # currently available architecture is PPC.
 P_MAC_MPTHREADS := 1
-STDCCFLAGS	+= -DP_MAC_MPTHREADS -DP_PLATFORM_HAS_THREADS
+STDCCFLAGS	+= -DP_MAC_MPTHREADS
 # stupid Projct Builder compiler
 STDCCFLAGS	+= -DNO_LONG_DOUBLE
 # 
@@ -969,7 +973,7 @@ endif
 #STDCCFLAGS     += -fno-implement-inlines
 
 # add OS directory to include path
-STDCCFLAGS	+= -I$(UNIX_INC_DIR)
+# STDCCFLAGS	+= -I$(UNIX_INC_DIR)  # removed CRS
 
 
 # add library directory to library path and include the library

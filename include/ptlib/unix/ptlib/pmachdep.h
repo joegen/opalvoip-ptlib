@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.57  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.56  2003/05/06 06:59:12  robertj
  * Dynamic library support for MacOSX, thanks Hugo Santos
  *
@@ -169,7 +173,6 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <dlfcn.h>
-
 
 #define HAS_IFREQ
 #define PSETPGRP()  setpgrp()
@@ -507,6 +510,7 @@ typedef int socklen_t;
 
 #define PSETPGRP()  setpgrp()
 
+///////////////////////////////////////////////////////////////////////////////
 #elif defined (P_VXWORKS)
 
 #include <taskLib.h>
@@ -524,6 +528,9 @@ typedef int socklen_t;
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 
+#include <sys/times.h>
+#include <socklib.h>
+
 #define HAS_IFREQ
 
 #define _exit(i)	exit(i)
@@ -540,6 +547,12 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 
 #define strcasecmp strcmp
 
+#define P_HAS_SEMAPHORES
+#define _THREAD_SAFE
+#define P_THREAD_SAFE_CLIB
+#define	P_THREADIDENTIFIER long
+#include <taskLib.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 #elif defined(P_RTEMS)
@@ -549,6 +562,7 @@ struct hostent * Vx_gethostbyaddr(char *name, struct hostent *hp);
 #include <sys/fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #include <net/if.h>
 typedef int socklen_t;
 typedef int64_t         quad_t;
@@ -596,30 +610,42 @@ extern "C" {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-#else
 
 // Other operating systems here
 
+#else
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
+
+// includes common to all Unix variants
 
 #include <netdb.h>
+#include <dirent.h>
+#include <limits.h>
 
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/socket.h>
+#include <sys/time.h>
 
-#if defined(P_PTHREADS)
-
-#define P_PLATFORM_HAS_THREADS
-#include <pthread.h>
-
-#elif defined(VX_TASKS)
-
-#define P_PLATFORM_HAS_THREADS
-#define P_HAS_SEMAPHORES
-#define _THREAD_SAFE
-#define P_THREAD_SAFE_CLIB
-#include <taskLib.h>
-
+#ifndef __BEOS__
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #endif
 
+typedef	int SOCKET;
+
+#ifdef P_PTHREADS
+
+#include <pthread.h>
+#define P_THREADIDENTIFIER pthread_t
+
+#if defined(P_HAS_SEMAPHORES)
+#include <semaphore.h>
+#endif  // P_HAS_SEMPAHORES
+
+#endif  // P_PTHREADS
 
 #endif // _PMACHDEP_H
 

@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.7  2003/09/17 01:18:03  csoutheren
+ * Removed recursive include file system and removed all references
+ * to deprecated coooperative threading support
+ *
  * Revision 1.6  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -53,21 +57,8 @@
  *
  */
 
-#ifndef _PVIDEO
-
-#ifdef P_USE_PRAGMA
-#pragma interface
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 // PVideo
-
-#define _PVIDEO_PLATFORM_INCLUDE
-#include "../../video.h"
-
-#endif
-#ifdef _PVIDEO_PLATFORM_INCLUDE
-#undef _PVIDEO_PLATFORM_INCLUDE
 
   public:
     virtual BOOL Close();
@@ -80,8 +71,5 @@
 
   protected:
     static PMutex dictMutex;
-
-#endif
-
 
 // End Of File ////////////////////////////////////////////////////////////////
