@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.47 1996/01/28 02:53:40 robertj Exp $
+ * $Id: contain.cxx,v 1.48 1996/01/28 14:12:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.48  1996/01/28 14:12:22  robertj
+ * Fixed bug in Tokenise() for first token empty and PINDEX unsigned.
+ *
  * Revision 1.47  1996/01/28 02:53:40  robertj
  * Added assert into all Compare functions to assure comparison between compatible objects.
  * Fixed bug in Find() function, subset sum calculation added one to many bytes.
@@ -1005,7 +1008,9 @@ PStringArray
   }
 
   while (p2 != P_MAX_INDEX) {
-    tokens[token++] = operator()(p1, p2-1);
+    if (p2 > p1)
+      tokens[token] = operator()(p1, p2-1);
+    token++;
 
     // Get next separator. If not one token per separator then continue
     // around loop to skip over all the consecutive separators.
