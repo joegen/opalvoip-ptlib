@@ -64,12 +64,16 @@ For Windows.
 2.	Open the pwlib.dsw file in the pwlib top directory. If you have the
 	minimum library it will come up with several requests to find .dsp
 	files, just cancel past these.
-3.	Build the target MergeSym, in release mode.
-4.	Move the MergeSym.exe file to somewhere in your path, eg c:\pwlib\lib
-5.	Build the target ASNParser, in release mode.
-6.	Move the ASNParser.exe file to somewhere in your path, eg c:\pwlib\lib
-7.	Build the pwtest target, if you have the full distribution.
-8.	You are now on your own!
+3.	If you have the NT or 95 DDK, find the ndis.h file and put it into the
+	pwlib/include/ptlib/msos directory. If you do not, then delete the files
+	ethsock.cxx and pethsock.cxx from the Console project.
+4.	Build the target MergeSym, in release mode.
+5.	Move the MergeSym.exe file to somewhere in your path, eg c:\pwlib\lib
+6.	Build the target ASNParser, in release mode. Note you will need bison
+	and flex to do this.
+7.	Move the ASNParser.exe file to somewhere in your path, eg c:\pwlib\lib
+8.	Build the pwtest target, if you have the full distribution.
+9.	You are now on your own!
 
 
 For unix.
