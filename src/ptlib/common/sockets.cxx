@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.79  1998/11/14 06:28:36  robertj
+ * Changed senatics of os_sendto to return TRUE if ANY bytes are sent.
+ *
  * Revision 1.78  1998/11/08 12:05:04  robertj
  * Fixed multiple thread access problem with DNS aliases array.
  *
@@ -1390,7 +1393,8 @@ BOOL PIPDatagramSocket::WriteTo(const void * buf, PINDEX len,
   sockAddr.sin_family = AF_INET;
   sockAddr.sin_addr = addr;
   sockAddr.sin_port = htons(port);
-  return os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr));
+  return os_sendto(buf, len, 0, (struct sockaddr *)&sockAddr, sizeof(sockAddr))
+         && lastWriteCount >= len;
 }
 
 
