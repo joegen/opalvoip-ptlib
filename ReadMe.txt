@@ -764,7 +764,7 @@ Native threads is the default and the best solution.
 7.4. Mac OS X (Darwin) Issues
 -----------------------------
 
-Port Maintained by Roger Hardiman <roger@freebsd.org> but recently
+Port maintained by Roger Hardiman <roger@freebsd.org> but recently
 Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu> has been leading
 development.
 Threads cannot be suspended once they are running, and trying to Suspend
@@ -780,12 +780,10 @@ localtime_r() and gm_time() are missing.
 So in osutil.cxx I have implemented os_localtime() and os_gmtime()
 with localtime() and gm_time() which may not be thread safe.
 
-Audio is supported through the Enlightenment Sound Daemon (esd) or EsounD.
-You must have this installed this, and set the ESDDIR environment
-variable to point to it prior to compiling PWLib.
+Audio is supported using the coreaudio library.
 
-There is no video support due to a lack of documentation and hardware.
-
+Video support is being added by Shawn and users interested in this should
+check Shawn's web site at http://sourceforge.net/projects/xmeeting/
 
 --------------------------------------------------------------------------------
 7.5. BeOS Issues
@@ -1224,6 +1222,17 @@ To build the DLL:
    4   Open openldap/build/main.dsw
    5   Select the "dll" project and build the "DLL Release" target.
    6   Put the resulting openldap/DLLRelease/openldap.dll file in your path.
+
+
+--------------------------------------------------------------------------------
+7.9. ESD (Esound)
+-----------------
+Most targets come with native sound support.
+However there is also support for the ESD (esound) daemon which provides
+full duplex audio via network sockets.
+To compile pwlib to use ESD, you need to set the ESDDIR environment variable
+to point to the directory you have installed ESD into.
+Then compile pwlib.
 
 
 ================================================================================
