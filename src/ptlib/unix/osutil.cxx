@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.81  2004/04/01 12:51:11  csoutheren
+ * Fixed problem with args to access, thanks to Borko Jandras
+ *
  * Revision 1.80  2004/01/07 21:30:30  dsandras
  * Applied patch from Miguel Rodriguez Perez <migrax@terra.es> to remove problematic PAssert failing in cases where it shouldn't.
  *
@@ -976,15 +979,15 @@ BOOL PFile::Access(const PFilePath & name, OpenMode mode)
 
   switch (mode) {
     case ReadOnly :
-      accmode = 2;
+      accmode = R_OK;
       break;
 
     case WriteOnly :
-      accmode = 4;
+      accmode = W_OK;
       break;
 
     default :
-      accmode = 6;
+      accmode = R_OK | W_OK;
   }
 
   return access(name, accmode) == 0;
