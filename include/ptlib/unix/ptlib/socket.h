@@ -1,5 +1,5 @@
 /*
- * $Id: socket.h,v 1.4 1996/01/26 11:06:31 craigs Exp $
+ * $Id: socket.h,v 1.5 1996/05/02 12:28:03 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: socket.h,v $
+ * Revision 1.5  1996/05/02 12:28:03  craigs
+ * More Sun4 fixes
+ *
  * Revision 1.4  1996/01/26 11:06:31  craigs
  * Added destructor
  *
@@ -35,15 +38,6 @@
 #include <signal.h>
 #include <netdb.h>
 #include <netinet/in.h>
-
-#if defined (P_SUN4)
-extern "C" int socket(int, int, int);
-extern "C" int connect(int s, struct sockaddr *name, int namelen);
-extern "C" int ioctl(int, int, void *);
-extern "C" int send(int s, const void *buf, int len, int flags);
-extern "C" int recv(int s, void *buf, int len, int flags);
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // PSocket
