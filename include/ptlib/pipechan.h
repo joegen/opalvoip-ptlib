@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.h,v $
+ * Revision 1.13  1998/10/26 09:11:05  robertj
+ * Added ability to separate out stdout from stderr on pipe channels.
+ *
  * Revision 1.12  1998/09/23 06:21:08  robertj
  * Added open source copyright license.
  *
@@ -112,7 +115,8 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
-      BOOL searchPath = TRUE       // Flag for system PATH to be searched.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
@@ -123,13 +127,15 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
          at all.
        */
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
-      BOOL searchPath = TRUE       // Flag for system PATH to be searched.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     PPipeChannel(
       const PString & subProgram,  // Sub program name or command line.
       const PStringArray & argumentList,  // Array of arguments to sub-program.
       OpenMode mode = ReadWrite,   // Mode for the pipe channel.
-      BOOL searchPath = TRUE       // Flag for system PATH to be searched.
+      BOOL searchPath = TRUE,      // Flag for system PATH to be searched.
+      BOOL stderrSeparate = FALSE  // Standard error is on separate pipe
     );
     /* Create a new pipe channel allowing the subProgram to be executed and
        data transferred from its stdin/stdout.
@@ -157,6 +163,11 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        for executables should be searched for the sub-program. If FALSE then
        only the explicit or implicit path contained in the
        <CODE>subProgram</CODE> parameter is searched for the executable.
+
+       The <CODE>stderrSeparate</CODE> parameter indicates that the standard
+       error stream is not included in line with the standard output stream.
+       In this case, data in this stream must be read using the
+       <A>ReadStandardError()</A> function.
      */
 
   ~PPipeChannel();
@@ -293,6 +304,20 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
        that the process has actually terminated.
      */
 
+    BOOL ReadStandardError(
+      PString & errors,   // String to receive standard error text.
+      BOOL wait = FALSE   // Flag to indicate if function should block
+    );
+    /* Read all available data on the standard error stream of the
+       sub-process. If the <CODE>wait</CODE> parameter is FALSE then only
+       the text currently available is returned. If TRUE then the function
+       blocks as long as necessary to get some number of bytes.
+
+       <H2>Returns:</H2>
+       TRUE indicates that at least one character was read from stderr.
+       FALSE means no bytes were read due to timeout or some other I/O error.
+     */
+
     static BOOL CanReadAndWrite();
     /* Determine if the platform can support simultaneous read and writes from
        the PPipeChannel (eg MSDOS returns FALSE, Unix returns TRUE).
@@ -317,8 +342,9 @@ PDECLARE_CLASS(PPipeChannel, PChannel)
          then this is equivalent to first constructor, without the parameter
          at all.
        */
-      OpenMode mode,    // Mode for the pipe channel.
-      BOOL searchPath   // Flag for system PATH to be searched.
+      OpenMode mode,       // Mode for the pipe channel.
+      BOOL searchPath,     // Flag for system PATH to be searched.
+      BOOL stderrSeparate  // Standard error is on separate pipe
     );
     /* Common, platform dependent, construction code for the pipe channel. This
        is called by all of the constructors.
