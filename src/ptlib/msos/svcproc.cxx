@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.64  2001/04/16 23:04:25  craigs
+ * Fixed problem with unknown command causing page fault due to missing comma in command list
+ *
  * Revision 1.63  2001/04/12 01:34:02  robertj
  * Added threads to NT event log.
  *
@@ -286,7 +289,7 @@ static const char * const ServiceCommandNames[NumSvcCmds] = {
   "Stop",
   "Pause",
   "Resume",
-  "Deinstall"
+  "Deinstall",
   "NoWin"
 };
 
