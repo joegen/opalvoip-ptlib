@@ -37,6 +37,7 @@ extern "C" {
 
 #if (__GNUC__ >= 3)
 #include <iostream>
+using namespace std;
 #else
 #include <iostream.h>
 #endif
