@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.160  2001/03/23 20:28:54  yurik
+ * Got rid of pragma warning for WinCE port
+ *
  * Revision 1.159  2001/03/09 05:50:48  robertj
  * Added ability to set default PConfig file or path to find it.
  *
@@ -533,14 +536,14 @@
  *
  */
 
+#ifdef _WIN32_WCE
+#pragma init_seg(lib)
+#endif
+
 #include <ptlib.h>
 #include <ptlib/svcproc.h>
 
 #include <ctype.h>
-
-#ifdef _WIN32_WCE
-#pragma init_seg(lib)
-#endif
 
 class PSimpleThread : public PThread
 {
