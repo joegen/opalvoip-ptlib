@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: main.cxx,v $
+ * Revision 1.7  2004/09/07 11:32:02  rjongbloed
+ * Changed function name in PSafeCollection to something more standard for collections
+ *
  * Revision 1.6  2004/04/04 13:24:19  rjongbloed
  * Changes to support native C++ Run Time Type Information
  *
@@ -199,19 +202,19 @@ void ThreadSafe::Test1OutputEnd()
   Test1Output();
 
   cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Unsorted:" << endl;
-  for (ptr = unsorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+  for (ptr = unsorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr) {
     cout << *ptr << endl;
-    }
+  }
     
   cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Sorted:" << endl;
-  for (ptr = sorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+  for (ptr = sorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr) {
     cout << *ptr << endl;
-    }
+  }
 
   cout << setprecision(0) << setw(5) << (PTimer::Tick() - startTick) << " Sparse:" << endl;
-  for (ptr = sparse.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+  for (ptr = sparse.GetAt(0, PSafeReference); ptr != NULL; ++ptr) {
     cout << *ptr << endl;
-    }
+  }
 
 
 }
@@ -242,14 +245,14 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
         break;
 
       case 3 :
-        for (ptr = unsorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+        for (ptr = unsorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr) {
           if (random%50 == 0)
             unsorted.Remove(ptr);
         }
         break;
 
       case 4 :
-        for (ptr = sorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr) {
+        for (ptr = sorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr) {
           if (random%50 == 0)
             sorted.Remove(ptr);
         }
@@ -275,53 +278,51 @@ void ThreadSafe::Test1Thread(PThread &, INT duration)
         break;
 
       case 9 :
-        for (ptr = unsorted.GetWithLock(0, PSafeReadOnly); ptr != NULL; ++ptr)
+        for (ptr = unsorted.GetAt(0, PSafeReadOnly); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
       case 10 :
-        for (ptr = sorted.GetWithLock(0, PSafeReadOnly); ptr != NULL; ++ptr)
+        for (ptr = sorted.GetAt(0, PSafeReadOnly); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
       case 11 :
-        for (ptr = sparse.GetWithLock(0, PSafeReadOnly); ptr != NULL; ++ptr)
+        for (ptr = sparse.GetAt(0, PSafeReadOnly); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
       case 12 :
-        for (ptr = unsorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr)
+        for (ptr = unsorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
       case 13 :
-        for (ptr = sorted.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr)
+        for (ptr = sorted.GetAt(0, PSafeReference); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
       case 14 :
-        for (ptr = sparse.GetWithLock(0, PSafeReference); ptr != NULL; ++ptr)
+        for (ptr = sparse.GetAt(0, PSafeReference); ptr != NULL; ++ptr)
           Sleep(random%50);
         break;
 
 
       case 15 :
         if ( unsorted.GetSize() > 0 ) {
-	        PSafePtr<TestObject> ptr2 = unsorted.GetWithLock(unsorted.GetSize() - 1, PSafeReadOnly);
-	  
-	        if ( ptr2 != NULL )
+	  PSafePtr<TestObject> ptr2 = unsorted.GetAt(unsorted.GetSize() - 1, PSafeReadOnly);
+	  if ( ptr2 != NULL )
             ptr2 = unsorted.FindWithLock(*ptr2, PSafeReadOnly);
-	        }
+	}
 		
         break;
 
       case 16 :
         if ( sorted.GetSize() > 0 ) {
-	        PSafePtr<TestObject> ptr2 = unsorted.GetWithLock(sorted.GetSize() - 1, PSafeReference);
-		
-	        if ( ptr2 != NULL )
+	  PSafePtr<TestObject> ptr2 = unsorted.GetAt(sorted.GetSize() - 1, PSafeReference);
+	  if ( ptr2 != NULL )
             ptr2 = sorted.FindWithLock(*ptr2, PSafeReference);
-		      }
+	}
         break;
 
     }
@@ -392,7 +393,7 @@ void ThreadSafe::Test3Thread1(PThread &, INT)
 {
   {
     cout << "Thread 1 before read only lock" << endl;
-    PSafePtr<TestObject> ptr = unsorted.GetWithLock(2, PSafeReadOnly);
+    PSafePtr<TestObject> ptr = unsorted.GetAt(2, PSafeReadOnly);
 
     cout << "Thread 1 after read only lock, pausing ..." << endl;
     Sleep(2000);
@@ -413,7 +414,7 @@ void ThreadSafe::Test3Thread2(PThread &, INT)
   Sleep(1000);
 
   cout << "Thread 2 before enumeration" << endl;
-  PSafePtr<TestObject> ptr = unsorted.GetWithLock(0, PSafeReadOnly);
+  PSafePtr<TestObject> ptr = unsorted.GetAt(0, PSafeReadOnly);
   while (ptr != NULL) {
     if (ptr->value == 2) {
       cout << "Thread 2 before read write lock" << endl;
