@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.6 1995/07/02 01:26:52 robertj Exp $
+ * $Id: win32.cxx,v 1.7 1995/08/24 12:42:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.7  1995/08/24 12:42:33  robertj
+ * Changed PChannel so not a PContainer.
+ * Rewrote PSerialChannel::Read yet again so can break out of I/O.
+ *
  * Revision 1.6  1995/07/02 01:26:52  robertj
  * Changed thread internal variables.
  * Added service process support for NT.
@@ -259,24 +263,9 @@ void PPipeChannel::Construct(const PString & subProgram,
 }
 
 
-void PPipeChannel::DestroyContents()
+PPipeChannel::~PPipeChannel()
 {
   Close();
-  PChannel::DestroyContents();
-}
-
-
-void PPipeChannel::CloneContents(const PPipeChannel *)
-{
-  PAssertAlways("Cannot clone pipe");
-}
-
-
-void PPipeChannel::CopyContents(const PPipeChannel & chan)
-{
-  info = chan.info;
-  hToChild = chan.hToChild;
-  hFromChild = chan.hFromChild;
 }
 
 
@@ -338,13 +327,9 @@ void PSerialChannel::Construct()
   strcpy(str, "com1");
   GetProfileString("ports", str, "9600,n,8,1,x", &str[5], sizeof(str)-6);
   str[4] = ':';
+  memset(&deviceControlBlock, 0, sizeof(deviceControlBlock));
+  deviceControlBlock.DCBlength = sizeof(deviceControlBlock);
   BuildCommDCB(str, &deviceControlBlock);
-}
-
-
-void PSerialChannel::CopyContents(const PSerialChannel & chan)
-{
-  commsResource = chan.commsResource;
 }
 
 
@@ -352,6 +337,18 @@ PString PSerialChannel::GetName() const
 {
   return portName;
 }
+
+
+class POVERLAPPED : public OVERLAPPED {
+  public:
+    POVERLAPPED()
+      {
+        memset(this, 0, sizeof(OVERLAPPED));
+        hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+      }
+    ~POVERLAPPED()
+      { CloseHandle(hEvent); }
+};
 
 
 BOOL PSerialChannel::Read(void * buf, PINDEX len)
@@ -366,36 +363,44 @@ BOOL PSerialChannel::Read(void * buf, PINDEX len)
 
   COMMTIMEOUTS cto;
   PAssertOS(GetCommTimeouts(commsResource, &cto));
-  cto.ReadIntervalTimeout = cto.ReadTotalTimeoutMultiplier = 0;
-  if (readTimeout == PMaxTimeInterval)
-    cto.ReadTotalTimeoutConstant = 0;
-  else {
-    cto.ReadTotalTimeoutConstant = readTimeout.GetMilliseconds();
-    if (cto.ReadTotalTimeoutConstant == 0)
-      cto.ReadIntervalTimeout = MAXDWORD; // Immediate timeout
-  }
+  cto.ReadIntervalTimeout = 0;
+  cto.ReadTotalTimeoutMultiplier = 0;
+  cto.ReadTotalTimeoutConstant = 0;
+  cto.ReadIntervalTimeout = MAXDWORD; // Immediate timeout
   PAssertOS(SetCommTimeouts(commsResource, &cto));
 
-  OVERLAPPED overlap;
-  memset(&overlap, 0, sizeof(overlap));
-  overlap.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-  if (ReadFile(commsResource, buf, len, (LPDWORD)&lastReadCount, &overlap)) {
-    CloseHandle(overlap.hEvent);
-    return lastReadCount > 0;
-  }
+  DWORD eventMask;
+  PAssertOS(GetCommMask(commsResource, &eventMask));
+  if (eventMask != (EV_RXCHAR|EV_TXEMPTY))
+    PAssertOS(SetCommMask(commsResource, EV_RXCHAR|EV_TXEMPTY));
 
-  if (GetLastError() == ERROR_IO_PENDING)
-    if (GetOverlappedResult(commsResource,
-                                   &overlap,
-                                    (LPDWORD)&lastReadCount, TRUE)) {
-      CloseHandle(overlap.hEvent);
-      return lastReadCount > 0;
+  POVERLAPPED overlap;
+  DWORD timeToGo = readTimeout.GetMilliseconds();
+  DWORD bytesToGo = len;
+  char * bufferPtr = (char *)buf;
+
+  for (;;) {
+    DWORD readCount = 0;
+    if (!ReadFile(commsResource, bufferPtr, bytesToGo, &readCount, &overlap)) {
+      if (GetLastError() != ERROR_IO_PENDING)
+        return ConvertOSError(-2);
+      if (!GetOverlappedResult(commsResource, &overlap, &readCount, FALSE))
+        return ConvertOSError(-2);
     }
 
-  ConvertOSError(-2);
-  CloseHandle(overlap.hEvent);
+    bytesToGo -= readCount;
+    bufferPtr += readCount;
+    lastReadCount += readCount;
+    if (lastReadCount >= len || timeToGo == 0)
+      return lastReadCount > 0;
 
-  return FALSE;
+    if (!WaitCommEvent(commsResource, &eventMask, &overlap)) {
+      if (GetLastError() != ERROR_IO_PENDING)
+        return ConvertOSError(-2);
+      if (WaitForSingleObject(overlap.hEvent, timeToGo) == WAIT_FAILED)
+        return ConvertOSError(-2);
+    }
+  }
 }
 
 
@@ -422,7 +427,7 @@ BOOL PSerialChannel::Write(const void * buf, PINDEX len)
 
   OVERLAPPED overlap;
   memset(&overlap, 0, sizeof(overlap));
-  overlap.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+  overlap.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
   if (WriteFile(commsResource, buf, len, (LPDWORD)&lastWriteCount, &overlap)) {
     CloseHandle(overlap.hEvent);
     return lastWriteCount == len;
@@ -460,11 +465,6 @@ BOOL PSerialChannel::Close()
 BOOL PSerialChannel::SetCommsParam(DWORD speed, BYTE data, Parity parity,
                      BYTE stop, FlowControl inputFlow, FlowControl outputFlow)
 {
-  if (IsOpen()) {
-    deviceControlBlock.DCBlength = sizeof(deviceControlBlock);
-    PAssertOS(GetCommState(commsResource, &deviceControlBlock));
-  }
-
   if (speed > 0)
     deviceControlBlock.BaudRate = speed;
 
@@ -978,7 +978,7 @@ BOOL PThread::IsTerminated() const
 void PThread::Suspend(BOOL susp)
 {
   if (susp)
-    SuspendThread(PAssertNULL(threadHandle));
+    SuspendThread(threadHandle);
   else
     Resume();
 }
@@ -986,7 +986,8 @@ void PThread::Suspend(BOOL susp)
 
 void PThread::Resume()
 {
-  ResumeThread(PAssertNULL(threadHandle));
+  PAssert(threadHandle != NULL, "Resume on terminated thread");
+  ResumeThread(threadHandle);
 }
 
 
@@ -1376,6 +1377,39 @@ void PServiceProcess::ProcessCommand(const char * cmd)
 	if (schSCManager != NULL)
     CloseServiceHandle(schSCManager);
   exit(0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSemaphore
+
+PSemaphore::PSemaphore(unsigned initial, unsigned maxCount)
+{
+  hSemaphore = CreateSemaphore(NULL, initial, maxCount, NULL);
+}
+
+
+PSemaphore::~PSemaphore()
+{
+  CloseHandle(hSemaphore);
+}
+
+
+void PSemaphore::Wait()
+{
+  WaitForSingleObject(hSemaphore, INFINITE);
+}
+
+
+void PSemaphore::Signal()
+{
+  ReleaseSemaphore(hSemaphore, 1, NULL);
+}
+
+
+BOOL PSemaphore::WillBlock() const
+{
+  return WaitForSingleObject(hSemaphore, 0) == WAIT_TIMEOUT;
 }
 
 
