@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: channel.cxx,v $
+ * Revision 1.33  2001/09/18 05:56:03  robertj
+ * Fixed numerous problems with thread suspend/resume and signals handling.
+ *
  * Revision 1.32  2001/09/11 03:39:19  robertj
  * Improved error processing on high level protocol failures, usually
  *   caused by unexpected shut down of a socket.
@@ -291,7 +294,7 @@ static void AbortIO(PThread * & thread, PMutex & mutex)
 {
   mutex.Wait();
   while (thread != NULL) {
-    thread->PXAbortIO();
+    thread->PXAbortBlock();
     mutex.Signal();
     PThread::Yield();
     mutex.Wait();
