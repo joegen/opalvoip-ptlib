@@ -8,12 +8,19 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  */
 
-#if defined(P_HPUX9)
-#include <langinfo.h>
-#elif defined(P_SUN4)
-#warning No locale info header
-#else
+#if defined(P_LINUX)
+#if (__GNUC_MINOR__ < 7)
 #include <localeinfo.h>
+#else
+#define P_USE_LANGINFO
+#endif
+#elif defined(P_HPUX9)
+#define P_USE_LANGINFO
+#elif defined(P_SUN4)
+#endif
+
+#ifdef P_USE_LANGINFO
+#include <langinfo.h>
 #endif
 
 PINLINE PProcess * PProcess::Current()
@@ -51,33 +58,39 @@ PINLINE PTime::PTime()
 }
 
 PINLINE BOOL PTime::GetTimeAMPM()
-#if defined(P_HPUX9)
+#if defined(P_USE_LANGINFO)
   { return strstr(nl_langinfo(T_FMT), "%p") != NULL; }
+#elif defined(P_LINUX)
+  { return strchr(_time_info->time, 'H') == NULL; }
 #elif defined(P_SUN4)
-#warning No AMPM flag
   { return FALSE; }
 #else
-  { return strchr(_time_info->time, 'H') == NULL; }
+#warning No AMPM flag
+  { return FALSE; }
 #endif
 
 PINLINE PString PTime::GetTimeAM()
-#if defined(P_HPUX9)
+#if defined(P_USE_LANGINFO)
   { return PString(nl_langinfo(AM_STR)); }
+#elif defined(P_LINUX)
+  { return PString(_time_info->ampm[0]); }
 #elif defined(P_SUN4)
-#warning No AM string
   { return "am"; }
 #else
-  { return PString(_time_info->ampm[0]); }
+#warning No AM string
+  { return "am"; }
 #endif
 
 PINLINE PString PTime::GetTimePM()
-#if defined(P_HPUX9)
+#if defined(P_USE_LANGINFO)
   { return PString(nl_langinfo(PM_STR)); }
+#elif defined(P_LINUX)
+  { return PString(_time_info->ampm[1]); }
 #elif defined(P_SUN4)
-#warning No PM string
   { return "pm"; }
 #else
-  { return PString(_time_info->ampm[1]); }
+#warning No PM string
+  { return "pm"; }
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,7 +134,7 @@ PINLINE PString PFilePath::GetVolume() const
 PINLINE BOOL PFile::Exists(const PFilePath & name)
   { return access(name, 0) == 0; }
 
-PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL force)
+PINLINE BOOL PFile::Remove(const PFilePath & name, BOOL)
   { return unlink(name) == 0; }
 
 ///////////////////////////////////////////////////////////////////////////////
