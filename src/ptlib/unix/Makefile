@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.69  2001/02/15 04:58:51  robertj
+# Added class to do secure HTTP based service process.
+#
 # Revision 1.68  2001/01/24 02:51:15  robertj
 # Changed definition of list of files for make clean to more correct position
 #   as expected by common.mak
@@ -254,7 +257,8 @@ VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 
 
 ifdef OPENSSLDIR
-SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx 
+SSL_SOURCE := $(COMPONENT_SRC_DIR)/pssl.cxx \
+              $(COMPONENT_SRC_DIR)/shttpsvc.cxx
 endif
 
 ifneq (,$(wildcard /usr/include/linux/videodev.h))
