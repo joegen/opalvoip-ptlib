@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.7 1996/10/31 10:28:38 craigs Exp $
+ * $Id: pprocess.h,v 1.8 1998/01/03 23:06:32 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.8  1998/01/03 23:06:32  craigs
+ * Added PThread support
+ *
  * Revision 1.7  1996/10/31 10:28:38  craigs
  * Removed PXOnSigxxx routines
  *
@@ -48,6 +51,9 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     friend class PApplication;
     friend class PServiceProcess;
     friend void PXSignalHandler(int);
+    friend class HouseKeepingThread;
+
+    ~PProcess();
 
     PString GetHomeDir ();
     char ** GetEnvp() const;
@@ -59,22 +65,36 @@ PDICTIONARY(PXFdDict,    POrdinalKey, PThread);
     virtual void PXOnSignal(int);
     virtual void PXOnAsyncSignal(int);
 
-    void PXAbortIOBlock(int fd);
-
     static void PXShowSystemWarning(PINDEX code);
     static void PXShowSystemWarning(PINDEX code, const PString & str);
 
   protected:
     void         PXCheckSignals();
     virtual void _PXShowSystemWarning(PINDEX code, const PString & str);
-    PXFdDict     ioBlocks[3];
-
     int pxSignals;
 
   private:
     char **envp;
     char **argv;
     int  argc;
+
+#ifndef P_PTHREADS
+  protected:
+    void PXAbortIOBlock(int fd);
+    PXFdDict     ioBlocks[3];
+#else
+  friend void * PXHouseKeepingThread(void *);
+
+  public:
+    void SignalTimerChange();
+
+  protected:
+    PDICTIONARY(ThreadDict, POrdinalKey, PThread);
+    ThreadDict activeThreads;
+    PSemaphore threadMutex;
+    PSemaphore timerChangeSemaphore;
+    PThread * housekeepingThread;
+#endif
 };
 
 extern PProcess * PProcessInstance;
