@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.104  2001/08/11 15:01:44  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.103  2001/05/08 23:27:12  robertj
  * Fixed, yet again, case significance in hash function.
  *
@@ -385,6 +388,14 @@
  * Fixed header comment for RCS.
  */
 
+#if P_MACOS
+#include <sys/types.h>
+extern "C"  // curse apple
+{
+#include <regex.h>
+};
+#endif
+
 #include <ptlib.h>
 
 #include <ctype.h>
@@ -393,8 +404,9 @@
 extern "C" int vsprintf(char *, const char *, va_list);
 #endif
 
+#if !P_MACOS
 #include "regex/regex.h"
-
+#endif
 
 #if !P_USE_INLINES
 #include "ptlib/contain.inl"
@@ -1687,7 +1699,7 @@ PString PString::RightTrim() const
     rpos--;
   }
 
-#if defined(P_MACOSX)	// make Apple gnu compiler happy
+#if defined(P_MACOSX) || defined(P_MACOS)	// make Apple gnu compiler happy
   PString retval(theArray, rpos - theArray);
   return retval;
 #else
