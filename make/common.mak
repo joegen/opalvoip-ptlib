@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.91  2004/04/21 12:05:04  csoutheren
+# Added target to create gcc compiled header for ptlib.h, but not used
+# because it does not seem to be able to compile some files
+#
 # Revision 1.90  2004/04/14 10:21:15  csoutheren
 # Grrr...more changes for CXX flags
 #
@@ -267,6 +271,7 @@ vpath %.cxx $(VPATH_CXX)
 vpath %.c   $(VPATH_C)
 vpath %.o   $(OBJDIR)
 vpath %.dep $(DEPDIR)
+vpath %.gch $(PWLIBDIR)/include
 
 #
 # add common directory to include path - must be after PW and PT directories
@@ -413,6 +418,11 @@ endif
 # ifdef PROG
 endif
 
+$(PWLIBDIR)/include/ptlib.h.gch: $(PWLIBDIR)/include/ptlib.h
+	@if [ ! -d $(OBJDIR) ] ; then mkdir -p $(OBJDIR) ; fi
+	$(CPLUS) $(STDCCFLAGS) $(OPTCCFLAGS) $(CFLAGS) $(STDCXXFLAGS) -x c++ -c $< -o $@
+
+PCH	:= $(PWLIBDIR)/include/ptlib.h.gch
 
 ######################################################################
 #
