@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.34  2004/04/09 06:40:48  rjongbloed
+ * Removed warning in VC++2003 version about wspapi.h
+ *
  * Revision 1.33  2004/04/09 00:42:59  csoutheren
  * Changed Unix build to use slightly different method for
  * keep class names, as GCC does not use actual class names for typeinfo
@@ -346,25 +349,27 @@ class RegistryKey
 // used by various modules to disable the winsock2 include to avoid header file problems
 #ifndef P_KNOCKOUT_WINSOCK2
 
+#pragma warning(push)
+#pragma warning(disable:4127 4706)
+
 #if defined(P_WINSOCKv1) || defined(_WIN32_WCE)
 
-#  include <winsock.h>
+  #include <winsock.h>
 
 #else // P_WINSOCKv1
 
   ///IPv6 support
   // Needed for for IPv6 socket API. Must be included before "windows.h"
-#  include <winsock2.h> // Version 2 of windows socket
-#  include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
+  #include <winsock2.h> // Version 2 of windows socket
+  #include <ws2tcpip.h> // winsock2 is not complete, ws2tcpip add some defines such as IP_TOS
 
-#  if P_HAS_IPV6 && !defined IPPROTO_IPV6
-#pragma warning(push)
-#pragma warning(disable:4127 4706)
-#include "tpipv6.h"  // For IPv6 Tech Preview.
-#pragma warning(pop)
-#  endif
+  #if P_HAS_IPV6 && !defined IPPROTO_IPV6
+    #include "tpipv6.h"  // For IPv6 Tech Preview.
+  #endif
 
 #endif // P_WINSOCKv1
+
+#pragma warning(pop)
 
 
 #define PIPX
