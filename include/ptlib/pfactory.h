@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pfactory.h,v $
+ * Revision 1.17  2004/07/06 10:12:52  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.16  2004/07/06 04:26:44  csoutheren
  * Fixed problem when using factory maps with non-standard keys
  *
@@ -389,7 +392,36 @@ class PFactory : PFactoryBase
   private:
     PFactory(const PFactory &) {}
     void operator=(const PFactory &) {}
+
+  public:
+    static int factoryLoader;
 };
 
+namespace PWLibFactoryLoader { \
+
+template <class AbstractType, typename KeyType>
+class Loader
+{
+  public:
+    Loader()
+    { PFactory<AbstractType, KeyType>::factoryLoader = 1; }
+};
+};
+
+//
+//  this macro is used to declare the static member variable used to force factories to instantiate
+//
+#define PLOAD_FACTORY(AbstractType, KeyType) \
+namespace PWLibFactoryLoader { \
+static Loader<AbstractType, KeyType> AbstractType##_##KeyType##; \
+}; \
+
+
+//
+//  this macro is used to instantiate a static variable that accesses the static member variable 
+//  in a factory forcing it to load
+//
+#define PINSTANTIATE_FACTORY(AbstractType, KeyType) \
+int PFactory<AbstractType, KeyType>::factoryLoader;
 
 #endif // _PFACTORY_H
