@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.18 1996/05/09 12:14:04 robertj Exp $
+ * $Id: inetprot.cxx,v 1.19 1996/05/15 10:15:15 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.19  1996/05/15 10:15:15  robertj
+ * Added access function to set intercharacter line read timeout.
+ *
  * Revision 1.18  1996/05/09 12:14:04  robertj
  * Rewrote the "unread" buffer usage and then used it to improve ReadLine() performance.
  *
@@ -135,6 +138,10 @@ void PApplicationSocket::Construct()
   unReadCount = 0;
 }
 
+void PApplicationSocket::SetReadLineTimeout(const PTimeInterval & t)
+{
+  readLineTimeout = t;
+}
 
 BOOL PApplicationSocket::Read(void * buf, PINDEX len)
 {
