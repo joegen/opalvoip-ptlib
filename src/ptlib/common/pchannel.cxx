@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pchannel.cxx,v $
+ * Revision 1.5  1999/06/17 14:44:42  robertj
+ * Fixed incorrect comparison of open write channel
+ *
  * Revision 1.4  1999/06/17 13:38:11  robertj
  * Fixed race condition on indirect channel close, mutex needed in PIndirectChannel.
  *
@@ -689,7 +692,7 @@ BOOL PIndirectChannel::SetReadChannel(PChannel * channel, BOOL autoDelete)
 
 BOOL PIndirectChannel::SetWriteChannel(PChannel * channel, BOOL autoDelete)
 {
-  if (writeAutoDelete != NULL) {
+  if (writeChannel != NULL) {
     lastError = Miscellaneous;
     osError = EBADF;
     return FALSE;
