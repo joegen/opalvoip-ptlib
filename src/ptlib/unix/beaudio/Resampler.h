@@ -1,9 +1,12 @@
 /*	pwlib/src/ptlib/unix/beaudio/Resampler.h
 
 	$Log: Resampler.h,v $
+	Revision 1.4  2002/02/04 03:15:47  yurik
+	VC compiler complained of invoking new on array with paramters in constructor. Fixed it.
+
 	Revision 1.3  2001/07/09 06:16:15  yurik
 	Jac Goudsmit's BeOS changes of July,6th. Cleaning up media subsystem etc.
-
+	
 
 	Copyright 2001, Be Incorporated.   All Rights Reserved.
 	This file may be used under the terms of the Be Sample Code License.
@@ -48,7 +51,9 @@ private:
 	T			   *mSecHead;	// kept equal to mHead+mSize
 	
 public:
-	History(size_t size, T neutralvalue)
+	History() {}; // default constructor to please vc's new for arrays. 
+
+	void Init(size_t size, T neutralvalue) // init with original constructor values
 	{
 		// The data is stored twice, so create a buffer that's double the requested size
 		mBuf=mHead=mSecHead=mLoop=new T[2*(mSize=size)];
@@ -59,6 +64,12 @@ public:
 		}
 		mLoop=mSecHead;
 	}
+
+	History(size_t size, T neutralvalue) // original constructor
+	{
+		Init(size, neutralvalue);
+	}
+
 	~History() { delete[] mBuf; }
 		
 	// Write one sample into the history
@@ -176,7 +187,9 @@ public:
 		mITicks=0; //mITicks=mICount*mITPS;
 		mOCount=0;
 		mOTicks=0;
-		mHistory=new SampleHistory[mIChannels](historysize,mNeutralValue);
+		mHistory = new SampleHistory[mIChannels];
+		for (unsigned u = 0; u < mIChannels; u++) 
+			mHistory[u].Init(historysize,mNeutralValue);
 	}
 public:
 	virtual ~BaseResampler()
