@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.35  2001/03/09 06:31:22  robertj
+ * Added ability to set default PConfig file or path to find it.
+ *
  * Revision 1.34  2000/05/02 03:17:13  robertj
  * Added display of thread name in SystemLog, thanks Ashley Unitt.
  *
@@ -272,6 +275,7 @@ int PServiceProcess::_main(void *)
              "h-help."
              "x-execute."
              "p-pid-file."
+             "i-ini-file:"
              "k-kill."
              "t-terminate."
              "l-log-file:"
@@ -328,24 +332,30 @@ int PServiceProcess::_main(void *)
   }
 
   if (helpAndExit) {
-    PError << "usage: [-c] -v|-d|-h|-x" << endl
-           << "  -h --help           output this help message and exit" << endl
-           << "  -v --version        display version information and exit" << endl
+    PError << "usage: [-c] -v|-d|-h|-x\n"
+              "  -h --help           output this help message and exit\n"
+              "  -v --version        display version information and exit\n"
 #ifndef BE_THREADS
-           << "  -d --daemon         run as a daemon" << endl
+              "  -d --daemon         run as a daemon\n"
 #endif
-           << "  -u --uid uid        set user id to run as" << endl
-           << "  -g --gid gid        set group id to run as" << endl
+              "  -u --uid uid        set user id to run as\n"
+              "  -g --gid gid        set group id to run as\n"
 #ifdef _PATH_VARRUN
-           << "  -p --pid-file       do not write pid file" << endl
-           << "  -t --terminate      terminate process in pid file" << endl
-           << "  -k --kill           kill process in pid file" << endl
+              "  -p --pid-file       do not write pid file\n"
+              "  -t --terminate      terminate process in pid file\n"
+              "  -k --kill           kill process in pid file\n"
 #endif
-           << "  -c --console        output messages to stdout rather than syslog" << endl
-           << "  -l --log-file file  output messages to file rather than syslog" << endl
-           << "  -x --execute        execute as a normal program" << endl;
+              "  -c --console        output messages to stdout rather than syslog\n"
+              "  -l --log-file file  output messages to file rather than syslog\n"
+              "  -x --execute        execute as a normal program\n"
+              "  -i --ini-file       Set the ini file to use, may be explicit file or\n"
+              "                      a ':' seaparated set of directories to search.\n"
+           << endl;
     return 0;
   }
+
+  if (args.HasOption('i'))
+    SetConfigurationPath(args.GetOptionString('i'));
 
   // open the system logger for this program
   if (systemLogFile.IsEmpty())
