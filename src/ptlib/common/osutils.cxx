@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.35 1995/07/31 12:09:25 robertj Exp $
+ * $Id: osutils.cxx,v 1.36 1995/11/09 12:22:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.36  1995/11/09 12:22:58  robertj
+ * Fixed bug in stream when reading an FF (get EOF).
+ *
  * Revision 1.35  1995/07/31 12:09:25  robertj
  * Added semaphore class.
  * Removed PContainer from PChannel ancestor.
@@ -693,7 +696,7 @@ int PChannelStreamBuffer::underflow()
   }
 
   if (gptr() != egptr())
-    return *gptr();
+    return (BYTE)*gptr();
 
   if (!channel->Read(eback(), egptr() - eback()) ||
                                   channel->GetErrorCode() != PChannel::NoError)
@@ -703,7 +706,7 @@ int PChannelStreamBuffer::underflow()
   char * p = egptr() - count;
   memmove(p, eback(), count);
   setg(eback(), p, egptr());
-  return *p;
+  return (BYTE)*p;
 }
 
 
