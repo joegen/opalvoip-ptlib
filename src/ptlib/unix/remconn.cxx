@@ -29,42 +29,58 @@
 
 #include "uerror.h"
 
-#define MAX_PPP_DEVICES		 4
-#define	DEFAULT_TIMEOUT		 "90"
-#define	DEFAULT_PPD_OPTS_STR	 "-detach crtscts modem defaultroute lock"
-#define	DEFAULT_LOGIN_STR	 ""
-#define	DEFAULT_BAUDRATE	 "9600"
-#define	DEFAULT_ERRORS_STR	 "ABORT 'NO CARRIER' ABORT BUSY ABORT 'NO DIALTONE'"
-#define	DEFAULT_MODEMINIT_STR	 "'' ATE1Q0Z OK"
-#define	DEFAULT_DIALPREFIX_STR	 "ATDT"
-#define DEFAULT_PPPD_STR         "pppd"
-#define DEFAULT_CHAT_STR         "chat"
+static const PString RasStr      = "ras";
+static const PString NumberStr   = "Number";
+static const PCaselessString UsernameStr = "$USERID";
+static const PCaselessString PasswordStr = "$PASSWORD";
+static const PString NameServerStr = "NameServer";
+
+static const PString OptionsStr = "Options";
+
+static const PString DeviceStr     = "Device";
+static const PString DefaultDevice = "ppp0";
+
+static const PString PPPDStr     = "PPPD";
+static const PString DefaultPPPD = "pppd";
+
+static const PString ChatStr     = "Chat";
+static const PString DefaultChat = "chat";
+
+static const PString PortStr     = "Port";
+static const PString DefaultPort = "/dev/modem";
+
+static const PString DialPrefixStr     = "DialPrefix";
+static const PString DefaultDialPrefix = "ATDT";
+
+static const PString LoginStr     = "Login";
+static const PString DefaultLogin = "";
+
+static const PString TimeoutStr     = "TimeoutStr";
+static const PString DefaultTimeout = "90";
+
+static const PString PPPDOptsStr     = "PPPDOpts";
+static const PString PPPDOpts        = "-detach";
+static const PString DefaultPPPDOpts = "crtscts modem defaultroute lock";
+
+static const PString BaudRateStr     = "BaudRate";
+static const PString DefaultBaudRate = "57600";
+
+static const PString ErrorsStr     = "Errors";
+static const PString DefaultErrors = "ABORT 'NO CARRIER' ABORT BUSY ABORT 'NO DIALTONE'";
+
+static const PString InitStr     = "Init";
+static const PString DefaultInit = "'' ATE1Q0Z OK";
+
 
 static const PXErrorStruct ErrorTable[] =
 {
   // Remote connection errors
   { 1000, "Attempt to open remote connection with empty system name" },
-  { 1001, "Attempt to open connection to unknown remote system \"%s\""},
-  { 1002, "Cannot find \"Device\" entry for remote system \"%s\""},
-  { 1003, "Cannot find \"Dial\" entry for remote system \"%s\""},
-  { 1004, "Cannot find free PPP device"},
+  { 1001, "Attempt to open connection to unknown remote system"},
+  { 1002, "pppd could not connect to remote system"},
 };
 
-static int PPPDeviceExists(const char * devName);
-
-static PRemoteConnection::Status status;
-
-PDECLARE_CLASS(PXRemoteThread, PThread)
-  public:
-    PXRemoteThread(PXRemoteThread ** myPtr, const PString & cmdLine);
-    void Main();
-    void KillPipeChannel();
-
-  protected:
-    int retVal;
-    PPipeChannel * pipeChannel;
-    PXRemoteThread ** myPtr;
-};
+static int PPPDeviceStatus(const char * devName);
 
 PRemoteConnection::PRemoteConnection()
 {
@@ -82,20 +98,6 @@ PRemoteConnection::~PRemoteConnection()
   Close();
 }
 
-static const PString RemoteStr = "Remote-";
-static const PString PortStr = "Port";
-static const PString DeviceStr = "Device";
-static const PString NumberStr   = "Number";
-static const PString DialPrefixStr   = "DialPrefix";
-static const PString LoginStr = "Login";
-static const PString TimeoutStr = "TimeoutStr";
-static const PString PPPDOptsStr = "PPPDOpts";
-static const PString BaudRateStr = "BaudRate";
-static const PString ErrorsStr = "Errors";
-static const PString InitStr = "Init";
-static const PString GeneralStr = "General";
-static const PString PPPDStr    = "PPPD";
-static const PString ChatStr    = "Chat";
 
 BOOL PRemoteConnection::Open(const PString & name)
 {
@@ -117,42 +119,23 @@ BOOL PRemoteConnection::Open(const PString & name,
   }
 
   // cannot open remote connection not in config file
-  PConfig config(PConfig::System);
-  PString str;
-  PString sectionName = RemoteStr + name;
-  if ((str = config.GetString(sectionName, PortStr, "")).IsEmpty()) {
+  PConfig config(0, RasStr);
+  PString phoneNumber;
+  if ((phoneNumber = config.GetString(name, NumberStr, "")).IsEmpty()) {
     status = NoNameOrNumber;
     PProcess::PXShowSystemWarning(1001, ErrorTable[1].str);
     return FALSE;
   }
 
-  // Try and find a connected PPP device. If we find one, then we assume
-  // we are connected and use that device. Otherwise, we assume PPPD will
-  // create the device when it runs
-  PINDEX i;
-  for (i = 0; i < MAX_PPP_DEVICES; i++) {
-    pppDeviceName = psprintf("ppp%i", i);
-    if (PPPDeviceExists(pppDeviceName) > 0) {
-      Close();
-      status = Connected;
-      remoteThread = NULL;
-      return TRUE;
-    }
+  // if there is a connection active, check to see if it has the same name
+  if (pipeChannel != NULL &&
+      pipeChannel->IsRunning() &&
+      name == remoteName &&
+      PPPDeviceStatus(deviceStr) > 0) {
+    status = Connected;
+    return TRUE;
   }
-
-  // cannot open remote connection with port not in config file
-  PString portSectionName = PortStr + "-" + str;
-  if ((str = config.GetString(portSectionName, DeviceStr, "")).IsEmpty()) {
-    status = NoNameOrNumber;
-    PProcess::PXShowSystemWarning(1002, ErrorTable[2].str);
-    return FALSE;
-  }
-  PString device = str;
-
-  // if already have a connection open, and it isn't the same one,
-  // then close it
-  if (name != remoteName) 
-    Close();
+  Close();
 
   // name        = name of configuration
   // sectionName = name of config section
@@ -160,54 +143,84 @@ BOOL PRemoteConnection::Open(const PString & name,
 
   ///////////////////////////////////////////
   //
-  // get name of program, if specified, in the general section
+  // get global options
   //
-  config.SetDefaultSection(GeneralStr);
-  PString pppdStr = config.GetString(PPPDStr, DEFAULT_PPPD_STR);
-  PString chatStr = config.GetString(ChatStr, DEFAULT_CHAT_STR);
+  config.SetDefaultSection(OptionsStr);
+  deviceStr          = config.GetString(DeviceStr,     DefaultDevice);
+  PString pppdStr    = config.GetString(PPPDStr,       DefaultPPPD);
+  PString chatStr    = config.GetString(ChatStr,       DefaultChat);
+  PString baudRate   = config.GetString(BaudRateStr,   DefaultBaudRate);
+  PString chatErrs   = config.GetString(ErrorsStr,     DefaultErrors);
+  PString modemInit  = config.GetString(InitStr,       DefaultInit);
+  PString dialPrefix = config.GetString(DialPrefixStr, DefaultDialPrefix);
+  PString portName   = config.GetString(PortStr,       DefaultPort);
+  PString pppdOpts   = config.GetString(PPPDOptsStr,   DefaultPPPDOpts);
 
   ///////////////////////////////////////////
   //
   // get remote system parameters
   //
-  config.SetDefaultSection(sectionName);
-  PString dialNumber = config.GetString(NumberStr);
-  PString loginStr   = config.GetString(LoginStr,    DEFAULT_LOGIN_STR);
-  PString timeout    = config.GetString(TimeoutStr,  DEFAULT_TIMEOUT);
-  PString pppdOpts   = config.GetString(PPPDOptsStr, DEFAULT_PPD_OPTS_STR);
-
-  // make sure we have a dial string
-  if (dialNumber.IsEmpty()) {
-    status = NoNameOrNumber;
-    PProcess::PXShowSystemWarning(1003, ErrorTable[3].str);
-    return FALSE;
-  }
+  config.SetDefaultSection(remoteName);
+  PString loginStr   = config.GetString(LoginStr,    DefaultLogin);
+  PString timeoutStr = config.GetString(TimeoutStr,  DefaultTimeout);
+  PINDEX timeout = timeoutStr.AsInteger();
+  PString nameServerStr = config.GetString(NameServerStr, "");
 
   ///////////////////////////////////////////
   //
-  // get port parameters
+  // replace metastrings in the login string
   //
-  config.SetDefaultSection(portSectionName);
-  PString baudRate   = config.GetString(BaudRateStr,   DEFAULT_BAUDRATE);
-  PString chatErrs   = config.GetString(ErrorsStr,     DEFAULT_ERRORS_STR);
-  PString modemInit  = config.GetString(InitStr,       DEFAULT_MODEMINIT_STR);
-  PString dialPrefix = config.GetString(DialPrefixStr, DEFAULT_DIALPREFIX_STR);
+  loginStr.Replace(UsernameStr, user);
+  loginStr.Replace(PasswordStr, pword);
+
+  ///////////////////////////////////////////
+  //
+  // setup the chat command
+  //
+  PString chatCmd     = chatErrs & modemInit & dialPrefix + phoneNumber & loginStr;
+  PString commandLine = pppdStr & portName & baudRate & PPPDOpts & pppdOpts;
+
+  if (!nameServerStr.IsEmpty())
+    commandLine &= "ipparam " & nameServerStr;
+
+  if (!chatCmd.IsEmpty()) 
+    commandLine &= PString("connect \"" + chatStr & "-t") + timeoutStr &
+                   chatCmd + "\"";
 
   ///////////////////////////////////////////
   //
   // instigate a dial using pppd
   //
-  PString chatCmd     = chatErrs & modemInit & dialPrefix + dialNumber & loginStr;
-  PString commandLine = pppdStr & device & baudRate & pppdOpts;
-  if (!chatCmd.IsEmpty()) 
-    commandLine &= PString("connect \"" + chatStr & "-t") + timeout &
-                   chatCmd + "\"";
+  PStringArray argArray;
+  argArray[0]  = "-c";
+  argArray[1]  = commandLine;
+  pipeChannel  = PNEW PPipeChannel("/bin/sh", argArray);
 
-  remoteThread = PNEW PXRemoteThread(&remoteThread, commandLine);
+  ///////////////////////////////////////////
+  //
+  //  wait until the dial succeeds, or times out
+  //
+  PTimer timer(timeout*1000);
+  for (;;) {
+    if (pipeChannel == NULL || !pipeChannel->IsRunning()) 
+      break;
 
-  // dialling is now in progress
-  status = InProgress;
-  return TRUE;
+    if (PPPDeviceStatus(deviceStr) > 0) 
+      return TRUE;
+
+    if (!timer.IsRunning())
+      break;
+
+    PThread::Current()->Sleep(1000);
+  }
+
+  ///////////////////////////////////////////
+  //
+  //  dial failed
+  //
+  Close();
+
+  return FALSE;
 }
 
 
@@ -225,7 +238,7 @@ PINDEX PRemoteConnection::HashFunction() const
 
 void PRemoteConnection::Construct()
 {
-  remoteThread = NULL;
+  pipeChannel  = NULL;
   status       = Idle;
 }
 
@@ -238,25 +251,33 @@ BOOL PRemoteConnection::Open()
 
 void PRemoteConnection::Close()
 {
-  if (remoteThread != NULL) {
-    remoteThread->KillPipeChannel();
-    for (PINDEX i = 0; i < 30 && remoteThread != NULL; i++)
+  if (pipeChannel != NULL) {
+
+    // give pppd a chance to clean up
+    pipeChannel->PXKill(SIGINT);
+
+    PTimer timer(10*1000);
+    for (;;) {
+      if (!pipeChannel->IsRunning() ||
+          (PPPDeviceStatus(deviceStr) <= 0) ||
+          !timer.IsRunning())
+        break;
       PThread::Current()->Sleep(1000);
+    }
+
+    // kill the connection for real
+    delete pipeChannel;
+    pipeChannel = NULL;
   }
-  remoteThread = NULL;
 }
 
 PRemoteConnection::Status PRemoteConnection::GetStatus() const
 {
-  if (remoteThread != NULL) {
-    if (PPPDeviceExists(pppDeviceName) > 0)
-      return Connected;
-    else
-      return InProgress;
-  }
-
-  if (PPPDeviceExists(pppDeviceName) > 0)
+  if (pipeChannel != NULL &&
+      pipeChannel->IsRunning() &&
+      PPPDeviceStatus(deviceStr) > 0) 
     return Connected;
+
   return Idle;
 }
 
@@ -265,46 +286,18 @@ PStringArray PRemoteConnection::GetAvailableNames()
   PStringArray names;
 
   // get the list of remote system names from the system config file
-  PConfig config(PConfig::System);
+  PConfig config(0, RasStr);
 
   // remotes have section names of the form "Remote-x" where X is some
   // unique identifier, usually a number or the system name
   PStringList sections = config.GetSections();
   for (PINDEX i = 0; i < sections.GetSize(); i++) {
     PString sectionName = sections[i];
-    if (sectionName.GetLength() > RemoteStr.GetLength()+1 &&
-        sectionName.Find(RemoteStr) == 0)
-      names[names.GetSize()] = sectionName.Mid(RemoteStr.GetLength(), P_MAX_INDEX);
+    if (sectionName != OptionsStr)
+      names[names.GetSize()] = sectionName;
   }
 
   return names;
-}
-
-PXRemoteThread::PXRemoteThread(PXRemoteThread ** ptr, const PString & cmdLine)
-  : PThread(20000, AutoDeleteThread), myPtr(ptr)
-{
-  PStringArray argArray;
-  argArray[0] = "-c";
-  argArray[1] = cmdLine;
-  pipeChannel = PNEW PPipeChannel("/bin/sh", argArray);
-  Resume();
-}
-
-void PXRemoteThread::Main()
-{
-  pipeChannel->PXWaitForTerminate();
-  retVal = pipeChannel->GetReturnCode();
-  delete pipeChannel;
-  pipeChannel = NULL;
-  *myPtr = NULL;
-}
-
-void PXRemoteThread::KillPipeChannel()
-{
-  if (pipeChannel != NULL) {
-    pipeChannel->PXKill();
-    pipeChannel->PXWaitForTerminate();
-  }
 }
 
 //
@@ -312,7 +305,7 @@ void PXRemoteThread::KillPipeChannel()
 //   0 = exists, but is down
 //  >0 = exists, is up
 //
-static int PPPDeviceExists(const char * devName)
+static int PPPDeviceStatus(const char * devName)
 {
 #if defined(HAS_IFREQ)
   int skfd;
