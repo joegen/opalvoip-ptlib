@@ -1,6 +1,7 @@
 Root
 Repository
 Entries
+Entries.Static
 Baserev
 rcs
 protocols.dsp
