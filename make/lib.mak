@@ -47,7 +47,7 @@ else
 
 $(LIBDIR)/$(LIB_BASENAME): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-ifdef RANLIB
+ifdef P_USE_RANLIB
 	$(AR) rc $(LIBDIR)/$(LIB_BASENAME) $(OBJS)
 	$(RANLIB) $(LIBDIR)/$(LIB_BASENAME)
 else
