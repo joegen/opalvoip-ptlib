@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.2 1994/06/25 11:55:15 robertj Exp $
+ * $Id: collect.cxx,v 1.3 1994/07/02 03:03:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.2  1994/06/25 11:55:15  robertj
+ * Revision 1.3  1994/07/02 03:03:49  robertj
+ * Added container searching facilities..
+ *
+ * Revision 1.2  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
 // Revision 1.1  1994/04/20  12:17:44  robertj
@@ -99,7 +102,7 @@ PINDEX PArrayObjects::Append(PObject * obj)
 
 PINDEX PArrayObjects::Insert(const PObject & before, PObject * obj)
 {
-  PINDEX where = GetIndex(&before);
+  PINDEX where = GetObjectsIndex(&before);
   InsertAt(where, obj);
   return where;
 }
@@ -107,7 +110,7 @@ PINDEX PArrayObjects::Insert(const PObject & before, PObject * obj)
 
 BOOL PArrayObjects::Remove(const PObject * obj)
 {
-  PINDEX i = GetIndex(obj);
+  PINDEX i = GetObjectsIndex(obj);
   if (i == P_MAX_INDEX)
     return FALSE;
   RemoveAt(i);
@@ -157,10 +160,20 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
 }
 
 
-PINDEX PArrayObjects::GetIndex(const PObject * obj) const
+PINDEX PArrayObjects::GetObjectsIndex(const PObject * obj) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
     if (theArray[i] == obj)
+      return i;
+  }
+  return P_MAX_INDEX;
+}
+
+
+PINDEX PArrayObjects::GetValuesIndex(const PObject & obj) const
+{
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    if (*theArray[i] == obj)
       return i;
   }
   return P_MAX_INDEX;
@@ -249,7 +262,7 @@ PINDEX PAbstractList::Insert(const PObject & before, PObject * obj)
 {
   PAssertNULL(obj);
   
-  PINDEX where = GetIndex(&before);
+  PINDEX where = GetObjectsIndex(&before);
   InsertAt(where, obj);
   return where;
 }
@@ -281,7 +294,7 @@ PINDEX PAbstractList::InsertAt(PINDEX index, PObject * obj)
 
 BOOL PAbstractList::Remove(const PObject * obj)
 {
-  PINDEX i = GetIndex(obj);
+  PINDEX i = GetObjectsIndex(obj);
   if (i == P_MAX_INDEX)
     return FALSE;
   RemoveAt(i);
@@ -344,29 +357,39 @@ BOOL PAbstractList::SetAt(PINDEX index, PObject * val)
 }
 
 
-PINDEX PAbstractList::GetIndex(const PObject * obj) const
+PINDEX PAbstractList::GetObjectsIndex(const PObject * obj) const
 {
-  PListElement * element = info->lastElement;
-  PINDEX index = info->lastIndex;
-  while (element != NULL && element->data != obj) {
+  PINDEX index = 0;
+  PListElement * element = info->head;
+  while (element != NULL) {
+    if (element->data == obj) {
+      info->lastElement = element;
+      info->lastIndex = index;
+      return index;
+    }
     element = element->next;
     index++;
   }
-  if (element == NULL) {
-    element = info->lastElement;
-    index = info->lastIndex;
-    while (element != NULL && element->data != obj) {
-      element = element->prev;
-      index--;
+
+  return P_MAX_INDEX;
+}
+
+
+PINDEX PAbstractList::GetValuesIndex(const PObject & obj) const
+{
+  PINDEX index = 0;
+  PListElement * element = info->head;
+  while (element != NULL) {
+    if (*element->data == obj) {
+      info->lastElement = element;
+      info->lastIndex = index;
+      return index;
     }
+    element = element->next;
+    index++;
   }
 
-  if (element == NULL)
-    return P_MAX_INDEX;
-
-  info->lastElement = element;
-  info->lastIndex = index;
-  return index;
+  return P_MAX_INDEX;
 }
 
 
@@ -595,12 +618,6 @@ BOOL PAbstractSortedList::SetAt(PINDEX, PObject *)
 }
 
 
-PINDEX PAbstractSortedList::GetIndex(const PObject *) const
-{
-  return 0;
-}
-
-
 PObject * PAbstractSortedList::GetAt(PINDEX index) const
 {
   if (index >= GetSize())
@@ -632,6 +649,18 @@ BOOL PAbstractSortedList::Enumerate(PEnumerator func, PObject * inf) const
     element = element->Successor();
   }
   return TRUE;
+}
+
+
+PINDEX PAbstractSortedList::GetObjectsIndex(const PObject * obj) const
+{
+  return info->root->ValueSelect(*obj);
+}
+
+
+PINDEX PAbstractSortedList::GetValuesIndex(const PObject & obj) const
+{
+  return info->root->ValueSelect(obj);
 }
 
 
@@ -829,8 +858,38 @@ PSortedListElement * PSortedListElement::OrderSelect(PINDEX index)
   PINDEX r = LeftTreeSize()+1;
   if (index == r)
     return this;
-  return index < r ? left != NULL ? left->OrderSelect(index) : NULL
-                   : right != NULL ? right->OrderSelect(index - r) : NULL;
+
+  if (index < r) {
+    if (left != NULL)
+      return left->OrderSelect(index);
+  }
+  else {
+    if (right != NULL)
+      return right->OrderSelect(index - r);
+  }
+
+  return NULL;
+}
+
+
+PINDEX PSortedListElement::ValueSelect(const PObject & obj)
+{
+  switch (data->Compare(obj)) {
+    case PObject::LessThan :
+      if (left != NULL)
+        return left->ValueSelect(obj);
+      break;
+
+    case PObject::GreaterThan :
+      if (left != NULL)
+        return LeftTreeSize() + right->ValueSelect(obj);
+      break;
+
+    default :
+      return LeftTreeSize();
+  }
+
+  return P_MAX_INDEX;
 }
 
 
@@ -888,46 +947,6 @@ ostream & PScalarKey::PrintOn(ostream & strm) const
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-PHashTable::PHashTable()
-  : hashTable(new PInternalHashTable)
-{
-  PAssertNULL(hashTable);
-  hashTable->lastElement = NULL;
-}
-
-
-void PHashTable::DestroyContents()
-{
-  hashTable->reference->deleteObjects = reference->deleteObjects;
-  delete hashTable;
-}
-
-
-void PHashTable::CopyContents(const PHashTable & hash)
-{
-  hashTable = hash.hashTable;
-}
-
-  
-void PHashTable::CloneContents(const PHashTable * hash)
-{
-  hashTable = (PInternalHashTable *)hash->hashTable->Clone();
-}
-
-
-PObject::Comparison PHashTable::Compare(const PObject & obj) const
-{
-  return reference != ((const PHashTable &)obj).reference
-                                                      ? GreaterThan : EqualTo;
-}
-
-
-BOOL PHashTable::SetSize(PINDEX)
-{
-  return TRUE;
-}
-
 
 void PInternalHashTable::DestroyContents()
 {
@@ -1068,6 +1087,26 @@ PHashTableElement * PInternalHashTable::GetElementAt(const PObject & key)
 }
 
 
+PINDEX PInternalHashTable::GetElementsIndex(
+                           const PObject * obj, BOOL byValue, BOOL keys) const
+{
+  PINDEX index = 0;
+  for (PINDEX i = 0; i < GetSize(); i++) {
+    PHashTableElement * list = operator[](i);
+    if (list != NULL) {
+      PHashTableElement * element = list;
+      do {
+        PObject * keydata = keys ? element->key : element->data;
+        if (byValue ? (*keydata == *obj) : (keydata == obj))
+          return index;
+        index++;
+      } while (element != list);
+    }
+  }
+  return P_MAX_INDEX;
+}
+
+
 BOOL PInternalHashTable::EnumerateElements(
                             PEnumerator func, PObject * info, BOOL keys) const
 {
@@ -1084,6 +1123,62 @@ BOOL PInternalHashTable::EnumerateElements(
   return TRUE;
 }
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+PHashTable::PHashTable()
+  : hashTable(new PInternalHashTable)
+{
+  PAssertNULL(hashTable);
+  hashTable->lastElement = NULL;
+}
+
+
+void PHashTable::DestroyContents()
+{
+  hashTable->reference->deleteObjects = reference->deleteObjects;
+  delete hashTable;
+}
+
+
+void PHashTable::CopyContents(const PHashTable & hash)
+{
+  hashTable = hash.hashTable;
+}
+
+  
+void PHashTable::CloneContents(const PHashTable * hash)
+{
+  hashTable = (PInternalHashTable *)hash->hashTable->Clone();
+}
+
+
+PObject::Comparison PHashTable::Compare(const PObject & obj) const
+{
+  return reference != ((const PHashTable &)obj).reference
+                                                      ? GreaterThan : EqualTo;
+}
+
+
+BOOL PHashTable::SetSize(PINDEX)
+{
+  return TRUE;
+}
+
+
+PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
+{
+  PAssert(hashTable->SetLastElementAt(index), PInvalidArrayIndex);
+  return *hashTable->lastElement->data;
+}
+
+
+const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
+{
+  PAssert(hashTable->SetLastElementAt(index), PInvalidArrayIndex);
+  return *hashTable->lastElement->key;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1144,23 +1239,27 @@ PObject * PAbstractSet::RemoveAt(PINDEX)
 }
 
 
-PINDEX PAbstractSet::GetIndex(const PObject *) const
+PINDEX PAbstractSet::GetObjectsIndex(const PObject * obj) const
 {
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
+  return hashTable->GetElementsIndex(obj, FALSE, TRUE);
 }
 
 
-BOOL PAbstractSet::SetAt(PINDEX, PObject *)
+PINDEX PAbstractSet::GetValuesIndex(const PObject & obj) const
 {
-  PAssertAlways(PUnimplementedFunction);
-  return FALSE;
+  return hashTable->GetElementsIndex(&obj, TRUE, TRUE);
+}
+
+
+BOOL PAbstractSet::SetAt(PINDEX, PObject * obj)
+{
+  return Append(obj);
+;
 }
 
 
 PObject * PAbstractSet::GetAt(PINDEX) const
 {
-  PAssertAlways(PUnimplementedFunction);
   return NULL;
 }
 
@@ -1188,7 +1287,7 @@ PINDEX PAbstractDictionary::Insert(const PObject &, PObject *)
 }
 
 
-PINDEX PAbstractDictionary::InsertAt(PINDEX index,PObject * obj)
+PINDEX PAbstractDictionary::InsertAt(PINDEX index, PObject * obj)
 {
   SetAt(PScalarKey(index), obj);
   return index;
@@ -1210,14 +1309,19 @@ PObject * PAbstractDictionary::RemoveAt(PINDEX index)
 }
 
 
-PINDEX PAbstractDictionary::GetIndex(const PObject *) const
+PINDEX PAbstractDictionary::GetObjectsIndex(const PObject * obj) const
 {
-  PAssertAlways(PUnimplementedFunction);
-  return 0;
+  return hashTable->GetElementsIndex(obj, FALSE, FALSE);
 }
 
 
-BOOL PAbstractDictionary::SetAt(PINDEX index,PObject * val)
+PINDEX PAbstractDictionary::GetValuesIndex(const PObject & obj) const
+{
+  return hashTable->GetElementsIndex(&obj, TRUE, FALSE);
+}
+
+
+BOOL PAbstractDictionary::SetAt(PINDEX index, PObject * val)
 {
   return SetAt(PScalarKey(index), val);
 }
@@ -1262,20 +1366,6 @@ BOOL PAbstractDictionary::SetAt(const PObject & key, PObject * obj)
     }
   }
   return TRUE;
-}
-
-
-PObject & PHashTable::AbstractGetDataAt(PINDEX index) const
-{
-  PAssert(hashTable->SetLastElementAt(index), PInvalidArrayIndex);
-  return *hashTable->lastElement->data;
-}
-
-
-const PObject & PHashTable::AbstractGetKeyAt(PINDEX index) const
-{
-  PAssert(hashTable->SetLastElementAt(index), PInvalidArrayIndex);
-  return *hashTable->lastElement->key;
 }
 
 
