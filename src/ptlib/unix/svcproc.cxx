@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.27  1999/03/02 05:41:59  robertj
+ * More BeOS changes
+ *
  * Revision 1.26  1999/01/11 12:10:32  robertj
  * Improved operating system version display.
  *
@@ -247,7 +250,9 @@ int PServiceProcess::_main(void *)
     PError << "usage: [-c] -v|-d|-h|-x" << endl
            << "        -h       output this help message and exit" << endl
            << "        -v       display version information and exit" << endl
+#ifndef BE_THREADS
            << "        -d       run as a daemon" << endl
+#endif
            << "        -u uid   set user id to run as" << endl
            << "        -g gid   set group id to run as" << endl
 #ifdef _PATH_VARRUN
@@ -312,6 +317,7 @@ int PServiceProcess::_main(void *)
   }
 
   // Run as a daemon, ie fork
+#ifndef BE_THREADS
   if (args.HasOption('d')) {
 #ifdef _PATH_VARRUN
     pid_t old_pid = get_daemon_pid(FALSE);
@@ -361,6 +367,7 @@ int PServiceProcess::_main(void *)
         return 0;
     }
   }
+#endif
 
   // call the main function
   if (OnStart())

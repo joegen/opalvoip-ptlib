@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.39  1999/03/02 05:41:59  robertj
+ * More BeOS changes
+ *
  * Revision 1.38  1999/02/26 04:10:39  robertj
  * More BeOS port changes
  *
@@ -110,8 +113,10 @@ int PSocket::os_close()
   ::shutdown(os_handle, 2);
 
 #ifdef __BEOS__
+#ifndef BE_THREADS
   // abort any I/O block using this os_handle
-  PProcess::Current().PXAbortIOBlock(handle);
+  PProcess::Current().PXAbortIOBlock(os_handle);
+#endif
 
   int retval = ::closesocket(os_handle);
   os_handle = -1;
