@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.75  2000/04/10 16:18:16  rogerh
+# More NetBSD support changes
+#
 # Revision 1.74  2000/04/10 11:36:16  rogerh
 # Add NetBSD pthreads support
 #
@@ -465,10 +468,14 @@ endif
 STDCCFLAGS	+= -DP_NETBSD
 LDLIBS		+= -lossaudio
 
+# PThread support requires you to install the mit-pthreads
+# package from /pkgsrc/devel/mit-pthreads
 ifdef P_PTHREADS
 STDCCFLAGS += -I/usr/pkg/pthreads/include
 LDFLAGS	+= -L/usr/pkg/pthreads/lib
 LDLIBS	+= -lpthread
+CC              := /usr/pkg/pthreads/bin/pgcc
+CPLUS           := /usr/pkg/pthreads/bin/pg++
 endif
 
 RANLIB		:= 1
