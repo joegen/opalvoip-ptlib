@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: semaphor.h,v $
+ * Revision 1.6  1998/11/30 02:55:27  robertj
+ * New directory structure
+ *
  * Revision 1.5  1998/09/24 03:30:21  robertj
  * Added open software license.
  *
@@ -51,7 +54,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSemaphore
 
-#include "../../common/ptlib/semaphor.h"
+#include "../../semaphor.h"
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return handle; }
