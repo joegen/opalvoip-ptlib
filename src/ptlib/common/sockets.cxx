@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.106  2001/01/29 06:41:32  robertj
+ * Added printing of entry of interface table.
+ *
  * Revision 1.105  2001/01/28 01:15:01  yurik
  * WinCE port-related
  *
@@ -1523,6 +1526,26 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
   a = PIPSocket::Address((BYTE)b1, (BYTE)b2, (BYTE)b3, (BYTE)b4);
   return s;
 }
+
+
+PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
+                                          const Address & _addr,
+                                          const PString & _macAddr)
+  : name(_name.Trim()),
+    ipAddr(_addr),
+    macAddr(_macAddr)
+{
+}
+
+void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
+{
+  strm << ipAddr;
+  if (!macAddr)
+    strm << " <" << macAddr << '>';
+  if (!name)
+    strm << " (" << name << ')';
+}
+
 
 #ifdef __NUCLEUS_NET__
 BOOL PIPSocket::GetInterfaceTable(InterfaceTable & table)
