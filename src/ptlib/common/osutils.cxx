@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.64 1996/05/18 09:18:33 robertj Exp $
+ * $Id: osutils.cxx,v 1.65 1996/05/23 09:56:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.65  1996/05/23 09:56:57  robertj
+ * Added mutex to timer list.
+ *
  * Revision 1.64  1996/05/18 09:18:33  robertj
  * Added mutex to timer list.
  *
@@ -330,7 +333,7 @@ void PTimer::OnTimeout()
 BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 {
   if (inTimeout)
-    return FALSE;
+    return TRUE;
 
   inTimeout = TRUE;
 
@@ -340,7 +343,7 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
     if (*this < minTimeLeft)
       minTimeLeft = *this;
     inTimeout = FALSE;
-    return FALSE;
+    return TRUE;
   }
 
   if (oneshot) {
@@ -357,34 +360,50 @@ BOOL PTimer::Process(const PTimeInterval & delta, PTimeInterval & minTimeLeft)
 
   inTimeout = FALSE;
 
-  return state != Running;
+  return state == Running;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // PTimerList
 
+PTimerList::PTimerList()
+{
+  DisallowDeleteObjects();
+  processingThread = NULL;
+}
+
+
 void PTimerList::AppendTimer(PTimer * timer)
 {
-  mutex.Wait();
-  PInternalTimerList::Append(timer);
-  mutex.Signal();
-  PProcess::Current()->SignalTimerChange();
+  if (processingThread == PThread::Current())
+    PInternalTimerList::InsertAt(0, timer);
+  else {
+    mutex.Wait();
+    PInternalTimerList::InsertAt(0, timer);
+    mutex.Signal();
+    PProcess::Current()->SignalTimerChange();
+  }
 }
 
 
 void PTimerList::RemoveTimer(PTimer * timer)
 {
-  mutex.Wait();
-  PInternalTimerList::Remove(timer);
-  mutex.Signal();
-  PProcess::Current()->SignalTimerChange();
+  if (processingThread == PThread::Current())
+    PInternalTimerList::Remove(timer);
+  else {
+    mutex.Wait();
+    PInternalTimerList::Remove(timer);
+    mutex.Signal();
+    PProcess::Current()->SignalTimerChange();
+  }
 }
 
 
 PTimeInterval PTimerList::Process()
 {
   mutex.Wait();
+  processingThread = PThread::Current();
 
   PTimeInterval now = PTimer::Tick();
   PTimeInterval sampleTime = now - lastSample;
@@ -394,10 +413,16 @@ PTimeInterval PTimerList::Process()
 
   PTimeInterval minTimeLeft = PMaxTimeInterval;
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (((PTimer *)GetAt(i))->Process(sampleTime, minTimeLeft))
-      RemoveAt(i--);
+    PTimer * tmr = (PTimer *)GetAt(i);
+    if (tmr->Process(sampleTime, minTimeLeft))
+      i = GetObjectsIndex(tmr);
+    else {
+      i = GetObjectsIndex(tmr)-1;
+      Remove(tmr);
+    }
   }
 
+  processingThread = NULL;
   mutex.Signal();
 
   return minTimeLeft;
