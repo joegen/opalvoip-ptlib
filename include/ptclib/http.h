@@ -1,5 +1,5 @@
 /*
- * $Id: http.h,v 1.12 1996/03/16 04:39:55 robertj Exp $
+ * $Id: http.h,v 1.13 1996/03/17 05:41:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: http.h,v $
+ * Revision 1.13  1996/03/17 05:41:57  robertj
+ * FireDoorV10
+ *
  * Revision 1.12  1996/03/16 04:39:55  robertj
  * Added ParseReponse() for splitting reponse line into code and info.
  * Added client side support for HTTP socket.
@@ -648,6 +651,17 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* Set the current authority for the resource to unrestricted.
      */
 
+    DWORD GetHitCount() const { return hitCount; }
+    /* Get the current hit count for the resource. This is the total number of
+       times the resource was asked for by a remote client.
+
+       <H2>Returns:</H2>
+       Hit count for the resource.
+     */
+
+    void ClearHitCount() { hitCount = 0; }
+    // Clear the hit count for the resource.
+
 
     virtual void OnGET(
       PHTTPSocket & socket,       // HTTP socket that received the request
@@ -787,9 +801,10 @@ PDECLARE_CLASS(PHTTPResource, PObject)
     /* See if the resource is authorised given the mime info
      */
 
-    PURL baseURL;
-    PString contentType;
+    PURL             baseURL;
+    PString          contentType;
     PHTTPAuthority * authority;
+    volatile DWORD   hitCount;
 };
 
 
