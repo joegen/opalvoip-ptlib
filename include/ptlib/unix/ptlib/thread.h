@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.35  2004/04/18 00:27:32  ykiryanov
+ * Added variable to count thread suspends. Removed thread name
+ *
  * Revision 1.34  2004/04/03 15:50:30  ykiryanov
  * Changed names to easily distinguish class members. Added PThread name
  *
@@ -195,8 +198,8 @@
     thread_id mId;
     int32 mPriority;
     PINDEX mStackSize;
+    int32 mSuspendCount;
     int mUnblockPipe[2];
-    char mName[B_OS_NAME_LENGTH];
 
 #elif defined(P_MAC_MPTHREADS)
   public:
