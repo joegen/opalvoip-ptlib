@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.45  1999/05/01 11:29:19  robertj
+ * Alpha linux port changes.
+ *
  * Revision 1.44  1999/04/18 12:58:39  robertj
  * MSVC 5 backward compatibility
  *
@@ -1959,7 +1962,7 @@ class PNotifier : public PSmartPointer
 ///////////////////////////////////////////////////////////////////////////////
 // Really big integer class for architectures without
 
-#ifndef P_HAS_INT64
+#ifdef P_NEEDS_INT64
 
 class PInt64__ {
   public:
