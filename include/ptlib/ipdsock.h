@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipdsock.h,v $
+ * Revision 1.4  1998/11/14 06:28:09  robertj
+ * Fixed error in documentation
+ *
  * Revision 1.3  1998/09/23 06:20:43  robertj
  * Added open source copyright license.
  *
@@ -66,7 +69,7 @@ PDECLARE_CLASS(PIPDatagramSocket, PIPSocket)
     /* Read a datagram from a remote computer.
        
        <H2>Returns:</H2>
-       TRUE if all the bytes were sucessfully written.
+       TRUE if any bytes were sucessfully read.
      */
 
     virtual BOOL WriteTo(
