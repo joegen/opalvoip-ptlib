@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.85  2001/01/16 19:19:02  rogerh
+# Set BE_THREADS to 1 instead of 0 for consistency
+#
 # Revision 1.84  2001/01/16 14:21:02  rogerh
 # Move -Wall to start of STDCCFLAGS so it can be overridden later.
 # Make some BeOS changes. All submitted by Jac Goudsmit.
@@ -597,10 +600,7 @@ endif # solaris
 
 ifeq ($(OSTYPE),beos)
 
-BE_THREADS := 0
-
-# Uncomment the next line if you have BeOS R5
-#BE_THREADS := 1
+BE_THREADS := 1
 
 # Uncomment the next line if you have the
 # BeOS Network Environment (BONE) installed.
