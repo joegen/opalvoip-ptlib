@@ -1,5 +1,5 @@
 /*
- * $Id: filepath.h,v 1.9 1995/04/22 00:43:43 robertj Exp $
+ * $Id: filepath.h,v 1.10 1995/07/31 12:03:37 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: filepath.h,v $
+ * Revision 1.10  1995/07/31 12:03:37  robertj
+ * Added copy constructor and assignment operator for right types.
+ *
  * Revision 1.9  1995/04/22 00:43:43  robertj
  * Added Move() function and changed semantics of Rename().
  * Changed all file name strings to PFilePath objects.
@@ -68,6 +71,9 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
     PFilePath(
       const PString & str // Partial PString for file name.
     );
+    PFilePath(
+      const PFilePath & path // Previous path for file name.
+    );
     /* Create a file specification object with the specified file name.
     
        The string passed in may be a full or partial specifiaction for a file
@@ -90,7 +96,13 @@ PDECLARE_CLASS(PFilePath, PFILE_PATH_STRING)
      */
 
     PFilePath & operator=(
+      const char * cstr // Partial "C" string for file name.
+    );
+    PFilePath & operator=(
       const PString & str // Partial PString for file name.
+    );
+    PFilePath & operator=(
+      const PFilePath & path // Previous path for file name.
     );
     /* Change the file specification object to the specified file name.
 
