@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.98  2004/04/09 07:53:51  rjongbloed
+ * Fixed backward compatibility after STL streams change
+ *
  * Revision 1.97  2004/04/09 00:56:35  csoutheren
  * Fixed problem with new class name code
  *
@@ -396,6 +399,11 @@
 #if (__GNUC__ < 3)
 typedef long _Ios_Fmtflags;
 #endif
+
+#if _MSC_VER<1300
+#define _BADOFF -1
+#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Disable inlines when debugging for faster compiles (the compiler doesn't
