@@ -153,6 +153,7 @@ EXPORTS
     ??0PTime@@QAE@ABVPString@@@Z @145 NONAME ;public: __thiscall PTime::PTime(class PString const &)
     ??0PTime@@QAE@HHHHHHH@Z @146 NONAME ;public: __thiscall PTime::PTime(int,int,int,int,int,int,int)
     ??0PTime@@QAE@XZ @147 NONAME ;public: __thiscall PTime::PTime(void)
+    ??0PTimeInterval@@QAE@ABVPString@@@Z @2264 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)
     ??0PTimeInterval@@QAE@H@Z @148 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(int)
     ??0PTimeInterval@@QAE@JJJJH@Z @149 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(long,long,long,long,int)
     ??0PTimer@@QAE@ABVPTimeInterval@@@Z @151 NONAME ;public: __thiscall PTimer::PTimer(class PTimeInterval const &)
@@ -1967,4 +1968,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
-    ??0PTimeInterval@@QAE@ABVPString@@@Z @2264 NONAME ;public: __thiscall PTimeInterval::PTimeInterval(class PString const &)
+    ?IsInitialised@PProcess@@SAHXZ @2265 NONAME ;public: static int __cdecl PProcess::IsInitialised(void)
