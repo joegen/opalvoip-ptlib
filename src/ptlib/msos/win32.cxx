@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.75  1998/11/20 03:17:19  robertj
+ * Added thread WaitForTermination() function.
+ *
  * Revision 1.74  1998/11/19 05:19:53  robertj
  * Bullet proofed WaitForMultipleObjects under 95.
  *
@@ -2237,12 +2240,24 @@ void PThread::Terminate()
 
 BOOL PThread::IsTerminated() const
 {
+  return WaitForTermination(0);
+}
+
+
+void PThread::WaitForTermination() const
+{
+  WaitForTermination(PMaxTimeInterval);
+}
+
+
+BOOL PThread::WaitForTermination(const PTimeInterval & maxWait) const
+{
   if (threadHandle == NULL)
     return TRUE;
 
   DWORD result;
   PINDEX retries = 10;
-  while ((result = WaitForSingleObject(threadHandle, 0)) != WAIT_TIMEOUT) {
+  while ((result = WaitForSingleObject(threadHandle, maxWait.GetInterval())) != WAIT_TIMEOUT) {
     if (result == WAIT_OBJECT_0)
       return TRUE;
 
