@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.83  2002/08/13 01:30:27  robertj
+ * Added UpTime macro for time service has been running.
+ * Added IfQuery macro blcok to add chunks of HTML depending on the value
+ *   of query parameters in the URL.
+ * Added memory statistics dump and memory object dump macros to help in
+ *   leak finding.
+ *
  * Revision 1.82  2002/07/30 08:37:34  robertj
  * Removed peer host as bad DNS makes it useless due to huge timeout.
  *
@@ -1168,7 +1175,7 @@ PString PServiceHTML::ExtractSignature(const PString & html,
     return tag(tag.Find("signature")+10, tag.FindLast('-')-2).Trim();
   }
 
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1320,7 +1327,7 @@ PObject::Comparison PServiceMacro::Compare(const PObject & obj) const
 
 PString PServiceMacro::Translate(PHTTPRequest &, const PString &, const PString &) const
 {
-  return PString();
+  return PString::Empty();
 };
 
 
@@ -1454,6 +1461,13 @@ PCREATE_SERVICE_MACRO(Time,P_EMPTY,args)
 PCREATE_SERVICE_MACRO(StartTime,P_EMPTY,P_EMPTY)
 {
   return PProcess::Current().GetStartTime().AsString(PTime::MediumDateTime);
+}
+
+
+PCREATE_SERVICE_MACRO(UpTime,P_EMPTY,P_EMPTY)
+{
+  PTimeInterval upTime = PTime() - PProcess::Current().GetStartTime();
+  return upTime.AsString(0, PTimeInterval::IncludeDays);
 }
 
 
@@ -1641,7 +1655,7 @@ PCREATE_SERVICE_MACRO(Query,request,args)
     if (!value)
       return value;
   }
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1660,7 +1674,7 @@ PCREATE_SERVICE_MACRO(Get,request,args)
       return config.GetString(variable, value);
     }
   }
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1712,12 +1726,82 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 }
 
 
+#if PMEMORY_CHECK
+PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
+{
+  BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+  PStringStream str;
+  str.SetSize(2000);
+  PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
+  PMemoryHeap::DumpStatistics(str);
+  return str;
+}
+
+PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
+{
+  static lastObjectNumber = 0;
+  DWORD objectNumber = lastObjectNumber;
+  PStringToString vars = request.url.GetQueryVars();
+  if (vars.Contains("object"))
+    objectNumber = vars["object"].AsUnsigned();
+  lastObjectNumber = objectNumber;
+
+  BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
+  PStringStream str;
+  str.SetSize(20000);
+  PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
+  PMemoryHeap::DumpObjectsSince(objectNumber, str);
+  return str;
+}
+#endif
+
+
+PCREATE_SERVICE_MACRO_BLOCK(IfQuery,request,args,block)
+{
+  PStringToString vars = request.url.GetQueryVars();
+
+  PINDEX space = args.FindOneOf(" \t\r\n");
+  PString var = args.Left(space);
+  PString value = args.Mid(space).LeftTrim();
+
+  BOOL ok;
+  if (value.IsEmpty())
+    ok = vars.Contains(var);
+  else {
+    PString operation;
+    space = value.FindOneOf(" \t\r\n");
+    if (space != P_MAX_INDEX) {
+      operation = value.Left(space);
+      value = value.Mid(space).LeftTrim();
+    }
+
+    PString query = vars(var);
+    if (operation == "!=")
+      ok = query != value;
+    else if (operation == "<")
+      ok = query < value;
+    else if (operation == ">")
+      ok = query > value;
+    else if (operation == "<=")
+      ok = query <= value;
+    else if (operation == ">=")
+      ok = query >= value;
+    else if (operation == "*=")
+      ok = (query *= value);
+    else
+      ok = query == value;
+  }
+
+  return ok ? block : PString::Empty();
+}
+
+
 PCREATE_SERVICE_MACRO_BLOCK(IfInURL,request,args,block)
 {
   if (request.url.AsString().Find(args) != P_MAX_INDEX)
     return block;
 
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1726,7 +1810,7 @@ PCREATE_SERVICE_MACRO_BLOCK(IfNotInURL,request,args,block)
   if (request.url.AsString().Find(args) == P_MAX_INDEX)
     return block;
 
-  return PString();
+  return PString::Empty();
 }
 
 
@@ -1737,7 +1821,7 @@ static void SplitCmdAndArgs(const PString & text, PINDEX pos, PCaselessString & 
   PINDEX endCmd = macro.FindOneOf(whitespace);
   if (endCmd == P_MAX_INDEX) {
     cmd = macro;
-    args = PString();
+    args = PString::Empty();
   }
   else {
     cmd = macro.Left(endCmd);
@@ -1843,7 +1927,7 @@ BOOL PServiceHTML::ProcessMacros(PHTTPRequest & request,
       if (!process.SubstituteEquivalSequence(request, cmd & args, substitution)) {
         PINDEX idx = ServiceMacros.GetValuesIndex(PServiceMacro(cmd, FALSE));
         if (idx != P_MAX_INDEX) {
-          substitution = ServiceMacros[idx].Translate(request, args, PString());
+          substitution = ServiceMacros[idx].Translate(request, args, PString::Empty());
           substitedMacro = TRUE;
         }
       }
