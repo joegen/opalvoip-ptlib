@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpclnt.cxx,v $
+ * Revision 1.17  1998/11/30 04:51:55  robertj
+ * New directory structure
+ *
  * Revision 1.16  1998/09/23 06:22:09  robertj
  * Added open source copyright license.
  *
@@ -205,8 +208,9 @@
  */
 
 #include <ptlib.h>
-#include <sockets.h>
-#include <http.h>
+#include <ptlib/sockets.h>
+#include <ptclib/http.h>
+
 #include <ctype.h>
 
 
