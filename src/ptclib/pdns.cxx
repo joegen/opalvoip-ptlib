@@ -24,6 +24,9 @@
  * Copyright 2003 Equivalence Pty. Ltd.
  *
  * $Log: pdns.cxx,v $
+ * Revision 1.11  2004/01/03 03:37:53  csoutheren
+ * Fixed compile problem on Linux
+ *
  * Revision 1.10  2004/01/03 03:10:42  csoutheren
  * Fixed more problems with looking up SRV records, especially on Windows
  *
@@ -112,6 +115,7 @@ PDNS::Record::Record()
 #define	DNS_TYPE_A		T_A
 #define	DnsFreeRecordList	0
 #define	DNS_QUERY_STANDARD	0
+#define	DNS_QUERY_BYPASS_CACHE	0
 
 typedef struct _DnsAData {
   DWORD IpAddress;
