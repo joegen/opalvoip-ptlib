@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.92  1999/06/01 08:04:35  robertj
+ * Fixed mistake from previous fix.
+ *
  * Revision 1.91  1999/06/01 07:39:23  robertj
  * Added retries to DNS lookup if get temporary error.
  *
@@ -514,7 +517,8 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
     if (retry == 0)
       return NULL;
 
-    SetAt(key, new PIPCacheData(host_info, name));
+    host = new PIPCacheData(host_info, name);
+    SetAt(key, host);
   }
 
   if (host->GetHostAddress() == 0)
@@ -607,7 +611,8 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     if (retry == 0)
       return FALSE;
 
-    SetAt(key, new PIPCacheData(host_info, inet_ntoa(addr)));
+    host = new PIPCacheData(host_info, inet_ntoa(addr));
+    SetAt(key, host);
   }
 
   if (host->GetHostAddress() == 0)
