@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: file.h,v $
+ * Revision 1.33  2000/07/09 14:05:46  robertj
+ * Added file share options.
+ *
  * Revision 1.32  1999/06/13 13:54:07  robertj
  * Added PConsoleChannel class for access to stdin/stdout/stderr.
  *
@@ -201,7 +204,11 @@ class PFile : public PChannel
       /// File open fails if file already exists.
       Exclusive = 4,    
       /// File is temporary and is to be deleted when closed.
-      Temporary = 8     
+      Temporary = 8,
+      /// File may not be read by another process.
+      DenySharedRead = 16,
+      /// File may not be written by another process.
+      DenySharedWrite = 32
     };
 
     /**Create a unique temporary file name, and open the file in the specified
