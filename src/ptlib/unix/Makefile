@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.35  1999/01/16 09:54:04  robertj
+# Changed some macros to more informative names.
+#
 # Revision 1.34  1998/12/04 12:53:14  craigs
 # Fixed problem with regex in wrong directory
 #
@@ -237,8 +240,8 @@ endif
 # make links to common directories and files to ease development work
 
 links:
-	ln -snf $(LIBDIR)/obj_$(OBJ_SUFFIX)_d obj_$(OBJ_SUFFIX)_d
-	ln -snf $(LIBDIR)/obj_$(OBJ_SUFFIX)_r obj_$(OBJ_SUFFIX)_r
+	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_d obj_$(PLATFORM_TYPE)_d
+	ln -snf $(LIBDIR)/obj_$(PLATFORM_TYPE)_r obj_$(PLATFORM_TYPE)_r
 	ln -snf $(PWLIBDIR)/make make
 	ln -snf $(UNIX_INC_DIR)/ptlib unix_include
 	ln -snf $(PWLIBDIR)/include/ptlib common_include
