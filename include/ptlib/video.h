@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.8  2002/01/04 04:11:45  dereks
+ * Add video flip code from Walter Whitlock, which flips code at the grabber.
+ *
  * Revision 1.7  2001/12/03 03:44:52  dereks
  * Add method to retrive pointer to the attached video display class.
  *
@@ -247,6 +250,10 @@ class PVideoChannel : public PChannel
     /**Allow free access to this video channel.
      */
     void EnableAccess();
+
+    /**Toggle the vertical flip state of the video grabber.
+    */
+    BOOL ToggleVFlipInput();
 
  protected:
 
