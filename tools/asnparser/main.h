@@ -30,6 +30,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.h,v $
+ * Revision 1.14  2003/02/27 04:04:14  robertj
+ * Added ability to have alternate directories for header file
+ *   includes in generated C++ code.
+ *
  * Revision 1.13  2001/08/03 09:01:02  robertj
  * Added assignement operator with RHS of PWORDArray to classes
  *   descended from PASN_BMPString.
@@ -1165,6 +1169,7 @@ class ImportModule : public PObject
   protected:
     PString   fullModuleName;
     PString   shortModuleName;
+    PString   directoryPrefix;
     TypesList symbols;
 };
 
@@ -1205,6 +1210,7 @@ class ModuleDefinition : public PObject
 
     void GenerateCplusplus(const PFilePath & path,
                            const PString & modName,
+                           const PString & headerDir,
                            unsigned numFiles,
                            BOOL useNamespaces,
                            BOOL useInlines,
