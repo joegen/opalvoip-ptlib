@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: psoap.cxx,v $
+ * Revision 1.5  2003/04/28 00:09:14  craigs
+ * Patches from Andreas Sikkema
+ *
  * Revision 1.4  2003/03/31 06:20:56  craigs
  * Split the expat wrapper from the XML file handling to allow reuse of the parser
  *
@@ -79,25 +82,29 @@ PSOAPMessage::PSOAPMessage( const PString & method, const PString & nameSpace ) 
 
 void PSOAPMessage::SetMethod( const PString & name, const PString & nameSpace )
 {
+  PXMLElement* rtElement = 0;
+  
   if ( pSOAPBody == 0 )
   {
     SetRootElement("SOAP-ENV:Envelope");
-
-    PXMLElement* rtElement = GetRootElement();
+    
+    rtElement = GetRootElement();
 
     rtElement->SetAttribute("xmlns:SOAP-ENV", "http://schemas.xmlsoap.org/soap/envelope/", TRUE );
     rtElement->SetAttribute("xmlns:xsi", "http://www.w3.org/1999/XMLSchema-instance", TRUE );
     rtElement->SetAttribute("xmlns:xsd", "http://www.w3.org/1999/XMLSchema", TRUE );
     rtElement->SetAttribute("xmlns:SOAP-ENC", "http://schemas.xmlsoap.org/soap/encoding/", TRUE );
 
-    pSOAPBody = new PXMLElement( NULL, "SOAP-ENV:Body");
+    pSOAPBody = new PXMLElement( rtElement, "SOAP-ENV:Body");
 
     rtElement->AddChild( pSOAPBody, TRUE );
   }
 
   if ( pSOAPMethod == 0 )
   {
-    pSOAPMethod = new PXMLElement( NULL, PString( "m:") + name );
+    rtElement = GetRootElement();
+
+    pSOAPMethod = new PXMLElement( rtElement, PString( "m:") + name );
     if ( nameSpace != "" )
     {
       pSOAPMethod->SetAttribute("xmlns:m", nameSpace, TRUE );
@@ -123,12 +130,16 @@ void PSOAPMessage::AddParameter( PString name, PString type, PString value )
 {
   if ( pSOAPMethod )
   {
-    PXMLElement* pParameter = new PXMLElement( NULL, name);
-    PXMLData* pParameterData = new PXMLData( NULL, value);
+    PXMLElement* rtElement = GetRootElement();
+    
+    PXMLElement* pParameter = new PXMLElement( rtElement, name);
+    PXMLData* pParameterData = new PXMLData( pParameter, value);
+    
     if ( type != "" )
     {
       pParameter->SetAttribute( "xsi:type", PString( "xsd:" ) + type );
     }
+    
     pParameter->AddChild( pParameterData, TRUE );
 
     AddParameter( pParameter, TRUE );
@@ -175,7 +186,7 @@ void PSOAPMessage::PrintOn(ostream & strm) const
     strm << endl;
 
   if ( rootElement != NULL ) {
-    rootElement->PrintOn(strm);
+    rootElement->Output(strm, *(this), 2 );
   }
 }
 
