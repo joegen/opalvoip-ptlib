@@ -101,13 +101,134 @@ AC_DEFINE_UNQUOTED(PBYTE_ORDER, $PBYTE_ORDER)
 
 
 dnl ########################################################################
+dnl look for OpenSSL
+dnl check for environment variable, then assume standard system install
+dnl this process is made incredibly more complex by the fact that RedHad 9
+dnl is completely fscked. The default OpenSSL installation requires Kerberos,
+dnl even when Kerberos is not installed, requiring an explicit #define to
+dnl make it compile
+dnl As if that is not enough, autoconf gets very confused if configure.in
+dnl contains a AC_CHECK_HEADER directive that never gets used. So we have 
+dnl to ensure that it is always called
+
+dnl MSWIN Open SSL,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\
+
+dnl see if openssl.h is in the system include paths
+AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
+
+dnl check to see OPENSSLDIR is set
+if test ${OPENSSLDIR:-unset} != "unset" ; then
+  echo "Using ${OPENSSLDIR} for SSL"
+  HAVE_LIBSSL=1
+  SSLINCLUDEDIR="${OPENSSLDIR}/include"
+  SSLLIBDIR="${OPENSSLDIR}/lib"
+
+else
+
+  dnl see if OpenSSL is in the system include path
+  dnl and do the crazy RedHat checks
+
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if openssl/ssl.h works with OPENSSL_NO_KRB5... "
+    AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include <openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+    else
+      echo "no"
+    fi
+  fi
+
+  dnl check if OpenSSL is in /usr/local/openssl
+  dnl and do the crazy RedHat checks
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works... "
+    AC_COMPILE_IFELSE([[#include "/usr/local/openssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/openssl/include"
+      SSLLIBDIR="/usr/local/openssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/openssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include "/usr/local/openssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/openssl/include"
+        SSLLIBDIR="/usr/local/openssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+
+  dnl check if OpenSSL is in /usr/local/ssl
+  dnl and do the crazy RedHat checks
+  if test "${SSLHDR:-unset}" = "unset" ; then
+    echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works... "
+    AC_COMPILE_IFELSE([[#include "/usr/local/ssl/include/openssl/ssl.h"
+int main(int argc,char **argv){}]],SSLHDR=1)
+    if test ${SSLHDR:-unset} != "unset" ; then
+      echo "yes"
+      SSLCCFLAGS=""
+      SSLINCLUDEDIR="/usr/local/ssl/include"
+      SSLLIBDIR="/usr/local/ssl/lib"
+    else
+      echo "no"
+      echo -n "checking if /usr/local/ssl/include/openssl/ssl.h works with OPENSSL_NO_KRB5... "
+      AC_COMPILE_IFELSE([[#define OPENSSL_NO_KRB5
+#include "/usr/local/ssl/include/openssl/ssl.h>
+int main(int argc,char **argv){}]],SSLHDR=1)
+      if test ${SSLHDR:-unset} != "unset" ; then
+        echo "yes"
+        SSLCCFLAGS=" -DOPENSSL_NO_KRB5"
+        SSLINCLUDEDIR="/usr/local/ssl/include"
+        SSLLIBDIR="/usr/local/ssl/lib"
+      else
+        echo "no"
+      fi
+    fi
+  fi
+fi
+
+if test ${SSLHDR:-unset} != "unset" ; then
+  AC_SUBST(HAS_OPENSSL, 1)
+  AC_DEFINE(P_SSL, 1, "OpenSSL found")
+  if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
+    STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
+  fi
+  if test ${SSLLIBDIR:-unset} != "unset" ; then
+    LDFLAGS="$STDCCFLAGS -L${SSLLIBDIR}"
+  fi
+  STDCCFLAGS="${STDCCFLAGS}${SSLCCFLAGS}"
+  ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
+fi
+
+dnl ########################################################################
 dnl look for DNS resolver code (must be done before OpenLDAP)
+dnl on some systems, the resolver is in libc
 
 dnl MSWIN DNS Resolver,P_DNS,1,@DNS_DIR@,include\windns.h,,\Program Files\Microsoft SDK\
 
-LIBS=""
-AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=$LIBS)
-if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
+AC_CHECK_FUNC(res_search, HAVE_RESOLVER=1)
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  RESOLVER_LIBS=""
+else
+  LIBS=""
+  AC_SEARCH_LIBS(res_search, resolv, HAVE_RESOLVER=1)
+  if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+    RESOLVER_LIBS="${LIBS}"
+  fi
+fi
+
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   AC_DEFINE(P_DNS, 1, "resolver libraries found")
 fi
 
@@ -116,10 +237,10 @@ dnl look for OpenLDAP
 
 dnl MSWIN Open LDAP,P_LDAP,1,@LDAP_DIR@,include\ldap.h,OpenLDAP,..\openldap\
 
-if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
   AC_CHECK_HEADERS(ldap.h, HAS_OPENLDAP=1)
   if test "${HAVE_OPENLDAP:-unset}" = "unset" ; then
-    AC_CHECK_LIB(ldap, ldap_open, HAVE_LIBOPENLDAP=1, HAVE_LIBOPENLDAP=,-llber $HAVE_RESOLVER)
+    AC_CHECK_LIB(ldap, ldap_open, HAVE_LIBOPENLDAP=1, HAVE_LIBOPENLDAP=,-llber $RESOLVER_LIBS)
   else
     AC_CHECK_FILE(/usr/local/include/ldap.h, HAS_OPENLDAP=1)
     if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
@@ -141,49 +262,6 @@ if test "${HAVE_LIBOPENLDAP:-unset}" != "unset" ; then
   ENDLDLIBS="$ENDLDLIBS -llber -lldap -lldap_r"
 fi
 
-
-dnl ########################################################################
-dnl look for OpenSSL
-dnl check for environment vcariable, then assume standard system install
-
-dnl MSWIN Open SSL,P_SSL,1,@SSL_DIR@,inc32\openssl\ssl.h,,..\openssl\
-
-if test ${OPENSSLDIR:-unset} != "unset" ; then
-  echo "Using ${OPENSSLDIR} for SSL"
-  HAVE_LIBSSL=1
-  SSLINCLUDEDIR="${OPENSSLDIR}/include"
-  SSLLIBDIR="${OPENSSLDIR}/lib"
-else
-  AC_CHECK_LIB(ssl, SSL_new, HAVE_LIBSSL=1)
-fi
-
-if test "${HAVE_LIBSSL:-unset}" != "unset" ; then
-  dnl find headser files
-  AC_CHECK_HEADER(openssl/ssl.h, SSLHDR=1)
-  if test ${SSLHDR:-unset} = "unset" ; then
-    AC_CHECK_FILE(/usr/local/openssl/include/openssl/ssl.h, SSLHDR=1)
-    if test ${SSLHDR:-unset} != "unset" ; then
-      SSLINCLUDEDIR=/usr/local/openssl/include
-    else
-      AC_CHECK_FILE(/usr/local/ssl/include/openssl/ssl.h, SSLHDR=1)
-      if test ${SSLHDR:-unset} != "unset" ; then
-        SSLINCLUDEDIR=/usr/local/ssl/include
-      fi
-    fi
-  fi
-
-  if test ${SSLHDR:-unset} != "unset" ; then
-    AC_SUBST(HAS_OPENSSL, 1)
-    AC_DEFINE(P_SSL, 1, "OpenSSL found")
-    if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
-      STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
-    fi
-    if test ${SSLLIBDIR:-unset} != "unset" ; then
-      LDFLAGS="$STDCCFLAGS -L${SSLLIBDIR}"
-    fi
-    ENDLDLIBS="$ENDLDLIBS -lssl -lcrypto"
-  fi
-fi
 
 dnl ########################################################################
 dnl look for expat XML parser
@@ -277,10 +355,9 @@ dnl ########################################################################
 dnl output make directives
 
 dnl resolver needs to be at the end
-if test "u${HAVE_RESOLVER:-nset}" != "unset" ; then
-  # Darwin does not needs -lresolv
-  if test ${OSTYPE} != Darwin ; then
-    ENDLDLIBS="$ENDLDLIBS $HAVE_RESOLVER"
+if test "${HAVE_RESOLVER:-unset}" != "unset" ; then
+  if test "${RESOLVER_LIBS:-unset}" != "unset" ; then
+    ENDLDLIBS="$ENDLDLIBS $RESOLVER_LIBS"
   fi
 fi
 
