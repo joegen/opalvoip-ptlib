@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.5  1998/11/05 10:33:53  robertj
+ * Solaris compatibility.
+ *
  * Revision 1.4  1998/11/05 09:58:30  craigs
  * Added static buffer for reentrant routines
  *
@@ -52,6 +55,7 @@
 // PDirectory
 
 #include <dirent.h>
+#include <limits.h>
 
 #define PDIR_SEPARATOR '/'
 
@@ -64,8 +68,9 @@
     DIR           * directory;
     struct dirent * entry;
     PFileInfo     * entryInfo;
-    BYTE dirb[sizeof(struct dirent) + NAME_MAX];
+    BYTE dirb[sizeof(struct dirent) + P_MAX_PATH];
 };
 
 #endif
+
 
