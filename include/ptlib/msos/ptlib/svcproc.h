@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.8 1996/07/20 05:33:06 robertj Exp $
+ * $Id: svcproc.h,v 1.9 1996/07/30 12:23:44 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.9  1996/07/30 12:23:44  robertj
+ * Changed SIGINTR handler to just set termination event.
+ *
  * Revision 1.8  1996/07/20 05:33:06  robertj
  * Fixed some Win95 service bugs and missing functionality (service stop).
  *
@@ -79,6 +82,11 @@
     void ControlEntry(DWORD code);
     /* This function is called by the Service Controller whenever someone calls
        ControlService in reference to our service.
+     */
+
+    static void Control_C(int);
+    /* This function is called on a SIGINTR (Control-C) signal for use in
+       debug mode.
      */
 
     BOOL ReportStatus(
