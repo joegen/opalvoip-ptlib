@@ -24,6 +24,10 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.7  2002/04/10 08:40:36  rogerh
+ * Simplify the SetVideoChannelFormat() code. Use the implementation in the
+ * ancestor class.
+ *
  * Revision 1.6  2002/04/05 06:41:54  rogerh
  * Apply video changes from Damien Sandras <dsandras@seconix.com>.
  * The Video Channel and Format are no longer set in Open(). Instead
@@ -223,11 +227,6 @@ BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width,
 {
 	// Assume the size is valid
 	return TRUE;
-}
-
-BOOL PVideoInputDevice::SetVideoChannelFormat (int newNumber, VideoFormat newFormat) 
-{
-  return TRUE;
 }
 
 BOOL PVideoInputDevice::TestAllFormats()
