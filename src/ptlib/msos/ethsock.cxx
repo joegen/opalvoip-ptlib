@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.44  2004/10/23 10:52:59  ykiryanov
+ * Added ifdef _WIN32_WCE for PocketPC 2003 SDK port
+ *
  * Revision 1.43  2004/06/30 12:17:06  rjongbloed
  * Rewrite of plug in system to use single global variable for all factories to avoid all sorts
  *   of issues with startup orders and Windows DLL multiple instances.
@@ -172,7 +175,9 @@
 #include <ptlib/sockets.h>
 #include <snmp.h>
 
+#ifndef _WIN32_WCE
 #pragma comment(lib, "snmpapi.lib")
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Stuff from snmp.h
@@ -667,8 +672,8 @@ PWin32SnmpLibrary::PWin32SnmpLibrary()
   }
 
 #else
-  Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
-  Query = SnmpExtensionQuery;
+  _Init = SnmpExtensionInit; // do not call Init as we dont'have Close 
+  _Query = SnmpExtensionQuery;
 #endif
 }
 
