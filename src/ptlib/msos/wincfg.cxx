@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: wincfg.cxx,v $
+ * Revision 1.12  2001/08/17 20:09:12  yurik
+ * Fixed RegEnumValue name clash with system function
+ *
  * Revision 1.11  2001/08/14 21:56:39  yurik
  * More CE Unicode Registry API bug fixes
  *
@@ -372,7 +375,7 @@ BOOL RegistryKey::EnumValue(PINDEX idx, PString & str)
 #else  // CE has only Unicode based API
   USES_CONVERSION;
   TCHAR tstr[MAX_PATH];
-  LONG lResult = RegEnumValue(key, idx, tstr,
+  LONG lResult = RegEnumValueCe(key, idx, tstr,
       &sizeofname, NULL, NULL, NULL, NULL);
   str = T2A(tstr);
   if( lResult != ERROR_SUCCESS )
