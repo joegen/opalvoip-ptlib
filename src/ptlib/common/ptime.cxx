@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.cxx,v 1.2 1996/02/13 12:59:32 robertj Exp $
+ * $Id: ptime.cxx,v 1.3 1996/02/15 14:47:35 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.3  1996/02/15 14:47:35  robertj
+ * Fixed bugs in time zone compensation (some in the C library).
+ *
  * Revision 1.2  1996/02/13 12:59:32  robertj
  * Changed GetTimeZone() so can specify standard/daylight time.
  * Split PTime into separate module after major change to ReadFrom().
@@ -68,22 +71,10 @@ void PTimeInterval::SetInterval(long millisecs,
 
 #if defined(_PTIME)
 
-PTime::PTime(time_t t, int zone)
-  : theTime(t)
-{ 
-  if (zone != Local) {
-    theTime += GetTimeZone()*60;	// back to original time
-    theTime -= zone*60;			// and then GMT
-  }
-}
-
-
 PTime::PTime(const PString & str)
 {
   PStringStream s = str;
-  PTime t;
-  s >> t;
-  operator=(t);
+  ReadFrom(s);
 }
 
 
@@ -102,7 +93,7 @@ PTime::PTime(int second, int minute, int hour,
   t.tm_mday = day;
   PAssert(month >= 1 && month <= 12, PInvalidParameter);
   t.tm_mon = month-1;
-  PAssert(year >= 1900, PInvalidParameter);
+  PAssert(year >= 1970 && year <= 2038, PInvalidParameter);
   t.tm_year   = year-1900;
 
   if (zone == Local)
@@ -112,14 +103,9 @@ PTime::PTime(int second, int minute, int hour,
 
   theTime = mktime(&t);
 
-  // mktime returns GMT, calculated using input_time - timezone. However, this
-  // assumes that the input time was a local time. If the input time wasn't a
-  // local time, then we have have to add the local timezone (without daylight
-  // savings) and subtract the specified zone offset to get GMT
-  // and then subtract
   if (zone != Local) {
-    theTime += GetTimeZone(StandardTime)*60;	// convert to local time
-    theTime -= zone*60;				// and then GMT
+    theTime += GetTimeZone()*60;  // convert to local time
+    theTime -= zone*60;           // and then to GMT
   }
 }
 
@@ -248,18 +234,14 @@ PString PTime::AsString(const char * format, int zone) const
   BOOL is12hour = strchr(format, 'a') != NULL;
 
   PString str;
-  time_t realTime = theTime;
 
   // the localtime call automatically adjusts for daylight savings time
   // so take this into account when converting non-local times
   if (zone == Local) 
     zone = GetTimeZone();  // includes daylight savings time
-  else {
-    realTime -= GetTimeZone()*60;  // back to GMT
-    realTime += zone*60;           // to correct timezone
-  }
-  realTime += zone*60;           // to correct timezone
+  time_t realTime = theTime - zone*60;     // to correct timezone
   struct tm * t = gmtime(&realTime);
+
   PINDEX repeatCount;
 
   while (*format != '\0') {
@@ -328,8 +310,6 @@ PString PTime::AsString(const char * format, int zone) const
       case 'z' :
         while (*++format == 'z')
           ;
-        if (zone == Local)
-          zone = GetTimeZone();
         str += (zone < 0 ? '-' : '+');
         zone = PABS(zone);
         str += psprintf("%02u%02u", zone/60, zone%60);
@@ -370,7 +350,7 @@ typedef struct {
   int          value;
 } stringKey;
 
-#define NUM_LIST_ENTRIES	50
+#define NUM_LIST_ENTRIES  50
 
 static const stringKey idList[NUM_LIST_ENTRIES] = {
   { "am",            AM },
@@ -508,7 +488,7 @@ void PTime::ReadFrom(istream &strm)
   token = get_token(strm, yytext, yyval);
 
   int mul, tmp;
-  BOOL putback;
+  BOOL putback      = TRUE;
   BOOL wantToFinish = FALSE;
   BOOL haveMinimum  = FALSE;
   BOOL finished     = FALSE;
@@ -678,7 +658,7 @@ void PTime::ReadFrom(istream &strm)
     t.tm_isdst = 0;
 
   // create the time
-  theTime    = mktime(&t);
+  theTime = mktime(&t);
 
   // mktime returns GMT, calculated using input_time - timezone. However, this
   // assumes that the input time was a local time. If the input time wasn't a
@@ -686,8 +666,8 @@ void PTime::ReadFrom(istream &strm)
   // savings) and subtract the specified zone offset to get GMT
   // and then subtract
   if (zone != Local) {
-    theTime += GetTimeZone(StandardTime)*60;	// convert to local time
-    theTime -= zone*60;				// and then GMT
+    theTime += GetTimeZone()*60;  // convert to local time
+    theTime -= zone*60;           // and then to GMT
   }
 }
 
