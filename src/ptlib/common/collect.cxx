@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.37 1998/03/26 23:31:50 robertj Exp $
+ * $Id: collect.cxx,v 1.38 1998/05/17 02:29:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
+ * Revision 1.38  1998/05/17 02:29:46  robertj
+ * Fixed GetObjectsIndex()/GetValuesIndex() finding elements that have a hash clash.
+ *
  * Revision 1.37  1998/03/26 23:31:50  robertj
  * Fixed bug in RemoveAll() deleting objects twice.
  *
@@ -1270,6 +1273,7 @@ PINDEX PHashTable::Table::GetElementsIndex(
         PObject * keydata = keys ? element->key : element->data;
         if (byValue ? (*keydata == *obj) : (keydata == obj))
           return index;
+        element = element->next;
         index++;
       } while (element != list);
     }
