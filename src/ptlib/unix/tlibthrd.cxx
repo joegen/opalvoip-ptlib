@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.113  2003/02/20 23:32:00  robertj
+ * More RTEMS support patches, thanks Sebastian Meyer.
+ *
  * Revision 1.112  2003/01/24 10:21:06  robertj
  * Fixed issues in RTEMS support, thanks Vladimir Nesic
  *
@@ -437,7 +440,7 @@ static BOOL PAssertThreadOp(int retval,
   if (errno == EINTR || errno == EAGAIN) {
     if (++retry < 1000) {
 #if defined(P_RTEMS)
-      rtems_task_wake_after(10);
+      sched_yield();
 #else
       usleep(10000); // Basically just swap out thread to try and clear blockage
 #endif
@@ -670,13 +673,9 @@ void PThread::Restart()
 
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
-#ifdef P_RTEMS
-#warning Adjust size to match Your processor requiremnts
-  pthread_attr_setstacksize(&threadAttr, 16*1024);
-#endif
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
-#if defined(P_LINUX) || defined(P_RTEMS)
+#if defined(P_LINUX)
   /*
     Set realtime scheduling if our effective user id is root (only then is this
     allowed) AND our priority is Highest.
@@ -690,6 +689,13 @@ void PThread::Restart()
   */
   if ((geteuid() == 0) && (PX_priority == HighestPriority))
     PAssertPTHREAD(pthread_attr_setschedpolicy, (&threadAttr, SCHED_FIFO));
+#elif defined(P_RTEMS)
+  pthread_attr_setstacksize(&threadAttr, 2*PTHREAD_MINIMUM_STACK_SIZE);
+  pthread_attr_setinheritsched(&threadAttr, PTHREAD_EXPLICIT_SCHED);
+  pthread_attr_setschedpolicy(&threadAttr, SCHED_OTHER);
+  struct sched_param sched_param;
+  sched_param.sched_priority = 125; /* set medium priority */
+  pthread_attr_setschedparam(&threadAttr, &sched_param);
 #endif
 
   PAssertPTHREAD(pthread_create, (&PX_threadId, &threadAttr, PX_ThreadStart, this));
@@ -798,7 +804,7 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PX_priority = priorityLevel;
 
-#if defined(P_LINUX) || defined(P_RTEMS)
+#if defined(P_LINUX)
   if (IsTerminated())
     return;
 
@@ -821,7 +827,7 @@ void PThread::SetPriority(Priority priorityLevel)
 
 PThread::Priority PThread::GetPriority() const
 {
-#if defined(LINUX) || defined(P_RTEMS)
+#if defined(LINUX)
   int schedulingPolicy;
   struct sched_param schedParams;
   

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.h,v $
+ * Revision 1.18  2003/02/20 23:32:00  robertj
+ * More RTEMS support patches, thanks Sebastian Meyer.
+ *
  * Revision 1.17  2002/10/17 12:57:24  robertj
  * Added ability to increase maximum file handles on a process.
  *
@@ -107,6 +110,9 @@
 #include <sys/time.h>
 #endif
 
+#ifdef P_RTEMS
+#include <netinet/tcp.h>
+#endif
 
 typedef	int SOCKET;
 

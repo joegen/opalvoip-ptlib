@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.158  2003/02/20 23:32:00  robertj
+# More RTEMS support patches, thanks Sebastian Meyer.
+#
 # Revision 1.157  2003/02/19 10:22:22  rogerh
 # Add ESD fix from Shawn Pai-Hsiang Hsiao <shawn@eecs.harvard.edu>
 #
@@ -1232,6 +1235,13 @@ STDCCFLAGS	+= -B$(SYSLIBDIR)/ -specs=bsp_specs -ansi -fasm -qrtems
 ifeq ($(CPUTYPE),mcpu32)
 STDCCFLAGS	+= -mcpu32
 LDFLAGS		+= -mcpu32 
+ENDIAN          := PBIG_ENDIAN
+endif
+
+ifeq ($(CPUTYPE),mpc860)
+STDCCFLAGS	+= -mcpu=860
+LDFLAGS		+= -mcpu=860
+ENDIAN          := PBIG_ENDIAN
 endif
 
 STDCCFLAGS	+= -DP_RTEMS -DNO_VIDEO_CAPTURE -DP_HAS_SEMAPHORES
