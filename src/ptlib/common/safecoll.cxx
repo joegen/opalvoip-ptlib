@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.7  2002/12/10 07:37:34  robertj
+ * optimised SetLockMode() so if doesn't change mode it doesn't do anything.
+ *
  * Revision 1.6  2002/10/29 00:06:24  robertj
  * Changed template classes so things like PSafeList actually creates the
  *   base collection class as well.
@@ -485,6 +488,9 @@ void PSafePtrBase::Previous()
 
 BOOL PSafePtrBase::SetSafetyMode(PSafetyMode mode)
 {
+  if (lockMode == mode)
+    return TRUE;
+
   ExitSafetyMode(NoDereference);
   lockMode = mode;
   return EnterSafetyMode(AlreadyReferenced);
