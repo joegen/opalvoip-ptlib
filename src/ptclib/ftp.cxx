@@ -1,5 +1,5 @@
 /*
- * $Id: ftp.cxx,v 1.5 1996/03/31 09:01:20 robertj Exp $
+ * $Id: ftp.cxx,v 1.6 1996/05/23 09:56:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: ftp.cxx,v $
+ * Revision 1.6  1996/05/23 09:56:27  robertj
+ * Changed FTP so can do passive/active mode on all data transfers.
+ *
  * Revision 1.5  1996/03/31 09:01:20  robertj
  * More FTP client implementation.
  *
@@ -230,19 +233,22 @@ PString PFTPSocket::GetCurrentDirectory()
 }
 
 
-PStringArray PFTPSocket::GetDirectoryNames(NameTypes type)
+PStringArray PFTPSocket::GetDirectoryNames(NameTypes type,
+                                           DataChannelType ctype)
 {
-  return GetDirectoryNames(PString(), type);
+  return GetDirectoryNames(PString(), type, ctype);
 }
 
 
 PStringArray PFTPSocket::GetDirectoryNames(const PString & path,
-                                          NameTypes type)
+                                          NameTypes type,
+                                          DataChannelType ctype)
 {
   SetType(PFTPSocket::ASCII);
 
-  PTCPSocket * socket =
-              PassiveClientTransfer(type == DetailedNames ? LIST : NLST, path);
+  Commands lcmd = type == DetailedNames ? LIST : NLST;
+  PTCPSocket * socket = ctype != Passive ? NormalClientTransfer(lcmd, path)
+                                         : PassiveClientTransfer(lcmd, path);
   if (socket == NULL)
     return PStringArray();
 
@@ -260,20 +266,32 @@ PStringArray PFTPSocket::GetDirectoryNames(const PString & path,
 }
 
 
-PString PFTPSocket::GetFileStatus(const PString & path)
+PString PFTPSocket::GetFileStatus(const PString & path, DataChannelType ctype)
 {
-  if (ExecuteCommand(STAT, path)/100 != 2)
+  if (ExecuteCommand(STAT, path)/100 == 2) {
+    PINDEX start = lastResponseInfo.Find('\n');
+    if (start != P_MAX_INDEX) {
+      PINDEX end = lastResponseInfo.Find('\n', ++start);
+      if (end != P_MAX_INDEX)
+        return lastResponseInfo(start, end-1);
+    }
+  }
+
+  PTCPSocket * socket = ctype != Passive ? NormalClientTransfer(LIST, path)
+                                         : PassiveClientTransfer(LIST, path);
+  if (socket == NULL)
     return PString();
 
-  PINDEX start = lastResponseInfo.Find('\n');
-  if (start == P_MAX_INDEX)
-    return PString();
+  PString str;
+  socket->Read(str.GetPointer(200), 199);
+  str[socket->GetLastReadCount()] = '\0';
+  delete socket;
+  ReadResponse();
 
-  PINDEX end = lastResponseInfo.Find('\n', ++start);
-  if (end == P_MAX_INDEX)
-    return PString();
-
-  return lastResponseInfo(start, end-1);
+  PINDEX end = str.FindOneOf("\r\n");
+  if (end != P_MAX_INDEX)
+    str[end] = '\0';
+  return str;
 }
 
 
@@ -287,7 +305,7 @@ PTCPSocket * PFTPSocket::NormalClientTransfer(Commands cmd,
   // get host address and port to send to other end
   WORD localPort = listenSocket.GetPort();
   PIPSocket::Address localAddr;
-  PIPSocket::GetHostAddress(localAddr);
+  GetLocalAddress(localAddr);
 
   // send PORT command to host
   if (!SendPORT(localAddr, localPort))
@@ -911,15 +929,6 @@ void PFTPSocket::SendToClient(const PFilePath & filename)
 
 BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port)
 {
-  PString info;
-  int code;
-  return SendPORT(addr, port, code, info);
-}
-
-
-BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
-                          int & code, PString & info)
-{
   PString str(PString::Printf,
               "%i,%i,%i,%i,%i,%i",
               addr.Byte1(),
@@ -928,11 +937,7 @@ BOOL PFTPSocket::SendPORT(const PIPSocket::Address & addr, WORD port,
               addr.Byte4(),
               port/256,
               port%256);
-
-  if (!WriteCommand(PORT, str))
-    return FALSE;
-
-  return ReadResponse(code, info) && lastResponseCode/100 == 2;
+  return ExecuteCommand(PORT, str)/100 == 2;
 }
 
 
