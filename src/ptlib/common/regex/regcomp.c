@@ -1056,7 +1056,7 @@ register cset *cs;
 {
 	register int i;
 	register cset *top = &p->g->sets[p->g->ncsets];
-	register size_t css = (size_t)p->g->csetsize;
+	register int css = (size_t)p->g->csetsize;
 
 	for (i = 0; i < css; i++)
 		CHsub(cs, i);
@@ -1083,7 +1083,7 @@ register cset *cs;
 	register int i;
 	register cset *top = &p->g->sets[p->g->ncsets];
 	register cset *cs2;
-	register size_t css = (size_t)p->g->csetsize;
+	register int css = (size_t)p->g->csetsize;
 
 	/* look for an earlier one which is the same */
 	for (cs2 = &p->g->sets[0]; cs2 < top; cs2++)
@@ -1114,7 +1114,7 @@ register struct parse *p;
 register cset *cs;
 {
 	register int i;
-	register size_t css = (size_t)p->g->csetsize;
+	register int css = (size_t)p->g->csetsize;
 
 	for (i = 0; i < css; i++)
 		if (CHIN(cs, i))
@@ -1133,7 +1133,7 @@ register struct parse *p;
 register cset *cs;
 {
 	register int i;
-	register size_t css = (size_t)p->g->csetsize;
+	register int css = (size_t)p->g->csetsize;
 	register int n = 0;
 
 	for (i = 0; i < css; i++)
