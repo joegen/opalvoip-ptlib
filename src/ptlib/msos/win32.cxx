@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.129  2003/10/27 03:29:11  csoutheren
+ * Added support for QoS
+ *    Thanks to Henry Harrison of AliceStreet
+ *
  * Revision 1.128  2003/09/17 05:45:10  csoutheren
  * Removed recursive includes
  *
@@ -468,7 +472,8 @@
 
 #include <process.h>
 #include <ptlib/msos/ptlib/debstrm.h>
-#include <winsock.h>
+#include <winsock2.h>
+#include<ws2tcpip.h>
 
 #define new PNEW
 

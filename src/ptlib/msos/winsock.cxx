@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.55  2003/10/27 03:29:11  csoutheren
+ * Added support for QoS
+ *    Thanks to Henry Harrison of AliceStreet
+ *
  * Revision 1.54  2003/09/17 05:45:10  csoutheren
  * Removed recursive includes
  *
@@ -223,9 +227,18 @@
 PWinSock::PWinSock()
 {
   WSADATA winsock;
+
+#if 0 // old WinSock version check
   PAssert(WSAStartup(0x101, &winsock) == 0, POperatingSystemError);
   PAssert(LOBYTE(winsock.wVersion) == 1 &&
           HIBYTE(winsock.wVersion) == 1, POperatingSystemError);
+
+#endif
+
+  // ensure we support QoS
+  PAssert(WSAStartup(0x0202, &winsock) == 0, POperatingSystemError);
+  PAssert(LOBYTE(winsock.wVersion) >= 1 &&
+          HIBYTE(winsock.wVersion) >= 1, POperatingSystemError);
 }
 
 
