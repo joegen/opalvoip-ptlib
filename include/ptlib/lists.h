@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: lists.h,v $
+ * Revision 1.22  2003/08/31 22:11:29  dereksmithies
+ * Fix from Diego Tartara for the SetAt function. Many thanks.
+ *
  * Revision 1.21  2002/11/12 08:55:53  robertj
  * Changed scope of PAbstraSortedList::Element class so descendant classes
  *   can get at it.
@@ -246,12 +249,9 @@ class PAbstractList : public PCollection
     );
 
     /**Set the object at the specified ordinal position to the new value. This
-       will overwrite the existing entry. If the AllowDeleteObjects option is
-       set then the old object is also deleted.
-
-       The object accessed in this way is remembered by the class and further
-       access will be fast. Access to elements one either side of that saved
-       element, and the head and tail of the list, will always be fast.
+       will overwrite the existing entry. 
+       This method will NOT delete the old object independently of the 
+       AllowDeleteObjects option. Use #ReplaceAt()# instead.
 
        Note if the index is beyond the size of the collection then the
        function will assert.
@@ -260,6 +260,21 @@ class PAbstractList : public PCollection
        TRUE if the object was successfully added.
      */
     virtual BOOL SetAt(
+      PINDEX index,   /// Index position in collection to set.
+      PObject * val   /// New value to place into the collection.
+    );
+    
+    /**Set the object at the specified ordinal position to the new value. This
+       will overwrite the existing entry. If the AllowDeleteObjects option is
+       set then the old object is also deleted.
+    
+       Note if the index is beyond the size of the collection then the
+       function will assert.
+       
+       @return
+       TRUE if the object was successfully replaced.
+     */   
+    virtual BOOL ReplaceAt(
       PINDEX index,   /// Index position in collection to set.
       PObject * val   /// New value to place into the collection.
     );
@@ -920,16 +935,11 @@ class PAbstractSortedList : public PCollection
      */
     virtual void RemoveAll();
 
-    /**Set the object at the specified ordinal position to the new value. This
-       will overwrite the existing entry. If the AllowDeleteObjects option is
-       set then the old object is also deleted.
-
-       Note, the object placed at #index# will not stay at that
-       ordinal position. It is actually placed at the correct position for its
-       rank.
-
+    /**This method simply returns FALSE as the list order is mantained by the 
+       class. Kept to mimic #PAbstractList# interface.
+       
        @return
-       TRUE if the object was successfully added.
+       FALSE allways
      */
     virtual BOOL SetAt(
       PINDEX index,   // Index position in collection to set.
