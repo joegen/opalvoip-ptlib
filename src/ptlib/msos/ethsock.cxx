@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.31  2002/02/15 03:56:46  yurik
+ * Warnings removed during compilation, patch courtesy of Jehan Bing, jehan@bravobrava.com
+ *
  * Revision 1.30  2001/10/12 19:04:24  yurik
  * New more robust ip collection routine
  *
@@ -1585,7 +1588,7 @@ BOOL PEthSocket::Read(void * data, PINDEX length)
     PINDEX retries = 100;
     for (;;) {
       result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
-      if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0+numBuffers)
+      if (result >= WAIT_OBJECT_0 && result < WAIT_OBJECT_0 + (DWORD)numBuffers)
         break;
 
       if (::GetLastError() != ERROR_INVALID_HANDLE || retries == 0)
@@ -1631,7 +1634,7 @@ BOOL PEthSocket::Write(const void * data, PINDEX length)
   }
 
   DWORD result = WaitForMultipleObjects(numBuffers, handles, FALSE, INFINITE);
-  if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0+numBuffers)
+  if (result < WAIT_OBJECT_0 || result >= WAIT_OBJECT_0 + (DWORD) numBuffers)
     return ConvertOSError(-1, LastWriteError);
 
   idx = result - WAIT_OBJECT_0;
