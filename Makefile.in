@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.25  2004/05/04 08:23:19  dsandras
+# Fixed installation of plugins. Fixed uninstallation of plugins.
+#
 # Revision 1.24  2004/05/03 12:33:18  csoutheren
 # Fixed install problem with ptlib-config
 #
@@ -255,8 +258,12 @@ install:
 		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ifeq (1, $(HAS_PLUGINS))
-	(for fn in plugins/pwlib/*.so ; \
-		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR); \
+	cd plugins/pwlib/device/ ; \
+	( for dir in ./* ;\
+		do mkdir -p $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir ; chmod 555 $(DESTDIR)$(LIBDIR)/pwlib/$$dir ; \
+		(for fn in ./$$dir/*.so ; \
+			do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR)/pwlib/devices/$$dir; \
+		done ); \
 	done )
 endif
 	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
@@ -282,7 +289,7 @@ uninstall:
 	       $(DESTDIR)$(PREFIX)/include/ptlib.h \
 	       $(DESTDIR)$(PREFIX)/include/ptbuildopts.h \
 	       $(DESTDIR)$(PREFIX)/share/pwlib \
-	       $(DESTDIR)$(LIBDIR)/pwlib/ \
+	       $(DESTDIR)$(LIBDIR)/pwlib/devices \
 	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* \
               @libdir@/libpt.so 
 
