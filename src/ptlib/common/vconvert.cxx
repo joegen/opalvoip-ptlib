@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.29  2002/02/26 02:23:21  dereks
+ * Reduced verbosity in PTRACE output for when video is enabled.
+ *
  * Revision 1.28  2002/02/20 02:37:26  dereks
  * Initial release of Firewire camera support for linux.
  * Many thanks to Ryutaroh Matsumoto <ryutaroh@rmatsumoto.org>.
@@ -239,7 +242,7 @@ PColourConverter::PColourConverter(const PString & src,
   : srcColourFormat(src),
     dstColourFormat(dst)
 {
-  PTRACE(4,"PColCnv\tPColourConverter constructed: " << src << "->" << dst << ' ' << width << 'x'<< height);
+  PTRACE(6,"PColCnv\tPColourConverter constructed: " << src << "->" << dst << ' ' << width << 'x'<< height);
 
   doVFlip = FALSE;
   SetFrameSize(width,height);
@@ -250,7 +253,7 @@ BOOL PColourConverter::SetFrameSize(unsigned width, unsigned height)
 {
   BOOL ok1 = SetSrcFrameSize(width, height);
   BOOL ok2 = SetDstFrameSize(width, height, FALSE);
-  PTRACE(4,"PColCnv\tSetFrameSize: " << width << 'x' << height
+  PTRACE(6,"PColCnv\tSetFrameSize: " << width << 'x' << height
          << (ok1 && ok2 ? " OK" : " Failed"));
   return ok1 && ok2;
 }
@@ -261,7 +264,7 @@ BOOL PColourConverter::SetSrcFrameSize(unsigned width, unsigned height)
   srcFrameWidth = width;
   srcFrameHeight = height;
   srcFrameBytes = PVideoDevice::CalculateFrameBytes(srcFrameWidth, srcFrameHeight, srcColourFormat);
-  PTRACE(4, "PColCnv\tSetSrcFrameSize "
+  PTRACE(6, "PColCnv\tSetSrcFrameSize "
          << ((srcFrameBytes != 0) ? "Succeed": "Fail") << "ed, "
          << srcColourFormat << ' ' << srcFrameWidth << 'x' << srcFrameHeight
          << ", " << srcFrameBytes << " bytes.");
@@ -278,7 +281,7 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height, BOOL bSc
   
   dstFrameBytes = PVideoDevice::CalculateFrameBytes(dstFrameWidth, dstFrameHeight, dstColourFormat);
 
-  PTRACE(4, "PColCnv\tSetDstFrameSize "
+  PTRACE(6, "PColCnv\tSetDstFrameSize "
          << ((dstFrameBytes != 0) ? "Succeed": "Fail") << "ed, "
          << dstColourFormat << ' ' << dstFrameWidth << 'x' << dstFrameHeight
          << ", " << dstFrameBytes << " bytes.");
