@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.37  2001/04/12 03:26:59  robertj
+ * Fixed PASN_Boolean cosntructor to be compatible with usage in ASN parser.
+ * Changed all PASN_xxx types so constructor can take real type as only
+ *   parameter. eg PASN_OctetString s = "fred";
+ * Changed block encode/decode so does not do a ByteAlign() if zero
+ *   length, required for interoperability even though spec implies otherwise..
+ *
  * Revision 1.36  2001/01/24 04:37:07  robertj
  * Added more bulletproofing to ASN structures to obey constraints.
  *
@@ -386,7 +393,14 @@ void PPER_Stream::NullEncode(const PASN_Null &)
 
 ///////////////////////////////////////////////////////////////////////
 
-PASN_Boolean::PASN_Boolean(BOOL val, unsigned tag, TagClass tagClass)
+PASN_Boolean::PASN_Boolean(BOOL val)
+  : PASN_Object(UniversalBoolean, UniversalTagClass)
+{
+  value = val;
+}
+
+
+PASN_Boolean::PASN_Boolean(unsigned tag, TagClass tagClass, BOOL val)
   : PASN_Object(tag, tagClass)
 {
   value = val;
@@ -482,6 +496,13 @@ void PPER_Stream::BooleanEncode(const PASN_Boolean & value)
 
 
 ///////////////////////////////////////////////////////////////////////
+
+PASN_Integer::PASN_Integer(unsigned val)
+  : PASN_ConstrainedObject(UniversalInteger, UniversalTagClass)
+{
+  value = val;
+}
+
 
 PASN_Integer::PASN_Integer(unsigned tag, TagClass tagClass, unsigned val)
   : PASN_ConstrainedObject(tag, tagClass)
@@ -683,6 +704,14 @@ void PASN_Integer::EncodePER(PPER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_Enumeration::PASN_Enumeration(unsigned val)
+  : PASN_Object(UniversalEnumeration, UniversalTagClass, FALSE)
+{
+  value = val;
+  maxEnumValue = P_MAX_INDEX;
+}
+
+
 PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
                                    unsigned maxEnum, BOOL extend,
                                    unsigned val)
@@ -861,6 +890,13 @@ void PASN_Enumeration::EncodePER(PPER_Stream & strm) const
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_Real::PASN_Real(double val)
+  : PASN_Object(UniversalReal, UniversalTagClass)
+{
+  value = val;
+}
+
+
 PASN_Real::PASN_Real(unsigned tag, TagClass tagClass, double val)
   : PASN_Object(tag, tagClass)
 {
@@ -969,6 +1005,14 @@ void PPER_Stream::RealEncode(const PASN_Real &)
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_ObjectId::PASN_ObjectId(const char * dotstr)
+  : PASN_Object(UniversalObjectId, UniversalTagClass)
+{
+  if (dotstr != NULL)
+    SetValue(dotstr);
+}
+
+
 PASN_ObjectId::PASN_ObjectId(unsigned tag, TagClass tagClass)
   : PASN_Object(tag, tagClass)
 {
@@ -992,7 +1036,10 @@ PASN_ObjectId & PASN_ObjectId::operator=(const PASN_ObjectId & other)
 
 PASN_ObjectId & PASN_ObjectId::operator=(const char * dotstr)
 {
-  SetValue(dotstr);
+  if (dotstr != NULL)
+    SetValue(dotstr);
+  else
+    value.SetSize(0);
   return *this;
 }
 
@@ -1223,6 +1270,16 @@ void PPER_Stream::ObjectIdEncode(const PASN_ObjectId & value)
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_BitString::PASN_BitString(unsigned nBits, const BYTE * buf)
+  : PASN_ConstrainedObject(UniversalBitString, UniversalTagClass),
+    totalBits(nBits),
+    bitData((totalBits+7)/8)
+{
+  if (buf != NULL)
+    memcpy(bitData.GetPointer(), buf, bitData.GetSize());
+}
+
+
 PASN_BitString::PASN_BitString(unsigned tag, TagClass tagClass, unsigned nBits)
   : PASN_ConstrainedObject(tag, tagClass),
     totalBits(nBits),
@@ -1251,14 +1308,16 @@ PASN_BitString & PASN_BitString::operator=(const PASN_BitString & other)
 void PASN_BitString::SetData(unsigned nBits, const PBYTEArray & bytes)
 {
   bitData = bytes;
-  totalBits = nBits;
+  SetSize(nBits);
 }
 
 
 void PASN_BitString::SetData(unsigned nBits, const BYTE * buf, PINDEX size)
 {
-  bitData = PBYTEArray(buf, size);
-  totalBits = nBits;
+  if (size == 0)
+    size = (nBits+7)/8;
+  memcpy(bitData.GetPointer(size), buf, size);
+  SetSize(nBits);
 }
 
 
@@ -1484,6 +1543,17 @@ void PPER_Stream::BitStringEncode(const PASN_BitString & value)
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_OctetString::PASN_OctetString(const char * str, PINDEX size)
+  : PASN_ConstrainedObject(UniversalOctetString, UniversalTagClass)
+{
+  if (str != NULL) {
+    if (size == 0)
+      size = ::strlen(str);
+    SetValue((const BYTE *)str, size);
+  }
+}
+
+
 PASN_OctetString::PASN_OctetString(unsigned tag, TagClass tagClass)
   : PASN_ConstrainedObject(tag, tagClass)
 {
@@ -1507,7 +1577,10 @@ PASN_OctetString & PASN_OctetString::operator=(const PASN_OctetString & other)
 
 PASN_OctetString & PASN_OctetString::operator=(const char * str)
 {
-  SetValue((const BYTE *)str, strlen(str));
+  if (str == NULL)
+    value.SetSize(lowerLimit);
+  else
+    SetValue((const BYTE *)str, strlen(str));
   return *this;
 }
 
@@ -1738,6 +1811,9 @@ PASN_ConstrainedString::PASN_ConstrainedString(const char * canonical, PINDEX si
 
 PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
 {
+  if (str == NULL)
+    str = "";
+
   value = PString();
 
   PINDEX len = strlen(str);
@@ -1961,10 +2037,14 @@ void PPER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 
 #define DEFINE_STRING_CLASS(name, set) \
   static const char name##StringSet[] = set; \
+  PASN_##name##String::PASN_##name##String(const char * str) \
+    : PASN_ConstrainedString(name##StringSet, sizeof(name##StringSet)-1, \
+                             Universal##name##String, UniversalTagClass) \
+    { PASN_ConstrainedString::SetValue(str); } \
   PASN_##name##String::PASN_##name##String(unsigned tag, TagClass tagClass) \
     : PASN_ConstrainedString(name##StringSet, sizeof(name##StringSet)-1, tag, tagClass) \
     { } \
-    PASN_##name##String & PASN_##name##String::operator=(const char * str) \
+  PASN_##name##String & PASN_##name##String::operator=(const char * str) \
     { PASN_ConstrainedString::SetValue(str); return *this; } \
   PASN_##name##String & PASN_##name##String::operator=(const PString & str) \
     { PASN_ConstrainedString::SetValue(str); return *this; } \
@@ -2015,8 +2095,31 @@ DEFINE_STRING_CLASS(General,   "\000\001\002\003\004\005\006\007"
 
 ///////////////////////////////////////////////////////////////////////
 
+PASN_BMPString::PASN_BMPString(const char * str)
+  : PASN_ConstrainedObject(UniversalBMPString, UniversalTagClass)
+{
+  Construct();
+  if (str != NULL)
+    SetValue(str);
+}
+
+
+PASN_BMPString::PASN_BMPString(const PWORDArray & wstr)
+  : PASN_ConstrainedObject(UniversalBMPString, UniversalTagClass)
+{
+  Construct();
+  SetValue(wstr);
+}
+
+
 PASN_BMPString::PASN_BMPString(unsigned tag, TagClass tagClass)
   : PASN_ConstrainedObject(tag, tagClass)
+{
+  Construct();
+}
+
+
+void PASN_BMPString::Construct()
 {
   firstChar = 0;
   lastChar = 0xffff;
@@ -3757,13 +3860,16 @@ void PASN_Stream::ByteEncode(unsigned value)
 
 unsigned PASN_Stream::BlockDecode(BYTE * bufptr, unsigned nBytes)
 {
-  ByteAlign();
-
-  if (byteOffset+nBytes > (unsigned)GetSize())
-    nBytes = GetSize() - byteOffset;
-
   if (nBytes == 0)
     return 0;
+
+  ByteAlign();
+
+  if (byteOffset+nBytes > (unsigned)GetSize()) {
+    nBytes = GetSize() - byteOffset;
+    if (nBytes == 0)
+      return 0;
+  }
 
   memcpy(bufptr, &theArray[byteOffset], nBytes);
   byteOffset += nBytes;
@@ -3775,10 +3881,10 @@ void PASN_Stream::BlockEncode(const BYTE * bufptr, PINDEX nBytes)
 {
   PAssert(byteOffset != P_MAX_INDEX, PLogicError);
 
-  ByteAlign();
-
   if (nBytes == 0)
     return;
+
+  ByteAlign();
 
   if (byteOffset+nBytes >= GetSize())
     SetSize(byteOffset+nBytes+10);
