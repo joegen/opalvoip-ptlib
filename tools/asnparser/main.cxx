@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.33  2001/04/26 08:15:58  robertj
+ * Fixed problem with ASN compile of single constraints on enumerations.
+ *
  * Revision 1.32  2001/04/23 04:40:14  robertj
  * Added ASN standard types GeneralizedTime and UTCTime
  *
@@ -278,7 +281,7 @@ class App : public PProcess
 PCREATE_PROCESS(App);
 
 App::App()
-  : PProcess("Equivalence", "ASNParse", 1, 4, ReleaseCode, 0)
+  : PProcess("Equivalence", "ASNParse", 1, 4, ReleaseCode, 1)
 {
 }
 
@@ -632,23 +635,9 @@ void SingleValueConstraintElement::PrintOn(ostream & strm) const
 
 void SingleValueConstraintElement::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx)
 {
-  if (value->IsDescendant(IntegerValue::Class())) {
-    cxx << fn << ", ";
-    value->GenerateCplusplus(hdr, cxx);
-    cxx << ", ";
-    value->GenerateCplusplus(hdr, cxx);
-    cxx << ");\n";
-    return;
-  }
-
-  if (value->IsDescendant(CharacterStringValue::Class())) {
-    cxx << fn << ", ";
-    value->GenerateCplusplus(hdr, cxx);
-    cxx << ");\n";
-    return;
-  }
-
-  PError << StdError(Warning) << "Unsupported constraint type, ignoring." << endl;
+  cxx << fn << ", ";
+  value->GenerateCplusplus(hdr, cxx);
+  cxx << ");\n";
 }
 
 
@@ -2975,7 +2964,7 @@ void DefinedValue::GenerateCplusplus(ostream & hdr, ostream & cxx)
   if (actualValue != NULL)
     actualValue->GenerateCplusplus(hdr, cxx);
   else
-    cxx << referenceName;
+    cxx << "e_" << referenceName;
 }
 
 
