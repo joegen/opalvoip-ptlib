@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.6  1998/10/30 10:42:32  robertj
+ * Better function arrangement for multi platforming.
+ *
  * Revision 1.5  1998/10/29 11:29:18  robertj
  * Added ability to set environment in sub-process.
  *
@@ -54,24 +57,34 @@
 
 #if defined(_PPIPECHANNEL)
 
-PPipeChannel::PPipeChannel(const PString & subProgram,
-                           OpenMode mode,
-                           BOOL searchPath,
-                           BOOL stderrSeparate,
-                           const char * environment)
+
+static BOOL SplitArgs(const PString & cmdline,
+                      PString & progName,
+                      PStringArray & arguments)
 {
-  Open(subProgram, NULL, mode, searchPath, stderrSeparate, environment);
+  PArgList list = cmdline;
+  if (list.GetCount() == 0)
+    return FALSE;
+
+  progName = list[0];
+
+  arguments.SetSize(list.GetCount()-1);
+  for (PINDEX i = 1; i < list.GetCount(); i++)
+    arguments[i-1] = list[i];
+
+  return TRUE;
 }
 
 
 PPipeChannel::PPipeChannel(const PString & subProgram,
-                           const char * const * arguments,
                            OpenMode mode,
                            BOOL searchPath,
-                           BOOL stderrSeparate,
-                           const char * environment)
+                           BOOL stderrSeparate)
 {
-  Open(subProgram, arguments, mode, searchPath, stderrSeparate, environment);
+  PString progName;
+  PStringArray arguments;
+  if (SplitArgs(subProgram, progName, arguments))
+    PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, NULL);
 }
 
 
@@ -79,10 +92,33 @@ PPipeChannel::PPipeChannel(const PString & subProgram,
                            const PStringArray & arguments,
                            OpenMode mode,
                            BOOL searchPath,
-                           BOOL stderrSeparate,
-                           const char * environment)
+                           BOOL stderrSeparate)
 {
-  Open(subProgram, arguments, mode, searchPath, stderrSeparate, environment);
+  PlatformOpen(subProgram, arguments, mode, searchPath, stderrSeparate, NULL);
+}
+
+
+PPipeChannel::PPipeChannel(const PString & subProgram,
+                           const PStringToString & environment,
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate)
+{
+  PString progName;
+  PStringArray arguments;
+  if (SplitArgs(subProgram, progName, arguments))
+    PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, &environment);
+}
+
+
+PPipeChannel::PPipeChannel(const PString & subProgram,
+                           const PStringArray & arguments,
+                           const PStringToString & environment,
+                           OpenMode mode,
+                           BOOL searchPath,
+                           BOOL stderrSeparate)
+{
+  PlatformOpen(subProgram, arguments, mode, searchPath, stderrSeparate, &environment);
 }
 
 
@@ -99,31 +135,51 @@ PString PPipeChannel::GetName() const
 }
 
 
-PBASEARRAY(PConstCharStarArray, const char *);
+BOOL PPipeChannel::Open(const PString & subProgram,
+                        OpenMode mode,
+                        BOOL searchPath,
+                        BOOL stderrSeparate)
+{
+  PString progName;
+  PStringArray arguments;
+  if (!SplitArgs(subProgram, progName, arguments))
+    return FALSE;
+  return PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, NULL);
+}
+
 
 BOOL PPipeChannel::Open(const PString & subProgram,
                         const PStringArray & arguments,
                         OpenMode mode,
                         BOOL searchPath,
-                        BOOL stderrSeparate,
-                        const char * environment)
+                        BOOL stderrSeparate)
 {
-  PConstCharStarArray args(arguments.GetSize()+1);
-  PINDEX i;
-  for (i = 0; i < arguments.GetSize(); i++)
-    args[i] = arguments[i];
-  args[i] = NULL;
-  return Open(subProgram, args, mode, searchPath, stderrSeparate, environment);
+  return PlatformOpen(subProgram, arguments, mode, searchPath, stderrSeparate, NULL);
 }
 
 
 BOOL PPipeChannel::Open(const PString & subProgram,
+                        const PStringToString & environment,
                         OpenMode mode,
                         BOOL searchPath,
-                        BOOL stderrSeparate,
-                        const char * environment)
+                        BOOL stderrSeparate)
 {
-  return Open(subProgram, NULL, mode, searchPath, stderrSeparate, environment);
+  PString progName;
+  PStringArray arguments;
+  if (!SplitArgs(subProgram, progName, arguments))
+    return FALSE;
+  return PlatformOpen(progName, arguments, mode, searchPath, stderrSeparate, &environment);
+}
+
+
+BOOL PPipeChannel::Open(const PString & subProgram,
+                        const PStringArray & arguments,
+                        const PStringToString & environment,
+                        OpenMode mode,
+                        BOOL searchPath,
+                        BOOL stderrSeparate)
+{
+  return PlatformOpen(subProgram, arguments, mode, searchPath, stderrSeparate, &environment);
 }
 
 
