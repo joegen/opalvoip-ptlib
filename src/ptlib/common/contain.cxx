@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.76  1998/10/28 00:58:40  robertj
+ * Changed PStringStream so flush or endl does not clear the string output, this now
+ *    just sets the string to minimum size.
+ *
  * Revision 1.75  1998/10/13 14:06:18  robertj
  * Complete rewrite of memory leak detection code.
  *
@@ -1750,7 +1754,7 @@ int PStringStream::Buffer::overflow(int c)
   if (pptr() >= epptr()) {
     int gpos = gptr() - eback();
     int ppos = pptr() - pbase();
-    char * newptr = string->GetPointer(string->GetSize() + 10);
+    char * newptr = string->GetPointer(string->GetSize() + 32);
     setp(newptr, newptr + string->GetSize() - 1);
     pbump(ppos);
     setg(newptr, newptr + gpos, newptr + ppos);
@@ -1771,10 +1775,11 @@ int PStringStream::Buffer::underflow()
 
 int PStringStream::Buffer::sync()
 {
+  string->MakeMinimumSize();
   char * base = string->GetPointer();
   char * end = base + string->GetLength();
   setg(base, base, end);
-  setp(end, base + string->GetSize() - 1);
+  setp(end, end);
   return 0;
 }
 
