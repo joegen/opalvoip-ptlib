@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: array.h,v $
+ * Revision 1.18  1999/09/03 15:08:38  robertj
+ * Fixed typo in ancestor class name
+ *
  * Revision 1.17  1999/08/22 12:13:42  robertj
  * Fixed warning when using inlines on older GNU compiler
  *
@@ -364,7 +367,7 @@ template <class T> class PBaseArray : public PAbstractArray
     void Attach(
       const T * buffer,   /// Pointer to an array of elements.
       PINDEX bufferSize   /// Number of elements pointed to by buffer.
-    ) { PAbstraceArray::Attach(buffer, bufferSize); }
+    ) { PAbstractArray::Attach(buffer, bufferSize); }
 
     /**Get a pointer to the internal array and assure that it is of at least
        the specified size. This is useful when the array contents are being
