@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.61  2001/05/29 03:35:16  craigs
+ * Changed to not tempnam to avoid linker warning on new Linux systems
+ *
  * Revision 1.60  2001/03/12 02:35:20  robertj
  * Fixed PDirectory::Exists so only returns TRUE if a directory and not file.
  *
@@ -625,45 +628,49 @@ BOOL PFile::Open(OpenMode mode, int opt)
   Close();
   clear();
 
+  if (opt > 0)
+    removeOnClose = (opt & Temporary) != 0;
+
   if (path.IsEmpty()) {
-    char * tmp = tempnam(NULL, "PWL");
-    PAssert(tmp != NULL, POperatingSystemError);
-    path = PString(tmp);
-    runtime_free(tmp);
+    char templateStr[3+6+1];
+    strcpy(templateStr, "PWL");
+    os_handle = mkstemp(templateStr);
+    if (!ConvertOSError(os_handle))
+      return FALSE;
+
+  } else {
+    int oflags = 0;
+    switch (mode) {
+      case ReadOnly :
+        oflags |= O_RDONLY;
+        if (opt == ModeDefault)
+          opt = MustExist;
+        break;
+      case WriteOnly :
+        oflags |= O_WRONLY;
+        if (opt == ModeDefault)
+          opt = Create|Truncate;
+        break;
+      case ReadWrite :
+        oflags |= O_RDWR;
+        if (opt == ModeDefault)
+          opt = Create;
+        break;
+  
+      default :
+        PAssertAlways(PInvalidParameter);
+    }
+    if ((opt&Create) != 0)
+      oflags |= O_CREAT;
+    if ((opt&Exclusive) != 0)
+      oflags |= O_EXCL;
+    if ((opt&Truncate) != 0)
+      oflags |= O_TRUNC;
+
+
+    if (!ConvertOSError(os_handle = ::open(path, oflags, DEFAULT_FILE_MODE)))
+      return FALSE;
   }
-
-  int oflags = 0;
-  switch (mode) {
-    case ReadOnly :
-      oflags |= O_RDONLY;
-      if (opt == ModeDefault)
-        opt = MustExist;
-      break;
-    case WriteOnly :
-      oflags |= O_WRONLY;
-      if (opt == ModeDefault)
-        opt = Create|Truncate;
-      break;
-    case ReadWrite :
-      oflags |= O_RDWR;
-      if (opt == ModeDefault)
-        opt = Create;
-      break;
-
-    default :
-      PAssertAlways(PInvalidParameter);
-  }
-  if ((opt&Create) != 0)
-    oflags |= O_CREAT;
-  if ((opt&Exclusive) != 0)
-    oflags |= O_EXCL;
-  if ((opt&Truncate) != 0)
-    oflags |= O_TRUNC;
-
-  removeOnClose = opt & Temporary;
-
-  if (!ConvertOSError(os_handle = ::open(path, oflags, DEFAULT_FILE_MODE)))
-    return FALSE;
 
   return ConvertOSError(::fcntl(os_handle, F_SETFD, 1));
 }
@@ -867,21 +874,16 @@ PFilePath::PFilePath(const char * prefix, const char * dir)
   if (prefix == NULL)
     prefix = "tmp";
   
-  char * n;
-  if (dir == NULL) {
-    n = tempnam(NULL, (char *)prefix);
-    *this = CanonicaliseFilename(n);
-    runtime_free (n);
-  } else {
-    PDirectory s(dir);
-    PString p = s + prefix + "XXXXXX";
-    if (mktemp(p.GetPointer()) == NULL) {
-      char extra = 'a';
-      do 
-        p = s + prefix + extra++ + "XXXXXX";
-      while (mktemp(p.GetPointer()) == NULL && extra <= 'z');
-    }
-    *this = PString(p);
+  PDirectory s(dir);
+  if (dir == NULL) 
+    s = PDirectory("/tmp");
+
+  PString p;
+  srandom(getpid());
+  for (;;) {
+    *this = s + prefix + psprintf("%i_%06x", getpid(), random() % 1000000);
+    if (!PFile::Exists(*this))
+      break;
   }
 }
 
