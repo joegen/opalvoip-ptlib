@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: syncpoint.h,v $
+ * Revision 1.3  1998/11/30 22:07:18  robertj
+ * New directory structure.
+ *
  * Revision 1.2  1998/09/24 04:11:59  robertj
  * Added open software license.
  *
@@ -45,7 +48,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PSyncPoint
 
-#include "../../common/ptlib/syncpoint.h"
+#include "../../syncpoint.h"
 };
 
 
