@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.11 1996/02/25 03:10:34 robertj Exp $
+ * $Id: http.cxx,v 1.12 1996/02/25 11:14:24 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.12  1996/02/25 11:14:24  robertj
+ * Radio button support for forms.
+ *
  * Revision 1.11  1996/02/25 03:10:34  robertj
  * Removed pass through HTTP resource.
  * Fixed PHTTPConfig resource to use correct name for config key.
@@ -1388,6 +1391,78 @@ PString PHTTPBooleanField::GetValue() const
 {
   return (value ? "T" : "F");
 }
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const PStringArray & valueArray,
+                                 PINDEX initVal)
+  : PHTTPField(name),
+    values(valueArray),
+    titles(valueArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 const PStringArray & valueArray,
+                                 const PStringArray & titleArray,
+                                 PINDEX initVal)
+  : PHTTPField(name),
+    values(valueArray),
+    titles(titleArray),
+    value(valueArray[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 PINDEX count,
+                                 const char * const * valueStrings,
+                                 PINDEX initVal)
+  : PHTTPField(name),
+    values(count, valueStrings),
+    titles(count, valueStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
+PHTTPRadioField::PHTTPRadioField(const char * name,
+                                 PINDEX count,
+                                 const char * const * valueStrings,
+                                 const char * const * titleStrings,
+                                 PINDEX initVal)
+  : PHTTPField(name),
+    values(count, valueStrings),
+    titles(count, titleStrings),
+    value(valueStrings[initVal])
+{
+}
+
+
+void PHTTPRadioField::GetHTML(PHTML & html)
+{
+  for (PINDEX i = 0; i < values.GetSize(); i++)
+    html << PHTML::RadioButton(name, values[i],
+                        values[i] == value ? PHTML::Checked : PHTML::UnChecked)
+         << titles[i]
+         << PHTML::BreakLine();
+  notInHTML = FALSE;
+}
+
+
+PString PHTTPRadioField::GetValue() const
+{
+  return value;
+}
+
+
+void PHTTPRadioField::SetValue(const PString & val)
+{
+  value = val;
+}
+
 
 
 PHTTPForm::PHTTPForm(const PURL & url)
