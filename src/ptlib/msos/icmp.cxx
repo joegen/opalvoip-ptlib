@@ -1,5 +1,5 @@
 /*
- * $Id: icmp.cxx,v 1.8 1997/10/03 13:32:46 robertj Exp $
+ * $Id: icmp.cxx,v 1.9 1998/01/26 00:53:33 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1996 Equivalence
  *
  * $Log: icmp.cxx,v $
+ * Revision 1.9  1998/01/26 00:53:33  robertj
+ * Added error codes, TTL and data buffer to Ping.
+ *
  * Revision 1.8  1997/10/03 13:32:46  robertj
  * Changed to late binding so do not need icmp.lib to compile system.
  *
@@ -170,37 +173,100 @@ BOOL PICMPSocket::Ping(const PString & host, PingInfo & info)
     return FALSE;
   }
 
-  BYTE sendBuffer[64];
   IPINFO requestOptions;
-  BYTE replyBuffer[256];
+  requestOptions.Ttl = info.ttl;     /* Time To Live (used for traceroute) */
+  requestOptions.Tos = 0;            /* Type Of Service (usually 0) */
+  requestOptions.Flags = 0;          /* IP header flags (usually 0) */
+  requestOptions.OptionsSize = 0;    /* Size of options data (usually 0, max 40) */
+  requestOptions.OptionsData = NULL; /* Options data buffer */
 
-  memset(&requestOptions, 0, sizeof(requestOptions));
-  memset(sendBuffer,     0, sizeof(sendBuffer));
-  memset(replyBuffer,    0, sizeof(replyBuffer));
+  BYTE sendBuffer[32];
+  void * sendBufferPtr;
+  WORD sendBufferSize;
 
-  requestOptions.Ttl = 255;
+  if (info.buffer != NULL) {
+    sendBufferPtr = (void *)info.buffer;
+    PAssert(info.bufferSize < 65535, PInvalidParameter);
+    sendBufferSize = (WORD)info.bufferSize;
+  }
+  else {
+    sendBufferPtr = sendBuffer;
+    sendBufferSize = sizeof(sendBuffer);
+  }
 
-  if (ICMP.IcmpSendEcho(icmpHandle, 
+  ICMPECHO * reply = (ICMPECHO *)malloc(sizeof(ICMPECHO)+sendBufferSize);
+
+  if (ICMP.IcmpSendEcho(icmpHandle,
 		        addr,
-		        sendBuffer, sizeof(sendBuffer),   
-		        &requestOptions,      
-		        replyBuffer, sizeof(replyBuffer), 
-		        GetReadTimeout().GetInterval()) == 0)
-    return FALSE;
+		        sendBufferPtr, sendBufferSize,
+		        &requestOptions,
+		        reply, sizeof(ICMPECHO)+sendBufferSize,
+		        GetReadTimeout().GetInterval()) != 0) {
+    info.delay.SetInterval(reply->RTTime);
+    info.remoteAddr = Address((in_addr&)reply->Address);
+  }
 
-  ICMPECHO * reply = (ICMPECHO *)replyBuffer;
-
-  if (reply->Status != IP_SUCCESS)
-    return FALSE;
-
-  info.remoteAddr = Address((in_addr&)reply->Address);
   GetHostAddress(info.localAddr);
-  info.delay.SetInterval(reply->RTTime);
 
-  // leave these two fields unchanged
-  //info.identifier   = 
-  //info.sequenceNum  = 
-  return TRUE;
+  switch (reply->Status) {
+    case IP_SUCCESS :
+      info.status = Success;
+      break;
+
+    case IP_DEST_NET_UNREACHABLE :
+      info.status = NetworkUnreachable;
+      break;
+
+    case IP_DEST_HOST_UNREACHABLE :
+      info.status = HostUnreachable;
+      break;
+
+    case IP_PACKET_TOO_BIG :
+      info.status = PacketTooBig;
+      break;
+
+    case IP_REQ_TIMED_OUT :
+      info.status = RequestTimedOut;
+      break;
+
+    case IP_BAD_ROUTE :
+      info.status = BadRoute;
+      break;
+
+    case IP_TTL_EXPIRED_TRANSIT :
+      info.status = TtlExpiredTransmit;
+      break;
+
+    case IP_TTL_EXPIRED_REASSEM :
+      info.status = TtlExpiredReassembly;
+      break;
+
+    case IP_SOURCE_QUENCH :
+      info.status = SourceQuench;
+      break;
+
+    case IP_MTU_CHANGE :
+      info.status = MtuChange;
+      break;
+
+    default :
+      info.status = GeneralError;
+  }
+
+  free(reply);
+
+  return info.status == Success;
 }
+
+
+PICMPSocket::PingInfo::PingInfo(WORD id)
+{
+  identifier = id;
+  sequenceNum = 0;
+  ttl = 255;
+  buffer = NULL;
+  status = Success;
+}
+
 
 // End Of File ///////////////////////////////////////////////////////////////
