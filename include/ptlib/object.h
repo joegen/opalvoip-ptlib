@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.104  2004/05/12 04:36:17  csoutheren
+ * Fixed problems with using sem_wait and friends on systems that do not
+ * support atomic integers
+ *
  * Revision 1.103  2004/04/18 04:33:36  rjongbloed
  * Changed all operators that return BOOL to return standard type bool. This is primarily
  *   for improved compatibility with std STL usage removing many warnings.
@@ -424,10 +428,6 @@ typedef long _Ios_Fmtflags;
 
 #if _MSC_VER<1300
 #define _BADOFF -1
-#endif
-
-#ifndef PCONTAINER_USES_CRITSEC
-#define	PCONTAINER_USES_CRITSEC	0
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
