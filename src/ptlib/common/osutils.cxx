@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.188  2002/05/01 03:45:09  robertj
+ * Added initialisation of PreadWriteMutex and changed slightly to agree
+ *   with the text book definition of a semaphore for one of the mutexes.
+ *
  * Revision 1.187  2002/04/30 06:21:38  robertj
  * Fixed PReadWriteMutex class to implement text book algorithm!
  *
@@ -2252,6 +2256,8 @@ PSyncPoint::PSyncPoint()
 
 #endif
 
+/////////////////////////////////////////////////////////////////////////////
+
 void PSyncPointAck::Signal()
 {
   PSyncPoint::Signal();
@@ -2271,6 +2277,8 @@ void PSyncPointAck::Acknowledge()
   ack.Signal();
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
 
 void PCondMutex::WaitCondition()
 {
@@ -2298,6 +2306,8 @@ void PCondMutex::OnWait()
   // Do nothing
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
 
 PIntCondMutex::PIntCondMutex(int val, int targ, Operation op)
 {
@@ -2389,59 +2399,70 @@ PIntCondMutex & PIntCondMutex::operator-=(int dec)
 }
 
 
+/////////////////////////////////////////////////////////////////////////////
+
+PReadWriteMutex::PReadWriteMutex()
+  : readerSemaphore(1, 1),
+    writerSemaphore(1, 1)
+{
+  readerCount = 0;
+  writerCount = 0;
+}
+
+
 void PReadWriteMutex::StartRead()
 {
   starvationPreventer.Wait();
-   readMutex.Wait();
-    readerCountMutex.Wait();
+   readerSemaphore.Wait();
+    readerMutex.Wait();
 
      readerCount++;
      if (readerCount == 1)
-       writeMutex.Wait();
+       writerSemaphore.Wait();
 
-    readerCountMutex.Signal();
-   readMutex.Signal();
+    readerMutex.Signal();
+   readerSemaphore.Signal();
   starvationPreventer.Signal();
 }
 
 
 void PReadWriteMutex::EndRead()
 {
-  readerCountMutex.Wait();
+  readerMutex.Wait();
 
   readerCount--;
   if (readerCount == 0)
-   writeMutex.Signal();
+    writerSemaphore.Signal();
 
-  readerCountMutex.Signal();
+  readerMutex.Signal();
 }
 
 
 void PReadWriteMutex::StartWrite()
 {
-  writerCountMutex.Wait();
+  writerMutex.Wait();
 
   writerCount++;
   if (writerCount == 1)
-    readMutex.Wait();
+    readerSemaphore.Wait();
 
-  writerCountMutex.Signal();
+  writerMutex.Signal();
 
-  writeMutex.Wait();
+  writerSemaphore.Wait();
 }
 
 
 void PReadWriteMutex::EndWrite()
 {
-  writeMutex.Signal();
+  writerSemaphore.Signal();
 
-  writerCountMutex.Wait();
+  writerMutex.Wait();
 
   writerCount--;
   if (writerCount == 0)
-    readMutex.Signal();
+    readerSemaphore.Signal();
 
-  writerCountMutex.Signal();
+  writerMutex.Signal();
 }
 
 
