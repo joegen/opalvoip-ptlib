@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: delaychan.cxx,v $
+ * Revision 1.5  2003/02/20 08:43:44  rogerh
+ * On Mac OS X, the thread sleep() (which uses select) is not as fine grained
+ * as usleep. So use usleep(). Tested by Shawn.
+ *
  * Revision 1.4  2002/02/26 00:42:13  robertj
  * Fixed MSVC warning.
  *
@@ -74,7 +78,7 @@ BOOL PAdaptiveDelay::Delay(int frameTime)
   int sleep_time = (int)delay.GetMilliSeconds();
 
   if (sleep_time > 0)
-#ifdef P_LINUX
+#if defined(P_LINUX) || defined(P_MACOSX)
     usleep(sleep_time * 1000);
 #else
     PThread::Current()->Sleep(sleep_time);
