@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: MergeSym.cxx,v $
+ * Revision 1.12  2004/04/03 06:54:32  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.11  2003/10/30 11:27:12  rjongbloed
  * Fixed ability to specify partial path for -x parameter.
  *
@@ -82,7 +85,7 @@ PCREATE_PROCESS(MergeSym);
 
 
 MergeSym::MergeSym()
-  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 2)
+  : PProcess("Equivalence", "MergeSym", 1, 2, ReleaseCode, 3)
 {
 }
 
@@ -235,8 +238,14 @@ void MergeSym::Main()
   PINDEX linecount = 0;
   SortedSymbolList lib_symbols;
   PPipeChannel pipe("dumpbin /symbols '" + lib_filename + "'", PPipeChannel::ReadOnly);
+  if (!pipe.IsOpen()) {
+    PError << "\nMergeSym: could not run \"dumpbin\".\n";
+    SetTerminationValue(2);
+    return;
+  }
+
   while (!pipe.eof()) {
-    char line[500];
+    char line[5000];
     pipe.getline(line, sizeof(line));
     char * namepos = strchr(line, '|');
     if (namepos != NULL) {
@@ -328,6 +337,9 @@ void MergeSym::Main()
         def << def_file_lines[i] << '\n';
       for (i = 0; i < merged_symbols.GetSize(); i++)
         def << merged_symbols[i];
+
+      if (args.HasOption('v'))
+        cout << merged_symbols.GetSize() << " symbols written." << endl;
     }
     else {
       PError << "Could not create file " << def_filename << ':' << def.GetErrorText() << endl;
