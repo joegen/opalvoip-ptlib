@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: spxsock.h,v $
+ * Revision 1.3  1998/11/30 02:55:34  robertj
+ * New directory structure
+ *
  * Revision 1.2  1998/09/24 03:30:27  robertj
  * Added open software license.
  *
@@ -37,7 +40,7 @@
 
 #ifndef _PSPXSOCKET
 
-#include "../../common/ptlib/spxsock.h"
+#include "../../spxsock.h"
 };
 
 
