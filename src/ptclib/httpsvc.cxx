@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.74  2001/06/30 06:59:06  yurik
+ * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+ *
  * Revision 1.73  2001/06/27 04:14:48  robertj
  * Added logging for listener thread open/close.
  *
@@ -553,7 +556,7 @@ PHTTPServer * PHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
                                        PHTTPServiceProcess & app,
                                        PSocket & listeningSocket)
-  : PThread(stackSize, AutoDeleteThread),
+  : PThread(stackSize, AutoDeleteThread, NormalPriority, "PHTTPServiceThread"),
     process(app),
     listener(listeningSocket)
 {

@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.57  2001/06/30 06:59:06  yurik
+# Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
+#
 # Revision 1.56  2001/06/29 06:47:30  robertj
 # Added missing dollar sign
 #
@@ -243,6 +246,12 @@ TARGET_LIBS	:= $(TARGET_LIBS) $(PW_LIBDIR)/$(PWLIB_FILE)
 endif
 
 $(TARGET):	$(OBJS) $(TARGET_LIBS)
+ifeq ($(OSTYPE),beos)
+# BeOS won't find dynamic libraries unless they are in one of the system
+# library directories or in the lib directory under the application's
+# directory
+	@if [ ! -L $(OBJDIR)/lib ] ; then cd $(OBJDIR); ln -s $(PW_LIBDIR) lib; fi
+endif
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
 
 ifdef DEBUG
