@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.50 1996/11/10 21:08:31 robertj Exp $
+ * $Id: sockets.cxx,v 1.51 1996/11/16 01:43:49 craigs Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.51  1996/11/16 01:43:49  craigs
+ * Fixed problem with ambiguous DNS cache keys
+ *
  * Revision 1.50  1996/11/10 21:08:31  robertj
  * Added host name caching.
  *
@@ -531,6 +534,7 @@ BOOL PHostByName::GetHostName(const PString & name, PString & hostname)
     hostname = host->GetHostName();
 
   mutex.Signal();
+
   return host != NULL;
 }
 
@@ -543,6 +547,7 @@ BOOL PHostByName::GetHostAddress(const PString & name, PIPSocket::Address & addr
     address = host->GetHostAddress();
 
   mutex.Signal();
+
   return host != NULL;
 }
 
@@ -580,14 +585,17 @@ PIPCacheData * PHostByName::GetHost(const PString & name)
 
 PDECLARE_CLASS(PIPCacheKey, PObject)
   public:
-    PIPCacheKey(PIPSocket::Address addr)
-      { hash = (addr.Byte1() + addr.Byte2() + addr.Byte3())%41; }
+    PIPCacheKey(const PIPSocket::Address & a)
+      { addr = a; }
+
     PObject * Clone() const
-    { return new PIPCacheKey(*this); }
+      { return new PIPCacheKey(*this); }
+
     PINDEX HashFunction() const
-      { return hash; }
+      { return (addr.Byte2() + addr.Byte3() + addr.Byte4())%41; }
+
   private:
-    PINDEX hash;
+    PIPSocket::Address addr;
 };
 
 PDICTIONARY(PHostByAddr_private, PIPCacheKey, PIPCacheData);
@@ -639,6 +647,10 @@ BOOL PHostByAddr::GetHostAliases(const PIPSocket::Address & addr, PStringArray &
   return host != NULL;
 }
 
+ostream & operator<<(ostream & s, const PIPSocket::Address & a)
+{
+  return s << inet_ntoa(a);
+}
 
 PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 {
