@@ -33,7 +33,7 @@
 #include <cstdio>
 #include <cstring>
 #include <errno.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <time.h>
 
