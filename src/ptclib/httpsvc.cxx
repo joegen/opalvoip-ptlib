@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.76  2001/09/11 02:37:41  robertj
+ * Fixed thread name for HTTP service connection handler.
+ *
  * Revision 1.75  2001/08/28 06:44:45  craigs
  * Added ability to override PHTTPServer creation
  *
@@ -564,7 +567,7 @@ PHTTPServer * PHTTPServiceProcess::OnCreateHTTPServer(const PHTTPSpace & httpNam
 PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
                                        PHTTPServiceProcess & app,
                                        PSocket & listeningSocket)
-  : PThread(stackSize, AutoDeleteThread, NormalPriority, "PHTTPServiceThread"),
+  : PThread(stackSize, AutoDeleteThread, NormalPriority, "HTTP Service:%x"),
     process(app),
     listener(listeningSocket)
 {
