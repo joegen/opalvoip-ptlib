@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.16  1999/10/30 13:45:02  craigs
+ * Added pipe to thread to allow asynchronous abort of socket operations
+ *
  * Revision 1.15  1999/09/03 02:26:25  robertj
  * Changes to aid in breaking I/O locks on thread termination. Still needs more work esp in BSD!
  *
@@ -125,6 +128,9 @@ class PSemaphore;
 
     PSemaphore * PX_waitingSemaphore;
     pthread_mutex_t PX_WaitSemMutex;
+
+    int termPipe[2];
+    friend class PSocket;
 
 #elif defined(BE_THREADS)
 
