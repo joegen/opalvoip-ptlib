@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.24  1999/09/28 00:07:54  robertj
+ * Fixed some comment typoes
+ *
  * Revision 1.23  1999/08/30 02:21:03  robertj
  * Added ability to listen to specific interfaces for IP sockets.
  *
@@ -118,8 +121,9 @@ class PTCPSocket : public PIPSocket
     /**Create a TCP/IP protocol socket channel. If a remote machine address or
        a "listening" socket is specified then the channel is also opened.
 
-       Note thate the "copy" constructor here is areally a "listening" socket
-       the same as the PSocket & parameter version.
+       Note that what looks like a "copy" constructor here is really a
+       the accept of a "listening" socket the same as the PSocket & parameter
+       version constructor.
      */
     PTCPSocket(
       WORD port = 0             /// Port number to use for the connection.
