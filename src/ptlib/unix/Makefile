@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.105  2003/02/18 03:55:59  dereks
+# Add 1394AVC pathces from  Georgi Georgiev. Thanks!
+#
 # Revision 1.104  2003/02/04 22:51:20  robertj
 # Added basic SOAP support, thanks Andreas Sikkema
 #
@@ -398,10 +401,6 @@ endif
 
 ifdef TRY_1394DC
 VIDEO_CAPTURE_SOURCE += video4dc1394.cxx
-endif
-
-ifdef TRY_1394AVC
-VIDEO_CAPTURE_SOURCE += video4avc1394.cxx
 endif
 
 VIDEO_SOURCE := $(COMMON_SRC_DIR)/vfakeio.cxx \

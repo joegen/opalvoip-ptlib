@@ -1,57 +1,4 @@
 /*
- * video4avc1394.cxx
- *
- * Portable Windows Library
- *
- * Copyright (c) 2003 Equivalence Pty. Ltd.
- *
- * The contents of this file are subject to the Mozilla Public License
- * Version 1.0 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://www.mozilla.org/MPL/
- *
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
- * the License for the specific language governing rights and limitations
- * under the License.
- *
- * The Original Code is Portable Windows Library.
- *
- * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
- *
- * Contributor(s): Georgi Georgiev <chutz@gg3.net>
- * 
- * $Log: video4avc1394.cxx,v $
- * Revision 1.1  2003/01/11 05:30:13  robertj
- * Added support for IEEE 1394 AV/C cameras, thanks Georgi Georgiev
- *
- */
-
-#pragma implementation "videoio1394avc.h"
-
-#include <ptlib.h>
-#include <ptlib/videoio.h>
-#include <ptlib/videoio1394avc.h>
-#include <ptlib/vconvert.h>
-#include <ptlib/file.h>
-#include <sys/utsname.h>
-
-//#define ESTIMATE_CAPTURE_PERFORMANCE
-
-#ifdef ESTIMATE_CAPTURE_PERFORMANCE
-// for debugging
-static PInt64 start_time;
-static int num_captured;
-#endif
-
-#ifndef RAW_BUFFER_SIZE
-#define RAW_BUFFER_SIZE 512
-#endif 
-
-static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
-
-
-/*
  * This file is essentially a rewrite of video4dc1394.cxx
  * Check that one for more explanations
  *
@@ -109,7 +56,32 @@ static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
  *   libavc1394 0.4.1
  *   libdv 0.98
  *
+ * Author: Georgi Georgiev <chutz@gg3.net>
+ *
  */
+
+#pragma implementation "videoio1394avc.h"
+
+#include <ptlib.h>
+#include <ptlib/videoio.h>
+#include <ptlib/videoio1394avc.h>
+#include <ptlib/vconvert.h>
+#include <ptlib/file.h>
+#include <sys/utsname.h>
+
+//#define ESTIMATE_CAPTURE_PERFORMANCE
+
+#ifdef ESTIMATE_CAPTURE_PERFORMANCE
+// for debugging
+static PInt64 start_time;
+static int num_captured;
+#endif
+
+#ifndef RAW_BUFFER_SIZE
+#define RAW_BUFFER_SIZE 512
+#endif 
+
+static u_int8_t raw_buffer[RAW_BUFFER_SIZE];
 
 
 ///////////////////////////////////////////////////////////////////////////////
