@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.28  2001/03/10 04:15:29  robertj
+ * Incorrect case for .ini extension
+ *
  * Revision 1.27  2001/03/09 06:31:22  robertj
  * Added ability to set default PConfig file or path to find it.
  *
@@ -434,7 +437,7 @@ PString PProcess::GetConfigurationFile()
   if (configurationPaths.GetSize() == 1 && !PDirectory::Exists(configurationPaths[0]))
     return configurationPaths[0];
 
-  PString iniFilename = executableFile.GetTitle() + ".INI";
+  PString iniFilename = executableFile.GetTitle() + ".ini";
 
   for (PINDEX i = 0; i < configurationPaths.GetSize(); i++) {
     PFilePath cfgFile = PDirectory(configurationPaths[i]) + iniFilename;
