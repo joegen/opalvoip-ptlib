@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.85  2004/04/03 08:57:41  csoutheren
+ * Replaced pseudo-RTTI with real RTTI
+ *
  * Revision 1.84  2004/02/22 03:31:50  ykiryanov
  * Added current thread id routine to BeOS code
  *
@@ -464,7 +467,7 @@ PServiceProcess::~PServiceProcess()
 PServiceProcess & PServiceProcess::Current()
 {
   PProcess & process = PProcess::Current();
-  PAssert(process.IsDescendant(PServiceProcess::Class()), "Not a service process!");
+  PAssert(PIsDescendant(&process, PServiceProcess), "Not a service process!");
   return (PServiceProcess &)process;
 }
 
