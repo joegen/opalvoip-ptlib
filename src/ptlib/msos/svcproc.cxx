@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.68  2001/12/13 09:20:57  robertj
+ * Fixed system log so does not crash if current thread not created by PWLib.
+ *
  * Revision 1.67  2001/09/13 00:23:33  robertj
  * Fixed problem where system log output can occur with no current thread.
  *
@@ -399,11 +402,19 @@ void PSystemLog::Output(Level level, const char * msg)
     };
     PTime now;
     *out << now.AsString("yyyy/MM/dd hh:mm:ss\t");
-    PString threadName = PThread::Current()->GetThreadName();
-    if (threadName.GetLength() <= 23)
-      *out << setw(23) << threadName;
-    else
-      *out << threadName.Left(10) << "..." << threadName.Right(10);
+    PThread * thread = PThread::Current();
+    if (thread == NULL)
+      *out << "ThreadID=0x"
+           << setfill('0') << hex
+           << setw(8) << GetCurrentThreadId()
+           << setfill(' ') << dec;
+    else {
+      PString threadName = thread->GetThreadName();
+      if (threadName.GetLength() <= 23)
+        *out << setw(23) << threadName;
+      else
+        *out << threadName.Left(10) << "..." << threadName.Right(10);
+    }
     *out << '\t'
          << levelName[level+1] << '\t' << msg;
     if (level < Info && err != 0)
