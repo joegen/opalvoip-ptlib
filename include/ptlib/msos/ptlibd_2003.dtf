@@ -3524,6 +3524,7 @@ EXPORTS
     ?Exists@PFile@@QBEHXZ @2019 NONAME
     ?Exists@PFile@@SAHABVPFilePath@@@Z @2020 NONAME
     ?ExitSafetyMode@PSafePtrBase@@IAEXW4ExitSafetyModeOption@1@@Z @2021 NONAME
+    ?factoryLoader@?$PFactory@VPProcessStartup@@VPString@@@@2HA @7040 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @5738 NONAME
     ?FillRect@PVideoInputDevice_FakeVideo@@QAEXPAEIIHHHHHHH@Z @3807 NONAME
     ?Filtered@PDirectory@@IAEHXZ @2023 NONAME
