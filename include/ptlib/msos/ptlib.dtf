@@ -1702,6 +1702,7 @@ EXPORTS
     ?GetParameters@PVideoDevice@@UAEHPAH0000@Z @3128 NONAME ;public: virtual int __thiscall PVideoDevice::GetParameters(int *,int *,int *,int *,int *)
     ?GetParent@PDirectory@@QBE?AV1@XZ @1104 NONAME ;public: class PDirectory  __thiscall PDirectory::GetParent(void)const 
     ?GetParity@PSerialChannel@@QBE?AW4Parity@1@XZ @1105 NONAME ;public: enum PSerialChannel::Parity  __thiscall PSerialChannel::GetParity(void)const 
+    ?GetPath@PDirectory@@QBE?AVPStringArray@@XZ @3397 NONAME ;public: class PStringArray  __thiscall PDirectory::GetPath(void)const 
     ?GetPath@PFilePath@@QBE?AVPCaselessString@@XZ @1106 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetPath(void)const 
     ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@@Z @1977 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &)
     ?GetPeerAddress@PIPSocket@@UAEHAAVAddress@1@AAG@Z @1978 NONAME ;public: virtual int __thiscall PIPSocket::GetPeerAddress(class PIPSocket::Address &,unsigned short &)
