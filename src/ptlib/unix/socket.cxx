@@ -198,7 +198,7 @@ BOOL PUDPSocket::ReadFrom(
 
   // attempt to read data
   struct sockaddr_in rec_addr;
-  int    addr_len;
+  int    addr_len = sizeof(rec_addr);
 
   if (ConvertOSError(lastReadCount = ::recvfrom(os_handle, buf, len, 0,
                                        (sockaddr *)&rec_addr, &addr_len))) {
