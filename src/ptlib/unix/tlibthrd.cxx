@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.88  2002/07/15 06:56:59  craigs
+ * Fixed missing brace
+ *
  * Revision 1.87  2002/07/15 06:39:23  craigs
  * Added function to allow raising of per-process file handle limit
  *
@@ -400,7 +403,7 @@ BOOL PProcess::SetMaxFileHandles(int maxFileHandles)
 
   // set the new current limit
   rl.rlim_cur = maxFileHandles;
-  if (setrlimit(RLIMIT_NOFILE, &rl) != 0) 
+  if (setrlimit(RLIMIT_NOFILE, &rl) != 0) {
     PTRACE(1, "Cannot set per-process file handle limit to " << maxFileHandles << " - check permissions");
     return FALSE;
   }
