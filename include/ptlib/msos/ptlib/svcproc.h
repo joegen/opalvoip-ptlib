@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.h,v $
+ * Revision 1.23  1998/11/30 02:55:35  robertj
+ * New directory structure
+ *
  * Revision 1.22  1998/09/24 03:30:29  robertj
  * Added open software license.
  *
@@ -102,7 +105,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // PServiceProcess
 
-#include "../../common/ptlib/svcproc.h"
+#include "../../svcproc.h"
 #ifdef _WIN32
   public:
     virtual const char * GetServiceDependencies() const { return NULL; }
