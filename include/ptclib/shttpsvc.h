@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.h,v $
+ * Revision 1.7  2004/04/24 03:58:15  rjongbloed
+ * Allow for run time enable/disable of secure web access to HTTP process,
+ *   changed from old debug only hack to "correct" usager. Thanks Ben Lear
+ *
  * Revision 1.6  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -82,10 +86,7 @@ class PSecureHTTPServiceProcess : public PHTTPServiceProcess
 
   protected:
     PSSLContext * sslContext;
-
-#ifdef _DEBUG
-    static BOOL secureServerHack;
-#endif
+    BOOL          disableSSL;
 };
 
 

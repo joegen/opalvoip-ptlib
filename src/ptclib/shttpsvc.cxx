@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.11  2004/04/24 03:58:15  rjongbloed
+ * Allow for run time enable/disable of secure web access to HTTP process,
+ *   changed from old debug only hack to "correct" usager. Thanks Ben Lear
+ *
  * Revision 1.10  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -87,14 +91,12 @@ class HTTP_PSSLChannel : public PSSLChannel
 
 #define new PNEW
 
-#ifdef _DEBUG
-BOOL PSecureHTTPServiceProcess::secureServerHack = FALSE;
-#endif
 
 PSecureHTTPServiceProcess::PSecureHTTPServiceProcess(const Info & inf)
   : PHTTPServiceProcess(inf)
 {
   sslContext = new PSSLContext;
+  disableSSL = FALSE;
 }
 
 
@@ -106,10 +108,8 @@ PSecureHTTPServiceProcess::~PSecureHTTPServiceProcess()
 
 PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 {
-#ifdef _DEBUG
-  if (secureServerHack)
+  if (disableSSL)
     return PHTTPServiceProcess::CreateHTTPServer(socket);
-#endif
 
 #ifdef SO_LINGER
   const linger ling = { 1, 5 };
