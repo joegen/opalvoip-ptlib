@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptbuildopts.h.in,v $
+ * Revision 1.17  2003/10/27 03:42:15  csoutheren
+ * Added support for QoS detection
+ *
  * Revision 1.16  2003/10/23 20:43:38  dereksmithies
  * Add fix for SDL video on Visual C. Thanks to Walter Whitlock.
  *
@@ -101,6 +104,19 @@
 #pragma include_alias(<ws2tcpip.h>, <@IPV6_DIR@/ws2tcpip.h>)
 #endif
 
+/////////////////////////////////////////////////
+//
+// QoS Support
+//
+//
+
+#ifndef _WIN32_WCE
+#undef P_HAS_QOS
+#endif //  _WIN32_WCE
+
+#if defined(_MSC_VER) && P_HAS_QOS
+#pragma include_alias(<qossp.h>, <@QOS_DIR@/qossp.h>)
+#endif
 
 /////////////////////////////////////////////////
 //
