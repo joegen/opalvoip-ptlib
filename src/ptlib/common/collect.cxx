@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.8 1994/10/23 03:41:31 robertj Exp $
+ * $Id: collect.cxx,v 1.9 1994/10/30 11:34:49 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.8  1994/10/23 03:41:31  robertj
+ * Revision 1.9  1994/10/30 11:34:49  robertj
+ * Fixed ObjectArray to have pointer to array object pointers.
+ *
+ * Revision 1.8  1994/10/23  03:41:31  robertj
  * Fixed dictionary functions that should work by index not key.
  *
  * Revision 1.7  1994/09/25  10:49:09  robertj
@@ -63,11 +66,12 @@ void PCollection::RemoveAll()
 void PArrayObjects::DestroyContents()
 {
   if (reference->deleteObjects) {
-    for (PINDEX i = 0; i < theArray.GetSize(); i++) {
-      if (theArray[i] != NULL)
-        delete theArray[i];
+    for (PINDEX i = 0; i < theArray->GetSize(); i++) {
+      if ((*theArray)[i] != NULL)
+        delete (*theArray)[i];
     }
   }
+  delete theArray;
 }
 
 
@@ -85,9 +89,9 @@ PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 {
   const PArrayObjects & other = (const PArrayObjects &)obj;
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (i >= other.GetSize() || *theArray[i] < *other.theArray[i])
+    if (i >= other.GetSize() || *(*theArray)[i] < *(*other.theArray)[i])
       return LessThan;
-    if (*theArray[i] > *other.theArray[i])
+    if (*(*theArray)[i] > *(*other.theArray)[i])
       return GreaterThan;
   }
   return i < other.GetSize() ? GreaterThan : EqualTo;
@@ -96,13 +100,13 @@ PObject::Comparison PArrayObjects::Compare(const PObject & obj) const
 
 PINDEX PArrayObjects::GetSize() const
 {
-  return theArray.GetSize();
+  return theArray->GetSize();
 }
 
 
 BOOL PArrayObjects::SetSize(PINDEX newSize)
 {
-  return theArray.SetSize(newSize);
+  return theArray->SetSize(newSize);
 }
 
 
@@ -134,19 +138,19 @@ BOOL PArrayObjects::Remove(const PObject * obj)
 
 PObject * PArrayObjects::GetAt(PINDEX index) const
 {
-  return theArray[index];
+  return (*theArray)[index];
 }
 
 
 BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
 {
-  if (!theArray.MakeUnique() ||
-                   (index >= theArray.GetSize() && !theArray.SetSize(index+1)))
+  if (!theArray->MakeUnique() ||
+                   (index >= theArray->GetSize() && !theArray->SetSize(index+1)))
     return FALSE;
-  PObject * oldObj = theArray.GetAt(index);
+  PObject * oldObj = theArray->GetAt(index);
   if (oldObj != NULL && reference->deleteObjects)
     delete oldObj;
-  theArray[index] = obj;
+  (*theArray)[index] = obj;
   return TRUE;
 }
 
@@ -154,7 +158,7 @@ BOOL PArrayObjects::SetAt(PINDEX index, PObject * obj)
 PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 {
   for (PINDEX i = index; i < GetSize(); i++)
-    theArray.SetAt(i+1, theArray[i]);
+    theArray->SetAt(i+1, (*theArray)[i]);
   SetAt(index, obj);
   return index;
 }
@@ -162,9 +166,9 @@ PINDEX PArrayObjects::InsertAt(PINDEX index, PObject * obj)
 
 PObject * PArrayObjects::RemoveAt(PINDEX index)
 {
-  PObject * obj = theArray[index];
+  PObject * obj = (*theArray)[index];
   for (PINDEX i = index; i < GetSize(); i++)
-    theArray[i] = theArray[i+1];
+    (*theArray)[i] = (*theArray)[i+1];
   SetSize(GetSize()-1);
   if (obj != NULL && reference->deleteObjects) {
     delete obj;
@@ -177,7 +181,7 @@ PObject * PArrayObjects::RemoveAt(PINDEX index)
 PINDEX PArrayObjects::GetObjectsIndex(const PObject * obj) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (theArray[i] == obj)
+    if ((*theArray)[i] == obj)
       return i;
   }
   return P_MAX_INDEX;
@@ -187,7 +191,7 @@ PINDEX PArrayObjects::GetObjectsIndex(const PObject * obj) const
 PINDEX PArrayObjects::GetValuesIndex(const PObject & obj) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (*theArray[i] == obj)
+    if (*(*theArray)[i] == obj)
       return i;
   }
   return P_MAX_INDEX;
@@ -197,7 +201,7 @@ PINDEX PArrayObjects::GetValuesIndex(const PObject & obj) const
 BOOL PArrayObjects::Enumerate(PEnumerator func, PObject * info) const
 {
   for (PINDEX i = 0; i < GetSize(); i++) {
-    if (!func(*theArray[i], info))
+    if (!func(*(*theArray)[i], info))
       return FALSE;
   }
   return TRUE;
