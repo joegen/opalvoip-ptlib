@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.cxx,v $
+ * Revision 1.74  2004/06/01 05:22:43  csoutheren
+ * Restored memory check functionality
+ *
  * Revision 1.73  2004/04/14 06:58:05  csoutheren
  * Fixed PAtomicInteger and PSmartPointer to use real atomic operations
  *
@@ -434,6 +437,566 @@ PObject::Comparison PSmartPointer::Compare(const PObject & obj) const
     return EqualTo;
   return object < other ? LessThan : GreaterThan;
 }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+
+#if PMEMORY_CHECK
+
+#undef malloc
+#undef realloc
+#undef free
+
+#if __GNUC__ >= 3
+void * operator new(size_t nSize) throw (std::bad_alloc)
+#else
+void * operator new(size_t nSize)
+#endif
+{
+  return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
+}
+
+
+#if __GNUC__ >= 3
+void * operator new[](size_t nSize) throw (std::bad_alloc)
+#else
+void * operator new[](size_t nSize)
+#endif
+{
+  return PMemoryHeap::Allocate(nSize, (const char *)NULL, 0, NULL);
+}
+
+
+#if __GNUC__ >= 3
+void operator delete(void * ptr) throw()
+#else
+void operator delete(void * ptr)
+#endif
+{
+  PMemoryHeap::Deallocate(ptr, NULL);
+}
+
+
+#if __GNUC__ >= 3
+void operator delete[](void * ptr) throw()
+#else
+void operator delete[](void * ptr)
+#endif
+{
+  PMemoryHeap::Deallocate(ptr, NULL);
+}
+
+
+DWORD PMemoryHeap::allocationBreakpoint;
+char PMemoryHeap::Header::GuardBytes[NumGuardBytes];
+
+
+PMemoryHeap::Wrapper::Wrapper()
+{
+  // The following is done like this to get over brain dead compilers that cannot
+  // guarentee that a static global is contructed before it is used.
+  static PMemoryHeap real_instance;
+  instance = &real_instance;
+  if (instance->isDestroyed)
+    return;
+
+#if defined(_WIN32)
+  EnterCriticalSection(&instance->mutex);
+#elif defined(P_MAC_MPTHREADS)
+  long err;
+  PAssertOS((err = MPEnterCriticalRegion(instance->mutex, kDurationForever)) == 0);
+#elif defined(P_PTHREADS)
+  pthread_mutex_lock(&instance->mutex);
+#endif
+}
+
+
+PMemoryHeap::Wrapper::~Wrapper()
+{
+  if (instance->isDestroyed)
+    return;
+
+#if defined(_WIN32)
+  LeaveCriticalSection(&instance->mutex);
+#elif defined(P_MAC_MPTHREADS)
+  long err;
+  PAssertOS((err = MPExitCriticalRegion(instance->mutex)) == 0 || instance->isDestroyed);
+#elif defined(P_PTHREADS)
+  pthread_mutex_unlock(&instance->mutex);
+#endif
+}
+
+
+PMemoryHeap::PMemoryHeap()
+{
+  isDestroyed = FALSE;
+
+  listHead = NULL;
+  listTail = NULL;
+
+  allocationRequest = 1;
+  firstRealObject = 0;
+  flags = NoLeakPrint;
+
+  allocFillChar = '\x5A';
+  freeFillChar = '\xA5';
+
+  currentMemoryUsage = 0;
+  peakMemoryUsage = 0;
+  currentObjects = 0;
+  peakObjects = 0;
+  totalObjects = 0;
+
+  for (PINDEX i = 0; i < Header::NumGuardBytes; i++)
+    Header::GuardBytes[i] = (i&1) == 0 ? '\x55' : '\xaa';
+
+#if defined(_WIN32)
+  InitializeCriticalSection(&mutex);
+  static PDebugStream debug;
+  leakDumpStream = &debug;
+#else
+#if defined(P_PTHREADS)
+  pthread_mutex_init(&mutex, NULL);
+#endif
+  leakDumpStream = &cerr;
+#endif
+}
+
+
+PMemoryHeap::~PMemoryHeap()
+{
+  if (leakDumpStream != NULL) {
+    InternalDumpStatistics(*leakDumpStream);
+    InternalDumpObjectsSince(firstRealObject, *leakDumpStream);
+  }
+
+  isDestroyed = TRUE;
+
+#if defined(_WIN32)
+  DeleteCriticalSection(&mutex);
+  extern void PWaitOnExitConsoleWindow();
+  PWaitOnExitConsoleWindow();
+#elif defined(P_PTHREADS)
+  pthread_mutex_destroy(&mutex);
+#endif
+}
+
+
+void * PMemoryHeap::Allocate(size_t nSize, const char * file, int line, const char * className)
+{
+  Wrapper mem;
+  return mem->InternalAllocate(nSize, file, line, className);
+}
+
+
+void * PMemoryHeap::Allocate(size_t count, size_t size, const char * file, int line)
+{
+  Wrapper mem;
+
+  char oldFill = mem->allocFillChar;
+  mem->allocFillChar = '\0';
+
+  void * data = mem->InternalAllocate(count*size, file, line, NULL);
+
+  mem->allocFillChar = oldFill;
+
+  return data;
+}
+
+
+void * PMemoryHeap::InternalAllocate(size_t nSize, const char * file, int line, const char * className)
+{
+  if (isDestroyed)
+    return malloc(nSize);
+
+  Header * obj = (Header *)malloc(sizeof(Header) + nSize + sizeof(Header::GuardBytes));
+  if (obj == NULL) {
+    PAssertAlways(POutOfMemory);
+    return NULL;
+  }
+
+  // Ignore all allocations made before main() is called. This is indicated
+  // by PProcess::PreInitialise() clearing the NoLeakPrint flag. Why do we do
+  // this? because the GNU compiler is broken in the way it does static global
+  // C++ object construction and destruction.
+  if (firstRealObject == 0 && (flags&NoLeakPrint) == 0)
+    firstRealObject = allocationRequest;
+
+  if (allocationRequest == allocationBreakpoint) {
+#ifdef _WIN32
+    __asm int 3;
+#else
+    kill(getpid(), SIGABRT);
+#endif 
+  }
+
+  currentMemoryUsage += nSize;
+  if (currentMemoryUsage > peakMemoryUsage)
+    peakMemoryUsage = currentMemoryUsage;
+
+  currentObjects++;
+  if (currentObjects > peakObjects)
+    peakObjects = currentObjects;
+  totalObjects++;
+
+  char * data = (char *)&obj[1];
+
+  obj->prev      = listTail;
+  obj->next      = NULL;
+  obj->size      = nSize;
+  obj->fileName  = file;
+  obj->line      = (WORD)line;
+  obj->className = className;
+  obj->request   = allocationRequest++;
+  obj->flags     = flags;
+  memcpy(obj->guard, obj->GuardBytes, sizeof(obj->guard));
+  memset(data, allocFillChar, nSize);
+  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
+
+  if (listTail != NULL)
+    listTail->next = obj;
+
+  listTail = obj;
+
+  if (listHead == NULL)
+    listHead = obj;
+
+  return data;
+}
+
+
+void * PMemoryHeap::Reallocate(void * ptr, size_t nSize, const char * file, int line)
+{
+  if (ptr == NULL)
+    return Allocate(nSize, file, line, NULL);
+
+  if (nSize == 0) {
+    Deallocate(ptr, NULL);
+    return NULL;
+  }
+
+  Wrapper mem;
+
+  if (mem->isDestroyed)
+    return realloc(ptr, nSize);
+
+  if (mem->InternalValidate(ptr, NULL, mem->leakDumpStream) != Ok)
+    return NULL;
+
+  Header * obj = (Header *)realloc(((Header *)ptr)-1, sizeof(Header) + nSize + sizeof(obj->guard));
+  if (obj == NULL) {
+    PAssertAlways(POutOfMemory);
+    return NULL;
+  }
+
+  if (mem->allocationRequest == mem->allocationBreakpoint) {
+#ifdef _WIN32
+    __asm int 3;
+#else
+    kill(getpid(), SIGABRT);
+#endif 
+  }
+
+  mem->currentMemoryUsage -= obj->size;
+  mem->currentMemoryUsage += nSize;
+  if (mem->currentMemoryUsage > mem->peakMemoryUsage)
+    mem->peakMemoryUsage = mem->currentMemoryUsage;
+
+  char * data = (char *)&obj[1];
+  memcpy(&data[nSize], obj->GuardBytes, sizeof(obj->guard));
+
+  obj->size      = nSize;
+  obj->fileName  = file;
+  obj->line      = (WORD)line;
+  obj->request   = mem->allocationRequest++;
+  if (obj->prev != NULL)
+    obj->prev->next = obj;
+  else
+    mem->listHead = obj;
+  if (obj->next != NULL)
+    obj->next->prev = obj;
+  else
+    mem->listTail = obj;
+
+  return data;
+}
+
+
+void PMemoryHeap::Deallocate(void * ptr, const char * className)
+{
+  if (ptr == NULL)
+    return;
+
+  Wrapper mem;
+  Header * obj = ((Header *)ptr)-1;
+
+  if (mem->isDestroyed) {
+    free(obj);
+    return;
+  }
+
+  switch (mem->InternalValidate(ptr, className, mem->leakDumpStream)) {
+    case Ok :
+      break;
+    case Trashed :
+      free(ptr);
+      return;
+    case Bad :
+      free(obj);
+      return;
+  }
+
+  if (obj->prev != NULL)
+    obj->prev->next = obj->next;
+  else
+    mem->listHead = obj->next;
+  if (obj->next != NULL)
+    obj->next->prev = obj->prev;
+  else
+    mem->listTail = obj->prev;
+
+  mem->currentMemoryUsage -= obj->size;
+  mem->currentObjects--;
+
+  memset(ptr, mem->freeFillChar, obj->size);  // Make use of freed data noticable
+  free(obj);
+}
+
+
+PMemoryHeap::Validation PMemoryHeap::Validate(void * ptr,
+                                              const char * className,
+                                              ostream * error)
+{
+  Wrapper mem;
+  return mem->InternalValidate(ptr, className, error);
+}
+
+
+PMemoryHeap::Validation PMemoryHeap::InternalValidate(void * ptr,
+                                                      const char * className,
+                                                      ostream * error)
+{
+  if (isDestroyed)
+    return Bad;
+
+  if (ptr == NULL)
+    return Trashed;
+
+  Header * obj = ((Header *)ptr)-1;
+
+  Header * link = listTail;  
+  while (link != NULL && link != obj) 
+    link = link->prev;  
+
+  if (link == NULL) {
+    if (error != NULL)
+      *error << "Block " << ptr << " not in heap!" << endl;
+    return Trashed;
+  }
+
+  if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+    if (error != NULL)
+      *error << "Underrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
+    return Bad;
+  }
+  
+  if (memcmp((char *)ptr+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+    if (error != NULL)
+      *error << "Overrun at " << ptr << '[' << obj->size << "] #" << obj->request << endl;
+    return Bad;
+  }
+  
+  if (!(className == NULL && obj->className == NULL) &&
+       (className == NULL || obj->className == NULL ||
+       (className != obj->className && strcmp(obj->className, className) != 0))) {
+    if (error != NULL)
+      *error << "PObject " << ptr << '[' << obj->size << "] #" << obj->request
+             << " allocated as \"" << (obj->className != NULL ? obj->className : "<NULL>")
+             << "\" and should be \"" << (className != NULL ? className : "<NULL>")
+             << "\"." << endl;
+    return Bad;
+  }
+
+  return Ok;
+}
+
+
+BOOL PMemoryHeap::ValidateHeap(ostream * error)
+{
+  Wrapper mem;
+
+  if (error == NULL)
+    error = mem->leakDumpStream;
+
+  Header * obj = mem->listHead;
+  while (obj != NULL) {
+    if (memcmp(obj->guard, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+      if (error != NULL)
+        *error << "Underrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
+      return FALSE;
+    }
+  
+    if (memcmp((char *)(obj+1)+obj->size, obj->GuardBytes, sizeof(obj->guard)) != 0) {
+      if (error != NULL)
+        *error << "Overrun at " << (obj+1) << '[' << obj->size << "] #" << obj->request << endl;
+      return FALSE;
+    }
+
+    obj = obj->next;
+  }
+
+#if defined(_WIN32) && defined(_DEBUG)
+  if (!_CrtCheckMemory()) {
+    if (error != NULL)
+      *error << "Heap failed MSVCRT validation!" << endl;
+    return FALSE;
+  }
+#endif
+  if (error != NULL)
+    *error << "Heap passed validation." << endl;
+  return TRUE;
+}
+
+
+BOOL PMemoryHeap::SetIgnoreAllocations(BOOL ignore)
+{
+  Wrapper mem;
+
+  BOOL ignoreAllocations = (mem->flags&NoLeakPrint) != 0;
+
+  if (ignore)
+    mem->flags |= NoLeakPrint;
+  else
+    mem->flags &= ~NoLeakPrint;
+
+  return ignoreAllocations;
+}
+
+
+void PMemoryHeap::DumpStatistics()
+{
+  Wrapper mem;
+  if (mem->leakDumpStream != NULL)
+    mem->InternalDumpStatistics(*mem->leakDumpStream);
+}
+
+
+void PMemoryHeap::DumpStatistics(ostream & strm)
+{
+  Wrapper mem;
+  mem->InternalDumpStatistics(strm);
+}
+
+
+void PMemoryHeap::InternalDumpStatistics(ostream & strm)
+{
+  strm << "\nCurrent memory usage: " << currentMemoryUsage << " bytes";
+  if (currentMemoryUsage > 2048)
+    strm << ", " << (currentMemoryUsage+1023)/1024 << "kb";
+  if (currentMemoryUsage > 2097152)
+    strm << ", " << (currentMemoryUsage+1048575)/1048576 << "Mb";
+
+  strm << ".\nCurrent objects count: " << currentObjects
+       << "\nPeak memory usage: " << peakMemoryUsage << " bytes";
+  if (peakMemoryUsage > 2048)
+    strm << ", " << (peakMemoryUsage+1023)/1024 << "kb";
+  if (peakMemoryUsage > 2097152)
+    strm << ", " << (peakMemoryUsage+1048575)/1048576 << "Mb";
+
+  strm << ".\nPeak objects created: " << peakObjects
+       << "\nTotal objects created: " << totalObjects
+       << "\nNext allocation request: " << allocationRequest
+       << '\n' << endl;
+}
+
+
+DWORD PMemoryHeap::GetAllocationRequest()
+{
+  Wrapper mem;
+  return mem->allocationRequest;
+}
+
+
+void PMemoryHeap::SetAllocationBreakpoint(DWORD point)
+{
+  allocationBreakpoint = point;
+}
+
+
+void PMemoryHeap::DumpObjectsSince(DWORD objectNumber)
+{
+  Wrapper mem;
+  if (mem->leakDumpStream != NULL)
+    mem->InternalDumpObjectsSince(objectNumber, *mem->leakDumpStream);
+}
+
+
+void PMemoryHeap::DumpObjectsSince(DWORD objectNumber, ostream & strm)
+{
+  Wrapper mem;
+  mem->InternalDumpObjectsSince(objectNumber, strm);
+}
+
+
+void PMemoryHeap::InternalDumpObjectsSince(DWORD objectNumber, ostream & strm)
+{
+  BOOL first = TRUE;
+  for (Header * obj = listHead; obj != NULL; obj = obj->next) {
+    if (obj->request < objectNumber || (obj->flags&NoLeakPrint) != 0)
+      continue;
+
+    if (first && isDestroyed) {
+      *leakDumpStream << "\nMemory leaks detected, press Enter to display . . ." << flush;
+#if !defined(_WIN32)
+      cin.get();
+#endif
+      first = FALSE;
+    }
+
+    BYTE * data = (BYTE *)&obj[1];
+
+    if (obj->fileName != NULL)
+      strm << obj->fileName << '(' << obj->line << ") : ";
+
+    strm << '#' << obj->request << ' ' << (void *)data << " [" << obj->size << "] ";
+
+    if (obj->className != NULL)
+      strm << '"' << obj->className << "\" ";
+
+    strm << '\n' << hex << setfill('0') << PBYTEArray(data, PMIN(16, obj->size), FALSE)
+                 << dec << setfill(' ') << endl;
+  }
+}
+
+
+#else // PMEMORY_CHECK
+
+#ifndef P_VXWORKS
+
+#if __GNUC__ >= 3
+void * operator new[](size_t nSize) throw (std::bad_alloc)
+#else
+void * operator new[](size_t nSize)
+#endif
+{
+  return malloc(nSize);
+}
+
+#if __GNUC__ >= 3
+void operator delete[](void * ptr) throw ()
+#else
+void operator delete[](void * ptr)
+#endif
+{
+  free(ptr);
+}
+
+#endif // !P_VXWORKS
+
+#endif // PMEMORY_CHECK
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
