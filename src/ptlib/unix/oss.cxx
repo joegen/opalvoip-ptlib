@@ -27,6 +27,10 @@
  * Contributor(s): Loopback feature: Philip Edelbrock <phil@netroedge.com>.
  *
  * $Log: oss.cxx,v $
+ * Revision 1.34  2002/01/07 04:15:38  robertj
+ * Removed ALSA major device number as this is not how it does its OSS
+ *   compatibility mode, it uses device id 14 as usual.
+ *
  * Revision 1.33  2001/12/08 00:58:41  robertj
  * Added ability to stil work with strange sound card setup, thanks Damian Sandras.
  *
@@ -386,8 +390,8 @@ static void CollectSoundDevices(PDirectory devdir, POrdinalToString & dsp, POrdi
       if (devdir.GetInfo(info) &&info.type == PFileInfo::CharDevice) {
         struct stat s;
         if (lstat(devname, &s) == 0) {
-          // OSS compatible audio major device numbers (OSS, ALSA, SAM9407, etc)
-          static const unsigned deviceNumbers[] = { 14, 116, 145 };
+          // OSS compatible audio major device numbers (OSS, SAM9407, etc)
+          static const unsigned deviceNumbers[] = { 14, 145 };
           for (PINDEX i = 0; i < PARRAYSIZE(deviceNumbers); i++) {
             if ((s.st_rdev >> 8) == deviceNumbers[i]) {
               PINDEX cardnum = (s.st_rdev >> 4) & 15;
