@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxmlrpc.h,v $
+ * Revision 1.15  2002/12/13 01:04:56  robertj
+ * Added copy constructor and assignment operator to XML/RPC structs
+ *
  * Revision 1.14  2002/12/10 04:44:43  robertj
  * Added support in PTime for ISO 8601 format.
  *
@@ -227,6 +230,7 @@ class PXMLRPCVariableBase : public PObject {
     const char * GetName() const { return name; }
     const char * GetType() const { return type; }
 
+    virtual void Copy(const PXMLRPCVariableBase & other) = 0;
     virtual PString ToString() const;
     virtual void FromString(const PString & str);
     virtual PXMLRPCStructBase * GetStruct() const { return NULL; }
@@ -242,8 +246,13 @@ class PXMLRPCVariableBase : public PObject {
 
 class PXMLRPCStructBase : public PObject {
     PCLASSINFO(PXMLRPCStructBase, PObject);
-  public:
+  protected:
     PXMLRPCStructBase();
+    PXMLRPCStructBase & operator=(const PXMLRPCStructBase &);
+  private:
+    PXMLRPCStructBase(const PXMLRPCStructBase &) { }
+
+  public:
     void PrintOn(ostream & strm) const;
 
     PINDEX GetNumVariables() const { return variablesByOrder.GetSize(); }
@@ -267,7 +276,9 @@ class PXMLRPCStructBase : public PObject {
 
 #define PXMLRPC_STRUCT_BEGIN(name) \
   class name : public PXMLRPCStructBase { \
-    public: name() { EndConstructor(); }
+    public: name() { EndConstructor(); } \
+    public: name(const name & other) { EndConstructor(); operator=(other); } \
+    name & operator=(const name & other) { PXMLRPCStructBase::operator=(other); return *this; }
 
 #define PXMLRPC_VARIABLE_CLASS(base, type, variable, xmltype, init, extras) \
     private: struct PXMLRPCVar_##variable : public PXMLRPCVariableBase { \
@@ -277,6 +288,8 @@ class PXMLRPCStructBase : public PObject {
         { init } \
       virtual void PrintOn (ostream & s) const { s << instance; } \
       virtual void ReadFrom(istream & s)       { s >> instance; } \
+      virtual void Copy(const PXMLRPCVariableBase & other) \
+                    { instance = ((PXMLRPCVar_##variable &)other).instance; } \
       extras \
       type & instance; \
     } pxmlrpcvar_##variable
