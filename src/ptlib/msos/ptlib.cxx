@@ -1,5 +1,5 @@
 /*
- * $Id: ptlib.cxx,v 1.2 1994/06/25 12:13:01 robertj Exp $
+ * $Id: ptlib.cxx,v 1.3 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: ptlib.cxx,v $
- * Revision 1.2  1994/06/25 12:13:01  robertj
+ * Revision 1.3  1994/07/02 03:18:09  robertj
+ * Multi-threading implementation.
+ *
+ * Revision 1.2  1994/06/25  12:13:01  robertj
  * Synchronisation.
  *
 // Revision 1.1  1994/04/01  14:39:35  robertj
@@ -397,13 +400,24 @@ BOOL PTextFile::Write(const void * buf, PINDEX len)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// PTextFile
+// PThread
+
+void PThread::InitialiseProcessThread()
+{
+  basePriority = NormalPriority;  // User settable priority
+  dynamicPriority = 0;            // Only thing running
+  suspendCount = 0;               // Not suspended (would not be a good idea)
+  isBlocked = NULL;               // No I/O blocking function
+  status = Running;               // Thread is already running
+  link = this;
+  ((PProcess*)this)->currentThread = this;
+}
+
 
 PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
 {
   basePriority = priorityLevel;   // Threads user settable priority level
-  dynamicPriority = 0;            // Allow immediate scheduling
-  isBlocked = NULL;               // No I/O blocking function
+  dynamicPriority = 0;            // Run immediately
 
   suspendCount = startSuspended ? 1 : 0;
 
@@ -413,27 +427,41 @@ PThread::PThread(PINDEX stackSize, BOOL startSuspended, Priority priorityLevel)
   stackTop = stackBase + stackSize; // For stack checking code
   stackUsed = 0;
 
+  status = Terminated; // Set to this so Restart() works
+  Restart();
+}
+
+
+PThread::~PThread()
+{
+  Terminate();
+  _nfree(stackBase);   // Give stack back to the near heap
+}
+
+
+void PThread::Restart()
+{
+  if (status != Terminated) // Is already running
+    return;
+
+  isBlocked = NULL;               // No I/O blocking function
+
   PThread * current = Current();
   link = current->link;
   current->link = this;
+
   status = Starting;
-  if (!startSuspended)
-    SwitchContext(current);
 }
 
 
 void PThread::Terminate()
 {
-  if (link == this) // Is only thread, cannot terminate it.
-    return;
+  if (link == this || status == Terminated)
+    return;   // Is only thread or already terminated
 
-  if (status == Terminated) // Is already terminated
-    return;
-
+  BOOL doYield = status == Running;
   status = Terminating;
-
-  // If current thread is self terminating then go to next thread
-  if (Current() == this)
+  if (doYield);
     Yield(); // Never returns from here
 }
 
@@ -446,69 +474,47 @@ void PThread::Suspend(BOOL susp)
   else
     suspendCount--;
 
-  // Suspending itself, yield to next thread
-  if (IsSuspended() && Current() == this)
-    Yield();
+  switch (status) {
+    case Running : // Suspending itself, yield to next thread
+      if (IsSuspended()) {
+        status = Suspended;
+        Yield();
+      }
+      break;
+
+    case Waiting :
+      if (IsSuspended())
+        status = Suspended;
+      break;
+
+    case Suspended :
+      if (!IsSuspended())
+        status = Waiting;
+      break;
+
+    default :
+      break;
+  }
 }
 
 
 void PThread::Sleep(const PTimeInterval & time)
 {
-  wakeUpTime = PTimer::Tick() + time;
-
-  // Current thread is going to sleep, so yield to other thread
-  if (Current() == this)
-    Yield();
-}
-
-
-void PThread::Yield()
-{
-  // Determine the next thread to schedule
-  PThread * current = Current();
-  PThread * prev = current; // Need the thread in the previous link
-  for (PThread * next = current->link; next != current; next = next->link) {
-    if (next->status == Terminating) {
-      prev->link = next->link;   // Unlink it from the list
-      _nfree(next->stackBase);   // Give stack back to the near heap
-      next->status = Terminated;
-      continue;
-    }
-
-    prev = next;
-
-    if (next->suspendCount > 0)
-      continue;
-
-    if (PTimer::Tick() < next->wakeUpTime)
-      continue;
-
-    if (next->isBlocked != NULL) {
-      if (next->isBlocked(next->blocker))
-        continue;
-      next->isBlocked = NULL;
-      break;
-    }
-
-    if (next->dynamicPriority <= 0)
+  sleepTimer = time;
+  switch (status) {
+    case Running : // Suspending itself, yield to next thread
+      status = Sleeping;
+      Yield();
       break;
 
-    next->dynamicPriority--;
-  }
+    case Waiting :
+    case Suspended :
+      status = Sleeping;
+      break;
 
-  switch (next->basePriority) {
-    case LowPriority :
-      next->dynamicPriority = 3;
-      break;
-    case NormalPriority :
-      next->dynamicPriority = 1;
-      break;
-    case HighPriority :
-      next->dynamicPriority = 0;
+    default :
       break;
   }
-
-  next->SwitchContext(current);
 }
 
 
@@ -516,19 +522,111 @@ void PThread::Block(PThreadBlockFunction isBlockFun, PObject * obj)
 {
   isBlocked = isBlockFun;
   blocker = obj;
+  status = Blocked;
   Yield();
 }
 
 
-void PThread::InitialiseProcessThread()
+void PThread::BeginThread()
 {
-  basePriority = NormalPriority;  // User settable priority
-  dynamicPriority = 0;            // Allow immediate scheduling
-  suspendCount = 0;               // Not suspended (would not be a good idea)
-  isBlocked = NULL;               // No I/O blocking function
-  status = Running;               // Thread is already running
-  link = this;                    // Circular list - is only one
-  PProcess::Current()->currentThread = this;
+  if (IsSuspended()) { // Begins suspended
+    status = Suspended;
+    Yield();
+  }
+  else
+    status = Running;
+
+  Main();
+
+  status = Terminating;
+  Yield(); // Never returns from here
+}
+
+
+void PThread::Yield()
+{
+  // Determine the next thread to schedule
+  PProcess * process = PProcess::Current();
+  PThread * current = process->currentThread;
+  if (current->status == Running) {
+    if (current->basePriority != HighestPriority && current->link != current)
+      current->status = Waiting;
+    else {
+      current->SwitchContext(current);
+      return;
+    }
+  }
+
+  static const int dynamicLevel[NumPriorities] = { -1, 3, 1, 0, 0 };
+  current->dynamicPriority = dynamicLevel[current->basePriority];
+
+  PThread * next = NULL; // Next thread to be scheduled
+  PThread * prev = current; // Need the thread in the previous link
+  PThread * thread = current->link;
+  BOOL pass = 0;
+  BOOL canUseLowest = TRUE;
+  while (next == NULL) {
+    switch (thread->status) {
+      case Waiting :
+        if (thread->dynamicPriority == 0)
+          next = thread;
+        else if (thread->dynamicPriority > 0) {
+          thread->dynamicPriority--;
+          canUseLowest = FALSE;
+        }
+        else if (pass > 1 && canUseLowest)
+          thread->dynamicPriority++;
+        break;
+
+      case Sleeping :
+        if (!thread->sleepTimer.IsRunning()) {
+          if (thread->IsSuspended())
+            thread->status = Suspended;
+          else
+            next = thread;
+        }
+        break;
+
+      case Blocked :
+        if (!thread->isBlocked(thread->blocker)) {
+          thread->isBlocked = NULL;
+          if (thread->IsSuspended())
+            thread->status = Suspended;
+          else
+            next = thread;
+        }
+        break;
+
+      case Starting :
+        next = thread;
+        break;
+
+      case Terminating :
+        prev->link = thread->link;   // Unlink it from the list
+        thread->status = Terminated;
+        break;
+
+      default :
+        break;
+    }
+
+    // Need to have previous thread so can unlink a terminating thread
+    prev = thread;
+    thread = thread->link;
+    if (thread == current) {
+      pass++;
+      if (pass > 3) { // Everything is blocked
+        ((PThread *)process)->SwitchContext(current);
+        process->currentThread = current = process;
+        process->GetTimerList()->Process();
+      }
+    }
+  }
+
+  process->currentThread = next;
+  if (next->status != Starting)
+    next->status = Running;
+  next->SwitchContext(current);
 }
 
 

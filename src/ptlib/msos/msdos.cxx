@@ -1,5 +1,5 @@
 /*
- * $Id: msdos.cxx,v 1.1 1994/06/25 12:13:01 robertj Exp $
+ * $Id: msdos.cxx,v 1.2 1994/07/02 03:18:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: msdos.cxx,v $
- * Revision 1.1  1994/06/25 12:13:01  robertj
+ * Revision 1.2  1994/07/02 03:18:09  robertj
+ * Multi-threading implementation.
+ *
+ * Revision 1.1  1994/06/25  12:13:01  robertj
  * Initial revision
  *
 // Revision 1.1  1994/04/01  14:39:35  robertj
@@ -543,6 +546,8 @@ PString PConfig::GetString(const char * section,
     char * env = getenv(key);
     if (env != NULL)
       str = env;
+    else
+      str = dflt;
   }
   else {
     PAssertAlways(PUnimplementedFunction);
@@ -571,26 +576,22 @@ void PConfig::SetString(const char * section,
 ///////////////////////////////////////////////////////////////////////////////
 // Threads
 
-PThread::PThread(PINDEX stackSize, BOOL startSuspended)
+void PThread::SwitchContext(PThread * from)
 {
-  nextThread = this;
-  basePriority = NormalPriority;
-  dynamicPriority = 0;
-  suspendCount = startSuspended ? 1 : 0;
-  blocked = FALSE;
-  nextThread = Current()->nextThread;
-  Current()->nextThread = this;
-  PAssertAlways(PUnimplementedFunction);
-}
+  if (setjmp(from->context) != 0) // Are being reactivated from previous yield
+    return;
 
+  if (status == Starting) {
+    if (setjmp(context) != 0) {
+      status = Running;
+      Main();
+      Terminate(); // Never returns from here
+    }
+    context[7] = (int)stackTop-16;  // Change the stack pointer in jmp_buf
+  }
 
-void PThread::Terminate()
-{
-}
-
-
-void PThread::Yield()
-{
+  longjmp(context, TRUE);
+  PAssertAlways("longjmp failed"); // Should never get here
 }
 
 
