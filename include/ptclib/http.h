@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.39  1999/05/04 15:26:01  robertj
+ * Improved HTTP/1.1 compatibility (pass through user commands).
+ * Fixed problems with quicktime installer.
+ *
  * Revision 1.38  1999/04/21 01:58:08  robertj
  * Fixed problem with reading data for request using second form of PHTTPRequestInfo constructor.
  *
@@ -291,19 +295,11 @@ class PHTTP : public PInternetProtocol
   public:
   // New functions for class.
     enum Commands {
-      GET,
-      HEAD,
-      POST,
-      PUT,
-      PATCH,
-      COPY,
-      MOVE,
-      DELETE,
-      LINK,
-      UNLINK,
-      TRACE,
-      WRAPPED,
-      OPTIONS,
+      // HTTP/1.0 commands
+      GET, HEAD, POST,
+      // HTTP/1.1 commands
+      PUT, DELETE, TRACE, OPTIONS,
+      // HTTPS command
       CONNECT,
       NumCommands
     };
@@ -439,9 +435,19 @@ class PHTTPClient : public PHTTP
                        const PString & dataBody,
                        PMIMEInfo & replyMime,
                        BOOL persist = TRUE);
+    int ExecuteCommand(const PString & cmdName,
+                       const PString & url,
+                       const PMIMEInfo & outMIME,
+                       const PString & dataBody,
+                       PMIMEInfo & replyMime,
+                       BOOL persist = TRUE);
 
     /// Write a HTTP command to server
     BOOL WriteCommand(Commands cmd,
+                      const PString & url,
+                      const PMIMEInfo & outMIME,
+                      const PString & dataBody);
+    BOOL WriteCommand(const PString & cmdName,
                       const PString & url,
                       const PMIMEInfo & outMIME,
                       const PString & dataBody);
@@ -495,9 +501,63 @@ class PHTTPClient : public PHTTP
 
 
 //////////////////////////////////////////////////////////////////////////////
-// PHTTPServer
+// PHTTPConnectionInfo
 
-class PHTTPConnectionInfo;
+class PHTTPServer;
+
+/** This object describes the connectiono associated with a HyperText Transport
+   Protocol request. This information is required by handler functions on
+   #PHTTPResource# descendant classes to manage the connection correctly.
+*/
+class PHTTPConnectionInfo : public PObject
+{
+  PCLASSINFO(PHTTPConnectionInfo, PObject)
+  public:
+    PHTTPConnectionInfo();
+    PHTTPConnectionInfo(PHTTP::Commands cmd,
+                        const PURL & url,
+                        const PMIMEInfo & mime,
+                        BOOL persist,
+                        BOOL proxy);
+
+    PHTTP::Commands GetCommandCode() const { return commandCode; }
+    const PString & GetCommandName() const { return commandName; }
+
+    const PURL & GetURL() const       { return url; }
+
+    const PMIMEInfo & GetMIME() const { return mimeInfo; }
+
+
+    void SetPersistance(BOOL newPersist);
+    BOOL IsCompatible(int major, int minor) const;
+
+    BOOL IsPersistant() const         { return isPersistant; }
+    BOOL IsProxyConnection() const    { return isProxyConnection; }
+    int  GetMajorVersion() const      { return majorVersion; }
+    int  GetMinorVersion() const      { return minorVersion; }
+
+    long GetEntityBodyLength() const  { return entityBodyLength; }
+
+  protected:
+    void CalculateEntityBodyLength();
+    BOOL Initialise(PHTTPServer & server, PString & args);
+
+    PHTTP::Commands commandCode;
+    PString   commandName;
+    PURL      url;
+    PMIMEInfo mimeInfo;
+    BOOL      isPersistant;
+    BOOL      isProxyConnection;
+    int       majorVersion;
+    int       minorVersion;
+    long      entityBodyLength;
+
+  friend class PHTTPServer;
+};
+
+
+//////////////////////////////////////////////////////////////////////////////
+// PHTTPServer
 
 /** A TCP/IP socket for the HyperText Transfer Protocol version 1.0.
 
@@ -638,9 +698,7 @@ class PHTTPServer : public PHTTP
        @return
        The entity body of the command
      */
-    virtual PString ReadEntityBody(
-      const PHTTPConnectionInfo & connectInfo
-    );
+    virtual PString ReadEntityBody();
 
     /** Handle an unknown command.
 
@@ -699,64 +757,11 @@ class PHTTPServer : public PHTTP
   protected:
     void Construct();
 
-    PINDEX majorVersion;
-    PINDEX minorVersion;
+    PHTTPConnectionInfo connectInfo;
     PINDEX transactionCount;
-    PString userAgent;
     PTimeInterval nextTimeout;
 
     PHTTPSpace urlSpace;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////
-// PHTTPConnectionInfo
-
-/** This object describes the connectiono associated with a HyperText Transport
-   Protocol request. This information is required by handler functions on
-   #PHTTPResource# descendant classes to manage the connection correctly.
-*/
-class PHTTPConnectionInfo : public PObject
-{
-  PCLASSINFO(PHTTPConnectionInfo, PObject)
-  public:
-    PHTTPConnectionInfo(PHTTP::Commands cmd);
-    PHTTPConnectionInfo(PHTTP::Commands cmd,
-                        const PURL & url,
-                        const PMIMEInfo & mime,
-                        BOOL persist,
-                        BOOL proxy);
-    void Construct(PHTTPServer & server, int majorVersion, int MinorVersion);
-
-    PHTTP::Commands GetCommand() const { return command; }
-
-    void SetURL(const PURL & u, WORD defPort);
-    const PURL & GetURL() const       { return url; }
-
-    const PMIMEInfo & GetMIME() const { return mimeInfo; }
-
-
-    void SetPersistance(BOOL newPersist);
-    BOOL IsCompatible(int major, int minor) const;
-
-    BOOL IsPersistant() const         { return isPersistant; }
-    BOOL IsProxyConnection() const    { return isProxyConnection; }
-    int  GetMajorVersion() const      { return majorVersion; }
-    int  GetMinorVersion() const      { return minorVersion; }
-
-    long GetEntityBodyLength() const  { return entityBodyLength; }
-
-  protected:
-    void CalculateEntityBodyLength();
-
-    PHTTP::Commands command;
-    PURL      url;
-    PMIMEInfo mimeInfo;
-    BOOL      isPersistant;
-    BOOL      isProxyConnection;
-    int       majorVersion;
-    int       minorVersion;
-    long      entityBodyLength;
 };
 
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.28  1999/05/04 15:26:01  robertj
+ * Improved HTTP/1.1 compatibility (pass through user commands).
+ * Fixed problems with quicktime installer.
+ *
  * Revision 1.27  1999/04/24 11:50:11  robertj
  * Changed HTTP command parser so will work if some idiot puts spaces in a URL.
  *
@@ -322,7 +326,14 @@ BOOL PHTTPServer::ProcessCommand()
   if (!ReadCommand(cmd, args))
     return FALSE;
 
-  PHTTPConnectionInfo connectInfo((Commands)cmd);
+  connectInfo.commandCode = (Commands)cmd;
+  if (cmd < NumCommands)
+    connectInfo.commandName = commandNames[cmd];
+  else {
+    PINDEX spacePos = args.Find(' ');
+    connectInfo.commandName = args.Left(spacePos);
+    args = args.Mid(spacePos);
+  }
 
   // if no tokens, error
   if (args.IsEmpty()) {
@@ -330,56 +341,13 @@ BOOL PHTTPServer::ProcessCommand()
     return FALSE;
   }
 
-  // if only one argument, then it must be a version 0.9 simple request
-  PINDEX lastSpacePos = args.FindLast(' ');
-  static const PCaselessString httpId = "HTTP/";
-  if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
-    majorVersion = 0;
-    minorVersion = 9;
-  }
-  else { // otherwise, attempt to extract a version number
-    PCaselessString verStr = args.Mid(lastSpacePos + 6);
-    PINDEX dotPos = verStr.Find('.');
-    if (dotPos == 0 || dotPos >= verStr.GetLength()) {
-      OnError(BadRequest, "Malformed version number: " + verStr, connectInfo);
+  if (!connectInfo.Initialise(*this, args))
       return FALSE;
-    }
-
-    // should actually check if the text contains only digits, but the
-    // chances of matching everything else and it not being a valid number
-    // are pretty small, so don't bother
-    majorVersion = (int)verStr.Left(dotPos).AsInteger();
-    minorVersion = (int)verStr.Mid(dotPos+1).AsInteger();
-    args.Delete(lastSpacePos, P_MAX_INDEX);
-  }
 
   // now that we've decided we did receive a HTTP request, increment the
   // count of transactions
   transactionCount++;
   nextTimeout.SetInterval(MAX_LIFETIME*1000);
-
-  // If the protocol is version 1.0 or greater, there is MIME info, and the
-  // prescence of a an entity body is signalled by the inclusion of
-  // Content-Length header. If the protocol is less than version 1.0, then 
-  // there is no entity body!
-  long contentLength = 0;
-
-  if (majorVersion > 0) {
-    // build our connection info reading MIME info until an empty line is
-    // received, or EOF
-    connectInfo.Construct(*this, majorVersion, minorVersion);
-//    if (connectInfo.IsPersistant()) {
-//      if (connectInfo.IsProxyConnection())
-//        PError << "Server: Persistant proxy connection received" << endl;
-//      else
-//        PError << "Server: Persistant direct connection received" << endl;
-//    }
-
-    contentLength = connectInfo.GetEntityBodyLength();
-  }
-
-  // get the user agent for various foul purposes...
-  userAgent = connectInfo.GetMIME()(UserAgentTag);
 
   PIPSocket * socket = GetSocket();
   WORD myPort = (WORD)(socket != NULL ? socket->GetPort() : 80);
@@ -388,9 +356,12 @@ BOOL PHTTPServer::ProcessCommand()
   // mangle it into a proper URL and do NOT close the connection.
   // for all other commands, close the read connection if not persistant
   if (cmd == CONNECT) 
-    connectInfo.SetURL("https://" + args, 0);
-  else
-    connectInfo.SetURL(args, myPort);
+    connectInfo.url = "https://" + args;
+  else {
+    connectInfo.url = args;
+    if (connectInfo.url.GetPort() == 0)
+      connectInfo.url.SetPort(myPort);
+  }
 
   BOOL persist;
 
@@ -406,7 +377,7 @@ BOOL PHTTPServer::ProcessCommand()
       (!url.GetHostName() && !PIPSocket::IsLocalHost(url.GetHostName())))
     persist = OnProxy(connectInfo);
   else {
-    PString entityBody = ReadEntityBody(connectInfo);
+    PString entityBody = ReadEntityBody();
 
     // Handle the local request
     PStringToString postData;
@@ -451,7 +422,7 @@ BOOL PHTTPServer::ProcessCommand()
 }
 
 
-PString PHTTPServer::ReadEntityBody(const PHTTPConnectionInfo & connectInfo)
+PString PHTTPServer::ReadEntityBody()
 {
   if (connectInfo.GetMajorVersion() < 1)
     return PString();
@@ -550,7 +521,7 @@ BOOL PHTTPServer::OnPOST(const PURL & url,
 BOOL PHTTPServer::OnProxy(const PHTTPConnectionInfo & connectInfo)
 {
   return OnError(BadGateway, "Proxy not implemented.", connectInfo) &&
-         connectInfo.GetCommand() != CONNECT;
+         connectInfo.GetCommandCode() != CONNECT;
 }
 
 
@@ -614,27 +585,26 @@ void PHTTPServer::StartResponse(StatusCode code,
                                 PMIMEInfo & headers,
                                 long bodySize)
 {
-  if (majorVersion < 1) 
+  if (connectInfo.majorVersion < 1) 
     return;
 
   const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
 
   // output the command line
-  const char * crlf = ""; //(transactionCount > 1) ? "\r\n" : "";
-  WriteString(psprintf("%sHTTP/%u.%u %03u %s\r\n",
-              crlf, majorVersion, minorVersion, statusInfo->code, statusInfo->text));
+  *this << "HTTP/" << connectInfo.majorVersion << '.' << connectInfo.minorVersion
+        << ' ' << statusInfo->code << ' ' << statusInfo->text << "\r\n";
 
   // output the headers. But don't put in ContentLength if the bodysize is zero
   // because that can be confused by some browsers as meaning there is no body length.
   if (bodySize > 0 && !headers.Contains(ContentLengthTag))
     headers.SetAt(ContentLengthTag, PString(PString::Unsigned, (PINDEX)bodySize));
-  headers.Write(*this);
+  *this << setfill('\r') << headers;
 
 #ifdef STRANGE_NETSCAPE_BUG
   // The following is a work around for a strange bug in Netscape where it
   // locks up when a persistent connection is made and data less than 1k
   // (including MIME headers) is sent. Go figure....
-  if (bodySize < 1024 && userAgent.Find("Mozilla/2.0") != P_MAX_INDEX)
+  if (bodySize < 1024 && connectInfo.GetMIME()(UserAgentTag).Find("Mozilla/2.0") != P_MAX_INDEX)
     nextTimeout.SetInterval(STRANGE_NETSCAPE_BUG*1000);
 #endif
 }
@@ -856,9 +826,9 @@ PHTTPRequest::PHTTPRequest(const PURL & u, const PMIMEInfo & iM, PHTTPServer & s
 //////////////////////////////////////////////////////////////////////////////
 // PHTTPConnectionInfo
 
-PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd)
+PHTTPConnectionInfo::PHTTPConnectionInfo()
 {
-  command           = cmd;
+  commandCode       = PHTTP::NumCommands;
 
   majorVersion      = 0;
   minorVersion      = 9;
@@ -877,7 +847,7 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd,
                                          BOOL proxy)
   : url(u), mimeInfo(mime)
 {
-  command           = cmd;
+  commandCode       = cmd;
 
   majorVersion      = 1;
   minorVersion      = 0;
@@ -889,12 +859,59 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd,
 }
 
 
-void PHTTPConnectionInfo::Construct(PHTTPServer & server, int major, int minor)
+void PHTTPConnectionInfo::CalculateEntityBodyLength()
 {
-  mimeInfo.Read(server);
+  // if the client specified a persistant connection, then use the
+  // ContentLength field. If there is no content length field, then
+  // assume a ContentLength of zero and close the connection.
+  // The spec actually says to read until end of file in this case,
+  // but Netscape hangs if this is done.
+  // If the client didn't specify a persistant connection, then use the
+  // ContentLength if there is one or read until end of file if there isn't
+  if (!isPersistant)
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
+                                           (commandCode == PHTTP::POST) ? -2 : 0);
+  else {
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
+    if (entityBodyLength < 0) {
+//        PError << "Server: persistant connection has no content length" << endl;
+      entityBodyLength = 0;
+      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
+    }
+  }
+}
 
-  majorVersion      = major;
-  minorVersion      = minor;
+
+BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
+{
+  // if only one argument, then it must be a version 0.9 simple request
+  PINDEX lastSpacePos = args.FindLast(' ');
+  static const PCaselessString httpId = "HTTP/";
+  if (lastSpacePos == P_MAX_INDEX || httpId != args(lastSpacePos+1, lastSpacePos+5)) {
+    majorVersion = 0;
+    minorVersion = 9;
+    return TRUE;
+  }
+
+  // otherwise, attempt to extract a version number
+  PCaselessString verStr = args.Mid(lastSpacePos + 6);
+  PINDEX dotPos = verStr.Find('.');
+  if (dotPos == 0 || dotPos >= verStr.GetLength()) {
+    server.OnError(PHTTP::BadRequest, "Malformed version number: " + verStr, *this);
+    return FALSE;
+  }
+
+  // should actually check if the text contains only digits, but the
+  // chances of matching everything else and it not being a valid number
+  // are pretty small, so don't bother
+  majorVersion = (int)verStr.Left(dotPos).AsInteger();
+  minorVersion = (int)verStr.Mid(dotPos+1).AsInteger();
+  args.Delete(lastSpacePos, P_MAX_INDEX);
+
+  // build our connection info reading MIME info until an empty line is
+  // received, or EOF
+  if (!mimeInfo.Read(server))
+    return FALSE;
 
   isPersistant      = FALSE;
 
@@ -916,39 +933,20 @@ void PHTTPConnectionInfo::Construct(PHTTPServer & server, int major, int minor)
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
 #endif
+//    if (connectInfo.IsPersistant()) {
+//      if (connectInfo.IsProxyConnection())
+//        PError << "Server: Persistant proxy connection received" << endl;
+//      else
+//        PError << "Server: Persistant direct connection received" << endl;
+//    }
 
+  // If the protocol is version 1.0 or greater, there is MIME info, and the
+  // prescence of a an entity body is signalled by the inclusion of
+  // Content-Length header. If the protocol is less than version 1.0, then 
+  // there is no entity body!
   CalculateEntityBodyLength();
-}
 
-
-void PHTTPConnectionInfo::CalculateEntityBodyLength()
-{
-  // if the client specified a persistant connection, then use the
-  // ContentLength field. If there is no content length field, then
-  // assume a ContentLength of zero and close the connection.
-  // The spec actually says to read until end of file in this case,
-  // but Netscape hangs if this is done.
-  // If the client didn't specify a persistant connection, then use the
-  // ContentLength if there is one or read until end of file if there isn't
-  if (!isPersistant)
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
-                                           (command == PHTTP::POST) ? -2 : 0);
-  else {
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
-    if (entityBodyLength < 0) {
-//        PError << "Server: persistant connection has no content length" << endl;
-      entityBodyLength = 0;
-      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
-    }
-  }
-}
-
-
-void PHTTPConnectionInfo::SetURL(const PURL & u, WORD defPort)
-{
-  url = u;
-  if (url.GetPort() == 0)
-    url.SetPort(defPort);
+  return TRUE;
 }
 
 
