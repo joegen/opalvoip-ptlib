@@ -1,5 +1,5 @@
 /*
- * $Id: asner.cxx,v 1.7 1998/03/05 12:49:50 robertj Exp $
+ * $Id: asner.cxx,v 1.8 1998/05/07 05:19:29 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: asner.cxx,v $
+ * Revision 1.8  1998/05/07 05:19:29  robertj
+ * Fixed problems with using copy constructor/assignment oeprator on PASN_Objects.
+ *
  * Revision 1.7  1998/03/05 12:49:50  robertj
  * MemCheck fixes.
  *
@@ -170,6 +173,13 @@ PASN_Null::PASN_Null(unsigned tag, TagClass tagClass)
 }
 
 
+PObject * PASN_Null::Clone() const
+{
+  PAssert(IsClass(PASN_Null::Class()), PInvalidCast);
+  return new PASN_Null(*this);
+}
+
+
 void PASN_Null::PrintOn(ostream & strm) const
 {
   strm << "<<null>>";
@@ -234,6 +244,13 @@ PASN_Boolean::PASN_Boolean(BOOL val, unsigned tag, TagClass tagClass)
   : PASN_Object(tag, tagClass, FALSE)
 {
   value = val;
+}
+
+
+PObject * PASN_Boolean::Clone() const
+{
+  PAssert(IsClass(PASN_Boolean::Class()), PInvalidCast);
+  return new PASN_Boolean(*this);
 }
 
 
@@ -331,6 +348,13 @@ PASN_Integer & PASN_Integer::operator=(unsigned val)
   else
     value = val;
   return *this;
+}
+
+
+PObject * PASN_Integer::Clone() const
+{
+  PAssert(IsClass(PASN_Integer::Class()), PInvalidCast);
+  return new PASN_Integer(*this);
 }
 
 
@@ -501,6 +525,13 @@ PASN_Enumeration::PASN_Enumeration(unsigned tag, TagClass tagClass,
 }
 
 
+PObject * PASN_Enumeration::Clone() const
+{
+  PAssert(IsClass(PASN_Enumeration::Class()), PInvalidCast);
+  return new PASN_Enumeration(*this);
+}
+
+
 void PASN_Enumeration::PrintOn(ostream & strm) const
 {
   if (names.Contains(value))
@@ -608,6 +639,13 @@ PASN_Real::PASN_Real(unsigned tag, TagClass tagClass, double val)
 }
 
 
+PObject * PASN_Real::Clone() const
+{
+  PAssert(IsClass(PASN_Real::Class()), PInvalidCast);
+  return new PASN_Real(*this);
+}
+
+
 void PASN_Real::PrintOn(ostream & strm) const
 {
   strm << value;
@@ -687,6 +725,21 @@ PASN_ObjectId::PASN_ObjectId(unsigned tag, TagClass tagClass)
 }
 
 
+PASN_ObjectId::PASN_ObjectId(const PASN_ObjectId & other)
+  : PASN_Object(other),
+    value(other.value, other.GetSize())
+{
+}
+
+
+PASN_ObjectId & PASN_ObjectId::operator=(const PASN_ObjectId & other)
+{
+  PASN_Object::operator=(other);
+  value = PUnsignedArray(other.value, other.GetSize());
+  return *this;
+}
+
+
 PASN_ObjectId & PASN_ObjectId::operator=(const char * dotstr)
 {
   SetValue(dotstr);
@@ -707,6 +760,13 @@ void PASN_ObjectId::SetValue(const PString & dotstr)
   value.SetSize(parts.GetSize());
   for (PINDEX i = 0; i < parts.GetSize(); i++)
     value[i] = parts[i].AsUnsigned();
+}
+
+
+PObject * PASN_ObjectId::Clone() const
+{
+  PAssert(IsClass(PASN_ObjectId::Class()), PInvalidCast);
+  return new PASN_ObjectId(*this);
 }
 
 
@@ -893,6 +953,23 @@ PASN_BitString::PASN_BitString(unsigned tag, TagClass tagClass,
 }
 
 
+PASN_BitString::PASN_BitString(const PASN_BitString & other)
+  : PASN_ConstrainedObject(other),
+    bitData(other.bitData, other.bitData.GetSize())
+{
+  totalBits = other.totalBits;
+}
+
+
+PASN_BitString & PASN_BitString::operator=(const PASN_BitString & other)
+{
+  PASN_ConstrainedObject::operator=(other);
+  totalBits = other.totalBits;
+  bitData = PBYTEArray(other.bitData, other.bitData.GetSize());
+  return *this;
+}
+
+
 void PASN_BitString::SetData(PINDEX nBits, const PBYTEArray & bytes)
 {
   bitData = bytes;
@@ -940,6 +1017,13 @@ void PASN_BitString::Invert(PINDEX bit)
 {
   if (bit < totalBits)
     bitData[bit>>3] ^= 1 << (7 - (bit&7));
+}
+
+
+PObject * PASN_BitString::Clone() const
+{
+  PAssert(IsClass(PASN_BitString::Class()), PInvalidCast);
+  return new PASN_BitString(*this);
 }
 
 
@@ -1103,11 +1187,18 @@ PASN_OctetString::PASN_OctetString(unsigned tag, TagClass tagClass,
 }
 
 
-PString PASN_OctetString::AsString() const
+PASN_OctetString::PASN_OctetString(const PASN_OctetString & other)
+  : PASN_ConstrainedObject(other),
+    value(other.value, other.GetSize())
 {
-  if (value.IsEmpty())
-    return PString();
-  return PString((const char *)(const BYTE *)value, value.GetSize());
+}
+
+
+PASN_OctetString & PASN_OctetString::operator=(const PASN_OctetString & other)
+{
+  PASN_ConstrainedObject::operator=(other);
+  value = PBYTEArray(other.value, other.GetSize());
+  return *this;
 }
 
 
@@ -1142,6 +1233,21 @@ void PASN_OctetString::SetValue(const BYTE * data, PINDEX len)
     len = upperLimit;
   value.SetSize((int)len < lowerLimit ? lowerLimit : len);
   memcpy(value.GetPointer(), data, len);
+}
+
+
+PString PASN_OctetString::AsString() const
+{
+  if (value.IsEmpty())
+    return PString();
+  return PString((const char *)(const BYTE *)value, value.GetSize());
+}
+
+
+PObject * PASN_OctetString::Clone() const
+{
+  PAssert(IsClass(PASN_OctetString::Class()), PInvalidCast);
+  return new PASN_OctetString(*this);
 }
 
 
@@ -1303,18 +1409,32 @@ PASN_ConstrainedString::PASN_ConstrainedString(const char * canonicalSet, PINDEX
   : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
 {
   PAssert(lower >= 0, PInvalidParameter);
-  canonicalSetBits = CountBits(size);
+
+  if (size == 0)
+    canonicalSetBits = 8;
+  else
+    canonicalSetBits = CountBits(size);
 
   if (set == NULL)
     charSet = canonicalSet;
   else {
-    for (PINDEX i = 0; i < size; i++) {
-      if (strchr(set, canonicalSet[i]) != NULL)
-        charSet += canonicalSet[i];
+    if (*canonicalSet == '\0') {
+      PAssert(*set != '\0', PInvalidParameter);
+      charSet = set;
     }
+    else {
+      for (PINDEX i = 0; i < size; i++) {
+        if (strchr(set, canonicalSet[i]) != NULL)
+          charSet += canonicalSet[i];
+      }
+    }
+    PAssert(!charSet.IsEmpty(), PInvalidParameter);
   }
 
-  charSetUnalignedBits = CountBits(charSet.GetLength());
+  if (charSet.IsEmpty())
+    charSetUnalignedBits = 8;
+  else
+    charSetUnalignedBits = CountBits(charSet.GetLength());
   charSetAlignedBits = 1;
   while (charSetUnalignedBits > charSetAlignedBits)
     charSetAlignedBits <<= 1;
@@ -1326,7 +1446,7 @@ PASN_ConstrainedString & PASN_ConstrainedString::operator=(const char * str)
   value = PString();
   PINDEX len = strlen(str);
   for (PINDEX i = 0; i < len; i++) {
-    if (charSet.Find(str[i]) != P_MAX_INDEX)
+    if (charSet.IsEmpty() || charSet.Find(str[i]) != P_MAX_INDEX)
       value += str[i];
   }
   return *this;
@@ -1462,98 +1582,35 @@ void PPER_Stream::ConstrainedStringEncode(const PASN_ConstrainedString & value)
 }
 
 
+#define DEFINE_STRING_CLASS(name, set) \
+  static const char name##StringSet[] = set; \
+  PASN_##name##String::PASN_##name##String(unsigned tag, TagClass tagClass, \
+                                           int lower, unsigned upper, ConstraintType ctype, \
+                                           const char * charSet, BOOL extendChars) \
+    : PASN_ConstrainedString(name##StringSet, sizeof(name##StringSet)-1, \
+                             tag, tagClass, lower, upper, ctype, charSet, extendChars) \
+    { } \
+  PObject * PASN_##name##String::Clone() const \
+    { PAssert(IsClass(PASN_##name##String::Class()), PInvalidCast); \
+      return new PASN_##name##String(*this); } \
+  PString PASN_##name##String::GetTypeAsString() const \
+    { return #name " String"; }
 
-static const char NumericStringSet[] = " 0123456789";
-
-PASN_NumericString::PASN_NumericString(unsigned tag, TagClass tagClass,
-                                       int lower, unsigned upper, ConstraintType ctype,
-                                       const char * charSet, BOOL extendChars)
-  : PASN_ConstrainedString(NumericStringSet, sizeof(NumericStringSet)-1,
-                           tag, tagClass, lower, upper, ctype, charSet, extendChars)
-{
-}
-
-PString PASN_NumericString::GetTypeAsString() const
-{
-  return "Numeric String";
-}
-
-
-
-static const char PrintableStringSet[] =
-            " '()+,-./0123456789:=?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-PASN_PrintableString::PASN_PrintableString(unsigned tag, TagClass tagClass,
-                                           int lower, unsigned upper, ConstraintType ctype,
-                                           const char * charSet, BOOL extendChars)
-  : PASN_ConstrainedString(PrintableStringSet, sizeof(PrintableStringSet)-1,
-                           tag, tagClass, lower, upper, ctype, charSet, extendChars)
-{
-}
-
-PString PASN_PrintableString::GetTypeAsString() const
-{
-  return "Printable String";
-}
-
-
-
-static const char VisibleStringSet[] =
-    " !\"#$%&'()*+,-./0123456789:;<=>?"
-    "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-    "`abcdefghijklmnopqrstuvwxyz{|}~";
-
-PASN_VisibleString::PASN_VisibleString(unsigned tag, TagClass tagClass,
-                                       int lower, unsigned upper, ConstraintType ctype,
-                                       const char * charSet, BOOL extendChars)
-  : PASN_ConstrainedString(VisibleStringSet, sizeof(VisibleStringSet)-1,
-                           tag, tagClass, lower, upper, ctype, charSet, extendChars)
-{
-}
-
-PString PASN_VisibleString::GetTypeAsString() const
-{
-  return "Visible String";
-}
-
-
-
-static const char IA5StringSet[] =
-    "\200\001\002\003\004\005\006\007"
-    "\010\011\012\013\014\015\016\017"
-    "\020\021\022\023\024\025\026\027"
-    "\030\031\032\033\034\035\036\037"
-    " !\"#$%&'()*+,-./0123456789:;<=>?"
-    "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-    "`abcdefghijklmnopqrstuvwxyz{|}~\177";
-
-PASN_IA5String::PASN_IA5String(unsigned tag, TagClass tagClass,
-                               int lower, unsigned upper, ConstraintType ctype,
-                               const char * charSet, BOOL extendChars)
-  : PASN_ConstrainedString(IA5StringSet, sizeof(IA5StringSet)-1,
-                           tag, tagClass, lower, upper, ctype, charSet, extendChars)
-{
-}
-
-PString PASN_IA5String::GetTypeAsString() const
-{
-  return "IA5 String";
-}
-
-
-
-PASN_GeneralString::PASN_GeneralString(unsigned tag, TagClass tagClass,
-                                       int lower, unsigned upper, ConstraintType ctype,
-                                       const char * charSet, BOOL extendChars)
-  : PASN_ConstrainedString(IA5StringSet, sizeof(IA5StringSet)-1,
-                           tag, tagClass, lower, upper, ctype, charSet, extendChars)
-{
-}
-
-PString PASN_GeneralString::GetTypeAsString() const
-{
-  return "General String";
-}
+DEFINE_STRING_CLASS(Numeric,   " 0123456789")
+DEFINE_STRING_CLASS(Printable, " '()+,-./0123456789:=?"
+                               "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                               "abcdefghijklmnopqrstuvwxyz")
+DEFINE_STRING_CLASS(Visible,   " !\"#$%&'()*+,-./0123456789:;<=>?"
+                               "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                               "`abcdefghijklmnopqrstuvwxyz{|}~")
+DEFINE_STRING_CLASS(IA5,       "\200\001\002\003\004\005\006\007"
+                               "\010\011\012\013\014\015\016\017"
+                               "\020\021\022\023\024\025\026\027"
+                               "\030\031\032\033\034\035\036\037"
+                               " !\"#$%&'()*+,-./0123456789:;<=>?"
+                               "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+                               "`abcdefghijklmnopqrstuvwxyz{|}~\177")
+DEFINE_STRING_CLASS(General,   "")
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -1563,6 +1620,23 @@ PASN_BMPString::PASN_BMPString(unsigned tag, TagClass tagClass,
   : PASN_ConstrainedObject(tag, tagClass, lower, upper, ctype)
 {
   PAssert(lower >= 0, PInvalidParameter);
+}
+
+
+PASN_BMPString::PASN_BMPString(const PASN_BMPString & other)
+  : PASN_ConstrainedObject(other),
+    value(other.value, other.value.GetSize())
+{
+}
+
+
+PASN_BMPString & PASN_BMPString::operator=(const PASN_BMPString & other)
+{
+  PASN_ConstrainedObject::operator=(other);
+
+  value = PWORDArray(other.value, other.value.GetSize());
+
+  return *this;
 }
 
 
@@ -1583,6 +1657,13 @@ PString PASN_BMPString::GetValue() const
       str += (char)value[i];
   }
   return str;
+}
+
+
+PObject * PASN_BMPString::Clone() const
+{
+  PAssert(IsClass(PASN_BMPString::Class()), PInvalidCast);
+  return new PASN_BMPString(*this);
 }
 
 
@@ -1752,13 +1833,33 @@ PASN_Choice::PASN_Choice(unsigned tag, TagClass tagClass,
 }
 
 
+PASN_Choice::PASN_Choice(const PASN_Choice & other)
+  : PASN_Object(other),
+    names(other.names)
+{
+  maxChoices = other.maxChoices;
+
+  if (other.choice != NULL)
+    choice = (PASN_Object *)other.choice->Clone();
+  else
+    choice = NULL;
+}
+
+
 PASN_Choice & PASN_Choice::operator=(const PASN_Choice & other)
 {
   delete choice;
 
+  PASN_Object::operator=(other);
+
   maxChoices = other.maxChoices;
-  if (CreateObject() && other.choice != NULL)
-    *choice = *other.choice;
+  names = other.names;
+
+  if (other.choice != NULL)
+    choice = (PASN_Object *)other.choice->Clone();
+  else
+    choice = NULL;
+
   return *this;
 }
 
@@ -1772,7 +1873,9 @@ PASN_Choice::~PASN_Choice()
 void PASN_Choice::SetTag(unsigned newTag, TagClass tagClass)
 {
   PASN_Object::SetTag(newTag, tagClass);
+
   delete choice;
+
   if (CreateObject())
     choice->SetTag(newTag, tagClass);
 }
@@ -1786,7 +1889,11 @@ PString PASN_Choice::GetTagName() const
   if (names.Contains(tag))
     return names[tag];
 
-  return PString(PString::Unsigned, tag);
+  if (choice != NULL && choice->IsDescendant(PASN_Choice::Class()) &&
+      choice->GetTag() == tag && choice->GetTagClass() == tagClass)
+    return PString(choice->GetClass()) + "->" + ((PASN_Choice *)choice)->GetTagName();
+
+  return psprintf("<%u>", tag);
 }
 
 
@@ -1797,14 +1904,114 @@ PASN_Object & PASN_Choice::GetObject() const
 }
 
 
+PASN_Choice::operator PASN_Null &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Null::Class()), PInvalidCast);
+  return (PASN_Null &)choice;
+}
+
+
+PASN_Choice::operator PASN_Boolean &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Boolean::Class()), PInvalidCast);
+  return (PASN_Boolean &)choice;
+}
+
+
+PASN_Choice::operator PASN_Integer &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Integer::Class()), PInvalidCast);
+  return (PASN_Integer &)choice;
+}
+
+
+PASN_Choice::operator PASN_Enumeration &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Enumeration::Class()), PInvalidCast);
+  return (PASN_Enumeration &)choice;
+}
+
+
+PASN_Choice::operator PASN_Real &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Real::Class()), PInvalidCast);
+  return (PASN_Real &)choice;
+}
+
+
+PASN_Choice::operator PASN_ObjectId &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_ObjectId::Class()), PInvalidCast);
+  return (PASN_ObjectId &)choice;
+}
+
+
+PASN_Choice::operator PASN_BitString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_BitString::Class()), PInvalidCast);
+  return (PASN_BitString &)choice;
+}
+
+
+PASN_Choice::operator PASN_OctetString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_OctetString::Class()), PInvalidCast);
+  return (PASN_OctetString &)choice;
+}
+
+
+PASN_Choice::operator PASN_NumericString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_NumericString::Class()), PInvalidCast);
+  return (PASN_NumericString &)choice;
+}
+
+
+PASN_Choice::operator PASN_PrintableString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_PrintableString::Class()), PInvalidCast);
+  return (PASN_PrintableString &)choice;
+}
+
+
+PASN_Choice::operator PASN_VisibleString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_VisibleString::Class()), PInvalidCast);
+  return (PASN_VisibleString &)choice;
+}
+
+
+PASN_Choice::operator PASN_IA5String &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_IA5String::Class()), PInvalidCast);
+  return (PASN_IA5String &)choice;
+}
+
+
+PASN_Choice::operator PASN_GeneralString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_GeneralString::Class()), PInvalidCast);
+  return (PASN_GeneralString &)choice;
+}
+
+
+PASN_Choice::operator PASN_BMPString &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_BMPString::Class()), PInvalidCast);
+  return (PASN_BMPString &)choice;
+}
+
+
+PASN_Choice::operator PASN_Sequence &() const
+{
+  PAssert(PAssertNULL(choice)->IsDescendant(PASN_Sequence::Class()), PInvalidCast);
+  return (PASN_Sequence &)choice;
+}
+
+
 void PASN_Choice::PrintOn(ostream & strm) const
 {
-  if (tag == UINT_MAX)
-    strm << "<uninitialised>";
-  else if (names.Contains(tag))
-    strm << names[tag];
-  else
-    strm << '<' << tag << '>';
+  strm << GetTagName();
 
   if (choice != NULL)
     strm << ' ' << *choice;
@@ -1958,17 +2165,38 @@ PASN_Sequence::PASN_Sequence(unsigned tag, TagClass tagClass,
 {
   knownExtensions = nExtend;
   totalExtensions = 0;
+  endBasicEncoding = 0;
+}
+
+
+PASN_Sequence::PASN_Sequence(const PASN_Sequence & other)
+  : PASN_Object(other),
+    fields(other.fields.GetSize()),
+    optionMap(other.optionMap),
+    extensionMap(other.extensionMap)
+{
+  for (PINDEX i = 0; i < other.fields.GetSize(); i++)
+    fields.SetAt(i, other.fields[i].Clone());
+
+  knownExtensions = other.knownExtensions;
+  totalExtensions = other.totalExtensions;
+  endBasicEncoding = 0;
 }
 
 
 PASN_Sequence & PASN_Sequence::operator=(const PASN_Sequence & other)
 {
+  PASN_Object::operator=(other);
+
+  fields.SetSize(other.fields.GetSize());
+  for (PINDEX i = 0; i < other.fields.GetSize(); i++)
+    fields.SetAt(i, other.fields[i].Clone());
+
   optionMap = other.optionMap;
   knownExtensions = other.knownExtensions;
   totalExtensions = other.totalExtensions;
   extensionMap = other.extensionMap;
-  for (PINDEX i = 0; i < other.fields.GetSize(); i++)
-    fields[i] = other.fields[i];
+
   return *this;
 }
 
@@ -1993,6 +2221,13 @@ void PASN_Sequence::IncludeOptionalField(PINDEX opt)
     if (opt < extensionMap.GetSize())
       extensionMap.Set(opt);
   }
+}
+
+
+PObject * PASN_Sequence::Clone() const
+{
+  PAssert(IsClass(PASN_Sequence::Class()), PInvalidCast);
+  return new PASN_Sequence(*this);
 }
 
 
@@ -2375,6 +2610,13 @@ PASN_Set::PASN_Set(unsigned tag, TagClass tagClass,
 }
 
 
+PObject * PASN_Set::Clone() const
+{
+  PAssert(IsClass(PASN_Set::Class()), PInvalidCast);
+  return new PASN_Set(*this);
+}
+
+
 PString PASN_Set::GetTypeAsString() const
 {
   return "Set";
@@ -2391,10 +2633,23 @@ PASN_Array::PASN_Array(unsigned tag, TagClass tagClass,
 }
 
 
-PASN_Array & PASN_Array::operator=(const PASN_Array & other)
+PASN_Array::PASN_Array(const PASN_Array & other)
+  : PASN_ConstrainedObject(other),
+    array(other.array.GetSize())
 {
   for (PINDEX i = 0; i < other.array.GetSize(); i++)
-    array[i] = other.array[i];
+    array.SetAt(i, other.array[i].Clone());
+}
+
+
+PASN_Array & PASN_Array::operator=(const PASN_Array & other)
+{
+  PASN_ConstrainedObject::operator=(other);
+
+  array.SetSize(other.array.GetSize());
+  for (PINDEX i = 0; i < other.array.GetSize(); i++)
+    array.SetAt(i, other.array[i].Clone());
+
   return *this;
 }
 
