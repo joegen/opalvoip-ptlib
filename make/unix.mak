@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.114  2002/01/26 00:22:27  robertj
+# Normalised MACHTYPE for sparc processors
+#
 # Revision 1.113  2002/01/15 12:17:53  craigs
 # Changed Solaris flags to make fd set size 4096.
 # This allows more OpenH323 connections under Solaris
@@ -397,6 +400,10 @@ endif
 
 ifneq (,$(findstring netbsd,$(OSTYPE)))
 OSTYPE := NetBSD
+endif
+
+ifneq (,$(findstring sparc, $(MACHTYPE)))
+MACHTYPE := sparc
 endif
 
 ifneq (,$(findstring sun4, $(MACHTYPE)))
