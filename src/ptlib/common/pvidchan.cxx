@@ -27,6 +27,10 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: pvidchan.cxx,v $
+ * Revision 1.12  2003/03/17 07:47:42  robertj
+ * Removed redundant "render now" function.
+ * Made significant enhancements to PVideoOutputDevice class.
+ *
  * Revision 1.11  2003/01/06 18:41:08  rogerh
  * Add NetBSD patches, taken from the NetBSD pkg patches.
  * Submitted by Andreas Wrede
@@ -161,7 +165,9 @@ BOOL PVideoChannel::Write(const void * buf,  //image data to be rendered
   if (mpOutput == NULL)
     return FALSE;
   
-  return mpOutput->Redraw (buf);
+  return mpOutput->SetFrameData(0, 0,
+                                mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
+                                (const BYTE *)buf, TRUE);
 }
 
 BOOL PVideoChannel::Close()
@@ -324,17 +330,11 @@ BOOL  PVideoChannel::Redraw(const void * frame)
   PWaitAndSignal m(accessMutex);
 
   if (mpOutput != NULL)
-    return mpOutput->Redraw (frame);
+    return mpOutput->SetFrameData(0, 0,
+                                  mpInput->GetFrameWidth(), mpInput->GetFrameHeight(),
+                                  (const BYTE *)frame, TRUE);
 
   return FALSE;
-}
-
-void  PVideoChannel::SetRenderNow(int _now)  
-{
-  PWaitAndSignal m(accessMutex);
-
-  if (mpOutput != NULL)
-    mpOutput->SetNow(_now); 
 }
 
 PINDEX   PVideoChannel::GetRenderWidth()
@@ -368,15 +368,18 @@ void PVideoChannel::EnableAccess()
   accessMutex.Signal();
 }
 
-BOOL PVideoChannel::ToggleVFlipInput() 
+
+BOOL PVideoChannel::ToggleVFlipInput()
 {
   PWaitAndSignal m(accessMutex);
 
-  if (mpInput == NULL) 
-    return FALSE;
+ if (mpOutput != NULL)
+  return mpInput->SetVFlipState(mpInput->GetVFlipState()); 
 
-  return mpInput->ToggleVFlipState();
+ return FALSE;
 }
+
+
 ///////////////////////////////////////////////////////////////////////////
 // End of file
 
