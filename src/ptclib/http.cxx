@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.89  2003/06/04 01:42:05  rjongbloed
+ * Fixed h323 scheme, does not have a "password" field.
+ *
  * Revision 1.88  2003/06/02 02:46:45  rjongbloed
  * Fixed issue with callto URL parsing incorrect username field.
  * Added automatic removal of illegal (though common) "//" in callto URL.
@@ -363,7 +366,8 @@
 
 struct schemeStruct {
   const char * name;
-  BOOL hasUserPassword;
+  BOOL hasUsername;
+  BOOL hasPassword;
   BOOL hasHostPort;
   BOOL defaultToUserIfNoAt;
   BOOL defaultHostToLocal;
@@ -379,26 +383,26 @@ struct schemeStruct {
 #define FILE_SCHEME    1
 
 static schemeStruct const SchemeTable[] = {
-//  scheme       user   host   @def   defhost query  params frags  path   rel    port
-  { "http",      TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
-  { "https",     FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
-  { "gopher",    FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
-  { "wais",      FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
-  { "nntp",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
-  { "prospero",  FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
-  { "rtspu",     FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
-  { "ftp",       TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
-  { "telnet",    TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
-  { "mailto",    FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "news",      FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "h323",      TRUE,  TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
-  { "sip",       TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
-  { "tel",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { "fax",       FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { "callto",    FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
-  { NULL,        FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
+//  scheme       user   pass   host   @def   defhost query  params frags  path   rel    port
+  { "http",      TRUE,  TRUE,  TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
+  { "https",     FALSE, FALSE, TRUE,  FALSE, TRUE,   TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
+  { "gopher",    FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
+  { "wais",      FALSE, FALSE, TRUE,  FALSE, FALSE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
+  { "nntp",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
+  { "prospero",  FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
+  { "rtspu",     FALSE, FALSE, TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
+  { "ftp",       TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
+  { "telnet",    TRUE,  TRUE,  TRUE,  FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
+  { "mailto",    FALSE, FALSE, FALSE, FALSE, TRUE,   TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "news",      FALSE, FALSE, FALSE, FALSE, TRUE,   FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "h323",      TRUE,  FALSE, TRUE,  TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
+  { "sip",       TRUE,  TRUE,  TRUE,  FALSE, FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
+  { "tel",       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { "fax",       FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { "callto",    FALSE, FALSE, FALSE, TRUE,  FALSE,  FALSE, TRUE,  FALSE, FALSE, FALSE, 0                     },
+  { NULL,        FALSE, FALSE, FALSE, FALSE, FALSE,  FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
 static const schemeStruct * GetSchemeInfo(const PCaselessString & scheme)
@@ -714,10 +718,12 @@ void PURL::Parse(const char * cstr, const char * defaultScheme)
       url = PString::Empty();
 
     // if the URL is of type UserPasswordHostPort, then parse it
-    if (schemeInfo->hasUserPassword) {
+    if (schemeInfo->hasUsername) {
       // extract username and password
       PINDEX pos2 = uphp.Find('@');
-      PINDEX pos3 = uphp.Find(':');
+      PINDEX pos3 = P_MAX_INDEX;
+      if (schemeInfo->hasPassword)
+        pos3 = uphp.Find(':');
       switch (pos2) {
         case 0 :
           uphp.Delete(0, 1);
@@ -865,10 +871,10 @@ PString PURL::AsString(UrlFormat fmt) const
     if (schemeInfo->hasPath && schemeInfo->hasHostPort)
       str << "//";
 
-    if (schemeInfo->hasUserPassword) {
+    if (schemeInfo->hasUsername) {
       if (!username) {
         str << TranslateString(username, LoginTranslation);
-        if (!password)
+        if (schemeInfo->hasPassword && !password)
           str << ':' << TranslateString(password, LoginTranslation);
         str << '@';
       }
