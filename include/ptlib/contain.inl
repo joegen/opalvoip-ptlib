@@ -1,5 +1,5 @@
 /*
- * $Id: contain.inl,v 1.13 1994/01/13 08:42:29 robertj Exp $
+ * $Id: contain.inl,v 1.14 1994/01/15 02:48:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.inl,v $
- * Revision 1.13  1994/01/13 08:42:29  robertj
+ * Revision 1.14  1994/01/15 02:48:55  robertj
+ * Rearranged PString assignment operator for NT portability.
+ *
+ * Revision 1.13  1994/01/13  08:42:29  robertj
  * Fixed missing copy constuctor and assignment operator for PString.
  *
  * Revision 1.12  1994/01/13  05:33:41  robertj
@@ -188,7 +191,7 @@ PINLINE PCaselessString::PCaselessString(const PString & str)
   : PString(str) { }
 
 PINLINE PCaselessString & PCaselessString::operator=(const PString & str)
-  { return PString::operator=(str); }
+  { PString::operator=(str); return *this; }
 
 
 ///////////////////////////////////////////////////////////////////////////////
