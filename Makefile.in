@@ -27,6 +27,10 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.23  2004/05/03 12:01:23  csoutheren
+# Fixed install target
+# Updated configure
+#
 # Revision 1.22  2004/04/29 15:01:43  csoutheren
 # Fixed INSTALL var
 #
@@ -227,40 +231,46 @@ install:
 		     $(DESTDIR)$(PREFIX)/include/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib \
                      $(DESTDIR)$(PREFIX)/include/ptclib \
-                     $(DESTDIR)$(PREFIX)/share/pwlib/make \
-          ; do mkdir -p $$dir ; chmod 555 $$dir ; done )
+                     $(DESTDIR)$(PREFIX)/share/pwlib/make ; \
+		do mkdir -p $$dir ; chmod 555 $$dir ; \
+	done )
 	$(INSTALL) -m 444 lib/$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(DESTDIR)$(LIBDIR)
 	(cd $(DESTDIR)$(LIBDIR) ; \
-	rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
-	ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ \
-		$(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ \
+		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@ \
 	)
 	(cd $(DESTDIR)$(LIBDIR) ; \
-	rm -f  $(PTLIB_FILE).@MAJOR_VERSION@ ; \
-	ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ \
-		$(PTLIB_FILE).@MAJOR_VERSION@ \
+		rm -f  $(PTLIB_FILE).@MAJOR_VERSION@ ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(PTLIB_FILE).@MAJOR_VERSION@ \
 	)
 	(cd $(DESTDIR)$(LIBDIR) ; \
-	rm -f  $(PTLIB_FILE) ; \
-	ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ \
-		$(PTLIB_FILE) \
+		rm -f  $(PTLIB_FILE) ; \
+		ln -sf $(PTLIB_FILE).@MAJOR_VERSION@.@MINOR_VERSION@.@BUILD_NUMBER@ $(PTLIB_FILE) \
 	)
 	(cd $(DESTDIR)$(LIBDIR); \
-	rm -f  libpt.@SHAREDLIBEXT@ ; \
-	ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
+		rm -f  libpt.@SHAREDLIBEXT@ ; \
+		ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ifeq (1, $(HAS_PLUGINS))
-	$(INSTALL) -m 444 plugins/pwlib/*.so             $(DESTDIR)$(LIBDIR)
+	(for fn in plugins/pwlib/*.so ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(LIBDIR); \
+	done )
 endif
 	$(INSTALL) -m 444 include/ptlib.h                $(DESTDIR)$(PREFIX)/include
 	$(INSTALL) -m 444 include/ptbuildopts.h          $(DESTDIR)$(PREFIX)/include
-	$(INSTALL) -m 444 include/ptlib/*.h              $(DESTDIR)$(PREFIX)/include/ptlib
-	$(INSTALL) -m 444 include/ptlib/*.inl            $(DESTDIR)$(PREFIX)/include/ptlib
-	$(INSTALL) -m 444 include/ptlib/unix/ptlib/*.h   $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib
-	$(INSTALL) -m 444 include/ptlib/unix/ptlib/*.inl $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib
-	$(INSTALL) -m 444 include/ptclib/*.h             $(DESTDIR)$(PREFIX)/include/ptclib
-	$(INSTALL) -m 444 make/*.mak                     $(DESTDIR)$(PREFIX)/share/pwlib/make/
-	$(INSTALL) -m 555 make/ptlib-config              $(DESTDIR)$(PREFIX)/share/pwlib/make/
+	(for fn in include/ptlib/*.h include/ptlib/*.inl; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib; \
+	done)
+	(for fn in include/ptlib/unix/ptlib/*.h include/ptlib/unix/ptlib/*.inl ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib ; \
+	done)
+	(for fn in include/ptclib/*.h ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/include/ptclib; \
+	done)
+	(for fn in make/*.mak ; \
+		do $(INSTALL) -m 444 $$fn $(DESTDIR)$(PREFIX)/share/pwlib/make; \
+	done)
+	$(INSTALL) -m 555 make/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/
 	(cd $(DESTDIR)$(PREFIX)/bin; ln -snf ../share/pwlib/make/ptlib-config ptlib-config)
 
 uninstall:
