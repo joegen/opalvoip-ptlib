@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.9 1997/03/02 03:42:19 robertj Exp $
+ * $Id: httpsvc.h,v 1.10 1997/06/16 13:20:14 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.10  1997/06/16 13:20:14  robertj
+ * Fixed bug where PHTTPThread crashes on exit.
+ *
  * Revision 1.9  1997/03/02 03:42:19  robertj
  * Added error logging to standard HTTP Service HTTP Server.
  * Removed extraneous variables that set GIF file size to zero.
@@ -49,11 +52,7 @@
 
 /////////////////////////////////////////////////////////////////////
 
-class POrderPage;
-
 PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
-
-  friend class POrderPage;
 
   public:
     PHTTPServiceProcess(
@@ -73,12 +72,13 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
       PINDEX securedKeyCount = 0,
       const PTEACypher::Key * sigKey = NULL // Signature key for encryption of HTML files
     );
+    ~PHTTPServiceProcess();
 
     virtual void OnConfigChanged() = 0;
     virtual BOOL Initialise(const char * initMsg) = 0;
 
-    void BeginRestartSystem();
-    void CompleteRestartSystem();
+    BOOL ListenForHTTP(WORD port, BOOL startThread = TRUE);
+    BOOL ListenForHTTP(PSocket * listener, BOOL startThread = TRUE);
 
     virtual PString GetPageGraphic();
     void GetPageHeader(PHTML &);
@@ -96,6 +96,9 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
 
 
   protected:
+    PSocket  * httpListeningSocket;
+    PHTTPSpace httpNameSpace;
+
     PString    gifText;
 
     PString    email;
@@ -106,13 +109,19 @@ PDECLARE_CLASS(PHTTPServiceProcess, PServiceProcess)
     PTEACypher::Key signatureKey;
 
   private:
+    void ShutdownListener();
+    void BeginRestartSystem();
+    void CompleteRestartSystem();
+
     PThread *  restartThread;
+    PSemaphore httpThreadClosed;
+
+  friend class PConfigPage;
+  friend class PHTTPServiceThread;
 };
 
 
 /////////////////////////////////////////////////////////////////////
-
-class PTCPSocket;
 
 PDECLARE_CLASS(PHTTPServiceThread, PThread)
   public:
@@ -125,7 +134,7 @@ PDECLARE_CLASS(PHTTPServiceThread, PThread)
   protected:
     PHTTPServiceProcess & process;
     PSocket & listener;
-    PHTTPSpace & httpSpace;
+    PHTTPSpace & httpNameSpace;
 };
 
 
