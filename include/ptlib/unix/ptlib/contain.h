@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.19  2004/04/03 08:57:41  csoutheren
+ * Replaced pseudo-RTTI with real RTTI
+ *
  * Revision 1.18  2004/04/03 07:14:51  csoutheren
  * Remove no-rtti compiler flag
  * Added __USE_STL__ to allow interopability with STL and iostreams
@@ -129,4 +132,6 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 #if (__GNUC__ >= 3)
 #define	__USE_STL__
 #endif
+
+#define	P_HAS_TYPEINFO	1
 
