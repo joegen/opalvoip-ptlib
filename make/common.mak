@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.86  2003/10/03 00:36:59  dereksmithies
+# Fix generation of dependencies. Thanks to Vyacheslav Frolov
+#
 # Revision 1.85  2003/07/29 11:25:23  csoutheren
 # Added support for system swab function
 #
@@ -299,12 +302,12 @@ DEPS	 := $(patsubst %.dep, $(DEPDIR)/%.dep, $(notdir $(SRC_DEPS) $(DEPS)))
 #
 $(DEPDIR)/%.dep : %.cxx 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
-	@printf %s $(OBJDIR) > $@
+	@printf %s $(OBJDIR)/ > $@
 	$(CPLUS) $(STDCCFLAGS) -M $< >> $@
 
 $(DEPDIR)/%.dep : %.c 
 	@if [ ! -d $(DEPDIR) ] ; then mkdir -p $(DEPDIR) ; fi
-	@printf %s $(OBJDIR) > $@
+	@printf %s $(OBJDIR)/ > $@
 	$(CC) $(STDCCFLAGS) -M $< >> $@
 
 #
