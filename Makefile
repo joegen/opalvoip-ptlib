@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.15  2000/11/01 02:42:46  robertj
+# Added optnoshared to build all default target.
+#
 # Revision 1.14  2000/10/30 05:49:25  robertj
 # Made make all do bothdepend both
 #
@@ -88,7 +91,7 @@ ifdef GUI_TYPE
 SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
 
-all : bothdepend both
+all : bothdepend both optnoshared
 
 
 opt :
