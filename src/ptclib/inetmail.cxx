@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetmail.cxx,v $
+ * Revision 1.15  2000/11/09 06:01:58  robertj
+ * Added MIME version and content disposition to RFC822 class.
+ *
  * Revision 1.14  2000/11/09 05:50:23  robertj
  * Added RFC822 aware channel class for doing internet mail.
  *
@@ -1093,6 +1096,7 @@ void PPOP3Server::HandleDeleteMessage(PINDEX, const PString &)
 //////////////////////////////////////////////////////////////////////////////
 // PRFC822Channel
 
+const char PRFC822Channel::MimeVersionTag[] = "MIME_version";
 const char PRFC822Channel::FromTag[] = "From";
 const char PRFC822Channel::ToTag[] = "To";
 const char PRFC822Channel::CCTag[] = "cc";
@@ -1104,7 +1108,9 @@ const char PRFC822Channel::ReceivedTag[] = "Received";
 const char PRFC822Channel::MessageIDTag[] = "Message-ID";
 const char PRFC822Channel::MailerTag[] = "X-Mailer";
 const char PRFC822Channel::ContentTypeTag[] = "Content-Type";
+const char PRFC822Channel::ContentDispositionTag[] = "Content-Disposition";
 const char PRFC822Channel::ContentTransferEncodingTag[] = "Content-Transfer-Encoding";
+
 
 
 PRFC822Channel::PRFC822Channel(Direction direction)
@@ -1139,8 +1145,12 @@ BOOL PRFC822Channel::Write(const void * buf, PINDEX len)
     if (!headers.HasKey(FromTag) || !headers.HasKey(ToTag))
       return FALSE;
 
+    if (!headers.HasKey(MimeVersionTag))
+      headers.SetAt(MimeVersionTag, "1.0");
+
     if (!headers.HasKey(DateTag))
       headers.SetAt(DateTag, PTime().AsString());
+
     if (writePartHeaders)
       headers.SetAt(ContentTypeTag, "multipart/mixed; boundary=\""+boundaries[0]+'"');
     else if (!headers.HasKey(ContentTypeTag))
@@ -1274,6 +1284,12 @@ void PRFC822Channel::SetSubject(const PString & subject)
 void PRFC822Channel::SetContentType(const PString & contentType)
 {
   SetHeaderField(ContentTypeTag, contentType);
+}
+
+
+void PRFC822Channel::SetContentAttachment(const PString & filename)
+{
+  SetHeaderField(ContentDispositionTag, "attachment; filename=\"" + filename + '"');
 }
 
 
