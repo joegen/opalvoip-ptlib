@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.20  1998/12/16 12:40:41  robertj
+ * Fixed bug where .ini file is not written when service run as a daemon.
+ *
  * Revision 1.19  1998/12/16 09:57:37  robertj
  * Fixed bug in writing .ini file, not truncating file when shrinking.
  *
@@ -152,7 +155,6 @@ PDECLARE_CLASS(PXConfigWriteThread, PThread)
 
 
 PXConfigDictionary * configDict;
-static BOOL writeStopped;
 
 #define	new PNEW
 
@@ -182,7 +184,6 @@ void PXConfigWriteThread::Main()
     configDict->WriteChangedInstances(FALSE);   // check dictionary for items that need writing
 
   configDict->WriteChangedInstances(TRUE);
-  writeStopped = TRUE;
 }
 
 
@@ -415,8 +416,9 @@ PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, cons
 {
   mutex.Wait();
 
-  // if we have already stopped the write thread, then assert
-  PAssert(!writeStopped, "Attempt to open file config after write thread stopped");
+  // start write thread, if not already started
+  if (writeThread == NULL)
+    writeThread = new PXConfigWriteThread(stopConfigWriteThread);
 
   PXConfig * config = GetAt(key);
   if (config != NULL) 
@@ -427,10 +429,6 @@ PXConfig * PXConfigDictionary::GetFileConfigInstance(const PFilePath & key, cons
     config->AddInstance();
     SetAt(key, config);
   }
-
-  // start write thread, if not already started
-  if (writeThread == NULL)
-    writeThread = new PXConfigWriteThread(stopConfigWriteThread);
 
   mutex.Signal();
   return config;
