@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.73  2002/11/19 10:36:50  robertj
+ * Added functions to set anf get "file:" URL. as PFilePath and do the right
+ *   things with platform dependent directory components.
+ *
  * Revision 1.72  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -322,23 +326,26 @@ class schemeStruct {
     WORD defaultPort;
 };
 
-static schemeStruct const schemeInfo[] = {
-  { "http",      UserPasswordHostPort, TRUE, DEFAULT_HTTP_PORT },
-  { "https",     HostPort, TRUE, DEFAULT_HTTPS_PORT },
-  { "gopher",    HostPort, TRUE, DEFAULT_GOPHER_PORT },
-  { "wais",      HostPort, TRUE, DEFAULT_WAIS_PORT },
-  { "nntp",      HostPort, TRUE, DEFAULT_NNTP_PORT },
-  { "prospero",  HostPort, TRUE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      HostPort, TRUE, DEFAULT_RTSP_PORT },
-  { "rtspu",     HostPort, TRUE, DEFAULT_RTSPU_PORT },
+#define DEFAULT_SCHEME 0
+#define FILE_SCHEME    1
 
-  { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT },
-  { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT },
-  { "file",      NoHost,               TRUE },
-  { "mailto",    Other, FALSE},
-  { "news",      Other, FALSE},
-  { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT },
-  { "sip",       UserPasswordHostPort, FALSE, DEFAULT_SIP_PORT },
+static schemeStruct const schemeInfo[] = {
+  { "http",      UserPasswordHostPort, TRUE, DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      NoHost,               TRUE                        }, // Must be second
+  { "https",     HostPort,             TRUE, DEFAULT_HTTPS_PORT    },
+  { "gopher",    HostPort,             TRUE, DEFAULT_GOPHER_PORT   },
+  { "wais",      HostPort,             TRUE, DEFAULT_WAIS_PORT     },
+  { "nntp",      HostPort,             TRUE, DEFAULT_NNTP_PORT     },
+  { "prospero",  HostPort,             TRUE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      HostPort,             TRUE, DEFAULT_RTSP_PORT     },
+  { "rtspu",     HostPort,             TRUE, DEFAULT_RTSPU_PORT    },
+
+  { "ftp",       UserPasswordHostPort, TRUE, DEFAULT_FTP_PORT      },
+  { "telnet",    UserPasswordHostPort, TRUE, DEFAULT_TELNET_PORT   },
+  { "mailto",    Other,                FALSE                       },
+  { "news",      Other,                FALSE                       },
+  { "h323",      UserPasswordHostPort, FALSE, DEFAULT_H323_PORT    },
+  { "sip",       UserPasswordHostPort, FALSE, DEFAULT_SIP_PORT     },
   { NULL }
 };
 
@@ -357,9 +364,9 @@ static const schemeStruct & GetSchemeInfo(const PString & scheme)
 // PURL
 
 PURL::PURL()
+  : scheme(schemeInfo[DEFAULT_SCHEME].name),
+    port(0)
 {
-  scheme = schemeInfo[0].name;
-  port   = 0;
 }
 
 
@@ -372,6 +379,14 @@ PURL::PURL(const char * str)
 PURL::PURL(const PString & str)
 {
   Parse(str);
+}
+
+
+PURL::PURL(const PFilePath & path)
+  : scheme(schemeInfo[FILE_SCHEME].name),
+    port(0)
+{
+  SetPathStr(path);
 }
 
 
@@ -626,6 +641,21 @@ void PURL::Parse(const char * cstr)
 }
 
 
+PFilePath PURL::AsFilePath() const
+{
+  if (scheme != schemeInfo[FILE_SCHEME].name)
+    return PString::Empty();
+
+  PStringStream str;
+  for (PINDEX i = 0; i < path.GetSize(); i++) {
+    if (i > 0)
+      str << PDIR_SEPARATOR;
+    str << path[i];
+  }
+  return str;
+}
+
+
 PString PURL::AsString(UrlFormat fmt) const
 {
   PINDEX i;
@@ -641,10 +671,13 @@ PString PURL::AsString(UrlFormat fmt) const
     str << scheme << ':';
     const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
-    if (schemeInfo.hasDoubleSlash)
-      str << "//";
+    if (schemeInfo.hasDoubleSlash) {
+      str << '/';
+      if (schemeInfo.type != NoHost)
+        str << '/';
+    }
 
-    if (schemeInfo.type == Other) 
+    if (schemeInfo.type == Other)
       str << pathStr;
     else {
       if (schemeInfo.type == HostOnly)
@@ -739,22 +772,41 @@ void PURL::SetPort(WORD newPort)
 
 void PURL::SetPathStr(const PString & p)
 {
-  pathStr = p;
+  if (scheme == schemeInfo[FILE_SCHEME].name)
+    SetPathStr(PFilePath(p));
+  else {
+    pathStr = p;
 
-  path = pathStr.Tokenise("/", TRUE);
+    path = pathStr.Tokenise("/", TRUE);
 
-  if (path.GetSize() > 0 && path[0].IsEmpty()) 
-    path.RemoveAt(0);
+    if (path.GetSize() > 0 && path[0].IsEmpty()) 
+      path.RemoveAt(0);
 
-  for (PINDEX i = 0; i < path.GetSize(); i++) {
-    path[i] = UntranslateString(path[i], PathTranslation);
-    if (i > 0 && path[i] == ".." && path[i-1] != "..") {
-      path.RemoveAt(i--);
-      path.RemoveAt(i--);
+    for (PINDEX i = 0; i < path.GetSize(); i++) {
+      path[i] = UntranslateString(path[i], PathTranslation);
+      if (i > 0 && path[i] == ".." && path[i-1] != "..") {
+        path.RemoveAt(i--);
+        path.RemoveAt(i--);
+      }
     }
-  }
 
-  Recalculate();
+    Recalculate();
+  }
+}
+
+
+void PURL::SetPathStr(const PFilePath & p)
+{
+  if (scheme != schemeInfo[FILE_SCHEME].name)
+    SetPathStr((PString)p);
+  else {
+    PStringArray pathArray = p.GetDirectory().GetPath();
+    PINDEX sz = pathArray.GetSize();
+    pathArray.SetSize(sz+1);
+    pathArray[sz] = p.GetFileName();
+
+    SetPath(pathArray);
+  }
 }
 
 
