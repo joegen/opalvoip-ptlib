@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.1 1994/04/01 14:08:52 robertj Exp $
+ * $Id: args.h,v 1.2 1994/07/17 10:46:06 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.1  1994/04/01 14:08:52  robertj
+ * Revision 1.2  1994/07/17 10:46:06  robertj
+ * Changed to use container classes to plug memory leak.
+ *
+ * Revision 1.1  1994/04/01  14:08:52  robertj
  * Initial revision
  *
  */
@@ -21,9 +24,6 @@ PCLASS PArgList {
     PArgList();
     PArgList(int theArgc, char ** theArgv, const char * argumentSpec = NULL);
       // Create an argument list object
-
-    virtual ~PArgList();
-      // Destroy the argument list
 
     void SetArgs(int argc, char ** argv);
       // Set the internal arguments list.
@@ -74,13 +74,13 @@ PCLASS PArgList {
 
 
     // Member variables
-    int       arg_count;
-    char   ** arg_values;
+    int     arg_count;
+    char ** arg_values;
            
-    char   *  argumentSpec;
-    char   ** argumentList;
-    PINDEX *  optionCount;
-    PINDEX    shift;
+    PString      argumentSpec;
+    PStringArray argumentList;
+    PIntArray    optionCount;
+    PINDEX       shift;
 };
 
 
