@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.30  1999/05/12 01:40:47  robertj
+ * Fixed "unknown" response codes being passed on when used with an "unknown" command.
+ *
  * Revision 1.29  1999/05/11 12:23:22  robertj
  * Fixed search for persistent connection to accept kee-alive on multile MIME fields.
  *
@@ -591,7 +594,18 @@ void PHTTPServer::StartResponse(StatusCode code,
   if (connectInfo.majorVersion < 1) 
     return;
 
-  const httpStatusCodeStruct * statusInfo = GetStatusCodeStruct(code);
+  httpStatusCodeStruct dummyInfo;
+  const httpStatusCodeStruct * statusInfo;
+  if (connectInfo.commandCode < NumCommands)
+    statusInfo = GetStatusCodeStruct(code);
+  else {
+    dummyInfo.text = "";
+    dummyInfo.code = code;
+    dummyInfo.allowedBody = TRUE;
+    dummyInfo.majorVersion = connectInfo.majorVersion;
+    dummyInfo.minorVersion = connectInfo.minorVersion;
+    statusInfo = &dummyInfo;
+  }
 
   // output the command line
   *this << "HTTP/" << connectInfo.majorVersion << '.' << connectInfo.minorVersion
