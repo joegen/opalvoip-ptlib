@@ -29,8 +29,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.31  1999/02/06 05:49:44  robertj
-# BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+# Revision 1.32  1999/02/06 08:44:55  robertj
+# Fixed mistake in last change, library must be at end of link command.
+#
+# Revision 1.32  1999/02/06 08:44:55  robertj
+# Fixed mistake in last change, library must be at end of link command.
 #
 # Revision 1.31  1999/02/06 05:49:44  robertj
 # BeOS port effort by Yuri Kiryanov <yk@altavista.net>
@@ -351,7 +354,8 @@ STDCCFLAGS	:= $(STDCCFLAGS) -DPBYTE_ORDER=$(ENDIAN) -Wall
 
 # add OS directory to include path
 STDCCFLAGS	:= $(STDCCFLAGS) -I$(UNIX_INC_DIR)
-LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR) -l$(PTLIB) 
+
+
 # add library directory to library path and include the library
 LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
