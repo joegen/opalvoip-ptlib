@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.10 2000/08/04 12:52:18 robertj Exp $
+ * $Id: pssl.cxx,v 1.11 2000/08/25 08:11:02 robertj Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.11  2000/08/25 08:11:02  robertj
+ * Fixed OpenSSL support so can operate as a server channel.
+ *
  * Revision 1.10  2000/08/04 12:52:18  robertj
  * SSL changes, added error functions, removed need to have openssl include directory in app.
  *
@@ -117,45 +120,21 @@
 #include <openssl/buffer.h>
 
 
-PMutex PSSLChannel::initFlag;
-
-SSL_CTX * PSSLChannel::context = NULL;
-
-
 ///////////////////////////////////////////////////////////////////////////////
 
-extern "C" {
+PARRAY(PMutexArray, PMutex);
+static PMutexArray LockMutexes;
 
-void locking_callback(int mode, int type, const char * /* file */, int /* line */)
+static void LockingCallback(int mode, int n, const char * /*file*/, int /*line*/)
 {
-  static PMutex semaphores[CRYPTO_NUM_LOCKS];
-  if (mode & CRYPTO_LOCK) 
-    semaphores[type].Wait();
+  if ((mode & CRYPTO_LOCK) != 0)
+    LockMutexes[n].Wait();
   else
-    semaphores[type].Signal();
-}
-
-};
-
-#if 0
-static void thread_setup()
-{
-	CRYPTO_set_locking_callback((void (*)(int,int,const char *,int))locking_callback);
-}
-#endif
-
-void PSSLChannel::Cleanup()
-{
-	CRYPTO_set_locking_callback(NULL);
-  SSL_CTX_free(context);
+    LockMutexes[n].Signal();
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-
-extern "C" {
-
-static int verifyCallBack(int ok, X509_STORE_CTX * ctx)
+static int VerifyCallBack(int ok, X509_STORE_CTX * ctx)
 {
   X509 * err_cert = X509_STORE_CTX_get_current_cert(ctx);
   //int err         = X509_STORE_CTX_get_error(ctx);
@@ -170,8 +149,118 @@ static int verifyCallBack(int ok, X509_STORE_CTX * ctx)
   return ok;
 }
 
-};
 
+static PMutex InitialisationMutex;
+
+PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
+{
+  InitialisationMutex.Wait();
+
+  static BOOL needInitialisation = TRUE;
+  if (needInitialisation) {
+    SSL_load_error_strings();
+    SSLeay_add_all_algorithms();
+
+    LockMutexes.SetSize(CRYPTO_num_locks());
+    for (PINDEX i = 0; i < LockMutexes.GetSize(); i++)
+      LockMutexes.SetAt(i, new PMutex);
+
+    needInitialisation = FALSE;
+  }
+
+  InitialisationMutex.Signal();
+
+  // create the new SSL context
+  SSL_METHOD * meth = SSLv23_method();
+  context  = SSL_CTX_new(meth);
+  PAssert(context != NULL, "Cannot create master SSL context");
+
+  // Shutdown
+  SSL_CTX_set_quiet_shutdown(context, 1);
+
+  // Set default locations
+  PAssert(SSL_CTX_load_verify_locations(context, NULL, NULL) && 
+          SSL_CTX_set_default_verify_paths(context), "Cannot set CAfile and path");
+
+  if (sessionId != NULL) {
+    if (idSize == 0)
+      idSize = ::strlen((const char *)sessionId)+1;
+    SSL_CTX_set_session_id_context(context, (const BYTE *)sessionId, idSize);
+    SSL_CTX_sess_set_cache_size(context, 128);
+  }
+
+  // set default verify mode
+  SSL_CTX_set_verify(context, SSL_VERIFY_NONE, VerifyCallBack);
+
+  // set up multithread stuff
+  CRYPTO_set_locking_callback(LockingCallback);
+}
+
+
+PSSLContext::~PSSLContext()
+{
+  CRYPTO_set_locking_callback(NULL);
+  SSL_CTX_free(context);
+}
+
+
+BOOL PSSLContext::SetCAPath(const PDirectory & caPath)
+{
+  PString path = caPath.Left(caPath.GetLength()-1);
+  if (!SSL_CTX_load_verify_locations(context, NULL, path))
+    return FALSE;
+
+  return SSL_CTX_set_default_verify_paths(context);
+}
+
+
+BOOL PSSLContext::SetCAFile(const PFilePath & caFile)
+{
+  if (!SSL_CTX_load_verify_locations(context, caFile, NULL))
+    return FALSE;
+
+  return SSL_CTX_set_default_verify_paths(context);
+}
+
+
+static DetermineFileType(const PFilePath & filename, int fileType)
+{
+  if (fileType >= 0)
+    return fileType;
+
+  if (filename.GetType() *= ".pem")
+    return SSL_FILETYPE_PEM;
+
+  return SSL_FILETYPE_ASN1;
+}
+
+
+BOOL PSSLContext::UseCertificate(const PFilePath & certFile, int fileType)
+{
+  return SSL_CTX_use_certificate_file(context,
+                                      certFile,
+                                      DetermineFileType(certFile, fileType)) > 0;
+}
+
+
+BOOL PSSLContext::UsePrivateKey(const PFilePath & keyFile, int fileType)
+{
+  if (SSL_CTX_use_PrivateKey_file(context,
+                                  keyFile,
+                                  DetermineFileType(keyFile, fileType)) <= 0)
+    return FALSE;
+
+  return SSL_CTX_check_private_key(context);
+}
+
+
+BOOL PSSLContext::SetCipherList(const PString & ciphers)
+{
+  if (ciphers.IsEmpty())
+    return FALSE;
+
+  return SSL_CTX_set_cipher_list(context, ciphers);
+}
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -179,166 +268,38 @@ static int verifyCallBack(int ok, X509_STORE_CTX * ctx)
 //  SSLChannel
 //
 
-PSSLChannel::PSSLChannel()
+PSSLChannel::PSSLChannel(PSSLContext * ctx, BOOL autoDel)
 {
-  initFlag.Wait();
-
-  if (context == NULL) {
-
-    SSL_load_error_strings();
-    SSLeay_add_ssl_algorithms();
-    //SSLeay_add_all_algorithms();
-
-    // create the new SSL context
-    SSL_METHOD *meth = SSLv2_client_method();
-    context  = SSL_CTX_new(meth);
-    PAssert(context != NULL, "Cannot create master SSL context");
-
-    // set other stuff
-    SSL_CTX_set_options        (context, 0);
-    //SSL_CTX_set_quiet_shutdown (context, 1);
-    //SSL_CTX_sess_set_cache_size(context, 128);
-
-    // set default ciphers
-    //PConfig config(PConfig::Environment);
-    //PString str = config.GetString("SSL_CIPHER");
-    //if (!str.IsEmpty())
-    //  SSL_CTX_set_cipher_list(context, (char *)(const char *)str);
-
-    // set default verify mode
-    //SSL_CTX_set_verify(context, SSL_VERIFY_NONE, (verifyCallBackType *)verifyCallBack);
-
-    PAssert( //SSL_CTX_load_verify_locations(context,NULL,NULL/*CAfile,CApath*/) && 
-             SSL_CTX_set_default_verify_paths(context), "Cannot set CAfile and path");
-
-
-    //PAssert (X509_set_default_verify_paths(context->cert),
-    //        "SSL: Cannot load certificates via X509_set_default_verify_paths");
-
-    // set up multithread stuff
-    //thread_setup();
-
-    // and make sure everything gets torn-down correctly
-    atexit(Cleanup);
+  if (ctx != NULL) {
+    context = ctx;
+    autoDeleteContext = autoDel;
+  }
+  else {
+    context = new PSSLContext;
+    autoDeleteContext = TRUE;
   }
 
-  initFlag.Signal();
+  ssl = SSL_new(*context);
+}
 
-  // create an SSL context
-  ssl = SSL_new(context);
+
+PSSLChannel::PSSLChannel(PSSLContext & ctx)
+{
+  context = &ctx;
+  autoDeleteContext = FALSE;
+
+  ssl = SSL_new(*context);
 }
 
 
 PSSLChannel::~PSSLChannel()
 {
-  // free the SSL context
-  SSL_free(ssl);
-}
+  // free the SSL connection
+  if (ssl != NULL)
+    SSL_free(ssl);
 
-/////////////////////////////////////////////////
-
-int PSSLChannel::SetClientCertificate(const PString & privateCert)
-{
-  return SetClientCertificate((const char *)privateCert, (const char *)privateCert);
-}
-
-int PSSLChannel::SetClientCertificate(const PString & privateCert, const PString & privateKey)
-{
-  return SetClientCertificate((const char *)privateCert, (const char *)privateKey);
-}
-
-int PSSLChannel::SetClientCertificate(const char * certFile, const char * keyFile)
-{
-  // set up certificate and key 
-  if (certFile != NULL) {
-    if (!SSL_use_certificate_file(ssl, (char *)certFile, X509_FILETYPE_PEM))
-      return PSSLChannel::UnknownCertificate;
-
-    if (keyFile == NULL)
-      keyFile = certFile;
-
-    if (!SSL_use_RSAPrivateKey_file(ssl, (char *)keyFile, X509_FILETYPE_PEM))
-      return PSSLChannel::UnknownPrivateKey;
-
-    if (!SSL_check_private_key(ssl))
-      return PSSLChannel::PrivateKeyMismatch;
-
-  }
-  return PSSLChannel::CertificateOK;
-}
-
-/////////////////////////////////////////////////
-
-BOOL PSSLChannel::SetCAPath(const PDirectory & caPath)
-{
-  return SetCAPathAndFile((const char *)caPath, NULL);
-}
-
-BOOL PSSLChannel::SetCAFile(const PFilePath & caFile)
-{
-  return SetCAPathAndFile(NULL, (const char *)caFile);
-}
-
-BOOL PSSLChannel::SetCAPathAndFile(const PDirectory & caPath, const PFilePath & caFile)
-{
-  return SetCAPathAndFile((const char *)caPath, (const char *)caFile);
-}
-
-BOOL PSSLChannel::SetCAPathAndFile(const char * CApath, const char * CAfile)
-{
-  PString path = CApath;
-  if (path.Right(1)[0] == PDIR_SEPARATOR)
-    path = path.Left(path.GetLength()-1);
-
-  return SSL_CTX_load_verify_locations(context,
-                                       (char *)CAfile,
-                                       (char *)(const char *)path
-         ) && SSL_CTX_set_default_verify_paths(context);
-}
-
-/////////////////////////////////////////////////
-
-void PSSLChannel::SetVerifyMode(int mode)
-{
-  int verify;
-
-  switch (mode) {
-    default :
-    case VerifyNone:
-      verify = SSL_VERIFY_NONE;
-      break;
-
-    case VerifyPeer:
-      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
-      break;
-
-    case VerifyPeerMandatory:
-      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-  }
-
-  SSL_set_verify(ssl, verify, verifyCallBack);
-}
-
-
-/////////////////////////////////////////////////
-
-BOOL PSSLChannel::Accept(PChannel & channel)
-{
-  if (!Open(channel))
-    return FALSE;
-
-  // connect the SSL layer
-  return ConvertOSError(SSL_accept(ssl));
-}
-
-
-BOOL PSSLChannel::Connect(PChannel & channel)
-{
-  if (!Open(channel))
-    return FALSE;
-
-  // connect the SSL layer
-  return ConvertOSError(SSL_connect(ssl));
+  if (autoDeleteContext)
+    delete context;
 }
 
 
@@ -353,6 +314,7 @@ BOOL PSSLChannel::Read(void * buf, PINDEX len)
   lastReadCount = readResult;
   return TRUE;
 }
+
 
 BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 {
@@ -371,40 +333,22 @@ BOOL PSSLChannel::Write(const void * buf, PINDEX len)
 }
 
 
-BOOL PSSLChannel::RawRead(void * buf, PINDEX len)
+BOOL PSSLChannel::Close()
 {
-  return readChannel->Read(buf, len);
-}
-
-
-PINDEX PSSLChannel::RawGetLastReadCount() const
-{
-  return readChannel->GetLastReadCount();
-}
-
-
-BOOL PSSLChannel::RawWrite(const void * buf, PINDEX len)
-{
-  return writeChannel->Write(buf, len);
-}
-
-
-PINDEX PSSLChannel::RawGetLastWriteCount() const
-{
-  return writeChannel->GetLastWriteCount();
+  SSL_shutdown(ssl);
+  return PIndirectChannel::Close();
 }
 
 
 BOOL PSSLChannel::ConvertOSError(int error)
 {
-  long errCode = SSL_get_error(ssl, error);
-  if (errCode == SSL_ERROR_NONE) {
+  if (SSL_get_error(ssl, error) == SSL_ERROR_NONE) {
     osError = 0;
     lastError = NoError;
     return TRUE;
   }
 
-  osError = errCode|0x20000000;
+  osError = ERR_peek_error()|0x80000000;
   lastError = Miscellaneous;
   return FALSE;
 }
@@ -412,11 +356,104 @@ BOOL PSSLChannel::ConvertOSError(int error)
 
 PString PSSLChannel::GetErrorText() const
 {
-  if ((osError&0x20000000) == 0)
+  if ((osError&0x80000000) == 0)
     return PIndirectChannel::GetErrorText();
 
   char buf[200];
   return ERR_error_string(osError&0x1fffffff, buf);
+}
+
+
+BOOL PSSLChannel::Accept()
+{
+  if (IsOpen())
+    return ConvertOSError(SSL_accept(ssl));
+  return FALSE;
+}
+
+
+BOOL PSSLChannel::Accept(PChannel & channel)
+{
+  if (Open(channel))
+    return ConvertOSError(SSL_accept(ssl));
+  return FALSE;
+}
+
+
+BOOL PSSLChannel::Accept(PChannel * channel, BOOL autoDelete)
+{
+  if (Open(channel, autoDelete))
+    return ConvertOSError(SSL_accept(ssl));
+  return FALSE;
+}
+
+
+BOOL PSSLChannel::Connect()
+{
+  if (IsOpen())
+    return ConvertOSError(SSL_connect(ssl));
+  return FALSE;
+}
+
+
+BOOL PSSLChannel::Connect(PChannel & channel)
+{
+  if (Open(channel))
+    return ConvertOSError(SSL_connect(ssl));
+  return FALSE;
+}
+
+
+BOOL PSSLChannel::Connect(PChannel * channel, BOOL autoDelete)
+{
+  if (Open(channel, autoDelete))
+    return ConvertOSError(SSL_connect(ssl));
+  return FALSE;
+}
+
+
+PSSLChannel::CertificateStatus PSSLChannel::SetClientCertificate(const PString & privateCert)
+{
+  return SetClientCertificate(privateCert, privateCert);
+}
+
+
+PSSLChannel::CertificateStatus PSSLChannel::SetClientCertificate(const PString & privateCert,
+                                                                 const PString & privateKey)
+{
+  // set up certificate and key 
+  if (!SSL_use_certificate_file(ssl, privateCert, X509_FILETYPE_PEM))
+    return PSSLChannel::UnknownCertificate;
+
+  if (!SSL_use_RSAPrivateKey_file(ssl, privateKey, X509_FILETYPE_PEM))
+    return PSSLChannel::UnknownPrivateKey;
+
+  if (!SSL_check_private_key(ssl))
+    return PSSLChannel::PrivateKeyMismatch;
+
+  return PSSLChannel::CertificateOK;
+}
+
+
+void PSSLChannel::SetVerifyMode(VerifyMode mode)
+{
+  int verify;
+
+  switch (mode) {
+    default :
+    case VerifyNone:
+      verify = SSL_VERIFY_NONE;
+      break;
+
+    case VerifyPeer:
+      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE;
+      break;
+
+    case VerifyPeerMandatory:
+      verify = SSL_VERIFY_PEER | SSL_VERIFY_CLIENT_ONCE | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+  }
+
+  SSL_set_verify(ssl, verify, VerifyCallBack);
 }
 
 
@@ -468,26 +505,22 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
   int *ip;
 
   switch (cmd) {
-    //
-    // mandatory BIO commands
-    //
-//    case BIO_CTRL_SET:
     case BIO_C_SET_FD:
-      if (bio != NULL)
-        Psock_free(bio);
+      Psock_free(bio);
       bio->num      = *((int *)ptr);
       bio->shutdown = (int)num;
       bio->init     = 1;
       break;
 
-    case BIO_CTRL_GET:
+    case BIO_C_GET_FD:
       if (bio->init) {
-        ip = (int *)ptr;
-	      if (ip == NULL)
-	        ret = 0;
-	      else
-	        *ip = bio->num;
+	ip = (int *)ptr;
+	if (ip != NULL)
+          *ip = bio->num;
+	ret = bio->num;
       }
+      else
+        ret = -1;
       break;
 
     case BIO_CTRL_GET_CLOSE:
@@ -495,43 +528,18 @@ static long Psock_ctrl(BIO * bio, int cmd, long num, char * ptr)
       break;
 
     case BIO_CTRL_SET_CLOSE:
-      bio->shutdown=(int)num;
+      bio->shutdown = (int)num;
       break;
 
-    //
-    // optional BIO commands
-    //
-    case BIO_CTRL_RESET:
-      ret = 0;
-      break;
-
-    case BIO_CTRL_INFO:
-      ret = 0;
-      break;
-
-    case BIO_CTRL_EOF:
-      ret = 0;
-      break;
-
-    case BIO_CTRL_PUSH:
-      ret = 0;
-      break;
-
-    case BIO_CTRL_POP:
-      ret = 0;
-      break;
-
-    case BIO_CTRL_PENDING:
-      ret = 0;
-      break;
-
+    case BIO_CTRL_DUP:
     case BIO_CTRL_FLUSH:
-      break;
+      return 1;
 
+    // Other BIO commands, return 0
     default:
-      ret = 0;
-      break;
+      return 0;
   }
+
   return ret;
 }
 
@@ -552,11 +560,12 @@ static int Psock_read(BIO * bio, char * out, int outl)
   int ret = 0;
 
   if (out != NULL) {
-    BOOL b = PSSLSOCKET(bio)->RawRead(out, outl);
+    PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
+    BOOL b = chan->Read(out, outl);
     BIO_clear_retry_flags(bio);
     if (b) 
-      ret = PSSLSOCKET(bio)->RawGetLastReadCount();
-    else if (Psock_should_retry(PSSLSOCKET(bio)->GetErrorCode())) {
+      ret = chan->GetLastReadCount();
+    else if (Psock_should_retry(chan->GetErrorCode())) {
       BIO_set_retry_read(bio);
       ret = -1;
     }
@@ -570,23 +579,17 @@ static int Psock_write(BIO * bio, char * in, int inl)
   int ret = 0;
 
   if (in != NULL) {
-    BOOL b = PSSLSOCKET(bio)->RawWrite(in, inl);
+    PChannel * chan = PSSLSOCKET(bio)->GetReadChannel();
+    BOOL b = chan->Write(in, inl);
     BIO_clear_retry_flags(bio);
-    bio->flags &= ~(BIO_FLAGS_READ|BIO_FLAGS_WRITE|BIO_FLAGS_SHOULD_RETRY);
     if (b)
-      ret = PSSLSOCKET(bio)->RawGetLastWriteCount();
-    else if (Psock_should_retry(PSSLSOCKET(bio)->GetErrorCode())) {
+      ret = chan->GetLastWriteCount();
+    else if (Psock_should_retry(chan->GetErrorCode())) {
       BIO_set_retry_write(bio);
       ret = -1;
     }
   }
   return(ret);
-}
-
-
-static int Psock_gets(BIO *,char *, int)
-{
-  return -1;
 }
 
 
@@ -610,7 +613,7 @@ static BIO_METHOD methods_Psock =
   (ifptr)Psock_write,
   (ifptr)Psock_read,
   (ifptr)Psock_puts,
-  (ifptr)Psock_gets, 
+  NULL,
   (lfptr)Psock_ctrl,
   (ifptr)Psock_new,
   (ifptr)Psock_free
