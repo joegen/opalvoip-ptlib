@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.29 1997/07/08 13:13:46 robertj Exp $
+ * $Id: pprocess.h,v 1.30 1998/03/20 03:16:10 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.30  1998/03/20 03:16:10  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.29  1997/07/08 13:13:46  robertj
  * DLL support.
  *
@@ -100,7 +103,7 @@
 #pragma interface
 #endif
 
-#include <semaphor.h>
+#include <mutex.h>
 
 
 /*$MACRO PCREATE_PROCESS(cls)
@@ -163,7 +166,7 @@ class PTimerList : PInternalTimerList // Want this to be private
     // Overrides for mutex
 
   private:
-    PSemaphore    mutex;
+    PMutex mutex;
     // Mutual exclusion for multi tasking
 
     PTimeInterval lastSample;
