@@ -1,5 +1,5 @@
 /*
- * $Id: pstring.h,v 1.16 1996/01/02 12:04:31 robertj Exp $
+ * $Id: pstring.h,v 1.17 1996/01/23 13:15:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,11 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: pstring.h,v $
+ * Revision 1.17  1996/01/23 13:15:17  robertj
+ * Added Replace() function to strings.
+ * Mac Metrowerks compiler support.
+ * String searching algorithm rewrite.
+ *
  * Revision 1.16  1996/01/02 12:04:31  robertj
  * Mac OS compatibility changes.
  * Removed requirement that PArray elements have parameterless constructor..
@@ -582,15 +587,15 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
      */
 
 
-    virtual PINDEX Find(
+    PINDEX Find(
       char ch,              // Character to search for in string.
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
-    virtual PINDEX Find(
+    PINDEX Find(
       const PString & str,  // String to search for in string.
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
-    virtual PINDEX Find(
+    PINDEX Find(
       const char * cstr,    // C string to search for in string.
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
@@ -609,15 +614,15 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        character or substring is not in the string.
      */
 
-    virtual PINDEX FindLast(
+    PINDEX FindLast(
       char ch,                     // Character to search for in string.
       PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
     ) const;
-    virtual PINDEX FindLast(
+    PINDEX FindLast(
       const PString & str,         // String to search for in string.
       PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
     ) const;
-    virtual PINDEX FindLast(
+    PINDEX FindLast(
       const char * cstr,           // C string to search for in string.
       PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
     ) const;
@@ -638,11 +643,11 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
        character or substring is not in the string.
      */
 
-    virtual PINDEX FindOneOf(
+    PINDEX FindOneOf(
       const PString & set,  // String of characters to search for in string.
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
-    virtual PINDEX FindOneOf(
+    PINDEX FindOneOf(
       const char * cset,    // C string of characters to search for in string.
       PINDEX offset = 0     // Offset into string to begin search.
     ) const;
@@ -662,15 +667,35 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
      */
 
 
-    void Insert(
+    void Replace(
+      const PString & target,   // String to be replaced in string.
+      const PString & subs,     // String to do replace in string.
+      BOOL all = FALSE,         // Replace all occurrences of string.
+      PINDEX offset = 0         // Offset into string to begin search.
+    );
+    /* Locate the substring within the string and replace it with the specifed
+       substring. The search will begin at the character offset provided.
+
+       If <CODE>offset</CODE> is beyond the length of the string, then the
+       function will do nothing.
+
+       The matching will be for identical character or string. If a search
+       ignoring case is required then the string should be converted to a
+       <A>PCaselessString</A> before the search is made.
+     */
+
+    void Splice(
       const PString & str,  // Substring to insert.
-      PINDEX pos            // Position in string to insert the substring.
+      PINDEX pos,           // Position in string to insert the substring.
+      PINDEX len = 0        // Length of section to remove.
     );
-    void Insert(
+    void Splice(
       const char * cstr,    // Substring to insert.
-      PINDEX pos            // Position in string to insert the substring.
+      PINDEX pos,           // Position in string to insert the substring.
+      PINDEX len = 0        // Length of section to remove.
     );
-    /* Insert the substring into the string.
+    /* Splice the string into the current string at the specified position. The
+       specified number of bytes are removed from the string.
 
        Note that this function will break the current instance from multiple
        references to the string. A new string buffer is allocated and the data
@@ -1020,11 +1045,16 @@ PDECLARE_CLASS(PString, PSTRING_ANCESTOR_CLASS)
 
   protected:
     virtual Comparison InternalCompare(
+      PINDEX offset,      // Offset into string to compare.
+      char c              // Character to compare against.
+    ) const;
+    virtual Comparison InternalCompare(
+      PINDEX offset,      // Offset into string to compare.
+      PINDEX length,      // Number of characters to compare.
       const char * cstr   // C string to compare against.
     ) const;
     /* Internal function to compare the current string value against the
-       specified C string. This is a wrapper araound the standard C libary
-       function <CODE>strcmp()</CODE>.
+       specified C string.
 
        <H2>Returns:</H2>
        relative rank of the two strings.
@@ -1104,88 +1134,22 @@ PDECLARE_CLASS(PCaselessString, PString)
      */
 
 
-  // Overrides from class PString
-    virtual PINDEX Find(
-      char ch,              // Character to search for in string.
-      PINDEX offset = 0     // Offset into string to begin search.
-    ) const;
-    virtual PINDEX Find(
-      const PString & str,  // String to search for in string.
-      PINDEX offset = 0     // Offset into string to begin search.
-    ) const;
-    virtual PINDEX Find(
-      const char * cstr,    // C string to search for in string.
-      PINDEX offset = 0     // Offset into string to begin search.
-    ) const;
-    /* Locate the position within the string of the character or substring. The
-       search will begin at the character offset provided. The case of either
-       string or character is ignored.
-
-       If <CODE>offset</CODE> is beyond the length of the string, then the
-       function will always return <CODE>P_MAX_INDEX</CODE>.
-       
-       <H2>Returns:</H2>
-       position of character or substring in the string, or P_MAX_INDEX if the
-       character or substring is not in the string.
-     */
-
-    virtual PINDEX FindLast(
-      char ch,                     // Character to search for in string.
-      PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
-    ) const;
-    virtual PINDEX FindLast(
-      const PString & str,         // String to search for in string.
-      PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
-    ) const;
-    virtual PINDEX FindLast(
-      const char * cstr,           // C string to search for in string.
-      PINDEX offset = P_MAX_INDEX  // Offset into string to begin search.
-    ) const;
-    /* Locate the position within the string of the last matching character or
-       substring. The search will begin at the character offset provided,
-       moving backward through the string. The case of either string or
-       character is ignored.
-
-       If <CODE>offset</CODE> is beyond the length of the string, then the
-       search begins at the end of the string. If <CODE>offset</CODE> is zero
-       then the function always returns <CODE>P_MAX_INDEX</CODE>.
-
-       <H2>Returns:</H2>
-       position of character or substring in the string, or P_MAX_INDEX if the
-       character or substring is not in the string.
-     */
-
-    virtual PINDEX FindOneOf(
-      const PString & set,  // String of characters to search for in string.
-      PINDEX offset = 0     // Offset into string to begin search.
-    ) const;
-    virtual PINDEX FindOneOf(
-      const char * cset,    // C string of characters to search for in string.
-      PINDEX offset = 0     // Offset into string to begin search.
-    ) const;
-    /* Locate the position within the string of one of the characters in the
-       set. The search will begin at the character offset provided. The case of
-       either string or character set is ignored.
-
-       If <CODE>offset</CODE> is beyond the length of the string, then the
-       function will always return <CODE>P_MAX_INDEX</CODE>.
-       
-       <H2>Returns:</H2>
-       position of character in the string, or P_MAX_INDEX if no characters
-       from the set are in the string.
-     */
-
-
   protected:
+  // Overrides from class PString
     virtual Comparison InternalCompare(
+      PINDEX offset,      // Offset into string to compare.
+      char c              // Character to compare against.
+    ) const;
+    virtual Comparison InternalCompare(
+      PINDEX offset,      // Offset into string to compare.
+      PINDEX length,      // Number of characters to compare.
       const char * cstr   // C string to compare against.
     ) const;
     /* Internal function to compare the current string value against the
-       specified C string. This is a wrapper araound the standard C libary
-       function <CODE>stricmp()</CODE> or <CODE>strcasecmp()</CODE>.
+       specified C string.
 
        <H2>Returns:</H2>
-       relative rank of the two strings.
+       relative rank of the two strings or characters.
      */
 
     PCaselessString(int dummy, const PCaselessString * str);
@@ -1531,11 +1495,11 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       : PAbstractDictionary(dummy, c) { }
 
   private:
-    PObject * GetAt(PINDEX) const { return NULL; }
-    PObject * GetAt(const PObject &) const { return NULL; }
-    BOOL SetAt(PINDEX, PObject *) { return FALSE; }
-    BOOL SetAt(const PObject &, PObject *) { return FALSE; }
-    BOOL SetDataAt(PINDEX, PObject *) { return FALSE; }
+    PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); }
+    PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); }
+    BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); }
+    BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); }
+    BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); }
 };
 
 
@@ -1560,12 +1524,12 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
       : PStringDictionary<K>(dummy, c) { } \
   public: \
     cls() \
-      : PDictionary<K>() { } \
+      : PStringDictionary<K>() { } \
     virtual PObject * Clone() const \
       { return PNEW cls(0, this); } \
 
 
-/*$MACRO PSTRING_DICTIONARY(cls, K, D)
+/*$MACRO PSTRING_DICTIONARY(cls, K)
    This macro is used to declare a descendent of PAbstractDictionary class,
    customised for a particular key type <B>K</B> and data object type
    <A>PString</A>. This macro closes the class declaration off so no additional
@@ -1585,6 +1549,12 @@ PDECLARE_CLASS(PStringDictionary, PAbstractDictionary)
 
 #define PDECLARE_STRING_DICTIONARY(cls, K) \
   PDECLARE_CLASS(cls, PAbstractDictionary) \
+  private: \
+    PObject * GetAt(PINDEX idx) const { return PAbstractDictionary::GetAt(idx); } \
+    PObject * GetAt(const PObject & key) const { return PAbstractDictionary::GetAt(key); } \
+    BOOL SetAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetAt(idx, obj); } \
+    BOOL SetAt(const PObject & key, PObject * obj) { return PAbstractDictionary::SetAt(key, obj); } \
+    BOOL SetDataAt(PINDEX idx, PObject * obj) { return PAbstractDictionary::SetDataAt(idx, obj); } \
   protected: \
     inline cls(int dummy, const cls * c) \
       : PAbstractDictionary(dummy, c) { } \
