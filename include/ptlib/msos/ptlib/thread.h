@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.18  1999/08/25 02:41:16  robertj
+ * Fixed problem with creating windows in background threads, not happening until have a message sent.
+ *
  * Revision 1.17  1998/11/30 02:55:41  robertj
  * New directory structure
  *
@@ -113,6 +116,7 @@ extern "C" void __cdecl longjmp(jmp_buf, int);
 #if defined(P_PLATFORM_HAS_THREADS)
   public:
     HANDLE GetHandle() const { return threadHandle; }
+    UINT GetThreadId() const { return threadId; }
 
   protected:
     HANDLE threadHandle;
