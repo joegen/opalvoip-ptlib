@@ -2894,7 +2894,6 @@ EXPORTS
     ?Move@PWin32OidBuffer@@QAEXPAEK@Z @2397 NONAME ;public: void __thiscall PWin32OidBuffer::Move(unsigned char *,unsigned long)
     ?Net2Host@PSocket@@SAGG@Z @1930 NONAME ;public: static unsigned short __cdecl PSocket::Net2Host(unsigned short)
     ?Next@PDirectory@@QAEHXZ @1931 NONAME ;public: int __thiscall PDirectory::Next(void)
-    ?nil@@3VElement@PAbstractSortedList@@A @1932 NONAME ;class PAbstractSortedList::Element  nil
     ?OnContinue@PServiceProcess@@UAEXXZ @1933 NONAME ;public: virtual void __thiscall PServiceProcess::OnContinue(void)
     ?OnControl@PServiceProcess@@UAEXXZ @1934 NONAME ;public: virtual void __thiscall PServiceProcess::OnControl(void)
     ?OnOpen@PIndirectChannel@@MAEHXZ @1935 NONAME ;protected: virtual int __thiscall PIndirectChannel::OnOpen(void)
