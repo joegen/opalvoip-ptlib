@@ -5,7 +5,7 @@
  *
  * Portable Windows Library
  *
- * Copyright (c) 1993-1998 Equivalence Pty. Ltd.
+ * Copyright (c) 1993-2002 Equivalence Pty. Ltd.
  *
  * The contents of this file are subject to the Mozilla Public License
  * Version 1.0 (the "License"); you may not use this file except in
@@ -21,12 +21,12 @@
  *
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
- * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
- * All Rights Reserved.
- *
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.45  2002/11/06 22:47:25  robertj
+ * Fixed header comment (copyright etc)
+ *
  * Revision 1.44  2002/10/10 04:43:44  robertj
  * VxWorks port, thanks Martijn Roest
  *
