@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.43  2003/11/23 22:17:35  dsandras
+ * Added YUV420P to BGR24 and BGR32 conversion.
+ *
  * Revision 1.42  2003/11/19 04:30:15  csoutheren
  * Changed to support video output plugins
  *
@@ -390,6 +393,7 @@ static struct {
   { "BGR24",   24 },
   { "BGR24F",  24 },
   { "RGB32",   32 },
+  { "BGR32",   32 },
   { "RGB32F",  32 },
   { "YUV422",  16 },
   { "YUV422P", 16 },

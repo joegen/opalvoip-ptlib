@@ -26,6 +26,9 @@
  *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.35  2003/11/23 22:17:35  dsandras
+ * Added YUV420P to BGR24 and BGR32 conversion.
+ *
  * Revision 1.34  2003/06/14 02:57:36  rjongbloed
  * REmoved redundent parameter, grey scale does not have rgb increment!
  *
@@ -162,6 +165,7 @@ PSYNONYM_COLOUR_CONVERTER(RGB24F, RGB24F);
 PSYNONYM_COLOUR_CONVERTER(BGR24,  BGR24);
 PSYNONYM_COLOUR_CONVERTER(BGR24F, BGR24F);
 PSYNONYM_COLOUR_CONVERTER(RGB32,  RGB32);
+PSYNONYM_COLOUR_CONVERTER(BGR32,  BGR32);
 PSYNONYM_COLOUR_CONVERTER(RGB32F, RGB32F);
 PSYNONYM_COLOUR_CONVERTER(YUV411P,YUV411P);
 PSYNONYM_COLOUR_CONVERTER(YUV420P,YUV420P);
@@ -201,20 +205,23 @@ class PStandardColourConverter : public PColourConverter
       const BYTE * rgb,
       BYTE * yuv,
       unsigned rgbIncrement,
-      BOOL flipVertical
+      BOOL flipVertical,
+      BOOL flipBR
     ) const;
     void RGBtoYUV420PWithResize(
       const BYTE * rgb,
       BYTE * yuv,
       unsigned rgbIncrement,
-      BOOL flipVertical
+      BOOL flipVertical,
+      BOOL flipBR
     ) const;
     BOOL RGBtoYUV420P(
       const BYTE * rgb,
       BYTE * yuv,
       PINDEX * bytesReturned,
       unsigned rgbIncrement,
-      BOOL flipVertical
+      BOOL flipVertical,
+      BOOL flipBR
     ) const;
     BOOL YUV420PtoRGB(
       const BYTE * yuv,
@@ -532,7 +539,8 @@ BOOL PStandardColourConverter::GreytoYUV420P(const BYTE * grey,
 void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
                                                     BYTE * yuv,
                                                     unsigned rgbIncrement,
-                                                    BOOL flip) const
+                                                    BOOL flip,
+						    BOOL flipBR) const
 {
   const unsigned planeSize = srcFrameWidth*srcFrameHeight;
   const unsigned halfWidth = srcFrameWidth >> 1;
@@ -552,10 +560,26 @@ void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
       rgbIndex = rgb + (srcFrameWidth*(srcFrameHeight-1-y)*rgbIncrement);
 
     for (unsigned x = 0; x < srcFrameWidth; x+=2) {
-      rgbtoy(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline);
+      if (!flipBR) {
+	
+	rgbtoy(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline);
+      }
+      else {
+
+	rgbtoy(rgbIndex[2], rgbIndex[1], rgbIndex[0],*yline);
+      }
+      
       rgbIndex += rgbIncrement;
       yline++;
-      rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+      if (!flipBR) {
+	
+	rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+      }
+      else {
+
+	rgbtoyuv(rgbIndex[2], rgbIndex[1], rgbIndex[0],*yline, *uline, *vline);
+      }
+
       rgbIndex += rgbIncrement;
       yline++;
       uline++;
@@ -570,7 +594,8 @@ void PStandardColourConverter::RGBtoYUV420PSameSize(const BYTE * rgb,
 void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
                                                       BYTE * yuv,
                                                       unsigned rgbIncrement,
-						      BOOL   flip) const
+						      BOOL   flip,
+						      BOOL flipBR) const
 {
   int planeSize = dstFrameWidth*dstFrameHeight;
   const int halfWidth = dstFrameWidth >> 1;
@@ -594,12 +619,24 @@ void PStandardColourConverter::RGBtoYUV420PWithResize(const BYTE * rgb,
     if (flip)
       rgbIndex = rgb + (srcFrameWidth*(min_height-1-y)*rgbIncrement); 
 
-    for (unsigned x = 0; x < min_width; x+=2) 
-    {
-     rgbtoy(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline);
+    for (unsigned x = 0; x < min_width; x+=2) {
+      if (!flipBR) {
+	rgbtoy(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline);
+      }
+      else {
+	rgbtoy(rgbIndex[2], rgbIndex[1], rgbIndex[0],*yline);
+      }
      rgbIndex += rgbIncrement;
      yline++;
-     rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+     if (!flipBR) {
+       
+       rgbtoyuv(rgbIndex[0], rgbIndex[1], rgbIndex[2],*yline, *uline, *vline);
+     }
+     else {
+       
+       rgbtoyuv(rgbIndex[2], rgbIndex[1], rgbIndex[0],*yline, *uline, *vline);
+     }
+     
      rgbIndex += rgbIncrement;
      yline++;
      uline++;
@@ -636,15 +673,16 @@ BOOL PStandardColourConverter::RGBtoYUV420P(const BYTE * rgb,
                                             BYTE * yuv,
                                             PINDEX * bytesReturned,
                                             unsigned rgbIncrement,
-                                            BOOL flip) const
+                                            BOOL flip,
+					    BOOL flipBR) const
 {
   if (rgb == yuv)
     return FALSE; // Cannot do in place conversion
 
   if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
-    RGBtoYUV420PSameSize(rgb, yuv, rgbIncrement, flip);
+    RGBtoYUV420PSameSize(rgb, yuv, rgbIncrement, flip, flipBR);
   else
-    RGBtoYUV420PWithResize(rgb, yuv, rgbIncrement, flip);
+    RGBtoYUV420PWithResize(rgb, yuv, rgbIncrement, flip, flipBR);
 
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
@@ -661,19 +699,31 @@ PSTANDARD_COLOUR_CONVERTER(Grey,YUV420P)
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3,  doVFlip);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3,  doVFlip, FALSE);
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(BGR24,YUV420P)
+{
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3,  doVFlip, TRUE);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, FALSE);
+}
+
+
+PSTANDARD_COLOUR_CONVERTER(BGR32,YUV420P)
+{
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, TRUE);
 }
 
 
 PSTANDARD_COLOUR_CONVERTER(RGB24F,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 3, doVFlip, FALSE);
 }
 
 
@@ -685,7 +735,7 @@ PSTANDARD_COLOUR_CONVERTER(GreyF,YUV420P)
 
 PSTANDARD_COLOUR_CONVERTER(RGB32F,YUV420P)
 {
-  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip);
+  return RGBtoYUV420P(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, FALSE);
 }
 
 
@@ -937,6 +987,11 @@ PSTANDARD_COLOUR_CONVERTER(YUV420P,BGR24)
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB32)
 {
   return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, FALSE);
+}
+
+PSTANDARD_COLOUR_CONVERTER(YUV420P,BGR32)
+{
+  return YUV420PtoRGB(srcFrameBuffer, dstFrameBuffer, bytesReturned, 4, doVFlip, TRUE);
 }
 
 PSTANDARD_COLOUR_CONVERTER(YUV420P,RGB24F)
