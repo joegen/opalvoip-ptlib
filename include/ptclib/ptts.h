@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.h,v $
+ * Revision 1.6  2004/07/07 07:18:43  csoutheren
+ * Removed warnings on Linux from Windows static global hacks
+ *
  * Revision 1.5  2004/07/06 10:12:51  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -86,11 +89,13 @@ class PTextToSpeech : public PObject
     virtual BOOL Speak      (const PString & text, TextType hint = Default) = 0;
 };
 
-#ifndef P_DISABLE_FACTORY_INSTANCES
-#  ifndef  P_FACTORY_INSTANCE_PTextToSpeech
-#    define P_FACTORY_INSTANCE_PTextToSpeech 1
+#ifdef _WIN32
+#  ifndef P_DISABLE_FACTORY_INSTANCES
+#    ifndef  P_FACTORY_INSTANCE_PTextToSpeech
+#      define P_FACTORY_INSTANCE_PTextToSpeech 1
 #      pragma message("Including PTextToSpeech factory loader")
        PLOAD_FACTORY(PTextToSpeech, PString)
+#    endif
 #  endif
 #endif
 
