@@ -138,6 +138,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "Protocols"=.\src\ptlib\msos\Protocols.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "pwrc"=.\Tools\PWRc\pwrc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -172,6 +184,9 @@ Package=<4>
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name PTLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name Protocols
     End Project Dependency
 }}}
 
