@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.76  2004/04/03 06:54:30  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.75  2004/03/20 09:08:15  rjongbloed
  * Changed interaction between PTrace and PSystemLog so that the tracing code does
  *   not need to know about the system log, thus reducing the code footprint for most apps.
@@ -280,10 +283,15 @@
 #include <commdlg.h>
 
 #include <process.h>
-#include <fstream.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <io.h>
+
+#ifdef __USE_STL__
+#include <fstream>
+#else
+#include <fstream.h>
+#endif
 
 #include <ptlib/svcproc.h>
 #include <ptlib/msos/ptlib/debstrm.h>

@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptlib.cxx,v $
+ * Revision 1.71  2004/04/03 06:54:30  rjongbloed
+ * Many and various changes to support new Visual C++ 2003
+ *
  * Revision 1.70  2003/09/26 13:46:18  rjongbloed
  * Fixed problem in Win32 NTFS security support, crashes if file has no security at all.
  *
@@ -307,7 +310,8 @@ static void GetDigits(BOOL sign, istream & s, char * buffer)
 {
   PINDEX count = 0;
 
-  s.eatwhite();
+  while (isspace(s.peek()))
+    s.get();
 
   if (s.peek() == '+')
     s.get(); // Skip leading '+'
