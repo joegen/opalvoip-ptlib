@@ -2831,47 +2831,26 @@ EOF
 fi
 done
 
-echo "$as_me:2834: checking for /proc/net/if_inet6" >&5
-echo $ECHO_N "checking for /proc/net/if_inet6... $ECHO_C" >&6
-if test "${ac_cv_file__proc_net_if_inet6+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  test "$cross_compiling" = yes &&
-  { { echo "$as_me:2840: error: cannot check for file existence when cross compiling" >&5
-echo "$as_me: error: cannot check for file existence when cross compiling" >&2;}
-   { (exit 1); exit 1; }; }
-if test -r "/proc/net/if_inet6"; then
-  ac_cv_file__proc_net_if_inet6=yes
-else
-  ac_cv_file__proc_net_if_inet6=no
-fi
-fi
-echo "$as_me:2849: result: $ac_cv_file__proc_net_if_inet6" >&5
-echo "${ECHO_T}$ac_cv_file__proc_net_if_inet6" >&6
-if test $ac_cv_file__proc_net_if_inet6 = yes; then
-  HAS_IPV6=1
-fi
-
 for ac_header in linux/in6.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
-echo "$as_me:2858: checking for $ac_header" >&5
+echo "$as_me:2837: checking for $ac_header" >&5
 echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
-#line 2864 "configure"
+#line 2843 "configure"
 #include "confdefs.h"
 #include <$ac_header>
 _ACEOF
-if { (eval echo "$as_me:2868: \"$ac_cpp conftest.$ac_ext\"") >&5
+if { (eval echo "$as_me:2847: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
   ac_status=$?
   egrep -v '^ *\+' conftest.er1 >conftest.err
   rm -f conftest.er1
   cat conftest.err >&5
-  echo "$as_me:2874: \$? = $ac_status" >&5
+  echo "$as_me:2853: \$? = $ac_status" >&5
   (exit $ac_status); } >/dev/null; then
   if test -s conftest.err; then
     ac_cpp_err=$ac_c_preproc_warn_flag
@@ -2890,7 +2869,7 @@ else
 fi
 rm -f conftest.err conftest.$ac_ext
 fi
-echo "$as_me:2893: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "$as_me:2872: result: `eval echo '${'$as_ac_Header'}'`" >&5
 echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
 if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<EOF
@@ -2908,23 +2887,23 @@ EOF
 
 fi
 
-echo "$as_me:2911: checking for linux/videodev.h" >&5
+echo "$as_me:2890: checking for linux/videodev.h" >&5
 echo $ECHO_N "checking for linux/videodev.h... $ECHO_C" >&6
 if test "${ac_cv_header_linux_videodev_h+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   cat >conftest.$ac_ext <<_ACEOF
-#line 2917 "configure"
+#line 2896 "configure"
 #include "confdefs.h"
 #include <linux/videodev.h>
 _ACEOF
-if { (eval echo "$as_me:2921: \"$ac_cpp conftest.$ac_ext\"") >&5
+if { (eval echo "$as_me:2900: \"$ac_cpp conftest.$ac_ext\"") >&5
   (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
   ac_status=$?
   egrep -v '^ *\+' conftest.er1 >conftest.err
   rm -f conftest.er1
   cat conftest.err >&5
-  echo "$as_me:2927: \$? = $ac_status" >&5
+  echo "$as_me:2906: \$? = $ac_status" >&5
   (exit $ac_status); } >/dev/null; then
   if test -s conftest.err; then
     ac_cpp_err=$ac_c_preproc_warn_flag
@@ -2943,7 +2922,7 @@ else
 fi
 rm -f conftest.err conftest.$ac_ext
 fi
-echo "$as_me:2946: result: $ac_cv_header_linux_videodev_h" >&5
+echo "$as_me:2925: result: $ac_cv_header_linux_videodev_h" >&5
 echo "${ECHO_T}$ac_cv_header_linux_videodev_h" >&6
 if test $ac_cv_header_linux_videodev_h = yes; then
   HAS_LINUX_VIDEODEV_H=1
@@ -3048,7 +3027,7 @@ DEFS=-DHAVE_CONFIG_H
 : ${CONFIG_STATUS=./config.status}
 ac_clean_files_save=$ac_clean_files
 ac_clean_files="$ac_clean_files $CONFIG_STATUS"
-{ echo "$as_me:3051: creating $CONFIG_STATUS" >&5
+{ echo "$as_me:3030: creating $CONFIG_STATUS" >&5
 echo "$as_me: creating $CONFIG_STATUS" >&6;}
 cat >$CONFIG_STATUS <<_ACEOF
 #! $SHELL
@@ -3220,7 +3199,7 @@ cat >>$CONFIG_STATUS <<\EOF
     echo "$ac_cs_version"; exit 0 ;;
   --he | --h)
     # Conflict between --help and --header
-    { { echo "$as_me:3223: error: ambiguous option: $1
+    { { echo "$as_me:3202: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: ambiguous option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -3239,7 +3218,7 @@ Try \`$0 --help' for more information." >&2;}
     ac_need_defaults=false;;
 
   # This is an error.
-  -*) { { echo "$as_me:3242: error: unrecognized option: $1
+  -*) { { echo "$as_me:3221: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&5
 echo "$as_me: error: unrecognized option: $1
 Try \`$0 --help' for more information." >&2;}
@@ -3276,7 +3255,7 @@ do
   # Handling of arguments.
   "make/ptbuildopts.mak" ) CONFIG_FILES="$CONFIG_FILES make/ptbuildopts.mak" ;;
   "include/ptbuildopts.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/ptbuildopts.h" ;;
-  *) { { echo "$as_me:3279: error: invalid argument: $ac_config_target" >&5
+  *) { { echo "$as_me:3258: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
    { (exit 1); exit 1; }; };;
   esac
@@ -3494,7 +3473,7 @@ done; }
   esac
 
   if test x"$ac_file" != x-; then
-    { echo "$as_me:3497: creating $ac_file" >&5
+    { echo "$as_me:3476: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
     rm -f "$ac_file"
   fi
@@ -3512,7 +3491,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:3515: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:3494: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -3525,7 +3504,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:3528: error: cannot find input file: $f" >&5
+           { { echo "$as_me:3507: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -3585,7 +3564,7 @@ for ac_file in : $CONFIG_HEADERS; do test "x$ac_file" = x: && continue
   * )   ac_file_in=$ac_file.in ;;
   esac
 
-  test x"$ac_file" != x- && { echo "$as_me:3588: creating $ac_file" >&5
+  test x"$ac_file" != x- && { echo "$as_me:3567: creating $ac_file" >&5
 echo "$as_me: creating $ac_file" >&6;}
 
   # First look for the input files in the build tree, otherwise in the
@@ -3596,7 +3575,7 @@ echo "$as_me: creating $ac_file" >&6;}
       -) echo $tmp/stdin ;;
       [\\/$]*)
          # Absolute (can't be DOS-style, as IFS=:)
-         test -f "$f" || { { echo "$as_me:3599: error: cannot find input file: $f" >&5
+         test -f "$f" || { { echo "$as_me:3578: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          echo $f;;
@@ -3609,7 +3588,7 @@ echo "$as_me: error: cannot find input file: $f" >&2;}
            echo $srcdir/$f
          else
            # /dev/null tree
-           { { echo "$as_me:3612: error: cannot find input file: $f" >&5
+           { { echo "$as_me:3591: error: cannot find input file: $f" >&5
 echo "$as_me: error: cannot find input file: $f" >&2;}
    { (exit 1); exit 1; }; }
          fi;;
@@ -3726,7 +3705,7 @@ cat >>$CONFIG_STATUS <<\EOF
   rm -f $tmp/in
   if test x"$ac_file" != x-; then
     if cmp -s $ac_file $tmp/config.h 2>/dev/null; then
-      { echo "$as_me:3729: $ac_file is unchanged" >&5
+      { echo "$as_me:3708: $ac_file is unchanged" >&5
 echo "$as_me: $ac_file is unchanged" >&6;}
     else
       ac_dir=`$as_expr X"$ac_file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \

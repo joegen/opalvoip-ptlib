@@ -193,7 +193,6 @@ dnl ########################################################################
 dnl look for IPV6 functions
 
 AC_CHECK_HEADERS(netinet6/in6.h, HAS_IPV6=1)
-AC_CHECK_FILE(/proc/net/if_inet6, HAS_IPV6=1)
 AC_CHECK_HEADERS(linux/in6.h, HAS_IPV6=1)
 
 if test "${HAS_IPV6:-unset}" != "unset" ; then
