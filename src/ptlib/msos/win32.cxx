@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.104  2001/04/26 06:07:34  yurik
+ * UI improvements
+ *
  * Revision 1.103  2001/04/15 03:38:42  yurik
  * Removed shutdown flag. Use IsTerminated() instead
  *
@@ -1017,6 +1020,10 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   process.SignalTimerChange();
 
   thread->Main();
+
+#ifdef _WIN32_WCE
+
+#endif
 
   return 0;
 }
