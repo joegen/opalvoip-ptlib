@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.33  1998/12/02 02:10:19  robertj
+# New directory structure
+#
 # Revision 1.32  1998/11/22 10:44:10  craigs
 # New GUI build system - for sure!
 #
@@ -121,62 +124,72 @@
 #
 #
 
-ifndef DEBUG
-DEBUG		= 1
-endif
+COMPONENT_SRC_DIR	= ../../ptclib
+COMMON_SRC_DIR		= ../common
+VPATH_CXX		:= $(COMMON_SRC_DIR) $(COMPONENT_SRC_DIR)
 
-COMMONSRC	= ../../common/ptlib/src
+# try and keep the order of modules in reverse order of usage so any
+# global statics will be constructed/destructed in the correct order
 
 SOURCES		= switch.cxx \
-		  osutil.cxx \
+		  $(COMPONENT_SRC_DIR)/httpsvc.cxx \
+		  $(COMPONENT_SRC_DIR)/cypher.cxx \
+		  $(COMPONENT_SRC_DIR)/pssl.cxx \
+		  $(COMPONENT_SRC_DIR)/asner.cxx \
+		  $(COMPONENT_SRC_DIR)/snmpclnt.cxx \
+		  $(COMPONENT_SRC_DIR)/snmpserv.cxx \
+		  $(COMPONENT_SRC_DIR)/psnmp.cxx \
+		  $(COMPONENT_SRC_DIR)/pasn.cxx \
+		  $(COMPONENT_SRC_DIR)/httpform.cxx \
+		  $(COMPONENT_SRC_DIR)/httpclnt.cxx \
+		  $(COMPONENT_SRC_DIR)/httpsrvr.cxx \
+		  $(COMPONENT_SRC_DIR)/http.cxx \
+		  $(COMPONENT_SRC_DIR)/html.cxx \
+		  $(COMPONENT_SRC_DIR)/ftpclnt.cxx \
+		  $(COMPONENT_SRC_DIR)/ftpsrvr.cxx \
+		  $(COMPONENT_SRC_DIR)/ftp.cxx \
+		  $(COMPONENT_SRC_DIR)/inetmail.cxx \
+		  $(COMPONENT_SRC_DIR)/inetprot.cxx \
+		  $(COMPONENT_SRC_DIR)/telnet.cxx \
+		  uicmp.cxx \
+		  $(COMMON_SRC_DIR)/sockets.cxx \
+		  socket.cxx \
+		  svcproc.cxx \
+		  remconn.cxx \
+		  config.cxx \
+		  udll.cxx \
+		  $(COMMON_SRC_DIR)/ptime.cxx \
+		  pipechan.cxx \
+		  serchan.cxx \
+		  $(COMMON_SRC_DIR)/sfile.cxx \
 		  channel.cxx \
+		  osutil.cxx \
+		  $(COMMON_SRC_DIR)/osutils.cxx \
 		  tlib.cxx \
 		  assert.cxx \
-		  config.cxx \
-		  remconn.cxx \
-		  serchan.cxx \
-		  pipechan.cxx \
-		  svcproc.cxx \
-		  socket.cxx \
-		  uicmp.cxx \
-		  udll.cxx \
-		  $(COMMONSRC)/contain.cxx \
-		  $(COMMONSRC)/osutils.cxx \
-		  $(COMMONSRC)/sfile.cxx \
-		  $(COMMONSRC)/ptime.cxx \
-		  $(COMMONSRC)/collect.cxx \
-		  $(COMMONSRC)/sockets.cxx \
-		  $(COMMONSRC)/inetprot.cxx \
-		  $(COMMONSRC)/httpclnt.cxx \
-		  $(COMMONSRC)/httpsrvr.cxx \
-		  $(COMMONSRC)/html.cxx \
-		  $(COMMONSRC)/http.cxx \
-		  $(COMMONSRC)/httpform.cxx \
-		  $(COMMONSRC)/httpsvc.cxx \
-		  $(COMMONSRC)/inetmail.cxx \
-		  $(COMMONSRC)/ftp.cxx \
-		  $(COMMONSRC)/ftpclnt.cxx \
-		  $(COMMONSRC)/ftpsrvr.cxx \
-		  $(COMMONSRC)/pssl.cxx \
-		  $(COMMONSRC)/telnet.cxx \
-		  $(COMMONSRC)/pasn.cxx \
-		  $(COMMONSRC)/psnmp.cxx \
-		  $(COMMONSRC)/snmpclnt.cxx \
-		  $(COMMONSRC)/snmpserv.cxx \
-		  $(COMMONSRC)/cypher.cxx \
-		  $(COMMONSRC)/pssl.cxx \
-		  $(COMMONSRC)/asner.cxx \
-		  $(COMMONSRC)/object.cxx   # must be last module
+		  $(COMMON_SRC_DIR)/collect.cxx \
+		  $(COMMON_SRC_DIR)/contain.cxx \
+		  $(COMMON_SRC_DIR)/object.cxx   # must be last module
 
 OBJS	= $(OBJDIR)/regex.o
 
-#######################################################
-
-include unix.mak
 
 #######################################################
+
+include ../../../make/unix.mak
+
+OBJDIR := $(LIBDIR)/$(OBJDIR)
 
 all ::	$(PTLIB_FILE)
+
+include ../../../make/common.mak
+
+#######################################################
+
+alllibs:
+	$(MAKE) both
+	$(MAKE) bothshared
+
 
 ifdef REQUIRES_SEPARATE_SWITCH 
 $(OBJDIR)/switch.o: ./switch.cxx
@@ -189,30 +202,9 @@ CLEAN_FILES	:= $(CLEAN_FILES) $(PTLIB_FILE)
 $(OBJDIR)/regex.o:	../../common/ptlib/src/regex.cxx
 	$(CPLUS) -DREGEX_MALLOC -D__STDC__ -DSTDC_HEADERS $(CFLAGS) $(STDCCFLAGS) -c -w $< -o $@
 
-thelot:
-	make alllibs
-	( cd ../../apps/mibmastr; make clean ; make both; )
-	( cd ../../apps/firedoor; make clean ; make both; )
-
-test:
-	(cd $(PWLIBDIR); \
-          grep -h '^#include' common/contain.h common/ptlib.h common/sockets.h \
-            | grep -v ptlib.inl \
-            | sed -e 's@^[^\"]*[<\"]@common/@' -e 's/[>\"]$$//' \
-	)
-
-distsrc:
-	(cd $(PWLIBDIR); tar -czvf ptlib-src.tgz \
-	unix/src/*.cxx unix/src/*.h unix/src/Makefile unix/src/*.mak \
-	unix/include/* common/*.h common/ptlib/* common/ptlib/src/* )
-
-#######################################################
-
-include common.mak
-
-#######################################################
 
 ifdef SHAREDLIB
+
 $(PTLIB_FILE): $(PTLIB_FILE).1
 	@if [ ! -e $(PTLIB_FILE) ] ; then ln -s $(PTLIB_FILE).1 $(PTLIB_FILE) ; fi
 
@@ -227,12 +219,26 @@ else
 
 $(PTLIB_FILE): $(OBJS)
 	@if [ ! -d $(LIBDIR) ] ; then mkdir $(LIBDIR) ; fi
-ifndef RANLIB
-	ar rcs $(PTLIB_FILE) $(OBJS)
-else
+ifdef RANLIB
 	ar rc $(PTLIB_FILE) $(OBJS)
 	ranlib $(PTLIB_FILE)
+else
+	ar rcs $(PTLIB_FILE) $(OBJS)
 endif
 
 endif
 
+
+###########################################################
+
+# make links to common directories and files to ease development work
+
+links:
+	ln -snf $(LIBDIR)/obj_$(OBJ_SUFFIX)_d obj_$(OBJ_SUFFIX)_d
+	ln -snf $(LIBDIR)/obj_$(OBJ_SUFFIX)_r obj_$(OBJ_SUFFIX)_r
+	ln -snf $(PWLIBDIR)/make make
+	ln -snf $(UNIX_INC_DIR)/ptlib unix_include
+	ln -snf $(PWLIBDIR)/include/ptlib common_include
+
+
+# End of Makefile
