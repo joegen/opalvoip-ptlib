@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.156  2003/04/07 23:31:33  robertj
+ * Fixed incorrect host to network byte order function, should be long!
+ *
  * Revision 1.155  2003/04/07 23:22:08  robertj
  * Fixed GNU compatibility issue.
  *
@@ -2257,7 +2260,7 @@ istream & operator>>(istream & s, PIPSocket::Address & a)
   s >> b1;
   if (!s.fail()) {
     if (s.peek() != '.')
-      a = htons(b1);
+      a = htonl(b1);
     else {
       s >> dot1 >> b2 >> dot2 >> b3 >> dot3 >> b4;
       if (!s.fail() && dot1 == '.' && dot2 == '.' && dot3 == '.')
