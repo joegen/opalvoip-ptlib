@@ -27,6 +27,11 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.139  2004/01/16 13:24:38  csoutheren
+ * Changed PString::Empty to be thread-safe
+ * Fixed PContainer::SetMinSize and PAbstractArray::SetSize, thanks to 123@call2ua.com
+ * Fixed PString::FindLast, thanks to Andreas Sikkema
+ *
  * Revision 1.138  2003/12/14 01:12:00  csoutheren
  * Added return value to PRegularExpression::operator = again (Doh!)
  *
@@ -606,6 +611,8 @@ void PContainer::Destruct()
 BOOL PContainer::SetMinSize(PINDEX minSize)
 {
   PASSERTINDEX(minSize);
+  if (minSize < 0)
+    minSize = 0;
   if (minSize < GetSize())
     minSize = GetSize();
   return SetSize(minSize);
@@ -763,6 +770,9 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
 
 BOOL PAbstractArray::SetSize(PINDEX newSize)
 {
+  if (newSize < 0)
+    newSize = 0;
+
   PINDEX newsizebytes = elementSize*newSize;
   PINDEX oldsizebytes = elementSize*GetSize();
 
@@ -1048,10 +1058,9 @@ BOOL PBitArray::Concatenate(const PBitArray & array)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-const PString & PString::Empty()
+PString PString::Empty()
 {
-  static PString emptyString((const char *)NULL);
-  return emptyString;
+  return PString((const char *)NULL);
 }
 
 
@@ -1837,7 +1846,7 @@ PINDEX PString::FindLast(const char * cstr, PINDEX offset) const
   }
 
   // search for a matching substring
-  while (offset > 0) {
+  while (offset >= 0) {
     if (strSum == cstrSum && InternalCompare(offset, clen, cstr) == EqualTo)
       return offset;
     strSum += toupper(theArray[--offset]);
