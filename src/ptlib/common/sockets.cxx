@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.68 1998/03/05 12:45:48 robertj Exp $
+ * $Id: sockets.cxx,v 1.69 1998/03/20 03:18:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.69  1998/03/20 03:18:21  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.68  1998/03/05 12:45:48  robertj
  * DNS cache and NT bug fix attempts.
  *
@@ -615,7 +618,7 @@ class PHostByName : PHostByName_private
     BOOL GetHostAliases(const PString & name, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PString & name);
-    PSemaphore mutex;
+    PMutex mutex;
   friend void PIPSocket::ClearNameCache();
 } pHostByName;
 
@@ -712,7 +715,7 @@ class PHostByAddr : PHostByAddr_private
     BOOL GetHostAliases(const PIPSocket::Address & addr, PStringArray & aliases);
   private:
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
-    PSemaphore mutex;
+    PMutex mutex;
   friend void PIPSocket::ClearNameCache();
 } pHostByAddr;
 
