@@ -3,7 +3,6 @@
 !IF  "$(CFG)" == "Console - Win32 Release"
 
 .\assert.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
@@ -66,7 +65,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 Debug"
 
 .\assert.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
@@ -126,7 +124,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Debug"
 
 .\assert.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
@@ -186,7 +183,6 @@
 !ELSEIF  "$(CFG)" == "Console - Win32 SSL Release"
 
 .\assert.cxx : \
-	"$(PROGRAMFILES)\microsoft visual studio\vc98\include\basetsd.h"\
 	"..\..\..\include\ptlib.h"\
 	"..\..\..\Include\PtLib\Args.h"\
 	"..\..\..\Include\PtLib\Array.h"\
