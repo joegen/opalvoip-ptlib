@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "..\..\..\Lib\Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /FR /Yu"ptlib.h" /FD /c
+# ADD CPP /nologo /MDd /W4 /GX /Zi /Od /I "..\..\..\include\ptlib\msos" /I "..\..\..\include" /I "$(OPENSSLDIR)/inc32" /I "$(EXPATDIR)/lib" /D "_DEBUG" /D "PTRACING" /D P_SSL=0$(OPENSSLFLAG) /D P_EXPAT=0$(EXPATFLAG) /D P_SAPI=0$(SAPIFLAG) /FR /Yu"ptlib.h" /FD /c
 # ADD BASE RSC /l 0xc09
 # ADD RSC /l 0xc09
 BSC32=bscmake.exe
@@ -176,6 +176,22 @@ SOURCE=..\..\Ptclib\Psnmp.cxx
 # Begin Source File
 
 SOURCE=..\..\ptclib\pssl.cxx
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\ptts.cxx
+
+!IF  "$(CFG)" == "Console Components - Win32 Release"
+
+# ADD CPP /D P_SAPI=0$(SAPIFLAG)
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -296,6 +312,10 @@ SOURCE=..\..\..\Include\PtCLib\psnmp.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pssl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\ptts.h
 # End Source File
 # Begin Source File
 
