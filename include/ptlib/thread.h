@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: thread.h,v $
+ * Revision 1.18  1998/11/20 03:18:33  robertj
+ * Added thread WaitForTermination() function.
+ *
  * Revision 1.17  1998/10/31 12:47:59  robertj
  * Removed ability to start threads immediately, race condition with vtable (Main() function).
  *
@@ -227,6 +230,16 @@ PDECLARE_CLASS(PThread, PObject)
 
        <H2>Returns:</H2>
        TRUE if the thread has been terminated.
+     */
+
+    void WaitForTermination() const;
+    BOOL WaitForTermination(
+      const PTimeInterval & maxWait  // Maximum time to wait for termination.
+    ) const;
+    /* Block and wait for the thread to terminate.
+
+       <H2>Returns:</H2>
+       FALSE if the thread has not terminated and the timeout has expired.
      */
 
     virtual void Suspend(
