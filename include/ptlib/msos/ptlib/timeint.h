@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.3 1995/03/12 05:00:03 robertj Exp $
+ * $Id: timeint.h,v 1.4 1995/04/25 11:20:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
+ * Revision 1.4  1995/04/25 11:20:53  robertj
+ * Moved const variable to .cxx file to better compiler portability.
+ *
  * Revision 1.3  1995/03/12 05:00:03  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -31,7 +34,7 @@
 #include "../../common/timeint.h"
 };
 
-const PTimeInterval PMaxTimeInterval = 0x7fffffff;
+extern const PTimeInterval PMaxTimeInterval;
 
 
 #endif
