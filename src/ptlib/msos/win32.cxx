@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: win32.cxx,v $
+ * Revision 1.119  2002/01/26 15:05:35  yurik
+ * Removed extra ifdefs
+ *
  * Revision 1.118  2002/01/23 04:45:50  craigs
  * Added copy Constructors for PSemaphore, PMutex and PSyncPoint
  *
@@ -1059,10 +1062,6 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
   process.SignalTimerChange();
 
   thread->Main();
-
-#ifdef _WIN32_WCE
-
-#endif
 
   return 0;
 }
