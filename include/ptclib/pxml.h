@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.h,v $
+ * Revision 1.16  2002/11/21 08:09:04  craigs
+ * Changed to not overwrite XML data if load fails
+ *
  * Revision 1.15  2002/11/19 07:37:38  craigs
  * Added locking functions and LoadURL function
  *
@@ -76,6 +79,8 @@ class PXML : public PObject
     BOOL LoadURL(const PURL & url, const PTimeInterval & timeout, int _options = -1);
     BOOL LoadFile(const PFilePath & fn, int options = -1);
 
+    virtual void OnLoaded() { }
+
     BOOL Save(int options = -1);
     BOOL Save(PString & data, int options = -1);
     BOOL SaveFile(const PFilePath & fn, int options = -1);
@@ -101,8 +106,7 @@ class PXML : public PObject
     PINDEX  GetErrorColumn() const { return errorCol; }
     PINDEX  GetErrorLine() const   { return errorLine; }
 
-    void Wait()     { rootMutex.Wait(); }
-    void Signal()   { rootMutex.Signal(); }
+    PMutex & GetMutex() { return rootMutex; }
 
     // overrides for expat callbacks
     virtual void StartElement(const char * name, const char **attrs);
@@ -126,13 +130,16 @@ class PXML : public PObject
     PXMLElement * rootElement;
     PMutex rootMutex;
 
-    PXMLElement * currentElement;
-    PXMLData * lastElement;
     int options;
     BOOL loadFromFile;
     PFilePath loadFilename;
     PString version, encoding;
     int standAlone;
+
+    // these are only used whilst loading
+    PXMLElement * loadingRootElement;
+    PXMLElement * currentElement;
+    PXMLData * lastElement;
 
     PString errorString;
     PINDEX errorCol;
