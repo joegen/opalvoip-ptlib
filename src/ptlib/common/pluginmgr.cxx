@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.8  2004/01/18 21:00:15  dsandras
+ * Fixed previous commit thanks to Craig Southeren!
+ *
  * Revision 1.7  2004/01/17 17:40:57  csoutheren
  * Changed to only attempt loading of files with the correct library file extension
  * Changed to handle plugins without a register function
@@ -126,6 +129,7 @@ BOOL PPluginManager::LoadPlugin (const PString & fileName)
         }
 
         pluginList.Append(new PPluginDynamic(dll));
+	return TRUE;
       }
     }
   }
