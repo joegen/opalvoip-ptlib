@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pdirect.h,v $
+ * Revision 1.8  1998/11/30 22:06:53  robertj
+ * New directory structure.
+ *
  * Revision 1.7  1998/11/24 09:38:16  robertj
  * FreeBSD port.
  *
@@ -69,7 +72,7 @@
 
 #define	PFILE_PATH_STRING	PString
 
-#include "../../common/ptlib/pdirect.h"
+#include "../../pdirect.h"
   protected:
     DIR           * directory;
     PFileInfo     * entryInfo;
