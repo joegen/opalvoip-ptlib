@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.71  2000/04/07 06:22:33  rogerh
+# Add comment about the -s flag and Mac OS X
+#
 # Revision 1.70  2000/04/06 20:12:33  craigs
 # Added install targets
 #
@@ -656,6 +659,7 @@ OPTCCFLAGS	+= -O2 -DNDEBUG
 #OPTCCFLAGS	+= -DP_USE_INLINES=1
 #OPTCCFLAGS	+= -fconserve-space
 ifneq ($(OSTYPE),macos)
+# Apple does not support -s to remove symbol table/relocation information 
 LDFLAGS		+= -s
 endif
 
