@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.9  2003/07/29 11:22:17  csoutheren
+# Removed trailing slash from vars.
+#
 # Revision 1.8  2003/07/28 18:13:02  dsandras
 # Added patch from Alexander Larsson <alexl@redhat.com> to add --libdir support to configure.
 #
@@ -140,29 +143,19 @@
 #
 #
 
-PREFIX=@INSTALLPREFIX@/
+PREFIX=@INSTALLPREFIX@
 exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
-export PWLIBDIR=@PWLIBDIR@/
+export PWLIBDIR=@PWLIBDIR@
 
 all ::
 
-ifeq ($(OSTYPE),Nucleus)
-TARGETDIR=Nucleus++
-else
-TARGETDIR=unix
-endif
+TARGETDIR=@TARGETDIR@
 
 include make/ptlib.mak
 
 SUBDIRS := src/ptlib/$(TARGETDIR)
-
-ifeq (,$(findstring $(OSTYPE),Nucleus rtems))
 SUBDIRS += tools/asnparser
-
-include make/defaultgui.mak
-endif
-
 
 # override P_SHAREDLIB for specific targets
 optshared   debugshared   bothshared   :: P_SHAREDLIB=1
