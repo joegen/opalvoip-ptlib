@@ -8,6 +8,9 @@
  * Copyright 1998 Equivalence Pty. Ltd.
  *
  * $Log: ipacl.cxx,v $
+ * Revision 1.13  2002/07/16 10:05:01  robertj
+ * Fixed GNU warning
+ *
  * Revision 1.12  2002/07/16 10:02:49  robertj
  * Fixed MSVC warning
  *
@@ -236,7 +239,7 @@ BOOL PIpAccessControlEntry::Parse(const PString & description)
     if (bits > 32)
       mask = PSocket::Host2Net(bits);
     else
-      mask = PSocket::Host2Net(0xffffffffL << (32 - bits));
+      mask = PSocket::Host2Net((DWORD)(0xffffffff << (32 - bits)));
   }
 
   if (mask == 0)
