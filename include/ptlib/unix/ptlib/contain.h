@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.h,v $
+ * Revision 1.20  2004/04/09 00:42:59  csoutheren
+ * Changed Unix build to use slightly different method for
+ * keep class names, as GCC does not use actual class names for typeinfo
+ *
  * Revision 1.19  2004/04/03 08:57:41  csoutheren
  * Replaced pseudo-RTTI with real RTTI
  *
@@ -134,4 +138,5 @@ inline PINDEX PABSINDEX(PINDEX idx) { return (idx < 0 ? -idx : idx)&P_MAX_INDEX;
 #endif
 
 #define	P_HAS_TYPEINFO	1
+#define	PCLASSNAME(cls)	(#cls)
 
