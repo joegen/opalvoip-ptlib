@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.24  2002/11/26 05:53:45  craigs
+ * Added ability to auto-reload from URL
+ *
  * Revision 1.23  2002/11/21 08:08:52  craigs
  * Changed to not overwrite XML data if load fails
  *
@@ -110,6 +113,7 @@ PXML::PXML(const PString & data, int _options)
 
 PXML::~PXML()
 {
+  autoLoadTimer.Stop();
   RemoveAll();
 }
 
@@ -261,6 +265,56 @@ BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options
   }
 
   return Load(data, _options);
+}
+
+BOOL PXML::StartAutoReloadURL(const PURL & url, 
+                              const PTimeInterval & timeout, 
+                              const PTimeInterval & refreshTime,
+                              int _options)
+{
+  PWaitAndSignal m(autoLoadMutex);
+  autoLoadTimer.Stop();
+
+  SetOptions(_options);
+  autoloadURL      = url;
+  autoLoadWaitTime = timeout;
+  autoLoadError    = PString::Empty();
+  autoLoadTimer.SetNotifier(PCREATE_NOTIFIER(AutoReloadTimeout));
+
+  BOOL stat = AutoLoadURL();
+
+  autoLoadTimer = refreshTime;
+
+  return stat;
+}
+
+void PXML::AutoReloadTimeout(PTimer &, INT)
+{
+  PThread::Create(PCREATE_NOTIFIER(AutoReloadThread), PThread::AutoDeleteThread);
+}
+
+void PXML::AutoReloadThread(PThread &, INT)
+{
+  PWaitAndSignal m(autoLoadMutex);
+  OnAutoLoad(AutoLoadURL());
+  autoLoadTimer.Reset();
+}
+
+BOOL PXML::AutoLoadURL()
+{
+  BOOL stat = LoadURL(autoloadURL, autoLoadWaitTime);
+  if (stat)
+    autoLoadError = PString::Empty();
+  else 
+    autoLoadError = GetErrorString() + psprintf(" at line %i, column %i", GetErrorLine(), GetErrorColumn());
+  return stat;
+}
+
+BOOL PXML::StopAutoReloadURL()
+{
+  PWaitAndSignal m(autoLoadMutex);
+  autoLoadTimer.Stop();
+  return TRUE;
 }
 
 
