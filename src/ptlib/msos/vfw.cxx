@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.19  2002/09/01 23:54:33  dereks
+ * Fix from Diego Tartara to handle (better) disconnection situation.
+ *
  * Revision 1.18  2002/02/25 08:01:02  robertj
  * Changed to utilise preferred colour format, thanks Martijn Roest
  *
@@ -313,7 +316,20 @@ BOOL PVideoInputDevice::Close()
   Stop();
 
   ::PostThreadMessage(captureThread->GetThreadId(), WM_QUIT, 0, 0L);
-  captureThread->WaitForTermination();
+
+  // Some brain dead drivers may hang so we provide a timeout.
+  if (!captureThread->WaitForTermination(5000))
+  {
+      // Two things may happen if we are forced to terminate the capture thread:
+      // 1. As the VIDCAP window is associated to that thread the OS itself will 
+      //    close the window and release the driver
+      // 2. the driver will not be released and we will not have video until we 
+      //    terminate the process
+      // Any of the two ios better than just hanging
+      captureThread->Terminate();
+      PTRACE(1, "PVidInp\tCapture thread failed to stop. Terminated");
+  }
+
   delete captureThread;
   captureThread = NULL;
 
@@ -577,7 +593,7 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
     converter->SetVFlipState(FormatTable[i].vfwComp->askForVFlip); 
     PTRACE(4, "PVidInp\tSetColourFormat(): converter.doVFlip set to " << converter->GetVFlipState());
   }
-	  
+      
   if (running)
     return Start();
 
@@ -802,13 +818,15 @@ void PVideoInputDevice::HandleCapture()
     while (::GetMessage(&msg, NULL, 0, 0))
       ::DispatchMessage(&msg);
   }
-  
+
+  PTRACE(5, "PVidInp\tDisconnecting driver");
   capDriverDisconnect(hCaptureWindow);
   capSetUserData(hCaptureWindow, NULL);
 
   capSetCallbackOnError(hCaptureWindow, NULL);
   capSetCallbackOnVideoStream(hCaptureWindow, NULL);
 
+  PTRACE(5, "PVidInp\tDestroying VIDCAP window");
   DestroyWindow(hCaptureWindow);
   hCaptureWindow = NULL;
 
