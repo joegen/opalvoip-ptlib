@@ -171,18 +171,11 @@ SOURCE=..\..\Ptclib\Pasn.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\ptclib\pils.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\ptclib\pldap.cxx
-
-!IF  "$(CFG)" == "Console Components - Win32 Release"
-
-# ADD CPP /D P_LDAP=0$(OPENLDAPFLAG)
-
-!ELSEIF  "$(CFG)" == "Console Components - Win32 Debug"
-
-# ADD CPP /D P_LDAP=0$(OPENLDAPFLAG)
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
@@ -343,6 +336,10 @@ SOURCE=..\..\..\Include\PtCLib\modem.h
 # Begin Source File
 
 SOURCE=..\..\..\Include\PtCLib\pasn.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\pils.h
 # End Source File
 # Begin Source File
 
