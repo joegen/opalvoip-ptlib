@@ -318,6 +318,34 @@ There is no audio support due to a lack of documentation and hardware.
 
 There is no video support due to a lack of documentation and hardware.
 
+6.5 BeOS Issues
+---------------
+Port Maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
+Current version supported is BeOS 5.0.2. 
+
+Most important issue is lack of variable sample frequency from system sound producer node.
+I made quite a few attempts to implement sound resampler in code, 
+even with help of Be engineers, but eventually decided to wait until new Media Kit
+with resampler built-in. 
+Also network code needed more things, as OOB, which was promised in BONE. 
+BONE will allow to make less #defines in network code as well.
+As update will hit the Net, I'll get back to it ASAP.  
+
+Look for more port-related info on http://www.dogsbone.com/be
+
+6.6 Windows CE Issues
+---------------------
+
+Port Maintained by Yuri Kiryanov <openh323@kiryanov.com>. 
+Versions supported is 2.x and 3.x (PocketPC). 
+
+I haven't made all variations of target platforms executables and 
+only tested on emulator and ARM, both 2.11  and PocketPC.
+
+Note that asnparser is being built separately on NT and then used for .asn file processing. 
+
+Biggest issue is poor multithreading capabilities of current implementation of Windows CE. 
+Therefore I doubt CE 2.11 build could be useful at all. PocketPC builds look better.
 
 7. Conclusion
 -------------
@@ -331,6 +359,7 @@ you from using it in whatever project you have in mind if you so desire. We like
 it and use it all the time, and we don't want to get into any religious wars of
 this class library over that one.
 
+Look for more port-related info on http://www.dogsbone.com/ce
 
 ================================================================================
 Equivalence Pty. Ltd.
