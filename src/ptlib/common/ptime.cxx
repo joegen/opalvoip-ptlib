@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptime.cxx,v $
+ * Revision 1.45  2003/08/14 02:07:11  dereksmithies
+ * Fix bug in AsString handling. Thanks Diego Tartara for pointing it out.
+ *
  * Revision 1.44  2002/12/17 04:41:40  robertj
  * Added ability to escape special characters.
  *
@@ -415,6 +418,9 @@ PObject::Comparison PTime::Compare(const PObject & obj) const
 
 PString PTime::AsString(TimeFormat format, int zone) const
 { 
+  if (format >= NumTimeStrings)
+    return "Invalid format : " + AsString("yyyy-MM-dd T hh:mm:ss Z");
+
   switch (format) {
     case RFC1123 :
       return AsString("wwwe, dd MMME yyyy hh:mm:ss z", zone);
@@ -431,7 +437,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
   PString tsep = GetTimeSeparator();
   BOOL is12hour = GetTimeAMPM();
 
-  switch (format & 7) {
+  switch (format ) {
     case LongDateTime :
     case LongTime :
     case MediumDateTime :
@@ -459,7 +465,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
       break;
   }
 
-  switch (format & 7) {
+  switch (format ) {
     case LongDateTime :
     case MediumDateTime :
     case ShortDateTime :
@@ -470,7 +476,7 @@ PString PTime::AsString(TimeFormat format, int zone) const
       break;
   }
 
-  switch (format & 7) {
+  switch (format ) {
     case LongDateTime :
     case LongDate :
       fmt += "wwww ";
