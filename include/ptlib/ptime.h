@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.10 1994/08/23 11:32:52 robertj Exp $
+ * $Id: ptime.h,v 1.11 1995/01/09 12:34:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.10  1994/08/23 11:32:52  robertj
+ * Revision 1.11  1995/01/09 12:34:05  robertj
+ * Removed unnecesary return value from I/O functions.
+ *
+ * Revision 1.10  1994/08/23  11:32:52  robertj
  * Oops
  *
  * Revision 1.9  1994/08/22  00:46:48  robertj
@@ -67,8 +70,8 @@ PDECLARE_CLASS(PTime, PObject)
     // Overrides from class PObject
     PObject * Clone() const;
     virtual Comparison Compare(const PObject & obj) const;
-    virtual ostream & PrintOn(ostream & strm) const;
-    virtual istream & ReadFrom(istream & strm);
+    virtual void PrintOn(ostream & strm) const;
+    virtual void ReadFrom(istream & strm);
       // I/O of time objects
 
 
