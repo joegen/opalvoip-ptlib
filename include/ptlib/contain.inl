@@ -27,6 +27,13 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.inl,v $
+ * Revision 1.49.2.1  2004/08/07 12:04:44  csoutheren
+ * Updated to compiler gcc 3.4/3.5
+ *
+ * Revision 1.52  2004/04/24 06:27:56  rjongbloed
+ * Fixed GCC 3.4.0 warnings about PAssertNULL and improved recoverability on
+ *   NULL pointer usage in various bits of code.
+ *
  * Revision 1.49  2004/01/18 13:43:48  rjongbloed
  * Fixed broken PString::MakeEmpty() function and moved implementations to .inl file.
  *
@@ -425,7 +432,7 @@ PINLINE PINDEX PStringArray::GetStringsIndex(const PString & str) const
 ///////////////////////////////////////////////////////////////////////////////
 
 PINLINE PAbstractList::PAbstractList()
-  : info(new Info) { PAssertNULL(info); }
+  : info(new Info) { PAssert(info != NULL, POutOfMemory); }
 
 PINLINE PObject & PAbstractList::GetReferenceAt(PINDEX index) const
   { PObject * obj = GetAt(index);
