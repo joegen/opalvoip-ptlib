@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.127  2002/12/16 08:10:35  robertj
+ * Fixed infinite loop when converting an illegal (incomplete) UTF-8 string
+ *   to UCS-2, thanks Chih-Wei Huang
+ *
  * Revision 1.126  2002/11/26 01:08:33  robertj
  * Fixed problem when using pre-initialised PStringStream greater than 255
  *   bytes, would truncate and lose trailing null. Reported by Thien Nguyen
@@ -2138,30 +2142,34 @@ PWORDArray PString::AsUCS2() const
 
   PINDEX count = 0;
   PINDEX i = 0;
-  while (i < GetSize()-1) {
-    if ((theArray[i]&0x80) == 0)
+  PINDEX length = GetSize()-1;
+  while (i < length) {
+    int c = theArray[i];
+    if ((c&0x80) == 0)
       ucs2[count++] = (BYTE)theArray[i++];
-    else if ((theArray[i]&0xe0) == 0xc0) {
-      if (i < GetSize()-2) {
+    else if ((c&0xe0) == 0xc0) {
+      if (i < length-1)
         ucs2[count++] = (WORD)(((theArray[i  ]&0x1f)<<6)|
                                 (theArray[i+1]&0x3f));
-        i += 2;
-      }
-      else
-        ucs2[count++] = 0xffff;
+      i += 2;
     }
-    else if ((theArray[i]&0xf0) == 0xe0) {
-      if (i < GetSize()-3) {
+    else if ((c&0xf0) == 0xe0) {
+      if (i < length-2)
         ucs2[count++] = (WORD)(((theArray[i  ]&0x0f)<<12)|
                                ((theArray[i+1]&0x3f)<< 6)|
                                 (theArray[i+2]&0x3f));
-        i += 3;
-      }
+      i += 3;
+    }
+    else {
+      if ((c&0xf8) == 0xf0)
+        i += 4;
+      else if ((c&0xfc) == 0xf8)
+        i += 5;
       else
+        i += 6;
+      if (i <= length)
         ucs2[count++] = 0xffff;
     }
-    else
-      ucs2[count++] = 0xffff;
   }
 
   ucs2.SetSize(count);
