@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.90  2000/10/12 05:14:41  robertj
+ * Fixed crash caused by previous change, didn;t work if in constructor.
+ *
  * Revision 1.89  2000/10/09 23:43:58  robertj
  * Fixed GNU C++ compatibility on last change.
  *
@@ -1786,7 +1789,7 @@ PString & PString::sprintf(const char * fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
-  PINDEX len = GetLength();
+  PINDEX len = theArray != NULL ? GetLength() : 0;
   PINDEX size = 0;
   do {
     size += 1000;
