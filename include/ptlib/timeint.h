@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: timeint.h,v $
+ * Revision 1.30  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.29  2003/09/17 05:41:59  csoutheren
  * Removed recursive includes
  *
@@ -379,10 +383,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are equal.
      */
-    BOOL operator==(
+    bool operator==(
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator==(
+    bool operator==(
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
 
@@ -393,10 +397,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are not equal.
      */
-    BOOL operator!=(
+    bool operator!=(
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator!=(
+    bool operator!=(
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
 
@@ -407,10 +411,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are greater than.
      */
-    BOOL operator> (
+    bool operator> (
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator> (
+    bool operator> (
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
 
@@ -421,10 +425,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are greater than or equal.
      */
-    BOOL operator>=(
+    bool operator>=(
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator>=(
+    bool operator>=(
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
 
@@ -435,10 +439,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are less than.
      */
-    BOOL operator< (
+    bool operator< (
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator< (
+    bool operator< (
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
 
@@ -449,10 +453,10 @@ class PTimeInterval : public PObject
        @return
        TRUE if intervals are less than or equal.
      */
-    BOOL operator<=(
+    bool operator<=(
       const PTimeInterval & interval   /// Time interval to compare.
     ) const;
-    BOOL operator<=(
+    bool operator<=(
       long msecs    /// Time interval as integer milliseconds to compare.
     ) const;
   //@}

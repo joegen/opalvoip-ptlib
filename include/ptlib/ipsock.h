@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.65  2004/04/18 04:33:36  rjongbloed
+ * Changed all operators that return BOOL to return standard type bool. This is primarily
+ *   for improved compatibility with std STL usage removing many warnings.
+ *
  * Revision 1.64  2004/04/07 05:29:50  csoutheren
  * Added function to detect RFC 1918 addresses
  *
@@ -314,34 +318,34 @@ class PIPSocket : public PSocket
 
         /// Compare two adresses
         Comparison Compare(const PObject & obj) const;
-        BOOL operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
-        BOOL operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
+        bool operator==(const Address & addr) const { return Compare(addr) == EqualTo; }
+        bool operator!=(const Address & addr) const { return Compare(addr) != EqualTo; }
 #if P_HAS_IPV6
-        BOOL operator==(in6_addr & addr) const;
-        BOOL operator!=(in6_addr & addr) const { return !operator==(addr); }
+        bool operator==(in6_addr & addr) const;
+        bool operator!=(in6_addr & addr) const { return !operator==(addr); }
 #endif
-        BOOL operator==(in_addr & addr) const;
-        BOOL operator!=(in_addr & addr) const { return !operator==(addr); }
-        BOOL operator==(DWORD dw) const;
-        BOOL operator!=(DWORD dw) const   { return !operator==(dw); }
+        bool operator==(in_addr & addr) const;
+        bool operator!=(in_addr & addr) const { return !operator==(addr); }
+        bool operator==(DWORD dw) const;
+        bool operator!=(DWORD dw) const   { return !operator==(dw); }
 #ifdef P_TORNADO 
-        BOOL operator==(long unsigned int u) const { return  operator==((DWORD)u); }
-        BOOL operator!=(long unsigned int u) const { return !operator==((DWORD)u); }
+        bool operator==(long unsigned int u) const { return  operator==((DWORD)u); }
+        bool operator!=(long unsigned int u) const { return !operator==((DWORD)u); }
 #endif
 #ifdef _WIN32
-        BOOL operator==(unsigned u) const { return  operator==((DWORD)u); }
-        BOOL operator!=(unsigned u) const { return !operator==((DWORD)u); }
+        bool operator==(unsigned u) const { return  operator==((DWORD)u); }
+        bool operator!=(unsigned u) const { return !operator==((DWORD)u); }
 #endif
 #ifdef P_RTEMS
-        BOOL operator==(u_long u) const { return  operator==((DWORD)u); }
-        BOOL operator!=(u_long u) const { return !operator==((DWORD)u); }
+        bool operator==(u_long u) const { return  operator==((DWORD)u); }
+        bool operator!=(u_long u) const { return !operator==((DWORD)u); }
 #endif
 #ifdef __BEOS__
-        BOOL operator==(in_addr_t a) const { return  operator==((DWORD)a); }
-        BOOL operator!=(in_addr_t a) const { return !operator==((DWORD)a); }
+        bool operator==(in_addr_t a) const { return  operator==((DWORD)a); }
+        bool operator!=(in_addr_t a) const { return !operator==((DWORD)a); }
 #endif
-        BOOL operator==(int i) const      { return  operator==((DWORD)i); }
-        BOOL operator!=(int i) const      { return !operator==((DWORD)i); }
+        bool operator==(int i) const      { return  operator==((DWORD)i); }
+        bool operator!=(int i) const      { return !operator==((DWORD)i); }
 
         /// Format an address as a string
         PString AsString() const;

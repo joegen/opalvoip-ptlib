@@ -213,7 +213,6 @@ EXPORTS
     ??0PDirectory@@QAE@XZ @5426 NONAME ;public: __thiscall PDirectory::PDirectory(void)
     ??0PDynaLink@@QAE@ABVPString@@@Z @80 NONAME ;public: __thiscall PDynaLink::PDynaLink(class PString const &)
     ??0PDynaLink@@QAE@XZ @81 NONAME ;public: __thiscall PDynaLink::PDynaLink(void)
-    ??0PEnterAndLeave@@QAE@AAVPCriticalSection@@H@Z @5534 NONAME ;public: __thiscall PEnterAndLeave::PEnterAndLeave(class PCriticalSection &,int)
     ??0PEthSocket@@QAE@HHH@Z @82 NONAME ;public: __thiscall PEthSocket::PEthSocket(int,int,int)
     ??0PFile@@QAE@ABVPFilePath@@W4OpenMode@0@H@Z @4625 NONAME ;public: __thiscall PFile::PFile(class PFilePath const &,enum PFile::OpenMode,int)
     ??0PFile@@QAE@W4OpenMode@0@H@Z @4626 NONAME ;public: __thiscall PFile::PFile(enum PFile::OpenMode,int)
@@ -579,7 +578,6 @@ EXPORTS
     ??1PDebugStream@@UAE@XZ @328 NONAME ;public: virtual __thiscall PDebugStream::~PDebugStream(void)
     ??1PDirectory@@UAE@XZ @329 NONAME ;public: virtual __thiscall PDirectory::~PDirectory(void)
     ??1PDynaLink@@UAE@XZ @330 NONAME ;public: virtual __thiscall PDynaLink::~PDynaLink(void)
-    ??1PEnterAndLeave@@QAE@XZ @5537 NONAME ;public: __thiscall PEnterAndLeave::~PEnterAndLeave(void)
     ??1PEthSocket@@UAE@XZ @331 NONAME ;public: virtual __thiscall PEthSocket::~PEthSocket(void)
     ??1PFile@@UAE@XZ @333 NONAME ;public: virtual __thiscall PFile::~PFile(void)
     ??1PFileInfo@@UAE@XZ @334 NONAME ;public: virtual __thiscall PFileInfo::~PFileInfo(void)
@@ -724,7 +722,6 @@ EXPORTS
     ??1P_YUV422_YUV420P_Registration@@UAE@XZ @458 NONAME ;public: virtual __thiscall P_YUV422_YUV420P_Registration::~P_YUV422_YUV420P_Registration(void)
     ??1P_YUV422_YUV422@@UAE@XZ @459 NONAME ;public: virtual __thiscall P_YUV422_YUV422::~P_YUV422_YUV422(void)
     ??1P_YUV422_YUV422_Registration@@UAE@XZ @460 NONAME ;public: virtual __thiscall P_YUV422_YUV422_Registration::~P_YUV422_YUV422_Registration(void)
-    ??1Reference@PContainer@@QAE@XZ @5538 NONAME ;public: __thiscall PContainer::Reference::~Reference(void)
     ??1RegistryKey@@QAE@XZ @461 NONAME ;public: __thiscall RegistryKey::~RegistryKey(void)
     ??1RouteEntry@PIPSocket@@UAE@XZ @462 NONAME ;public: virtual __thiscall PIPSocket::RouteEntry::~RouteEntry(void)
     ??1SecurityID@@QAE@XZ @463 NONAME ;public: __thiscall SecurityID::~SecurityID(void)
@@ -824,7 +821,6 @@ EXPORTS
     ??4PWin32AsnOid@@QAEAAV0@ABUAsnObjectIdentifier@@@Z @554 NONAME ;public: class PWin32AsnOid & __thiscall PWin32AsnOid::operator=(struct AsnObjectIdentifier const &)
     ??4P_fd_set@@QAEAAV0@I@Z @555 NONAME ;public: class P_fd_set & __thiscall P_fd_set::operator=(unsigned int)
     ??4P_timeval@@QAEAAV0@ABVPTimeInterval@@@Z @556 NONAME ;public: class P_timeval & __thiscall P_timeval::operator=(class PTimeInterval const &)
-    ??4Reference@PContainer@@QAEAAV01@ABV01@@Z @5539 NONAME ;public: class PContainer::Reference & __thiscall PContainer::Reference::operator=(class PContainer::Reference const &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVAddress@PIPSocket@@@Z @4751 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,class PIPSocket::Address &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AAVPObject@@@Z @4752 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,class PObject &)
     ??5@YAAAV?$basic_istream@DU?$char_traits@D@std@@@std@@AAV01@AA_J@Z @4753 NONAME ;class std::basic_istream<char,struct std::char_traits<char> > & __cdecl operator>>(class std::basic_istream<char,struct std::char_traits<char> > &,__int64 &)
@@ -836,26 +832,26 @@ EXPORTS
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@_J@Z @4758 NONAME ;class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,__int64)
     ??6@YAAAV?$basic_ostream@DU?$char_traits@D@std@@@std@@AAV01@_K@Z @4759 NONAME ;class std::basic_ostream<char,struct std::char_traits<char> > & __cdecl operator<<(class std::basic_ostream<char,struct std::char_traits<char> > &,unsigned __int64)
     ??6PArgList@@QAEAAV0@H@Z @5445 NONAME ;public: class PArgList & __thiscall PArgList::operator<<(int)
-    ??7PString@@QBEHXZ @4760 NONAME ;public: int __thiscall PString::operator!(void)const 
-    ??8Address@PEthSocket@@QBEHABT01@@Z @4761 NONAME ;public: int __thiscall PEthSocket::Address::operator==(union PEthSocket::Address const &)const 
-    ??8Address@PEthSocket@@QBEHPBE@Z @564 NONAME ;public: int __thiscall PEthSocket::Address::operator==(unsigned char const *)const 
-    ??8Address@PIPSocket@@QBEHAAUin6_addr@@@Z @2925 NONAME ;public: int __thiscall PIPSocket::Address::operator==(struct in6_addr &)const 
-    ??8Address@PIPSocket@@QBEHAAUin_addr@@@Z @565 NONAME ;public: int __thiscall PIPSocket::Address::operator==(struct in_addr &)const 
-    ??8Address@PIPSocket@@QBEHABV01@@Z @4762 NONAME ;public: int __thiscall PIPSocket::Address::operator==(class PIPSocket::Address const &)const 
-    ??8Address@PIPSocket@@QBEHH@Z @4763 NONAME ;public: int __thiscall PIPSocket::Address::operator==(int)const 
-    ??8Address@PIPSocket@@QBEHK@Z @566 NONAME ;public: int __thiscall PIPSocket::Address::operator==(unsigned long)const 
-    ??8PObject@@QBEHABV0@@Z @4764 NONAME ;public: int __thiscall PObject::operator==(class PObject const &)const 
-    ??8PString@@QBEHABVPObject@@@Z @4765 NONAME ;public: int __thiscall PString::operator==(class PObject const &)const 
-    ??8PString@@QBEHPBD@Z @4766 NONAME ;public: int __thiscall PString::operator==(char const *)const 
-    ??8PTimeInterval@@QBEHABV0@@Z @4767 NONAME ;public: int __thiscall PTimeInterval::operator==(class PTimeInterval const &)const 
-    ??8PTimeInterval@@QBEHJ@Z @4768 NONAME ;public: int __thiscall PTimeInterval::operator==(long)const 
-    ??9Address@PEthSocket@@QBEHPBE@Z @567 NONAME ;public: int __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
-    ??9Address@PIPSocket@@QBEHH@Z @4769 NONAME ;public: int __thiscall PIPSocket::Address::operator!=(int)const 
-    ??9PObject@@QBEHABV0@@Z @4770 NONAME ;public: int __thiscall PObject::operator!=(class PObject const &)const 
-    ??9PString@@QBEHABVPObject@@@Z @4771 NONAME ;public: int __thiscall PString::operator!=(class PObject const &)const 
-    ??9PString@@QBEHPBD@Z @4772 NONAME ;public: int __thiscall PString::operator!=(char const *)const 
-    ??9PTimeInterval@@QBEHABV0@@Z @4773 NONAME ;public: int __thiscall PTimeInterval::operator!=(class PTimeInterval const &)const 
-    ??9PTimeInterval@@QBEHJ@Z @4774 NONAME ;public: int __thiscall PTimeInterval::operator!=(long)const 
+    ??7PString@@QBE_NXZ @5594 NONAME ;public: bool __thiscall PString::operator!(void)const 
+    ??8Address@PEthSocket@@QBE_NABT01@@Z @5595 NONAME ;public: bool __thiscall PEthSocket::Address::operator==(union PEthSocket::Address const &)const 
+    ??8Address@PEthSocket@@QBE_NPBE@Z @5596 NONAME ;public: bool __thiscall PEthSocket::Address::operator==(unsigned char const *)const 
+    ??8Address@PIPSocket@@QBE_NAAUin6_addr@@@Z @5597 NONAME ;public: bool __thiscall PIPSocket::Address::operator==(struct in6_addr &)const 
+    ??8Address@PIPSocket@@QBE_NAAUin_addr@@@Z @5598 NONAME ;public: bool __thiscall PIPSocket::Address::operator==(struct in_addr &)const 
+    ??8Address@PIPSocket@@QBE_NABV01@@Z @5599 NONAME ;public: bool __thiscall PIPSocket::Address::operator==(class PIPSocket::Address const &)const 
+    ??8Address@PIPSocket@@QBE_NH@Z @5600 NONAME ;public: bool __thiscall PIPSocket::Address::operator==(int)const 
+    ??8Address@PIPSocket@@QBE_NK@Z @5601 NONAME ;public: bool __thiscall PIPSocket::Address::operator==(unsigned long)const 
+    ??8PObject@@QBE_NABV0@@Z @5602 NONAME ;public: bool __thiscall PObject::operator==(class PObject const &)const 
+    ??8PString@@QBE_NABVPObject@@@Z @5603 NONAME ;public: bool __thiscall PString::operator==(class PObject const &)const 
+    ??8PString@@QBE_NPBD@Z @5604 NONAME ;public: bool __thiscall PString::operator==(char const *)const 
+    ??8PTimeInterval@@QBE_NABV0@@Z @5605 NONAME ;public: bool __thiscall PTimeInterval::operator==(class PTimeInterval const &)const 
+    ??8PTimeInterval@@QBE_NJ@Z @5606 NONAME ;public: bool __thiscall PTimeInterval::operator==(long)const 
+    ??9Address@PEthSocket@@QBE_NPBE@Z @5607 NONAME ;public: bool __thiscall PEthSocket::Address::operator!=(unsigned char const *)const 
+    ??9Address@PIPSocket@@QBE_NH@Z @5608 NONAME ;public: bool __thiscall PIPSocket::Address::operator!=(int)const 
+    ??9PObject@@QBE_NABV0@@Z @5609 NONAME ;public: bool __thiscall PObject::operator!=(class PObject const &)const 
+    ??9PString@@QBE_NABVPObject@@@Z @5610 NONAME ;public: bool __thiscall PString::operator!=(class PObject const &)const 
+    ??9PString@@QBE_NPBD@Z @5611 NONAME ;public: bool __thiscall PString::operator!=(char const *)const 
+    ??9PTimeInterval@@QBE_NABV0@@Z @5612 NONAME ;public: bool __thiscall PTimeInterval::operator!=(class PTimeInterval const &)const 
+    ??9PTimeInterval@@QBE_NJ@Z @5613 NONAME ;public: bool __thiscall PTimeInterval::operator!=(long)const 
     ??A?$PArray@VPString@@@@QBEAAVPString@@H@Z @4775 NONAME ;public: class PString & __thiscall PArray<class PString>::operator[](int)const 
     ??A?$PArray@VPWaveBuffer@@@@QBEAAVPWaveBuffer@@H@Z @4776 NONAME ;public: class PWaveBuffer & __thiscall PArray<class PWaveBuffer>::operator[](int)const 
     ??A?$PArray@VPWin32PacketBuffer@@@@QBEAAVPWin32PacketBuffer@@H@Z @4777 NONAME ;public: class PWin32PacketBuffer & __thiscall PArray<class PWin32PacketBuffer>::operator[](int)const 
@@ -950,30 +946,30 @@ EXPORTS
     ??IPString@@QBE?AV0@D@Z @593 NONAME ;public: class PString  __thiscall PString::operator&(char)const 
     ??IPString@@QBE?AV0@PBD@Z @594 NONAME ;public: class PString  __thiscall PString::operator&(char const *)const 
     ??KPTimeInterval@@QBE?AV0@H@Z @5459 NONAME ;public: class PTimeInterval __thiscall PTimeInterval::operator/(int)const 
-    ??MPObject@@QBEHABV0@@Z @4824 NONAME ;public: int __thiscall PObject::operator<(class PObject const &)const 
-    ??MPString@@QBEHABVPObject@@@Z @5460 NONAME ;public: int __thiscall PString::operator<(class PObject const &)const 
-    ??MPString@@QBEHPBD@Z @5461 NONAME ;public: int __thiscall PString::operator<(char const *)const 
-    ??MPTimeInterval@@QBEHABV0@@Z @4825 NONAME ;public: int __thiscall PTimeInterval::operator<(class PTimeInterval const &)const 
-    ??MPTimeInterval@@QBEHJ@Z @5462 NONAME ;public: int __thiscall PTimeInterval::operator<(long)const 
-    ??NPObject@@QBEHABV0@@Z @5463 NONAME ;public: int __thiscall PObject::operator<=(class PObject const &)const 
-    ??NPString@@QBEHABVPObject@@@Z @5464 NONAME ;public: int __thiscall PString::operator<=(class PObject const &)const 
-    ??NPString@@QBEHPBD@Z @5465 NONAME ;public: int __thiscall PString::operator<=(char const *)const 
-    ??NPTimeInterval@@QBEHABV0@@Z @4826 NONAME ;public: int __thiscall PTimeInterval::operator<=(class PTimeInterval const &)const 
-    ??NPTimeInterval@@QBEHJ@Z @5466 NONAME ;public: int __thiscall PTimeInterval::operator<=(long)const 
-    ??OPObject@@QBEHABV0@@Z @4827 NONAME ;public: int __thiscall PObject::operator>(class PObject const &)const 
-    ??OPString@@QBEHABVPObject@@@Z @5467 NONAME ;public: int __thiscall PString::operator>(class PObject const &)const 
-    ??OPString@@QBEHPBD@Z @5468 NONAME ;public: int __thiscall PString::operator>(char const *)const 
-    ??OPTimeInterval@@QBEHABV0@@Z @4828 NONAME ;public: int __thiscall PTimeInterval::operator>(class PTimeInterval const &)const 
-    ??OPTimeInterval@@QBEHJ@Z @4829 NONAME ;public: int __thiscall PTimeInterval::operator>(long)const 
-    ??PPObject@@QBEHABV0@@Z @5469 NONAME ;public: int __thiscall PObject::operator>=(class PObject const &)const 
-    ??PPString@@QBEHABVPObject@@@Z @5470 NONAME ;public: int __thiscall PString::operator>=(class PObject const &)const 
-    ??PPString@@QBEHPBD@Z @5471 NONAME ;public: int __thiscall PString::operator>=(char const *)const 
-    ??PPTimeInterval@@QBEHABV0@@Z @5472 NONAME ;public: int __thiscall PTimeInterval::operator>=(class PTimeInterval const &)const 
-    ??PPTimeInterval@@QBEHJ@Z @5473 NONAME ;public: int __thiscall PTimeInterval::operator>=(long)const 
+    ??MPObject@@QBE_NABV0@@Z @5614 NONAME ;public: bool __thiscall PObject::operator<(class PObject const &)const 
+    ??MPString@@QBE_NABVPObject@@@Z @5615 NONAME ;public: bool __thiscall PString::operator<(class PObject const &)const 
+    ??MPString@@QBE_NPBD@Z @5616 NONAME ;public: bool __thiscall PString::operator<(char const *)const 
+    ??MPTimeInterval@@QBE_NABV0@@Z @5617 NONAME ;public: bool __thiscall PTimeInterval::operator<(class PTimeInterval const &)const 
+    ??MPTimeInterval@@QBE_NJ@Z @5618 NONAME ;public: bool __thiscall PTimeInterval::operator<(long)const 
+    ??NPObject@@QBE_NABV0@@Z @5619 NONAME ;public: bool __thiscall PObject::operator<=(class PObject const &)const 
+    ??NPString@@QBE_NABVPObject@@@Z @5620 NONAME ;public: bool __thiscall PString::operator<=(class PObject const &)const 
+    ??NPString@@QBE_NPBD@Z @5621 NONAME ;public: bool __thiscall PString::operator<=(char const *)const 
+    ??NPTimeInterval@@QBE_NABV0@@Z @5622 NONAME ;public: bool __thiscall PTimeInterval::operator<=(class PTimeInterval const &)const 
+    ??NPTimeInterval@@QBE_NJ@Z @5623 NONAME ;public: bool __thiscall PTimeInterval::operator<=(long)const 
+    ??OPObject@@QBE_NABV0@@Z @5624 NONAME ;public: bool __thiscall PObject::operator>(class PObject const &)const 
+    ??OPString@@QBE_NABVPObject@@@Z @5625 NONAME ;public: bool __thiscall PString::operator>(class PObject const &)const 
+    ??OPString@@QBE_NPBD@Z @5626 NONAME ;public: bool __thiscall PString::operator>(char const *)const 
+    ??OPTimeInterval@@QBE_NABV0@@Z @5627 NONAME ;public: bool __thiscall PTimeInterval::operator>(class PTimeInterval const &)const 
+    ??OPTimeInterval@@QBE_NJ@Z @5628 NONAME ;public: bool __thiscall PTimeInterval::operator>(long)const 
+    ??PPObject@@QBE_NABV0@@Z @5629 NONAME ;public: bool __thiscall PObject::operator>=(class PObject const &)const 
+    ??PPString@@QBE_NABVPObject@@@Z @5630 NONAME ;public: bool __thiscall PString::operator>=(class PObject const &)const 
+    ??PPString@@QBE_NPBD@Z @5631 NONAME ;public: bool __thiscall PString::operator>=(char const *)const 
+    ??PPTimeInterval@@QBE_NABV0@@Z @5632 NONAME ;public: bool __thiscall PTimeInterval::operator>=(class PTimeInterval const &)const 
+    ??PPTimeInterval@@QBE_NJ@Z @5633 NONAME ;public: bool __thiscall PTimeInterval::operator>=(long)const 
     ??RPNotifier@@UBEXAAVPObject@@H@Z @595 NONAME ;public: virtual void __thiscall PNotifier::operator()(class PObject &,int)const 
     ??RPString@@QBE?AV0@HH@Z @596 NONAME ;public: class PString  __thiscall PString::operator()(int,int)const 
-    ??XPString@@QBEHABV0@@Z @4830 NONAME ;public: int __thiscall PString::operator*=(class PString const &)const 
-    ??XPString@@QBEHPBD@Z @597 NONAME ;public: int __thiscall PString::operator*=(char const *)const 
+    ??XPString@@QBE_NABV0@@Z @5634 NONAME ;public: bool __thiscall PString::operator*=(class PString const &)const 
+    ??XPString@@QBE_NPBD@Z @5635 NONAME ;public: bool __thiscall PString::operator*=(char const *)const 
     ??XPTimeInterval@@QAEAAV0@H@Z @5474 NONAME ;public: class PTimeInterval & __thiscall PTimeInterval::operator*=(int)
     ??XPWin32AsnOid@@QAE_NABV0@@Z @4831 NONAME ;public: bool __thiscall PWin32AsnOid::operator*=(class PWin32AsnOid const &)
     ??YPFilePath@@QAEAAV0@ABVPString@@@Z @598 NONAME ;public: class PFilePath & __thiscall PFilePath::operator+=(class PString const &)
@@ -4449,7 +4445,6 @@ EXPORTS
     ?SetTime@PConfig@@UAEXABVPString@@ABVPTime@@@Z @3007 NONAME ;public: virtual void __thiscall PConfig::SetTime(class PString const &,class PTime const &)
     ?SetType@PFilePath@@QAEXABVPCaselessString@@@Z @2489 NONAME ;public: void __thiscall PFilePath::SetType(class PCaselessString const &)
     ?SetUserName@PProcess@@QAEHABVPString@@H@Z @2490 NONAME ;public: int __thiscall PProcess::SetUserName(class PString const &,int)
-    ?SetValue@PAtomicInteger@@QAEXJ@Z @5555 NONAME ;public: void __thiscall PAtomicInteger::SetValue(long)
     ?SetValue@RegistryKey@@QAEHABVPString@@0@Z @2491 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,class PString const &)
     ?SetValue@RegistryKey@@QAEHABVPString@@K@Z @2492 NONAME ;public: int __thiscall RegistryKey::SetValue(class PString const &,unsigned long)
     ?SetVFlipState@PColourConverter@@QAEXH@Z @5389 NONAME ;public: void __thiscall PColourConverter::SetVFlipState(int)
