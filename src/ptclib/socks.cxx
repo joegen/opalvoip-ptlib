@@ -22,6 +22,9 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * $Log: socks.cxx,v $
+ * Revision 1.9  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.8  2003/09/08 01:42:48  dereksmithies
  * Add patch from Diego Tartara <dtartara@mens2.hq.novamens.com>. Many Thanks!
  *
@@ -385,7 +388,7 @@ BOOL PSocksSocket::Accept(PSocket & socket)
   // If is right class, transfer the SOCKS socket to class to receive the accept
   // The "listener" socket is implicitly closed as there is really only one
   // handle in a SOCKS BIND operation.
-  PAssert(socket.IsDescendant(PSocksSocket::Class()), PUnsupportedFeature);
+  PAssert(PIsDescendant(&socket, PSocksSocket), PUnsupportedFeature);
   os_handle = ((PSocksSocket &)socket).TransferHandle(*this);
   return Accept();
 }

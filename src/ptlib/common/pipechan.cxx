@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.8  2004/04/03 08:22:21  csoutheren
+ * Remove pseudo-RTTI and replaced with real RTTI
+ *
  * Revision 1.7  1998/11/30 04:59:04  robertj
  * New directory structure
  *
@@ -125,7 +128,7 @@ PPipeChannel::PPipeChannel(const PString & subProgram,
 
 PObject::Comparison PPipeChannel::Compare(const PObject & obj) const
 {
-  PAssert(obj.IsDescendant(PPipeChannel::Class()), PInvalidCast);
+  PAssert(PIsDescendant(&obj, PPipeChannel), PInvalidCast);
   return subProgName.Compare(((const PPipeChannel &)obj).subProgName);
 }
 
