@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.22 1997/08/28 14:19:40 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.23 1997/10/30 10:21:26 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.23  1997/10/30 10:21:26  robertj
+ * Added ability to customise regisration text by application.
+ *
  * Revision 1.22  1997/08/28 14:19:40  robertj
  * Fixed bug where HTTP directory was not processed for macros.
  *
@@ -203,6 +206,7 @@ PString PHTTPServiceProcess::GetCopyrightText()
   return html;
 }
 
+
 PString PHTTPServiceProcess::GetPageGraphic()
 {
   PHTML html = PHTML::InBody;
@@ -258,6 +262,21 @@ void PHTTPServiceProcess::CompleteRestartSystem()
   if (!Initialise("Configuration changed - reloaded"))
     Terminate();
   restartThread = NULL;
+}
+
+
+void PHTTPServiceProcess::AddRegisteredText(PHTML &)
+{
+}
+
+
+void PHTTPServiceProcess::AddUnregisteredText(PHTML &)
+{
+}
+
+
+void PHTTPServiceProcess::SubstituteEquivalSequence(PHTTPRequest &, const PString &, PString &)
+{
 }
 
 
@@ -859,6 +878,10 @@ static void ReplaceIncludes(PHTTPRequest & request, PString & text)
       subs = process.GetOSClass() & process.GetOSName();
     else if (cmd == "version")
       subs = process.GetVersion(TRUE);
+    else if (cmd == "localhost")
+      subs = PIPSocket::GetHostName();
+    else if (cmd == "peerhost")
+      subs = PIPSocket::GetHostName(request.origin);
     else if (cmd == "reginfo")
       DigestSecuredKeys(process, subs, NULL);
     else if (cmd == "registration") {
@@ -871,10 +894,15 @@ static void ReplaceIncludes(PHTTPRequest & request, PString & text)
           << PHTML::Heading(3)
           << PHTML::Heading(4)
           << sconf.GetString("Company", sconf.GetString(pending+"Company"))
-          << PHTML::Heading(4);
+          << PHTML::Heading(4)
+          << PHTML::Paragraph();
 
-      out << PHTML::Paragraph()
-          << PHTML::HotLink("/register.html")
+      if (sconf.GetString("Name").IsEmpty())
+        process.AddUnregisteredText(out);
+      else
+        process.AddRegisteredText(out);
+
+      out << PHTML::HotLink("/register.html")
           << (sconf.GetString("Name").IsEmpty()
                                    ? "Register Now!" : "View Registration")
           << PHTML::HotLink();
