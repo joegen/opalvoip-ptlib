@@ -1,5 +1,5 @@
 /*
- * $Id: array.h,v 1.8 1996/01/02 11:48:46 robertj Exp $
+ * $Id: array.h,v 1.9 1996/08/17 09:54:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: array.h,v $
+ * Revision 1.9  1996/08/17 09:54:34  robertj
+ * Optimised RemoveAll() for object arrays.
+ *
  * Revision 1.8  1996/01/02 11:48:46  robertj
  * Removed requirement that PArray elements have parameterless constructor..
  *
@@ -585,6 +588,14 @@ PDECLARE_CONTAINER(PArrayObjects, PCollection)
 
        <H2>Returns:</H2>
        ordinal index position of the object, or P_MAX_INDEX.
+     */
+
+    virtual void RemoveAll();
+    /* Remove all of the elements in the collection. This operates by
+       continually calling <A>RemoveAt()</A> until there are no objects left.
+
+       The objects are removed from the last, at index
+       <CODE>(GetSize()-1)</CODE> toward the first at index zero.
      */
 
 
