@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.37  1998/11/06 04:44:46  robertj
+ * Solaris compatibility
+ *
  * Revision 1.36  1998/11/05 12:03:13  robertj
  * Fixed solaris compatibility and Linux warning on readdir_r function.
  *
@@ -130,10 +133,8 @@ static PString CanonicaliseDirectory (const PString & path)
   // if the path does not start with a slash, then the current directory
   // must be prepended
   if (path.IsEmpty() || path[0] != '/')  {
-    char *p = getcwd(NULL, 0);
+    char *p = getcwd(canonical_path.GetPointer(P_MAX_PATH), P_MAX_PATH);
     PAssertOS (p != NULL);
-    canonical_path = PString(p);
-    runtime_free(p);
   }
 
   // if the path doesn't end in a slash, add one
