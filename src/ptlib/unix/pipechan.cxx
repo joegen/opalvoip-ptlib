@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipechan.cxx,v $
+ * Revision 1.39  2003/01/08 01:29:22  craigs
+ * More changes for return code to waitpid
+ *
  * Revision 1.38  2002/12/18 01:12:09  craigs
  * Remove erroneous WUNTRACED and added support for EINTR from waitpid
  *
@@ -385,8 +388,19 @@ BOOL PPipeChannel::IsRunning() const
   PPipeChannel * thisW = (PPipeChannel *)this;
   thisW->childPid = 0;
 
-  if (WIFEXITED(status) != 0)
+  if (WIFEXITED(status)) {
     thisW->retVal = WEXITSTATUS(status);
+    PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
+  } else if (WIFSIGNALED(status)) {
+    PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
+    thisW->retVal = -1;
+  } else if (WIFSTOPPED(status)) {
+    PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
+    thisW->retVal = -1;
+  } else {
+    PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
+    thisW->retVal = -1;
+  }
 
   return FALSE;
 
@@ -408,10 +422,19 @@ int PPipeChannel::WaitForTermination()
     err = waitpid(childPid, &status, 0);
     if (err == childPid) {
       childPid = 0;
-      if (WIFEXITED(status) != 0)
+      if (WIFEXITED(status)) {
         retVal = WEXITSTATUS(status);
-      else
+        PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
+      } else if (WIFSIGNALED(status)) {
+        PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
         retVal = -1;
+      } else if (WIFSTOPPED(status)) {
+        PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
+        retVal = -1;
+      } else {
+        PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
+        retVal = -1;
+      }
       return retVal;
     }
   } while (err == EINTR);
@@ -438,10 +461,19 @@ int PPipeChannel::WaitForTermination(const PTimeInterval & timeout)
     err = waitpid(childPid, &status, 0);
     if (err == childPid) {
       childPid = 0;
-      if (WIFEXITED(status) != 0)
+      if (WIFEXITED(status)) {
         retVal = WEXITSTATUS(status);
-      else
+        PTRACE(2, "PipeChannel\tChild exited with code " << retVal);
+      } else if (WIFSIGNALED(status)) {
+        PTRACE(2, "PipeChannel\tChild was signalled with " << WTERMSIG(status));
         retVal = -1;
+      } else if (WIFSTOPPED(status)) {
+        PTRACE(2, "PipeChannel\tChild was stopped with " << WSTOPSIG(status));
+        retVal = -1;
+      } else {
+        PTRACE(2, "PipeChannel\tChild was stopped with unknown status" << status);
+        retVal = -1;
+      }
       return retVal;
     }
   } while (err == EINTR);
