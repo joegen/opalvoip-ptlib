@@ -23,8 +23,12 @@
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
+ *		   Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: vconvert.cxx,v $
+ * Revision 1.10  2001/03/20 02:21:57  robertj
+ * More enhancements from Mark Cooke
+ *
  * Revision 1.9  2001/03/08 23:36:03  robertj
  * Added backward compatibility SetFrameSize() function.
  * Added internal SimpleConvert() function for same type converters.
@@ -148,6 +152,22 @@ BOOL PColourConverter::SetDstFrameSize(unsigned width, unsigned height,
 }
 
 
+BOOL PColourConverter::GetSrcFrameSize(unsigned &width, unsigned &height) const
+{
+    width = srcFrameWidth;
+    height = srcFrameHeight;
+    return TRUE;
+}
+
+
+BOOL PColourConverter::GetDstFrameSize(unsigned &width, unsigned &height) const
+{
+    width = dstFrameWidth;
+    height = dstFrameHeight;
+    return TRUE;
+}
+
+
 BOOL PColourConverter::ConvertInPlace(BYTE * frameBuffer,
                                       PINDEX * bytesReturned,
                                       BOOL noIntermediateFrame)
@@ -223,10 +243,82 @@ static void RGBtoYUV411p(unsigned width, unsigned height,
   }
 }
 
+#define BLACK_Y 0
+#define BLACK_U 128
+#define BLACK_V 128
+
+// Simple crop/pad version.  Image aligned to top-left
+// and cropped / padded with black borders as required.
+static void RGBtoYUV411pWithResize(
+    unsigned swidth, unsigned sheight, const BYTE * rgb,
+    unsigned dwidth, unsigned dheight, BYTE * yuv,
+    unsigned rgbIncrement)
+{
+  int planeSize = dwidth*dheight;
+  const int halfWidth = dwidth >> 1;
+  unsigned min_width, min_height;
+  
+  min_width  = (dwidth  < swidth)  ? dwidth  : swidth;
+  min_height = (dheight < sheight) ? dheight : sheight;
+
+  // get pointers to the data
+  BYTE * yplane  = yuv;
+  BYTE * uplane  = yuv + planeSize;
+  BYTE * vplane  = yuv + planeSize + (planeSize >> 2);
+
+  for (unsigned y = 0; y < min_height; y++) 
+  {
+    BYTE * yline  = yplane + (y * dwidth);
+    BYTE * uline  = uplane + ((y >> 1) * halfWidth);
+    BYTE * vline  = vplane + ((y >> 1) * halfWidth);
+
+    for (unsigned x = 0; x < min_width; x+=2) 
+    {
+     rgbtoyuv(rgb[0], rgb[1], rgb[2],*yline, *uline, *vline);
+     rgb += rgbIncrement;
+     yline++;
+     rgbtoyuv(rgb[0], rgb[1], rgb[2],*yline, *uline, *vline);
+     rgb += rgbIncrement;
+     yline++;
+     uline++;
+     vline++;
+    }
+
+    // Crop if source width > dest width
+    if (swidth > dwidth)
+      rgb += rgbIncrement * (swidth - dwidth);
+
+    // Pad if dest width < source width
+    if (dwidth > swidth) {
+      memset(yline, BLACK_Y, dwidth - swidth);
+      memset(uline, BLACK_U, (dwidth - swidth)>>1);
+      memset(vline, BLACK_V, (dwidth - swidth)>>1);
+    }
+  }
+
+  // Pad if dest height > source height
+  if (dheight > sheight) {
+    BYTE * yline  = yplane + (sheight * dwidth);
+    BYTE * uline  = uplane + ((sheight >> 1) * halfWidth);
+    BYTE * vline  = vplane + ((sheight >> 1) * halfWidth);
+    unsigned fill = (dheight - sheight) * dwidth;
+
+    memset(yline, BLACK_Y, fill);
+    memset(uline, BLACK_U, fill >> 2);
+    memset(vline, BLACK_V, fill >> 2);
+  }
+}
 
 PSTANDARD_COLOUR_CONVERTER(RGB24,YUV411P)
 {
-  RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 3);
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+  
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+    RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 3);
+  else
+    RGBtoYUV411pWithResize(srcFrameWidth, srcFrameHeight, srcFrameBuffer,
+                           dstFrameWidth, dstFrameHeight, dstFrameBuffer, 3);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
@@ -235,7 +327,14 @@ PSTANDARD_COLOUR_CONVERTER(RGB24,YUV411P)
 
 PSTANDARD_COLOUR_CONVERTER(RGB32,YUV411P)
 {
-  RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 4);
+  if (srcFrameBuffer == dstFrameBuffer)
+    return FALSE;
+  
+  if ((srcFrameWidth == dstFrameWidth) && (srcFrameHeight == dstFrameHeight)) 
+    RGBtoYUV411p(srcFrameWidth, srcFrameHeight, srcFrameBuffer, dstFrameBuffer, 4);
+  else
+    RGBtoYUV411pWithResize(srcFrameWidth, srcFrameHeight, srcFrameBuffer,
+                           dstFrameWidth, dstFrameHeight, dstFrameBuffer, 4);
   if (bytesReturned != NULL)
     *bytesReturned = dstFrameBytes;
   return TRUE;
