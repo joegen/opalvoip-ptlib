@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.1 1996/06/13 13:33:14 robertj Exp $
+ * $Id: httpsvc.h,v 1.2 1996/06/28 13:15:39 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.2  1996/06/28 13:15:39  robertj
+ * Moved HTTP form resource to another compilation module.
+ *
  * Revision 1.1  1996/06/13 13:33:14  robertj
  * Initial revision
  *
@@ -14,8 +17,7 @@
 #ifndef APPCOMM_H
 #define APPCOMM_H
 
-#include <html.h>
-#include <http.h>
+#include <httpform.h>
 #include <svcproc.h>
 #include <cypher.h>
 
