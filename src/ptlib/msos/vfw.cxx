@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.5  2000/07/30 03:41:31  robertj
+ * Added more colour formats to video device enum.
+ *
  * Revision 1.4  2000/07/26 03:50:50  robertj
  * Added last error variable to video device.
  *
@@ -100,26 +103,33 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(unsigned width, unsigned height,
       for (i = 0; i < 256; i++)
         bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
       break;
-    case PVideoDevice::RGB24 :
-      bi->bmiHeader.biCompression = BI_RGB;
-      bi->bmiHeader.biBitCount = 24;
-      break;
     case PVideoDevice::RGB32 :
       bi->bmiHeader.biCompression = BI_RGB;
       bi->bmiHeader.biBitCount = 32;
       break;
-    case PVideoDevice::YUV422 :
-      bi->bmiHeader.biCompression = mmioFOURCC('Y', 'U', 'V', '8');
-      bi->bmiHeader.biBitCount = 8;
+    case PVideoDevice::RGB24 :
+      bi->bmiHeader.biCompression = BI_RGB;
+      bi->bmiHeader.biBitCount = 24;
       break;
     case PVideoDevice::RGB565 :
       bi->bmiHeader.biCompression = BI_BITFIELDS;
+      bi->bmiHeader.biBitCount = 16;
+      break;
+    case PVideoDevice::RGB555 :
+      bi->bmiHeader.biCompression = BI_BITFIELDS;
+      bi->bmiHeader.biBitCount = 15;
+      break;
+    case PVideoDevice::YUV422 :
+      bi->bmiHeader.biCompression = mmioFOURCC('Y', 'U', 'Y', '2');
       bi->bmiHeader.biBitCount = 16;
       break;
     case PVideoDevice::MJPEG :
       bi->bmiHeader.biCompression = mmioFOURCC('M','J','P','G');
       bi->bmiHeader.biBitCount = 0;
       break;
+    default :
+      bi->bmiHeader.biCompression = 0xffffffff; // Indicate invalid colour format
+      return;
   }
 
   bi->bmiHeader.biSizeImage = height*((bi->bmiHeader.biBitCount*width + 31)/32)*4;

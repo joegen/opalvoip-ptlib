@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.6  2000/07/30 03:41:31  robertj
+ * Added more colour formats to video device enum.
+ *
  * Revision 1.5  2000/07/26 03:50:49  robertj
  * Added last error variable to video device.
  *
@@ -67,13 +70,22 @@ class PVideoDevice : public PObject
       NumVideoFormats
     };
 
+    /// Colour frame formats for video.
     enum ColourFormat {
-      Grey,
+      Grey,     /// Simple 8 bit linear grey scale
       Gray = Grey,
-      RGB24,
-      RGB32,
-      YUV422,
-      RGB565,
+      RGB32,    /// 32 bit RGB
+      RGB24,    /// 24 bit RGB
+      RGB565,   /// 16 bit RGB (6 bit green)
+      RGB555,   /// 15 bit RGB
+      YUV422,   /// YUV 4:2:2 packed
+      YUV422P,  /// YUV 4:2:2 planar
+      YUV411,   /// YUV 4:1:1 packed
+      YUV411P,  /// YUV 4:1:1 planar
+      YUV420,   /// YUV 4:2:0 packed
+      YUV420P,  /// YUV 4:2:0 planar
+      YUV410,   /// YUV 4:1:0 packed
+      YUV410P,  /// YUV 4:1:0 planar
       MJPEG,
       NumColourFormats
     };
@@ -86,7 +98,7 @@ class PVideoDevice : public PObject
     /** Create a new video output device.
      */
     PVideoDevice(
-      VideoFormat videoformat = PAL,
+      VideoFormat videoformat = Auto,
       unsigned channelNumber = 0,
       ColourFormat colourFormat = RGB24
     );
