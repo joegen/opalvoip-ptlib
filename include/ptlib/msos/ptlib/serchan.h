@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.h,v $
+ * Revision 1.8  1998/11/30 02:55:29  robertj
+ * New directory structure
+ *
  * Revision 1.7  1998/09/24 03:30:22  robertj
  * Added open software license.
  *
@@ -54,7 +57,7 @@
 
 #ifndef _PSERIALCHANNEL
 
-#include "..\..\common\ptlib/serchan.h"
+#include "..\..\serchan.h"
   public:
     // Overrides from class PChannel
     virtual PString GetName() const;
