@@ -46,7 +46,7 @@ using namespace std;
 typedef unsigned char  UInt8;
 typedef unsigned short UInt16;
 typedef unsigned int   UInt32;
-typedef struct { unsigned char octet[8]; }  UInt128;
+typedef struct { unsigned char octet[16]; }  UInt128;
 
 
 /// define a structure to hold a stun address 
