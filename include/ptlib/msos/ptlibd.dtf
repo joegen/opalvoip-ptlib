@@ -329,7 +329,7 @@ EXPORTS
     ??0PVideoInputDevice@@QAE@XZ @3659 NONAME ;public: __thiscall PVideoInputDevice::PVideoInputDevice(void)
     ??0PVideoInputThread@@QAE@AAVPVideoInputDevice@@@Z @3366 NONAME ;public: __thiscall PVideoInputThread::PVideoInputThread(class PVideoInputDevice &)
     ??0PVideoOutputDevice@@QAE@XZ @3660 NONAME ;public: __thiscall PVideoOutputDevice::PVideoOutputDevice(void)
-    ??0PWaitAndSignal@@QAE@AAVPSemaphore@@H@Z @3792 NONAME ;public: __thiscall PWaitAndSignal::PWaitAndSignal(class PSemaphore &,int)
+    ??0PWaitAndSignal@@QAE@ABVPSemaphore@@H@Z @4230 NONAME ;public: __thiscall PWaitAndSignal::PWaitAndSignal(class PSemaphore const &,int)
     ??0PWaveBuffer@@AAE@H@Z @2602 NONAME ;private: __thiscall PWaveBuffer::PWaveBuffer(int)
     ??0PWaveFormat@@QAE@ABV0@@Z @2603 NONAME ;public: __thiscall PWaveFormat::PWaveFormat(class PWaveFormat const &)
     ??0PWaveFormat@@QAE@XZ @2604 NONAME ;public: __thiscall PWaveFormat::PWaveFormat(void)
