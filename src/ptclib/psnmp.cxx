@@ -1,11 +1,14 @@
 /*
  * SNMP Library
  *
- * $Id: psnmp.cxx,v 1.2 1996/11/04 03:59:19 robertj Exp $
+ * $Id: psnmp.cxx,v 1.3 1997/07/14 11:47:17 robertj Exp $
  *
  * Copyright 1996 by Equivalence
  *
  * $Log: psnmp.cxx,v $
+ * Revision 1.3  1997/07/14 11:47:17  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.2  1996/11/04 03:59:19  robertj
  * Added selectable read buffer size.
  *
@@ -43,7 +46,7 @@
 #include <psnmp.h>
 
 
-static char *SnmpErrorCodeTable[] = 
+static char const * const SnmpErrorCodeTable[] = 
 {
   "no error",
   "too big",
@@ -59,7 +62,7 @@ static char *SnmpErrorCodeTable[] =
   "tx data too big"
 };
 
-static char * TrapCodeToText[PSNMP::NumTrapTypes] = {
+static char const * const TrapCodeToText[PSNMP::NumTrapTypes] = {
   "Cold Start",
   "Warm Start",
   "Link Down",
