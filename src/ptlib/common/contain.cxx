@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.77  1999/04/16 14:38:37  craigs
+ * Changes to make getdate.y compile under Linux
+ *
  * Revision 1.76  1998/10/28 00:58:40  robertj
  * Changed PStringStream so flush or endl does not clear the string output, this now
  *    just sets the string to minimum size.
@@ -764,6 +767,19 @@ static void UnicodeCopy(WORD * theArray, char * src, size_t len)
 #else
 #define PSTRING_COPY(d, s, l) memcpy((d), (s), (l))
 #define PSTRING_MOVE(d, doff, s, soff, l) memmove((d)+(doff), (s)+(soff), (l))
+#endif
+
+#ifndef PSTRLWR
+extern "C" {
+char * PSTRLWR(char * s)
+{
+  char * str = s;
+  while (*str) {
+    *str = tolower(*str);
+  }
+  return s;
+}
+};
 #endif
 
 PString::PString(const char * cstr)
