@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
+# Revision 1.110  2001/12/06 05:38:25  craigs
+# Added detection of expat XML parser library
+#
 # Revision 1.109  2001/12/05 06:26:17  rogerh
 # Make Darwin and Carbon use only static libaries.
 #
@@ -1076,6 +1079,12 @@ LDFLAGS		+= -L$(OPENSSLDIR)/lib
 ENDLDLIBS	+= -lssl -lcrypto
 HAS_OPENSSL	= 1
 endif
+endif
+
+# define expat (XML parser) variables if installed
+ifneq (,$(wildcard /usr/include/expat.h))
+HAS_EXPAT	= 1
+ENDLDLIBS	+= -lexpat
 endif
 
 # define ESDDIR variables if installed
