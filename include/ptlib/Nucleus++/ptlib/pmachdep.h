@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.2  2001/03/07 06:52:23  yurik
+ * Changed email to current one
+ *
  * Revision 1.1  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -46,7 +49,7 @@
  * BeOS port changes.
  *
  * Revision 1.23  1999/02/06 05:49:44  robertj
- * BeOS port effort by Yuri Kiryanov <yk@altavista.net>
+ * BeOS port effort by Yuri Kiryanov <openh323@kiryanov.com>
  *
  * Revision 1.22  1999/01/08 01:28:16  robertj
  * Added pthreads support for FreeBSD
