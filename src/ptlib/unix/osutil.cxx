@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.63  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.62  2001/06/30 06:59:07  yurik
  * Jac Goudsmit from Be submit these changes 6/28. Implemented by Yuri Kiryanov
  *
@@ -168,7 +171,7 @@
 #define P_USE_LANGINFO
 #endif
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 #define P_USE_STRFTIME
 
 #include <sys/param.h>
@@ -524,7 +527,7 @@ PString PDirectory::GetVolume() const
     }
     fclose(fp);
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 
     struct statfs * mnt;
     int count = getmntinfo(&mnt, MNT_NOWAIT);
@@ -560,7 +563,7 @@ PString PDirectory::GetVolume() const
 
 BOOL PDirectory::GetVolumeSpace(PInt64 & total, PInt64 & free, DWORD & clusterSize) const
 {
-#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX)
+#if defined(P_LINUX) || defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 
   struct statfs fs;
 
@@ -1288,7 +1291,7 @@ int PTime::GetTimeZone(PTime::TimeZoneType type)
     return tz;
   else
     return tz + ::daylight*60;
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(__BEOS__)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined(P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS) || defined(__BEOS__)
   time_t t;
   time(&t);
   struct tm  * tm = localtime(&t);
@@ -1336,7 +1339,7 @@ PString PTime::GetTimeZoneString(PTime::TimeZoneType type)
 #ifdef P_PTHREADS
 struct tm * PTime::os_localtime(const time_t * clock, struct tm * ts)
 {
-#ifdef P_MACOSX
+#ifdef P_MACOSX 
 #warning LOCALTIME_R NOT DEFINED
   return ::localtime(clock);
 #else

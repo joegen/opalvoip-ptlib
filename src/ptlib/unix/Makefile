@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.81  2001/08/11 15:38:43  rogerh
+# Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+#
 # Revision 1.80  2001/07/20 07:36:59  rogerh
 # Move ESD detection.
 #
@@ -372,6 +375,17 @@ VIDEO_SOURCE = $(COMMON_SRC_DIR)/vfakeio.cxx \
 	       	   $(COMMON_SRC_DIR)/vconvert.cxx
 endif
 
+ifeq ($(OSTYPE),Carbon)
+MACAUDIO_SRC_DIR	= ./macosaudio
+VPATH_CXX += $(MACAUDIO_SRC_DIR)
+
+SOUND_SOURCE = macosaudio.cxx \
+	$(MACAUDIO_SRC_DIR)/ringbuffer.cxx \
+	$(MACAUDIO_SRC_DIR)/MacMain.cxx \
+	$(MACAUDIO_SRC_DIR)/SequenceGrabber.cxx \
+	$(MACAUDIO_SRC_DIR)/SoundMangler.cxx
+endif
+
 ifdef HAS_ESD
 SOUND_SOURCE = esdaudio.cxx
 endif
@@ -430,7 +444,9 @@ SOURCES	= \
 	$(COMMON_SRC_DIR)/contain.cxx \
 	$(COMMON_SRC_DIR)/object.cxx   # must be last module
 
+ifneq ($(OSTYPE),Carbon)
 OBJS	= $(OBJDIR)/regcomp.o $(OBJDIR)/regexec.o $(OBJDIR)/regerror.o $(OBJDIR)/regfree.o
+endif
 
 CLEAN_FILES = $(GETDATE_SOURCE)
 

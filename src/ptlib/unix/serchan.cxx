@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.22  2001/08/11 15:38:43  rogerh
+ * Add Mac OS Carbon changes from John Woods <jfw@jfwhome.funhouse.com>
+ *
  * Revision 1.21  2001/01/04 17:57:41  rogerh
  * Fix a cut and past error in my previous commit
  *
@@ -86,7 +89,7 @@
 #define	TCSETATTR(f,t)	tcsetattr(f,TCSANOW,t)
 #define	TCGETATTR(f,t)	tcgetattr(f,t)
 
-#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
+#elif defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
 #include <sys/ttycom.h>
 #define TCGETA TIOCGETA
 #define TCSETAW TIOCSETAW
@@ -136,7 +139,7 @@ void PSerialChannel::Construct()
   Termio.c_iflag = IGNBRK | IGNPAR;
   Termio.c_cflag = CS8 | CSTOPB | CREAD | CLOCAL;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
   Termio.c_ispeed = Termio.c_ospeed = B9600;
 #else
   Termio.c_cflag |= B9600;
@@ -376,7 +379,7 @@ BOOL PSerialChannel::SetSpeed(DWORD newBaudRate)
   // save new baud rate
   baudRate = newBaudRate;
 
-#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX)
+#if defined(P_FREEBSD) || defined(P_OPENBSD) || defined (P_NETBSD) || defined(P_MACOSX) || defined(P_MACOS)
   // The BSD way
   Termio.c_ispeed = baud; 
   Termio.c_ospeed = baud;
