@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.27 1996/02/19 13:30:15 robertj Exp $
+ * $Id: sockets.cxx,v 1.28 1996/02/25 03:10:55 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.28  1996/02/25 03:10:55  robertj
+ * Moved some socket functions to platform dependent code.
+ *
  * Revision 1.27  1996/02/19 13:30:15  robertj
  * Fixed bug in getting port by service name when specifying service by string number.
  * Added SO_LINGER option to socket to stop data loss on close.
@@ -103,7 +106,9 @@
 #include <ctype.h>
 
 
+#if defined(_WIN32) || defined(WINDOWS)
 static PTCPSocket dummyForWINSOCK; // Assure winsock is initialised
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -137,7 +142,13 @@ int PSocket::Select(PSocket & sock1,
 #pragma warning(default:4127)
 #endif
 
-  int rval = os_select(PMAX(h1, h2)+1, readfds, writefds, exceptfds, timeout);
+  PIntArray allfds(4);
+  allfds[0] = h1;
+  allfds[1] = 1;
+  allfds[2] = h2;
+  allfds[3] = 1;
+  int rval = os_select(PMAX(h1, h2)+1,
+                                readfds, writefds, exceptfds, allfds, timeout);
 
   if (rval > 0) {
     rval = 0;
@@ -191,6 +202,9 @@ BOOL PSocket::Select(SelectList & read,
                      const PTimeInterval & timeout)
 {
   int maxfds = 0;
+  PINDEX nextfd = 0;
+  PIntArray allfds(2*(read.GetSize()+write.GetSize()+except.GetSize()));
+
 #ifdef _MSC_VER
 #pragma warning(disable:4127)
 #endif
@@ -201,6 +215,8 @@ BOOL PSocket::Select(SelectList & read,
     FD_SET(h, &readfds);
     if (h > maxfds)
       maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 1;
   }
 
   fd_set writefds;
@@ -210,6 +226,8 @@ BOOL PSocket::Select(SelectList & read,
     FD_SET(h, &writefds);
     if (h > maxfds)
       maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 2;
   }
 
   fd_set exceptfds;
@@ -219,12 +237,14 @@ BOOL PSocket::Select(SelectList & read,
     FD_SET(h, &exceptfds);
     if (h > maxfds)
       maxfds = h;
+    allfds[nextfd++] = h;
+    allfds[nextfd++] = 4;
   }
 #ifdef _MSC_VER
 #pragma warning(default:4127)
 #endif
 
-  int retval = os_select(maxfds+1, readfds, writefds, exceptfds, timeout);
+  int retval = os_select(maxfds+1,readfds,writefds,exceptfds,allfds,timeout);
 
   if (retval < 0)
     return FALSE;
@@ -466,41 +486,11 @@ PString PIPSocket::GetServiceByPort(const char * protocol, WORD port)
 }
 
 
-BOOL PIPSocket::_Socket(int type)
-{
-  // close the port if it is already open
-  if (IsOpen())
-    Close();
-
-  // make sure we have a port
-  PAssert(port != 0, "Cannot open socket without setting port");
-
-  // attempt to create a socket
-  if (!ConvertOSError(os_handle = ::socket(AF_INET, type, 0)))
-    return FALSE;
-
-  // make the socket non-blocking
-#if !defined(_WIN32)
-  DWORD cmd = 1;
-#if defined(_WINDOWS)
-  ::ioctlsocket(os_handle, FIONBIO, &cmd);
-#else
-  ::ioctl(os_handle, FIONBIO, &cmd);
-#endif
-#endif
-
-  if (type == SOCK_DGRAM)
-    return TRUE;
-
-  // Wait 10 seconds for close to flush output
-  static linger ling = { 1, 10 };
-  return ConvertOSError(setsockopt(os_handle,
-                          SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
-}
-
-
 BOOL PIPSocket::_Connect(const PString & host)
 {
+  // make sure we have a port
+  PAssert(port != 0, "Cannot connect socket without setting port");
+
   // attempt to lookup the host name
   Address ipnum;
   if (!GetAddress(host, ipnum))
@@ -512,8 +502,7 @@ BOOL PIPSocket::_Connect(const PString & host)
   sin.sin_family = AF_INET;
   sin.sin_port   = htons(port);  // set the port
   sin.sin_addr   = ipnum;
-  return ConvertOSError(::connect(os_handle,
-                               (struct sockaddr *)&sin, sizeof(sin)));
+  return ConvertOSError(os_connect((struct sockaddr *)&sin, sizeof(sin)));
 }
 
 
@@ -526,7 +515,15 @@ BOOL PIPSocket::_Bind()
   sin.sin_addr.s_addr = htonl(INADDR_ANY);
   sin.sin_port        = htons(port);       // set the port
 
-  return ConvertOSError(bind(os_handle, (struct sockaddr*)&sin, sizeof(sin)));
+  if (!ConvertOSError(bind(os_handle, (struct sockaddr*)&sin, sizeof(sin))))
+    return FALSE;
+
+  int size = sizeof(sin);
+  if (!ConvertOSError(getsockname(os_handle, (struct sockaddr*)&sin, &size)))
+    return FALSE;
+
+  port = ntohs(sin.sin_port);
+  return TRUE;
 }
 
 
@@ -618,8 +615,12 @@ PTCPSocket::PTCPSocket(PSocket & socket)
 
 BOOL PTCPSocket::Connect(const PString & host)
 {
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
   // attempt to create a socket
-  if (!_Socket(SOCK_STREAM))
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
     return FALSE;
 
   // attempt to connect
@@ -633,12 +634,16 @@ BOOL PTCPSocket::Connect(const PString & host)
 
 BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
 {
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
 
   // attempt to create a socket
-  if (!_Socket(SOCK_STREAM))
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_STREAM, 0)))
     return FALSE;
 
   // attempt to listen
@@ -647,6 +652,24 @@ BOOL PTCPSocket::Listen(unsigned queueSize, WORD newPort)
 
   _Close();
   return FALSE;
+}
+
+
+BOOL PTCPSocket::Accept(PSocket & socket)
+{
+  // attempt to create a socket
+  sockaddr_in address;
+  address.sin_family = AF_INET;
+  int size = sizeof(address);
+  if (!ConvertOSError(os_handle = os_accept(socket.GetHandle(),
+                                          (struct sockaddr *)&address, &size)))
+    return FALSE;
+
+  port = ntohs(address.sin_port);
+
+  static const linger ling = { 1, 10 };
+  return ConvertOSError(setsockopt(os_handle,
+                               SOL_SOCKET, SO_LINGER, (char *)&ling, sizeof(ling)));
 }
 
 
@@ -717,8 +740,12 @@ PUDPSocket::PUDPSocket(const PString & address, const PString & service)
 
 BOOL PUDPSocket::Connect(const PString & host)
 {
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
   // attempt to create a socket
-  if (!_Socket(SOCK_DGRAM))
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
     return FALSE;
 
   // attempt to connect
@@ -732,12 +759,16 @@ BOOL PUDPSocket::Connect(const PString & host)
 
 BOOL PUDPSocket::Listen(unsigned, WORD newPort)
 {
+  // close the port if it is already open
+  if (IsOpen())
+    Close();
+
   // make sure we have a port
   if (newPort != 0)
     port = newPort;
 
   // attempt to create a socket
-  if (!_Socket(SOCK_DGRAM))
+  if (!ConvertOSError(os_handle = os_socket(AF_INET, SOCK_DGRAM, 0)))
     return FALSE;
 
   // attempt to listen
