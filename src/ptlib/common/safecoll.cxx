@@ -24,6 +24,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.cxx,v $
+ * Revision 1.5  2002/10/04 08:22:50  robertj
+ * Changed read/write mutex so can be called by same thread without deadlock
+ *   removing the need to a lock count in safe pointer.
+ * Added asserts if try and dereference a NULL safe pointer.
+ * Added more documentation on behaviour.
+ *
  * Revision 1.4  2002/08/29 06:53:28  robertj
  * Added optimisiation, separate mutex for toBeRemoved list.
  * Added assert for reference count going below zero.
@@ -270,8 +276,6 @@ PSafePtrBase::PSafePtrBase(PSafeObject * obj, PSafetyMode mode)
   collection = NULL;
   currentObject = obj;
   lockMode = mode;
-  lockThread = NULL;
-  lockCount = 0;
 
   EnterSafetyMode(WithReference);
 }
@@ -284,8 +288,6 @@ PSafePtrBase::PSafePtrBase(PSafeCollection & safeCollection,
   collection = &safeCollection;
   currentObject = NULL;
   lockMode = mode;
-  lockThread = NULL;
-  lockCount = 0;
 
   Assign(idx);
 }
@@ -298,8 +300,6 @@ PSafePtrBase::PSafePtrBase(PSafeCollection & safeCollection,
   collection = &safeCollection;
   currentObject = NULL;
   lockMode = mode;
-  lockThread = NULL;
-  lockCount = 0;
 
   Assign(obj);
 }
@@ -310,8 +310,6 @@ PSafePtrBase::PSafePtrBase(const PSafePtrBase & enumerator)
   collection = enumerator.collection;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
-  lockThread = enumerator.lockThread;
-  lockCount = 0;
 
   EnterSafetyMode(WithReference);
 }
@@ -340,16 +338,12 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
   if (this == &enumerator)
     return;
 
-  while (lockCount > 1)
-    ExitSafetyMode(NoDereference);
-
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
   collection = enumerator.collection;
   currentObject = enumerator.currentObject;
   lockMode = enumerator.lockMode;
-  lockThread = enumerator.lockThread;
 
   EnterSafetyMode(WithReference);
 }
@@ -357,9 +351,6 @@ void PSafePtrBase::Assign(const PSafePtrBase & enumerator)
 
 void PSafePtrBase::Assign(PSafeCollection & safeCollection)
 {
-  while (lockCount > 1)
-    ExitSafetyMode(NoDereference);
-
   // lockCount ends up zero after this
   ExitSafetyMode(WithDereference);
 
@@ -380,6 +371,7 @@ void PSafePtrBase::Assign(PSafeObject * newObj)
     return;
 
   if (collection == NULL) {
+    lockMode = PSafeReference;
     if (!EnterSafetyMode(WithReference))
       currentObject = NULL;
     return;
@@ -387,12 +379,19 @@ void PSafePtrBase::Assign(PSafeObject * newObj)
 
   collection->collectionMutex.Wait();
 
-  if (collection->collection->GetObjectsIndex(newObj) == P_MAX_INDEX || !newObj->SafeReference())
-    currentObject = NULL;
-
-  collection->collectionMutex.Signal();
-
-  EnterSafetyMode(AlreadyReferenced);
+  if (collection->collection->GetObjectsIndex(newObj) == P_MAX_INDEX) {
+    collection->collectionMutex.Signal();
+    collection = NULL;
+    lockMode = PSafeReference;
+    if (!EnterSafetyMode(WithReference))
+      currentObject = NULL;
+  }
+  else {
+    if (!newObj->SafeReference())
+      currentObject = NULL;
+    collection->collectionMutex.Signal();
+    EnterSafetyMode(AlreadyReferenced);
+  }
 }
 
 
@@ -503,33 +502,23 @@ BOOL PSafePtrBase::EnterSafetyMode(EnterSafetyModeOption ref)
     return FALSE;
   }
 
-  if (lockMode == PSafeReference)
-    return TRUE;
+  switch (lockMode) {
+    case PSafeReadOnly :
+      if (currentObject->LockReadOnly())
+        return TRUE;
+      break;
 
-  PThread * currentThread = PThread::Current();
-  if (lockThread == currentThread) {
-    lockCount++;
-    return TRUE;
-  }
+    case PSafeReadWrite :
+      if (currentObject->LockReadWrite())
+        return TRUE;
+      break;
 
-  PAssert(lockThread == NULL, "Invalid use of PSafePtr, locking across threads");
-  lockThread = currentThread;
-  lockCount = 1;
-
-  if (lockMode == PSafeReadOnly) {
-    if (currentObject->LockReadOnly())
-      return TRUE;
-  }
-  else {
-    if (currentObject->LockReadWrite())
+    case PSafeReference :
       return TRUE;
   }
 
   currentObject->SafeDereference();
-
   currentObject = NULL;
-  lockThread = NULL;
-  lockCount = 0;
   return FALSE;
 }
 
@@ -539,20 +528,17 @@ void PSafePtrBase::ExitSafetyMode(ExitSafetyModeOption ref)
   if (currentObject == NULL)
     return;
 
-  if (lockMode != PSafeReference) {
-    if (lockThread != PThread::Current()) {
-      PAssertAlways("Invalid use of PSafePtr, unlocking across threads");
-      return;
-    }
+  switch (lockMode) {
+    case PSafeReadOnly :
+      currentObject->UnlockReadOnly();
+      break;
 
-    lockCount--;
-    if (lockCount == 0) {
-      if (lockMode == PSafeReadOnly)
-        currentObject->UnlockReadOnly();
-      else
-        currentObject->UnlockReadWrite();
-      lockThread = NULL;
-    }
+    case PSafeReadWrite :
+      currentObject->UnlockReadWrite();
+      break;
+
+    case PSafeReference :
+      break;
   }
 
   if (ref == WithDereference)
