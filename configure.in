@@ -245,6 +245,33 @@ fi
 #   AC_MSG_RESULT(no)
 # fi
 
+AC_MSG_CHECKING(if compiler uses RTTI by default)
+AC_COMPILE_IFELSE([[
+#include <typeinfo>
+int main(int ac,char **av)
+{
+  class A
+  {
+    public:
+      virtual void fred() { }
+  };
+  class B : public A
+  {
+    public:
+      void fred() { }
+  };
+  B t;
+  A * p = dynamic_cast<A *>(&t);
+  return 0;
+}
+]],DEFAULT_RTTI=1, DEFAULT_RTTI=0)
+if test "$DEFAULT_RTTI" = "1" ; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+  STDCXXFLAGS="$STDCCFLAGS -rtti"
+fi
+
 GCSECTIONS=0
 
 AC_MSG_CHECKING(if linker accepts --gc-sections)
