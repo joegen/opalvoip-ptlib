@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.47  2000/10/31 08:09:51  rogerh
+ * Change return type of PX_GetThreadId() to save unnecessary typecasting
+ *
  * Revision 1.46  2000/10/31 07:52:06  rogerh
  * Add type casts to allow the code to compile on FreeBSD 4.1.1
  *
@@ -479,7 +482,7 @@ void PThread::PX_ThreadEnd(void * arg)
   PThread * thread = (PThread *)arg;
   PProcess & process = PProcess::Current();
   
-  pthread_t id = (pthread_t)thread->PX_GetThreadId();
+  pthread_t id = thread->PX_GetThreadId();
   thread->PX_threadId = 0;  // Prevent terminating terminated thread
 
   // delete the thread if required
@@ -493,9 +496,9 @@ void PThread::PX_ThreadEnd(void * arg)
 }
 
 
-unsigned PThread::PX_GetThreadId() const
+pthread_t PThread::PX_GetThreadId() const
 {
-  return (unsigned)PX_threadId;
+  return PX_threadId;
 }
 
 
