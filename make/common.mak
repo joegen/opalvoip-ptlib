@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.45  2000/03/20 23:08:31  craigs
+# Added showgui target to allow displaying the GUI settings
+#
 # Revision 1.44  2000/03/20 22:43:09  craigs
 # Added totally new mechanism for detecting GUI
 #
@@ -423,6 +426,10 @@ $(PWRC) :
 	$(MAKE) REALGUI=$(PWLIB_GUI) -C $(PWRC_DIR) opt
 
 endif
+
+showgui:
+	@echo PWLIB_GUI    = $(PWLIB_GUI)
+	@echo PWLIB_GUIDIR = $(PWLIB_GUIDIR)
 endif
 
 
