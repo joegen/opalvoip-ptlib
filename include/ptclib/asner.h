@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.h,v $
+ * Revision 1.30  2002/10/10 14:37:40  rogerh
+ * In two of the PASN classes make the protected members public. This
+ * makes OpenH323 compile in Mac OS X 10.2.1
+ *
  * Revision 1.29  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -802,7 +806,12 @@ class PASN_Choice : public PASN_Object
     virtual BOOL DecodePER(PPER_Stream &);
     virtual void EncodePER(PPER_Stream &) const;
 
+#ifdef P_MACOSX
+  #warning making PASN_Choice public
+  public:
+#else
   protected:
+#endif
     PASN_Choice(unsigned nChoices = 0, BOOL extend = FALSE);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend);
     PASN_Choice(unsigned tag, TagClass tagClass, unsigned nChoices, BOOL extend, const PString & nameSpec);
@@ -925,7 +934,12 @@ class PASN_Array : public PASN_ConstrainedObject
 
     virtual PASN_Object * CreateObject() const = 0;
 
+#ifdef P_MACOSX
+  #warning making PASN_Array public
+  public:
+#else
   protected:
+#endif
     PASN_Array(unsigned tag = UniversalSequence,
                TagClass tagClass = UniversalTagClass);
 
