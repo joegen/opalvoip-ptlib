@@ -1,5 +1,5 @@
 /*
- * $Id: cypher.h,v 1.2 1996/01/28 02:41:00 robertj Exp $
+ * $Id: cypher.h,v 1.3 1996/01/28 14:16:11 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: cypher.h,v $
+ * Revision 1.3  1996/01/28 14:16:11  robertj
+ * Further implementation of secure config.
+ *
  * Revision 1.2  1996/01/28 02:41:00  robertj
  * Removal of MemoryPointer classes as usage didn't work for GNU.
  * Added the secure configuration mechanism for protecting applications.
@@ -297,14 +300,18 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
 
   public:
     PSecureConfig(
-      const char * encryptPhrase,         // Phrase to be used for encryption.
       const char * const * securedKeys,   // List of secured keys.
       PINDEX count,                       // Number of secured keys in list.
-      const char * securedSection = "Secured Options",
-        // Section for secured key values
       Source src = Application      // Standard source for the configuration.
     );
-    /* Create a secured configuration. 
+    PSecureConfig(
+      const char * const * securedKeys,   // List of secured keys.
+      PINDEX count,                       // Number of secured keys in list.
+      const PString & securedSection,     // Section for secured key values
+      Source src = Application        // Standard source for the configuration.
+    );
+    /* Create a secured configuration. The default section for the
+       configuration keys is "Secured Options".
      */
 
 
@@ -330,7 +337,6 @@ PDECLARE_CLASS(PSecureConfig, PConfig)
   protected:
     PString CalculateValidation();
 
-    PTEACypher::Key cryptKey;
     PStringArray    securedKey;
 };
 
