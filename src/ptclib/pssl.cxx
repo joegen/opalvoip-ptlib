@@ -29,8 +29,11 @@
  * Portions bsed upon the file crypto/buffer/bss_sock.c 
  * Original copyright notice appears below
  *
- * $Id: pssl.cxx,v 1.12 2000/08/25 13:56:46 robertj Exp $
+ * $Id: pssl.cxx,v 1.13 2000/09/01 02:06:00 craigs Exp $
  * $Log: pssl.cxx,v $
+ * Revision 1.13  2000/09/01 02:06:00  craigs
+ * Changed to OpenSSL_add_ssl_algorthms to fix link problem on some machines
+ *
  * Revision 1.12  2000/08/25 13:56:46  robertj
  * Fixed some GNU warnings
  *
@@ -117,10 +120,14 @@
 
 #define USE_SOCKETS
 
+extern "C" {
+
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/crypto.h>
 #include <openssl/buffer.h>
+
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -163,7 +170,7 @@ PSSLContext::PSSLContext(const void * sessionId, PINDEX idSize)
   static BOOL needInitialisation = TRUE;
   if (needInitialisation) {
     SSL_load_error_strings();
-    SSLeay_add_all_algorithms();
+    OpenSSL_add_ssl_algorithms();
 
     LockMutexes.SetSize(CRYPTO_num_locks());
     for (PINDEX i = 0; i < LockMutexes.GetSize(); i++)
@@ -263,7 +270,7 @@ BOOL PSSLContext::SetCipherList(const PString & ciphers)
   if (ciphers.IsEmpty())
     return FALSE;
 
-  return SSL_CTX_set_cipher_list(context, ciphers);
+  return SSL_CTX_set_cipher_list(context, (char *)(const char *)ciphers);
 }
 
 
