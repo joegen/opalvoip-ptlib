@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.41  2000/02/16 11:30:25  craigs
+# Added rule to force library build for applications
+#
 # Revision 1.40  2000/02/04 19:33:25  craigs
 # Added ability to create non-shared versions of programs
 #
@@ -187,6 +190,9 @@ ifndef STATIC
 
 $(TARGET):	$(OBJS) $(PW_LIBDIR)/$(PTLIB_FILE)
 	$(CPLUS) $(CFLAGS) $(LDFLAGS) $(OBJS) -o $@ $(LDLIBS)
+
+$(PW_LIBDIR)/$(PTLIB_FILE):
+	( cd $(PWLIBDIR); $(MAKE) )
 
 else
 
