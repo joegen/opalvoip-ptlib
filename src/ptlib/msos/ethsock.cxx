@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ethsock.cxx,v $
+ * Revision 1.9  1998/10/15 05:41:48  robertj
+ * New memory leak check code.
+ *
  * Revision 1.8  1998/10/12 09:34:42  robertj
  * New method for getting IP addresses of interfaces.
  *
@@ -259,6 +262,10 @@ class PWin32PacketBuffer
     DWORD            count;
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+
+#define new PNEW
 
 /////////////////////////////////////////////////////////////////////////////
 
