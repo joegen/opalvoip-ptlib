@@ -475,6 +475,7 @@ EXPORTS
     ??0PImageDLL@@QAE@XZ @185 NONAME
     ??0PIndirectChannel@@QAE@XZ @186 NONAME
     ??0PingInfo@PICMPSocket@@QAE@G@Z @187 NONAME
+    ??0PInstantiateMe@@QAE@XZ @7663 NONAME
     ??0PIntCondMutex@@QAE@HHW4Operation@0@@Z @188 NONAME
     ??0PIPCacheData@@QAE@PAUaddrinfo@@PBD@Z @3866 NONAME
     ??0PIPCacheData@@QAE@PAUhostent@@PBD@Z @189 NONAME
@@ -3955,7 +3956,6 @@ EXPORTS
     ?factory@?1???0PPlugin_PVideoInputDevice_VideoForWindows_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoInputDevice@@VPString@@@@A @7426 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@$AVWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @7427 NONAME
     ?factory@?1???0PPlugin_PVideoOutputDevice_NULLOutput_Registration@@QAE@PAVPPluginManager@@@Z@4VWorker@?$PDevicePluginFactory@VPVideoOutputDevice@@VPString@@@@A @7428 NONAME
-    ?factoryLoader@?$PFactory@VPProcessStartup@@VPString@@@@2HA @7040 NONAME
     ?failbit@?$_Iosb@H@std@@2W4_Iostate@12@B @5738 NONAME
     ?FillRect@PVideoInputDevice_FakeVideo@@QAEXPAEIIHHHHHHH@Z @3807 NONAME
     ?Filtered@PDirectory@@IAEHXZ @2023 NONAME
@@ -5052,6 +5052,7 @@ EXPORTS
     ?PPlugin_PVideoInputDevice_VideoForWindows_Registration_Instance@@3VPPlugin_PVideoInputDevice_VideoForWindows_Registration@@A @3727 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_GetVersion@@YAIXZ @3841 NONAME
     ?PPlugin_PVideoOutputDevice_NULLOutput_Registration_Instance@@3VPPlugin_PVideoOutputDevice_NULLOutput_Registration@@A @3842 NONAME
+    ?PProcessStartup_PString@PWLibFactoryLoader@@3HA @7664 NONAME
     ?Predecessor@PAbstractSortedList@@IBEPAUElement@1@PBU21@@Z @3973 NONAME
     ?PreInitialise@PProcess@@SAXHPAPAD0@Z @3058 NONAME
     ?Prepare@PWaveBuffer@@AAEKPAUHWAVEIN__@@@Z @3059 NONAME
