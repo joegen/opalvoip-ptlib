@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.231  2005/01/31 08:05:40  csoutheren
+ * More patches for MacOSX, thanks to Hannes Friederich
+ *
  * Revision 1.230  2005/01/26 05:37:59  csoutheren
  * Added ability to remove config file support
  *
@@ -774,6 +777,14 @@
 #include <vector>
 
 #include <ctype.h>
+
+#ifdef __MACOSX__
+namespace PWLibStupidOSXHacks {
+	extern int loadShmVideoStuff;
+	extern int loadCoreAudioStuff;
+	extern int loadFakeVideoStuff;
+};
+#endif
 
 class PSimpleThread : public PThread
 {
@@ -1917,6 +1928,21 @@ PProcess::PProcess(const char * manuf, const char * name,
   InitialiseProcessThread();
 
   Construct();
+  
+#ifdef __MACOSX__
+  
+#ifdef HAS_VIDEO
+  PWLibStupidOSXHacks::loadFakeVideoStuff = 1;
+#ifdef USE_SHM_VIDEO_DEVICES
+  PWLibStupidOSXHacks::loadShmVideoStuff = 1;
+#endif // USE_SHM_VIDEO_DEVICES
+#endif // HAS_VIDEO
+  
+#ifdef HAS_AUDIO
+  PWLibStupidOSXHacks::loadCoreAudioStuff = 1;
+#endif // HAS_AUDIO
+  
+#endif // __MACOSX__
 
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory
