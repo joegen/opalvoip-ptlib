@@ -4113,7 +4113,7 @@ _ACEOF
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/pwlib/lib"
+#define P_DEFAULT_PLUGIN_DIR "${INSTALLPREFIX}/lib/pwlib"
 _ACEOF
 
 
