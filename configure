@@ -847,7 +847,7 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-minsize        minimise the size of the lib by disabling least used options
   --enable-internalregex  force internal regex library
-  --enable-plugins        enable plugins' support in PWLIB
+  --enable-plugins        enable plugin support in PWLIB
   --enable-v4l2           enable V4L2 video support
   --disable-resolver      disable DNS resolver support in PWLIB
   --disable-sasl          disable SASL support in PWLIB
@@ -2712,6 +2712,7 @@ default_openssl=yes
 default_expat=yes
 default_sdl=yes
 default_sasl=yes
+default_plugins=yes
 
 if test "${enable_minsize}x" = "yesx" ; then
   default_resolver=no
@@ -2720,6 +2721,7 @@ if test "${enable_minsize}x" = "yesx" ; then
   default_expat=no
   default_sdl=no
   default_sasl=no
+  default_plugins=yes
 fi
 
 
@@ -4363,8 +4365,12 @@ echo $ECHO_N "checking if plugins support needs to be compiled... $ECHO_C" >&6
 # Check whether --enable-plugins or --disable-plugins was given.
 if test "${enable_plugins+set}" = set; then
   enableval="$enable_plugins"
-  plugins=$enableval
+
 fi;
+if test "${enable_plugins}z" = "z" ; then
+  enable_plugins=default_plugins
+fi
+
 v4l2="no"
 # Check whether --enable-v4l2 or --disable-v4l2 was given.
 if test "${enable_v4l2+set}" = set; then
@@ -4374,8 +4380,8 @@ else
   enable_v4l2=no
 fi;
 
-HAS_PLUGINS=0
-if test "${plugins}" = "no" ; then
+HAS_PLUGINS=
+if test "${enable_plugins}" = "no" ; then
   echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6
 elif test "${P_DYNALINK:-unset}" = "unset" ; then
