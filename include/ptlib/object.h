@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.40  1999/02/22 10:48:14  robertj
+ * Fixed delete operator prototypes for MSVC6 and GNU compatibility.
+ *
  * Revision 1.39  1999/02/19 11:33:02  robertj
  * Fixed compatibility problems with GNU/MSVC6
  *
@@ -542,13 +545,10 @@ inline void * operator new[](size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
 
 #ifndef __GNUC__
-inline void operator delete(void * ptr)
-  { PMemoryHeap::Deallocate(ptr, NULL); }
+void operator delete(void * ptr);
+void operator delete[](void * ptr);
 
 inline void operator delete(void * ptr, const char *, int)
-  { PMemoryHeap::Deallocate(ptr, NULL); }
-
-inline void operator delete[](void * ptr)
   { PMemoryHeap::Deallocate(ptr, NULL); }
 
 inline void operator delete[](void * ptr, const char *, int)
