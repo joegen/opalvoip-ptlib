@@ -220,6 +220,36 @@ dnl ########################################################################
 dnl look for compile flags
 AC_LANG_PUSH(C++)
 
+AC_MSG_CHECKING(if linker accepts -felide-constructors)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CXX $CFLAGS -felide-constructors conftest.cc > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -felide-constructors"
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if linker accepts -Wreorder)
+AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+$CXX $CFLAGS -Wreorder conftest.cc > /dev/null 2>&1
+if test $? = 0 ; then
+  AC_MSG_RESULT(yes)
+  STDCCFLAGS="$STDCCFLAGS -Wreorder"
+else
+  AC_MSG_RESULT(no)
+fi
+
+# AC_MSG_CHECKING(if linker accepts -Woverloaded-virtual)
+# AC_LANG_CONFTEST([[int main(int ac,char **av) { return 0; }]])
+# $CXX $CFLAGS -Woverloaded-virtual conftest.cc > /dev/null 2>&1
+# if test $? = 0 ; then
+#   AC_MSG_RESULT(yes)
+#   STDCCFLAGS="$STDCCFLAGS -Woverloaded-virtual"
+# else
+#   AC_MSG_RESULT(no)
+# fi
+
 GCSECTIONS=0
 
 AC_MSG_CHECKING(if linker accepts --gc-sections)
