@@ -1,5 +1,5 @@
 /*
- * $Id: thread.h,v 1.13 1995/11/21 11:49:44 robertj Exp $
+ * $Id: thread.h,v 1.14 1995/12/10 11:44:32 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: thread.h,v $
+ * Revision 1.14  1995/12/10 11:44:32  robertj
+ * Fixed bug in non-platform threads and semaphore timeouts.
+ *
  * Revision 1.13  1995/11/21 11:49:44  robertj
  * Added timeout on semaphore wait.
  *
@@ -52,6 +55,9 @@
 #ifdef __GNUC__
 #pragma interface
 #endif
+
+
+class PSemaphore;
 
 
 ///////////////////////////////////////////////////////////////////////////////
