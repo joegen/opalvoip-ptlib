@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.32  1998/10/16 01:16:55  craigs
+ * Added Yield to help with cooperative multithreading.
+ *
  * Revision 1.31  1998/10/11 02:23:16  craigs
  * Fixed problem with socket writes not correctly detecting EOF
  *
@@ -383,6 +386,7 @@ BOOL PSocket::os_sendto(
   int writeResult;
   if ((writeResult =
          ::sendto(os_handle, (char *)buf, len, flags, (sockaddr *)addr, addrlen)) > 0) {
+    PThread::Yield();
     lastWriteCount = writeResult;
     return lastWriteCount >= len;
   }
