@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.29  1999/05/11 12:23:22  robertj
+ * Fixed search for persistent connection to accept kee-alive on multile MIME fields.
+ *
  * Revision 1.28  1999/05/04 15:26:01  robertj
  * Improved HTTP/1.1 compatibility (pass through user commands).
  * Fixed problems with quicktime installer.
@@ -928,7 +931,7 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 
   // get any connection options
   if (!str) {
-    PStringArray tokens = str.Tokenise(", ", FALSE);
+    PStringArray tokens = str.Tokenise(", \r\n", FALSE);
     for (PINDEX z = 0; !isPersistant && z < tokens.GetSize(); z++)
       isPersistant = isPersistant || (tokens[z] *= PHTTP::KeepAliveTag);
   }
