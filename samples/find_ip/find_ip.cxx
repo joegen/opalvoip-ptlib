@@ -80,7 +80,8 @@ BOOL FindIP::get_ip(PString server_url, PString &ip_address){
       cout << "Page is empty." << endl;
     }
   } else {
-    cout << "Could not get page from server." << endl;
+    cout << "Could not get page from server: "
+         << web.GetLastResponseCode() << ' ' << web.GetLastResponseInfo() << endl;
   }
   return result;
 }
