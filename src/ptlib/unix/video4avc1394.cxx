@@ -179,15 +179,19 @@ BOOL PVideoInput1394AvcDevice::Open(const PString & devName, BOOL startImmediate
     return FALSE;
   }
 
-  SetFrameSize(CIFHeight, CIFWidth);
+//  SetFrameSize(CIFHeight, CIFWidth);
   /*
   frameWidth = CIFHeight;
   frameHeight = CIFWidth;
 //  colourFormat = "UYVY422";
   colourFormat = "RGB24";
   */
+  frameWidth = CIFWidth;
+  frameHeight = CIFHeight;
+  colourFormat = "RGB24F";
   desiredFrameHeight = CIFHeight;
   desiredFrameWidth = CIFWidth;
+  desiredColourFormat = "RGB24F";
 
   capturing_duration = 10000; // arbitrary large value suffices
   deviceName = devName;

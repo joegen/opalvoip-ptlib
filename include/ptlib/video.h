@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.14  2003/04/15 21:10:29  dereks
+ * Patches for Firewire video. Thanks Georgi Georgiev.
+ *
  * Revision 1.13  2003/03/17 07:45:14  robertj
  * Removed redundant "render now" function.
  *
@@ -87,9 +90,6 @@
 #include <ptlib/vfakeio.h>
 #ifdef TRY_1394DC
 #include <ptlib/videoio1394dc.h>
-#endif
-#ifdef TRY_1394AVC
-#include <ptlib/videoio1394avc.h>
 #endif
 #ifdef TRY_1394AVC
 #include <ptlib/videoio1394avc.h>
