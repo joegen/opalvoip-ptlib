@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.8 1995/01/02 12:28:24 robertj Exp $
+ * $Id: ipsock.h,v 1.9 1995/03/12 04:38:41 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
- * Revision 1.8  1995/01/02 12:28:24  robertj
+ * Revision 1.9  1995/03/12 04:38:41  robertj
+ * Added more functionality.
+ *
+ * Revision 1.8  1995/01/02  12:28:24  robertj
  * Documentation.
  * Added more socket functions.
  *
@@ -50,12 +53,19 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
   public:
 
+  // Overrides from class PChannel
+    virtual PString GetName() const;
+    /* Get the platform and I/O channel type name of the channel. For an IP
+       socket this returns the host name of the peer the socket is connected
+       to, followed by the socket number it is connected to.
+
+       Returns: the name of the channel.
+     */
+
+
   // New functions for class
     typedef BYTE Address[4];
 
-    BOOL GetAddress(
-      Address & addr    // Variable to receive hosts IP address
-    );
     static BOOL GetAddress(
       const PString & hostname,
       /* Name of host to get address for. This may be either a domain name or
@@ -65,10 +75,9 @@ PDECLARE_CLASS(PIPSocket, PSocket)
     );
     /* Get the Internet Protocol address for the specified host.
 
-       Returns: the IP number for the host.
+       Returns: TRUE if the IP number was returned.
      */
 
-    PStringArray GetHostAliases() const;
     static PStringArray GetHostAliases(
       const PString & hostname
       /* Name of host to get address for. This may be either a domain name or
@@ -79,6 +88,36 @@ PDECLARE_CLASS(PIPSocket, PSocket)
 
        Returns: array of strings for each alias for the host.
      */
+
+    BOOL GetLocalAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    /* Get the Internet Protocol address for the local host.
+
+       Returns: TRUE if the IP number was returned.
+     */
+
+    BOOL GetPeerAddress(
+      Address & addr    // Variable to receive hosts IP address
+    );
+    /* Get the Internet Protocol address for the peer host the socket is
+       connected to.
+
+       Returns: TRUE if the IP number was returned.
+     */
+
+    PString GetLocalHostName();
+    /* Get the host name for the local host.
+
+       Returns: Name of the host, or an empty string if an error occurs.
+     */
+
+    PString GetPeerHostName();
+    /* Get the host name for the peer host the socket is connected to.
+
+       Returns: Name of the host, or an empty string if an error occurs.
+     */
+
 
     virtual WORD GetPort(
       const PString & service   // Name of service to get port number for.
