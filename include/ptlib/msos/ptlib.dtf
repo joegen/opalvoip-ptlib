@@ -2704,7 +2704,7 @@ EXPORTS
     ?UnknownOption@PArgList@@UBEXABVPString@@@Z @2558 NONAME ;public: virtual void __thiscall PArgList::UnknownOption(class PString const &)const 
     ?UnlockReadOnly@PSafeObject@@QBEXXZ @2559 NONAME ;public: void __thiscall PSafeObject::UnlockReadOnly(void)const 
     ?UnlockReadWrite@PSafeObject@@QAEXXZ @2560 NONAME ;public: void __thiscall PSafeObject::UnlockReadWrite(void)
-    ?ValueSelect@PAbstractSortedList@@IBEHPBUElement@1@ABVPObject@@AAPBU21@@Z @3026 NONAME ;protected: int __thiscall PAbstractSortedList::ValueSelect(struct PAbstractSortedList::Element const *,class PObject const &,struct PAbstractSortedList::Element const * &)const 
+    ?ValueSelect@PAbstractSortedList@@IBEHPBUElement@1@ABVPObject@@PAPBU21@@Z @3028 NONAME ;protected: int __thiscall PAbstractSortedList::ValueSelect(struct PAbstractSortedList::Element const *,class PObject const &,struct PAbstractSortedList::Element const * *)const 
     ?VerifyHardwareFrameSize@PVideoInputDevice_VideoForWindows@@MAEHII@Z @2816 NONAME ;protected: virtual int __thiscall PVideoInputDevice_VideoForWindows::VerifyHardwareFrameSize(unsigned int,unsigned int)
     ?VideoHandler@PVideoInputDevice_VideoForWindows@@KGJPAUHWND__@@PAUvideohdr_tag@@@Z @2817 NONAME ;protected: static long __stdcall PVideoInputDevice_VideoForWindows::VideoHandler(struct HWND__ *,struct videohdr_tag *)
     ?vsprintf@PString@@QAEAAV1@PBDPAD@Z @2564 NONAME ;public: class PString & __thiscall PString::vsprintf(char const *,char *)
