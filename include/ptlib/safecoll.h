@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: safecoll.h,v $
+ * Revision 1.7  2002/12/10 07:36:57  robertj
+ * Fixed possible deadlock in PSafeCollection find functions.
+ *
  * Revision 1.6  2002/10/29 00:06:14  robertj
  * Changed template classes so things like PSafeList actually creates the
  *   base collection class as well.
@@ -753,8 +756,11 @@ template <class Coll, class Base> class PSafeColl : public PSafeCollection
       const Base & value,
       PSafetyMode mode = PSafeReadWrite
     ) {
-        PWaitAndSignal mutex(collectionMutex);
-        return PSafePtr<Base>(*this, mode, collection->GetValuesIndex(value));
+        collectionMutex.Wait();
+        PSafePtr<Base> ptr(*this, PSafeReference, collection->GetValuesIndex(value));
+        collectionMutex.Signal();
+        ptr.SetSafetyMode(mode);
+        return ptr;
       }
   //@}
 };
@@ -859,8 +865,11 @@ template <class Coll, class Key, class Base> class PSafeDictionaryBase : public 
       const Key & key,
       PSafetyMode mode = PSafeReadWrite
     ) {
-        PWaitAndSignal mutex(collectionMutex);
-        return PSafePtr<Base>(*this, mode, ((Coll *)collection)->GetAt(key));
+        collectionMutex.Wait();
+        PSafePtr<Base> ptr(*this, PSafeReference, ((Coll *)collection)->GetAt(key));
+        collectionMutex.Signal();
+        ptr.SetSafetyMode(mode);
+        return ptr;
       }
   //@}
 };
