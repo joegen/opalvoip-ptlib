@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.77  2002/12/17 07:00:15  robertj
+ * Fixed incorrect encoding of arrays greater than 8192 and less than 16384
+ *
  * Revision 1.76  2002/12/13 03:57:17  robertj
  * Fixed crash if enable extension fields beyond the "known" extensions.
  *
@@ -4615,13 +4618,13 @@ void PPER_Stream::LengthEncode(unsigned len, unsigned lower, unsigned upper)
 
   SingleBitEncode(TRUE);
 
-  if (len < 0x2000) {
+  if (len < 0x4000) {
     MultiBitEncode(len, 15);    // 10.9.3.7
     return;
   }
 
   SingleBitEncode(TRUE);
-  PAssert(len < 0x2000, PUnimplementedFunction);  // 10.9.3.8 unsupported
+  PAssertAlways(PUnimplementedFunction);  // 10.9.3.8 unsupported
 }
 
 
