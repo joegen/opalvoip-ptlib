@@ -30,6 +30,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: main.cxx,v $
+ * Revision 1.15  1999/06/14 13:00:15  robertj
+ * Fixed bug in code generation for string constraints.
+ *
  * Revision 1.14  1999/06/09 06:58:09  robertj
  * Adjusted heading comments.
  *
@@ -696,9 +699,11 @@ void FromConstraintElement::PrintOn(ostream & strm) const
 }
 
 
-void FromConstraintElement::GenerateCplusplus(const PString &, ostream & hdr, ostream & cxx)
+void FromConstraintElement::GenerateCplusplus(const PString & fn, ostream & hdr, ostream & cxx)
 {
-  constraint->GenerateCplusplus("SetCharacterSet(", hdr, cxx);
+  PString newfn = fn;
+  newfn.Replace("SetConstraints(", "SetCharacterSet(");
+  constraint->GenerateCplusplus(newfn, hdr, cxx);
 }
 
 
@@ -974,7 +979,7 @@ void TypeBase::GenerateCplusplus(ostream & hdr, ostream & cxx)
   // Close off the constructor implementation
   cxx << ")\n"
          "{\n";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
 
   EndGenerateCplusplus(hdr, cxx);
 }
@@ -1117,7 +1122,7 @@ void TypeBase::GenerateCplusplusConstructor(ostream &, ostream & cxx)
 void TypeBase::GenerateCplusplusConstraints(const PString & prefix, ostream & hdr, ostream & cxx)
 {
   for (PINDEX i = 0; i < constraints.GetSize(); i++)
-    constraints[i].GenerateCplusplus(prefix + "SetConstraints(", hdr, cxx);
+    constraints[i].GenerateCplusplus("  " + prefix + "SetConstraints(", hdr, cxx);
 }
 
 
@@ -1534,7 +1539,7 @@ void EnumeratedType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   cxx << "#endif\n"
          "    )\n"
          "{\n";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
   EndGenerateCplusplus(hdr, cxx);
 }
 
@@ -1789,9 +1794,9 @@ void SequenceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   cxx << "\n"
          "{\n";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
   for (i = 0; i < fields.GetSize(); i++)
-    fields[i].GenerateCplusplusConstraints("  m_"+fields[i].GetIdentifier()+".", hdr, cxx);
+    fields[i].GenerateCplusplusConstraints("m_"+fields[i].GetIdentifier()+".", hdr, cxx);
   cxx << "}\n"
          "\n"
          "\n"
@@ -1968,7 +1973,7 @@ void SequenceOfType::GenerateCplusplus(ostream & hdr, ostream & cxx)
   BeginGenerateCplusplus(hdr, cxx);
   cxx << ")\n"
          "{\n";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
   cxx << "}\n"
          "\n"
          "\n";
@@ -2119,7 +2124,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
 
   cxx << ")\n"
          "{\n";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
   cxx << "}\n"
          "\n"
          "\n";
@@ -2168,7 +2173,7 @@ void ChoiceType::GenerateCplusplus(ostream & hdr, ostream & cxx)
              "      choice = new " << fields[i].GetTypeName();
       fields[i].GenerateCplusplusConstructor(hdr, cxx);
       cxx << ";\n";
-      fields[i].GenerateCplusplusConstraints("      choice->", hdr, cxx);
+      fields[i].GenerateCplusplusConstraints("    choice->", hdr, cxx);
       cxx << "      return TRUE;\n";
     }
   }
@@ -2567,7 +2572,7 @@ void ObjectClassFieldType::GenerateCplusplus(ostream & hdr, ostream & cxx)
          "//\n"
          "\n"
          "typedef ";
-  GenerateCplusplusConstraints("  ", hdr, cxx);
+  GenerateCplusplusConstraints(PString(), hdr, cxx);
   hdr << ' ' << GetIdentifier() << ";\n"
          "\n"
          "\n";
