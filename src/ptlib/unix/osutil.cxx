@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.cxx,v $
+ * Revision 1.69  2002/06/06 09:28:42  robertj
+ * Fixed problems with canonicalising directories now PINDEX is signed.
+ *
  * Revision 1.68  2002/02/11 02:26:54  craigs
  * Fixed problem with reading lines of length > 100 chares from text files
  * Thanks to Ohnuma Masato
@@ -256,18 +259,17 @@ static PString CanonicaliseDirectory (const PString & path)
 
 {
   PString canonical_path;
-  PString slash("/");
 
-  // if the path does not start with a slash, then the current directory
-  // must be prepended
-  if (path.IsEmpty() || path[0] != '/')  {
+  if (path[0] == '/')
+    canonical_path = '/';
+  else {
     char *p = getcwd(canonical_path.GetPointer(P_MAX_PATH), P_MAX_PATH);
     PAssertOS (p != NULL);
-  }
 
-  // if the path doesn't end in a slash, add one
-  if (canonical_path[canonical_path.GetLength()-1] != '/')
-    canonical_path += slash;
+    // if the path doesn't end in a slash, add one
+    if (canonical_path[canonical_path.GetLength()-1] != '/')
+      canonical_path += '/';
+  }
 
   const char * ptr = path;
   const char * end;
@@ -296,7 +298,7 @@ static PString CanonicaliseDirectory (const PString & path)
     } else if (element == "." || element == "") {
     } else {
       canonical_path += element;
-      canonical_path += slash;
+      canonical_path += '/';
     }
     ptr = end;
   }
