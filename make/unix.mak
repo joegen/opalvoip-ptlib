@@ -25,8 +25,11 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: unix.mak,v $
-# Revision 1.24  1998/11/16 07:30:15  robertj
-# Removed confusion between sunos and solaris
+# Revision 1.25  1998/11/22 08:11:41  craigs
+# *** empty log message ***
+#
+# Revision 1.25  1998/11/22 08:11:41  craigs
+# *** empty log message ***
 #
 # Revision 1.24  1998/11/16 07:30:15  robertj
 # Removed confusion between sunos and solaris
@@ -303,6 +306,9 @@ LDFLAGS		:= $(LDFLAGS) -L$(LIBDIR)
 LDLIBS		:= $(LDLIBS) -l$(PTLIB) 
 #
 
+
+#  clean whitespace out of source file list
+######################################################################
 
 
 SOURCES		:= $(strip $(SOURCES))
