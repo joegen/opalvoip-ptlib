@@ -85,6 +85,11 @@ LIB32=link.exe -lib
 # PROP Default_Filter "*.cxx"
 # Begin Source File
 
+SOURCE=..\..\ptclib\asnber.cxx
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\Ptclib\Asner.cxx
 
 !IF  "$(CFG)" == "Console Components - Win32 Release"
@@ -95,6 +100,16 @@ SOURCE=..\..\Ptclib\Asner.cxx
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\asnper.cxx
+# PROP Exclude_From_Build 1
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\ptclib\asnxer.cxx
+# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -260,7 +275,19 @@ SOURCE=..\..\ptclib\vxml.cxx
 # PROP Default_Filter "*.h"
 # Begin Source File
 
+SOURCE=..\..\..\include\ptclib\asnber.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\Include\PtCLib\asner.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\asnper.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\include\ptclib\asnxer.h
 # End Source File
 # Begin Source File
 
