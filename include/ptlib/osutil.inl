@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.67  1998/11/19 05:17:35  robertj
+ * Added PWaitAndSignal class for easier mutexing.
+ *
  * Revision 1.66  1998/11/01 04:56:52  robertj
  * Added BOOl return value to Parse() to indicate there are parameters available.
  *
@@ -691,6 +694,16 @@ PINLINE PArgList & PArgList::operator<<(int sh)
 
 PINLINE PArgList & PArgList::operator>>(int sh)
   { Shift(-sh); return *this; }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// PSemaphore
+
+PINLINE PWaitAndSignal::PWaitAndSignal(PSemaphore & sem)
+  : semaphore(sem) { semaphore.Wait(); }
+
+PINLINE PWaitAndSignal::~PWaitAndSignal()
+  { semaphore.Signal(); }
 
 
 ///////////////////////////////////////////////////////////////////////////////
