@@ -1,5 +1,5 @@
 /*
- * $Id: sockets.cxx,v 1.55 1996/12/12 09:23:27 robertj Exp $
+ * $Id: sockets.cxx,v 1.56 1996/12/17 11:07:05 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.56  1996/12/17 11:07:05  robertj
+ * Added clear of name cache.
+ *
  * Revision 1.55  1996/12/12 09:23:27  robertj
  * Fixed name cache to cache missing names as well.
  * Fixed new connect with specific local port so can be re-used (simultaneous FTP session bug)
@@ -545,6 +548,7 @@ class PHostByName : PHostByName_private
   private:
     PIPCacheData * GetHost(const PString & name);
     PSemaphore mutex;
+  friend void PIPSocket::ClearNameCache();
 } pHostByName;
 
 
@@ -629,6 +633,7 @@ class PHostByAddr : PHostByAddr_private
   private:
     PIPCacheData * GetHost(const PIPSocket::Address & addr);
     PSemaphore mutex;
+  friend void PIPSocket::ClearNameCache();
 } pHostByAddr;
 
 
@@ -695,6 +700,17 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 PIPSocket::PIPSocket()
 {
+}
+
+
+void PIPSocket::ClearNameCache()
+{
+  pHostByName.mutex.Wait();
+  pHostByName.RemoveAll();
+  pHostByName.mutex.Signal();
+  pHostByAddr.mutex.Wait();
+  pHostByAddr.RemoveAll();
+  pHostByAddr.mutex.Signal();
 }
 
 
