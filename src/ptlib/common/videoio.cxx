@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.cxx,v $
+ * Revision 1.3  2000/07/26 02:13:48  robertj
+ * Added some more "common" bounds checking to video device.
+ *
  * Revision 1.2  2000/07/25 13:38:26  robertj
  * Added frame rate parameter to video frame grabber.
  *
@@ -73,6 +76,9 @@ unsigned PVideoDevice::GetNumChannels() const
 
 BOOL PVideoDevice::SetChannel(unsigned channelNum)
 {
+  if (channelNum >= GetNumChannels())
+    return FALSE;
+
   channelNumber = channelNum;
   return IsOpen();
 }
@@ -110,24 +116,36 @@ unsigned PVideoDevice::GetFrameRate() const
 }
 
 
-BOOL PVideoDevice::GetMaxFrameSize(unsigned & width, unsigned & height) const
+BOOL PVideoDevice::GetFrameSizeLimits(unsigned & minWidth,
+                                      unsigned & minHeight,
+                                      unsigned & maxWidth,
+                                      unsigned & maxHeight) const
 {
-  width = height = UINT_MAX;
-  return FALSE;
-}
-
-
-BOOL PVideoDevice::GetMinFrameSize(unsigned & width, unsigned & height) const
-{
-  width = height = 1;
+  minWidth = minHeight = 1;
+  maxWidth = maxHeight = UINT_MAX;
   return FALSE;
 }
 
 
 BOOL PVideoDevice::SetFrameSize(unsigned width, unsigned height)
 {
-  frameWidth = width;
-  frameHeight = height;
+  unsigned minWidth, minHeight, maxWidth, maxHeight;
+  GetFrameSizeLimits(minWidth, minHeight, maxWidth, maxHeight);
+
+  if (width < minWidth)
+    frameWidth = minWidth;
+  else if (width > maxWidth)
+    frameWidth = maxWidth;
+  else
+    frameWidth = width;
+
+  if (height < minHeight)
+    frameHeight = minHeight;
+  else if (height > maxHeight)
+    frameHeight = maxHeight;
+  else
+    frameHeight = height;
+
   return IsOpen();
 }
 
