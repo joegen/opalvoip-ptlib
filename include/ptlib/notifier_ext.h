@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: notifier_ext.h,v $
+ * Revision 1.3  2004/05/09 07:23:48  rjongbloed
+ * More work on XMPP, thanks Federico Pinna and Reitek S.p.A.
+ *
  * Revision 1.2  2004/04/26 01:34:58  rjongbloed
  * Change nofier list to be able to used in containers, thanks Federico Pinna, Reitek S.p.A.
  *
@@ -85,12 +88,11 @@ class PSmartNotifierFunction : public PNotifierFunction
       func##_PSmartNotifier(unsigned id) : PSmartNotifierFunction(id) { } \
       virtual void Call(PObject & note, INT extra) const \
       { \
-          RCTLibFuncQuiet(func##_PSmartNotifier::Call); \
           void * obj = GetNotifiee(); \
           if (obj) \
-              ((notifiee*)obj)->func((notifier &)note, extra); \
+            ((notifiee*)obj)->func((notifier &)note, extra); \
           else \
-	      PTRACE(2, "Invalid notifiee"); \
+	          PTRACE(2, "Invalid notifiee"); \
       } \
   }; \
   friend class func##_PSmartNotifier; \
@@ -126,5 +128,6 @@ class PNotifierList : public PObject
 #endif  // _PNOTIFIER_EXT
 
 // End of File ///////////////////////////////////////////////////////////////
+
 
 
