@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.84  2002/02/13 02:19:47  robertj
+ * Fixed mistake in previous patch, is if not ifdef!
+ *
  * Revision 1.83  2002/02/13 00:50:32  robertj
  * Fixed use of symbol in older versionsof Solaris, thanks Markus Storm
  *
@@ -1326,7 +1329,7 @@ BOOL PIPSocket::GetRouteTable(RouteTable & table)
 	}
 
 	if (req->level != MIB2_IP
-#ifdef P_SOLARIS > 7
+#if P_SOLARIS > 7
 	    || req->name != MIB2_IP_ROUTE
 #endif
            ) {  /* == 21 */
