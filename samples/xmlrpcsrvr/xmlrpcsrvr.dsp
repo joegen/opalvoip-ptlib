@@ -189,9 +189,5 @@ BuildCmds= \
 !ENDIF 
 
 # End Source File
-# Begin Source File
-
-SOURCE=.\xmlrpcsrvr.key
-# End Source File
 # End Target
 # End Project
