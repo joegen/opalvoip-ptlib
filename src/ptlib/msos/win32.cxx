@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.48 1997/06/16 13:15:53 robertj Exp $
+ * $Id: win32.cxx,v 1.49 1997/07/14 11:47:22 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.49  1997/07/14 11:47:22  robertj
+ * Added "const" to numerous variables.
+ *
  * Revision 1.48  1997/06/16 13:15:53  robertj
  * Added function to get a dyna-link libraries name.
  *
@@ -443,7 +446,7 @@ PString PChannel::GetErrorText() const
 PString PChannel::GetErrorText(Errors lastError, int osError)
 {
   if (osError == 0) {
-    static int errors[Miscellaneous+1] = {
+    static int const errors[Miscellaneous+1] = {
       0, ENOENT, EEXIST, ENOSPC, EACCES, 1000, EINVAL, ENOMEM, EBADF, EAGAIN, EINTR, 1001
     };
     if (osError == 0)
@@ -1185,12 +1188,9 @@ BOOL PSerialChannel::GetRing()
 
 PStringList PSerialChannel::GetPortNames()
 {
-  static char buf[] = "\\\\.\\COM ";
   PStringList ports;
-  for (char p = '1'; p <= '9'; p++) {
-    buf[sizeof(buf)-2] = p;
-    ports.AppendString(buf);
-  }
+  for (char p = 1; p <= 9; p++)
+    ports.AppendString(psprintf("\\\\.\\COM%u", p));
   return ports;
 }
 
@@ -1942,7 +1942,7 @@ void PThread::SetPriority(Priority priorityLevel)
 {
   PAssert(!IsTerminated(), "Operation on terminated thread");
 
-  static int priorities[NumPriorities] = {
+  static int const priorities[NumPriorities] = {
     THREAD_PRIORITY_LOWEST,
     THREAD_PRIORITY_BELOW_NORMAL,
     THREAD_PRIORITY_NORMAL,
