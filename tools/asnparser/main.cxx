@@ -2710,6 +2710,8 @@ void IntegerValue::PrintOn(ostream & strm) const
 void IntegerValue::GenerateCplusplus(ostream &, ostream & cxx)
 {
   cxx << value;
+  if (value > INT_MAX)
+    cxx << 'U';
 }
 
 
