@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.13  1999/02/22 10:15:14  robertj
+ * Sound driver interface implementation to Linux OSS specification.
+ *
  * Revision 1.12  1999/02/16 06:02:27  robertj
  * Major implementation to Linux OSS model
  *
@@ -83,7 +86,6 @@ class PSound : public PBYTEArray
 
   public:
     PSound(
-      unsigned encoding = 0,       // Encoding format code
       unsigned numChannels = 1,    // Number of channels eg mono/stereo
       unsigned sampleRate = 8000,  // Samples per second
       unsigned bitsPerSample = 16, // Number of bits per sample
@@ -101,8 +103,24 @@ class PSound : public PBYTEArray
      */
 
 
-    static void Beep();
-    // Play the "standard" warning beep for the platform.
+    static void Beep(); // Play the "standard" warning beep for the platform.
+
+
+    PSound & operator=(
+      const PBYTEArray & data  // New data for sound
+    );
+    /* set new data bytes for the sound.
+     */
+
+
+    void SetFormat(
+      unsigned numChannels,   // Number of channels eg mono/stereo
+      unsigned sampleRate,    // Samples per second
+      unsigned bitsPerSample  // Number of bits per sample
+    );
+    /* Set the internal sound forman to linear PCM at the specification in
+       the parameters.
+     */
 
 
     BOOL Load(
@@ -169,7 +187,10 @@ class PSoundChannel : public PChannel
    it a byte at a time if desired, but as soon as all the data in the buffer
    is used returned, the next read will wait until the entire next buffer is
    read from the hardware. So again, tailor the number and size of buffers to
-   the application.
+   the application. To avoid being blocked until the buffer fills, you can use
+   the StartRecording() function to initiate the buffer filling, and the
+   IsRecordingBufferFull() function to determine when the Read() function will
+   no longer block.
 
    Note that this sound channel is implicitly a linear PCM channel. No data
    conversion is performed on data to/from the channel.
@@ -283,6 +304,27 @@ class PSoundChannel : public PChannel
        TRUE if the sound is playing or has played.
      */
 
+    BOOL RecordSound(
+      PSound & sound // Sound recorded
+    );
+    /* Record into the sound object all of the buffer's of sound data. Use the
+       SetBuffers() function to determine how long the recording will be made.
+
+       For the Win32 platform, the most efficient way to record a PSound is to
+       use the SetBuffers() function to set a single buffer of the desired
+       size and then do the recording. For Linux OSS this can cause problems
+       as the buffers are rounded up to a power of two, so to gain more
+       accuracy you need a number of smaller buffers.
+
+       Note that this function will block until all of the data is buffered.
+       If you wish to do this asynchronously, use StartRecording() and
+       AreAllrecordBuffersFull() to determine when you can call RecordSound()
+       without blocking.
+
+       <H2>Returns:</H2>
+       TRUE if the sound has been recorded.
+     */
+
     BOOL PlayFile(
       const PFilePath & file, // Sound file to play.
       BOOL wait = TRUE        // Flag to play sound synchronously.
@@ -303,6 +345,23 @@ class PSoundChannel : public PChannel
        TRUE if the sound is playing or has played.
      */
 
+    BOOL RecordFile(
+      const PFilePath & file // Sound file recorded
+    );
+    /* Record into the platform dependent sound file all of the buffer's of
+       sound data. Use the SetBuffers() function to determine how long the
+       recording will be made.
+
+       Note that this function will block until all of the data is buffered.
+       If you wish to do this asynchronously, use StartRecording() and
+       AreAllrecordBuffersFull() to determine when you can call RecordSound()
+       without blocking.
+
+       <H2>Returns:</H2>
+       TRUE if the sound has been recorded.
+     */
+
+
     BOOL HasPlayCompleted();
     /* Indicate if the sound play begun with PlayBuffer() or PlayFile() has
        completed.
@@ -320,19 +379,58 @@ class PSoundChannel : public PChannel
      */
 
 
+    BOOL StartRecording();
+    /* Start filling record buffers. The first call to Read() will also
+       initiate the recording.
+
+       <H2>Returns:</H2>
+       TRUE if the sound driver has successfully started recording.
+     */
+
+    BOOL IsRecordBufferFull();
+    /* Determine if a record buffer has been filled, so that the next Read()
+       call will not block. Provided that the amount of data read is less than
+       the buffer size.
+
+       <H2>Returns:</H2>
+       TRUE if the sound driver has filled a buffer.
+     */
+
+    BOOL AreAllRecordBuffersFull();
+    /* Determine if all of the record buffer allocated has been filled. There
+       is an implicit Abort() of the recording if this occurs and recording is
+       stopped. The channel may need to be closed and opened again to start
+       a new recording.
+
+       <H2>Returns:</H2>
+       TRUE if the sound driver has filled a buffer.
+     */
+
+    BOOL WaitForRecordBufferFull();
+    /* Block the thread until a record buffer has been filled, so that the
+       next Read() call will not block. Provided that the amount of data read
+       is less than the buffer size.
+
+       <H2>Returns:</H2>
+       TRUE if the sound driver has filled a buffer.
+     */
+
+    BOOL WaitForAllRecordBuffersFull();
+    /* Block the thread until all of the record buffer allocated has been
+       filled. There is an implicit Abort() of the recording if this occurs
+       and recording is stopped. The channel may need to be closed and opened
+       again to start a new recording.
+
+       <H2>Returns:</H2>
+       TRUE if the sound driver has filled a buffer.
+     */
+
+
     BOOL Abort();
     /* Abort the background playing/recording of the sound channel.
 
        <H2>Returns:</H2>
        TRUE if the sound has successfully been aborted.
-     */
-
-
-    PString GetErrorText() const;
-    /* Get a text form of the last error encountered.
-
-       <H2>Returns:</H2>
-       PString for error text of last error.
      */
 
 
