@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.14  2003/11/25 09:51:11  dsandras
+# Fixed make install on Linux.
+#
 # Revision 1.13  2003/11/24 09:53:31  rogerhardiman
 # Make the install target work on non-linux platforms. (Tested on FreeBSD).
 #
@@ -213,10 +216,11 @@ install:
 		$(PTLIB_FILE) \
 	)
 	(cd $(DESTDIR)$(LIBDIR); \
-	rm -f  libpt.@SHAREDLIBEXT@ \
+	rm -f  libpt.@SHAREDLIBEXT@ ; \
 	ln -sf $(PTLIB_FILE) libpt.@SHAREDLIBEXT@ \
 	)
 ###	cp -df lib/*@SHAREDLIBEXT@* $(DESTDIR)$(LIBDIR)/
+	cp -rf plugins/pwlib/ $(DESTDIR)$(LIBDIR)
 	cp -rf include/ptclib        $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptlib         $(DESTDIR)$(PREFIX)/include/
 	cp -rf include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/
@@ -229,11 +233,11 @@ install:
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/CVS/
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib/CVS/
 	rm -rf $(DESTDIR)$(PREFIX)/include/ptclib/CVS/
-	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h
+	chmod -R a+r $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/share/pwlib $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(LIBDIR)/pwlib/
 	chmod a+rx $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptlib/unix $(DESTDIR)$(PREFIX)/include/ptlib/unix/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/bin/ptlib-config $(DESTDIR)$(PREFIX)/share/pwlib/make/ 
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ 
+	rm -rf $(DESTDIR)$(PREFIX)/include/ptlib $(DESTDIR)$(PREFIX)/include/ptclib $(DESTDIR)$(PREFIX)/include/ptlib.h $(DESTDIR)$(PREFIX)/include/ptbuildopts.h $(DESTDIR)$(PREFIX)/share/pwlib/ $(DESTDIR)$(LIBDIR)/pwlib/
 	rm -f $(DESTDIR)@libdir@/$(PTLIB_FILE)* @libdir@/libpt.so $(DESTDIR)$(PREFIX)/bin/asnparser
 
 
