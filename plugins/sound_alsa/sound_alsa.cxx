@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.4  2003/11/23 22:09:57  dsandras
+ * Removed unuseful stuff and added implementation for functions permitting to play a file or a PSound.
+ *
  * Revision 1.3  2003/11/14 05:28:47  csoutheren
  * Updated for new plugin code thanks to Damien and Snark
  *
@@ -43,136 +46,6 @@
 
 PCREATE_SOUND_PLUGIN(ALSA, PSoundChannelALSA)
 
-///////////////////////////////////////////////////////////////////////////////
-    
-PAudioDelay::PAudioDelay()
-{
-  firstTime = TRUE;
-  error = 0;
-}
-    
-void PAudioDelay::Restart()
-{
-  firstTime = TRUE;
-}
-  
-BOOL PAudioDelay::Delay(int frameTime)
-{
-  if (firstTime) {
-    firstTime = FALSE;
-    previousTime = PTime();
-    return TRUE;
-  }
-
-  error += frameTime;
-
-  PTime now;
-  PTimeInterval delay = now - previousTime;
-  error -= (int)delay.GetMilliSeconds();
-  previousTime = now;
-
-  if (error > 0)
-#ifdef P_LINUX
-    usleep(error * 1000);
-#else
-    PThread::Current()->Sleep(error);
-#endif
-
-  return error <= -frameTime;
-
-  //if (headRoom > MAX_HEADROOM)
-  //  PThread::Current()->Sleep(headRoom - MIN_HEADROOM);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// declare type for sound handle dictionary
-
-PSound::PSound(unsigned channels,
-               unsigned samplesPerSecond,
-               unsigned bitsPerSample,
-               PINDEX   bufferSize,
-               const BYTE * buffer)
-{
-  encoding = 0;
-  numChannels = channels;
-  sampleRate = samplesPerSecond;
-  sampleSize = bitsPerSample;
-  SetSize(bufferSize);
-  if (buffer != NULL)
-    memcpy(GetPointer(), buffer, bufferSize);
-}
-
-
-PSound::PSound(const PFilePath & filename)
-{
-  encoding = 0;
-  numChannels = 1;
-  sampleRate = 8000;
-  sampleSize = 16;
-  Load(filename);
-}
-
-
-PSound & PSound::operator=(const PBYTEArray & data)
-{
-  PBYTEArray::operator=(data);
-  return *this;
-}
-
-
-void PSound::SetFormat(unsigned channels,
-                       unsigned samplesPerSecond,
-                       unsigned bitsPerSample)
-{
-  encoding = 0;
-  numChannels = channels;
-  sampleRate = samplesPerSecond;
-  sampleSize = bitsPerSample;
-  formatInfo.SetSize(0);
-}
-
-
-BOOL PSound::Load(const PFilePath & /*filename*/)
-{
-  return FALSE;
-}
-
-
-BOOL PSound::Save(const PFilePath & /*filename*/)
-{
-  return FALSE;
-}
-
-
-BOOL PSound::Play()
-{
-  PSoundChannel channel(PSoundChannelALSA::GetDefaultDevice(PSoundChannelALSA::Player),
-                        PSoundChannelALSA::Player);
-  if (!channel.IsOpen())
-    return FALSE;
-
-  return channel.PlaySound(*this, TRUE);
-}
-
-
-BOOL PSound::PlayFile(const PFilePath & file, BOOL wait)
-{
-  PSoundChannel channel(PSoundChannelALSA::GetDefaultDevice(PSoundChannelALSA::Player),
-                        PSoundChannelALSA::Player);
-  if (!channel.IsOpen())
-    return FALSE;
-
-  return channel.PlayFile(file, wait);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-SoundHandleEntry::SoundHandleEntry()
-{
-  handle    = -1;
-  direction = 0;
-}
 
 static PStringArray playback_devices;
 static PStringArray capture_devices;
@@ -657,30 +530,80 @@ BOOL PSoundChannelALSA::SetBuffers (PINDEX size, PINDEX count)
 
 BOOL PSoundChannelALSA::GetBuffers(PINDEX & size, PINDEX & count)
 {
+  size = period_size;
+  count = periods;
+  
   return FALSE;
 }
 
 
 BOOL PSoundChannelALSA::PlaySound(const PSound & sound, BOOL wait)
 {
-  return FALSE;
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
+
+  Abort();
+
+  if (!Write((const BYTE *)sound, sound.GetSize()))
+    return FALSE;
+
+  if (wait)
+    return WaitForPlayCompletion();
+
+  return TRUE;
 }
 
 
 BOOL PSoundChannelALSA::PlayFile(const PFilePath & filename, BOOL wait)
 {
-  return FALSE;
+  BYTE buffer [512];
+  
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
+
+  PFile file (filename, PFile::ReadOnly);
+
+  if (!file.IsOpen())
+    return FALSE;
+
+  for (;;) {
+
+    if (!file.Read (buffer, 512))
+      break;
+
+    PINDEX len = file.GetLastReadCount();
+    if (len == 0)
+      break;
+    if (!Write(buffer, len))
+      break;
+  }
+
+  file.Close();
+
+  if (wait)
+    return WaitForPlayCompletion();
+
+  return TRUE;
 }
 
 
 BOOL PSoundChannelALSA::HasPlayCompleted()
 {
-  return TRUE;
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
+
+  return (snd_pcm_state (os_handle) != SND_PCM_STATE_RUNNING);
 }
 
 
 BOOL PSoundChannelALSA::WaitForPlayCompletion()
 {
+  if (!os_handle)
+    return SetErrorValues(NotOpen, EBADF);
+
+  while (snd_pcm_state (os_handle) == SND_PCM_STATE_RUNNING)
+    {}
+
   return TRUE;
 }
 
