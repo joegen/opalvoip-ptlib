@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: config.cxx,v $
+ * Revision 1.32  2003/01/24 12:12:20  robertj
+ * Changed so that a crash in some other thread can no longer cause the
+ *   config file to be truncated to zero bytes.
+ *
  * Revision 1.31  2001/09/14 07:36:27  robertj
  * Fixed bug where fails to read last line of config file if not ended with '\n'.
  *
@@ -290,8 +294,9 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
     return FALSE;
   }
 
+  PFilePath tempfilename = filename + ".new";
   PTextFile file;
-  if (!file.Open(filename, PFile::WriteOnly)) {
+  if (!file.Open(tempfilename, PFile::WriteOnly)) {
     PProcess::PXShowSystemWarning(2001, "Cannot create PWLIB config file");
     return FALSE;
   }
@@ -311,6 +316,9 @@ BOOL PXConfig::WriteToFile(const PFilePath & filename)
 
   file.flush();
   file.SetLength(file.GetPosition());
+  file.Close();
+
+  file.Rename(filename, TRUE);
 
   return TRUE;
 }
