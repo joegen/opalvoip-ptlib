@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.31  1999/05/13 04:04:04  robertj
+ * Fixed problem of initialised commandName in ConnectionInfo.
+ *
  * Revision 1.30  1999/05/12 01:40:47  robertj
  * Fixed "unknown" response codes being passed on when used with an "unknown" command.
  *
@@ -857,48 +860,6 @@ PHTTPConnectionInfo::PHTTPConnectionInfo()
 }
 
 
-PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd,
-                                         const PURL & u,
-                                         const PMIMEInfo & mime,
-                                         BOOL persist,
-                                         BOOL proxy)
-  : url(u), mimeInfo(mime)
-{
-  commandCode       = cmd;
-
-  majorVersion      = 1;
-  minorVersion      = 0;
-
-  isPersistant      = persist;
-  isProxyConnection = proxy;
-
-  CalculateEntityBodyLength();
-}
-
-
-void PHTTPConnectionInfo::CalculateEntityBodyLength()
-{
-  // if the client specified a persistant connection, then use the
-  // ContentLength field. If there is no content length field, then
-  // assume a ContentLength of zero and close the connection.
-  // The spec actually says to read until end of file in this case,
-  // but Netscape hangs if this is done.
-  // If the client didn't specify a persistant connection, then use the
-  // ContentLength if there is one or read until end of file if there isn't
-  if (!isPersistant)
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
-                                           (commandCode == PHTTP::POST) ? -2 : 0);
-  else {
-    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
-    if (entityBodyLength < 0) {
-//        PError << "Server: persistant connection has no content length" << endl;
-      entityBodyLength = 0;
-      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
-    }
-  }
-}
-
-
 BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
 {
   // if only one argument, then it must be a version 0.9 simple request
@@ -961,9 +922,34 @@ BOOL PHTTPConnectionInfo::Initialise(PHTTPServer & server, PString & args)
   // prescence of a an entity body is signalled by the inclusion of
   // Content-Length header. If the protocol is less than version 1.0, then 
   // there is no entity body!
-  CalculateEntityBodyLength();
+
+  // if the client specified a persistant connection, then use the
+  // ContentLength field. If there is no content length field, then
+  // assume a ContentLength of zero and close the connection.
+  // The spec actually says to read until end of file in this case,
+  // but Netscape hangs if this is done.
+  // If the client didn't specify a persistant connection, then use the
+  // ContentLength if there is one or read until end of file if there isn't
+  if (!isPersistant)
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag,
+                                           (commandCode == PHTTP::POST) ? -2 : 0);
+  else {
+    entityBodyLength = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
+    if (entityBodyLength < 0) {
+//        PError << "Server: persistant connection has no content length" << endl;
+      entityBodyLength = 0;
+      mimeInfo.SetAt(PHTTP::ContentLengthTag, "0");
+    }
+  }
 
   return TRUE;
+}
+
+
+void PHTTPConnectionInfo::SetMIME(const PString & tag, const PString & value)
+{
+  mimeInfo.MakeUnique();
+  mimeInfo.SetAt(tag, value);
 }
 
 

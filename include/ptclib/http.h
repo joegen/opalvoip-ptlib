@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.40  1999/05/13 04:04:04  robertj
+ * Fixed problem of initialised commandName in ConnectionInfo.
+ *
  * Revision 1.39  1999/05/04 15:26:01  robertj
  * Improved HTTP/1.1 compatibility (pass through user commands).
  * Fixed problems with quicktime installer.
@@ -514,11 +517,6 @@ class PHTTPConnectionInfo : public PObject
   PCLASSINFO(PHTTPConnectionInfo, PObject)
   public:
     PHTTPConnectionInfo();
-    PHTTPConnectionInfo(PHTTP::Commands cmd,
-                        const PURL & url,
-                        const PMIMEInfo & mime,
-                        BOOL persist,
-                        BOOL proxy);
 
     PHTTP::Commands GetCommandCode() const { return commandCode; }
     const PString & GetCommandName() const { return commandName; }
@@ -526,6 +524,7 @@ class PHTTPConnectionInfo : public PObject
     const PURL & GetURL() const       { return url; }
 
     const PMIMEInfo & GetMIME() const { return mimeInfo; }
+    void SetMIME(const PString & tag, const PString & value);
 
 
     void SetPersistance(BOOL newPersist);
@@ -539,7 +538,6 @@ class PHTTPConnectionInfo : public PObject
     long GetEntityBodyLength() const  { return entityBodyLength; }
 
   protected:
-    void CalculateEntityBodyLength();
     BOOL Initialise(PHTTPServer & server, PString & args);
 
     PHTTP::Commands commandCode;
