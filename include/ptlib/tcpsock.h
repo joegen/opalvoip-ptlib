@@ -1,5 +1,5 @@
 /*
- * $Id: tcpsock.h,v 1.11 1995/06/17 00:47:31 robertj Exp $
+ * $Id: tcpsock.h,v 1.12 1995/06/17 11:13:31 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: tcpsock.h,v $
+ * Revision 1.12  1995/06/17 11:13:31  robertj
+ * Documentation update.
+ *
  * Revision 1.11  1995/06/17 00:47:31  robertj
  * Changed overloaded Open() calls to 3 separate function names.
  * More logical design of port numbers and service names.
@@ -87,7 +90,7 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        communications channel.
 
        The port number as defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully connected to the remote host.
@@ -106,7 +109,7 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
 
        If the <CODE>port</CODE> parameter is zero then the port number as
        defined by the object instance construction or the
-       <A><CODE>SetPort()</CODE></A> function.
+       <A>PIPSocket::SetPort()</A> function.
 
        <H2>Returns:</H2>
        TRUE if the channel was successfully opened.
@@ -142,8 +145,9 @@ PDECLARE_CLASS(PTCPSocket, PIPSocket)
        URGENT data which does not follow the usual stream sequencing of the
        normal channel data.
 
-       This is subject to the write timeout and sets the lastWriteCount
-       variable in the same way as usual <A><CODE>Write()</CODE></A> function.
+       This is subject to the write timeout and sets the
+       <CODE>lastWriteCount</CODE> member variable in the same way as usual
+       <A>PChannel::Write()</A> function.
        
        <H2>Returns:</H2>
        TRUE if all the bytes were sucessfully written.
