@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.44  2001/01/29 06:41:18  robertj
+ * Added printing of entry of interface table.
+ *
  * Revision 1.43  2000/06/26 11:17:19  robertj
  * Nucleus++ port (incomplete).
  *
@@ -520,17 +523,21 @@ class PIPSocket : public PSocket
 
       public:
         /// create an interface entry from a name, IP addr and MAC addr
-        InterfaceEntry(const PString & _name, const Address & _addr, const PString & _macAddr)
-          : name(_name), ipAddr(_addr), macAddr(_macAddr) { }
+        InterfaceEntry(const PString & _name, const Address & _addr, const PString & _macAddr);
+
+        /// Print to specified stream
+        virtual void PrintOn(
+          ostream &strm   // Stream to print the object into.
+        ) const;
 
         /// Get the name of the interface
-        PString GetName() const { return name; }
+        const PString & GetName() const { return name; }
 
         /// Get the address associated with the interface
         Address GetAddress() const { return ipAddr; }
 
         /// Get the MAC address associate with the interface
-        PString GetMACAddress() const { return macAddr; }
+        const PString & GetMACAddress() const { return macAddr; }
 
       protected:
         PString name;
