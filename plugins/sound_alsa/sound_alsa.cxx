@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.16  2004/03/13 12:36:14  dsandras
+ * Added support for DMIX plugin output.
+ *
  * Revision 1.15  2004/03/04 13:36:13  dsandras
  * Added check so that ALSA doesn't assert on broken installations.
  *
@@ -194,8 +197,13 @@ PStringArray PSoundChannelALSA::GetDeviceNames (Directions dir)
 
   if (dir == Recorder)
     return capture_devices;
-  else 
+  else {
+ 
+    if (playback_devices.GetSize () > 0)
+      playback_devices += "DMIX Plugin";
+    
     return playback_devices;
+  }
 }
 
 
@@ -228,7 +236,11 @@ BOOL PSoundChannelALSA::Open (const PString & _device,
     stream = SND_PCM_STREAM_PLAYBACK;
 
   /* Open in NONBLOCK mode */
-  if ((i = (_dir == Recorder) ? capture_devices.GetStringsIndex (_device) : playback_devices.GetStringsIndex (_device)) != P_MAX_INDEX) {
+  if (_dir != Recorder && _device == "DMIX Plugin") {
+
+    real_device_name = "plug:dmix";
+  }
+  else if ((i = (_dir == Recorder) ? capture_devices.GetStringsIndex (_device) : playback_devices.GetStringsIndex (_device)) != P_MAX_INDEX) {
 
     real_device_name = "plughw:" + PString (i);
     card_nr = i;
