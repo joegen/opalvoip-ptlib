@@ -1,7 +1,7 @@
 /*
- * sound.h
+ * video.h
  *
- * Sound class.
+ * Video class.
  *
  * Portable Windows Library
  *
@@ -27,6 +27,9 @@
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
  *
  * $Log: video.h,v $
+ * Revision 1.3  2001/01/03 08:30:36  rogerh
+ * Typo sound -> video
+ *
  * Revision 1.2  2000/12/19 22:20:26  dereks
  * Add video channel classes to connect to the PwLib PVideoInputDevice class.
  * Add PFakeVideoInput class to generate test images for video.
