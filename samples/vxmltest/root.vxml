@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<vxml version="1.0">
+
+<form id="root">
+	<block>
+		<prompt>
+			<audio src="welcome.wav"/>
+			This is the Open, H 3 2 3, V X M L test program.
+			Thank you for listening.
+		</prompt>
+	</block>
+</form>
+
+</vxml>
