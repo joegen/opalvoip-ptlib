@@ -17,7 +17,6 @@ all:
 	cd ..\..\pwlib\mswin
 	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Release" RECURSE=0
 	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Release" RECURSE=0
-	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Debug" RECURSE=0
 	nmake /nologo /f "GUI Components.mak" CFG="GUI Components - Win32 Release" RECURSE=0
 	cd ..\..\..\tools\asnparser
 	nmake /nologo /f "ASNParser.mak" CFG="ASNParser - Win32 Release" RECURSE=0
@@ -32,5 +31,6 @@ debug: all
 	nmake /nologo /f "PTLib.mak" CFG="PTLib - Win32 Debug" RECURSE=0
 	nmake /nologo /f "Console Components.mak" CFG="Console Components - Win32 Debug" RECURSE=0
 	nmake /nologo /f "GUI.mak" CFG="GUI - Win32 Debug" RECURSE=0
+	nmake /nologo /f "PWLib.mak" CFG="PWLib - Win32 Debug" RECURSE=0
 	nmake /nologo /f "GUI Components.mak" CFG="GUI Components - Win32 Debug" RECURSE=0
 	nmake /nologo /f "PWTest.mak" CFG="pwtest - Win32 Debug" RECURSE=0
