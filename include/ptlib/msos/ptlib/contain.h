@@ -1,5 +1,5 @@
 /*
- * $Id: contain.h,v 1.10 1996/01/23 13:23:15 robertj Exp $
+ * $Id: contain.h,v 1.11 1996/01/28 02:54:27 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: contain.h,v $
+ * Revision 1.11  1996/01/28 02:54:27  robertj
+ * Removal of MemoryPointer classes as usage didn't work for GNU.
+ *
  * Revision 1.10  1996/01/23 13:23:15  robertj
  * Added const version of PMemoryPointer
  *
@@ -138,16 +141,6 @@ typedef int            BOOL;  // type returned by expresion (i != j)
 typedef int INT;
 #else
 typedef long INT;   
-#endif
-
-
-// Declaration for a pointer to arbitrary blocks of memory
-#if defined(_WIN32)
-typedef unsigned char * PMemoryPointer;
-typedef unsigned char const * PConstMemoryPointer;
-#else
-typedef unsigned char __huge * PMemoryPointer;
-typedef unsigned char __huge const * PConstMemoryPointer;
 #endif
 
 
