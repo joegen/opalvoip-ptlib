@@ -1,5 +1,5 @@
 /*
- * $Id: win32.cxx,v 1.44 1997/01/12 04:24:16 robertj Exp $
+ * $Id: win32.cxx,v 1.45 1997/02/05 11:50:58 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: win32.cxx,v $
+ * Revision 1.45  1997/02/05 11:50:58  robertj
+ * Changed current process function to return reference and validate objects descendancy.
+ *
  * Revision 1.44  1997/01/12 04:24:16  robertj
  * Added function to get disk size and free space.
  *
@@ -1318,7 +1321,7 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
   SID_NAME_USE snuType;
   char szDomain[100];
   DWORD cchDomainName = sizeof(szDomain);
-  SecurityID userID(NULL, PProcess::Current()->GetUserName(),
+  SecurityID userID(NULL, PProcess::Current().GetUserName(),
                     szDomain, &cchDomainName, &snuType);
   if (!userID.IsValid())
     return GetLastError();
@@ -1360,13 +1363,13 @@ static DWORD SecureCreateKey(HKEY rootKey, const PString & subkey, HKEY & key)
 
 RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
 {
-  PProcess * proc = PProcess::Current();
+  PProcess & proc = PProcess::Current();
   DWORD access = mode == ReadOnly ? KEY_READ : KEY_ALL_ACCESS;
   DWORD error;
 
-  if (!proc->GetVersion(FALSE).IsEmpty()) {
+  if (!proc.GetVersion(FALSE).IsEmpty()) {
     PString keyname = subkey;
-    keyname.Replace("CurrentVersion", proc->GetVersion(FALSE));
+    keyname.Replace("CurrentVersion", proc.GetVersion(FALSE));
 
     error = RegOpenKeyEx(HKEY_CURRENT_USER, keyname, 0, access, &key);
     if (error == ERROR_SUCCESS)
@@ -1398,7 +1401,7 @@ RegistryKey::RegistryKey(const PString & subkey, OpenMode mode)
     return;
 
   HKEY rootKey = HKEY_CURRENT_USER;
-  if (PProcess::Current()->IsDescendant(PServiceProcess::Class()))
+  if (PProcess::Current().IsDescendant(PServiceProcess::Class()))
     rootKey = HKEY_LOCAL_MACHINE;
 
   error = SecureCreateKey(rootKey, subkey, key);
@@ -1557,19 +1560,19 @@ void PConfig::Construct(Source src)
       break;
 
     case Application :
-      PFilePath appFile = PProcess::Current()->GetFile();
+      PFilePath appFile = PProcess::Current().GetFile();
       PFilePath cfgFile = appFile.GetVolume() +
                                appFile.GetPath() + appFile.GetTitle() + ".INI";
       if (PFile::Exists(cfgFile))
         Construct(cfgFile); // Make a file based config
       else {
         location = "SOFTWARE\\";
-        PProcess * proc = PProcess::Current();
-        if (!proc->GetManufacturer().IsEmpty())
-          location += proc->GetManufacturer() + PDIR_SEPARATOR;
+        PProcess & proc = PProcess::Current();
+        if (!proc.GetManufacturer().IsEmpty())
+          location += proc.GetManufacturer() + PDIR_SEPARATOR;
         else
           location += "PWLib\\";
-        location += proc->GetName() + "\\CurrentVersion\\";
+        location += proc.GetName() + "\\CurrentVersion\\";
       }
       break;
   }
@@ -1833,16 +1836,16 @@ UINT __stdcall PThread::MainFunction(void * threadPtr)
 {
   PThread * thread = (PThread *)PAssertNULL(threadPtr);
 
-  PProcess * process = PProcess::Current();
+  PProcess & process = PProcess::Current();
 
-  AttachThreadInput(thread->threadId, ((PThread*)process)->threadId, TRUE);
-  AttachThreadInput(((PThread*)process)->threadId, thread->threadId, TRUE);
+  AttachThreadInput(thread->threadId, ((PThread&)process).threadId, TRUE);
+  AttachThreadInput(((PThread&)process).threadId, thread->threadId, TRUE);
 
-  process->threadMutex.Wait();
-  process->activeThreads.SetAt(thread->threadId, thread);
-  process->threadMutex.Signal();
+  process.threadMutex.Wait();
+  process.activeThreads.SetAt(thread->threadId, thread);
+  process.threadMutex.Signal();
 
-  process->SignalTimerChange();
+  process.SignalTimerChange();
 
   thread->Main();
 
@@ -1980,10 +1983,10 @@ void PThread::InitialiseProcessThread()
 
 PThread * PThread::Current()
 {
-  PProcess * process = PProcess::Current();
-  process->threadMutex.Wait();
-  PThread * thread = process->activeThreads.GetAt(GetCurrentThreadId());
-  process->threadMutex.Signal();
+  PProcess & process = PProcess::Current();
+  process.threadMutex.Wait();
+  PThread * thread = process.activeThreads.GetAt(GetCurrentThreadId());
+  process.threadMutex.Signal();
   return thread;
 }
 
@@ -2018,7 +2021,7 @@ PProcess::HouseKeepingThread::HouseKeepingThread()
 
 void PProcess::HouseKeepingThread::Main()
 {
-  PProcess & process = *PProcess::Current();
+  PProcess & process = PProcess::Current();
   for (;;) {
     process.threadMutex.Wait();
     HANDLE * handles = new HANDLE[process.activeThreads.GetSize()+1];
