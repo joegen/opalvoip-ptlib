@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.55  2002/12/19 03:35:01  craigs
+ * Fixed problem with PInternetProtocol::Write returning wrong values
+ *
  * Revision 1.54  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -317,11 +320,13 @@ BOOL PInternetProtocol::Write(const void * buf, PINDEX len)
     current++;
   }
 
-  if (current > base)
-    if (!PIndirectChannel::Write(base, current - base))
-      return FALSE;
-
-  lastWriteCount += totalWritten;
+  if (current > base) {  
+    if (!PIndirectChannel::Write(base, current - base))  
+      return FALSE;  
+    totalWritten += lastWriteCount;  
+  }  
+  
+  lastWriteCount = totalWritten;  
   return lastWriteCount > 0;
 }
 
