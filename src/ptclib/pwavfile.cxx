@@ -28,6 +28,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pwavfile.cxx,v $
+ * Revision 1.33  2004/07/19 12:23:38  csoutheren
+ * Removed compiler crash under gcc 3.4.0
+ *
  * Revision 1.32  2004/07/15 03:12:42  csoutheren
  * Migrated changes from crs_vxnml_devel branch into main trunk
  *
@@ -577,7 +580,6 @@ static inline BOOL NeedsConverter(const PWAV::FMTChunk & fmtChunk)
   return (fmtChunk.format != PWAVFile::fmt_PCM) || (fmtChunk.bitsPerSample != 16);
 }
 
-
 BOOL PWAVFile::ProcessHeader() {
 
   // Process the header information
@@ -664,7 +666,7 @@ BOOL PWAVFile::ProcessHeader() {
   if (autoConvert && NeedsConverter(wavFmtChunk)) {
     autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
     if (autoConverter == NULL) {
-      PTRACE(1, "PWAVFile\tNo format converter for type " << wavFmtChunk.format);
+      PTRACE(1, "PWAVFile\tNo format converter for type " << (int)wavFmtChunk.format);
     }
   }
 
@@ -749,13 +751,15 @@ BOOL PWAVFile::GenerateHeader()
   if (autoConvert && NeedsConverter(wavFmtChunk)) {
     autoConverter = PWAVFileConverterFactory::CreateInstance(wavFmtChunk.format);
     if (autoConverter == NULL) {
-      PTRACE(1, "PWAVFile\tNo format converter for type " << wavFmtChunk.format);
+      PTRACE(1, "PWAVFile\tNo format converter for type " << (int)wavFmtChunk.format);
       return FALSE;
     }
   }
 
   return (TRUE);
 }
+
+// #if 0
 
 // Update the WAV header according to the file length
 BOOL PWAVFile::UpdateHeader()
@@ -892,7 +896,6 @@ BOOL PWAVFileFormatPCM::Write(PWAVFile & file, const void * buf, PINDEX & len)
 }
 
 //////////////////////////////////////////////////////////////////
-
 
 #ifdef __GNUC__
 #define P_PACKED    __attribute__ ((packed));
@@ -1130,7 +1133,7 @@ BOOL PWAVFileConverterPCM::Read(PWAVFile & file, void * buf, PINDEX len)
     return file.PWAVFile::RawRead(buf, len);
 
   if (file.wavFmtChunk.bitsPerSample != 8) {
-    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << file.wavFmtChunk.bitsPerSample);
+    PTRACE(1, "PWAVFile\tAttempt to read autoconvert PCM data with unsupported number of bits per sample " << (int)file.wavFmtChunk.bitsPerSample);
     return FALSE;
   }
 
@@ -1158,7 +1161,7 @@ BOOL PWAVFileConverterPCM::Write(PWAVFile & file, const void * buf, PINDEX len)
   if (file.wavFmtChunk.bitsPerSample == 16)
     return file.PWAVFile::RawWrite(buf, len);
 
-  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << file.wavFmtChunk.bitsPerSample);
+  PTRACE(1, "PWAVFile\tAttempt to write autoconvert PCM data with unsupported number of bits per sample " << (int)file.wavFmtChunk.bitsPerSample);
   return FALSE;
 }
 
