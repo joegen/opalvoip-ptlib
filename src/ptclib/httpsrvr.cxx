@@ -1,5 +1,5 @@
 /*
- * $Id: httpsrvr.cxx,v 1.17 1998/04/01 01:55:16 robertj Exp $
+ * $Id: httpsrvr.cxx,v 1.18 1998/06/16 03:32:14 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.18  1998/06/16 03:32:14  robertj
+ * Propagated persistence and proxy flags in new connection info instances.
+ *
  * Revision 1.17  1998/04/01 01:55:16  robertj
  * Fixed bug when serving HTTPFile that has zero bytes in it.
  *
@@ -780,7 +783,11 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd)
 }
 
 
-PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & u, const PMIMEInfo & mime)
+PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd,
+                                         const PURL & u,
+                                         const PMIMEInfo & mime,
+                                         BOOL persist,
+                                         BOOL proxy)
   : url(u), mimeInfo(mime)
 {
   command           = cmd;
@@ -788,8 +795,8 @@ PHTTPConnectionInfo::PHTTPConnectionInfo(PHTTP::Commands cmd, const PURL & u, co
   majorVersion      = 1;
   minorVersion      = 0;
 
-  isPersistant      = FALSE;
-  isProxyConnection = FALSE;
+  isPersistant      = persist;
+  isProxyConnection = proxy;
 
   entityBodyLength  = mimeInfo.GetInteger(PHTTP::ContentLengthTag, -1);
 }
