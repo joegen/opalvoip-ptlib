@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.28 1996/12/17 11:08:05 robertj Exp $
+ * $Id: ipsock.h,v 1.29 1997/12/11 10:28:57 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.29  1997/12/11 10:28:57  robertj
+ * Added operators for IP address to DWORD conversions.
+ *
  * Revision 1.28  1996/12/17 11:08:05  robertj
  * Added DNS name cache clear command.
  *
@@ -126,10 +129,13 @@ PDECLARE_CLASS(PIPSocket, PSocket)
         Address();
         Address(const PString & dotNotation);
         Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
+        Address(DWORD dw);
         Address(const in_addr & addr);
         Address(const Address & addr);
         Address & operator=(const in_addr & addr);
         Address & operator=(const Address & addr);
+        Address & operator=(const PString & dotNotation);
+        Address & operator=(DWORD dw);
         operator PString() const;
         operator DWORD() const;
         BYTE Byte1() const;
