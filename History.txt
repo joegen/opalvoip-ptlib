@@ -2,6 +2,136 @@ Portable Windows Library Modification History
 =============================================
 
 
+Release 1.10
+------------
+	Fixed usage of inlines in optimised version. Was not inlined.
+
+	Added ASN compiler #defines for backward support of pre GCC 2.9
+	compilers.
+
+	Added ASN compiler #defines to reduce its memory footprint.
+
+	Added comparison operation to base ASN classes and compiled ASN
+	code.
+
+	Added support for ANY type in ASN parser.
+
+	Fixed anomaly to always include non-optional extensions in
+	PER encodings of the ASN parser generated code.
+
+	Fixed ASN PER encoding problems for large integer values.
+
+	Fixed incorrect encoding of unknown extensions in ASN PER.
+
+	Fixed incorrect size of ASN PER OID if zero length encoded.
+
+	Added ability to get the host/port of the the last packet
+	read/written to UDP socket.
+
+	Added ability to listen to specific interfaces for IP sockets.
+
+	Added operator>> for PIPSocket::Address class.
+
+	Fixed problem with creating windows in background threads, not
+	happening until have a message sent.
+
+	Fixed problem with calling modal dialog from a background thread.
+
+	Fixed problem with GUI menu item stopping working on calling
+	SetString().
+
+	Changes to aid in breaking I/O locks on thread termination. Still
+	needs more work especially in BSD!
+
+	Fixed problem with destroying PMutex that is already locked.
+
+	Fixed termination hang up problem with memory check code under unix
+	pthreads.
+
+	Added mutex in memory check detection code.
+
+	Added missing operator on smart pointer to return the pointer!
+	Cleaned up the smart pointer code (macros).
+
+	Added concatenation function to "base type" arrays.
+
+	Added "NoWin" option to prevent display of window in command
+	line commands of "Service Process" applications.
+
+	Added audio loopback psuedo-device (thanks Philip Edelbrock)
+
+	Fixed bug in display of PTimeIntervals larger than 24 hours.
+
+	Added missing unix paths include (esp. for VARRUN in svcproc)
+
+	Added support for libc5 and libc6 compiles under Linux (libc6
+	uses pthreads).
+
+	Fixed problem with EINTR causing sound channel reads and write
+	to fail, thanks to phil@netroedge.com!
+
+
+Release 1.09
+------------
+
+	Fixed bug when assigning negative number to a cosntrained
+	PASN_Integer.
+
+	Fixed bug in encoding/decoding OID greater than 2.39 in PER and
+	BER ASN.
+
+	Changed PASN_Choice cast operators in ASN generated code so no
+	longer "break" const-ness of object.
+
+	Fixed bug in encoding sequence of constrained primitive type in
+	ASN generated code, constraint not set.
+
+	Fixed bug in not emitting namespace use clause in ASN generated code.
+
+	Added "normalisation" of separate sequence of <base type> to be
+	single class in ASN generated code.
+
+	Fixed some 64 bit compatibility issues.
+
+	Fixed being able to cast an unsigned to a PTimeInterval.
+
+	Improved resolution of PTimer::Tick() to be millisecond accurate.
+
+	Rewite to compensate for linux OSS sensitivity to ioctl order.
+	Added code to allow full duplex audio.
+
+	Fixed build problems with not including oss.cxx in library if
+	OSTYPE not "linux"
+
+	Fixed bug in PFile::Copy, does not write last chunk of data to
+	new file.
+
+	Fixed bug when breaking block by closing the PSoundChannel in
+	other thread.
+
+	Fixed bug in PThread::IsSuspended(), returned exactly the
+	opposite state!
+
+	Fixed bug in PFilePath::SetType finding dots outside of file
+	name in path.
+
+	Portability issues, especially n BeOS (thanks Yuri!)
+
+
+Release 1.08
+------------
+
+	Fixed bug causing crashes on pass through of unknown extensions in
+	PER encoding.
+
+	Fixed race condition on indirect channel close, mutex needed in
+	PIndirectChannel.
+
+	Fixed core dump problem with SIGINT/SIGTERM terminating process.
+
+	Fixed bug in not returning correct default recorder (waveIn) device
+	under MS Windows.
+
 Release 1.07
 ------------
 
