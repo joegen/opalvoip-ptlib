@@ -8,3 +8,4 @@ asn_grammar.cxx
 asnparser.ncb
 asnparser.opt
 asnparser.plg
+asnparser.dep

@@ -30,7 +30,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Console Componets"=".\src\ptlib\msos\Console Componets.dsp" - Package Owner=<4>
+Project: "Console Components"=".\src\ptlib\msos\Console Components.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -38,9 +38,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name Protocols
-    End Project Dependency
 }}}
 
 ###############################################################################
@@ -147,18 +144,6 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Protocols"=.\src\ptlib\msos\Protocols.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "pwrc"=.\Tools\PWRc\pwrc.dsp - Package Owner=<4>
 
 Package=<5>
@@ -186,7 +171,7 @@ Package=<4>
     Project_Dep_Name PWLib
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name Console Componets
+    Project_Dep_Name Console Components
     End Project Dependency
     Begin Project Dependency
     Project_Dep_Name GUI Components
