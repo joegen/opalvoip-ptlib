@@ -24,6 +24,9 @@
  * Contributor(s): Derek J Smithies (derek@indranet.co.nz)
  *
  * $Log: vfakeio.cxx,v $
+ * Revision 1.22  2003/06/14 03:28:50  rjongbloed
+ * Further MSVC warning fix up
+ *
  * Revision 1.21  2003/06/14 02:59:34  rjongbloed
  * Fixed MSVC warning.
  *
@@ -98,7 +101,7 @@
 #endif
 
 #include <ptlib.h>
-#include <ptlib/videoio.h>
+#include <ptlib/vfakeio.h>
 
 /****
  * The fonts for these letters were written by  Sverre H. Huseby, and have been included
@@ -1826,7 +1829,7 @@ void PFakeVideoInputDevice::GrabTextVideoFrame(BYTE *resFrame)
     }
 }
     
-OneVFakeLetterData *PFakeVideoInputDevice::FindLetter(unsigned ascii)
+OneVFakeLetterData *PFakeVideoInputDevice::FindLetter(char ascii)
 {
   int q;
   int fontNumLetters = sizeof(vFakeLetterData) / sizeof(OneVFakeLetterData);

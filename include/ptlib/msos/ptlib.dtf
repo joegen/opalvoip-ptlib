@@ -1399,7 +1399,7 @@ EXPORTS
     ?Find@PString@@QBEHPBDH@Z @862 NONAME ;public: int __thiscall PString::Find(char const *,int)const 
     ?FindLast@PString@@QBEHDH@Z @864 NONAME ;public: int __thiscall PString::FindLast(char,int)const 
     ?FindLast@PString@@QBEHPBDH@Z @865 NONAME ;public: int __thiscall PString::FindLast(char const *,int)const 
-    ?FindLetter@PFakeVideoInputDevice@@QAEPAUOneVFakeLetterData@@I@Z @3594 NONAME ;public: struct OneVFakeLetterData * __thiscall PFakeVideoInputDevice::FindLetter(unsigned int)
+    ?FindLetter@PFakeVideoInputDevice@@QAEPAUOneVFakeLetterData@@D@Z @3602 NONAME ;public: struct OneVFakeLetterData * __thiscall PFakeVideoInputDevice::FindLetter(char)
     ?FindOneOf@PString@@QBEHPBDH@Z @867 NONAME ;public: int __thiscall PString::FindOneOf(char const *,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@AAH1HH@Z @868 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int &,int &,int,int)const 
     ?FindRegEx@PString@@QBEHABVPRegularExpression@@H@Z @869 NONAME ;public: int __thiscall PString::FindRegEx(class PRegularExpression const &,int)const 
