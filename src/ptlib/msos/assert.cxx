@@ -1,5 +1,5 @@
 /*
- * $Id: assert.cxx,v 1.4 1995/03/12 05:00:04 robertj Exp $
+ * $Id: assert.cxx,v 1.5 1995/04/25 11:32:34 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: assert.cxx,v $
+ * Revision 1.5  1995/04/25 11:32:34  robertj
+ * Fixed Borland compiler warnings.
+ *
  * Revision 1.4  1995/03/12 05:00:04  robertj
  * Re-organisation of DOS/WIN16 and WIN32 platforms to maximise common code.
  * Used built-in equate for WIN32 API (_WIN32).
@@ -23,12 +26,16 @@
 //
  */
 
-#include "ptlib.h"
+#include <ptlib.h>
 #include <errno.h>
 
 #if defined(_WIN32)
 #include <conio.h>
+#ifdef _MSC_VER
 #define GETCHAR _getch
+#else
+#define GETCHAR getch
+#endif
 #else
 #define GETCHAR getchar
 #endif
@@ -51,8 +58,8 @@ static BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM thisProcess)
   if (wndProcess != (DWORD)thisProcess)
     return TRUE;
 
-  cerr << "\nPress any key to continue . . .\n";
-  _getch();
+  fputs("\nPress any key to continue . . .\n", stderr);
+  GETCHAR();
   return FALSE;
 }
 
@@ -73,26 +80,27 @@ void PAssertFunc(const char * file, int line, const char * msg)
   int err = errno;
 #endif
   for (;;) {
-    cerr << "Assertion fail: File " << file << ", Line " << line << endl;
+    fprintf(stderr, "Assertion fail: File %s, Line %u\n", file, line);
     if (msg != NULL)
-      cerr << msg << " - Error code=" << err << endl;
-    cerr << "<A>bort, <B>reak, <I>gnore? ";
-    cerr.flush();
+      fprintf(stderr, "%s - Error code=%u\n", msg, err);
+    fputs("<A>bort, <B>reak, <I>gnore? ", stderr);
     switch (GETCHAR()) {
       case 'A' :
       case 'a' :
       case EOF :
-        cerr << "Aborted\n";
+        fputs("Aborted\n", stderr);
         _exit(100);
         
       case 'B' :
       case 'b' :
-        cerr << "Break\n";
+        fputs("Break\n", stderr);
+#ifdef _MSC_VER
         __asm int 3;
-        
+#endif
+
       case 'I' :
       case 'i' :
-        cerr << "Ignored\n";
+        fputs("Ignored\n", stderr);
         return;
     }
   }
