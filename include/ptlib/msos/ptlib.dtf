@@ -1157,10 +1157,10 @@ EXPORTS
     ?Convert@P_YUV422_YUV420P@@UAEHPBEPAEPAH@Z @3009 NONAME ;public: virtual int __thiscall P_YUV422_YUV420P::Convert(unsigned char const *,unsigned char *,int *)
     ?Convert@P_YUV422_YUV422@@UAEHPBEPAEPAH@Z @2937 NONAME ;public: virtual int __thiscall P_YUV422_YUV422::Convert(unsigned char const *,unsigned char *,int *)
     ?ConvertInPlace@PColourConverter@@UAEHPAEPAHH@Z @2804 NONAME ;public: virtual int __thiscall PColourConverter::ConvertInPlace(unsigned char *,int *,int)
-    ?ConvertOSError@PChannel@@MAEHH@Z @2242 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int)
+    ?ConvertOSError@PChannel@@MAEHHW4ErrorGroup@1@@Z @3024 NONAME ;protected: virtual int __thiscall PChannel::ConvertOSError(int,enum PChannel::ErrorGroup)
     ?ConvertOSError@PChannel@@SAHHAAW4Errors@1@AAH@Z @2249 NONAME ;public: static int __cdecl PChannel::ConvertOSError(int,enum PChannel::Errors &,int &)
     ?ConvertOSError@PSocket@@KAHHAAW4Errors@PChannel@@AAH@Z @797 NONAME ;protected: static int __cdecl PSocket::ConvertOSError(int,enum PChannel::Errors &,int &)
-    ?ConvertOSError@PSocket@@MAEHH@Z @2243 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int)
+    ?ConvertOSError@PSocket@@MAEHHW4ErrorGroup@PChannel@@@Z @3025 NONAME ;protected: virtual int __thiscall PSocket::ConvertOSError(int,enum PChannel::ErrorGroup)
     ?Copy@PFile@@SAHABVPFilePath@@0H@Z @799 NONAME ;public: static int __cdecl PFile::Copy(class PFilePath const &,class PFilePath const &,int)
     ?CopyContents@PAbstractArray@@IAEXABV1@@Z @800 NONAME ;protected: void __thiscall PAbstractArray::CopyContents(class PAbstractArray const &)
     ?CopyContents@PAbstractList@@IAEXABV1@@Z @801 NONAME ;protected: void __thiscall PAbstractList::CopyContents(class PAbstractList const &)
@@ -1432,12 +1432,11 @@ EXPORTS
     ?GetErrorCode@PMail@@QBEHXZ @1001 NONAME ;public: int __thiscall PMail::GetErrorCode(void)const 
     ?GetErrorCode@PRegularExpression@@QBE?AW4ErrorCodes@1@XZ @1002 NONAME ;public: enum PRegularExpression::ErrorCodes  __thiscall PRegularExpression::GetErrorCode(void)const 
     ?GetErrorText@PChannel@@SA?AVPString@@W4Errors@1@H@Z @1005 NONAME ;public: static class PString  __cdecl PChannel::GetErrorText(enum PChannel::Errors,int)
-    ?GetErrorText@PChannel@@UBE?AVPString@@XZ @2244 NONAME ;public: virtual class PString  __thiscall PChannel::GetErrorText(void)const 
-    ?GetErrorText@PIndirectChannel@@UBE?AVPString@@XZ @2492 NONAME ;public: virtual class PString  __thiscall PIndirectChannel::GetErrorText(void)const 
+    ?GetErrorText@PChannel@@UBE?AVPString@@W4ErrorGroup@1@@Z @3026 NONAME ;public: virtual class PString  __thiscall PChannel::GetErrorText(enum PChannel::ErrorGroup)const 
+    ?GetErrorText@PIndirectChannel@@UBE?AVPString@@W4ErrorGroup@PChannel@@@Z @3027 NONAME ;public: virtual class PString  __thiscall PIndirectChannel::GetErrorText(enum PChannel::ErrorGroup)const 
     ?GetErrorText@PMail@@QBE?AVPString@@XZ @1006 NONAME ;public: class PString  __thiscall PMail::GetErrorText(void)const 
     ?GetErrorText@PRegularExpression@@QBE?AVPString@@XZ @1007 NONAME ;public: class PString  __thiscall PRegularExpression::GetErrorText(void)const 
-    ?GetErrorText@PSoundChannel@@UBE?AVPString@@XZ @2245 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetErrorText(void)const 
-    ?GetErrorText@PVideoChannel@@UBE?AVPString@@XZ @2522 NONAME ;public: virtual class PString  __thiscall PVideoChannel::GetErrorText(void)const 
+    ?GetErrorText@PSoundChannel@@UBE?AVPString@@W4ErrorGroup@PChannel@@@Z @3028 NONAME ;public: virtual class PString  __thiscall PSoundChannel::GetErrorText(enum PChannel::ErrorGroup)const 
     ?GetExtension@PDynaLink@@SA?AVPString@@XZ @1008 NONAME ;public: static class PString  __cdecl PDynaLink::GetExtension(void)
     ?GetFileName@PFilePath@@QBE?AVPCaselessString@@XZ @1010 NONAME ;public: class PCaselessString  __thiscall PFilePath::GetFileName(void)const 
     ?GetFilter@PEthSocket@@QAEHAAIAAG@Z @1896 NONAME ;public: int __thiscall PEthSocket::GetFilter(unsigned int &,unsigned short &)
@@ -2273,6 +2272,7 @@ EXPORTS
     ?SetDataBits@PSerialChannel@@QAEHE@Z @1658 NONAME ;public: int __thiscall PSerialChannel::SetDataBits(unsigned char)
     ?SetDstFrameSize@PColourConverter@@UAEHIIH@Z @2872 NONAME ;public: virtual int __thiscall PColourConverter::SetDstFrameSize(unsigned int,unsigned int,int)
     ?SetDTR@PSerialChannel@@QAEXH@Z @1660 NONAME ;public: void __thiscall PSerialChannel::SetDTR(int)
+    ?SetErrorValues@PChannel@@IAEHW4Errors@1@HW4ErrorGroup@1@@Z @3029 NONAME ;protected: int __thiscall PChannel::SetErrorValues(enum PChannel::Errors,int,enum PChannel::ErrorGroup)
     ?SetFilePath@PFile@@QAEXABVPString@@@Z @1661 NONAME ;public: void __thiscall PFile::SetFilePath(class PString const &)
     ?SetFilter@PEthSocket@@QAEHIG@Z @1945 NONAME ;public: int __thiscall PEthSocket::SetFilter(unsigned int,unsigned short)
     ?SetFormat@PSound@@QAEXIII@Z @2111 NONAME ;public: void __thiscall PSound::SetFormat(unsigned int,unsigned int,unsigned int)
@@ -2354,7 +2354,6 @@ EXPORTS
     ?Signal@PSyncPointAck@@UAEXXZ @1717 NONAME ;public: virtual void __thiscall PSyncPointAck::Signal(void)
     ?SignalTimerChange@PProcess@@QAEXXZ @1718 NONAME ;public: void __thiscall PProcess::SignalTimerChange(void)
     ?SimpleConvert@PColourConverter@@MAEHPBEPAEPAH@Z @2876 NONAME ;protected: virtual int __thiscall PColourConverter::SimpleConvert(unsigned char const *,unsigned char *,int *)
-    ?Sleep@PThread@@UAEXABVPTimeInterval@@@Z @1719 NONAME ;public: virtual void __thiscall PThread::Sleep(class PTimeInterval const &)
     ?Splice@PString@@QAEXPBDHH@Z @1721 NONAME ;public: void __thiscall PString::Splice(char const *,int,int)
     ?sprintf@PString@@QAAAAV1@PBDZZ @1722 NONAME ;public: class PString & __cdecl PString::sprintf(char const *,...)
     ?Start@NT_ServiceManager@@UAEHPAVPServiceProcess@@@Z @1723 NONAME ;public: virtual int __thiscall NT_ServiceManager::Start(class PServiceProcess *)

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutil.inl,v $
+ * Revision 1.80  2001/09/10 02:51:22  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.79  2001/07/10 02:55:16  robertj
  * Added unary minus operator
  *
@@ -481,11 +485,11 @@ PINLINE PINDEX PChannel::GetLastWriteCount() const
 PINLINE int PChannel::GetHandle() const
   { return os_handle; }
 
-PINLINE PChannel::Errors PChannel::GetErrorCode() const
-  { return lastError; }
+PINLINE PChannel::Errors PChannel::GetErrorCode(ErrorGroup group) const
+  { return lastErrorCode[group]; }
 
-PINLINE int PChannel::GetErrorNumber() const
-  { return osError; }
+PINLINE int PChannel::GetErrorNumber(ErrorGroup group) const
+  { return lastErrorNumber[group]; }
 
 PINLINE void PChannel::AbortCommandString()
   { abortCommandString = TRUE; }
