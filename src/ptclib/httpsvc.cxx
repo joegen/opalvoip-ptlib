@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.27 1998/01/26 02:12:14 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.28 1998/01/26 02:49:19 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.28  1998/01/26 02:49:19  robertj
+ * GNU support.
+ *
  * Revision 1.27  1998/01/26 02:12:14  robertj
  * GNU warnings.
  *
@@ -92,6 +95,10 @@
  * Initial revision
  *
  */
+
+#ifdef __GNUC__
+#pragma implementation "httpsvc.h"
+#endif
 
 #include <ptlib.h>
 #include <httpsvc.h>
