@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: common.mak,v $
+# Revision 1.71  2002/01/28 10:33:20  rogerh
+# use CPLUS instead of gcc. Makes it work on Mac OS X
+#
 # Revision 1.70  2002/01/28 00:19:59  craigs
 # Made gcc 3 changes dependent on having gcc 3.0 installed
 #
@@ -185,7 +188,7 @@
 
 #  set USE_GCC3 if the gcc version is 3
 #
-GCC_VER	= $(shell gcc --version | sed 's/\..*//' )
+GCC_VER	= $(shell $(CPLUS) --version | sed 's/\..*//' )
 ifeq	($(GCC_VER),3)
 USE_GCC3 = 1
 endif
