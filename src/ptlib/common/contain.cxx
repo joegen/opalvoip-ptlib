@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.150  2004/04/09 06:38:11  rjongbloed
+ * Fixed compatibility with STL based streams, eg as used by VC++2003
+ *
  * Revision 1.149  2004/04/03 23:53:09  csoutheren
  * Added various changes to improce compatibility with the Sun Forte compiler
  *   Thanks to Brian Cameron
@@ -2417,11 +2420,10 @@ int PStringStream::Buffer::sync()
   return 0;
 }
 
-streampos PStringStream::Buffer::seekoff(streamoff off,
-#ifdef __USE_STL__
-                                 ios::seekdir dir, ios::openmode mode)
+#if __USE_STL__
+streambuf::pos_type PStringStream::Buffer::seekoff(off_type off, ios_base::seekdir dir, ios_base::openmode mode)
 #else
-                                 ios::seek_dir dir, int mode)
+streampos PStringStream::Buffer::seekoff(streamoff off, ios::seek_dir dir, int mode)
 #endif
 {
   int len = string.GetLength();
@@ -2477,6 +2479,14 @@ streampos PStringStream::Buffer::seekoff(streamoff off,
 
   return 0;
 }
+
+
+#if __USE_STL__
+streampos PStringStream::Buffer::seekpos(pos_type pos, ios_base::openmode mode)
+{
+  return seekoff(pos, ios_base::beg, mode);
+}
+#endif
 
 
 #ifdef _MSC_VER
