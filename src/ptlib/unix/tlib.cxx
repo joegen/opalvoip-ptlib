@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.72  2005/01/26 05:38:05  csoutheren
+ * Added ability to remove config file support
+ *
  * Revision 1.71  2005/01/04 08:09:43  csoutheren
  * Fixed Linux configure problems
  *
@@ -718,7 +721,9 @@ void PProcess::CommonConstruct()
   tzset();
 #endif
 
+#ifdef P_CONFIG_FILES
   CreateConfigFilesDictionary();
+#endif
 }
 
 void PProcess::CommonDestruct()
