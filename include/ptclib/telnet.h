@@ -1,5 +1,5 @@
 /*
- * $Id: telnet.h,v 1.2 1994/07/25 03:36:03 robertj Exp $
+ * $Id: telnet.h,v 1.3 1994/08/21 23:43:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: telnet.h,v $
- * Revision 1.2  1994/07/25 03:36:03  robertj
+ * Revision 1.3  1994/08/21 23:43:02  robertj
+ * Changed type of socket port number for better portability.
+ *
+ * Revision 1.2  1994/07/25  03:36:03  robertj
  * Added sockets to common, normalising to same comment standard.
  *
  */
@@ -28,29 +31,27 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
     PTelnetSocket();
       // create an unopened socket
 
-    PTelnetSocket(const PString address, int port = DefaultPort);
+    PTelnetSocket(const PString & address, WORD port = DefaultPort);
       // create an opened socket
 
     // Overrides from class PTCPSocket
-    BOOL Open (const PString address, int port = DefaultPort);
+    BOOL Open(const PString & address, WORD port = DefaultPort);
       // connect to a telnet server
 
     // Overrides from class PChannel
-    BOOL Read (void * data, PINDEX len);
+    BOOL Read(void * data, PINDEX len);
       // read data from a telnet port
 
-    int ReadChar();
-      // read a character from a telnet port
 
     // New functions
     virtual BOOL OnUnknownCommand(BYTE code);
       // Received unknown telnet command. Return TRUE if next byte
       // is not part of the unknown command
 
-    virtual void OnDo (BYTE code);
+    virtual void OnDo(BYTE code);
       // Received DO request
 
-    virtual void OnWill (BYTE code);
+    virtual void OnWill(BYTE code);
       // Received WILL request
 
     virtual void SendWill(BYTE code);
@@ -95,7 +96,7 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
       StateUnknownCommand,
     };
 
-    void Construct ();
+    void Construct();
       // common construct code for telnet socket
 
     // internal storage for the Telnet decoder
@@ -105,6 +106,8 @@ PDECLARE_CLASS(PTelnetSocket, PTCPSocket)
 
 };
 
+
 #endif
+
 
 // End Of File ///////////////////////////////////////////////////////////////
