@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.58  2001/03/07 06:56:36  yurik
+ * Made adjustment for BONE platforms as requested by Jac Goudsmit
+ *
  * Revision 1.57  2001/03/06 00:16:59  robertj
  * Fixed BSD compatibility problem.
  *
@@ -180,7 +183,7 @@ int PSocket::os_close()
   // send a shutdown to the other end
   ::shutdown(os_handle, 2);
 
-#ifdef __BEOS__
+#if defined(__BEOS__) && !defined(BE_BONE) // Jac's platform
 #ifndef BE_THREADS
   // abort any I/O block using this os_handle
   PProcess::Current().PXAbortIOBlock(os_handle);
