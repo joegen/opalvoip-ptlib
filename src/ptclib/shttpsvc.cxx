@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.7  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.6  2001/08/28 06:44:45  craigs
  * Added ability to override PHTTPServer creation
  *
@@ -55,7 +59,7 @@ class HTTP_PSSLChannel : public PSSLChannel
   public:
     HTTP_PSSLChannel(PSecureHTTPServiceProcess * svc, PSSLContext * context = NULL);
 
-    BOOL RawSSLRead(PChannel * chan, void * buf, PINDEX & len);
+    virtual BOOL RawSSLRead(void * buf, PINDEX & len);
 
   protected:
     enum { PreRead_Size = 4 };
@@ -183,12 +187,13 @@ HTTP_PSSLChannel::HTTP_PSSLChannel(PSecureHTTPServiceProcess * _svc, PSSLContext
 }
 
 
-BOOL HTTP_PSSLChannel::RawSSLRead(PChannel * chan, void * buf, PINDEX & len)
+BOOL HTTP_PSSLChannel::RawSSLRead(void * buf, PINDEX & len)
 { 
   if (preReadLen == 0)
-    return PSSLChannel::RawSSLRead(chan, buf, len); 
+    return PSSLChannel::RawSSLRead(buf, len); 
 
   if (preReadLen == P_MAX_INDEX) {
+    PChannel * chan = GetReadChannel();
 
     // read some bytes from the channel
     preReadLen = 0;

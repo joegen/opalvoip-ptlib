@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.8  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.7  2001/05/22 12:49:32  robertj
  * Did some seriously wierd rewrite of platform headers to eliminate the
  *   stupid GNU compiler warning about braces not matching.
@@ -54,29 +58,29 @@
 #ifndef _PIPSOCKET
 
 #ifndef _WIN32_WCE
-#define EINPROGRESS             (WSAEINPROGRESS|0x40000000)
-#define ENOTSOCK                (WSAENOTSOCK|0x40000000)
-#define EMSGSIZE                (WSAEMSGSIZE|0x40000000)
-#define ESOCKTNOSUPPORT         (WSAESOCKTNOSUPPORT|0x40000000)
-#define EOPNOTSUPP              (WSAEOPNOTSUPP|0x40000000)
-#define EPFNOSUPPORT            (WSAEPFNOSUPPORT|0x40000000)
-#define EAFNOSUPPORT            (WSAEAFNOSUPPORT|0x40000000)
-#define EADDRINUSE              (WSAEADDRINUSE|0x40000000)
-#define EADDRNOTAVAIL           (WSAEADDRNOTAVAIL|0x40000000)
-#define ENETDOWN                (WSAENETDOWN|0x40000000)
-#define ENETUNREACH             (WSAENETUNREACH|0x40000000)
-#define ENETRESET               (WSAENETRESET|0x40000000)
-#define ECONNABORTED            (WSAECONNABORTED|0x40000000)
-#define ECONNRESET              (WSAECONNRESET|0x40000000)
-#define ENOBUFS                 (WSAENOBUFS|0x40000000)
-#define EISCONN                 (WSAEISCONN|0x40000000)
-#define ENOTCONN                (WSAENOTCONN|0x40000000)
-#define ESHUTDOWN               (WSAESHUTDOWN|0x40000000)
-#define ETOOMANYREFS            (WSAETOOMANYREFS|0x40000000)
-#define ETIMEDOUT               (WSAETIMEDOUT|0x40000000)
-#define ECONNREFUSED            (WSAECONNREFUSED|0x40000000)
-#define EHOSTDOWN               (WSAEHOSTDOWN|0x40000000)
-#define EHOSTUNREACH            (WSAEHOSTUNREACH|0x40000000)
+#define EINPROGRESS             (WSAEINPROGRESS|PWIN32ErrorFlag)
+#define ENOTSOCK                (WSAENOTSOCK|PWIN32ErrorFlag)
+#define EMSGSIZE                (WSAEMSGSIZE|PWIN32ErrorFlag)
+#define ESOCKTNOSUPPORT         (WSAESOCKTNOSUPPORT|PWIN32ErrorFlag)
+#define EOPNOTSUPP              (WSAEOPNOTSUPP|PWIN32ErrorFlag)
+#define EPFNOSUPPORT            (WSAEPFNOSUPPORT|PWIN32ErrorFlag)
+#define EAFNOSUPPORT            (WSAEAFNOSUPPORT|PWIN32ErrorFlag)
+#define EADDRINUSE              (WSAEADDRINUSE|PWIN32ErrorFlag)
+#define EADDRNOTAVAIL           (WSAEADDRNOTAVAIL|PWIN32ErrorFlag)
+#define ENETDOWN                (WSAENETDOWN|PWIN32ErrorFlag)
+#define ENETUNREACH             (WSAENETUNREACH|PWIN32ErrorFlag)
+#define ENETRESET               (WSAENETRESET|PWIN32ErrorFlag)
+#define ECONNABORTED            (WSAECONNABORTED|PWIN32ErrorFlag)
+#define ECONNRESET              (WSAECONNRESET|PWIN32ErrorFlag)
+#define ENOBUFS                 (WSAENOBUFS|PWIN32ErrorFlag)
+#define EISCONN                 (WSAEISCONN|PWIN32ErrorFlag)
+#define ENOTCONN                (WSAENOTCONN|PWIN32ErrorFlag)
+#define ESHUTDOWN               (WSAESHUTDOWN|PWIN32ErrorFlag)
+#define ETOOMANYREFS            (WSAETOOMANYREFS|PWIN32ErrorFlag)
+#define ETIMEDOUT               (WSAETIMEDOUT|PWIN32ErrorFlag)
+#define ECONNREFUSED            (WSAECONNREFUSED|PWIN32ErrorFlag)
+#define EHOSTDOWN               (WSAEHOSTDOWN|PWIN32ErrorFlag)
+#define EHOSTUNREACH            (WSAEHOSTUNREACH|PWIN32ErrorFlag)
 #endif
 
 

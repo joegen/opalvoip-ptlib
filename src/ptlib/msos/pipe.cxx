@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pipe.cxx,v $
+ * Revision 1.3  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.2  1998/11/30 07:37:56  robertj
  * Fixed (previous bug) of incorrect handle values.
  *
@@ -223,7 +227,7 @@ BOOL PPipeChannel::Read(void * buffer, PINDEX len)
 {
   lastReadCount = 0;
   DWORD count;
-  if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 :-2))
+  if (!ConvertOSError(ReadFile(hFromChild, buffer, len, &count, NULL) ? 0 :-2, LastReadError))
     return FALSE;
   lastReadCount = count;
   return lastReadCount > 0;
@@ -234,7 +238,7 @@ BOOL PPipeChannel::Write(const void * buffer, PINDEX len)
 {
   lastWriteCount = 0;
   DWORD count;
-  if (!ConvertOSError(WriteFile(hToChild, buffer, len, &count, NULL) ? 0 : -2))
+  if (!ConvertOSError(WriteFile(hToChild, buffer, len, &count, NULL) ? 0 : -2, LastWriteError))
     return FALSE;
   lastWriteCount = count;
   return lastWriteCount >= len;
@@ -272,31 +276,31 @@ BOOL PPipeChannel::ReadStandardError(PString & errors, BOOL wait)
 {
   DWORD available, bytesRead;
   if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
-    return ConvertOSError(-2);
+    return ConvertOSError(-2, LastReadError);
 
   if (available != 0)
     return ConvertOSError(ReadFile(hStandardError,
                           errors.GetPointer(available+1), available,
-                          &bytesRead, NULL) ? 0 : -2);
+                          &bytesRead, NULL) ? 0 : -2, LastReadError);
 
   if (wait)
     return FALSE;
 
   char firstByte;
   if (!ReadFile(hStandardError, &firstByte, 1, &bytesRead, NULL))
-    return ConvertOSError(-2);
+    return ConvertOSError(-2, LastReadError);
 
   errors = firstByte;
 
   if (!PeekNamedPipe(hStandardError, NULL, 0, NULL, &available, NULL))
-    return ConvertOSError(-2);
+    return ConvertOSError(-2, LastReadError);
 
   if (available == 0)
     return TRUE;
 
   return ConvertOSError(ReadFile(hStandardError,
                         errors.GetPointer(available+2)+1, available,
-                        &bytesRead, NULL) ? 0 : -2);
+                        &bytesRead, NULL) ? 0 : -2, LastReadError);
 }
 
 

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: winsock.cxx,v $
+ * Revision 1.45  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.44  2001/09/06 02:30:31  robertj
  * Fixed mismatched declarations, thanks Vjacheslav Andrejev
  *
@@ -224,11 +228,8 @@ BOOL PSocket::Read(void * buf, PINDEX len)
   flush();
   lastReadCount = 0;
 
-  if (len == 0) {
-    lastError = BadParameter;
-    osError = EINVAL;
-    return FALSE;
-  }
+  if (len == 0)
+    return SetErrorValues(BadParameter, EINVAL, LastReadError);
 
   os_recvfrom((char *)buf, len, 0, NULL, NULL);
   return lastReadCount > 0;
@@ -373,23 +374,20 @@ BOOL PSocket::os_recvfrom(void * buf,
 
   if (readTimeout != PMaxTimeInterval) {
     DWORD available;
-    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+    if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
       return FALSE;
 
     if (available == 0) {
       fd_set_class readfds = os_handle;
       timeval_class tv = readTimeout;
       int selval = ::select(0, &readfds, NULL, NULL, &tv);
-      if (!ConvertOSError(selval))
+      if (!ConvertOSError(selval, LastReadError))
         return FALSE;
 
-      if (selval == 0) {
-        lastError = Timeout;
-        osError = EAGAIN;
-        return FALSE;
-      }
+      if (selval == 0)
+        return SetErrorValues(Timeout, EAGAIN, LastReadError);
 
-      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available)))
+      if (!ConvertOSError(ioctlsocket(os_handle, FIONREAD, &available), LastReadError))
         return FALSE;
     }
 
@@ -398,7 +396,7 @@ BOOL PSocket::os_recvfrom(void * buf,
   }
 
   int recvResult = ::recvfrom(os_handle, (char *)buf, len, flags, from, fromlen);
-  if (!ConvertOSError(recvResult))
+  if (!ConvertOSError(recvResult, LastReadError))
     return FALSE;
 
   lastReadCount = recvResult;
@@ -432,7 +430,7 @@ BOOL PSocket::os_sendto(const void * buf,
   }
 
   int sendResult = ::sendto(os_handle, (const char *)buf, len, flags, to, tolen);
-  if (!ConvertOSError(sendResult))
+  if (!ConvertOSError(sendResult, LastWriteError))
     return FALSE;
 
   if (sendResult == 0)
@@ -461,15 +459,19 @@ int PSocket::os_select(int maxfds,
 }
 
 
-BOOL PSocket::ConvertOSError(int error)
+BOOL PSocket::ConvertOSError(int status, ErrorGroup group)
 {
-  return ConvertOSError(error, lastError, osError);
+  Errors lastError;
+  int osError;
+  BOOL ok = ConvertOSError(status, lastError, osError);
+  SetErrorValues(lastError, osError, group);
+  return ok;
 }
 
 
-BOOL PSocket::ConvertOSError(int error, Errors & lastError, int & osError)
+BOOL PSocket::ConvertOSError(int status, Errors & lastError, int & osError)
 {
-  if (error >= 0) {
+  if (status >= 0) {
     lastError = NoError;
     osError = 0;
     return TRUE;
@@ -488,7 +490,7 @@ BOOL PSocket::ConvertOSError(int error, Errors & lastError, int & osError)
       lastError = Timeout;
       break;
     default :
-      osError |= 0x40000000;
+      osError |= PWIN32ErrorFlag;
       lastError = Miscellaneous;
   }
   return FALSE;
@@ -936,11 +938,7 @@ BOOL PIPXSocket::WriteTo(const void * buf, PINDEX len, const Address & addr, WOR
   sip.sa_family = AF_IPX;
   AssignAddress(sip, addr);
   sip.sa_socket = Host2Net(port);
-  int sendResult = os_sendto(buf, len, 0, (struct sockaddr *)&sip, sizeof(sip));
-  if (ConvertOSError(sendResult))
-    lastWriteCount = sendResult;
-
-  return lastWriteCount >= len;
+  return os_sendto(buf, len, 0, (struct sockaddr *)&sip, sizeof(sip));
 }
 
 

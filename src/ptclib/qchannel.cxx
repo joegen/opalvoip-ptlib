@@ -24,6 +24,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: qchannel.cxx,v $
+ * Revision 1.2  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.1  2001/07/10 03:07:07  robertj
  * Added queue channel and delay channel classes to ptclib.
  *
@@ -122,16 +126,13 @@ BOOL PQueueChannel::Read(void * buf, PINDEX count)
       PTRACE_IF(6, readTimeout > 0, "QChan\tBlocking on empty queue");
       if (!unempty.Wait(readTimeout)) {
         PTRACE(6, "QChan\tRead timeout on empty queue");
-        lastError = Timeout;
-        osError = EAGAIN;
-        return lastReadCount > 0;
+        if (lastReadCount == 0)
+          return SetErrorValues(Timeout, EAGAIN, LastReadError);
+        return TRUE;
       }
 
-      if (!IsOpen()) {
-        lastError = Interrupted;
-        osError = EINTR;
-        return FALSE;
-      }
+      if (!IsOpen())
+        return SetErrorValues(Interrupted, EINTR, LastReadError);
 
       mutex.Wait();
     }
@@ -200,16 +201,11 @@ BOOL PQueueChannel::Write(const void * buf, PINDEX count)
       PTRACE_IF(6, writeTimeout > 0, "QChan\tBlocking on full queue");
       if (!unfull.Wait(writeTimeout)) {
         PTRACE(6, "QChan\tWrite timeout on full queue");
-        lastError = Timeout;
-        osError = EAGAIN;
-        return FALSE;
+        return SetErrorValues(Timeout, EAGAIN, LastWriteError);
       }
 
-      if (!IsOpen()) {
-        lastError = Interrupted;
-        osError = EINTR;
-        return FALSE;
-      }
+      if (!IsOpen())
+        return SetErrorValues(Interrupted, EINTR, LastWriteError);
 
       mutex.Wait();
     }

@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: telnet.cxx,v $
+ * Revision 1.8  2001/09/10 02:51:23  robertj
+ * Major change to fix problem with error codes being corrupted in a
+ *   PChannel when have simultaneous reads and writes in threads.
+ *
  * Revision 1.7  1998/11/30 04:52:11  robertj
  * New directory structure
  *
@@ -288,9 +292,7 @@ BOOL PTelnetSocket::StartSend(const char * which, BYTE code)
     return TRUE;
 
   PDebugError << "not open yet." << endl;
-  osError = EBADF;
-  lastError = NotOpen;
-  return FALSE;
+  return SetErrorValues(NotOpen, EBADF);
 }
 
 
