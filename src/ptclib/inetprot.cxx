@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.28 1997/02/05 11:53:13 robertj Exp $
+ * $Id: inetprot.cxx,v 1.29 1997/03/18 21:26:46 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.29  1997/03/18 21:26:46  robertj
+ * Fixed stream write of MIME putting double CR's in text files..
+ *
  * Revision 1.28  1997/02/05 11:53:13  robertj
  * Changed construction of MIME dictionary to be delayed untill it is used.
  *
@@ -545,8 +548,8 @@ PMIMEInfo::PMIMEInfo(PInternetProtocol & socket)
 void PMIMEInfo::PrintOn(ostream &strm) const
 {
   for (PINDEX i = 0; i < GetSize(); i++)
-    strm << GetKeyAt(i) << ": " << GetDataAt(i) << CRLF;
-  strm << CRLF;
+    strm << GetKeyAt(i) << ": " << GetDataAt(i) << '\n';
+  strm << endl;
 }
 
 
