@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.77  2001/10/10 08:06:49  robertj
+ * Fixed problem with not shutting down threads when closing listener.
+ *
  * Revision 1.76  2001/09/11 02:37:41  robertj
  * Fixed thread name for HTTP service connection handler.
  *
@@ -329,6 +332,7 @@ PHTTPServiceProcess::PHTTPServiceProcess(const Info & inf)
 
   restartThread = NULL;
   httpListeningSocket = NULL;
+  httpThreads.DisallowDeleteObjects();
 }
 
 
@@ -435,7 +439,19 @@ void PHTTPServiceProcess::ShutdownListener()
                  << httpListeningSocket->GetPort());
 
   httpListeningSocket->Close();
-  httpThreadClosed.Wait();
+
+  httpThreadsMutex.Wait();
+  for (PINDEX i = 0; i < httpThreads.GetSize(); i++)
+    httpThreads[i].Close();
+
+  while (httpThreads.GetSize() > 0) {
+    httpThreadsMutex.Signal();
+    Sleep(1);
+    httpThreadsMutex.Wait();
+  }
+
+  httpThreadsMutex.Signal();
+
   delete httpListeningSocket;
   httpListeningSocket = NULL;
 }
@@ -571,27 +587,34 @@ PHTTPServiceThread::PHTTPServiceThread(PINDEX stackSize,
     process(app),
     listener(listeningSocket)
 {
+  process.httpThreadsMutex.Wait();
+  process.httpThreads.Append(this);
+  process.httpThreadsMutex.Signal();
+
   myStackSize = stackSize;
   Resume();
 }
 
 
+PHTTPServiceThread::~PHTTPServiceThread()
+{
+  process.httpThreadsMutex.Wait();
+  process.httpThreads.Remove(this);
+  process.httpThreadsMutex.Signal();
+}
+
+
 void PHTTPServiceThread::Main()
 {
-  if (!listener.IsOpen()) {
-    process.httpThreadClosed.Signal();
+  if (!listener.IsOpen())
     return;
-  }
 
   // get a socket when a client connects
-  PTCPSocket socket;
   if (!socket.Accept(listener)) {
     if (socket.GetErrorCode() != PChannel::Interrupted)
       PSYSTEMLOG(Error, "Accept failed for HTTP: " << socket.GetErrorText());
     if (listener.IsOpen())
       new PHTTPServiceThread(myStackSize, process, listener);
-    else
-      process.httpThreadClosed.Signal();
     return;
   }
 
@@ -610,8 +633,9 @@ void PHTTPServiceThread::Main()
   // always close after the response has been sent
   delete server;
 
-  // if a restart was requested, then do it
-  process.CompleteRestartSystem();
+  // if a restart was requested, then do it, but only if we are not shutting down
+  if (listener.IsOpen())
+    process.CompleteRestartSystem();
 }
 
 
