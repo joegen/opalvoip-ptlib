@@ -137,6 +137,9 @@
  *
  *
  * $Log: video4dc1394.cxx,v $
+ * Revision 1.4  2004/06/15 15:38:29  dsandras
+ * Fixed bug with latest API of libdc1394.
+ *
  * Revision 1.3  2004/06/14 20:43:33  dsandras
  * Try to fix compilation.
  *
@@ -429,7 +432,7 @@ BOOL PVideoInput1394DcDevice::Start()
                            FORMAT_VGA_NONCOMPRESSED,
                            dc1394_mode,
                            P_DC1394_DEFAULT_SPEED,
-                           framerate, 4, 1, (const char *) deviceName,
+                           framerate, 4, 1, 1, deviceName,
 			 &camera)!=DC1394_SUCCESS) ||
       (!UseDMA && dc1394_setup_capture(handle,camera_nodes[channelNumber],
                            0, /* channel of IEEE 1394 */ 
