@@ -27,6 +27,17 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.177.2.3  2005/02/13 23:44:04  csoutheren
+ * Backported more IPV6 fixes from Atlas-devel
+ *
+ * Revision 1.186  2005/02/13 23:01:36  csoutheren
+ * Fixed problem with not detecting mapped IPV6 addresses within the RFC1918
+ * address range as RFC1918
+ *
+ * Revision 1.185  2005/02/07 12:12:30  csoutheren
+ * Expanded interface list routines to include IPV6 addresses
+ * Added IPV6 to GetLocalAddress
+ *
  * Revision 1.177.2.2  2005/02/07 00:54:33  csoutheren
  * Backported latest IPV6 changes from Atlas-devel
  *
@@ -2504,15 +2515,46 @@ BOOL PIPSocket::Address::IsBroadcast() const
   return *this == broadcast4;
 }
 
+BOOL PIPSocket::Address::IsRFC1918() const 
+{ 
+#if P_HAS_IPV6
+  if (version == 6) {
+    if (IN6_IS_ADDR_LINKLOCAL(&v.six) || IN6_IS_ADDR_SITELOCAL(&v.six))
+      return TRUE;
+    if (IsV4Mapped())
+      return PIPSocket::Address((*this)[12], (*this)[13], (*this)[14], (*this)[15]).IsRFC1918();
+  }
+#endif
+  return (Byte1() == 10)
+          ||
+          (
+            (Byte1() == 172)
+            &&
+            (Byte2() >= 16) && (Byte2() <= 31)
+          )
+          ||
+          (
+            (Byte1() == 192) 
+            &&
+            (Byte2() == 168)
+          );
+}
 
 PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
                                           const Address & _addr,
                                           const Address & _mask,
-                                          const PString & _macAddr)
+                                          const PString & _macAddr
+#if P_HAS_IPV6
+                                         ,const PString & _ip6Addr
+#endif
+                                         )
   : name(_name.Trim()),
     ipAddr(_addr),
     netMask(_mask),
     macAddr(_macAddr)
+#if P_HAS_IPV6
+    , ip6Addr(_ip6Addr)
+#endif
 {
 }
 
@@ -2520,6 +2562,10 @@ PIPSocket::InterfaceEntry::InterfaceEntry(const PString & _name,
 void PIPSocket::InterfaceEntry::PrintOn(ostream & strm) const
 {
   strm << ipAddr;
+#if P_HAS_IPV6
+  if (!ip6Addr)
+    strm << " [" << ip6Addr << ']';
+#endif
   if (!macAddr)
     strm << " <" << macAddr << '>';
   if (!name)
