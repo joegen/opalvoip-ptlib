@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.112  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.111  2003/01/20 10:13:18  rogerh
  * NetBSD thread changes
  *
@@ -518,6 +521,7 @@ void PProcess::Construct()
 
   ::pipe(timerChangePipe);
 #else
+  maxHandles = 500; // arbitrary value
   socketpair(AF_INET,SOCK_STREAM,0,timerChangePipe);
 #endif
 
@@ -666,6 +670,10 @@ void PThread::Restart()
 
   pthread_attr_t threadAttr;
   pthread_attr_init(&threadAttr);
+#ifdef P_RTEMS
+#warning Adjust size to match Your processor requiremnts
+  pthread_attr_setstacksize(&threadAttr, 16*1024);
+#endif
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
 
 #if defined(P_LINUX) || defined(P_RTEMS)

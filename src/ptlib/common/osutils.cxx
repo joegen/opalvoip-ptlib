@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.203  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.202  2002/12/18 05:31:31  robertj
  * Moved PTimeInterval::GetInterval() to common code.
  *
@@ -1736,6 +1739,7 @@ PProcess::PProcess(const char * manuf, const char * name,
   PMemoryHeap::SetIgnoreAllocations(ignoreAllocations);
 #endif
 
+#ifndef P_RTEMS
   if (p_argv != 0 && p_argc > 0) {
     arguments.SetArgs(p_argc-1, p_argv+1);
 
@@ -1749,6 +1753,10 @@ PProcess::PProcess(const char * manuf, const char * name,
     if (productName.IsEmpty())
       productName = executableFile.GetTitle().ToLower();
   }
+#else
+  cout << "Enter program arguments:\n";
+  arguments.ReadFrom(cin);
+#endif
 
   InitialiseProcessThread();
 

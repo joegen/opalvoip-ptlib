@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.67  2003/01/24 10:21:06  robertj
+ * Fixed issues in RTEMS support, thanks Vladimir Nesic
+ *
  * Revision 1.66  2002/12/11 23:02:39  robertj
  * Added ability to set user identity temporarily and permanently.
  * Added ability to have username exclusively digits which corresponds to a uid.
@@ -415,7 +418,7 @@ PString PProcess::GetUserName() const
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-  struct passwd * pw;
+  struct passwd * pw = NULL;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
   ::getpwuid_r(geteuid(), &pwd, buffer, 1024, &pw);
 #else
@@ -456,7 +459,7 @@ BOOL PProcess::SetUserName(const PString & username, BOOL permanent)
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
     struct passwd pwd;
     char buffer[1024];
-    struct passwd * pw;
+    struct passwd * pw = NULL;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
     ::getpwnam_r(username, &pwd, buffer, 1024, &pw);
 #else
@@ -503,7 +506,7 @@ PString PProcess::GetGroupName() const
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct group grp;
   char buffer[1024];
-  struct group * gr;
+  struct group * gr = NULL;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
   ::getgrgid_r(getegid(), &grp, buffer, 1024, &gr);
 #else
@@ -544,7 +547,7 @@ BOOL PProcess::SetGroupName(const PString & groupname, BOOL permanent)
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
     struct group grp;
     char buffer[1024];
-    struct group * gr;
+    struct group * gr = NULL;
 #if defined (P_LINUX) || defined (P_AIX) || defined(P_IRIX) || (__GNUC__>=3 && defined(P_SOLARIS)) || defined(P_RTEMS)
     ::getgrnam_r(groupname, &grp, buffer, 1024, &gr);
 #else
@@ -869,20 +872,24 @@ struct rtems_bsdnet_config rtems_bsdnet_config = {
 #define CONFIGURE_MAXIMUM_MESSAGE_QUEUES rtems_resource_unlimited(50)
 #define CONFIGURE_MAXIMUM_MUTEXES        rtems_resource_unlimited(50)
 
-#define CONFIGURE_MAXIMUM_POSIX_THREADS                           50
-#define CONFIGURE_MAXIMUM_POSIX_MUTEXES                           50
-#define CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES               50
-#define CONFIGURE_MAXIMUM_POSIX_KEYS                              50
-#define CONFIGURE_MAXIMUM_POSIX_TIMERS                            50
-#define CONFIGURE_MAXIMUM_POSIX_QUEUED_SIGNALS                    50
-#define CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES                    50
-#define CONFIGURE_MAXIMUM_POSIX_SEMAPHORES                        50
+#define CONFIGURE_MAXIMUM_POSIX_THREADS                          500
+#define CONFIGURE_MAXIMUM_POSIX_MUTEXES                          500
+#define CONFIGURE_MAXIMUM_POSIX_CONDITION_VARIABLES              500
+#define CONFIGURE_MAXIMUM_POSIX_KEYS                             500
+#define CONFIGURE_MAXIMUM_POSIX_TIMERS                           500
+#define CONFIGURE_MAXIMUM_POSIX_QUEUED_SIGNALS                   500
+#define CONFIGURE_MAXIMUM_POSIX_MESSAGE_QUEUES                   500
+#define CONFIGURE_MAXIMUM_POSIX_SEMAPHORES                       500
 
-#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS                  50
+#define CONFIGURE_LIBIO_MAXIMUM_FILE_DESCRIPTORS                 500
 #define CONFIGURE_USE_IMFS_AS_BASE_FILESYSTEM
 
 #define CONFIGURE_POSIX_INIT_THREAD_TABLE
 #define CONFIGURE_INIT_TASK_INITIAL_MODES (RTEMS_PREEMPT | RTEMS_TIMESLICE)
+
+#ifdef DEBUG
+#define STACK_CHECKER_ON
+#endif
 
 void* POSIX_Init(void*);
 #define CONFIGURE_INIT
