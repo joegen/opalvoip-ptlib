@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.219  2004/05/18 06:01:06  csoutheren
+ * Deferred plugin loading until after main has executed by using abstract factory classes
+ *
  * Revision 1.218  2004/05/18 02:32:09  csoutheren
  * Fixed linking problems with PGenericFactory classes
  *
@@ -956,6 +959,7 @@ ostream & PTrace::End(ostream & s)
      must suffer with blank lines in that case.
    */
   ::streambuf & rb = *s.rdbuf();
+#if 0
 #ifndef P_LINUX
   if (((s.flags()&ios::unitbuf) != 0) ||
 #ifdef __USE_STL__
@@ -964,6 +968,7 @@ ostream & PTrace::End(ostream & s)
           rb.out_waiting() > 0
 #endif
       )
+#endif
 #endif
     {
     if ((PTraceOptions&SystemLogStream) != 0) {
@@ -1831,27 +1836,30 @@ int PProcess::_main(void *)
 {
   // create one instance of each class registered in the 
   // PProcessStartup abstract factory
-  std::vector<PProcessStartup *> startups;
+  std::map<PString, PProcessStartup *> startups;
   {
     PProcessStartupFactory::KeyList list = PProcessStartupFactory::GetKeyList();
     PProcessStartupFactory::KeyList::const_iterator r;
     for (r = list.begin(); r != list.end(); ++r) {
       PProcessStartup * instance = PProcessStartupFactory::CreateInstance(*r);
       instance->OnStartup();
-      startups.push_back(instance);
+      startups.insert(pair<PString, PProcessStartup *>(*r, instance));
     }
   }
 
   // now call the main process
   Main();
 
-  // delete the PProcessInstance previously created
+  // call OnShutfdown for the PProcessInstances previously created
+  // make sure we handle singletons correctly
   {
-    std::vector<PProcessStartup *>::iterator r;
-    for (r = startups.begin(); r != startups.end(); ++r) {
-      (*r)->OnShutdown();
-      delete *r;
-      *r = NULL;
+    while (startups.size() > 0) {
+      std::map<PString, PProcessStartup *>::iterator r = startups.begin();
+      PProcessStartup * instance = r->second;
+      instance->OnShutdown();
+      if (!PProcessStartupFactory::IsSingleton(r->first))
+        delete instance;
+      startups.erase(r);
     }
   }
 
