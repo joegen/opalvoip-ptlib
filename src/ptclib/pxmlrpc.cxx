@@ -8,6 +8,9 @@
  * Copyright 2002 Equivalence
  *
  * $Log: pxmlrpc.cxx,v $
+ * Revision 1.14  2002/10/08 12:26:31  craigs
+ * Changed struct members to always contain name/value in that order
+ *
  * Revision 1.13  2002/10/08 12:09:28  craigs
  * More fixes for creation of struct params
  *
@@ -172,8 +175,8 @@ PXMLElement * PXMLRPCBlock::CreateStruct(const PStringToString & dict, const PSt
 PXMLElement * PXMLRPCBlock::CreateMember(const PString & name, PXMLElement * value)
 {
   PXMLElement * member = new PXMLElement(NULL, "member");
-  member->AddChild(value);
   member->AddChild(new PXMLElement(member, "name", name));
+  member->AddChild(value);
 
   return member;
 }
