@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: socket.cxx,v $
+ * Revision 1.62  2001/04/16 22:46:22  craigs
+ * Fixed problem with os_connect not correctly reporting errors
+ *
  * Revision 1.61  2001/03/26 03:31:53  robertj
  * Fixed Solaris compile error.
  *
@@ -217,15 +220,15 @@ int PSocket::os_socket(int af, int type, int protocol)
 #ifndef P_PTHREADS
 // non PThread unixes need non-blocking sockets
     DWORD cmd = 1;
-    if (!ConvertOSError(::ioctl(handle, FIONBIO, &cmd)) ||
-        !ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
+    if ((::ioctl(handle, FIONBIO, &cmd) != 0) ||
+        (::fcntl(handle, F_SETFD, 1) != 0)) {
       ::close(handle);
       return -1;
     }
 #endif
 
     // close socket on exec
-    if (!ConvertOSError(::fcntl(handle, F_SETFD, 1))) {
+    if (::fcntl(handle, F_SETFD, 1) != 0) {
       ::close(handle);
       return -1;
     }
@@ -242,7 +245,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
 #ifdef P_PTHREADS
   DWORD cmd = 1;
-  if (!ConvertOSError(::ioctl(os_handle, FIONBIO, &cmd)))
+  if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
 #endif
 
@@ -250,7 +253,7 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
 
 #ifdef P_PTHREADS
   cmd = 0;
-  if (!ConvertOSError(::ioctl(os_handle, FIONBIO, &cmd)))
+  if (::ioctl(os_handle, FIONBIO, &cmd) != 0)
     return -1;
 #endif
 
@@ -260,21 +263,21 @@ int PSocket::os_connect(struct sockaddr * addr, PINDEX size)
   if (errno != EINPROGRESS)
     return -1;
 
-  if (PXSetIOBlock(PXConnectBlock, readTimeout))
-    return TRUE;
+  if (!PXSetIOBlock(PXConnectBlock, readTimeout))
+    return -1;
 
 #ifndef __BEOS__
   // A successful select() call does not necessarily mean the socket connected OK.
   int optval = -1;
   socklen_t optlen = sizeof(optval);
   getsockopt(os_handle, SOL_SOCKET, SO_ERROR, (char *)&optval, &optlen);
-  if (optval == 0)
-    return 0;
-
-  errno = optval;
+  if (optval != 0) {
+    errno = optval;
+    return -1;
+  }
 #endif //!__BEOS__
 
-  return -1;
+  return 0;
 }
 
 int PSocket::os_accept(PSocket & listener, struct sockaddr * addr, PINDEX * size)
