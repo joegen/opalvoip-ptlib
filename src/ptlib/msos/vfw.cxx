@@ -25,6 +25,9 @@
  *                 Walter H Whitlock (twohives@nc.rr.com)
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.16  2002/01/10 03:52:41  robertj
+ * Fixed 8bpp problem, thanks Walter Whitlock.
+ *
  * Revision 1.15  2002/01/08 01:42:06  robertj
  * Tidied up some PTRACE debug output.
  * Changed some code formatting.
@@ -121,10 +124,14 @@ class PCapStatus : public CAPSTATUS
 class PVideoDeviceBitmap : PBYTEArray
 {
   public:
-    PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
-    PVideoDeviceBitmap(HWND hWnd);
-    BOOL ApplyFormat(HWND hWnd) 
-      { return capSetVideoFormat(hWnd, theArray, GetSize()); }
+    // the following method is replaced by PVideoDeviceBitmap(HWND hWnd, WORD bpp)
+    // PVideoDeviceBitmap(unsigned width, unsigned height, const PString & fmt);
+    //returns object with gray color pallet if needed for 8 bpp formats
+    PVideoDeviceBitmap(HWND hWnd, WORD bpp);
+    // does not build color pallet
+    PVideoDeviceBitmap(HWND hWnd); 
+    // apply video format to capture device
+    BOOL ApplyFormat(HWND hWnd);
 
     BITMAPINFO * operator->() const 
     { return (BITMAPINFO *)theArray; }
@@ -207,14 +214,39 @@ PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow)
 {
   PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
   SetSize(sz);
-  if (capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
+  if (!capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
+    PTRACE(1, "PVidInp\tcapGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
+    SetSize(0);
+    return;
+  }
+}
+
+PVideoDeviceBitmap::PVideoDeviceBitmap(HWND hCaptureWindow, WORD bpp) {
+  PINDEX sz = capGetVideoFormatSize(hCaptureWindow);
+  SetSize(sz);
+  if (!capGetVideoFormat(hCaptureWindow, theArray, sz)) { 
+    PTRACE(1, "PVidInp\tcapGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
+    SetSize(0);
     return;
   }
 
-  PTRACE(1, "PVidInp\tcapGetVideoFormat(hCaptureWindow) failed - " << ::GetLastError());
-  SetSize(0);
+  if (8 == bpp && bpp != ((BITMAPINFO*)theArray)->bmiHeader.biBitCount) {
+    SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
+    for (int i = 0; i < 256; i++)
+      ((BITMAPINFO*)theArray)->bmiColors[i].rgbBlue  = ((BITMAPINFO*)theArray)->bmiColors[i].rgbGreen = ((BITMAPINFO*)theArray)->bmiColors[i].rgbRed = (BYTE)i;
+  }
+  ((BITMAPINFO*)theArray)->bmiHeader.biBitCount = bpp;
 }
 
+PVideoDeviceBitmap::ApplyFormat(HWND hWnd) {
+  // NB it is necessary to set the biSizeImage value appropriate to frame size
+  // assume bmiHeader.biBitCount has already been set appropriatly for format
+  ((BITMAPINFO*)theArray)->bmiHeader.biPlanes = 1;
+  ((BITMAPINFO*)theArray)->bmiHeader.biSizeImage = 
+    (((BITMAPINFO*)theArray)->bmiHeader.biHeight<0 ? -((BITMAPINFO*)theArray)->bmiHeader.biHeight : ((BITMAPINFO*)theArray)->bmiHeader.biHeight)
+    *4*((((BITMAPINFO*)theArray)->bmiHeader.biBitCount * ((BITMAPINFO*)theArray)->bmiHeader.biWidth + 31)/32);
+  return capSetVideoFormat(hWnd, theArray, GetSize());
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -333,9 +365,14 @@ BOOL PVideoInputDevice::TestAllFormats() {
   if (running)
     Stop();
 
-  PVideoDeviceBitmap bi(hCaptureWindow); 
   for (PINDEX prefFormatIdx = 0; prefFormatIdx < PARRAYSIZE(FormatTable); prefFormatIdx++) {
+    PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[prefFormatIdx].bitCount); 
     for (PINDEX prefResizeIdx = 0; prefResizeIdx < PARRAYSIZE(winTestResTable); prefResizeIdx++) {
+      if (FormatTable[prefFormatIdx].colourFormat != NULL)
+        bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].vfwComp->compression;
+      else
+        continue;
+
       bi->bmiHeader.biHeight = winTestResTable[prefResizeIdx].device_height;
       bi->bmiHeader.biWidth = winTestResTable[prefResizeIdx].device_width;
 
@@ -344,17 +381,6 @@ BOOL PVideoInputDevice::TestAllFormats() {
         bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
       else if (!FormatTable[prefFormatIdx].negHeight && bi->bmiHeader.biHeight < 0)
         bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
-
-      if (FormatTable[prefFormatIdx].colourFormat != NULL)
-        bi->bmiHeader.biCompression = FormatTable[prefFormatIdx].vfwComp->compression;
-      else
-        continue;
-
-      bi->bmiHeader.biPlanes = 1;
-      bi->bmiHeader.biBitCount = FormatTable[prefFormatIdx].bitCount;
-      bi->bmiHeader.biSizeImage = 
-	      (bi->bmiHeader.biHeight < 0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight)*
-	      ((bi->bmiHeader.biBitCount * (bi->bmiHeader.biWidth) + 31)/32)*4;
 
       if (bi.ApplyFormat(hCaptureWindow)) {
         PTRACE(3, "PVidInp\tcapSetVideoFormat succeeded: "
@@ -432,12 +458,6 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   bi->bmiHeader.biWidth = width;
   bi->bmiHeader.biHeight = height;
 
-  // NB it is necessary to set the biSizeImage value appropriate to frame size
-  // assume bmiHeader.biBitCount has already been set appropriatly for format
-  bi->bmiHeader.biSizeImage = 
-	(bi->bmiHeader.biHeight<0 ? -bi->bmiHeader.biHeight : bi->bmiHeader.biHeight)*
-	((bi->bmiHeader.biBitCount * (bi->bmiHeader.biWidth) + 31)/32)*4;
-
   if (!bi.ApplyFormat(hCaptureWindow)) {
     lastError = ::GetLastError();
     PTRACE(1, "PVidInp\tcapSetVideoFormat failed: "
@@ -506,12 +526,12 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
     return FALSE;
   }
 
-  PVideoDeviceBitmap bi(hCaptureWindow);
-
   PINDEX i = 0;
   while (FormatTable[i].colourFormat != NULL && !(colourFmt *= FormatTable[i].colourFormat))
     i++;
-  
+
+  PVideoDeviceBitmap bi(hCaptureWindow, FormatTable[i].bitCount);
+
   // set frame width and height
   bi->bmiHeader.biHeight = frameHeight;
   bi->bmiHeader.biWidth = frameWidth;
@@ -521,9 +541,6 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
   else  if (!(FormatTable[i].negHeight) && !(0 < (int)bi->bmiHeader.biHeight) )
     bi->bmiHeader.biHeight = -(int)bi->bmiHeader.biHeight; 
 
-  bi->bmiHeader.biPlanes = 1;
-  bi->bmiHeader.biBitCount = FormatTable[i].bitCount;
-
   if (FormatTable[i].colourFormat != NULL)
     bi->bmiHeader.biCompression = FormatTable[i].vfwComp->compression;
   else if (colourFmt.GetLength() == 4)
@@ -532,17 +549,7 @@ BOOL PVideoInputDevice::SetColourFormat(const PString & colourFmt)
     bi->bmiHeader.biCompression = INVALID_COMP; // Indicate invalid colour format
     return FALSE;
   }
-  bi->bmiHeader.biSizeImage = frameHeight*((bi->bmiHeader.biBitCount*frameWidth + 31)/32)*4;
 
-  // the following code is probably unnecessary but was present in earlier versions
-  //if (bi->bmiHeader.biCompression == BI_RGB && bi->bmiHeader.biBitCount == 8) {
-  //  bi->SetSize(sizeof(BITMAPINFOHEADER)+sizeof(RGBQUAD)*256);
-  //  for (i = 0; i < 256; i++)
-  //    bi->bmiColors[i].rgbBlue = bi->bmiColors[i].rgbGreen = bi->bmiColors[i].rgbRed = (BYTE)i;
-  //  bi->bmiHeader.biHeight = -bi->bmiHeader.biHeight;
-  //}
-  //##
-  
   // try to apply new colourFmt using current frame resolution
   if (!bi.ApplyFormat(hCaptureWindow)) {
     lastError = ::GetLastError();
