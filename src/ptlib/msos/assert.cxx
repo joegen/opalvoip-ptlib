@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: assert.cxx,v $
+ * Revision 1.39  2004/07/06 10:12:55  csoutheren
+ * Added static integer o factory template to assist in ensuring factories are instantiated
+ *
  * Revision 1.38  2004/04/03 06:54:30  rjongbloed
  * Many and various changes to support new Visual C++ 2003
  *
@@ -143,6 +146,8 @@
  * Revision 1.1  1994/04/01  14:39:35  robertj
  * Initial revision
  */
+
+#define P_DISABLE_FACTORY_INSTANCES
 
 #include <ptlib.h>
 #include <ptlib/svcproc.h>
