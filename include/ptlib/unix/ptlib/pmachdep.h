@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pmachdep.h,v $
+ * Revision 1.19  1998/12/04 12:38:07  robertj
+ * Fixed signal include
+ *
  * Revision 1.18  1998/11/24 09:38:19  robertj
  * FreeBSD port.
  *
@@ -49,6 +52,7 @@
 
 #if defined(P_LINUX)
 #include <errno.h>
+#include <signal.h>
 #include <sys/ioctl.h>
 #include <sys/fcntl.h>
 #include <sys/termios.h>
@@ -79,6 +83,7 @@ typedef size_t socklen_t;
 #include <sys/filio.h>
 #include <sys/socket.h>
 #include <sys/sockio.h>
+#include <sys/signal.h>
 #include <net/if.h>
 
 #define HAS_IFREQ
