@@ -28,6 +28,9 @@
  * Contributor(s): /
  *
  * $Log: sound_alsa.cxx,v $
+ * Revision 1.13  2004/01/04 20:59:30  dsandras
+ * Use set_rate_near instead of set_rate.
+ *
  * Revision 1.12  2003/12/28 15:10:35  dsandras
  * Updated to the new PCM API.
  *
@@ -309,8 +312,10 @@ BOOL PSoundChannelALSA::Setup()
   }
 
 
-  if ((err = snd_pcm_hw_params_set_rate (os_handle, hw_params, 
-					 mSampleRate, 0)) < 0) {
+  if ((err = snd_pcm_hw_params_set_rate_near (os_handle,
+					      hw_params, 
+					      &mSampleRate,
+					      NULL)) < 0) {
 
     PTRACE (1, "ALSA\tCannot set sample rate " <<
 	    snd_strerror (err));
