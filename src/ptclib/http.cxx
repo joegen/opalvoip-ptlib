@@ -1,5 +1,5 @@
 /*
- * $Id: http.cxx,v 1.6 1996/02/03 11:11:49 robertj Exp $
+ * $Id: http.cxx,v 1.7 1996/02/03 11:33:19 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: http.cxx,v $
+ * Revision 1.7  1996/02/03 11:33:19  robertj
+ * Changed RadCmd() so can distinguish between I/O error and unknown command.
+ *
  * Revision 1.6  1996/02/03 11:11:49  robertj
  * Numerous bug fixes.
  * Added expiry date and ismodifiedsince support.
@@ -408,7 +411,10 @@ BOOL PHTTPSocket::PostData(const PString & url, const PStringToString & data)
 BOOL PHTTPSocket::ProcessCommand()
 {
   PString args;
-  PINDEX cmd = ReadCommand(args);
+  PINDEX cmd;
+  if (!ReadCommand(cmd, args))
+    return FALSE;
+
   if (cmd == P_MAX_INDEX)   // Unknown command
     return OnUnknown(args);
 
