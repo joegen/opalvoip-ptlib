@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: videoio.h,v $
+ * Revision 1.7  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.6  2001/01/24 06:10:04  yurik
  * Windows CE port-related changes
  *
@@ -53,7 +56,7 @@
 
 #include "../../videoio.h"
   public:
-    virtual BOOL SetColourFormat(ColourFormat colourFormat);
+    virtual BOOL SetColourFormat(const PString & colourFormat);
     virtual BOOL SetFrameRate(unsigned rate);
     virtual BOOL SetFrameSize(unsigned width, unsigned height);
 
@@ -75,6 +78,7 @@
     LPBYTE        lastFramePtr;
     unsigned      lastFrameSize;
     PMutex        lastFrameMutex;
+    BOOL          isCapturingNow;
 #endif // _WIN32_WCE
 
   friend class PVideoInputThread;

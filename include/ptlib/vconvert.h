@@ -22,8 +22,12 @@
  * The Initial Developer of the Original Code is Equivalence Pty. Ltd.
  *
  * Contributor(s): Derek Smithies (derek@indranet.co.nz)
+ *		   Thorsten Westheider (thorsten.westheider@teleos-web.de)
  *
  * $Log: vconvert.h,v $
+ * Revision 1.3  2001/03/03 05:06:31  robertj
+ * Major upgrade of video conversion and grabbing classes.
+ *
  * Revision 1.2  2000/12/19 23:58:14  robertj
  * Fixed MSVC compatibility issues.
  *
@@ -34,8 +38,8 @@
  *
  */
 
-
 #define _PCONVERT
+
 
 #ifdef __GNUC__
 #pragma interface
@@ -43,73 +47,179 @@
 
 
 
-/**This class defines a means to convert an image from one format.
- */
-class PVideoConvert 
-{
-//  PCLASSINFO(PVideoConvert, PObject);
+class PColourConverter;
 
+/**This class registers a colour conversion class.
+   There should be one and one only instance of this class for each pair of
+   srcColurFormat and dstColourFormat strings. Use the
+   PCOLOUR_CONVERTER_REGISTRATION macro to do this.
+ */
+class PColourConverterRegistration : public PString
+{
+    PCLASSINFO(PColourConverterRegistration, PString);
   public:
-    /** Create a new video output device.
-        Allocates internal buffer memory. Open fails if cannot alloc memory.
-     */
-    PVideoConvert(
-      PVideoDevice::ColourFormat srcColourFormat,
-      PVideoDevice::ColourFormat destColourFormat,
-      unsigned width,
-      unsigned height
+    PColourConverterRegistration(
+      const PString & srcColourFormat,  /// Name of source colour format
+      const PString & destColourFormat  /// Name of destination colour format
     );
 
-    /** Destructor. Frees up internal buffer memory.
-     */
-    ~PVideoConvert() { Close(); }
-
-     /**Open operation is required to be a descendant of PVideoDevice.
-        Open process occurs in the constructor, so this function does nothing.
-	     */
-    BOOL Open(
-        const PString & /*deviceName*/,   /// Device name to open
-        BOOL /*startImmediate = TRUE*/    /// Immediately start device
-        ) { return TRUE; }
-
-    /** Do the conversion. (first copy data to an internal buffer )
-    */
-      BOOL ConvertWithCopy(BYTE * src, BYTE * dest);
-
-      /**Convert image at src pointer into buffer pointed to by dest
-      */      
-      BOOL ConvertDirectly(BYTE * src, BYTE * dest);
-            
-     /** Obtain pointer to the internal buffer.
-         Necessary when processing the output of ::ioctl(READ
-       */    
-      BYTE * GetInternalBuffer() 
-           { return internalBuffer; }
-  
-      /** Take the data in the internal buffer and convert it to the
-         required format and put into the region pointed by dest.
-	    */
-      BOOL ConvertInternalBuffer(BYTE *dest);
-     
-      /** YUV422 to YUV411P format 
-      */
-      BOOL Yuv422ToYuv411p(BYTE *src, BYTE * dest);
-
-      BOOL Close();
-
-      
-  private:
-      BYTE * internalBuffer;
-    
-      PVideoDevice::ColourFormat srcColourFormat;
-      PVideoDevice::ColourFormat destColourFormat;
-      unsigned frameWidth;
-      unsigned frameHeight;
-      PINDEX  srcFrameSize;
-      PINDEX  destFrameSize;
+    virtual PColourConverter * Create(
+      unsigned width,   /// Width of frame
+      unsigned height   /// Height of frame
+    ) const = 0;
 };
 
- 
-////////////////////////////////////////////////////////////////////////
-// End of file
 
+/**Internal list of registered colour conversion classes.
+  */
+class PColourConverterRegistrations : PSortedStringList
+{
+    PCLASSINFO(PColourConverterRegistrations, PSortedStringList);
+  public:
+    PColourConverterRegistrations();
+
+    void Register(PColourConverterRegistration * reg);
+
+  friend class PColourConverter;
+};
+
+
+/**This class defines a means to convert an image from one colour format to another.
+   It is an ancestor class for the individual formatting functions.
+ */
+class PColourConverter : public PObject
+{
+    PCLASSINFO(PColourConverter, PObject);
+  public:
+    /**Create a new converter.
+      */
+    PColourConverter(
+      const PString & srcColourFormat,  /// Name of source colour format
+      const PString & destColourFormat, /// Name of destination colour format
+      unsigned width,   /// Width of frame
+      unsigned height   /// Height of frame
+    );
+
+    /**Set the frame size to be used.
+
+       Default behaviour sets the frameWidth and frameHeight variables and
+       returns the IsOpen() status.
+    */
+    virtual BOOL SetFrameSize(
+      unsigned width,   /// New width of frame
+      unsigned height   /// New height of frame
+    );
+
+    /**Get the source colour format.
+      */
+    const PString & GetSrcColourFormat() { return srcColourFormat; }
+
+    /**Get the destination colour format.
+      */
+    const PString & GetDstColourFormat() { return dstColourFormat; }
+
+    /**Get the maximum frame size in bytes for source frames.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    PINDEX GetMaxSrcFrameBytes() { return srcFrameBytes; }
+
+    /**Get the maximum frame size in bytes for destination frames.
+
+       Note a particular device may be able to provide variable length
+       frames (eg motion JPEG) so will be the maximum size of all frames.
+      */
+    PINDEX GetMaxDstFrameBytes() { return dstFrameBytes; }
+
+
+    /**Convert from one colour format to another.
+       This version will copy the data from one frame buffer to another.
+       An implementation of this function should allow for the case of
+       where srcFrameBuffer and dstFrameBuffer are the same, if the conversion
+       algorithm allows for that to occur without an intermediate frame store.
+
+       The function should return FALSE if srcFrameBuffer and dstFrameBuffer
+       are the same and that form pf conversion is not allowed
+    */
+    virtual BOOL Convert(
+      const BYTE * srcFrameBuffer,  /// Frame store for source pixels
+      BYTE * dstFrameBuffer,        /// Frame store for destination pixels
+      PINDEX * bytesReturned = NULL /// Bytes written to dstFrameBuffer
+    ) = 0;
+
+    /**Convert from one colour format to another.
+       This version will copy the data from one frame buffer to the same frame
+       buffer. Not all conversions can do this so an intermediate store and
+       copy may be required. If the noIntermediateFrame parameter is TRUE
+       and the conversion cannot be done in place then the function returns
+       FALSE. If the in place conversion can be done then that parameter is
+       ignored.
+
+       Note that the frame should be large enough to take the destination
+       pixels.
+
+       Default behaviour calls Convert() from the frameBuffer to itself, and
+       if that returns FALSE then calls it again (provided noIntermediateFrame
+       is FALSE) using an intermediate store, copying the intermediate store
+       back to the original frame store.
+    */
+    virtual BOOL ConvertInPlace(
+      BYTE * frameBuffer,               /// Frame buffer to translate data
+      BOOL noIntermediateFrame = FALSE  /// Flag to use intermediate store
+    );
+
+
+    /**Create an instance of a colour conversion function.
+       Returns NULL if there is no registered colour converter between the two
+       named formats.
+      */
+    static PColourConverter * Create(
+      const PString & srcColourFormat,  /// Name of source colour format
+      const PString & destColourFormat, /// Name of destination colour format
+      unsigned width,   /// Width of frame
+      unsigned height   /// Height of frame
+    );
+
+
+  protected:
+    PString  srcColourFormat;
+    PString  dstColourFormat;
+    unsigned frameWidth;
+    unsigned frameHeight;
+    unsigned srcFrameBytes;
+    unsigned dstFrameBytes;
+
+    PBYTEArray intermediateFrameStore;
+
+    static PColourConverterRegistrations converters;
+
+  friend class PColourConverterRegistration;
+};
+
+
+/**Declare a colour converter class with Convert() function.
+   This should anly be used once and at the global scope level for each
+   converter. It declares everything needs so only the body of the Convert()
+   function need be added.
+  */
+#define PCOLOUR_CONVERTER(cls,src,dst) \
+class cls : public PColourConverter { \
+  public: \
+  cls(const PString & srcFmt, const PString & dstFmt, unsigned w, unsigned h) \
+    : PColourConverter(srcFmt, dstFmt, w, h) { } \
+  virtual BOOL Convert(const BYTE *, BYTE *, PINDEX * = NULL); \
+}; \
+class cls##_Registration : public PColourConverterRegistration { \
+  public: \
+  cls##_Registration() \
+    : PColourConverterRegistration(src,dst) { } \
+  virtual PColourConverter * Create(unsigned w, unsigned h) const; \
+} cls##_registration_instance; \
+PColourConverter * cls##_Registration::Create(unsigned w, unsigned h) const \
+  { PINDEX tab = Find('\t'); return new cls(Left(tab), Mid(tab+1), w, h); } \
+BOOL cls::Convert(const BYTE *srcFrameBuffer, BYTE *dstFrameBuffer, PINDEX * bytesReturned)
+
+
+
+// End of file ///////////////////////////////////////////////////////////////
