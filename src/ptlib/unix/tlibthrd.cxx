@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlibthrd.cxx,v $
+ * Revision 1.17  1999/07/11 13:42:13  craigs
+ * pthreads support for Linux
+ *
  * Revision 1.16  1999/05/12 03:29:20  robertj
  * Fixed problem with semaphore free, done at wrong time.
  *
@@ -133,7 +136,12 @@ static void sigSuspendHandler(int)
   sigset_t waitSignals;
   sigemptyset(&waitSignals);
   sigaddset(&waitSignals, RESUME_SIG);
+#ifdef P_LINUX
+  int sig;
+  sigwait(&waitSignals, &sig);
+#else
   sigwait(&waitSignals);
+#endif
 }
 
 
@@ -179,7 +187,7 @@ void PProcess::Construct()
   PAssertOS(setrlimit(RLIMIT_NOFILE, &rl) == 0);
 
   // initialise the housekeeping thread
-  housekeepingThread = PNEW HouseKeepingThread;
+  housekeepingThread = NULL;
 
   CommonConstruct();
 }
@@ -295,7 +303,12 @@ void * PThread::PX_ThreadStart(void * arg)
     sigset_t waitSignals;
     sigemptyset(&waitSignals);
     sigaddset(&waitSignals, RESUME_SIG);
+#ifdef P_LINUX
+  int sig;
+  sigwait(&waitSignals, &sig);
+#else
     sigwait(&waitSignals);
+#endif
   }
 
   // set the signal handler for SUSPEND_SIG
@@ -316,7 +329,10 @@ void * PThread::PX_ThreadStart(void * arg)
 
 void PProcess::SignalTimerChange()
 {
-  timerChangeSemaphore.Signal();
+  if (housekeepingThread == NULL)
+    housekeepingThread = PNEW HouseKeepingThread;
+  else
+    timerChangeSemaphore.Signal();
 }
 
 
@@ -408,7 +424,12 @@ void PThread::Suspend(BOOL susp)
           sigset_t waitSignals;
           sigemptyset(&waitSignals);
           sigaddset(&waitSignals, RESUME_SIG);
+#ifdef P_LINUX
+          int sig;
+          sigwait(&waitSignals, &sig);
+#else
           sigwait(&waitSignals);
+#endif
         }
       }
     }
@@ -534,7 +555,11 @@ PSemaphore::~PSemaphore()
   PAssertOS(pthread_mutex_lock(&mutex) == 0);
   PAssert(queuedLocks == 0, "Semaphore destroyed with queued locks");
   PAssertOS(pthread_cond_destroy(&condVar) == 0);
+#ifdef P_LINUX
+  pthread_mutex_destroy(&mutex);
+#else
   PAssertOS(pthread_mutex_destroy(&mutex) == 0);
+#endif
 }
 
 
@@ -593,7 +618,8 @@ BOOL PSemaphore::Wait(const PTimeInterval & waitTime)
       ok = FALSE;
       break;
     }
-    PAssertOS(err == 0);
+    else
+      PAssert(err == 0 || err == EINTR, psprintf("timed wait error = %i", err));
   }
 
   PThread::Current()->PXSetWaitingSemaphore(NULL);

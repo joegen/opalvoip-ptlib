@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.45  1999/07/11 13:42:13  craigs
+ * pthreads support for Linux
+ *
  * Revision 1.44  1999/06/28 09:28:02  robertj
  * Portability issues, especially n BeOS (thanks Yuri!)
  *
@@ -275,7 +278,13 @@ PDirectory PProcess::PXGetHomeDir ()
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
+#ifdef P_LINUX
+  ::getpwuid_r(geteuid(), &pwd,
+               buffer, 1024,
+               &pw);
+#else
   pw = ::getpwuid_r(geteuid(), &pwd, buffer, 1024);
+#endif
 #else
   pw = ::getpwuid(geteuid());
 #endif
@@ -305,7 +314,14 @@ PString PProcess::GetUserName() const
 #if defined(P_PTHREADS) && !defined(P_THREAD_SAFE_CLIB)
   struct passwd pwd;
   char buffer[1024];
-  struct passwd * pw = ::getpwuid_r(getuid(), &pwd, buffer, 1024);
+  struct passwd * pw;
+#ifdef P_LINUX
+  ::getpwuid_r(getuid(), &pwd,
+               buffer, 1024,
+               &pw);
+#else
+  pw = ::getpwuid_r(getuid(), &pwd, buffer, 1024);
+#endif
 #else
   struct passwd * pw = ::getpwuid(getuid());
 #endif
