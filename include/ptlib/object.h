@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: object.h,v $
+ * Revision 1.38  1999/02/16 08:12:22  robertj
+ * MSVC 6.0 compatibility changes.
+ *
  * Revision 1.37  1999/01/07 03:35:35  robertj
  * Added default for PCHAR8 to ANSI, removes need for compiler option.
  *
@@ -506,6 +509,8 @@ inline void runtime_free(void * ptr) { free(ptr); }
 #define PNEW_AND_DELETE_FUNCTIONS \
     void * operator new(size_t nSize, const char * file, int line) \
       { return PMemoryHeap::Allocate(nSize, file, line, Class()); } \
+    void operator delete(void * ptr, const char *, int) \
+      { PMemoryHeap::Deallocate(ptr, Class()); } \
     void * operator new(size_t nSize) \
       { return PMemoryHeap::Allocate(nSize, NULL, 0, Class()); } \
     void operator delete(void * ptr) \
@@ -514,8 +519,18 @@ inline void runtime_free(void * ptr) { free(ptr); }
 inline void * operator new(size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
 
+inline void operator delete(void * ptr, const char *, int)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+
 inline void * operator new[](size_t nSize, const char * file, int line)
   { return PMemoryHeap::Allocate(nSize, file, line, NULL); }
+
+inline void operator delete[](void * ptr)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+
+inline void operator delete[](void * ptr, const char *, int)
+  { PMemoryHeap::Deallocate(ptr, NULL); }
+
 
 #else // _DEBUG
 
@@ -951,7 +966,9 @@ class PSerialRegistration {
 };
 
 
-PDECLARE_CLASS(PSerialiser, PObject)
+class PSerialiser : public PObject
+{
+  PCLASSINFO(PSerialiser, PObject)
 /* This class allows the serialisation of objects to an output stream. This
    packages up objects so that they can be reconstructed by an instance of the
    <A>PUnSerialiser</A> class. The stream they are sent to can be any stream;
@@ -1003,7 +1020,9 @@ PDECLARE_CLASS(PSerialiser, PObject)
 };
 
 
-PDECLARE_CLASS(PUnSerialiser, PObject)
+class PUnSerialiser : public PObject
+{
+  PCLASSINFO(PUnSerialiser, PObject)
 /* This class allows the un-serialisation of objects from an input stream. This
    reconstruct objects that where packaged earlier by an instance of the
    <A>PSerialise</A> class. The stream they are received from can be any
@@ -1086,7 +1105,9 @@ PDECLARE_CLASS(PUnSerialiser, PObject)
   PSerialRegistration cls::pRegisterSerial(cls::Class(), cls::UnSerialise); \
 
 
-PDECLARE_CLASS(PTextSerialiser, PSerialiser)
+class PTextSerialiser : public PSerialiser
+{
+  PCLASSINFO(PTextSerialiser, PSerialiser)
 /* This serialiser class serialises each object using ASCII text. This gives
   the highest level of portability for streams and platforms at the expense
   if larger amounts of data.
@@ -1124,7 +1145,9 @@ PDECLARE_CLASS(PTextSerialiser, PSerialiser)
 
 class PSortedStringList;
 
-PDECLARE_CLASS(PBinarySerialiser, PSerialiser)
+class PBinarySerialiser : public PSerialiser
+{
+  PCLASSINFO(PBinarySerialiser, PSerialiser)
 /* This serialiser class serialises each object using binary data. This gives
    the highest level data density at the expense of some portability and
    possibly the speed of execution.
@@ -1173,7 +1196,9 @@ PDECLARE_CLASS(PBinarySerialiser, PSerialiser)
 };
 
 
-PDECLARE_CLASS(PTextUnSerialiser, PUnSerialiser)
+class PTextUnSerialiser : public PUnSerialiser
+{
+  PCLASSINFO(PTextUnSerialiser, PUnSerialiser)
 /* This un-serialiser class reconstructs each object using ASCII text. This
    gives the highest level of portability for streams and platforms at the
    expense if larger amounts of data.
@@ -1210,7 +1235,9 @@ PDECLARE_CLASS(PTextUnSerialiser, PUnSerialiser)
 
 class PStringArray;
 
-PDECLARE_CLASS(PBinaryUnSerialiser, PUnSerialiser)
+class PBinaryUnSerialiser : public PUnSerialiser
+{
+  PCLASSINFO(PBinaryUnSerialiser, PUnSerialiser)
 /* This un-serialiser class reconstructs each object using binary data. This
    gives the highest level data density at the expense of some portability and
    possibly the speed of execution.
@@ -1259,7 +1286,9 @@ PDECLARE_CLASS(PBinaryUnSerialiser, PUnSerialiser)
 ///////////////////////////////////////////////////////////////////////////////
 // "Smart" pointers.
 
-PDECLARE_CLASS(PSmartObject, PObject)
+class PSmartObject : public PObject
+{
+  PCLASSINFO(PSmartObject, PObject)
 /* This is the base class for objects that use the <I>smart pointer</I> system.
    In conjunction with the <A>PSmartPointer</A> class, this class creates
    objects that can have the automatic deletion of the object instance when
@@ -1287,7 +1316,9 @@ PDECLARE_CLASS(PSmartObject, PObject)
 };
 
 
-PDECLARE_CLASS(PSmartPointer, PObject)
+class PSmartPointer : public PObject
+{
+  PCLASSINFO(PSmartPointer, PObject)
 /* This is the class for pointers to objects that use the <I>smart pointer</I>
    system. In conjunction with the <A>PSmartObject</A> class, this class
    references objects that can have the automatic deletion of the object
@@ -1469,7 +1500,9 @@ PDECLARE_CLASS(PSmartPointer, PObject)
 ///////////////////////////////////////////////////////////////////////////////
 // General notification mechanism from one object to another
 
-PDECLARE_CLASS(PNotifierFunction, PSmartObject)
+class PNotifierFunction : public PSmartObject
+{
+  PCLASSINFO(PNotifierFunction, PSmartObject)
 /* This class is the <A>PSmartObject</A> contents of the <A>PNotifier</A>
    class.
 
@@ -1515,7 +1548,9 @@ PDECLARE_CLASS(PNotifierFunction, PSmartObject)
 };
 
 
-PDECLARE_CLASS(PNotifier, PSmartPointer)
+class PNotifier : public PSmartPointer
+{
+  PCLASSINFO(PNotifier, PSmartPointer)
 /* This class is the <A>PSmartPointer</A> to the <A>PNotifierFunction</A>
    class.
 
