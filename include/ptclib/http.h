@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.h,v $
+ * Revision 1.55  2002/10/10 04:43:43  robertj
+ * VxWorks port, thanks Martijn Roest
+ *
  * Revision 1.54  2002/10/02 08:54:34  craigs
  * Added support for XMLRPC server
  *
@@ -355,7 +358,7 @@ class PHTTP : public PInternetProtocol
     enum StatusCode {
       Continue = 100,              // 100 - Continue
       SwitchingProtocols,          // 101 - upgrade allowed
-      OK = 200,                    // 200 - request has succeeded
+      RequestOK = 200,             // 200 - request has succeeded
       Created,                     // 201 - new resource created: entity body contains URL
       Accepted,                    // 202 - request accepted, but not yet completed
       NonAuthoritativeInformation, // 203 - not definitive entity header
