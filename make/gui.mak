@@ -29,6 +29,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: gui.mak,v $
+# Revision 1.15  2001/06/15 00:58:00  robertj
+# Allowed for empty GUI type.
+#
 # Revision 1.14  2000/06/26 13:20:49  robertj
 # Added ability to append resources to existing file.
 #
@@ -62,6 +65,9 @@
 
 
 include $(PWLIBDIR)/make/defaultgui.mak
+
+ifneq (,$(GUI_TYPE))
+
 include $(PWLIBDIR)/make/$(GUI_TYPE).mak
 
 ifndef	GUI_SRC_NAME
@@ -115,5 +121,6 @@ CLEAN_FILES	:= $(CLEAN_FILES) $(RESHDR) $(RESCODE) $(RESCXX) $(RESOBJS)
 
 endif
 
+endif
 
 # End of gui.mak
