@@ -22,6 +22,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vxml.h,v $
+ * Revision 1.32  2004/07/23 00:59:26  csoutheren
+ * Check in latest changes
+ *
  * Revision 1.31  2004/07/15 03:12:41  csoutheren
  * Migrated changes from crs_vxnml_devel branch into main trunk
  *
@@ -318,6 +321,8 @@ class PVXMLSession : public PIndirectChannel, public PVXMLChannelInterface
     BOOL LoadGrammar(PVXMLGrammar * grammar);
 
     virtual BOOL PlayText(const PString & text, PTextToSpeech::TextType type = PTextToSpeech::Default, PINDEX repeat = 1, PINDEX delay = 0);
+    BOOL ConvertTextToFilenameList(const PString & _text, PTextToSpeech::TextType type, PStringArray & list, BOOL useCacheing);
+
     virtual BOOL PlayFile(const PString & fn, PINDEX repeat = 1, PINDEX delay = 0, BOOL autoDelete = FALSE);
     virtual BOOL PlayData(const PBYTEArray & data, PINDEX repeat = 1, PINDEX delay = 0);
     virtual BOOL PlayCommand(const PString & data, PINDEX repeat = 1, PINDEX delay = 0);
@@ -505,6 +510,9 @@ class PVXMLPlayable : public PObject
 
     virtual void Play(PVXMLChannel & outgoingChannel) = 0;
 
+    virtual void OnRepeat(PVXMLChannel & /*outgoingChannel*/)
+    { }
+
     virtual void OnStart() { }
 
     virtual void OnStop() { }
@@ -583,6 +591,22 @@ class PVXMLPlayableFilename : public PVXMLPlayable
     void OnStop();
   protected:
     PFilePath fn;
+};
+
+//////////////////////////////////////////////////////////////////
+
+class PVXMLPlayableFilenameList : public PVXMLPlayable
+{
+  PCLASSINFO(PVXMLPlayableFilenameList, PVXMLPlayable);
+  public:
+    BOOL Open(PVXMLChannel & chan, const PStringArray & _filenames, PINDEX _delay, PINDEX _repeat, BOOL _autoDelete);
+    void Play(PVXMLChannel & outgoingChannel)
+    { OnRepeat(outgoingChannel); }
+    void OnRepeat(PVXMLChannel & outgoingChannel);
+    void OnStop();
+  protected:
+    PINDEX currentIndex;
+    PStringArray filenames;
 };
 
 //////////////////////////////////////////////////////////////////
