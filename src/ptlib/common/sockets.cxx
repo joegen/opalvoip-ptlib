@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.150  2003/02/03 11:23:32  robertj
+ * Added function to get pointer to IP address data.
+ *
  * Revision 1.149  2003/02/03 10:27:55  robertj
  * Cleaned up the gethostbyX functions for various platforms
  *
@@ -928,7 +931,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     struct hostent hostEnt;
     do {
       host_info = &hostEnt;
-      ::gethostbyaddr_r((char *)&addr, addr.GetSize(),
+      ::gethostbyaddr_r((char *)addr.GetPointer(), addr.GetSize(),
                         PF_INET, 
                         host_info,
                         &ht_data);
@@ -937,20 +940,20 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 #elif defined P_RTEMS
 
-    host_info = ::gethostbyaddr((const char *)&addr, addr.GetSize(), PF_INET);
+    host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
 
 #elif defined P_VXWORKS
 
     struct hostent hostEnt;
-    host_info = Vx_gethostbyaddr((char *)&addr, &hostEnt);
+    host_info = Vx_gethostbyaddr(addr.GetPointer(), &hostEnt);
 
 #elif defined P_LINUX
 
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
     do {
-      ::gethostbyaddr_r((const char *)&addr, addr.GetSize(),
+      ::gethostbyaddr_r(addr.GetPointer(), addr.GetSize(),
                         PF_INET, 
                         &hostEnt,
                         buffer, REENTRANT_BUFFER_LEN,
@@ -963,7 +966,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
     char buffer[REENTRANT_BUFFER_LEN];
     struct hostent hostEnt;
     do {
-      host_info = ::gethostbyaddr_r((const char *)&addr, addr.GetSize(),
+      host_info = ::gethostbyaddr_r(addr.GetPointer(), addr.GetSize(),
                                     PF_INET, 
                                     &hostEnt,
                                     buffer, REENTRANT_BUFFER_LEN,
@@ -972,7 +975,7 @@ PIPCacheData * PHostByAddr::GetHost(const PIPSocket::Address & addr)
 
 #else
 
-    host_info = ::gethostbyaddr((const char *)&addr, addr.GetSize(), PF_INET);
+    host_info = ::gethostbyaddr(addr.GetPointer(), addr.GetSize(), PF_INET);
     localErrNo = h_errno;
 
 #if defined(_WIN32) || defined(WINDOWS)  // Kludge to avoid strange 95 bug

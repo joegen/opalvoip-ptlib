@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.56  2003/02/03 11:23:32  robertj
+ * Added function to get pointer to IP address data.
+ *
  * Revision 1.55  2003/02/03 08:51:44  robertj
  * Fixed compatibility with old code so taking address of PIPSocket::Address
  *   gets address of 4 or 16 byte IP address.
@@ -349,6 +352,9 @@ class PIPSocket : public PSocket
 
         /// Get the address length (will be either 4 or 16)
         PINDEX GetSize() const;
+
+        /// Get the pointer to IP address data
+        const char * GetPointer() const { return (const char *)&v; }
 
         /// Get the version of the IP address being used
         unsigned GetVersion() const { return version; }
