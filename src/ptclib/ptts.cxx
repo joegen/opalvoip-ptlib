@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.10  2004/06/19 07:18:59  csoutheren
+ * Change TTS engine registration to use abstract factory code
+ *
  * Revision 1.9  2004/04/09 06:52:17  rjongbloed
  * Removed #pargma linker command for /delayload of DLL as documentations sais that
  *   you cannot do this.
@@ -60,6 +63,7 @@
 
 #include "ptbuildopts.h"
 
+
 ////////////////////////////////////////////////////////////
 
 // WIN32 COM stuff must be first in file to compile properly
@@ -69,7 +73,6 @@
 #if defined(P_SAPI_LIBRARY)
 #pragma comment(lib, P_SAPI_LIBRARY)
 #endif
-
 
 #ifndef _WIN32_DCOM
 #define _WIN32_DCOM 1
@@ -93,9 +96,6 @@
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
 
-PMutex PTextToSpeech::engineMutex;
-PTextToSpeechEngineDict * PTextToSpeech::engineDict = NULL;
-
 ////////////////////////////////////////////////////////////
 //
 // Text to speech using Microsoft's Speech API (SAPI)
@@ -106,9 +106,9 @@ PTextToSpeechEngineDict * PTextToSpeech::engineDict = NULL;
 
 #define MAX_FN_SIZE 1024
 
-class PTextToSpeech_SAPI : public PTextToSpeechEngine
+class PTextToSpeech_SAPI : public PTextToSpeech
 {
-  PCLASSINFO(PTextToSpeech_SAPI, PTextToSpeechEngine);
+  PCLASSINFO(PTextToSpeech_SAPI, PTextToSpeech);
   public:
     PTextToSpeech_SAPI();
     ~PTextToSpeech_SAPI();
@@ -145,13 +145,11 @@ class PTextToSpeech_SAPI : public PTextToSpeechEngine
     PString voice;
 };
 
+static PAbstractFactory<PTextToSpeech, PTextToSpeech_SAPI> sapiTTSFactory("Microsoft SAPI");
+
 int * PTextToSpeech_SAPI::refCount;
 PMutex PTextToSpeech_SAPI::refMutex;
 
-static PTextToSpeechEngine * PTextToSpeech_SAPI_Creator()
-{
-  return new PTextToSpeech_SAPI;
-}
 
 PTextToSpeech_SAPI::PTextToSpeech_SAPI()
 {
@@ -352,9 +350,9 @@ unsigned PTextToSpeech_SAPI::GetVolume()
 //  Generic text to speech using Festival
 //
 
-class PTextToSpeech_Festival : public PTextToSpeechEngine
+class PTextToSpeech_Festival : public PTextToSpeech
 {
-  PCLASSINFO(PTextToSpeech_Festival, PTextToSpeechEngine);
+  PCLASSINFO(PTextToSpeech_Festival, PTextToSpeech);
   public:
     PTextToSpeech_Festival();
     ~PTextToSpeech_Festival();
@@ -388,10 +386,7 @@ class PTextToSpeech_Festival : public PTextToSpeechEngine
     PString voice;
 };
 
-static PTextToSpeechEngine * PTextToSpeech_Festival_Creator()
-{
-  return new PTextToSpeech_Festival;
-}
+static PAbstractFactory<PTextToSpeech, PTextToSpeech_Festival> festivalTTSFactory("Festival");
 
 PTextToSpeech_Festival::PTextToSpeech_Festival()
 {
@@ -557,165 +552,6 @@ BOOL PTextToSpeech_Festival::Invoke(const PString & otext, const PFilePath & fna
 #endif
 }
 
-////////////////////////////////////////////////////////////
-//
-//  Text to speech for underlying engines
-//
-
-PTextToSpeech::PTextToSpeech()
-{
-  PWaitAndSignal m(engineMutex);
-
-  if (engineDict == NULL) {
-    engineDict =  new PTextToSpeechEngineDict;
-
-    // register known engines
-#if P_SAPI
-    RegisterEngine("Microsoft SAPI", new PTextToSpeechEngineDef(PTextToSpeech_SAPI_Creator));
-#endif
-    RegisterEngine("Festival",       new PTextToSpeechEngineDef(PTextToSpeech_Festival_Creator));
-  }
-
-  engine = NULL;
-
-  SetVolume(100);
-  SetRate(8000);
-}
-
-PTextToSpeech::~PTextToSpeech()
-{
-  Close();
-  if (engine != NULL)
-    delete engine;
-}
-
-void PTextToSpeech::RegisterEngine(const PString & engineName, PTextToSpeechEngineDef * engineDef)
-{
-  PWaitAndSignal m(engineMutex);
-  engineDict->SetAt(engineName, engineDef);
-}
-
-void PTextToSpeech::UnregisterEngine(const PString & engineName)
-{
-  PWaitAndSignal m(engineMutex);
-  engineDict->SetAt(engineName, NULL);
-}
-
-PStringArray PTextToSpeech::GetEngines()
-{
-  PWaitAndSignal m(engineMutex);
-  PStringArray engines;
-  PINDEX i;
-  for (i = 0; i < engineDict->GetSize(); i++) {
-    engines.AppendString(engineDict->GetKeyAt(i));
-  }
-
-  return engines;
-}
-
-BOOL PTextToSpeech::SetEngine(const PString & format)
-{
-  PWaitAndSignal m2(mutex);
-  if (engine != NULL) {
-    delete engine;
-    engine = NULL;
-  }
-
-  PWaitAndSignal m(engineMutex);
-  PStringArray engines;
-  PINDEX i;
-  for (i = 0; i < engineDict->GetSize(); i++) {
-    PString key = engineDict->GetKeyAt(i);
-    if (key *= format) {
-      //int val = (*(*engineDict)[key].creator)();
-      PTextToSpeechEngineCreator * creator = (*engineDict)[key].creator;
-      if (creator != NULL) {
-        engine = creator();
-        if (engine != NULL) {
-          engine->SetRate(rate);
-          engine->SetVolume(volume);
-          return TRUE;
-        }
-      }
-    }
-  }
-
-  return FALSE;
-}
-
-#define TTS_FUNCTION(name) \
-{ \
-  PWaitAndSignal m(mutex); \
-  if (engine == NULL) \
-    return FALSE; \
-  return engine->name(); \
-} \
-
-#define TTS_FUNCTION_PARM(name, parm) \
-{ \
-  PWaitAndSignal m(mutex); \
-  if (engine == NULL) \
-    return FALSE; \
-  return engine->name(parm); \
-} \
-
-#define TTS_FUNCTION_PARM2(name, parm1, parm2) \
-{ \
-  PWaitAndSignal m(mutex); \
-  if (engine == NULL) \
-    return FALSE; \
-  return engine->name(parm1, parm2); \
-} \
-
-#define TTS_FUNCTION_SET_MIRROR_PARM(name, parm) \
-{ \
-  PWaitAndSignal m(mutex); \
-  parm = _##parm; \
-  if (engine == NULL) \
-    return TRUE; \
-  return engine->name(_##parm); \
-} \
-
-#define TTS_FUNCTION_GET_MIRROR_PARM(name, parm) \
-{ \
-  PWaitAndSignal m(mutex); \
-  if (engine == NULL) \
-    return engine->name(); \
-  return parm; \
-} \
-
-BOOL PTextToSpeech::IsOpen() 
-TTS_FUNCTION(IsOpen)
-
-BOOL PTextToSpeech::Close() 
-TTS_FUNCTION(Close)
-
-BOOL PTextToSpeech::OpenFile(const PFilePath & fn)
-TTS_FUNCTION_PARM(OpenFile, fn)
-
-BOOL PTextToSpeech::OpenChannel(PChannel * channel)
-TTS_FUNCTION_PARM(OpenChannel, channel)
-
-BOOL PTextToSpeech::Speak(const PString & text, TextType hint)
-TTS_FUNCTION_PARM2(Speak, text, hint)
-
-PStringArray PTextToSpeech::GetVoiceList()
-TTS_FUNCTION(GetVoiceList)
-
-BOOL PTextToSpeech::SetVoice(const PString & voice)
-TTS_FUNCTION_PARM(SetVoice, voice)
-
-BOOL PTextToSpeech::SetRate(unsigned _rate)
-TTS_FUNCTION_SET_MIRROR_PARM(SetRate, rate)
-
-unsigned PTextToSpeech::GetRate()
-TTS_FUNCTION_GET_MIRROR_PARM(GetRate, rate)
-
-BOOL PTextToSpeech::SetVolume(unsigned _volume)
-TTS_FUNCTION_SET_MIRROR_PARM(SetVolume, volume)
-
-unsigned PTextToSpeech::GetVolume()
-TTS_FUNCTION_GET_MIRROR_PARM(GetVolume, volume)
-
+PINSTANTIATE_FACTORY(PTextToSpeech)
 
 // End Of File ///////////////////////////////////////////////////////////////
