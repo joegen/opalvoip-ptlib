@@ -137,7 +137,7 @@ fi
 if test "${HAVE_LIBSSL:-unset}" = "unset" ; then
   AC_DEFINE(P_SSL, 0, "OpenSSL not found")
 else
-  AC_SUBST(HAS_OPEN_SSL, 1)
+  AC_SUBST(HAS_OPENSSL, 1)
   AC_DEFINE(P_SSL, 1, "OpenSSL found")
   if test ${SSLINCLUDEDIR:-unset} != "unset" ; then
     STDCCFLAGS="$STDCCFLAGS -I${SSLINCLUDEDIR}"
