@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.200  2002/12/10 02:39:07  robertj
+ * Avoid odd trace output to stderr before trace file is set.
+ *
  * Revision 1.199  2002/10/09 00:46:19  robertj
  * Changed PThread::Create() so does not return PThread pointer if the thread
  *   has been created auto-delete, the pointer is extremely dangerous to use
@@ -745,13 +748,10 @@ void PTrace::SetStream(ostream * s)
 
 void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
 {
+  // If we have a tracing version, then open trace file and set modes
 #if PTRACING
   PProcess & process = PProcess::Current();
 #endif
-
-  // If we have a tracing version, then open trace file and set modes
-  PTraceOptions = options;
-  PTraceLevelThreshold = level;
 
 #if PMEMORY_CHECK
   int ignoreAllocations = -1;
@@ -775,6 +775,9 @@ void PTrace::Initialise(unsigned level, const char * filename, unsigned options)
       delete traceOutput;
     }
   }
+
+  PTraceOptions = options;
+  PTraceLevelThreshold = level;
 
   PTRACE(1, process.GetName()
          << "\tVersion " << process.GetVersion(TRUE)
