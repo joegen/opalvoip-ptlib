@@ -619,6 +619,7 @@ EXPORTS
     ??_8PWinSock@@7Bistream@@@ @579 NONAME ;const  PWinSock::`vbtable'{for `istream'}
     ??_8PWinSock@@7Bostream@@@ @580 NONAME ;const  PWinSock::`vbtable'{for `ostream'}
     ??_DPFile@@QAEXXZ @582 NONAME ;public: void __thiscall PFile::`vbase destructor'(void)
+    ??_DPSoundChannel@@QAEXXZ @2260 NONAME ;public: void __thiscall PSoundChannel::`vbase destructor'(void)
     ??_DPStringStream@@QAEXXZ @586 NONAME ;public: void __thiscall PStringStream::`vbase destructor'(void)
     ??_Sofstream@@6B@ @587 NONAME ;const  ofstream::`local vftable'
     ?Abort@PSoundChannel@@QAEHXZ @2044 NONAME ;public: int __thiscall PSoundChannel::Abort(void)
@@ -1635,6 +1636,8 @@ EXPORTS
     ?Ping@PICMPSocket@@QAEHABVPString@@@Z @1501 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &)
     ?Ping@PICMPSocket@@QAEHABVPString@@AAVPingInfo@1@@Z @1502 NONAME ;public: int __thiscall PICMPSocket::Ping(class PString const &,class PICMPSocket::PingInfo &)
     ?PlatformOpen@PPipeChannel@@AAEHABVPString@@ABVPStringArray@@W4OpenMode@1@HHPBVPStringToString@@@Z @1503 NONAME ;private: int __thiscall PPipeChannel::PlatformOpen(class PString const &,class PStringArray const &,enum PPipeChannel::OpenMode,int,int,class PStringToString const *)
+    ?Play@PSound@@QAEHXZ @2261 NONAME ;public: int __thiscall PSound::Play(void)
+    ?PlayFile@PSound@@SAHABVPFilePath@@H@Z @2262 NONAME ;public: static int __cdecl PSound::PlayFile(class PFilePath const &,int)
     ?PlayFile@PSoundChannel@@QAEHABVPFilePath@@H@Z @2093 NONAME ;public: int __thiscall PSoundChannel::PlayFile(class PFilePath const &,int)
     ?PlaySoundA@PSoundChannel@@QAEHABVPSound@@H@Z @2064 NONAME ;public: int __thiscall PSoundChannel::PlaySoundA(class PSound const &,int)
     ?Predecessor@Element@PAbstractSortedList@@ABEPAV12@XZ @1504 NONAME ;private: class PAbstractSortedList::Element * __thiscall PAbstractSortedList::Element::Predecessor(void)const 
@@ -1963,3 +1966,4 @@ EXPORTS
     _PTimeParse@12 @2130 NONAME ;_PTimeParse@12
     _PTimeUngetChar@8 @2131 NONAME ;_PTimeUngetChar@8
     __real@4@4008fa00000000000000 @2080 NONAME ;__real@4@4008fa00000000000000
+    ?IsGUIProcess@PProcess@@UBEHXZ @2263 NONAME ;public: virtual int __thiscall PProcess::IsGUIProcess(void)const 
