@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: asner.cxx,v $
+ * Revision 1.46  2001/08/06 01:39:02  robertj
+ * Added assignement operator with RHS of PASN_BMPString to classes
+ *   descended from PASN_BMPString.
+ *
  * Revision 1.45  2001/06/14 02:14:12  robertj
  * Added functions to encode and decode another ASN type that is inside
  *   an octet string, useful for ANY or EXTERNAL types etc.
@@ -2255,9 +2259,9 @@ BOOL PASN_BMPString::IsLegalCharacter(WORD ch)
 }
 
 
-PASN_BMPString & PASN_BMPString::operator=(const PString & str)
+PASN_BMPString & PASN_BMPString::operator=(const char * str)
 {
-  PINDEX paramSize = str.GetLength();
+  PINDEX paramSize = ::strlen(str);
 
   // Can't copy any more than the upper constraint
   if ((unsigned)paramSize > upperLimit)
