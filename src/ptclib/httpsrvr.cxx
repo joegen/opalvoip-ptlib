@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsrvr.cxx,v $
+ * Revision 1.47  2004/02/03 09:37:20  rjongbloed
+ * Added check to text files via the type extension, thanks David Parr
+ *
  * Revision 1.46  2003/03/19 01:55:26  robertj
  * Fixed bugs in deleteing HTTP resources from server, thanks Diego Tártara
  *
@@ -1714,10 +1717,15 @@ BOOL PHTTPFile::LoadHeaders(PHTTPRequest & request)
 
 BOOL PHTTPFile::LoadData(PHTTPRequest & request, PCharArray & data)
 {
-  if (GetContentType()(0, 4) == "text/")
+  PFile & file = ((PHTTPFileRequest&)request).file;
+
+  PString contentType = GetContentType();
+  if (contentType.IsEmpty())
+    contentType = PMIMEInfo::GetContentType(file.GetFilePath().GetType());
+
+  if (contentType(0, 4) *= "text/")
     return PHTTPResource::LoadData(request, data);
 
-  PFile & file = ((PHTTPFileRequest&)request).file;
   PAssert(file.IsOpen(), PLogicError);
 
   PINDEX count = file.GetLength() - file.GetPosition();
