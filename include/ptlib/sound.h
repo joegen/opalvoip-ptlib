@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.12  1999/02/16 06:02:27  robertj
+ * Major implementation to Linux OSS model
+ *
  * Revision 1.11  1998/09/23 06:21:27  robertj
  * Added open source copyright license.
  *
@@ -67,23 +70,274 @@
 #endif
 
 
-PDECLARE_CLASS(PSound, PObject)
-/* A class representing a sound. A sound is a highly platform dependent entity
-   that is abstracted for use here. Very little manipulation of the sounds are
-   possible. The class is provided mainly for the playback of sound files on
-   the system.
+class PSound : public PBYTEArray
+{
+  PCLASSINFO(PSound, PBYTEArray)
+/* A class representing a sound. A sound is a highly platform dependent
+   entity that is abstracted for use here. Very little manipulation of the
+   sounds are possible.
 
    The most common sound to use is the static function <A>Beep()</A> which
    emits the system standard "warning" or "attention" sound.
  */
 
   public:
-    PSound();
-    // Create an empty sound.
+    PSound(
+      unsigned encoding = 0,       // Encoding format code
+      unsigned numChannels = 1,    // Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,  // Samples per second
+      unsigned bitsPerSample = 16, // Number of bits per sample
+      PINDEX   bufferSize = 0,     // Size of data
+      const BYTE * data = NULL     // Pointer to initial data
+    );
+    PSound(
+      const PFilePath & filename   // Sound file to load.
+    );
+    /* Create a new sound, using the parameters provided. A value of zero for
+       the <CODE>format</CODE> argument indicates a "lowest common
+       denominator" encoding, linear PCM.
+
+       All other values for the encoding are platform dependent.
+     */
 
 
     static void Beep();
     // Play the "standard" warning beep for the platform.
 
-    
+
+    BOOL Load(
+      const PFilePath & filename   // Sound file to load.
+    );
+    /* Load a platform dependent sound file (eg .WAV file for Win32) into the
+       object. Note the whole file must able to be loaded into memory.
+
+       Also note that not all possible files are playable by this library. No
+       format conversions between file and driver are performed.
+
+       <H2>Returns:</H2>
+       TRUE if the sound is loaded successfully.
+     */
+
+    BOOL Save(
+      const PFilePath & filename   // Sound file to load.
+    );
+    /* Save a platform dependent sound file (eg .WAV file for Win32) from the
+       object.
+
+       <H2>Returns:</H2>
+       TRUE if the sound is saved successfully.
+     */
+
+
+    unsigned GetEncoding()   const { return encoding; }
+    unsigned GetChannels()   const { return numChannels; }
+    unsigned GetSampleRate() const { return sampleRate; }
+    unsigned GetSampleSize() const { return sampleSize; }
+    DWORD    GetErrorCode()  const { return dwLastError; }
+    PINDEX   GetFormatInfoSize()  const { return formatInfo.GetSize(); }
+    const void * GetFormatInfoData() const { return (const BYTE *)formatInfo; }
+
+
+  protected:
+    unsigned   encoding;      // Format code
+    unsigned   numChannels;   // Number of channels eg mono/stereo
+    unsigned   sampleRate;    // Samples per second
+    unsigned   sampleSize;    // Number of bits per sample
+
+    DWORD      dwLastError;   // Last error code for Load()/Save() functions
+
+    PBYTEArray formatInfo;    // Full info on the format (platform dependent)
+};
+
+
+class PSoundChannel : public PChannel
+{
+  PCLASSINFO(PSoundChannel, PChannel)
+/* A class representing a sound channel. This class is provided mainly for
+   the playback or recording of sounds on the system.
+
+   A sound driver is either playing or recording. If simultaneous playing and
+   recording is desired, two instances of PSoundChannel must be created.
+
+   The sound is buffered and the size and number of buffers should be set
+   before playing/recording. Each call to Write() will use one buffer, so care
+   needs to be taken not to use a large number of small writes but tailor the
+   buffers to the size of each write you make.
+
+   Similarly for reading, an entire buffer must be read before any of it is
+   available to a Read() call. Note that once a buffer is filled you can read
+   it a byte at a time if desired, but as soon as all the data in the buffer
+   is used returned, the next read will wait until the entire next buffer is
+   read from the hardware. So again, tailor the number and size of buffers to
+   the application.
+
+   Note that this sound channel is implicitly a linear PCM channel. No data
+   conversion is performed on data to/from the channel.
+ */
+
+  public:
+    enum Directions {
+      Recorder,
+      Player
+    };
+
+    PSoundChannel();
+    PSoundChannel(
+      const PString & device,       // Name of sound driver/device
+      Directions dir,               // Sound I/O direction
+      unsigned numChannels = 1,     // Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   // Samples per second
+      unsigned bitsPerSample = 16   // Number of bits per sample
+    );
+    // Create a reference to the sound drivers for the platform.
+
+    ~PSoundChannel();
+    // Destroy and close the sound driver
+
+
+    static PStringArray GetDeviceNames(
+      Directions dir    // Sound I/O direction
+    );
+    /* Get all of the names for sound devices/drivers that are available on
+       this platform. Note that a named device may not necessarily do both
+       playing and recording so the arrays returned with the <CODE>dir</CODE>
+       parameter in each value is not necessarily the same.
+
+       <H2>Returns:</H2>
+       An array of platform dependent strings for each sound player/recorder.
+     */
+
+
+    BOOL Open(
+      const PString & device,       // Name of sound driver/device
+      Directions dir,               // Sound I/O direction
+      unsigned numChannels = 1,     // Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   // Samples per second
+      unsigned bitsPerSample = 16   // Number of bits per sample
+    );
+    /* Open the specified device for playing or recording. The device name is
+       platform specific and is as returned in the GetDevices() function.
+
+       <H2>Returns:</H2>
+       TRUE if the sound device is valid for playing/recording.
+     */
+
+
+    BOOL SetFormat(
+      unsigned numChannels = 1,     // Number of channels eg mono/stereo
+      unsigned sampleRate = 8000,   // Samples per second
+      unsigned bitsPerSample = 16   // Number of bits per sample
+    );
+    /* Set the format for play/record. Note that linear PCM data is the only
+       one supported at this time.
+
+       Note that if the PlayFile() function is used, this may be overridden
+       by information in the file being played.
+
+       <H2>Returns:</H2>
+       TRUE if the format is valid.
+     */
+
+
+    BOOL SetBuffers(
+      PINDEX size,      // Size of each buffer
+      PINDEX count = 2  // Number of buffers
+    );
+    /* Set the internal buffers for the sound channel I/O.
+
+       Note that with Linux OSS, the size is always rounded up to the nearest
+       power of two, so 20000 => 32768.
+
+       <H2>Returns:</H2>
+       TRUE if the sound device is valid for playing/recording.
+     */
+
+    BOOL GetBuffers(
+      PINDEX & size,    // Size of each buffer
+      PINDEX & count    // Number of buffers
+    );
+    /* Get the internal buffers for the sound channel I/O.
+
+       <H2>Returns:</H2>
+       TRUE if the buffer size were obtained.
+     */
+
+
+    BOOL PlaySound(
+      const PSound & sound,   // Sound to play.
+      BOOL wait = TRUE        // Flag to play sound synchronously.
+    );
+    /* Play a sound to the open device. If the <CODE>wait</CODE> parameter is
+       TRUE then the function does not return until the file has been played.
+       If FALSE then the sound play is begun asynchronously and the function
+       returns immediately.
+
+       Note if the driver is closed of the object destroyed then the sound
+       play is aborted.
+
+       Also note that not all possible sounds and sound files are playable by
+       this library. No format conversions between sound object and driver are
+       performed.
+
+       <H2>Returns:</H2>
+       TRUE if the sound is playing or has played.
+     */
+
+    BOOL PlayFile(
+      const PFilePath & file, // Sound file to play.
+      BOOL wait = TRUE        // Flag to play sound synchronously.
+    );
+    /* Play a sound file to the open device. If the <CODE>wait</CODE>
+       parameter is TRUE then the function does not return until the file has
+       been played. If FALSE then the sound play is begun asynchronously and
+       the function returns immediately.
+
+       Note if the driver is closed of the object destroyed then the sound
+       play is aborted.
+
+       Also note that not all possible sounds and sound files are playable by
+       this library. No format conversions between sound object and driver are
+       performed.
+
+       <H2>Returns:</H2>
+       TRUE if the sound is playing or has played.
+     */
+
+    BOOL HasPlayCompleted();
+    /* Indicate if the sound play begun with PlayBuffer() or PlayFile() has
+       completed.
+
+       <H2>Returns:</H2>
+       TRUE if the sound has completed playing.
+     */
+
+    BOOL WaitForPlayCompletion();
+    /* Block the thread until the sound play begun with PlayBuffer() or
+       PlayFile() has completed.
+
+       <H2>Returns:</H2>
+       TRUE if the sound has successfully completed playing.
+     */
+
+
+    BOOL Abort();
+    /* Abort the background playing/recording of the sound channel.
+
+       <H2>Returns:</H2>
+       TRUE if the sound has successfully been aborted.
+     */
+
+
+    PString GetErrorText() const;
+    /* Get a text form of the last error encountered.
+
+       <H2>Returns:</H2>
+       PString for error text of last error.
+     */
+
+
+  private:
+    void Construct();
+
+
 // Class declaration continued in platform specific header file ///////////////
