@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.158  2003/04/15 07:40:08  robertj
+ * Removed redundent variable.
+ * Fixed IPv6 support for multiple IP address DNS lookups.
+ *
  * Revision 1.157  2003/04/08 01:12:35  robertj
  * Latest patch for IPv6 operation, thanks Sebastien Josset
  *
@@ -543,9 +547,7 @@ static PIPSocket::Address any4(INADDR_ANY);
 static in_addr inaddr_empty;
 #if P_HAS_IPV6
 static PIPSocket::Address loopback6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\001");
-static in6_addr inaddr6_empty;
-static in6_addr inaddr6_any={0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0};
-static PIPSocket::Address any6(inaddr6_any);
+static PIPSocket::Address any6(16,(const BYTE *)"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0");
 #endif
 
 
@@ -772,8 +774,14 @@ PIPCacheData::PIPCacheData(struct hostent * host_info, const char * original)
   for (i = 0; host_info->h_aliases[i] != NULL; i++)
     aliases.AppendString(host_info->h_aliases[i]);
 
-  for (i = 0; host_info->h_addr_list[i] != NULL; i++)
-    aliases.AppendString(inet_ntoa(*(struct in_addr *)host_info->h_addr_list[i]));
+  for (i = 0; host_info->h_addr_list[i] != NULL; i++) {
+#ifndef _WIN32_WCE
+    PIPSocket::Address ip(*(DWORD *)host_info->h_addr_list[i]);
+#else
+    PIPSocket::Address ip(host_info->h_length, (const BYTE *)host_info->h_addr_list[i]);
+#endif
+    aliases.AppendString(ip.AsString());
+  }
 
   for (i = 0; i < aliases.GetSize(); i++)
     if (aliases[i] *= original)
@@ -2222,7 +2230,7 @@ PIPSocket::Address::operator in_addr() const
 PIPSocket::Address::operator in6_addr() const
 {
   if (version != 6)
-    return inaddr6_empty;
+    return any6.v.six;
 
   return v.six;
 }
@@ -2290,7 +2298,7 @@ BOOL PIPSocket::Address::IsValid() const
   switch (version) {
 #if P_HAS_IPV6
     case 6 :
-      return memcmp(&v.six, &inaddr6_empty, sizeof(v.six)) != 0;
+      return memcmp(&v.six, &any6.v.six, sizeof(v.six)) != 0;
 #endif
 
     case 4 :
