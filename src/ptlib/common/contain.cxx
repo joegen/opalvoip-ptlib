@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.57 1996/05/09 12:17:10 robertj Exp $
+ * $Id: contain.cxx,v 1.58 1996/05/15 10:17:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
+ * Revision 1.58  1996/05/15 10:17:02  robertj
+ * Fixed idiotic bug in string compare, caseless version always matched.
+ *
  * Revision 1.57  1996/05/09 12:17:10  robertj
  * Fixed incorrect use of memcmp/strcmp return value.
  * Added assertion when finding empty string.
@@ -683,7 +686,7 @@ void PString::ReadFrom(istream &strm)
 PObject::Comparison PString::Compare(const PObject & obj) const
 {
   PAssert(obj.IsDescendant(PString::Class()), PInvalidCast);
-  return InternalCompare(0, 0, ((const PString &)obj).theArray);
+  return InternalCompare(0, P_MAX_INDEX, ((const PString &)obj).theArray);
 }
 
 
@@ -937,7 +940,7 @@ PObject::Comparison PString::InternalCompare(
     return EqualTo;
 
   int retval;
-  if (length == 0)
+  if (length == P_MAX_INDEX)
     retval = strcmp(theArray+offset, PAssertNULL(cstr));
   else
     retval = strncmp(theArray+offset, PAssertNULL(cstr), length);
