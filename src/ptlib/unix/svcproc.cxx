@@ -27,6 +27,12 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: svcproc.cxx,v $
+ * Revision 1.65  2002/03/18 08:03:30  robertj
+ * Fixed hex output of thread pid.
+ * Added ability to have -tk option wich attempt to terminate a daemon and
+ *   if no response in 10 seconds kills it.
+ * Fixed leaving .pid file behind when using -k option.
+ *
  * Revision 1.64  2002/02/19 07:12:36  rogerh
  * Mac Carbon fix
  *
@@ -272,9 +278,9 @@ void PSystemLog::Output(Level level, const char * cmsg)
       unsigned tid = (unsigned) pthread_self();
 #endif
       *out << "ThreadID=0x"
-           << setfill('0') << hex
+           << setfill('0') << ::hex
            << setw(8) << tid
-           << setfill(' ') << dec;
+           << setfill(' ') << ::dec;
     } else {
       PString threadName = thread->GetThreadName();
       if (threadName.GetLength() <= 23)
@@ -365,6 +371,33 @@ PServiceProcess & PServiceProcess::Current()
   return (PServiceProcess &)process;
 }
 
+
+static int KillProcess(int pid, int sig)
+{
+  if (kill(pid, sig) != 0)
+    return -1;
+
+  cout << "Sent SIG";
+  if (sig == SIGTERM)
+    cout << "TERM";
+  else
+    cout << "KILL";
+  cout << " to daemon at pid " << pid << ' ' << flush;
+
+  for (PINDEX retry = 1; retry <= 10; retry++) {
+    PThread::Sleep(1000);
+    if (kill(pid, 0) != 0) {
+      cout << "\nDaemon stopped." << endl;
+      return 0;
+    }
+    cout << '.' << flush;
+  }
+  cout << "\nDaemon has not stopped." << endl;
+
+  return 1;
+}
+
+
 void PServiceProcess::_PXShowSystemWarning(PINDEX code, const PString & str)
 {
   PSYSTEMLOG(Warning, "PWLib/Unix error #"
@@ -431,18 +464,21 @@ int PServiceProcess::InitialiseService()
     pidfilename = PDirectory(pidfilename) + PProcess::Current().GetFile().GetFileName() + ".pid";
 
   if (args.HasOption('k') || args.HasOption('t') || args.HasOption('s')) {
-    ifstream pidfile(pidfilename);
-    if (!pidfile.is_open()) {
-      cout << "Could not open pid file: \"" << pidfilename << "\""
-              " - " << strerror(errno) << endl;
-      return 1;
-    }
-
     pid_t pid;
-    pidfile >> pid;
-    if (pid == 0) {
-      cout << "Illegal format pid file \"" << pidfilename << '"' << endl;
-      return 1;
+
+    {
+      ifstream pidfile(pidfilename);
+      if (!pidfile.is_open()) {
+        cout << "Could not open pid file: \"" << pidfilename << "\""
+                " - " << strerror(errno) << endl;
+        return 1;
+      }
+
+      pidfile >> pid;
+      if (pid == 0) {
+        cout << "Illegal format pid file \"" << pidfilename << '"' << endl;
+        return 1;
+      }
     }
 
     if (args.HasOption('s')) {
@@ -454,23 +490,26 @@ int PServiceProcess::InitialiseService()
     }
 
     int sig = args.HasOption('t') ? SIGTERM : SIGKILL;
-    if (kill(pid, sig) == 0) {
-      cout << "Sent SIG";
-      if (sig == SIGTERM)
-        cout << "TERM";
-      else
-        cout << "KILL";
-      cout << " to daemon at pid " << pid << ' ' << flush;
-      for (PINDEX retry = 1; retry <= 5; retry++) {
-        Sleep(1000);
-        if (kill(pid, 0) != 0) {
-          cout << "\nDaemon stopped." << endl;
-          return 0;
+    switch (KillProcess(pid, sig)) {
+      case -1 :
+        break;
+      case 0 :
+        PFile::Remove(pidfilename);
+        return 0;
+      case 1 :
+        if (args.HasOption('t') && args.HasOption('k')) {
+          switch (KillProcess(pid, SIGKILL)) {
+            case -1 :
+              break;
+            case 0 :
+              PFile::Remove(pidfilename);
+              return 0;
+            case 1 :
+              return 2;
+          }
         }
-        cout << '.' << flush;
-      }
-      cout << "\nDaemon has not stopped." << endl;
-      return 2;
+        else
+          return 2;
     }
 
     cout << "Could not stop process " << pid <<
