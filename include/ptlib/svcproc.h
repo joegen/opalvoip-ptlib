@@ -1,5 +1,5 @@
 /*
- * $Id: svcproc.h,v 1.11 1998/03/29 06:16:50 robertj Exp $
+ * $Id: svcproc.h,v 1.12 1998/04/07 13:33:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1995 Equivalence
  *
  * $Log: svcproc.h,v $
+ * Revision 1.12  1998/04/07 13:33:21  robertj
+ * Changed startup code to support PApplication class.
+ *
  * Revision 1.11  1998/03/29 06:16:50  robertj
  * Rearranged initialisation sequence so PProcess descendent constructors can do "things".
  *
@@ -139,7 +142,7 @@ PDECLARE_CLASS(PServiceProcess, PProcess)
 
 
   // Overrides from class PProcess
-    virtual int _main();
+    virtual int _main(void * arg = NULL);
     /* Internal initialisation function called directly from
        <CODE>main()</CODE>. The user should never call this function.
      */
