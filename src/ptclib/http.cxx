@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: http.cxx,v $
+ * Revision 1.79  2002/12/02 00:17:03  robertj
+ * Fixed URL parsing/display problems with non-path URL type eg mailto
+ *
  * Revision 1.78  2002/11/22 06:16:49  robertj
  * Fixed usage of URI (relative http/https URL).
  *
@@ -331,6 +334,9 @@ struct schemeStruct {
   const char * name;
   BOOL hasUserPassword;
   BOOL hasHostPort;
+  BOOL hasQuery;
+  BOOL hasParameters;
+  BOOL hasFragments;
   BOOL hasPath;
   BOOL relativeImpliesScheme;
   WORD defaultPort;
@@ -340,23 +346,24 @@ struct schemeStruct {
 #define FILE_SCHEME    1
 
 static schemeStruct const schemeInfo[] = {
-  { "http",      TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
-  { "file",      FALSE, TRUE,  TRUE,  FALSE, 0                     }, // Must be second
-  { "https",     FALSE, TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
-  { "gopher",    FALSE, TRUE,  TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
-  { "wais",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_WAIS_PORT     },
-  { "nntp",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_NNTP_PORT     },
-  { "prospero",  FALSE, TRUE,  TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
-  { "rtsp",      FALSE, TRUE,  TRUE,  FALSE, DEFAULT_RTSP_PORT     },
-  { "rtspu",     FALSE, TRUE,  TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
+//  scheme       user   host   query  params frags  path   rel    port
+  { "http",      TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTP_PORT     }, // Must be first
+  { "file",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, 0                     }, // Must be second
+  { "https",     FALSE, TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  TRUE,  DEFAULT_HTTPS_PORT    },
+  { "gopher",    FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_GOPHER_PORT   },
+  { "wais",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_WAIS_PORT     },
+  { "nntp",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_NNTP_PORT     },
+  { "prospero",  FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_PROSPERO_PORT },
+  { "rtsp",      FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSP_PORT     },
+  { "rtspu",     FALSE, TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_RTSPU_PORT    },
 
-  { "ftp",       TRUE,  TRUE,  TRUE,  FALSE, DEFAULT_FTP_PORT      },
-  { "telnet",    TRUE,  TRUE,  FALSE, FALSE, DEFAULT_TELNET_PORT   },
-  { "mailto",    FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "news",      FALSE, FALSE, FALSE, FALSE, 0                     },
-  { "h323",      TRUE,  TRUE,  FALSE, FALSE, DEFAULT_H323_PORT     },
-  { "sip",       TRUE,  TRUE,  FALSE, FALSE, DEFAULT_SIP_PORT      },
-  { NULL,        FALSE, FALSE, FALSE, FALSE, 0                     }
+  { "ftp",       TRUE,  TRUE,  FALSE, FALSE, FALSE, TRUE,  FALSE, DEFAULT_FTP_PORT      },
+  { "telnet",    TRUE,  TRUE,  FALSE, FALSE, FALSE, FALSE, FALSE, DEFAULT_TELNET_PORT   },
+  { "mailto",    FALSE, FALSE, TRUE,  FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "news",      FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 0                     },
+  { "h323",      TRUE,  TRUE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_H323_PORT     },
+  { "sip",       TRUE,  TRUE,  FALSE, TRUE,  FALSE, FALSE, FALSE, DEFAULT_SIP_PORT      },
+  { NULL,        FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, 0                     }
 };
 
 static const schemeStruct & GetSchemeInfo(const PCaselessString & scheme)
@@ -537,7 +544,7 @@ void PURL::Parse(const char * cstr)
   path.SetSize(0);
   queryVars.RemoveAll();
   port = 0;
-  relativePath = TRUE;
+  relativePath = FALSE;
 
   // copy the string so we can take bits off it
   while (isspace(*cstr))
@@ -571,16 +578,11 @@ void PURL::Parse(const char * cstr)
   const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
     
   // if the URL should have leading slash, then remove it if it has one
-  if (schemeInfo.hasHostPort &&
-             url.GetLength() > 2 && url[0] == '/' && url[1] == '/') {
-    url.Delete(0, 2);
-    relativePath = FALSE;
-  }
-
-  // if the rest of the URL isn't a path, then we are finished!
-  if (!schemeInfo.hasPath) {
-    pathStr = url;
-    return;
+  if (schemeInfo.hasHostPort && schemeInfo.hasPath) {
+    if (url.GetLength() > 2 && url[0] == '/' && url[1] == '/')
+      url.Delete(0, 2);
+    else
+      relativePath = TRUE;
   }
 
   // parse user/password/host/port
@@ -630,29 +632,40 @@ void PURL::Parse(const char * cstr)
     }
   }
 
-  // chop off any trailing query
-  pos = url.Find('?');
-  if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    SplitQueryVars(url(pos+1, P_MAX_INDEX), queryVars);
-    url.Delete(pos, P_MAX_INDEX);
+  if (schemeInfo.hasQuery) {
+    // chop off any trailing query
+    pos = url.Find('?');
+    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+      SplitQueryVars(url(pos+1, P_MAX_INDEX), queryVars);
+      url.Delete(pos, P_MAX_INDEX);
+    }
   }
 
-  // chop off any trailing parameters
-  pos = url.Find(';');
-  if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    SplitVars(url(pos+1, P_MAX_INDEX), paramVars, ';', '=');
-    url.Delete(pos, P_MAX_INDEX);
+  if (schemeInfo.hasParameters) {
+    // chop off any trailing parameters
+    pos = url.Find(';');
+    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+      SplitVars(url(pos+1, P_MAX_INDEX), paramVars, ';', '=');
+      url.Delete(pos, P_MAX_INDEX);
+    }
   }
 
-  // chop off any trailing fragment
-  pos = url.Find('#');
-  if (pos != P_MAX_INDEX /* && pos > 0 */) {
-    fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
-    url.Delete(pos, P_MAX_INDEX);
+  if (schemeInfo.hasFragments) {
+    // chop off any trailing fragment
+    pos = url.Find('#');
+    if (pos != P_MAX_INDEX /* && pos > 0 */) {
+      fragment = UntranslateString(url(pos+1, P_MAX_INDEX), PathTranslation);
+      url.Delete(pos, P_MAX_INDEX);
+    }
   }
 
-  // the hierarchy is what is left
-  SetPathStr(url);
+  if (schemeInfo.hasPath)
+    SetPathStr(url);   // the hierarchy is what is left
+  else {
+  // if the rest of the URL isn't a path, then we are finished!
+    pathStr = UntranslateString(url, PathTranslation);
+    Recalculate();
+  }
 }
 
 
@@ -689,13 +702,13 @@ PString PURL::AsString(UrlFormat fmt) const
   if (fmt == FullURL)
     return urlString;
 
+  if (scheme.IsEmpty())
+    return PString::Empty();
+
+  const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
+
   if (fmt == HostPortOnly) {
-    if (scheme.IsEmpty())
-      return PString::Empty();
-
     str << scheme << ':';
-
-    const schemeStruct & schemeInfo = GetSchemeInfo(scheme);
 
     if (relativePath) {
       if (schemeInfo.relativeImpliesScheme)
@@ -703,38 +716,39 @@ PString PURL::AsString(UrlFormat fmt) const
       return str;
     }
 
-    if (schemeInfo.hasHostPort)
+    if (schemeInfo.hasPath && schemeInfo.hasHostPort)
       str << "//";
 
-    if (!schemeInfo.hasPath)
-      str << pathStr;
-    else {
-      if (schemeInfo.hasUserPassword) {
-        if (!username) {
-          str << TranslateString(username, LoginTranslation);
-          if (!password)
-            str << ':' << TranslateString(password, LoginTranslation);
-          str << '@';
-        }
-      }
-
-      if (schemeInfo.hasHostPort)
-        str << hostname;
-
-      if (schemeInfo.defaultPort != 0) {
-        if (port != schemeInfo.defaultPort)
-          str << ':' << port;
+    if (schemeInfo.hasUserPassword) {
+      if (!username) {
+        str << TranslateString(username, LoginTranslation);
+        if (!password)
+          str << ':' << TranslateString(password, LoginTranslation);
+        str << '@';
       }
     }
+
+    if (schemeInfo.hasHostPort)
+      str << hostname;
+
+    if (schemeInfo.defaultPort != 0) {
+      if (port != schemeInfo.defaultPort)
+        str << ':' << port;
+    }
+
     return str;
   }
 
   // URIOnly and PathOnly
-  for (i = 0; i < path.GetSize(); i++) {
-    if (i > 0 || !relativePath)
-      str << '/';
-    str << TranslateString(path[i], PathTranslation);
+  if (schemeInfo.hasPath) {
+    for (i = 0; i < path.GetSize(); i++) {
+      if (i > 0 || !relativePath)
+        str << '/';
+      str << TranslateString(path[i], PathTranslation);
+    }
   }
+  else
+    str << TranslateString(pathStr, PathTranslation);
 
   if (fmt == URIOnly) {
     if (!fragment)
