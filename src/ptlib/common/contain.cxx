@@ -1,5 +1,5 @@
 /*
- * $Id: contain.cxx,v 1.25 1994/09/25 10:49:44 robertj Exp $
+ * $Id: contain.cxx,v 1.26 1994/10/23 03:43:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,11 @@
  * Copyright 1993 Equivalence
  *
  * $Log: contain.cxx,v $
- * Revision 1.25  1994/09/25 10:49:44  robertj
+ * Revision 1.26  1994/10/23 03:43:07  robertj
+ * Changed PBaseArray so can have zero elements in it.
+ * Added Printf style constructor to PString.
+ *
+ * Revision 1.25  1994/09/25  10:49:44  robertj
  * Added empty functions for serialisation.
  *
  * Revision 1.24  1994/08/21  23:43:02  robertj
@@ -682,8 +686,9 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes, PINDEX initialSize)
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0, PInvalidParameter);
   if (GetSize() == 0)
-    reference->size = 1;
-  theArray = (char *)calloc(GetSize(), elementSize);
+    theArray = NULL;
+  else
+    theArray = (char *)calloc(GetSize(), elementSize);
 }
 
 
@@ -695,10 +700,12 @@ PAbstractArray::PAbstractArray(PINDEX elementSizeInBytes,
   elementSize = elementSizeInBytes;
   PAssert(elementSize != 0, PInvalidParameter);
   if (GetSize() == 0)
-    reference->size = 1;
-  PINDEX sizebytes = elementSize*GetSize();
-  theArray = (char *)malloc(sizebytes);
-  memcpy(theArray, PAssertNULL(buffer), sizebytes);
+    theArray = NULL;
+  else {
+    PINDEX sizebytes = elementSize*GetSize();
+    theArray = (char *)malloc(sizebytes);
+    memcpy(theArray, PAssertNULL(buffer), sizebytes);
+  }
 }
 
 
@@ -746,6 +753,9 @@ PObject::Comparison PAbstractArray::Compare(const PObject & obj) const
   if (thisSize > arraySize)
     return GreaterThan;
 
+  if (thisSize == 0)
+    return EqualTo;
+
   char * p2 = array.theArray;
   PINDEX len = elementSize*thisSize;
   return (Comparison)memcmp(theArray, p2, len);
@@ -762,15 +772,22 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
   char * newArray;
 
   if (IsUnique()) {
-    if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
-      return FALSE;
+    if (theArray != NULL) {
+      if ((newArray = (char *)realloc(theArray, newsizebytes)) == NULL)
+        return FALSE;
+    }
+    else {
+      if ((newArray = (char *)malloc(newsizebytes)) == NULL)
+        return FALSE;
+    }
     reference->size = newSize;
   }
   else {
     if ((newArray = (char *)malloc(newsizebytes)) == NULL)
       return FALSE;
 
-    memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
+    if (theArray != NULL)
+      memcpy(newArray, theArray, PMIN(oldsizebytes, newsizebytes));
 
     reference->count--;
     reference = new Reference(newSize);
@@ -786,6 +803,8 @@ BOOL PAbstractArray::SetSize(PINDEX newSize)
 
 BOOL PAbstractArray::SetMinSize(PINDEX minSize)
 {
+  if (minSize <= 0)
+    minSize = 1;
   PASSERTINDEX(minSize);
   return minSize <= GetSize() ? MakeUnique() : SetSize(minSize);
 }
@@ -851,7 +870,7 @@ static void TranslateEscapes(const char * src, char * dst)
 }
 
 
-PString::PString(ConversionType type, const char * str)
+PString::PString(ConversionType type, const char * str, ...)
 {
   switch (type) {
     case Pascal :
@@ -874,6 +893,12 @@ PString::PString(ConversionType type, const char * str)
       PAssert(SetSize(strlen(str)+1), POutOfMemory);
       TranslateEscapes(str, theArray);
       PAssert(MakeMinimumSize(), POutOfMemory);
+      break;
+
+    case Printf :
+      va_list args;
+      va_start(args, str);
+      vsprintf(str, args);
       break;
 
     default :
@@ -1323,7 +1348,7 @@ PString PString::ToLiteral() const
         }
       }
       if (i >= PARRAYSIZE(PStringEscapeValue))
-        str += psprintf("\\%03o", *p & 0xff);
+        str.sprintf("\\%03o", *p & 0xff);
     }
   }
   return str + '"';
@@ -1348,7 +1373,7 @@ PString & PString::sprintf(PString fmt, ...)
 
 PString & PString::vsprintf(const char * fmt, va_list arg)
 {
-  ::vsprintf(GetPointer(1000), fmt, arg);
+  ::vsprintf(GetPointer(1000)+strlen(theArray), fmt, arg);
   PAssert(strlen(theArray) < 1000, "Single sprintf() too large");
   PAssert(MakeMinimumSize(), POutOfMemory);
   return *this;
