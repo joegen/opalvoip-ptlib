@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ipsock.h,v $
+ * Revision 1.10  2002/10/08 14:31:17  robertj
+ * Fixed GNU compiler compatibility
+ *
  * Revision 1.9  2002/09/16 01:08:59  robertj
  * Added #define so can select if #pragma interface/implementation is used on
  *   platform basis (eg MacOS) rather than compiler, thanks Robert Monaghan.
@@ -79,8 +82,6 @@
 #endif
 #ifdef _PIPSOCKET_PLATFORM_INCLUDE
 #undef _PIPSOCKET_PLATFORM_INCLUDE
-
-  friend ostream & operator << (ostream & strm, const PIPSocket::Address & addr);
 
 #endif
 
