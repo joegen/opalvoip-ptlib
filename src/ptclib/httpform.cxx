@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.39  2001/01/08 04:13:23  robertj
+ * Fixed bug with skipping every second option in determining the selected
+ *   option in a SELECT field. No longer requires a </option> to work.
+ *
  * Revision 1.38  2000/12/20 02:23:39  robertj
  * Fixed variable array size value (caused extra blank entry ever commit).
  *
@@ -383,6 +387,12 @@ static void AdjustSelectOptions(PString & text, PINDEX begin, PINDEX end,
   while (FindSpliceBlock(StartOption, EndOption, text, pos+len, pos, len, start, finish) && pos < end) {
     if (start == P_MAX_INDEX)
       start = text.Find('>', pos)+1;
+    else {
+      // Check for if option was not closed by </option> but another <option>
+      PINDEX optpos = text.FindRegEx(StartOption, start);
+      if (optpos < pos+len) // Adjust back to before <option> if so.
+        len = optpos-pos;
+    }
     PCaselessString option = text(pos, start-1);
     PINDEX before, after;
     if (FindInputValue(option, before, after)) {
