@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: ptts.cxx,v $
+ * Revision 1.14  2004/07/12 09:17:20  csoutheren
+ * Fixed warnings and errors under Linux
+ *
  * Revision 1.13  2004/07/06 10:12:54  csoutheren
  * Added static integer o factory template to assist in ensuring factories are instantiated
  *
@@ -107,7 +110,11 @@
 #include <ptlib/pipechan.h>
 #include <ptclib/ptts.h>
 
+#ifdef _WIN32
+
 PINSTANTIATE_FACTORY(PTextToSpeech, PString)
+
+#endif
 
 ////////////////////////////////////////////////////////////
 //
