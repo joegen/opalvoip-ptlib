@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.21  1996/12/30 03:21:46  robertj
+ * Added timer to block on wait for child process.
+ *
  * Revision 1.20  1996/12/29 13:25:02  robertj
  * Fixed GCC warnings.
  *
@@ -564,10 +567,13 @@ int PThread::PXBlockOnIO(int maxHandles,
   return selectReturnVal;
 }
 
-int PThread::PXBlockOnChildTerminate(int pid)
+int PThread::PXBlockOnChildTerminate(int pid, const PTimeInterval & timeout)
 {
-  waitPid  = pid;
-  status   = BlockedIO;
+  waitPid    = pid;
+  hasIOTimer = timeout != PMaxTimeInterval;
+  if (hasIOTimer)
+    ioTimer  = timeout;
+  status     = BlockedIO;
   Yield();
   return 0;
 }
