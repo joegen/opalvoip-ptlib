@@ -166,6 +166,29 @@ BOOL PRemoteConnection::Open(const PString & name,
   PINDEX timeout = timeoutStr.AsInteger();
   PString nameServerStr = config.GetString(NameServerStr, "");
 
+
+  ///////////////////////////////////////////
+  //
+  // start constructing the command argument array
+  //
+  PStringArray argArray;
+  argArray.SetAt(argArray.GetSize(), PNEW PString(portName));
+  argArray.SetAt(argArray.GetSize(), PNEW PString(baudRate));
+
+  PStringArray tokens = PPPDOpts.Tokenise(' ');
+  PINDEX i;
+  for (i = 0; i < tokens.GetSize(); i++)
+    argArray.SetAt(argArray.GetSize(), PNEW PString(tokens[i]));
+
+  tokens = pppdOpts.Tokenise(' ');
+  for (i = 0; i < tokens.GetSize(); i++)
+    argArray.SetAt(argArray.GetSize(), PNEW PString(tokens[i]));
+
+  if (!nameServerStr.IsEmpty()) {
+    argArray.SetAt(argArray.GetSize(), PNEW PString("ipparam"));
+    argArray.SetAt(argArray.GetSize(), PNEW PString(nameServerStr));
+  }
+
   ///////////////////////////////////////////
   //
   // replace metastrings in the login string
@@ -177,24 +200,17 @@ BOOL PRemoteConnection::Open(const PString & name,
   //
   // setup the chat command
   //
-  PString chatCmd     = chatErrs & modemInit & dialPrefix + phoneNumber & loginStr;
-  PString commandLine = pppdStr & portName & baudRate & PPPDOpts & pppdOpts;
-
-  if (!nameServerStr.IsEmpty())
-    commandLine &= "ipparam " & nameServerStr;
-
-  if (!chatCmd.IsEmpty()) 
-    commandLine &= PString("connect \"" + chatStr & "-t") + timeoutStr &
-                   chatCmd + "\"";
+  PString chatCmd = chatErrs & modemInit & dialPrefix + phoneNumber & loginStr;
+  if (!chatCmd.IsEmpty()) {
+    argArray.SetAt(argArray.GetSize(), PNEW PString("connect"));
+    argArray.SetAt(argArray.GetSize(), PNEW PString(chatStr & "-t" + timeoutStr & chatCmd));
+  }
 
   ///////////////////////////////////////////
   //
   // instigate a dial using pppd
   //
-  PStringArray argArray;
-  argArray[0]  = "-c";
-  argArray[1]  = commandLine;
-  pipeChannel  = PNEW PPipeChannel("/bin/sh", argArray);
+  pipeChannel  = PNEW PPipeChannel(pppdStr, argArray);
 
   ///////////////////////////////////////////
   //
@@ -254,7 +270,7 @@ void PRemoteConnection::Close()
   if (pipeChannel != NULL) {
 
     // give pppd a chance to clean up
-    pipeChannel->PXKill(SIGINT);
+    pipeChannel->Kill(SIGINT);
 
     PTimer timer(10*1000);
     for (;;) {
