@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pxml.cxx,v $
+ * Revision 1.22  2002/11/19 07:37:25  craigs
+ * Added locking functions and LoadURL function
+ *
  * Revision 1.21  2002/11/06 22:47:25  robertj
  * Fixed header comment (copyright etc)
  *
@@ -40,6 +43,7 @@
 
 #include <ptclib/pxml.h>
 
+#define CACHE_BUFFER_SIZE   1024
 
 #if P_EXPAT
 
@@ -117,6 +121,8 @@ PXML::PXML(const PXML & xml)
   encoding     = xml.encoding;
   standAlone   = xml.standAlone;
 
+  PWaitAndSignal m(rootMutex);
+
   PXMLElement * oldRootElement = xml.rootElement;
   if (oldRootElement != NULL)
     rootElement = (PXMLElement *)oldRootElement->Clone(NULL);
@@ -134,24 +140,32 @@ void PXML::Construct()
 
 PXMLElement * PXML::SetRootElement(const PString & documentType)
 {
+  PWaitAndSignal m(rootMutex);
+
   if (rootElement != NULL)
     delete rootElement;
 
   rootElement = new PXMLElement(rootElement, documentType);
+
   return rootElement;
 }
 
 PXMLElement * PXML::SetRootElement(PXMLElement * element)
 {
+  PWaitAndSignal m(rootMutex);
+
   if (rootElement != NULL)
     delete rootElement;
 
   rootElement = element;
+
   return rootElement;
 }
 
 BOOL PXML::IsDirty() const
 {
+  PWaitAndSignal m(rootMutex);
+
   if (rootElement == NULL)
     return FALSE;
 
@@ -160,6 +174,8 @@ BOOL PXML::IsDirty() const
 
 PCaselessString PXML::GetDocumentType() const
 { 
+  PWaitAndSignal m(rootMutex);
+
   if (rootElement == NULL)
     return PCaselessString();
   return rootElement->GetName();
@@ -167,6 +183,8 @@ PCaselessString PXML::GetDocumentType() const
 
 BOOL PXML::LoadFile(const PFilePath & fn, int _options)
 {
+  PWaitAndSignal m(rootMutex);
+
   if (_options >= 0)
     options = _options;
 
@@ -187,8 +205,61 @@ BOOL PXML::LoadFile(const PFilePath & fn, int _options)
   return Load(data);
 }
 
+BOOL PXML::LoadURL(const PURL & url)
+{
+  return LoadURL(url, PMaxTimeInterval, -1);
+}
+
+
+BOOL PXML::LoadURL(const PURL & url, const PTimeInterval & timeout, int _options)
+{
+  PHTTPClient client;
+  PINDEX contentLength;
+  PMIMEInfo outMIME, replyMIME;
+
+  // make sure we do not hang around for ever
+  client.SetReadTimeout(timeout);
+
+  // get the resource header information
+  if (!client.GetDocument(url, outMIME, replyMIME)) {
+    PTRACE(2, "PVXML\tCannot load resource " << url);
+    return FALSE;
+  }
+
+  // get the length of the data
+  if (!replyMIME.Contains(PHTTPClient::ContentLengthTag))
+    contentLength = (PINDEX)replyMIME[PHTTPClient::ContentLengthTag].AsUnsigned();
+  else
+    contentLength = P_MAX_INDEX;
+
+  // download the resource into memory
+  PString data;
+  PINDEX offs = 0;
+  for (;;) {
+    PINDEX len;
+    if (contentLength == P_MAX_INDEX)
+      len = CACHE_BUFFER_SIZE;
+    else if (offs == contentLength)
+      break;
+    else
+      len = PMIN(contentLength = offs, CACHE_BUFFER_SIZE);
+
+    if (!client.Read(offs + data.GetPointer(offs + len), len))
+      break;
+
+    len = client.GetLastReadCount();
+
+    offs += len;
+  }
+
+  return Load(data, _options);
+}
+
+
 BOOL PXML::Load(const PString & data, int _options)
 {
+  PWaitAndSignal m(rootMutex);
+
   if (_options >= 0)
     options = _options;
 
@@ -233,6 +304,8 @@ BOOL PXML::Save(int _options)
 
 BOOL PXML::SaveFile(const PFilePath & fn, int _options)
 {
+  PWaitAndSignal m(rootMutex);
+
   PFile file;
   if (!file.Open(fn, PFile::WriteOnly)) 
     return FALSE;
@@ -246,6 +319,8 @@ BOOL PXML::SaveFile(const PFilePath & fn, int _options)
 
 BOOL PXML::Save(PString & data, int _options)
 {
+  PWaitAndSignal m(rootMutex);
+
   if (_options >= 0)
     options = _options;
 
@@ -257,6 +332,8 @@ BOOL PXML::Save(PString & data, int _options)
 
 void PXML::RemoveAll()
 {
+  PWaitAndSignal m(rootMutex);
+
   if (rootElement != NULL) {
     delete rootElement;
     rootElement = NULL;
