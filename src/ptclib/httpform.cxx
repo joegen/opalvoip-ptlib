@@ -1,5 +1,5 @@
 /*
- * $Id: httpform.cxx,v 1.4 1996/10/08 13:10:34 robertj Exp $
+ * $Id: httpform.cxx,v 1.5 1997/04/01 06:00:53 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: httpform.cxx,v $
+ * Revision 1.5  1997/04/01 06:00:53  robertj
+ * Changed PHTTPConfig so if section empty string, does not write PConfig parameters.
+ *
  * Revision 1.4  1996/10/08 13:10:34  robertj
  * Fixed bug in boolean (checkbox) html forms, cannot be reset.
  *
@@ -634,7 +637,8 @@ void PHTTPConfig::OnLoadedText(PHTTPRequest & request, PString & text)
     return;
 
   PString sectionName = request.url.GetQueryVars()("section", section);
-  PAssert(!sectionName, PLogicError);
+  if (sectionName.IsEmpty())
+    return;
 
   PConfig cfg(sectionName);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
@@ -663,7 +667,11 @@ BOOL PHTTPConfig::Post(PHTTPRequest & request,
   if (sectionField != NULL)
     section = sectionPrefix + sectionField->GetValue() + sectionSuffix;
 
-  PConfig cfg(request.url.GetQueryVars()("section", section));
+  PString sectionName = request.url.GetQueryVars()("section", section);
+  if (sectionName.IsEmpty())
+    return TRUE;
+
+  PConfig cfg(sectionName);
   for (PINDEX fld = 0; fld < fields.GetSize(); fld++) {
     PHTTPField & field = fields[fld];
     if (&field == keyField) {
