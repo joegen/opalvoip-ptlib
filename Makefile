@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.12  2000/04/26 02:50:12  robertj
+# Fixed build of correct GUI directory.
+#
 # Revision 1.11  2000/04/26 01:03:46  robertj
 # Removed tarfile creation target, this is done differently now.
 #
@@ -63,25 +66,12 @@
 #
 
 
-ifneq (,$(wildcard src/pwlib/xlib))
-HAS_GUI = 1
-HAS_XLIB = 1
-endif
-
-ifneq (,$(wildcard src/pwlib/motif))
-HAS_GUI = 1
-HAS_MOTIF = 1
-endif
-
 SUBDIRS := src/ptlib/unix tools/asnparser
-ifdef HAS_GUI
-SUBDIRS += tools/pwrc
-ifdef HAS_XLIB
-SUBDIRS += src/pwlib/xlib
-endif
-ifdef HAS_MOTIF
-SUBDIRS += src/pwlib/motif
-endif
+
+include make/defaultgui.mak
+
+ifdef GUI_TYPE
+SUBDIRS += src/pwlib/$(GUI_TYPE)
 endif
 
 opt :
