@@ -1,5 +1,5 @@
 /*
- * $Id: ipsock.h,v 1.23 1996/08/25 09:33:55 robertj Exp $
+ * $Id: ipsock.h,v 1.24 1996/09/14 13:09:21 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,12 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ipsock.h,v $
+ * Revision 1.24  1996/09/14 13:09:21  robertj
+ * Major upgrade:
+ *   rearranged sockets to help support IPX.
+ *   added indirect channel class and moved all protocols to descend from it,
+ *   separating the protocol from the low level byte transport.
+ *
  * Revision 1.23  1996/08/25 09:33:55  robertj
  * Added function to detect "local" host name.
  *
@@ -95,21 +101,32 @@ PDECLARE_CLASS(PIPSocket, PSocket)
    Internet Protocol.
  */
 
-  public:
-    PIPSocket(
-      WORD port = 0              // Port number to use for the connection.
-    );
-    PIPSocket(
-      const char * protocol,     // Protocol name to use for port look up.
-      const PString & service    // Service name to use for the connection.
-    );
-    /* Create a new Internet Protocol socket.
-
-       A service name is a unique string contained in a system database. The
-       parameter here may be either this unique name, an integer value or both
-       separated by a space (name then integer). In the latter case the
-       integer value is used if the name cannot be found in the database.
+  protected:
+    PIPSocket();
+    /* Create a new Internet Protocol socket based on the port number
+       specified.
      */
+
+
+  public:
+    class Address : public in_addr {
+      public:
+        Address();
+        Address(const PString & dotNotation);
+        Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
+        Address(const in_addr & addr);
+        Address(const Address & addr);
+        Address & operator=(const in_addr & addr);
+        Address & operator=(const Address & addr);
+        operator PString() const;
+        operator DWORD() const;
+        BYTE Byte1() const;
+        BYTE Byte2() const;
+        BYTE Byte3() const;
+        BYTE Byte4() const;
+      friend ostream & operator<<(ostream & s, Address & a)
+        { return s << (PString)a; }
+    };
 
 
   // Overrides from class PChannel
@@ -123,41 +140,48 @@ PDECLARE_CLASS(PIPSocket, PSocket)
      */
 
 
-  // New functions for class
-#ifdef P_HAS_BERKELEY_SOCKETS
-    class Address : public in_addr {
-      public:
-        Address(const in_addr & addr);
-        Address & operator=(const in_addr & addr);
-#else
-    class Address {
-      private:
-        union {
-          struct {
-            BYTE s_b1,s_b2,s_b3,s_b4;
-          } S_un_b;
-          struct {
-            WORD s_w1,s_w2;
-          } S_un_w;
-          DWORD S_addr;
-        } S_un;
-#endif
-      public:
-        Address();
-        Address(const Address & addr);
-        Address(const PString & dotNotation);
-        Address(BYTE b1, BYTE b2, BYTE b3, BYTE b4);
-        Address & operator=(const Address & addr);
-        operator PString() const;
-        operator DWORD() const;
-        BYTE Byte1() const;
-        BYTE Byte2() const;
-        BYTE Byte3() const;
-        BYTE Byte4() const;
-      friend ostream & operator<<(ostream & s, Address & a)
-        { return s << (PString)a; }
-    };
+  // Overrides from class PSocket.
+    virtual BOOL Connect(
+      const PString & address   // Address of remote machine to connect to.
+    );
+    virtual BOOL Connect(
+      const Address & addr      // Address of remote machine to connect to.
+    );
+    /* Connect a socket to a remote host on the specified port number. This is
+       typically used by the client or initiator of a communications channel.
+       This connects to a "listening" socket at the other end of the
+       communications channel.
 
+       The port number as defined by the object instance construction or the
+       <A>PIPSocket::SetPort()</A> function.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully connected to the remote host.
+     */
+
+    virtual BOOL Listen(
+      unsigned queueSize = 5,  // Number of pending accepts that may be queued.
+      WORD port = 0,           // Port number to use for the connection.
+      Reusability reuse = AddressIsExclusive // Can/Cant listen more than once.
+    );
+    /* Listen on a socket for a remote host on the specified port number. This
+       may be used for server based applications. A "connecting" socket begins
+       a connection by initiating a connection to this socket. An active socket
+       of this type is then used to generate other "accepting" sockets which
+       establish a two way communications channel with the "connecting" socket.
+
+       If the <CODE>port</CODE> parameter is zero then the port number as
+       defined by the object instance construction or the
+       <A>PIPSocket::SetPort()</A> function.
+
+       For the UDP protocol, the <CODE>queueSize</CODE> parameter is ignored.
+
+       <H2>Returns:</H2>
+       TRUE if the channel was successfully opened.
+     */
+
+
+  // New functions for class
     static PString GetHostName();
     static PString GetHostName(
       const PString & hostname  // Hosts IP address to get name for
@@ -264,119 +288,6 @@ PDECLARE_CLASS(PIPSocket, PSocket)
        <H2>Returns:</H2>
        Name of the host, or an empty string if an error occurs.
      */
-
-
-    void SetPort(
-      WORD port   // New port number for the channel.
-    );
-    void SetPort(
-      const PString & service   // Service name to describe the port number.
-    );
-    /* Set the port number for the channel. This a 16 bit number representing
-       an agreed high level protocol type. The string version looks up a
-       database of names to find the number for the string name.
-
-       A service name is a unique string contained in a system database. The
-       parameter here may be either this unique name, an integer value or both
-       separated by a space (name then integer). In the latter case the
-       integer value is used if the name cannot be found in the database.
-    
-       The port number may not be changed while the port is open and the
-       function will assert if an attempt is made to do so.
-     */
-
-    WORD GetPort() const;
-    /* Get the port the TCP socket channel object instance is using.
-
-       <H2>Returns:</H2>
-       Port number.
-     */
-
-    PString GetService() const;
-    /* Get a service name for the port number the TCP socket channel object
-       instance is using.
-
-       <H2>Returns:</H2>
-       string service name or a string representation of the port number if no
-       service with that number can be found.
-     */
-
-
-    virtual WORD GetPortByService(
-      const PString & service   // Name of service to get port number for.
-    ) const = 0;
-    static WORD GetPortByService(
-      const char * protocol,     // Protocol type for port lookup
-      const PString & service    // Name of service to get port number for.
-    );
-    /* Get the port number for the specified service name.
-    
-       A name is a unique string contained in a system database. The parameter
-       here may be either this unique name, an integer value or both separated
-       by a space (name then integer). In the latter case the integer value is
-       used if the name cannot be found in the database.
-    
-       The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
-       classes will implement this function.
-
-       The static version of the function is independent of the socket type as
-       its first parameter may be "tcp" or "udp", 
-
-       <H2>Returns:</H2>
-       Port number for service name, or 0 if service cannot be found.
-     */
-
-    virtual PString GetServiceByPort(
-      WORD port   // Number for service to find name of.
-    ) const = 0;
-    static PString GetServiceByPort(
-      const char * protocol,  // Protocol type for port lookup
-      WORD port   // Number for service to find name of.
-    );
-    /* Get the service name from the port number.
-    
-       A service name is a unique string contained in a system database. The
-       parameter here may be either this unique name, an integer value or both
-       separated by a space (name then integer). In the latter case the
-       integer value is used if the name cannot be found in the database.
-    
-       The exact behviour of this function is dependent on whether TCP or UDP
-       transport is being used. The <A>PTCPSocket</A> and <A>PUDPSocket</A>
-       classes will implement this function.
-
-       The static version of the function is independent of the socket type as
-       its first parameter may be "tcp" or "udp", 
-
-       <H2>Returns:</H2>
-       Service name for port number.
-     */
-
-
-  protected:
-#ifdef P_HAS_BERKELEY_SOCKETS
-    BOOL _Connect(
-      const PString & host  // IP number of remote host to connect to.
-    );
-    /* Connect a socket to the specified host.
-
-       <H2>Returns:</H2>
-       TRUE if successful.
-     */
-
-    BOOL _Bind(Reusability reuse);
-    /* Bind a socket to the protocol and listen for connections from remote
-       hosts.
-
-       <H2>Returns:</H2>
-       TRUE if successful.
-     */
-#endif
-
-
-  // Member variables
-    WORD port;
-    // Port to be used by the socket when opening the channel.
 
 
 // Class declaration continued in platform specific header file ///////////////
