@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.cxx,v $
+ * Revision 1.12  2000/05/22 07:17:50  robertj
+ * Fixed missing initialisation of format data block in Win32 PSound::Load().
+ *
  * Revision 1.11  2000/05/01 05:59:11  robertj
  * Added mutex to PSoundChannel buffer structure.
  *
@@ -433,6 +436,11 @@ BOOL PSound::Load(const PFilePath & filename)
   numChannels = waveFormat->nChannels;
   sampleRate = waveFormat->nSamplesPerSec;
   sampleSize = waveFormat->wBitsPerSample;
+
+  if (encoding != 0) {
+    PINDEX formatSize = waveFormat->cbSize + sizeof(WAVEFORMATEX);
+    memcpy(formatInfo.GetPointer(formatSize), waveFormat, formatSize);
+  }
 
   // Allocate and lock memory for the waveform data.
   if (!SetSize(dataSize)) {
