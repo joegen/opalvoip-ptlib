@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.cxx,v 1.18 1997/07/08 13:11:44 robertj Exp $
+ * $Id: httpsvc.cxx,v 1.19 1997/07/26 11:38:22 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.19  1997/07/26 11:38:22  robertj
+ * Support for overridable pages in HTTP service applications.
+ *
  * Revision 1.18  1997/07/08 13:11:44  robertj
  * Added standard header and copyright macros to service HTML.
  *
@@ -323,6 +326,18 @@ PConfigPage::PConfigPage(PHTTPServiceProcess & app,
 }
 
 
+void PConfigPage::OnLoadedText(PHTTPRequest & request, PString & text)
+{
+  PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
+  PFile file;
+  if (file.Open(filePath, PFile::ReadOnly)) {
+    text = file.ReadString(file.GetLength());
+    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+  }
+  PHTTPConfig::OnLoadedText(request, text);
+}
+
+
 BOOL PConfigPage::OnPOST(PHTTPServer & server,
                          const PURL & url,
                          const PMIMEInfo & info,
@@ -347,7 +362,70 @@ BOOL PConfigPage::Post(PHTTPRequest & request,
 
 BOOL PConfigPage::GetExpirationDate(PTime & when)
 {
-  when = PTime();  // Now
+  // As early as possible, but because of time zones & daylight time make it the
+  // second day...
+  when = PTime(90000);
+  return TRUE;
+}
+
+
+//////////////////////////////////////////////////////////////
+
+PConfigSectionsPage::PConfigSectionsPage(PHTTPServiceProcess & app,
+                                         const PURL & url,
+                                         const PHTTPAuthority & auth,
+                                         const PString & prefix,
+                                         const PString & valueName,
+                                         const PURL & editSection,
+                                         const PURL & newSection,
+                                         const PString & newTitle,
+                                         PHTML & heading)
+  : PHTTPConfigSectionList(url, auth, prefix, valueName,
+                           editSection, newSection, newTitle, heading),
+    process(app)
+{
+}
+
+
+void PConfigSectionsPage::OnLoadedText(PHTTPRequest & request, PString & text)
+{
+  PString filePath = baseURL.AsString(PURL::PathOnly).Mid(1);
+  PFile file;
+  if (file.Open(filePath, PFile::ReadOnly)) {
+    text = file.ReadString(file.GetLength());
+    PServiceHTML::ProcessMacros(text, baseURL.AsString(PURL::PathOnly), TRUE);
+  }
+  PHTTPConfigSectionList::OnLoadedText(request, text);
+}
+
+
+BOOL PConfigSectionsPage::OnPOST(PHTTPServer & server,
+                                 const PURL & url,
+                                 const PMIMEInfo & info,
+                                 const PStringToString & data,
+                                 const PHTTPConnectionInfo & connectInfo)
+{
+  PHTTPConfigSectionList::OnPOST(server, url, info, data, connectInfo);
+  return FALSE;    // Make sure we break any persistent connections
+}
+
+
+BOOL PConfigSectionsPage::Post(PHTTPRequest & request,
+                               const PStringToString & data,
+                               PHTML & reply)
+{
+  BOOL retval = PHTTPConfigSectionList::Post(request, data, reply);
+  if (request.code == PHTTP::OK)
+    process.BeginRestartSystem();
+  return retval;
+}
+
+
+BOOL PConfigSectionsPage::GetExpirationDate(PTime & when)
+{
+  // As early as possible, but because of time zones & daylight time make it the
+  // second day...
+  when = PTime(90000);
   return TRUE;
 }
 
