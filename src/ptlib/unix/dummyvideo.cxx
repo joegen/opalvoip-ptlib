@@ -24,6 +24,9 @@
  * Contributor(s): Roger Hardiman <roger@freebsd.org>
  *
  * $Log: dummyvideo.cxx,v $
+ * Revision 1.8  2004/01/02 23:30:18  rjongbloed
+ * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
+ *
  * Revision 1.7  2002/04/10 08:40:36  rogerh
  * Simplify the SetVideoChannelFormat() code. Use the implementation in the
  * ancestor class.
@@ -100,14 +103,6 @@ BOOL PVideoInputDevice::Stop()
 BOOL PVideoInputDevice::IsCapturing()
 {
   return FALSE;
-}
-
-
-PStringList PVideoInputDevice::GetInputDeviceNames()
-{
-  PStringList list;
-
-  return list;
 }
 
 

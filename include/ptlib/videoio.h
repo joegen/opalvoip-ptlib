@@ -24,6 +24,9 @@
  * Contributor(s): Mark Cooke (mpc@star.sr.bham.ac.uk)
  *
  * $Log: videoio.h,v $
+ * Revision 1.38  2004/01/02 23:30:18  rjongbloed
+ * Removed extraneous static function for getting input device names that has been deprecated during the plug ins addition.
+ *
  * Revision 1.37  2003/12/14 10:01:02  rjongbloed
  * Resolved issue with name space conflict os static and virtual forms of GetDeviceNames() function.
  *
@@ -848,10 +851,6 @@ class PVideoInputDevice : public PVideoDevice
     /**Determine if the video device I/O capture is in progress.
       */
     virtual BOOL IsCapturing() = 0;
-
-    /**Get a list of all of the drivers available.
-      */
-    static PStringList GetInputDeviceNames();
 
     /**Get the maximum frame size in bytes.
 
