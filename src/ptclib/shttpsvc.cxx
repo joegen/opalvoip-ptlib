@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: shttpsvc.cxx,v $
+ * Revision 1.2  2001/03/27 03:55:48  craigs
+ * Added hack to allow secure servers to act as non-secure servers
+ *
  * Revision 1.1  2001/02/15 02:41:14  robertj
  * Added class to do secure HTTP based service process.
  *
@@ -32,9 +35,11 @@
 #include <ptlib.h>
 #include <ptclib/shttpsvc.h>
 
-
 #define new PNEW
 
+#ifdef _DEBUG
+BOOL PSecureHTTPServiceProcess::secureServerHack = FALSE;
+#endif
 
 PSecureHTTPServiceProcess::PSecureHTTPServiceProcess(const Info & inf)
   : PHTTPServiceProcess(inf)
@@ -51,6 +56,11 @@ PSecureHTTPServiceProcess::~PSecureHTTPServiceProcess()
 
 PHTTPServer * PSecureHTTPServiceProcess::CreateHTTPServer(PTCPSocket & socket)
 {
+#ifdef _DEBUG
+  if (secureServerHack)
+    return PHTTPServiceProcess::CreateHTTPServer(socket);
+#endif
+
   PSSLChannel * ssl = new PSSLChannel(sslContext);
 
   if (!ssl->Accept(socket)) {
