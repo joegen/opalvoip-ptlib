@@ -158,6 +158,10 @@ SOURCE=.\win32.cxx
 # End Source File
 # Begin Source File
 
+SOURCE=.\wincfg.cxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\winserial.cxx
 # End Source File
 # Begin Source File
