@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: pssl.h,v $
+ * Revision 1.11  2001/05/16 06:02:05  craigs
+ * Changed to allow detection of non-SSL connection to SecureHTTPServiceProcess
+ *
  * Revision 1.10  2000/11/14 08:33:16  robertj
  * Added certificate and private key classes.
  *
@@ -344,6 +347,14 @@ class PSSLChannel : public PIndirectChannel
 
     PSSLContext * GetContext() const { return context; }
 
+    /**This callback is executed when the SSL read function requires data.
+       Normally, it just calls read on the underlying channel but it can be
+       used to intercept data when requred
+
+       @return
+       Returns TRUE if data is available.
+     */
+    virtual BOOL RawSSLRead(PChannel * chan, void * buf, PINDEX & len);
 
   protected:
     /**This callback is executed when the Open() function is called with
