@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile.in,v $
+# Revision 1.17  2004/02/01 12:12:37  dsandras
+# Fixed default target to optshared.
+#
 # Revision 1.16  2004/02/01 11:46:39  dsandras
 # Set default target to "optshared".
 #
@@ -169,7 +172,9 @@ exec_prefix = ${PREFIX}
 LIBDIR=@LIBDIR@
 export PWLIBDIR=@PWLIBDIR@
 
-all :: optshared
+default :: optshared
+
+all :: 
 
 TARGETDIR=@TARGETDIR@
 
