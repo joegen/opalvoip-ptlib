@@ -1,11 +1,14 @@
 /*
- * $Id: httpsvc.h,v 1.16 1997/10/30 10:22:35 robertj Exp $
+ * $Id: httpsvc.h,v 1.17 1997/11/04 06:02:56 robertj Exp $
  *
  * Common classes for service applications using HTTP as the user interface.
  *
  * Copyright 1995-1996 Equivalence
  *
  * $Log: httpsvc.h,v $
+ * Revision 1.17  1997/11/04 06:02:56  robertj
+ * Allowed help gif file name to overridable in PServiceHTML, so can be in subdirectory.
+ *
  * Revision 1.16  1997/10/30 10:22:35  robertj
  * Added ability to customise regisration text by application.
  *
@@ -282,7 +285,9 @@ PDECLARE_CLASS(POrderPage, PHTTPString)
 
 PDECLARE_CLASS(PServiceHTML, PHTML)
   public:
-    PServiceHTML(const char * title, const char * help = NULL);
+    PServiceHTML(const char * title,
+                 const char * help = NULL,
+                 const char * helpGif = "help.gif");
 
     PString ExtractSignature(PString & out);
     static PString ExtractSignature(const PString & html,
