@@ -4,7 +4,6 @@
 
 #include <ptlib.h>
 #include <ptlib/videoio.h>
-#include <ptlib/vfakeio.h>
 #include <ptlib/vconvert.h>
 
 #include <linux/videodev.h>
