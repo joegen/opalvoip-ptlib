@@ -1,5 +1,5 @@
 /*
- * $Id: timeint.h,v 1.3 1993/08/27 18:17:47 robertj Exp $
+ * $Id: timeint.h,v 1.4 1993/08/31 03:38:02 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: timeint.h,v $
- * Revision 1.3  1993/08/27 18:17:47  robertj
+ * Revision 1.4  1993/08/31 03:38:02  robertj
+ * Added copy constructor and assignement oeprator due to G++ strangeness.
+ *
+ * Revision 1.3  1993/08/27  18:17:47  robertj
  * Added function to set the interval of a PTieInterval object.
  * Used a common type for number of milliseconds.
  *
@@ -28,6 +31,11 @@ DECLARE_CLASS(PTimeInterval,PObject)
   public:
     PTimeInterval(long milliseconds = 0,
                 int seconds = 0, int minutes = 0, int hours = 0, int days = 0);
+      // Make a new time interval object
+
+    PTimeInterval(const PTimeInterval & ti);
+    PTimeInterval & operator=(const PTimeInterval & ti);
+      // Make a copy of the time interval object
 
     // Overrides from class PObject
     PObject * Clone() const;
