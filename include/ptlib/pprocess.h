@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.18 1996/01/02 11:57:17 robertj Exp $
+ * $Id: pprocess.h,v 1.19 1996/02/03 11:54:09 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
+ * Revision 1.19  1996/02/03 11:54:09  robertj
+ * Added operating system identification functions.
+ *
  * Revision 1.18  1996/01/02 11:57:17  robertj
  * Added thread for timers.
  *
@@ -153,6 +156,31 @@ PDECLARE_CLASS(PProcess, PThread)
        <H2>Returns:</H2>
        pointer to current process instance.
      */
+
+    static PString GetOSClass();
+    /* Get the class of the operating system the process is running on, eg
+       "unix".
+       
+       <H2>Returns:</H2>
+       String for OS class.
+     */
+
+    static PString GetOSName();
+    /* Get the class of the operating system the process is running on, eg
+       "linux".
+       
+       <H2>Returns:</H2>
+       String for OS name.
+     */
+
+    static PString GetOSVersion();
+    /* Get the version of the operating system the process is running on, eg
+       "v1.3pl1".
+       
+       <H2>Returns:</H2>
+       String for OS version.
+     */
+
 
     virtual void Terminate();
     /* Terminate the process. Usually only used in abnormal abort situation.
