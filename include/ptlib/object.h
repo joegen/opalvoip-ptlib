@@ -1,5 +1,5 @@
 /*
- * $Id: object.h,v 1.21 1996/05/09 12:14:48 robertj Exp $
+ * $Id: object.h,v 1.22 1996/07/15 10:27:51 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: object.h,v $
+ * Revision 1.22  1996/07/15 10:27:51  robertj
+ * Changed endian classes to be memory mapped.
+ *
  * Revision 1.21  1996/05/09 12:14:48  robertj
  * Fixed up 64 bit integer class for Mac platform.
  *
@@ -418,14 +421,8 @@ class PStandardType
 {
   public:
     PStandardType(
-      char c = '\0'   // Value to initialise data in platform dependent form.
-    ) : data(c) { }
-    PStandardType(
-      istream & stream // Stream to get data in platform independent form.
-    ) { Get(stream); }
-    PStandardType(
-      PConstMemoryPointer & mem // Memory to get data in platform independent form.
-    ) { Get(mem); }
+      type newVal   // Value to initialise data in platform dependent form.
+    ) { data = newVal; }
     /* Create a new instance of the platform independent type using platform
        dependent data, or platform independent streams.
      */
@@ -437,35 +434,22 @@ class PStandardType
        data for instance.
      */
 
-    BOOL Get(
-      istream & stream // Stream to get data in platform independent form.
-    );
-    void Get(
-      PConstMemoryPointer & mem // Memory to get data in platform independent form.
-    );
-    /* Get the platform dependent value from the platform independent value
-       next in the stream or pointed to in memory. The stream or memory pointer
-       is automatically moved the correct platform independent amount to assure
-       correct structure packing.
+    friend ostream & operator<<(ostream & strm, const PStandardType & val)
+      { return strm << (type)val; }
+    /* Output the platform dependent value for the type to the stream.
 
        <H2>Returns:</H2>
-       TRUE if data was successfully translated.
+       the stream output was made to.
      */
 
-    BOOL Put(
-      ostream & stream // Stream to put data in platform independent form.
-    ) const;
-    void Put(
-      PMemoryPointer & mem // Memory to put data in platform independent form.
-    ) const;
-    /* Put the platform dependent value to the platform independent value
-       next in the stream or pointed to in memory. The stream or memory pointer
-       is automatically moved the correct platform independent amount to assure
-       correct structure packing.
+    friend istream & operator>>(istream & strm, PStandardType & val)
+      { type data; strm >> data; val = PStandardType(data); return strm; }
+    /* Input the platform dependent value for the type from the stream.
 
        <H2>Returns:</H2>
-       TRUE if data was successfully translated.
+       the stream input was made from.
      */
+
 
   private:
     type data;
@@ -473,185 +457,153 @@ class PStandardType
 #endif
 
 
-#define PI_TYPE(name, type) \
+#define PI_SAME(name, type) \
   struct name { \
     name() { } \
-    name(type value) : data(value) { } \
-    name(istream & stream) { Get(stream); } \
-    name(const BYTE ** mem) { Get(mem); } \
+    name(type value) { data = value; } \
+    name(const name & value) { data = value.data; } \
+    name & operator =(type value) { data = value; return *this; } \
+    name & operator =(const name & value) { data = value.data; return *this; } \
     operator type() const { return data; } \
-    operator type &() { return data; } \
-    inline void Get(istream & stream); \
-    inline void Get(const BYTE ** mem); \
-    inline void Put(ostream & stream) const; \
-    inline void Put(BYTE ** mem) const; \
-    friend ostream & operator<<(ostream & s, const name & v) { v.Put(s); return s; } \
-    friend istream & operator>>(istream & s, name & v) { v.Get(s); return s; } \
+    friend ostream & operator<<(ostream & s, const name & v) { return s << v.data; } \
+    friend istream & operator>>(istream & s, name & v) { return s >> v.data; } \
     private: type data; \
   }
 
-#define PI_SAME(name, type) \
-  inline void name::Get(istream & stream) \
-    { stream.read((char *)&data, sizeof(type)); } \
-  inline void name::Get(const BYTE ** mem) \
-    { data = *(type *)*mem; *mem += sizeof(type); } \
-  inline void name::Put(ostream & stream) const \
-    { stream.write((char *)&data, sizeof(type)); } \
-  inline void name::Put(BYTE ** mem) const \
-    { *(type *)*mem = data; *mem += sizeof(type); }
-
-#define PI_LOOP(type) \
-    BYTE * bytes = ((BYTE *)&data)+sizeof(type); while (bytes != (BYTE *)&data)
+#define PI_LOOP(src, dst) \
+    BYTE *s = ((BYTE *)&src)+sizeof(src); BYTE *d = (BYTE *)&dst; \
+    while (s != (BYTE *)&src) *d++ = *--s;
 
 #define PI_DIFF(name, type) \
-  inline void name::Get(istream & stream) \
-    { PI_LOOP(type) stream.get(*--bytes); } \
-  inline void name::Get(const BYTE ** mem) \
-    { PI_LOOP(type) *--bytes = *(*mem)++; } \
-  inline void name::Put(ostream & stream) const \
-    { PI_LOOP(type) stream.put(*--bytes); } \
-  inline void name::Put(BYTE ** mem) const \
-    { PI_LOOP(type) *(*mem)++ = *--bytes; }
+  struct name { \
+    name() { } \
+    name(type value) { operator=(value); } \
+    name(const name & value) { data = value.data; } \
+    name & operator =(type value) { PI_LOOP(value, data); return *this; } \
+    name & operator =(const name & value) { data = value.data; return *this; } \
+    operator type() const { type value; PI_LOOP(data, value); return value; } \
+    friend ostream & operator<<(ostream & s, const name & value) { return s << (type)value; } \
+    friend istream & operator>>(istream & s, name & v) { type val; s >> val; v = val; return s; } \
+    private: type data; \
+  }
 
-
-PI_TYPE(PChar8, char);
 #if PCHAR8==PANSI_CHAR
-PI_SAME(PChar8, char)
+PI_SAME(PChar8, char);
 #endif
 
-PI_TYPE(PInt8, signed char);
-PI_SAME(PInt8, signed char)
+PI_SAME(PInt8, signed char);
 
-PI_TYPE(PUInt8, unsigned char);
-PI_SAME(PUInt8, unsigned char)
+PI_SAME(PUInt8, unsigned char);
 
-PI_TYPE(PInt16l, PInt16);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt16l, PInt16)
+PI_SAME(PInt16l, PInt16);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt16l, PInt16)
+PI_DIFF(PInt16l, PInt16);
 #endif
 
-PI_TYPE(PInt16b, PInt16);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt16b, PInt16)
+PI_DIFF(PInt16b, PInt16);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt16b, PInt16)
+PI_SAME(PInt16b, PInt16);
 #endif
 
-PI_TYPE(PUInt16l, WORD);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt16l, WORD)
+PI_SAME(PUInt16l, WORD);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt16l, WORD)
+PI_DIFF(PUInt16l, WORD);
 #endif
 
-PI_TYPE(PUInt16b, WORD);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt16b, WORD)
+PI_DIFF(PUInt16b, WORD);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt16b, WORD)
+PI_SAME(PUInt16b, WORD);
 #endif
 
-PI_TYPE(PInt32l, PInt32);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt32l, PInt32)
+PI_SAME(PInt32l, PInt32);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt32l, PInt32)
+PI_DIFF(PInt32l, PInt32);
 #endif
 
-PI_TYPE(PInt32b, PInt32);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt32b, PInt32)
+PI_DIFF(PInt32b, PInt32);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt32b, PInt32)
+PI_SAME(PInt32b, PInt32);
 #endif
 
-PI_TYPE(PUInt32l, DWORD);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt32l, DWORD)
+PI_SAME(PUInt32l, DWORD);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt32l, DWORD)
+PI_DIFF(PUInt32l, DWORD);
 #endif
 
-PI_TYPE(PUInt32b, DWORD);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt32b, DWORD)
+PI_DIFF(PUInt32b, DWORD);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt32b, DWORD)
+PI_SAME(PUInt32b, DWORD);
 #endif
 
-PI_TYPE(PInt64l, PInt64);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PInt64l, PInt64)
+PI_SAME(PInt64l, PInt64);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PInt64l, PInt64)
+PI_DIFF(PInt64l, PInt64);
 #endif
 
-PI_TYPE(PInt64b, PInt64);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PInt64b, PInt64)
+PI_DIFF(PInt64b, PInt64);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PInt64b, PInt64)
+PI_SAME(PInt64b, PInt64);
 #endif
 
-PI_TYPE(PUInt64l, PUInt64);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PUInt64l, PUInt64)
+PI_SAME(PUInt64l, PUInt64);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PUInt64l, PUInt64)
+PI_DIFF(PUInt64l, PUInt64);
 #endif
 
-PI_TYPE(PUInt64b, PUInt64);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PUInt64b, PUInt64)
+PI_DIFF(PUInt64b, PUInt64);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PUInt64b, PUInt64)
+PI_SAME(PUInt64b, PUInt64);
 #endif
 
-PI_TYPE(PFloat32l, float);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat32l, float)
+PI_SAME(PFloat32l, float);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat32l, float)
+PI_DIFF(PFloat32l, float);
 #endif
 
-PI_TYPE(PFloat32b, float);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat32b, float)
+PI_DIFF(PFloat32b, float);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat32b, float)
+PI_SAME(PFloat32b, float);
 #endif
 
-PI_TYPE(PFloat64l, double);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat64l, double)
+PI_SAME(PFloat64l, double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat64l, double)
+PI_DIFF(PFloat64l, double);
 #endif
 
-PI_TYPE(PFloat64b, double);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat64b, double)
+PI_DIFF(PFloat64b, double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat64b, double)
+PI_SAME(PFloat64b, double);
 #endif
 
-PI_TYPE(PFloat80l, long double);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_SAME(PFloat80l, long double)
+PI_SAME(PFloat80l, long double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_DIFF(PFloat80l, long double)
+PI_DIFF(PFloat80l, long double);
 #endif
 
-PI_TYPE(PFloat80b, long double);
 #if PBYTE_ORDER==PLITTLE_ENDIAN
-PI_DIFF(PFloat80b, long double)
+PI_DIFF(PFloat80b, long double);
 #elif PBYTE_ORDER==PBIG_ENDIAN
-PI_SAME(PFloat80b, long double)
+PI_SAME(PFloat80b, long double);
 #endif
 
-#undef PI_TYPE
+#undef PI_LOOP
 #undef PI_SAME
 #undef PI_DIFF
 
