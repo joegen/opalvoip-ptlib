@@ -1,5 +1,5 @@
 /*
- * $Id: osutils.cxx,v 1.90 1998/02/05 13:33:12 robertj Exp $
+ * $Id: osutils.cxx,v 1.91 1998/03/20 03:18:17 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1993 Equivalence
  *
  * $Log: osutils.cxx,v $
+ * Revision 1.91  1998/03/20 03:18:17  robertj
+ * Added special classes for specific sepahores, PMutex and PSyncPoint.
+ *
  * Revision 1.90  1998/02/05 13:33:12  robertj
  * Fixed close of non-autodelete PIndirectChannels
  *
@@ -1950,6 +1953,18 @@ void PSemaphore::Signal()
 BOOL PSemaphore::WillBlock() const
 {
   return currentCount == 0;
+}
+
+
+PMutex::PMutex()
+  : PSemaphore(1, 1)
+{
+}
+
+
+PSyncPoint::PSyncPoint()
+  : PSemaphore(0, 1)
+{
 }
 
 
