@@ -27,6 +27,10 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: contain.cxx,v $
+ * Revision 1.126  2002/11/26 01:08:33  robertj
+ * Fixed problem when using pre-initialised PStringStream greater than 255
+ *   bytes, would truncate and lose trailing null. Reported by Thien Nguyen
+ *
  * Revision 1.125  2002/11/12 09:18:03  robertj
  * Added PString::NumCompare() as functional equivalent of strncmp().
  * Added PSortedStringList::GetNextStringsIndex() to do searches of binary
@@ -2348,7 +2352,7 @@ PStringStream::Buffer::Buffer(PStringStream & str, PINDEX size)
   : string(str),
     fixedBufferSize(size != 0)
 {
-  string.SetSize(size != 0 ? size : 256);
+  string.SetMinSize(size != 0 ? size : 256);
   sync();
 }
 
