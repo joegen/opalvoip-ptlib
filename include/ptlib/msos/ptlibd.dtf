@@ -1706,6 +1706,7 @@ EXPORTS
     ?GetOptionString@PArgList@@QBE?AVPString@@PBD0@Z @1551 NONAME ;public: class PString  __thiscall PArgList::GetOptionString(char const *,char const *)const 
     ?GetOptionStringByIndex@PArgList@@ABE?AVPString@@HPBD@Z @1552 NONAME ;private: class PString  __thiscall PArgList::GetOptionStringByIndex(int,char const *)const 
     ?GetOSClass@PProcess@@SA?AVPString@@XZ @1553 NONAME ;public: static class PString  __cdecl PProcess::GetOSClass(void)
+    ?GetOSHardware@PProcess@@SA?AVPString@@XZ @2544 NONAME ;public: static class PString  __cdecl PProcess::GetOSHardware(void)
     ?GetOSName@PProcess@@SA?AVPString@@XZ @1554 NONAME ;public: static class PString  __cdecl PProcess::GetOSName(void)
     ?GetOSVersion@PProcess@@SA?AVPString@@XZ @1555 NONAME ;public: static class PString  __cdecl PProcess::GetOSVersion(void)
     ?GetOutputFlowControl@PSerialChannel@@QBE?AW4FlowControl@1@XZ @1556 NONAME ;public: enum PSerialChannel::FlowControl  __thiscall PSerialChannel::GetOutputFlowControl(void)const 
