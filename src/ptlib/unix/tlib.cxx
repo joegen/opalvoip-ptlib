@@ -8,6 +8,9 @@
  * Copyright 1993 by Robert Jongbloed and Craig Southeren
  *
  * $Log: tlib.cxx,v $
+ * Revision 1.14  1996/06/10 12:46:53  craigs
+ * Changed process.h include
+ *
  * Revision 1.13  1996/05/25 06:06:33  craigs
  * Sun4 fixes and updated for gcc 2.7.2
  *
@@ -38,7 +41,7 @@
 #define _OSUTIL_CXX
 
 #pragma implementation "args.h"
-#pragma implementation "process.h"
+#pragma implementation "pprocess.h"
 #pragma implementation "thread.h"
 #pragma implementation "dynalink.h"
 #pragma implementation "semaphor.h"
