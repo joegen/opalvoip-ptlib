@@ -1,5 +1,5 @@
 /*
- * $Id: collect.cxx,v 1.4 1994/07/17 10:46:06 robertj Exp $
+ * $Id: collect.cxx,v 1.5 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: collect.cxx,v $
- * Revision 1.4  1994/07/17 10:46:06  robertj
+ * Revision 1.5  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.4  1994/07/17  10:46:06  robertj
  * Fixed searching in sorted lists.
  *
  * Revision 1.3  1994/07/02  03:03:49  robertj
@@ -923,7 +926,7 @@ void PSortedListElement::DeleteSubTrees(BOOL deleteObject)
 
 PObject * PScalarKey::Clone() const
 {
-  return new PScalarKey(theKey);
+  return PNEW PScalarKey(theKey);
 }
 
 
@@ -1135,7 +1138,7 @@ BOOL PInternalHashTable::EnumerateElements(
 ///////////////////////////////////////////////////////////////////////////////
 
 PHashTable::PHashTable()
-  : hashTable(new PInternalHashTable)
+  : hashTable(PNEW PInternalHashTable)
 {
   PAssertNULL(hashTable);
   hashTable->lastElement = NULL;

@@ -1,5 +1,5 @@
 /*
- * $Id: ptime.h,v 1.7 1994/06/25 11:55:15 robertj Exp $
+ * $Id: ptime.h,v 1.8 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: ptime.h,v $
- * Revision 1.7  1994/06/25 11:55:15  robertj
+ * Revision 1.8  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.7  1994/06/25  11:55:15  robertj
  * Unix version synchronisation.
  *
  * Revision 1.6  1994/01/13  03:16:09  robertj
@@ -116,6 +119,7 @@ PDECLARE_CLASS(PTime, PObject)
       // Return the time as a string in one of the standard formats
 
     PString AsString(const char * format) const;
+    PString AsString(const PString & format) const;
       // Return the time as a string using the string as a format template.
       //    h         hour without leading zero
       //    hh        hour with leading zero

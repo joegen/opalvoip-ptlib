@@ -1,5 +1,5 @@
 /*
- * $Id: pprocess.h,v 1.4 1994/07/21 12:33:49 robertj Exp $
+ * $Id: pprocess.h,v 1.5 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: pprocess.h,v $
- * Revision 1.4  1994/07/21 12:33:49  robertj
+ * Revision 1.5  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.4  1994/07/21  12:33:49  robertj
  * Moved cooperative threads to common.
  *
  * Revision 1.3  1994/06/25  11:55:15  robertj
@@ -32,8 +35,6 @@ PDECLARE_CLASS(PProcess, PThread)
     PProcess();
       // Create a new process instance.
 
-    ~PProcess();
-      // Destroy the process.
 
     // Overrides from class PObject
     Comparison Compare(const PObject & obj) const;

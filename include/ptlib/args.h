@@ -1,5 +1,5 @@
 /*
- * $Id: args.h,v 1.2 1994/07/17 10:46:06 robertj Exp $
+ * $Id: args.h,v 1.3 1994/07/27 05:58:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,7 +8,10 @@
  * Copyright 1993 Equivalence
  *
  * $Log: args.h,v $
- * Revision 1.2  1994/07/17 10:46:06  robertj
+ * Revision 1.3  1994/07/27 05:58:07  robertj
+ * Synchronisation.
+ *
+ * Revision 1.2  1994/07/17  10:46:06  robertj
  * Changed to use container classes to plug memory leak.
  *
  * Revision 1.1  1994/04/01  14:08:52  robertj
@@ -23,12 +26,14 @@ PCLASS PArgList {
   public:
     PArgList();
     PArgList(int theArgc, char ** theArgv, const char * argumentSpec = NULL);
+    PArgList(int theArgc, char ** theArgv, const PString & argumentSpec);
       // Create an argument list object
 
     void SetArgs(int argc, char ** argv);
       // Set the internal arguments list.
 
     void Parse(const char * theArgumentSpec);
+    void Parse(const PString & theArgumentSpec);
       // Parse the standard C program arguments into an argument list
 
     PINDEX GetOptionCount(char option) const;
