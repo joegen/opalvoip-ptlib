@@ -9,7 +9,7 @@ class MyConcreteClass : public MyAbstractClass
     { return "Concrete"; }
 };
 
-PAbstractFactory<MyAbstractClass, MyConcreteClass> concreteFactory("concrete");
+PFactory<MyAbstractClass>::Worker<MyConcreteClass> concreteFactory("concrete", false);
 
 class MyConcrete2Class : public MyAbstractClass
 {
@@ -18,4 +18,4 @@ class MyConcrete2Class : public MyAbstractClass
     { return "Concrete2"; }
 };
 
-PAbstractFactory<MyAbstractClass, MyConcrete2Class> concrete2Factory("concrete2");
+PFactory<MyAbstractClass>::Worker<MyConcrete2Class> concrete2Factory("concrete2", false);
