@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sound.h,v $
+ * Revision 1.17  2001/02/07 03:33:43  craigs
+ * Added functions to get sound channel parameters
+ *
  * Revision 1.16  2000/03/04 10:15:32  robertj
  * Added simple play functions for sound files.
  *
@@ -343,6 +346,14 @@ class PSoundChannel : public PChannel
       unsigned bitsPerSample = 16   /// Number of bits per sample
     );
 
+    /// Get  the number of channels (mono/stereo) in the sound.
+    unsigned GetChannels()   const;
+
+    /// Get the sample rate in samples per second.
+    unsigned GetSampleRate() const;
+
+    /// Get the sample size in bits per sample.
+    unsigned GetSampleSize() const;
 
     /**Set the internal buffers for the sound channel I/O.
 
