@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: vfw.cxx,v $
+ * Revision 1.11  2001/03/08 22:57:15  robertj
+ * Added new VerifyHardwareFrameSize() function
+ *
  * Revision 1.10  2001/03/08 02:18:45  robertj
  * Added improved defaulting of video formats so Open() does not fail.
  * Removed the requirement that the device be open before you can set
@@ -341,6 +344,12 @@ BOOL PVideoInputDevice::SetFrameSize(unsigned width, unsigned height)
   if (running)
     return Start();
 
+  return TRUE;
+}
+
+
+BOOL PVideoInputDevice::VerifyHardwareFrameSize(unsigned width, unsigned height)
+{
   return TRUE;
 }
 
