@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: serchan.cxx,v $
+ * Revision 1.14  2000/06/21 01:01:22  robertj
+ * AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+ *
  * Revision 1.13  2000/04/09 18:19:23  rogerh
  * Add my changes for NetBSD support.
  *
@@ -67,6 +70,9 @@
 #elif defined(P_SUN4)
 #include <sys/termio.h>
 extern "C" int ioctl(int, int, void *);
+
+#elif defined (P_AIX)
+#include <sys/termio.h>
 #endif
 
 //#define BINARY_LOCK	1

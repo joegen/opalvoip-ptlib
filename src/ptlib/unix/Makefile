@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.60  2000/06/21 01:01:22  robertj
+# AIX port, thanks Wolfgang Platzer (wolfgang.platzer@infonova.at).
+#
 # Revision 1.59  2000/04/26 00:40:48  robertj
 # Redesigned version number system to have single file to change on releases.
 #
@@ -245,6 +248,10 @@ endif
 
 ifeq ($(OSTYPE),NetBSD)
 SOUND_SOURCE = oss.cxx
+endif
+
+ifeq ($(OSTYPE),AIX)
+SOUND_SOURCE = ossaix.cxx
 endif
 
 ifeq ($(OSTYPE),beos)
