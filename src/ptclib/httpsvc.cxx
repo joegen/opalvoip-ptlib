@@ -24,6 +24,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: httpsvc.cxx,v $
+ * Revision 1.90  2003/09/17 09:02:13  csoutheren
+ * Removed memory leak detection code
+ *
  * Revision 1.89  2003/02/19 07:23:45  robertj
  * Changes to allow for single threaded HTTP service processes.
  *
@@ -1774,39 +1777,6 @@ PCREATE_SERVICE_MACRO(SignedInclude,P_EMPTY,args)
 
   return text;
 }
-
-
-#if PMEMORY_CHECK
-
-PCREATE_SERVICE_MACRO(HeapStatistics,P_EMPTY,P_EMPTY)
-{
-  BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-  PStringStream str(5000);
-  PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
-  PMemoryHeap::DumpStatistics(str);
-  return str;
-}
-
-
-PCREATE_SERVICE_MACRO(HeapDump,request,P_EMPTY)
-{
-  static DWORD lastObjectNumber = 0;
-  DWORD objectNumber = lastObjectNumber;
-  PStringToString vars = request.url.GetQueryVars();
-  if (vars.Contains("object"))
-    objectNumber = vars["object"].AsUnsigned();
-
-  BOOL oldIgnoreAllocations = PMemoryHeap::SetIgnoreAllocations(TRUE);
-  PStringStream str(32000);
-  str << "Dumping objects from #" << objectNumber << '\n';
-  PMemoryHeap::SetIgnoreAllocations(oldIgnoreAllocations);
-  PMemoryHeap::DumpObjectsSince(objectNumber, str);
-  lastObjectNumber = PMemoryHeap::GetAllocationRequest();
-  return str;
-}
-
-#endif
-
 
 PCREATE_SERVICE_MACRO_BLOCK(IfQuery,request,args,block)
 {
