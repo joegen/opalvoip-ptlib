@@ -27,6 +27,9 @@
 # Contributor(s): ______________________________________.
 #
 # $Log: Makefile,v $
+# Revision 1.58  2000/04/19 00:13:52  robertj
+# BeOS port changes.
+#
 # Revision 1.57  2000/04/09 18:19:23  rogerh
 # Add my changes for NetBSD support.
 #
@@ -249,8 +252,7 @@ SOUND_SOURCE = beaudio.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundInput.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundConsumer.cxx \
 	$(BEAUDIO_SRC_DIR)/SoundUtils.cxx \
-	$(BEAUDIO_SRC_DIR)/Resampler.cxx \
-	$(BEAUDIO_SRC_DIR)/resample.c
+	$(BEAUDIO_SRC_DIR)/BlockFIFO.cxx
 endif
 
 GETDATE_SOURCE = $(COMMON_SRC_DIR)/getdate.tab.c

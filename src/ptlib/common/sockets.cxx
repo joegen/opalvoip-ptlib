@@ -27,6 +27,9 @@
  * Contributor(s): ______________________________________.
  *
  * $Log: sockets.cxx,v $
+ * Revision 1.99  2000/04/19 00:13:52  robertj
+ * BeOS port changes.
+ *
  * Revision 1.98  2000/02/18 09:55:21  robertj
  * Added parameter so get/setsockopt can have other levels to SOL_SOCKET.
  *
@@ -1356,9 +1359,13 @@ PIPSocket::Address & PIPSocket::Address::operator=(const Address & addr)
 
 PIPSocket::Address & PIPSocket::Address::operator=(const PString & dotNotation)
 {
-  s_addr = inet_addr((const char *)dotNotation);
-  if (s_addr == (DWORD)INADDR_NONE)
+  if (strspn(dotNotation, "0123456789.") != dotNotation.GetLength())
     s_addr = 0;
+  else {
+    s_addr = inet_addr((const char *)dotNotation);
+    if (s_addr == (DWORD)INADDR_NONE)
+      s_addr = 0;
+  }
   return *this;
 }
 

@@ -24,9 +24,12 @@
  * Portions are Copyright (C) 1993 Free Software Foundation, Inc.
  * All Rights Reserved.
  *
- * Contributor(s): Yuri Kiryanov (yk@altavista.net)
+ * Contributor(s): Yuri Kiryanov (openh323@kiryanov.com)
  *
  * $Log: beaudio.cxx,v $
+ * Revision 1.5  2000/04/19 00:13:52  robertj
+ * BeOS port changes.
+ *
  * Revision 1.4  1999/09/21 00:56:29  robertj
  * Added more sound support for BeOS (thanks again Yuri!)
  *
@@ -45,14 +48,21 @@
 
 #include <ptlib.h>
 
-// Storage kit used
+// Storage kit bits
+#include <storage/Entry.h>
 #include <storage/File.h>
 
-// Streaming sound player
-#include "beaudio/SoundPlayer.h"
+// Medis kit bits
+#include <media/MediaDefs.h>
+#include <media/MediaFile.h>
+#include <media/MediaTrack.h>
 
-// Audio input consumer
+// Game kit bits
+#include <game/GameSoundDefs.h>
+
+// Homegrown bits
 #include "beaudio/SoundInput.h"
+#include "beaudio/SoundPlayer.h"
 
 // Format convertors
 #define FORMATFROMBITSPERSAMPLE(bps) (uint32) ( \
@@ -60,15 +70,11 @@
 		(bps) == 8*sizeof(short) ? gs_audio_format::B_GS_S16 : \
 		(bps) == 8*sizeof(int) ? gs_audio_format::B_GS_S32 : \
 		(bps) == 0 ? gs_audio_format::B_GS_F : gs_audio_format::B_GS_U8 )
-
 #define BITSPERSAMPLEFROMFORMAT(fmt) (unsigned) ( (fmt & 0xf)*8 )
 #define DEFAULTSAMPLESIZE BITSPERSAMPLEFROMFORMAT(gs_audio_format::B_GS_U8)
 #define MAX_SOUND_FILE_SIZE (3 * 1024 * 1024)
 
 #define GAMESOUNDFORMAT(ps) (*(gs_audio_format*)(ps)->formatInfo.GetPointer())
-
-static const uint32 g_byteOrder = (B_HOST_IS_BENDIAN) ? B_MEDIA_BIG_ENDIAN : B_MEDIA_LITTLE_ENDIAN;
-static const gs_audio_format g_defaultFmt =  { 44100, 1, 0x11, g_byteOrder, 1024 };
 
 // PSound
 PSound::PSound(unsigned channels,
@@ -210,54 +216,9 @@ BOOL PSound::Save(const PFilePath & filename)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-class PBufferPlayer : public PSoundPlayer
-{
-	gs_audio_format fmt;
-public:
-	PBufferPlayer() : 
-         PSoundPlayer( &fmt, true ), 
-         	fmt(g_defaultFmt)
-	{     	
-    }		
-
-	void SetFormat(unsigned numChannels,
-                   unsigned sampleRate,
-                   unsigned bitsPerSample)
-	{
-		Abort();
-		
-		PAssert(!IsPlaying(), PInvalidParameter);
-		PAssert(bytesPlayed == 0, PInvalidParameter);
-		
-		fmt.frame_rate = 1.0 * sampleRate; 
-		fmt.channel_count =	numChannels; 
-		fmt.format = FORMATFROMBITSPERSAMPLE(bitsPerSample), 
-		fmt.byte_order = g_byteOrder;
-		fmt.buffer_size = 1024;
-		SetParameters(fmt.frame_rate * 0.2, &fmt, 2);
-		
-		stopDelay = 100;
-	}
-
-	void AddBuffer(const void * buf, PINDEX len)
-	{
-		AddSound(new PSound(fmt.channel_count, 
-					fmt.frame_rate, 
-						BITSPERSAMPLEFROMFORMAT(fmt.format), 
-							(PINDEX)len, (BYTE*) buf ));
-		if( !IsPlaying() )
-				StartPlaying();
-	}
-};
-
-// Output
-static PBufferPlayer* g_pSoundOutput = NULL;
-
-// Input
-static PSoundInput* g_pSoundInput = NULL;
-
-PSoundChannel::PSoundChannel()
+PSoundChannel::PSoundChannel() :
+	mpInput(NULL), mpOutput(NULL), 
+	mNumChannels(1), mSampleRate(8000), mBitsPerSample(16)
 {
   Construct();
 }
@@ -267,40 +228,29 @@ PSoundChannel::PSoundChannel(const PString & device,
                              Directions dir,
                              unsigned numChannels,
                              unsigned sampleRate,
-                             unsigned bitsPerSample)
+                             unsigned bitsPerSample) :
+	mpInput(NULL), mpOutput(NULL), 
+	mNumChannels(numChannels), mSampleRate(sampleRate), mBitsPerSample(bitsPerSample)
 {
   Construct();
+  
   Open(device, dir, numChannels, sampleRate, bitsPerSample);
 }
 
 
 void PSoundChannel::Construct()
 {
-	isInitialised = false;
-	
-	if( !g_pSoundOutput )
-		g_pSoundOutput = new PBufferPlayer;
-
-	if( !g_pSoundInput )
-		g_pSoundInput = new PSoundInput(this);
 }
 
 
 PSoundChannel::~PSoundChannel()
 {
-  Close();
-
-   if( g_pSoundInput )
-   {
-		delete g_pSoundInput;
-		g_pSoundInput = NULL;
-   }
-
-   if( g_pSoundOutput )
-   {
-		delete g_pSoundOutput;
-		g_pSoundOutput = NULL;
-   }
+	Close();
+  
+	if( direction == Recorder && mpInput )
+	{
+		PSoundInput::ReleaseSoundInput( mpInput );
+  	}
 }
 
 
@@ -318,7 +268,7 @@ PString PSoundChannel::GetDefaultDevice(Directions /*dir*/)
 }
 
 
-BOOL PSoundChannel::Open(const PString & device,
+BOOL PSoundChannel::Open(const PString & dev,
                          Directions dir,
                          unsigned numChannels,
                          unsigned sampleRate,
@@ -326,20 +276,32 @@ BOOL PSoundChannel::Open(const PString & device,
 {
     Close();
 	
-// 	if( dir == Player )
-//	{
-		PAssertNULL(g_pSoundOutput);
-		
-  		SetFormat(numChannels, sampleRate, bitsPerSample);
-  		g_pSoundOutput->StartPlaying();
-//	}
-//	else
-//	{
-		
-// 	}
+	device = dev;
+	direction = dir;
+	
+  	SetFormat(numChannels, sampleRate, bitsPerSample);
 
-//  return FALSE;
-   return TRUE;
+ 	if( direction == Player )
+	{
+		mpOutput = new PSoundPlayer(device);
+		if( !mpOutput )
+			return FALSE;		
+  		
+  		mpOutput->SetFormat(mNumChannels, mSampleRate, mBitsPerSample);
+   		return 	mpOutput->StartPlayer()? TRUE : FALSE;
+	}
+	else
+ 	if( direction == Recorder )
+	{
+		mpInput = PSoundInput::CreateSoundInput(device);
+
+  		// Can't yet set format for input. Resampler?
+		// Recorder initialised
+  		return ( mpInput && mpInput->StartRecording() ) ? TRUE : FALSE;
+ 	}
+   		
+	// No more channel types 
+   	return FALSE;
 }
 
 
@@ -347,42 +309,104 @@ BOOL PSoundChannel::SetFormat(unsigned numChannels,
                               unsigned sampleRate,
                               unsigned bitsPerSample)
 {
-  PError << "PSoundChannel::SetFormat" <<  endl;
-  
-  Abort();
+	PError << "PSoundChannel::SetFormat: " <<  numChannels << "," << sampleRate << "," << bitsPerSample << endl;
+	
+	PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
+	PAssert(	bitsPerSample == 0 ||
+		bitsPerSample == 8 || 
+		bitsPerSample == 16 ||
+		bitsPerSample == 32, PInvalidParameter);
 
-  PAssert(numChannels >= 1 && numChannels <= 2, PInvalidParameter);
-  PAssert(	bitsPerSample == 0 ||
- 			bitsPerSample == 8 || 
- 			bitsPerSample == 16 ||
- 			bitsPerSample == 32, PInvalidParameter);
-  if( !bitsPerSample )
-  	PError << "\tWarning: sample bits parameter is zero. Float?" << endl;
+	if( !bitsPerSample )
+		PError << "\tWarning: sample bits parameter is zero. Float?" << endl;
+	
+	mNumChannels = numChannels;
+	mSampleRate = sampleRate;
+	mBitsPerSample = bitsPerSample;
+	
+  	if( direction == Player )
+	{
+		if( mpOutput )
+		{
+			mpOutput->SetFormat(mNumChannels, mSampleRate, mBitsPerSample);
+		}
+		
+		return TRUE;
+	}
+	else
+	if( direction == Recorder )
+	{
+		if( mpInput )
+		{
+		}
 
-  PAssertNULL(g_pSoundOutput);
-  g_pSoundOutput->SetFormat(numChannels, sampleRate, bitsPerSample);
-
-  return FALSE;
+		return TRUE;
+	}
+	
+	return FALSE;
 }
 
 BOOL PSoundChannel::Read( void * buf, PINDEX len)
 {
-  return g_pSoundInput->GetBuffer(buf, len);
+  	if( direction == Player )
+	{
+		return FALSE;
+	}
+	else
+	if( direction == Recorder )
+	{
+		PAssertNULL(mpInput);
+		
+		return mpInput->Read(buf, len)? TRUE : FALSE;
+	}
+
+	return FALSE;
 }
 
 BOOL PSoundChannel::Write( const void * buf, PINDEX len)
 {
-  //PError << "PSoundChannel::Write" << endl;
-  g_pSoundOutput->AddBuffer(buf, len);
-  return g_pSoundOutput->IsPlaying();
+  	if( direction == Player )
+	{
+		PAssertNULL(mpOutput);
+		
+		mpOutput->Play(buf, len);
+		return mpOutput->IsPlaying()? TRUE : FALSE;
+	}
+	else
+	if( direction == Recorder )
+	{
+		return FALSE;
+	}
+
+	return FALSE;
 }
 
 BOOL PSoundChannel::Close()
 {
-  Abort();
-  
-  isInitialised = false;
-  return TRUE;
+  	if( direction == Player )
+	{
+		if ( mpOutput )
+		{
+		 	mpOutput->StopPlayer();
+		}
+		
+	 	isInitialised = false;
+		return TRUE;
+		
+	}
+	else
+	if( direction == Recorder )
+	{
+		if ( mpInput )
+		{
+		 	mpInput->StopRecording();
+		}
+		
+	 	isInitialised = false;
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
@@ -391,7 +415,7 @@ BOOL PSoundChannel::SetBuffers(PINDEX size, PINDEX count)
 
   PAssert(size > 0 && count > 0 && count < 65536, PInvalidParameter);
 
-  return FALSE;
+  return TRUE;
 }
 
 
@@ -412,10 +436,11 @@ BOOL PSoundChannel::PlaySound(const PSound & sound, BOOL wait)
 //  return WaitForPlayCompletion();
 
 	// Set buffer frame count to 20ms.
-	PSoundPlayer player((PSound*) &sound);
+	PSoundPlayer NewSoundPlayer("TempOutput");
+	NewSoundPlayer.SetFormat(sound.GetChannels(), sound.GetSampleRate(), sound.GetSampleSize(), sound.GetSize());
 	
-	status_t err = player.StartPlaying();
-	while( wait && player.IsPlaying() )
+	status_t err = NewSoundPlayer.StartPlayer();
+	while( wait && NewSoundPlayer.IsPlaying() )
 		PXSetIOBlock(PXReadBlock, readTimeout); 
 
   return err == B_OK;
@@ -430,7 +455,9 @@ BOOL PSoundChannel::PlayFile(const PFilePath & filename, BOOL wait)
 
 BOOL PSoundChannel::HasPlayCompleted()
 {
-  return g_pSoundOutput->IsPlaying()? FALSE : TRUE;
+	PAssertNULL(mpOutput);
+			
+	return mpOutput->IsPlaying()? FALSE : TRUE;
 }
 
 
@@ -454,13 +481,23 @@ BOOL PSoundChannel::RecordFile(const PFilePath & filename)
 
 BOOL PSoundChannel::StartRecording()
 {
-	PAssertNULL(g_pSoundInput);
-	bool isRecording = g_pSoundInput->StartRecording();
-	
-	if( isRecording )
-		PError << "Recording started" << endl;
+  	if( direction == Player )
+	{
+		return FALSE;
+	}
+	else
+	if( direction == Recorder )
+	{
+		PAssertNULL(mpInput);
 
-  return isRecording? TRUE : FALSE;
+		bool isRecording = mpInput->StartRecording();
+		
+		if( isRecording )
+			PError << "Recording started" << endl;
+		return isRecording? TRUE : FALSE;
+	}
+
+	return FALSE;
 }
 
 
@@ -495,10 +532,23 @@ BOOL PSoundChannel::WaitForAllRecordBuffersFull()
 
 BOOL PSoundChannel::Abort()
 {
-  PAssertNULL(g_pSoundOutput);
-  g_pSoundOutput->Abort();
-  
-  return FALSE;
+  	if( direction == Player )
+	{
+		if(mpOutput);
+			return mpOutput->StopPlayer() ? TRUE : FALSE;
+			
+		return TRUE;
+	}
+  	else
+  	if( direction == Recorder )
+	{
+		if(mpInput)
+			mpInput->StopRecording()? TRUE : FALSE;
+			
+		return TRUE;
+	}
+	
+	return FALSE;
 }
 
 
