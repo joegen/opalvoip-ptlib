@@ -1,5 +1,5 @@
 /*
- * $Id: inetprot.cxx,v 1.24 1996/09/14 13:09:36 robertj Exp $
+ * $Id: inetprot.cxx,v 1.25 1996/09/16 12:57:07 robertj Exp $
  *
  * Portable Windows Library
  *
@@ -8,6 +8,9 @@
  * Copyright 1994 Equivalence
  *
  * $Log: inetprot.cxx,v $
+ * Revision 1.25  1996/09/16 12:57:07  robertj
+ * Fixed missing propagationof errors on open of subchannel.
+ *
  * Revision 1.24  1996/09/14 13:09:36  robertj
  * Major upgrade:
  *   rearranged sockets to help support IPX.
@@ -217,9 +220,14 @@ BOOL PInternetProtocol::AttachSocket(PIPSocket * socket)
     if (Open(socket))
       return TRUE;
     Close();
+    lastError = Miscellaneous;
+    osError = -1;
   }
-  else
+  else {
+    lastError = socket->GetErrorCode();
+    osError = socket->GetErrorNumber();
     delete socket;
+  }
 
   return FALSE;
 }
