@@ -8,6 +8,9 @@
  * Contributor(s): Snark at GnomeMeeting
  *
  * $Log: pluginmgr.cxx,v $
+ * Revision 1.15  2004/05/02 08:37:56  rjongbloed
+ * Fixed loading of plug ins when multiple plug in class sets used. Especially H.323 codecs.
+ *
  * Revision 1.14  2004/04/22 11:43:48  csoutheren
  * Factored out functions useful for loading dynamic libraries
  *
@@ -261,8 +264,6 @@ PPluginModuleManager::PPluginModuleManager(const char * _signatureFunctionName, 
   pluginMgr = _pluginMgr;;
   if (pluginMgr == NULL)
     pluginMgr = &PPluginManager::GetPluginManager();
-
-  pluginMgr->AddNotifier(PCREATE_NOTIFIER(OnLoadModule), TRUE);
 }
 
 void PPluginModuleManager::OnLoadModule(PDynaLink & dll, INT code)

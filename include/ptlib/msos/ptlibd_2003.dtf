@@ -145,7 +145,6 @@ EXPORTS
     ??0MAPIDLL@PMail@@QAE@XZ @97 NONAME ;public: __thiscall PMail::MAPIDLL::MAPIDLL(void)
     ??0Nest@PReadWriteMutex@@QAE@XZ @98 NONAME ;public: __thiscall PReadWriteMutex::Nest::Nest(void)
     ??0NT_ServiceManager@@QAE@XZ @99 NONAME ;public: __thiscall NT_ServiceManager::NT_ServiceManager(void)
-    ??0OnLoadModule_PNotifier@PPluginModuleManager@@QAE@PAV1@@Z @5862 NONAME ;public: __thiscall PPluginModuleManager::OnLoadModule_PNotifier::OnLoadModule_PNotifier(class PPluginModuleManager *)
     ??0ostrstream@std@@QAE@XZ @5550 NONAME ;public: __thiscall std::ostrstream::ostrstream(void)
     ??0PAbstractArray@@QAE@ABV0@@Z @100 NONAME ;public: __thiscall PAbstractArray::PAbstractArray(class PAbstractArray const &)
     ??0PAbstractArray@@QAE@HH@Z @101 NONAME ;public: __thiscall PAbstractArray::PAbstractArray(int,int)
@@ -558,7 +557,6 @@ EXPORTS
     ??1MAPIDLL@PMail@@UAE@XZ @463 NONAME ;public: virtual __thiscall PMail::MAPIDLL::~MAPIDLL(void)
     ??1Nest@PReadWriteMutex@@UAE@XZ @464 NONAME ;public: virtual __thiscall PReadWriteMutex::Nest::~Nest(void)
     ??1NT_ServiceManager@@QAE@XZ @465 NONAME ;public: __thiscall NT_ServiceManager::~NT_ServiceManager(void)
-    ??1OnLoadModule_PNotifier@PPluginModuleManager@@UAE@XZ @5865 NONAME ;public: virtual __thiscall PPluginModuleManager::OnLoadModule_PNotifier::~OnLoadModule_PNotifier(void)
     ??1PAbstractArray@@UAE@XZ @466 NONAME ;public: virtual __thiscall PAbstractArray::~PAbstractArray(void)
     ??1PAbstractDictionary@@UAE@XZ @467 NONAME ;public: virtual __thiscall PAbstractDictionary::~PAbstractDictionary(void)
     ??1PAbstractList@@UAE@XZ @468 NONAME ;public: virtual __thiscall PAbstractList::~PAbstractList(void)
@@ -1054,7 +1052,6 @@ EXPORTS
     ??_7MAPIDLL@PMail@@6B@ @1158 NONAME ;const  PMail::MAPIDLL::`vftable'
     ??_7Nest@PReadWriteMutex@@6B@ @1159 NONAME ;const  PReadWriteMutex::Nest::`vftable'
     ??_7NT_ServiceManager@@6B@ @1160 NONAME ;const  NT_ServiceManager::`vftable'
-    ??_7OnLoadModule_PNotifier@PPluginModuleManager@@6B@ @5868 NONAME ;const PPluginModuleManager::OnLoadModule_PNotifier::`vftable'
     ??_7ostrstream@std@@6B@ @5582 NONAME ;const std::ostrstream::`vftable'
     ??_7PAbstractArray@@6B@ @1161 NONAME ;const  PAbstractArray::`vftable'
     ??_7PAbstractDictionary@@6B@ @1162 NONAME ;const  PAbstractDictionary::`vftable'
@@ -1377,7 +1374,6 @@ EXPORTS
     ??_R0?AVMAPIDLL@PMail@@@8 @4057 NONAME ;class PMail::MAPIDLL `RTTI Type Descriptor'
     ??_R0?AVNest@PReadWriteMutex@@@8 @4058 NONAME ;class PReadWriteMutex::Nest `RTTI Type Descriptor'
     ??_R0?AVNT_ServiceManager@@@8 @4059 NONAME ;class NT_ServiceManager `RTTI Type Descriptor'
-    ??_R0?AVOnLoadModule_PNotifier@PPluginModuleManager@@@8 @5871 NONAME ;class PPluginModuleManager::OnLoadModule_PNotifier `RTTI Type Descriptor'
     ??_R0?AVostrstream@std@@@8 @5665 NONAME ;class std::ostrstream `RTTI Type Descriptor'
     ??_R0?AVPAbstractArray@@@8 @4062 NONAME ;class PAbstractArray `RTTI Type Descriptor'
     ??_R0?AVPAbstractDictionary@@@8 @4063 NONAME ;class PAbstractDictionary `RTTI Type Descriptor'
@@ -1617,7 +1613,6 @@ EXPORTS
     ??_R1A@?0A@A@MAPIDLL@PMail@@8 @4283 NONAME ;PMail::MAPIDLL::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@Nest@PReadWriteMutex@@8 @4284 NONAME ;PReadWriteMutex::Nest::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@NT_ServiceManager@@8 @4285 NONAME ;NT_ServiceManager::`RTTI Base Class Descriptor at (0,-1,0,0)'
-    ??_R1A@?0A@A@OnLoadModule_PNotifier@PPluginModuleManager@@8 @5874 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@ostrstream@std@@8 @5677 NONAME ;std::ostrstream::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PAbstractArray@@8 @4288 NONAME ;PAbstractArray::`RTTI Base Class Descriptor at (0,-1,0,0)'
     ??_R1A@?0A@A@PAbstractDictionary@@8 @4289 NONAME ;PAbstractDictionary::`RTTI Base Class Descriptor at (0,-1,0,0)'
@@ -1843,7 +1838,6 @@ EXPORTS
     ??_R2MAPIDLL@PMail@@8 @4500 NONAME ;PMail::MAPIDLL::`RTTI Base Class Array'
     ??_R2Nest@PReadWriteMutex@@8 @4501 NONAME ;PReadWriteMutex::Nest::`RTTI Base Class Array'
     ??_R2NT_ServiceManager@@8 @4502 NONAME ;NT_ServiceManager::`RTTI Base Class Array'
-    ??_R2OnLoadModule_PNotifier@PPluginModuleManager@@8 @5877 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Base Class Array'
     ??_R2ostrstream@std@@8 @5688 NONAME ;std::ostrstream::`RTTI Base Class Array'
     ??_R2PAbstractArray@@8 @4504 NONAME ;PAbstractArray::`RTTI Base Class Array'
     ??_R2PAbstractDictionary@@8 @4505 NONAME ;PAbstractDictionary::`RTTI Base Class Array'
@@ -2061,7 +2055,6 @@ EXPORTS
     ??_R3MAPIDLL@PMail@@8 @4709 NONAME ;PMail::MAPIDLL::`RTTI Class Hierarchy Descriptor'
     ??_R3Nest@PReadWriteMutex@@8 @4710 NONAME ;PReadWriteMutex::Nest::`RTTI Class Hierarchy Descriptor'
     ??_R3NT_ServiceManager@@8 @4711 NONAME ;NT_ServiceManager::`RTTI Class Hierarchy Descriptor'
-    ??_R3OnLoadModule_PNotifier@PPluginModuleManager@@8 @5880 NONAME ;PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Class Hierarchy Descriptor'
     ??_R3ostrstream@std@@8 @5691 NONAME ;std::ostrstream::`RTTI Class Hierarchy Descriptor'
     ??_R3PAbstractArray@@8 @4713 NONAME ;PAbstractArray::`RTTI Class Hierarchy Descriptor'
     ??_R3PAbstractDictionary@@8 @4714 NONAME ;PAbstractDictionary::`RTTI Class Hierarchy Descriptor'
@@ -2279,7 +2272,6 @@ EXPORTS
     ??_R4MAPIDLL@PMail@@6B@ @4918 NONAME ;const  PMail::MAPIDLL::`RTTI Complete Object Locator'
     ??_R4Nest@PReadWriteMutex@@6B@ @4919 NONAME ;const  PReadWriteMutex::Nest::`RTTI Complete Object Locator'
     ??_R4NT_ServiceManager@@6B@ @4920 NONAME ;const  NT_ServiceManager::`RTTI Complete Object Locator'
-    ??_R4OnLoadModule_PNotifier@PPluginModuleManager@@6B@ @5883 NONAME ;const PPluginModuleManager::OnLoadModule_PNotifier::`RTTI Complete Object Locator'
     ??_R4ostrstream@std@@6B@ @5694 NONAME ;const std::ostrstream::`RTTI Complete Object Locator'
     ??_R4PAbstractArray@@6B@ @4922 NONAME ;const  PAbstractArray::`RTTI Complete Object Locator'
     ??_R4PAbstractDictionary@@6B@ @4923 NONAME ;const  PAbstractDictionary::`RTTI Complete Object Locator'
@@ -2565,7 +2557,6 @@ EXPORTS
     ?Byte4@Address@PIPSocket@@QBEEXZ @1484 NONAME ;public: unsigned char __thiscall PIPSocket::Address::Byte4(void)const 
     ?CalculateFrameBytes@PVideoDevice@@SAIIIABVPString@@@Z @1485 NONAME ;public: static unsigned int __cdecl PVideoDevice::CalculateFrameBytes(unsigned int,unsigned int,class PString const &)
     ?Call@DeleteObjectsTimeout_PNotifier@PSafeCollection@@UBEXAAVPObject@@H@Z @1486 NONAME ;public: virtual void __thiscall PSafeCollection::DeleteObjectsTimeout_PNotifier::Call(class PObject &,int)const 
-    ?Call@OnLoadModule_PNotifier@PPluginModuleManager@@UBEXAAVPObject@@H@Z @5885 NONAME ;public: virtual void __thiscall PPluginModuleManager::OnLoadModule_PNotifier::Call(class PObject &,int)const 
     ?CallNotifier@PPluginManager@@IAEXAAVPDynaLink@@H@Z @3997 NONAME ;protected: void __thiscall PPluginManager::CallNotifier(class PDynaLink &,int)
     ?CanCaptureVideo@PVideoInputDevice@@UBEHXZ @1487 NONAME ;public: virtual int __thiscall PVideoInputDevice::CanCaptureVideo(void)const 
     ?CanCaptureVideo@PVideoOutputDevice@@UBEHXZ @1488 NONAME ;public: virtual int __thiscall PVideoOutputDevice::CanCaptureVideo(void)const 
